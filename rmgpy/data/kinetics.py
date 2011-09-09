@@ -2205,16 +2205,25 @@ class KineticsFamily(Database):
                 )
                 reactionList.append(reaction)
 
+        # Determine the reactant-product pairs to use for flux analysis
         # Also store the reaction template (useful so we can easily get the kinetics later)
         for reaction in reactionList:
+            reaction.pairs = self.getReactionPairs(reaction)
             reaction.template = self.getReactionTemplate(reaction)
             if hasattr(reaction,'reverse'):
+                reaction.reverse.pairs = self.getReactionPairs(reaction.reverse)
                 reaction.reverse.template = self.getReactionTemplate(reaction.reverse)
-        
+            
         # Return the reactions as containing Species objects, not Molecule objects
         for reaction in reactionList:
-            reaction.reactants = [Species(label=reactant.toSMILES(), molecule=[reactant]) for reactant in reaction.reactants]
-            reaction.products = [Species(label=product.toSMILES(), molecule=[product]) for product in reaction.products]
+            moleculeDict = {}
+            for molecule in reaction.reactants:
+                moleculeDict[molecule] = Species(label=molecule.toSMILES(), molecule=[molecule])
+            for molecule in reaction.products:
+                moleculeDict[molecule] = Species(label=molecule.toSMILES(), molecule=[molecule])
+            reaction.reactants = [moleculeDict[molecule] for molecule in reaction.reactants]
+            reaction.products = [moleculeDict[molecule] for molecule in reaction.products]
+            reaction.pairs = [(moleculeDict[reactant],moleculeDict[product]) for reactant, product in reaction.pairs]
 
         return reactionList
     
@@ -2365,6 +2374,71 @@ class KineticsFamily(Database):
         # with the global list of reactions
         return rxnList
 
+    def getReactionPairs(self, reaction):
+        """
+        For a given `reaction` with properly-labeled :class:`Molecule` objects
+        as the reactants, return the reactant-product pairs to use when
+        performing flux analysis.
+        """
+        pairs = []; error = False
+        if len(reaction.reactants) == 1 or len(reaction.products) == 1:
+            # When there is only one reactant (or one product), it is paired 
+            # with each of the products (reactants)
+            for reactant in reaction.reactants:
+                for product in reaction.products:
+                    pairs.append([reactant,product])
+        elif self.label.lower() == 'h_abstraction':
+            # Hardcoding for hydrogen abstraction: pair the reactant containing
+            # *1 with the product containing *3 and vice versa
+            assert len(reaction.reactants) == len(reaction.products) == 2
+            if reaction.reactants[0].containsLabeledAtom('*1'):
+                if reaction.products[0].containsLabeledAtom('*3'):
+                    pairs.append([reaction.reactants[0],reaction.products[0]])
+                    pairs.append([reaction.reactants[1],reaction.products[1]])
+                elif reaction.products[1].containsLabeledAtom('*3'):
+                    pairs.append([reaction.reactants[0],reaction.products[1]])
+                    pairs.append([reaction.reactants[1],reaction.products[0]])
+                else:
+                    error = True
+            elif reaction.reactants[1].containsLabeledAtom('*1'):
+                if reaction.products[1].containsLabeledAtom('*3'):
+                    pairs.append([reaction.reactants[0],reaction.products[0]])
+                    pairs.append([reaction.reactants[1],reaction.products[1]])
+                elif reaction.products[0].containsLabeledAtom('*3'):
+                    pairs.append([reaction.reactants[0],reaction.products[1]])
+                    pairs.append([reaction.reactants[1],reaction.products[0]])
+                else:
+                    error = True
+        elif self.label.lower() == 'disproportionation':
+            # Hardcoding for disproportionation: pair the reactant containing
+            # *1 with the product containing *1
+            assert len(reaction.reactants) == len(reaction.products) == 2
+            if reaction.reactants[0].containsLabeledAtom('*1'):
+                if reaction.products[0].containsLabeledAtom('*1'):
+                    pairs.append([reaction.reactants[0],reaction.products[0]])
+                    pairs.append([reaction.reactants[1],reaction.products[1]])
+                elif reaction.products[1].containsLabeledAtom('*1'):
+                    pairs.append([reaction.reactants[0],reaction.products[1]])
+                    pairs.append([reaction.reactants[1],reaction.products[0]])
+                else:
+                    error = True
+            elif reaction.reactants[1].containsLabeledAtom('*1'):
+                if reaction.products[1].containsLabeledAtom('*1'):
+                    pairs.append([reaction.reactants[0],reaction.products[0]])
+                    pairs.append([reaction.reactants[1],reaction.products[1]])
+                elif reaction.products[0].containsLabeledAtom('*1'):
+                    pairs.append([reaction.reactants[0],reaction.products[1]])
+                    pairs.append([reaction.reactants[1],reaction.products[0]])
+                else:
+                    error = True
+        else:
+            error = True
+            
+        if error:
+            raise KineticsError('Unable to determine reaction pairs for {0!s} reaction {1!s}.'.format(self.label, reaction))
+        else:
+            return pairs
+        
     def getReactionTemplate(self, reaction):
         """
         For a given `reaction` with properly-labeled :class:`Molecule` objects
