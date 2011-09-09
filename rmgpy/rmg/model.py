@@ -398,13 +398,28 @@ class CoreEdgeReactionModel:
         """
 
         # Determine the proper species objects for all reactants and products
-        forward.reactants = [self.makeNewSpecies(reactant)[0] for reactant in forward.reactants]
-        forward.products  = [self.makeNewSpecies(product)[0]  for product  in forward.products ]
+        reactants = [self.makeNewSpecies(reactant)[0] for reactant in forward.reactants]
+        products  = [self.makeNewSpecies(product)[0]  for product  in forward.products ]
+        if forward.pairs is not None:
+            for pairIndex in range(len(forward.pairs)):
+                reactantIndex = forward.reactants.index(forward.pairs[pairIndex][0])
+                productIndex = forward.products.index(forward.pairs[pairIndex][1])
+                forward.pairs[pairIndex] = (reactants[reactantIndex], products[productIndex])
+                if hasattr(forward, 'reverse'):
+                    forward.reverse.pairs[pairIndex] = (products[productIndex], reactants[reactantIndex])
+        forward.reactants = reactants
+        forward.products  = products
 
         if checkExisting:
             found, rxn = self.checkForExistingReaction(forward)
             if found: return rxn, False
 
+        # Generate the reaction pairs if not yet defined
+        if forward.pairs is None:
+            forward.generatePairs()
+            if hasattr(forward, 'reverse'):
+                forward.reverse.generatePairs()
+            
         # Note in the log
         if isinstance(forward, TemplateReaction):
             logging.debug('Creating new {0} template reaction {1}'.format(forward.family.label, forward))
@@ -458,6 +473,10 @@ class CoreEdgeReactionModel:
         forward.reverse = None
         forward.reversible = False
 
+        # Generate the reaction pairs if not yet defined
+        if forward.pairs is None:
+            forward.generatePairs()
+            
         # Set reaction index and increment the counter
         forward.index = self.reactionCounter + 1
         self.reactionCounter += 1
@@ -575,7 +594,7 @@ class CoreEdgeReactionModel:
                 # Flip the reaction direction if the kinetics are defined in the reverse direction
                 if not isForward:
                     reaction.reactants, reaction.products = reaction.products, reaction.reactants
-                
+                    reaction.pairs = reaction.reverse.pairs
                 if reaction.family.ownReverse and hasattr(reaction,'reverse'):
                     # We're done with the "reverse" attribute, so delete it to save a bit of memory
                     delattr(reaction,'reverse')
@@ -831,8 +850,6 @@ class CoreEdgeReactionModel:
         logging.info('Created {0:d} new edge reactions'.format(len(newEdgeReactions)))
         for rxn in newEdgeReactions:
             logging.info('    {0}'.format(rxn))
-            logging.info('    {0}'.format(rxn.kinetics))
-           #logging.info('    K = {0}'.format(rxn.getEquilibriumConstant(700)))
 
         coreSpeciesCount, coreReactionCount, edgeSpeciesCount, edgeReactionCount = self.getModelSize()
 
