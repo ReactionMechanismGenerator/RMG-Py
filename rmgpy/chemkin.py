@@ -40,6 +40,8 @@ from reaction import Reaction
 from species import Species
 from thermo import NASA, MultiNASA
 from quantity import constants, Quantity
+from data.kinetics import TemplateReaction, LibraryReaction
+from rmg.pdep import PDepReaction
 
 __chemkin_reaction_count = None
     
@@ -679,13 +681,35 @@ def writeKineticsEntry(reaction, speciesList):
             string += "DUPLICATE\n"
         return string + "\n"
     
+    # First line of comment contains reaction equation
+    string += '! {0!s}\n'.format(reaction)
+    
+    # Next line of comment contains Chemkin and RMG indices
     global __chemkin_reaction_count
     if __chemkin_reaction_count is not None:
         __chemkin_reaction_count += 1
-        string += "! Chemkin # {0}. RMG # {1}.\n".format(__chemkin_reaction_count, reaction.index)
+        string += "! Reaction index: Chemkin #{0:d}; RMG #{1:d}\n".format(__chemkin_reaction_count, reaction.index)
+    
+    # Next line of comment contains information about the type of reaction
+    if isinstance(reaction, TemplateReaction):
+        string += '! Template reaction: {0!s} [{1!s}]\n'.format(reaction.family.label, ','.join([group.label for group in reaction.template]))
+    elif isinstance(reaction, LibraryReaction):
+        string += '! Library reaction: {0!s}\n'.format(reaction.library.label)
+    elif isinstance(reaction, PDepReaction):
+        string += '! PDep reaction: {0!s}\n'.format(reaction.network)
+    
+    # Next line of comment contains flux pairs
+    if reaction.pairs is not None:
+        string += '! Flux pairs: {0}\n'.format(
+            '; '.join(['{0!s}, {1!s}'.format(getSpeciesIdentifier(reactant), getSpeciesIdentifier(product)) for reactant, product in reaction.pairs])
+        )
+
+    # Remaining lines of comments taken from reaction kinetics
     if reaction.kinetics.comment:
+        string += '! Kinetics comments:\n'
         for line in reaction.kinetics.comment.split("\n"):
-            string += "! {0}\n".format(line) 
+            string += "!   {0}\n".format(line) 
+    
     kinetics = reaction.kinetics
     numReactants = len(reaction.reactants)
     

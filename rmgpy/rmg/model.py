@@ -1190,6 +1190,9 @@ class CoreEdgeReactionModel:
             self.addSpeciesToEdge(spec)
 
         for rxn in self.newReactionList:
+            # Note that we haven't actually evaluated any fluxes at this point
+            # Instead, we remove the comment below if the reaction is moved to
+            # the core later in the mechanism generation
             rxn.kinetics.comment += "\nRMG did not find reaction rate to be high enough to be included in model core."
             self.addReactionToEdge(rxn)
 

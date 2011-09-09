@@ -797,7 +797,7 @@ class KineticsLibrary(Database):
         if product2 is not None: products.append(Species(label=product2.strip().splitlines()[0].strip(), molecule=[Molecule().fromAdjacencyList(product2)]))
         if product3 is not None: products.append(Species(label=product3.strip().splitlines()[0].strip(), molecule=[Molecule().fromAdjacencyList(product3)]))
         
-        comment = "Reaction from {0}.".format(self.label)
+        comment = "Reaction and kinetics from {0}.".format(self.label)
         if shortDesc.strip(): 
             comment += "{0!s}\n".format(shortdesc.strip())
         if longDesc.strip():
@@ -2483,7 +2483,8 @@ class KineticsFamily(Database):
                     # The rules are defined on a per-site basis, so we need to include the degeneracy manually
                     assert isinstance(kinetics, ArrheniusEP)
                     kinetics.A.value *= degeneracy
-                    kinetics.comment += "Matched rule {0} {1} in {2}".format(entry.index, entry.label, depository.label)
+                    kinetics.comment += "Matched rule {0} {1} in {2}\n".format(entry.index, entry.label, depository.label)
+                    kinetics.comment += "Multiplied by reaction path degeneracy {0}".format(degeneracy)
         else:
             # The depository contains real reactions
             entries = depository.entries.values()
