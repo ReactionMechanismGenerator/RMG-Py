@@ -96,6 +96,8 @@ cdef class Reaction:
 
     cpdef bint isBalanced(self)
     
+    cpdef generatePairs(self)
+    
 ################################################################################
 
 cdef class ReactionModel:

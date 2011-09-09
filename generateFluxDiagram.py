@@ -47,53 +47,6 @@ finalPadding = 5                # The number of seconds to display the final flu
 
 ################################################################################
 
-def getFluxPairs(reaction):
-    """
-    For a given `reaction`, match each reactant with a product for the purposes
-    of determining molar fluxes. The exact procedure for doing so depends on
-    the reaction type:
-    
-    =================== =============== ========================================
-    Reaction type       Template        Resulting pairs
-    =================== =============== ========================================
-    Isomerization       A     -> C      (A,C)
-    Dissociation        A     -> C + D  (A,C), (A,D)
-    Association         A + B -> C      (A,C), (B,C)
-    Bimolecular         A + B -> C + D  (A,C), (B,D) *or* (A,D), (B,C)
-    =================== =============== ========================================
-    
-    There are a number of ways of determining the correct pairing for 
-    bimolecular reactions. Here we try a simple similarity analysis by comparing
-    the number of heavy atoms (carbons and oxygens at the moment). This should
-    work most of the time, but a more rigorous algorithm may be needed for
-    some cases.
-    """
-    pairs = []
-    if len(reaction.reactants) == 2 and len(reaction.products) == 2:
-        reactants = reaction.reactants[:]
-        products = reaction.products[:]
-        
-        reactantCarbons = [sum([1 for atom in reactant.molecule[0].atoms if atom.isCarbon()]) for reactant in reactants]
-        productCarbons  = [sum([1 for atom in  product.molecule[0].atoms if atom.isCarbon()]) for product  in products ]
-        reactantOxygens = [sum([1 for atom in reactant.molecule[0].atoms if atom.isOxygen()]) for reactant in reactants]
-        productOxygens  = [sum([1 for atom in  product.molecule[0].atoms if atom.isOxygen()]) for product  in products ]
-        if (
-            reactants[0] is products[1] or
-            reactants[1] is products[0] or
-            abs(reactantCarbons[0] - productCarbons[1]) < abs(reactantCarbons[0] - productCarbons[0]) or
-            abs(reactantOxygens[0] - productOxygens[1]) < abs(reactantOxygens[0] - productOxygens[0])
-        ):
-            pairs = [(reactants[0], products[1]), (reactants[1], products[0])]
-        else:
-            pairs = [(reactants[0], products[0]), (reactants[1], products[1])]
-            
-    else:
-        for reactant in reaction.reactants:
-            for product in reaction.products:
-                pairs.append((reactant, product))
-        
-    return pairs
-
 def generateFluxDiagram(reactionModel, times, concentrations, reactionRates, outputDirectory):
     """
     For a given `reactionModel` and simulation results stored as arrays of
@@ -113,7 +66,8 @@ def generateFluxDiagram(reactionModel, times, concentrations, reactionRates, out
     speciesRates = numpy.zeros((len(times),numSpecies,numSpecies), numpy.float64)
     for index, reaction in enumerate(reactionList):
         rate = reactionRates[:,index]
-        for reactant, product in getFluxPairs(reaction):
+        reaction.generatePairs()
+        for reactant, product in reaction.pairs:
             reactantIndex = speciesList.index(reactant)
             productIndex = speciesList.index(product)
             speciesRates[:,reactantIndex,productIndex] += rate

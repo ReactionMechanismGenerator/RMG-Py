@@ -787,6 +787,55 @@ class Reaction:
                 return False
         
         return True
+    
+    def generatePairs(self):
+        """
+        Generate the reactant-product pairs to use for this reaction when
+        performing flux analysis. The exact procedure for doing so depends on
+        the reaction type:
+        
+        =================== =============== ========================================
+        Reaction type       Template        Resulting pairs
+        =================== =============== ========================================
+        Isomerization       A     -> C      (A,C)
+        Dissociation        A     -> C + D  (A,C), (A,D)
+        Association         A + B -> C      (A,C), (B,C)
+        Bimolecular         A + B -> C + D  (A,C), (B,D) *or* (A,D), (B,C)
+        =================== =============== ========================================
+        
+        There are a number of ways of determining the correct pairing for 
+        bimolecular reactions. Here we try a simple similarity analysis by comparing
+        the number of heavy atoms (carbons and oxygens at the moment). This should
+        work most of the time, but a more rigorous algorithm may be needed for
+        some cases.
+        """
+        self.pairs = []
+        
+        if len(self.reactants) == 1 or len(self.products) == 1:
+            for reactant in self.reactants:
+                for product in self.products:
+                    self.pairs.append((reactant, product))
+            
+        elif len(self.reactants) == 2 and len(self.products) == 2:
+            reactants = self.reactants[:]
+            products = self.products[:]
+            
+            reactantCarbons = [sum([1 for atom in reactant.molecule[0].atoms if atom.isCarbon()]) for reactant in reactants]
+            productCarbons  = [sum([1 for atom in  product.molecule[0].atoms if atom.isCarbon()]) for product  in products ]
+            reactantOxygens = [sum([1 for atom in reactant.molecule[0].atoms if atom.isOxygen()]) for reactant in reactants]
+            productOxygens  = [sum([1 for atom in  product.molecule[0].atoms if atom.isOxygen()]) for product  in products ]
+            if (
+                reactants[0] is products[1] or
+                reactants[1] is products[0] or
+                abs(reactantCarbons[0] - productCarbons[1]) < abs(reactantCarbons[0] - productCarbons[0]) or
+                abs(reactantOxygens[0] - productOxygens[1]) < abs(reactantOxygens[0] - productOxygens[0])
+            ):
+                self.pairs = [(reactants[0], products[1]), (reactants[1], products[0])]
+            else:
+                self.pairs = [(reactants[0], products[0]), (reactants[1], products[1])]
+                
+        else:
+            raise ReactionError('Unable to determine reaction flux pairs for {0}.'.format(self))
         
 ################################################################################
 
