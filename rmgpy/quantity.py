@@ -348,6 +348,45 @@ class Quantity:
         """
         return self.uncertaintyType == '*|/'
 
+    def equals(self, quantity):
+        """
+        Return ``True`` if the everything in a quantity object matches
+        the parameters in this object.  If there are lists of values or uncertainties,
+        each item in the list must be matching and in the same order.
+        Otherwise, return ``False``
+        (Originally intended to return warning if units capitalization was
+        different, however, Quantity object only parses units matching in case, so
+        this will not be a problem.)
+        """
+        if isinstance(quantity, Quantity):
+            if (self.value == quantity.value and self.uncertaintyType == quantity.uncertaintyType
+            and self.uncertainty == quantity.uncertainty and self.units == quantity.units):
+
+                if self.values is not None and quantity.values is not None:
+                    if all(self.values == quantity.values):
+                        pass
+                    else:
+                        return False
+                elif self.values is None and quantity.values is None:
+                    pass
+                else:
+                    return False
+
+                if self.uncertainties is not None and quantity.uncertainties is not None:
+                    if all(self.uncertainties == quantity.uncertainties):
+                        pass
+                    else:
+                        return False
+                elif self.uncertainties is None and quantity.uncertainties is None:
+                    pass
+                else:
+                    return False
+
+                return True
+
+        return False
+
+
 ################################################################################
 
 class Constants:

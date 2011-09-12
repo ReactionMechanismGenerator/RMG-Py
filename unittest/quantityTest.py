@@ -343,6 +343,29 @@ class TestQuantity(unittest.TestCase):
         self.assertFalse(q.isUncertaintyMultiplicative())
         self.assertEqual(q.getConversionFactorToSI(), 0.01)
         self.assertEqual(q.getConversionFactorFromSI(), 100.0)
+
+    def testEquals(self):
+        """
+        Tests the ``equals`` function within quantity to make sure that it rejects
+        nonidentical quantity objects.
+        """
+        q1 = Quantity((10,"cm","+|-",1.0))
+        q1b = Quantity((10,"cm","+|-",1.0))
+        q2 = Quantity((10,"kJ","+|-",1.0))
+        q2b= Quantity((10,"kJ","+|-",1.0))
+        q3 = Quantity(([10.0,20.0,30.0],"cm","+|-",[1.0,2.0,3.0]))
+        q3b = Quantity(([10.0,20.0,30.0],"cm","+|-",[1.0,2.0,3.0]))
+        q4 = Quantity(([10.0,20.0,30.0],"cm","+|-",1.0))
+        q4b = Quantity(([10.0,20.0,30.0],"cm","+|-",1.0))
+
+        self.assertTrue(q1.equals(q1b))
+        self.assertTrue(q2.equals(q2b))
+        self.assertTrue(q3.equals(q3b))
+        self.assertTrue(q4.equals(q4b))
+        self.assertFalse(q1.equals(q2))
+        self.assertFalse(q1.equals(q3))
+        self.assertFalse(q1.equals(q4))
+        self.assertFalse(q3.equals(q4))
     
 ################################################################################
 
