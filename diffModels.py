@@ -9,10 +9,12 @@ pass the
 import math
 import numpy
 import pylab
+import os.path
 #import matplotlib.pyplot
 
 from rmgpy.chemkin import loadChemkinFile
 from rmgpy.reaction import ReactionModel
+from rmgpy.rmg.output import saveDiffHTML
 
 ################################################################################
 
@@ -77,7 +79,39 @@ def compareModelKinetics(model1, model2):
     connection_id = fig.canvas.mpl_connect('pick_event', onpick)
         
         
-    pylab.show()
+#    pylab.show()
+
+    return commonReactions, uniqueReactions1, uniqueReactions2
+
+
+
+def saveCompareHTML(outputDir,chemkinPath1,speciesDictPath1,chemkinPath2,speciesDictPath2):
+    """
+    Saves a model comparison HTML file based on two sets of chemkin and species dictionary
+    files.
+    """
+    model1 = ReactionModel()
+    model1.species, model1.reactions = loadChemkinFile(chemkinPath1, speciesDictPath1)
+    model2 = ReactionModel()
+    model2.species, model2.reactions = loadChemkinFile(chemkinPath2, speciesDictPath2)
+    commonReactions, uniqueReactions1, uniqueReactions2 = compareModelKinetics(model1, model2)
+
+    outputPath = outputDir + 'diff.html'
+    speciesList1 = []
+    speciesList1 = model1.species
+    commonSpeciesList = []
+    speciesList2 = []
+    for spec2 in model2.species:
+        for spec1 in speciesList1:
+            if spec2.isIsomorphic(spec1):
+                spec2.label = spec1.label
+                speciesList1.remove(spec1)
+                commonSpeciesList.append(spec2)
+                break
+        else:
+            speciesList2.append(spec2)
+            
+    saveDiffHTML(outputPath, commonSpeciesList,speciesList1,speciesList2,commonReactions,uniqueReactions1,uniqueReactions2)
     
 ################################################################################
 
@@ -107,4 +141,3 @@ if __name__ == '__main__':
     model2.species, model2.reactions = loadChemkinFile(chemkin2, speciesDict2)
     
     compareModelKinetics(model1, model2)
-    
