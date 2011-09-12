@@ -147,7 +147,6 @@ def readKineticsEntry(entry, speciesDict, energyUnits, moleculeUnits):
     for reactant in reactants.split('+'):
         reactant = reactant.strip()
         if reactant == 'M' or reactant == 'm':
-            print 'thirdbody true'
             thirdBody = True
         elif reactant not in speciesDict:
             raise ChemkinError('Unexpected reactant "{0}" in reaction {1}.'.format(reactant, reaction))
