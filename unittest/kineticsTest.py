@@ -75,21 +75,22 @@ class TestKineticsModel(unittest.TestCase):
         self.assertEqual(self.kinetics.Pmax.units, kinetics.Pmax.units)
         self.assertEqual(self.kinetics.comment, kinetics.comment)
     
-    def testOutput(self):
-        """
-        Test that we can reconstruct a KineticsModel object from its repr()
-        output with no loss of information.
-        """
-        exec('kinetics = {0!r}'.format(self.kinetics))
-        self.assertEqual(self.kinetics.Tmin.value, kinetics.Tmin.value)
-        self.assertEqual(self.kinetics.Tmin.units, kinetics.Tmin.units)
-        self.assertEqual(self.kinetics.Tmax.value, kinetics.Tmax.value)
-        self.assertEqual(self.kinetics.Tmax.units, kinetics.Tmax.units)
-        self.assertEqual(self.kinetics.Pmin.value, kinetics.Pmin.value)
-        self.assertEqual(self.kinetics.Pmin.units, kinetics.Pmin.units)
-        self.assertEqual(self.kinetics.Pmax.value, kinetics.Pmax.value)
-        self.assertEqual(self.kinetics.Pmax.units, kinetics.Pmax.units)
-        self.assertEqual(self.kinetics.comment, kinetics.comment)
+#    def testOutput(self):
+#        """
+#        Test that we can reconstruct a KineticsModel object from its repr()
+#        output with no loss of information.
+#        """
+#        # KineticsModel does not have repr since it must be from derived class.
+#        exec('kinetics = {0!r}'.format(self.kinetics))
+#        self.assertEqual(self.kinetics.Tmin.value, kinetics.Tmin.value)
+#        self.assertEqual(self.kinetics.Tmin.units, kinetics.Tmin.units)
+#        self.assertEqual(self.kinetics.Tmax.value, kinetics.Tmax.value)
+#        self.assertEqual(self.kinetics.Tmax.units, kinetics.Tmax.units)
+#        self.assertEqual(self.kinetics.Pmin.value, kinetics.Pmin.value)
+#        self.assertEqual(self.kinetics.Pmin.units, kinetics.Pmin.units)
+#        self.assertEqual(self.kinetics.Pmax.value, kinetics.Pmax.value)
+#        self.assertEqual(self.kinetics.Pmax.units, kinetics.Pmax.units)
+#        self.assertEqual(self.kinetics.comment, kinetics.comment)
         
 ################################################################################
 
@@ -1171,7 +1172,78 @@ class TestTroe(unittest.TestCase):
         self.assertEqual(self.kinetics.Pmax.value, kinetics.Pmax.value)
         self.assertEqual(self.kinetics.Pmax.units, kinetics.Pmax.units)
         self.assertEqual(self.kinetics.comment, kinetics.comment)
-    
+
+################################################################################
+
+class TestIdentity(unittest.TestCase):
+    """
+    Tests the isIdenticalTo function for the different ypes of kinetics:
+    KineticsModel, KineticsData, Arrhenius, ArrheniusEP, PDepArrhenius
+    Chebyshev, ThirdBody, Lindemann, Troe
+    """
+
+    def testIdentity(self):
+        arrhenius1 = Arrhenius(A=(1.21e+13,"cm^3/(mol*s)"), n=0, Ea=(0,"kcal/mol"), T0=(1,"K"))
+        arrhenius1b = Arrhenius(A=(1.21e+13,"cm^3/(mol*s)"), n=0, Ea=(0,"kcal/mol"), T0=(1,"K"))
+        arrhenius2 = Arrhenius(A=(1.21e+13,"cm^3/(mol*s)"), n=0, Ea=(0,"kcal/mol"), T0=(1,"K"), Tmin=(353,"K"),Tmax =(400,"K"))
+        arrhenius3= Arrhenius(A=(1.75e+10,"cm^3/(mol*s)"), n=0, Ea=(-3.28,"kcal/mol"), T0=(1,"K"))
+        chebyshev1=Chebyshev(coeffs=[[12.71,0.052197,-0.0026878,5.7448e-06], [-0.43104,0.099138,-0.0048957,-1.404e-05], [-0.281,0.084727,-0.0036625,-7.4128e-05], [-0.19107,0.064542,-0.0021801,-0.0001291]], Tmin=(300,"K"), Tmax=(2500,"K"), Pmin=(4.93462,"atm"), Pmax=(59.2154,"atm"), comment="""NetReaction from PDepNetwork #2 (DMP) High-P Limit: R_Recombination exact:  [ C_rad/H/NonDeC , CO_rad/NonDe ] For the above reaction, deltaHrxn(T=298K) = -87.3 kcal/mol""")
+        chebyshev1b=Chebyshev(coeffs=[[12.71,0.052197,-0.0026878,5.7448e-06], [-0.43104,0.099138,-0.0048957,-1.404e-05], [-0.281,0.084727,-0.0036625,-7.4128e-05], [-0.19107,0.064542,-0.0021801,-0.0001291]], Tmin=(300,"K"), Tmax=(2500,"K"), Pmin=(4.93462,"atm"), Pmax=(59.2154,"atm"), comment="""NetReaction from PDepNetwork #2 (DMP) High-P Limit: R_Recombination exact:  [ C_rad/H/NonDeC , CO_rad/NonDe ]""")
+        chebyshev2=Chebyshev(coeffs=[[7.9506,0.53959,-1.586e-06,-3.1831e-07], [-0.60789,4.1618e-06,1.2168e-06,2.4422e-07], [-0.217,7.4673e-07,2.1833e-07,4.382e-08], [-0.075306,2.4397e-08,7.1345e-09,1.4325e-09]], Tmin=(300,"K"), Tmax=(2500,"K"), Pmin=(4.93462,"atm"), Pmax=(59.2154,"atm"), comment="""NetReaction from PDepNetwork #5 (HO2) High-P Limit: Oa_R_Recombination estimate: (Average:) [ O_pri_rad , Oa ] For the above reaction, deltaHrxn(T=298K) = -66.0 kcal/mol""")
+        thirdbody1=ThirdBody(arrheniusHigh=Arrhenius(A=(1.2e+17,"cm^6/(mol^2*s)"),n=-1,Ea=(0,"kcal/mol"),T0=(1,"K"),),efficiencies={
+            "C":2,"C(=O)=O":3.6,"CC":3,"O":15.4,"[Ar]":0.83,"[C]=O":1.75,"[H][H]":2.4,},comment="""ReactionLibrary:GRI-Mech3.0""")
+        thirdbody1b=ThirdBody(arrheniusHigh=Arrhenius(A=(1.2e+17,"cm^6/(mol^2*s)"),n=-1,Ea=(0,"kcal/mol"),T0=(1,"K"),),efficiencies={
+            "C":2,"C(=O)=O":3.6,"CC":3,"O":15.4,"[Ar]":0.83,"[C]=O":1.75,"[H][H]":2.4,},comment="""ReactionLibrary""")
+        thirdbody2=ThirdBody(arrheniusHigh=Arrhenius(A=(1.2e+17,"cm^6/(mol^2*s)"),n=-.5,Ea=(0,"kcal/mol"),T0=(1,"K"),),efficiencies={
+                "C":2,"C(=O)=O":3.6,"CC":3,"O":15.4,"[Ar]":0.83,"[C]=O":1.75,"[H][H]":2.4,},comment="""ReactionLibrary:GRI-Mech3.0""")
+        thirdbody3=ThirdBody(arrheniusHigh=Arrhenius(A=(1.2e+17,"cm^6/(mol^2*s)"),n=-1,Ea=(0,"kcal/mol"),T0=(1,"K"),),efficiencies={
+            "C":2,"CC=O":3.6,"CC":3,"O":15.4,"[Ar]":0.83,"[C]=O":1.75,"[H][H]":2.4,},comment="""ReactionLibrary:GRI-Mech3.0""")
+        troe1 = Troe(arrheniusHigh=Arrhenius(A=(7.4e+13,"cm^3/(mol*s)"),n=-0.37,Ea=(0,"kcal/mol"),T0=(1,"K"), ), arrheniusLow=Arrhenius(A=(2.3e+18,"cm^6/(mol^2*s)"),n=-0.9,Ea=(-1.7,"kcal/mol"),T0=(1,"K"), ), alpha=0.7346, T3=(94,"K"), T1=(1756,"K"), T2=(5182,"K"), efficiencies={
+            "C": 2,"C(=O)=O": 2,"CC": 3,"O": 6,"[Ar]": 0.7,"[C]=O": 1.5,"[H][H]": 2, }, comment="""ReactionLibrary: GRI-Mech3.0   """)
+        troe1b = Troe(arrheniusHigh=Arrhenius(A=(7.4e+13,"cm^3/(mol*s)"),n=-0.37,Ea=(0,"kcal/mol"),T0=(1,"K"), ), arrheniusLow=Arrhenius(A=(2.3e+18,"cm^6/(mol^2*s)"),n=-0.9,Ea=(-1.7,"kcal/mol"),T0=(1,"K"), ), alpha=0.7346, T3=(94,"K"), T1=(1756,"K"), T2=(5182,"K"), efficiencies={
+            "C": 2,"C(=O)=O": 2,"CC": 3,"O": 6,"[Ar]": 0.7,"[C]=O": 1.5,"[H][H]": 2, }, comment="""Reaction""")
+        troe2 = Troe(arrheniusHigh=Arrhenius(A=(7.4e+13,"cm^3/(mol*s)"),n=-0.57,Ea=(0,"kcal/mol"),T0=(1,"K"), ), arrheniusLow=Arrhenius(A=(2.3e+18,"cm^6/(mol^2*s)"),n=-0.9,Ea=(-1.7,"kcal/mol"),T0=(1,"K"), ), alpha=0.7346, T3=(94,"K"), T1=(1756,"K"), T2=(5182,"K"), efficiencies={
+            "C": 2,"C(=O)=O": 2,"CC": 3,"O": 6,"[Ar]": 0.7,"[C]=O": 1.5,"[H][H]": 2, }, comment="""Reaction""")
+        troe3 = Troe(arrheniusHigh=Arrhenius(A=(7.4e+13,"cm^3/(mol*s)"),n=-0.37,Ea=(0,"kcal/mol"),T0=(1,"K"), ), arrheniusLow=Arrhenius(A=(2.3e+18,"cm^6/(mol^2*s)"),n=-0.9,Ea=(-1.7,"kcal/mol"),T0=(1,"K"), ), alpha=0.7346, T3=(94,"K"), T1=(1756,"K"), T2=(5182,"K"), efficiencies={
+            "C": 2,"CC=O": 2,"CC": 3,"O": 6,"[Ar]": 0.7,"[C]=O": 1.5,"[H][H]": 2, }, comment="""Reaction""")
+        plog1 = PDepArrhenius(pressures=[3000, 10000],arrhenius=[arrhenius1,arrhenius3],highPlimit=arrhenius1)
+        plog1b = PDepArrhenius(pressures=[3000, 10000],arrhenius=[arrhenius1b,arrhenius3],highPlimit=arrhenius1b)
+        plog2 = PDepArrhenius(pressures=[3000, 10000],arrhenius=[arrhenius1,arrhenius3],highPlimit=arrhenius1, Tmin=(300,"K"),Tmax=(1500,"K"))
+        plog3 = PDepArrhenius(pressures=[3000, 10000, 20000],arrhenius=[arrhenius1,arrhenius3, arrhenius2],highPlimit=arrhenius1)
+        multikinetics1 = MultiKinetics(kineticsList=[arrhenius1,troe1])
+        multikinetics1b = MultiKinetics(kineticsList=[arrhenius1b,troe1b])
+        multikinetics2 = MultiKinetics(kineticsList=[thirdbody1,troe2])  
+
+        self.assertTrue(arrhenius1.isIdenticalTo(arrhenius1b))
+        self.assertFalse(arrhenius1.isIdenticalTo(arrhenius2))
+        self.assertFalse(arrhenius1.isIdenticalTo(arrhenius3))
+        self.assertFalse(arrhenius2.isIdenticalTo(arrhenius3))
+        self.assertTrue(chebyshev1.isIdenticalTo(chebyshev1b))
+        self.assertFalse(chebyshev1.isIdenticalTo(chebyshev2))
+        self.assertTrue(thirdbody1.isIdenticalTo(thirdbody1b))
+        self.assertFalse(thirdbody1.isIdenticalTo(thirdbody2))
+        self.assertFalse(thirdbody1.isIdenticalTo(thirdbody3))
+        self.assertFalse(thirdbody2.isIdenticalTo(thirdbody3))
+        self.assertTrue(troe1.isIdenticalTo(troe1b))
+        self.assertFalse(troe1.isIdenticalTo(troe2))
+        self.assertFalse(troe1.isIdenticalTo(troe3))
+        self.assertFalse(troe2.isIdenticalTo(troe3))
+        self.assertTrue(plog1.isIdenticalTo(plog1b))
+        self.assertFalse(plog1.isIdenticalTo(plog2))
+        self.assertFalse(plog1.isIdenticalTo(plog3))
+        self.assertTrue(multikinetics1.isIdenticalTo(multikinetics1b))
+        self.assertFalse(multikinetics1.isIdenticalTo(multikinetics2))
+
+        self.assertFalse(arrhenius1.isIdenticalTo(chebyshev1))
+        self.assertFalse(arrhenius1.isIdenticalTo(thirdbody1))
+        self.assertFalse(arrhenius1.isIdenticalTo(troe1))
+        self.assertFalse(arrhenius1.isIdenticalTo(plog1))
+        self.assertFalse(arrhenius1.isIdenticalTo(multikinetics1))
+        self.assertFalse(chebyshev1.isIdenticalTo(thirdbody1))
+        self.assertFalse(chebyshev1.isIdenticalTo(troe1))
+        self.assertFalse(thirdbody1.isIdenticalTo(troe1))
+        self.assertFalse(troe1.isIdenticalTo(thirdbody1))
+
 ################################################################################
 
 if __name__ == '__main__':
