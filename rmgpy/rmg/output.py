@@ -77,6 +77,9 @@ def saveOutputHTML(path, reactionModel):
     species = reactionModel.core.species[:] + reactionModel.outputSpeciesList
 
     re_index = re.compile(r'\((\d+)\)$')
+
+    if not os.path.isdir(os.path.join(dirname,'species')):
+        os.makedirs(os.path.join(dirname,'species'))
     for spec in species:
         # if the species dictionary came from an RMG-Java job, make them prettier
         # We use the presence of a trailing index on the label to discern this
