@@ -2950,7 +2950,7 @@ class KineticsDatabase:
                 reaction.products.append(product)
 
             # Generate all possible reactions involving the reactant species
-            generatedReactions = self.generateReactionsFromFamilies([reactant.molecule for reactant in reaction.reactants], only_families=[family])
+            generatedReactions = self.generateReactionsFromFamilies([reactant.molecule for reactant in reaction.reactants], [], only_families=[family])
 
             # Remove from that set any reactions that don't produce the desired reactants and products
             forward = []; reverse = []
