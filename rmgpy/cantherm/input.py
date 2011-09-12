@@ -27,6 +27,7 @@
 #
 ################################################################################
 
+import os.path
 import logging
 import numpy
 
@@ -142,16 +143,24 @@ def loadConfiguration(energyLog, geomLog, statesLog, extSymmetry, spinMultiplici
 
     return E0, geom, states
 
-def loadSpecies(label, geomLog, statesLog, extSymmetry, spinMultiplicity, freqScaleFactor, linear, rotors, atoms, bonds, E0=None, energyLog=None):
+def loadSpecies(label, geomLog, statesLog, extSymmetry, spinMultiplicity, freqScaleFactor, linear, rotors, atoms, bonds, directory=None, E0=None, energyLog=None):
     global modelChemistry
     logging.info('Loading species %s...' % label)
+    if directory:
+        geomLog = os.path.join(directory, geomLog)
+        statesLog = os.path.join(directory, statesLog)
+        if energyLog: energyLog = os.path.join(directory, energyLog)
     E0, geom, states = loadConfiguration(energyLog, geomLog, statesLog, extSymmetry, spinMultiplicity, freqScaleFactor, linear, rotors, atoms, bonds, E0, TS=False)
     speciesDict[label] = Species(label=label, thermo=None, states=states, E0=(E0/1000.,"kJ/mol"))
     geometryDict[label] = geom
 
-def loadTransitionState(label, geomLog, statesLog, extSymmetry, spinMultiplicity, freqScaleFactor, linear, rotors, atoms, bonds, E0=None, energyLog=None):
+def loadTransitionState(label, geomLog, statesLog, extSymmetry, spinMultiplicity, freqScaleFactor, linear, rotors, atoms, bonds, directory=None, E0=None, energyLog=None):
     global modelChemistry
     logging.info('Loading transition state %s...' % label)
+    if directory:
+        geomLog = os.path.join(directory, geomLog)
+        statesLog = os.path.join(directory, statesLog)
+        if energyLog: energyLog = os.path.join(directory, energyLog)
     E0, geom, states = loadConfiguration(energyLog, geomLog, statesLog, extSymmetry, spinMultiplicity, freqScaleFactor, linear, rotors, atoms, bonds, E0, TS=True)
     log = GaussianLog(statesLog)
     frequency = log.loadNegativeFrequency()
