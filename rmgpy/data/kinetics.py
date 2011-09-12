@@ -354,7 +354,9 @@ def saveEntry(f, entry):
         raise DatabaseError("Encountered unexpected item of type {0} while saving database.".format(entry.item.__class__))
 
     # Write kinetics
-    if entry.data is not None:
+    if isinstance(entry.data, str):
+        f.write('    kinetics = "{0}",\n'.format(entry.data))
+    elif entry.data is not None:
         kinetics = entry.data.toPrettyRepr()
         lines = kinetics.splitlines()
         f.write('    kinetics = {0}\n'.format(lines[0]))
@@ -373,7 +375,7 @@ def saveEntry(f, entry):
             f.write('    {0}\n'.format(line))
         f.write('    ),\n'.format(lines[0]))
     else:
-        f.write('    kinetics = None,\n')
+        f.write('    reference = None,\n')
     
     f.write('    referenceType = "{0}",\n'.format(entry.referenceType))
     if entry.rank is not None:
@@ -527,18 +529,23 @@ class KineticsDepository(Database):
         
         return ArrheniusEP(A=A, n=n, alpha=alpha, E0=E0, Tmin=Tmin, Tmax=Tmax), rank
 
-    def loadOldRateRules(self, path, groups):
+    def loadOldRateRules(self, path, groups, numLabels):
         """
         Load a set of old rate rules for kinetics groups into this depository.
         """
         # Parse the old library
-        numLabels = max(len(groups.forwardTemplate.reactants), len(groups.top))
         entries = self.parseOldLibrary(os.path.join(path, 'rateLibrary.txt'), numParameters=10, numLabels=numLabels)
         
         self.entries = {}
         for entry in entries:
             index, label, data, shortDesc = entry
-            kinetics, rank = data
+            if isinstance(data, str):
+                kinetics = data
+                rank = 0
+            elif isinstance(data, tuple) and len(data) == 2:
+                kinetics, rank = data
+            else:
+                raise DatabaseError('Unexpected data {0!r} for entry {1!s}.'.format(data, entry))
             reactants = [groups.entries[l].item for l in label.split(';')]
             item = Reaction(reactants=reactants, products=[])
             self.entries[index] = Entry(
@@ -1091,6 +1098,7 @@ class KineticsLibrary(Database):
                         inUnitSection = False; inReactionSection = True
                         
         except (DatabaseError, InvalidAdjacencyListError), e:
+            logging.exception('Error while reading old reactions file {0}.'.format(path))
             logging.exception(str(e))
             raise
         except IOError, e:
@@ -1499,11 +1507,12 @@ class KineticsFamily(Database):
         self.label = os.path.basename(path)
         self.name = self.label
 
+        self.groups = KineticsGroups(label='{0}/groups'.format(self.label))
         self.groups.loadOldDictionary(os.path.join(path, 'dictionary.txt'), pattern=True)
         self.groups.loadOldTree(os.path.join(path, 'tree.txt'))
         # The old kinetics groups use rate rules (not group additivity values),
         # so we can't load the old rateLibrary.txt
-
+        
         # Load the reaction recipe
         self.loadOldTemplate(os.path.join(path, 'reactionAdjList.txt'))
         # Construct the forward and reverse templates
@@ -1529,7 +1538,7 @@ class KineticsFamily(Database):
             entry.index = index + 1
             
         self.rules = KineticsDepository(label='{0}/rules'.format(self.label))
-        self.rules.loadOldRateRules(path, self)
+        self.rules.loadOldRateRules(path, self.groups, numLabels=max(len(self.forwardTemplate.reactants), len(self.groups.top)))
         self.depositories = {}
 
         return self
@@ -2941,7 +2950,7 @@ class KineticsDatabase:
                 reaction.products.append(product)
 
             # Generate all possible reactions involving the reactant species
-            generatedReactions = self.generateReactionsFromFamilies([reactant.molecule for reactant in reaction.reactants], only_families=[family])
+            generatedReactions = self.generateReactionsFromFamilies([reactant.molecule for reactant in reaction.reactants], [], only_families=[family])
 
             # Remove from that set any reactions that don't produce the desired reactants and products
             forward = []; reverse = []

@@ -158,7 +158,7 @@ def pressureDependence(method, temperatures, pressures, maximumGrainSize=0.0, mi
     # Process interpolation model
     rmg.pressureDependence.model = interpolation
 
-def options(units='si', saveRestartPeriod=None, drawMolecules=False, generatePlots=False, saveConcentrationProfiles=True):
+def options(units='si', saveRestartPeriod=None, drawMolecules=False, generatePlots=False, saveConcentrationProfiles=False):
     rmg.units = units
     rmg.saveRestartPeriod = Quantity(saveRestartPeriod) if saveRestartPeriod else None
     rmg.drawMolecules = drawMolecules
