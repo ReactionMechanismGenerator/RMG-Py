@@ -89,8 +89,10 @@ def saveOutputHTML(path, reactionModel):
         fstr = os.path.join(dirname, 'species', '{0}.png'.format(spec))
         if not os.path.exists(fstr):
             drawMolecule(spec.molecule[0], fstr)
-    
-    species.sort(key=lambda x: x.index)
+
+    # We want to keep species sorted in the original order in which they were added to the RMG core.
+    # Rather than ordered by index
+#    species.sort(key=lambda x: x.index)
 
     reactions = [rxn for rxn in reactionModel.core.reactions ] + reactionModel.outputReactionList
     reactions.sort(key=lambda x: x.index)
