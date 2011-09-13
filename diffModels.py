@@ -79,7 +79,22 @@ def compareModelKinetics(model1, model2):
     connection_id = fig.canvas.mpl_connect('pick_event', onpick)
         
         
-#    pylab.show()
+    pylab.show()
+
+def compareModelReactions(model1, model2):
+    """
+    This function compares two RMG models and returns a list of common reactions
+    as a dictionary, as well as a list of unique reactions for each model.
+    """
+
+    commonReactions = {}
+    for rxn1 in model1.reactions:
+        for rxn2 in model2.reactions:
+            if rxn1.isIsomorphic(rxn2):
+                commonReactions[rxn1] = rxn2
+                break
+    uniqueReactions1 = [rxn for rxn in model1.reactions if rxn not in commonReactions.keys()]
+    uniqueReactions2 = [rxn for rxn in model2.reactions if rxn not in commonReactions.values()]
 
     return commonReactions, uniqueReactions1, uniqueReactions2
 
@@ -94,7 +109,7 @@ def saveCompareHTML(outputDir,chemkinPath1,speciesDictPath1,chemkinPath2,species
     model1.species, model1.reactions = loadChemkinFile(chemkinPath1, speciesDictPath1)
     model2 = ReactionModel()
     model2.species, model2.reactions = loadChemkinFile(chemkinPath2, speciesDictPath2)
-    commonReactions, uniqueReactions1, uniqueReactions2 = compareModelKinetics(model1, model2)
+    commonReactions, uniqueReactions1, uniqueReactions2 = compareModelReactions(model1, model2)
 
     outputPath = outputDir + 'diff.html'
     speciesList1 = []
