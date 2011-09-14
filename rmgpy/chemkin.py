@@ -40,6 +40,8 @@ from reaction import Reaction
 from species import Species
 from thermo import NASA, MultiNASA
 from quantity import constants, Quantity
+from data.kinetics import TemplateReaction, LibraryReaction
+from rmg.pdep import PDepReaction
 
 __chemkin_reaction_count = None
     
@@ -127,7 +129,6 @@ def readKineticsEntry(entry, speciesDict, energyUnits, moleculeUnits):
     # Extract the reaction equation
     reaction = str(lines[0][0:52].strip())
     thirdBody = False
-    duplicate = False
     
     # Split the reaction equation into reactants and products
     reversible = True
@@ -202,7 +203,7 @@ def readKineticsEntry(entry, speciesDict, energyUnits, moleculeUnits):
             tokens = line.split('/')
             if 'DUP' in line:
                 # Duplicate reaction
-                duplicate = True
+                reaction.duplicate = True
             
             elif 'LOW' in line:
                 # Low-pressure-limit Arrhenius parameters
@@ -304,11 +305,95 @@ def readKineticsEntry(entry, speciesDict, energyUnits, moleculeUnits):
         elif thirdBody:
             reaction.kinetics = ThirdBody(arrheniusHigh=arrheniusHigh)
             reaction.kinetics.efficiencies = efficiencies
-        elif duplicate:
+        elif reaction.duplicate:
             reaction.kinetics = arrheniusHigh
         else:
             raise ChemkinError('Unable to determine pressure-dependent kinetics for reaction {0}.'.format(reaction))
    
+    return reaction
+
+def readReactionComments(reaction, comments):
+    """
+    Parse the `comments` associated with a given `reaction`. If the comments
+    come from RMG (Py or Java), parse them and extract the useful information.
+    Return the reaction object based on the information parsed from these
+    comments.
+    """
+    from rmgpy.data.kinetics import LibraryReaction,TemplateReaction, KineticsLibrary, KineticsFamily
+    from rmgpy.rmg.pdep import PDepReaction, PDepNetwork
+    
+    atKineticsComments = False
+    lines = comments.strip().splitlines()
+    
+    for line in lines:
+        
+        tokens = line.split()
+        
+        if 'Reaction index:' in line:
+            # Don't store the reaction indices
+            pass
+        
+        elif 'Template reaction:' in line:
+            label = str(tokens[-2])
+            template = tokens[-1][1:-1].split(',')
+            reaction = TemplateReaction(
+                index = reaction.index,
+                reactants = reaction.reactants, 
+                products = reaction.products, 
+                kinetics = reaction.kinetics,
+                duplicate = reaction.duplicate,
+                family = KineticsFamily(label=label),
+                template = template,
+            )
+            
+        elif 'Library reaction:' in line:
+            label = str(tokens[-1])
+            reaction = LibraryReaction(
+                index = reaction.index,
+                reactants = reaction.reactants, 
+                products = reaction.products, 
+                kinetics = reaction.kinetics,
+                duplicate = reaction.duplicate,
+                library = KineticsLibrary(label=label),
+            )   
+            
+        elif 'PDep reaction:' in line:
+            networkIndex = int(tokens[-1][1:])
+            reaction = PDepReaction(
+                index = reaction.index,
+                reactants = reaction.reactants, 
+                products = reaction.products, 
+                kinetics = reaction.kinetics, 
+                duplicate = reaction.duplicate,
+                network = PDepNetwork(index=networkIndex), 
+            )
+            
+        elif 'Flux pairs:' in line:
+            reaction.pairs = []
+            for reacStr, prodStr in zip(tokens[2::2], tokens[3::2]):
+                if reacStr[-1] == ',': reacStr = reacStr[:-1]
+                for reactant in reaction.reactants:
+                    if reactant.label == reacStr:
+                        break
+                else:
+                    import pdb; pdb.set_trace()
+                    raise ChemkinError('Unexpected species identifier {0} encountered in flux pairs for reaction {1}.'.format(reacStr, reaction))
+                if prodStr[-1] == ';': prodStr = prodStr[:-1]
+                for product in reaction.products:
+                    if product.label == prodStr:
+                        break
+                else:
+                    import pdb; pdb.set_trace()
+                    raise ChemkinError('Unexpected species identifier {0} encountered in flux pairs for reaction {1}.'.format(prodStr, reaction))
+                reaction.pairs.append((reactant, product))
+            assert len(reaction.pairs) == max(len(reaction.reactants), len(reaction.products))
+            
+        elif 'Kinetics comments:' in line:
+            atKineticsComments = True
+        
+        elif atKineticsComments:
+            reaction.kinetics.comment += line.strip() + "\n"
+            
     return reaction
 
 ################################################################################
@@ -386,7 +471,6 @@ def loadChemkinFile(path, dictionaryPath=None):
             # add this new, nonduplicate reaction
             reaction = readKineticsEntry(kinetics,speciesDict,energyUnits,moleculeUnits)
             reaction.kinetics.comment = comments
-            print reaction.kinetics
             reactionList.append(reaction)
             kinetics = ''
             comments = ''
@@ -460,67 +544,80 @@ def loadChemkinFile(path, dictionaryPath=None):
                 # Reactions section
                 energyUnits, moleculeUnits = tokens[1:3]
 
-                line = f.readline()
+                # Assume that each reaction is preceded by at least one line of
+                # comments describing that reaction
+                inCommentBlock = False
+                kineticsList = []
+                commentsList = []
                 kinetics = ''
                 comments = ''
-                dupReactionList = []
-                reaction = None
+                
+                line = f.readline()
                 while line != '' and 'END' not in line:
+                    if line.startswith('!'):
+                        if not inCommentBlock and kinetics.strip():
+                            # Finish previous record
+                            kineticsList.append(kinetics)
+                            commentsList.append(comments)
+                            kinetics = ''
+                            comments = ''
+                        inCommentBlock = True
+                    else:
+                        inCommentBlock = False
+                        
                     line, comment = removeCommentFromLine(line)
-                    if '=' in line and kinetics.strip() != '':
-                        reaction, kinetics,comments,dupReactionList,reactionList = checkDuplicateKinetics(reaction, kinetics, comments, dupReactionList, reactionList)
-
-                    kinetics += line
-                    comments += comment
+                    line = line.strip(); comment = comment.strip()
+                    if line: kinetics += line + '\n'
+                    if comment: comments += comment + '\n'
                     
                     line = f.readline()
+                    
                 # Don't forget the last reaction!
                 if kinetics.strip() != '':
-                    reaction, kinetics,comments,dupReactionList,reactionList = checkDuplicateKinetics(reaction, kinetics, comments, dupReactionList, reactionList)
-                    if dupReactionList:
-                    # add previous reaction if they were duplicate reactions
-                        oldReactionKinetics = MultiKinetics()
-                        for item in dupReactionList:
-                            oldReactionKinetics.kineticsList.append(item.kinetics)
-                        oldReaction = dupReactionList[0]
-                        oldReaction.kinetics = oldReactionKinetics
-                        reactionList.append(oldReaction)
-                        dupReactionList = []
-
+                    kineticsList.append(kinetics)
+                    commentsList.append(comments)
+                        
+                for kinetics, comments in zip(kineticsList, commentsList):  
+                    reaction = readKineticsEntry(kinetics, speciesDict, energyUnits, moleculeUnits)
+                    reaction = readReactionComments(reaction, comments)
+                    reactionList.append(reaction)
+                    
             line = f.readline()
 
-    from rmgpy.data.kinetics import LibraryReaction,TemplateReaction, KineticsLibrary, KineticsFamily
-    from rmgpy.rmg.pdep import PDepReaction, PDepNetwork
-    newReactionList = []
-    index = 0
-    # Create sources for each reaction to include the additional info that it came from RMG-Java
-    # and so it will generate family categories with the saveOutputHTML function
-    for reaction in reactionList:
-        index += 1
+    # Check for marked (and unmarked!) duplicate reactions
+    # Combine marked duplicate reactions into a single reaction using MultiKinetics
+    # Raise exception for unmarked duplicate reactions
+    duplicateReactionsToRemove = []
+    duplicateReactionsToAdd = []
+    for index1 in range(len(reactionList)):
+        reaction1 = reactionList[index1]
+        if reaction1 in duplicateReactionsToRemove:
+            continue
         
-        if reaction.kinetics.comment:
-            comment = reaction.kinetics.comment
-        else:
-            # We have a MultiKinetics reaction, so take the first reaction's comments
-            comment = reaction.kinetics.kineticsList[0].comment
-
-        if comment.find('PDepNetwork') > 0:
-            number = comment.split(' ')[3][1:]
-            network = PDepNetwork(index = int(number))
-            newReaction = PDepReaction(reactants = reaction.reactants, products = reaction.products, kinetics = reaction.kinetics, network = network, index = index)
-        else:
-            comment = comment.split(' ')
-            comment0 = comment[0]
-            if comment0.find('Library:') > 0:
-                library = KineticsLibrary(label= comment[1])
-                newReaction = LibraryReaction(reactants = reaction.reactants, products = reaction.products, kinetics = reaction.kinetics, library = library, index = index)
-            else:
-                family = KineticsFamily(label = comment[0])
-                newReaction = TemplateReaction(reactants = reaction.reactants, products = reaction.products, kinetics = reaction.kinetics, family = family, index = index)
-
-        newReactionList.append(newReaction)
-
-    return speciesList, newReactionList
+        for index2 in range(index1+1, len(reactionList)):
+            reaction2 = reactionList[index2]
+            if reaction1.reactants == reaction2.reactants and reaction1.products == reaction2.products:
+                if reaction1.duplicate and reaction2.duplicate:
+                    for reaction in duplicateReactionsToAdd:
+                        if reaction1.reactants == reaction.reactants and reaction1.products == reaction.products:
+                            break
+                    else:
+                        reaction = Reaction(
+                            reactants = reaction1.reactants,
+                            products = reaction1.products,
+                            kinetics = MultiKinetics()
+                        )
+                        duplicateReactionsToAdd.append(reaction)
+                        reaction.kinetics.kineticsList.append(reaction1.kinetics)
+                    reaction.kinetics.kineticsList.append(reaction2.kinetics)
+                else:
+                    raise ChemkinError('Encountered unmarked duplicate reaction {0}.'.format(reaction1))
+                    
+    for reaction in duplicateReactionsToRemove:
+        reactionList.remove(reaction)
+    reactionList.extend(duplicateReactionsToAdd)
+    
+    return speciesList, reactionList
     
 ################################################################################
 
@@ -679,13 +776,35 @@ def writeKineticsEntry(reaction, speciesList):
             string += "DUPLICATE\n"
         return string + "\n"
     
+    # First line of comment contains reaction equation
+    string += '! {0!s}\n'.format(reaction)
+    
+    # Next line of comment contains Chemkin and RMG indices
     global __chemkin_reaction_count
     if __chemkin_reaction_count is not None:
         __chemkin_reaction_count += 1
-        string += "! Chemkin # {0}. RMG # {1}.\n".format(__chemkin_reaction_count, reaction.index)
+        string += "! Reaction index: Chemkin #{0:d}; RMG #{1:d}\n".format(__chemkin_reaction_count, reaction.index)
+    
+    # Next line of comment contains information about the type of reaction
+    if isinstance(reaction, TemplateReaction):
+        string += '! Template reaction: {0!s} [{1!s}]\n'.format(reaction.family.label, ','.join([group.label for group in reaction.template]))
+    elif isinstance(reaction, LibraryReaction):
+        string += '! Library reaction: {0!s}\n'.format(reaction.library.label)
+    elif isinstance(reaction, PDepReaction):
+        string += '! PDep reaction: {0!s}\n'.format(reaction.network)
+    
+    # Next line of comment contains flux pairs
+    if reaction.pairs is not None:
+        string += '! Flux pairs: {0}\n'.format(
+            '; '.join(['{0!s}, {1!s}'.format(getSpeciesIdentifier(reactant), getSpeciesIdentifier(product)) for reactant, product in reaction.pairs])
+        )
+
+    # Remaining lines of comments taken from reaction kinetics
     if reaction.kinetics.comment:
+        string += '! Kinetics comments:\n'
         for line in reaction.kinetics.comment.split("\n"):
-            string += "! {0}\n".format(line) 
+            string += "!   {0}\n".format(line) 
+    
     kinetics = reaction.kinetics
     numReactants = len(reaction.reactants)
     

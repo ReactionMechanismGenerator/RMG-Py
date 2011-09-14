@@ -71,8 +71,8 @@ class DepositoryReaction(Reaction):
     store the library and the entry in that depository that it was created from.
     """
 
-    def __init__(self, index=-1, reactants=None, products=None, kinetics=None, reversible=True, transitionState=None, thirdBody=False, duplicate=False, degeneracy=1, depository=None, family=None, entry=None):
-        Reaction.__init__(self, index=index, reactants=reactants, products=products, kinetics=kinetics, reversible=reversible, transitionState=transitionState, thirdBody=thirdBody, duplicate=duplicate, degeneracy=degeneracy)
+    def __init__(self, index=-1, reactants=None, products=None, kinetics=None, reversible=True, transitionState=None, thirdBody=False, duplicate=False, degeneracy=1, pairs=None, depository=None, family=None, entry=None):
+        Reaction.__init__(self, index=index, reactants=reactants, products=products, kinetics=kinetics, reversible=reversible, transitionState=transitionState, thirdBody=thirdBody, duplicate=duplicate, degeneracy=degeneracy, pairs=pairs)
         self.depository = depository
         self.family = family
         self.entry = entry
@@ -81,7 +81,7 @@ class DepositoryReaction(Reaction):
         """
         A helper function used when pickling an object.
         """
-        return (DepositoryReaction, (self.index, self.reactants, self.products, self.kinetics, self.reversible, self.transitionState, self.thirdBody, self.degeneracy, self.depository, self.entry))
+        return (DepositoryReaction, (self.index, self.reactants, self.products, self.kinetics, self.reversible, self.transitionState, self.thirdBody, self.duplicate, self.degeneracy, self.pairs, self.depository, self.family, self.entry))
 
     def getSource(self):
         """
@@ -99,8 +99,8 @@ class LibraryReaction(Reaction):
     store the library and the entry in that library that it was created from.
     """
     
-    def __init__(self, index=-1, reactants=None, products=None, kinetics=None, reversible=True, transitionState=None, thirdBody=False, duplicate=False, degeneracy=1, library=None, entry=None):
-        Reaction.__init__(self, index=index, reactants=reactants, products=products, kinetics=kinetics, reversible=reversible, transitionState=transitionState, thirdBody=thirdBody, duplicate=duplicate, degeneracy=degeneracy)
+    def __init__(self, index=-1, reactants=None, products=None, kinetics=None, reversible=True, transitionState=None, thirdBody=False, duplicate=False, degeneracy=1, pairs=None, library=None, entry=None):
+        Reaction.__init__(self, index=index, reactants=reactants, products=products, kinetics=kinetics, reversible=reversible, transitionState=transitionState, thirdBody=thirdBody, duplicate=duplicate, degeneracy=degeneracy, pairs=pairs)
         self.library = library
         self.family = library
         self.entry = entry
@@ -109,7 +109,7 @@ class LibraryReaction(Reaction):
         """
         A helper function used when pickling an object.
         """
-        return (LibraryReaction, (self.index, self.reactants, self.products, self.kinetics, self.reversible, self.transitionState, self.thirdBody, self.duplicate, self.degeneracy, self.library, self.entry))
+        return (LibraryReaction, (self.index, self.reactants, self.products, self.kinetics, self.reversible, self.transitionState, self.thirdBody, self.duplicate, self.degeneracy, self.pairs, self.library, self.entry))
 
     def getSource(self):
         """
@@ -127,8 +127,8 @@ class TemplateReaction(Reaction):
     family that it was created from.
     """
 
-    def __init__(self, index=-1, reactants=None, products=None, kinetics=None, reversible=True, transitionState=None, thirdBody=False, duplicate=False, degeneracy=1, family=None, template=None):
-        Reaction.__init__(self, index=index, reactants=reactants, products=products, kinetics=kinetics, reversible=reversible, transitionState=transitionState, thirdBody=thirdBody, duplicate=duplicate, degeneracy=degeneracy)
+    def __init__(self, index=-1, reactants=None, products=None, kinetics=None, reversible=True, transitionState=None, thirdBody=False, duplicate=False, degeneracy=1, pairs=None, family=None, template=None):
+        Reaction.__init__(self, index=index, reactants=reactants, products=products, kinetics=kinetics, reversible=reversible, transitionState=transitionState, thirdBody=thirdBody, duplicate=duplicate, degeneracy=degeneracy, pairs=pairs)
         self.family = family
         self.template = template
 
@@ -136,7 +136,7 @@ class TemplateReaction(Reaction):
         """
         A helper function used when pickling an object.
         """
-        return (TemplateReaction, (self.index, self.reactants, self.products, self.kinetics, self.reversible, self.transitionState, self.thirdBody, self.duplicate, self.degeneracy, self.family, self.template))
+        return (TemplateReaction, (self.index, self.reactants, self.products, self.kinetics, self.reversible, self.transitionState, self.thirdBody, self.duplicate, self.degeneracy, self.pairs, self.family, self.template))
 
     def getSource(self):
         """
@@ -797,7 +797,7 @@ class KineticsLibrary(Database):
         if product2 is not None: products.append(Species(label=product2.strip().splitlines()[0].strip(), molecule=[Molecule().fromAdjacencyList(product2)]))
         if product3 is not None: products.append(Species(label=product3.strip().splitlines()[0].strip(), molecule=[Molecule().fromAdjacencyList(product3)]))
         
-        comment = "Reaction from {0}.".format(self.label)
+        comment = "Reaction and kinetics from {0}.".format(self.label)
         if shortDesc.strip(): 
             comment += "{0!s}\n".format(shortdesc.strip())
         if longDesc.strip():
@@ -2205,16 +2205,25 @@ class KineticsFamily(Database):
                 )
                 reactionList.append(reaction)
 
+        # Determine the reactant-product pairs to use for flux analysis
         # Also store the reaction template (useful so we can easily get the kinetics later)
         for reaction in reactionList:
+            reaction.pairs = self.getReactionPairs(reaction)
             reaction.template = self.getReactionTemplate(reaction)
             if hasattr(reaction,'reverse'):
+                reaction.reverse.pairs = self.getReactionPairs(reaction.reverse)
                 reaction.reverse.template = self.getReactionTemplate(reaction.reverse)
-        
+            
         # Return the reactions as containing Species objects, not Molecule objects
         for reaction in reactionList:
-            reaction.reactants = [Species(label=reactant.toSMILES(), molecule=[reactant]) for reactant in reaction.reactants]
-            reaction.products = [Species(label=product.toSMILES(), molecule=[product]) for product in reaction.products]
+            moleculeDict = {}
+            for molecule in reaction.reactants:
+                moleculeDict[molecule] = Species(label=molecule.toSMILES(), molecule=[molecule])
+            for molecule in reaction.products:
+                moleculeDict[molecule] = Species(label=molecule.toSMILES(), molecule=[molecule])
+            reaction.reactants = [moleculeDict[molecule] for molecule in reaction.reactants]
+            reaction.products = [moleculeDict[molecule] for molecule in reaction.products]
+            reaction.pairs = [(moleculeDict[reactant],moleculeDict[product]) for reactant, product in reaction.pairs]
 
         return reactionList
     
@@ -2365,6 +2374,71 @@ class KineticsFamily(Database):
         # with the global list of reactions
         return rxnList
 
+    def getReactionPairs(self, reaction):
+        """
+        For a given `reaction` with properly-labeled :class:`Molecule` objects
+        as the reactants, return the reactant-product pairs to use when
+        performing flux analysis.
+        """
+        pairs = []; error = False
+        if len(reaction.reactants) == 1 or len(reaction.products) == 1:
+            # When there is only one reactant (or one product), it is paired 
+            # with each of the products (reactants)
+            for reactant in reaction.reactants:
+                for product in reaction.products:
+                    pairs.append([reactant,product])
+        elif self.label.lower() == 'h_abstraction':
+            # Hardcoding for hydrogen abstraction: pair the reactant containing
+            # *1 with the product containing *3 and vice versa
+            assert len(reaction.reactants) == len(reaction.products) == 2
+            if reaction.reactants[0].containsLabeledAtom('*1'):
+                if reaction.products[0].containsLabeledAtom('*3'):
+                    pairs.append([reaction.reactants[0],reaction.products[0]])
+                    pairs.append([reaction.reactants[1],reaction.products[1]])
+                elif reaction.products[1].containsLabeledAtom('*3'):
+                    pairs.append([reaction.reactants[0],reaction.products[1]])
+                    pairs.append([reaction.reactants[1],reaction.products[0]])
+                else:
+                    error = True
+            elif reaction.reactants[1].containsLabeledAtom('*1'):
+                if reaction.products[1].containsLabeledAtom('*3'):
+                    pairs.append([reaction.reactants[0],reaction.products[0]])
+                    pairs.append([reaction.reactants[1],reaction.products[1]])
+                elif reaction.products[0].containsLabeledAtom('*3'):
+                    pairs.append([reaction.reactants[0],reaction.products[1]])
+                    pairs.append([reaction.reactants[1],reaction.products[0]])
+                else:
+                    error = True
+        elif self.label.lower() == 'disproportionation':
+            # Hardcoding for disproportionation: pair the reactant containing
+            # *1 with the product containing *1
+            assert len(reaction.reactants) == len(reaction.products) == 2
+            if reaction.reactants[0].containsLabeledAtom('*1'):
+                if reaction.products[0].containsLabeledAtom('*1'):
+                    pairs.append([reaction.reactants[0],reaction.products[0]])
+                    pairs.append([reaction.reactants[1],reaction.products[1]])
+                elif reaction.products[1].containsLabeledAtom('*1'):
+                    pairs.append([reaction.reactants[0],reaction.products[1]])
+                    pairs.append([reaction.reactants[1],reaction.products[0]])
+                else:
+                    error = True
+            elif reaction.reactants[1].containsLabeledAtom('*1'):
+                if reaction.products[1].containsLabeledAtom('*1'):
+                    pairs.append([reaction.reactants[0],reaction.products[0]])
+                    pairs.append([reaction.reactants[1],reaction.products[1]])
+                elif reaction.products[0].containsLabeledAtom('*1'):
+                    pairs.append([reaction.reactants[0],reaction.products[1]])
+                    pairs.append([reaction.reactants[1],reaction.products[0]])
+                else:
+                    error = True
+        else:
+            error = True
+            
+        if error:
+            raise KineticsError('Unable to determine reaction pairs for {0!s} reaction {1!s}.'.format(self.label, reaction))
+        else:
+            return pairs
+        
     def getReactionTemplate(self, reaction):
         """
         For a given `reaction` with properly-labeled :class:`Molecule` objects
@@ -2409,7 +2483,8 @@ class KineticsFamily(Database):
                     # The rules are defined on a per-site basis, so we need to include the degeneracy manually
                     assert isinstance(kinetics, ArrheniusEP)
                     kinetics.A.value *= degeneracy
-                    kinetics.comment += "Matched rule {0} {1} in {2}".format(entry.index, entry.label, depository.label)
+                    kinetics.comment += "Matched rule {0} {1} in {2}\n".format(entry.index, entry.label, depository.label)
+                    kinetics.comment += "Multiplied by reaction path degeneracy {0}".format(degeneracy)
         else:
             # The depository contains real reactions
             entries = depository.entries.values()

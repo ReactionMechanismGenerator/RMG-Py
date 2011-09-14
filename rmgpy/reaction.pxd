@@ -44,6 +44,7 @@ cdef class Reaction:
     cdef public bint thirdBody
     cdef public bint duplicate
     cdef public int degeneracy
+    cdef public list pairs
     
     cpdef bint isIsomerization(self)
 
@@ -94,6 +95,8 @@ cdef class Reaction:
     cpdef double __eckartIntegrand(self, double E_kT, double kT, double dV1, double alpha1, double alpha2)
 
     cpdef bint isBalanced(self)
+    
+    cpdef generatePairs(self)
     
 ################################################################################
 

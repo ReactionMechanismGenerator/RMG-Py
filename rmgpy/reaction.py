@@ -44,6 +44,7 @@ import math
 import numpy
 import logging
 import re
+import os.path
 
 from quantity import constants
 from species import Species
@@ -77,11 +78,12 @@ class Reaction:
     `thirdBody`         ``bool``                    ``True`` if the reaction if the reaction kinetics imply a third body, ``False`` if not
     `duplicate`         ``bool``                    ``True`` if the reaction is known to be a duplicate, ``False`` if not
     `degeneracy`        :class:`double`             The reaction path degeneracy for the reaction
+    `pairs`             ``list``                    Reactant-product pairings to use in converting reaction flux to species flux
     =================== =========================== ============================
     
     """
     
-    def __init__(self, index=-1, reactants=None, products=None, kinetics=None, reversible=True, transitionState=None, thirdBody=False, duplicate=False, degeneracy=1):
+    def __init__(self, index=-1, reactants=None, products=None, kinetics=None, reversible=True, transitionState=None, thirdBody=False, duplicate=False, degeneracy=1, pairs=None):
         self.index = index
         self.reactants = reactants
         self.products = products
@@ -91,6 +93,7 @@ class Reaction:
         self.thirdBody = thirdBody
         self.duplicate = duplicate
         self.degeneracy = degeneracy
+        self.pairs = pairs
 
     def __repr__(self):
         """
@@ -107,6 +110,7 @@ class Reaction:
         if self.thirdBody: string += 'thirdBody={0}, '.format(self.thirdBody)
         if self.duplicate: string += 'duplicate={0}, '.format(self.duplicate)
         if self.degeneracy != 1: string += 'degeneracy={0:d}, '.format(self.degeneracy)
+        if self.pairs is not None: string += 'pairs={0}, '.format(self.pairs)
         string = string[:-2] + ')'
         return string
 
@@ -122,7 +126,7 @@ class Reaction:
         """
         A helper function used when pickling an object.
         """
-        return (Reaction, (self.index, self.reactants, self.products, self.kinetics, self.reversible, self.transitionState, self.thirdBody, self.duplicate, self.degeneracy))
+        return (Reaction, (self.index, self.reactants, self.products, self.kinetics, self.reversible, self.transitionState, self.thirdBody, self.duplicate, self.degeneracy, self.pairs))
 
     def toChemkin(self, speciesList):
         """
@@ -784,7 +788,180 @@ class Reaction:
                 return False
         
         return True
+    
+    def generatePairs(self):
+        """
+        Generate the reactant-product pairs to use for this reaction when
+        performing flux analysis. The exact procedure for doing so depends on
+        the reaction type:
         
+        =================== =============== ========================================
+        Reaction type       Template        Resulting pairs
+        =================== =============== ========================================
+        Isomerization       A     -> C      (A,C)
+        Dissociation        A     -> C + D  (A,C), (A,D)
+        Association         A + B -> C      (A,C), (B,C)
+        Bimolecular         A + B -> C + D  (A,C), (B,D) *or* (A,D), (B,C)
+        =================== =============== ========================================
+        
+        There are a number of ways of determining the correct pairing for 
+        bimolecular reactions. Here we try a simple similarity analysis by comparing
+        the number of heavy atoms (carbons and oxygens at the moment). This should
+        work most of the time, but a more rigorous algorithm may be needed for
+        some cases.
+        """
+        self.pairs = []
+        
+        if len(self.reactants) == 1 or len(self.products) == 1:
+            # Pair each reactant with each product
+            for reactant in self.reactants:
+                for product in self.products:
+                    self.pairs.append((reactant, product))
+            
+        else:
+                
+            reactants = self.reactants[:]
+            products = self.products[:]
+            
+            reactantCarbons = [sum([1 for atom in reactant.molecule[0].atoms if atom.isCarbon()]) for reactant in reactants]
+            productCarbons  = [sum([1 for atom in  product.molecule[0].atoms if atom.isCarbon()]) for product  in products ]
+            reactantOxygens = [sum([1 for atom in reactant.molecule[0].atoms if atom.isOxygen()]) for reactant in reactants]
+            productOxygens  = [sum([1 for atom in  product.molecule[0].atoms if atom.isOxygen()]) for product  in products ]
+            
+            # Sort the reactants and products by carbon number, then by oxygen number
+            reactants = [(carbon, oxygen, reactant) for carbon, oxygen, reactant in zip(reactantCarbons,reactantOxygens,reactants)]
+            reactants.sort()
+            products = [(carbon, oxygen, product) for carbon, oxygen, product in zip(productCarbons,productOxygens,products)]
+            products.sort()
+            
+            while len(reactants) > 1 and len(products) > 1:
+                self.pairs.append((reactants[-1][2], products[-1][2]))
+                reactants.pop()
+                products.pop()
+            for reactant in reactants:
+                for product in products:
+                    self.pairs.append((reactant[2], product[2]))
+    
+    def draw(self, path):
+        """
+        Generate a pictorial representation of the chemical reaction using the
+        :mod:`molecule_draw` module. Use `path` to specify the file to save
+        the generated image to; the image type is automatically determined by
+        extension. Valid extensions are ``.png``, ``.svg``, ``.pdf``, and
+        ``.ps``; of these, the first is a raster format and the remainder are
+        vector formats.
+        """
+        import cairo
+        from molecule_draw import drawMolecule, createNewSurface, fontFamily, fontSizeNormal
+        
+        format = os.path.splitext(path)[1].lower()[1:]
+        
+        # First draw each of the reactants and products
+        reactants = []; products = []
+        for reactant in self.reactants:
+            if isinstance(reactant, Species):
+                molecule = reactant.molecule[0]
+            elif isinstance(reactant, Molecule):
+                molecule = reactant
+            reactants.append(drawMolecule(molecule, surface=format))
+        for product in self.products:
+            if isinstance(product, Species):
+                molecule = product.molecule[0]
+            elif isinstance(product, Molecule):
+                molecule = product
+            products.append(drawMolecule(molecule, surface=format))
+            
+        # Next determine size required for surface
+        rxn_width = 0; rxn_height = 0
+        for surface, cr, rect in reactants:
+            left, top, width, height = rect
+            rxn_width += width
+            if height > rxn_height: rxn_height = height
+        for surface, cr, rect in products:
+            left, top, width, height = rect
+            rxn_width += width
+            if height > rxn_height: rxn_height = height
+        
+        # Also include '+' and reaction arrow in width
+        cr.set_font_size(fontSizeNormal)
+        plus_extents = cr.text_extents(' + ')
+        arrow_width = 48
+        rxn_width += (len(reactants)-1) * plus_extents[4] + arrow_width + (len(products)-1) * plus_extents[4]
+        
+        # Now make the surface for the reaction and render each molecule on it
+        rxn_surface = createNewSurface(type=format, path=path, width=rxn_width, height=rxn_height)
+        rxn_cr = cairo.Context(rxn_surface)
+        
+        # Draw white background
+        rxn_cr.set_source_rgba(1.0, 1.0, 1.0, 1.0)
+        rxn_cr.paint()
+    
+        # Draw reactants
+        rxn_x = 0.0; rxn_y = 0.0
+        for index, reactant in enumerate(reactants):
+            surface, cr, rect = reactant
+            left, top, width, height = rect
+            if index > 0:
+                # Draw the "+" between the reactants
+                rxn_cr.save()
+                rxn_cr.set_font_size(fontSizeNormal)
+                rxn_y = (rxn_height - plus_extents[3]) / 2.0
+                rxn_cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
+                rxn_cr.move_to(rxn_x, rxn_height + plus_extents[1])
+                rxn_cr.show_text(' + ')
+                rxn_cr.restore()
+                rxn_x += plus_extents[4]
+            # Draw the reactant
+            rxn_y = (rxn_height - height) / 2.0
+            rxn_cr.save()
+            rxn_cr.set_source_surface(surface, rxn_x, rxn_y)
+            rxn_cr.paint()
+            rxn_cr.restore()
+            rxn_x += width            
+        
+        # Draw reaction arrow
+        # Unfortunately Cairo does not have arrow drawing built-in, so we must
+        # draw the arrow head ourselves
+        rxn_cr.save()
+        rxn_cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
+        rxn_cr.set_line_width(1.0)
+        rxn_cr.move_to(rxn_x + 8, rxn_height / 2.0)
+        rxn_cr.line_to(rxn_x + arrow_width - 8, rxn_height / 2.0)
+        rxn_cr.move_to(rxn_x + arrow_width - 14, rxn_height / 2.0 - 3.0)
+        rxn_cr.line_to(rxn_x + arrow_width - 8, rxn_height / 2.0)
+        rxn_cr.line_to(rxn_x + arrow_width - 14, rxn_height / 2.0 + 3.0)
+        rxn_cr.stroke()
+        rxn_cr.restore()
+        rxn_x += arrow_width
+        
+        # Draw products
+        for index, product in enumerate(products):
+            surface, cr, rect = product
+            left, top, width, height = rect
+            if index > 0:
+                # Draw the "+" between the products
+                rxn_cr.save()
+                rxn_cr.set_font_size(fontSizeNormal)
+                rxn_y = (rxn_height - plus_extents[3]) / 2.0
+                rxn_cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
+                rxn_cr.move_to(rxn_x, rxn_height + plus_extents[1])
+                rxn_cr.show_text(' + ')
+                rxn_cr.restore()
+                rxn_x += plus_extents[4]
+            # Draw the product
+            rxn_y = (rxn_height - height) / 2.0
+            rxn_cr.save()
+            rxn_cr.set_source_surface(surface, rxn_x, rxn_y)
+            rxn_cr.paint()
+            rxn_cr.restore()
+            rxn_x += width            
+        
+        # Finish Cairo drawing
+        if format == 'png':
+            surface.write_to_png(path)
+        else:
+            surface.finish()
+                
 ################################################################################
 
 class ReactionModel:
