@@ -554,19 +554,28 @@ def loadChemkinFile(path, dictionaryPath=None):
                 
                 line = f.readline()
                 while line != '' and 'END' not in line:
-                    if line.startswith('!'):
+                    lineStartsWithComment = line.startswith('!')
+                    line, comment = removeCommentFromLine(line)
+                    line = line.strip(); comment = comment.strip()
+                    
+                    if lineStartsWithComment:
                         if not inCommentBlock and kinetics.strip():
-                            # Finish previous record
+                            # Finish previous record (with comment block before next record)
                             kineticsList.append(kinetics)
                             commentsList.append(comments)
                             kinetics = ''
                             comments = ''
                         inCommentBlock = True
+                    elif '=' in line and kinetics.strip():
+                        # Finish previous record (with no comment block before next record)
+                        kineticsList.append(kinetics)
+                        commentsList.append(comments)
+                        kinetics = ''
+                        comments = ''
+                        inCommentBlock = False
                     else:
                         inCommentBlock = False
                         
-                    line, comment = removeCommentFromLine(line)
-                    line = line.strip(); comment = comment.strip()
                     if line: kinetics += line + '\n'
                     if comment: comments += comment + '\n'
                     
