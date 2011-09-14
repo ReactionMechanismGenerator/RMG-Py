@@ -397,6 +397,11 @@ if __name__ == '__main__':
         
         rmg.makeOutputSubdirectory('flux/{0:d}'.format(index+1))
         
+        # If there is no termination time, then add one to prevent jobs from
+        # running forever
+        if not any([isinstance(term, TerminationTime) for term in reactionSystem.termination]):
+            reactionSystem.termination.append(TerminationTime((1e10,'s')))
+        
         print 'Conducting simulation of reaction system {0:d}...'.format(index+1)
         time, coreSpeciesConcentrations, coreReactionRates, edgeReactionRates = simulate(rmg.reactionModel, reactionSystem)
         
