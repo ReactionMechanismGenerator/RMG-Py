@@ -89,7 +89,9 @@ import math
 import numpy
 import os.path
 import re
+import logging
 
+from numpy.linalg import LinAlgError
 from rmgpy.molecule import *
 
 ################################################################################
@@ -1145,7 +1147,12 @@ def drawMolecule(molecule, path=None, surface=''):
             del bonds[atom]
 
     # Generate the coordinates to use to draw the molecule
-    coordinates = generateCoordinates(molecule, atoms, bonds, cycles)
+    try:
+        coordinates = generateCoordinates(molecule, atoms, bonds, cycles)
+    except (ValueError, LinAlgError), e:
+        logging.error('Error while drawing molecule {0}: {1}'.format(molecule.toSMILES(), e))
+        return None, None, None
+
     coordinates[:,1] *= -1
     coordinates = coordinates * bondLength
 
