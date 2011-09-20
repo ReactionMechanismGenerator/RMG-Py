@@ -346,7 +346,7 @@ def readReactionComments(reaction, comments):
                 template = template,
             )
             
-        elif 'Library reaction:' in line:
+        elif 'Library reaction:' in line or 'Seed mechanism:' in line:
             label = str(tokens[-1])
             reaction = LibraryReaction(
                 index = reaction.index,
