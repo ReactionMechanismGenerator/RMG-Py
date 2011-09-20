@@ -264,12 +264,12 @@ def readKineticsEntry(entry, speciesDict, energyUnits, moleculeUnits):
                 if pdepArrhenius is None:
                     pdepArrhenius = []
                 tokens = tokens[1].split()
-                pdepArrhenius = [float(tokens[0].strip()), Arrhenius(
+                pdepArrhenius.append([float(tokens[0].strip()), Arrhenius(
                     A = (float(tokens[1].strip()),kunits),
                     n = float(tokens[2].strip()),
                     Ea = (float(tokens[3].strip()) * energyFactor,"kcal/mol"),
                     T0 = (1,"K"),
-                )]
+                )])
 
             else:
                 # Assume a list of collider efficiencies
@@ -292,7 +292,7 @@ def readKineticsEntry(entry, speciesDict, energyUnits, moleculeUnits):
         elif pdepArrhenius is not None:
             reaction.kinetics = PDepArrhenius(
                 pressures = ([P for P, arrh in pdepArrhenius],"atm"),
-                arrhenius = [arrh in pdepArrhenius],
+                arrhenius = [arrh for P, arrh in pdepArrhenius],
             )
         elif troe is not None:
             troe.arrheniusHigh = arrheniusHigh
