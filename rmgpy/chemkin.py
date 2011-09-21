@@ -588,9 +588,6 @@ def loadChemkinFile(path, dictionaryPath=None):
                 # Reactions section
                 energyUnits, moleculeUnits = tokens[1:3]
 
-                # Assume that each reaction is preceded by at least one line of
-                # comments describing that reaction
-                inCommentBlock = False
                 kineticsList = []
                 commentsList = []
                 kinetics = ''
@@ -601,24 +598,13 @@ def loadChemkinFile(path, dictionaryPath=None):
                     lineStartsWithComment = line.startswith('!')
                     line, comment = removeCommentFromLine(line)
                     line = line.strip(); comment = comment.strip()
-                    
-                    if lineStartsWithComment:
-                        if not inCommentBlock and kinetics.strip():
-                            # Finish previous record (with comment block before next record)
-                            kineticsList.append(kinetics)
-                            commentsList.append(comments)
-                            kinetics = ''
-                            comments = ''
-                        inCommentBlock = True
-                    elif '=' in line and kinetics.strip():
-                        # Finish previous record (with no comment block before next record)
+                
+                    if '=' in line and not lineStartsWithComment:
+                        # Finish previous record
                         kineticsList.append(kinetics)
                         commentsList.append(comments)
                         kinetics = ''
                         comments = ''
-                        inCommentBlock = False
-                    else:
-                        inCommentBlock = False
                         
                     if line: kinetics += line + '\n'
                     if comment: comments += comment + '\n'
@@ -629,7 +615,16 @@ def loadChemkinFile(path, dictionaryPath=None):
                 if kinetics.strip() != '':
                     kineticsList.append(kinetics)
                     commentsList.append(comments)
-                        
+                
+                if kineticsList[0] == '' and commentsList[-1] == '':
+                    # True for Chemkin files generated from RMG-Py
+                    kineticsList.pop(0)
+                    commentsList.pop(-1)
+                elif kineticsList[0] == '' and commentsList[0] == '':
+                    # True for Chemkin files generated from RMG-Java
+                    kineticsList.pop(0)
+                    commentsList.pop(0)
+                    
                 for kinetics, comments in zip(kineticsList, commentsList):
                     reaction = readKineticsEntry(kinetics, speciesDict, energyUnits, moleculeUnits)
                     reaction = readReactionComments(reaction, comments)
