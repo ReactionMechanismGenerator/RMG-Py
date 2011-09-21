@@ -673,6 +673,12 @@ def loadChemkinFile(path, dictionaryPath=None):
     for reaction in duplicateReactionsToRemove:
         reactionList.remove(reaction)
     reactionList.extend(duplicateReactionsToAdd)
+
+
+    index = 0
+    for reaction in reactionList:
+        index += 1
+        reaction.index = index
     
     return speciesList, reactionList
     
