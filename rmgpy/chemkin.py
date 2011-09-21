@@ -466,6 +466,8 @@ def loadChemkinFile(path, dictionaryPath=None):
                     speciesDict[species.label] = species
                     adjlist = ''
                 else:
+                    if "InChI" in line:
+                        line = line.split()[0] + '\n'
                     if '//' in line:
                         index = line.index('//')
                         line = line[0:index]
