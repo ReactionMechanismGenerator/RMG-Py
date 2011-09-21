@@ -310,6 +310,10 @@ def loadRMGJavaJob(inputFile):
                 speciesDict[spec0] = species
                 break
             
+    # Generate flux pairs for each reaction if needed
+    for reaction in reactionList:
+        if not reaction.pairs: reaction.generatePairs()
+
     # Replace species in input file with those in Chemkin file
     for reactionSystem in rmg.reactionSystems:
         reactionSystem.initialMoleFractions = dict([(speciesDict[spec], frac) for spec, frac in reactionSystem.initialMoleFractions.iteritems()])
@@ -357,6 +361,10 @@ def loadRMGPyJob(inputFile):
                 speciesDict[spec0] = species
                 break
             
+    # Generate flux pairs for each reaction if needed
+    for reaction in reactionList:
+        if not reaction.pairs: reaction.generatePairs()
+    
     # Replace species in input file with those in Chemkin file
     for reactionSystem in rmg.reactionSystems:
         reactionSystem.initialMoleFractions = dict([(speciesDict[spec], frac) for spec, frac in reactionSystem.initialMoleFractions.iteritems()])
