@@ -409,7 +409,7 @@ def readReactionComments(reaction, comments):
                 )
             reaction.kinetics.comment = line
 
-        elif 'ReactionLibrary:' in line or 'SeedMechanism:' in line:
+        elif 'ReactionLibrary:' in line or 'Seed Mechanism:' in line:
             label = str(tokens[-1])
             reaction = LibraryReaction(
                 index = reaction.index,
