@@ -40,6 +40,7 @@ from reaction import Reaction
 from species import Species
 from thermo import NASA, MultiNASA
 from quantity import constants, Quantity
+from data.base import Entry
 from data.kinetics import TemplateReaction, LibraryReaction
 from rmg.pdep import PDepReaction
 
@@ -324,7 +325,7 @@ def readReactionComments(reaction, comments):
     
     atKineticsComments = False
     lines = comments.strip().splitlines()
-    
+        
     for line in lines:
         
         tokens = line.split()
@@ -343,7 +344,7 @@ def readReactionComments(reaction, comments):
                 kinetics = reaction.kinetics,
                 duplicate = reaction.duplicate,
                 family = KineticsFamily(label=label),
-                template = template,
+                template = [Entry(label=g) for g in template],
             )
             
         elif 'Library reaction:' in line or 'Seed mechanism:' in line:
@@ -387,13 +388,56 @@ def readReactionComments(reaction, comments):
                     raise ChemkinError('Unexpected species identifier {0} encountered in flux pairs for reaction {1}.'.format(prodStr, reaction))
                 reaction.pairs.append((reactant, product))
             assert len(reaction.pairs) == max(len(reaction.reactants), len(reaction.products))
-            
+
         elif 'Kinetics comments:' in line:
             atKineticsComments = True
-        
+
         elif atKineticsComments:
             reaction.kinetics.comment += line.strip() + "\n"
+
+
+        # Comment parsing from old RMG-Java chemkin files
+        elif 'PDepNetwork' in line:
+            networkIndex = int(tokens[3][1:])
+            reaction = PDepReaction(
+                index = reaction.index,
+                reactants = reaction.reactants, 
+                products = reaction.products,
+                kinetics = reaction.kinetics,
+                duplicate = reaction.duplicate,
+                network = PDepNetwork(index=networkIndex)
+                )
+            reaction.kinetics.comment = line
+
+        elif 'ReactionLibrary:' in line or 'SeedMechanism:' in line:
+            label = str(tokens[-1])
+            reaction = LibraryReaction(
+                index = reaction.index,
+                reactants = reaction.reactants, 
+                products = reaction.products, 
+                kinetics = reaction.kinetics,
+                duplicate = reaction.duplicate,
+                library = KineticsLibrary(label=label),
+            )
+            reaction.kinetics.comment = line
             
+        elif 'exact' in line or 'estimate' in line:
+            index1 = line.find('[')
+            index2 = line.find(']')
+            template = [s.strip() for s in line[index1:index2].split(',')]
+            label = str(tokens[0])
+            reaction = TemplateReaction(
+                index = reaction.index,
+                reactants = reaction.reactants, 
+                products = reaction.products, 
+                kinetics = reaction.kinetics,
+                duplicate = reaction.duplicate,
+                family = KineticsFamily(label=label),
+                template = [Entry(label=g) for g in template],
+            )
+            reaction.kinetics.comment = line
+
+
     return reaction
 
 ################################################################################
@@ -586,7 +630,7 @@ def loadChemkinFile(path, dictionaryPath=None):
                     kineticsList.append(kinetics)
                     commentsList.append(comments)
                         
-                for kinetics, comments in zip(kineticsList, commentsList):  
+                for kinetics, comments in zip(kineticsList, commentsList):
                     reaction = readKineticsEntry(kinetics, speciesDict, energyUnits, moleculeUnits)
                     reaction = readReactionComments(reaction, comments)
                     reactionList.append(reaction)
@@ -602,24 +646,33 @@ def loadChemkinFile(path, dictionaryPath=None):
         reaction1 = reactionList[index1]
         if reaction1 in duplicateReactionsToRemove:
             continue
-        
+
         for index2 in range(index1+1, len(reactionList)):
             reaction2 = reactionList[index2]
             if reaction1.reactants == reaction2.reactants and reaction1.products == reaction2.products:
                 if reaction1.duplicate and reaction2.duplicate:
+                    if not isinstance(reaction1, LibraryReaction) or not isinstance(reaction2, LibraryReaction):
+                        # Only make a MultiKinetics for library reactions, not template reactions
+                        continue
                     for reaction in duplicateReactionsToAdd:
                         if reaction1.reactants == reaction.reactants and reaction1.products == reaction.products:
                             break
                     else:
-                        reaction = Reaction(
+                        assert reaction1.library.label == reaction2.library.label
+                        reaction = LibraryReaction(
+                            index = reaction1.index,
                             reactants = reaction1.reactants,
                             products = reaction1.products,
-                            kinetics = MultiKinetics()
+                            kinetics = MultiKinetics(),
+                            library = reaction1.library,
+                            duplicate = False,
                         )
                         duplicateReactionsToAdd.append(reaction)
                         reaction.kinetics.kineticsList.append(reaction1.kinetics)
                     reaction.kinetics.kineticsList.append(reaction2.kinetics)
-                else:
+                elif reaction1.kinetics.isPressureDependent() == reaction2.kinetics.isPressureDependent():
+                    # If both reactions are pressure-independent or both are pressure-dependent, then they need duplicate tags
+                    # Chemkin treates pdep and non-pdep reactions as different, so those are okay
                     raise ChemkinError('Encountered unmarked duplicate reaction {0}.'.format(reaction1))
                     
     for reaction in duplicateReactionsToRemove:
