@@ -1193,7 +1193,6 @@ class CoreEdgeReactionModel:
             # Note that we haven't actually evaluated any fluxes at this point
             # Instead, we remove the comment below if the reaction is moved to
             # the core later in the mechanism generation
-            rxn.kinetics.comment += "\nRMG did not find reaction rate to be high enough to be included in model core."
             self.addReactionToEdge(rxn)
 
         self.printEnlargeSummary(
@@ -1230,9 +1229,10 @@ class CoreEdgeReactionModel:
             # Reaction library was already on the edge, so we just need to get right label
             rxn = self.checkForExistingReaction(rxn)[1]
             if rxn in self.core.reactions:
-                if rxn.kinetics.comment.find("RMG did not find reaction rate to be high enough to be included in model core."):
-                    rxn.kinetics.comment = "Reaction from {0}.".format(reactionLib)
+                rxn.kinetics.comment = ''
+                pass
             else:
+                rxn.kinetics.comment = ("RMG did not find reaction rate to be high enough to be included in model core.")
                 self.outputReactionList.append(rxn)
 
 
