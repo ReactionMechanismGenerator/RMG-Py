@@ -828,15 +828,27 @@ def writeKineticsEntry(reaction, speciesList):
     string = ""
     
     if isinstance(reaction.kinetics, MultiKinetics):
+#        if isinstance(reaction,LibraryReaction):
+#            string += '! Library reaction: {0!s}\n'.format(reaction.library.label)
         if reaction.kinetics.comment:
+            string += '! Kinetics comments:\n'
             for line in reaction.kinetics.comment.split("\n"):
-                string += "! {0}\n".format(line) 
+                string += "!   {0}\n".format(line) 
         for kinetics in reaction.kinetics.kineticsList:
-            new_reaction = Reaction( index=reaction.index,
+            if isinstance(reaction,LibraryReaction):
+                new_reaction = LibraryReaction( index=reaction.index,
                      reactants=reaction.reactants,
                      products=reaction.products,
                      reversible=reaction.reversible,
-                     kinetics=kinetics)
+                     kinetics=kinetics,
+                     library=reaction.library
+                     )
+            else:
+                new_reaction = Reaction( index=reaction.index,
+                         reactants=reaction.reactants,
+                         products=reaction.products,
+                         reversible=reaction.reversible,
+                         kinetics=kinetics)
             string += writeKineticsEntry(new_reaction, speciesList)
             string += "DUPLICATE\n"
         return string + "\n"
