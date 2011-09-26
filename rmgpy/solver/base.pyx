@@ -197,17 +197,17 @@ cdef class ReactionSystem(DASSL):
 
             # Get the edge species with the highest flux
             if numEdgeSpecies > 0:
-                maxSpeciesIndex = numpy.argmax(self.edgeSpeciesRates)
+                maxSpeciesIndex = numpy.argmax(edgeSpeciesRates)
                 maxSpecies = edgeSpecies[maxSpeciesIndex]
-                maxSpeciesRate = self.edgeSpeciesRates[maxSpeciesIndex]
+                maxSpeciesRate = edgeSpeciesRates[maxSpeciesIndex]
             else:
                 maxSpeciesIndex = -1
                 maxSpecies = None
                 maxSpeciesRate = 0.0
             if pdepNetworks:
-                maxNetworkIndex = numpy.argmax(self.networkLeakRates)
+                maxNetworkIndex = numpy.argmax(networkLeakRates)
                 maxNetwork = pdepNetworks[maxNetworkIndex]
-                maxNetworkRate = self.networkLeakRates[maxNetworkIndex]
+                maxNetworkRate = networkLeakRates[maxNetworkIndex]
 
             # Interrupt simulation if that flux exceeds the characteristic rate times a tolerance
             if maxSpeciesRate > toleranceMoveToCore * charRate and not invalidObject:
