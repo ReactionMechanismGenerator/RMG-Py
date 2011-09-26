@@ -666,7 +666,9 @@ def loadChemkinFile(path, dictionaryPath=None):
                         )
                         duplicateReactionsToAdd.append(reaction)
                         reaction.kinetics.kineticsList.append(reaction1.kinetics)
+                        duplicateReactionsToRemove.append(reaction1)
                     reaction.kinetics.kineticsList.append(reaction2.kinetics)
+                    duplicateReactionsToRemove.append(reaction2)
                 elif reaction1.kinetics.isPressureDependent() == reaction2.kinetics.isPressureDependent():
                     # If both reactions are pressure-independent or both are pressure-dependent, then they need duplicate tags
                     # Chemkin treates pdep and non-pdep reactions as different, so those are okay
