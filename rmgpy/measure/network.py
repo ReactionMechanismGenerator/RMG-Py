@@ -750,7 +750,7 @@ class Network:
 
         return K, p0
 
-    def generateFullMEMatrix(self, T, P, Elist):
+    def generateFullMEMatrix(self, T, P, grainCount=None, grainSize=None):
         """
         Generate the full master equation matrix for the network at the
         specified temperature `T` in K and pressure `P` in Pa and for the
@@ -765,21 +765,15 @@ class Network:
         # Would be better to refactor to share the common code!
 
         # Determine the values of some counters
-        Ngrains = len(Elist)
         Nisom = len(self.isomers)
         Nreac = len(self.reactants)
         Nprod = len(self.products)
-        dE = Elist[1] - Elist[0]
-
+        
         # Get ground-state energies of all isomers and each reactant channel
         # that has the necessary parameters
         # An exception will be raised if a unimolecular isomer is missing
         # this information
-        E0 = numpy.zeros((Nisom+Nreac), numpy.float64)
-        for i in range(Nisom):
-            E0[i] = self.isomers[i].E0.value
-        for n in range(Nreac):
-            E0[n+Nisom] = sum([spec.E0.value for spec in self.reactants[n]])
+        E0 = self.calculateGroundStateEnergies() 
 
         # Get first reactive grain for each isomer
         Ereac = numpy.ones(Nisom, numpy.float64) * 1e20
@@ -789,41 +783,54 @@ class Network:
                     if rxn.transitionState.E0.value < Ereac[i]:
                         Ereac[i] = rxn.transitionState.E0.value
 
-        # Shift energy grains such that lowest is zero
-        Emin = Elist[0]
-        for rxn in self.pathReactions:
-            rxn.transitionState.E0.value -= Emin
-        E0 -= Emin
-        Ereac -= Emin
-        Elist -= Emin
-
+        # Choose the energies used to compute the densities of states
+        # We want to use the smallest needed grain spacing (which always occurs at the minimum temperature)
+        # We want to use the largest needed maximum energy (which always occurs at the maximum temperature)
+        Elist0 = self.autoGenerateEnergyGrains(T, grainSize, grainCount)
+        Ngrains0 = len(Elist0)
+        Elist0 -= Elist0[0]
+        
         # Calculate density of states for each isomer and each reactant channel
         # that has the necessary parameters
-        densStates0 = self.calculateDensitiesOfStates(Elist, E0)
+        densStates0 = self.calculateDensitiesOfStates(Elist0)
+        
+        Elist = self.autoGenerateEnergyGrains(T, grainSize, grainCount)
+        Ngrains = len(Elist)
+        dE = Elist[1] - Elist[0]
+        
+        densStates = self.mapDensitiesOfStates(Elist, E0, densStates0, Elist0, T)
 
-        Kij, Gnj, Fim = self.calculateMicrocanonicalRates(Elist, densStates0, T)
+        Kij, Gnj, Fim = self.calculateMicrocanonicalRates(Elist, densStates, T)
 
         # Rescale densities of states such that, when they are integrated
         # using the Boltzmann factor as a weighting factor, the result is unity
-        densStates = numpy.zeros_like(densStates0)
         eqRatios = numpy.zeros(Nisom+Nreac, numpy.float64)
         for i in range(Nisom+Nreac):
-            eqRatios[i] = numpy.sum(densStates0[i,:] * numpy.exp(-Elist / constants.R / T)) * dE
-            densStates[i,:] = densStates0[i,:] / eqRatios[i] * dE
+            eqRatios[i] = numpy.sum(densStates[i,:] * numpy.exp(-Elist / constants.R / T)) * dE
+            densStates[i,:] = densStates[i,:] / eqRatios[i] * dE
         
         # Calculate collision frequencies
         collFreq = numpy.zeros(Nisom, numpy.float64)
         for i in range(Nisom):
             collFreq[i] = calculateCollisionFrequency(self.isomers[i], T, P, self.bathGas)
 
+        # Compute average energy transferred in a deactivating collision
+        dEdown = numpy.zeros(Nisom, numpy.float64)
+        for i in range(Nisom):
+            # First compute dEdown as a weighted sum of the values from each of the bath gas components
+            totalFrac = 0
+            for species, frac in self.bathGas.iteritems():
+                if species.collisionModel is not None:
+                    dEdown[i] += frac * species.collisionModel.getAlpha(T)
+                    totalFrac += frac
+            dEdown[i] /= totalFrac
+            # If the isomer also has a collision model, then average its dEdown with that of the bath gas
+            if self.isomers[i].collisionModel is not None:
+                dEdown[i] = 0.5 * (dEdown[i] + self.isomers[i].collisionModel.getAlpha(T))
+                   
         Mcoll = numpy.zeros((Nisom,Ngrains,Ngrains), numpy.float64)
         for i in range(Nisom):
-            Mcoll[i,:,:] = collFreq[i] * self.collisionModel.generateCollisionMatrix(Elist, T, densStates[i,:])
-
-        # Unshift energy grains
-        for rxn in self.pathReactions:
-            rxn.transitionState.E0.value += Emin
-        Elist += Emin
+            Mcoll[i,:,:] = collFreq[i] * SingleExponentialDown().generateCollisionMatrix(Elist, T, densStates[i,:], dEdown[i])
 
         # Construct accounting matrix
         # Row is grain number, column is well number, value is index into matrix
@@ -869,7 +876,7 @@ class Network:
                                 M[u,v] = Fim[i,n,r]
                                 M[v,v] -= Fim[i,n,r]
 
-        return M, indices, densStates
+        return M, Elist, indices, densStates
 
     def __createNewSurfaceAndContext(self, ext, fstr='', width=800, height=600):
         import cairo
