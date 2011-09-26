@@ -360,19 +360,9 @@ class RMG:
                     self.reactionModel.addReactionLibraryToOutput(library)
                     
             # Save the current state of the model core to a pretty HTML file
-            logging.info('Saving latest model core to HTML file...')
-            saveOutputHTML(os.path.join(self.outputDirectory, 'output.html'), self.reactionModel)
-            
+            self.saveOutputHTML()
             # Save a Chemkin file containing the current model core
-            logging.info('Saving latest model core to Chemkin file...')
-            this_chemkin_path = os.path.join(self.outputDirectory, 'chemkin', 'chem%04i.inp' % len(self.reactionModel.core.species))
-            latest_chemkin_path = os.path.join(self.outputDirectory, 'chemkin','chem.inp')
-            latest_dictionary_path = os.path.join(self.outputDirectory, 'chemkin','species_dictionary.txt')
-            self.reactionModel.saveChemkinFile(this_chemkin_path, latest_dictionary_path)
-            if os.path.exists(latest_chemkin_path):
-                os.unlink(latest_chemkin_path)
-            os.link(this_chemkin_path,latest_chemkin_path)
-    
+            self.saveChemkinFile()
             # Save the restart file if desired
             if self.saveRestartPeriod or done:
                 self.saveRestartFile(os.path.join(self.outputDirectory,'restart.pkl'), self.reactionModel, delay=0 if done else self.saveRestartPeriod.value)
@@ -551,6 +541,27 @@ class RMG:
         
         self.reactionModel.reactionDict = reactionDict
     
+    def saveOutputHTML(self):
+        """
+        Save the current reaction model to a pretty HTML file.
+        """
+        logging.info('Saving current model to HTML file...')
+        from rmgpy.rmg.output import saveOutputHTML
+        saveOutputHTML(os.path.join(self.outputDirectory, 'output.html'), self.reactionModel)
+        
+    def saveChemkinFile(self):
+        """
+        Save the current reaction model to a Chemkin file.
+        """        
+        logging.info('Saving current model to Chemkin file...')
+        this_chemkin_path = os.path.join(self.outputDirectory, 'chemkin', 'chem%04i.inp' % len(self.reactionModel.core.species))
+        latest_chemkin_path = os.path.join(self.outputDirectory, 'chemkin','chem.inp')
+        latest_dictionary_path = os.path.join(self.outputDirectory, 'chemkin','species_dictionary.txt')
+        self.reactionModel.saveChemkinFile(this_chemkin_path, latest_dictionary_path)
+        if os.path.exists(latest_chemkin_path):
+            os.unlink(latest_chemkin_path)
+        os.link(this_chemkin_path,latest_chemkin_path)
+        
     def saveRestartFile(self, path, reactionModel, delay=0):
         """
         Save a restart file to `path` on disk containing the contents of the
