@@ -310,6 +310,42 @@ class Network:
         
         return densStates
 
+    def mapDensitiesOfStates(self, Elist, E0, densStates0, Elist0, T):
+        """
+        Given a set of densities of states `densStates0` at energies `Elist0`
+        relative to their ground-state energies `E0`, return the densities of
+        states as mapped to energies `Elist` at temperature `T`. 
+        Semi-logarithmic interpolation will be used if the grain sizes of 
+        `Elist0` and `Elist` do not match; this should not be a significant
+        source of error as long as the grain sizes are sufficiently small.
+        """
+        Nisom = len(self.isomers)
+        Nreac = len(self.reactants)
+        Nprod = len(self.products)
+        Ngrains = len(Elist)
+        Ngrains0 = len(Elist0)
+        
+        densStates = numpy.zeros((Nisom+Nreac+Nprod, Ngrains), numpy.float64)
+        for i in range(Nisom+Nreac+Nprod):
+            for r in range(Ngrains):
+                if Elist[r] >= E0[i]:
+                    for s in range(Ngrains0):
+                        if E0[i] + Elist0[s] >= Elist[r]:
+                            if densStates0[i,s-1] > 0 and densStates0[i,s] > 0:
+                                densStates[i,r] = densStates0[i,s] * (densStates0[i,s-1] / densStates0[i,s]) ** ((Elist[r] - E0[i] - Elist0[s]) / (Elist0[s-1] - Elist0[s]))
+                            else:
+                                densStates[i,r] = densStates0[i,s] + (densStates0[i,s-1] - densStates0[i,s]) * (Elist[r] - E0[i] - Elist0[s]) / (Elist0[s-1] - Elist0[s])
+                            break
+                    else:
+                        if i < Nisom:
+                            raise NetworkError('Unable to determine density of states for isomer {0} at {1:g} K.'.format(self.isomers[i],T))
+                        elif i < Nisom+Nreac:
+                            raise NetworkError('Unable to determine density of states for reactant channel {0} at {1:g} K.'.format(' + '.join(['{0!s}'.format(r) for r in self.reactants[i-Nisom]]),T))
+                        else:
+                            raise NetworkError('Unable to determine density of states for product channel {0} at {1:g} K.'.format(' + '.join(['{0!s}'.format(r) for p in self.products[i-Nisom-Nreac]]),T))
+        
+        return densStates
+
     def calculateMicrocanonicalRates(self, Elist, densStates, T=None):
         """
         Calculate and return arrays containing the microcanonical rate
@@ -576,25 +612,8 @@ class Network:
             
             # Map the densities of states onto this set of energies
             # Also shift each density of states to a common zero of energy
-            densStates = numpy.zeros((Nisom+Nreac+Nprod, Ngrains), numpy.float64)
-            for i in range(Nisom+Nreac+Nprod):
-                for r in range(Ngrains):
-                    if Elist[r] >= E0[i]:
-                        for s in range(Ngrains0):
-                            if E0[i] + Elist0[s] >= Elist[r]:
-                                if densStates0[i,s-1] > 0 and densStates0[i,s] > 0:
-                                    densStates[i,r] = densStates0[i,s] * (densStates0[i,s-1] / densStates0[i,s]) ** ((Elist[r] - E0[i] - Elist0[s]) / (Elist0[s-1] - Elist0[s]))
-                                else:
-                                    densStates[i,r] = densStates0[i,s] + (densStates0[i,s-1] - densStates0[i,s]) * (Elist[r] - E0[i] - Elist0[s]) / (Elist0[s-1] - Elist0[s])
-                                break
-                        else:
-                            if i < Nisom:
-                                raise NetworkError('Unable to determine density of states for isomer {0} at {1:g} K.'.format(self.isomers[i],T))
-                            elif i < Nisom+Nreac:
-                                raise NetworkError('Unable to determine density of states for reactant channel {0} at {1:g} K.'.format(' + '.join(['{0!s}'.format(r) for r in self.reactants[i-Nisom]]),T))
-                            else:
-                                raise NetworkError('Unable to determine density of states for product channel {0} at {1:g} K.'.format(' + '.join(['{0!s}'.format(r) for p in self.products[i-Nisom-Nreac]]),T))
-                            
+            densStates = self.mapDensitiesOfStates(Elist, E0, densStates0, Elist0, T)
+            
             # Calculate microcanonical rate coefficients for each path reaction
             # If degree of freedom data is provided for the transition state, then RRKM theory is used
             # If high-pressure limit Arrhenius data is provided, then the inverse Laplace transform method is used
