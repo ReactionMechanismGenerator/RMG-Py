@@ -180,9 +180,9 @@ class RMG:
             depository = False, # Don't bother loading the depository information, as we don't use it
         )
     
-    def execute(self, args):
+    def initialize(self, args):
         """
-        Execute an RMG job using the command-line arguments `args` as returned
+        Initialize an RMG job using the command-line arguments `args` as returned
         by the :mod:`argparse` package.
         """
     
@@ -278,6 +278,14 @@ class RMG:
             if self.saveRestartPeriod:
                 self.saveRestartFile(os.path.join(self.outputDirectory,'restart.pkl'), self.reactionModel)
     
+    def execute(self, args):
+        """
+        Execute an RMG job using the command-line arguments `args` as returned
+        by the :mod:`argparse` package.
+        """
+    
+        self.initialize(args)
+        
         # RMG execution statistics
         coreSpeciesCount = []
         coreReactionCount = []
@@ -418,6 +426,12 @@ class RMG:
         logging.info('The final model core has %s species and %s reactions' % (coreSpec, coreReac))
         logging.info('The final model edge has %s species and %s reactions' % (edgeSpec, edgeReac))
         
+        self.finish()
+        
+    def finish(self):
+        """
+        Complete the model generation.
+        """
         # Log end timestamp
         logging.info('')
         logging.info('RMG execution terminated at ' + time.asctime())
