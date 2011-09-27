@@ -30,9 +30,10 @@ def compareModelKinetics(model1, model2):
         for rxn2 in model2.reactions:
             if rxn1.isIsomorphic(rxn2):
                 commonReactions[rxn1] = rxn2
+                model2.reactions.remove(rxn2)
                 break
     uniqueReactions1 = [rxn for rxn in model1.reactions if rxn not in commonReactions.keys()]
-    uniqueReactions2 = [rxn for rxn in model2.reactions if rxn not in commonReactions.values()]
+    uniqueReactions2 = model2.reactions
     
     print '{0:d} reactions were found in both models:'.format(len(commonReactions))
     for rxn in commonReactions:
@@ -92,9 +93,13 @@ def compareModelReactions(model1, model2):
         for rxn2 in model2.reactions:
             if rxn1.isIsomorphic(rxn2):
                 commonReactions[rxn1] = rxn2
+                # Remove reaction 2 from being chosen a second time.
+                # Let each reaction only appear only once in the diff comparison.
+                # Otherwise this miscounts number of reactions in model 2.
+                model2.reactions.remove(rxn2)
                 break
     uniqueReactions1 = [rxn for rxn in model1.reactions if rxn not in commonReactions.keys()]
-    uniqueReactions2 = [rxn for rxn in model2.reactions if rxn not in commonReactions.values()]
+    uniqueReactions2 = model2.reactions
 
     return commonReactions, uniqueReactions1, uniqueReactions2
 
