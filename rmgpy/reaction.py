@@ -232,6 +232,31 @@ class Reaction:
                 forwardReactantsMatch = True
             elif self.reactants[0].isIsomorphic(other.reactants[1]) and self.reactants[1].isIsomorphic(other.reactants[0]):
                 forwardReactantsMatch = True
+        elif len(self.reactants) == len(other.reactants) == 3:
+            if (    self.reactants[0].isIsomorphic(other.reactants[0]) and
+                    self.reactants[1].isIsomorphic(other.reactants[1]) and
+                    self.reactants[2].isIsomorphic(other.reactants[2]) ):
+                forwardReactantsMatch = True
+            elif (  self.reactants[0].isIsomorphic(other.reactants[0]) and
+                    self.reactants[1].isIsomorphic(other.reactants[2]) and
+                    self.reactants[2].isIsomorphic(other.reactants[1]) ):
+                forwardReactantsMatch = True
+            elif (  self.reactants[0].isIsomorphic(other.reactants[1]) and
+                    self.reactants[1].isIsomorphic(other.reactants[0]) and
+                    self.reactants[2].isIsomorphic(other.reactants[2]) ):
+                forwardReactantsMatch = True
+            elif (  self.reactants[0].isIsomorphic(other.reactants[2]) and
+                    self.reactants[1].isIsomorphic(other.reactants[0]) and
+                    self.reactants[2].isIsomorphic(other.reactants[1]) ):
+                forwardReactantsMatch = True
+            elif (  self.reactants[0].isIsomorphic(other.reactants[1]) and
+                    self.reactants[1].isIsomorphic(other.reactants[2]) and
+                    self.reactants[2].isIsomorphic(other.reactants[0]) ):
+                forwardReactantsMatch = True
+            elif (  self.reactants[0].isIsomorphic(other.reactants[2]) and
+                    self.reactants[1].isIsomorphic(other.reactants[1]) and
+                    self.reactants[2].isIsomorphic(other.reactants[0]) ):
+                forwardReactantsMatch = True
         elif len(self.reactants) == len(other.reactants):
             raise NotImplementedError("Can't check isomorphism of reactions with {0} reactants".format(len(self.reactants)))
         
@@ -288,6 +313,31 @@ class Reaction:
             if self.reactants[0].isIsomorphic(other.products[0]) and self.reactants[1].isIsomorphic(other.products[1]):
                 reverseReactantsMatch = True
             elif self.reactants[0].isIsomorphic(other.products[1]) and self.reactants[1].isIsomorphic(other.products[0]):
+                reverseReactantsMatch = True
+        elif len(self.reactants) == len(other.products) == 3:
+            if (    self.reactants[0].isIsomorphic(other.products[0]) and
+                    self.reactants[1].isIsomorphic(other.products[1]) and
+                    self.reactants[2].isIsomorphic(other.products[2]) ):
+                reverseReactantsMatch = True
+            elif (  self.reactants[0].isIsomorphic(other.products[0]) and
+                    self.reactants[1].isIsomorphic(other.products[2]) and
+                    self.reactants[2].isIsomorphic(other.products[1]) ):
+                reverseReactantsMatch = True
+            elif (  self.reactants[0].isIsomorphic(other.products[1]) and
+                    self.reactants[1].isIsomorphic(other.products[0]) and
+                    self.reactants[2].isIsomorphic(other.products[2]) ):
+                reverseReactantsMatch = True
+            elif (  self.reactants[0].isIsomorphic(other.products[2]) and
+                    self.reactants[1].isIsomorphic(other.products[0]) and
+                    self.reactants[2].isIsomorphic(other.products[1]) ):
+                reverseReactantsMatch = True
+            elif (  self.reactants[0].isIsomorphic(other.products[1]) and
+                    self.reactants[1].isIsomorphic(other.products[2]) and
+                    self.reactants[2].isIsomorphic(other.products[0]) ):
+                reverseReactantsMatch = True
+            elif (  self.reactants[0].isIsomorphic(other.products[2]) and
+                    self.reactants[1].isIsomorphic(other.products[1]) and
+                    self.reactants[2].isIsomorphic(other.products[0]) ):
                 reverseReactantsMatch = True
         elif len(self.reactants) == len(other.products):
             raise NotImplementedError("Can't check isomorphism of reactions with {0} reactants".format(len(self.reactants)))
