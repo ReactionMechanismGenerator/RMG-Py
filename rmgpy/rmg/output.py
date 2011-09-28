@@ -253,14 +253,14 @@ def saveOutputHTML(path, reactionModel):
 <h2>Species ({{ species|length }})</h2>
 
 <table class="speciesList">
-    <tr><th>Index</th><th>Structure</th><th>Label</th><th>Molecular Weight</th></tr>
+    <tr><th>Index</th><th>Structure</th><th>Label</th><th>Mol. Wt. (g/mol)</th></tr>
     {% for spec in species %}
     <tr class="species">
         <td class="index">
         {{ spec.index }}.</td>
         <td class="structure"><a href={{ spec.molecule[0].getURL() }}><img src="species/{{ spec|replace('#','%23') }}.png" alt="{{ spec }}" title="{{ spec }}"></a></td>
         <td class="label">{{ spec.label }}</td>
-        <td>{{spec.molecule[0].getMolecularWeight() * 1000 }}</td>
+        <td>{{ "%.2f"|format(spec.molecule[0].getMolecularWeight() * 1000) }}</td>
     </tr>
     {% endfor %}
 </table>
@@ -287,9 +287,9 @@ def saveOutputHTML(path, reactionModel):
     {% for rxn in reactions %}
     <tr class="reaction {{ rxn.getSource().label|csssafe }}">
         <td class="index"><a href="{{ rxn.getURL() }}" title="Search on RMG website" class="searchlink">{{ rxn.index }}.</a></td>
-        <td class="reactants">{% for reactant in rxn.reactants %}<a href="{{ reactant.molecule[0].getURL() }}"><img src="species/{{ reactant|replace('#','%23') }}.png" alt="{{ reactant }}" title="{{ reactant }}, MW = {{ reactant.molecule[0].getMolecularWeight()*1000 }}"></a>{% if not loop.last %} + {% endif %}{% endfor %}</td>
+        <td class="reactants">{% for reactant in rxn.reactants %}<a href="{{ reactant.molecule[0].getURL() }}"><img src="species/{{ reactant|replace('#','%23') }}.png" alt="{{ reactant }}" title="{{ reactant }}, MW = {{ "%.2f g/mol"|format(reactant.molecule[0].getMolecularWeight() * 1000) }}"></a>{% if not loop.last %} + {% endif %}{% endfor %}</td>
         <td class="reactionArrow">{% if rxn.reversible %}&hArr;{% else %}&rarr;{% endif %}</td>
-        <td class="products">{% for product in rxn.products %}<a href="{{ product.molecule[0].getURL() }}"><img src="species/{{ product|replace('#','%23') }}.png" alt="{{ product }}" title="{{ product }}, MW = {{ product.molecule[0].getMolecularWeight()*1000 }}"></a>{% if not loop.last %} + {% endif %}{% endfor %}</td>
+        <td class="products">{% for product in rxn.products %}<a href="{{ product.molecule[0].getURL() }}"><img src="species/{{ product|replace('#','%23') }}.png" alt="{{ product }}" title="{{ product }}, MW = {{ "%.2f g/mol"|format(product.molecule[0].getMolecularWeight() * 1000) }}"></a>{% if not loop.last %} + {% endif %}{% endfor %}</td>
         <td class="family">{{ rxn.getSource().label }}</td>
     </tr>
     <tr class="kinetics {{ rxn.getSource().label|csssafe }}">
@@ -533,14 +533,14 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
 <h2 align="center">Common Species ({{ commonSpecies|length }})</h2>
 
 <table width="50%" align="center">
-    <tr><th>Index</th><th>Structure</th><th>Label</th><th>Molecular Weight</th></tr>
+    <tr><th>Index</th><th>Structure</th><th>Label</th><th>Mol. Wt. (g/mol)</th></tr>
     {% for spec in commonSpecies %}
     <tr class="species">
         <td class="index" align="center">
         {{ spec.index }}.</td>
         <td class="structure" align="center"><a href="{{spec.molecule[0].getURL()}}"><img src="species/{{ spec|replace('#','%23') }}.png" alt="{{ spec }}" title="{{ spec }}"></a></td>
         <td class="label" align="center">{{ spec.label }}</td>
-        <td>{{spec.molecule[0].getMolecularWeight() * 1000 }}</td>
+        <td>{{ "%.2f"|format(spec.molecule[0].getMolecularWeight() * 1000) }}</td>
     </tr>
     {% endfor %}
 </table>
@@ -551,14 +551,14 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
 
 <h2>Model 1: Unique Species ({{ speciesList1|length }})</h2>
 <table class="speciesList">
-    <tr><th>Index</th><th>Structure</th><th>Label</th><th>Molecular Weight</th></tr>
+    <tr><th>Index</th><th>Structure</th><th>Label</th><th>Mol. Wt. (g/mol)</th></tr>
     {% for spec in speciesList1 %}
     <tr class="species">
         <td class="index">
         {{ spec.index }}.</td>
         <td class="structure"><a href="{{ spec.molecule[0].getURL() }}"><img src="species/{{ spec|replace('#','%23') }}.png" alt="{{ spec }}" title="{{ spec }}"></a></td>
         <td class="label">{{ spec.label }}</td>
-        <td>{{spec.molecule[0].getMolecularWeight() * 1000 }}</td>
+        <td>{{ "%.2f"|format(spec.molecule[0].getMolecularWeight() * 1000) }}</td>
     </tr>
     {% endfor %}
 </table>
@@ -566,14 +566,14 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
 <td width=50% valign="top">
 <h2>Model 2: Unique Species ({{ speciesList2|length }})</h2>
 <table class="speciesList">
-    <tr><th>Index</th><th>Structure</th><th>Label</th><th>Molecular Weight</th></tr>
+    <tr><th>Index</th><th>Structure</th><th>Label</th><th>Mol. Wt. (g/mol)</th></tr>
     {% for spec in speciesList2 %}
     <tr class="species">
         <td class="index">
         {{ spec.index }}.</td>
         <td class="structure"><a href="{{ spec.molecule[0].getURL() }}"><img src="species/{{ spec|replace('#','%23') }}.png" alt="{{ spec }}" title="{{ spec }}"></a></td>
         <td class="label">{{ spec.label }}</td>
-        <td>{{spec.molecule[0].getMolecularWeight() * 1000 }}</td>
+        <td>{{ "%.2f"|format(spec.molecule[0].getMolecularWeight() * 1000) }}</td>
     </tr>
     {% endfor %}
 </table>
@@ -634,9 +634,9 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
 <td width=100% colspan="4"><hr>
 <table align="center">
 <tr>
-    <td class="reactants" align="right">{% for reactant in rxn1.reactants %}<a href="{{reactant.molecule[0].getURL() }}"><img src="species/{{ reactant|replace('#','%23') }}.png" alt="{{ reactant }}" title="{{ reactant }}, MW = {{ reactant.molecule[0].getMolecularWeight() * 1000 }}"></a>{% if not loop.last %} + {% endif %}{% endfor %}</td>
+    <td class="reactants" align="right">{% for reactant in rxn1.reactants %}<a href="{{reactant.molecule[0].getURL() }}"><img src="species/{{ reactant|replace('#','%23') }}.png" alt="{{ reactant }}" title="{{ reactant }}, MW = {{ "%.2f"|format(reactant.molecule[0].getMolecularWeight() * 1000) }}"></a>{% if not loop.last %} + {% endif %}{% endfor %}</td>
     <td class="reactionArrow" align="center">{% if rxn1.reversible %}&hArr;{% else %}&rarr;{% endif %}</td>
-    <td class="products" align="left">{% for product in rxn1.products %}<a href="{{product.molecule[0].getURL()}}"><img src="species/{{ product|replace('#','%23') }}.png" alt="{{ product }}" title="{{ product }}, MW = {{ product.molecule[0].getMolecularWeight() * 1000 }}"></a>{% if not loop.last %} + {% endif %}{% endfor %}</td>
+    <td class="products" align="left">{% for product in rxn1.products %}<a href="{{product.molecule[0].getURL()}}"><img src="species/{{ product|replace('#','%23') }}.png" alt="{{ product }}" title="{{ product }}, MW = {{ "%.2f"|format(product.molecule[0].getMolecularWeight() * 1000) }}"></a>{% if not loop.last %} + {% endif %}{% endfor %}</td>
 </tr>
 </table>
 </td>
@@ -714,9 +714,9 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
     {% for rxn in uniqueReactions1 %}
     <tr class="reaction {{ rxn.getSource().label|csssafe }}">
         <td class="index"><a href="{{ rxn.getURL() }}" title="Search on RMG website" class="searchlink">{{ rxn.index }}.</a></td>
-        <td class="reactants">{% for reactant in rxn.reactants %}<a href="{{ reactant.molecule[0].getURL() }}"><img src="species/{{ reactant|replace('#','%23') }}.png" alt="{{ reactant }}" title="{{ reactant }}, MW = {{ reactant.molecule[0].getMolecularWeight()*1000 }}"></a>{% if not loop.last %} + {% endif %}{% endfor %}</td>
+        <td class="reactants">{% for reactant in rxn.reactants %}<a href="{{ reactant.molecule[0].getURL() }}"><img src="species/{{ reactant|replace('#','%23') }}.png" alt="{{ reactant }}" title="{{ reactant }}, MW = {{ "%.2f"|format(reactant.molecule[0].getMolecularWeight() * 1000) }}"></a>{% if not loop.last %} + {% endif %}{% endfor %}</td>
         <td class="reactionArrow">{% if rxn.reversible %}&hArr;{% else %}&rarr;{% endif %}</td>
-        <td class="products">{% for product in rxn.products %}<a href="{{ product.molecule[0].getURL() }}"><img src="species/{{ product|replace('#','%23') }}.png" alt="{{ product }}" title="{{ product }}, MW = {{ product.molecule[0].getMolecularWeight()*1000 }}"></a>{% if not loop.last %} + {% endif %}{% endfor %}</td>
+        <td class="products">{% for product in rxn.products %}<a href="{{ product.molecule[0].getURL() }}"><img src="species/{{ product|replace('#','%23') }}.png" alt="{{ product }}" title="{{ product }}, MW = {{ "%.2f"|format(product.molecule[0].getMolecularWeight() * 1000) }}"></a>{% if not loop.last %} + {% endif %}{% endfor %}</td>
         <td class="family">{{ rxn.getSource().label }}</td>
     </tr>
     <tr class="kinetics {{ rxn.getSource().label|csssafe }}">
@@ -744,9 +744,9 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
     {% for rxn in uniqueReactions2 %}
     <tr class="reaction {{ rxn.getSource().label|csssafe }}">
         <td class="index"><a href="{{ rxn.getURL() }}" title="Search on RMG website" class="searchlink">{{ rxn.index }}.</a></td>
-        <td class="reactants">{% for reactant in rxn.reactants %}<a href="{{ reactant.molecule[0].getURL() }}"><img src="species/{{ reactant|replace('#','%23') }}.png" alt="{{ reactant }}" title="{{ reactant }}, MW = {{ reactant.molecule[0].getMolecularWeight()*1000 }}"></a>{% if not loop.last %} + {% endif %}{% endfor %}</td>
+        <td class="reactants">{% for reactant in rxn.reactants %}<a href="{{ reactant.molecule[0].getURL() }}"><img src="species/{{ reactant|replace('#','%23') }}.png" alt="{{ reactant }}" title="{{ reactant }}, MW = {{ "%.2f"|format(reactant.molecule[0].getMolecularWeight() * 1000) }}"></a>{% if not loop.last %} + {% endif %}{% endfor %}</td>
         <td class="reactionArrow">{% if rxn.reversible %}&hArr;{% else %}&rarr;{% endif %}</td>
-        <td class="products">{% for product in rxn.products %}<a href="{{ product.molecule[0].getURL() }}"><img src="species/{{ product|replace('#','%23') }}.png" alt="{{ product }}" title="{{ product }}, MW = {{ product.molecule[0].getMolecularWeight()*1000 }}"></a>{% if not loop.last %} + {% endif %}{% endfor %}</td>
+        <td class="products">{% for product in rxn.products %}<a href="{{ product.molecule[0].getURL() }}"><img src="species/{{ product|replace('#','%23') }}.png" alt="{{ product }}" title="{{ product }}, MW = {{ "%.2f"|format(product.molecule[0].getMolecularWeight() * 1000) }}"></a>{% if not loop.last %} + {% endif %}{% endfor %}</td>
         <td class="family">{{ rxn.getSource().label }}</td>
     </tr>
     <tr class="kinetics {{ rxn.getSource().label|csssafe }}">
