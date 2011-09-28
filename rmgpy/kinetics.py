@@ -1486,7 +1486,10 @@ class Troe(Lindemann):
         if isinstance(otherKinetics,Troe):
             if Lindemann.isIdenticalTo(self,otherKinetics):
                 if (self.alpha.equals(otherKinetics.alpha) and self.T1.equals(otherKinetics.T1)
-                and self.T2.equals(otherKinetics.T2) and self.T3.equals(otherKinetics.T3)):
-                    return True
-                
+                and self.T3.equals(otherKinetics.T3)):
+                    if self.T2 is None and otherKinetics.T2 is None:
+                        return True
+                    elif self.T2 is not None and otherKinetics.T2 is not None:
+                        if self.T2.equals(otherKinetics.T2):
+                            return True                
         return False
