@@ -248,7 +248,37 @@ class Network:
         for n in range(Nprod):
             E0[n+Nisom+Nreac] = sum([spec.E0.value for spec in self.products[n]])
         return E0
-        
+    
+    def calculateFirstReactiveEnergies(self):
+        """
+        Return an array containing the lowest reactive energy for each isomer.
+        """
+        Nisom = len(self.isomers)
+        Ereac = numpy.ones(Nisom, numpy.float64) * 1e20
+        for i in range(Nisom):
+            for rxn in self.pathReactions:
+                if rxn.reactants[0] == self.isomers[i] or rxn.products[0] == self.isomers[i]:
+                    if rxn.transitionState.E0.value < Ereac[i]:
+                        Ereac[i] = rxn.transitionState.E0.value
+        return Ereac
+    
+    def selectDensityOfStatesEnergies(self, Tlist, Plist, grainSize, grainCount):
+        """
+        Return an array of energies to use to compute the density of states for
+        a calculation at the given temperatures `Tlist` and pressures `Plist`.
+        The energies are chosen with the smallest needed grain spacing (which
+        always occurs at the lowest temperature) and the largest maximum energy
+        (which always occurs at the highest temperature).
+        """
+        Elist0 = self.autoGenerateEnergyGrains(numpy.min(Tlist), grainSize, grainCount)
+        grainSize0 = Elist0[1] - Elist0[0]
+        Elist0 = self.autoGenerateEnergyGrains(numpy.max(Tlist), grainSize, grainCount)
+        grainCount0 = len(Elist0)
+        Emin0 = numpy.min(Elist0)
+        Emax0 = numpy.max(Elist0)
+        Elist0 = self.getEnergyGrains(Emin0, Emax0, grainSize0, grainCount0)
+        return Elist0
+    
     def calculateDensitiesOfStates(self, Elist):
         """
         Calculate and return an array containing the density of states for each
@@ -463,6 +493,50 @@ class Network:
         
         return Kij, Gnj, Fim
 
+    def calculateDeltaEDown(self, T):
+        """
+        Return an array containing the average energy transferred in a 
+        deactivating collision for each isomer at temperature `T` in K. First,
+        the bath gas value is computed as a weighted sum of the values for
+        each bath gas component. This value is then averaged arithmetically 
+        with that from the isomer itself if the latter is provided.
+        """
+        Nisom = len(self.isomers)
+        dEdown = numpy.zeros(Nisom, numpy.float64)
+        for i in range(Nisom):
+            # First compute dEdown as a weighted sum of the values from each of the bath gas components
+            totalFrac = 0
+            for species, frac in self.bathGas.iteritems():
+                if species.collisionModel is not None:
+                    dEdown[i] += frac * species.collisionModel.getAlpha(T)
+                    totalFrac += frac
+            dEdown[i] /= totalFrac
+            # If the isomer also has a collision model, then average its dEdown with that of the bath gas
+            if self.isomers[i].collisionModel is not None:
+                dEdown[i] = 0.5 * (dEdown[i] + self.isomers[i].collisionModel.getAlpha(T))
+        return dEdown
+    
+    def calculateEquilibriumRatios(self, T):
+        """
+        Return an array containing the fraction of each isomer and reactant
+        channel present at equilibrium, as determined from the Gibbs free 
+        energy and using the concentration equilibrium constant 
+        :math:`K_\\mathrm{c}`. These values are ratios, and the absolute
+        magnitude is not guaranteed; however, the implementation scales the 
+        elements of the array so that they sum to unity.
+        """
+        Nisom = len(self.isomers)
+        Nreac = len(self.reactants)
+        eqRatios = numpy.zeros(Nisom+Nreac, numpy.float64)
+        conc = 1e5 / constants.R / T
+        for i in range(Nisom):
+            G = self.isomers[i].thermo.getFreeEnergy(T)
+            eqRatios[i] = math.exp(-G / constants.R / T)
+        for i in range(Nreac):
+            G = sum([spec.thermo.getFreeEnergy(T) for spec in self.reactants[i]])
+            eqRatios[Nisom+i] = math.exp(-G / constants.R / T) * conc ** (len(self.reactants[i]) - 1)
+        return eqRatios / numpy.sum(eqRatios)
+    
     def deleteSpecies(self, species):
         """
         Completely remove the given `species` from the network, including any
@@ -564,23 +638,10 @@ class Network:
         E0 = self.calculateGroundStateEnergies() 
         
         # Get first reactive grain for each isomer
-        Ereac = numpy.ones(Nisom, numpy.float64) * 1e20
-        for i in range(Nisom):
-            for rxn in self.pathReactions:
-                if rxn.reactants[0] == self.isomers[i] or rxn.products[0] == self.isomers[i]:
-                    if rxn.transitionState.E0.value < Ereac[i]:
-                        Ereac[i] = rxn.transitionState.E0.value
+        Ereac = self.calculateFirstReactiveEnergies()
 
         # Choose the energies used to compute the densities of states
-        # We want to use the smallest needed grain spacing (which always occurs at the minimum temperature)
-        # We want to use the largest needed maximum energy (which always occurs at the maximum temperature)
-        Elist0 = self.autoGenerateEnergyGrains(numpy.min(Tlist), grainSize, grainCount)
-        grainSize0 = Elist0[1] - Elist0[0]
-        Elist0 = self.autoGenerateEnergyGrains(numpy.max(Tlist), grainSize, grainCount)
-        grainCount0 = len(Elist0)
-        Emin0 = numpy.min(Elist0)
-        Emax0 = numpy.max(Elist0)
-        Elist0 = self.getEnergyGrains(Emin0, Emax0, grainSize0, grainCount0)
+        Elist0 = self.selectDensityOfStatesEnergies(Tlist, Plist, grainSize, grainCount)
         logging.info('Using {0:d} grains from {1:.2f} to {2:.2f} kJ/mol in steps of {3:.2f} kJ/mol to compute densities of states'.format(len(Elist0), Elist0[0] / 1000, Elist0[-1] / 1000, (Elist0[1] - Elist0[0]) / 1000))
         Ngrains0 = len(Elist0)
         Elist0 -= Elist0[0]
@@ -604,11 +665,9 @@ class Network:
 
             # Choose the energy grains to use to compute k(T,P) values at this temperature
             Elist = self.autoGenerateEnergyGrains(T, grainSize, grainCount)
-            Emin = numpy.min(Elist)
-            Emax = numpy.max(Elist)
             Ngrains = len(Elist)
             dE = Elist[1] - Elist[0]
-            logging.info('Using {0:d} grains from {1:.2f} to {2:.2f} kJ/mol in steps of {3:.2f} kJ/mol to compute the k(T,P) values at {4:g} K'.format(Ngrains, Emin / 1000, Emax / 1000, dE / 1000, T))
+            logging.info('Using {0:d} grains from {1:.2f} to {2:.2f} kJ/mol in steps of {3:.2f} kJ/mol to compute the k(T,P) values at {4:g} K'.format(Ngrains, numpy.min(Elist) / 1000, numpy.max(Elist) / 1000, dE / 1000, T))
             
             # Map the densities of states onto this set of energies
             # Also shift each density of states to a common zero of energy
@@ -624,34 +683,15 @@ class Network:
 
             # Rescale densities of states such that, when they are integrated
             # using the Boltzmann factor as a weighting factor, the result is unity
-            eqRatios = numpy.zeros(Nisom+Nreac, numpy.float64)
             for i in range(Nisom+Nreac):
-                eqRatios[i] = numpy.sum(densStates[i,:] * numpy.exp(-Elist / constants.R / T)) * dE
-                densStates[i,:] = densStates[i,:] / eqRatios[i] * dE
+                densStates[i,:] = densStates[i,:] / numpy.sum(densStates[i,:] * numpy.exp(-Elist / constants.R / T))
+            
             # Use free energy to determine equilibrium ratios of each isomer and product channel
-            eqRatios = numpy.zeros(Nisom+Nreac, numpy.float64)
-            conc = 1e5 / constants.R / T
-            for i in range(Nisom):
-                G = self.isomers[i].thermo.getFreeEnergy(T)
-                eqRatios[i] = math.exp(-G / constants.R / T)
-            for i in range(Nreac):
-                G = sum([spec.thermo.getFreeEnergy(T) for spec in self.reactants[i]])
-                eqRatios[Nisom+i] = math.exp(-G / constants.R / T) * conc ** (len(self.reactants[i]) - 1)
+            eqRatios = self.calculateEquilibriumRatios(T)
             
             # Compute average energy transferred in a deactivating collision
-            dEdown = numpy.zeros(Nisom, numpy.float64)
-            for i in range(Nisom):
-                # First compute dEdown as a weighted sum of the values from each of the bath gas components
-                totalFrac = 0
-                for species, frac in self.bathGas.iteritems():
-                    if species.collisionModel is not None:
-                        dEdown[i] += frac * species.collisionModel.getAlpha(T)
-                        totalFrac += frac
-                dEdown[i] /= totalFrac
-                # If the isomer also has a collision model, then average its dEdown with that of the bath gas
-                if self.isomers[i].collisionModel is not None:
-                    dEdown[i] = 0.5 * (dEdown[i] + self.isomers[i].collisionModel.getAlpha(T))
-                   
+            dEdown = self.calculateDeltaEDown(T)
+            
             # Compute collision efficiencies if needed (MSC method only)
             # Since they are only a function of temperature and not pressure,
             # we do this outside the pressure loop
@@ -776,58 +816,29 @@ class Network:
         E0 = self.calculateGroundStateEnergies() 
 
         # Get first reactive grain for each isomer
-        Ereac = numpy.ones(Nisom, numpy.float64) * 1e20
-        for i in range(Nisom):
-            for rxn in self.pathReactions:
-                if rxn.reactants[0] == self.isomers[i] or rxn.products[0] == self.isomers[i]:
-                    if rxn.transitionState.E0.value < Ereac[i]:
-                        Ereac[i] = rxn.transitionState.E0.value
+        Ereac = self.calculateFirstReactiveEnergies()
 
-        # Choose the energies used to compute the densities of states
-        # We want to use the smallest needed grain spacing (which always occurs at the minimum temperature)
-        # We want to use the largest needed maximum energy (which always occurs at the maximum temperature)
-        Elist0 = self.autoGenerateEnergyGrains(T, grainSize, grainCount)
-        Ngrains0 = len(Elist0)
-        Elist0 -= Elist0[0]
-        
-        # Calculate density of states for each isomer and each reactant channel
-        # that has the necessary parameters
-        densStates0 = self.calculateDensitiesOfStates(Elist0)
-        
         Elist = self.autoGenerateEnergyGrains(T, grainSize, grainCount)
         Ngrains = len(Elist)
         dE = Elist[1] - Elist[0]
         
-        densStates = self.mapDensitiesOfStates(Elist, E0, densStates0, Elist0, T)
+        # Calculate density of states for each isomer and each reactant channel
+        # that has the necessary parameters
+        densStates = self.calculateDensitiesOfStates(Elist)
 
         Kij, Gnj, Fim = self.calculateMicrocanonicalRates(Elist, densStates, T)
 
         # Rescale densities of states such that, when they are integrated
         # using the Boltzmann factor as a weighting factor, the result is unity
-        eqRatios = numpy.zeros(Nisom+Nreac, numpy.float64)
         for i in range(Nisom+Nreac):
-            eqRatios[i] = numpy.sum(densStates[i,:] * numpy.exp(-Elist / constants.R / T)) * dE
-            densStates[i,:] = densStates[i,:] / eqRatios[i] * dE
+            densStates[i,:] = densStates[i,:] / numpy.sum(densStates[i,:] * numpy.exp(-Elist / constants.R / T))
         
-        # Calculate collision frequencies
-        collFreq = numpy.zeros(Nisom, numpy.float64)
-        for i in range(Nisom):
-            collFreq[i] = calculateCollisionFrequency(self.isomers[i], T, P, self.bathGas)
-
+        # Use free energy to determine equilibrium ratios of each isomer and product channel
+        eqRatios = self.calculateEquilibriumRatios(T)
+        
         # Compute average energy transferred in a deactivating collision
-        dEdown = numpy.zeros(Nisom, numpy.float64)
-        for i in range(Nisom):
-            # First compute dEdown as a weighted sum of the values from each of the bath gas components
-            totalFrac = 0
-            for species, frac in self.bathGas.iteritems():
-                if species.collisionModel is not None:
-                    dEdown[i] += frac * species.collisionModel.getAlpha(T)
-                    totalFrac += frac
-            dEdown[i] /= totalFrac
-            # If the isomer also has a collision model, then average its dEdown with that of the bath gas
-            if self.isomers[i].collisionModel is not None:
-                dEdown[i] = 0.5 * (dEdown[i] + self.isomers[i].collisionModel.getAlpha(T))
-                   
+        dEdown = self.calculateDeltaEDown(T)
+            
         Mcoll = numpy.zeros((Nisom,Ngrains,Ngrains), numpy.float64)
         for i in range(Nisom):
             Mcoll[i,:,:] = collFreq[i] * SingleExponentialDown().generateCollisionMatrix(Elist, T, densStates[i,:], dEdown[i])
