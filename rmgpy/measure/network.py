@@ -692,20 +692,12 @@ class Network:
             # Compute average energy transferred in a deactivating collision
             dEdown = self.calculateDeltaEDown(T)
             
-            # Compute collision efficiencies if needed (MSC method only)
-            # Since they are only a function of temperature and not pressure,
-            # we do this outside the pressure loop
-            collEff = numpy.ones(Nisom, numpy.float64)
-            if method.lower() == 'modified strong collision':
-                for i in range(Nisom):
-                    collEff[i] *= calculateCollisionEfficiency(self.isomers[i], T, Elist, densStates[i,:], dEdown[i], E0[i], Ereac[i])
-                
             for p, P in enumerate(Plist):
 
                 # Calculate collision frequencies
                 collFreq = numpy.zeros(Nisom, numpy.float64)
                 for i in range(Nisom):
-                    collFreq[i] = calculateCollisionFrequency(self.isomers[i], T, P, self.bathGas) * collEff[i]
+                    collFreq[i] = calculateCollisionFrequency(self.isomers[i], T, P, self.bathGas)
 
                 if method.lower() != 'modified strong collision':
                     # Generate the full collision matrix for each isomer
@@ -718,7 +710,7 @@ class Network:
                 if method.lower() == 'modified strong collision':
                     # Apply modified strong collision method
                     import msc
-                    K[t,p,:,:], p0 = msc.applyModifiedStrongCollisionMethod(T, P, Elist, densStates, collFreq, Kij, Fim, Gnj, Ereac, Nisom, Nreac, Nprod)
+                    K[t,p,:,:], p0 = msc.applyModifiedStrongCollisionMethod(T, P, Elist, densStates, collFreq, dEdown, Kij, Fim, Gnj, E0, Ereac, Nisom, Nreac, Nprod)
                 elif method.lower() == 'reservoir state':
                     # Apply reservoir state method
                     import rs

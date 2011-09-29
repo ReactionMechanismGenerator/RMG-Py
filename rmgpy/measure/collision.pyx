@@ -103,7 +103,7 @@ cpdef double calculateCollisionFrequency(species, double T, double P, bathGas):
 
 ################################################################################
 
-def calculateCollisionEfficiency(species, double T,
+def calculateCollisionEfficiency(double T,
     numpy.ndarray[numpy.float64_t,ndim=1] Elist,
     numpy.ndarray[numpy.float64_t,ndim=1] densStates,
     double dEdown, double E0, double Ereac):
@@ -169,10 +169,10 @@ def calculateCollisionEfficiency(species, double T,
     beta = (dEdown / (dEdown + Fe * R * T))**2 / Delta
 
     if beta > 1:
-        logging.warning('Collision efficiency {0:.3f} calculated at {1:g} K for species {2} is greater than unity, so it will be set to unity.'.format(beta, T, species))
+        logging.warning('Collision efficiency {0:.3f} calculated at {1:g} K is greater than unity, so it will be set to unity.'.format(beta, T))
         beta = 1
     if beta < 0:
-        raise CollisionError('Invalid collision efficiency {0:.3f} calculated at {1:g} K for species {2}.'.format(beta, T, species))
+        raise CollisionError('Invalid collision efficiency {0:.3f} calculated at {1:g} K.'.format(beta, T))
     
     return beta
 

@@ -38,6 +38,7 @@ cimport numpy
 import cython
 
 from rmgpy.quantity import constants
+from collision import calculateCollisionEfficiency
 
 ################################################################################
 
@@ -56,9 +57,11 @@ def applyModifiedStrongCollisionMethod(double T, double P,
     numpy.ndarray[numpy.float64_t,ndim=1] Elist,
     numpy.ndarray[numpy.float64_t,ndim=2] densStates,
     numpy.ndarray[numpy.float64_t,ndim=1] collFreq,
+    numpy.ndarray[numpy.float64_t,ndim=1] dEdown,
     numpy.ndarray[numpy.float64_t,ndim=3] Kij,
     numpy.ndarray[numpy.float64_t,ndim=3] Fim,
     numpy.ndarray[numpy.float64_t,ndim=3] Gnj,
+    numpy.ndarray[numpy.float64_t,ndim=1] E0,
     numpy.ndarray[numpy.float64_t,ndim=1] Ereac,
     int Nisom, int Nreac, int Nprod):
     """
@@ -77,6 +80,7 @@ def applyModifiedStrongCollisionMethod(double T, double P,
     
     cdef int Ngrains, start, i, j, n, r, src
     cdef double E, Emin, val, beta = 1.0 / (constants.R * T)
+    cdef numpy.ndarray[numpy.float64_t,ndim=1] collEff
     cdef numpy.ndarray[numpy.float64_t,ndim=2] A, b, K, x
     cdef numpy.ndarray[numpy.float64_t,ndim=3] pa
 
@@ -95,6 +99,11 @@ def applyModifiedStrongCollisionMethod(double T, double P,
     if start < 0:
         raise ModifiedStrongCollisionError('Unable to determine starting grain; check active-state energies.')
 
+    # Compute collision efficiencies
+    collEff = numpy.ones(Nisom, numpy.float64)
+    for i in range(Nisom):
+        collEff[i] = calculateCollisionEfficiency(T, Elist, densStates[i,:], dEdown[i], E0[i], Ereac[i])
+                
     # Zero LHS matrix and RHS vectors
     A = numpy.zeros((Nisom,Nisom), numpy.float64)
     b = numpy.zeros((Nisom,Nisom+Nreac), numpy.float64)
@@ -105,7 +114,7 @@ def applyModifiedStrongCollisionMethod(double T, double P,
         # Populate LHS matrix
         # Collisional deactivation
         for i in range(Nisom):
-            A[i,i] = -collFreq[i]
+            A[i,i] = -collFreq[i] * collEff[i]
         # Isomerization reactions
         for i in range(Nisom):
             for j in range(i):
@@ -121,7 +130,7 @@ def applyModifiedStrongCollisionMethod(double T, double P,
         # Populate RHS vectors, one per isomer and reactant
         for i in range(Nisom):
             # Thermal activation via collisions
-            b[i,i] = collFreq[i] * densStates[i,r] * exp(-Elist[r] * beta)
+            b[i,i] = collFreq[i] * collEff[i] * densStates[i,r] * exp(-Elist[r] * beta)
         for n in range(Nisom, Nisom+Nreac):
             # Chemical activation via association reaction
             for j in range(Nisom):
@@ -143,7 +152,7 @@ def applyModifiedStrongCollisionMethod(double T, double P,
         # Calculate stabilization rates (i.e.) R + R' --> Ai or M --> Ai
         for i in range(Nisom):
             if i != src:
-                val = collFreq[i] * numpy.sum(pa[:,i,src])
+                val = collFreq[i] * collEff[i] * numpy.sum(pa[:,i,src])
                 K[i,src] += val
                 K[src,src] -= val
         # Calculate dissociation rates (i.e.) R + R' --> Bn + Cn or M --> Bn + Cn
