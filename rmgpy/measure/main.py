@@ -237,7 +237,7 @@ class MEASURE:
         model = self.model
         
         # Calculate the rate coefficients
-        K, p0 = network.calculateRateCoefficients(Tlist, Plist, method, grainCount=self.grainCount, grainSize=self.grainSize.value)
+        K = network.calculateRateCoefficients(Tlist, Plist, method, grainCount=self.grainCount, grainSize=self.grainSize.value)
 
         # Fit interpolation model
         from rmgpy.reaction import Reaction
