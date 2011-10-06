@@ -433,7 +433,7 @@ class PDepNetwork(rmgpy.measure.network.Network):
         self.printSummary(level=logging.INFO)
 
         # Calculate the rate coefficients
-        K, p0 = self.calculateRateCoefficients(Tlist, Plist, method, grainSize=grainSize, grainCount=grainCount)
+        K = self.calculateRateCoefficients(Tlist, Plist, method, grainSize=grainSize, grainCount=grainCount)
 
         # Generate PDepReaction objects
         configurations = []

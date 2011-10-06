@@ -32,12 +32,14 @@ of phenomenological rate coefficients :math:`k(T,P)`.
 
 cdef extern from "math.h":
     cdef double exp(double x)
+    cdef double ceil(double x)
 
 import numpy
 cimport numpy
 import cython
 
 from rmgpy.quantity import constants
+from collision import calculateCollisionEfficiency
 
 ################################################################################
 
@@ -56,10 +58,13 @@ def applyModifiedStrongCollisionMethod(double T, double P,
     numpy.ndarray[numpy.float64_t,ndim=1] Elist,
     numpy.ndarray[numpy.float64_t,ndim=2] densStates,
     numpy.ndarray[numpy.float64_t,ndim=1] collFreq,
+    numpy.ndarray[numpy.float64_t,ndim=1] dEdown,
     numpy.ndarray[numpy.float64_t,ndim=3] Kij,
     numpy.ndarray[numpy.float64_t,ndim=3] Fim,
     numpy.ndarray[numpy.float64_t,ndim=3] Gnj,
+    numpy.ndarray[numpy.float64_t,ndim=1] E0,
     numpy.ndarray[numpy.float64_t,ndim=1] Ereac,
+    str efficiencyModel,
     int Nisom, int Nreac, int Nprod):
     """
     Use the modified strong collsion method to reduce the master equation model
@@ -75,9 +80,9 @@ def applyModifiedStrongCollisionMethod(double T, double P,
     channels `Nisom`, `Nreac`, and `Nprod`, respectively.
     """
     
-    cdef int Ngrains, start, i, j, n, r, src
+    cdef int Ngrains, start, i, j, n, r, s, src
     cdef double E, Emin, val, beta = 1.0 / (constants.R * T)
-    cdef numpy.ndarray[numpy.float64_t,ndim=2] A, b, K, x
+    cdef numpy.ndarray[numpy.float64_t,ndim=2] A, b, K, x, collEff
     cdef numpy.ndarray[numpy.float64_t,ndim=3] pa
 
     Ngrains = len(Elist)
@@ -95,6 +100,29 @@ def applyModifiedStrongCollisionMethod(double T, double P,
     if start < 0:
         raise ModifiedStrongCollisionError('Unable to determine starting grain; check active-state energies.')
 
+    # Compute collision efficiencies
+    collEff = numpy.ones((Nisom,Ngrains), numpy.float64)
+    if efficiencyModel == 'default':
+        for i in range(Nisom):
+            val = calculateCollisionEfficiency(T, Elist, densStates[i,:], dEdown[i], E0[i], Ereac[i])
+            for s in range(Ngrains):
+                collEff[i,s] = val
+    elif efficiencyModel == 'none':
+        pass
+    elif efficiencyModel == 'guess':
+        # A first attempt at an energy-dependent collision efficiency by me
+        # Seems to work a bit better than the default approach, especially at high T
+        # However, I can't explain why
+        for i in range(Nisom):
+            for s in range(Ngrains):
+                if Elist[s] < Ereac[i]:
+                    continue
+                steps = int(ceil((Elist[s] - Ereac[i]) / dEdown[i]))
+                collEff[i,s] = 0.5 * dEdown[i] / (Elist[s] - Ereac[i])
+                if collEff[i,s] > 0.5: collEff[i,s] = 0.5
+    else:
+        raise ValueError('Unknown efficiency model "{0}".'.format(efficiencyModel))
+    
     # Zero LHS matrix and RHS vectors
     A = numpy.zeros((Nisom,Nisom), numpy.float64)
     b = numpy.zeros((Nisom,Nisom+Nreac), numpy.float64)
@@ -105,7 +133,7 @@ def applyModifiedStrongCollisionMethod(double T, double P,
         # Populate LHS matrix
         # Collisional deactivation
         for i in range(Nisom):
-            A[i,i] = -collFreq[i]
+            A[i,i] = -collFreq[i] * collEff[i,r]
         # Isomerization reactions
         for i in range(Nisom):
             for j in range(i):
@@ -121,7 +149,7 @@ def applyModifiedStrongCollisionMethod(double T, double P,
         # Populate RHS vectors, one per isomer and reactant
         for i in range(Nisom):
             # Thermal activation via collisions
-            b[i,i] = collFreq[i] * densStates[i,r] * exp(-Elist[r] * beta)
+            b[i,i] = collFreq[i] * collEff[i,r] * densStates[i,r] * exp(-Elist[r] * beta)
         for n in range(Nisom, Nisom+Nreac):
             # Chemical activation via association reaction
             for j in range(Nisom):
@@ -143,7 +171,7 @@ def applyModifiedStrongCollisionMethod(double T, double P,
         # Calculate stabilization rates (i.e.) R + R' --> Ai or M --> Ai
         for i in range(Nisom):
             if i != src:
-                val = collFreq[i] * numpy.sum(pa[:,i,src])
+                val = collFreq[i] * numpy.sum(collEff[i,:] * pa[:,i,src])
                 K[i,src] += val
                 K[src,src] -= val
         # Calculate dissociation rates (i.e.) R + R' --> Bn + Cn or M --> Bn + Cn
