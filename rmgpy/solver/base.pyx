@@ -180,9 +180,9 @@ cdef class ReactionSystem(DASSL):
             # Get the characteristic flux
             charRate = sqrt(numpy.sum(self.coreSpeciesRates * self.coreSpeciesRates))
 
-            coreSpeciesRates = numpy.abs(self.coreSpeciesRates / charRate)
-            edgeSpeciesRates = numpy.abs(self.edgeSpeciesRates / charRate)
-            networkLeakRates = numpy.abs(self.networkLeakRates / charRate)
+            coreSpeciesRates = numpy.abs(self.coreSpeciesRates)
+            edgeSpeciesRates = numpy.abs(self.edgeSpeciesRates)
+            networkLeakRates = numpy.abs(self.networkLeakRates)
 
             # Update the maximum species rate and maximum network leak rate arrays
             for index in range(numCoreSpecies):
