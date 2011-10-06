@@ -2752,6 +2752,7 @@ class KineticsDatabase:
             'ThirdBody': ThirdBody,
             'Lindemann': Lindemann,
             'Troe': Troe,
+            'R': constants.R,
         }
         self.global_context = {}
 
