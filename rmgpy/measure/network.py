@@ -793,6 +793,48 @@ class Network:
         if temperatureChanged or pressureChanged:
             self.calculateCollisionModel()
 
+    def applyModifiedStrongCollisionMethod(self, efficiencyModel='default'):
+        """
+        Compute the phenomenological rate coefficients :math:`k(T,P)` at the
+        current conditions using the modified strong collision method.
+        """
+        Nisom = len(self.isomers)
+        Nreac = len(self.reactants)
+        Nprod = len(self.products)
+        
+        import msc
+        logging.debug('Applying modified strong collision method at {0:g} K, {1:g} bar...'.format(self.T, self.P/1e5))
+        self.K, self.p0 = msc.applyModifiedStrongCollisionMethod(self.T, self.P, self.Elist, self.densStates, self.collFreq, self.dEdown, self.Kij, self.Fim, self.Gnj, self.E0, self.Ereac, efficiencyModel, Nisom, Nreac, Nprod)
+        return self.K, self.p0
+    
+    def applyReservoirStateMethod(self):
+        """
+        Compute the phenomenological rate coefficients :math:`k(T,P)` at the
+        current conditions using the reservoir state method.
+        """
+        Nisom = len(self.isomers)
+        Nreac = len(self.reactants)
+        Nprod = len(self.products)
+        
+        import rs
+        logging.debug('Applying reservoir state method at {0:g} K, {1:g} bar...'.format(self.T, self.P/1e5))
+        self.K, self.p0 = rs.applyReservoirStateMethod(self.T, self.P, self.Elist, self.densStates, self.Mcoll, self.Kij, self.Fim, self.Gnj, self.Ereac, Nisom, Nreac, Nprod)
+        return self.K, self.p0
+    
+    def applyChemicallySignificantEigenvaluesMethod(self):
+        """
+        Compute the phenomenological rate coefficients :math:`k(T,P)` at the
+        current conditions using the chemically-significant eigenvalues method.
+        """
+        Nisom = len(self.isomers)
+        Nreac = len(self.reactants)
+        Nprod = len(self.products)
+        
+        import cse
+        logging.debug('Applying chemically-significant eigenvalues method at {0:g} K, {1:g} bar...'.format(self.T, self.P/1e5))
+        self.K, self.p0 = cse.applyChemicallySignificantEigenvaluesMethod(self.T, self.P, self.Elist, self.densStates, self.Mcoll, self.Kij, self.Fim, self.Gnj, self.eqRatios, Nisom, Nreac, Nprod)
+        return self.K, self.p0
+    
     def calculateRateCoefficients(self, Tlist, Plist, method, grainSize=None, grainCount=None, errorCheck=True):
         """
         Calculate the phenomenological rate coefficients :math:`k(T,P)` for the
@@ -831,23 +873,12 @@ class Network:
                 self.setConditions(T, P)
                 
                 # Apply method
-                logging.debug('Applying {0} method at {1:g} K, {2:g} bar...'.format(method, T, P/1e5))
                 if method.lower() == 'modified strong collision':
-                    # Apply modified strong collision method
-                    import msc
-                    self.K, self.p0 = msc.applyModifiedStrongCollisionMethod(self.T, self.P, self.Elist, self.densStates, self.collFreq, self.dEdown, self.Kij, self.Fim, self.Gnj, self.E0, self.Ereac, Nisom, Nreac, Nprod)
+                    self.applyModifiedStrongCollisionMethod()
                 elif method.lower() == 'reservoir state':
-                    # Apply reservoir state method
-                    import rs
-                    self.K, self.p0 = rs.applyReservoirStateMethod(self.T, self.P, self.Elist, self.densStates, self.Mcoll, self.Kij, self.Fim, self.Gnj, self.Ereac, Nisom, Nreac, Nprod)
+                    self.applyReservoirStateMethod()
                 elif method.lower() == 'chemically-significant eigenvalues':
-                    # Apply chemically-significant eigenvalues method
-                    import cse
-                    self.K, self.p0 = cse.applyChemicallySignificantEigenvaluesMethod(self.T, self.P, self.Elist, self.densStates, self.Mcoll, self.Kij, self.Fim, self.Gnj, self.eqRatios, Nisom, Nreac, Nprod)
-                elif method.lower() == 'branching ratios':
-                    # Apply chemically-significant eigenvalues method
-                    import me
-                    self.K, self.p0 = me.applyBranchingRatiosMethod(self.T, self.P, self.Elist, self.densStates, self.Mcoll, self.Kij, self.Fim, self.Gnj,self. Ereac, Nisom, Nreac, Nprod)
+                    self.applyChemicallySignificantEigenvaluesMethod()
                 else:
                     raise NetworkError('Unknown method "{0}".'.format(method))
 
