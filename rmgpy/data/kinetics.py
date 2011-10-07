@@ -1883,6 +1883,28 @@ class KineticsFamily(Database):
 
         return productSet
 
+    def hasRateRule(self, template):
+        """
+        Return ``True`` if a rate rule with the given `template` currently 
+        exists, or ``False`` otherwise.
+        """
+        try:
+            return self.getRateRule(template) is not None
+        except ValueError:
+            return False
+
+    def getRateRule(self, template):
+        """
+        Return the rate rule with the given `template`. Raises a 
+        :class:`ValueError` if no corresponding entry exists.
+        """
+        templateLabels = [group.label for group in template]
+        for entry in self.rules.entries.values():
+            entryLabels = entry.label.split(';')
+            if all([group in entryLabels for group in templateLabels]) and all([group in templateLabels for group in entryLabels]):
+                return entry
+        raise ValueError('No entry for template {0}.'.format(template))
+
     def reactantMatch(self, reactant, templateReactant):
         """
         Return ``True`` if the provided reactant matches the provided
@@ -2590,16 +2612,14 @@ class KineticsFamily(Database):
         entries = self.rules.entries.values()
             
         # Do we have a rate rule for this exact template?
-        templateLabels = [group.label for group in template0]
-        for entry in entries:
-            entryLabels = entry.label.split(';')
-            if all([group in entryLabels for group in templateLabels]) and all([group in templateLabels for group in entryLabels]):
-                # We do! Use these kinetics as-is
-                kinetics = deepcopy(entry.data)
-                kinetics.comment += 'Explicit rate rule for {0}'.format(
-                    self.__getTemplateLabel(template0),
-                )
-                return kinetics, template0
+        if self.hasRateRule(template0):
+            # We do! Use these kinetics as-is
+            entry = self.getRateRule(template0)
+            kinetics = deepcopy(entry.data)
+            kinetics.comment += 'Explicit rate rule for {0}'.format(
+                self.__getTemplateLabel(template0),
+            )
+            return kinetics, template0
         
         # Okay, we don't have an exact rate rule.
         # Can we average the rate rules for the child nodes?
@@ -2609,14 +2629,12 @@ class KineticsFamily(Database):
         childrenList = getAllCombinations(childrenList)
         kineticsList = []
         for children in childrenList:
-            templateLabels = [group.label for group in children]
-            for entry in entries:
-                entryLabels = entry.label.split(';')
-                if all([group in entryLabels for group in templateLabels]) and all([group in templateLabels for group in entryLabels]):
-                    # We've found a combination of child nodes with a rate rule!
-                    kineticsList.append([entry.data, children])
-                    # Only keep the first hit (in case there are multiple instances of the same rule)
-                    break
+            if self.hasRateRule(children):
+                # We've found a combination of child nodes with a rate rule!
+                entry = self.getRateRule(children)
+                kineticsList.append([entry.data, children])
+                # Only keep the first hit (in case there are multiple instances of the same rule)
+                break
         if len(kineticsList) > 0:
             # We've found one or more rate rules for the child nodes!
             # Average them together and return the result
