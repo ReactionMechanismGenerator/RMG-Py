@@ -116,7 +116,7 @@ def generateFluxDiagram(reactionModel, times, concentrations, reactionRates, out
         # Try to use an image instead of the label
         speciesIndex = re.search('\(\d+\)$', species.label).group(0) + '.png'
         imagePath = ''
-        for root, dirs, files in os.walk(os.path.join(outputDirectory, '..', '..', 'species')):
+        for root, dirs, files in os.walk(os.path.join(outputDirectory, '..', 'species')):
             for f in files:
                 if f.endswith(speciesIndex):
                     imagePath = os.path.join(root, f)
@@ -172,7 +172,10 @@ def generateFluxDiagram(reactionModel, times, concentrations, reactionRates, out
                 penwidth = slope * math.log10(speciesRate) + maximumEdgePenWidth
             edge.set_penwidth(penwidth)
         # Save the graph at this time to a dot file and a PNG image
-        label = 't = 10^{0:.1f} s'.format(math.log10(times[t]))
+        if times[t] == 0:
+            label = 't = 0 s'
+        else:
+            label = 't = 10^{0:.1f} s'.format(math.log10(times[t]))
         graph.set_label(label)
         if t == 0:
             repeat = framesPerSecond * initialPadding
@@ -215,10 +218,10 @@ def simulate(reactionModel, reactionSystem):
     edgeSpecies = reactionModel.edge.species
     edgeReactions = reactionModel.edge.reactions
     
-    numCoreSpecies = len(coreSpecies)
-    numCoreReactions = len(coreReactions)
-    numEdgeSpecies = len(edgeSpecies)
-    numEdgeReactions = len(edgeReactions)
+#    numCoreSpecies = len(coreSpecies)
+#    numCoreReactions = len(coreReactions)
+#    numEdgeSpecies = len(edgeSpecies)
+#    numEdgeReactions = len(edgeReactions)
     
     speciesIndex = {}
     for index, spec in enumerate(coreSpecies):
@@ -264,15 +267,82 @@ def simulate(reactionModel, reactionSystem):
             nextTime *= timeStep
 
     time = numpy.array(time)
-    coreSpeciesConcentrations = numpy.array(coreSpeciesConcentrations)
+    coreSpeciesConcentrations = numpy.array([coreSpeciesConcentrations])
     coreReactionRates = numpy.array(coreReactionRates)
     edgeReactionRates = numpy.array(edgeReactionRates)
     
     return time, coreSpeciesConcentrations, coreReactionRates, edgeReactionRates
 
 ################################################################################
+def loadChemkinOutput(outputFile, reactionModel):
+    """
+    Load the species concentrations from a Chemkin Output file in a simulation
+    and generate the reaction rates at each time point.
+    """
+    from rmgpy.quantity import Quantity, constants
 
-def loadRMGJavaJob(inputFile):
+    coreReactions = reactionModel.core.reactions
+    edgeReactions = reactionModel.edge.reactions
+
+    time = []
+    coreSpeciesConcentrations = []
+    coreReactionRates = []
+    edgeReactionRates = []
+
+    with open(outputFile, 'r') as f:
+
+        line = f.readline()
+        print line
+        while line != '' and 'SPECIFIED END TIME' not in line:
+            line.strip()
+            tokens = line.split()
+            if 'DDASPK Transient Solution' in line:
+                # Time is in seconds
+                time.append(float(tokens[-2]))
+            elif 'PRESSURE' in line:
+                # Time from Chemkin is in atm
+                P = Quantity(float(tokens[1]),'atm')
+                print P
+            elif 'TEMPERATURE' in line:
+                # Temperature from Chemkin in in K
+                T = Quantity(float(tokens[1]),'K')
+            elif 'MOLE FRACTIONS' in line:
+                # Species always come in the same order as listed in chem.inp
+                molefractions = []
+                line = f.readline() # This one reads the blank line which follows
+                line = f.readline()
+                while line.strip() != '':
+                    tokens = line.split()
+                    molefractions.extend([float(value) for value in tokens[2::3]])
+                    line = f.readline()
+
+                totalConcentration = P.value/constants.R/T.value
+                coreSpeciesConcentrations.append([molefrac*totalConcentration for molefrac in molefractions])
+
+                coreRates = []
+                edgeRates = []
+                for reaction in coreReactions:
+                    coreRates.append(reaction.getRateCoefficient(T.value,P.value))
+                for reaction in edgeReactions:
+                    edgeRates.append(reaction.getRateCoefficient(T.value,P.value))
+
+                if coreRates:
+                    coreReactionRates.append(coreRates)
+                if edgeRates:
+                    edgeReactionRates.append(edgeRates)
+            
+            line=f.readline()
+   
+    time = numpy.array(time)
+    coreSpeciesConcentrations = numpy.array(coreSpeciesConcentrations)
+    coreReactionRates = numpy.array(coreReactionRates)
+    edgeReactionRates = numpy.array(edgeReactionRates)
+   
+    return time, coreSpeciesConcentrations, coreReactionRates, edgeReactionRates
+
+################################################################################
+
+def loadRMGJavaJob(inputFile, chemkinFile, speciesDict):
     """
     Load the results of an RMG-Java job generated from the given `inputFile`.
     """
@@ -286,8 +356,8 @@ def loadRMGJavaJob(inputFile):
     rmg.outputDirectory = os.path.abspath(os.path.dirname(inputFile))
     
     # Load the final Chemkin model generated by RMG-Java
-    chemkinFile = os.path.join(os.path.dirname(inputFile), 'chemkin', 'chem.inp')
-    speciesDict = os.path.join(os.path.dirname(inputFile), 'RMG_Dictionary.txt')
+    #chemkinFile = os.path.join(os.path.dirname(inputFile), 'chemkin', 'chem.inp')
+    #speciesDict = os.path.join(os.path.dirname(inputFile), 'RMG_Dictionary.txt')
     speciesList, reactionList = loadChemkinFile(chemkinFile, speciesDict)
     
     # Bath gas species don't appear in RMG-Java species dictionary, so handle
@@ -332,13 +402,15 @@ def loadRMGJavaJob(inputFile):
     except OSError:
         pass
     for species in speciesList:
-        species.molecule[0].draw(os.path.join(speciesPath, '{0!s}.png'.format(species)))
+
+        path = os.path.join(speciesPath + '/{0!s}.png'.format(species))
+        species.molecule[0].draw(str(path))
     
     return rmg
 
 ################################################################################
 
-def loadRMGPyJob(inputFile):
+def loadRMGPyJob(inputFile,chemkinFile,speciesDict):
     """
     Load the results of an RMG-Py job generated from the given `inputFile`.
     """
@@ -349,8 +421,8 @@ def loadRMGPyJob(inputFile):
     rmg.outputDirectory = os.path.abspath(os.path.dirname(inputFile))
     
     # Load the final Chemkin model generated by RMG
-    chemkinFile = os.path.join(os.path.dirname(inputFile), 'chemkin', 'chem.inp')
-    speciesDict = os.path.join(os.path.dirname(inputFile), 'chemkin', 'species_dictionary.txt')
+    #chemkinFile = os.path.join(os.path.dirname(inputFile), 'chemkin', 'chem.inp')
+    #speciesDict = os.path.join(os.path.dirname(inputFile), 'chemkin', 'species_dictionary.txt')
     speciesList, reactionList = loadChemkinFile(chemkinFile, speciesDict)
     
     # Map species in input file to corresponding species in Chemkin file
@@ -375,12 +447,78 @@ def loadRMGPyJob(inputFile):
     # Set reaction model to match model loaded from Chemkin file
     rmg.reactionModel.core.species = speciesList
     rmg.reactionModel.core.reactions = reactionList
+
+    # Generate species images
+    speciesPath = os.path.join(os.path.dirname(inputFile), 'species')
+    print speciesPath
+    try:
+        os.mkdir(speciesPath)
+    except OSError:
+        pass
+    for species in speciesList:
+        path = os.path.join(speciesPath + '/{0!s}.png'.format(species))
+        species.molecule[0].draw(str(path))
     
     return rmg
 
 ################################################################################
+def createFluxDiagram(savePath, inputFile, chemkinFile, speciesDict, java = False, chemkinOutput = ''):
+    """
+    Generates the flux diagram based on a condition 'inputFile', chemkin.inp chemkinFile,
+    a speciesDict txt file, plus an optional chemkinOutput file.
+    """
+    if java:
+        rmg = loadRMGJavaJob(inputFile, chemkinFile, speciesDict)
+    else:
+        rmg = loadRMGPyJob(inputFile, chemkinFile, speciesDict)
+
+
+    # if you have a chemkin output, then you only have one reactionSystem
+    if chemkinOutput:
+        try:
+            os.makedirs(os.path.join(savePath,'1'))
+        except OSError:
+            pass
+
+        print 'Extracting species concentrations and calculating reaction rates from chemkin output...'
+        time, coreSpeciesConcentrations, coreReactionRates, edgeReactionRates = loadChemkinOutput(chemkinOutput, rmg.reactionModel)
+
+        print 'Generating flux diagram for chemkin output...'
+        generateFluxDiagram(rmg.reactionModel, time, coreSpeciesConcentrations, coreReactionRates, os.path.join(savePath, '1'))
+
+    else:
+        # Generate a flux diagram video for each reaction system
+        for index, reactionSystem in enumerate(rmg.reactionSystems):
+            try:
+                os.makedirs(os.path.join(savePath,'{0:d}'.format(index+1)))
+            except OSError:
+            # Fail silently on any OS errors
+                pass
+
+            #rmg.makeOutputSubdirectory('flux/{0:d}'.format(index+1))
+
+            # If there is no termination time, then add one to prevent jobs from
+            # running forever
+            if not any([isinstance(term, TerminationTime) for term in reactionSystem.termination]):
+                reactionSystem.termination.append(TerminationTime((1e10,'s')))
+
+            print 'Conducting simulation of reaction system {0:d}...'.format(index+1)
+            time, coreSpeciesConcentrations, coreReactionRates, edgeReactionRates = simulate(rmg.reactionModel, reactionSystem)
+
+            print 'Generating flux diagram for reaction system {0:d}...'.format(index+1)
+            generateFluxDiagram(rmg.reactionModel, time, coreSpeciesConcentrations, coreReactionRates, os.path.join(savePath, '{0:d}'.format(index+1)))
+
+
+
+
+
+
+
+################################################################################
+
 
 if __name__ == '__main__':
+    # This might not work anymore because functions were modified for use with webserver
 
     import argparse
     
