@@ -267,7 +267,7 @@ def simulate(reactionModel, reactionSystem):
             nextTime *= timeStep
 
     time = numpy.array(time)
-    coreSpeciesConcentrations = numpy.array([coreSpeciesConcentrations])
+    coreSpeciesConcentrations = numpy.array(coreSpeciesConcentrations)
     coreReactionRates = numpy.array(coreReactionRates)
     edgeReactionRates = numpy.array(edgeReactionRates)
     
@@ -302,7 +302,6 @@ def loadChemkinOutput(outputFile, reactionModel):
             elif 'PRESSURE' in line:
                 # Time from Chemkin is in atm
                 P = Quantity(float(tokens[1]),'atm')
-                print P
             elif 'TEMPERATURE' in line:
                 # Temperature from Chemkin in in K
                 T = Quantity(float(tokens[1]),'K')
