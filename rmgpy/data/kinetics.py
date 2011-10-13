@@ -1898,10 +1898,9 @@ class KineticsFamily(Database):
         Return the rate rule with the given `template`. Raises a 
         :class:`ValueError` if no corresponding entry exists.
         """
-        templateLabels = [group.label for group in template]
+        templateLabels = ';'.join([group.label for group in template])
         for entry in self.rules.entries.values():
-            entryLabels = entry.label.split(';')
-            if all([group in entryLabels for group in templateLabels]) and all([group in templateLabels for group in entryLabels]):
+            if templateLabels == entry.label:
                 return entry
         raise ValueError('No entry for template {0}.'.format(template))
 
@@ -1944,12 +1943,14 @@ class KineticsFamily(Database):
             label = ';'.join([g.label for g in template])
             if template == rootTemplate: 
                 continue
-            elif any([g in rootTemplate for g in template]):
-                kinetics = self.fillKineticsRulesByAveragingUp(template, alreadyDone)
+            
+            if label in alreadyDone:
+                kinetics = alreadyDone[label]
             else:
                 kinetics = self.fillKineticsRulesByAveragingUp(template, alreadyDone)
-                if kinetics:
-                    kineticsList.append([kinetics, template])
+            
+            if kinetics is not None and not any([g in rootTemplate for g in template]):
+                kineticsList.append([kinetics, template])
         
         if self.hasRateRule(rootTemplate):
             # We already have a rate rule for this exact template
