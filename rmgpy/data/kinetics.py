@@ -1917,7 +1917,7 @@ class KineticsFamily(Database):
         else:
             return self.groups.top
     
-    def fillKineticsRulesByAveragingUp(self, rootTemplate=None):
+    def fillKineticsRulesByAveragingUp(self, rootTemplate=None, alreadyDone=None):
         """
         Fill in gaps in the kinetics rate rules by averaging child nodes.
         """
@@ -1927,6 +1927,9 @@ class KineticsFamily(Database):
             alreadyDone = {}
         
         rootLabel = ';'.join([g.label for g in rootTemplate])
+        
+        if rootLabel in alreadyDone:
+            return alreadyDone[rootLabel]
         
         # Recursively descend to the child nodes
         childrenList = [[group] for group in rootTemplate]
@@ -1942,15 +1945,16 @@ class KineticsFamily(Database):
             if template == rootTemplate: 
                 continue
             elif any([g in rootTemplate for g in template]):
-                kinetics = self.fillKineticsRulesByAveragingUp(template)
+                kinetics = self.fillKineticsRulesByAveragingUp(template, alreadyDone)
             else:
-                kinetics = self.fillKineticsRulesByAveragingUp(template)
+                kinetics = self.fillKineticsRulesByAveragingUp(template, alreadyDone)
                 if kinetics:
                     kineticsList.append([kinetics, template])
         
         if self.hasRateRule(rootTemplate):
             # We already have a rate rule for this exact template
             entry = self.getRateRule(rootTemplate)
+            alreadyDone[rootLabel] = entry.data
             return entry.data
         elif len(kineticsList) > 0:
             
@@ -1966,8 +1970,10 @@ class KineticsFamily(Database):
                 data = kinetics,
             )
             self.rules.entries[entry.label] = entry
+            alreadyDone[rootLabel] = entry.data
             return entry.data
             
+        alreadyDone[rootLabel] = None
         return None
             
     def reactantMatch(self, reactant, templateReactant):
