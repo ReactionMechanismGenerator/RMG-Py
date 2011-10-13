@@ -2220,11 +2220,11 @@ class KineticsFamily(Database):
                 reaction = TemplateReaction(
                     reactants = rxn.products[:],
                     products = rxn.reactants[:],
-                    degeneracy = rxn.degeneracy,
                     thirdBody = rxn.thirdBody,
                     reversible = rxn.reversible,
                     family = self,
                 )
+                reaction.degeneracy = self.calculateDegeneracy(reaction)
                 reactionList.append(reaction)
 
         # Determine the reactant-product pairs to use for flux analysis
@@ -2249,6 +2249,17 @@ class KineticsFamily(Database):
 
         return reactionList
     
+    def calculateDegeneracy(self, reaction):
+        """
+        For a `reaction` given in the direction in which the kinetics are
+        defined, compute the reaction-path degeneracy.
+        """
+        reactions = self.__generateReactions(reaction.reactants, forward=True)
+        for rxn in reactions:
+            if rxn.isIsomorphic(reaction, eitherDirection=False):
+                return rxn.degeneracy
+        raise Exception('Unable to calculate degeneracy for reaction {0}.'.format(reaction))
+        
     def __generateReactions(self, reactants, forward=True):
         """
         Generate a list of all of the possible reactions of this family between
