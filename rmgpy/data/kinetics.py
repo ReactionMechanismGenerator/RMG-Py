@@ -1954,9 +1954,15 @@ class KineticsFamily(Database):
         if self.hasRateRule(rootTemplate):
             # We already have a rate rule for this exact template
             entry = self.getRateRule(rootTemplate)
-            alreadyDone[rootLabel] = entry.data
-            return entry.data
-        elif len(kineticsList) > 0:
+            if entry.rank > 0:
+                # If the entry has rank of zero, then we have so little faith
+                # in it that we'd rather use an averaged value if possible
+                # Since this entry does not have a rank of zero, we keep its
+                # value
+                alreadyDone[rootLabel] = entry.data
+                return entry.data
+        
+        if len(kineticsList) > 0:
             
             # We found one or more results! Let's average them together
             kinetics = self.__getAverageKinetics([k for k, t in kineticsList])
@@ -1968,6 +1974,7 @@ class KineticsFamily(Database):
                 label = rootLabel,
                 item = rootTemplate,
                 data = kinetics,
+                rank = 10, # Indicates this is an averaged estimate
             )
             self.rules.entries[entry.label] = entry
             alreadyDone[rootLabel] = entry.data
