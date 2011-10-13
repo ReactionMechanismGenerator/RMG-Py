@@ -1905,6 +1905,71 @@ class KineticsFamily(Database):
                 return entry
         raise ValueError('No entry for template {0}.'.format(template))
 
+    def getRootTemplate(self):
+        """
+        Return the root template for the reaction family. Most of the time this
+        is the top-level nodes of the tree (as stored in the 
+        :class:`KineticsGroups` object), but there are a few exceptions (e.g.
+        R_Recombination).
+        """
+        if len(self.forwardTemplate.reactants) > len(self.groups.top):
+            return self.forwardTemplate.reactants
+        else:
+            return self.groups.top
+    
+    def fillKineticsRulesByAveragingUp(self, rootTemplate=None):
+        """
+        Fill in gaps in the kinetics rate rules by averaging child nodes.
+        """
+        # If no template is specified, then start at the top-level nodes
+        if rootTemplate is None:
+            rootTemplate = self.getRootTemplate()
+            alreadyDone = {}
+        
+        rootLabel = ';'.join([g.label for g in rootTemplate])
+        
+        # Recursively descend to the child nodes
+        childrenList = [[group] for group in rootTemplate]
+        for group in childrenList:
+            parent = group[0]
+            if len(parent.children) > 0:
+                group.extend(parent.children)
+            
+        childrenList = getAllCombinations(childrenList)
+        kineticsList = []
+        for template in childrenList:
+            label = ';'.join([g.label for g in template])
+            if template == rootTemplate: 
+                continue
+            elif any([g in rootTemplate for g in template]):
+                kinetics = self.fillKineticsRulesByAveragingUp(template)
+            else:
+                kinetics = self.fillKineticsRulesByAveragingUp(template)
+                if kinetics:
+                    kineticsList.append([kinetics, template])
+        
+        if self.hasRateRule(rootTemplate):
+            # We already have a rate rule for this exact template
+            entry = self.getRateRule(rootTemplate)
+            return entry.data
+        elif len(kineticsList) > 0:
+            
+            # We found one or more results! Let's average them together
+            kinetics = self.__getAverageKinetics([k for k, t in kineticsList])
+            kinetics.comment += '(Average of {0})'.format(
+                ' + '.join([k.comment if k.comment != '' else ';'.join([g.label for g in t]) for k, t in kineticsList]),
+            )
+            entry = Entry(
+                index = 0,
+                label = rootLabel,
+                item = rootTemplate,
+                data = kinetics,
+            )
+            self.rules.entries[entry.label] = entry
+            return entry.data
+            
+        return None
+            
     def reactantMatch(self, reactant, templateReactant):
         """
         Return ``True`` if the provided reactant matches the provided
