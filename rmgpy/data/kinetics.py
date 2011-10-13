@@ -2664,68 +2664,6 @@ class KineticsFamily(Database):
     def __getTemplateLabel(self, template):
         return '({0})'.format(','.join([g.label for g in template]))
         
-    def __getKineticsForRateRule(self, template0):
-        """
-        Determine the appropriate kinetics for a reaction with the given
-        `template` using rate rules. The procedure is as follows:
-        
-        * If there is a rate rule at the exact template, then use that rule.
-        
-        * If there is no rate rule at the template, but there are one or more
-          combinations of child nodes with a rate rule, then average those
-          rules and use the result.
-        
-        * If there is no exact or averaged rate rule at the template, then
-          fall up the tree in search of a rule. We want the rule that is the
-          minimum "distance" (i.e. number of ancestors) away from this 
-          combination of nodes. This algorithm uses a breadth-first search
-          so as to prefer
-        
-        The worst case is that we fall all the way up to the top-level nodes
-        for this family.          
-        """
-        
-        entries = self.rules.entries.values()
-            
-        # Do we have a rate rule for this exact template?
-        if self.hasRateRule(template0):
-            # We do! Use these kinetics as-is
-            entry = self.getRateRule(template0)
-            kinetics = deepcopy(entry.data)
-            kinetics.comment += 'Explicit rate rule for {0}'.format(
-                self.__getTemplateLabel(template0),
-            )
-            return kinetics, template0
-        
-        # Okay, we don't have an exact rate rule.
-        # Can we average the rate rules for the child nodes?
-        childrenList = [[group] for group in template0]
-        for group in childrenList:
-            group.extend(group[0].children)
-        childrenList = getAllCombinations(childrenList)
-        kineticsList = []
-        for children in childrenList:
-            if self.hasRateRule(children):
-                # We've found a combination of child nodes with a rate rule!
-                entry = self.getRateRule(children)
-                kineticsList.append([entry.data, children])
-                # Only keep the first hit (in case there are multiple instances of the same rule)
-                break
-        if len(kineticsList) > 0:
-            # We've found one or more rate rules for the child nodes!
-            # Average them together and return the result
-            kunits = kineticsList[0][0].A.units
-            averagedKinetics = self.__getAverageKinetics([kinetics for kinetics, children in kineticsList])
-            averagedKinetics.comment += '(Averaged rate rule for {0} (Average of {1}))'.format(
-                self.__getTemplateLabel(template0),
-                ' + '.join([self.__getTemplateLabel(children) for kinetics, children in kineticsList]),
-            )
-            return averagedKinetics, template0
-        
-        # Well, we couldn't construct an average at this node either
-        # Give up and return None
-        return None, None
-        
     def estimateKineticsUsingRateRules(self, template, degeneracy=1):
         """
         Determine the appropriate kinetics for a reaction with the given
@@ -2736,9 +2674,13 @@ class KineticsFamily(Database):
             
             kineticsList = []
             for t in templateList:
-                kinetics1, template1 = self.__getKineticsForRateRule(t)
-                if kinetics1:
-                    kineticsList.append([kinetics1, template1])
+                if self.hasRateRule(t):
+                    entry = self.getRateRule(t)
+                    kinetics = deepcopy(entry.data)
+                    kinetics.comment += 'Explicit rate rule for {0}'.format(
+                        self.__getTemplateLabel(t),
+                    )
+                    kineticsList.append([kinetics, t])
             
             if len(kineticsList) > 0:
                 # We found one or more results! Let's average them together
