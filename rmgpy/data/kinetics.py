@@ -2646,10 +2646,17 @@ class KineticsFamily(Database):
         
         # Check the various depositories for kinetics
         for depository in depositories:
-            for kinetics, entry, isForward in self.getKineticsFromDepository(depository, reaction, template, degeneracy):
-                if not returnAllKinetics:
-                    return kinetics, depository, entry, isForward
-                kineticsList.append([kinetics, depository, entry, isForward])
+            kineticsList0 = self.getKineticsFromDepository(depository, reaction, template, degeneracy)
+            if len(kineticsList0) > 0 and not returnAllKinetics:
+                # If we have multiple matching rules but only want one result,
+                # choose the one with the lowest rank that occurs first
+                assert(not any([x[1].rank == 0 for x in kineticsList0]))
+                kineticsList0.sort(key=lambda x: (x[1].rank, x[1].index))
+                kinetics, entry, isForward = kineticsList0[0]
+                return kinetics, depository, entry, isForward
+            else:
+                for kinetics, entry, isForward in kineticsList0:
+                    kineticsList.append([kinetics, depository, entry, isForward])
         # Also generate a group additivity estimate
         kinetics = self.getKineticsForTemplate(template, degeneracy, method=estimator)
         if kinetics:
