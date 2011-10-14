@@ -1898,11 +1898,32 @@ class KineticsFamily(Database):
         Return the rate rule with the given `template`. Raises a 
         :class:`ValueError` if no corresponding entry exists.
         """
+        entries = []
         templateLabels = ';'.join([group.label for group in template])
         for entry in self.rules.entries.values():
             if templateLabels == entry.label:
-                return entry
-        raise ValueError('No entry for template {0}.'.format(template))
+                entries.append(entry)
+        
+        if self.label.lower() == 'r_recombination' and template[0] != template[1]:
+            template.reverse()
+            templateLabels = ';'.join([group.label for group in template])
+            for entry in self.rules.entries.values():
+                if templateLabels == entry.label:
+                    entries.append(entry)
+            template.reverse()
+            
+        if len(entries) == 1:
+            return entries[0]
+        elif len(entries) > 1:
+            if any([entry.rank > 0 for entry in entries]):
+                entries = [entry for entry in entries if entry.rank > 0]
+                entries.sort(key=lambda x: (x.rank, x.index))
+                return entries[0]
+            else:
+                entries.sort(key=lambda x: x.index)
+                return entries[0]
+        else:
+            raise ValueError('No entry for template {0}.'.format(template))
 
     def getRootTemplate(self):
         """
