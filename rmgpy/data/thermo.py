@@ -642,6 +642,8 @@ class ThermoDatabase:
             # Get thermo estimate for saturated form of structure
             thermoData = self.getThermoDataFromGroups(saturatedStruct)[0]
             assert thermoData is not None, "Thermo data of saturated {0} of molecule {1} is None!".format(saturatedStruct, molecule)
+            # Undo symmetry number correction for saturated structure
+            thermoData.S298.value += constants.R * math.log(saturatedStruct.symmetryNumber)
 
             # For each radical site, get radical correction
             # Only one radical site should be considered at a time; all others
