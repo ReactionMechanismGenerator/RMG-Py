@@ -179,6 +179,10 @@ class RMG:
             #frequenciesLibraries = self.statmechLibraries,
             depository = False, # Don't bother loading the depository information, as we don't use it
         )
+        if self.kineticsEstimator == 'rate rules':
+            logging.info('Filling in rate rules in kinetics families by averaging...')
+            for family in self.database.kinetics.families.values():
+                family.fillKineticsRulesByAveragingUp()
     
     def initialize(self, args):
         """
