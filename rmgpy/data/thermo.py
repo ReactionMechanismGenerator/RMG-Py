@@ -356,12 +356,12 @@ class ThermoDatabase:
         """
         logging.info('Loading thermodynamics group database from {0}...'.format(path))
         self.groups = {}
-        self.groups['group']   = ThermoGroups().load(os.path.join(path, 'group.py' ), self.local_context, self.global_context)
-        self.groups['gauche']  = ThermoGroups().load(os.path.join(path, 'gauche.py' ), self.local_context, self.global_context)
-        self.groups['int15']   = ThermoGroups().load(os.path.join(path, 'int15.py'  ), self.local_context, self.global_context)
-        self.groups['ring']    = ThermoGroups().load(os.path.join(path, 'ring.py'   ), self.local_context, self.global_context)
-        self.groups['radical'] = ThermoGroups().load(os.path.join(path, 'radical.py'), self.local_context, self.global_context)
-        self.groups['other']   = ThermoGroups().load(os.path.join(path, 'other.py'  ), self.local_context, self.global_context)
+        self.groups['group']   =   ThermoGroups(label='group').load(os.path.join(path, 'group.py'  ), self.local_context, self.global_context)
+        self.groups['gauche']  =  ThermoGroups(label='gauche').load(os.path.join(path, 'gauche.py' ), self.local_context, self.global_context)
+        self.groups['int15']   =   ThermoGroups(label='int15').load(os.path.join(path, 'int15.py'  ), self.local_context, self.global_context)
+        self.groups['ring']    =    ThermoGroups(label='ring').load(os.path.join(path, 'ring.py'   ), self.local_context, self.global_context)
+        self.groups['radical'] = ThermoGroups(label='radical').load(os.path.join(path, 'radical.py'), self.local_context, self.global_context)
+        self.groups['other']   =   ThermoGroups(label='other').load(os.path.join(path, 'other.py'  ), self.local_context, self.global_context)
 
     def save(self, path):
         """
@@ -771,12 +771,15 @@ class ThermoDatabase:
         if node is None:
             raise InvalidDatabaseError('Unable to determine thermo parameters for {0}: no library entries for {1} or any of its ancestors.'.format(molecule, node0) )
 
-        data = node.data
+        data = node.data; comment = node.label
         while isinstance(data, str) and data is not None:
             for entry in database.entries.values():
                 if entry.label == data:
                     data = entry.data
+                    comment = entry.label
                     break
+        data = deepcopy(data)
+        data.comment = '{0}({1})'.format(database.label, comment)
 
         # This code prints the hierarchy of the found node; useful for debugging
         #result = ''
