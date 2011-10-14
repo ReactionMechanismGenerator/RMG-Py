@@ -2667,7 +2667,8 @@ class KineticsFamily(Database):
             if len(kineticsList0) > 0 and not returnAllKinetics:
                 # If we have multiple matching rules but only want one result,
                 # choose the one with the lowest rank that occurs first
-                assert(not any([x[1].rank == 0 for x in kineticsList0]))
+                if any([x[1].rank == 0 for x in kineticsList0]) and not all([x[1].rank == 0 for x in kineticsList0]):
+                    kineticsList0 = [x for x in kineticsList0 if x[1].rank != 0]
                 kineticsList0.sort(key=lambda x: (x[1].rank, x[1].index))
                 kinetics, entry, isForward = kineticsList0[0]
                 return kinetics, depository, entry, isForward
