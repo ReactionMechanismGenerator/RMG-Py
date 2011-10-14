@@ -2357,11 +2357,26 @@ class KineticsFamily(Database):
         defined, compute the reaction-path degeneracy.
         """
         reactions = self.__generateReactions(reaction.reactants, forward=True)
+        products = []
+        for product in reaction.products:
+            if isinstance(product, Molecule):
+                species = Species(molecule=[product])
+                species.generateResonanceIsomers()
+                products.append(species)
+            elif isinstance(product, Species):
+               products.append(product.molecule)
         for rxn in reactions:
-            if rxn.isIsomorphic(reaction, eitherDirection=False):
-                return rxn.degeneracy
-        raise Exception('Unable to calculate degeneracy for reaction {0}.'.format(reaction))
-        
+            # We already know the reactants match, so we only need to evaluate the products
+            if len(rxn.products) == len(products) == 1:
+                if products[0].isIsomorphic(rxn.products[0]):
+                    return rxn.degeneracy
+            elif len(rxn.products) == len(products) == 2:
+                if products[0].isIsomorphic(rxn.products[0]) and products[1].isIsomorphic(rxn.products[1]):
+                    return rxn.degeneracy
+                elif products[0].isIsomorphic(rxn.products[1]) and products[1].isIsomorphic(rxn.products[0]):
+                    return rxn.degeneracy
+        raise Exception('Unable to calculate degeneracy for reaction {0} in reaction family {1}.'.format(reaction, self.label))
+    
     def __generateReactions(self, reactants, forward=True):
         """
         Generate a list of all of the possible reactions of this family between
