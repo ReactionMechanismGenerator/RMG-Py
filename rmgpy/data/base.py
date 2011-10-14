@@ -855,7 +855,10 @@ class Database:
         if len(next) == 1:
             return self.descendTree(structure, atoms, next[0])
         elif len(next) == 0:
-            return root
+            if len(root.children) > 0 and root.children[-1].label.startswith('Others-'):
+                return root.children[-1]
+            else:
+                return root
         else:
             #print structure.toAdjacencyList()
             #raise DatabaseError('For structure {0}, a node {1} with non-mutually-exclusive children {2} was encountered in tree with top level nodes {3}.'.format(structure.getFormula(), root, next, self.tree.top))
