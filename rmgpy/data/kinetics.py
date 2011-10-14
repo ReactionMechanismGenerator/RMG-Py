@@ -1951,13 +1951,26 @@ class KineticsFamily(Database):
         if rootLabel in alreadyDone:
             return alreadyDone[rootLabel]
         
+        if self.hasRateRule(rootTemplate):
+            # We already have a rate rule for this exact template
+            entry = self.getRateRule(rootTemplate)
+            if entry.rank > 0:
+                # If the entry has rank of zero, then we have so little faith
+                # in it that we'd rather use an averaged value if possible
+                # Since this entry does not have a rank of zero, we keep its
+                # value
+                alreadyDone[rootLabel] = entry.data
+                return entry.data
+        
         # Recursively descend to the child nodes
         childrenList = [[group] for group in rootTemplate]
         for group in childrenList:
-            parent = group[0]
+            parent = group.pop(0)
             if len(parent.children) > 0:
                 group.extend(parent.children)
-            
+            else:
+                group.append(parent)
+                
         childrenList = getAllCombinations(childrenList)
         kineticsList = []
         for template in childrenList:
@@ -1970,19 +1983,8 @@ class KineticsFamily(Database):
             else:
                 kinetics = self.fillKineticsRulesByAveragingUp(template, alreadyDone)
             
-            if kinetics is not None and not any([g in rootTemplate for g in template]):
+            if kinetics is not None:
                 kineticsList.append([kinetics, template])
-        
-        if self.hasRateRule(rootTemplate):
-            # We already have a rate rule for this exact template
-            entry = self.getRateRule(rootTemplate)
-            if entry.rank > 0:
-                # If the entry has rank of zero, then we have so little faith
-                # in it that we'd rather use an averaged value if possible
-                # Since this entry does not have a rank of zero, we keep its
-                # value
-                alreadyDone[rootLabel] = entry.data
-                return entry.data
         
         if len(kineticsList) > 0:
             
