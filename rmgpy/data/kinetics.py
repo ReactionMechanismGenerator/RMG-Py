@@ -2433,6 +2433,8 @@ class KineticsFamily(Database):
         # original
         reactants = [reactant if isinstance(reactant, list) else [reactant] for reactant in reactants]
 
+        sameReactants = len(reactants) == 2 and reactants[0] == reactants[1]
+        
         # Also make a deep copy of each reactant molecule
         for i in range(len(reactants)):
             for j in range(len(reactants[i])):
@@ -2556,8 +2558,18 @@ class KineticsFamily(Database):
         # This is hardcoding of reaction families!
         if self.label.lower().startswith('r_recombination'):
             for rxn in rxnList:
+                assert(rxn.degeneracy % 2 == 0)
                 rxn.degeneracy /= 2
 
+        # For reactions of the form A + A -> products, the degeneracy is twice
+        # what it should be, so divide those by two
+        if sameReactants and not self.label.lower().startswith('r_recombination'):
+            for rxn in rxnList:
+                if rxn.degeneracy % 2 != 0:
+                    import pdb; pdb.set_trace()
+                assert(rxn.degeneracy % 2 == 0)
+                rxn.degeneracy /= 2
+                
         # This reaction list has only checked for duplicates within itself, not
         # with the global list of reactions
         return rxnList
