@@ -74,25 +74,9 @@ class Species(rmgpy.species.Species):
         implicitH = [mol.implicitHydrogens for mol in self.molecule]
         for molecule in self.molecule:
             molecule.makeHydrogensExplicit()
-        
-        thermo = []
-        for molecule in self.molecule:
-            molecule.clearLabeledAtoms()
-            molecule.updateAtomTypes()
-            tdata = database.thermo.getThermoData(molecule)
-            thermo.append(tdata)
 
-        H298 = numpy.array([t.getEnthalpy(298.) for t in thermo])
-        indices = H298.argsort()
-
-        # If multiple resonance isomers are present, use the thermo data of
-        # the most stable isomer (i.e. one with lowest enthalpy of formation)
-        # as the thermo data of the species
-        thermo0 = thermo[indices[0]]
-
-        # Sort the structures in order of decreasing stability
-        self.molecule = [self.molecule[ind] for ind in indices]
-        implicitH = [implicitH[ind] for ind in indices]
+        # Get the thermo data for the species from the database
+        thermo0 = database.thermo.getThermoData(self)
 
         # Always convert to Wilhoit so we can compute E0
         if isinstance(thermo0, Wilhoit):
