@@ -418,8 +418,9 @@ class RMG:
                     logging.info('There is not enough time to complete the next iteration before the wall time is reached.')
                     logging.info('The output model may be incomplete.')
                     logging.info('')
-                    logging.info('The current model core has %s species and %s reactions' % (len(reactionModel.core.species), len(reactionModel.core.reactions)))
-                    logging.info('The current model edge has %s species and %s reactions' % (len(reactionModel.edge.species), len(reactionModel.edge.reactions)))
+                    coreSpec, coreReac, edgeSpec, edgeReac = self.reactionModel.getModelSize()
+                    logging.info('The current model core has %s species and %s reactions' % (coreSpec, coreReac))
+                    logging.info('The current model edge has %s species and %s reactions' % (edgeSpec, edgeReac))
                     return
     
         # Write output file
