@@ -68,6 +68,7 @@ class RMG:
     `reactionLibraries`         The kinetics libraries to load
     `statmechLibraries`         The statistical mechanics libraries to load
     `seedMechanisms`            The seed mechanisms included in the model
+    `kineticsFamilies`          The kinetics families to use for reaction generation
     `kineticsDepositories`      The kinetics depositories to use for looking up kinetics in each family
     `kineticsEstimator`         The method to use to estimate kinetics: 'group additivity' or 'rate rules'
     --------------------------- ------------------------------------------------
@@ -115,6 +116,7 @@ class RMG:
         self.reactionLibraries = None
         self.statmechLibraries = None
         self.seedMechanisms = None
+        self.kineticsFamilies = None
         self.kineticsDepositories = None
         self.kineticsEstimator = 'group additivity'
         
@@ -175,6 +177,7 @@ class RMG:
             thermoLibraries = self.thermoLibraries,
             reactionLibraries = [library for library, option in self.reactionLibraries],
             seedMechanisms = self.seedMechanisms,
+            kineticsFamilies = self.kineticsFamilies,
             kineticsDepositories = self.kineticsDepositories,
             #frequenciesLibraries = self.statmechLibraries,
             depository = False, # Don't bother loading the depository information, as we don't use it

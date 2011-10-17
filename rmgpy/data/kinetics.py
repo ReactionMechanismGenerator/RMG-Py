@@ -2890,28 +2890,47 @@ class KineticsDatabase:
         }
         self.global_context = {}
 
-    def load(self, path, libraries=None, depositories=None):
+    def load(self, path, families=None, libraries=None, depositories=None):
         """
         Load the kinetics database from the given `path` on disk, where `path`
         points to the top-level folder of the families database.
         """
-        self.loadFamilies(os.path.join(path, 'families'), depositories)
+        self.loadFamilies(os.path.join(path, 'families'), families, depositories)
         self.loadLibraries(os.path.join(path, 'libraries'), libraries)
         
-    def loadFamilies(self, path, depositories=None):
+    def loadFamilies(self, path, families=None, depositories=None):
         """
         Load the kinetics families from the given `path` on disk, where `path`
         points to the top-level folder of the kinetics families.
         """
-        self.families = {}
         logging.info('Loading kinetics families from {0}'.format(path))
+        
+        familiesToLoad = []
         for (root, dirs, files) in os.walk(os.path.join(path)):
             if root == path:
-                for d in dirs:
-                    familyPath = os.path.join(root, d)
-                    family = KineticsFamily(label=d)
-                    family.load(familyPath, self.local_context, self.global_context, depositoryLabels=depositories)
-                    self.families[d] = family
+                if families is None or families == 'all':
+                    # All families are loaded by default
+                    for d in dirs:
+                        familiesToLoad.append(d)
+                elif isinstance(families, list) or isinstance(families, tuple):
+                    # If all items in the list start with !, all families will be loaded except these
+                    if all([label.startswith('!') for label in families]):
+                        for d in dirs:
+                            if '!{0}'.format(d) not in families:
+                                familiesToLoad.append(d)
+                    # Otherwise only the families given will be loaded
+                    else:
+                        for d in dirs:
+                            if d in families:
+                                familiesToLoad.append(d)
+        
+        # Now we know what families to load, so let's load them
+        self.families = {}
+        for label in familiesToLoad:
+            familyPath = os.path.join(path, label)
+            family = KineticsFamily(label=label)
+            family.load(familyPath, self.local_context, self.global_context, depositoryLabels=depositories)
+            self.families[label] = family
 
     def loadLibraries(self, path, libraries=None):
         """
