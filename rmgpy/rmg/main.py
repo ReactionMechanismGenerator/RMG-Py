@@ -180,6 +180,9 @@ class RMG:
             depository = False, # Don't bother loading the depository information, as we don't use it
         )
         if self.kineticsEstimator == 'rate rules':
+            logging.info('Adding rate rules from training set in kinetics families...')
+            for family in self.database.kinetics.families.values():
+                family.addKineticsRulesFromTrainingSet()
             logging.info('Filling in rate rules in kinetics families by averaging...')
             for family in self.database.kinetics.families.values():
                 family.fillKineticsRulesByAveragingUp()

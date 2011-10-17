@@ -1925,6 +1925,44 @@ class KineticsFamily(Database):
         else:
             raise ValueError('No entry for template {0}.'.format(template))
 
+    def addKineticsRulesFromTrainingSet(self):
+        """
+        For each reaction involving real reactants and products in the training
+        set, add a rate rule for that reaction.
+        """
+        for depository in self.depositories:
+            if depository.label.endswith('training'):
+                break
+        else:
+            raise Exception('Could not find training depository in family {0}.'.format(self.label))
+        
+        index = max([e.index for e in self.rules.entries.values()]) + 1
+        
+        entries = depository.entries.values()
+        entries.sort(key=lambda x: x.index)
+        for entry in entries:
+            template = self.getReactionTemplate(entry.item)
+            assert isinstance(entry.data, Arrhenius)
+            data = deepcopy(entry.data)
+            data.changeT0(1)
+            
+            new_entry = Entry(
+                index = index,
+                label = ';'.join([g.label for g in template]),
+                data = ArrheniusEP(
+                    A = deepcopy(data.A),
+                    n = deepcopy(data.n),
+                    alpha = 0,
+                    E0 = deepcopy(data.Ea),
+                    Tmin = deepcopy(data.Tmin),
+                    Tmax = deepcopy(data.Tmax),
+                ),
+                rank = 3,
+            )
+            new_entry.data.A.value /= entry.item.degeneracy
+            self.rules.entries[index] = new_entry
+            index += 1
+    
     def getRootTemplate(self):
         """
         Return the root template for the reaction family. Most of the time this
