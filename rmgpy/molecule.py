@@ -1300,12 +1300,20 @@ class Molecule(Graph):
                         if (atom21, atom22) not in listToAddTo: listToAddTo.append((atom21, atom22))
                     else:
                         cumulatedBonds.append([(atom11, atom12), (atom21, atom22)])
-
+        
+        # Also keep isolated double bonds
+        for bond1 in doubleBonds:
+            for bonds in cumulatedBonds:
+                if bond1 in bonds:
+                    break
+            else:
+                cumulatedBonds.append([bond1])
+               
         # For each set of adjacent double bonds, check for axis symmetry
         for bonds in cumulatedBonds:
             
             # Do nothing if less than two cumulated bonds
-            if len(bonds) < 2: continue
+            if len(bonds) < 1: continue
 
             # Do nothing if axis is in cycle
             found = False
@@ -1328,14 +1336,12 @@ class Molecule(Graph):
                 structure.removeBond(atom1, atom2)
             atomsToRemove = []
             for atom in structure.atoms:
-                if len(structure.bonds[atom]) == 0: # it's not bonded to anything
+                if len(structure.bonds[atom]) == 0 and atom not in terminalAtoms: # it's not bonded to anything
                     atomsToRemove.append(atom)
             for atom in atomsToRemove: structure.removeAtom(atom)
 
             # Split remaining fragments of structure
             end_fragments = structure.split()
-            # you may have only one end fragment,
-            # eg. if you started with H2C=C=C..
             
             # 
             # there can be two groups at each end     A\         /B
@@ -1343,25 +1349,43 @@ class Molecule(Graph):
             #                                         A/         \B
             
             # to start with nothing has broken symmetry about the axis
-            symmetry_broken=False 
+            symmetry_broken=False
+            end_fragments_to_remove = []
             for fragment in end_fragments: # a fragment is one end of the axis
                 
                 # remove the atom that was at the end of the axis and split what's left into groups
+                terminalAtom = None
                 for atom in terminalAtoms:
-                    if atom in fragment.atoms: fragment.removeAtom(atom)
-                groups = fragment.split()
+                    if atom in fragment.atoms: 
+                        terminalAtom = atom
+                        fragment.removeAtom(atom)
+                        break
+                else:
+                    continue
+                
+                groups = []
+                if len(fragment.atoms) > 0:
+                    groups = fragment.split()
                 
                 # If end has only one group then it can't contribute to (nor break) axial symmetry
                 #   Eg. this has no axis symmetry:   A-T=C=C=C=T-A
                 # so we remove this end from the list of interesting end fragments
-                if len(groups)==1:
-                    end_fragments.remove(fragment)
+                if len(groups) == 0:
+                    end_fragments_to_remove.append(fragment)
                     continue # next end fragment
-                if len(groups)==2:
+                elif len(groups)==1 and terminalAtom.radicalElectrons == 0:
+                    end_fragments_to_remove.append(fragment)
+                    continue # next end fragment
+                elif len(groups)==1 and terminalAtom.radicalElectrons != 0:
+                    symmetry_broken = True
+                elif len(groups)==2:
                     if not groups[0].isIsomorphic(groups[1]):
                         # this end has broken the symmetry of the axis
                         symmetry_broken = True
-                        
+            
+            for fragment in end_fragments_to_remove:
+                end_fragments.remove(fragment)
+                                
             # If there are end fragments left that can contribute to symmetry,
             # and none of them broke it, then double the symmetry number
             # NB>> This assumes coordination number of 4 (eg. Carbon).
