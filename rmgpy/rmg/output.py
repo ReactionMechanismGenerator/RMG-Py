@@ -360,11 +360,11 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
 
     familyCount1 = {}
     familyCount2 = {}
-    for rxn in commonReactions:
-        if isinstance(rxn, PDepReaction):
+    for rxn1, rxn2 in commonReactions:
+        if isinstance(rxn1, PDepReaction):
             family = "PDepNetwork"
         else:
-            family = rxn.getSource().label
+            family = rxn1.getSource().label
         if family in familyCount1:
             familyCount1[family] += 1
             familyCount2[family] += 1
@@ -628,7 +628,7 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
 <table class="reactionList hide_comment hide_kinetics hide_chemkin" width=100% cellpadding="10">
     <tr colspan="4" width=100%><th>Index.</th><th>Family</th><th>Index.</th><th>Family</th></tr>
 
-    {% for rxn1, rxn2 in commonReactions.iteritems() %}
+    {% for rxn1, rxn2 in commonReactions %}
 
 <tr>
 <td width=100% colspan="4"><hr>

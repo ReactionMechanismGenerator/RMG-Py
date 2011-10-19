@@ -82,28 +82,72 @@ def compareModelKinetics(model1, model2):
         
     pylab.show()
 
-def compareModelReactions(model1, model2):
+def compareModelSpecies(model1, model2):
     """
     This function compares two RMG models and returns a list of common reactions
     as a dictionary, as well as a list of unique reactions for each model.
     """
 
-    commonReactions = {}
-    for rxn1 in model1.reactions:
-        for rxn2 in model2.reactions:
-            if rxn1.isIsomorphic(rxn2):
-                commonReactions[rxn1] = rxn2
-                # Remove reaction 2 from being chosen a second time.
-                # Let each reaction only appear only once in the diff comparison.
-                # Otherwise this miscounts number of reactions in model 2.
-                model2.reactions.remove(rxn2)
+    speciesList1 = model1.species[:]
+    speciesList2 = model2.species[:]
+    
+    commonSpecies = []; uniqueSpecies1 = []; uniqueSpecies2 = []
+    for spec1 in speciesList1:
+        for spec2 in speciesList2:
+            if spec1.isIsomorphic(spec2):
+                commonSpecies.append([spec1, spec2])
+                # Remove species 2 from being chosen a second time.
+                # Let each species only appear only once in the diff comparison.
+                # Otherwise this miscounts number of species in model 2.
+                speciesList2.remove(spec2)
                 break
-    uniqueReactions1 = [rxn for rxn in model1.reactions if rxn not in commonReactions.keys()]
-    uniqueReactions2 = model2.reactions
+    for spec1 in speciesList1:
+        for s1, s2 in commonSpecies:
+            if spec1 is s1:
+                break
+        else:
+            uniqueSpecies1.append(spec1)
+    for spec2 in speciesList2:
+        for s1, s2 in commonSpecies:
+            if spec2 is s2:
+                break
+        else:
+            uniqueSpecies2.append(spec2)
+
+    return commonSpecies, uniqueSpecies1, uniqueSpecies2
+
+def compareModelReactions(model1, model2):
+    """
+    This function compares two RMG models and returns a list of common reactions
+    as a dictionary, as well as a list of unique reactions for each model.
+    """
+    reactionList1 = model1.reactions[:]
+    reactionList2 = model2.reactions[:]
+    
+    commonReactions = []; uniqueReactions1 = []; uniqueReactions2 = []
+    for rxn1 in reactionList1:
+        for rxn2 in reactionList2:
+            if rxn1.isIsomorphic(rxn2):
+                commonReactions.append([rxn1, rxn2])
+                # Remove species 2 from being chosen a second time.
+                # Let each species only appear only once in the diff comparison.
+                # Otherwise this miscounts number of species in model 2.
+                reactionList2.remove(rxn2)
+                break
+    for rxn1 in reactionList1:
+        for r1, r2 in commonReactions:
+            if rxn1 is r1:
+                break
+        else:
+            uniqueReactions1.append(rxn1)
+    for rxn2 in reactionList2:
+        for r1, r2 in commonReactions:
+            if rxn2 is r2:
+                break
+        else:
+            uniqueReactions2.append(rxn2)
 
     return commonReactions, uniqueReactions1, uniqueReactions2
-
-
 
 def saveCompareHTML(outputDir,chemkinPath1,speciesDictPath1,chemkinPath2,speciesDictPath2):
     """
@@ -160,4 +204,70 @@ if __name__ == '__main__':
     model2 = ReactionModel()
     model2.species, model2.reactions = loadChemkinFile(chemkin2, speciesDict2)
     
-    compareModelKinetics(model1, model2)
+    commonSpecies, uniqueSpecies1, uniqueSpecies2 = compareModelSpecies(model1, model2)
+    commonReactions, uniqueReactions1, uniqueReactions2 = compareModelReactions(model1, model2)
+
+    print '{0:d} species were found in both models:'.format(len(commonSpecies))
+    for spec1, spec2 in commonSpecies:
+        print '    {0!s}'.format(spec1)
+        if spec1.thermo and spec2.thermo:
+            spec1.molecule[0].calculateSymmetryNumber()
+            print '        {0:7.2f} {1:7.2f} {2:7.2f} {3:7.2f} {4:7.2f} {5:7.2f} {6:7.2f} {7:7.2f} {8:7.2f}'.format( 
+                spec1.thermo.getEnthalpy(298) / 4184.,
+                spec1.thermo.getEntropy(298) / 4.184,
+                spec1.thermo.getHeatCapacity(300) / 4.184,
+                spec1.thermo.getHeatCapacity(400) / 4.184,
+                spec1.thermo.getHeatCapacity(500) / 4.184,
+                spec1.thermo.getHeatCapacity(600) / 4.184,
+                spec1.thermo.getHeatCapacity(800) / 4.184,
+                spec1.thermo.getHeatCapacity(1000) / 4.184,
+                spec1.thermo.getHeatCapacity(1500) / 4.184,
+            )
+            print '        {0:7.2f} {1:7.2f} {2:7.2f} {3:7.2f} {4:7.2f} {5:7.2f} {6:7.2f} {7:7.2f} {8:7.2f}'.format( 
+                spec2.thermo.getEnthalpy(298) / 4184.,
+                spec2.thermo.getEntropy(298) / 4.184,
+                spec2.thermo.getHeatCapacity(300) / 4.184,
+                spec2.thermo.getHeatCapacity(400) / 4.184,
+                spec2.thermo.getHeatCapacity(500) / 4.184,
+                spec2.thermo.getHeatCapacity(600) / 4.184,
+                spec2.thermo.getHeatCapacity(800) / 4.184,
+                spec2.thermo.getHeatCapacity(1000) / 4.184,
+                spec2.thermo.getHeatCapacity(1500) / 4.184,
+            )
+    print '{0:d} species were only found in the first model:'.format(len(uniqueSpecies1))
+    for spec in uniqueSpecies1:
+        print '    {0!s}'.format(spec)
+    print '{0:d} species were only found in the second model:'.format(len(uniqueSpecies2))
+    for spec in uniqueSpecies2:
+        print '    {0!s}'.format(spec)
+
+    print '{0:d} reactions were found in both models:'.format(len(commonReactions))
+    for rxn1, rxn2 in commonReactions:
+        print '    {0!s}'.format(rxn1)
+        if rxn1.kinetics and rxn2.kinetics:
+            print '        {0:7.2f} {1:7.2f} {2:7.2f} {3:7.2f} {4:7.2f} {5:7.2f} {6:7.2f} {7:7.2f}'.format(
+                math.log10(rxn1.kinetics.getRateCoefficient(300, 1e5)),
+                math.log10(rxn1.kinetics.getRateCoefficient(400, 1e5)),
+                math.log10(rxn1.kinetics.getRateCoefficient(500, 1e5)),
+                math.log10(rxn1.kinetics.getRateCoefficient(600, 1e5)),
+                math.log10(rxn1.kinetics.getRateCoefficient(800, 1e5)),
+                math.log10(rxn1.kinetics.getRateCoefficient(1000, 1e5)),
+                math.log10(rxn1.kinetics.getRateCoefficient(1500, 1e5)),
+                math.log10(rxn1.kinetics.getRateCoefficient(2000, 1e5)),
+            )
+            print '        {0:7.2f} {1:7.2f} {2:7.2f} {3:7.2f} {4:7.2f} {5:7.2f} {6:7.2f} {7:7.2f}'.format(
+                math.log10(rxn2.kinetics.getRateCoefficient(300, 1e5)),
+                math.log10(rxn2.kinetics.getRateCoefficient(400, 1e5)),
+                math.log10(rxn2.kinetics.getRateCoefficient(500, 1e5)),
+                math.log10(rxn2.kinetics.getRateCoefficient(600, 1e5)),
+                math.log10(rxn2.kinetics.getRateCoefficient(800, 1e5)),
+                math.log10(rxn2.kinetics.getRateCoefficient(1000, 1e5)),
+                math.log10(rxn2.kinetics.getRateCoefficient(1500, 1e5)),
+                math.log10(rxn2.kinetics.getRateCoefficient(2000, 1e5)),
+            )
+    print '{0:d} reactions were only found in the first model:'.format(len(uniqueReactions1))
+    for rxn in uniqueReactions1:
+        print '    {0!s}'.format(rxn)
+    print '{0:d} reactions were only found in the second model:'.format(len(uniqueReactions2))
+    for rxn in uniqueReactions2:
+        print '    {0!s}'.format(rxn)
