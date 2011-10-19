@@ -1092,6 +1092,12 @@ class TestMoleculeSymmetry(unittest.TestCase):
                     symmetryNumber *= molecule.calculateBondSymmetryNumber(atom1, atom2)
         self.assertEqual(symmetryNumber, 2)
     
+    def testAxisSymmetryNumberEthylene(self):
+        """
+        Test the Molecule.calculateAxisSymmtryNumber() method.
+        """
+        self.assertEqual(Molecule().fromSMILES('C=C').calculateAxisSymmetryNumber(), 2)
+        
     def testAxisSymmetryNumberPropadiene(self):
         """
         Test the Molecule.calculateAxisSymmtryNumber() method.
@@ -1108,7 +1114,7 @@ class TestMoleculeSymmetry(unittest.TestCase):
         """
         Test the Molecule.calculateAxisSymmtryNumber() method.
         """
-        self.assertEqual(Molecule().fromSMILES('C=C=C=[CH]').calculateAxisSymmetryNumber(), 2)
+        self.assertEqual(Molecule().fromSMILES('C=C=C=[CH]').calculateAxisSymmetryNumber(), 1)
     
     def testAxisSymmetryNumberPropadienyl(self):
         """
@@ -1206,6 +1212,7 @@ class TestMoleculeSymmetry(unittest.TestCase):
         """
         Test the Molecule.calculateSymmtryNumber() method.
         """
+        self.assertEqual(Molecule().fromSMILES('O=O').calculateAxisSymmetryNumber(), 1)
         self.assertEqual(Molecule().fromSMILES('O=O').calculateSymmetryNumber(), 2)
         
     def testSymmetryNumberDicarbon(self):
@@ -1261,6 +1268,12 @@ class TestMoleculeSymmetry(unittest.TestCase):
         Test the Molecule.calculateSymmtryNumber() method.
         """
         self.assertEqual(Molecule().fromSMILES('C=C').calculateSymmetryNumber(), 4)
+    
+    def testSymmetryNumberEthenyl(self):
+        """
+        Test the Molecule.calculateSymmtryNumber() method.
+        """
+        self.assertEqual(Molecule().fromSMILES('C=[CH]').calculateSymmetryNumber(), 1)
     
     def testSymmetryNumberCyclic(self):
         """

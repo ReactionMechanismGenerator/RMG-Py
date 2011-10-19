@@ -49,7 +49,7 @@ class InputError(Exception): pass
 rmg = None
 speciesDict = {}
 
-def database(path, thermoLibraries=None, reactionLibraries=None, frequenciesLibraries=None, seedMechanisms=None, kineticsDepositories='default', kineticsEstimator='group additivity'):
+def database(path, thermoLibraries=None, reactionLibraries=None, frequenciesLibraries=None, seedMechanisms=None, kineticsFamilies='default', kineticsDepositories='default', kineticsEstimator='group additivity'):
     # This function just stores the information about the database to be loaded
     # We don't actually load the database until after we're finished reading
     # the input file
@@ -70,6 +70,13 @@ def database(path, thermoLibraries=None, reactionLibraries=None, frequenciesLibr
     else:
         assert isinstance(kineticsDepositories,list), "kineticsDepositories should be either 'default', 'all', or a list of names eg. ['training','PrIMe']."
         rmg.kineticsDepositories = kineticsDepositories
+    if kineticsFamilies == 'default':
+        pass
+    elif kineticsFamilies == 'all':
+        pass
+    else:
+        assert isinstance(kineticsFamilies,list), "kineticsFamilies should be either 'default', 'all', or a list of names eg. ['H_Abstraction','!Intra_Disproportionation']."
+        rmg.kineticsFamilies = kineticsFamilies
 
 def species(label, structure, reactive=True):
     logging.debug('Found {0} species "{1}" ({2})'.format('reactive' if reactive else 'nonreactive', label, structure.toSMILES()))

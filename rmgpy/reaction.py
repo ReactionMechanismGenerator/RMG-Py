@@ -561,22 +561,22 @@ class Reaction:
         for endothermic reactions, and is not negative only as a result 
         of using Evans Polanyi with an exothermic reaction.
         """
-        cython.declare(H=cython.double, Ea=cython.double)
-        #H = self.getEnthalpyOfReaction(298)
-        H = sum([spec.E0.value for spec in self.products]) - sum([spec.E0.value for spec in self.reactants])
+        cython.declare(H0=cython.double, H298=cython.double, Ea=cython.double)
+        H298 = self.getEnthalpyOfReaction(298)
+        H0 = sum([spec.E0.value for spec in self.products]) - sum([spec.E0.value for spec in self.reactants])
         if isinstance(self.kinetics, ArrheniusEP):
             Ea = self.kinetics.E0.value # temporarily using Ea to store the intrinsic barrier height E0
-            self.kinetics = self.kinetics.toArrhenius(H)
+            self.kinetics = self.kinetics.toArrhenius(H298)
             if Ea > 0 and self.kinetics.Ea.value < 0:
                 self.kinetics.comment += "Ea raised from {0:.1f} to 0 kJ/mol.".format(self.kinetics.Ea.value/1000)
                 logging.info("For reaction {1!s} Ea raised from {0:.1f} to 0 kJ/mol.".format(self.kinetics.Ea.value/1000, self))
                 self.kinetics.Ea.value = 0
         if isinstance(self.kinetics, Arrhenius):
             Ea = self.kinetics.Ea.value
-            if H > 0 and Ea < H:
-                self.kinetics.Ea.value = H
-                self.kinetics.comment += "Ea raised from {0:.1f} to {1:.1f} kJ/mol to match endothermicity of reaction.".format(Ea/1000,H/1000)
-                logging.info("For reaction {2!s}, Ea raised from {0:.1f} to {1:.1f} kJ/mol to match endothermicity of reaction.".format(Ea/1000, H/1000, self))
+            if H0 > 0 and Ea < H0:
+                self.kinetics.Ea.value = H0
+                self.kinetics.comment += "Ea raised from {0:.1f} to {1:.1f} kJ/mol to match endothermicity of reaction.".format(Ea/1000,H0/1000)
+                logging.info("For reaction {2!s}, Ea raised from {0:.1f} to {1:.1f} kJ/mol to match endothermicity of reaction.".format(Ea/1000, H0/1000, self))
 
     def generateReverseRateCoefficient(self):
         """

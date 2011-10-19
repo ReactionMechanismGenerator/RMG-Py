@@ -68,6 +68,7 @@ class RMG:
     `reactionLibraries`         The kinetics libraries to load
     `statmechLibraries`         The statistical mechanics libraries to load
     `seedMechanisms`            The seed mechanisms included in the model
+    `kineticsFamilies`          The kinetics families to use for reaction generation
     `kineticsDepositories`      The kinetics depositories to use for looking up kinetics in each family
     `kineticsEstimator`         The method to use to estimate kinetics: 'group additivity' or 'rate rules'
     --------------------------- ------------------------------------------------
@@ -115,6 +116,7 @@ class RMG:
         self.reactionLibraries = None
         self.statmechLibraries = None
         self.seedMechanisms = None
+        self.kineticsFamilies = None
         self.kineticsDepositories = None
         self.kineticsEstimator = 'group additivity'
         
@@ -175,10 +177,18 @@ class RMG:
             thermoLibraries = self.thermoLibraries,
             reactionLibraries = [library for library, option in self.reactionLibraries],
             seedMechanisms = self.seedMechanisms,
+            kineticsFamilies = self.kineticsFamilies,
             kineticsDepositories = self.kineticsDepositories,
             #frequenciesLibraries = self.statmechLibraries,
             depository = False, # Don't bother loading the depository information, as we don't use it
         )
+        if self.kineticsEstimator == 'rate rules':
+            logging.info('Adding rate rules from training set in kinetics families...')
+            for family in self.database.kinetics.families.values():
+                family.addKineticsRulesFromTrainingSet()
+            logging.info('Filling in rate rules in kinetics families by averaging...')
+            for family in self.database.kinetics.families.values():
+                family.fillKineticsRulesByAveragingUp()
     
     def initialize(self, args):
         """
@@ -414,8 +424,9 @@ class RMG:
                     logging.info('There is not enough time to complete the next iteration before the wall time is reached.')
                     logging.info('The output model may be incomplete.')
                     logging.info('')
-                    logging.info('The current model core has %s species and %s reactions' % (len(reactionModel.core.species), len(reactionModel.core.reactions)))
-                    logging.info('The current model edge has %s species and %s reactions' % (len(reactionModel.edge.species), len(reactionModel.edge.reactions)))
+                    coreSpec, coreReac, edgeSpec, edgeReac = self.reactionModel.getModelSize()
+                    logging.info('The current model core has %s species and %s reactions' % (coreSpec, coreReac))
+                    logging.info('The current model edge has %s species and %s reactions' % (edgeSpec, edgeReac))
                     return
     
         # Write output file

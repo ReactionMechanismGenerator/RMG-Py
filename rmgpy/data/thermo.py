@@ -356,12 +356,12 @@ class ThermoDatabase:
         """
         logging.info('Loading thermodynamics group database from {0}...'.format(path))
         self.groups = {}
-        self.groups['group']   = ThermoGroups().load(os.path.join(path, 'group.py' ), self.local_context, self.global_context)
-        self.groups['gauche']  = ThermoGroups().load(os.path.join(path, 'gauche.py' ), self.local_context, self.global_context)
-        self.groups['int15']   = ThermoGroups().load(os.path.join(path, 'int15.py'  ), self.local_context, self.global_context)
-        self.groups['ring']    = ThermoGroups().load(os.path.join(path, 'ring.py'   ), self.local_context, self.global_context)
-        self.groups['radical'] = ThermoGroups().load(os.path.join(path, 'radical.py'), self.local_context, self.global_context)
-        self.groups['other']   = ThermoGroups().load(os.path.join(path, 'other.py'  ), self.local_context, self.global_context)
+        self.groups['group']   =   ThermoGroups(label='group').load(os.path.join(path, 'group.py'  ), self.local_context, self.global_context)
+        self.groups['gauche']  =  ThermoGroups(label='gauche').load(os.path.join(path, 'gauche.py' ), self.local_context, self.global_context)
+        self.groups['int15']   =   ThermoGroups(label='int15').load(os.path.join(path, 'int15.py'  ), self.local_context, self.global_context)
+        self.groups['ring']    =    ThermoGroups(label='ring').load(os.path.join(path, 'ring.py'   ), self.local_context, self.global_context)
+        self.groups['radical'] = ThermoGroups(label='radical').load(os.path.join(path, 'radical.py'), self.local_context, self.global_context)
+        self.groups['other']   =   ThermoGroups(label='other').load(os.path.join(path, 'other.py'  ), self.local_context, self.global_context)
 
     def save(self, path):
         """
@@ -531,71 +531,108 @@ class ThermoDatabase:
             libstr = os.path.join(groupsPath, 'Other_Library.txt'),
         )
 
-    def getThermoData(self, molecule):
+    def getThermoData(self, species):
         """
-        Return the thermodynamic parameters for a given :class:`Molecule`
-        object `molecule`. This function first searches the loaded libraries
+        Return the thermodynamic parameters for a given :class:`Species`
+        object `species`. This function first searches the loaded libraries
         in order, returning the first match found, before falling back to
         estimation via group additivity.
         """
         thermoData = None
         # Check the libraries in order first; return the first successful match
         for label in self.libraryOrder:
-            thermoData = self.getThermoDataFromLibrary(molecule, self.libraries[label])
+            thermoData = self.getThermoDataFromLibrary(species, self.libraries[label])
             if thermoData is not None: break
         else:
             # Thermo not found in any loaded libraries, so estimate
-            thermoData = self.getThermoDataFromGroups(molecule)
+            thermoData = self.getThermoDataFromGroups(species)
         return thermoData[0]
 
-    def getAllThermoData(self, molecule):
+    def getAllThermoData(self, species):
         """
         Return all possible sets of thermodynamic parameters for a given
-        :class:`Molecule` object `molecule`. The hits from the depository come
+        :class:`Species` object `species`. The hits from the depository come
         first, then the libraries (in order), and then the group additivity
         estimate. This method is useful for a generic search job.
         """
         thermoData = []
         # Data from depository comes first
-        thermoData.extend(self.getThermoDataFromDepository(molecule))
+        thermoData.extend(self.getThermoDataFromDepository(species))
         # Data from libraries comes second
         for label in self.libraryOrder:
-            data = self.getThermoDataFromLibrary(molecule, self.libraries[label])
-            if data: thermoData.append(data)
+            data = self.getThermoDataFromLibrary(species, self.libraries[label])
+            if data: 
+                thermoData.append(data)
         # Last entry is always the estimate from group additivity
-        thermoData.append(self.getThermoDataFromGroups(molecule))
+        thermoData.append(self.getThermoDataFromGroups(species))
         return thermoData
 
-    def getThermoDataFromDepository(self, molecule):
+    def getThermoDataFromDepository(self, species):
         """
         Return all possible sets of thermodynamic parameters for a given
-        :class:`Molecule` object `molecule` from the depository. If no
+        :class:`Species` object `species` from the depository. If no
         depository is loaded, a :class:`DatabaseError` is raised.
         """
         items = []
         for label, entry in self.depository['stable'].entries.iteritems():
-            if molecule.isIsomorphic(entry.item):
-                items.append((deepcopy(entry.data), self.depository['stable'], entry))
+            for molecule in species.molecule:
+                if molecule.isIsomorphic(entry.item):
+                    items.append((deepcopy(entry.data), self.depository['stable'], entry))
+                    break
         for label, entry in self.depository['radical'].entries.iteritems():
-            if molecule.isIsomorphic(entry.item):
-                items.append((deepcopy(entry.data), self.depository['radical'], entry))
+            for molecule in species.molecule:
+                if molecule.isIsomorphic(entry.item):
+                    items.append((deepcopy(entry.data), self.depository['radical'], entry))
+                    break
         return items
 
-    def getThermoDataFromLibrary(self, molecule, library):
+    def getThermoDataFromLibrary(self, species, library):
         """
         Return the set of thermodynamic parameters corresponding to a given
-        :class:`Molecule` object `molecule` from the specified thermodynamics
+        :class:`Species` object `species` from the specified thermodynamics
         `library`. If `library` is a string, the list of libraries is searched
         for a library with that name. If no match is found in that library,
         ``None`` is returned. If no corresponding library is found, a
         :class:`DatabaseError` is raised.
         """
         for label, entry in library.entries.iteritems():
-            if molecule.isIsomorphic(entry.item) and entry.data is not None:
-                return (deepcopy(entry.data), library, entry)
+            for molecule in species.molecule:
+                if molecule.isIsomorphic(entry.item) and entry.data is not None:
+                    return (deepcopy(entry.data), library, entry)
         return None
 
-    def getThermoDataFromGroups(self, molecule):
+    def getThermoDataFromGroups(self, species):
+        """
+        Return the set of thermodynamic parameters corresponding to a given
+        :class:`Species` object `species` by estimation using the group
+        additivity values. If no group additivity values are loaded, a
+        :class:`DatabaseError` is raised.
+        """
+        # Ensure molecules are using explicit hydrogens
+        implicitH = [mol.implicitHydrogens for mol in species.molecule]
+        for molecule in species.molecule:
+            molecule.makeHydrogensExplicit()
+        
+        thermo = []
+        for molecule in species.molecule:
+            molecule.clearLabeledAtoms()
+            molecule.updateAtomTypes()
+            tdata = self.estimateThermoViaGroupAdditivity(molecule)
+            thermo.append(tdata)
+
+        H298 = numpy.array([t.getEnthalpy(298.) for t in thermo])
+        indices = H298.argsort()
+        
+        species.molecule = [species.molecule[ind] for ind in indices]
+        implicitH = [implicitH[ind] for ind in indices]
+        
+        # Restore implicit hydrogens if necessary
+        for implicit, molecule in zip(implicitH, species.molecule):
+            if implicit: molecule.makeHydrogensImplicit()
+        
+        return (thermo[indices[0]], None, None)
+        
+    def estimateThermoViaGroupAdditivity(self, molecule):
         """
         Return the set of thermodynamic parameters corresponding to a given
         :class:`Molecule` object `molecule` by estimation using the group
@@ -640,8 +677,10 @@ class ThermoDatabase:
             saturatedStruct.updateAtomTypes()
 
             # Get thermo estimate for saturated form of structure
-            thermoData = self.getThermoDataFromGroups(saturatedStruct)[0]
+            thermoData = self.estimateThermoViaGroupAdditivity(saturatedStruct)
             assert thermoData is not None, "Thermo data of saturated {0} of molecule {1} is None!".format(saturatedStruct, molecule)
+            # Undo symmetry number correction for saturated structure
+            thermoData.S298.value += constants.R * math.log(saturatedStruct.symmetryNumber)
 
             # For each radical site, get radical correction
             # Only one radical site should be considered at a time; all others
@@ -731,7 +770,7 @@ class ThermoDatabase:
 
         if implicitH: molecule.makeHydrogensImplicit()
 
-        return (thermoData, None, None)
+        return thermoData
 
     def __addThermoData(self, thermoData1, thermoData2):
         """
@@ -771,12 +810,15 @@ class ThermoDatabase:
         if node is None:
             raise InvalidDatabaseError('Unable to determine thermo parameters for {0}: no library entries for {1} or any of its ancestors.'.format(molecule, node0) )
 
-        data = node.data
+        data = node.data; comment = node.label
         while isinstance(data, str) and data is not None:
             for entry in database.entries.values():
                 if entry.label == data:
                     data = entry.data
+                    comment = entry.label
                     break
+        data = deepcopy(data)
+        data.comment = '{0}({1})'.format(database.label, comment)
 
         # This code prints the hierarchy of the found node; useful for debugging
         #result = ''
