@@ -653,7 +653,7 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
  </tr>
 
  <tr width=100%>
-     <td colspan="4" valign="top" width=50%><div align="center"><font color="red">IDENTICAL KINETICS WERE FOUND FOR THIS REACTION.</font></div>
+     <td colspan="4" valign="top" width=50%><div align="center"><font color="blue">IDENTICAL KINETICS WERE FOUND FOR THIS REACTION.</font></div>
      <P>{{ rxn1.kinetics.toHTML() }}</td>
 </tr>
 
