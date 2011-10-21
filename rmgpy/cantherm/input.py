@@ -150,6 +150,8 @@ def loadSpecies(label, geomLog, statesLog, extSymmetry, spinMultiplicity, freqSc
         geomLog = os.path.join(directory, geomLog)
         statesLog = os.path.join(directory, statesLog)
         if energyLog: energyLog = os.path.join(directory, energyLog)
+        for rotor in rotors:
+            rotor[0] = os.path.join(directory, rotor[0])
     E0, geom, states = loadConfiguration(energyLog, geomLog, statesLog, extSymmetry, spinMultiplicity, freqScaleFactor, linear, rotors, atoms, bonds, E0, TS=False)
     speciesDict[label] = Species(label=label, thermo=None, states=states, E0=(E0/1000.,"kJ/mol"))
     geometryDict[label] = geom
@@ -161,6 +163,8 @@ def loadTransitionState(label, geomLog, statesLog, extSymmetry, spinMultiplicity
         geomLog = os.path.join(directory, geomLog)
         statesLog = os.path.join(directory, statesLog)
         if energyLog: energyLog = os.path.join(directory, energyLog)
+        for rotor in rotors:
+            rotor[0] = os.path.join(directory, rotor[0])
     E0, geom, states = loadConfiguration(energyLog, geomLog, statesLog, extSymmetry, spinMultiplicity, freqScaleFactor, linear, rotors, atoms, bonds, E0, TS=True)
     log = GaussianLog(statesLog)
     frequency = log.loadNegativeFrequency()
