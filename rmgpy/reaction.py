@@ -936,7 +936,7 @@ class Reaction:
         # Also include '+' and reaction arrow in width
         cr.set_font_size(fontSizeNormal)
         plus_extents = cr.text_extents(' + ')
-        arrow_width = 48
+        arrow_width = 36
         rxn_width += (len(reactants)-1) * plus_extents[4] + arrow_width + (len(products)-1) * plus_extents[4]
         
         # Now make the surface for the reaction and render each molecule on it
@@ -958,7 +958,7 @@ class Reaction:
                 rxn_cr.set_font_size(fontSizeNormal)
                 rxn_y = (rxn_height - plus_extents[3]) / 2.0
                 rxn_cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
-                rxn_cr.move_to(rxn_x, rxn_height + plus_extents[1])
+                rxn_cr.move_to(rxn_x, rxn_y - plus_extents[1])
                 rxn_cr.show_text(' + ')
                 rxn_cr.restore()
                 rxn_x += plus_extents[4]
@@ -995,7 +995,7 @@ class Reaction:
                 rxn_cr.set_font_size(fontSizeNormal)
                 rxn_y = (rxn_height - plus_extents[3]) / 2.0
                 rxn_cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
-                rxn_cr.move_to(rxn_x, rxn_height + plus_extents[1])
+                rxn_cr.move_to(rxn_x, rxn_y - plus_extents[1])
                 rxn_cr.show_text(' + ')
                 rxn_cr.restore()
                 rxn_x += plus_extents[4]
