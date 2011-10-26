@@ -274,15 +274,11 @@ class RMG:
             
             # Add nonreactive species (e.g. bath gases) to core first
             # This is necessary so that the PDep algorithm can identify the bath gas
-            for spec in self.initialSpecies:
-                if not spec.reactive:
-                    self.reactionModel.enlarge(spec)
+            self.reactionModel.enlarge([spec for spec in self.initialSpecies if not spec.reactive])
             # Then add remaining reactive species
             for spec in self.initialSpecies:
                 spec.generateThermoData(self.database)
-            for spec in self.initialSpecies:
-                if spec.reactive:
-                    self.reactionModel.enlarge(spec)
+            self.reactionModel.enlarge([spec for spec in self.initialSpecies if spec.reactive])
             
             # Save a restart file if desired
             if self.saveRestartPeriod:
@@ -365,8 +361,7 @@ class RMG:
                 # These should be Species or Network objects
                 logging.info('')
                 objectsToEnlarge = list(set(objectsToEnlarge))
-                for object in objectsToEnlarge:
-                    self.reactionModel.enlarge(object)
+                self.reactionModel.enlarge(objectsToEnlarge)
 
             # If the user specifies it, add unused reaction library reactions to
             # an additional output species and reaction list which is written to the ouput HTML
