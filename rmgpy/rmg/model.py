@@ -625,57 +625,11 @@ class CoreEdgeReactionModel:
                 newEdgeReactions=self.edge.reactions[numOldEdgeReactions:]
             )
 
-        # PDepReaction objects generated from partial networks are irreversible
-        # However, it makes more sense to have reversible reactions in the core
-        # Thus we mark PDepReaction objects as reversible and remove the reverse
-        # direction from the list of core reactions
-        # Note that well-skipping reactions may not have a reverse if the well
-        # that they skip over is not itself in the core
-        index = 0
-        while index < len(self.core.reactions):
-            reaction = self.core.reactions[index]
-            if isinstance(reaction, PDepReaction):
-                for reaction2 in self.core.reactions[index+1:]:
-                    if isinstance(reaction2, PDepReaction) and reaction.reactants == reaction2.products and reaction.products == reaction2.reactants:
-                        # We've found the PDepReaction for the reverse direction
-                        kf = reaction.getRateCoefficient(1000,1e5)
-                        kr = reaction.getRateCoefficient(1000,1e5) / reaction.getEquilibriumConstant(1000)
-                        kf2 = reaction2.getRateCoefficient(1000,1e5) / reaction2.getEquilibriumConstant(1000)
-                        kr2 = reaction2.getRateCoefficient(1000,1e5)
-                        if kf / kf2 < 0.5 or kf / kf2 > 2.0:
-                            # Most pairs of reactions should satisfy thermodynamic consistency (or at least be "close")
-                            # Warn about the ones that aren't close (but don't abort)
-                            logging.warning('Forward and reverse PDepReactions for reaction {0!s} generated from networks {1:d} and {2:d} do not satisfy thermodynamic consistency.'.format(reaction, reaction.network.index, reaction2.network.index))
-                            logging.debug('{0!s}:'.format(reaction))
-                            logging.debug('{0:.2e} {1:.2e}:'.format(kf, kf2))
-                            logging.debug('{0!s}:'.format(reaction2))
-                            logging.debug('{0:.2e} {1:.2e}:'.format(kr, kr2))
-                        # Keep the one from the more explored network (as it's probably more accurate)
-                        keepFirst = True
-                        if len(reaction.network.explored) > len(reaction2.network.explored):
-                            keepFirst = True
-                        elif len(reaction.network.explored) < len(reaction2.network.explored):
-                            keepFirst = False
-                        # If that's not enough, keep the one that's faster (comparing in the same direction)
-                        elif kf > kf2:
-                            keepFirst = True
-                        else:
-                            keepFirst = False
-                        # Delete the PDepReaction that we aren't keeping
-                        if keepFirst:
-                            self.core.reactions.remove(reaction2)
-                            reaction.reversible = True
-                        else:
-                            self.core.reactions.remove(reaction)
-                            self.core.reactions.remove(reaction2)
-                            self.core.reactions.insert(index, reaction2)
-                            reaction2.reversible = True
-                        # There should be only one reverse, so we can stop searching once we've found it
-                        break
-                else:
-                    reaction.reversible = True
-            # Move to the next core reaction
-            index += 1
+        # Update unimolecular (pressure dependent) reaction networks
+        if self.pressureDependence:
+            # Recalculate k(T,P) values for modified networks
+            self.updateUnimolecularReactionNetworks(database)
+            logging.info('')
         
         logging.info('')
 
@@ -1283,6 +1237,31 @@ class CoreEdgeReactionModel:
         updated.
         """
 
+        # Merge networks if necessary
+        # Two partial networks having the same source and containing one or
+        # more explored isomers in common must be merged together to avoid
+        # double-counting of rates
+        for index0, network0 in enumerate(self.unirxnNetworks):
+            index = index0 + 1
+            while index < len(self.unirxnNetworks):
+                found = False
+                network = self.unirxnNetworks[index]
+                if network0.source == network.source:
+                    # The networks contain the same source, but do they contain any common included isomers (other than the source)?
+                    for isomer in network0.explored:
+                        if isomer != network.source and isomer in network.explored:
+                            # The networks contain an included isomer in common, so we need to merge them
+                            found = True
+                            break
+                if found:
+                    # The networks contain the same source and one or more common included isomers
+                    # Therefore they need to be merged together
+                    logging.info('Merging PDepNetwork #{0:d} and PDepNetwork #{1:d}'.format(network0.index, network.index))
+                    network0.merge(network)
+                    self.unirxnNetworks.remove(network)
+                else:
+                    index += 1
+
         count = sum([1 for network in self.unirxnNetworks if not network.valid and not (len(network.explored) == 0 and len(network.source) > 1)])
         logging.info('Updating {0:d} modified unimolecular reaction networks...'.format(count))
         
@@ -1290,6 +1269,58 @@ class CoreEdgeReactionModel:
         # self = reactionModel object
         for network in self.unirxnNetworks:
             network.update(self, database, self.pressureDependence)
+            
+        # PDepReaction objects generated from partial networks are irreversible
+        # However, it makes more sense to have reversible reactions in the core
+        # Thus we mark PDepReaction objects as reversible and remove the reverse
+        # direction from the list of core reactions
+        # Note that well-skipping reactions may not have a reverse if the well
+        # that they skip over is not itself in the core
+        index = 0
+        while index < len(self.core.reactions):
+            reaction = self.core.reactions[index]
+            if isinstance(reaction, PDepReaction):
+                for reaction2 in self.core.reactions[index+1:]:
+                    if isinstance(reaction2, PDepReaction) and reaction.reactants == reaction2.products and reaction.products == reaction2.reactants:
+                        # We've found the PDepReaction for the reverse direction
+                        kf = reaction.getRateCoefficient(1000,1e5)
+                        kr = reaction.getRateCoefficient(1000,1e5) / reaction.getEquilibriumConstant(1000)
+                        kf2 = reaction2.getRateCoefficient(1000,1e5) / reaction2.getEquilibriumConstant(1000)
+                        kr2 = reaction2.getRateCoefficient(1000,1e5)
+                        if kf / kf2 < 0.5 or kf / kf2 > 2.0:
+                            # Most pairs of reactions should satisfy thermodynamic consistency (or at least be "close")
+                            # Warn about the ones that aren't close (but don't abort)
+                            logging.warning('Forward and reverse PDepReactions for reaction {0!s} generated from networks {1:d} and {2:d} do not satisfy thermodynamic consistency.'.format(reaction, reaction.network.index, reaction2.network.index))
+                            logging.debug('{0!s}:'.format(reaction))
+                            logging.debug('{0:.2e} {1:.2e}:'.format(kf, kf2))
+                            logging.debug('{0!s}:'.format(reaction2))
+                            logging.debug('{0:.2e} {1:.2e}:'.format(kr, kr2))
+                        # Keep the one from the more explored network (as it's probably more accurate)
+                        keepFirst = True
+                        if len(reaction.network.explored) > len(reaction2.network.explored):
+                            keepFirst = True
+                        elif len(reaction.network.explored) < len(reaction2.network.explored):
+                            keepFirst = False
+                        # If that's not enough, keep the one that's faster (comparing in the same direction)
+                        elif kf > kf2:
+                            keepFirst = True
+                        else:
+                            keepFirst = False
+                        # Delete the PDepReaction that we aren't keeping
+                        if keepFirst:
+                            self.core.reactions.remove(reaction2)
+                            reaction.reversible = True
+                        else:
+                            self.core.reactions.remove(reaction)
+                            self.core.reactions.remove(reaction2)
+                            self.core.reactions.insert(index, reaction2)
+                            reaction2.reversible = True
+                        # There should be only one reverse, so we can stop searching once we've found it
+                        break
+                else:
+                    reaction.reversible = True
+            # Move to the next core reaction
+            index += 1
 
     def loadSeedMechanism(self, path):
         """
