@@ -507,24 +507,25 @@ class CoreEdgeReactionModel:
         if not isinstance(newObject, list):
             newObject = [newObject]
         
+        numOldCoreSpecies = len(self.core.species)
+        numOldCoreReactions = len(self.core.reactions)
+        numOldEdgeSpecies = len(self.edge.species)
+        numOldEdgeReactions = len(self.edge.reactions)
+        reactionsMovedFromEdge = []
+        newReactionList = []; newSpeciesList = []
+            
         for obj in newObject:
             
             self.newReactionList = []; self.newSpeciesList = []
             newReactions = []
-            reactionsMovedFromEdge = []
-    
-            numOldCoreSpecies = len(self.core.species)
-            numOldCoreReactions = len(self.core.reactions)
-            numOldEdgeSpecies = len(self.edge.species)
-            numOldEdgeReactions = len(self.edge.reactions)
-    
             pdepNetwork = None
-
+            objectWasInEdge = False
         
             if isinstance(obj, Species):
 
                 newSpecies = obj
-    
+                objectWasInEdge = newSpecies in self.edge.species
+                
                 if not newSpecies.reactive:
                     logging.info('NOT generating reactions for unreactive species {0}'.format(newSpecies))
                 else:
@@ -575,62 +576,64 @@ class CoreEdgeReactionModel:
                             break
                     else:
                         index += 1
-        
-            # Generate thermodynamics of new species
-            logging.info('Generating thermodynamics for new species...')
-            for spec in self.newSpeciesList:
-                spec.generateThermoData(database)
             
-            # Generate kinetics of new reactions
-            logging.info('Generating kinetics for new reactions...')
-            for reaction in self.newReactionList:
-                # If the reaction already has kinetics (e.g. from a library),
-                # assume the kinetics are satisfactory
-                if reaction.kinetics is None:
-                    # Set the reaction kinetics
-                    kinetics, source, entry, isForward = self.generateKinetics(reaction)
-                    reaction.kinetics = kinetics
-                    # Flip the reaction direction if the kinetics are defined in the reverse direction
-                    if not isForward:
-                        reaction.reactants, reaction.products = reaction.products, reaction.reactants
-                        reaction.pairs = reaction.reverse.pairs
-                    if reaction.family.ownReverse and hasattr(reaction,'reverse'):
-                        if not isForward:
-                            reaction.template = reaction.reverse.template
-                        # We're done with the "reverse" attribute, so delete it to save a bit of memory
-                        delattr(reaction,'reverse')
-                        
-            # For new reactions, convert ArrheniusEP to Arrhenius, and fix barrier heights.
-            # self.newReactionList only contains *actually* new reactions, all in the forward direction.
-            for reaction in self.newReactionList:
-                # convert KineticsData to Arrhenius forms
-                if isinstance(reaction.kinetics, KineticsData):
-                    reaction.kinetics = reaction.kinetics.toArrhenius()
-                #  correct barrier heights of estimated kinetics
-                if isinstance(reaction,TemplateReaction) or isinstance(reaction,DepositoryReaction): # i.e. not LibraryReaction
-                    reaction.fixBarrierHeight() # also converts ArrheniusEP to Arrhenius.
-            
-            
-            if isinstance(obj, Species):
+            if isinstance(obj, Species) and objectWasInEdge:
                 # moved one species from edge to core
                 numOldEdgeSpecies -= 1
                 # moved these reactions from edge to core
                 numOldEdgeReactions -= len(reactionsMovedFromEdge)
             
-            self.printEnlargeSummary(
-                newCoreSpecies=self.core.species[numOldCoreSpecies:],
-                newCoreReactions=self.core.reactions[numOldCoreReactions:],
-                reactionsMovedFromEdge=reactionsMovedFromEdge,
-                newEdgeSpecies=self.edge.species[numOldEdgeSpecies:],
-                newEdgeReactions=self.edge.reactions[numOldEdgeReactions:]
-            )
-
+            newSpeciesList.extend(self.newSpeciesList)
+            newReactionList.extend(self.newReactionList)
+            
+        # Generate thermodynamics of new species
+        logging.info('Generating thermodynamics for new species...')
+        for spec in newSpeciesList:
+            spec.generateThermoData(database)
+        
+        # Generate kinetics of new reactions
+        logging.info('Generating kinetics for new reactions...')
+        for reaction in newReactionList:
+            # If the reaction already has kinetics (e.g. from a library),
+            # assume the kinetics are satisfactory
+            if reaction.kinetics is None:
+                # Set the reaction kinetics
+                kinetics, source, entry, isForward = self.generateKinetics(reaction)
+                reaction.kinetics = kinetics
+                # Flip the reaction direction if the kinetics are defined in the reverse direction
+                if not isForward:
+                    reaction.reactants, reaction.products = reaction.products, reaction.reactants
+                    reaction.pairs = reaction.reverse.pairs
+                if reaction.family.ownReverse and hasattr(reaction,'reverse'):
+                    if not isForward:
+                        reaction.template = reaction.reverse.template
+                    # We're done with the "reverse" attribute, so delete it to save a bit of memory
+                    delattr(reaction,'reverse')
+                    
+        # For new reactions, convert ArrheniusEP to Arrhenius, and fix barrier heights.
+        # self.newReactionList only contains *actually* new reactions, all in the forward direction.
+        for reaction in newReactionList:
+            # convert KineticsData to Arrhenius forms
+            if isinstance(reaction.kinetics, KineticsData):
+                reaction.kinetics = reaction.kinetics.toArrhenius()
+            #  correct barrier heights of estimated kinetics
+            if isinstance(reaction,TemplateReaction) or isinstance(reaction,DepositoryReaction): # i.e. not LibraryReaction
+                reaction.fixBarrierHeight() # also converts ArrheniusEP to Arrhenius.
+            
         # Update unimolecular (pressure dependent) reaction networks
         if self.pressureDependence:
             # Recalculate k(T,P) values for modified networks
             self.updateUnimolecularReactionNetworks(database)
             logging.info('')
         
+        self.printEnlargeSummary(
+            newCoreSpecies=self.core.species[numOldCoreSpecies:],
+            newCoreReactions=self.core.reactions[numOldCoreReactions:],
+            reactionsMovedFromEdge=reactionsMovedFromEdge,
+            newEdgeSpecies=self.edge.species[numOldEdgeSpecies:],
+            newEdgeReactions=self.edge.reactions[numOldEdgeReactions:]
+        )
+
         logging.info('')
 
     def processNewReactions(self, newReactions, newSpecies, pdepNetwork=None):
@@ -783,9 +786,13 @@ class CoreEdgeReactionModel:
         if reactionsMovedFromEdge:
             logging.info('Moved {0:d} reactions from edge to core'.format(len(reactionsMovedFromEdge)))
             for rxn in reactionsMovedFromEdge:
-                logging.info('    {0}'.format(rxn))
-                newCoreReactions.remove(rxn)
-
+                for r in newCoreReactions:
+                    if ((r.reactants == rxn.reactants and r.products == rxn.products) or
+                        (r.products == rxn.reactants and r.reactants == rxn.products)):
+                        logging.info('    {0}'.format(r))
+                        newCoreReactions.remove(r)
+                        break
+                    
         logging.info('Added {0:d} new core reactions'.format(len(newCoreReactions)))
         for rxn in newCoreReactions:
             logging.info('    {0}'.format(rxn))
