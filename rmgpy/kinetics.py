@@ -210,6 +210,36 @@ class KineticsModel:
         string += "<span class='KineticsData_repr'>{0!r}</span>".format(self)
         return string
 
+    def isSimilarTo(self,otherKinetics):
+        """
+        Returns ``True`` if rates of reaction at temperatures 500,1000,1500,2000 K
+        and 1 and 10 bar are within +/ .3 for log(k), in other words, within a factor of 2.
+        """
+        cython.declare(T=cython.double)
+        cython.declare(Tdata=list)
+        Tdata = [500,1000,1500,2000]
+
+        if self.isPressureDependent() and otherKinetics.isPressureDependent():
+            for T in Tdata:
+                if (abs(math.log10(self.getRateCoefficient(T,P=1e5))-math.log10(otherKinetics.getRateCoefficient(T,P=1e5))) <= .5
+                and abs(math.log10(self.getRateCoefficient(T,P=1e6))-math.log10(otherKinetics.getRateCoefficient(T,P=1e6))) <= .5):
+                    pass
+                else:
+                    return False
+            return True
+
+        elif not self.isPressureDependent() and not otherKinetics.isPressureDependent():
+            for T in Tdata:
+                if abs(math.log10(self.getRateCoefficient(T,P=1e5))-math.log10(otherKinetics.getRateCoefficient(T,P=1e5))) <= .5:
+                    pass
+                else:
+                    return False
+            return True
+
+        else:
+            return False
+
+
     def isIdenticalTo(self,otherKinetics):
         """
         Returns ``True`` if Tmin, Tmax, Pmin, Pmax for both objects match.
