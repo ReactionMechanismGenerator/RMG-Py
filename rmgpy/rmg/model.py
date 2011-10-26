@@ -504,148 +504,126 @@ class CoreEdgeReactionModel:
         """
         database = rmgpy.data.rmg.database
         
-        self.newReactionList = []; self.newSpeciesList = []
-        newReactions = []
-        reactionsMovedFromEdge = []
+        if not isinstance(newObject, list):
+            newObject = [newObject]
+        
+        for obj in newObject:
+            
+            self.newReactionList = []; self.newSpeciesList = []
+            newReactions = []
+            reactionsMovedFromEdge = []
+    
+            numOldCoreSpecies = len(self.core.species)
+            numOldCoreReactions = len(self.core.reactions)
+            numOldEdgeSpecies = len(self.edge.species)
+            numOldEdgeReactions = len(self.edge.reactions)
+    
+            pdepNetwork = None
 
-        numOldCoreSpecies = len(self.core.species)
-        numOldCoreReactions = len(self.core.reactions)
-        numOldEdgeSpecies = len(self.edge.species)
-        numOldEdgeReactions = len(self.edge.reactions)
+        
+            if isinstance(obj, Species):
 
-        pdepNetwork = None
-
-        if isinstance(newObject, Species):
-
-            newSpecies = newObject
-
-            if not newSpecies.reactive:
-                logging.info('NOT generating reactions for unreactive species {0}'.format(newSpecies))
-            else:
-                logging.info('Adding species {0} to model core'.format(newSpecies))
-                # Find reactions involving the new species as unimolecular reactant
-                # or product (e.g. A <---> products)
-                newReactions.extend(self.react(database, newSpecies))
-                # Find reactions involving the new species as bimolecular reactants
-                # or products with other core species (e.g. A + B <---> products)
-                for coreSpecies in self.core.species:
-                    if coreSpecies.reactive:
-                        newReactions.extend(self.react(database, newSpecies, coreSpecies))
-                # Find reactions involving the new species as bimolecular reactants
-                # or products with itself (e.g. A + A <---> products)
-                newReactions.extend(self.react(database, newSpecies, newSpecies))
-
-            # Add new species
-            reactionsMovedFromEdge = self.addSpeciesToCore(newSpecies)
-
-            # Process the new reactions
-            self.processNewReactions(newReactions, newSpecies, pdepNetwork)
-
-        elif isinstance(newObject, tuple) and isinstance(newObject[0], PDepNetwork) and self.pressureDependence:
-
-            pdepNetwork, newSpecies = newObject
-            newReactions.extend(pdepNetwork.exploreIsomer(newSpecies, self, database))
-            self.processNewReactions(newReactions, newSpecies, pdepNetwork)
-
-        else:
-            raise TypeError('Unable to use object {0} to enlarge reaction model; expecting an object of class rmg.model.Species or rmg.model.PDepNetwork.'.format(newObject))
-
-        # If there are any core species among the unimolecular product channels
-        # of any existing network, they need to be made included
-        for network in self.unirxnNetworks:
-            network.updateConfigurations(self)
-            index = 0
-            while index < len(self.core.species):
-                species = self.core.species[index]
-                for products in network.products:
-                    if len(products) == 1 and products[0] == species:
-                        newReactions = network.exploreIsomer(species, self, database)
-                        self.processNewReactions(newReactions, species, network)
-                        network.updateConfigurations(self)
-                        index = 0
-                        break
+                newSpecies = obj
+    
+                if not newSpecies.reactive:
+                    logging.info('NOT generating reactions for unreactive species {0}'.format(newSpecies))
                 else:
-                    index += 1
-        
-        # Generate thermodynamics of new species
-        logging.info('Generating thermodynamics for new species...')
-        for spec in self.newSpeciesList:
-            spec.generateThermoData(database)
-        
-        # Generate kinetics of new reactions
-        logging.info('Generating kinetics for new reactions...')
-        for reaction in self.newReactionList:
-            # If the reaction already has kinetics (e.g. from a library),
-            # assume the kinetics are satisfactory
-            if reaction.kinetics is None:
-                # Set the reaction kinetics
-                kinetics, source, entry, isForward = self.generateKinetics(reaction)
-                reaction.kinetics = kinetics
-                # Flip the reaction direction if the kinetics are defined in the reverse direction
-                if not isForward:
-                    reaction.reactants, reaction.products = reaction.products, reaction.reactants
-                    reaction.pairs = reaction.reverse.pairs
-                if reaction.family.ownReverse and hasattr(reaction,'reverse'):
-                    if not isForward:
-                        reaction.template = reaction.reverse.template
-                    # We're done with the "reverse" attribute, so delete it to save a bit of memory
-                    delattr(reaction,'reverse')
-                    
-        # For new reactions, convert ArrheniusEP to Arrhenius, and fix barrier heights.
-        # self.newReactionList only contains *actually* new reactions, all in the forward direction.
-        for reaction in self.newReactionList:
-            # convert KineticsData to Arrhenius forms
-            if isinstance(reaction.kinetics, KineticsData):
-                reaction.kinetics = reaction.kinetics.toArrhenius()
-            #  correct barrier heights of estimated kinetics
-            if isinstance(reaction,TemplateReaction) or isinstance(reaction,DepositoryReaction): # i.e. not LibraryReaction
-                reaction.fixBarrierHeight() # also converts ArrheniusEP to Arrhenius.
-        
-        
-        # Update unimolecular (pressure dependent) reaction networks
-        if self.pressureDependence:
-            # Merge networks if necessary
-            # Two partial networks having the same source and containing one or
-            # more explored isomers in common must be merged together to avoid
-            # double-counting of rates
-            for index0, network0 in enumerate(self.unirxnNetworks):
-                index = index0 + 1
-                while index < len(self.unirxnNetworks):
-                    found = False
-                    network = self.unirxnNetworks[index]
-                    if network0.source == network.source:
-                        # The networks contain the same source, but do they contain any common included isomers (other than the source)?
-                        for isomer in network0.explored:
-                            if isomer != network.source and isomer in network.explored:
-                                # The networks contain an included isomer in common, so we need to merge them
-                                found = True
-                                break
-                    if found:
-                        # The networks contain the same source and one or more common included isomers
-                        # Therefore they need to be merged together
-                        logging.info('Merging PDepNetwork #{0:d} and PDepNetwork #{1:d}'.format(network0.index, network.index))
-                        network0.merge(network)
-                        self.unirxnNetworks.remove(network)
+                    logging.info('Adding species {0} to model core'.format(newSpecies))
+                    # Find reactions involving the new species as unimolecular reactant
+                    # or product (e.g. A <---> products)
+                    newReactions.extend(self.react(database, newSpecies))
+                    # Find reactions involving the new species as bimolecular reactants
+                    # or products with other core species (e.g. A + B <---> products)
+                    for coreSpecies in self.core.species:
+                        if coreSpecies.reactive:
+                            newReactions.extend(self.react(database, newSpecies, coreSpecies))
+                    # Find reactions involving the new species as bimolecular reactants
+                    # or products with itself (e.g. A + A <---> products)
+                    newReactions.extend(self.react(database, newSpecies, newSpecies))
+    
+                # Add new species
+                reactionsMovedFromEdge = self.addSpeciesToCore(newSpecies)
+    
+                # Process the new reactions
+                self.processNewReactions(newReactions, newSpecies, pdepNetwork)
+    
+            elif isinstance(obj, tuple) and isinstance(obj[0], PDepNetwork) and self.pressureDependence:
+    
+                pdepNetwork, newSpecies = obj
+                newReactions.extend(pdepNetwork.exploreIsomer(newSpecies, self, database))
+                self.processNewReactions(newReactions, newSpecies, pdepNetwork)
+    
+            else:
+                raise TypeError('Unable to use object {0} to enlarge reaction model; expecting an object of class rmg.model.Species or rmg.model.PDepNetwork.'.format(obj))
+
+            # If there are any core species among the unimolecular product channels
+            # of any existing network, they need to be made included
+            for network in self.unirxnNetworks:
+                network.updateConfigurations(self)
+                index = 0
+                while index < len(self.core.species):
+                    species = self.core.species[index]
+                    if species in network.isomers and species not in network.explored:
+                        network.explored.append(species)
+                        continue
+                    for products in network.products:
+                        if len(products) == 1 and products[0] == species:
+                            newReactions = network.exploreIsomer(species, self, database)
+                            self.processNewReactions(newReactions, species, network)
+                            network.updateConfigurations(self)
+                            index = 0
+                            break
                     else:
                         index += 1
-
-            # Recalculate k(T,P) values for modified networks
-            self.updateUnimolecularReactionNetworks(database)
-            logging.info('')
-
-        # Print summary of enlargement
-        if isinstance(newObject, Species):
-            # moved one species from edge to core
-            numOldEdgeSpecies -= 1
-            # moved these reactions from edge to core
-            numOldEdgeReactions -= len(reactionsMovedFromEdge)
-        self.printEnlargeSummary(
-            newCoreSpecies=self.core.species[numOldCoreSpecies:],
-            newCoreReactions=self.core.reactions[numOldCoreReactions:],
-            reactionsMovedFromEdge=reactionsMovedFromEdge,
-            newEdgeSpecies=self.edge.species[numOldEdgeSpecies:],
-            newEdgeReactions=self.edge.reactions[numOldEdgeReactions:]
-        )
+        
+            # Generate thermodynamics of new species
+            logging.info('Generating thermodynamics for new species...')
+            for spec in self.newSpeciesList:
+                spec.generateThermoData(database)
+            
+            # Generate kinetics of new reactions
+            logging.info('Generating kinetics for new reactions...')
+            for reaction in self.newReactionList:
+                # If the reaction already has kinetics (e.g. from a library),
+                # assume the kinetics are satisfactory
+                if reaction.kinetics is None:
+                    # Set the reaction kinetics
+                    kinetics, source, entry, isForward = self.generateKinetics(reaction)
+                    reaction.kinetics = kinetics
+                    # Flip the reaction direction if the kinetics are defined in the reverse direction
+                    if not isForward:
+                        reaction.reactants, reaction.products = reaction.products, reaction.reactants
+                        reaction.pairs = reaction.reverse.pairs
+                    if reaction.family.ownReverse and hasattr(reaction,'reverse'):
+                        if not isForward:
+                            reaction.template = reaction.reverse.template
+                        # We're done with the "reverse" attribute, so delete it to save a bit of memory
+                        delattr(reaction,'reverse')
+                        
+            # For new reactions, convert ArrheniusEP to Arrhenius, and fix barrier heights.
+            # self.newReactionList only contains *actually* new reactions, all in the forward direction.
+            for reaction in self.newReactionList:
+                # convert KineticsData to Arrhenius forms
+                if isinstance(reaction.kinetics, KineticsData):
+                    reaction.kinetics = reaction.kinetics.toArrhenius()
+                #  correct barrier heights of estimated kinetics
+                if isinstance(reaction,TemplateReaction) or isinstance(reaction,DepositoryReaction): # i.e. not LibraryReaction
+                    reaction.fixBarrierHeight() # also converts ArrheniusEP to Arrhenius.
+            
+            
+            if isinstance(obj, Species):
+                # moved one species from edge to core
+                numOldEdgeSpecies -= 1
+                # moved these reactions from edge to core
+                numOldEdgeReactions -= len(reactionsMovedFromEdge)
+            
+            self.printEnlargeSummary(
+                newCoreSpecies=self.core.species[numOldCoreSpecies:],
+                newCoreReactions=self.core.reactions[numOldCoreReactions:],
+                reactionsMovedFromEdge=reactionsMovedFromEdge,
+                newEdgeSpecies=self.edge.species[numOldEdgeSpecies:],
+                newEdgeReactions=self.edge.reactions[numOldEdgeReactions:]
+            )
 
         # PDepReaction objects generated from partial networks are irreversible
         # However, it makes more sense to have reversible reactions in the core
@@ -1084,11 +1062,9 @@ class CoreEdgeReactionModel:
         corresponding species and reaction lists.
         """
         coreSpeciesCount = len(self.core.species)
-        coreReactionsCount = len([rxn for rxn in self.core.reactions if not isinstance(rxn, PDepReaction)])
-        coreReactionsCount += len([rxn for rxn in self.core.reactions if isinstance(rxn, PDepReaction)]) / 2
+        coreReactionsCount = len(self.core.reactions)
         edgeSpeciesCount = len(self.edge.species)
-        edgeReactionsCount = len([rxn for rxn in self.edge.reactions if not isinstance(rxn, PDepReaction)])
-        edgeReactionsCount += len([rxn for rxn in self.edge.reactions if isinstance(rxn, PDepReaction)]) / 2
+        edgeReactionsCount = len(self.edge.reactions)
         return (coreSpeciesCount, coreReactionsCount, edgeSpeciesCount, edgeReactionsCount)
 
     def getLists(self):
