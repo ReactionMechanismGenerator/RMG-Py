@@ -121,9 +121,7 @@ if __name__ == '__main__':
     rmg.initialize(args)
     
     # Show all core and edge species and reactions in the output
-    rmg.reactionModel.outputSpeciesList = rmg.reactionModel.core.species[:]
     rmg.reactionModel.outputSpeciesList.extend(rmg.reactionModel.edge.species)
-    rmg.reactionModel.outputReactionList = rmg.reactionModel.core.reactions[:]
     rmg.reactionModel.outputReactionList.extend(rmg.reactionModel.edge.reactions)
             
     # Save the current state of the model core to a pretty HTML file
