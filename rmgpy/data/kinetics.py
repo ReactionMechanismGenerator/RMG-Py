@@ -2380,9 +2380,9 @@ class KineticsFamily(Database):
         for reaction in reactionList:
             moleculeDict = {}
             for molecule in reaction.reactants:
-                moleculeDict[molecule] = Species(label=molecule.toSMILES(), molecule=[molecule])
+                moleculeDict[molecule] = Species(molecule=[molecule])
             for molecule in reaction.products:
-                moleculeDict[molecule] = Species(label=molecule.toSMILES(), molecule=[molecule])
+                moleculeDict[molecule] = Species(molecule=[molecule])
             reaction.reactants = [moleculeDict[molecule] for molecule in reaction.reactants]
             reaction.products = [moleculeDict[molecule] for molecule in reaction.products]
             reaction.pairs = [(moleculeDict[reactant],moleculeDict[product]) for reactant, product in reaction.pairs]
@@ -3179,13 +3179,13 @@ class KineticsDatabase:
             reaction = Reaction(reactants=[], products=[])
             for molecule in entry.item.reactants:
                 molecule.makeHydrogensExplicit()
-                reactant = Species(molecule=[molecule], label=molecule.toSMILES())
+                reactant = Species(molecule=[molecule])
                 reactant.generateResonanceIsomers()
                 reactant.thermo = generateThermoData(reactant, thermoDatabase)
                 reaction.reactants.append(reactant)
             for molecule in entry.item.products:
                 molecule.makeHydrogensExplicit()
-                product = Species(molecule=[molecule], label=molecule.toSMILES())
+                product = Species(molecule=[molecule])
                 product.generateResonanceIsomers()
                 product.thermo = generateThermoData(product, thermoDatabase)
                 reaction.products.append(product)
