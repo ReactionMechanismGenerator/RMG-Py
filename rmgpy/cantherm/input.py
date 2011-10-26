@@ -29,8 +29,11 @@
 
 import os.path
 import logging
+import math
 import numpy
-
+import matplotlib
+matplotlib.rc('mathtext', default='regular')
+            
 from rmgpy.quantity import constants
 from rmgpy.statmech import HinderedRotor, HarmonicOscillator
 from rmgpy.species import Species, TransitionState
@@ -111,21 +114,51 @@ def loadConfiguration(energyLog, geomLog, statesLog, extSymmetry, spinMultiplici
         logging.debug('    Fitting %i hindered rotors...' % len(rotors))
         for scanLog, pivots, top, symmetry in rotors:
             log = GaussianLog(scanLog)
-            fourier = log.fitFourierSeriesPotential()
+            
+            Vlist, angle = log.loadScanEnergies()
+            
             inertia = geom.getInternalReducedMomentOfInertia(pivots, top)
-            rotor = HinderedRotor(inertia=(inertia*constants.Na*1e23,"amu*angstrom^2"), symmetry=symmetry, fourier=(fourier,"J/mol"))
+            
+            barr, symm = log.fitCosinePotential()
+            cosineRotor = HinderedRotor(inertia=(inertia*constants.Na*1e23,"amu*angstrom^2"), symmetry=symm, barrier=(barr/4184.,"kcal/mol"))
+            fourier = log.fitFourierSeriesPotential()
+            fourierRotor = HinderedRotor(inertia=(inertia*constants.Na*1e23,"amu*angstrom^2"), symmetry=symmetry, fourier=(fourier,"J/mol"))
+                
+            Vlist_cosine = cosineRotor.getPotential(angle)
+            Vlist_fourier = fourierRotor.getPotential(angle)
+            
+            rms_cosine = numpy.sqrt(numpy.sum((Vlist_cosine - Vlist) * (Vlist_cosine - Vlist)) / (len(Vlist) - 1)) / 4184.
+            rms_fourier = numpy.sqrt(numpy.sum((Vlist_fourier - Vlist) * (Vlist_fourier - Vlist))/ (len(Vlist) - 1)) / 4184.
+            print rms_cosine, rms_fourier, symm, symmetry
+            
+            # Keep the rotor with the most accurate potential
+            rotor = cosineRotor if rms_cosine < rms_fourier else fourierRotor
+            # However, keep the cosine rotor if it is accurate enough, the
+            # fourier rotor is not significantly more accurate, and the cosine
+            # rotor has the correct symmetry 
+            if rms_cosine < 0.05 and rms_cosine / rms_fourier > 0.25 and rms_cosine / rms_fourier < 4.0 and symmetry == symm:
+                rotor = cosineRotor
+            
             states.modes.append(rotor)
             
-            #import numpy
-            #import pylab
-            #import math
-            #Vlist = log.loadScanEnergies()
-            #Vlist = Vlist[:-1]
-            #angle = numpy.arange(0.0, 2*math.pi+0.00001, 2*math.pi/(len(Vlist)-1), numpy.float64)
-            #phi = numpy.arange(0, 6.3, 0.02, numpy.float64)
-            #pylab.plot(angle, Vlist / 4184, 'ok')
-            #pylab.plot(phi, rotor.getPotential(phi) / 4184, '-k')
-        #pylab.show()
+            import pylab
+            phi = numpy.arange(0, 6.3, 0.02, numpy.float64)
+            fig = pylab.figure()
+            pylab.plot(angle, Vlist / 4184, 'ok')
+            linespec = '-r' if rotor is cosineRotor else '--r'
+            pylab.plot(phi, cosineRotor.getPotential(phi) / 4184, linespec)
+            linespec = '-b' if rotor is fourierRotor else '--b'
+            pylab.plot(phi, fourierRotor.getPotential(phi) / 4184, linespec)
+            pylab.legend(['scan', 'cosine', 'fourier'], loc=1)
+            pylab.xlim(0, 2*math.pi)
+            
+            axes = fig.get_axes()[0]
+            axes.set_xticks([float(j*math.pi/4) for j in range(0,9)])
+            axes.set_xticks([float(j*math.pi/8) for j in range(0,17)], minor=True)
+            axes.set_xticklabels(['$0$', '$\pi/4$', '$\pi/2$', '$3\pi/4$', '$\pi$', '$5\pi/4$', '$3\pi/2$', '$7\pi/4$', '$2\pi$'])
+
+            
+        pylab.show()
         
         logging.debug('    Determining frequencies from reduced force constant matrix...')
         frequencies = list(projectRotors(geom, F, rotors, linear, TS))
