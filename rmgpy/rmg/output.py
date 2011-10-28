@@ -644,32 +644,19 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
 
 
 {% if rxn1.kinetics.isIdenticalTo(rxn2.kinetics) %}
-<tr width=100%>
-     <td class="index" width=10%><a href="{{ rxn1.getURL() }}" title="Search on RMG website" class="searchlink">{{ rxn1.index }}.</a></td>
-     <td class="family" width=40%>{{ rxn1.getSource().label }}</td>
-
-     <td class="index" width=10%><a href="{{ rxn2.getURL() }}" title="Search on RMG website" class="searchlink">{{ rxn2.index }}.</a></td>
-     <td class="family" width=40%>{{ rxn2.getSource().label }}</td>
- </tr>
 
  <tr width=100%>
      <td colspan="4" valign="top" width=50%><div align="center"><font color="blue">IDENTICAL KINETICS WERE FOUND FOR THIS REACTION.</font></div>
-     <P>{{ rxn1.kinetics.toHTML() }}</td>
+
 </tr>
+{% elif rxn1.kinetics.isSimilarTo(rxn2.kinetics) %}
 
-<tr width=100%>
-    <td colspan="4" valign="top" width=50%><font size="1pt" face="courier">{{ rxn1.toChemkin(commonSpecies) }}</font></td>
+ <tr width=100%>
+     <td colspan="4" valign="top" width=50%><div align="center"><font color="green">SIMILAR KINETICS WERE FOUND FOR THIS REACTION.</font></div>
+
 </tr>
+{% endif%}
 
-<tr width=100%>
-    <td colspan="2" valign="top" width=50%><font size="1pt">Model 1 Comments:
-    <br>{{ rxn1.kinetics.comment }}</font></td>
-    <td colspan="2" valign="top" width=50%><font size="1pt">Model 2 Comments:
-    <br>{{ rxn2.kinetics.comment }}</font></td>
-</tr>
-
-
-{% else %}
 
 <tr width=100%>
      <td class="index" width=10%><a href="{{ rxn1.getURL() }}" title="Search on RMG website" class="searchlink">{{ rxn1.index }}.</a></td>
@@ -698,7 +685,6 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
     <td colspan="2" valign="top" width=50%><font size="1pt">{{ rxn1.kinetics.comment }}</font></td>
     <td colspan="2" valign="top" width=50%><font size="1pt">{{ rxn2.kinetics.comment }}</font></td>
 </tr>
-{% endif %}
 {% endfor %}
 
 </table>

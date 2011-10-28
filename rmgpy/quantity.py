@@ -358,13 +358,33 @@ class Quantity:
         different, however, Quantity object only parses units matching in case, so
         this will not be a problem.)
         """
+
+        def approx_equal(x, y, atol = .01):
+            """
+            Returns true if two float/double values are approximately equal
+            within a relative error of 1% or under a user specific absolute tolerance.
+            """
+            return abs(x-y) <= 1e-2*abs(x) or abs(x-y) <= 1e-2*abs(y) or abs(x-y) <= atol
+
         if isinstance(quantity, Quantity):
-            if (self.value == quantity.value and self.uncertaintyType == quantity.uncertaintyType
-            and self.uncertainty == quantity.uncertainty and self.units == quantity.units):
+            if (self.uncertaintyType == quantity.uncertaintyType
+            and approx_equal(self.uncertainty, quantity.uncertainty) and self.units == quantity.units):
+
+                if self.units == "kcal/mol":
+                    # set absolute tolerance to .01 kcal/mol = 42 J/mol
+                    atol = 42
+                else:
+                    # for other units, set it to .01
+                    atol = .01
+
+                if not approx_equal(self.value, quantity.value, atol):
+                    return False
 
                 if self.values is not None and quantity.values is not None:
-                    if all(self.values == quantity.values):
-                        pass
+                    if len(self.values) == len(quantity.values):
+                        for i in range(len(self.values)):
+                            if not approx_equal(self.values[i],quantity.values[i],atol):
+                                return False
                     else:
                         return False
                 elif self.values is None and quantity.values is None:
@@ -373,8 +393,10 @@ class Quantity:
                     return False
 
                 if self.uncertainties is not None and quantity.uncertainties is not None:
-                    if all(self.uncertainties == quantity.uncertainties):
-                        pass
+                    if len(self.uncertainties) == len(quantity.uncertainties):
+                        for i in range(len(self.uncertainties)):
+                            if not approx_equal(self.uncertainties[i],quantity.uncertainties[i]):
+                                return False
                     else:
                         return False
                 elif self.uncertainties is None and quantity.uncertainties is None:
