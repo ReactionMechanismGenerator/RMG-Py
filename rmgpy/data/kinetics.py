@@ -1925,7 +1925,7 @@ class KineticsFamily(Database):
         else:
             raise ValueError('No entry for template {0}.'.format(template))
 
-    def addKineticsRulesFromTrainingSet(self):
+    def addKineticsRulesFromTrainingSet(self, thermoDatabase=None):
         """
         For each reaction involving real reactants and products in the training
         set, add a rate rule for that reaction.
@@ -1940,8 +1940,16 @@ class KineticsFamily(Database):
         
         entries = depository.entries.values()
         entries.sort(key=lambda x: x.index)
+        reverse_entries = []
         for entry in entries:
-            template = self.getReactionTemplate(entry.item)
+            try:
+                template = self.getReactionTemplate(entry.item)
+            except UndeterminableKineticsError:
+                # Some entries might be stored in the reverse direction for
+                # this family; save them so we can try this
+                reverse_entries.append(entry)
+                continue
+            
             assert isinstance(entry.data, Arrhenius)
             data = deepcopy(entry.data)
             data.changeT0(1)
@@ -1949,6 +1957,7 @@ class KineticsFamily(Database):
             new_entry = Entry(
                 index = index,
                 label = ';'.join([g.label for g in template]),
+                item = template,
                 data = ArrheniusEP(
                     A = deepcopy(data.A),
                     n = deepcopy(data.n),
@@ -1960,6 +1969,50 @@ class KineticsFamily(Database):
                 rank = 3,
             )
             new_entry.data.A.value /= entry.item.degeneracy
+            self.rules.entries[index] = new_entry
+            index += 1
+        
+        # Process the entries that are stored in the reverse direction of the
+        # family definition
+        for entry in reverse_entries:
+            
+            assert isinstance(entry.data, Arrhenius)
+            data = deepcopy(entry.data)
+            data.changeT0(1)
+            
+            # Estimate the thermo for the reactants and products
+            item = deepcopy(entry.item)
+            item.reactants = [Species(molecule=[m]) for m in item.reactants]
+            for reactant in item.reactants:
+                reactant.generateResonanceIsomers()
+                reactant.thermo = thermoDatabase.getThermoData(reactant)
+            item.products = [Species(molecule=[m]) for m in item.products]
+            for product in item.products:
+                product.generateResonanceIsomers()
+                product.thermo = thermoDatabase.getThermoData(product)
+            # Now that we have the thermo, we can get the reverse k(T)
+            item.kinetics = data
+            data = item.generateReverseRateCoefficient()
+            
+            item = Reaction(reactants=entry.item.products, products=entry.item.reactants)
+            template = self.getReactionTemplate(item)
+            item.degeneracy = self.calculateDegeneracy(item)
+            
+            new_entry = Entry(
+                index = index,
+                label = ';'.join([g.label for g in template]),
+                item = template,
+                data = ArrheniusEP(
+                    A = deepcopy(data.A),
+                    n = deepcopy(data.n),
+                    alpha = 0,
+                    E0 = deepcopy(data.Ea),
+                    Tmin = deepcopy(data.Tmin),
+                    Tmax = deepcopy(data.Tmax),
+                ),
+                rank = 3,
+            )
+            new_entry.data.A.value /= item.degeneracy
             self.rules.entries[index] = new_entry
             index += 1
     

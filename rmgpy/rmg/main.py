@@ -185,7 +185,7 @@ class RMG:
         if self.kineticsEstimator == 'rate rules':
             logging.info('Adding rate rules from training set in kinetics families...')
             for family in self.database.kinetics.families.values():
-                family.addKineticsRulesFromTrainingSet()
+                family.addKineticsRulesFromTrainingSet(thermoDatabase=self.database.thermo)
             logging.info('Filling in rate rules in kinetics families by averaging...')
             for family in self.database.kinetics.families.values():
                 family.fillKineticsRulesByAveragingUp()
