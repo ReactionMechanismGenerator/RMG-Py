@@ -603,7 +603,7 @@ class CoreEdgeReactionModel:
                 # Flip the reaction direction if the kinetics are defined in the reverse direction
                 if not isForward:
                     reaction.reactants, reaction.products = reaction.products, reaction.reactants
-                    reaction.pairs = reaction.reverse.pairs
+                    reaction.pairs = [(p,r) for r,p in reaction.pairs]
                 if reaction.family.ownReverse and hasattr(reaction,'reverse'):
                     if not isForward:
                         reaction.template = reaction.reverse.template
