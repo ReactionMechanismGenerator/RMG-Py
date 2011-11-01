@@ -593,7 +593,7 @@ def loadChemkinFile(path, dictionaryPath=None):
                                     if label in ['Ar', 'N2', 'He', 'Ne']:
                                         pass
                                     else:
-                                        raise ChemkinError('Unexpected species "{0}" while reading thermodynamics entry.'.format(label))
+                                        logging.warning('Skipping unexpected species "{0}" while reading thermodynamics entry.'.format(label))
                                 thermo = ''
                     line = f.readline()
                 
