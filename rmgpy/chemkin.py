@@ -128,7 +128,8 @@ def readKineticsEntry(entry, speciesDict, energyUnits, moleculeUnits):
     lines = entry.strip().splitlines()
     
     # Extract the reaction equation
-    reaction = str(lines[0][0:52].strip())
+    #reaction = str(lines[0][0:52].strip())
+    reaction = str(lines[0].split()[0])
     thirdBody = False
     
     # Split the reaction equation into reactants and products
@@ -178,7 +179,8 @@ def readKineticsEntry(entry, speciesDict, energyUnits, moleculeUnits):
         raise ChemkinError('Invalid number of reactant species for reaction {0}.'.format(reaction))
     
     # The rest of the first line contains the high-P limit Arrhenius parameters (if available)
-    tokens = lines[0][52:].split()
+    #tokens = lines[0][52:].split()
+    tokens = lines[0].split()[1:]
     arrheniusHigh = Arrhenius(
         A = (float(tokens[0].strip()),kunits),
         n = float(tokens[1].strip()),
@@ -202,11 +204,11 @@ def readKineticsEntry(entry, speciesDict, energyUnits, moleculeUnits):
         # Note that the subsequent lines could be in any order
         for line in lines[1:]:
             tokens = line.split('/')
-            if 'DUP' in line:
+            if 'DUP' or 'dup' in line:
                 # Duplicate reaction
                 reaction.duplicate = True
             
-            elif 'LOW' in line:
+            elif 'LOW' or 'low' in line:
                 # Low-pressure-limit Arrhenius parameters
                 tokens = tokens[1].split()
                 arrheniusLow = Arrhenius(
@@ -216,7 +218,7 @@ def readKineticsEntry(entry, speciesDict, energyUnits, moleculeUnits):
                     T0 = (1,"K"),
                 )
             
-            elif 'TROE' in line:
+            elif 'TROE' or 'troe' in line:
                 # Troe falloff parameters
                 tokens = tokens[1].split()
                 alpha = float(tokens[0].strip())
@@ -234,7 +236,7 @@ def readKineticsEntry(entry, speciesDict, energyUnits, moleculeUnits):
                     T2 = (T2,"K") if T2 is not None else None,
                 )
             
-            elif 'CHEB' in line:
+            elif 'CHEB' or 'cheb' in line:
                 # Chebyshev parameters
                 if chebyshev is None:
                     chebyshev = Chebyshev()
@@ -260,7 +262,7 @@ def readKineticsEntry(entry, speciesDict, energyUnits, moleculeUnits):
                     tokens2 = tokens[1].split()
                     chebyshevCoeffs.extend([float(t.strip()) for t in tokens2])
                     
-            elif 'PLOG' in line:
+            elif 'PLOG' or 'plog' in line:
                 # Pressure-dependent Arrhenius parameters
                 if pdepArrhenius is None:
                     pdepArrhenius = []
@@ -275,6 +277,7 @@ def readKineticsEntry(entry, speciesDict, energyUnits, moleculeUnits):
             else:
                 # Assume a list of collider efficiencies
                 for collider, efficiency in zip(tokens[0::2], tokens[1::2]):
+                    
                     efficiencies[speciesDict[collider.strip()].molecule[0]] = float(efficiency.strip())
     
         # Decide which kinetics to keep and store them on the reaction object
@@ -329,7 +332,6 @@ def readReactionComments(reaction, comments):
     for line in lines:
         
         tokens = line.split()
-        
         if 'Reaction index:' in line:
             # Don't store the reaction indices
             pass
@@ -437,7 +439,16 @@ def readReactionComments(reaction, comments):
             )
             reaction.kinetics.comment = line
 
-
+    if not isinstance(reaction, LibraryReaction) and not isinstance(reaction, TemplateReaction) and not isinstance(reaction,PDepReaction):
+        reaction = LibraryReaction(
+            index = reaction.index,
+            reactants = reaction.reactants, 
+            products = reaction.products, 
+            kinetics = reaction.kinetics,
+            duplicate = reaction.duplicate,
+            library = KineticsLibrary(label='Unclassified'),
+        )  
+            
     return reaction
 
 ################################################################################
@@ -597,7 +608,10 @@ def loadChemkinFile(path, dictionaryPath=None):
                 
                 line = f.readline()
                 while line != '' and 'END' not in line:
-                    lineStartsWithComment = line.startswith('!')
+                    if line.startswith('rev/'):
+                        line = f.readline()
+                        
+                    lineStartsWithComment = line.startswith('!') 
                     line, comment = removeCommentFromLine(line)
                     line = line.strip(); comment = comment.strip()
                 
