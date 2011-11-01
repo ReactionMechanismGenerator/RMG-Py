@@ -1333,9 +1333,9 @@ class KineticsGroups(Database):
                 matched_node = self.descendTree(reactant, atoms, root=entry)
                 if matched_node is not None:
                     template.append(matched_node)
-                else:
-                    logging.warning("Couldn't find match for {0} in {1}".format(entry,atomList))
-                    logging.warning(reactant.toAdjacencyList())
+                #else:
+                #    logging.warning("Couldn't find match for {0} in {1}".format(entry,atomList))
+                #    logging.warning(reactant.toAdjacencyList())
 
         # Get fresh templates (with duplicate nodes back in)
         forwardTemplate = self.top[:]
@@ -1346,14 +1346,14 @@ class KineticsGroups(Database):
         # template is a list of the actual matched nodes
         # forwardTemplate is a list of the top level nodes that should be matched
         if len(template) != len(forwardTemplate):
-            logging.warning('Unable to find matching template for reaction {0} in reaction family {1}'.format(str(reaction), str(self)) )
-            logging.warning(" Trying to match " + str(forwardTemplate))
-            logging.warning(" Matched "+str(template))
-            print str(self), template, forwardTemplate
-            for reactant in reaction.reactants:
-                print reactant.toAdjacencyList() + '\n'
-            for product in reaction.products:
-                print product.toAdjacencyList() + '\n'
+            #logging.warning('Unable to find matching template for reaction {0} in reaction family {1}'.format(str(reaction), str(self)) )
+            #logging.warning(" Trying to match " + str(forwardTemplate))
+            #logging.warning(" Matched "+str(template))
+            #print str(self), template, forwardTemplate
+            #for reactant in reaction.reactants:
+            #    print reactant.toAdjacencyList() + '\n'
+            #for product in reaction.products:
+            #    print product.toAdjacencyList() + '\n'
             raise UndeterminableKineticsError(reaction)
 
         return template
@@ -1925,7 +1925,7 @@ class KineticsFamily(Database):
         else:
             raise ValueError('No entry for template {0}.'.format(template))
 
-    def addKineticsRulesFromTrainingSet(self):
+    def addKineticsRulesFromTrainingSet(self, thermoDatabase=None):
         """
         For each reaction involving real reactants and products in the training
         set, add a rate rule for that reaction.
@@ -1940,8 +1940,16 @@ class KineticsFamily(Database):
         
         entries = depository.entries.values()
         entries.sort(key=lambda x: x.index)
+        reverse_entries = []
         for entry in entries:
-            template = self.getReactionTemplate(entry.item)
+            try:
+                template = self.getReactionTemplate(entry.item)
+            except UndeterminableKineticsError:
+                # Some entries might be stored in the reverse direction for
+                # this family; save them so we can try this
+                reverse_entries.append(entry)
+                continue
+            
             assert isinstance(entry.data, Arrhenius)
             data = deepcopy(entry.data)
             data.changeT0(1)
@@ -1949,6 +1957,7 @@ class KineticsFamily(Database):
             new_entry = Entry(
                 index = index,
                 label = ';'.join([g.label for g in template]),
+                item = template,
                 data = ArrheniusEP(
                     A = deepcopy(data.A),
                     n = deepcopy(data.n),
@@ -1960,6 +1969,50 @@ class KineticsFamily(Database):
                 rank = 3,
             )
             new_entry.data.A.value /= entry.item.degeneracy
+            self.rules.entries[index] = new_entry
+            index += 1
+        
+        # Process the entries that are stored in the reverse direction of the
+        # family definition
+        for entry in reverse_entries:
+            
+            assert isinstance(entry.data, Arrhenius)
+            data = deepcopy(entry.data)
+            data.changeT0(1)
+            
+            # Estimate the thermo for the reactants and products
+            item = deepcopy(entry.item)
+            item.reactants = [Species(molecule=[m]) for m in item.reactants]
+            for reactant in item.reactants:
+                reactant.generateResonanceIsomers()
+                reactant.thermo = thermoDatabase.getThermoData(reactant)
+            item.products = [Species(molecule=[m]) for m in item.products]
+            for product in item.products:
+                product.generateResonanceIsomers()
+                product.thermo = thermoDatabase.getThermoData(product)
+            # Now that we have the thermo, we can get the reverse k(T)
+            item.kinetics = data
+            data = item.generateReverseRateCoefficient()
+            
+            item = Reaction(reactants=entry.item.products, products=entry.item.reactants)
+            template = self.getReactionTemplate(item)
+            item.degeneracy = self.calculateDegeneracy(item)
+            
+            new_entry = Entry(
+                index = index,
+                label = ';'.join([g.label for g in template]),
+                item = template,
+                data = ArrheniusEP(
+                    A = deepcopy(data.A),
+                    n = deepcopy(data.n),
+                    alpha = 0,
+                    E0 = deepcopy(data.Ea),
+                    Tmin = deepcopy(data.Tmin),
+                    Tmax = deepcopy(data.Tmax),
+                ),
+                rank = 3,
+            )
+            new_entry.data.A.value /= item.degeneracy
             self.rules.entries[index] = new_entry
             index += 1
     
@@ -2380,9 +2433,9 @@ class KineticsFamily(Database):
         for reaction in reactionList:
             moleculeDict = {}
             for molecule in reaction.reactants:
-                moleculeDict[molecule] = Species(label=molecule.toSMILES(), molecule=[molecule])
+                moleculeDict[molecule] = Species(molecule=[molecule])
             for molecule in reaction.products:
-                moleculeDict[molecule] = Species(label=molecule.toSMILES(), molecule=[molecule])
+                moleculeDict[molecule] = Species(molecule=[molecule])
             reaction.reactants = [moleculeDict[molecule] for molecule in reaction.reactants]
             reaction.products = [moleculeDict[molecule] for molecule in reaction.products]
             reaction.pairs = [(moleculeDict[reactant],moleculeDict[product]) for reactant, product in reaction.pairs]
@@ -3179,13 +3232,13 @@ class KineticsDatabase:
             reaction = Reaction(reactants=[], products=[])
             for molecule in entry.item.reactants:
                 molecule.makeHydrogensExplicit()
-                reactant = Species(molecule=[molecule], label=molecule.toSMILES())
+                reactant = Species(molecule=[molecule])
                 reactant.generateResonanceIsomers()
                 reactant.thermo = generateThermoData(reactant, thermoDatabase)
                 reaction.reactants.append(reactant)
             for molecule in entry.item.products:
                 molecule.makeHydrogensExplicit()
-                product = Species(molecule=[molecule], label=molecule.toSMILES())
+                product = Species(molecule=[molecule])
                 product.generateResonanceIsomers()
                 product.thermo = generateThermoData(product, thermoDatabase)
                 reaction.products.append(product)

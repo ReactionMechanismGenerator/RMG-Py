@@ -277,6 +277,8 @@ class GaussianLog:
         of a Gaussian "Scan" quantum chemistry calculation.
         """
 
+        optfreq = False
+
         # The array of potentials at each scan angle
         Vlist = []
 
@@ -285,6 +287,9 @@ class GaussianLog:
         f = open(self.path, 'r')
         line = f.readline()
         while line != '':
+            # If the job contains a "freq" then we want to ignore the last energy
+            if ' freq ' in line:
+                optfreq = True
             # The lines containing "SCF Done" give the energy at each
             # iteration (even the intermediate ones)
             if 'SCF Done:' in line:
@@ -304,7 +309,14 @@ class GaussianLog:
         Vlist -= numpy.min(Vlist)
         Vlist *= 4.35974394e-18 * 6.02214179e23
 
-        return Vlist
+        if optfreq: Vlist = Vlist[:-1]
+
+        # Determine the set of dihedral angles corresponding to the loaded energies
+        # This assumes that you start at 0.0, finish at 360.0, and take
+        # constant step sizes in between
+        angle = numpy.arange(0.0, 2*math.pi+0.00001, 2*math.pi/(len(Vlist)-1), numpy.float64)
+
+        return Vlist, angle
 
     def loadNegativeFrequency(self):
         """
@@ -346,17 +358,8 @@ class GaussianLog:
         """
         
         # Load the energies from the file
-        Vlist = self.loadScanEnergies()
+        Vlist, angle = self.loadScanEnergies()
         
-        # Gaussian does something extra with the last step in the scan, so we
-        # discard this point
-        Vlist = Vlist[:-1]
-
-        # Determine the set of dihedral angles corresponding to the above
-        # This assumes that you start at 0.0, finish at 360.0, and take
-        # constant step sizes in between
-        angle = numpy.arange(0.0, 2*math.pi+0.00001, 2*math.pi/(len(Vlist)-1), numpy.float64)
-
         # Fit the simple cosine potential to get the barrier height V0
         # and the symmetry number
         # We fit at integral symmetry numbers in the range [1, 9]
@@ -388,16 +391,7 @@ class GaussianLog:
         """
 
         # Load the energies from the file
-        Vlist = self.loadScanEnergies()
-
-        # Gaussian does something extra with the last step in the scan, so we
-        # discard this point
-        Vlist = Vlist[:-1]
-        
-        # Determine the set of dihedral angles corresponding to the above
-        # This assumes that you start at 0.0, finish at 360.0, and take
-        # constant step sizes in between
-        angle = numpy.arange(0.0, 2*math.pi+0.00001, 2*math.pi/(len(Vlist)-1), numpy.float64)
+        Vlist, angle = self.loadScanEnergies()
 
         # Fit Fourier series potential
         A = numpy.zeros((len(Vlist)+1,12), numpy.float64)

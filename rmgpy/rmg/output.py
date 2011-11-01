@@ -105,7 +105,6 @@ def saveOutputHTML(path, reactionModel):
 
     familyCount = {}
     for rxn in reactions:
-        print rxn
         
         if isinstance(rxn, PDepReaction):
             family = "PDepNetwork"
