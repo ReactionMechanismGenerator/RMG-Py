@@ -322,6 +322,7 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
     for the comparison of two RMG models.
     """
     from model import PDepReaction
+    from rmgpy.kinetics import Arrhenius, MultiKinetics
 
     from rmgpy.molecule_draw import drawMolecule
     try:
@@ -360,6 +361,8 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
     familyCount1 = {}
     familyCount2 = {}
     for rxn1, rxn2 in commonReactions:
+        if isinstance(rxn2.kinetics, MultiKinetics):
+            rxn2.duplicate = True   
         if isinstance(rxn1, PDepReaction):
             family = "PDepNetwork"
         else:
@@ -665,14 +668,30 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
      <td class="family" width=40%>{{ rxn2.getSource().label }}</td>
  </tr>
 
-<tr width=100%>
+<tr width=100%>{% if not rxn1.isIsomorphic(rxn2, eitherDirection=False) %} 
 <td colspan="2" width=50%></td>
-<td colspan="2" width=50%>{% if not rxn1.isIsomorphic(rxn2, eitherDirection=False) %} * Reaction was found in reverse {% endif %}</td>
+<td colspan="2" width=50%>* Reaction was found in reverse 
+
+
+{% if not rxn2.kinetics.isPressureDependent() %}
+{% if not rxn2.duplicate %}
+<P><b>Fitted Reverse Kinetics:</b>
+{{rxn2.generateReverseRateCoefficient().toHTML() }}
+
+
+{% endif %}
+{% endif %}
+
+<P><b>Original Kinetics:</b>
+{% endif %}</td>
 </tr>
 
 <tr width=100%>
-     <td colspan="2" valign="top" width=50%>{{ rxn1.kinetics.toHTML() }}</td>
-     <td colspan="2" valign="top" width=50%>{{ rxn2.kinetics.toHTML() }}</td>
+     <td colspan="2" valign="top" width=50%>
+     
+     {{ rxn1.kinetics.toHTML() }}</td>
+     <td colspan="2" valign="top" width=50%>
+     {{ rxn2.kinetics.toHTML() }}</td>
 </tr>
 
 <tr width=100%>

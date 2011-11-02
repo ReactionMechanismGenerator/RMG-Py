@@ -200,15 +200,17 @@ def readKineticsEntry(entry, speciesDict, energyUnits, moleculeUnits):
         pdepArrhenius = None
         efficiencies = {}
         chebyshevCoeffs = []
+        
     
         # Note that the subsequent lines could be in any order
         for line in lines[1:]:
+            
             tokens = line.split('/')
-            if 'DUP' or 'dup' in line:
+            if 'DUP' in line or 'dup' in line:            
                 # Duplicate reaction
                 reaction.duplicate = True
             
-            elif 'LOW' or 'low' in line:
+            elif 'LOW' in line or 'low' in line:
                 # Low-pressure-limit Arrhenius parameters
                 tokens = tokens[1].split()
                 arrheniusLow = Arrhenius(
@@ -218,7 +220,7 @@ def readKineticsEntry(entry, speciesDict, energyUnits, moleculeUnits):
                     T0 = (1,"K"),
                 )
             
-            elif 'TROE' or 'troe' in line:
+            elif 'TROE' in line or 'troe' in line:
                 # Troe falloff parameters
                 tokens = tokens[1].split()
                 alpha = float(tokens[0].strip())
@@ -236,7 +238,7 @@ def readKineticsEntry(entry, speciesDict, energyUnits, moleculeUnits):
                     T2 = (T2,"K") if T2 is not None else None,
                 )
             
-            elif 'CHEB' or 'cheb' in line:
+            elif 'CHEB' in line or 'cheb' in line:
                 # Chebyshev parameters
                 if chebyshev is None:
                     chebyshev = Chebyshev()
@@ -262,7 +264,7 @@ def readKineticsEntry(entry, speciesDict, energyUnits, moleculeUnits):
                     tokens2 = tokens[1].split()
                     chebyshevCoeffs.extend([float(t.strip()) for t in tokens2])
                     
-            elif 'PLOG' or 'plog' in line:
+            elif 'PLOG' in line or 'plog' in line:
                 # Pressure-dependent Arrhenius parameters
                 if pdepArrhenius is None:
                     pdepArrhenius = []
@@ -275,6 +277,7 @@ def readKineticsEntry(entry, speciesDict, energyUnits, moleculeUnits):
                 )])
 
             else:
+                print line
                 # Assume a list of collider efficiencies
                 for collider, efficiency in zip(tokens[0::2], tokens[1::2]):
                     
@@ -608,7 +611,8 @@ def loadChemkinFile(path, dictionaryPath=None):
                 
                 line = f.readline()
                 while line != '' and 'END' not in line:
-                    if line.startswith('rev/'):
+                    if 'rev' in line or 'REV' in line:
+                        # can no longer name reactants rev...
                         line = f.readline()
                         
                     lineStartsWithComment = line.startswith('!') 
