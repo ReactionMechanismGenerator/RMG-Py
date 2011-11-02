@@ -189,11 +189,14 @@ class PDepNetwork(rmgpy.measure.network.Network):
         returning the new reactions and new species.
         """
         assert isomer not in self.explored
+        assert [isomer] in self.products
         assert isomer not in self.isomers
         assert isomer not in self.source
 
         logging.info('Exploring isomer {0} in pressure-dependent network #{1:d}'.format(isomer, self.index))
         self.explored.append(isomer)
+        self.isomers.append(isomer)
+        self.products.remove([isomer])
         # Find reactions involving the found species as unimolecular
         # reactant or product (e.g. A <---> products)
         newReactionList = reactionModel.react(database, isomer)
