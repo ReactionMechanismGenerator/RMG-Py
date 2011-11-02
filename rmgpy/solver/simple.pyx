@@ -173,7 +173,7 @@ cdef class SimpleReactor(ReactionSystem):
         cdef int numCoreSpecies, numCoreReactions, numEdgeSpecies, numEdgeReactions, numPdepNetworks
         cdef int j, first, second, third
         cdef double k, reactionRate
-        cdef numpy.ndarray[numpy.float64_t, ndim=1] coreSpeciesRates, coreReactionRates, edgeSpeciesRates, edgeReactionRates, networkLeakRates
+        cdef numpy.ndarray[numpy.float64_t, ndim=1] coreSpeciesConcentrations, coreSpeciesRates, coreReactionRates, edgeSpeciesRates, edgeReactionRates, networkLeakRates
 
         res = numpy.zeros(y.shape[0], numpy.float64)
 
