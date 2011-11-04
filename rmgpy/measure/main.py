@@ -341,13 +341,14 @@ class MEASURE:
             self.model = ['pdeparrhenius']
         
         # Read grain size or number of grains
-        data = readMeaningfulLine(f).split()
-        if data[0].lower() == 'numgrains':
-            self.grainCount = int(data[1])
-            self.grainSize = Quantity(0.0, "J/mol")
-        elif data[0].lower() == 'grainsize':
-            self.grainCount = 0
-            self.grainSize = Quantity(float(data[2]), data[1])
+        self.grainCount = 0
+        self.grainSize = Quantity(0.0, "J/mol")
+        for i in range(2):
+            data = readMeaningfulLine(f).split()
+            if data[0].lower() == 'numgrains':
+                self.grainCount = int(data[1])
+            elif data[0].lower() == 'grainsize':
+                self.grainSize = Quantity(float(data[2]), data[1])
 
         # Create the Network
         self.network = Network()
