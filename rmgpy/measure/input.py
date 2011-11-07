@@ -221,7 +221,7 @@ def generateThermoFromStates(species, Tlist):
     # states data
     if species.thermo is not None or species.states is None: return
     # States data must have external rotational modes
-    if not any([isinstance(mode, RigidRotor) for mode in species.states.modes]):
+    if not any([isinstance(mode, RigidRotor) for mode in species.states.modes]) and len(species.molecule[0].atoms) > 1:
         raise InputError('For species "{0}", must specify external rotational constants to generate thermo model from states data.'.format(species))
     
     # Must use ThermoData because we can't rely on knowing
