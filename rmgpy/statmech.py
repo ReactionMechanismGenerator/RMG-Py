@@ -926,7 +926,7 @@ class StatesModel:
         automatically included if there are no translational or external 
         rotational modes.
         """
-        cython.declare(rho=numpy.ndarray, i=cython.int, E=cython.double)
+        cython.declare(rho=numpy.ndarray, i=cython.int, j=cython.int, E=cython.double, mult=cython.int)
         rho = numpy.zeros_like(Elist)
         # Active K-rotor
         # Only include this if there is no translation or rotation data
@@ -941,11 +941,27 @@ class StatesModel:
         for mode in self.modes:
             if not isinstance(mode, HarmonicOscillator):
                 rho = convolve(rho, mode.getDensityOfStates(Elist), Elist)
+        # We know the number of modes in the ground state from the spin multiplicity
+        rho[0] = self.spinMultiplicity
         # Vibrational modes
+        # We need to use a grain size of 10 cm^-1 or less to get the desired accuracy
+        Emin = Elist[0]; Emax = Elist[-1]; dE = Elist[1] - Elist[0]
+        dE_vib = dE; mult = 1
+        while dE_vib > 119.6215:
+            mult *= 2
+            dE_vib /= 2.
+        Elist_vib = numpy.arange(Emin, Emax + dE_vib, dE_vib)
+        rho_vib = numpy.zeros_like(Elist_vib)
+        for i in range(len(Elist)-1):
+            for j in range(mult):
+                rho_vib[i*mult+j] = rho[i] * (rho[i+1] / rho[i]) ** ((Elist_vib[i*mult+j] - Elist[i]) / (Elist[i+1] - Elist[i]))
+        rho_vib[-1] = rho[-1]
         for mode in self.modes:
             if isinstance(mode, HarmonicOscillator):
-                rho = mode.getDensityOfStates(Elist, rho)
-        return rho * self.spinMultiplicity
+                rho_vib = mode.getDensityOfStates(Elist_vib, rho_vib)
+        for i in range(len(Elist)):
+            rho[i] = rho_vib[i*mult]
+        return rho
 
     def getSumOfStates(self, Elist):
         """
