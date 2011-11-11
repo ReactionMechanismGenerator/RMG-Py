@@ -407,9 +407,11 @@ class Wilhoit(ThermoModel):
         self.fitToDataForConstantB(Tlist, Cplist, linear, nFreq, nRotors, B, H298, S298)
         Cp_fit = self.getHeatCapacities(Tlist)
         # Objective function is linear least-squares
+        # it might be faster to compute this using numpy.linalg.lstsq "residues",
+        # computed during fitToDataForConstantB, but if speed here is not critical, this is fine
         return numpy.sum( (Cp_fit - Cplist) * (Cp_fit - Cplist) )
     
-    def fitToData(self, Tlist, Cplist, linear, nFreq, nRotors, H298, S298, B0=500.0):
+    def fitToData(self, Tlist, Cplist, linear, nFreq, nRotors, H298, S298, B0=500.0, Bmin=300.0, Bmax=3000.0):
         """
         Fit a Wilhoit model to the data points provided, allowing the 
         characteristic temperature `B` to vary so as to improve the fit. This
@@ -417,13 +419,22 @@ class Wilhoit(ThermoModel):
         in the ``scipy.optimize`` module. The data consists of a set
         of dimensionless heat capacity points `Cplist` at a given set of
         temperatures `Tlist` in K. The linearity of the molecule, number of
-        vibrational frequencies, and number of internal rotors (`linear`,
-        `nFreq`, and `nRotors`, respectively) is used to set the limits at
-        zero and infinite temperature.
+        vibrational frequencies (not including internal rotors), and number
+        of internal rotors (`linear`,`nFreq`, and `nRotors`, respectively) is
+        used to set the limits at zero and infinite temperature.
         """
         self.B = Quantity(B0,"K")
         import scipy.optimize
-        scipy.optimize.fminbound(self.__residual, 300.0, 3000.0, args=(Tlist, Cplist, linear, nFreq, nRotors, H298, S298))
+        scipy.optimize.fminbound(self.__residual, Bmin, Bmax, args=(Tlist, Cplist, linear, nFreq, nRotors, H298, S298))
+        #compute the rmsErr of Cp/R
+        #note that IF the "residues" from the least squares fit was used instead, the error is
+        #minimized with respect to Cpdata/(CpInf-Cp0) + const, so we would need to
+        #scale back by (CpInf-Cp0) to get the error in Cpdata
+        rmsErr = math.sqrt(self.__residual/len(Tlist))/constants.R
+        self.comment = self.comment + 'Wilhoit polynomial fit to ThermoData with RMS error = %.3f*R;'%(rmsErr)
+        #print a warning if the rms fit is worse that 0.25*R
+        if(rmsErr > 0.25):
+            logging.warning("Poor ThermoData-to-Wilhoit fit quality: RMS error = %.3f*R" % (rmsErr))
         return self
     
     def fitToDataForConstantB(self, Tlist, Cplist, linear, nFreq, nRotors, B, H298, S298):
@@ -642,9 +653,10 @@ def convertThermoModel(model, thermoClass, **kwargs):
     * In general, if you are converting to a :class:`Wilhoit` model -- even if 
       this conversion is only part of a conversion to another format -- you 
       need to specify whether or not the molecule is linear, the number of 
-      vibrational modes, and the number of internal hindered rotor modes as the
-      `linear`, `nFreq`, and `nRotors` keyword arguments, so that the correct 
-      limits at zero and infinite temperature can be determined. 
+      vibrational modes (excluding internal hindered rotors),and the number of
+      internal hindered rotor modes as the `linear`, `nFreq`, and `nRotors`
+      keyword arguments, so that the correct limits at zero and infinite
+      temperature can be determined.
     
     * If you are converting to a :class:`ThermoData` model, you must provide 
       the set of temperatures in K to use for the heat capacity points via the
@@ -675,7 +687,14 @@ def convertThermoModel(model, thermoClass, **kwargs):
     elif isinstance(model, ThermoData) and thermoClass == MultiNASA:
         # First convert it to a Wilhoit, then to a MultiNASA
         output = convertThermoModel(convertThermoModel(model, Wilhoit, **kwargs), MultiNASA, **kwargs)
-    
+	# compute error for the overall conversion
+        Cp_fit = output.getHeatCapacities(model.Tdata.values)
+        rmsErr = math.sqrt(numpy.sum( (Cp_fit - model.Cpdata.values) * (Cp_fit - model.Cpdata.values) )/len(model.Tdata.values))/constants.R
+        output.comment = output.comment + 'Overall conversion of ThermoData to MultiNASA with RMS error = %.3f*R;'%(rmsErr)
+        #there is already a warning in model.py's generateThermoData
+        #if(rmsErr > 0.50):#print a warning if the rms fit is worse that 0.50*R
+        #    logging.warning("Poor ThermoData-to-MultiNASA fit quality: RMS error = %.3f*R" % (rmsErr))
+
     elif isinstance(model, Wilhoit) and thermoClass == ThermoData:
         try:
             Tdata = kwargs['Tdata']
@@ -697,7 +716,7 @@ def convertThermoModel(model, thermoClass, **kwargs):
             Tmax = kwargs['Tmax']
             Tint = kwargs['Tint']
         except KeyError:
-            raise ValueError('To convert Wilhoit tor MultiNASA, you must provide the keyword arguments Tmin, Tmax, and Tint.')
+            raise ValueError('To convert Wilhoit to MultiNASA, you must provide the keyword arguments Tmin, Tmax, and Tint.')
         output = convertWilhoitToNASA(model, Tmin, Tmax, Tint)
         
     elif isinstance(model, MultiNASA) and thermoClass == ThermoData:
@@ -801,7 +820,7 @@ def convertWilhoitToNASA(wilhoit, Tmin, Tmax, Tint, fixedTint=False, weighting=T
     nasa_high.c4 /= 1000000000000.
 
     # output comment
-    comment = 'NASA function fitted to Wilhoit function. ' + rmsStr + wilhoit.comment
+    comment = 'NASA function fitted to Wilhoit function with B = ' + wilhoit.B + '. ' + rmsStr + wilhoit.comment
     nasa_low.Tmin = Quantity(Tmin,"K"); nasa_low.Tmax = Quantity(Tint,"K")
     nasa_low.comment = 'Low temperature range polynomial'
     nasa_high.Tmin = Quantity(Tint,"K"); nasa_high.Tmax = Quantity(Tmax,"K")
