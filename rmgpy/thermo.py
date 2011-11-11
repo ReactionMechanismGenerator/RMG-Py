@@ -680,9 +680,13 @@ def convertThermoModel(model, thermoClass, **kwargs):
             linear = kwargs['linear']
             nFreq = kwargs['nFreq']
             nRotors = kwargs['nRotors']
+            #optional keywords/parameters
+            B0 = kwargs['B0'] if ('B0' in kwargs) else 500.0
+            Bmin = kwargs['Bmin'] if ('Bmin' in kwargs) else 300.0
+            Bmax = kwargs['Bmax'] if ('Bmax' in kwargs) else 3000.0
         except KeyError:
             raise ValueError('To convert ThermoData to Wilhoit or MultiNASA, you must provide the keyword arguments linear, nFreq, and nRotors.')
-        output = Wilhoit().fitToData(model.Tdata.values, model.Cpdata.values, linear, nFreq, nRotors, model.H298.value, model.S298.value)
+        output = Wilhoit().fitToData(model.Tdata.values, model.Cpdata.values, linear, nFreq, nRotors, model.H298.value, model.S298.value, B0=B0, Bmin=Bmin, Bmax=Bmax)
     
     elif isinstance(model, ThermoData) and thermoClass == MultiNASA:
         # First convert it to a Wilhoit, then to a MultiNASA
@@ -715,9 +719,13 @@ def convertThermoModel(model, thermoClass, **kwargs):
             Tmin = kwargs['Tmin']
             Tmax = kwargs['Tmax']
             Tint = kwargs['Tint']
+            #optional keywords/parameters
+            fixedTint = kwargs['fixedTint'] if ('fixedTint' in kwargs) else False
+            weighting = kwargs['weighting'] if ('weighting' in kwargs) else True
+            continuity = kwargs['continuity'] if ('continuity' in kwargs) else 3
         except KeyError:
             raise ValueError('To convert Wilhoit to MultiNASA, you must provide the keyword arguments Tmin, Tmax, and Tint.')
-        output = convertWilhoitToNASA(model, Tmin, Tmax, Tint)
+        output = convertWilhoitToNASA(model, Tmin, Tmax, Tint, fixedTint=fixedTint, weighting=weighting, continuity=continuity)
         
     elif isinstance(model, MultiNASA) and thermoClass == ThermoData:
         try:
