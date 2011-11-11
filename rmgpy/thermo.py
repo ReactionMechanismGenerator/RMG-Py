@@ -820,7 +820,7 @@ def convertWilhoitToNASA(wilhoit, Tmin, Tmax, Tint, fixedTint=False, weighting=T
     nasa_high.c4 /= 1000000000000.
 
     # output comment
-    comment = 'NASA function fitted to Wilhoit function with B = ' + wilhoit.B + '. ' + rmsStr + wilhoit.comment
+    comment = 'NASA function fitted to Wilhoit function with B = ' + str(wilhoit.B) + '. ' + rmsStr + wilhoit.comment
     nasa_low.Tmin = Quantity(Tmin,"K"); nasa_low.Tmax = Quantity(Tint,"K")
     nasa_low.comment = 'Low temperature range polynomial'
     nasa_high.Tmin = Quantity(Tint,"K"); nasa_high.Tmax = Quantity(Tmax,"K")
