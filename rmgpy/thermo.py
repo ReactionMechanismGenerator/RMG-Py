@@ -430,7 +430,7 @@ class Wilhoit(ThermoModel):
         #note that IF the "residues" from the least squares fit was used instead, the error is
         #minimized with respect to Cpdata/(CpInf-Cp0) + const, so we would need to
         #scale back by (CpInf-Cp0) to get the error in Cpdata
-        rmsErr = math.sqrt(self.__residual/len(Tlist))/constants.R
+        rmsErr = math.sqrt(self.__residual(self.B.value, Tlist, Cplist, linear, nFreq, nRotors, H298, S298)/len(Tlist))/constants.R
         self.comment = self.comment + 'Wilhoit polynomial fit to ThermoData with RMS error = %.3f*R;'%(rmsErr)
         #print a warning if the rms fit is worse that 0.25*R
         if(rmsErr > 0.25):
