@@ -82,9 +82,14 @@ class Species(rmgpy.species.Species):
         if isinstance(thermo0, Wilhoit):
             wilhoit = thermo0
         else:
-            linear = self.molecule[0].isLinear()
-            nRotors = self.molecule[0].countInternalRotors()
-            nFreq = 3 * len(self.molecule[0].atoms) - (5 if linear else 6) - nRotors
+            if len(self.molecule[0].atoms) == 1:
+                linear = False
+                nRotors = 0
+                nFreq = 0
+            else:
+                linear = self.molecule[0].isLinear()
+                nRotors = self.molecule[0].countInternalRotors()
+                nFreq = 3 * len(self.molecule[0].atoms) - (5 if linear else 6) - nRotors
             wilhoit = convertThermoModel(thermo0, Wilhoit, linear=linear, nFreq=nFreq, nRotors=nRotors)
         
         # Compute E0 by extrapolation to 0 K

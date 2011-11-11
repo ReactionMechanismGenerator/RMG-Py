@@ -439,24 +439,38 @@ class Wilhoit(ThermoModel):
         
         cython.declare(y=numpy.ndarray, A=numpy.ndarray, b=numpy.ndarray, x=numpy.ndarray)
         
-        # Set the Cp(T) limits as T -> and T -> infinity
-        self.cp0 = Quantity(3.5 * constants.R if linear else 4.0 * constants.R, "J/(mol*K)")
-        self.cpInf = Quantity(self.cp0.value + (nFreq + 0.5 * nRotors) * constants.R, "J/(mol*K)")
-        
-        # What remains is to fit the polynomial coefficients (a0, a1, a2, a3)
-        # This can be done directly - no iteration required
-        y = Tlist / (Tlist + B)
-        A = numpy.zeros((len(Cplist),4), numpy.float64)
-        for j in range(4):
-            A[:,j] = (y*y*y - y*y) * y**j
-        b = ((Cplist - self.cp0.value) / (self.cpInf.value - self.cp0.value) - y*y)
-        x, residues, rank, s = numpy.linalg.lstsq(A, b)
-        
-        self.B = Quantity(float(B), "K")
-        self.a0 = float(x[0])
-        self.a1 = float(x[1])
-        self.a2 = float(x[2])
-        self.a3 = float(x[3])
+        if nFreq == 0:
+            # Monatomic species
+            assert nRotors == 0
+            self.cp0 = Quantity(2.5 * constants.R, "J/(mol*K)")
+            self.cpInf = Quantity(2.5 * constants.R, "J/(mol*K)")
+            self.B = Quantity(float(B), "K")
+            self.a0 = 0.0
+            self.a1 = 0.0
+            self.a2 = 0.0
+            self.a3 = 0.0
+    
+        else:
+            # Polyatomic species
+    
+            # Set the Cp(T) limits as T -> and T -> infinity
+            self.cp0 = Quantity(3.5 * constants.R if linear else 4.0 * constants.R, "J/(mol*K)")
+            self.cpInf = Quantity(self.cp0.value + (nFreq + 0.5 * nRotors) * constants.R, "J/(mol*K)")
+            
+            # What remains is to fit the polynomial coefficients (a0, a1, a2, a3)
+            # This can be done directly - no iteration required
+            y = Tlist / (Tlist + B)
+            A = numpy.zeros((len(Cplist),4), numpy.float64)
+            for j in range(4):
+                A[:,j] = (y*y*y - y*y) * y**j
+            b = ((Cplist - self.cp0.value) / (self.cpInf.value - self.cp0.value) - y*y)
+            x, residues, rank, s = numpy.linalg.lstsq(A, b)
+            
+            self.B = Quantity(float(B), "K")
+            self.a0 = float(x[0])
+            self.a1 = float(x[1])
+            self.a2 = float(x[2])
+            self.a3 = float(x[3])
 
         self.H0 = Quantity(0.0,"J/mol"); self.S0 = Quantity(0.0,"J/(mol*K)")
         self.H0.value = H298 - self.getEnthalpy(298.15)
