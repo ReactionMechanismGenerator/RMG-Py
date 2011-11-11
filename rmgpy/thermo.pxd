@@ -89,7 +89,7 @@ cdef class Wilhoit(ThermoModel):
         bint linear, int nFreq, int nRotors, double H298, double S298)
     
     cpdef Wilhoit fitToData(self, numpy.ndarray Tlist, numpy.ndarray Cplist,
-        bint linear, int nFreq, int nRotors, double H298, double S298, double B0=?)
+        bint linear, int nFreq, int nRotors, double H298, double S298, double B0=?, double Bmin=?, double Bmax=?)
     
     cpdef Wilhoit fitToDataForConstantB(self, numpy.ndarray Tlist, numpy.ndarray Cplist,
         bint linear, int nFreq, int nRotors, double B, double H298, double S298)
