@@ -1389,7 +1389,7 @@ def Wilhoit_Dintegral2_T0(wilhoit, t1,t2):
         logBplust = math.log((B + t2)/(B + t1))
    #nb. didn't take the time to reorder to place z2 first
     result =         cpInf*cpInf*(t2-t1) + B*cdiff*(((-a0*a0 - (a1 + a2 + a3)*(a1 + a2 + a3) - 2*a0*(4. + a1 + a2 + a3) - 2*(3. + 5*a1 + 6*a2 + 7*a3))*cdiff - 2*(1. + 2*a0 + 3*a1 + 4*a2 + 5*a3)*cp0)*
-           (-z12 + z22) + ((2. + 2*a0*a0 + 10*a1 + 15*a2 + 21*a3 + (a1 + a2 + a3)*(3*a1 + 4*a2 + 5*a3) + a0*(6. + 5*a1 + 6*a2 + 7*a3))*cdiff + (a0 + 3*a1 + 6*a2 + 10*a3)*cp0)*
+           (-z1 + z2) + ((2. + 2*a0*a0 + 10*a1 + 15*a2 + 21*a3 + (a1 + a2 + a3)*(3*a1 + 4*a2 + 5*a3) + a0*(6. + 5*a1 + 6*a2 + 7*a3))*cdiff + (a0 + 3*a1 + 6*a2 + 10*a3)*cp0)*
            (-z12 + z22) - (((1. + 6*a0*a0 + 15*a1*a1 + 4*a2*(10 + 7*a2) + 70*a3 + 72*a2*a3 + 45*a3*a3 + a0*(8. + 20*a1 + 30*a2 + 42*a3) + a1*(20 + 42*a2 + 56*a3))*cdiff +
                2*(a1 + 4*a2 + 10*a3)*cp0)*(-(z1*z12) + z2*z22))/3. + (((a0 + 2*a0*a0 + 5*a1 + 10*a0*a1 + 10*a1*a1 + 15*a2 + 20*a0*a2 + 35*a1*a2 + 28*a2*a2 +
                   7*(5.+ 5*a0 + 8*a1 + 12*a2)*a3 + 60*a3*a3)*cdiff + (a2 + 5*a3)*cp0)*(-z14 + z24))/2. +
@@ -1473,17 +1473,19 @@ def NASA_integral2_TM1(polynomial, T):
 def NASA_Dintegral2_T0(polynomial, Ta,Tb):
     #output: the quantity Integrate[(Cp(NASA)/R)^2, {t',Ta,Tb}] evaluated at t'=t
     cython.declare(c0=cython.double, c1=cython.double, c2=cython.double, c3=cython.double, c4=cython.double)
-    cython.declare(Ta2=cython.double, Ta4=cython.double, Tb2=cython.double, Tb4=cython.double)
+    cython.declare(Ta2=cython.double, Ta4=cython.double, Ta8=cython.double, Tb2=cython.double, Tb4=cython.double, Tb8=cython.double)
     c0, c1, c2, c3, c4 = polynomial.c0, polynomial.c1, polynomial.c2, polynomial.c3, polynomial.c4
     Ta2=Ta*Ta
     Ta4=Ta2*Ta2
+    Ta8=Ta4*Ta4
     Tb2=Tb*Tb
     Tb4=Tb2*Tb2
+    Tb8=Tb4*Tb4
     result = (
         c0*c0*(Tb-Ta) + c0*c1*(Tb2-Ta2) + (2.*c0*c2+c1*c1)/3.*(Tb2*Tb-Ta2*Ta) + 0.5*(c0*c3+c1*c2)*(Tb4-Ta4) + 0.4*(c0*c4+c1*c3+0.5*c2*c2)*(Tb4*Tb-Ta4*Ta) +
         (c1*c4+c2*c3)/3.*(Tb4*Tb2-Ta4*Ta2) +
-        (2.*c2*c4+c3*c3)/7.*(Tb4*Tb2*Tb-Ta4*Ta2*Ta) + 0.25*c3*c4*(Tb4*Tb4-Ta4*Ta4) +
-        c4*c4*(Tb4*Tb4*Tb-Ta4*Ta4*Ta)/9.
+        (2.*c2*c4+c3*c3)/7.*(Tb4*Tb2*Tb-Ta4*Ta2*Ta) + 0.25*c3*c4*(Tb8-Ta8) +
+        c4*c4*(Tb8*Tb-Ta8*Ta)/9.
     )
     return result
 
