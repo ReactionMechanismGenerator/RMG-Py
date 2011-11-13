@@ -154,7 +154,27 @@ cpdef double Wilhoit_integral2_T0(Wilhoit wilhoit, double t)
 
 cpdef double Wilhoit_integral2_TM1(Wilhoit wilhoit, double t)
 
+cpdef double Wilhoit_Dintegral_T0(Wilhoit wilhoit, double t1, double t2)
+
+cpdef double Wilhoit_Dintegral_TM1(Wilhoit wilhoit, double t1, double t2)
+
+cpdef double Wilhoit_Dintegral_T1(Wilhoit wilhoit, double t1, double t2)
+
+cpdef double Wilhoit_Dintegral_T2(Wilhoit wilhoit, double t1, double t2)
+
+cpdef double Wilhoit_Dintegral_T3(Wilhoit wilhoit, double t1, double t2)
+
+cpdef double Wilhoit_Dintegral_T4(Wilhoit wilhoit, double t1, double t2)
+
+cpdef double Wilhoit_Dintegral2_T0(Wilhoit wilhoit, double t1, double t2)
+
+cpdef double Wilhoit_Dintegral2_TM1(Wilhoit wilhoit, double t1, double t2)
+
 cpdef double NASA_integral2_T0(NASA polynomial, double T)
 
 cpdef double NASA_integral2_TM1(NASA polynomial, double T)
+
+cpdef double NASA_Dintegral2_T0(NASA polynomial, double Ta, double Tb)
+
+cpdef double NASA_Dintegral2_TM1(NASA polynomial, double Ta, double Tb)
 
