@@ -1281,10 +1281,10 @@ def Wilhoit_Dintegral_TM1(wilhoit, t1,t2):
     z22 = z2*z2
     if cython.compiled:
         logBplust = log((B + t2)/(B + t1))
-	logt=log(t2/t1)
+        logt=log(t2/t1)
     else:
         logBplust = math.log((B + t2)/(B + t1))
-	logt=math.log(t2/t1)
+        logt=math.log(t2/t1)
     result=                 cp0*logt + (cpInf-cp0)*((1. + a0 + a1 + a2 + a3)*(z2-z1) - ((a0 + 2*a1 + 3*a2 + 4*a3)*(z22-z12))/2. + ((a1 + 3*a2 + 6*a3)*(z2*z22-z1*z12))/3. -
           ((a2 + 4*a3)*(z22*z22-z12*z12))/4. + (a3*(z22*z22*z2-z12*z12*z1))/5. + logBplust)
     return result
@@ -1303,8 +1303,8 @@ def Wilhoit_Dintegral_T1(wilhoit, t1,t2):
     else:
         logBplust = math.log((B + t2)/(B + t1))
     result =  (cpInf*(t2*t2-t1*t1)/2. -((2. + a0 + a1 + a2 + a3)*B*(cpInf-cp0)*(t2-t1))  +
-		B*B*(cpInf-cp0)*((1. + 3*a0 + 6*a1 + 10*a2 + 15*a3)*(z2-z1) - ((a0 + 4*a1 + 10*a2 + 20*a3)*(z22-z12))/2. + ((a1 + 5*a2 + 15*a3)*(z2*z22-z1*z12))/3. -
-		((a2 + 6*a3)*(z22*z22-z12*z12))/4. + (a3*(z22*z22*z2-z12*z12*z1))/5. + (3. + 3*a0 + 4*a1 + 5*a2 + 6*a3)*logBplust))
+              B*B*(cpInf-cp0)*((1. + 3*a0 + 6*a1 + 10*a2 + 15*a3)*(z2-z1) - ((a0 + 4*a1 + 10*a2 + 20*a3)*(z22-z12))/2. + ((a1 + 5*a2 + 15*a3)*(z2*z22-z1*z12))/3. -
+              ((a2 + 6*a3)*(z22*z22-z12*z12))/4. + (a3*(z22*z22*z2-z12*z12*z1))/5. + (3. + 3*a0 + 4*a1 + 5*a2 + 6*a3)*logBplust))
     return result
 
 def Wilhoit_Dintegral_T2(wilhoit, t1,t2):
@@ -1323,8 +1323,8 @@ def Wilhoit_Dintegral_T2(wilhoit, t1,t2):
     else:
         logBplust = math.log((B + t2)/(B + t1))
     result=      ((3. + 3*a0 + 4*a1 + 5*a2 + 6*a3)*B*B*(cpInf-cp0)*(t2-t1) - ((2. + a0 + a1 + a2 + a3)*B*(cpInf-cp0)*(t22-t12))/2. + (cpInf*(t2*t22-t1*t12))/3. + 
-	    B**3*(cpInf-cp0)*(-((1. + 4*a0 + 10*a1 + 20*a2 + 35*a3)*(z2-z1)) + ((a0 + 5*(a1 + 3*a2 + 7*a3))*(z22-z12))/2. - ((a1 + 6*a2 + 21*a3)*(z2*z22-z1*z12))/3. +
-          ((a2 + 7*a3)*(z22*z22-z12*z12))/4. - (a3*(z22*z22*z2-z12*z12*z1))/5. - (4. + 6*a0 + 10*a1 + 15*a2 + 21*a3)*logBplust))
+              B**3*(cpInf-cp0)*(-((1. + 4*a0 + 10*a1 + 20*a2 + 35*a3)*(z2-z1)) + ((a0 + 5*(a1 + 3*a2 + 7*a3))*(z22-z12))/2. - ((a1 + 6*a2 + 21*a3)*(z2*z22-z1*z12))/3. +
+             ((a2 + 7*a3)*(z22*z22-z12*z12))/4. - (a3*(z22*z22*z2-z12*z12*z1))/5. - (4. + 6*a0 + 10*a1 + 15*a2 + 21*a3)*logBplust))
     return result
 
 def Wilhoit_Dintegral_T3(wilhoit, t1,t2):
@@ -1416,10 +1416,10 @@ def Wilhoit_Dintegral2_TM1(wilhoit, t1,t2):
     z28 = z24*z24
     if cython.compiled:
         logBplust = log((B + t2)/(B + t1))
-	logt=log(t2/t1)
+        logt=log(t2/t1)
     else:
         logBplust = math.log((B + t2)/(B + t1))
-	logt=math.log(t2/t1)
+        logt=math.log(t2/t1)
     #nb. didn't take the time to reorder to place z2 first
     result =         cp0*cp0*logt + cdiff*(((3. + 2*a0 + 2*a1 + 2*a2 + 2*a3)*cdiff + 2*(1. + a0 + a1 + a2 + a3)*cp0)*(-z1 + z2) +
           (((-3. - a0*a0 - 8*a1 - 10*a2 - 12*a3 - (a1 + a2 + a3)*(a1 + a2 + a3) - 2*a0*(3. + a1 + a2 + a3))*cdiff - 2*(a0 + 2*a1 + 3*a2 + 4*a3)*cp0)*(-z12 + z22))/2. +
