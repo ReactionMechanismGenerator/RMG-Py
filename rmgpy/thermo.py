@@ -1481,7 +1481,7 @@ def NASA_Dintegral2_T0(polynomial, Ta,Tb):
     Tb4=Tb2*Tb2
     result = (
         c0*c0*(Tb-Ta) + c0*c1*(Tb2-Ta2) + (2.*c0*c2+c1*c1)/3.*(Tb2*Tb-Ta2*Ta) + 0.5*(c0*c3+c1*c2)*(Tb4-Ta4) + 0.4*(c0*c4+c1*c3+0.5*c2*c2)*(Tb4*Tb-Ta4*Ta) +
-        (c1*c4+c2*c3)/3.*(Tb4*Tb2-Ta4*Ta2)
+        (c1*c4+c2*c3)/3.*(Tb4*Tb2-Ta4*Ta2) +
         (2.*c2*c4+c3*c3)/7.*(Tb4*Tb2*Tb-Ta4*Ta2*Ta) + 0.25*c3*c4*(Tb4*Tb4-Ta4*Ta4) +
         c4*c4*(Tb4*Tb4*Tb-Ta4*Ta4*Ta)/9.
     )
