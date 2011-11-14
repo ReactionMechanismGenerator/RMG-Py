@@ -106,7 +106,7 @@ class Species(rmgpy.species.Species):
         if self.thermo.__class__ != thermo0.__class__:
             # Compute RMS error of overall transformation
             Tlist = numpy.array([300.0, 400.0, 500.0, 600.0, 800.0, 1000.0, 1500.0], numpy.float64)
-            err = math.sqrt(numpy.sum((self.thermo.getHeatCapacities(Tlist) - thermo0.getHeatCapacities(Tlist))**2))/constants.R/len(Tlist)
+            err = math.sqrt(numpy.sum((self.thermo.getHeatCapacities(Tlist) - thermo0.getHeatCapacities(Tlist))**2)/len(Tlist))/constants.R
             logging.log(logging.WARNING if err > 0.1 else 0, 'Average RMS error in heat capacity fit to {0} = {1:g}*R'.format(self, err))
 
         # Restore implicit hydrogens if necessary
