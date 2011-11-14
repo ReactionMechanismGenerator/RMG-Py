@@ -411,7 +411,7 @@ class Wilhoit(ThermoModel):
         # computed during fitToDataForConstantB, but if speed here is not critical, this is fine
         return numpy.sum( (Cp_fit - Cplist) * (Cp_fit - Cplist) )
     
-    def fitToData(self, Tlist, Cplist, linear, nFreq, nRotors, H298, S298, B0=500.0, Bmin=300.0, Bmax=3000.0):
+    def fitToData(self, Tlist, Cplist, linear, nFreq, nRotors, H298, S298, B0=500.0, Bmin=300.0, Bmax=1000.0):
         """
         Fit a Wilhoit model to the data points provided, allowing the 
         characteristic temperature `B` to vary so as to improve the fit. This
@@ -683,7 +683,7 @@ def convertThermoModel(model, thermoClass, **kwargs):
             #optional keywords/parameters
             B0 = kwargs['B0'] if ('B0' in kwargs) else 500.0
             Bmin = kwargs['Bmin'] if ('Bmin' in kwargs) else 300.0
-            Bmax = kwargs['Bmax'] if ('Bmax' in kwargs) else 3000.0
+            Bmax = kwargs['Bmax'] if ('Bmax' in kwargs) else 1000.0
         except KeyError:
             raise ValueError('To convert ThermoData to Wilhoit or MultiNASA, you must provide the keyword arguments linear, nFreq, and nRotors.')
         output = Wilhoit().fitToData(model.Tdata.values, model.Cpdata.values, linear, nFreq, nRotors, model.H298.value, model.S298.value, B0=B0, Bmin=Bmin, Bmax=Bmax)
