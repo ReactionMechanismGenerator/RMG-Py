@@ -732,7 +732,7 @@ def getSpeciesIdentifier(species):
     """
 
     # Special case for inert colliders - just use the label if possible
-    if not species.reactive and 0 < len(species.label) < 10:
+    if not species.reactive and 0 < len(species.label) <= 10:
         return species.label
 
     # The algorithm is slightly different depending on whether or not the
@@ -741,7 +741,7 @@ def getSpeciesIdentifier(species):
     if species.index == -1:
         # No index present -- probably not in RMG job
         # In this case just return the label (if the right size)
-        if len(species.label) > 0 and len(species.label) < 10:
+        if len(species.label) > 0 and len(species.label) <= 10:
             return species.label
         
     else:
