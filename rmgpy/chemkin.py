@@ -735,29 +735,39 @@ def getSpeciesIdentifier(species):
     if not species.reactive and 0 < len(species.label) < 10:
         return species.label
 
-    # First try to use the label and index
-    # The label can only contain alphanumeric characters, hyphens, and underscores
-    if len(species.label) > 0 and species.index >= 0 and not re.search('[^A-Za-z0-9\-_]+', species.label):
-        name = '{0}({1:d})'.format(species.label, species.index)
-        if len(name) <= 10:
-            return name
-
-    # Next try the chemical formula
-    if len(species.molecule) > 0:
-        # Try the chemical formula
-        name = '{0}({1:d})'.format(species.molecule[0].getFormula(), species.index)
-        if len(name) <= 10:
-            return name
-
-    # As a last resort, just use the index
-    if species.index >= 0:
-        name = 'S({0:d})'.format(species.index)
-        if len(name) <= 10:
-            return name
-
+    # The algorithm is slightly different depending on whether or not the
+    # species has an index
+    # If so, we want to include the index in the identifier
     if species.index == -1:
-        # this didn't come from an RMG-job.  It came from a preexisting chemkin file.
-        return species.label
+        # No index present -- probably not in RMG job
+        # In this case just return the label (if the right size)
+        if len(species.label) > 0 and len(species.label) < 10:
+            return species.label
+        
+    else:
+        
+        # Index present - the index will be included in the identifier
+        # (at the expense of the current label or formula if need be)
+
+        # First try to use the label and index
+        # The label can only contain alphanumeric characters, hyphens, and underscores
+        if len(species.label) > 0 and species.index >= 0 and not re.search('[^A-Za-z0-9\-_]+', species.label):
+            name = '{0}({1:d})'.format(species.label, species.index)
+            if len(name) <= 10:
+                return name
+    
+        # Next try the chemical formula
+        if len(species.molecule) > 0:
+            # Try the chemical formula
+            name = '{0}({1:d})'.format(species.molecule[0].getFormula(), species.index)
+            if len(name) <= 10:
+                return name
+    
+        # As a last resort, just use the index
+        if species.index >= 0:
+            name = 'S({0:d})'.format(species.index)
+            if len(name) <= 10:
+                return name
 
     # If we're here then we just can't come up with a valid Chemkin name
     # for this species, so raise an exception
