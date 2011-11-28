@@ -644,6 +644,18 @@ def loadChemkinFile(path, dictionaryPath=None):
                     # True for Chemkin files generated from RMG-Java
                     kineticsList.pop(0)
                     commentsList.pop(0)
+                else:
+                    # In reality, comments can occur anywhere in the Chemkin
+                    # file (e.g. either or both of before and after the
+                    # reaction equation)
+                    # If we can't tell what semantics we are using, then just
+                    # throw the comments away
+                    # (This is better than failing to load the Chemkin file at
+                    # all, which would likely occur otherwise)
+                    if kineticsList[0] == '':
+                        kineticsList.pop(0)
+                    if len(kineticsList) != len(commentsList):
+                        commentsList = ['' for kinetics in kineticsList]
                     
                 for kinetics, comments in zip(kineticsList, commentsList):
                     reaction = readKineticsEntry(kinetics, speciesDict, energyUnits, moleculeUnits)
