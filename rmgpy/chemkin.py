@@ -277,10 +277,8 @@ def readKineticsEntry(entry, speciesDict, energyUnits, moleculeUnits):
                 )])
 
             else:
-                print line
                 # Assume a list of collider efficiencies
                 for collider, efficiency in zip(tokens[0::2], tokens[1::2]):
-                    
                     efficiencies[speciesDict[collider.strip()].molecule[0]] = float(efficiency.strip())
     
         # Decide which kinetics to keep and store them on the reaction object
@@ -602,8 +600,14 @@ def loadChemkinFile(path, dictionaryPath=None):
                 
             elif 'REACTIONS' in line:
                 # Reactions section
-                energyUnits, moleculeUnits = tokens[1:3]
-
+                energyUnits = 'CAL/MOL'
+                moleculeUnits = 'MOLES'
+                try:
+                    energyUnits = tokens[1]
+                    moleculeUnits = tokens[2]
+                except IndexError:
+                    pass
+                
                 kineticsList = []
                 commentsList = []
                 kinetics = ''
