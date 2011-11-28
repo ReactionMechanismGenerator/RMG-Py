@@ -52,6 +52,14 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds):
         atomEnergies = {'H':-0.499818 , 'N':-54.520543, 'O':-74.987624, 'C':-37.785385, 'P':-340.817186}
     elif modelChemistry == 'G3':
         atomEnergies = {'H':-0.5010030, 'N':-54.564343, 'O':-75.030991, 'C':-37.827717, 'P':-341.116432}
+    elif modelChemistry == 'Klip_1':
+        atomEnergies = {'H':-0.50003976, 'O':-75.00915718, 'C':-37.79249556}
+    elif modelChemistry == 'Klip_2':
+        #Klip QCI(tz,qz)
+        atomEnergies = {'H':-0.50003976, 'O':-75.00692746, 'C':-37.79044863}
+    elif modelChemistry == 'Klip_2_cc':
+        #Klip CCSD(T)(tz,qz)
+        atomEnergies = {'H':-0.50003976, 'O':-75.00681155, 'C':-37.79029443}
     else:
         logging.warning('Unknown model chemistry "{0}"; not applying energy corrections.'.format(modelChemistry))
         return E0
