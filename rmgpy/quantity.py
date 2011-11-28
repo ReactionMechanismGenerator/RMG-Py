@@ -438,3 +438,7 @@ class Constants:
 
 # An instance of the Constants class providing easy access to the physical constants
 constants = Constants()
+
+globals().update({
+    'constants': constants,
+})
