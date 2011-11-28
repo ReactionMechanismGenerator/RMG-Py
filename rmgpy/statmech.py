@@ -195,6 +195,21 @@ class Translation(Mode):
         rho = qt * Elist**1.5 / (numpy.sqrt(math.pi) * 0.75) / constants.Na
         return rho
 
+    def getSumOfStates(self, Elist):
+        """
+        Return the sum of states at the specified energies `Elist` in J/mol
+        above the ground state. The formula is
+
+        .. math:: N(E) = \\left( \\frac{2 \\pi m}{h^2} \\right)^{3/2} \\frac{E^{5/2}}{\\Gamma(7/2)} \\frac{1}{P}
+
+        where :math:`E` is energy, :math:`m` is mass, :math:`k_\\mathrm{B}` is
+        the Boltzmann constant, and :math:`R` is the gas law constant.
+        """
+        cython.declare(sumStates=numpy.ndarray, qt=cython.double)
+        qt = ((2 * constants.pi * self.mass.value / constants.Na / constants.Na) / (constants.h * constants.h))**(1.5) / 101325.
+        sumStates = qt * Elist**2.5 / (numpy.sqrt(math.pi) * 15.0/8.0) / constants.Na
+        return sumStates
+
 ################################################################################
 
 class RigidRotor(Mode):
@@ -343,6 +358,33 @@ class RigidRotor(Mode):
             for inertia in self.inertia.values:
                 theta *= constants.h * constants.h / (8 * constants.pi * constants.pi * inertia) * constants.Na
             return 2.0 * numpy.sqrt(Elist / theta) / self.symmetry
+
+    def getSumOfStates(self, Elist):
+        """
+        Return the sum of states at the specified energies `Elist` in J/mol
+        above the ground state. The formula is
+
+        .. math:: N(E) = \\frac{8 \\pi^2 I}{\\sigma h^2} E
+
+        for linear rotors and
+
+        .. math:: N(E) = \\frac{\\sqrt{\\pi}}{\\sigma} \\left( \\frac{8 \\pi^2}{h^2} \\right)^{3/2} \\sqrt{I_\\mathrm{A} I_\\mathrm{B} I_\\mathrm{C}} \\frac{E^{3/2}}{(3/2)!}
+
+        for nonlinear rotors. Above, :math:`E` is energy, :math:`\\sigma`
+        is the symmetry number, :math:`I` is the moment of inertia,
+        :math:`k_\\mathrm{B}` is the Boltzmann constant, and :math:`h` is the
+        Planck constant.
+        """
+        cython.declare(theta=cython.double, inertia=cython.double)
+        if self.linear:
+            inertia = self.inertia.value
+            theta = constants.h * constants.h / (8 * constants.pi * constants.pi * inertia) * constants.Na
+            return Elist / theta / self.symmetry
+        else:
+            theta = 1.0
+            for inertia in self.inertia.values:
+                theta *= constants.h * constants.h / (8 * constants.pi * constants.pi * inertia) * constants.Na
+            return 4.0/3.0 * Elist * numpy.sqrt(Elist / theta) / self.symmetry
 
 ################################################################################
 
@@ -658,6 +700,40 @@ class HinderedRotor(Mode):
                 rho[i] = pre * math.sqrt(V0 / Elist[i]) * cellipk(V0 / Elist[i])
         return rho
 
+    def getSumOfStates(self, Elist):
+        """
+        Return the sum of states at the specified energies `Elist` in J/mol
+        above the ground state. For the cosine potential, the formula is
+
+        .. math:: N(E) = \\frac{4 q_\\mathrm{1f} V_0^{1/2}}{\\pi^{3/2}} \\left[ \\mathcal{E}(E / V_0) - \\left(1 - \\frac{E}{V_0} \\right) \\mathcal{K}(E / V_0) \\right] \\hspace{20pt} E < V_0
+
+        and
+
+        .. math:: N(E) = \\frac{4 q_\\mathrm{1f} E^{1/2}}{\\pi^{3/2}} \\mathcal{E}(V_0 / E) \\hspace{20pt} E > V_0
+
+        where
+
+        .. math:: q_\\mathrm{1f} = \\frac{\\pi^{1/2}}{\\sigma} \\left( \\frac{8 \\pi^2 I}{h^2} \\right)^{1/2}
+
+        :math:`E` is energy, :math:`V_0` is barrier height, and
+        :math:`\\mathcal{K}(x)` and :math:`\\mathcal{E}(x)` are the complete 
+        elliptic integrals of the first and second kind, respectively. There is
+        currently no functionality for using the Fourier series potential.
+        """
+        cython.declare(sumStates=numpy.ndarray, q1f=cython.double, pre=cython.double, V0=cython.double, i=cython.int)
+        sumStates = numpy.zeros_like(Elist)
+        q1f = math.sqrt(8 * math.pi * math.pi * math.pi * self.inertia.value / constants.h / constants.h / constants.Na) / self.symmetry
+        V0 = self.barrier.value
+        pre = 4.0 * q1f * math.sqrt(V0) / math.sqrt(math.pi * math.pi * math.pi)
+        # The following is only valid in the classical limit
+        # Note that cellipk(1) = infinity, so we must skip that value
+        for i in range(len(Elist)):
+            if Elist[i] / V0 < 1:
+                sumStates[i] = pre * (cellipe(Elist[i] / V0) - (1 - Elist[i] / V0) * cellipk(Elist[i] / V0))
+            elif Elist[i] / V0 > 1:
+                sumStates[i] = pre * math.sqrt(Elist[i] / V0) * cellipe(V0 / Elist[i])
+        return sumStates
+
     def getFrequency(self):
         """
         Return the frequency of vibration in cm^-1 corresponding to the limit of
@@ -694,6 +770,13 @@ def cellipk(x):
     """
     import scipy.special
     return scipy.special.ellipk(x)
+
+def cellipe(x):
+    """
+    Return the value of the complete elliptic integral of the second kind at `x`.
+    """
+    import scipy.special
+    return scipy.special.ellipe(x)
 
 ################################################################################
 
@@ -827,6 +910,7 @@ class HarmonicOscillator(Mode):
             rho = rho0
         else:
             rho = numpy.zeros_like(Elist)
+            rho[0] = 1.0
         dE = Elist[1] - Elist[0]
         nE = len(Elist)
         for freq in self.frequencies.values:
@@ -834,6 +918,31 @@ class HarmonicOscillator(Mode):
             for n in range(dn+1, nE):
                 rho[n] = rho[n] + rho[n-dn]
         return rho
+
+    def getSumOfStates(self, Elist, sumStates0=None):
+        """
+        Return the sum of states at the specified energies `Elist` in J/mol
+        above the ground state. The Beyer-Swinehart method is used to
+        efficiently convolve the vibrational sum of states into the
+        sum of states of other modes. To be accurate, this requires a small
+        (:math:`1-10 \\ \\mathrm{cm^{-1}}` or so) energy spacing.
+        """
+        cython.declare(sumStates=numpy.ndarray, freq=cython.double)
+        cython.declare(dE=cython.double, nE=cython.int, dn=cython.int, n=cython.int)
+        if sumStates0 is not None:
+            sumStates = sumStates0
+        else:
+            sumStates = numpy.ones_like(Elist)
+        # The Beyer-Swinehart algorithm is exactly the same as for the density 
+        # of states; the only difference is in the initial array that the 
+        # algorithm is applied to!
+        dE = Elist[1] - Elist[0]
+        nE = len(Elist)
+        for freq in self.frequencies.values:
+            dn = int(freq * constants.h * constants.c * 100 * constants.Na / dE)
+            for n in range(dn+1, nE):
+                sumStates[n] = sumStates[n] + sumStates[n-dn]
+        return sumStates
 
 ################################################################################
 
@@ -941,8 +1050,6 @@ class StatesModel:
         for mode in self.modes:
             if not isinstance(mode, HarmonicOscillator):
                 rho = convolve(rho, mode.getDensityOfStates(Elist), Elist)
-        # We know the number of modes in the ground state from the spin multiplicity
-        rho[0] = self.spinMultiplicity
         # Vibrational modes
         # We need to use a grain size of 10 cm^-1 or less to get the desired accuracy
         Emin = Elist[0]; Emax = Elist[-1]; dE = Elist[1] - Elist[0]
@@ -954,14 +1061,15 @@ class StatesModel:
         rho_vib = numpy.zeros_like(Elist_vib)
         for i in range(len(Elist)-1):
             for j in range(mult):
-                rho_vib[i*mult+j] = rho[i] * (rho[i+1] / rho[i]) ** ((Elist_vib[i*mult+j] - Elist[i]) / (Elist[i+1] - Elist[i]))
+                if rho[i] != 0:
+                    rho_vib[i*mult+j] = rho[i] * (rho[i+1] / rho[i]) ** ((Elist_vib[i*mult+j] - Elist[i]) / (Elist[i+1] - Elist[i]))
         rho_vib[-1] = rho[-1]
         for mode in self.modes:
             if isinstance(mode, HarmonicOscillator):
                 rho_vib = mode.getDensityOfStates(Elist_vib, rho_vib)
         for i in range(len(Elist)):
             rho[i] = rho_vib[i*mult]
-        return rho
+        return rho * self.spinMultiplicity
 
     def getSumOfStates(self, Elist):
         """
@@ -969,13 +1077,44 @@ class StatesModel:
         in J/mol above the ground state. The sum of states is computed via
         numerical integration of the density of states.
         """
-        cython.declare(densStates=numpy.ndarray, sumStates=numpy.ndarray, i=cython.int, dE=cython.double)
-        densStates = self.getDensityOfStates(Elist)
-        sumStates = numpy.zeros_like(densStates)
-        dE = Elist[1] - Elist[0]
-        for i in range(len(densStates)):
-            sumStates[i] = numpy.sum(densStates[0:i]) * dE
-        return sumStates
+        cython.declare(sumStates=numpy.ndarray, i=cython.int, j=cython.int, E=cython.double, mult=cython.int)
+        sumStates = numpy.zeros_like(Elist)
+        # Active K-rotor
+        # Only include this if there is no translation or rotation data
+        translators = [mode for mode in self.modes if isinstance(mode, Translation)]
+        rotors = [mode for mode in self.modes if isinstance(mode, RigidRotor)]
+        if len(translators) == 0 and len(rotors) == 0:
+            sumStates0 = numpy.zeros_like(Elist)
+            for i, E in enumerate(Elist):
+                if E > 0: sumStates0[i] = math.sqrt(1.0 * E)
+            sumStates = convolve(sumStates, sumStates0, Elist)
+        # Other non-vibrational modes
+        for mode in self.modes:
+            if not isinstance(mode, HarmonicOscillator):
+                if numpy.any(sumStates):
+                    sumStates = convolve(sumStates, mode.getDensityOfStates(Elist), Elist)
+                else:
+                    sumStates = convolve(sumStates, mode.getSumOfStates(Elist), Elist)
+        # Vibrational modes
+        # We need to use a grain size of 10 cm^-1 or less to get the desired accuracy
+        Emin = Elist[0]; Emax = Elist[-1]; dE = Elist[1] - Elist[0]
+        dE_vib = dE; mult = 1
+        while dE_vib > 119.6215:
+            mult *= 2
+            dE_vib /= 2.
+        Elist_vib = numpy.arange(Emin, Emax + dE_vib, dE_vib)
+        sumStates_vib = numpy.zeros_like(Elist_vib)
+        for i in range(len(Elist)-1):
+            for j in range(mult):
+                if sumStates[i] != 0:
+                    sumStates_vib[i*mult+j] = sumStates[i] * (sumStates[i+1] / sumStates[i]) ** ((Elist_vib[i*mult+j] - Elist[i]) / (Elist[i+1] - Elist[i]))
+        sumStates_vib[-1] = sumStates[-1]
+        for mode in self.modes:
+            if isinstance(mode, HarmonicOscillator):
+                sumStates_vib = mode.getDensityOfStates(Elist_vib, sumStates_vib)
+        for i in range(len(Elist)):
+            sumStates[i] = sumStates_vib[i*mult]
+        return sumStates * self.spinMultiplicity
     
     def getPartitionFunctions(self, Tlist):
         return numpy.array([self.getPartitionFunction(T) for T in Tlist], numpy.float64)

@@ -56,6 +56,8 @@ cdef class Translation(Mode):
     
     cpdef numpy.ndarray getDensityOfStates(self, numpy.ndarray Elist)
 
+    cpdef numpy.ndarray getSumOfStates(self, numpy.ndarray Elist)
+
 ################################################################################
 
 cdef class RigidRotor(Mode):
@@ -74,6 +76,8 @@ cdef class RigidRotor(Mode):
 
     cpdef numpy.ndarray getDensityOfStates(self, numpy.ndarray Elist)
 
+    cpdef numpy.ndarray getSumOfStates(self, numpy.ndarray Elist)
+
 ################################################################################
 
 cdef class HinderedRotor(Mode):
@@ -91,6 +95,8 @@ cdef class HinderedRotor(Mode):
     cpdef double getEnthalpy(self, double T)
 
     cpdef double getEntropy(self, double T)
+
+    cpdef numpy.ndarray getSumOfStates(self, numpy.ndarray Elist)
 
     cpdef numpy.ndarray getDensityOfStates(self, numpy.ndarray Elist)
 
@@ -115,6 +121,8 @@ cdef class HarmonicOscillator(Mode):
     cpdef double getEnthalpy(self, double T)
 
     cpdef double getEntropy(self, double T)
+
+    cpdef numpy.ndarray getSumOfStates(self, numpy.ndarray Elist, numpy.ndarray sumStates0=?)
 
     cpdef numpy.ndarray getDensityOfStates(self, numpy.ndarray Elist, numpy.ndarray rho0=?)
 
