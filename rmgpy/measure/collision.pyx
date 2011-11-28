@@ -228,6 +228,9 @@ cdef class SingleExponentialDown(CollisionModel):
     def __init__(self, alpha0=None, T0=None, n=None):
         if alpha0 is not None:
             self.alpha0 = Quantity(alpha0)
+            if self.alpha0.units == 'cm^-1':
+                self.alpha0.value *= 11.96
+                self.alpha0.units = 'J/mol'
         else:
             self.alpha0 = None
         if T0 is not None:
