@@ -73,6 +73,7 @@ def getMainExtensionModules():
 
 def getMeasureExtensionModules():
     return [
+        Extension('rmgpy.measure._network', ['rmgpy/measure/_network.pyx'], include_dirs=['.']),
         Extension('rmgpy.measure.collision', ['rmgpy/measure/collision.pyx'], include_dirs=['.']),
         Extension('rmgpy.measure.reaction', ['rmgpy/measure/reaction.pyx'], include_dirs=['.']),
         Extension('rmgpy.measure.msc', ['rmgpy/measure/msc.pyx'], include_dirs=['.']),

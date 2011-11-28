@@ -492,39 +492,18 @@ class Network:
         `Elist0` and `Elist` do not match; this should not be a significant
         source of error as long as the grain sizes are sufficiently small.
         """
-        Elist = self.Elist
-        Elist0 = self.Elist_full
-        densStates0 = self.densStates_full
-        T = self.T
-        E0 = self.E0
-        
-        Nisom = len(self.isomers)
-        Nreac = len(self.reactants)
-        Nprod = len(self.products)
-        Ngrains = len(Elist)
-        Ngrains0 = len(Elist0)
-        
-        densStates = numpy.zeros((Nisom+Nreac+Nprod, Ngrains), numpy.float64)
-        for i in range(Nisom+Nreac+Nprod):
-            for r in range(Ngrains):
-                if Elist[r] >= E0[i]:
-                    for s in range(Ngrains0):
-                        if E0[i] + Elist0[s] >= Elist[r]:
-                            if densStates0[i,s-1] > 0 and densStates0[i,s] > 0:
-                                densStates[i,r] = densStates0[i,s] * (densStates0[i,s-1] / densStates0[i,s]) ** ((Elist[r] - E0[i] - Elist0[s]) / (Elist0[s-1] - Elist0[s]))
-                            else:
-                                densStates[i,r] = densStates0[i,s] + (densStates0[i,s-1] - densStates0[i,s]) * (Elist[r] - E0[i] - Elist0[s]) / (Elist0[s-1] - Elist0[s])
-                            break
-                    else:
-                        if i < Nisom:
-                            raise NetworkError('Unable to determine density of states for isomer {0} at {1:g} K.'.format(self.isomers[i],T))
-                        elif i < Nisom+Nreac:
-                            raise NetworkError('Unable to determine density of states for reactant channel {0} at {1:g} K.'.format(' + '.join(['{0!s}'.format(r) for r in self.reactants[i-Nisom]]),T))
-                        else:
-                            raise NetworkError('Unable to determine density of states for product channel {0} at {1:g} K.'.format(' + '.join(['{0!s}'.format(r) for p in self.products[i-Nisom-Nreac]]),T))
-        
-        self.densStates = densStates
-        return densStates
+        from _network import mapDensitiesOfStates
+        self.densStates = mapDensitiesOfStates(
+            self.Elist,
+            self.Elist_full,
+            self.densStates_full,
+            self.T,
+            self.E0,
+            len(self.isomers), 
+            len(self.reactants), 
+            len(self.products),
+        )
+        return self.densStates
 
     def calculateMicrocanonicalRates(self, check=True):
         """
