@@ -154,8 +154,3 @@ cdef class StatesModel:
     cpdef numpy.ndarray getEnthalpies(self, numpy.ndarray Tlist)
 
     cpdef numpy.ndarray getEntropies(self, numpy.ndarray Tlist)
-    
-################################################################################
-
-cpdef numpy.ndarray convolve(numpy.ndarray rho1, numpy.ndarray rho2, numpy.ndarray Elist)
-

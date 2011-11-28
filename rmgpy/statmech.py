@@ -51,6 +51,7 @@ import cython
 import numpy
 
 from quantity import Quantity, constants
+from _statmech import convolve, convolveBS
 
 ################################################################################
 
@@ -904,20 +905,10 @@ class HarmonicOscillator(Mode):
         density of states of other modes. To be accurate, this requires a small
         (:math:`1-10 \\ \\mathrm{cm^{-1}}` or so) energy spacing.
         """
-        cython.declare(rho=numpy.ndarray, freq=cython.double)
-        cython.declare(dE=cython.double, nE=cython.int, dn=cython.int, n=cython.int)
-        if rho0 is not None:
-            rho = rho0
-        else:
-            rho = numpy.zeros_like(Elist)
-            rho[0] = 1.0
-        dE = Elist[1] - Elist[0]
-        nE = len(Elist)
-        for freq in self.frequencies.values:
-            dn = int(freq * constants.h * constants.c * 100 * constants.Na / dE)
-            for n in range(dn+1, nE):
-                rho[n] = rho[n] + rho[n-dn]
-        return rho
+        if rho0 is None:
+            rho0 = numpy.zeros_like(Elist)
+            rho0[0] = 1.0
+        return convolveBS(self.frequencies.values, Elist, rho0)
 
     def getSumOfStates(self, Elist, sumStates0=None):
         """
@@ -927,22 +918,9 @@ class HarmonicOscillator(Mode):
         sum of states of other modes. To be accurate, this requires a small
         (:math:`1-10 \\ \\mathrm{cm^{-1}}` or so) energy spacing.
         """
-        cython.declare(sumStates=numpy.ndarray, freq=cython.double)
-        cython.declare(dE=cython.double, nE=cython.int, dn=cython.int, n=cython.int)
-        if sumStates0 is not None:
-            sumStates = sumStates0
-        else:
-            sumStates = numpy.ones_like(Elist)
-        # The Beyer-Swinehart algorithm is exactly the same as for the density 
-        # of states; the only difference is in the initial array that the 
-        # algorithm is applied to!
-        dE = Elist[1] - Elist[0]
-        nE = len(Elist)
-        for freq in self.frequencies.values:
-            dn = int(freq * constants.h * constants.c * 100 * constants.Na / dE)
-            for n in range(dn+1, nE):
-                sumStates[n] = sumStates[n] + sumStates[n-dn]
-        return sumStates
+        if sumStates0 is None:
+            sumStates0 = numpy.ones_like(Elist)
+        return convolveBS(self.frequencies.values, Elist, sumStates0)
 
 ################################################################################
 
@@ -1178,33 +1156,3 @@ class StatesModel:
                 d4fdx4 = (self.__phi(x+2*dx, E) - 4 * self.__phi(x+dx, E) + 6 * self.__phi(x, E) - 4 * self.__phi(x-dx, E) + self.__phi(x-2*dx, E)) / (dx**4)
                 rho[i] *= 1 + d4fdx4 / 8 / (d2fdx2**2) - 5 * (d3fdx3**2) / 24 / (d2fdx2**3)
         return rho
-
-def convolve(rho1, rho2, Elist):
-    """
-    Convolutes two density of states arrays `rho1` and `rho2` with corresponding
-    energies `Elist` together using the equation
-
-    .. math:: \\rho(E) = \\int_0^E \\rho_1(x) \\rho_2(E-x) \\, dx
-
-    The units of the parameters do not matter so long as they are consistent.
-    """
-
-    cython.declare(rho=numpy.ndarray, found1=cython.bint, found2=cython.bint)
-    cython.declare(dE=cython.double, nE=cython.int, i=cython.int, j=cython.int)
-    rho = numpy.zeros_like(Elist)
-
-    found1 = rho1.any(); found2 = rho2.any()
-    if not found1 and not found2:
-        pass
-    elif found1 and not found2:
-        rho = rho1
-    elif not found1 and found2:
-        rho = rho2
-    else:
-        dE = Elist[1] - Elist[0]
-        nE = len(Elist)
-        for i in range(nE):
-            for j in range(i+1):
-                rho[i] += rho2[i-j] * rho1[i] * dE
-
-    return rho
