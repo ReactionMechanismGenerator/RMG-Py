@@ -41,7 +41,7 @@ import numpy
 cimport numpy
 import logging
 
-from rmgpy.quantity import constants, Quantity
+from rmgpy.quantity cimport constants, Quantity
 import rmgpy.reaction
 from rmgpy.kinetics import *
 

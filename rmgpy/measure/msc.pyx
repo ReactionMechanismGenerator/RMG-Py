@@ -38,7 +38,7 @@ import numpy
 cimport numpy
 import cython
 
-from rmgpy.quantity import constants
+from rmgpy.quantity cimport constants
 from collision import calculateCollisionEfficiency
 
 ################################################################################

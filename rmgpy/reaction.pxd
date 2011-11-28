@@ -24,6 +24,7 @@
 #
 ################################################################################
 
+from quantity cimport constants
 from species cimport Species, TransitionState
 from molecule cimport Atom, Molecule
 from element cimport Element

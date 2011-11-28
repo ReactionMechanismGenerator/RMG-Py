@@ -47,7 +47,7 @@ import logging
 import cython
 
 from rmgpy.quantity import Quantity, constants
-from rmgpy.quantity cimport Quantity
+from rmgpy.quantity cimport Quantity, constants
 
 ################################################################################
 

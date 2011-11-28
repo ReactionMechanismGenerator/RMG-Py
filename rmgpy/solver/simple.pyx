@@ -37,7 +37,7 @@ from base cimport ReactionSystem
 cimport cython
 
 from rmgpy.quantity import Quantity, constants
-from rmgpy.quantity cimport Quantity
+from rmgpy.quantity cimport Quantity, constants
 
 cdef class SimpleReactor(ReactionSystem):
     """
