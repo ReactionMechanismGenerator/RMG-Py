@@ -49,7 +49,7 @@ class InputError(Exception): pass
 rmg = None
 speciesDict = {}
 
-def database(path, thermoLibraries=None, reactionLibraries=None, frequenciesLibraries=None, seedMechanisms=None, kineticsFamilies='default', kineticsDepositories='default', kineticsEstimator='group additivity'):
+def database(thermoLibraries=None, reactionLibraries=None, frequenciesLibraries=None, seedMechanisms=None, kineticsFamilies='default', kineticsDepositories='default', kineticsEstimator='group additivity'):
     # This function just stores the information about the database to be loaded
     # We don't actually load the database until after we're finished reading
     # the input file
@@ -57,7 +57,8 @@ def database(path, thermoLibraries=None, reactionLibraries=None, frequenciesLibr
     if isinstance(reactionLibraries, str): reactionLibraries = [reactionLibraries]
     if isinstance(seedMechanisms, str): seedMechanisms = [seedMechanisms]
     if isinstance(frequenciesLibraries, str): frequenciesLibraries = [frequenciesLibraries]
-    rmg.databaseDirectory = os.path.abspath(os.path.expandvars(path))
+    #rmg.databaseDirectory = os.path.abspath(os.path.expandvars(path))
+    rmg.databaseDirectory = os.path.join(rmgpy.getPath(),'..','..','RMG-database','input')
     rmg.thermoLibraries = thermoLibraries or []
     rmg.reactionLibraries = reactionLibraries or []
     rmg.seedMechanisms = seedMechanisms or []
@@ -245,7 +246,7 @@ def saveInputFile(path, rmg):
 
     # Databases
     f.write('database(\n')
-    f.write('    "{0}",\n'.format(rmg.databaseDirectory))
+    #f.write('    "{0}",\n'.format(rmg.databaseDirectory))
     f.write('    thermoLibraries = {0!r},\n'.format(rmg.thermoLibraries))
     f.write('    reactionLibraries = {0!r},\n'.format(rmg.reactionLibraries))
     f.write('    seedMechanisms = {0!r},\n'.format(rmg.seedMechanisms))

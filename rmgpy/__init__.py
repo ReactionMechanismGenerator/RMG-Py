@@ -31,6 +31,12 @@
 """
 This is the rmg module.
 """
-pass
 
+import os
+import os.path
 
+def getPath():
+    """
+    Return the directory that this file is found in on disk.
+    """
+    return os.path.abspath(os.path.dirname(__file__))
