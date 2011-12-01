@@ -1,0 +1,24 @@
+################################################################################
+#
+#   This is a configuration file for RMG-Py. 
+#
+#   A copy of this file is always available from site-packages/rmgpy/rmgrc. 
+#   Note that any changes made to that file will likely be overridden when 
+#   installing an updated version of RMG-Py. If you want to keep a permanent 
+#   local copy that will not be over-written, place it in $HOME/.rmg/rmgrc 
+#   (Unix-based systems) or C:\Documents and Settings\yourname\.rmg\rmgrc 
+#   (Windows systems).
+#
+#   This file is best viewed in a editor which supports python mode
+#   syntax highlighting. Blank lines, or lines starting with a comment
+#   symbol (#), are ignored, as are trailing comments.  Other lines must
+#   have the format
+#
+#       key : val # optional comment
+#
+#   The whitespace before and after the colon is optional.
+#
+################################################################################
+
+# The path to the directory where the RMG-database is located on disk
+#database.directory : ../../RMG-database/input

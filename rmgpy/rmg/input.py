@@ -31,6 +31,8 @@
 import logging
 import quantities
 
+from rmgpy import settings
+
 from rmgpy.molecule import Molecule
 
 from rmgpy.data.rmg import RMGDatabase
@@ -57,7 +59,7 @@ def database(thermoLibraries=None, reactionLibraries=None, frequenciesLibraries=
     if isinstance(reactionLibraries, str): reactionLibraries = [reactionLibraries]
     if isinstance(seedMechanisms, str): seedMechanisms = [seedMechanisms]
     if isinstance(frequenciesLibraries, str): frequenciesLibraries = [frequenciesLibraries]
-    #rmg.databaseDirectory = os.path.abspath(os.path.expandvars(path))
+    rmg.databaseDirectory = settings['database.directory']
     rmg.databaseDirectory = os.path.join(rmgpy.getPath(),'..','..','RMG-database','input')
     rmg.thermoLibraries = thermoLibraries or []
     rmg.reactionLibraries = reactionLibraries or []
