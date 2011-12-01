@@ -1,10 +1,11 @@
 # Data sources
 database(
-    '../RMG-database/input',
     thermoLibraries = ['primaryThermoLibrary'],
     reactionLibraries = [],
     seedMechanisms = [],
-    kineticsEstimator = 'group additivity',
+    kineticsDepositories = ['training'],
+    kineticsFamilies = ['!Intra_Disproportionation'],
+    kineticsEstimator = 'rate rules',
 )
 
 # List of species
@@ -35,7 +36,7 @@ simulator(
 model(
     toleranceKeepInEdge=0.0,
     toleranceMoveToCore=0.1,
-    toleranceInterruptSimulation=1.0,
+    toleranceInterruptSimulation=0.1,
     maximumEdgeSpecies=100000
 )
 

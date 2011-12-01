@@ -1,9 +1,11 @@
 # Data sources
 database(
-    '../RMG-database/input',
     thermoLibraries = ['primaryThermoLibrary', 'GRI-Mech3.0'],
     reactionLibraries = [],
     seedMechanisms = ['GRI-Mech3.0'],
+    kineticsDepositories = ['training'],
+    kineticsFamilies = ['!Intra_Disproportionation'],
+    kineticsEstimator = 'rate rules',
 )
 
 # List of species

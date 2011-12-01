@@ -1,11 +1,11 @@
 # Data sources
 database(
-    '/$RMGpy/RMG-database/input',
     thermoLibraries = ['primaryThermoLibrary', 'GRI-Mech3.0'],
-    reactionLibraries = ['GRI-Mech3.0'],
-    seedMechanisms = ['Glarborg/C1'],
+    reactionLibraries = [],
+    seedMechanisms = [],
     kineticsDepositories = ['training'], #  'all', 'default'==['training'], [], 
-    kineticsEstimator = 'rate rules',  # or 'rate rules'
+    kineticsFamilies = ['!Intra_Disproportionation'],
+    kineticsEstimator = 'rate rules',
 )
 
 # List of species
@@ -76,14 +76,14 @@ simulator(
 
 model(
     toleranceKeepInEdge=0.0,
-    toleranceMoveToCore=0.1,
-    toleranceInterruptSimulation=1.0,
+    toleranceMoveToCore=0.5,
+    toleranceInterruptSimulation=0.5,
     maximumEdgeSpecies=100000
 )
 
 pressureDependence(
     method='modified strong collision',
-    maximumGrainSize=(2.0,'kcal/mol'),
+    maximumGrainSize=(1.0,'kcal/mol'),
     minimumNumberOfGrains=200,
     temperatures=(300,2000,'K',8),
     pressures=(0.01,100,'bar',5),
