@@ -60,7 +60,6 @@ def database(thermoLibraries=None, reactionLibraries=None, frequenciesLibraries=
     if isinstance(seedMechanisms, str): seedMechanisms = [seedMechanisms]
     if isinstance(frequenciesLibraries, str): frequenciesLibraries = [frequenciesLibraries]
     rmg.databaseDirectory = settings['database.directory']
-    rmg.databaseDirectory = os.path.join(rmgpy.getPath(),'..','..','RMG-database','input')
     rmg.thermoLibraries = thermoLibraries or []
     rmg.reactionLibraries = reactionLibraries or []
     rmg.seedMechanisms = seedMechanisms or []
