@@ -760,6 +760,9 @@ def getSpeciesIdentifier(species):
         if len(species.label) > 0 and len(species.label) <= 10 and not re.search(r'[^A-Za-z0-9\-_,\(\)\*]+', species.label):
             return species.label
         
+        elif len(species.label) > 0 and len(species.label) <= 15 and not re.search(r'[^A-Za-z0-9\-_,\(\)\*]+', species.label):
+            return species.label
+            logging.warning('Species label is longer than 10 characters and may exceed chemkin string limit')
     else:
         
         # Index present - the index will be included in the identifier
