@@ -249,7 +249,7 @@ class GaussianLog:
         """
 
         modes = []
-        E0 = None; E0_cbs = None
+        E0 = None; E0_cbs = None; ZPE = None
         spinMultiplicity = 1
 
         f = open(self.path, 'r')
@@ -260,15 +260,23 @@ class GaussianLog:
                 E0 = float(line.split()[4]) * 4.35974394e-18 * constants.Na
             elif 'CBS-QB3 (0 K)' in line or 'G3 (O K)' in line:
                 E0_cbs = float(line.split()[3]) * 4.35974394e-18 * constants.Na
-            
+            elif 'Zero-point correction=' in line:
+                ZPE = float(line.split()[2])
+            elif '\\ZeroPoint=' in line:
+                start = line.find('\\ZeroPoint=') + 11
+                end = line.find('\\', start)
+                ZPE = float(line[start:end])
             # Read the next line in the file
             line = f.readline()
 
         # Close file when finished
         f.close()
-
+        
         if E0_cbs is not None: return E0_cbs
-        elif E0 is not None: return E0
+        elif E0 is not None: 
+            if ZPE is None:
+                raise ChemPyError('Unable to find zero-point energy in Gaussian log file.')
+            return E0 + ZPE
         else: raise ChemPyError('Unable to find energy in Gaussian log file.')
     
     def loadScanEnergies(self):
