@@ -261,11 +261,11 @@ class GaussianLog:
             elif 'CBS-QB3 (0 K)' in line or 'G3 (O K)' in line:
                 E0_cbs = float(line.split()[3]) * 4.35974394e-18 * constants.Na
             elif 'Zero-point correction=' in line:
-                ZPE = float(line.split()[2])
+                ZPE = float(line.split()[2]) * 4.35974394e-18 * constants.Na
             elif '\\ZeroPoint=' in line:
                 start = line.find('\\ZeroPoint=') + 11
                 end = line.find('\\', start)
-                ZPE = float(line[start:end])
+                ZPE = float(line[start:end]) * 4.35974394e-18 * constants.Na
             # Read the next line in the file
             line = f.readline()
 
