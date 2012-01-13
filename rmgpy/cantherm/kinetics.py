@@ -65,7 +65,7 @@ def generateKineticsModel(reaction, tunneling='', plot=False):
     
 ################################################################################
 
-def saveKinetics(reaction, label, path):
+def saveKinetics(reaction, tunneling, label, path):
     """
     Append the kinetic model generated for `reaction` with associated
     string `label` to the file located at `path` on disk.
@@ -75,16 +75,20 @@ def saveKinetics(reaction, label, path):
 
     Aunits = reaction.kinetics.A.units
     
-    f.write('# Kinetics for {0}:\n'.format(label)) # Note: This includes reaction-path degeneracy!
-    f.write('#   k(300 K)  = {0:12.3e} {1}\n'.format(reaction.kinetics.getRateCoefficient(300, 1e5), Aunits))
-    f.write('#   k(400 K)  = {0:12.3e} {1}\n'.format(reaction.kinetics.getRateCoefficient(400, 1e5), Aunits))
-    f.write('#   k(500 K)  = {0:12.3e} {1}\n'.format(reaction.kinetics.getRateCoefficient(500, 1e5), Aunits))
-    f.write('#   k(600 K)  = {0:12.3e} {1}\n'.format(reaction.kinetics.getRateCoefficient(600, 1e5), Aunits))
-    f.write('#   k(800 K)  = {0:12.3e} {1}\n'.format(reaction.kinetics.getRateCoefficient(800, 1e5), Aunits))
-    f.write('#   k(1000 K) = {0:12.3e} {1}\n'.format(reaction.kinetics.getRateCoefficient(1000, 1e5), Aunits))
-    f.write('#   k(1500 K) = {0:12.3e} {1}\n'.format(reaction.kinetics.getRateCoefficient(1500, 1e5), Aunits))
-    f.write('#   k(2000 K) = {0:12.3e} {1}\n'.format(reaction.kinetics.getRateCoefficient(2000, 1e5), Aunits))
-
+    f.write('#   ======= =========== =========== =========== ===============\n')
+    f.write('#   Temp.   k (TST)     Tunneling   k (TST+T)   Units\n')
+    f.write('#   ======= =========== =========== =========== ===============\n')
+    for T in [300,400,500,600,800,1000,1500,2000]:  
+        k0 = reaction.calculateTSTRateCoefficient(T, tunneling='')
+        if tunneling.lower() == 'wigner':
+            kappa = reaction.calculateWignerTunnelingCorrection(T)
+        elif tunneling.lower() == 'eckart':
+            kappa = reaction.calculateEckartTunnelingCorrection(T)
+        else:
+            kappa = 1.0
+        k = k0 * kappa
+        f.write('#    {0:4g} K {1:11.3e} {2:11.3f} {3:11.3e} {4}\n'.format(T, k0, kappa, k, Aunits))
+    f.write('#   ======= =========== =========== =========== ===============\n')
     f.write('kinetics(\n')
     f.write('    label = "{0}",\n'.format(label))
     

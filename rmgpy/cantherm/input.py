@@ -237,4 +237,4 @@ def generateKinetics(label, tunneling='', plot=False):
     global outputFile, reactionDict
     from kinetics import generateKineticsModel, saveKinetics
     generateKineticsModel(reactionDict[label], tunneling, plot)
-    saveKinetics(reactionDict[label], label, outputFile)
+    saveKinetics(reactionDict[label], tunneling, label, outputFile)
