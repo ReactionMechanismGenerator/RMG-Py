@@ -239,11 +239,15 @@ cdef class ReactionSystem(DASSL):
                 if isinstance(term, TerminationTime):
                     if self.t > term.time.value:
                         terminated = True
+                        logging.info('At time {0:10.4e} s, reached target termination time.'.format(term.time.value))
+                        self.logConversions(speciesIndex, y0)
                         break
                 elif isinstance(term, TerminationConversion):
                     index = speciesIndex[term.species]
                     if (y0[index] - self.y[index]) / y0[index] > term.conversion:
                         terminated = True
+                        logging.info('At time {0:10.4e} s, reached target termination conversion: {1:f} of {2}'.format(self.t,term.conversion,term.species))
+                        self.logConversions(speciesIndex, y0)
                         break
 
             # Increment destination step time if necessary
