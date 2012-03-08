@@ -615,14 +615,15 @@ def loadChemkinFile(path, dictionaryPath=None):
                 
                 line = f.readline()
                 while line != '' and 'END' not in line:
-                    if 'rev' in line or 'REV' in line:
-                        # can no longer name reactants rev...
-                        line = f.readline()
-                        
+                    
                     lineStartsWithComment = line.startswith('!') 
                     line, comment = removeCommentFromLine(line)
                     line = line.strip(); comment = comment.strip()
                 
+                    if 'rev' in line or 'REV' in line:
+                        # can no longer name reactants rev...
+                        line = f.readline()
+
                     if '=' in line and not lineStartsWithComment:
                         # Finish previous record
                         kineticsList.append(kinetics)
