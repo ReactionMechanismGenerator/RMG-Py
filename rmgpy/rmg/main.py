@@ -725,10 +725,9 @@ class RMG:
         termination = []; atol=1e-16; rtol=1e-8
         
         with open(path, 'r') as f:
-            line = f.readline()
+            line = self.readMeaningfulLineJava(f)
             while line != '':
-                line = line.strip()
-                if '//' in line: line = line[0:line.index('//')]
+                
                 
                 if line.startswith('TemperatureModel:'):
                     tokens = line.split()
@@ -757,9 +756,8 @@ class RMG:
                 elif line.startswith('InitialStatus:'):
                     label = ''; concentrations = []; adjlist = ''
                     
-                    line = f.readline().strip()
+                    line = self.readMeaningfulLineJava(f)
                     while line != 'END':
-                        if '//' in line: line = line[0:line.index('//')]
                         
                         if line == '' and label != '':
                             species = Species(label=label, molecule=[Molecule().fromAdjacencyList(adjlist)])
@@ -786,46 +784,44 @@ class RMG:
                             adjlist += line + '\n'
                         
                         line = f.readline().strip()
+                        if '//' in line: line = line[0:line.index('//')]
                         
                 elif line.startswith('InertGas:'):
                     
-                    line = f.readline().strip()
+                    line = self.readMeaningfulLineJava(f)
                     while line != 'END':
-                        if '//' in line: line = line[0:line.index('//')]
                         
-                        if line != '':
-                            tokens = line.split()
-                            label = tokens[0]
-                            assert label in ['N2', 'Ar', 'He', 'Ne']
-                            if label == 'Ne':
-                                smiles = '[Ne]'
-                            elif label == 'Ar':
-                                smiles = '[Ar]'
-                            elif label == 'He':
-                                smiles = '[He]'
-                            else:
-                                smiles = 'N#N'
-                            units = tokens[1][1:-1]
-                            assert units in ['mol/cm3', 'mol/m3', 'mol/l']
-                            if units == 'mol/cm3':
-                                concentrations = [float(C)*1.0e6 for C in tokens[2:]]
-                            elif units == 'mol/l':
-                                concentrations = [float(C)*1.0e3 for C in tokens[2:]]
-                            else:
-                                concentrations = [float(C) for C in tokens[2:]]
+                        tokens = line.split()
+                        label = tokens[0]
+                        assert label in ['N2', 'Ar', 'He', 'Ne']
+                        if label == 'Ne':
+                            smiles = '[Ne]'
+                        elif label == 'Ar':
+                            smiles = '[Ar]'
+                        elif label == 'He':
+                            smiles = '[He]'
+                        else:
+                            smiles = 'N#N'
+                        units = tokens[1][1:-1]
+                        assert units in ['mol/cm3', 'mol/m3', 'mol/l']
+                        if units == 'mol/cm3':
+                            concentrations = [float(C)*1.0e6 for C in tokens[2:]]
+                        elif units == 'mol/l':
+                            concentrations = [float(C)*1.0e3 for C in tokens[2:]]
+                        else:
+                            concentrations = [float(C) for C in tokens[2:]]
+                        
+                        species = Species(label=label, reactive=False, molecule=[Molecule().fromSMILES(smiles)])
+                        self.initialSpecies.append(species)
+                        speciesDict[label] = species
+                        concentrationList.append(concentrations)
                             
-                            species = Species(label=label, reactive=False, molecule=[Molecule().fromSMILES(smiles)])
-                            self.initialSpecies.append(species)
-                            speciesDict[label] = species
-                            concentrationList.append(concentrations)
-                            
-                        line = f.readline().strip()
+                        line = self.readMeaningfulLineJava(f)
                 
                 elif line.startswith('FinishController:'):
                     
-                    line = f.readline().strip()
-                    if '//' in line: line = line[0:line.index('//')]
-                
+                    # First meaningful line is a termination time or conversion
+                    line = self.readMeaningfulLineJava(f)
                     tokens = line.split()
                     if tokens[2].lower() == 'conversion:':
                         label = tokens[3]
@@ -843,9 +839,10 @@ class RMG:
                             time *= 60. * 60. * 24.
                         termination.append(TerminationTime(time=time))
                             
-                    line = f.readline().strip()
-                    if '//' in line: line = line[0:line.index('//')]
-                
+                    # Second meaningful line is the error tolerance
+                    # We're not doing anything with this information yet!
+                    line = self.readMeaningfulLineJava(f)
+                 
                 elif line.startswith('Atol:'):
                     tokens = line.split()
                     atol = float(tokens[1])
@@ -854,7 +851,7 @@ class RMG:
                     tokens = line.split()
                     rtol = float(tokens[1])
                 
-                line = f.readline()
+                line = self.readMeaningfulLineJava(f)
         
         assert len(Tlist) > 0
         assert len(Plist) > 0
@@ -874,6 +871,22 @@ class RMG:
                 reactionSystem = SimpleReactor(T, P, initialMoleFractions=initialMoleFractions, termination=termination)
                 self.reactionSystems.append(reactionSystem)
                 systemCounter += 1
+    
+    def readMeaningfulLineJava(self, f):
+        """
+        Read a meaningful line from an RMG-Java condition file object `f`,
+        returning the line with any comments removed.
+        """
+        line = f.readline()
+        if line != '':
+            line = line.strip()
+            if '//' in line: line = line[0:line.index('//')]
+            while line == '':
+                line = f.readline()
+                if line == '': break
+                line = line.strip()
+                if '//' in line: line = line[0:line.index('//')]
+        return line
     
 ################################################################################
 
