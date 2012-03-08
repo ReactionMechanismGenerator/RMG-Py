@@ -127,9 +127,12 @@ def readKineticsEntry(entry, speciesDict, energyUnits, moleculeUnits):
     
     lines = entry.strip().splitlines()
     
-    # Extract the reaction equation
-    #reaction = str(lines[0][0:52].strip())
-    reaction = str(lines[0].split()[0])
+    # The first line contains the reaction equation and a set of modified Arrhenius parameters
+    tokens = lines[0].split()
+    A = float(tokens[-3])
+    n = float(tokens[-2])
+    Ea = float(tokens[-1])
+    reaction = ''.join(tokens[:-3])
     thirdBody = False
     
     # Split the reaction equation into reactants and products
@@ -154,7 +157,14 @@ def readKineticsEntry(entry, speciesDict, energyUnits, moleculeUnits):
         elif reactant not in speciesDict:
             raise ChemkinError('Unexpected reactant "{0}" in reaction {1}.'.format(reactant, reaction))
         else:
-            reaction.reactants.append(speciesDict[reactant])
+            count = 1
+            if reactant[0].isdigit():
+                # This allows for reactions to be of the form 2A=B+C instead of A+A=B+C
+                # The implementation below assumes an integer between 0 and 9, inclusive
+                count = int(reactant[0])
+                reactant = reactant[1:]
+            for i in range(count):
+                reaction.reactants.append(speciesDict[reactant])
     for product in products.split('+'):
         product = product.strip()
         if product.upper() == 'M' or product == 'm':
@@ -162,7 +172,14 @@ def readKineticsEntry(entry, speciesDict, energyUnits, moleculeUnits):
         elif product not in speciesDict:
             raise ChemkinError('Unexpected product "{0}" in reaction {1}.'.format(product, reaction))
         else:
-            reaction.products.append(speciesDict[product])
+            count = 1
+            if product[0].isdigit():
+                # This allows for reactions to be of the form A+B=2C instead of A+B=C+C
+                # The implementation below assumes an integer between 0 and 9, inclusive
+                count = int(product[0])
+                product = product[1:]
+            for i in range(count):
+                reaction.products.append(speciesDict[product])
     
     # Determine the appropriate units for k(T) and k(T,P) based on the number of reactants
     # This assumes elementary kinetics for all reactions
@@ -182,9 +199,9 @@ def readKineticsEntry(entry, speciesDict, energyUnits, moleculeUnits):
     #tokens = lines[0][52:].split()
     tokens = lines[0].split()[1:]
     arrheniusHigh = Arrhenius(
-        A = (float(tokens[0].strip()),kunits),
-        n = float(tokens[1].strip()),
-        Ea = (float(tokens[2].strip()) * energyFactor,"kcal/mol"),
+        A = (A,kunits),
+        n = n,
+        Ea = (Ea * energyFactor,"kcal/mol"),
         T0 = (1,"K"),
     )
     
@@ -615,14 +632,15 @@ def loadChemkinFile(path, dictionaryPath=None):
                 
                 line = f.readline()
                 while line != '' and 'END' not in line:
-                    if 'rev' in line or 'REV' in line:
-                        # can no longer name reactants rev...
-                        line = f.readline()
-                        
+                    
                     lineStartsWithComment = line.startswith('!') 
                     line, comment = removeCommentFromLine(line)
                     line = line.strip(); comment = comment.strip()
                 
+                    if 'rev' in line or 'REV' in line:
+                        # can no longer name reactants rev...
+                        line = f.readline()
+
                     if '=' in line and not lineStartsWithComment:
                         # Finish previous record
                         kineticsList.append(kinetics)
