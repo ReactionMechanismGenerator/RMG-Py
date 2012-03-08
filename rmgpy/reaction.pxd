@@ -87,13 +87,13 @@ cdef class Reaction:
 
     cpdef numpy.ndarray calculateTSTRateCoefficients(self, numpy.ndarray Tlist, str tunneling=?)
 
-    cpdef double calculateTSTRateCoefficient(self, double T, str tunneling=?)
+    cpdef double calculateTSTRateCoefficient(self, double T, str tunneling=?) except -2
     
-    cpdef double calculateWignerTunnelingCorrection(self, double T)
+    cpdef double calculateWignerTunnelingCorrection(self, double T) except -2
     
-    cpdef double calculateEckartTunnelingCorrection(self, double T)
+    cpdef double calculateEckartTunnelingCorrection(self, double T) except -2
 
-    cpdef double __eckartIntegrand(self, double E_kT, double kT, double dV1, double alpha1, double alpha2)
+    cpdef double __eckartIntegrand(self, double E_kT, double kT, double dV1, double alpha1, double alpha2) except -2
 
     cpdef bint isBalanced(self)
     

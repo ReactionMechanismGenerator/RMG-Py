@@ -741,6 +741,9 @@ class Reaction:
         alpha1 = 2 * math.pi * dV1 / constants.Na / (constants.h * constants.c * 100.0 * frequency)
         alpha2 = 2 * math.pi * dV2 / constants.Na / (constants.h * constants.c * 100.0 * frequency)
         
+        if dV1 < 0 or dV2 < 0:
+            raise ValueError('One or both of the barrier heights of {0:g} and {1:g} kJ/mol encountered in Eckart method are invalid.'.format(dV1 / 1000., dV2 / 1000.)) 
+        
         # Integrate to get Eckart correction
         kappa = 0.0
         
