@@ -274,8 +274,8 @@ def readKineticsEntry(entry, speciesDict, energyUnits, moleculeUnits):
                     pass
                 elif chebyshev.degreeT == 0 or chebyshev.degreeP == 0:
                     tokens2 = tokens[1].split()
-                    chebyshev.degreeT = int(tokens2[0].strip())
-                    chebyshev.degreeP = int(tokens2[1].strip())
+                    chebyshev.degreeT = int(float(tokens2[0].strip()))
+                    chebyshev.degreeP = int(float(tokens2[1].strip()))
                     chebyshev.coeffs = numpy.zeros((chebyshev.degreeT,chebyshev.degreeP), numpy.float64)
                 else:
                     tokens2 = tokens[1].split()
