@@ -392,7 +392,8 @@ def loadRMGJavaJob(inputFile, chemkinFile=None, speciesDict=None):
         reactionSystem.initialMoleFractions = dict([(speciesDict[spec], frac) for spec, frac in reactionSystem.initialMoleFractions.iteritems()])
         for t in reactionSystem.termination:
             if isinstance(t, TerminationConversion):
-                t.species = speciesDict[t.species]
+                if t.species not in speciesDict.values():
+                    t.species = speciesDict[t.species]
     
     # Set reaction model to match model loaded from Chemkin file
     rmg.reactionModel.core.species = speciesList
