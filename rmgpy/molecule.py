@@ -36,7 +36,7 @@ describe the corresponding atom or bond.
 """
 
 import cython
-
+import logging
 import re
 import element as elements
 from graph import Vertex, Edge, Graph
@@ -851,6 +851,8 @@ class Molecule(Graph):
         """
         from molecule_draw import drawMolecule
         drawMolecule(self, path=path)
+        
+        self.generate3Dgeometry()
 
     def fromCML(self, cmlstr, implicitH=False):
         """
@@ -1607,3 +1609,48 @@ class Molecule(Graph):
         url += "{0}".format(re.sub('\s+', '%20', adjlist.replace('\n', ';')))
         return url.strip('_')
         
+    def generate3Dgeometry(self):
+        """
+        Generate a 3D geometry, using RDKit
+        """
+        """
+        To use RDKit we must import the modules needed to generate the geometry. 
+        'Chem' folder stores most of what is needed. $RDBASE must also be on 
+        the python path for this to work.
+        """
+        import rdkit
+        import rdkit.Chem
+        
+        """ 
+        Take the number of atoms from RMG and run a for loop form the first
+        to the last atom, adding each atom to RDKit through he AddAtom() function. 
+        """
+        
+        m = rdkit.Chem.rdchem.EditableMol( rdkit.Chem.rdchem.Mol() ) # initialize a blank Editable molecule
+        for atom in self.vertices: # add all the atoms for molecule from RMG
+            a = rdkit.Chem.rdchem.Atom(atom.element.symbol)
+            m = m.AddAtom(a) 
+        
+        for bond in self.edges: # add all the bonds for the molecule and connect atoms 
+            pass # m = m.AddBond(getEdge(self, self.edges[0], self.edges[1]))
+        
+        geom = rdkit.Chem.AllChem.EmbedMultipleConfs(m, useRandomCoords = True) # generate the 3D geometry
+        
+        """
+        Check if UFF is available for all atoms in molecule.
+        """
+        if not rdkit.Chem.AllChem.UFFHasAllMoleculeParameters(geom):
+            raise Exception("Insufficient data for atoms in molecule.")
+        
+        """
+        If generating multiple conformers, need to build a loop and get the 
+        energy for each conformer, and minimize.
+        """
+        lowestEnergy = None
+        for k in range(geom.GetNumConformers()): # for each geometry
+            m3d = rdkit.Chem.AllChem.UFFOptimizeMolecule(geom, confId = k) # optimize the geometry
+            energy = rdkit.Chem.AllChem.UFFGetMoleculeForceField(m3d, confId = k) # get the electronic energy
+            if lowestEnergy == None or energy < lowestEnergy:
+                lowestEnergy = energy
+        logging.info("Lowest energy conformer: %s"%lowestEnergy)
+            
