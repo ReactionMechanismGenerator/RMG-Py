@@ -1616,7 +1616,7 @@ class Molecule(Graph):
         """
         To use RDKit we must import the modules needed to generate the geometry. 
         'Chem' folder stores most of what is needed. $RDBASE must also be on 
-        the python path for this to work.
+        the python path.
         """
         import rdkit
         import rdkit.Chem
@@ -1629,23 +1629,23 @@ class Molecule(Graph):
         m = rdkit.Chem.rdchem.EditableMol( rdkit.Chem.rdchem.Mol() ) # initialize a blank Editable molecule
         for atom in self.vertices: # add all the atoms for molecule from RMG
             a = rdkit.Chem.rdchem.Atom(atom.element.symbol)
-            m = m.AddAtom(a) 
+            m = m.rdkit.Chem.rdchem.EditableMol.AddAtom(a) 
         
         for bond in self.edges: # add all the bonds for the molecule and connect atoms 
-            pass # m = m.AddBond(getEdge(self, self.edges[0], self.edges[1]))
-        
-        geom = rdkit.Chem.AllChem.EmbedMultipleConfs(m, useRandomCoords = True) # generate the 3D geometry
+            # can't initialize bond in python
+            # Note: unlike Atoms, is it currently impossible to construct Bonds from Python.
+            # m = m.rdkit.Chem.rdchem.EditableMol.AddBond(getEdge(self, self.edges[0], self.edges[1])
+            pass        
         
         """
-        Check if UFF is available for all atoms in molecule.
+        Generate the 3D geometries, and check if each atom has the necessary data (if not, raise an
+        exception). Then optimize each conformer and find the lowest energy conformer.
         """
+        
+        geom = rdkit.Chem.AllChem.EmbedMultipleConfs(m, useRandomCoords = True)
         if not rdkit.Chem.AllChem.UFFHasAllMoleculeParameters(geom):
             raise Exception("Insufficient data for atoms in molecule.")
         
-        """
-        If generating multiple conformers, need to build a loop and get the 
-        energy for each conformer, and minimize.
-        """
         lowestEnergy = None
         for k in range(geom.GetNumConformers()): # for each geometry
             m3d = rdkit.Chem.AllChem.UFFOptimizeMolecule(geom, confId = k) # optimize the geometry
@@ -1653,4 +1653,3 @@ class Molecule(Graph):
             if lowestEnergy == None or energy < lowestEnergy:
                 lowestEnergy = energy
         logging.info("Lowest energy conformer: %s"%lowestEnergy)
-            
