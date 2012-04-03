@@ -122,6 +122,9 @@ class Species:
     `reactive`          ``bool``                ``True`` if the species participates in reactions, ``False`` if not
     =================== ======================= ================================
 
+    note::
+    
+        :class:`rmg.model.Species` inherits from this class, and adds some extra methods.
     """
 
     def __init__(self, index=-1, label='', thermo=None, states=None, molecule=None, E0=None, lennardJones=None, molecularWeight=None, collisionModel=None, reactive=True):
