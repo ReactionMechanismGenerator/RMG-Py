@@ -1626,23 +1626,28 @@ class Molecule(Graph):
         to the last atom, adding each atom to RDKit through he AddAtom() function. 
         """
         
-        m = rdkit.Chem.rdchem.EditableMol( rdkit.Chem.rdchem.Mol() ) # initialize a blank Editable molecule
+        rd_mol = rdkit.Chem.rdchem.EditableMol( rdkit.Chem.rdchem.Mol() ) # initialize a blank Editable molecule
         for atom in self.vertices: # add all the atoms for molecule from RMG
-            a = rdkit.Chem.rdchem.Atom(atom.element.symbol)
-            m = m.rdkit.Chem.rdchem.EditableMol.AddAtom(a) 
+            rd_atom = rdkit.Chem.rdchem.Atom(atom.element.symbol)
+            rd_mol.AddAtom(rd_atom)
+            atom.rdkitAtom = rd_atom
+            print rd_atom.GetIdx()
+            import ipdb; ipdb.set_trace();
         
-        for bond in self.edges: # add all the bonds for the molecule and connect atoms 
-            # can't initialize bond in python
-            # Note: unlike Atoms, is it currently impossible to construct Bonds from Python.
-            # m = m.rdkit.Chem.rdchem.EditableMol.AddBond(getEdge(self, self.edges[0], self.edges[1])
-            pass        
+        for atom1 in self.edges: 
+            for atom2, bond in self.edges[atom1].iteritems():
+                index1 = atom1.rdkitAtom.GetIdx()
+                index2 = atom2.rdkitAtom.GetIdx()
+                order = rdkit.Chem.rdchem.BondType.SINGLE # some translation of bond.order
+                rd_mol.AddBond(index1, index2, order)
+        
         
         """
         Generate the 3D geometries, and check if each atom has the necessary data (if not, raise an
         exception). Then optimize each conformer and find the lowest energy conformer.
         """
         
-        geom = rdkit.Chem.AllChem.EmbedMultipleConfs(m, useRandomCoords = True)
+        geom = rdkit.Chem.AllChem.EmbedMultipleConfs(rd_mol, useRandomCoords = True)
         if not rdkit.Chem.AllChem.UFFHasAllMoleculeParameters(geom):
             raise Exception("Insufficient data for atoms in molecule.")
         
