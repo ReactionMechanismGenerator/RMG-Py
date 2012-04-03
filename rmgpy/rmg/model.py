@@ -113,6 +113,10 @@ class Species(rmgpy.species.Species):
         for implicit, molecule in zip(implicitH, self.molecule):
             if implicit: molecule.makeHydrogensImplicit()
 
+        import ipdb; ipdb.set_trace()
+        for molecule in self.molecule:
+            molecule.generate3Dgeometry()
+        
         return self.thermo
 
     def generateStatesData(self, database):

@@ -852,7 +852,7 @@ class Molecule(Graph):
         from molecule_draw import drawMolecule
         drawMolecule(self, path=path)
         
-        self.generate3Dgeometry()
+        
 
     def fromCML(self, cmlstr, implicitH=False):
         """
