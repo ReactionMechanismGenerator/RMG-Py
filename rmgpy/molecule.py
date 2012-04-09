@@ -1627,28 +1627,54 @@ class Molecule(Graph):
         """
         
         rd_mol = rdkit.Chem.rdchem.EditableMol( rdkit.Chem.rdchem.Mol() ) # initialize a blank Editable molecule
-        for atom in self.vertices: # add all the atoms for molecule from RMG
+        for index, atom in enumerate(self.vertices): # add all the atoms for molecule from RMG
             rd_atom = rdkit.Chem.rdchem.Atom(atom.element.symbol)
             rd_mol.AddAtom(rd_atom)
-            atom.rdkitAtom = rd_atom
-            print rd_atom.GetIdx()
-            import ipdb; ipdb.set_trace();
+            atom.rdkitAtomIdx = index
         
+        """
+        Check each pair of atoms and add the bonds to them.
+        """
         for atom1 in self.edges: 
             for atom2, bond in self.edges[atom1].iteritems():
-                index1 = atom1.rdkitAtom.GetIdx()
-                index2 = atom2.rdkitAtom.GetIdx()
-                order = rdkit.Chem.rdchem.BondType.SINGLE # some translation of bond.order
-                rd_mol.AddBond(index1, index2, order)
+                index1 = atom1.rdkitAtomIdx
+                index2 = atom2.rdkitAtomIdx
+                # print "Adding bond from %s to %s"%(index1,index2)
+                if index1 > index2:
+                    rd_bondOrder = bond.order # get the 
+                    """
+                    Check the RMG bond order and add the appropriate rdkit bond.
+                    """
+                    if rd_bondOrder == 'S':
+                        rd_bond = rdkit.Chem.rdchem.BondType.SINGLE
+                        rd_mol.AddBond(index1, index2, rd_bond)
+                                                    
+                    elif rd_bondOrder == 'D':
+                        rd_bond = rdkit.Chem.rdchem.BondType.DOUBLE
+                        rd_mol.AddBond(index1, index2, rd_bond)
+                            
+                    elif rd_bondOrder == 'T':
+                        rd_bond = rdkit.Chem.rdchem.BondType.TRIPLE
+                        rd_mol.AddBond(index1, index2, rd_bond)
+                            
+                    elif rd_bondOrder == 'B':
+                        rd_bond = rdkit.Chem.rdchem.BondType.AROMATIC
+                        rd_mol.AddBond(index1, index2, rd_bond)
+                            
+                    else:
+                        print "Unknown bond order"
         
+        # while debugging, check that rdkitAtomIdx matches GetIdx
+        for atom in self.vertices:
+            index = atom.rdkitAtomIdx
+            rd_atom = rd_mol.GetMol().GetAtomWithIdx(index)
+            assert index == rd_atom.GetIdx()
         
         """
         Generate the 3D geometries, and check if each atom has the necessary data (if not, raise an
         exception). Then optimize each conformer and find the lowest energy conformer.
         """
-        
         geom = rdkit.Chem.AllChem.EmbedMultipleConfs(rd_mol, useRandomCoords = True)
-        if not rdkit.Chem.AllChem.UFFHasAllMoleculeParameters(geom):
             raise Exception("Insufficient data for atoms in molecule.")
         
         lowestEnergy = None
