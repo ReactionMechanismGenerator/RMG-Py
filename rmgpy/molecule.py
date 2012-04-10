@@ -1620,15 +1620,17 @@ class Molecule(Graph):
         """
         import rdkit
         import rdkit.Chem
+        import rdkit.Chem.AllChem
         
         """ 
         Take the number of atoms from RMG and run a for loop form the first
         to the last atom, adding each atom to RDKit through he AddAtom() function. 
         """
-        
+        self.makeHydrogensExplicit()
         rd_mol = rdkit.Chem.rdchem.EditableMol( rdkit.Chem.rdchem.Mol() ) # initialize a blank Editable molecule
         for index, atom in enumerate(self.vertices): # add all the atoms for molecule from RMG
             rd_atom = rdkit.Chem.rdchem.Atom(atom.element.symbol)
+            rd_atom.SetNumRadicalElectrons(atom.radicalElectrons)
             rd_mol.AddAtom(rd_atom)
             atom.rdkitAtomIdx = index
         
@@ -1641,7 +1643,7 @@ class Molecule(Graph):
                 index2 = atom2.rdkitAtomIdx
                 # print "Adding bond from %s to %s"%(index1,index2)
                 if index1 > index2:
-                    rd_bondOrder = bond.order # get the 
+                    rd_bondOrder = bond.order
                     """
                     Check the RMG bond order and add the appropriate rdkit bond.
                     """
@@ -1674,13 +1676,21 @@ class Molecule(Graph):
         Generate the 3D geometries, and check if each atom has the necessary data (if not, raise an
         exception). Then optimize each conformer and find the lowest energy conformer.
         """
-        geom = rdkit.Chem.AllChem.EmbedMultipleConfs(rd_mol, useRandomCoords = True)
+        rd_mol = rd_mol.GetMol() # Make editable mol into a mol
+        rdkit.Chem.SanitizeMol(rd_mol) # Rectify the molecule
+        conformer_ids = rdkit.Chem.AllChem.EmbedMultipleConfs(rd_mol, useRandomCoords = True)
+        if not rdkit.Chem.rdForceFieldHelpers.UFFHasAllMoleculeParams(rd_mol):
             raise Exception("Insufficient data for atoms in molecule.")
+        assert len(conformer_ids) == rd_mol.GetNumConformers()
         
         lowestEnergy = None
-        for k in range(geom.GetNumConformers()): # for each geometry
-            m3d = rdkit.Chem.AllChem.UFFOptimizeMolecule(geom, confId = k) # optimize the geometry
-            energy = rdkit.Chem.AllChem.UFFGetMoleculeForceField(m3d, confId = k) # get the electronic energy
+        for k in conformer_ids: # for each geometry
+            more_iterations_required = 1
+            while more_iterations_required:
+                more_iterations_required = rdkit.Chem.AllChem.UFFOptimizeMolecule(rd_mol, confId = k) # optimize the geometry. returns 0 when successful
+            energy = rdkit.Chem.AllChem.UFFGetMoleculeForceField(rd_mol, confId = k).CalcEnergy() # get the electronic energy
             if lowestEnergy == None or energy < lowestEnergy:
                 lowestEnergy = energy
-        logging.info("Lowest energy conformer: %s"%lowestEnergy)
+                lowestEnergyConfomer = k
+        logging.info("Lowest energy conformer: %d has energy %s"%(lowestEnergyConfomer,lowestEnergy))
+        print rdkit.Chem.MolToMolBlock(rd_mol, confId=lowestEnergyConfomer)
