@@ -39,6 +39,10 @@ import logging
 import time
 import shutil
 import numpy
+try:
+    import xlwt
+except ImportError:
+    logging.warning('Optional package dependency "xlwt" not loaded; Some output features will not work.')
 
 from rmgpy.species import Species
 from rmgpy.molecule import Molecule
@@ -222,9 +226,9 @@ class RMG:
         # See if spreadsheet writing package is available
         if self.saveConcentrationProfiles:
             try:
-                import xlwt
-            except ImportError:
-                logging.warning('Package dependency "xlwt" not found; reaction system concentration profiles will not be saved, despite saveConcentrationProfiles = True option.')
+                xlwt
+            except NameError:
+                logging.warning('Package dependency "xlwt" not loaded; reaction system concentration profiles will not be saved, despite saveConcentrationProfiles = True option.')
                 self.saveConcentrationProfiles = False
         
         # Make output subdirectories
@@ -306,6 +310,7 @@ class RMG:
         while not done:
     
             if self.saveConcentrationProfiles:
+                # self.saveConcentrationProfiles should have been set to false if xlwt cannot be loaded
                 workbook = xlwt.Workbook()
                 
             done = True
@@ -616,9 +621,9 @@ class RMG:
     
         # Attempt to import the xlwt package; return if not installed
         try:
-            import xlwt
-        except ImportError:
-            logging.warning('Package xlwt not found. Unable to save execution statistics.')
+            xlwt
+        except NamerError:
+            logging.warning('Package xlwt not loaded. Unable to save execution statistics.')
             return
     
         # Create workbook and sheet for statistics to be places
