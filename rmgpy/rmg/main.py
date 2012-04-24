@@ -100,6 +100,7 @@ class RMG:
     `wallTime`                  The maximum amount of CPU time in seconds to expend on this job; used to stop gracefully so we can still get profiling information
     --------------------------- ------------------------------------------------
     `initializationTime`        The time at which the job was initiated, in seconds since the epoch (i.e. from time.time())
+    `done`                      Whether the job has completed (there is nothing new to add)
     =========================== ================================================
     
     """
@@ -136,6 +137,7 @@ class RMG:
         self.maximumEdgeSpecies = 1000000
         self.termination = []
         
+        self.done = False
         self.verbosity = logging.INFO
         self.loadRestart = None
         self.saveRestartPeriod = None
@@ -304,16 +306,17 @@ class RMG:
         execTime = []
         restartSize = []
         memoryUse = []
-    
+
+        self.done = False
+        self.saveEverything()
         # Main RMG loop
-        done = False
-        while not done:
+        while not self.done:
     
             if self.saveConcentrationProfiles:
                 # self.saveConcentrationProfiles should have been set to false if xlwt cannot be loaded
                 workbook = xlwt.Workbook()
                 
-            done = True
+            self.done = True
             objectsToEnlarge = []
             allTerminated = True
             for index, reactionSystem in enumerate(self.reactionSystems):
@@ -350,12 +353,12 @@ class RMG:
                         # Store the maximum leak species along with the associated network
                         obj = (obj, obj.getMaximumLeakSpecies(reactionSystem.T.value, reactionSystem.P.value))
                     objectsToEnlarge.append(obj)
-                    done = False
+                    self.done = False
     
             if self.saveConcentrationProfiles:
                 workbook.save(os.path.join(self.outputDirectory, 'solver', 'simulation_{0:d}.xls'.format(len(self.reactionModel.core.species))))
     
-            if not done:
+            if not self.done: # There is something that needs exploring/enlarging
     
                 # If we reached our termination conditions, then try to prune
                 # species from the edge
@@ -368,22 +371,7 @@ class RMG:
                 objectsToEnlarge = list(set(objectsToEnlarge))
                 self.reactionModel.enlarge(objectsToEnlarge)
 
-            # If the user specifies it, add unused reaction library reactions to
-            # an additional output species and reaction list which is written to the ouput HTML
-            # file as well as the chemkin file
-            self.reactionModel.outputSpeciesList = []
-            self.reactionModel.outputReactionList = []
-            for library, option in self.reactionLibraries:
-                if option:
-                    self.reactionModel.addReactionLibraryToOutput(library)
-                    
-            # Save the current state of the model core to a pretty HTML file
-            self.saveOutputHTML()
-            # Save a Chemkin file containing the current model core
-            self.saveChemkinFile()
-            # Save the restart file if desired
-            if self.saveRestartPeriod or done:
-                self.saveRestartFile(os.path.join(self.outputDirectory,'restart.pkl'), self.reactionModel, delay=0 if done else self.saveRestartPeriod.value)
+            self.saveEverything()
 
             # Update RMG execution statistics
             logging.info('Updating RMG execution statistics...')
@@ -439,6 +427,33 @@ class RMG:
         
         self.finish()
         
+    def saveEverything(self):
+        """
+        Saves the output HTML, the Chemkin file, and the Restart file (if appropriate).
+        
+        The restart file is only saved if self.saveRestartPeriod or self.done.
+        """
+        # If the user specifies it, add unused reaction library reactions to
+        # an additional output species and reaction list which is written to the ouput HTML
+        # file as well as the chemkin file
+        self.reactionModel.outputSpeciesList = []
+        self.reactionModel.outputReactionList = []
+        for library, option in self.reactionLibraries:
+            if option:
+                self.reactionModel.addReactionLibraryToOutput(library)
+                
+        # Save the current state of the model core to a pretty HTML file
+        self.saveOutputHTML()
+        # Save a Chemkin file containing the current model core
+        self.saveChemkinFile()
+        # Save the restart file if desired
+        if self.saveRestartPeriod or self.done:
+            self.saveRestartFile( os.path.join(self.outputDirectory,'restart.pkl'),
+                                  self.reactionModel,
+                                  delay=0 if self.done else self.saveRestartPeriod.value
+                                )
+            
+            
     def finish(self):
         """
         Complete the model generation.
