@@ -166,6 +166,17 @@ class RMG:
             self.pressureDependence.outputFile = self.outputDirectory
             self.reactionModel.pressureDependence = self.pressureDependence
         
+    def checkInput(self):
+        """
+        Check for a few common mistakes in the input file.
+        """
+        if self.pressureDependence:
+            for index, reactionSystem in enumerate(self.reactionSystems):
+                assert (reactionSystem.T.value < self.pressureDependence.Tmax.value), "Reaction system T is above pressureDependence range."
+                assert (reactionSystem.T.value > self.pressureDependence.Tmin.value), "Reaction system T is below pressureDependence range."
+                assert (reactionSystem.P.value < self.pressureDependence.Pmax.value), "Reaction system P is above pressureDependence range."
+                assert (reactionSystem.P.value > self.pressureDependence.Pmin.value), "Reaction system P is below pressureDependence range."
+        
     def saveInput(self, path=None):
         """
         Save an RMG job to the input file located at `path`, or
@@ -217,6 +228,9 @@ class RMG:
         
         # Read input file
         self.loadInput(args.file[0])
+        
+        # Check input file 
+        self.checkInput()
     
         # See if memory profiling package is available
         try:
