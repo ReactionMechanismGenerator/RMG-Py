@@ -36,7 +36,7 @@ describe the corresponding atom or bond.
 """
 
 import cython
-
+import os
 import re
 import element as elements
 from graph import Vertex, Edge, Graph
@@ -851,6 +851,18 @@ class Molecule(Graph):
         """
         from molecule_draw import drawMolecule
         drawMolecule(self, path=path)
+    
+    def _repr_png_(self):
+        """
+        Return a png picture of the molecule, useful for ipython-qtconsole.
+        """
+        from molecule_draw import drawMolecule
+        tempFileName = 'temp_molecule.png'
+        drawMolecule(self, path=tempFileName)
+        png = open(tempFileName,'rb').read()
+        os.unlink(tempFileName)
+        return png
+        
 
     def fromCML(self, cmlstr, implicitH=False):
         """
