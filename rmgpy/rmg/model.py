@@ -37,6 +37,8 @@ import math
 import numpy
 import os.path
 
+from rmgpy.display import display
+
 from rmgpy.quantity import Quantity, constants
 import rmgpy.species
 from rmgpy.thermo import Wilhoit, MultiNASA
@@ -47,6 +49,7 @@ from rmgpy.data.states import *
 import rmgpy.data.rmg
 
 from pdep import PDepReaction, PDepNetwork, PressureDependenceError
+
 
 ################################################################################
 
@@ -535,6 +538,8 @@ class CoreEdgeReactionModel:
                     logging.info('NOT generating reactions for unreactive species {0}'.format(newSpecies))
                 else:
                     logging.info('Adding species {0} to model core'.format(newSpecies))
+                    display(newSpecies) # if running in IPython --pylab mode, draws the picture!
+                    
                     # Find reactions involving the new species as unimolecular reactant
                     # or product (e.g. A <---> products)
                     newReactions.extend(self.react(database, newSpecies))
@@ -783,9 +788,11 @@ class CoreEdgeReactionModel:
         logging.info('----------------------------')
         logging.info('Added {0:d} new core species'.format(len(newCoreSpecies)))
         for spec in newCoreSpecies:
+            display(spec)
             logging.info('    {0}'.format(spec))
         logging.info('Created {0:d} new edge species'.format(len(newEdgeSpecies)))
         for spec in newEdgeSpecies:
+            display(spec)
             logging.info('    {0}'.format(spec))
         
         if reactionsMovedFromEdge:
