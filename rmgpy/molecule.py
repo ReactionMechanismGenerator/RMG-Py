@@ -83,11 +83,10 @@ class Atom(Vertex):
         """
         Return a human-readable string representation of the object.
         """
-        return "<Atom '{0}>".format(
+        return "<Atom '{0}'>".format(
             str(self.element) +
-            ''.join(['.' for i in range(self.radicalElectrons)]) +
-            ''.join(['+' for i in range(self.charge)]) +
-            ''.join(['-' for i in range(-self.charge)])
+            '.' * self.radicalElectrons +
+            '+' * self.charge if self.charge > 0 else '-' * -self.charge
         )
 
     def __repr__(self):
