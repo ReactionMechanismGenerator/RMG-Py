@@ -1015,6 +1015,31 @@ class Reaction:
             surface.write_to_png(path)
         else:
             surface.finish()
+            
+    # Build the transition state geometry
+    def generate3dTS(self, reactants, products):
+        """
+        Generate the 3D structure of the transition state. Called from 
+        model.generateKinetics().
+        
+        self.reactants is a list of reactants
+        self.products is a list of products
+        """
+        import rdkit
+        import rdkit.Chem
+        import rdkit.Chem.AllChem
+        
+        import ipdb; ipdb.set_trace()
+        
+        # Go through the list of reactants
+        for i in range(0, len(reactants)):
+            mol = reactants[i].molecule[0]
+            print rdkit.Chem.MolToMolBlock(mol.rdMol, confId = mol.rdMolConfId)
+       
+        # Go through the list of products
+        for i in range(0, len(products)):
+            mol = products[i].molecule[0]
+            print rdkit.Chem.MolToMolBlock(mol.rdMol, confId = mol.rdMolConfId)
                 
 ################################################################################
 
@@ -1083,4 +1108,3 @@ class ReactionModel:
             j = rxn.index - 1
             rxnRates[j] = rxn.getRate(T, P, Ci)
         return rxnRates
-
