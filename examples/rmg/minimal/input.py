@@ -1,9 +1,11 @@
 # Data sources
 database(
-    '../RMG-database/input',
     thermoLibraries = ['primaryThermoLibrary'],
     reactionLibraries = [],
     seedMechanisms = [],
+    kineticsDepositories = ['training'],
+    kineticsFamilies = ['!Intra_Disproportionation'],
+    kineticsEstimator = 'rate rules',
 )
 
 # List of species
@@ -20,13 +22,10 @@ simpleReactor(
     initialMoleFractions={
         "ethane": 1.0,
     },
-)
-
-termination(
-    conversion={
+    terminationConversion={
         'ethane': 0.9,
     },
-    time=(1e6,'s'),
+    terminationTime=(1e6,'s'),
 )
 
 simulator(
@@ -37,7 +36,7 @@ simulator(
 model(
     toleranceKeepInEdge=0.0,
     toleranceMoveToCore=0.1,
-    toleranceInterruptSimulation=1.0,
+    toleranceInterruptSimulation=0.1,
     maximumEdgeSpecies=100000
 )
 

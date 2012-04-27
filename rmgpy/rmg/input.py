@@ -31,6 +31,8 @@
 import logging
 import quantities
 
+from rmgpy import settings
+
 from rmgpy.molecule import Molecule
 
 from rmgpy.data.rmg import RMGDatabase
@@ -49,7 +51,7 @@ class InputError(Exception): pass
 rmg = None
 speciesDict = {}
 
-def database(path, thermoLibraries=None, reactionLibraries=None, frequenciesLibraries=None, seedMechanisms=None, kineticsDepositories='default'):
+def database(thermoLibraries=None, reactionLibraries=None, frequenciesLibraries=None, seedMechanisms=None, kineticsFamilies='default', kineticsDepositories='default', kineticsEstimator='group additivity'):
     # This function just stores the information about the database to be loaded
     # We don't actually load the database until after we're finished reading
     # the input file
@@ -57,11 +59,12 @@ def database(path, thermoLibraries=None, reactionLibraries=None, frequenciesLibr
     if isinstance(reactionLibraries, str): reactionLibraries = [reactionLibraries]
     if isinstance(seedMechanisms, str): seedMechanisms = [seedMechanisms]
     if isinstance(frequenciesLibraries, str): frequenciesLibraries = [frequenciesLibraries]
-    rmg.databaseDirectory = os.path.abspath(os.path.expandvars(path))
+    rmg.databaseDirectory = settings['database.directory']
     rmg.thermoLibraries = thermoLibraries or []
     rmg.reactionLibraries = reactionLibraries or []
     rmg.seedMechanisms = seedMechanisms or []
     rmg.statmechLibraries = frequenciesLibraries or []
+    rmg.kineticsEstimator = kineticsEstimator
     if kineticsDepositories == 'default':
         rmg.kineticsDepositories = ['training']
     elif kineticsDepositories == 'all':
@@ -69,6 +72,13 @@ def database(path, thermoLibraries=None, reactionLibraries=None, frequenciesLibr
     else:
         assert isinstance(kineticsDepositories,list), "kineticsDepositories should be either 'default', 'all', or a list of names eg. ['training','PrIMe']."
         rmg.kineticsDepositories = kineticsDepositories
+    if kineticsFamilies == 'default':
+        pass
+    elif kineticsFamilies == 'all':
+        pass
+    else:
+        assert isinstance(kineticsFamilies,list), "kineticsFamilies should be either 'default', 'all', or a list of names eg. ['H_Abstraction','!Intra_Disproportionation']."
+        rmg.kineticsFamilies = kineticsFamilies
 
 def species(label, structure, reactive=True):
     logging.debug('Found {0} species "{1}" ({2})'.format('reactive' if reactive else 'nonreactive', label, structure.toSMILES()))
@@ -90,7 +100,7 @@ def adjacencyList(string):
     return Molecule().fromAdjacencyList(string)
 
 # Reaction systems
-def simpleReactor(temperature, pressure, initialMoleFractions):
+def simpleReactor(temperature, pressure, initialMoleFractions, terminationConversion=None, terminationTime=None):
     logging.debug('Found SimpleReactor reaction system')
 
     if sum(initialMoleFractions.values()) != 1:
@@ -101,16 +111,17 @@ def simpleReactor(temperature, pressure, initialMoleFractions):
     T = Quantity(temperature)
     P = Quantity(pressure)
     
-    system = SimpleReactor(T, P, initialMoleFractions)
+    termination = []
+    if terminationConversion is not None:
+        for spec, conv in terminationConversion.iteritems():
+            termination.append(TerminationConversion(speciesDict[spec], conv))
+    if terminationTime is not None:
+        termination.append(TerminationTime(Quantity(terminationTime)))
+    if len(termination) == 0:
+        raise InputError('No termination conditions specified for reaction system #{0}.'.format(len(rmg.reactionSystems)+2))
+    
+    system = SimpleReactor(T, P, initialMoleFractions, termination)
     rmg.reactionSystems.append(system)
-
-def termination(conversion=None, time=None):
-    rmg.termination = []
-    if conversion is not None:
-        for spec, conv in conversion.iteritems():
-            rmg.termination.append(TerminationConversion(speciesDict[spec], conv))
-    if time is not None:
-        rmg.termination.append(TerminationTime(Quantity(time)))
 
 def simulator(atol, rtol):
     rmg.absoluteTolerance = atol
@@ -156,7 +167,7 @@ def pressureDependence(method, temperatures, pressures, maximumGrainSize=0.0, mi
     # Process interpolation model
     rmg.pressureDependence.model = interpolation
 
-def options(units='si', saveRestartPeriod=None, drawMolecules=False, generatePlots=False, saveConcentrationProfiles=True):
+def options(units='si', saveRestartPeriod=None, drawMolecules=False, generatePlots=False, saveConcentrationProfiles=False):
     rmg.units = units
     rmg.saveRestartPeriod = Quantity(saveRestartPeriod) if saveRestartPeriod else None
     rmg.drawMolecules = drawMolecules
@@ -201,7 +212,6 @@ def readInputFile(path, rmg0):
         'InChI': InChI,
         'adjacencyList': adjacencyList,
         'simpleReactor': simpleReactor,
-        'termination': termination,
         'simulator': simulator,
         'model': model,
         'pressureDependence': pressureDependence,
@@ -237,7 +247,7 @@ def saveInputFile(path, rmg):
 
     # Databases
     f.write('database(\n')
-    f.write('    "{0}",\n'.format(rmg.databaseDirectory))
+    #f.write('    "{0}",\n'.format(rmg.databaseDirectory))
     f.write('    thermoLibraries = {0!r},\n'.format(rmg.thermoLibraries))
     f.write('    reactionLibraries = {0!r},\n'.format(rmg.reactionLibraries))
     f.write('    seedMechanisms = {0!r},\n'.format(rmg.seedMechanisms))

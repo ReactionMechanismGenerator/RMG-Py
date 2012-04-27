@@ -36,7 +36,7 @@ cimport numpy
 import numpy.linalg
 import logging
 
-from rmgpy.quantity import constants
+from rmgpy.quantity cimport constants
 
 from me import generateFullMEMatrix
 
@@ -132,12 +132,16 @@ def applyChemicallySignificantEigenvaluesMethod(double T, double P,
             M[r,s] = Sinv[r] * M[r,s] * S[s]
 
     # DEBUG: Check that the matrix has been properly symmetrized
+    properlySymmetrized = True
     for r in range(Nrows):
         for s in range(r):
             if M[r,s] != 0:
                 if abs(M[r,s] - M[s,r]) / M[r,s] > 0.01:
-                    print r, s, M[r,s], M[s,r]
-                    raise ChemicallySignificantEigenvaluesError('Master equation matrix not properly symmetrized.')
+                    if M[r,s] > 1e-200 or M[s,r] > 1e-200:
+                        print r, s, M[r,s], M[s,r]
+                        properlySymmetrized = False
+    if not properlySymmetrized:
+        raise ChemicallySignificantEigenvaluesError('Master equation matrix not properly symmetrized.')
 
     # Get eigenvalues and eigenvectors
     try:

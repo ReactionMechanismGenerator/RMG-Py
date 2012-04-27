@@ -77,12 +77,38 @@ class Network:
     `valid`             ``bool``                ``True`` if the rate coefficients for the network have been computed, ``False`` if not
     `title`             ``str``                 A short title for the network
     `description`       ``str``                 A verbose description of the network
+    ------------------- ----------------------- --------------------------------
+    `Tmin`              ``float``               The minimum temperature of interest in K
+    `Tmax`              ``float``               The maximum temperature of interest in K
+    `Pmin`              ``float``               The minimum pressure of interest in Pa
+    `Pmax`              ``float``               The maximum pressure of interest in Pa
+    `grainSize`         ``float``               The maximum grain size in J/mol
+    `grainCount`        ``int``                 The minimum number of grains
+    `E0`                :class:`numpy.ndarray`  The ground-state energies in J/mol for each configuration
+    `Ereac`             :class:`numpy.ndarray`  The first reactive energy in J/mol for each isomer
+    `Elist_full`        :class:`numpy.ndarray`  The energies used to compute the "full" densities of states
+    `densStates_full`   :class:`numpy.ndarray`  The "full" densities of states for each configuration, referenced to the ground-state energy of that configuration
+    `T`                 ``float``               The current temperature of interest in K
+    `P`                 ``float``               The current pressure of interest in Pa
+    `Elist`             :class:`numpy.ndarray`  The energy grains used at the current conditions
+    `densStates`        :class:`numpy.ndarray`  The density of states for each configuration at the current conditions
+    `Kij`               :class:`numpy.ndarray`  The microcanonical isomerization rate coefficients at the current conditions
+    `Gnj`               :class:`numpy.ndarray`  The microcanonical dissociation rate coefficients at the current conditions
+    `Fim`               :class:`numpy.ndarray`  The microcanonical association rate coefficients times equilibrium distributions at the current conditions
+    `eqRatios`          :class:`numpy.ndarray`  The ratio of each configuration expected at equilibrium at the current conditions
+    `dEdown`            :class:`numpy.ndarray`  The average energy transferred in a deactivating collision for each isomer at the current conditions
+    `collFreq`          :class:`numpy.ndarray`  The collision frequency for each isomer at the current conditions
+    `Mcoll`             :class:`numpy.ndarray`  The full collsion matrix for each isomer at the current conditions
+    `K`                 :class:`numpy.ndarray`  The computed phenomenological rate coefficients at the current conditions
+    `p0`                :class:`numpy.ndarray`  The computed reduced-space manifold at the current conditions
     =================== ======================= ================================
 
     """
 
     def __init__(self, index=-1, isomers=None, reactants=None, products=None, pathReactions=None, bathGas=None, collisionModel=None, title='', description=''):
         self.index = index
+        self.title = title
+        self.description = description
         self.isomers = isomers or []
         self.reactants = reactants or []
         self.products = products or []
@@ -91,16 +117,49 @@ class Network:
         self.collisionModel = collisionModel
         self.netReactions = []
         self.valid = False
-        self.title = title
-        self.description = description
         self.errorString = ''
         
+        self.clear()
+
     def __str__(self):
         if self.index != -1:
             return 'Network #{0:d}'.format(self.index)
         else:
             return 'Network "{0}"'.format(self.title)
+    
+    def clear(self):
+        """
+        Clear the state variables used in the pressure dependence calculation.
+        """
+        self.Tmin = 0
+        self.Tmax = 0
+        self.Pmin = 0
+        self.Pmax = 0
+        self.grainSize = 0.0
+        self.grainCount = 0
         
+        self.E0 = None
+        self.Ereac = None
+        self.Elist_full = None
+        self.densStates_full = None
+        
+        self.T = 0
+        self.P = 0
+        
+        self.Elist = None
+        self.densStates = None
+        self.Kij = None
+        self.Gnj = None
+        self.Fim = None
+        self.eqRatios = None
+        self.dEdown = None
+        
+        self.collFreq = None
+        self.Mcoll = None
+        
+        self.K = None
+        self.p0 = None
+    
     def invalidate(self):
         """
         Mark the network as in need of a new calculation to determine the
@@ -147,37 +206,118 @@ class Network:
             if spec not in speciesList: speciesList.append(spec)
         return speciesList
     
-    def getEnergyGrains(self, Emin, Emax, dE=0.0, Ngrains=0):
+    def deleteSpecies(self, species):
+        """
+        Completely remove the given `species` from the network, including any
+        path and net reactions it participates in. 
+        """
+        # Remove the species from the list of isomers
+        if species in self.isomers:
+            self.isomers.remove(species)
+        
+        # Remove any reactant channels containing the species
+        reactantsToRemove = []
+        for reactants in self.reactants:
+            if species in reactants:
+                reactantsToRemove.append(reactants)
+        for reactants in reactantsToRemove:
+            self.reactants.remove(reactants)
+            
+        # Remove any product channels containing the species
+        productsToRemove = []
+        for products in self.products:
+            if species in products:
+                productsToRemove.append(products)
+        for products in productsToRemove:
+            self.products.remove(products)
+        
+        # Remove any path reactions containing the species
+        pathReactionsToRemove = []
+        for reaction in self.pathReactions:
+            if species in reaction.reactants or species in reaction.products:
+                pathReactionsToRemove.append(reaction)
+        for reaction in pathReactionsToRemove:
+            self.pathReactions.remove(reaction)
+        
+        # Remove any net reactions containing the species
+        netReactionsToRemove = []
+        for reaction in self.netReactions:
+            if species in reaction.reactants or species in reaction.products:
+                netReactionsToRemove.append(reaction)
+        for reaction in netReactionsToRemove:
+            self.netReactions.remove(reaction)
+    
+    def deletePathReaction(self, reaction):
+        """
+        Remove the given path `reaction` from the network. Does not remove the
+        species involved in the reaction.
+        """
+        self.pathReactions.remove(reaction)
+    
+    def printSummary(self, level=logging.DEBUG):
+        """
+        Print a formatted list of information about the current network. Each
+        molecular configuration - unimolecular isomers, bimolecular reactant
+        channels, and bimolecular product channels - is given along with its
+        energy on the potential energy surface. The path reactions connecting
+        adjacent molecular configurations are also given, along with their
+        energies on the potential energy surface. The `level` parameter controls
+        the level of logging to which the summary is written, and is DEBUG by
+        default.
+        """
+
+        logging.log(level, '')
+        logging.log(level, '========================================================================')
+        logging.log(level, 'Network Information (Network #{0})'.format(self.index))
+        logging.log(level, '-------------------')
+        logging.log(level, 'Isomers:')
+        for isomer in self.isomers:
+            logging.log(level, '    {0:<48s} {1:12g} kJ/mol'.format(str(isomer), isomer.E0.value / 1000.0))
+        logging.log(level, 'Reactant channels:')
+        for reactants in self.reactants:
+            logging.log(level, '    {0:<48s} {1:12g} kJ/mol'.format(' + '.join([str(spec) for spec in reactants]), sum([spec.E0.value for spec in reactants]) / 1000.0))
+        logging.log(level, 'Product channels:')
+        for products in self.products:
+            logging.log(level, '    {0:<48s} {1:12g} kJ/mol'.format(' + '.join([str(spec) for spec in products]), sum([spec.E0.value for spec in products]) / 1000.0))
+        logging.log(level, 'Path reactions:')
+        for rxn in self.pathReactions:
+            logging.log(level, '    {0:<48s} {1:12g} kJ/mol'.format(rxn, rxn.transitionState.E0.value / 1000.0))
+        logging.log(level, '========================================================================')
+        logging.log(level, '')
+
+    def __getEnergyGrains(self, Emin, Emax, grainSize=0.0, grainCount=0):
         """
         Return an array of energy grains that have a minimum of `Emin`, a
-        maximum of `Emax`, and either a spacing of `dE` or have number of
-        grains `nGrains`. The first three parameters are in J/mol, as is the
+        maximum of `Emax`, and either a spacing of `grainSize` or have number of
+        grains `grainCount`. The first three parameters are in J/mol, as is the
         returned array of energy grains.
         """
-        useGrainSize = False
-
-        if Ngrains <= 0 and dE <= 0.0:
+        
+        # Now determine the grain size and number of grains to use
+        if grainCount <= 0 and grainSize <= 0.0:
             # Neither grain size nor number of grains specified, so raise exception
             raise NetworkError('You must specify a positive value for either dE or Ngrains.')
-        elif Ngrains <= 0 and dE > 0.0:
+        elif grainCount <= 0 and grainSize > 0.0:
             # Only grain size was specified, so we must use it
             useGrainSize = True
-        elif Ngrains > 0 and dE <= 0.0:
+        elif grainCount > 0 and grainSize <= 0.0:
             # Only number of grains was specified, so we must use it
             useGrainSize = False
         else:
             # Both were specified, so we choose the tighter constraint
             # (i.e. the one that will give more grains, and so better accuracy)
-            dE0 = (Emax - Emin) / (Ngrains - 1)
-            useGrainSize = (dE0 > dE)
+            grainSize0 = (Emax - Emin) / (grainCount - 1)
+            useGrainSize = (grainSize0 > grainSize)
 
         # Generate the array of energies
         if useGrainSize:
-            return numpy.arange(Emin, Emax + dE, dE, numpy.float64)
+            Elist = numpy.arange(Emin, Emax + grainSize, grainSize, numpy.float64)
         else:
-            return numpy.linspace(Emin, Emax, Ngrains, numpy.float64)
+            Elist = numpy.linspace(Emin, Emax, grainCount, numpy.float64)
 
-    def autoGenerateEnergyGrains(self, Tmax, grainSize=0.0, Ngrains=0):
+        return Elist
+
+    def selectEnergyGrains(self, T, grainSize=0.0, grainCount=0):
         """
         Select a suitable list of energies to use for subsequent calculations.
         This is done by finding the minimum and maximum energies on the 
@@ -186,15 +326,14 @@ class Network:
 
         You must specify either the desired grain spacing `grainSize` in J/mol
         or the desired number of grains `Ngrains`, as well as a temperature
-        `Tmax` in K to use for the equilibrium calculation, which should be the
-        highest temperature of interest. You can specify both `grainSize` and
-        `Ngrains`, in which case the one that gives the more accurate result
-        will be used (i.e. they represent a maximum grain size and a minimum
-        number of grains). An array containing the energy grains in J/mol is
-        returned.
+        `T` in K to use for the equilibrium calculation. You can specify both
+        `grainSize` and `grainCount`, in which case the one that gives the more
+        accurate result will be used (i.e. they represent a maximum grain size
+        and a minimum number of grains). An array containing the energy grains
+        in J/mol is returned.
         """
 
-        if grainSize == 0.0 and Ngrains == 0:
+        if grainSize == 0.0 and grainCount == 0:
             raise NetworkError('Must provide either grainSize or Ngrains parameter to Network.determineEnergyGrains().')
 
         # The minimum energy is the lowest isomer or reactant or product energy on the PES
@@ -226,51 +365,53 @@ class Network:
         
         # Choose the actual Emax as many kB * T above the maximum energy on the PES
         # You should check that this is high enough so that the Boltzmann distributions have trailed off to negligible values
-        Emax += 40 * constants.R * Tmax
+        Emax += 40 * constants.R * T
 
-        # Return the chosen energy grains
-        return self.getEnergyGrains(Emin, Emax, grainSize, Ngrains)
+        return self.__getEnergyGrains(Emin, Emax, grainSize, grainCount)
 
-    def calculateGroundStateEnergies(self):
+    def calculateDensitiesOfStates(self):
         """
-        Return an array of the ground-state energies in J/mol of each isomer,
-        reactant channel, and product channel, in that order.
+        Calculate the densities of states of each configuration that has states
+        data. The densities of states are computed such that they can be
+        applied to each temperature in the range of interest by interpolation.
         """
+        
+        Tmin = self.Tmin
+        Tmax = self.Tmax
+        grainSize = self.grainSize
+        grainCount = self.grainCount
+        
         Nisom = len(self.isomers)
         Nreac = len(self.reactants)
         Nprod = len(self.products)
         
-        E0 = numpy.zeros((Nisom+Nreac+Nprod), numpy.float64)
-        for i in range(Nisom):
-            E0[i] = self.isomers[i].E0.value
-        for n in range(Nreac):
-            E0[n+Nisom] = sum([spec.E0.value for spec in self.reactants[n]])
-        for n in range(Nprod):
-            E0[n+Nisom+Nreac] = sum([spec.E0.value for spec in self.products[n]])
-        return E0
-        
-    def calculateDensitiesOfStates(self, Elist):
-        """
-        Calculate and return an array containing the density of states for each
-        isomer and reactant channel in the network. `Elist` represents the
-        array of energies in J/mol at which to compute each density of states.
-        The ground-state energies `E0` in J/mol are used to shift each density
-        of states for each configuration to the same zero of energy. The
-        returned density of states is in units of mol/J.
-        """
+        logging.info('Calculating densities of states for {0}...'.format(self))
 
+        # Choose the energies used to compute the densities of states
+        # Use Tmin to select the minimum energy and grain size
+        Elist0 = self.selectEnergyGrains(Tmin, grainSize, grainCount)
+        Emin0 = numpy.min(Elist0)
+        grainSize0 = Elist0[1] - Elist0[0]
+        # Use Tmax to select the maximum energy and grain count
+        Elist0 = self.selectEnergyGrains(Tmax, grainSize, grainCount)
+        grainCount0 = len(Elist0)
+        Emax0 = numpy.max(Elist0)
+        
+        Elist = self.__getEnergyGrains(Emin0, Emax0, grainSize0, grainCount0)
         Ngrains = len(Elist)
-        Nisom = len(self.isomers)
-        Nreac = len(self.reactants)
-        Nprod = len(self.products)
-        densStates = numpy.zeros((Nisom+Nreac+Nprod, Ngrains), numpy.float64)
         dE = Elist[1] - Elist[0]
-
+        logging.info('Using {0:d} grains from {1:.2f} to {2:.2f} kJ/mol in steps of {3:.2f} kJ/mol to compute densities of states'.format(
+            Ngrains, Elist[0] / 1000, Elist[-1] / 1000, dE / 1000))
+        
+        # Shift the energy grains so that the minimum grain is zero
+        Elist -= Elist[0]
+        
+        # Actually compute the densities of states
+        densStates = numpy.zeros((Nisom+Nreac+Nprod, Ngrains), numpy.float64)
         # Densities of states for isomers
         for i in range(Nisom):
             logging.debug('Calculating density of states for isomer "{0}"'.format(self.isomers[i]))
             densStates[i,:] = self.isomers[i].states.getDensityOfStates(Elist)
-       
         # Densities of states for reactant channels
         for n in range(Nreac):
             if self.reactants[n][0].states is not None and self.reactants[n][1].states is not None:
@@ -286,7 +427,6 @@ class Network:
                 densStates[n+Nisom,:] = self.reactants[n][1].states.getDensityOfStates(Elist)
             else:
                 logging.debug('NOT calculating density of states for reactant channel "{0}"'.format(' + '.join([str(spec) for spec in self.reactants[n]])))
-        
         # Densities of states for product channels
         for n in range(Nprod):
             if len(self.products[n]) == 1 and self.products[n][0].states is not None:
@@ -305,23 +445,79 @@ class Network:
                 densStates[n+Nisom+Nreac,:] = self.products[n][1].states.getDensityOfStates(Elist)
             else:
                 logging.debug('NOT calculating density of states for product channel "{0}"'.format(' + '.join([str(spec) for spec in self.products[n]])))
-        
         logging.debug('')
         
+        # Store the computed densities of states on this object
+        self.Elist_full = Elist
+        self.densStates_full = densStates
+  
         return densStates
+    
+    def calculateGroundStateEnergies(self):
+        """
+        Return an array of the ground-state energies in J/mol of each isomer,
+        reactant channel, and product channel, in that order.
+        """
+        Nisom = len(self.isomers)
+        Nreac = len(self.reactants)
+        Nprod = len(self.products)
+        E0 = numpy.zeros((Nisom+Nreac+Nprod), numpy.float64)
+        for i in range(Nisom):
+            E0[i] = self.isomers[i].E0.value
+        for n in range(Nreac):
+            E0[n+Nisom] = sum([spec.E0.value for spec in self.reactants[n]])
+        for n in range(Nprod):
+            E0[n+Nisom+Nreac] = sum([spec.E0.value for spec in self.products[n]])
+        self.E0 = E0
+        return E0
+    
+    def calculateFirstReactiveEnergies(self):
+        """
+        Return an array containing the lowest reactive energy for each isomer.
+        """
+        Nisom = len(self.isomers)
+        Ereac = numpy.ones(Nisom, numpy.float64) * 1e20
+        for i in range(Nisom):
+            for rxn in self.pathReactions:
+                if rxn.reactants[0] == self.isomers[i] or rxn.products[0] == self.isomers[i]:
+                    if rxn.transitionState.E0.value < Ereac[i]:
+                        Ereac[i] = rxn.transitionState.E0.value
+        self.Ereac = Ereac
+        return Ereac
 
-    def calculateMicrocanonicalRates(self, Elist, densStates, T=None):
+    def mapDensitiesOfStates(self):
+        """
+        Map the overall densities of states to the current energy grains.
+        Semi-logarithmic interpolation will be used if the grain sizes of 
+        `Elist0` and `Elist` do not match; this should not be a significant
+        source of error as long as the grain sizes are sufficiently small.
+        """
+        from _network import mapDensitiesOfStates
+        self.densStates = mapDensitiesOfStates(
+            self.Elist,
+            self.Elist_full,
+            self.densStates_full,
+            self.T,
+            self.E0,
+            len(self.isomers), 
+            len(self.reactants), 
+            len(self.products),
+        )
+        return self.densStates
+
+    def calculateMicrocanonicalRates(self, check=True):
         """
         Calculate and return arrays containing the microcanonical rate
         coefficients :math:`k(E)` for the isomerization, dissociation, and
-        association path reactions in the network. `Elist` represents the
-        array of energies in J/mol at which to compute each density of states,
-        while `densStates` represents the density of states of each isomer and
-        reactant channel in mol/J. The temperature `T` is K is used in certain
-        circumstances when :math:`k(E)` cannot be determined without it, and
-        in the detailed balance expression to obtain the reverse kinetics.
+        association path reactions in the network. If `check` is ``True``, the
+        computed :math:`k(E)` values are checked that they integrate to give
+        the expected :math:`k(T)` values (with some allowance for numerical
+        error).
         """
 
+        T = self.T
+        Elist = self.Elist
+        densStates = self.densStates
         Ngrains = len(Elist)
         Nisom = len(self.isomers)
         Nreac = len(self.reactants)
@@ -331,10 +527,6 @@ class Network:
         Gnj = numpy.zeros([Nreac+Nprod,Nisom,Ngrains], numpy.float64)
         Fim = numpy.zeros([Nisom,Nreac,Ngrains], numpy.float64)
 
-        # Set to True to also check that the computed k(E) values integrate to
-        # give the expected k(T) values (allowing for some numerical error)
-        check = True
-        
         for rxn in self.pathReactions:
             kf0 = 0.0; kr0 = 0.0; kf = 0.0; kr = 0.0
             if rxn.reactants[0] in self.isomers and rxn.products[0] in self.isomers:
@@ -425,88 +617,204 @@ class Network:
         if numpy.isnan(Kij).any() or numpy.isnan(Gnj).any() or numpy.isnan(Fim).any():
             raise NetworkError('One or more k(E) values is NaN for network {0:d}.'.format(self.index))
         
+        self.Kij = Kij
+        self.Gnj = Gnj
+        self.Fim = Fim
+        
         return Kij, Gnj, Fim
 
-    def deleteSpecies(self, species):
+    def calculateDeltaEDown(self):
         """
-        Completely remove the given `species` from the network, including any
-        path and net reactions it participates in. 
+        Return an array containing the average energy transferred in a 
+        deactivating collision for each isomer at the current temperature. 
+        First, the bath gas value is computed as a weighted sum of the values
+        for each bath gas component. This value is then averaged arithmetically 
+        with that from the isomer itself if the latter is provided.
         """
-        # Remove the species from the list of isomers
-        if species in self.isomers:
-            self.isomers.remove(species)
+        T = self.T
+        Nisom = len(self.isomers)
+        dEdown = numpy.zeros(Nisom, numpy.float64)
+        for i in range(Nisom):
+            # First compute dEdown as a weighted sum of the values from each of the bath gas components
+            totalFrac = 0
+            for species, frac in self.bathGas.iteritems():
+                if species.collisionModel is not None:
+                    dEdown[i] += frac * species.collisionModel.getAlpha(T)
+                    totalFrac += frac
+            dEdown[i] /= totalFrac
+            # If the isomer also has a collision model, then average its dEdown with that of the bath gas
+            if self.isomers[i].collisionModel is not None:
+                dEdown[i] = 0.5 * (dEdown[i] + self.isomers[i].collisionModel.getAlpha(T))
+        self.dEdown = dEdown
+        return dEdown
+    
+    def calculateEquilibriumRatios(self):
+        """
+        Return an array containing the fraction of each isomer and reactant
+        channel present at equilibrium, as determined from the Gibbs free 
+        energy and using the concentration equilibrium constant 
+        :math:`K_\\mathrm{c}`. These values are ratios, and the absolute
+        magnitude is not guaranteed; however, the implementation scales the 
+        elements of the array so that they sum to unity.
+        """
+        T = self.T
+        Nisom = len(self.isomers)
+        Nreac = len(self.reactants)
+        eqRatios = numpy.zeros(Nisom+Nreac, numpy.float64)
+        conc = 1e5 / constants.R / T
+        for i in range(Nisom):
+            G = self.isomers[i].thermo.getFreeEnergy(T)
+            eqRatios[i] = math.exp(-G / constants.R / T)
+        for i in range(Nreac):
+            G = sum([spec.thermo.getFreeEnergy(T) for spec in self.reactants[i]])
+            eqRatios[Nisom+i] = math.exp(-G / constants.R / T) * conc ** (len(self.reactants[i]) - 1)
+        self.eqRatios = eqRatios
+        return eqRatios / numpy.sum(eqRatios)
+
+    def calculateCollisionModel(self):
+        """
+        Calculate the matrix of first-order rate coefficients for collisional
+        population transfer between grains for each isomer, including the
+        corresponding collision frequencies.
+        """
+        T = self.T
+        P = self.P
+        Elist = self.Elist
+        densStates = self.densStates
+        dEdown = self.dEdown
+        Nisom = len(self.isomers)
+        Ngrains = len(Elist)
         
-        # Remove any reactant channels containing the species
-        reactantsToRemove = []
-        for reactants in self.reactants:
-            if species in reactants:
-                reactantsToRemove.append(reactants)
-        for reactants in reactantsToRemove:
-            self.reactants.remove(reactants)
+        # Calculate collision frequencies
+        collFreq = numpy.zeros(Nisom, numpy.float64)
+        for i in range(Nisom):
+            collFreq[i] = calculateCollisionFrequency(self.isomers[i], T, P, self.bathGas)
+        self.collFreq = collFreq
+        
+        # Generate the full collision matrix for each isomer
+        Mcoll = numpy.zeros((Nisom,Ngrains,Ngrains), numpy.float64)
+        for i in range(Nisom):
+            Mcoll[i,:,:] = collFreq[i] * SingleExponentialDown().generateCollisionMatrix(Elist, T, densStates[i,:], dEdown[i])
+        self.Mcoll = Mcoll
+        
+        return Mcoll
+    
+    def initialize(self, Tmin, Tmax, Pmin, Pmax, grainSize=0.0, grainCount=0):
+        """
+        Initialize a pressure dependence calculation by computing several
+        quantities that are independent of the conditions. You must specify
+        the temperature and pressure ranges of interesting using `Tmin` and
+        `Tmax` in K and `Pmin` and `Pmax` in Pa. You must also specify the
+        maximum energy grain size `grainSize` in J/mol and/or the minimum
+        number of grains `grainCount`.
+        """
+        if grainSize == 0.0 and grainCount == 0:
+            raise NetworkError('Must provide either grainSize or Ngrains parameter to Network.determineEnergyGrains().')
+
+        self.Tmin = Tmin
+        self.Tmax = Tmax
+        self.Pmin = Pmin
+        self.Pmax = Pmax
+        self.grainSize = grainSize
+        self.grainCount = grainCount
+        
+        self.calculateGroundStateEnergies() 
+        self.calculateFirstReactiveEnergies()
+        self.calculateDensitiesOfStates()
+        
+    def setConditions(self, T, P):
+        """
+        Set the current network conditions to the temperature `T` in K and
+        pressure `P` in Pa. All of the internal variables are updated 
+        accordingly if they are out of date. For example, those variables that
+        depend only on temperature will not be recomputed if the temperature
+        is the same.
+        """
+        
+        temperatureChanged = (self.T != T)
+        pressureChanged = (self.P != P)
+        self.T = T
+        self.P = P
+        
+        Nisom = len(self.isomers)
+        Nreac = len(self.reactants)
+        Nprod = len(self.products)
+        
+        E0 = self.E0
+        Ereac = self.Ereac
+        Elist0 = self.Elist_full
+        densStates0 = self.densStates_full
+        grainSize = self.grainSize
+        grainCount = self.grainCount
+        
+        # Update parameters that depend on temperature only if necessary
+        if temperatureChanged:
+            # Choose the energy grains to use to compute k(T,P) values at this temperature
+            Elist = self.Elist = self.selectEnergyGrains(T, grainSize, grainCount)
+            Ngrains = len(Elist)
+            logging.info('Using {0:d} grains from {1:.2f} to {2:.2f} kJ/mol in steps of {3:.2f} kJ/mol to compute the k(T,P) values at {4:g} K'.format(
+                Ngrains, numpy.min(Elist) / 1000, numpy.max(Elist) / 1000, (Elist[1] - Elist[0]) / 1000, T))
+            # Map the densities of states onto this set of energies
+            # Also shift each density of states to a common zero of energy
+            densStates = self.mapDensitiesOfStates()
+            # Calculate microcanonical rate coefficients for each path reaction
+            self.calculateMicrocanonicalRates()
+            # Rescale densities of states such that, when they are integrated
+            # using the Boltzmann factor as a weighting factor, the result is unity
+            for i in range(Nisom+Nreac):
+                densStates[i,:] = densStates[i,:] / numpy.sum(densStates[i,:] * numpy.exp(-Elist / constants.R / T))
+            # Use free energy to determine equilibrium ratios of each isomer and product channel
+            self.calculateEquilibriumRatios()
+            # Compute average energy transferred in a deactivating collision
+            self.calculateDeltaEDown()
             
-        # Remove any product channels containing the species
-        productsToRemove = []
-        for products in self.products:
-            if species in products:
-                productsToRemove.append(products)
-        for products in productsToRemove:
-            self.products.remove(products)
-        
-        # Remove any path reactions containing the species
-        pathReactionsToRemove = []
-        for reaction in self.pathReactions:
-            if species in reaction.reactants or species in reaction.products:
-                pathReactionsToRemove.append(reaction)
-        for reaction in pathReactionsToRemove:
-            self.pathReactions.remove(reaction)
-        
-        # Remove any net reactions containing the species
-        netReactionsToRemove = []
-        for reaction in self.netReactions:
-            if species in reaction.reactants or species in reaction.products:
-                netReactionsToRemove.append(reaction)
-        for reaction in netReactionsToRemove:
-            self.netReactions.remove(reaction)
-    
-    def deletePathReaction(self, reaction):
-        """
-        Remove the given path `reaction` from the network. Does not remove the
-        species involved in the reaction.
-        """
-        self.pathReactions.remove(reaction)
-    
-    def printSummary(self, level=logging.DEBUG):
-        """
-        Print a formatted list of information about the current network. Each
-        molecular configuration - unimolecular isomers, bimolecular reactant
-        channels, and bimolecular product channels - is given along with its
-        energy on the potential energy surface. The path reactions connecting
-        adjacent molecular configurations are also given, along with their
-        energies on the potential energy surface. The `level` parameter controls
-        the level of logging to which the summary is written, and is DEBUG by
-        default.
-        """
+        # Update parameters that depend on temperature and pressure if necessary
+        if temperatureChanged or pressureChanged:
+            self.calculateCollisionModel()
 
-        logging.log(level, '')
-        logging.log(level, '========================================================================')
-        logging.log(level, 'Network Information (Network #{0})'.format(self.index))
-        logging.log(level, '-------------------')
-        logging.log(level, 'Isomers:')
-        for isomer in self.isomers:
-            logging.log(level, '    {0:<48s} {1:12g} kJ/mol'.format(str(isomer), isomer.E0.value / 1000.0))
-        logging.log(level, 'Reactant channels:')
-        for reactants in self.reactants:
-            logging.log(level, '    {0:<48s} {1:12g} kJ/mol'.format(' + '.join([str(spec) for spec in reactants]), sum([spec.E0.value for spec in reactants]) / 1000.0))
-        logging.log(level, 'Product channels:')
-        for products in self.products:
-            logging.log(level, '    {0:<48s} {1:12g} kJ/mol'.format(' + '.join([str(spec) for spec in products]), sum([spec.E0.value for spec in products]) / 1000.0))
-        logging.log(level, 'Path reactions:')
-        for rxn in self.pathReactions:
-            logging.log(level, '    {0:<48s} {1:12g} kJ/mol'.format(rxn, rxn.transitionState.E0.value / 1000.0))
-        logging.log(level, '========================================================================')
-        logging.log(level, '')
-
-    def calculateRateCoefficients(self, Tlist, Plist, method, grainCount=None, grainSize=None, errorCheck=True):
+    def applyModifiedStrongCollisionMethod(self, efficiencyModel='default'):
+        """
+        Compute the phenomenological rate coefficients :math:`k(T,P)` at the
+        current conditions using the modified strong collision method.
+        """
+        Nisom = len(self.isomers)
+        Nreac = len(self.reactants)
+        Nprod = len(self.products)
+        
+        import msc
+        logging.debug('Applying modified strong collision method at {0:g} K, {1:g} bar...'.format(self.T, self.P/1e5))
+        self.K, self.p0 = msc.applyModifiedStrongCollisionMethod(self.T, self.P, self.Elist, self.densStates, self.collFreq, self.dEdown, self.Kij, self.Fim, self.Gnj, self.E0, self.Ereac, efficiencyModel, Nisom, Nreac, Nprod)
+        return self.K, self.p0
+    
+    def applyReservoirStateMethod(self):
+        """
+        Compute the phenomenological rate coefficients :math:`k(T,P)` at the
+        current conditions using the reservoir state method.
+        """
+        Nisom = len(self.isomers)
+        Nreac = len(self.reactants)
+        Nprod = len(self.products)
+        
+        import rs
+        logging.debug('Applying reservoir state method at {0:g} K, {1:g} bar...'.format(self.T, self.P/1e5))
+        self.K, self.p0 = rs.applyReservoirStateMethod(self.T, self.P, self.Elist, self.densStates, self.Mcoll, self.Kij, self.Fim, self.Gnj, self.Ereac, Nisom, Nreac, Nprod)
+        return self.K, self.p0
+    
+    def applyChemicallySignificantEigenvaluesMethod(self):
+        """
+        Compute the phenomenological rate coefficients :math:`k(T,P)` at the
+        current conditions using the chemically-significant eigenvalues method.
+        """
+        Nisom = len(self.isomers)
+        Nreac = len(self.reactants)
+        Nprod = len(self.products)
+        
+        import cse
+        logging.debug('Applying chemically-significant eigenvalues method at {0:g} K, {1:g} bar...'.format(self.T, self.P/1e5))
+        self.K, self.p0 = cse.applyChemicallySignificantEigenvaluesMethod(self.T, self.P, self.Elist, self.densStates, self.Mcoll, self.Kij, self.Fim, self.Gnj, self.eqRatios, Nisom, Nreac, Nprod)
+        return self.K, self.p0
+    
+    def calculateRateCoefficients(self, Tlist, Plist, method, grainSize=None, grainCount=None, errorCheck=True):
         """
         Calculate the phenomenological rate coefficients :math:`k(T,P)` for the
         network at the given temperatures `Tlist` in K and pressures `Plist` in
@@ -516,43 +824,18 @@ class Network:
         ``"chemically-significant eigenvalues"``.
         """
 
-        # Determine the values of some counters
         Nisom = len(self.isomers)
         Nreac = len(self.reactants)
         Nprod = len(self.products)
         
-        # Get ground-state energies of all isomers and each reactant channel
-        # that has the necessary parameters
-        # An exception will be raised if a unimolecular isomer is missing
-        # this information
-        E0 = self.calculateGroundStateEnergies() 
-        
-        # Get first reactive grain for each isomer
-        Ereac = numpy.ones(Nisom, numpy.float64) * 1e20
-        for i in range(Nisom):
-            for rxn in self.pathReactions:
-                if rxn.reactants[0] == self.isomers[i] or rxn.products[0] == self.isomers[i]:
-                    if rxn.transitionState.E0.value < Ereac[i]:
-                        Ereac[i] = rxn.transitionState.E0.value
-
-        # Choose the energies used to compute the densities of states
-        # We want to use the smallest needed grain spacing (which always occurs at the minimum temperature)
-        # We want to use the largest needed maximum energy (which always occurs at the maximum temperature)
-        Elist0 = self.autoGenerateEnergyGrains(numpy.min(Tlist), grainSize, grainCount)
-        grainSize0 = Elist0[1] - Elist0[0]
-        Elist0 = self.autoGenerateEnergyGrains(numpy.max(Tlist), grainSize, grainCount)
-        grainCount0 = len(Elist0)
-        Emin0 = numpy.min(Elist0)
-        Emax0 = numpy.max(Elist0)
-        Elist0 = self.getEnergyGrains(Emin0, Emax0, grainSize0, grainCount0)
-        logging.info('Using {0:d} grains from {1:.2f} to {2:.2f} kJ/mol in steps of {3:.2f} kJ/mol to compute densities of states'.format(len(Elist0), Elist0[0] / 1000, Elist0[-1] / 1000, (Elist0[1] - Elist0[0]) / 1000))
-        Ngrains0 = len(Elist0)
-        Elist0 -= Elist0[0]
-        
-        # Calculate density of states for each configuration that has the necessary parameters
-        # In these arrays the zero of energy is that configuration's E0
-        logging.info('Calculating densities of states for {0}...'.format(self))
-        densStates0 = self.calculateDensitiesOfStates(Elist0)
+        self.initialize(
+            Tmin = numpy.min(Tlist),
+            Tmax = numpy.max(Tlist),
+            Pmin = numpy.min(Plist),
+            Pmax = numpy.max(Plist),
+            grainSize = grainSize,
+            grainCount = grainCount,
+        )
         
         for rxn in self.pathReactions:
             if rxn.transitionState.states is not None:
@@ -565,117 +848,23 @@ class Network:
         K = numpy.zeros((len(Tlist),len(Plist),Nisom+Nreac+Nprod,Nisom+Nreac+Nprod), numpy.float64)
         
         for t, T in enumerate(Tlist):
-
-            # Choose the energy grains to use to compute k(T,P) values at this temperature
-            Elist = self.autoGenerateEnergyGrains(T, grainSize, grainCount)
-            Emin = numpy.min(Elist)
-            Emax = numpy.max(Elist)
-            Ngrains = len(Elist)
-            dE = Elist[1] - Elist[0]
-            logging.info('Using {0:d} grains from {1:.2f} to {2:.2f} kJ/mol in steps of {3:.2f} kJ/mol to compute the k(T,P) values at {4:g} K'.format(Ngrains, Emin / 1000, Emax / 1000, dE / 1000, T))
-            
-            # Map the densities of states onto this set of energies
-            # Also shift each density of states to a common zero of energy
-            densStates = numpy.zeros((Nisom+Nreac+Nprod, Ngrains), numpy.float64)
-            for i in range(Nisom+Nreac+Nprod):
-                for r in range(Ngrains):
-                    if Elist[r] >= E0[i]:
-                        for s in range(Ngrains0):
-                            if E0[i] + Elist0[s] >= Elist[r]:
-                                if densStates0[i,s-1] > 0 and densStates0[i,s] > 0:
-                                    densStates[i,r] = densStates0[i,s] * (densStates0[i,s-1] / densStates0[i,s]) ** ((Elist[r] - E0[i] - Elist0[s]) / (Elist0[s-1] - Elist0[s]))
-                                else:
-                                    densStates[i,r] = densStates0[i,s] + (densStates0[i,s-1] - densStates0[i,s]) * (Elist[r] - E0[i] - Elist0[s]) / (Elist0[s-1] - Elist0[s])
-                                break
-                        else:
-                            if i < Nisom:
-                                raise NetworkError('Unable to determine density of states for isomer {0} at {1:g} K.'.format(self.isomers[i],T))
-                            elif i < Nisom+Nreac:
-                                raise NetworkError('Unable to determine density of states for reactant channel {0} at {1:g} K.'.format(' + '.join(['{0!s}'.format(r) for r in self.reactants[i-Nisom]]),T))
-                            else:
-                                raise NetworkError('Unable to determine density of states for product channel {0} at {1:g} K.'.format(' + '.join(['{0!s}'.format(r) for p in self.products[i-Nisom-Nreac]]),T))
-                            
-            # Calculate microcanonical rate coefficients for each path reaction
-            # If degree of freedom data is provided for the transition state, then RRKM theory is used
-            # If high-pressure limit Arrhenius data is provided, then the inverse Laplace transform method is used
-            # Otherwise an exception is raised
-            # This is only dependent on temperature for the ILT method with
-            # certain Arrhenius parameters
-            Kij, Gnj, Fim = self.calculateMicrocanonicalRates(Elist, densStates, T)
-
-            # Rescale densities of states such that, when they are integrated
-            # using the Boltzmann factor as a weighting factor, the result is unity
-            eqRatios = numpy.zeros(Nisom+Nreac, numpy.float64)
-            for i in range(Nisom+Nreac):
-                eqRatios[i] = numpy.sum(densStates[i,:] * numpy.exp(-Elist / constants.R / T)) * dE
-                densStates[i,:] = densStates[i,:] / eqRatios[i] * dE
-            # Use free energy to determine equilibrium ratios of each isomer and product channel
-            eqRatios = numpy.zeros(Nisom+Nreac, numpy.float64)
-            conc = 1e5 / constants.R / T
-            for i in range(Nisom):
-                G = self.isomers[i].thermo.getFreeEnergy(T)
-                eqRatios[i] = math.exp(-G / constants.R / T)
-            for i in range(Nreac):
-                G = sum([spec.thermo.getFreeEnergy(T) for spec in self.reactants[i]])
-                eqRatios[Nisom+i] = math.exp(-G / constants.R / T) * conc ** (len(self.reactants[i]) - 1)
-            
-            # Compute average energy transferred in a deactivating collision
-            dEdown = numpy.zeros(Nisom, numpy.float64)
-            for i in range(Nisom):
-                # First compute dEdown as a weighted sum of the values from each of the bath gas components
-                totalFrac = 0
-                for species, frac in self.bathGas.iteritems():
-                    if species.collisionModel is not None:
-                        dEdown[i] += frac * species.collisionModel.getAlpha(T)
-                        totalFrac += frac
-                dEdown[i] /= totalFrac
-                # If the isomer also has a collision model, then average its dEdown with that of the bath gas
-                if self.isomers[i].collisionModel is not None:
-                    dEdown[i] = 0.5 * (dEdown[i] + self.isomers[i].collisionModel.getAlpha(T))
-                   
-            # Compute collision efficiencies if needed (MSC method only)
-            # Since they are only a function of temperature and not pressure,
-            # we do this outside the pressure loop
-            collEff = numpy.ones(Nisom, numpy.float64)
-            if method.lower() == 'modified strong collision':
-                for i in range(Nisom):
-                    collEff[i] *= calculateCollisionEfficiency(self.isomers[i], T, Elist, densStates[i,:], dEdown[i], E0[i], Ereac[i])
-                
             for p, P in enumerate(Plist):
-
-                # Calculate collision frequencies
-                collFreq = numpy.zeros(Nisom, numpy.float64)
-                for i in range(Nisom):
-                    collFreq[i] = calculateCollisionFrequency(self.isomers[i], T, P, self.bathGas) * collEff[i]
-
-                if method.lower() != 'modified strong collision':
-                    # Generate the full collision matrix for each isomer
-                    Mcoll = numpy.zeros((Nisom,Ngrains,Ngrains), numpy.float64)
-                    for i in range(Nisom):
-                        Mcoll[i,:,:] = collFreq[i] * SingleExponentialDown().generateCollisionMatrix(Elist, T, densStates[i,:], dEdown[i])
-
+                self.setConditions(T, P)
+                
                 # Apply method
-                logging.debug('Applying {0} method at {1:g} K, {2:g} bar...'.format(method, T, P/1e5))
                 if method.lower() == 'modified strong collision':
-                    # Apply modified strong collision method
-                    import msc
-                    K[t,p,:,:], p0 = msc.applyModifiedStrongCollisionMethod(T, P, Elist, densStates, collFreq, Kij, Fim, Gnj, Ereac, Nisom, Nreac, Nprod)
+                    self.applyModifiedStrongCollisionMethod()
                 elif method.lower() == 'reservoir state':
-                    # Apply reservoir state method
-                    import rs
-                    K[t,p,:,:], p0 = rs.applyReservoirStateMethod(T, P, Elist, densStates, Mcoll, Kij, Fim, Gnj, Ereac, Nisom, Nreac, Nprod)
+                    self.applyReservoirStateMethod()
                 elif method.lower() == 'chemically-significant eigenvalues':
-                    # Apply chemically-significant eigenvalues method
-                    import cse
-                    K[t,p,:,:], p0 = cse.applyChemicallySignificantEigenvaluesMethod(T, P, Elist, densStates, Mcoll, Kij, Fim, Gnj, eqRatios, Nisom, Nreac, Nprod)
-                elif method.lower() == 'branching ratios':
-                    # Apply chemically-significant eigenvalues method
-                    import me
-                    K[t,p,:,:], p0 = me.applyBranchingRatiosMethod(T, P, Elist, densStates, Mcoll, Kij, Fim, Gnj, Ereac, Nisom, Nreac, Nprod)
+                    self.applyChemicallySignificantEigenvaluesMethod()
                 else:
                     raise NetworkError('Unknown method "{0}".'.format(method))
 
+                K[t,p,:,:] = self.K
+
                 # Check that the k(T,P) values satisfy macroscopic equilibrium
+                eqRatios = self.eqRatios
                 for i in range(Nisom+Nreac):
                     for j in range(i):
                         Keq0 = K[t,p,i,j] / K[t,p,j,i]
@@ -729,9 +918,9 @@ class Network:
         # Mark network as valid
         self.valid = True
 
-        return K, p0
+        return K
 
-    def generateFullMEMatrix(self, T, P, Elist):
+    def generateFullMEMatrix(self, T, P, grainSize=None, grainCount=None):
         """
         Generate the full master equation matrix for the network at the
         specified temperature `T` in K and pressure `P` in Pa and for the
@@ -740,72 +929,21 @@ class Network:
         matrix, and the computed densities of states in mol/J.
         """
 
-        # Note that this is a very similar method to calculateRateCoefficients()
-        # Thus, if you change something here, you may need to change it there
-        # as well
-        # Would be better to refactor to share the common code!
-
-        # Determine the values of some counters
-        Ngrains = len(Elist)
         Nisom = len(self.isomers)
         Nreac = len(self.reactants)
         Nprod = len(self.products)
-        dE = Elist[1] - Elist[0]
-
-        # Get ground-state energies of all isomers and each reactant channel
-        # that has the necessary parameters
-        # An exception will be raised if a unimolecular isomer is missing
-        # this information
-        E0 = numpy.zeros((Nisom+Nreac), numpy.float64)
-        for i in range(Nisom):
-            E0[i] = self.isomers[i].E0.value
-        for n in range(Nreac):
-            E0[n+Nisom] = sum([spec.E0.value for spec in self.reactants[n]])
-
-        # Get first reactive grain for each isomer
-        Ereac = numpy.ones(Nisom, numpy.float64) * 1e20
-        for i in range(Nisom):
-            for rxn in self.pathReactions:
-                if rxn.reactants[0] == self.isomers[i] or rxn.products[0] == self.isomers[i]:
-                    if rxn.transitionState.E0.value < Ereac[i]:
-                        Ereac[i] = rxn.transitionState.E0.value
-
-        # Shift energy grains such that lowest is zero
-        Emin = Elist[0]
-        for rxn in self.pathReactions:
-            rxn.transitionState.E0.value -= Emin
-        E0 -= Emin
-        Ereac -= Emin
-        Elist -= Emin
-
-        # Calculate density of states for each isomer and each reactant channel
-        # that has the necessary parameters
-        densStates0 = self.calculateDensitiesOfStates(Elist, E0)
-
-        Kij, Gnj, Fim = self.calculateMicrocanonicalRates(Elist, densStates0, T)
-
-        # Rescale densities of states such that, when they are integrated
-        # using the Boltzmann factor as a weighting factor, the result is unity
-        densStates = numpy.zeros_like(densStates0)
-        eqRatios = numpy.zeros(Nisom+Nreac, numpy.float64)
-        for i in range(Nisom+Nreac):
-            eqRatios[i] = numpy.sum(densStates0[i,:] * numpy.exp(-Elist / constants.R / T)) * dE
-            densStates[i,:] = densStates0[i,:] / eqRatios[i] * dE
         
-        # Calculate collision frequencies
-        collFreq = numpy.zeros(Nisom, numpy.float64)
-        for i in range(Nisom):
-            collFreq[i] = calculateCollisionFrequency(self.isomers[i], T, P, self.bathGas)
-
-        Mcoll = numpy.zeros((Nisom,Ngrains,Ngrains), numpy.float64)
-        for i in range(Nisom):
-            Mcoll[i,:,:] = collFreq[i] * self.collisionModel.generateCollisionMatrix(Elist, T, densStates[i,:])
-
-        # Unshift energy grains
-        for rxn in self.pathReactions:
-            rxn.transitionState.E0.value += Emin
-        Elist += Emin
-
+        self.initialize(Tmin=T, Tmax=T, Pmin=P, Pmax=P, grainSize=grainSize, grainCount=grainCount)
+        self.setConditions(T, P)
+        
+        Mcoll = self.Mcoll
+        Kij = self.Kij
+        Gnj = self.Gnj
+        Fim = self.Fim
+        Elist = self.Elist
+        densStates = self.densStates
+        Ngrains = len(Elist)
+        
         # Construct accounting matrix
         # Row is grain number, column is well number, value is index into matrix
         indices = -numpy.ones([Ngrains,Nisom], numpy.int)
@@ -850,7 +988,7 @@ class Network:
                                 M[u,v] = Fim[i,n,r]
                                 M[v,v] -= Fim[i,n,r]
 
-        return M, indices, densStates
+        return M, Elist, indices, densStates
 
     def __createNewSurfaceAndContext(self, ext, fstr='', width=800, height=600):
         import cairo

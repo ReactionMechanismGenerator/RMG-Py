@@ -813,8 +813,20 @@ class Database:
                             " has bond but group {0} doesn't".format(node))
                 # Passed semantic checks, so add to maps of already-matched atoms
                 initialMap[atom] = center
+            # Labeled atoms in the structure that are not in the group should
+            # not be considered in the isomorphism check, so remove them temporarily
+            # Without this we would hit a lot of nodes that are ambiguous
+            removedAtoms = []
+            for label, atom in structure.getLabeledAtoms().iteritems():
+                if label not in centers:
+                    removedAtoms.append(atom)
+                    structure.atoms.remove(atom)
             # use mapped (labeled) atoms to try to match subgraph
-            return structure.isSubgraphIsomorphic(group, initialMap)
+            result = structure.isSubgraphIsomorphic(group, initialMap)
+            # Restore atoms removed in previous step
+            for atom in removedAtoms:
+                structure.atoms.append(atom)
+            return result
 
     def descendTree(self, structure, atoms, root=None):
         """
@@ -843,7 +855,10 @@ class Database:
         if len(next) == 1:
             return self.descendTree(structure, atoms, next[0])
         elif len(next) == 0:
-            return root
+            if len(root.children) > 0 and root.children[-1].label.startswith('Others-'):
+                return root.children[-1]
+            else:
+                return root
         else:
             #print structure.toAdjacencyList()
             #raise DatabaseError('For structure {0}, a node {1} with non-mutually-exclusive children {2} was encountered in tree with top level nodes {3}.'.format(structure.getFormula(), root, next, self.tree.top))

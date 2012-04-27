@@ -66,6 +66,7 @@ import numpy
 import numpy.linalg
 import cython
 import re
+import logging
 
 from quantity import Quantity, constants
 from molecule import Molecule
@@ -208,7 +209,83 @@ class KineticsModel:
         string += '\n</tr></table>'
         string += "<span class='KineticsData_repr'>{0!r}</span>".format(self)
         return string
-        
+
+    def isSimilarTo(self,otherKinetics):
+        """
+        Returns ``True`` if rates of reaction at temperatures 500,1000,1500,2000 K
+        and 1 and 10 bar are within +/ .3 for log(k), in other words, within a factor of 2.
+        """
+        cython.declare(T=cython.double)
+        cython.declare(Tdata=list)
+        Tdata = [500,1000,1500,2000]
+
+        if self.isPressureDependent() and otherKinetics.isPressureDependent():
+            for T in Tdata:
+                if (abs(math.log10(self.getRateCoefficient(T,P=1e5))-math.log10(otherKinetics.getRateCoefficient(T,P=1e5))) <= .5
+                and abs(math.log10(self.getRateCoefficient(T,P=1e6))-math.log10(otherKinetics.getRateCoefficient(T,P=1e6))) <= .5):
+                    pass
+                else:
+                    return False
+            return True
+
+        elif not self.isPressureDependent() and not otherKinetics.isPressureDependent():
+            for T in Tdata:
+                if abs(math.log10(self.getRateCoefficient(T,P=1e5))-math.log10(otherKinetics.getRateCoefficient(T,P=1e5))) <= .5:
+                    pass
+                else:
+                    return False
+            return True
+
+        else:
+            return False
+
+
+    def isIdenticalTo(self,otherKinetics):
+        """
+        Returns ``True`` if Tmin, Tmax, Pmin, Pmax for both objects match.
+        Otherwise returns ``False``
+        """
+        if self.Tmin is not None and otherKinetics.Tmin is not None:
+            if self.Tmin.equals(otherKinetics.Tmin):
+                pass
+            else:
+                return False
+        elif self.Tmin is None and otherKinetics.Tmin is None:
+            pass
+        else:
+            return False
+
+        if self.Tmax is not None and otherKinetics.Tmax is not None:
+            if self.Tmax.equals(otherKinetics.Tmax):
+                pass
+            else:
+                return False
+        elif self.Tmax is None and otherKinetics.Tmax is None:
+            pass
+        else:
+            return False
+
+        if self.Pmin is not None and otherKinetics.Pmin is not None:
+            if self.Pmin.equals(otherKinetics.Pmin):
+                pass
+            else:
+                return False
+        elif self.Pmin is None and otherKinetics.Pmin is None:
+            pass
+        else:
+            return False
+
+        if self.Pmax is not None and otherKinetics.Pmax is not None:
+            if self.Pmax.equals(otherKinetics.Pmax):
+                pass
+            else:
+                return False
+        elif self.Pmax is None and otherKinetics.Pmax is None:
+            pass
+        else:
+            return False
+
+        return True
 
 ################################################################################
 
@@ -299,6 +376,16 @@ class KineticsData(KineticsModel):
         """
         return Arrhenius(comment=self.comment, Tmin=self.Tmin, Tmax=self.Tmax).fitToData(Tlist=self.Tdata.values, klist=self.kdata.values, kunits=self.kdata.units)
 
+    def isIdenticalTo(self,otherKinetics):
+        """
+        Returns ``True`` if the kdata and Tdata match. Returns ``False`` otherwise.
+        """
+        if isinstance(otherKinetics,KineticsData):
+            if KineticsModel.isIdenticalTo(self,otherKinetics):
+                if self.Tdata.equals(otherKinetics.Tdata) and self.kdata.equals(otherKinetics.kdata):
+                    return True
+
+        return False
 ################################################################################
 
 class Arrhenius(KineticsModel):
@@ -410,6 +497,21 @@ class Arrhenius(KineticsModel):
         self.Ea = Quantity(x[2], "J/mol", '+|-', t * math.sqrt(cov[2,2]))
         self.T0 = Quantity(T0, "K")
         return self
+
+    def isIdenticalTo(self, otherKinetics):
+        """
+        Returns ``True`` if kinetics matches that of another kinetics model.  Must match temperature
+        and pressure range of kinetics model, as well as parameters: A, n, Ea, T0. (Shouldn't have pressure
+        range if it's Arrhenius.) Otherwise returns ``False``.
+        """
+        if isinstance(otherKinetics,Arrhenius):
+            if KineticsModel.isIdenticalTo(self, otherKinetics):
+                if (self.A.equals(otherKinetics.A) and self.n.equals(otherKinetics.n)
+                and self.Ea.equals(otherKinetics.Ea) and self.T0.equals(otherKinetics.T0)):
+                    return True
+                
+        return False
+
     
 ################################################################################
 
@@ -492,6 +594,20 @@ class ArrheniusEP(KineticsModel):
         """
         return Arrhenius(A=self.A, n=self.n, Ea=(self.getActivationEnergy(dHrxn),"J/mol"), T0=(1.0,"K"), Tmin=self.Tmin, Tmax=self.Tmax, comment=self.comment)
 
+    def isIdenticalTo(self, otherKinetics):
+        """
+        Returns ``True`` if kinetics matches that of another kinetics model.  Must match temperature
+        range of kinetics model, as well as parameters: A, n, alpha, E0. (Shouldn't have pressure
+        range if it's ArrheniusEP.)  Otherwise returns ``False``
+        """
+        if isinstance(otherKinetics,ArrheniusEP):
+            if KineticsModel.isIdenticalTo(self,otherKinetics):
+                if (self.A.equals(otherKinetics.A) and self.n.equals(otherKinetics.n)
+                and self.alpha.equals(otherKinetics.alpha) and self.E0.equals(otherKinetics.E0)):
+                    return True
+ 
+        return False
+            
 ################################################################################
 
 class MultiKinetics(KineticsModel):
@@ -556,6 +672,24 @@ class MultiKinetics(KineticsModel):
         for kin in self.kineticsList:
             k += kin.getRateCoefficient(T,P)
         return k
+
+    def isIdenticalTo(self, otherKinetics):
+        """
+        Returns ``True`` if kinetics matches that of another kinetics model.  Each duplicate
+        reaction must be matched and equal to that in the other MultiKinetics model
+        in the same order.  Otherwise returns ``False``
+        """
+        if isinstance(otherKinetics, MultiKinetics):
+            if KineticsModel.isIdenticalTo(self,otherKinetics):
+                if len(self.kineticsList) == len(otherKinetics.kineticsList):
+                    for index in range(len(self.kineticsList)):
+                        if self.kineticsList[index].isIdenticalTo(otherKinetics.kineticsList[index]):
+                            pass
+                        else:
+                            return False
+                    return True
+                
+        return False
 
 ################################################################################
 
@@ -698,6 +832,69 @@ class PDepArrhenius(KineticsModel):
             self.arrhenius.append(arrhenius)
         return self
 
+    def isValid(self):
+        """
+        Returns ``True`` if model has same number of arrhenius objects as pressures and if
+        neither are empty.  Otherwise returns ``False``
+        """
+        if self.arrhenius and self.pressures is not None:
+            if len(self.arrhenius) == len(self.pressures.values):
+                return True
+            else:
+                logging.error('Number of pressures ({}) did not match number of Arrhenius data ({}) in PDepArrhenius object.'.format(len(self.pressures.values),len(self.arrhenius)))
+                return False
+        else:
+            logging.error('Empty arrhenius data or pressure list in PDepArrhenius object.')
+            return False
+
+    def isIdenticalTo(self, otherKinetics):
+        """
+        Returns ``True`` if kinetics matches that of another kinetics model.  Must match
+        pressures, arrhenius list, and highPlimit. Otherwise returns ``False``
+        """
+        if isinstance(otherKinetics, PDepArrhenius):
+            # Catch anomalies in the objects themselves
+            try:
+                if not self.isValid():
+                    raise KineticsError('Your PdepArrhenius object is invalid.')
+                if not otherKinetics.isValid():
+                    raise KineticsError('The other PdepArrhenius object is invalid.')
+            except KineticsError, e:
+                print e
+                raise KineticsError
+            
+            # Now assume both Plog objects are valid
+            if KineticsModel.isIdenticalTo(self,otherKinetics):
+                if len(self.arrhenius) == len(otherKinetics.arrhenius):
+                    for index in range(len(self.arrhenius)):
+                        if self.arrhenius[index].isIdenticalTo(otherKinetics.arrhenius[index]):
+                            pass
+                        else:
+                            return False
+
+                        if self.pressures.equals(otherKinetics.pressures):
+                            pass
+                        else:
+                            return False
+                else:
+                    return False
+
+                if self.highPlimit and otherKinetics.highPlimit:
+                    if self.highPlimit.isIdenticalTo(otherKinetics.highPlimit):
+                        return True
+                    else:
+                        return False
+                elif self.highPlimit is None and otherKinetics.highPlimit is None:
+                    return True
+                else:
+                    return False               
+
+            else:
+                return False
+        else:
+            return False
+   
+        
 ################################################################################
 
 class Chebyshev(KineticsModel):
@@ -904,6 +1101,20 @@ class Chebyshev(KineticsModel):
         
         return self
 
+    def isIdenticalTo(self,otherKinetics):
+        """
+        Checks to see if kinetics matches that of other kinetics and returns ``True``
+        if coeffs, kunits, Tmin,
+        """
+
+        if isinstance(otherKinetics, Chebyshev):
+            if KineticsModel.isIdenticalTo(self,otherKinetics):
+                if (self.degreeT == otherKinetics.degreeT and self.degreeP == otherKinetics.degreeP
+                and self.kunits == otherKinetics.kunits and (self.coeffs == otherKinetics.coeffs).all()):
+                    return True
+
+        return False
+
 ################################################################################
 
 class ThirdBody(KineticsModel):
@@ -1030,6 +1241,25 @@ class ThirdBody(KineticsModel):
         efficiency = self.getColliderEfficiency(collider)
         return efficiency * k * C
 
+    def isIdenticalTo(self,otherKinetics):
+        """
+        Return ``True`` if arrheniusHigh and efficiences match that of other Kinetics model.
+        Otherwise return ``False``.
+        """
+        if isinstance(otherKinetics,ThirdBody):
+            if KineticsModel.isIdenticalTo(self,otherKinetics):
+                if self.arrheniusHigh.isIdenticalTo(otherKinetics.arrheniusHigh):
+                    if len(self.efficiencies) == len(otherKinetics.efficiencies):
+                        selfEff = {}
+                        otherEff = {}
+                        for mol, eff in self.efficiencies.iteritems():
+                            selfEff[mol.toSMILES()]=eff
+                        for mol, eff in otherKinetics.efficiencies.iteritems():
+                            otherEff[mol.toSMILES()]=eff
+                        if selfEff==otherEff:
+                            return True
+        return False
+
 ################################################################################
 
 class Lindemann(ThirdBody):
@@ -1128,6 +1358,17 @@ class Lindemann(ThirdBody):
         F = 1.0
         efficiency = self.getColliderEfficiency(collider)
         return efficiency * kinf * (Pr / (1 + Pr)) * F
+
+    def isIdenticalTo(self,otherKinetics):
+        """
+        Return ``True if all parameters matches that of other kinetics
+        """
+        if isinstance(otherKinetics,Lindemann):
+            if ThirdBody.isIdenticalTo(self,otherKinetics):
+                if self.arrheniusLow.isIdenticalTo(otherKinetics.arrheniusLow):
+                    return True
+
+        return False
 
 ################################################################################
 
@@ -1265,3 +1506,20 @@ class Troe(Lindemann):
         F = 10.0**(math.log10(Fcent)/(1 + ((math.log10(Pr) + c)/(n - d * (math.log10(Pr))))**2))
 
         return efficiency * kinf * (Pr / (1 + Pr)) * F
+
+    def isIdenticalTo(self,otherKinetics):
+        """
+        Return ``True`` if all parameters are identical to that of otherKinetics.
+        Otherwise return ``False``.
+        """
+
+        if isinstance(otherKinetics,Troe):
+            if Lindemann.isIdenticalTo(self,otherKinetics):
+                if (self.alpha.equals(otherKinetics.alpha) and self.T1.equals(otherKinetics.T1)
+                and self.T3.equals(otherKinetics.T3)):
+                    if self.T2 is None and otherKinetics.T2 is None:
+                        return True
+                    elif self.T2 is not None and otherKinetics.T2 is not None:
+                        if self.T2.equals(otherKinetics.T2):
+                            return True                
+        return False

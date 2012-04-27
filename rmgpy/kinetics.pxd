@@ -26,7 +26,7 @@
 
 cimport numpy
 
-from quantity cimport Quantity
+from quantity cimport Quantity, constants
 
 cdef extern from "math.h":
     cdef double acos(double x)

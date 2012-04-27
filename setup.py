@@ -66,12 +66,14 @@ def getMainExtensionModules():
         Extension('rmgpy.quantity', ['rmgpy/quantity.py'], include_dirs=['.']),
         Extension('rmgpy.reaction', ['rmgpy/reaction.py'], include_dirs=['.']),
         Extension('rmgpy.species', ['rmgpy/species.py'], include_dirs=['.']),
+        Extension('rmgpy._statmech', ['rmgpy/_statmech.pyx'], include_dirs=['.']),
         Extension('rmgpy.statmech', ['rmgpy/statmech.py'], include_dirs=['.']),
         Extension('rmgpy.thermo', ['rmgpy/thermo.py'], include_dirs=['.']),
     ]
 
 def getMeasureExtensionModules():
     return [
+        Extension('rmgpy.measure._network', ['rmgpy/measure/_network.pyx'], include_dirs=['.']),
         Extension('rmgpy.measure.collision', ['rmgpy/measure/collision.pyx'], include_dirs=['.']),
         Extension('rmgpy.measure.reaction', ['rmgpy/measure/reaction.pyx'], include_dirs=['.']),
         Extension('rmgpy.measure.msc', ['rmgpy/measure/msc.pyx'], include_dirs=['.']),
@@ -79,6 +81,7 @@ def getMeasureExtensionModules():
         Extension('rmgpy.measure.cse', ['rmgpy/measure/cse.pyx'], include_dirs=['.']),
         Extension('rmgpy.measure.me', ['rmgpy/measure/me.pyx'], include_dirs=['.']),
         Extension('rmgpy.quantity', ['rmgpy/quantity.py'], include_dirs=['.']),
+        Extension('rmgpy._statmech', ['rmgpy/_statmech.pyx'], include_dirs=['.']),
     ]
     
 def getSolverExtensionModules():

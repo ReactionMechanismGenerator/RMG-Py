@@ -1,10 +1,11 @@
 # Data sources
 database(
-    '/$RMGpy/RMG-database/input',
     thermoLibraries = ['primaryThermoLibrary','DFT_QCI_thermo','GRI-Mech3.0'],
-    reactionLibraries = ['Methylformate','Glarborg/highP'],
+    reactionLibraries = [('Methylformate',False),('Glarborg/highP',False)],
     seedMechanisms = ['Glarborg/C2'],
     kineticsDepositories = ['training'],
+    kineticsFamilies = ['!Intra_Disproportionation'],
+    kineticsEstimator = 'rate rules',
 )
 
 # List of species
@@ -105,6 +106,7 @@ simpleReactor(
         "O2": 0.02,
         "Ar": 0.08,
     },
+    terminationTime=(0.5,'s'),
 )
 simpleReactor(
     temperature=(1350,'K'),
@@ -114,6 +116,7 @@ simpleReactor(
         "O2": 0.02,
         "Ar": 0.97,
     },
+    terminationTime=(0.5,'s'),
 )
 simpleReactor(
     temperature=(1950,'K'),
@@ -123,10 +126,7 @@ simpleReactor(
         "O2": 0.02,
         "Ar": 0.97,
     },
-)
-
-termination(
-    time=(0.5,'s'),
+    terminationTime=(0.5,'s'),
 )
 
 simulator(

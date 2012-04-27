@@ -26,7 +26,7 @@
 
 cimport numpy
 
-from quantity cimport Quantity
+from quantity cimport Quantity, constants
 
 cdef extern from "math.h":
     double log(double)
@@ -89,7 +89,7 @@ cdef class Wilhoit(ThermoModel):
         bint linear, int nFreq, int nRotors, double H298, double S298)
     
     cpdef Wilhoit fitToData(self, numpy.ndarray Tlist, numpy.ndarray Cplist,
-        bint linear, int nFreq, int nRotors, double H298, double S298, double B0=?)
+        bint linear, int nFreq, int nRotors, double H298, double S298, double B0=?, double Bmin=?, double Bmax=?)
     
     cpdef Wilhoit fitToDataForConstantB(self, numpy.ndarray Tlist, numpy.ndarray Cplist,
         bint linear, int nFreq, int nRotors, double B, double H298, double S298)
@@ -154,7 +154,27 @@ cpdef double Wilhoit_integral2_T0(Wilhoit wilhoit, double t)
 
 cpdef double Wilhoit_integral2_TM1(Wilhoit wilhoit, double t)
 
+cpdef double Wilhoit_Dintegral_T0(Wilhoit wilhoit, double t1, double t2)
+
+cpdef double Wilhoit_Dintegral_TM1(Wilhoit wilhoit, double t1, double t2)
+
+cpdef double Wilhoit_Dintegral_T1(Wilhoit wilhoit, double t1, double t2)
+
+cpdef double Wilhoit_Dintegral_T2(Wilhoit wilhoit, double t1, double t2)
+
+cpdef double Wilhoit_Dintegral_T3(Wilhoit wilhoit, double t1, double t2)
+
+cpdef double Wilhoit_Dintegral_T4(Wilhoit wilhoit, double t1, double t2)
+
+cpdef double Wilhoit_Dintegral2_T0(Wilhoit wilhoit, double t1, double t2)
+
+cpdef double Wilhoit_Dintegral2_TM1(Wilhoit wilhoit, double t1, double t2)
+
 cpdef double NASA_integral2_T0(NASA polynomial, double T)
 
 cpdef double NASA_integral2_TM1(NASA polynomial, double T)
+
+cpdef double NASA_Dintegral2_T0(NASA polynomial, double Ta, double Tb)
+
+cpdef double NASA_Dintegral2_TM1(NASA polynomial, double Ta, double Tb)
 

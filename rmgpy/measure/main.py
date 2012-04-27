@@ -37,6 +37,8 @@ import os.path
 import numpy
 
 from rmgpy.quantity import Quantity, constants
+from rmgpy.kinetics import Chebyshev, PDepArrhenius
+from rmgpy.reaction import Reaction
 
 ################################################################################
 
@@ -237,7 +239,7 @@ class MEASURE:
         model = self.model
         
         # Calculate the rate coefficients
-        K, p0 = network.calculateRateCoefficients(Tlist, Plist, method, grainCount=self.grainCount, grainSize=self.grainSize.value)
+        K = network.calculateRateCoefficients(Tlist, Plist, method, grainCount=self.grainCount, grainSize=self.grainSize.value)
 
         # Fit interpolation model
         from rmgpy.reaction import Reaction
@@ -341,13 +343,14 @@ class MEASURE:
             self.model = ['pdeparrhenius']
         
         # Read grain size or number of grains
-        data = readMeaningfulLine(f).split()
-        if data[0].lower() == 'numgrains':
-            self.grainCount = int(data[1])
-            self.grainSize = Quantity(0.0, "J/mol")
-        elif data[0].lower() == 'grainsize':
-            self.grainCount = 0
-            self.grainSize = Quantity(float(data[2]), data[1])
+        self.grainCount = 0
+        self.grainSize = Quantity(0.0, "J/mol")
+        for i in range(2):
+            data = readMeaningfulLine(f).split()
+            if data[0].lower() == 'numgrains':
+                self.grainCount = int(data[1])
+            elif data[0].lower() == 'grainsize':
+                self.grainSize = Quantity(float(data[2]), data[1])
 
         # Create the Network
         self.network = Network()
@@ -528,7 +531,109 @@ class MEASURE:
             )
     
         f.close()
-
+    
+    def loadFAMEOutput(self, path):
+        """
+        Load the contents of a FAME ourput file into the MEASURE object. This
+        method assumes that you have already loaded the corresponding input
+        file via :meth:`loadFAMEInput()`.
+        """
+        
+        def readMeaningfulLine(f):
+            line = f.readline()
+            while line != '':
+                line = line.strip()
+                if len(line) > 0 and line[0] != '#':
+                    return line
+                else:
+                    line = f.readline()
+            return ''
+            
+        with open(path, 'r') as f:
+        
+            method = readMeaningfulLine(f).strip()
+            Tlist = numpy.array([float(d) for d in readMeaningfulLine(f).strip().split()[2:]])
+            Plist = numpy.array([float(d) for d in readMeaningfulLine(f).strip().split()[2:]])
+            model = readMeaningfulLine(f).strip().split()
+            
+            Nspec = int(readMeaningfulLine(f).strip())
+            Nisom = int(readMeaningfulLine(f).strip())
+            Nreac = int(readMeaningfulLine(f).strip())
+            Nprod = int(readMeaningfulLine(f).strip())
+            Npath = int(readMeaningfulLine(f).strip())
+            Nnet = int(readMeaningfulLine(f).strip())
+            
+            assert Nisom == len(self.network.isomers)
+            assert Nreac == len(self.network.reactants)
+            assert Nprod == len(self.network.products)
+            assert Npath == len(self.network.pathReactions)
+            
+            for n in range(Nnet):
+                reac, prod = readMeaningfulLine(f).strip().split()
+                reac = int(reac) - 1; prod = int(prod) - 1
+                
+                if reac < Nisom:
+                    reactants = [self.network.isomers[reac]]
+                elif reac < Nisom + Nreac:
+                    reactants = self.network.reactants[reac-Nisom]
+                elif reac < Nisom + Nreac + Nprod:
+                    reactants = self.network.products[reac-Nisom-Nreac]
+                else:
+                    reactants = []
+                
+                if prod < Nisom:
+                    products = [self.network.isomers[prod]]
+                elif prod < Nisom + Nreac:
+                    products = self.network.reactants[prod-Nisom]
+                elif prod < Nisom + Nreac + Nprod:
+                    products = self.network.products[prod-Nisom-Nreac]
+                else:
+                    products = []
+                
+                readMeaningfulLine(f)
+                
+                K = numpy.zeros((len(Tlist), len(Plist)), numpy.float64)
+                for t in range(len(Tlist)):
+                    K[t,:] = [float(d) for d in readMeaningfulLine(f).strip().split()[1:]]
+                
+                if len(reactants) > 1:
+                    # FAME returns k(T,P) values in cm^3/mol*s and s^-1, when
+                    # we want m^3/mol*s and s^-1
+                    K /= 1e6
+                    kunits = 'm^3/(mol*s)'
+                else:
+                    kunits = 's^-1'
+                    
+                if model[0].lower() == 'chebyshev':
+                    degreeT = int(model[1]); degreeP = int(model[2])
+                    coeffs = numpy.zeros((degreeT, degreeP), numpy.float64)
+                    for t in range(degreeT):
+                        coeffs[t,:] = [float(d) for d in readMeaningfulLine(f).strip().split()]
+                    if kunits == 'm^3/(mol*s)':
+                        coeffs[0,0] -= 6.0
+                    kinetics = Chebyshev(coeffs=coeffs, kunits=kunits, Tmin=self.Tmin, Tmax=self.Tmax, Pmin=self.Pmin, Pmax=self.Pmax)
+                elif model[0].lower() == 'pdeparrhenius':
+                    pressures = []
+                    arrhenius = []
+                    for p in range(len(Plist)):
+                        P, A, n, Ea = [float(d) for d in readMeaningfulLine(f).strip().split()]
+                        if kunits == 'm^3/(mol*s)':
+                            A /= 1e6
+                        pressures.append(P)
+                        arrhenius.append(Arrhenius(
+                            A = (A,kunits), n = n, Ea = (Ea,"J/mol"), T0=(1,"K"), 
+                            Tmin=self.Tmin, Tmax=self.Tmax
+                        ))
+                    kinetics = PDepArrhenius(pressures=(pressures,"Pa"), arrhenius=arrhenius, Tmin=self.Tmin, Tmax=self.Tmax, Pmin=self.Pmin, Pmax=self.Pmax)
+                    
+                netReaction = Reaction(
+                    reactants = reactants,
+                    products = products,
+                    kinetics = kinetics
+                )
+                
+                self.network.netReactions.append(netReaction)
+        
 ################################################################################
 
 def initializeLogging(level, logFile=None):

@@ -1,9 +1,11 @@
 # Data sources
 database(
-    '../RMG-database/input',
     thermoLibraries = ['primaryThermoLibrary', 'GRI-Mech3.0'],
     reactionLibraries = [],
     seedMechanisms = ['GRI-Mech3.0'],
+    kineticsDepositories = ['training'],
+    kineticsFamilies = ['!Intra_Disproportionation'],
+    kineticsEstimator = 'rate rules',
 )
 
 # List of species
@@ -50,13 +52,8 @@ simpleReactor(
         "C6H12n": 2.1000044337e-05,
         "Ar": 0.990929988899,
     },
-)
-
-termination(
-    conversion={
-        'C2H6On': 0.9,
-    },
-    time=(2e2,'s'),
+    terminationConversion = {'C2H6On': 0.9},
+    terminationTime = (2e2,'s'),
 )
    
 simulator(

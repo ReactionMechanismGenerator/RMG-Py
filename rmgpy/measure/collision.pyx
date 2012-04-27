@@ -47,7 +47,7 @@ import logging
 import cython
 
 from rmgpy.quantity import Quantity, constants
-from rmgpy.quantity cimport Quantity
+from rmgpy.quantity cimport Quantity, constants
 
 ################################################################################
 
@@ -103,7 +103,7 @@ cpdef double calculateCollisionFrequency(species, double T, double P, bathGas):
 
 ################################################################################
 
-def calculateCollisionEfficiency(species, double T,
+def calculateCollisionEfficiency(double T,
     numpy.ndarray[numpy.float64_t,ndim=1] Elist,
     numpy.ndarray[numpy.float64_t,ndim=1] densStates,
     double dEdown, double E0, double Ereac):
@@ -169,10 +169,10 @@ def calculateCollisionEfficiency(species, double T,
     beta = (dEdown / (dEdown + Fe * R * T))**2 / Delta
 
     if beta > 1:
-        logging.warning('Collision efficiency {0:.3f} calculated at {1:g} K for species {2} is greater than unity, so it will be set to unity.'.format(beta, T, species))
+        logging.warning('Collision efficiency {0:.3f} calculated at {1:g} K is greater than unity, so it will be set to unity.'.format(beta, T))
         beta = 1
     if beta < 0:
-        raise CollisionError('Invalid collision efficiency {0:.3f} calculated at {1:g} K for species {2}.'.format(beta, T, species))
+        raise CollisionError('Invalid collision efficiency {0:.3f} calculated at {1:g} K.'.format(beta, T))
     
     return beta
 
@@ -228,6 +228,9 @@ cdef class SingleExponentialDown(CollisionModel):
     def __init__(self, alpha0=None, T0=None, n=None):
         if alpha0 is not None:
             self.alpha0 = Quantity(alpha0)
+            if self.alpha0.units == 'cm^-1':
+                self.alpha0.value *= 11.96
+                self.alpha0.units = 'J/mol'
         else:
             self.alpha0 = None
         if T0 is not None:

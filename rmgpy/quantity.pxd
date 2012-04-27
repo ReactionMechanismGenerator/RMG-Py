@@ -50,3 +50,4 @@ cdef class Constants:
 
     cdef public double Na, kB, R, h, c, pi
 
+cdef Constants constants

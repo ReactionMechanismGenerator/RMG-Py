@@ -24,7 +24,7 @@
 #
 ################################################################################
 
-from quantity cimport Quantity
+from quantity cimport Quantity, constants
 from thermo cimport ThermoModel
 from statmech cimport StatesModel
 

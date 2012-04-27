@@ -54,8 +54,8 @@ class PressureDependenceError(Exception):
 
 class PDepReaction(rmgpy.reaction.Reaction):
 
-    def __init__(self, index=-1, reactants=None, products=None, network=None, kinetics=None, reversible=True, transitionState=None, thirdBody=False):
-        rmgpy.reaction.Reaction.__init__(self, index, reactants, products, kinetics, reversible, transitionState, thirdBody)
+    def __init__(self, index=-1, reactants=None, products=None, network=None, kinetics=None, reversible=True, transitionState=None, thirdBody=False, duplicate=False, degeneracy=1, pairs=None):
+        rmgpy.reaction.Reaction.__init__(self, index, reactants, products, kinetics, reversible, transitionState, thirdBody, duplicate, degeneracy, pairs)
         self.network = network
         
     def getSource(self):
@@ -188,12 +188,18 @@ class PDepNetwork(rmgpy.measure.network.Network):
         network using the provided core-edge reaction model `reactionModel`,
         returning the new reactions and new species.
         """
-        assert isomer not in self.explored
+        if isomer in self.explored:
+            logging.warning('Already explored isomer {0} in pressure-dependent network #{1:d}'.format(isomer, self.index))
+            return []
+        
+        assert [isomer] in self.products
         assert isomer not in self.isomers
         assert isomer not in self.source
 
         logging.info('Exploring isomer {0} in pressure-dependent network #{1:d}'.format(isomer, self.index))
         self.explored.append(isomer)
+        self.isomers.append(isomer)
+        self.products.remove([isomer])
         # Find reactions involving the found species as unimolecular
         # reactant or product (e.g. A <---> products)
         newReactionList = reactionModel.react(database, isomer)
@@ -433,7 +439,7 @@ class PDepNetwork(rmgpy.measure.network.Network):
         self.printSummary(level=logging.INFO)
 
         # Calculate the rate coefficients
-        K, p0 = self.calculateRateCoefficients(Tlist, Plist, method, grainSize=grainSize, grainCount=grainCount)
+        K = self.calculateRateCoefficients(Tlist, Plist, method, grainSize=grainSize, grainCount=grainCount)
 
         # Generate PDepReaction objects
         configurations = []
@@ -468,7 +474,36 @@ class PDepNetwork(rmgpy.measure.network.Network):
                         reactionModel.addReactionToEdge(netReaction)
 
                 # Set/update the net reaction kinetics using interpolation model
-                netReaction.kinetics = fitInterpolationModel(netReaction, Tlist, Plist, K[:,:,i,j], model, Tmin, Tmax, Pmin, Pmax)
+                netReaction.kinetics = fitInterpolationModel(netReaction, Tlist, Plist, K[:,:,i,j], model, Tmin, Tmax, Pmin, Pmax, errorCheck=True)
 
+                # Check: For each net reaction that has a path reaction, make
+                # sure the k(T,P) values for the net reaction do not exceed
+                # the k(T) values of the path reaction
+                # Only check the k(T,P) value at the highest P and lowest T,
+                # as this is the one most likely to be in the high-pressure 
+                # limit
+                t = 0; p = len(Plist) - 1
+                for pathReaction in self.pathReactions:
+                    if pathReaction.isIsomerization():
+                        # Don't check isomerization reactions, since their
+                        # k(T,P) values potentially contain both direct and
+                        # well-skipping contributions, and therefore could be
+                        # significantly larger than the direct k(T) value
+                        # (This can also happen for association/dissocation
+                        # reactions, but the effect is generally not too large)
+                        continue
+                    if pathReaction.reactants == netReaction.reactants and pathReaction.products == netReaction.products:
+                        kinf = pathReaction.kinetics.getRateCoefficient(Tlist[t])
+                        if K[t,p,i,j] > 2 * kinf: # To allow for a small discretization error
+                            logging.warning('k(T,P) for net reaction {0} exceeds high-P k(T) by {1:g} at {2:g} K, {3:g} bar'.format(netReaction, K[t,p,i,j] / kinf, Tlist[t], Plist[p]/1e5))
+                            logging.info('    k(T,P) = {0:9.2e}    k(T) = {1:9.2e}'.format(K[t,p,i,j], kinf))
+                        break
+                    elif pathReaction.products == netReaction.reactants and pathReaction.reactants == netReaction.products:
+                        kinf = pathReaction.kinetics.getRateCoefficient(Tlist[t]) / pathReaction.getEquilibriumConstant(Tlist[t])
+                        if K[t,p,i,j] > 2 * kinf: # To allow for a small discretization error
+                            logging.warning('k(T,P) for net reaction {0} exceeds high-P k(T) by {1:g} at {2:g} K, {3:g} bar'.format(netReaction, K[t,p,i,j] / kinf, Tlist[t], Plist[p]/1e5))           
+                            logging.info('    k(T,P) = {0:9.2e}    k(T) = {1:9.2e}'.format(K[t,p,i,j], kinf))
+                        break
+        
         # We're done processing this network, so mark it as valid
         self.valid = True

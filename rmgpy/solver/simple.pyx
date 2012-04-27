@@ -37,7 +37,7 @@ from base cimport ReactionSystem
 cimport cython
 
 from rmgpy.quantity import Quantity, constants
-from rmgpy.quantity cimport Quantity
+from rmgpy.quantity cimport Quantity, constants
 
 cdef class SimpleReactor(ReactionSystem):
     """
@@ -57,12 +57,12 @@ cdef class SimpleReactor(ReactionSystem):
     cdef numpy.ndarray reverseRateCoefficients
     cdef numpy.ndarray networkLeakCoefficients
 
-    def __init__(self, T, P, initialMoleFractions):
-        ReactionSystem.__init__(self)
+    def __init__(self, T, P, initialMoleFractions, termination):
+        ReactionSystem.__init__(self, termination)
         self.T = Quantity(T)
         self.P = Quantity(P)
         self.initialMoleFractions = initialMoleFractions
-
+        
         # These are helper variables used within the solver
         self.reactantIndices = None
         self.productIndices = None
@@ -173,7 +173,7 @@ cdef class SimpleReactor(ReactionSystem):
         cdef int numCoreSpecies, numCoreReactions, numEdgeSpecies, numEdgeReactions, numPdepNetworks
         cdef int j, first, second, third
         cdef double k, reactionRate
-        cdef numpy.ndarray[numpy.float64_t, ndim=1] coreSpeciesRates, coreReactionRates, edgeSpeciesRates, edgeReactionRates, networkLeakRates
+        cdef numpy.ndarray[numpy.float64_t, ndim=1] coreSpeciesConcentrations, coreSpeciesRates, coreReactionRates, edgeSpeciesRates, edgeReactionRates, networkLeakRates
 
         res = numpy.zeros(y.shape[0], numpy.float64)
 

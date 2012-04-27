@@ -52,24 +52,15 @@ from pdep import PDepReaction, PDepNetwork, PressureDependenceError
 
 class Species(rmgpy.species.Species):
 
-    def __init__(self, index=-1, label='', thermo=None, states=None, molecule=None, E0=0.0, lennardJones=None, molecularWeight=0.0, collisionModel=None, reactive=True):
+    def __init__(self, index=-1, label='', thermo=None, states=None, molecule=None, E0=0.0, lennardJones=None, molecularWeight=0.0, collisionModel=None, reactive=True, coreSizeAtCreation=0):
         rmgpy.species.Species.__init__(self, index, label, thermo, states, molecule, E0, lennardJones, molecularWeight, collisionModel, reactive)
-        self.coreSizeAtCreation = 0
+        self.coreSizeAtCreation = coreSizeAtCreation
 
     def __reduce__(self):
         """
         A helper function used when pickling an object.
         """
-        d = {
-            'coreSizeAtCreation': self.coreSizeAtCreation,
-        }
-        return (Species, (self.index, self.label, self.thermo, self.states, self.molecule, self.E0, self.lennardJones, self.molecularWeight, self.reactive), d)
-
-    def __setstate__(self, d):
-        """
-        A helper function used when unpickling an object.
-        """
-        self.coreSizeAtCreation = d['coreSizeAtCreation']
+        return (Species, (self.index, self.label, self.thermo, self.states, self.molecule, self.E0, self.lennardJones, self.molecularWeight, self.reactive, self.coreSizeAtCreation),)
 
     def generateThermoData(self, database, thermoClass=MultiNASA):
         """
@@ -83,33 +74,22 @@ class Species(rmgpy.species.Species):
         implicitH = [mol.implicitHydrogens for mol in self.molecule]
         for molecule in self.molecule:
             molecule.makeHydrogensExplicit()
-        
-        thermo = []
-        for molecule in self.molecule:
-            molecule.clearLabeledAtoms()
-            molecule.updateAtomTypes()
-            tdata = database.thermo.getThermoData(molecule)
-            thermo.append(tdata)
 
-        H298 = numpy.array([t.getEnthalpy(298.) for t in thermo])
-        indices = H298.argsort()
-
-        # If multiple resonance isomers are present, use the thermo data of
-        # the most stable isomer (i.e. one with lowest enthalpy of formation)
-        # as the thermo data of the species
-        thermo0 = thermo[indices[0]]
-
-        # Sort the structures in order of decreasing stability
-        self.molecule = [self.molecule[ind] for ind in indices]
-        implicitH = [implicitH[ind] for ind in indices]
+        # Get the thermo data for the species from the database
+        thermo0 = database.thermo.getThermoData(self)
 
         # Always convert to Wilhoit so we can compute E0
         if isinstance(thermo0, Wilhoit):
             wilhoit = thermo0
         else:
-            linear = self.molecule[0].isLinear()
-            nRotors = self.molecule[0].countInternalRotors()
-            nFreq = 3 * len(self.molecule[0].atoms) - (5 if linear else 6) - nRotors
+            if len(self.molecule[0].atoms) == 1:
+                linear = False
+                nRotors = 0
+                nFreq = 0
+            else:
+                linear = self.molecule[0].isLinear()
+                nRotors = self.molecule[0].countInternalRotors()
+                nFreq = 3 * len(self.molecule[0].atoms) - (5 if linear else 6) - nRotors
             wilhoit = convertThermoModel(thermo0, Wilhoit, linear=linear, nFreq=nFreq, nRotors=nRotors)
         
         # Compute E0 by extrapolation to 0 K
@@ -126,7 +106,7 @@ class Species(rmgpy.species.Species):
         if self.thermo.__class__ != thermo0.__class__:
             # Compute RMS error of overall transformation
             Tlist = numpy.array([300.0, 400.0, 500.0, 600.0, 800.0, 1000.0, 1500.0], numpy.float64)
-            err = math.sqrt(numpy.sum((self.thermo.getHeatCapacities(Tlist) - thermo0.getHeatCapacities(Tlist))**2))/constants.R/len(Tlist)
+            err = math.sqrt(numpy.sum((self.thermo.getHeatCapacities(Tlist) - thermo0.getHeatCapacities(Tlist))**2)/len(Tlist))/constants.R
             logging.log(logging.WARNING if err > 0.1 else 0, 'Average RMS error in heat capacity fit to {0} = {1:g}*R'.format(self, err))
 
         # Restore implicit hydrogens if necessary
@@ -234,6 +214,7 @@ class CoreEdgeReactionModel:
         self.outputSpeciesList = []
         self.outputReactionList = []
         self.pressureDependence = None
+        self.kineticsEstimator = 'group additivity'
 
     def checkForExistingSpecies(self, molecule):
         """
@@ -291,7 +272,13 @@ class CoreEdgeReactionModel:
         # Check that the structure is not forbidden
 
         # If we're here then we're ready to make the new species
-        if label == '': label = molecule.getFormula()
+        if label == '': 
+            # Use SMILES as default format for label
+            # However, SMILES can contain slashes (to describe the
+            # stereochemistry around double bonds); since RMG doesn't 
+            # distinguish cis and trans isomers, we'll just strip these out
+            # so that we can use the label in file paths
+            label = molecule.toSMILES().replace('/','').replace('\\','')
         logging.debug('Creating new species {0}'.format(label))
         spec = Species(index=self.speciesCounter+1, label=label, molecule=[molecule], reactive=reactive)
         spec.coreSizeAtCreation = len(self.core.species)
@@ -406,13 +393,28 @@ class CoreEdgeReactionModel:
         """
 
         # Determine the proper species objects for all reactants and products
-        forward.reactants = [self.makeNewSpecies(reactant)[0] for reactant in forward.reactants]
-        forward.products  = [self.makeNewSpecies(product)[0]  for product  in forward.products ]
+        reactants = [self.makeNewSpecies(reactant)[0] for reactant in forward.reactants]
+        products  = [self.makeNewSpecies(product)[0]  for product  in forward.products ]
+        if forward.pairs is not None:
+            for pairIndex in range(len(forward.pairs)):
+                reactantIndex = forward.reactants.index(forward.pairs[pairIndex][0])
+                productIndex = forward.products.index(forward.pairs[pairIndex][1])
+                forward.pairs[pairIndex] = (reactants[reactantIndex], products[productIndex])
+                if hasattr(forward, 'reverse'):
+                    forward.reverse.pairs[pairIndex] = (products[productIndex], reactants[reactantIndex])
+        forward.reactants = reactants
+        forward.products  = products
 
         if checkExisting:
             found, rxn = self.checkForExistingReaction(forward)
             if found: return rxn, False
 
+        # Generate the reaction pairs if not yet defined
+        if forward.pairs is None:
+            forward.generatePairs()
+            if hasattr(forward, 'reverse'):
+                forward.reverse.generatePairs()
+            
         # Note in the log
         if isinstance(forward, TemplateReaction):
             logging.debug('Creating new {0} template reaction {1}'.format(forward.family.label, forward))
@@ -466,6 +468,10 @@ class CoreEdgeReactionModel:
         forward.reverse = None
         forward.reversible = False
 
+        # Generate the reaction pairs if not yet defined
+        if forward.pairs is None:
+            forward.generatePairs()
+            
         # Set reaction index and increment the counter
         forward.index = self.reactionCounter + 1
         self.reactionCounter += 1
@@ -503,77 +509,96 @@ class CoreEdgeReactionModel:
         """
         database = rmgpy.data.rmg.database
         
-        self.newReactionList = []; self.newSpeciesList = []
-        newReactions = []
-        reactionsMovedFromEdge = []
-
+        if not isinstance(newObject, list):
+            newObject = [newObject]
+        
         numOldCoreSpecies = len(self.core.species)
         numOldCoreReactions = len(self.core.reactions)
         numOldEdgeSpecies = len(self.edge.species)
         numOldEdgeReactions = len(self.edge.reactions)
-
-        pdepNetwork = None
-
-        if isinstance(newObject, Species):
-
-            newSpecies = newObject
-
-            if not newSpecies.reactive:
-                logging.info('NOT generating reactions for unreactive species {0}'.format(newSpecies))
-            else:
-                logging.info('Adding species {0} to model core'.format(newSpecies))
-                # Find reactions involving the new species as unimolecular reactant
-                # or product (e.g. A <---> products)
-                newReactions.extend(self.react(database, newSpecies))
-                # Find reactions involving the new species as bimolecular reactants
-                # or products with other core species (e.g. A + B <---> products)
-                for coreSpecies in self.core.species:
-                    if coreSpecies.reactive:
-                        newReactions.extend(self.react(database, newSpecies, coreSpecies))
-                # Find reactions involving the new species as bimolecular reactants
-                # or products with itself (e.g. A + A <---> products)
-                newReactions.extend(self.react(database, newSpecies, newSpecies))
-
-            # Add new species
-            reactionsMovedFromEdge = self.addSpeciesToCore(newSpecies)
-
-            # Process the new reactions
-            self.processNewReactions(newReactions, newSpecies, pdepNetwork)
-
-        elif isinstance(newObject, tuple) and isinstance(newObject[0], PDepNetwork) and self.pressureDependence:
-
-            pdepNetwork, newSpecies = newObject
-            newReactions.extend(pdepNetwork.exploreIsomer(newSpecies, self, database))
-            self.processNewReactions(newReactions, newSpecies, pdepNetwork)
-
-        else:
-            raise TypeError('Unable to use object {0} to enlarge reaction model; expecting an object of class rmg.model.Species or rmg.model.PDepNetwork.'.format(newObject))
-
-        # If there are any core species among the unimolecular product channels
-        # of any existing network, they need to be made included
-        for network in self.unirxnNetworks:
-            network.updateConfigurations(self)
-            index = 0
-            while index < len(self.core.species):
-                species = self.core.species[index]
-                for products in network.products:
-                    if len(products) == 1 and products[0] == species:
-                        newReactions = network.exploreIsomer(species, self, database)
-                        self.processNewReactions(newReactions, species, network)
-                        network.updateConfigurations(self)
-                        index = 0
-                        break
-                else:
-                    index += 1
+        reactionsMovedFromEdge = []
+        newReactionList = []; newSpeciesList = []
+            
+        for obj in newObject:
+            
+            self.newReactionList = []; self.newSpeciesList = []
+            newReactions = []
+            pdepNetwork = None
+            objectWasInEdge = False
         
+            if isinstance(obj, Species):
+
+                newSpecies = obj
+                objectWasInEdge = newSpecies in self.edge.species
+                
+                if not newSpecies.reactive:
+                    logging.info('NOT generating reactions for unreactive species {0}'.format(newSpecies))
+                else:
+                    logging.info('Adding species {0} to model core'.format(newSpecies))
+                    # Find reactions involving the new species as unimolecular reactant
+                    # or product (e.g. A <---> products)
+                    newReactions.extend(self.react(database, newSpecies))
+                    # Find reactions involving the new species as bimolecular reactants
+                    # or products with other core species (e.g. A + B <---> products)
+                    for coreSpecies in self.core.species:
+                        if coreSpecies.reactive:
+                            newReactions.extend(self.react(database, newSpecies, coreSpecies))
+                    # Find reactions involving the new species as bimolecular reactants
+                    # or products with itself (e.g. A + A <---> products)
+                    newReactions.extend(self.react(database, newSpecies, newSpecies))
+    
+                # Add new species
+                reactionsMovedFromEdge = self.addSpeciesToCore(newSpecies)
+    
+                # Process the new reactions
+                self.processNewReactions(newReactions, newSpecies, pdepNetwork)
+    
+            elif isinstance(obj, tuple) and isinstance(obj[0], PDepNetwork) and self.pressureDependence:
+    
+                pdepNetwork, newSpecies = obj
+                newReactions.extend(pdepNetwork.exploreIsomer(newSpecies, self, database))
+                self.processNewReactions(newReactions, newSpecies, pdepNetwork)
+    
+            else:
+                raise TypeError('Unable to use object {0} to enlarge reaction model; expecting an object of class rmg.model.Species or rmg.model.PDepNetwork.'.format(obj))
+
+            # If there are any core species among the unimolecular product channels
+            # of any existing network, they need to be made included
+            for network in self.unirxnNetworks:
+                network.updateConfigurations(self)
+                index = 0
+                while index < len(self.core.species):
+                    species = self.core.species[index]
+                    if species in network.isomers and species not in network.explored:
+                        network.explored.append(species)
+                        continue
+                    for products in network.products:
+                        if len(products) == 1 and products[0] == species:
+                            newReactions = network.exploreIsomer(species, self, database)
+                            self.processNewReactions(newReactions, species, network)
+                            network.updateConfigurations(self)
+                            index = 0
+                            break
+                    else:
+                        index += 1
+            
+            if isinstance(obj, Species) and objectWasInEdge:
+                # moved one species from edge to core
+                numOldEdgeSpecies -= 1
+                # moved these reactions from edge to core
+                numOldEdgeReactions -= len(reactionsMovedFromEdge)
+            
+            newSpeciesList.extend(self.newSpeciesList)
+            newReactionList.extend(self.newReactionList)
+            
         # Generate thermodynamics of new species
         logging.info('Generating thermodynamics for new species...')
-        for spec in self.newSpeciesList:
+        for spec in newSpeciesList:
             spec.generateThermoData(database)
         
         # Generate kinetics of new reactions
         logging.info('Generating kinetics for new reactions...')
-        for reaction in self.newReactionList:
+        for reaction in newReactionList:
             # If the reaction already has kinetics (e.g. from a library),
             # assume the kinetics are satisfactory
             if reaction.kinetics is None:
@@ -583,59 +608,29 @@ class CoreEdgeReactionModel:
                 # Flip the reaction direction if the kinetics are defined in the reverse direction
                 if not isForward:
                     reaction.reactants, reaction.products = reaction.products, reaction.reactants
-                
+                    reaction.pairs = [(p,r) for r,p in reaction.pairs]
                 if reaction.family.ownReverse and hasattr(reaction,'reverse'):
+                    if not isForward:
+                        reaction.template = reaction.reverse.template
                     # We're done with the "reverse" attribute, so delete it to save a bit of memory
                     delattr(reaction,'reverse')
                     
         # For new reactions, convert ArrheniusEP to Arrhenius, and fix barrier heights.
         # self.newReactionList only contains *actually* new reactions, all in the forward direction.
-        for reaction in self.newReactionList:
+        for reaction in newReactionList:
             # convert KineticsData to Arrhenius forms
             if isinstance(reaction.kinetics, KineticsData):
                 reaction.kinetics = reaction.kinetics.toArrhenius()
             #  correct barrier heights of estimated kinetics
             if isinstance(reaction,TemplateReaction) or isinstance(reaction,DepositoryReaction): # i.e. not LibraryReaction
                 reaction.fixBarrierHeight() # also converts ArrheniusEP to Arrhenius.
-        
-        
+            
         # Update unimolecular (pressure dependent) reaction networks
         if self.pressureDependence:
-            # Merge networks if necessary
-            # Two partial networks having the same source and containing one or
-            # more explored isomers in common must be merged together to avoid
-            # double-counting of rates
-            for index0, network0 in enumerate(self.unirxnNetworks):
-                index = index0 + 1
-                while index < len(self.unirxnNetworks):
-                    found = False
-                    network = self.unirxnNetworks[index]
-                    if network0.source == network.source:
-                        # The networks contain the same source, but do they contain any common included isomers (other than the source)?
-                        for isomer in network0.explored:
-                            if isomer != network.source and isomer in network.explored:
-                                # The networks contain an included isomer in common, so we need to merge them
-                                found = True
-                                break
-                    if found:
-                        # The networks contain the same source and one or more common included isomers
-                        # Therefore they need to be merged together
-                        logging.info('Merging PDepNetwork #{0:d} and PDepNetwork #{1:d}'.format(network0.index, network.index))
-                        network0.merge(network)
-                        self.unirxnNetworks.remove(network)
-                    else:
-                        index += 1
-
             # Recalculate k(T,P) values for modified networks
             self.updateUnimolecularReactionNetworks(database)
             logging.info('')
-
-        # Print summary of enlargement
-        if isinstance(newObject, Species):
-            # moved one species from edge to core
-            numOldEdgeSpecies -= 1
-            # moved these reactions from edge to core
-            numOldEdgeReactions -= len(reactionsMovedFromEdge)
+        
         self.printEnlargeSummary(
             newCoreSpecies=self.core.species[numOldCoreSpecies:],
             newCoreReactions=self.core.reactions[numOldCoreReactions:],
@@ -644,58 +639,6 @@ class CoreEdgeReactionModel:
             newEdgeReactions=self.edge.reactions[numOldEdgeReactions:]
         )
 
-        # PDepReaction objects generated from partial networks are irreversible
-        # However, it makes more sense to have reversible reactions in the core
-        # Thus we mark PDepReaction objects as reversible and remove the reverse
-        # direction from the list of core reactions
-        # Note that well-skipping reactions may not have a reverse if the well
-        # that they skip over is not itself in the core
-        index = 0
-        while index < len(self.core.reactions):
-            reaction = self.core.reactions[index]
-            if isinstance(reaction, PDepReaction):
-                for reaction2 in self.core.reactions[index+1:]:
-                    if isinstance(reaction2, PDepReaction) and reaction.reactants == reaction2.products and reaction.products == reaction2.reactants:
-                        # We've found the PDepReaction for the reverse direction
-                        kf = reaction.getRateCoefficient(1000,1e5)
-                        kr = reaction.getRateCoefficient(1000,1e5) / reaction.getEquilibriumConstant(1000)
-                        kf2 = reaction2.getRateCoefficient(1000,1e5) / reaction2.getEquilibriumConstant(1000)
-                        kr2 = reaction2.getRateCoefficient(1000,1e5)
-                        if kf / kf2 < 0.5 or kf / kf2 > 2.0:
-                            # Most pairs of reactions should satisfy thermodynamic consistency (or at least be "close")
-                            # Warn about the ones that aren't close (but don't abort)
-                            logging.warning('Forward and reverse PDepReactions for reaction {0!s} generated from networks {1:d} and {2:d} do not satisfy thermodynamic consistency.'.format(reaction, reaction.network.index, reaction2.network.index))
-                            logging.debug('{0!s}:'.format(reaction))
-                            logging.debug('{0:.2e} {1:.2e}:'.format(kf, kf2))
-                            logging.debug('{0!s}:'.format(reaction2))
-                            logging.debug('{0:.2e} {1:.2e}:'.format(kr, kr2))
-                        # Keep the one from the more explored network (as it's probably more accurate)
-                        keepFirst = True
-                        if len(reaction.network.explored) > len(reaction2.network.explored):
-                            keepFirst = True
-                        elif len(reaction.network.explored) < len(reaction2.network.explored):
-                            keepFirst = False
-                        # If that's not enough, keep the one that's faster (comparing in the same direction)
-                        elif kf > kf2:
-                            keepFirst = True
-                        else:
-                            keepFirst = False
-                        # Delete the PDepReaction that we aren't keeping
-                        if keepFirst:
-                            self.core.reactions.remove(reaction2)
-                            reaction.reversible = True
-                        else:
-                            self.core.reactions.remove(reaction)
-                            self.core.reactions.remove(reaction2)
-                            self.core.reactions.insert(index, reaction2)
-                            reaction2.reversible = True
-                        # There should be only one reverse, so we can stop searching once we've found it
-                        break
-                else:
-                    reaction.reversible = True
-            # Move to the next core reaction
-            index += 1
-        
         logging.info('')
 
     def processNewReactions(self, newReactions, newSpecies, pdepNetwork=None):
@@ -760,53 +703,71 @@ class CoreEdgeReactionModel:
         assert isinstance(reaction, TemplateReaction)
         
         # Get the kinetics for the reaction
-        kinetics, source, entry, isForward = reaction.family.getKinetics(reaction, template=reaction.template, degeneracy=reaction.degeneracy, returnAllKinetics=False)
+        kinetics, source, entry, isForward = reaction.family.getKinetics(reaction, template=reaction.template, degeneracy=reaction.degeneracy, estimator=self.kineticsEstimator, returnAllKinetics=False)
+        
+        # Get the enthalpy of reaction at 298 K
+        H298 = reaction.getEnthalpyOfReaction(298)
         
         if reaction.family.ownReverse and hasattr(reaction,'reverse'):
             
             # The kinetics family is its own reverse, so we could estimate kinetics in either direction
             
             # First get the kinetics for the other direction
-            rev_kinetics, rev_source, rev_entry, rev_isForward = reaction.family.getKinetics(reaction.reverse, template=reaction.reverse.template, degeneracy=reaction.reverse.degeneracy, returnAllKinetics=False)
+            rev_kinetics, rev_source, rev_entry, rev_isForward = reaction.family.getKinetics(reaction.reverse, template=reaction.reverse.template, degeneracy=reaction.reverse.degeneracy, estimator=self.kineticsEstimator, returnAllKinetics=False)
 
             # Now decide which direction's kinetics to keep
             keepReverse = False
             if (source is not None and rev_source is None):
                 # Only the forward has a source - use forward.
-                reason = "This direction matched an entry in {0}, the other was just a group additive estimate.".format(source.label)
+                reason = "This direction matched an entry in {0}, the other was just an estimate.".format(source.label)
             elif (source is None and rev_source is not None):
                 # Only the reverse has a source - use reverse.
                 keepReverse = True
-                reason = "This direction matched an entry in {0}, the other was just a group additive estimate.".format(rev_source.label)
+                reason = "This direction matched an entry in {0}, the other was just an estimate.".format(rev_source.label)
             elif (source is not None and rev_source is not None 
                   and entry is rev_entry):
                 # Both forward and reverse have the same source and entry
                 # Use the one for which the kinetics is the forward kinetics
                 reason = "Both direction matched the same entry in {0}, which is defined in this direction.".format(source.label)
                 keepReverse = not isForward
-            elif (kinetics.comment.find("Fitted to 1 rate")>0
+            elif self.kineticsEstimator == 'group additivity' and (kinetics.comment.find("Fitted to 1 rate")>0
                   and not rev_kinetics.comment.find("Fitted to 1 rate")>0) :
                     # forward kinetics were fitted to only 1 rate, but reverse are hopefully better
                     keepReverse = True
                     reason = "Other direction matched a group only fitted to 1 rate."
-            elif (not kinetics.comment.find("Fitted to 1 rate")>0
+            elif self.kineticsEstimator == 'group additivity' and (not kinetics.comment.find("Fitted to 1 rate")>0
                   and rev_kinetics.comment.find("Fitted to 1 rate")>0) :
                     # reverse kinetics were fitted to only 1 rate, but forward are hopefully better
                     keepReverse = False
                     reason = "Other direction matched a group only fitted to 1 rate."
+            elif entry is not None and rev_entry is not None:
+                # Both directions matched explicit rate rules
+                # Keep the direction with the lower (but nonzero) rank
+                if entry.rank < rev_entry.rank and entry.rank != 0:
+                    keepReverse = False
+                    reason = "Both directions matched explicit rate rules, but this direction has a rule with a lower rank."
+                elif rev_entry.rank < entry.rank and rev_entry.rank != 0:
+                    keepReverse = True
+                    reason = "Both directions matched explicit rate rules, but this direction has a rule with a lower rank."
+                # Otherwise keep the direction that is exothermic at 298 K
+                else:
+                    keepReverse = H298 > 0 and isForward and rev_isForward
+                    reason = "Both directions matched explicit rate rules, but this direction is exothermic."
             else:
                 # Keep the direction that is exothermic at 298 K
                 # This must be done after the thermo generation step
-                keepReverse = reaction.getEnthalpyOfReaction(298) > 0 and isForward and rev_isForward
-                reason = "Both directions are group additive estimates, but this direction is exothermic."
+                keepReverse = H298 > 0 and isForward and rev_isForward
+                reason = "Both directions are estimates, but this direction is exothermic."
             
             if keepReverse:
                 kinetics = rev_kinetics
                 source = rev_source
                 entry = rev_entry
                 isForward = not rev_isForward
+                H298 = -H298
                 
             kinetics.comment += "\nKinetics were estimated in this direction instead of the reverse because:\n{0}".format(reason)
+            kinetics.comment += "\ndHrxn(298 K) = {0:.2f} kJ/mol".format(H298 / 1000.)
         
         return kinetics, source, entry, isForward
     
@@ -830,17 +791,19 @@ class CoreEdgeReactionModel:
         if reactionsMovedFromEdge:
             logging.info('Moved {0:d} reactions from edge to core'.format(len(reactionsMovedFromEdge)))
             for rxn in reactionsMovedFromEdge:
-                logging.info('    {0}'.format(rxn))
-                newCoreReactions.remove(rxn)
-
+                for r in newCoreReactions:
+                    if ((r.reactants == rxn.reactants and r.products == rxn.products) or
+                        (r.products == rxn.reactants and r.reactants == rxn.products)):
+                        logging.info('    {0}'.format(r))
+                        newCoreReactions.remove(r)
+                        break
+                    
         logging.info('Added {0:d} new core reactions'.format(len(newCoreReactions)))
         for rxn in newCoreReactions:
             logging.info('    {0}'.format(rxn))
         logging.info('Created {0:d} new edge reactions'.format(len(newEdgeReactions)))
         for rxn in newEdgeReactions:
             logging.info('    {0}'.format(rxn))
-            logging.info('    {0}'.format(rxn.kinetics))
-           #logging.info('    K = {0}'.format(rxn.getEquilibriumConstant(700)))
 
         coreSpeciesCount, coreReactionCount, edgeSpeciesCount, edgeReactionCount = self.getModelSize()
 
@@ -1065,11 +1028,9 @@ class CoreEdgeReactionModel:
         corresponding species and reaction lists.
         """
         coreSpeciesCount = len(self.core.species)
-        coreReactionsCount = len([rxn for rxn in self.core.reactions if not isinstance(rxn, PDepReaction)])
-        coreReactionsCount += len([rxn for rxn in self.core.reactions if isinstance(rxn, PDepReaction)]) / 2
+        coreReactionsCount = len(self.core.reactions)
         edgeSpeciesCount = len(self.edge.species)
-        edgeReactionsCount = len([rxn for rxn in self.edge.reactions if not isinstance(rxn, PDepReaction)])
-        edgeReactionsCount += len([rxn for rxn in self.edge.reactions if isinstance(rxn, PDepReaction)]) / 2
+        edgeReactionsCount = len(self.edge.reactions)
         return (coreSpeciesCount, coreReactionsCount, edgeSpeciesCount, edgeReactionsCount)
 
     def getLists(self):
@@ -1181,7 +1142,9 @@ class CoreEdgeReactionModel:
             self.addSpeciesToEdge(spec)
 
         for rxn in self.newReactionList:
-            rxn.kinetics.comment += "\nRMG did not find reaction rate to be high enough to be included in model core."
+            # Note that we haven't actually evaluated any fluxes at this point
+            # Instead, we remove the comment below if the reaction is moved to
+            # the core later in the mechanism generation
             self.addReactionToEdge(rxn)
 
         self.printEnlargeSummary(
@@ -1218,9 +1181,10 @@ class CoreEdgeReactionModel:
             # Reaction library was already on the edge, so we just need to get right label
             rxn = self.checkForExistingReaction(rxn)[1]
             if rxn in self.core.reactions:
-                if rxn.kinetics.comment.find("RMG did not find reaction rate to be high enough to be included in model core."):
-                    rxn.kinetics.comment = "Reaction from {0}.".format(reactionLib)
+                rxn.kinetics.comment = ''
+                pass
             else:
+                rxn.kinetics.comment = ("RMG did not find reaction rate to be high enough to be included in model core.")
                 self.outputReactionList.append(rxn)
 
 
@@ -1285,6 +1249,31 @@ class CoreEdgeReactionModel:
         updated.
         """
 
+        # Merge networks if necessary
+        # Two partial networks having the same source and containing one or
+        # more explored isomers in common must be merged together to avoid
+        # double-counting of rates
+        for index0, network0 in enumerate(self.unirxnNetworks):
+            index = index0 + 1
+            while index < len(self.unirxnNetworks):
+                found = False
+                network = self.unirxnNetworks[index]
+                if network0.source == network.source:
+                    # The networks contain the same source, but do they contain any common included isomers (other than the source)?
+                    for isomer in network0.explored:
+                        if isomer != network.source and isomer in network.explored:
+                            # The networks contain an included isomer in common, so we need to merge them
+                            found = True
+                            break
+                if found:
+                    # The networks contain the same source and one or more common included isomers
+                    # Therefore they need to be merged together
+                    logging.info('Merging PDepNetwork #{0:d} and PDepNetwork #{1:d}'.format(network0.index, network.index))
+                    network0.merge(network)
+                    self.unirxnNetworks.remove(network)
+                else:
+                    index += 1
+
         count = sum([1 for network in self.unirxnNetworks if not network.valid and not (len(network.explored) == 0 and len(network.source) > 1)])
         logging.info('Updating {0:d} modified unimolecular reaction networks...'.format(count))
         
@@ -1292,6 +1281,58 @@ class CoreEdgeReactionModel:
         # self = reactionModel object
         for network in self.unirxnNetworks:
             network.update(self, database, self.pressureDependence)
+            
+        # PDepReaction objects generated from partial networks are irreversible
+        # However, it makes more sense to have reversible reactions in the core
+        # Thus we mark PDepReaction objects as reversible and remove the reverse
+        # direction from the list of core reactions
+        # Note that well-skipping reactions may not have a reverse if the well
+        # that they skip over is not itself in the core
+        index = 0
+        while index < len(self.core.reactions):
+            reaction = self.core.reactions[index]
+            if isinstance(reaction, PDepReaction):
+                for reaction2 in self.core.reactions[index+1:]:
+                    if isinstance(reaction2, PDepReaction) and reaction.reactants == reaction2.products and reaction.products == reaction2.reactants:
+                        # We've found the PDepReaction for the reverse direction
+                        kf = reaction.getRateCoefficient(1000,1e5)
+                        kr = reaction.getRateCoefficient(1000,1e5) / reaction.getEquilibriumConstant(1000)
+                        kf2 = reaction2.getRateCoefficient(1000,1e5) / reaction2.getEquilibriumConstant(1000)
+                        kr2 = reaction2.getRateCoefficient(1000,1e5)
+                        if kf / kf2 < 0.5 or kf / kf2 > 2.0:
+                            # Most pairs of reactions should satisfy thermodynamic consistency (or at least be "close")
+                            # Warn about the ones that aren't close (but don't abort)
+                            logging.warning('Forward and reverse PDepReactions for reaction {0!s} generated from networks {1:d} and {2:d} do not satisfy thermodynamic consistency.'.format(reaction, reaction.network.index, reaction2.network.index))
+                            logging.debug('{0!s}:'.format(reaction))
+                            logging.debug('{0:.2e} {1:.2e}:'.format(kf, kf2))
+                            logging.debug('{0!s}:'.format(reaction2))
+                            logging.debug('{0:.2e} {1:.2e}:'.format(kr, kr2))
+                        # Keep the one from the more explored network (as it's probably more accurate)
+                        keepFirst = True
+                        if len(reaction.network.explored) > len(reaction2.network.explored):
+                            keepFirst = True
+                        elif len(reaction.network.explored) < len(reaction2.network.explored):
+                            keepFirst = False
+                        # If that's not enough, keep the one that's faster (comparing in the same direction)
+                        elif kf > kf2:
+                            keepFirst = True
+                        else:
+                            keepFirst = False
+                        # Delete the PDepReaction that we aren't keeping
+                        if keepFirst:
+                            self.core.reactions.remove(reaction2)
+                            reaction.reversible = True
+                        else:
+                            self.core.reactions.remove(reaction)
+                            self.core.reactions.remove(reaction2)
+                            self.core.reactions.insert(index, reaction2)
+                            reaction2.reversible = True
+                        # There should be only one reverse, so we can stop searching once we've found it
+                        break
+                else:
+                    reaction.reversible = True
+            # Move to the next core reaction
+            index += 1
 
     def loadSeedMechanism(self, path):
         """

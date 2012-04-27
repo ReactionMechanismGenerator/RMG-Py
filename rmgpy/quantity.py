@@ -348,6 +348,67 @@ class Quantity:
         """
         return self.uncertaintyType == '*|/'
 
+    def equals(self, quantity):
+        """
+        Return ``True`` if the everything in a quantity object matches
+        the parameters in this object.  If there are lists of values or uncertainties,
+        each item in the list must be matching and in the same order.
+        Otherwise, return ``False``
+        (Originally intended to return warning if units capitalization was
+        different, however, Quantity object only parses units matching in case, so
+        this will not be a problem.)
+        """
+
+        def approx_equal(x, y, atol = .01):
+            """
+            Returns true if two float/double values are approximately equal
+            within a relative error of 1% or under a user specific absolute tolerance.
+            """
+            return abs(x-y) <= 1e-2*abs(x) or abs(x-y) <= 1e-2*abs(y) or abs(x-y) <= atol
+
+        if isinstance(quantity, Quantity):
+            if (self.uncertaintyType == quantity.uncertaintyType
+            and approx_equal(self.uncertainty, quantity.uncertainty) and self.units == quantity.units):
+
+                if self.units == "kcal/mol":
+                    # set absolute tolerance to .01 kcal/mol = 42 J/mol
+                    atol = 42
+                else:
+                    # for other units, set it to .01
+                    atol = .01
+
+                if not approx_equal(self.value, quantity.value, atol):
+                    return False
+
+                if self.values is not None and quantity.values is not None:
+                    if len(self.values) == len(quantity.values):
+                        for i in range(len(self.values)):
+                            if not approx_equal(self.values[i],quantity.values[i],atol):
+                                return False
+                    else:
+                        return False
+                elif self.values is None and quantity.values is None:
+                    pass
+                else:
+                    return False
+
+                if self.uncertainties is not None and quantity.uncertainties is not None:
+                    if len(self.uncertainties) == len(quantity.uncertainties):
+                        for i in range(len(self.uncertainties)):
+                            if not approx_equal(self.uncertainties[i],quantity.uncertainties[i]):
+                                return False
+                    else:
+                        return False
+                elif self.uncertainties is None and quantity.uncertainties is None:
+                    pass
+                else:
+                    return False
+
+                return True
+
+        return False
+
+
 ################################################################################
 
 class Constants:
@@ -377,3 +438,7 @@ class Constants:
 
 # An instance of the Constants class providing easy access to the physical constants
 constants = Constants()
+
+globals().update({
+    'constants': constants,
+})

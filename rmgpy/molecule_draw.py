@@ -89,7 +89,9 @@ import math
 import numpy
 import os.path
 import re
+import logging
 
+from numpy.linalg import LinAlgError
 from rmgpy.molecule import *
 
 ################################################################################
@@ -133,6 +135,10 @@ def render(atoms, bonds, cycles, coordinates, symbols, cr, offset=(0,0)):
     # Shift coordinates by offset value
     coordinates[:,0] += offset[0]
     coordinates[:,1] += offset[1]
+    
+    # Draw white background
+    cr.set_source_rgba(1.0, 1.0, 1.0, 1.0)
+    cr.paint()
     
     # Draw bonds
     for atom1 in bonds:
@@ -327,10 +333,13 @@ def renderAtom(symbol, atom, coordinates0, atoms, bonds, x0, y0, cr, heavyFirst=
         cr.line_to(x1, y1 + r)
         cr.curve_to(x1, y1 + r/2, x1 + r/2, y1, x1 + r, y1)
         cr.close_path()
-        cr.set_operator(cairo.OPERATOR_CLEAR)
+        
+        cr.save()
+        cr.set_operator(cairo.OPERATOR_SOURCE)
         cr.set_source_rgba(1.0, 1.0, 1.0, 1.0)
         cr.fill()
-        cr.set_operator(cairo.OPERATOR_OVER)
+        cr.restore()
+        
         boundingRect = [x1, y1, x2, y2]
 
         # Set color for text
@@ -1145,7 +1154,12 @@ def drawMolecule(molecule, path=None, surface=''):
             del bonds[atom]
 
     # Generate the coordinates to use to draw the molecule
-    coordinates = generateCoordinates(molecule, atoms, bonds, cycles)
+    try:
+        coordinates = generateCoordinates(molecule, atoms, bonds, cycles)
+    except (ValueError, LinAlgError), e:
+        logging.error('Error while drawing molecule {0}: {1}'.format(molecule.toSMILES(), e))
+        return None, None, None
+
     coordinates[:,1] *= -1
     coordinates = coordinates * bondLength
 
