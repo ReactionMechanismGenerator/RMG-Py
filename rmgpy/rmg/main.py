@@ -39,6 +39,10 @@ import logging
 import time
 import shutil
 import numpy
+try:
+    import xlwt
+except ImportError:
+    logging.warning('Optional package dependency "xlwt" not loaded; Some output features will not work.')
 
 from rmgpy.species import Species
 from rmgpy.molecule import Molecule
@@ -96,6 +100,7 @@ class RMG:
     `wallTime`                  The maximum amount of CPU time in seconds to expend on this job; used to stop gracefully so we can still get profiling information
     --------------------------- ------------------------------------------------
     `initializationTime`        The time at which the job was initiated, in seconds since the epoch (i.e. from time.time())
+    `done`                      Whether the job has completed (there is nothing new to add)
     =========================== ================================================
     
     """
@@ -132,6 +137,7 @@ class RMG:
         self.maximumEdgeSpecies = 1000000
         self.termination = []
         
+        self.done = False
         self.verbosity = logging.INFO
         self.loadRestart = None
         self.saveRestartPeriod = None
@@ -159,6 +165,17 @@ class RMG:
                 self.outputDirectory = os.path.dirname(path)
             self.pressureDependence.outputFile = self.outputDirectory
             self.reactionModel.pressureDependence = self.pressureDependence
+        
+    def checkInput(self):
+        """
+        Check for a few common mistakes in the input file.
+        """
+        if self.pressureDependence:
+            for index, reactionSystem in enumerate(self.reactionSystems):
+                assert (reactionSystem.T.value < self.pressureDependence.Tmax.value), "Reaction system T is above pressureDependence range."
+                assert (reactionSystem.T.value > self.pressureDependence.Tmin.value), "Reaction system T is below pressureDependence range."
+                assert (reactionSystem.P.value < self.pressureDependence.Pmax.value), "Reaction system P is above pressureDependence range."
+                assert (reactionSystem.P.value > self.pressureDependence.Pmin.value), "Reaction system P is below pressureDependence range."
         
     def saveInput(self, path=None):
         """
@@ -211,6 +228,9 @@ class RMG:
         
         # Read input file
         self.loadInput(args.file[0])
+        
+        # Check input file 
+        self.checkInput()
     
         # See if memory profiling package is available
         try:
@@ -222,9 +242,9 @@ class RMG:
         # See if spreadsheet writing package is available
         if self.saveConcentrationProfiles:
             try:
-                import xlwt
-            except ImportError:
-                logging.warning('Package dependency "xlwt" not found; reaction system concentration profiles will not be saved, despite saveConcentrationProfiles = True option.')
+                xlwt
+            except NameError:
+                logging.warning('Package dependency "xlwt" not loaded; reaction system concentration profiles will not be saved, despite saveConcentrationProfiles = True option.')
                 self.saveConcentrationProfiles = False
         
         # Make output subdirectories
@@ -300,15 +320,17 @@ class RMG:
         execTime = []
         restartSize = []
         memoryUse = []
-    
+
+        self.done = False
+        self.saveEverything()
         # Main RMG loop
-        done = False
-        while not done:
+        while not self.done:
     
             if self.saveConcentrationProfiles:
+                # self.saveConcentrationProfiles should have been set to false if xlwt cannot be loaded
                 workbook = xlwt.Workbook()
                 
-            done = True
+            self.done = True
             objectsToEnlarge = []
             allTerminated = True
             for index, reactionSystem in enumerate(self.reactionSystems):
@@ -345,12 +367,12 @@ class RMG:
                         # Store the maximum leak species along with the associated network
                         obj = (obj, obj.getMaximumLeakSpecies(reactionSystem.T.value, reactionSystem.P.value))
                     objectsToEnlarge.append(obj)
-                    done = False
+                    self.done = False
     
             if self.saveConcentrationProfiles:
                 workbook.save(os.path.join(self.outputDirectory, 'solver', 'simulation_{0:d}.xls'.format(len(self.reactionModel.core.species))))
     
-            if not done:
+            if not self.done: # There is something that needs exploring/enlarging
     
                 # If we reached our termination conditions, then try to prune
                 # species from the edge
@@ -363,22 +385,7 @@ class RMG:
                 objectsToEnlarge = list(set(objectsToEnlarge))
                 self.reactionModel.enlarge(objectsToEnlarge)
 
-            # If the user specifies it, add unused reaction library reactions to
-            # an additional output species and reaction list which is written to the ouput HTML
-            # file as well as the chemkin file
-            self.reactionModel.outputSpeciesList = []
-            self.reactionModel.outputReactionList = []
-            for library, option in self.reactionLibraries:
-                if option:
-                    self.reactionModel.addReactionLibraryToOutput(library)
-                    
-            # Save the current state of the model core to a pretty HTML file
-            self.saveOutputHTML()
-            # Save a Chemkin file containing the current model core
-            self.saveChemkinFile()
-            # Save the restart file if desired
-            if self.saveRestartPeriod or done:
-                self.saveRestartFile(os.path.join(self.outputDirectory,'restart.pkl'), self.reactionModel, delay=0 if done else self.saveRestartPeriod.value)
+            self.saveEverything()
 
             # Update RMG execution statistics
             logging.info('Updating RMG execution statistics...')
@@ -434,6 +441,33 @@ class RMG:
         
         self.finish()
         
+    def saveEverything(self):
+        """
+        Saves the output HTML, the Chemkin file, and the Restart file (if appropriate).
+        
+        The restart file is only saved if self.saveRestartPeriod or self.done.
+        """
+        # If the user specifies it, add unused reaction library reactions to
+        # an additional output species and reaction list which is written to the ouput HTML
+        # file as well as the chemkin file
+        self.reactionModel.outputSpeciesList = []
+        self.reactionModel.outputReactionList = []
+        for library, option in self.reactionLibraries:
+            if option:
+                self.reactionModel.addReactionLibraryToOutput(library)
+                
+        # Save the current state of the model core to a pretty HTML file
+        self.saveOutputHTML()
+        # Save a Chemkin file containing the current model core
+        self.saveChemkinFile()
+        # Save the restart file if desired
+        if self.saveRestartPeriod or self.done:
+            self.saveRestartFile( os.path.join(self.outputDirectory,'restart.pkl'),
+                                  self.reactionModel,
+                                  delay=0 if self.done else self.saveRestartPeriod.value
+                                )
+            
+            
     def finish(self):
         """
         Complete the model generation.
@@ -616,9 +650,9 @@ class RMG:
     
         # Attempt to import the xlwt package; return if not installed
         try:
-            import xlwt
-        except ImportError:
-            logging.warning('Package xlwt not found. Unable to save execution statistics.')
+            xlwt
+        except NamerError:
+            logging.warning('Package xlwt not loaded. Unable to save execution statistics.')
             return
     
         # Create workbook and sheet for statistics to be places

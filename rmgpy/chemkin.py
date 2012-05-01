@@ -310,6 +310,9 @@ def readKineticsEntry(entry, speciesDict, energyUnits, moleculeUnits):
                 for p in range(chebyshev.degreeP):
                     chebyshev.coeffs[t,p] = chebyshevCoeffs[index]
                     index += 1
+            # Don't forget to convert the Chebyshev coefficients to SI units!
+            # This assumes that s^-1, cm^3/mol*s, etc. are compulsory
+            chebyshev.coeffs[0,0] -= (len(reaction.reactants) - 1) * 6.0
             reaction.kinetics = chebyshev
         elif pdepArrhenius is not None:
             reaction.kinetics = PDepArrhenius(
@@ -975,10 +978,17 @@ def writeKineticsEntry(reaction, speciesList):
             kinetics.n.value,
             kinetics.Ea.value / 4184.
         )
-    elif isinstance(kinetics, ThirdBody):
+    elif isinstance(kinetics, Lindemann):
         arrhenius = kinetics.arrheniusHigh
         string += '{0:<9.3e} {1:<9.3f} {2:<9.3f}'.format(
             arrhenius.A.value / (arrhenius.T0.value ** arrhenius.n.value) * 1.0e6 ** (numReactants - 1),
+            arrhenius.n.value,
+            arrhenius.Ea.value / 4184.
+        )
+    elif isinstance(kinetics, ThirdBody):
+        arrhenius = kinetics.arrheniusHigh
+        string += '{0:<9.3e} {1:<9.3f} {2:<9.3f}'.format(
+            arrhenius.A.value / (arrhenius.T0.value ** arrhenius.n.value) * 1.0e6 ** (numReactants),
             arrhenius.n.value,
             arrhenius.Ea.value / 4184.
         )
@@ -1008,7 +1018,7 @@ def writeKineticsEntry(reaction, speciesList):
             # Write low-P kinetics
             arrhenius = kinetics.arrheniusLow
             string += '    LOW/ {0:<9.3e} {1:<9.3f} {2:<9.3f}/\n'.format(
-                arrhenius.A.value / (arrhenius.T0.value ** arrhenius.n.value) * 1.0e6 ** (numReactants - 1),
+                arrhenius.A.value / (arrhenius.T0.value ** arrhenius.n.value) * 1.0e6 ** (numReactants),
                 arrhenius.n.value,
                 arrhenius.Ea.value / 4184.
             )

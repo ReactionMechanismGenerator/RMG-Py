@@ -157,6 +157,12 @@ class Species:
         if self.collisionModel is not None: string += 'collisionModel={0!r}, '.format(self.collisionModel)
         string = string[:-2] + ')'
         return string
+    
+    def _repr_png_(self):
+        if len(self.molecule) > 0:
+            return self.molecule[0]._repr_png_()
+        else:
+            return None
 
     def __str__(self):
         """

@@ -105,7 +105,7 @@ def getElement(value):
     :class:`ElementError` is raised if no matching element is found.
     """
     cython.declare(element=Element, number=cython.int, symbol=str)
-    if isinstance(value, int):
+    if isinstance(value, int) or isinstance(value, long):
         # The parameter is an integer; assume this is the atomic number
         number = value
         for element in elementList:
@@ -124,7 +124,7 @@ def getElement(value):
         # so we raise an exception
         raise ElementError("No element found with symbol %s." % (symbol))
     else:
-        raise ElementError('No element found based on parameter "%s".' % (value))
+        raise ElementError('No element found based on parameter %s "%r".' % (type(value), value))
 
 ################################################################################
 

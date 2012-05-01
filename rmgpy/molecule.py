@@ -37,6 +37,7 @@ describe the corresponding atom or bond.
 
 import cython
 import logging
+import os
 import re
 import element as elements
 from graph import Vertex, Edge, Graph
@@ -83,11 +84,10 @@ class Atom(Vertex):
         """
         Return a human-readable string representation of the object.
         """
-        return "<Atom '{0}>".format(
+        return "<Atom '{0}'>".format(
             str(self.element) +
-            ''.join(['.' for i in range(self.radicalElectrons)]) +
-            ''.join(['+' for i in range(self.charge)]) +
-            ''.join(['-' for i in range(-self.charge)])
+            '.' * self.radicalElectrons +
+            '+' * self.charge if self.charge > 0 else '-' * -self.charge
         )
 
     def __repr__(self):
@@ -851,7 +851,17 @@ class Molecule(Graph):
         """
         from molecule_draw import drawMolecule
         drawMolecule(self, path=path)
-        
+    
+    def _repr_png_(self):
+        """
+        Return a png picture of the molecule, useful for ipython-qtconsole.
+        """
+        from molecule_draw import drawMolecule
+        tempFileName = 'temp_molecule.png'
+        drawMolecule(self, path=tempFileName)
+        png = open(tempFileName,'rb').read()
+        os.unlink(tempFileName)
+        return png
         
 
     def fromCML(self, cmlstr, implicitH=False):
