@@ -1028,18 +1028,61 @@ class Reaction:
         import rdkit
         import rdkit.Chem
         import rdkit.Chem.AllChem
+        import rdkit.Geometry
         
-        import ipdb; ipdb.set_trace()
+        """
+        Iterate through each reactant, then iterate through its atoms to find the
+        atoms involved in the reaction. If a radical is involved, can find the atom
+        with radical electrons. If a more reliable method can be found, would greatly
+        improve the method.
         
-        # Go through the list of reactants
+        Repeat for the products
+        """
         for i in range(0, len(reactants)):
             mol = reactants[i].molecule[0]
-            print rdkit.Chem.MolToMolBlock(mol.rdMol, confId = mol.rdMolConfId)
-       
-        # Go through the list of products
+            for j in range(0, mol.rdMol.GetNumAtoms()):
+                if mol.rdMol.GetAtomWithIdx(j).GetNumRadicalElectrons():
+                    point = mol.rdMol.GetConformer(mol.rdMolConfId).GetAtomPosition(j)
+                    neighbor = mol.rdMol.GetAtomWithIdx(j).GetNeighbors()
+                    dirVec = [{} for k in range(len(neighbor))]
+                    lenVec = [None]*len(neighbor)
+                    for k in range(0, len(neighbor)):
+                        newIdx = neighbor[k].GetIdx()
+                        newPt = mol.rdMol.GetConformer(mol.rdMolConfId).GetAtomPosition(newIdx)
+                        dirVec[k] = point.DirectionVector(newPt)
+                        lenVec[k] = point.Distance(newPt)
+                    xCoord = [None]*len(neighbor)
+                    yCoord = [None]*len(neighbor)
+                    zCoord = [None]*len(neighbor) 
+                    for k in range(0, len(neighbor)):
+                        xCoord[k] = dirVec[k].x*lenVec[k]
+                        yCoord[k] = dirVec[k].y*lenVec[k]
+                        zCoord[k] = dirVec[k].z*lenVec[k]
+            reactionAxis = [sum(xCoord), sum(yCoord), sum(zCoord)]
+            reactants[i].reactionAxis = reactionAxis
+        
         for i in range(0, len(products)):
             mol = products[i].molecule[0]
-            print rdkit.Chem.MolToMolBlock(mol.rdMol, confId = mol.rdMolConfId)
+            for j in range(0, mol.rdMol.GetNumAtoms()):
+                if mol.rdMol.GetAtomWithIdx(j).GetNumRadicalElectrons():
+                    point = mol.rdMol.GetConformer(mol.rdMolConfId).GetAtomPosition(j)
+                    neighbor = mol.rdMol.GetAtomWithIdx(j).GetNeighbors()
+                    dirVec = [{} for k in range(len(neighbor))]
+                    lenVec = [None]*len(neighbor)
+                    for k in range(0, len(neighbor)):
+                        newIdx = neighbor[k].GetIdx()
+                        newPt = mol.rdMol.GetConformer(mol.rdMolConfId).GetAtomPosition(newIdx)
+                        dirVec[k] = point.DirectionVector(newPt)
+                        lenVec[k] = point.Distance(newPt)
+                    xCoord = [None]*len(neighbor)
+                    yCoord = [None]*len(neighbor)
+                    zCoord = [None]*len(neighbor) 
+                    for k in range(0, len(neighbor)):
+                        xCoord[k] = dirVec[k].x*lenVec[k]
+                        yCoord[k] = dirVec[k].y*lenVec[k]
+                        zCoord[k] = dirVec[k].z*lenVec[k]
+            reactionAxis = [sum(xCoord), sum(yCoord), sum(zCoord)]
+            products[i].reactionAxis = reactionAxis
                 
 ################################################################################
 
