@@ -74,6 +74,7 @@ class Species(rmgpy.species.Species):
         implicitH = [mol.implicitHydrogens for mol in self.molecule]
         for molecule in self.molecule:
             molecule.makeHydrogensExplicit()
+            molecule.generate3dGeometry()
 
         # Get the thermo data for the species from the database
         thermo0 = database.thermo.getThermoData(self)
@@ -113,10 +114,6 @@ class Species(rmgpy.species.Species):
         for implicit, molecule in zip(implicitH, self.molecule):
             if implicit: molecule.makeHydrogensImplicit()
 
-        import ipdb; ipdb.set_trace()
-        for molecule in self.molecule:
-            molecule.generate3Dgeometry()
-        
         return self.thermo
 
     def generateStatesData(self, database):
@@ -256,7 +253,6 @@ class CoreEdgeReactionModel:
         either a :class:`Molecule` object or an :class:`rmgpy.species.Species`
         object.
         """
-
         if isinstance(object, rmgpy.species.Species):
             molecule = object.molecule[0]
             label = label if label != '' else object.label

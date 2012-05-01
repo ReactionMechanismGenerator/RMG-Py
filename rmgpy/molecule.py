@@ -1609,11 +1609,14 @@ class Molecule(Graph):
         url += "{0}".format(re.sub('\s+', '%20', adjlist.replace('\n', ';')))
         return url.strip('_')
         
-    def generate3Dgeometry(self):
+    def generate3dGeometry(self):
         """
         Generate a 3D geometry, using RDKit
-        """
-        """
+        
+        called from model.generateThermoData()
+            'for molecule in self.molecule:
+                 molecule.generate3dGeometry()'
+        
         To use RDKit we must import the modules needed to generate the geometry. 
         'Chem' folder stores most of what is needed. $RDBASE must also be on 
         the python path.
@@ -1622,49 +1625,39 @@ class Molecule(Graph):
         import rdkit.Chem
         import rdkit.Chem.AllChem
         
-        """ 
-        Take the number of atoms from RMG and run a for loop form the first
-        to the last atom, adding each atom to RDKit through he AddAtom() function. 
-        """
+        # Ensure the hydrogen atoms are explicit
         self.makeHydrogensExplicit()
-        rd_mol = rdkit.Chem.rdchem.EditableMol( rdkit.Chem.rdchem.Mol() ) # initialize a blank Editable molecule
-        for index, atom in enumerate(self.vertices): # add all the atoms for molecule from RMG
+        
+        # Initialize a blank Editable molecule and add all the atoms from RMG molecule
+        rd_mol = rdkit.Chem.rdchem.EditableMol( rdkit.Chem.rdchem.Mol() )
+        for index, atom in enumerate(self.vertices):
             rd_atom = rdkit.Chem.rdchem.Atom(atom.element.symbol)
             rd_atom.SetNumRadicalElectrons(atom.radicalElectrons)
             rd_mol.AddAtom(rd_atom)
             atom.rdkitAtomIdx = index
         
-        """
-        Check each pair of atoms and add the bonds to them.
-        """
+        # Add the bonds
         for atom1 in self.edges: 
             for atom2, bond in self.edges[atom1].iteritems():
                 index1 = atom1.rdkitAtomIdx
                 index2 = atom2.rdkitAtomIdx
-                # print "Adding bond from %s to %s"%(index1,index2)
                 if index1 > index2:
                     rd_bondOrder = bond.order
-                    """
-                    Check the RMG bond order and add the appropriate rdkit bond.
-                    """
+                    
+                    # Check the RMG bond order and add the appropriate rdkit bond.
+                    
                     if rd_bondOrder == 'S':
                         rd_bond = rdkit.Chem.rdchem.BondType.SINGLE
-                        rd_mol.AddBond(index1, index2, rd_bond)
-                                                    
                     elif rd_bondOrder == 'D':
                         rd_bond = rdkit.Chem.rdchem.BondType.DOUBLE
-                        rd_mol.AddBond(index1, index2, rd_bond)
-                            
                     elif rd_bondOrder == 'T':
                         rd_bond = rdkit.Chem.rdchem.BondType.TRIPLE
-                        rd_mol.AddBond(index1, index2, rd_bond)
-                            
                     elif rd_bondOrder == 'B':
                         rd_bond = rdkit.Chem.rdchem.BondType.AROMATIC
-                        rd_mol.AddBond(index1, index2, rd_bond)
-                            
                     else:
                         print "Unknown bond order"
+                    
+                    rd_mol.AddBond(index1, index2, rd_bond)
         
         # while debugging, check that rdkitAtomIdx matches GetIdx
         for atom in self.vertices:
@@ -1676,21 +1669,26 @@ class Molecule(Graph):
         Generate the 3D geometries, and check if each atom has the necessary data (if not, raise an
         exception). Then optimize each conformer and find the lowest energy conformer.
         """
-        rd_mol = rd_mol.GetMol() # Make editable mol into a mol
-        rdkit.Chem.SanitizeMol(rd_mol) # Rectify the molecule
+        # Make editable mol into a mol and rectify the molecule
+        rd_mol = rd_mol.GetMol()
+        rdkit.Chem.SanitizeMol(rd_mol)
         conformer_ids = rdkit.Chem.AllChem.EmbedMultipleConfs(rd_mol, useRandomCoords = True)
-        if not rdkit.Chem.rdForceFieldHelpers.UFFHasAllMoleculeParams(rd_mol):
-            raise Exception("Insufficient data for atoms in molecule.")
         assert len(conformer_ids) == rd_mol.GetNumConformers()
         
+        # For each conformer, optimize and find the energy, store the lowest energy
+        if not rdkit.Chem.rdForceFieldHelpers.UFFHasAllMoleculeParams(rd_mol):
+            raise Exception("Insufficient data for atoms in molecule.")
         lowestEnergy = None
-        for k in conformer_ids: # for each geometry
+        for k in conformer_ids:
             more_iterations_required = 1
+            # optimize the geometry. returns 0 when successful
             while more_iterations_required:
-                more_iterations_required = rdkit.Chem.AllChem.UFFOptimizeMolecule(rd_mol, confId = k) # optimize the geometry. returns 0 when successful
-            energy = rdkit.Chem.AllChem.UFFGetMoleculeForceField(rd_mol, confId = k).CalcEnergy() # get the electronic energy
+                more_iterations_required = rdkit.Chem.AllChem.UFFOptimizeMolecule(rd_mol, confId = k)
+            energy = rdkit.Chem.AllChem.UFFGetMoleculeForceField(rd_mol, confId = k).CalcEnergy()
             if lowestEnergy == None or energy < lowestEnergy:
                 lowestEnergy = energy
                 lowestEnergyConfomer = k
-        logging.info("Lowest energy conformer: %d has energy %s"%(lowestEnergyConfomer,lowestEnergy))
-        print rdkit.Chem.MolToMolBlock(rd_mol, confId=lowestEnergyConfomer)
+        # logging.info("Lowest energy conformer: %d has energy %s"%(lowestEnergyConfomer,lowestEnergy))
+        # print rdkit.Chem.MolToMolBlock(rd_mol, confId=lowestEnergyConfomer)
+        self.rdMol = rd_mol
+        self.rdMolConfId = lowestEnergyConfomer
