@@ -46,6 +46,9 @@ from rmgpy.data.kinetics import *
 from rmgpy.data.states import *
 import rmgpy.data.rmg
 
+#needed to call the generate3dTS method in Reaction class
+from rmgpy.reaction import Reaction
+
 from pdep import PDepReaction, PDepNetwork, PressureDependenceError
 
 ################################################################################
@@ -549,8 +552,9 @@ class CoreEdgeReactionModel:
     
                 # Add new species
                 reactionsMovedFromEdge = self.addSpeciesToCore(newSpecies)
-    
+                
                 # Process the new reactions
+                # While adding to core/edge/pdep network, this clears atom labels:
                 self.processNewReactions(newReactions, newSpecies, pdepNetwork)
     
             elif isinstance(obj, tuple) and isinstance(obj[0], PDepNetwork) and self.pressureDependence:
@@ -768,7 +772,7 @@ class CoreEdgeReactionModel:
                 
             kinetics.comment += "\nKinetics were estimated in this direction instead of the reverse because:\n{0}".format(reason)
             kinetics.comment += "\ndHrxn(298 K) = {0:.2f} kJ/mol".format(H298 / 1000.)
-        
+            
         return kinetics, source, entry, isForward
     
     def printEnlargeSummary(self, newCoreSpecies, newCoreReactions, newEdgeSpecies, newEdgeReactions, reactionsMovedFromEdge=None):

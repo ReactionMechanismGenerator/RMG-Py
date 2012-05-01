@@ -2116,6 +2116,17 @@ class KineticsFamily(Database):
             return len(mapsList) > 0, mapsList
         elif isinstance(struct, Molecule):
             return reactant.findSubgraphIsomorphisms(struct)
+    
+    def generateTransitionState(self, reaction):
+        """
+        make TS geometry
+        """
+        TS = Molecule()
+        for s in reaction.reactants:
+            TS = TS.merge(s.copy(deep=True))
+        import ipdb; ipdb.set_trace()
+        return TS
+        
 
     def applyRecipe(self, reactantStructures, forward=True, unique=True):
         """
@@ -2229,7 +2240,7 @@ class KineticsFamily(Database):
         for struct in productStructures:
             if isinstance(struct, Molecule):
                 struct.updateAtomTypes()
-
+                
         # Return the product structures
         return productStructures
 
@@ -2387,6 +2398,10 @@ class KineticsFamily(Database):
             )
             reactionList.append(reaction)
         
+        # Generate transistion states
+        for rxn in reactionList:
+            rxn.transitionState = self.generateTransitionState(rxn)
+        
         reverseReactions = []
         if self.ownReverse:
             # for each reaction, make its reverse reaction and store in a 'reverse' attribute
@@ -2424,6 +2439,7 @@ class KineticsFamily(Database):
         # Also store the reaction template (useful so we can easily get the kinetics later)
         for reaction in reactionList:
             reaction.pairs = self.getReactionPairs(reaction)
+            # at this point, species are labeled, so kinetics can be determined
             reaction.template = self.getReactionTemplate(reaction)
             if hasattr(reaction,'reverse'):
                 reaction.reverse.pairs = self.getReactionPairs(reaction.reverse)
