@@ -60,6 +60,7 @@ class Atom(Vertex):
     `implicitHydrogens` ``short``           The number of implicit hydrogen atoms bonded to this atom
     `charge`            ``short``           The formal charge of the atom
     `label`             ``str``             A string label that can be used to tag individual atoms
+    `coords`
     =================== =================== ====================================
 
     Additionally, the ``mass``, ``number``, and ``symbol`` attributes of the
@@ -79,6 +80,7 @@ class Atom(Vertex):
         self.charge = charge
         self.label = label
         self.atomType = None
+        self.coords = list()
 
     def __str__(self):
         """
@@ -195,6 +197,7 @@ class Atom(Vertex):
         """
         a = Atom(self.element, self.radicalElectrons, self.spinMultiplicity, self.implicitHydrogens, self.charge, self.label)
         a.atomType = self.atomType
+        a.coords = self.coords[:]
         return a
 
     def isHydrogen(self):
@@ -1638,19 +1641,20 @@ class Molecule(Graph):
         # Ensure the hydrogen atoms are explicit
         self.makeHydrogensExplicit()
         
+        rdkitAtomIdx = {} # dictionary of rdkit atom indices
         # Initialize a blank Editable molecule and add all the atoms from RMG molecule
         rd_mol = rdkit.Chem.rdchem.EditableMol( rdkit.Chem.rdchem.Mol() )
         for index, atom in enumerate(self.vertices):
             rd_atom = rdkit.Chem.rdchem.Atom(atom.element.symbol)
             rd_atom.SetNumRadicalElectrons(atom.radicalElectrons)
             rd_mol.AddAtom(rd_atom)
-            atom.rdkitAtomIdx = index
+            rdkitAtomIdx[atom] = index
         
         # Add the bonds
         for atom1 in self.edges: 
             for atom2, bond in self.edges[atom1].iteritems():
-                index1 = atom1.rdkitAtomIdx
-                index2 = atom2.rdkitAtomIdx
+                index1 = rdkitAtomIdx[atom1]
+                index2 = rdkitAtomIdx[atom2]
                 if index1 > index2:
                     rd_bondOrder = bond.order
                     
@@ -1669,11 +1673,6 @@ class Molecule(Graph):
                     
                     rd_mol.AddBond(index1, index2, rd_bond)
         
-        # while debugging, check that rdkitAtomIdx matches GetIdx
-        for atom in self.vertices:
-            index = atom.rdkitAtomIdx
-            rd_atom = rd_mol.GetMol().GetAtomWithIdx(index)
-            assert index == rd_atom.GetIdx()
         
         """
         Generate the 3D geometries, and check if each atom has the necessary data (if not, raise an
@@ -1702,3 +1701,9 @@ class Molecule(Graph):
         # print rdkit.Chem.MolToMolBlock(rd_mol, confId=lowestEnergyConfomer)
         self.rdMol = rd_mol
         self.rdMolConfId = lowestEnergyConfomer
+        
+        # store the coordinates
+        for atom in self.vertices:
+            index = rdkitAtomIdx[atom]
+            point = self.rdMol.GetConformer(lowestEnergyConfomer).GetAtomPosition(index)
+            atom.coords = [point.x, point.y, point.z]

@@ -80,7 +80,6 @@ class Species(rmgpy.species.Species):
         implicitH = [mol.implicitHydrogens for mol in self.molecule]
         for molecule in self.molecule:
             molecule.makeHydrogensExplicit()
-            molecule.generate3dGeometry()
 
         # Get the thermo data for the species from the database
         thermo0 = database.thermo.getThermoData(self)
@@ -119,6 +118,9 @@ class Species(rmgpy.species.Species):
         # Restore implicit hydrogens if necessary
         for implicit, molecule in zip(implicitH, self.molecule):
             if implicit: molecule.makeHydrogensImplicit()
+            
+        for molecule in self.molecule:
+            molecule.generate3dGeometry()
 
         return self.thermo
 
