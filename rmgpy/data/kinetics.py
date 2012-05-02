@@ -2122,6 +2122,39 @@ class KineticsFamily(Database):
         make TS geometry
         """
         TS = Molecule()
+        # For hydrogen abstraction reactions
+        if reaction.family.label.lower() == 'h_abstraction':
+            # For H_Abstraction '*2' is the H that migrates it moves from '*1' to '*3'
+            # Initialize the reaction vectors for each molecule
+            reaction.reactantVec = [None]*len(reaction.reactants)
+            for molecule in reaction.reactants:
+                # 1 atom in the reaction center (may also want to check for radical?!?)
+                if len(molecule.getLabeledAtoms()) == 1:
+                    atom = molecule.getLabeledAtoms().items()[0][1]    # Take the labeled atom
+                    adjacentBonds = molecule.getBonds(atom).items()    # Find the adjacent bonds
+                    bondVec = [None]*len(adjacentBonds)
+                    # For each bond, find the other atom and the direction vector from the reactive atom
+                    for bondIdx in range(0, len(adjacentBonds)):
+                        bondedAtom = adjacentBonds[bondIdx][0]
+                        bondVec[bondIdx] = [pt2 - pt1 for pt2, pt1 in zip(bondedAtom.coords, atom.coords)]
+                    # Find the molecule's index and set the reaction axis vector to the same
+                    molIdx = reaction.reactants.index(molecule)
+                    reaction.reactantVec[molIdx] = [sum(coord) for coord in zip(*bondVec)]
+                # 2 atoms in the reaction center
+                elif len(molecule.getLabeledAtoms()) == 2:
+                    atom1 = molecule.getLabeledAtoms().items()[0][1]
+                    atom2 = molecule.getLabeledAtoms().items()[1][1]
+                    # Find the direction vector from one to the other. May need to check the order.
+                    # H atom should be atom2 for how it's coded below.
+                    molIdx = reaction.reactants.index(molecule)
+                    reaction.reactantVec[molIdx] = [pt2 - pt1 for pt2, pt1 in zip(atom2.coords, atom1.coords)]
+
+                        
+            
+            # Transform 1 molecule to another, or transform both
+            
+                    
+        """
         for s in reaction.reactants:
             TS = TS.merge(s.copy(deep=True))
         import ipdb; ipdb.set_trace()
