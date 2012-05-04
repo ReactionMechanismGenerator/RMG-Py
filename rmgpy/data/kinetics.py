@@ -2121,6 +2121,8 @@ class KineticsFamily(Database):
         """
         make TS geometry
         """
+        from rmgpy.cantherm.geometry import Geometry
+        
         TS = Molecule()
         # For hydrogen abstraction reactions
         if reaction.family.label.lower() == 'h_abstraction':
@@ -2128,38 +2130,68 @@ class KineticsFamily(Database):
             # Initialize the reaction vectors for each molecule
             reaction.reactantVec = [None]*len(reaction.reactants)
             for molecule in reaction.reactants:
-                # 1 atom in the reaction center (may also want to check for radical?!?)
+                
+                # 1 atom in the reaction center, it is the '*3' atom
                 if len(molecule.getLabeledAtoms()) == 1:
-                    atom = molecule.getLabeledAtoms().items()[0][1]    # Take the labeled atom
-                    adjacentBonds = molecule.getBonds(atom).items()    # Find the adjacent bonds
-                    bondVec = [None]*len(adjacentBonds)
-                    # For each bond, find the other atom and the direction vector from the reactive atom
-                    for bondIdx in range(0, len(adjacentBonds)):
-                        bondedAtom = adjacentBonds[bondIdx][0]
-                        bondVec[bondIdx] = [pt2 - pt1 for pt2, pt1 in zip(bondedAtom.coords, atom.coords)]
-                    # Find the molecule's index and set the reaction axis vector to the same
-                    molIdx = reaction.reactants.index(molecule)
-                    reaction.reactantVec[molIdx] = [sum(coord) for coord in zip(*bondVec)]
-                # 2 atoms in the reaction center
+                    
+                    # Problem with the sorting labels, rectifying that.
+                    # Need to find the root issue to eliminate need for this.
+                    sortlbl = 0
+                    for atom in molecule.atoms:
+                        atom.sortingLabel = sortlbl
+                        sortlbl += 1
+                    
+                    # Set up the atom data for Geometry class in rmgpy.cantherm.geometry
+                    atomCoords = []
+                    atomNumber = []
+                    atomMass = []
+                    for atom in molecule.atoms:
+                        atomCoords = atomCoords + [atom.coords]
+                        atomMass = atomMass + [atom.mass]
+                        atomNumber = atomNumber + [atom.number]
+                    geom = Geometry(numpy.array(atomCoords), numpy.array(atomNumber), numpy.array(atomMass))
+                    
+                    atLbld = molecule.getLabeledAtoms().items()[0][1]  # Take the labeled atom
+                    atLdldIdx = atLbld.sortingLabel
+                    
+                       
+                # 2 atoms in the reaction center, those atoms are '*1' and '*2'
                 elif len(molecule.getLabeledAtoms()) == 2:
-                    atom1 = molecule.getLabeledAtoms().items()[0][1]
-                    atom2 = molecule.getLabeledAtoms().items()[1][1]
-                    # Find the direction vector from one to the other. May need to check the order.
-                    # H atom should be atom2 for how it's coded below.
-                    molIdx = reaction.reactants.index(molecule)
-                    reaction.reactantVec[molIdx] = [pt2 - pt1 for pt2, pt1 in zip(atom2.coords, atom1.coords)]
-
-                        
-            
-            # Transform 1 molecule to another, or transform both
-            
+                    # Problem with the sorting labels, rectifying that.
+                    sortlbl = 0
+                    for atom in molecule.atoms:
+                        atom.sortingLabel = sortlbl
+                        sortlbl += 1
+                    
+                    # Set up the atom data for Geometry class in rmgpy.cantherm.geometry
+                    atomCoords = []
+                    atomNumber = []
+                    atomMass = []
+                    for atom in molecule.atoms:
+                        atomCoords = atomCoords + [atom.coords]
+                        atomMass = atomMass + [atom.mass]
+                        atomNumber = atomNumber + [atom.number]
+                        if atom.label == '*2':
+                            trans = numpy.array(atom.coords) * -1
+                    geom = Geometry(np.array(atomCoords), np.array(atomNumber), np.array(atomMass))
+                    Idx = 0
+                    for coords in geom.coordinates:
+                        geom.coordinates[Idx] = coords + trans
+                        Idx += 1
+                    
+                    # Find the indices of the labeled atoms
+                    for group in molecule.getLabeledAtoms().items():
+                        if group[0] == '*1':
+                            atIdx1 = group[1].sortingLabel
+                        else:
+                            atIdx2 = group[1].sortingLabel 
                     
         """
         for s in reaction.reactants:
             TS = TS.merge(s.copy(deep=True))
-        import ipdb; ipdb.set_trace()
-        return TS
-        
+        """
+            
+        # return TS
 
     def applyRecipe(self, reactantStructures, forward=True, unique=True):
         """
@@ -2431,7 +2463,7 @@ class KineticsFamily(Database):
             )
             reactionList.append(reaction)
         
-        # Generate transistion states
+        # Generate transition states
         for rxn in reactionList:
             rxn.transitionState = self.generateTransitionState(rxn)
         
