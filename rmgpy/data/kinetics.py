@@ -2192,7 +2192,7 @@ class KineticsFamily(Database):
                         atomNumber = atomNumber + [atom.number]
                         if atom.label == '*2':
                             trans = numpy.array(atom.coords) * -1
-                    geom = Geometry(np.array(atomCoords), np.array(atomNumber), np.array(atomMass))
+                    geom = Geometry(numpy.array(atomCoords), numpy.array(atomNumber), numpy.array(atomMass))
                     Idx = 0
                     for coords in geom.coordinates:
                         geom.coordinates[Idx] = coords + trans
@@ -2219,7 +2219,6 @@ class KineticsFamily(Database):
                         rtnArrayCoords = numpy.array(numpy.matrix.transpose(rotatedCoords))[0]
                         geom.coordinates[Idx] = numpy.delete(rtnArrayCoords, 3)
 
-       
         """
         for s in reaction.reactants:
             TS = TS.merge(s.copy(deep=True))
