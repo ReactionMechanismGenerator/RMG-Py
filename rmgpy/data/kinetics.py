@@ -2122,6 +2122,7 @@ class KineticsFamily(Database):
         make TS geometry
         """
         from rmgpy.cantherm.geometry import Geometry
+        from rmgpy.transformations import rotation_matrix
         
         TS = Molecule()
         # For hydrogen abstraction reactions
@@ -2133,7 +2134,6 @@ class KineticsFamily(Database):
                 
                 # 1 atom in the reaction center, it is the '*3' atom
                 if len(molecule.getLabeledAtoms()) == 1:
-                    
                     # Problem with the sorting labels, rectifying that.
                     # Need to find the root issue to eliminate need for this.
                     sortlbl = 0
@@ -2154,6 +2154,25 @@ class KineticsFamily(Database):
                     atLbld = molecule.getLabeledAtoms().items()[0][1]  # Take the labeled atom
                     atLdldIdx = atLbld.sortingLabel
                     
+                    # Set the translation vector so that the reacting atom is at origin
+                    trans = geom.coordinates[atLdldIdx]*-1
+                    Idx = 0
+                    for coords in geom.coordinates:
+                        geom.coordinates[Idx] = coords + trans
+                        Idx += 1
+                    
+                    # Find the reaction vector (translating the atoms first makes this easier)
+                    rPt = sum(geom.coordinates) * -1
+                    # Get the cosine of the transformation angle for the molecule
+                    rVec = numpy.array([numpy.sqrt(sum(rPt*rPt)), 0, 0])
+                    ang = numpy.arccos(numpy.dot(rVec, rPt)/numpy.sqrt(sum(rVec*rVec))/numpy.sqrt(sum(rPt*rPt)))
+                    crossProd = numpy.array([rPt[1]*rVec[2]-rPt[2]*rVec[1], rPt[2]*rVec[0]-rPt[0]*rVec[2], rPt[0]*rVec[1]-rPt[1]*rVec[0]])
+                    rotMat = numpy.matrix(rotation_matrix(ang, crossProd))
+                    for Idx in range(0, len(molecule.atoms)):
+                        extendedCoords = numpy.matrix(numpy.append(geom.coordinates[Idx], 1))
+                        rotatedCoords = rotMat * numpy.matrix.transpose(extendedCoords)
+                        rtnArrayCoords = numpy.array(numpy.matrix.transpose(rotatedCoords))[0]
+                        geom.coordinates[Idx] = numpy.delete(rtnArrayCoords, 3)
                        
                 # 2 atoms in the reaction center, those atoms are '*1' and '*2'
                 elif len(molecule.getLabeledAtoms()) == 2:
@@ -2186,6 +2205,21 @@ class KineticsFamily(Database):
                         else:
                             atIdx2 = group[1].sortingLabel 
                     
+                    # Original vector between the 2 reaction atoms
+                    rPt = geom.coordinates[atIdx2] - geom.coordinates[atIdx1]
+                    
+                    # Rotate the molecule
+                    rVec = numpy.array([numpy.sqrt(sum(rPt*rPt)), 0, 0])
+                    ang = numpy.arccos(numpy.dot(rVec, rPt)/numpy.sqrt(sum(rVec*rVec))/numpy.sqrt(sum(rPt*rPt)))
+                    crossProd = numpy.array([rPt[1]*rVec[2]-rPt[2]*rVec[1], rPt[2]*rVec[0]-rPt[0]*rVec[2], rPt[0]*rVec[1]-rPt[1]*rVec[0]])
+                    rotMat = numpy.matrix(rotation_matrix(ang, crossProd))
+                    for Idx in range(0, len(molecule.atoms)):
+                        extendedCoords = numpy.matrix(numpy.append(geom.coordinates[Idx], 1))
+                        rotatedCoords = rotMat * numpy.matrix.transpose(extendedCoords)
+                        rtnArrayCoords = numpy.array(numpy.matrix.transpose(rotatedCoords))[0]
+                        geom.coordinates[Idx] = numpy.delete(rtnArrayCoords, 3)
+
+       
         """
         for s in reaction.reactants:
             TS = TS.merge(s.copy(deep=True))
