@@ -2124,79 +2124,77 @@ class KineticsFamily(Database):
         from rmgpy.cantherm.geometry import Geometry
         from rmgpy.transformations import rotation_matrix
         
-        TS = Molecule()
+        def fixSortLabel(molecule):
+            sortLbl = 0
+            for atom in molecule.atoms:
+                atom.sortingLabel = sortLbl
+                sortLbl += 1
+            return molecule
+        
+        def getGeometry(molecule):
+            atomCoords = []
+            atomNumber = []
+            atomMass = []
+            for atom in molecule.atoms:
+                atomCoords = atomCoords + [atom.coords]
+                atomMass = atomMass + [atom.mass]
+                atomNumber = atomNumber + [atom.number]
+            geometry = Geometry(numpy.array(atomCoords), numpy.array(atomNumber), numpy.array(atomMass))
+            return geometry
+        
+        def translateMol(geometry, translationMatrix):
+            Idx = 0
+            for coords in geom.coordinates:
+                geom.coordinates[Idx] = coords + translationMatrix
+                Idx += 1
+            return geometry
+        
+        def rotateMol(molecule, geometry, rotationPt):
+            rotatedVec = numpy.array([numpy.sqrt(sum(rotationPt*rotationPt)), 0, 0])
+            angle = numpy.arccos(numpy.dot(rotatedVec, rotationPt)/numpy.sqrt(sum(rotatedVec*rotatedVec))/numpy.sqrt(sum(rotationPt*rotationPt)))
+            crossProd = numpy.array([rotationPt[1]*rotatedVec[2]-rotationPt[2]*rotatedVec[1], rotationPt[2]*rotatedVec[0]-rotationPt[0]*rotatedVec[2], rotationPt[0]*rotatedVec[1]-rotationPt[1]*rotatedVec[0]])
+            rotMat = numpy.matrix(rotation_matrix(angle, crossProd))
+            for Idx in range(0, len(molecule.atoms)):
+                extendedCoords = numpy.matrix(numpy.append(geometry.coordinates[Idx], 1))
+                rotatedCoords = rotMat * numpy.matrix.transpose(extendedCoords)
+                rotationArrayCoords = numpy.array(numpy.matrix.transpose(rotatedCoords))[0]
+                geometry.coordinates[Idx] = numpy.delete(rotationArrayCoords, 3)
+            return geometry
+            
+        tState = Molecule()
         # For hydrogen abstraction reactions
         if reaction.family.label.lower() == 'h_abstraction':
             # For H_Abstraction '*2' is the H that migrates it moves from '*1' to '*3'
             # Initialize the reaction vectors for each molecule
-            reaction.reactantVec = [None]*len(reaction.reactants)
             for molecule in reaction.reactants:
-                
                 # 1 atom in the reaction center, it is the '*3' atom
                 if len(molecule.getLabeledAtoms()) == 1:
-                    # Problem with the sorting labels, rectifying that.
-                    # Need to find the root issue to eliminate need for this.
-                    sortlbl = 0
-                    for atom in molecule.atoms:
-                        atom.sortingLabel = sortlbl
-                        sortlbl += 1
+                    # Rectify atom labels and store the geometries
+                    molecule = fixSortLabel(molecule)
+                    geom = getGeometry(molecule)
                     
-                    # Set up the atom data for Geometry class in rmgpy.cantherm.geometry
-                    atomCoords = []
-                    atomNumber = []
-                    atomMass = []
-                    for atom in molecule.atoms:
-                        atomCoords = atomCoords + [atom.coords]
-                        atomMass = atomMass + [atom.mass]
-                        atomNumber = atomNumber + [atom.number]
-                    geom = Geometry(numpy.array(atomCoords), numpy.array(atomNumber), numpy.array(atomMass))
+                    # Get the labeled atom sorting label
+                    atIdx3 = molecule.getLabeledAtom('*3').sortingLabel
                     
-                    atLbld = molecule.getLabeledAtoms().items()[0][1]  # Take the labeled atom
-                    atLdldIdx = atLbld.sortingLabel
+                    # Set the translation vector and translate the coordinates so that 
+                    # the reacting atom is at origin
+                    trans = geom.coordinates[atIdx3]*-1
+                    geom = translateMol(geom, trans)
                     
-                    # Set the translation vector so that the reacting atom is at origin
-                    trans = geom.coordinates[atLdldIdx]*-1
-                    Idx = 0
-                    for coords in geom.coordinates:
-                        geom.coordinates[Idx] = coords + trans
-                        Idx += 1
-                    
-                    # Find the reaction vector (translating the atoms first makes this easier)
+                    # Find the reaction vector
                     rPt = sum(geom.coordinates) * -1
-                    # Get the cosine of the transformation angle for the molecule
+                    
+                    # Need to know the reaction vector to position the other molecule
                     rVec = numpy.array([numpy.sqrt(sum(rPt*rPt)), 0, 0])
-                    ang = numpy.arccos(numpy.dot(rVec, rPt)/numpy.sqrt(sum(rVec*rVec))/numpy.sqrt(sum(rPt*rPt)))
-                    crossProd = numpy.array([rPt[1]*rVec[2]-rPt[2]*rVec[1], rPt[2]*rVec[0]-rPt[0]*rVec[2], rPt[0]*rVec[1]-rPt[1]*rVec[0]])
-                    rotMat = numpy.matrix(rotation_matrix(ang, crossProd))
-                    for Idx in range(0, len(molecule.atoms)):
-                        extendedCoords = numpy.matrix(numpy.append(geom.coordinates[Idx], 1))
-                        rotatedCoords = rotMat * numpy.matrix.transpose(extendedCoords)
-                        rtnArrayCoords = numpy.array(numpy.matrix.transpose(rotatedCoords))[0]
-                        geom.coordinates[Idx] = numpy.delete(rtnArrayCoords, 3)
-                       
+                    
+                    # Rotate the atoms to position the reaction axis along the x-axis
+                    geom = rotateMol(molecule, geom, rPt)
+                    
                 # 2 atoms in the reaction center, those atoms are '*1' and '*2'
                 elif len(molecule.getLabeledAtoms()) == 2:
-                    # Problem with the sorting labels, rectifying that.
-                    sortlbl = 0
-                    for atom in molecule.atoms:
-                        atom.sortingLabel = sortlbl
-                        sortlbl += 1
                     
-                    # Set up the atom data for Geometry class in rmgpy.cantherm.geometry
-                    atomCoords = []
-                    atomNumber = []
-                    atomMass = []
-                    for atom in molecule.atoms:
-                        atomCoords = atomCoords + [atom.coords]
-                        atomMass = atomMass + [atom.mass]
-                        atomNumber = atomNumber + [atom.number]
-                        if atom.label == '*2':
-                            trans = numpy.array(atom.coords) * -1
-                    geom = Geometry(numpy.array(atomCoords), numpy.array(atomNumber), numpy.array(atomMass))
-                    Idx = 0
-                    for coords in geom.coordinates:
-                        geom.coordinates[Idx] = coords + trans
-                        Idx += 1
+                    molecule = fixSortLabel(molecule)
+                    geom = getGeometry(molecule)
                     
                     # Find the indices of the labeled atoms
                     for group in molecule.getLabeledAtoms().items():
@@ -2205,27 +2203,40 @@ class KineticsFamily(Database):
                         else:
                             atIdx2 = group[1].sortingLabel 
                     
+                    # Set the translation vector and translate the coordinates so that 
+                    # the reacting atom is at origin
+                    trans = geom.coordinates[atIdx2]*-1
+                    geom = translateMol(geom, trans)
+                    
                     # Original vector between the 2 reaction atoms
-                    rPt = geom.coordinates[atIdx2] - geom.coordinates[atIdx1]
+                    rPt = geom.coordinates[atIdx1] - geom.coordinates[atIdx2]
                     
                     # Rotate the molecule
-                    rVec = numpy.array([numpy.sqrt(sum(rPt*rPt)), 0, 0])
-                    ang = numpy.arccos(numpy.dot(rVec, rPt)/numpy.sqrt(sum(rVec*rVec))/numpy.sqrt(sum(rPt*rPt)))
-                    crossProd = numpy.array([rPt[1]*rVec[2]-rPt[2]*rVec[1], rPt[2]*rVec[0]-rPt[0]*rVec[2], rPt[0]*rVec[1]-rPt[1]*rVec[0]])
-                    rotMat = numpy.matrix(rotation_matrix(ang, crossProd))
+                    geom = rotateMol(molecule, geom, rPt)
+                    
+
+            # Build the Transition State
+            for molecule in reaction.reactants:
+                if len(molecule.getLabeledAtoms())==2:
                     for Idx in range(0, len(molecule.atoms)):
-                        extendedCoords = numpy.matrix(numpy.append(geom.coordinates[Idx], 1))
-                        rotatedCoords = rotMat * numpy.matrix.transpose(extendedCoords)
-                        rtnArrayCoords = numpy.array(numpy.matrix.transpose(rotatedCoords))[0]
-                        geom.coordinates[Idx] = numpy.delete(rtnArrayCoords, 3)
-
-        """
-        for s in reaction.reactants:
-            TS = TS.merge(s.copy(deep=True))
-        """
+                       geom.coordinates[Idx] = geom.coordinates[Idx] + rVec
             
-        # return TS
+            tState = reaction.reactants[0].merge(reaction.reactants[1])
+            tState.addBond(tState.getLabeledAtom('*2'), tState.getLabeledAtom('*3'), Bond(order = 'S'))
+            # return tState
+            # TypeError: 'Cannot convert rmgpy.molecule.Molecule to rmgpy.species.TransitionState'
 
+            
+        elif reaction.family.label.lower() == 'diels_alder_addition':
+            import ipdb; ipdb.set_trace()
+            pass
+            
+        elif reaction.family.label.lower() == '2+2_cycloaddition_cd':
+            pass
+        
+        elif reaction.family.label.lower() == 'r_addition_multiplebond':
+            pass
+                
     def applyRecipe(self, reactantStructures, forward=True, unique=True):
         """
         Apply the recipe for this reaction family to the list of
