@@ -36,6 +36,8 @@ each net reaction.
 cdef extern from "math.h":
     cdef double exp(double x)
     cdef double floor(double x)
+    cdef double log(double x)
+    cdef double sqrt(double x)
 
 import numpy
 cimport numpy
@@ -43,7 +45,7 @@ import logging
 
 from rmgpy.quantity cimport constants, Quantity
 import rmgpy.reaction
-from rmgpy.kinetics import *
+from rmgpy.kinetics import Arrhenius, PDepArrhenius, Chebyshev
 
 def convolve(numpy.ndarray[numpy.float64_t,ndim=1] rho1,
     numpy.ndarray[numpy.float64_t,ndim=1] rho2,
@@ -131,7 +133,7 @@ def calculateMicrocanonicalRateCoefficient(reaction,
         elif productStatesKnown and reaction.isAssociation():
             kr = applyRRKMTheory(reaction.transitionState, Elist, prodDensStates)
         else:
-            raise ReactionError('Unable to compute k(E) values via RRKM theory for path reaction "{0}".'.format(rxn))
+            raise ReactionError('Unable to compute k(E) values via RRKM theory for path reaction "{0}".'.format(reaction))
     
     elif reaction.kinetics is not None:
         # We've been provided with high-pressure-limit rate coefficient data,
@@ -143,10 +145,10 @@ def calculateMicrocanonicalRateCoefficient(reaction,
             kinetics = reaction.generateReverseRateCoefficient()
             kr = applyInverseLaplaceTransformMethod(kinetics, reaction.transitionState.E0.value, Elist, prodDensStates, T)
         else:
-            raise ReactionError('Unable to compute k(E) values via ILT method for path reaction "{0}".'.format(rxn))
+            raise ReactionError('Unable to compute k(E) values via ILT method for path reaction "{0}".'.format(reaction))
     
     else:
-        raise ReactionError('Unable to compute k(E) values for path reaction "{0}".'.format(rxn))
+        raise ReactionError('Unable to compute k(E) values for path reaction "{0}".'.format(reaction))
     
     # If the reaction is endothermic and barrierless, it is possible that the
     # forward k(E) will have a nonzero value at an energy where the product
@@ -379,10 +381,10 @@ def fitInterpolationModel(reaction, Tlist, Plist, K, model, Tmin, Tmax, Pmin, Pm
         # Check that fit is within an order of magnitude at all points
         for t, T in enumerate(Tlist):
             for p, P in enumerate(Plist):
-                logkmodel = math.log(kinetics.getRateCoefficient(T, P))
-                logkdata = math.log(K[t,p])
+                logkmodel = log(kinetics.getRateCoefficient(T, P))
+                logkdata = log(K[t,p])
                 logRMS += (logkmodel - logkdata) * (logkmodel - logkdata)
-        logRMS = math.sqrt(logRMS / len(Tlist) / len(Plist))
+        logRMS = sqrt(logRMS / len(Tlist) / len(Plist))
         if logRMS > 0.5:
             logging.warning('RMS error for k(T,P) fit = {0:g} for reaction {1}.'.format(logRMS, reaction))
     
