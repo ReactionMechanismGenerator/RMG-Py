@@ -6,8 +6,8 @@ import unittest
 import sys
 sys.path.append('.')
 
-from rmg.data import *
-from rmg.structure import *
+from rmgpy.data import *
+from rmgpy.molecule import *
 
 thermoDatabase = 'data/RMG_database/thermo_groups'
 

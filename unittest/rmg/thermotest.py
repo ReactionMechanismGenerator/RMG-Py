@@ -8,21 +8,21 @@ sys.path.append('.')
 
 import math
 		
-import rmg.data as data
-import rmg.species as species
-import rmg.structure as structure
-import rmg.log as logging
+import rmgpy.data as data
+import rmgpy.species as species
+import rmgpy.molecule as structure
+import logging
 
-from rmg.thermo.model import *
-from rmg.thermo.converter import *
-from rmg.thermo.data import *
+from rmgpy.thermo import *
+#from rmg.thermo.converter import *
+#from rmg.thermo.data import *
 
 # Run this whether being run as __main__ or called by other unit test suite:
 # Load databases
 databasePath = 'data/RMG_database'
 
 # Create and load thermo databases and forbidden structures
-rmg.thermo.data.loadThermoDatabase(databasePath + '/')
+data.loadThermoDatabase(databasePath + '/')
 
 ################################################################################
 
@@ -247,7 +247,7 @@ class ThermoGAtoWilhoitCheck(unittest.TestCase):
 		Uses Propane as a test-case. atoms=11, rotors=2, linear=False
 		"""
 		
-		propane = structure.Structure(SMILES='CCC')
+		propane = molecule.Molecule(SMILES='CCC')
 		propane.updateAtomTypes()
 		GAthermoData = generateThermoData(propane,thermoClass=ThermoData)
 		WilhoitData = convertGAtoWilhoit(GAthermoData, atoms=11, rotors=2, linear=False)
@@ -266,7 +266,7 @@ class ThermoGAtoWilhoitCheck(unittest.TestCase):
 		Uses Propane as a test-case. atoms=11, rotors=2, linear=False
 		"""
 		
-		propane = structure.Structure(SMILES='CCC')
+		propane = molecule.Molecule(SMILES='CCC')
 		propane.updateAtomTypes()
 		GAthermoData = generateThermoData(propane,thermoClass=ThermoData)
 		WilhoitData = convertGAtoWilhoit(GAthermoData, atoms=11, rotors=2, linear=False)
@@ -285,7 +285,7 @@ class ThermoGAtoWilhoitCheck(unittest.TestCase):
 		Uses Propane as a test-case. atoms=11, rotors=2, linear=False
 		"""
 		
-		propane = structure.Structure(SMILES='CCC')
+		propane = molecule.Molecule(SMILES='CCC')
 		propane.updateAtomTypes()
 		GAthermoData = generateThermoData(propane,thermoClass=ThermoData)
 		WilhoitData = convertGAtoWilhoit(GAthermoData, atoms=11, rotors=2, linear=False)
@@ -316,7 +316,7 @@ class ThermoWilhoitToNASACheck(unittest.TestCase):
 		Uses Propane as a test-case. atoms=11, rotors=2, linear=False
 		"""
 		
-		propane = structure.Structure(SMILES='CCC')
+		propane = molecule.Molecule(SMILES='CCC')
 		propane.updateAtomTypes()
 		GAthermoData = generateThermoData(propane,thermoClass=ThermoData)
 		WilhoitData = convertGAtoWilhoit(GAthermoData, atoms=11, rotors=2, linear=False)
@@ -336,7 +336,7 @@ class ThermoWilhoitToNASACheck(unittest.TestCase):
 		Uses Propane as a test-case. atoms=11, rotors=2, linear=False
 		"""
 		
-		propane = structure.Structure(SMILES='CCC')
+		propane = molecule.Molecule(SMILES='CCC')
 		propane.updateAtomTypes()
 		GAthermoData = generateThermoData(propane,thermoClass=ThermoData)
 		WilhoitData = convertGAtoWilhoit(GAthermoData, atoms=11, rotors=2, linear=False)
@@ -356,7 +356,7 @@ class ThermoWilhoitToNASACheck(unittest.TestCase):
 		Uses Propane as a test-case. atoms=11, rotors=2, linear=False
 		"""
 		
-		propane = structure.Structure(SMILES='CCC')
+		propane = molecule.Molecule(SMILES='CCC')
 		propane.updateAtomTypes()
 		GAthermoData = generateThermoData(propane,thermoClass=ThermoData)
 		WilhoitData = convertGAtoWilhoit(GAthermoData, atoms=11, rotors=2, linear=False)
@@ -385,7 +385,7 @@ class ThermoWilhoitToNASACheck(unittest.TestCase):
 		"""Check conversion of GA values for molecular oxygen to NASA form
 		"""
 
-		oxygen = structure.Structure(SMILES='O=O')
+		oxygen = molecule.Molecule(SMILES='O=O')
 		oxygen.updateAtomTypes()
 		GAthermoData = generateThermoData(oxygen,thermoClass=ThermoData)
 		WilhoitData = convertGAtoWilhoit(GAthermoData, atoms=2, rotors=0, linear=True)
@@ -421,7 +421,7 @@ class ThermoWilhoitToNASACheck(unittest.TestCase):
 
 		"""
 
-		oxygen = structure.Structure(SMILES='O=O')
+		oxygen = molecule.Molecule(SMILES='O=O')
 		oxygen.updateAtomTypes()
 		GAthermoData = generateThermoData(oxygen,thermoClass=ThermoData)
 		#the following values come from Greg's Windows computer
@@ -554,7 +554,7 @@ from rmg.thermo.data import generateThermoData
 import rmg.species as species
 import rmg.structure as structure
 from rmg.structure import Structure
-propane = structure.Structure(SMILES='CCC')
+propane = molecule.Molecule(SMILES='CCC')
 propane.updateAtomTypes()
 GAthermoData = generateThermoData(propane,thermoClass=ThermoData)
 WilhoitData = convertGAtoWilhoit(GAthermoData, atoms=11, rotors=2, linear=False)

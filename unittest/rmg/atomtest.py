@@ -6,7 +6,7 @@ import unittest
 import sys
 sys.path.append('.')
 
-from rmg.chem import *
+from rmgpy.molecule import *
 
 ################################################################################
 
