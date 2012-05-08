@@ -1674,7 +1674,7 @@ class Molecule(Graph):
         rd_mol = rd_mol.GetMol()
         rdkit.Chem.SanitizeMol(rd_mol)
         
-        return rd_mol
+        return rd_mol, rdkitAtomIdx
     
     def generate3dGeometry(self):
         """
@@ -1692,7 +1692,7 @@ class Molecule(Graph):
         import rdkit.Chem
         import rdkit.Chem.AllChem
         
-        rd_mol = self.makeRDMol()
+        rd_mol, rdkitAtomIdx = self.makeRDMol()
         
         conformer_ids = rdkit.Chem.AllChem.EmbedMultipleConfs(rd_mol, useRandomCoords = True)
         assert len(conformer_ids) == rd_mol.GetNumConformers()
