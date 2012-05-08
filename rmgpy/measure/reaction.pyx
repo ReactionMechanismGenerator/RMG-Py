@@ -36,6 +36,8 @@ each net reaction.
 cdef extern from "math.h":
     cdef double exp(double x)
     cdef double floor(double x)
+    cdef double log(double x)
+    cdef double sqrt(double x)
 
 import numpy
 cimport numpy
@@ -379,10 +381,10 @@ def fitInterpolationModel(reaction, Tlist, Plist, K, model, Tmin, Tmax, Pmin, Pm
         # Check that fit is within an order of magnitude at all points
         for t, T in enumerate(Tlist):
             for p, P in enumerate(Plist):
-                logkmodel = math.log(kinetics.getRateCoefficient(T, P))
-                logkdata = math.log(K[t,p])
+                logkmodel = log(kinetics.getRateCoefficient(T, P))
+                logkdata = log(K[t,p])
                 logRMS += (logkmodel - logkdata) * (logkmodel - logkdata)
-        logRMS = math.sqrt(logRMS / len(Tlist) / len(Plist))
+        logRMS = sqrt(logRMS / len(Tlist) / len(Plist))
         if logRMS > 0.5:
             logging.warning('RMS error for k(T,P) fit = {0:g} for reaction {1}.'.format(logRMS, reaction))
     
