@@ -2121,8 +2121,10 @@ class KineticsFamily(Database):
         """
         make TS geometry
         """
+        from rmgpy.molecule import Molecule
         from rmgpy.cantherm.geometry import Geometry
         from rmgpy.transformations import rotation_matrix
+        from rmgpy.species import TransitionState
         
         def fixSortLabel(molecule):
             sortLbl = 0
@@ -2130,7 +2132,7 @@ class KineticsFamily(Database):
                 atom.sortingLabel = sortLbl
                 sortLbl += 1
             return molecule
-        
+    
         def getGeometry(molecule):
             atomCoords = []
             atomNumber = []
@@ -2141,14 +2143,14 @@ class KineticsFamily(Database):
                 atomNumber = atomNumber + [atom.number]
             geometry = Geometry(numpy.array(atomCoords), numpy.array(atomNumber), numpy.array(atomMass))
             return geometry
-        
+    
         def translateMol(geometry, translationMatrix):
             Idx = 0
             for coords in geom.coordinates:
                 geom.coordinates[Idx] = coords + translationMatrix
                 Idx += 1
             return geometry
-        
+    
         def rotateMol(molecule, geometry, rotationPt):
             rotatedVec = numpy.array([numpy.sqrt(sum(rotationPt*rotationPt)), 0, 0])
             angle = numpy.arccos(numpy.dot(rotatedVec, rotationPt)/numpy.sqrt(sum(rotatedVec*rotatedVec))/numpy.sqrt(sum(rotationPt*rotationPt)))
@@ -2161,7 +2163,20 @@ class KineticsFamily(Database):
                 geometry.coordinates[Idx] = numpy.delete(rotationArrayCoords, 3)
             return geometry
             
-        tState = Molecule()
+        def buildRDKitMol(molecule):
+            import rdkit
+            # Convert rmgpy.molecule.Molecule to RDKit::ROMol
+            rd_mol, rdkitAtomIdx = molecule.makeRDMol()
+            rdConfId = rdkit.Chem.rdDistGeom.EmbedMolecule(rd_mol)
+            # Set the optimized coordinates to the RDKit::ROMol
+            for atNum in range(0, rd_mol.GetNumAtoms()):
+                point3D = rd_mol.GetConformer(rdConfId).GetAtomPosition(atNum)
+                atom = molecule.atoms[atNum]
+                rdkit.Geometry.Point3D.__init__(point3D, atom.coords[0],atom.coords[1], atom.coords[2])
+                rd_mol.GetConformer(rdConfId).SetAtomPosition(atNum, point3D)
+            # return the mol and the conformer ID
+            return rd_mol, rdConfId
+    
         # For hydrogen abstraction reactions
         if reaction.family.label.lower() == 'h_abstraction':
             # For H_Abstraction '*2' is the H that migrates it moves from '*1' to '*3'
@@ -2172,64 +2187,64 @@ class KineticsFamily(Database):
                     # Rectify atom labels and store the geometries
                     molecule = fixSortLabel(molecule)
                     geom = getGeometry(molecule)
-                    
+    
                     # Get the labeled atom sorting label
                     atIdx3 = molecule.getLabeledAtom('*3').sortingLabel
-                    
+    
                     # Set the translation vector and translate the coordinates so that 
                     # the reacting atom is at origin
                     trans = geom.coordinates[atIdx3]*-1
                     geom = translateMol(geom, trans)
-                    
+    
                     # Find the reaction vector
                     rPt = sum(geom.coordinates) * -1
-                    
+    
                     # Need to know the reaction vector to position the other molecule
                     rVec = numpy.array([numpy.sqrt(sum(rPt*rPt)), 0, 0])
-                    
+    
                     # Rotate the atoms to position the reaction axis along the x-axis
                     geom = rotateMol(molecule, geom, rPt)
-                    
+    
                 # 2 atoms in the reaction center, those atoms are '*1' and '*2'
                 elif len(molecule.getLabeledAtoms()) == 2:
-                    
+    
                     molecule = fixSortLabel(molecule)
                     geom = getGeometry(molecule)
-                    
+    
                     # Find the indices of the labeled atoms
                     for group in molecule.getLabeledAtoms().items():
                         if group[0] == '*1':
                             atIdx1 = group[1].sortingLabel
                         else:
                             atIdx2 = group[1].sortingLabel 
-                    
+    
                     # Set the translation vector and translate the coordinates so that 
                     # the reacting atom is at origin
                     trans = geom.coordinates[atIdx2]*-1
                     geom = translateMol(geom, trans)
-                    
+    
                     # Original vector between the 2 reaction atoms
                     rPt = geom.coordinates[atIdx1] - geom.coordinates[atIdx2]
-                    
+    
                     # Rotate the molecule
                     geom = rotateMol(molecule, geom, rPt)
-                    
-
+    
+    
             # Build the Transition State
             for molecule in reaction.reactants:
                 if len(molecule.getLabeledAtoms())==2:
                     for Idx in range(0, len(molecule.atoms)):
                        geom.coordinates[Idx] = geom.coordinates[Idx] + rVec
-            
+    
             tState = reaction.reactants[0].merge(reaction.reactants[1])
             tState.addBond(tState.getLabeledAtom('*2'), tState.getLabeledAtom('*3'), Bond(order = 'S'))
             # return tState
             # TypeError: 'Cannot convert rmgpy.molecule.Molecule to rmgpy.species.TransitionState'
-
-            
+          
         elif reaction.family.label.lower() == 'diels_alder_addition':
-            import ipdb; ipdb.set_trace()
-            pass
+            for molecule in reaction.reactants:
+                # Get the RDKit Mol and set its coordinates from the RMG molecule 
+                molecule.rdMol, molecule.rdMolConfId = buildRDKitMol(molecule)
             
         elif reaction.family.label.lower() == '2+2_cycloaddition_cd':
             pass
