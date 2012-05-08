@@ -45,7 +45,7 @@ import logging
 
 from rmgpy.quantity cimport constants, Quantity
 import rmgpy.reaction
-from rmgpy.kinetics import *
+from rmgpy.kinetics import Arrhenius, PDepArrhenius, Chebyshev
 
 def convolve(numpy.ndarray[numpy.float64_t,ndim=1] rho1,
     numpy.ndarray[numpy.float64_t,ndim=1] rho2,
