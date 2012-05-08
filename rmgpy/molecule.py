@@ -1621,18 +1621,10 @@ class Molecule(Graph):
         adjlist = self.toAdjacencyList(removeH=True)
         url += "{0}".format(re.sub('\s+', '%20', adjlist.replace('\n', ';')))
         return url.strip('_')
-        
-    def generate3dGeometry(self):
+    
+    def makeRDMol(self):
         """
-        Generate a 3D geometry, using RDKit
-        
-        called from model.generateThermoData()
-            'for molecule in self.molecule:
-                 molecule.generate3dGeometry()'
-        
-        To use RDKit we must import the modules needed to generate the geometry. 
-        'Chem' folder stores most of what is needed. $RDBASE must also be on 
-        the python path.
+        Import a rmg molecule and create a rdkit molecule with the same atom labeling.
         """
         import rdkit
         import rdkit.Chem
@@ -1681,6 +1673,27 @@ class Molecule(Graph):
         # Make editable mol into a mol and rectify the molecule
         rd_mol = rd_mol.GetMol()
         rdkit.Chem.SanitizeMol(rd_mol)
+        
+        return rd_mol
+    
+    def generate3dGeometry(self):
+        """
+        Generate a 3D geometry, using RDKit
+        
+        called from model.generateThermoData()
+            'for molecule in self.molecule:
+                 molecule.generate3dGeometry()'
+        
+        To use RDKit we must import the modules needed to generate the geometry. 
+        'Chem' folder stores most of what is needed. $RDBASE must also be on 
+        the python path.
+        """
+        import rdkit
+        import rdkit.Chem
+        import rdkit.Chem.AllChem
+        
+        rd_mol = self.makeRDMol()
+        
         conformer_ids = rdkit.Chem.AllChem.EmbedMultipleConfs(rd_mol, useRandomCoords = True)
         assert len(conformer_ids) == rd_mol.GetNumConformers()
         
