@@ -133,7 +133,7 @@ def calculateMicrocanonicalRateCoefficient(reaction,
         elif productStatesKnown and reaction.isAssociation():
             kr = applyRRKMTheory(reaction.transitionState, Elist, prodDensStates)
         else:
-            raise ReactionError('Unable to compute k(E) values via RRKM theory for path reaction "{0}".'.format(rxn))
+            raise ReactionError('Unable to compute k(E) values via RRKM theory for path reaction "{0}".'.format(reaction))
     
     elif reaction.kinetics is not None:
         # We've been provided with high-pressure-limit rate coefficient data,
@@ -145,10 +145,10 @@ def calculateMicrocanonicalRateCoefficient(reaction,
             kinetics = reaction.generateReverseRateCoefficient()
             kr = applyInverseLaplaceTransformMethod(kinetics, reaction.transitionState.E0.value, Elist, prodDensStates, T)
         else:
-            raise ReactionError('Unable to compute k(E) values via ILT method for path reaction "{0}".'.format(rxn))
+            raise ReactionError('Unable to compute k(E) values via ILT method for path reaction "{0}".'.format(reaction))
     
     else:
-        raise ReactionError('Unable to compute k(E) values for path reaction "{0}".'.format(rxn))
+        raise ReactionError('Unable to compute k(E) values for path reaction "{0}".'.format(reaction))
     
     # If the reaction is endothermic and barrierless, it is possible that the
     # forward k(E) will have a nonzero value at an energy where the product
