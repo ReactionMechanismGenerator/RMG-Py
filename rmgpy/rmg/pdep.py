@@ -430,6 +430,7 @@ class PDepNetwork(rmgpy.measure.network.Network):
         bathGas = [spec for spec in reactionModel.core.species if not spec.reactive]
         self.bathGas = {}
         for spec in bathGas:
+            # is this really the only/best way to weight them? And what is alpha0?
             self.bathGas[spec] = 1.0 / len(bathGas)
             spec.collisionModel = SingleExponentialDown(alpha0=4.86 * 4184)
 
