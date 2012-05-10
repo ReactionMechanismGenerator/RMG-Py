@@ -2125,6 +2125,7 @@ class KineticsFamily(Database):
         from rmgpy.cantherm.geometry import Geometry
         from rmgpy.transformations import rotation_matrix
         from rmgpy.species import TransitionState
+        import rdkit
         
         def fixSortLabel(molecule):
             sortLbl = 0
@@ -2229,7 +2230,6 @@ class KineticsFamily(Database):
                     # Rotate the molecule
                     geom = rotateMol(molecule, geom, rPt)
     
-    
             # Build the Transition State
             for molecule in reaction.reactants:
                 if len(molecule.getLabeledAtoms())==2:
@@ -2242,10 +2242,63 @@ class KineticsFamily(Database):
             # TypeError: 'Cannot convert rmgpy.molecule.Molecule to rmgpy.species.TransitionState'
           
         elif reaction.family.label.lower() == 'diels_alder_addition':
+            # Need to fix the sortingLabels
+            # Should I align my molecules first then do the bounds??
             for molecule in reaction.reactants:
-                # Get the RDKit Mol and set its coordinates from the RMG molecule 
-                molecule.rdMol, molecule.rdMolConfId = buildRDKitMol(molecule)
+                molecule = fixSortLabel(molecule)
             
+            for molecule in reaction.products:
+                molcule = fixSortLabel(molecule)
+            # geom0 = getGeometry(reaction.reactants[0])
+            # geom1 = getGeometry(reaction.reactants[1])
+            # merge = reaction.reactants[0].merge(reaction.reactants[1])
+            # merge = fixSortLabel(mergeR)
+            # rRDMol, rRDConfId = buildRDKitMol(mergeR)
+            # rBoundsMat = rdkit.Chem.rdDistGeom.GetMoleculeBoundsMatrix(rRDMol)
+            prod = reaction.products[0]
+            pRDMol, pRDConfId = buildRDKitMol(prod)
+            pBoundsMat = rdkit.Chem.rdDistGeom.GetMoleculeBoundsMatrix(pRDMol)
+            import ipdb; ipdb.set_trace()
+            for action in reaction.family.reverseRecipe.actions:
+                lbl1 = action[1]
+                lbl2 = action[3]
+                atom1 = prod.getLabeledAtom(lbl1)
+                atom2 = prod.getLabeledAtom(lbl2)
+                idx1 = atom1.sortingLabel
+                idx2 = atom2.sortingLabel
+                if action[0].lower() == 'change_bond':
+                    if action[2] == '1':
+                        # make the bond shorter
+                        # do i need to add for double?
+                        pBoundsMat[idx1][idx2] -= 0.25
+                        pBoundsMat[idx2][idx1] -= 0.25
+                    elif action[2] == '-1':
+                        # make bond longer
+                        pBoundsMat[idx1][idx2] += 0.25
+                        pBoundsMat[idx2][idx1] += 0.25
+                elif action[0].lower() == 'break_bond':
+                    # move them further
+                    pBoundsMat[idx1][idx2] += 0.35
+                    pBoundsMat[idx2][idx1] += 0.35
+                elif action[0].lower() == 'form_bond':
+                    # mover them closer
+                    pBoundsMat[idx1][idx2] -= 0.35
+                    pBoundsMat[idx2][idx1] -= 0.35
+                # # could import reaction.family.forwardRecipe.actions
+                # if atom[1].label == '*1':
+                #     Idx1 = atom[1].sortingLabel
+                # elif atom[1].label == '*2':
+                #     Idx2 = atom[1].sortingLabel
+                # elif atom[1].label == '*3':
+                #     Idx3 = atom[1].sortingLabel
+                # elif atom[1].label == '*4':
+                #     Idx4 = atom[1].sortingLabel
+                # elif atom[1].label == '*5':
+                #     Idx5 = atom[1].sortingLabel
+                # elif atom[1].label == '*6':
+                #     Idx6 = atom[1].sortingLabel
+                
+                
         elif reaction.family.label.lower() == '2+2_cycloaddition_cd':
             pass
         
