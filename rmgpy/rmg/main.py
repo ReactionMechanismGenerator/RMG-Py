@@ -614,7 +614,7 @@ class RMG:
         self.reactionModel.saveChemkinFile(this_chemkin_path, latest_dictionary_path)
         if os.path.exists(latest_chemkin_path):
             os.unlink(latest_chemkin_path)
-        os.link(this_chemkin_path,latest_chemkin_path)
+        shutil.copy2(this_chemkin_path,latest_chemkin_path)
         
     def saveRestartFile(self, path, reactionModel, delay=0):
         """
