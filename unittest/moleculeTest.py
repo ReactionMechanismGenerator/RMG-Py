@@ -872,6 +872,14 @@ class TestMolecule(unittest.TestCase):
         molecule = Molecule().fromSMILES('[CH2]')
         self.assertEqual(molecule.atoms[0].radicalElectrons, 2)
         self.assertEqual(molecule.atoms[0].spinMultiplicity, 3)
+        
+    def testInChIKey(self):
+        """
+        Test that InChI Key generation is working properly.
+        """
+        molecule = Molecule().fromInChI('InChI=1S/C7H12/c1-2-7-4-3-6(1)5-7/h6-7H,1-5H2')
+        key = molecule.toInChIKey()
+        self.assertEqual(key, 'UMRZSTCPUPJPOJ-UHFFFAOYSA')
 ################################################################################
 
 class TestMoleculeSymmetry(unittest.TestCase):
