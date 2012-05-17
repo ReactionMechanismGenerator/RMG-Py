@@ -1036,6 +1036,20 @@ class Molecule(Graph):
         obConversion.SetOptions('w', openbabel.OBConversion.OUTOPTIONS)
         return obConversion.WriteString(obmol).strip()
     
+    def toAugmentedInChI(self):
+        """
+        Adds an extra layer to the InChI denoting the number of unpaired electrons in case
+        more than 1 ( >= 2) unpaired electrons are present in the molecule.
+        """
+        inchi = self.toInChI()
+        
+        radicalNumber = sum([i.radicalElectrons for i in self.atoms])
+        
+        if radicalNumber >= 2:
+            return inchi+'/mult'+str(radicalNumber+1)
+        else:
+            return inchi
+    
     def toInChIKey(self):
         """
         Convert a molecular structure to an InChI Key string. Uses
