@@ -1066,7 +1066,21 @@ class Molecule(Graph):
         obConversion.SetOptions('w', openbabel.OBConversion.OUTOPTIONS)
         obConversion.SetOptions('K', openbabel.OBConversion.OUTOPTIONS)
         return obConversion.WriteString(obmol).strip()[:-2]
-
+    
+    def toAugmentedInChIKey(self):
+        """
+        Adds an extra layer to the InChIKey denoting the number of unpaired electrons in case
+        more than 1 ( >= 2) unpaired electrons are present in the molecule.
+        """
+        key = self.toInChIKey()
+        
+        radicalNumber = sum([i.radicalElectrons for i in self.atoms])
+        
+        if radicalNumber >= 2:
+            return key+'/mult'+str(radicalNumber+1)
+        else:
+            return key
+        
     def toSMILES(self):
         """
         Convert a molecular structure to an SMILES string. Uses
