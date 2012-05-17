@@ -2126,6 +2126,7 @@ class KineticsFamily(Database):
         from rmgpy.transformations import rotation_matrix
         from rmgpy.species import TransitionState
         import rdkit
+        from rdkit.Chem.Pharm3D import EmbedLib
         
         def fixSortLabel(molecule):
             sortLbl = 0
@@ -2180,85 +2181,120 @@ class KineticsFamily(Database):
     
         # For hydrogen abstraction reactions
         if reaction.family.label.lower() == 'h_abstraction':
-            # For H_Abstraction '*2' is the H that migrates it moves from '*1' to '*3'
-            # Initialize the reaction vectors for each molecule
-            for molecule in reaction.reactants:
-                # 1 atom in the reaction center, it is the '*3' atom
-                if len(molecule.getLabeledAtoms()) == 1:
-                    # Rectify atom labels and store the geometries
-                    molecule = fixSortLabel(molecule)
-                    geom = getGeometry(molecule)
-    
-                    # Get the labeled atom sorting label
-                    atIdx3 = molecule.getLabeledAtom('*3').sortingLabel
-    
-                    # Set the translation vector and translate the coordinates so that 
-                    # the reacting atom is at origin
-                    trans = geom.coordinates[atIdx3]*-1
-                    geom = translateMol(geom, trans)
-    
-                    # Find the reaction vector
-                    rPt = sum(geom.coordinates) * -1
-    
-                    # Need to know the reaction vector to position the other molecule
-                    rVec = numpy.array([numpy.sqrt(sum(rPt*rPt)), 0, 0])
-    
-                    # Rotate the atoms to position the reaction axis along the x-axis
-                    geom = rotateMol(molecule, geom, rPt)
-    
-                # 2 atoms in the reaction center, those atoms are '*1' and '*2'
-                elif len(molecule.getLabeledAtoms()) == 2:
-    
-                    molecule = fixSortLabel(molecule)
-                    geom = getGeometry(molecule)
-    
-                    # Find the indices of the labeled atoms
-                    for group in molecule.getLabeledAtoms().items():
-                        if group[0] == '*1':
-                            atIdx1 = group[1].sortingLabel
-                        else:
-                            atIdx2 = group[1].sortingLabel 
-    
-                    # Set the translation vector and translate the coordinates so that 
-                    # the reacting atom is at origin
-                    trans = geom.coordinates[atIdx2]*-1
-                    geom = translateMol(geom, trans)
-    
-                    # Original vector between the 2 reaction atoms
-                    rPt = geom.coordinates[atIdx1] - geom.coordinates[atIdx2]
-    
-                    # Rotate the molecule
-                    geom = rotateMol(molecule, geom, rPt)
-    
-            # Build the Transition State
-            for molecule in reaction.reactants:
-                if len(molecule.getLabeledAtoms())==2:
-                    for Idx in range(0, len(molecule.atoms)):
-                       geom.coordinates[Idx] = geom.coordinates[Idx] + rVec
-    
-            tState = reaction.reactants[0].merge(reaction.reactants[1])
-            tState.addBond(tState.getLabeledAtom('*2'), tState.getLabeledAtom('*3'), Bond(order = 'S'))
-            # return tState
-            # TypeError: 'Cannot convert rmgpy.molecule.Molecule to rmgpy.species.TransitionState'
-          
-        elif reaction.family.label.lower() == 'diels_alder_addition':
-            # Need to fix the sortingLabels
-            # Should I align my molecules first then do the bounds??
-            for molecule in reaction.reactants:
-                molecule = fixSortLabel(molecule)
-            
             for molecule in reaction.products:
                 molcule = fixSortLabel(molecule)
-            # geom0 = getGeometry(reaction.reactants[0])
-            # geom1 = getGeometry(reaction.reactants[1])
-            # merge = reaction.reactants[0].merge(reaction.reactants[1])
-            # merge = fixSortLabel(mergeR)
-            # rRDMol, rRDConfId = buildRDKitMol(mergeR)
-            # rBoundsMat = rdkit.Chem.rdDistGeom.GetMoleculeBoundsMatrix(rRDMol)
-            prod = reaction.products[0]
+            # Generate the RDKit::Mol from the RMG molecule and get the bounds matrix
+            prod = reaction.products[0].merge(reaction.products[1])
+            rRDMol, rRDConfId = buildRDKitMol(reaction.reactants[0])
+            rBoundsMat = rdkit.Chem.rdDistGeom.GetMoleculeBoundsMatrix(rRDMol)
             pRDMol, pRDConfId = buildRDKitMol(prod)
             pBoundsMat = rdkit.Chem.rdDistGeom.GetMoleculeBoundsMatrix(pRDMol)
+            # Alter the bounds matrix for the reacting atoms using the reaction recipe
+            # H abstraction doesn't have a reverse recipe, might have to alter and only use forward
+            for action in reaction.family.forwardRecipe.actions:
+                lbl1 = action[1]
+                atom1 = prod.getLabeledAtom(lbl1)
+                idx1 = atom1.sortingLabel
+                if len(action) == 4:
+                    lbl2 = action[3]
+                    atom2 = prod.getLabeledAtom(lbl2)
+                    idx2 = atom2.sortingLabel
+                
+                if action[0].lower() == 'change_bond':
+                    if action[2] == '1':
+                        # make the bond shorter
+                        # do i need to add for double?
+                        pBoundsMat[idx1][idx2] += 0.25
+                        pBoundsMat[idx2][idx1] += 0.25
+                    elif action[2] == '-1':
+                        # make bond shorter
+                        pBoundsMat[idx1][idx2] -= 0.25
+                        pBoundsMat[idx2][idx1] -= 0.25
+                elif action[0].lower() == 'break_bond':
+                    # move them further apart
+                    pBoundsMat[idx1][idx2] -= 0.35
+                    pBoundsMat[idx2][idx1] -= 0.35
+                elif action[0].lower() == 'form_bond':
+                    # mover them further
+                    pBoundsMat[idx1][idx2] += 0.35
+                    pBoundsMat[idx2][idx1] += 0.35
+                
+            # optimize the mol using the constraints of the bounds matrix
+            rdkit.DistanceGeometry.DistGeom.DoTriangleSmoothing(pBoundsMat)
+            rdkit.Chem.Pharm3D.EmbedLib.EmbedMol(pRDMol, pBoundsMat)
+            
+            # # For H_Abstraction '*2' is the H that migrates it moves from '*1' to '*3'
+            # # Initialize the reaction vectors for each molecule
+            # for molecule in reaction.reactants:
+            #     # 1 atom in the reaction center, it is the '*3' atom
+            #     if len(molecule.getLabeledAtoms()) == 1:
+            #         # Rectify atom labels and store the geometries
+            #         molecule = fixSortLabel(molecule)
+            #         geom = getGeometry(molecule)
+            # 
+            #         # Get the labeled atom sorting label
+            #         atIdx3 = molecule.getLabeledAtom('*3').sortingLabel
+            # 
+            #         # Set the translation vector and translate the coordinates so that 
+            #         # the reacting atom is at origin
+            #         trans = geom.coordinates[atIdx3]*-1
+            #         geom = translateMol(geom, trans)
+            # 
+            #         # Find the reaction vector
+            #         rPt = sum(geom.coordinates) * -1
+            # 
+            #         # Need to know the reaction vector to position the other molecule
+            #         rVec = numpy.array([numpy.sqrt(sum(rPt*rPt)), 0, 0])
+            # 
+            #         # Rotate the atoms to position the reaction axis along the x-axis
+            #         geom = rotateMol(molecule, geom, rPt)
+            # 
+            #     # 2 atoms in the reaction center, those atoms are '*1' and '*2'
+            #     elif len(molecule.getLabeledAtoms()) == 2:
+            # 
+            #         molecule = fixSortLabel(molecule)
+            #         geom = getGeometry(molecule)
+            # 
+            #         # Find the indices of the labeled atoms
+            #         for group in molecule.getLabeledAtoms().items():
+            #             if group[0] == '*1':
+            #                 atIdx1 = group[1].sortingLabel
+            #             else:
+            #                 atIdx2 = group[1].sortingLabel 
+            # 
+            #         # Set the translation vector and translate the coordinates so that 
+            #         # the reacting atom is at origin
+            #         trans = geom.coordinates[atIdx2]*-1
+            #         geom = translateMol(geom, trans)
+            # 
+            #         # Original vector between the 2 reaction atoms
+            #         rPt = geom.coordinates[atIdx1] - geom.coordinates[atIdx2]
+            # 
+            #         # Rotate the molecule
+            #         geom = rotateMol(molecule, geom, rPt)
+            # 
+            # # Build the Transition State
+            # for molecule in reaction.reactants:
+            #     if len(molecule.getLabeledAtoms())==2:
+            #         for Idx in range(0, len(molecule.atoms)):
+            #            geom.coordinates[Idx] = geom.coordinates[Idx] + rVec
+            # 
+            # tState = reaction.reactants[0].merge(reaction.reactants[1])
+            # tState.addBond(tState.getLabeledAtom('*2'), tState.getLabeledAtom('*3'), Bond(order = 'S'))
+            # return tState
+            # TypeError: 'Cannot convert rmgpy.molecule.Molecule to rmgpy.species.TransitionState'
+            # rdkit.Chem.Pharm3D.EmbedLib.OptimizeMol(pRDMol, pBoundsMat)
+        elif reaction.family.label.lower() == 'diels_alder_addition':
             import ipdb; ipdb.set_trace()
+            for molecule in reaction.products:
+                molcule = fixSortLabel(molecule)
+            # Generate the RDKit::Mol from the RMG molecule and get the bounds matrix
+            prod = reaction.products[0]
+            rRDMol, rRDConfId = buildRDKitMol(reaction.reactants[0])
+            rBoundsMat = rdkit.Chem.rdDistGeom.GetMoleculeBoundsMatrix(rRDMol)
+            pRDMol, pRDConfId = buildRDKitMol(prod)
+            pBoundsMat = rdkit.Chem.rdDistGeom.GetMoleculeBoundsMatrix(pRDMol)
+            # Alter the bounds matrix for the reacting atoms using the reaction recipe
             for action in reaction.family.reverseRecipe.actions:
                 lbl1 = action[1]
                 lbl2 = action[3]
@@ -2270,34 +2306,23 @@ class KineticsFamily(Database):
                     if action[2] == '1':
                         # make the bond shorter
                         # do i need to add for double?
-                        pBoundsMat[idx1][idx2] -= 0.25
-                        pBoundsMat[idx2][idx1] -= 0.25
+                        pBoundsMat[idx1][idx2] -= 0.15
+                        pBoundsMat[idx2][idx1] -= 0.15
                     elif action[2] == '-1':
                         # make bond longer
-                        pBoundsMat[idx1][idx2] += 0.25
-                        pBoundsMat[idx2][idx1] += 0.25
+                        pBoundsMat[idx1][idx2] += 0.15
+                        pBoundsMat[idx2][idx1] += 0.15
                 elif action[0].lower() == 'break_bond':
                     # move them further
-                    pBoundsMat[idx1][idx2] += 0.35
-                    pBoundsMat[idx2][idx1] += 0.35
+                    pBoundsMat[idx1][idx2] += 0.25
+                    pBoundsMat[idx2][idx1] += 0.25
                 elif action[0].lower() == 'form_bond':
                     # mover them closer
-                    pBoundsMat[idx1][idx2] -= 0.35
-                    pBoundsMat[idx2][idx1] -= 0.35
-                # # could import reaction.family.forwardRecipe.actions
-                # if atom[1].label == '*1':
-                #     Idx1 = atom[1].sortingLabel
-                # elif atom[1].label == '*2':
-                #     Idx2 = atom[1].sortingLabel
-                # elif atom[1].label == '*3':
-                #     Idx3 = atom[1].sortingLabel
-                # elif atom[1].label == '*4':
-                #     Idx4 = atom[1].sortingLabel
-                # elif atom[1].label == '*5':
-                #     Idx5 = atom[1].sortingLabel
-                # elif atom[1].label == '*6':
-                #     Idx6 = atom[1].sortingLabel
-                
+                    pBoundsMat[idx1][idx2] -= 0.25
+                    pBoundsMat[idx2][idx1] -= 0.25
+            # optimize the mol using the constraints of the bounds matrix
+            rdkit.DistanceGeometry.DistGeom.DoTriangleSmoothing(pBoundsMat)
+            rdkit.Chem.Pharm3D.EmbedLib.EmbedMol(pRDMol, pBoundsMat)
                 
         elif reaction.family.label.lower() == '2+2_cycloaddition_cd':
             pass
