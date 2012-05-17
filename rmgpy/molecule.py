@@ -998,6 +998,23 @@ class Molecule(Graph):
         obConversion.SetOutFormat('inchi')
         obConversion.SetOptions('w', openbabel.OBConversion.OUTOPTIONS)
         return obConversion.WriteString(obmol).strip()
+    
+    def toInChIKey(self):
+        """
+        Convert a molecular structure to an InChI Key string. Uses
+        `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
+        
+        Removes check-sum dash (-) and character so that only 
+        the 14 + 9 characters remain.
+        """
+        import openbabel
+        # This version does not write a warning to stderr if stereochemistry is undefined
+        obmol = self.toOBMol()
+        obConversion = openbabel.OBConversion()
+        obConversion.SetOutFormat('inchi')
+        obConversion.SetOptions('w', openbabel.OBConversion.OUTOPTIONS)
+        obConversion.SetOptions('K', openbabel.OBConversion.OUTOPTIONS)
+        return obConversion.WriteString(obmol).strip()[:-2]
 
     def toSMILES(self):
         """
