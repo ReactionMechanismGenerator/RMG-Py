@@ -892,6 +892,16 @@ class TestMolecule(unittest.TestCase):
         
         self.assertEqual(mol.toAugmentedInChI(self), 'InChI=1S/C2H4/c1-2/h1-2H2/mult3')
         
+    def testAugmentedInChIKey(self):
+        """
+        Test that Augmented InChI Key generation is printing the /mult layer
+        """
+        mol = Molecule().fromAdjacencyList("""
+            1     C     1 {2,S}
+            2     C     1 {1,S}
+        """)
+        
+        self.assertEqual(mol.toAugmentedInChIKey(self), 'VGGSQFUCUMXWEO-UHFFFAOYSA/mult3')
 ################################################################################
 
 class TestMoleculeSymmetry(unittest.TestCase):
