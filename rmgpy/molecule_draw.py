@@ -577,8 +577,10 @@ def findBackbone(chemGraph, ringSystems):
         chemGraph = chemGraph.copy()
 
         # Remove hydrogen atoms from consideration, as they cannot be part of
-        # the backbone
-        chemGraph.makeHydrogensImplicit()
+        # the backbone.
+        # Do this irreversibly, because we have a copy and we don't want to change
+        # the implicitHydrogen count of the other atoms.
+        chemGraph.deleteHydrogens()
 
         # If there are only one or two atoms remaining, these are the backbone
         if len(chemGraph.atoms) == 1 or len(chemGraph.atoms) == 2:
