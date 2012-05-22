@@ -2122,8 +2122,6 @@ class KineticsFamily(Database):
         make TS geometry
         """
         from rmgpy.molecule import Molecule
-        from rmgpy.cantherm.geometry import Geometry
-        from rmgpy.transformations import rotation_matrix
         from rmgpy.species import TransitionState
         import rdkit
         from rdkit.Chem.Pharm3D import EmbedLib
@@ -2141,7 +2139,6 @@ class KineticsFamily(Database):
                 
             # Generate the RDKit::Mol from the RMG molecule and get the bounds matrix
             prod = reaction.products[0]
-            import ipdb; ipdb.set_trace()
             if prod.rdMol == None:
                 Molecule.generate3dGeometry(prod)
             boundsMat = rdkit.Chem.rdDistGeom.GetMoleculeBoundsMatrix(prod.rdMol)
@@ -2183,98 +2180,10 @@ class KineticsFamily(Database):
             rdkit.DistanceGeometry.DistGeom.DoTriangleSmoothing(boundsMat)
             # Optimizes the TS geometry in place, outputing the initial and final energies
             rdkit.Chem.Pharm3D.EmbedLib.OptimizeMol(prod.rdMol, boundsMat, maxPasses = 10)
-            
+                        
         elif len(reaction.products) == 2:
             pass
-        
-        # def getGeometry(molecule):
-        #     atomCoords = []
-        #     atomNumber = []
-        #     atomMass = []
-        #     for atom in molecule.atoms:
-        #         atomCoords = atomCoords + [atom.coords]
-        #         atomMass = atomMass + [atom.mass]
-        #         atomNumber = atomNumber + [atom.number]
-        #     geometry = Geometry(numpy.array(atomCoords), numpy.array(atomNumber), numpy.array(atomMass))
-        #     return geometry
-        # 
-        # def translateMol(geometry, translationMatrix):
-        #     Idx = 0
-        #     for coords in geom.coordinates:
-        #         geom.coordinates[Idx] = coords + translationMatrix
-        #         Idx += 1
-        #     return geometry
-        # 
-        # def rotateMol(molecule, geometry, rotationPt):
-        #     rotatedVec = numpy.array([numpy.sqrt(sum(rotationPt*rotationPt)), 0, 0])
-        #     angle = numpy.arccos(numpy.dot(rotatedVec, rotationPt)/numpy.sqrt(sum(rotatedVec*rotatedVec))/numpy.sqrt(sum(rotationPt*rotationPt)))
-        #     crossProd = numpy.array([rotationPt[1]*rotatedVec[2]-rotationPt[2]*rotatedVec[1], rotationPt[2]*rotatedVec[0]-rotationPt[0]*rotatedVec[2], rotationPt[0]*rotatedVec[1]-rotationPt[1]*rotatedVec[0]])
-        #     rotMat = numpy.matrix(rotation_matrix(angle, crossProd))
-        #     for Idx in range(0, len(molecule.atoms)):
-        #         extendedCoords = numpy.matrix(numpy.append(geometry.coordinates[Idx], 1))
-        #         rotatedCoords = rotMat * numpy.matrix.transpose(extendedCoords)
-        #         rotationArrayCoords = numpy.array(numpy.matrix.transpose(rotatedCoords))[0]
-        #         geometry.coordinates[Idx] = numpy.delete(rotationArrayCoords, 3)
-        #     return geometry
-        #     
-        # def buildRDKitMol(molecule):
-        #     import rdkit
-        #     # Convert rmgpy.molecule.Molecule to RDKit::ROMol
-        #     rd_mol, rdkitAtomIdx = molecule.makeRDMol()
-        #     rdConfId = rdkit.Chem.rdDistGeom.EmbedMolecule(rd_mol)
-        #     # Set the optimized coordinates to the RDKit::ROMol
-        #     for atNum in range(0, rd_mol.GetNumAtoms()):
-        #         point3D = rd_mol.GetConformer(rdConfId).GetAtomPosition(atNum)
-        #         atom = molecule.atoms[atNum]
-        #         rdkit.Geometry.Point3D.__init__(point3D, atom.coords[0],atom.coords[1], atom.coords[2])
-        #         rd_mol.GetConformer(rdConfId).SetAtomPosition(atNum, point3D)
-        #     # return the mol and the conformer ID
-        #     return rd_mol, rdConfId
-        # 
-        # # For hydrogen abstraction reactions
-        # if reaction.family.label.lower() == 'h_abstraction':
-        #     for molecule in reaction.products:
-        #         molcule = fixSortLabel(molecule)
-        #     # Generate the RDKit::Mol from the RMG molecule and get the bounds matrix
-        #     prod = reaction.products[0].merge(reaction.products[1])
-        #     rRDMol, rRDConfId = buildRDKitMol(reaction.reactants[0])
-        #     rBoundsMat = rdkit.Chem.rdDistGeom.GetMoleculeBoundsMatrix(rRDMol)
-        #     pRDMol, pRDConfId = buildRDKitMol(prod)
-        #     pBoundsMat = rdkit.Chem.rdDistGeom.GetMoleculeBoundsMatrix(pRDMol)
-        #     # Alter the bounds matrix for the reacting atoms using the reaction recipe
-        #     # H abstraction doesn't have a reverse recipe, might have to alter and only use forward
-        #     for action in reaction.family.forwardRecipe.actions:
-        #         lbl1 = action[1]
-        #         atom1 = prod.getLabeledAtom(lbl1)
-        #         idx1 = atom1.sortingLabel
-        #         if len(action) == 4:
-        #             lbl2 = action[3]
-        #             atom2 = prod.getLabeledAtom(lbl2)
-        #             idx2 = atom2.sortingLabel
-        #         
-        #         if action[0].lower() == 'change_bond':
-        #             if action[2] == '1':
-        #                 # make the bond shorter
-        #                 # do i need to add for double?
-        #                 pBoundsMat[idx1][idx2] += 0.25
-        #                 pBoundsMat[idx2][idx1] += 0.25
-        #             elif action[2] == '-1':
-        #                 # make bond shorter
-        #                 pBoundsMat[idx1][idx2] -= 0.25
-        #                 pBoundsMat[idx2][idx1] -= 0.25
-        #         elif action[0].lower() == 'break_bond':
-        #             # move them further apart
-        #             pBoundsMat[idx1][idx2] -= 0.35
-        #             pBoundsMat[idx2][idx1] -= 0.35
-        #         elif action[0].lower() == 'form_bond':
-        #             # mover them further
-        #             pBoundsMat[idx1][idx2] += 0.35
-        #             pBoundsMat[idx2][idx1] += 0.35
-        #         
-        #     # optimize the mol using the constraints of the bounds matrix
-        #     rdkit.DistanceGeometry.DistGeom.DoTriangleSmoothing(pBoundsMat)
-        #     rdkit.Chem.Pharm3D.EmbedLib.EmbedMol(pRDMol, pBoundsMat)
-                
+                        
     def applyRecipe(self, reactantStructures, forward=True, unique=True):
         """
         Apply the recipe for this reaction family to the list of
