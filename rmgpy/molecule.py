@@ -594,6 +594,32 @@ class Molecule(Graph):
             molecules.append(molecule)
         return molecules
 
+    def deleteHydrogens(self):
+        """
+        Irreversibly delete all non-labeled hydrogens, without incrementing
+        the "implicitHydrogens" count of the neighbouring atom, or updating
+        Connectivity Values or the implicitHydrogens flag. If there's nothing
+        but Hydrogens, it does nothing.
+        It destroys information; be careful with it.
+        """
+        cython.declare(atom=Atom, neighbor=Atom, hydrogens=list)
+        # Check that the structure contains at least one heavy atom
+        for atom in self.vertices:
+            if not atom.isHydrogen():
+                break
+        else:
+            # No heavy atoms, so leave explicit
+            return
+        hydrogens = []
+        for atom in self.vertices:
+            if atom.isHydrogen() and atom.label == '':
+                neighbor = self.edges[atom].keys()[0]
+                hydrogens.append(atom)
+        # Remove the hydrogen atoms from the structure
+        for atom in hydrogens:
+            self.removeAtom(atom)
+
+
     def makeHydrogensImplicit(self):
         """
         Convert all explicitly stored hydrogen atoms to be stored implicitly,
