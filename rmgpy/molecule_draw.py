@@ -1139,7 +1139,12 @@ def drawMolecule(molecule, path=None, surface=''):
     molecule.makeHydrogensImplicit()
 
     atoms = molecule.atoms[:]
-    bonds = molecule.bonds.copy()
+    # bonds = molecule.bonds.copy() is too shallow for a dict-of-dicts,
+    # so we loop one level deep and copy the inner dicts.
+    bonds = dict()
+    for atom1,atom2dict in molecule.bonds.iteritems():
+        bonds[atom1] = atom2dict.copy()
+
     cycles = molecule.getSmallestSetOfSmallestRings()
 
     # Special cases: H, H2, anything with one heavy atom
