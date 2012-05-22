@@ -1158,6 +1158,9 @@ def drawMolecule(molecule, path=None, surface=''):
         coordinates = generateCoordinates(molecule, atoms, bonds, cycles)
     except (ValueError, LinAlgError), e:
         logging.error('Error while drawing molecule {0}: {1}'.format(molecule.toSMILES(), e))
+        import sys, traceback
+        exc_type, exc_value, exc_traceback = sys.exc_info()
+        traceback.print_exc()
         return None, None, None
 
     coordinates[:,1] *= -1
