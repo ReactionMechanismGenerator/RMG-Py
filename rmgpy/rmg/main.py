@@ -176,7 +176,9 @@ class RMG:
                 assert (reactionSystem.T.value > self.pressureDependence.Tmin.value), "Reaction system T is below pressureDependence range."
                 assert (reactionSystem.P.value < self.pressureDependence.Pmax.value), "Reaction system P is above pressureDependence range."
                 assert (reactionSystem.P.value > self.pressureDependence.Pmin.value), "Reaction system P is below pressureDependence range."
-        
+            assert any([not s.reactive for s in reactionSystem.initialMoleFractions.keys()]), \
+                "Pressure Dependence calculations require at least one inert (nonreacting) species for the bath gas."
+
     def saveInput(self, path=None):
         """
         Save an RMG job to the input file located at `path`, or

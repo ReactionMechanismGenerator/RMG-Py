@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-.PHONY : all minimal main measure solver clean
+.PHONY : all minimal main measure solver clean decython
 
 all: main measure solver
 
@@ -23,4 +23,9 @@ clean:
 	python setup.py clean --build-temp build
 	rm -rf build/
 	find . -name *.so -exec rm -f '{}' \;
+	find . -name *.pyc -exec rm -f '{}' \;
+
+decython:
+	# de-cythonize all but the 'minimal'. Helpful for debugging in "pure python" mode.
+	find . -name *.so ! \( -name _statmech.so -o -name quantity.so -o -regex '.*rmgpy/measure/.*' -o -regex '.*rmgpy/solver/.*' \) -exec rm -f '{}' \;
 	find . -name *.pyc -exec rm -f '{}' \;
