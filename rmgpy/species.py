@@ -234,7 +234,7 @@ class Species:
     
 ################################################################################
 
-class TransitionState:
+class TransitionState(Molecule):
     """
     A chemical transition state, representing a first-order saddle point on a
     potential energy surface. The attributes are:
@@ -248,6 +248,8 @@ class TransitionState:
     `frequency`     :class:`Quantity`       The negative frequency of the first-order saddle point in cm^-1
     `degeneracy`    ``int``                 The reaction path degeneracy
     =============== ======================= ====================================
+    
+    ...and everything inherited from :class:`Molecule`.
 
     """
 
