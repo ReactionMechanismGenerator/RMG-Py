@@ -577,8 +577,10 @@ def findBackbone(chemGraph, ringSystems):
         chemGraph = chemGraph.copy()
 
         # Remove hydrogen atoms from consideration, as they cannot be part of
-        # the backbone
-        chemGraph.makeHydrogensImplicit()
+        # the backbone.
+        # Do this irreversibly, because we have a copy and we don't want to change
+        # the implicitHydrogen count of the other atoms.
+        chemGraph.deleteHydrogens()
 
         # If there are only one or two atoms remaining, these are the backbone
         if len(chemGraph.atoms) == 1 or len(chemGraph.atoms) == 2:
@@ -1132,17 +1134,25 @@ def drawMolecule(molecule, path=None, surface=''):
         print 'Cairo not found; molecule will not be drawn.'
         return
 
-    # This algorithm requires that the hydrogen atoms be implicit
-    implicitH = molecule.implicitHydrogens
-    molecule.makeHydrogensImplicit()
+    # This algorithm now works with explicit hydrogen atoms on the molecule.
+    # Please ensure all the subroutines do also.
+    # We will delete them from the *copied* list of atoms, and store them here:
+    implicitHydrogensToDraw = {}
+    for atom in molecule.atoms:
+        implicitHydrogensToDraw[atom] = atom.implicitHydrogens
 
     atoms = molecule.atoms[:]
-    bonds = molecule.bonds.copy()
+    # bonds = molecule.bonds.copy() is too shallow for a dict-of-dicts,
+    # so we loop one level deep and copy the inner dicts.
+    bonds = dict()
+    for atom1,atom2dict in molecule.bonds.iteritems():
+        bonds[atom1] = atom2dict.copy()
+
     cycles = molecule.getSmallestSetOfSmallestRings()
 
     # Special cases: H, H2, anything with one heavy atom
 
-    # Remove all unlabeled hydrogen atoms from the molecule, as they are not drawn
+    # Remove all unlabeled hydrogen atoms from the copied atoms and bonds, as they are not drawn
     # However, if this would remove all atoms, then don't remove any
     atomsToRemove = []
     for atom in atoms:
@@ -1150,7 +1160,9 @@ def drawMolecule(molecule, path=None, surface=''):
     if len(atomsToRemove) < len(atoms):
         for atom in atomsToRemove:
             atoms.remove(atom)
-            for atom2 in bonds[atom]: del bonds[atom2][atom]
+            for atom2 in bonds[atom]:
+                del bonds[atom2][atom]
+                implicitHydrogensToDraw[atom2] = implicitHydrogensToDraw[atom2] + 1
             del bonds[atom]
 
     # Generate the coordinates to use to draw the molecule
@@ -1158,6 +1170,9 @@ def drawMolecule(molecule, path=None, surface=''):
         coordinates = generateCoordinates(molecule, atoms, bonds, cycles)
     except (ValueError, LinAlgError), e:
         logging.error('Error while drawing molecule {0}: {1}'.format(molecule.toSMILES(), e))
+        import sys, traceback
+        exc_type, exc_value, exc_traceback = sys.exc_info()
+        traceback.print_exc()
         return None, None, None
 
     coordinates[:,1] *= -1
@@ -1181,8 +1196,8 @@ def drawMolecule(molecule, path=None, surface=''):
     # Add implicit hydrogens
     for i in range(len(symbols)):
         if symbols[i] != '':
-            if atoms[i].implicitHydrogens == 1: symbols[i] = symbols[i] + 'H'
-            elif atoms[i].implicitHydrogens > 1: symbols[i] = symbols[i] + 'H{0:d}'.format(atoms[i].implicitHydrogens)
+            if implicitHydrogensToDraw.get(atoms[i],0) == 1: symbols[i] = symbols[i] + 'H'
+            elif implicitHydrogensToDraw.get(atoms[i],0) > 1: symbols[i] = symbols[i] + 'H{0:d}'.format(implicitHydrogensToDraw[atoms[i]])
 
     # Special case: H2 (render as H2 and not H-H)
     if symbols == ['H','H']:
@@ -1217,8 +1232,6 @@ def drawMolecule(molecule, path=None, surface=''):
                 surface.write_to_png(path)
             else:
                 surface.finish()
-
-    if not implicitH: molecule.makeHydrogensExplicit()
 
     return surface, cr, (0, 0, width, height)
 
