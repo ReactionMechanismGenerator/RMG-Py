@@ -107,6 +107,8 @@ cdef class Molecule(Graph):
 
     cpdef Graph copy(self, bint deep=?)
 
+    cpdef deleteHydrogens(self)
+
     cpdef makeHydrogensImplicit(self)
 
     cpdef makeHydrogensExplicit(self)
