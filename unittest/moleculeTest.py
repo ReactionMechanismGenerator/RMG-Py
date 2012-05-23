@@ -890,7 +890,7 @@ class TestMolecule(unittest.TestCase):
             2     C     1 {1,S}
         """)
         
-        self.assertEqual(mol.toAugmentedInChI(self), 'InChI=1S/C2H4/c1-2/h1-2H2/mult3')
+        self.assertEqual(mol.toAugmentedInChI(), 'InChI=1S/C2H4/c1-2/h1-2H2/mult3')
         
     def testAugmentedInChIKey(self):
         """
@@ -901,7 +901,7 @@ class TestMolecule(unittest.TestCase):
             2     C     1 {1,S}
         """)
         
-        self.assertEqual(mol.toAugmentedInChIKey(self), 'VGGSQFUCUMXWEO-UHFFFAOYSA/mult3')
+        self.assertEqual(mol.toAugmentedInChIKey(), 'VGGSQFUCUMXWEO-UHFFFAOYSA/mult3')
 ################################################################################
 
 class TestMoleculeSymmetry(unittest.TestCase):
