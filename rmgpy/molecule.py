@@ -1035,7 +1035,52 @@ class Molecule(Graph):
         obConversion.SetOutFormat('inchi')
         obConversion.SetOptions('w', openbabel.OBConversion.OUTOPTIONS)
         return obConversion.WriteString(obmol).strip()
-
+    
+    def toAugmentedInChI(self):
+        """
+        Adds an extra layer to the InChI denoting the number of unpaired electrons in case
+        more than 1 ( >= 2) unpaired electrons are present in the molecule.
+        """
+        inchi = self.toInChI()
+        
+        radicalNumber = sum([i.radicalElectrons for i in self.atoms])
+        
+        if radicalNumber >= 2:
+            return inchi+'/mult'+str(radicalNumber+1)
+        else:
+            return inchi
+    
+    def toInChIKey(self):
+        """
+        Convert a molecular structure to an InChI Key string. Uses
+        `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
+        
+        Removes check-sum dash (-) and character so that only 
+        the 14 + 9 characters remain.
+        """
+        import openbabel
+        # This version does not write a warning to stderr if stereochemistry is undefined
+        obmol = self.toOBMol()
+        obConversion = openbabel.OBConversion()
+        obConversion.SetOutFormat('inchi')
+        obConversion.SetOptions('w', openbabel.OBConversion.OUTOPTIONS)
+        obConversion.SetOptions('K', openbabel.OBConversion.OUTOPTIONS)
+        return obConversion.WriteString(obmol).strip()[:-2]
+    
+    def toAugmentedInChIKey(self):
+        """
+        Adds an extra layer to the InChIKey denoting the number of unpaired electrons in case
+        more than 1 ( >= 2) unpaired electrons are present in the molecule.
+        """
+        key = self.toInChIKey()
+        
+        radicalNumber = sum([i.radicalElectrons for i in self.atoms])
+        
+        if radicalNumber >= 2:
+            return key+'mult'+str(radicalNumber+1)
+        else:
+            return key
+        
     def toSMILES(self):
         """
         Convert a molecular structure to an SMILES string. Uses
