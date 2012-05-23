@@ -872,6 +872,36 @@ class TestMolecule(unittest.TestCase):
         molecule = Molecule().fromSMILES('[CH2]')
         self.assertEqual(molecule.atoms[0].radicalElectrons, 2)
         self.assertEqual(molecule.atoms[0].spinMultiplicity, 3)
+        
+    def testInChIKey(self):
+        """
+        Test that InChI Key generation is working properly.
+        """
+        molecule = Molecule().fromInChI('InChI=1S/C7H12/c1-2-7-4-3-6(1)5-7/h6-7H,1-5H2')
+        key = molecule.toInChIKey()
+        self.assertEqual(key, 'UMRZSTCPUPJPOJ-UHFFFAOYSA')
+        
+    def testAugmentedInChI(self):
+        """
+        Test that Augmented InChI generation is printing the /mult layer
+        """
+        mol = Molecule().fromAdjacencyList("""
+            1     C     1 {2,S}
+            2     C     1 {1,S}
+        """)
+        
+        self.assertEqual(mol.toAugmentedInChI(self), 'InChI=1S/C2H4/c1-2/h1-2H2/mult3')
+        
+    def testAugmentedInChIKey(self):
+        """
+        Test that Augmented InChI Key generation is printing the /mult layer
+        """
+        mol = Molecule().fromAdjacencyList("""
+            1     C     1 {2,S}
+            2     C     1 {1,S}
+        """)
+        
+        self.assertEqual(mol.toAugmentedInChIKey(self), 'VGGSQFUCUMXWEO-UHFFFAOYSA/mult3')
 ################################################################################
 
 class TestMoleculeSymmetry(unittest.TestCase):
