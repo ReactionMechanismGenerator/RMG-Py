@@ -1077,7 +1077,7 @@ class Molecule(Graph):
         radicalNumber = sum([i.radicalElectrons for i in self.atoms])
         
         if radicalNumber >= 2:
-            return key+'/mult'+str(radicalNumber+1)
+            return key+'mult'+str(radicalNumber+1)
         else:
             return key
         
