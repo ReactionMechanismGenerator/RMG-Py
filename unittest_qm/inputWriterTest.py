@@ -1,0 +1,35 @@
+'''
+Created on May 23, 2012
+
+@author: nmvdewie
+'''
+import time
+import unittest
+import qmtp_package.qminputwriters as writers
+import os
+import qmtp_package.qmtp as qm
+import rmgpy.molecule as mol
+class Test(unittest.TestCase):
+
+    def testMOPACInputWriter(self):
+        '''
+        Checks whether the .mop output file has been written based on the 3D coords file (.mol)
+        '''
+        
+        name = 'WTARULDDTDQWMU-UHFFFAOYAW'
+        inchi = 'InChI=1/C10H16/c1-7-4-5-8-6-9(7)10(8,2)3/h8-9H,1,4-6H2,2-3H3'
+        dir = os.path.join(os.getcwd(),'data/QMfiles/3DMolfiles')
+        os.remove(os.path.join(dir,name+'.mop'))
+        molecule = mol.Molecule().fromInChI(inchi)
+        mf = qm.molFile(molecule, name, dir)
+        
+        writer = writers.MOPACPM3InputWriter(name, dir, mf, attemptNumber=1, multiplicity=1)
+        inputFile = writer.write()
+        
+        time.sleep(3)#otherwise assertion fails before the file is written!
+        self.assertTrue(os.path.exists(os.path.join(dir,name+'.mop')))
+        
+
+if __name__ == "__main__":
+    #import sys;sys.argv = ['', 'Test.testName']
+    unittest.main()
