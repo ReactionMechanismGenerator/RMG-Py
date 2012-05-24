@@ -2133,54 +2133,65 @@ class KineticsFamily(Database):
                 sortLbl += 1
             return molecule
         
-        if len(reaction.products) == 1:
-            for molecule in reaction.products:
-                molcule = fixSortLabel(molecule)
-                
+        if len(reaction.products) != len(reaction.reactants):
+            # Fix the sorting label for the molecule if it has not been done.
+            # Set the action list to forward or reverse depending on the species
+            # the transition state is being built from.
+            if len(reaction.reactants) == 1:
+                if reaction.reactants[0].atoms[0].sortingLabel == -1:
+                    reaction.reactants[0] = fixSortLabel(reaction.reactants[0])
+                buildTS = reaction.reactants[0]
+                actionList = reaction.family.forwardRecipe.actions
+            else:
+                if reaction.products[0].atoms[0].sortingLabel == -1:
+                    reaction.products[0] = fixSortLabel(reaction.products[0])
+                buildTS = reaction.products[0]
+                actionList = reaction.family.reverseRecipe.actions
+            
             # Generate the RDKit::Mol from the RMG molecule and get the bounds matrix
-            prod = reaction.products[0]
-            if prod.rdMol == None:
-                Molecule.generate3dGeometry(prod)
-            boundsMat = rdkit.Chem.rdDistGeom.GetMoleculeBoundsMatrix(prod.rdMol)
-            # Alter the bounds matrix for the reacting atoms using the reaction recipe
-            for action in reaction.family.forwardRecipe.actions:
+            if buildTS.rdMol == None:
+                Molecule.generate3dGeometry(buildTS)
+            boundsMat = rdkit.Chem.rdDistGeom.GetMoleculeBoundsMatrix(buildTS.rdMol)
+            
+            # Alter the bounds matrix based on the reaction recipe
+            for action in actionList:
                 lbl1 = action[1]
-                atom1 = prod.getLabeledAtom(lbl1)
+                atom1 = buildTS.getLabeledAtom(lbl1)
                 idx1 = atom1.sortingLabel
                 if len(action) ==4:
                     lbl2 = action[3]
-                    atom2 = prod.getLabeledAtom(lbl2)
+                    atom2 = buildTS.getLabeledAtom(lbl2)
                     idx2 = atom2.sortingLabel
                 if action[0].lower() == 'change_bond':
                     # bond was added
                     if action[2] == '1':
-                        # make the bond longer
-                        # do i need to add for double?
-                        boundsMat[idx1][idx2] += 0.15
-                        boundsMat[idx2][idx1] += 0.15
+                        # make the bond shorter
+                        boundsMat[idx1][idx2] -= 0.15
+                        boundsMat[idx2][idx1] -= 0.15
                     # bond was removed
                     elif action[2] == '-1':
                         # make bond shorter
-                        boundsMat[idx1][idx2] -= 0.15
-                        boundsMat[idx2][idx1] -= 0.15
-                elif action[0].lower() == 'break_bond':
-                    # move them closer
-                    boundsMat[idx1][idx2] -= 0.25
-                    boundsMat[idx2][idx1] -= 0.25
+                        boundsMat[idx1][idx2] += 0.15
+                        boundsMat[idx2][idx1] += 0.15
                 elif action[0].lower() == 'form_bond':
                     # move them further
+                    boundsMat[idx1][idx2] -= 0.25
+                    boundsMat[idx2][idx1] -= 0.25
+                elif action[0].lower() == 'break_bond':
+                    # move them closer
                     boundsMat[idx1][idx2] += 0.25
                     boundsMat[idx2][idx1] += 0.25
-            # optimize the mol using the constraints of the bounds matrix
+                # optimize the mol using the constraints of the bounds matrix
             # Keep the most stable conformer, remove the rest
-            for conf in range(0, prod.rdMol.GetNumConformers()):
-                if conf != prod.rdMolConfId:
-                    prod.rdMol.RemoveConformer(conf)
+            for conf in range(0, buildTS.rdMol.GetNumConformers()):
+                if conf != buildTS.rdMolConfId:
+                    buildTS.rdMol.RemoveConformer(conf)
+            
             # Smooth the bounds matrix to speed up the optimization
             rdkit.DistanceGeometry.DistGeom.DoTriangleSmoothing(boundsMat)
             # Optimizes the TS geometry in place, outputing the initial and final energies
-            rdkit.Chem.Pharm3D.EmbedLib.OptimizeMol(prod.rdMol, boundsMat, maxPasses = 10)
-                        
+            rdkit.Chem.Pharm3D.EmbedLib.OptimizeMol(buildTS.rdMol, boundsMat, maxPasses = 10)
+                       
         elif len(reaction.products) == 2:
             pass
                         
