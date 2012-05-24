@@ -455,6 +455,7 @@ class Molecule(Graph):
         Graph.__init__(self, atoms, bonds)
         self.implicitHydrogens = implicitH
         self.symmetryNumber = symmetry
+        self.rdMol = None
         if SMILES != '': self.fromSMILES(SMILES, implicitH)
         elif InChI != '': self.fromInChI(InChI, implicitH)
     
