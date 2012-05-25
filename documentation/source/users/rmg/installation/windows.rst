@@ -100,7 +100,7 @@ Download and run the installers listed below. These builds have been verified as
 * `guppy 0.1.10 <http://www.sistemasagiles.com.ar/soft/guppy-0.1.10.win32-py2.7.exe>`_
 * `OpenBabel 2.3.1 <http://voxel.dl.sourceforge.net/project/openbabel/openbabel/2.3.1/OpenBabel2.3.1_Windows_Installer.exe>`_
 
-  * Install cairo libraries: ::
+  * The OpenBabel installer includes some libraries (.dll files) that you also need for other purposes, so copy them out of the OpenBabel program directory and into your system directory so they are generally accessible: ::
 	
 		cd /c/PROGRA~1/OpenBabel-2.3.1
 		cp libcairo-2.dll libpng14-14.dll zlib1.dll $SYSTEMROOT/system32
@@ -115,7 +115,7 @@ Download and run the installers listed below. These builds have been verified as
 Remaining Dependencies
 ======================
 
-Install the remaining six dependencies: ::
+Install the remaining six python dependencies using 'pip': ::
 
 	curl http://python-distribute.org/distribute_setup.py | python
 	rm distribute*.tar.gz
