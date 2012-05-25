@@ -97,8 +97,10 @@ class MOPACJob(QMJob):
         '''
         TODO maybe it's better to call the alias 'mopac'. However, this did not work yet... 
         '''
+        assert os.getenv('MOPAC_DIR'), "Please set the environment variable MOPAC_DIR to the directory containing MOPAC2009.exe"
         self.executable = os.path.join(os.getenv('MOPAC_DIR') , 'MOPAC2009.exe')#assumes this env var is pointing to install directory of mopac!
-                
+        assert os.path.exists(self.executable), "Please set the environment variable MOPAC_DIR to the directory containing MOPAC2009.exe"
+
         'specify the input file'
         self.command = os.path.join(self.directory ,self.name+ self.inputFileExtension)
         
