@@ -57,6 +57,11 @@ class ThreeDMolFileCreator:
         self.dir2D = os.path.join(directory,'2DMolfiles/')
         self.dir3D = os.path.join(directory,'3DMolfiles/')
         
+        for directory in (self.dir2D, self.dir3D):
+            if not os.path.exists(directory):
+                logging.info("Creating directory %s for mol files."%os.path.abspath(directory))
+                os.makedirs(directory)
+
     def create2D(self):
         '''
         #1. create a 2D file
