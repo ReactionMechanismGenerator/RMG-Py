@@ -16,8 +16,8 @@ class Test(unittest.TestCase):
         
         name = 'UMRZSTCPUPJPOJ-UHFFFAOYSA'
         InChIaug = 'InChI=1S/C7H12/c1-2-7-4-3-6(1)5-7/h6-7H,1-5H2'
-        dir = os.path.join(os.getcwd(),'data/QMfiles')
-        verifier = verif.QMVerifier(name, InChIaug, dir, QMTP = driver)
+        directory = os.path.join(os.path.dirname(__file__),'data','QMfiles')
+        verifier = verif.QMVerifier(name, InChIaug, directory, QMTP = driver)
         verifier.verify()
         
         self.assertFalse(verifier.succesfulJobExists())
@@ -28,8 +28,8 @@ class Test(unittest.TestCase):
         
         name = 'GRWFGVWFFZKLTI-UHFFFAOYAF'
         InChIaug = 'InChI=1/C10H16/c1-7-4-5-8-6-9(7)10(8,2)3/h4,8-9H,5-6H2,1-3H3'
-        dir = os.path.join(os.getcwd(),'data/QMfiles/MOPAC')
-        verifier = verif.QMVerifier(name, InChIaug, dir, driver)
+        directory = os.path.join(os.path.dirname(__file__),'data','QMfiles','MOPAC')
+        verifier = verif.QMVerifier(name, InChIaug, directory, driver)
         verifier.verify()
         self.assertTrue(verifier.succesfulJobExists())
         self.assertTrue(verifier.mopacResultExists)

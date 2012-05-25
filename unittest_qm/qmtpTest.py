@@ -26,7 +26,7 @@ class QMTest(unittest.TestCase):
         driver = qm.QMTP(qmprogram)
         name, inchi = driver.generateIdentifiers(molecule)#UMRZSTCPUPJPOJ-UHFFFAOYSA
         
-        directory = os.path.join(os.getcwd(), 'data/ThreeDMolFileCreatorTest')
+        directory = os.path.join(os.path.dirname(__file__), 'data','ThreeDMolFileCreatorTest')
         print os.path.exists(directory)
         creator = qm.ThreeDMolFileCreator(name, directory, molecule)
         
@@ -43,14 +43,14 @@ class QMTest(unittest.TestCase):
         driver = qm.QMTP('mopac', 'pm3')
         #corresponds to GRWFGVWFFZKLTI-UHFFFAOYAF.out
         molecule = Molecule().fromInChI('InChI=1/C10H16/c1-7-4-5-8-6-9(7)10(8,2)3/h4,8-9H,5-6H2,1-3H3')
-        qm.QMTP.qmfolder = os.path.join(os.getcwd(), 'data/QMfiles')
+        qm.QMTP.qmfolder = os.path.join(os.path.dirname(__file__), 'data','QMfiles')
         result = driver.generateQMThermoData(molecule)
         
         self.assertTrue(isinstance(result, ThermoData))
         from glob import glob
         for f in glob (os.path.join(qm.QMTP.qmfolder,'GRWFGVWFFZKLTI-UHFFFAOYSA.*')):
             os.unlink (f)
-        for f in glob (os.path.join(qm.QMTP.qmfolder,'/3DMolfiles','GRWFGVWFFZKLTI-UHFFFAOYSA.*')):
+        for f in glob (os.path.join(qm.QMTP.qmfolder,'3DMolfiles','GRWFGVWFFZKLTI-UHFFFAOYSA.*')):
             os.unlink (f)
         
 if __name__ == "__main__":

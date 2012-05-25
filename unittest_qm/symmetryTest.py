@@ -31,12 +31,12 @@ class Test(unittest.TestCase):
         InChIaug = 'InChI=1/C9H14O2/c1-6(2)9-5-8(11-10)4-7(9)3/h4-6,8,10H,1-3H3'
         molecule = mol.Molecule().fromInChI(InChIaug)
         inputFileExtension = '.log'
-        dir = os.path.join(os.getcwd(),'data/QMfiles/G03')
+        directory = os.path.join(os.path.dirname(__file__),'data/QMfiles/G03')
         driver = qm.QMTP('gaussian03', 'pm3')
-        parsingTool = pars.CCLibParser(os.path.join(dir,name+inputFileExtension), driver)
+        parsingTool = pars.CCLibParser(os.path.join(directory, name+inputFileExtension), driver)
         
         data = parsingTool.parse(molecule)
-        pgc = symm.PointGroupCalculator(name, dir, data)
+        pgc = symm.PointGroupCalculator(name, directory, data)
         pg = pgc.calculate()
         
         self.assertTrue(isinstance(pg, symm.PointGroup))

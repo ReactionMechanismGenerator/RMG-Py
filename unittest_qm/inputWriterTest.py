@@ -9,6 +9,7 @@ import qmtp_package.qminputwriters as writers
 import os
 import qmtp_package.qmtp as qm
 import rmgpy.molecule as mol
+
 class Test(unittest.TestCase):
 
     def testMOPACInputWriter(self):
@@ -18,17 +19,17 @@ class Test(unittest.TestCase):
         
         name = 'WTARULDDTDQWMU-UHFFFAOYAW'
         inchi = 'InChI=1/C10H16/c1-7-4-5-8-6-9(7)10(8,2)3/h8-9H,1,4-6H2,2-3H3'
-        dir = os.path.join(os.getcwd(),'data/QMfiles/3DMolfiles')
-        os.remove(os.path.join(dir,name+'.mop'))
+        directory = os.path.join(os.path.dirname(__file__), 'data','QMfiles','3DMolfiles')
+        target_file = os.path.join(directory, name+'.mop')
+        if os.path.exists(target_file): os.remove(target_file)
         molecule = mol.Molecule().fromInChI(inchi)
-        mf = qm.molFile(molecule, name, dir)
-        
-        writer = writers.MOPACPM3InputWriter(name, dir, mf, attemptNumber=1, multiplicity=1)
+        mf = qm.molFile(molecule, name, directory)
+        writer = writers.MOPACPM3InputWriter(name, directory, mf, attemptNumber=1, multiplicity=1)
         inputFile = writer.write()
         
         time.sleep(3)#otherwise assertion fails before the file is written!
-        self.assertTrue(os.path.exists(os.path.join(dir,name+'.mop')))
-        
+        self.assertTrue(os.path.exists(target_file))
+
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']

@@ -18,9 +18,9 @@ class Test(unittest.TestCase):
         name = 'GRWFGVWFFZKLTI-UHFFFAOYAF'
         InChIaug = 'InChI=1/C10H16/c1-7-4-5-8-6-9(7)10(8,2)3/h4,8-9H,5-6H2,1-3H3'
         molecule = mol.Molecule().fromInChI(InChIaug)
-        dir = os.path.join(os.getcwd(),'data/QMfiles/MOPAC')
+        directory = os.path.join(os.path.dirname(__file__),'data','QMfiles','MOPAC')
 
-        parser = pars.MOPACPM3Parser(name, dir, molecule, driver)
+        parser = pars.MOPACPM3Parser(name, directory, molecule, driver)
         result = parser.parse()
         assert isinstance(result, ThermoData)
         
@@ -33,8 +33,8 @@ class Test(unittest.TestCase):
         molecule = mol.Molecule().fromInChI(InChIaug)
         inputFileExtension = '.log'
         driver = qm.QMTP('gaussian03', 'pm3')
-        dir = os.path.join(os.getcwd(),'data/QMfiles/G03')
-        parsingTool = pars.CCLibParser(os.path.join(dir,name+inputFileExtension), driver)
+        directory = os.path.join(os.path.dirname(__file__),'data','QMfiles','G03')
+        parsingTool = pars.CCLibParser(os.path.join(directory, name+inputFileExtension), driver)
         
         data = parsingTool.parse(molecule)
         

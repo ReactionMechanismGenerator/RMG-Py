@@ -17,15 +17,15 @@ class Test(unittest.TestCase):
 
     def testMOPACJob(self):
         name = 'UMRZSTCPUPJPOJ-UHFFFAOYAR'
-        dir = os.path.join(os.getcwd(),'data/QMfiles/MOPAC')
-        mj = MOPACJob(name, dir)
+        directory = os.path.join(os.path.dirname(__file__),'data','QMfiles','MOPAC')
+        mj = MOPACJob(name, directory)
         success = mj.run()
         
         self.assertTrue(success)
         
         #remove generated output files
-        os.remove(os.path.join(dir,name+'.out'))
-        os.remove(os.path.join(dir,name+'.arc'))
+        os.remove(os.path.join(directory, name+'.out'))
+        os.remove(os.path.join(directory, name+'.arc'))
         
         
 
@@ -38,14 +38,14 @@ class Test(unittest.TestCase):
         molecule = mol.Molecule().fromInChI(InChIaug)
         inputFileExtension = '.log'
         driver = qm.QMTP('gaussian03', 'pm3')
-        dir = os.path.join(os.getcwd(),'data/QMfiles/G03')
-        parsingTool = pars.CCLibParser(os.path.join(dir,name+inputFileExtension), driver)
+        directory = os.path.join(os.path.dirname(__file__),'data','QMfiles','G03')
+        parsingTool = pars.CCLibParser(os.path.join(directory, name+inputFileExtension), driver)
 
         iqmdata = parsingTool.parse(molecule);
         path = os.environ.get('RMG_workingDirectory')
-        symm_job = job.SymmetryJob(name, dir, iqmdata)
+        symm_job = job.SymmetryJob(name, directory, iqmdata)
         pointGroup = symm_job.calculate()
-        self.assertTrue(os.path.exists(os.path.join(dir, 'AAAOFKFEDKWQNN-UHFFFAOYAY.symm')))
+        self.assertTrue(os.path.exists(os.path.join(directory, 'AAAOFKFEDKWQNN-UHFFFAOYAY.symm')))
         
         self.assertEqual(pointGroup.symmetryNumber, 1)
         self.assertTrue(pointGroup.chiral)#the chiral flag is set to True for C1 symmetry groups!
