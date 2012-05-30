@@ -1,1 +1,1 @@
-.. _installation:************Installation************.. toctree::    :maxdepth: 2    windows
+.. _installation:************Installation************.. toctree::    :maxdepth: 1    windows    linux

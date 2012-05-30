@@ -149,7 +149,7 @@ RMG
 * Build and install RMG-Py: ::
 
 	cd /c/RMG-Py
-	mingw32-make; python setup.py build_ext --inplace
+	mingw32-make
 
 * Run an example: ::
 
