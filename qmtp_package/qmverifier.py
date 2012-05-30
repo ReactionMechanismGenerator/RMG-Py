@@ -14,9 +14,8 @@ class QMVerifier:
  * searching for specific keywords in the output files, 
  * located in a specific directory (e.g. "QMFiles")
     '''
-    def __init__(self,molfile, QMTP):
+    def __init__(self,molfile):
         self.molfile = molfile
-        self.QMTP = QMTP
         self.gaussianResultExists = False
         self.mopacResultExists = False
         self.mm4ResultExists = False
@@ -127,15 +126,8 @@ class QMVerifier:
         #returns True if an MM4 output file for the given name and directory (.mm4out suffix) exists and indicates successful completion (same criteria as used after calculation runs) terminates if the InChI doesn't match the InChI in the file or if there is no InChI in the file returns False otherwise
        
     def verify(self):
-        '''
-        /**
-     * Depending on the QM method used, a specific verification method will be called,
-     * and assigns the correct flag stored as an attribute.
-     */
-        ''' 
-        if self.QMTP.qmMethod == "pm3":
-            #first, check to see if the result already exists and the job terminated successfully
-            self.mopacResultExists = self.successfulMopacResultExistsQ()
+       
+       self.mopacResultExists = self.successfulMopacResultExistsQ()
         
        
     def succesfulJobExists(self):
