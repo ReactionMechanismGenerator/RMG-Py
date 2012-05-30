@@ -116,10 +116,18 @@ class MOPACJob(QMJob):
 
 class SymmetryJob(QMJob):
      '''
-     determine the point group using the SYMMETRY program (http://www.cobalt.chem.ucalgary.ca/ps/symmetry/)
-     required input is a line with number of atoms followed by lines for each atom including atom number and x,y,z coordinates
-     finalTol determines how loose the point group criteria are; values are comparable to those specifed in the GaussView point group interface
-     public String determinePointGroupUsingSYMMETRYProgram(String geom, double finalTol){ 
+     Determine the point group using the SYMMETRY program 
+     (http://www.cobalt.chem.ucalgary.ca/ps/symmetry/).
+     
+     
+     Required input is a line with number of atoms followed by lines for each atom 
+     including:
+     1) atom number
+     2) x,y,z coordinates
+     
+     finalTol determines how loose the point group criteria are;
+     values are comparable to those specified in the GaussView point group interface
+      
      '''   
     
      maxAttemptNumber = 4;
@@ -127,11 +135,17 @@ class SymmetryJob(QMJob):
      def __init__(self, molfile, iqmdata, environ = os.environ.get("RMG_workingDirectory")):
         QMJob.__init__(self, molfile)
         
-        'the keywords denoting the executable'
-        self.executable = ''
+        self.executable = 'bin/symmetry'
         
         'the command line command'
         self.command = []
+        
+        'keywords that will be passed as an argument for the consecutive attempts'
+        self.keywords = {}
+        self.keywords[1] = ['-final', '0.02']
+        self.keywords[2] = ['-final', '0.1']
+        self.keywords[3] = ['-primary', '0.2', '-final' ,'0.1']
+        self.keywords[4] = ['-final', '0.0']
         
         
         '''
@@ -139,7 +153,8 @@ class SymmetryJob(QMJob):
         '''
         self.qmdata = iqmdata
         
-        self.inputFile = self.molfile.name + '.symm'
+        self.inputFileExtension = '.symm'
+        self.inputFile = self.molfile.name + self.inputFileExtension
         
         self.environ = environ
         
@@ -166,12 +181,8 @@ class SymmetryJob(QMJob):
         return result;
            
      def run(self):
-        try:
-            pp = subprocess.Popen(self.command, stdout=subprocess.PIPE)
-            stdout, stderr = pp.communicate()
-        except Exception as e:
-            logging.error('Error in running Symmetry process \n')
-            logging.error(str(e))
+        pp = subprocess.Popen(self.command, stdout=subprocess.PIPE)
+        stdout, stderr = pp.communicate()
         
         return self.check(stdout)    
     
@@ -201,26 +212,14 @@ class SymmetryJob(QMJob):
 
         #continue trying to generate symmetry group until too many no. of attempts or until a point group is found: 
         while self.attemptNumber <= SymmetryJob.maxAttemptNumber and not self.pointGroupFound:
-            result = "";
             '''
             TODO only *nix case works!
             '''
-            path_symm = os.path.join(self.environ, 'bin/symmetry')
-            print 'Symmetry exec: '+str(os.path.exists(path_symm))
-            #path to the symmetry input file 'InChIKey.symm'
-            path_mol = os.path.join(self.molfile.directory, self.inputFile)
-            print 'mol symm file: '+str(os.path.exists(path_mol))
-            if self.attemptNumber == 1:
-                self.command = [path_symm  , '-final', '0.02',path_mol]
-            elif self.attemptNumber == 2:
-                self.command = [path_symm  , '-final', '0.1',path_mol]
-            elif self.attemptNumber == 3:
-                self.command = [path_symm  , '-primary', '0.2', '-final' ,'0.1', path_mol]
-            elif self.attemptNumber == 4:
-                logging.warning("*****WARNING****: Using last-resort symmetry estimation options; symmetry may be underestimated")
-                self.command = [path_symm  , '-final', '0.0',path_mol]
-            else:
-                logging.critical("Invalid attemptNumber: "+ self.attemptNumber)
+
+            self.command.append(os.path.join(self.environ, self.executable))
+            for t in self.keywords[self.attemptNumber]:
+                self.command.append(t)
+            self.command.append(os.path.join(self.molfile.directory, self.inputFile))
             
             #call the program and read the result
             result = self.run();
