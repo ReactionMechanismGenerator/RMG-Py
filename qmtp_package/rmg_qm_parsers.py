@@ -76,11 +76,11 @@ class CCLibParser:
              *  (cf. http:#cccbdb.nist.gov/thermo.asp)            
             '''
             if self.qmtp.qmprogram == 'mopac':
-                myfile=ccopen(self.path)
+                myfile=Mopac(self.path)
             elif self.qmtp.qmprogram == 'mm4':
                 myfile=MM4(self.path)
             elif self.qmtp.qmprogram == 'gaussian03':
-                myfile=Mopac(self.path)
+                myfile=ccopen(self.path)
                 
             myfile.logger.setLevel(logging.ERROR) #cf. http://cclib.sourceforge.net/wiki/index.php/Using_cclib#Additional_information
             
