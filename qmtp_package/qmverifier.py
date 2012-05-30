@@ -51,7 +51,6 @@ class QMVerifier:
                         #         DOES NOT INCLUDE THE  2 IMAGINARY FREQUENCIES
                    failure_expr.append("IMAGINARY FREQUENCIES")
                    failure_expr.append("EXCESS NUMBER OF OPTIMIZATION CYCLES")#exceeding max cycles error
-                   failure_expr.append("EXCESS NUMBER OF OPTIMIZATION CYCLES")
                    failure_expr.append("NOT ENOUGH TIME FOR ANOTHER CYCLE")#timeout error
                        
                    for each_line in qmfile:
