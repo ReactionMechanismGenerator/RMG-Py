@@ -75,11 +75,11 @@ class CCLibParser:
              *  spatial degeneracy for non-symmetric linear molecules like OH radical 
              *  (cf. http:#cccbdb.nist.gov/thermo.asp)            
             '''
-            if self.qmtp.qmprogram == 'mopac':
+            if self.qmtp.qmprogram == 'gaussian03':
                 myfile=ccopen(self.path)
             elif self.qmtp.qmprogram == 'mm4':
                 myfile=MM4(self.path)
-            elif self.qmtp.qmprogram == 'gaussian03':
+            elif self.qmtp.qmprogram == 'mopac':
                 myfile=Mopac(self.path)
                 
             myfile.logger.setLevel(logging.ERROR) #cf. http://cclib.sourceforge.net/wiki/index.php/Using_cclib#Additional_information
@@ -93,6 +93,7 @@ class CCLibParser:
         except Exception as e:
             logging.error('Error in reading/parsing ccLib Python process \n')
             logging.error(str(e))
+            raise
 
         return self.qmdata
         
