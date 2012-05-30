@@ -34,11 +34,12 @@ class molFile:
     may eventually want to have a super class threeDGeom and say "public class molFile extends threeDGeom {"
     '''
     
-    def __init__(self, molecule, name='', directory=''):
+    def __init__(self, molecule, name='', directory='', InChIAug = ''):
         #construct a molFile object while writing a file with text determined by chemGraph
         self.name = name
         self.directory = directory
         self.molecule = molecule
+        self.InChIAug = InChIAug#Augmented InChI
         self.path = os.path.join(self.directory,self.name +'.mol')
         self.crudepath = os.path.join(self.directory, self.name+'.cmol')
      
@@ -222,13 +223,14 @@ class QMTP:
                 return result
          else:#no successful result exists, we have to calculate from zero
                 molfile = self.generate3DCoords(molecule, name)
+                molfile.InChIAug = InChIaug
                 multiplicity = sum([i.radicalElectrons for i in molecule.atoms]) + 1
                 attemptNumber = 1
                 success = False
                 maxAttemptNumber = self.mapMaxAttemptNumber[self.qmprogram]
                 while not success and (attemptNumber <= maxAttemptNumber):
                     self.createQMInput(name, molecule, molfile, attemptNumber, InChIaug, multiplicity)
-                    success = self.runQM(name)
+                    success = self.runQM(molfile)
                     if success:
                         logging.info('Attempt {0} on species {1} succeeded.'.format(attemptNumber, InChIaug))
                         '''
@@ -240,7 +242,7 @@ class QMTP:
                 result = self.parseOutput(name, molecule)
                 return result
     
-    def runQM(self, name):
+    def runQM(self, molfile):
         if self.qmprogram == "mopac"  or  self.qmprogram == "both":
             '''
              * name and directory are the name and directory for the input (and output) file
@@ -248,7 +250,7 @@ class QMTP:
              * returns an integer indicating success or failure of the MOPAC calculation: 1 for success, 0 for failure
              * this function is based on the Gaussian analogue
             '''
-            jobMOPAC = job.MOPACJob(name, QMTP.qmfolder) 
+            jobMOPAC = job.MOPACJob(molfile, QMTP.qmfolder) 
             return jobMOPAC.run()
          
         else :

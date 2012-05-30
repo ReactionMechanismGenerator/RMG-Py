@@ -27,6 +27,7 @@ import logging
 import platform
 import os
 import symmetry as sym
+import qmverifier as verif
 import qmtp as qm
 
 class QMJob:
@@ -44,9 +45,8 @@ class QMJob:
     -the output file extension which will be used to check the output file for the correct termination.
     '''
     
-    def __init__(self, name, directory):
-        self.name = name
-        self.directory = directory
+    def __init__(self, molfile):
+        self.molfile = molfile
         self.inputFileExtension = ''
         self.outputFileExtension = ''
         
@@ -88,8 +88,8 @@ class MOPACJob(QMJob):
     
     
     ''' 
-    def __init__(self, name, directory):
-        QMJob.__init__(self, name, directory)
+    def __init__(self, molfile):
+        QMJob.__init__(self, molfile)
         
         self.inputFileExtension = '.mop'
         self.outputFileExtension = '.out'
@@ -100,7 +100,7 @@ class MOPACJob(QMJob):
         self.executable = os.path.join(os.getenv('MOPAC_DIR') , 'MOPAC2009.exe')#assumes this env var is pointing to install directory of mopac!
                 
         'specify the input file'
-        self.command = os.path.join(self.directory ,self.name+ self.inputFileExtension)
+        self.command = os.path.join(self.molfile.directory ,self.molfile.name+ self.inputFileExtension)
         
     def check(self):
         failure = False
@@ -116,31 +116,24 @@ class MOPACJob(QMJob):
         return not failure;
     
     def run(self):
-        try:
-            process = subprocess.Popen([self.executable, self.command])
-            process.communicate()# necessary to wait for executable termination!
-        except Exception as e:
-            logging.error('Error in executing MOPAC with %s as input file \n'%self.command)
-            logging.error(str(e))
+        process = subprocess.Popen([self.executable, self.command])
+        process.communicate()# necessary to wait for executable termination!
+
 
         return self.check()
 
 class SymmetryJob(QMJob):
      '''
-     
- determine the point group using the SYMMETRY program (http://www.cobalt.chem.ucalgary.ca/ps/symmetry/)
- required input is a line with number of atoms followed by lines for each atom including atom number and x,y,z coordinates
- finalTol determines how loose the point group criteria are; values are comparable to those specifed in the GaussView point group interface
- public String determinePointGroupUsingSYMMETRYProgram(String geom, double finalTol){ 
- 
- 
+     determine the point group using the SYMMETRY program (http://www.cobalt.chem.ucalgary.ca/ps/symmetry/)
+     required input is a line with number of atoms followed by lines for each atom including atom number and x,y,z coordinates
+     finalTol determines how loose the point group criteria are; values are comparable to those specifed in the GaussView point group interface
+     public String determinePointGroupUsingSYMMETRYProgram(String geom, double finalTol){ 
      '''   
     
-
      maxAttemptNumber = 4;
          
-     def __init__(self, name, directory, iqmdata, environ = os.environ.get("RMG_workingDirectory")):
-        QMJob.__init__(self, name, directory)
+     def __init__(self, molfile, iqmdata, environ = os.environ.get("RMG_workingDirectory")):
+        QMJob.__init__(self, molfile)
         
         'the keywords denoting the executable'
         self.executable = ''
@@ -154,7 +147,7 @@ class SymmetryJob(QMJob):
         '''
         self.qmdata = iqmdata
         
-        self.inputFile = self.name + '.symm'
+        self.inputFile = self.molfile.name + '.symm'
         
         self.environ = environ
         
@@ -202,10 +195,10 @@ class SymmetryJob(QMJob):
           '''
           Write the input file for the SYMMETRY program based on the passed-in string.
           '''
-          with open(os.path.join(self.directory, self.inputFile), 'w') as input_file:
+          with open(os.path.join(self.molfile.directory, self.inputFile), 'w') as input_file:
                input_file.write(geom)
           input_file.close()
-          logging.info('Symmetry input file written to %s'%os.path.join(self.directory, self.inputFile))
+          logging.info('Symmetry input file written to %s'%os.path.join(self.molfile.directory, self.inputFile))
           return input_file     
         
      def calculate(self):
@@ -223,7 +216,7 @@ class SymmetryJob(QMJob):
             path_symm = os.path.join(self.environ, 'bin/symmetry')
             print 'Symmetry exec: '+str(os.path.exists(path_symm))
             #path to the symmetry input file 'InChIKey.symm'
-            path_mol = os.path.join(self.directory, self.inputFile)
+            path_mol = os.path.join(self.molfile.directory, self.inputFile)
             print 'mol symm file: '+str(os.path.exists(path_mol))
             if self.attemptNumber == 1:
                 self.command = [path_symm  , '-final', '0.02',path_mol]
