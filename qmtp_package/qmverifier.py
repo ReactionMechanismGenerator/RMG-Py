@@ -62,7 +62,7 @@ class QMVerifier:
                     logging.info("*****Warning: potential InChIKey collision: InChIKey(augmented) = " + self.molfile.name + " RMG Augmented InChI = "+ self.molfile.InChIAug + " Log file Augmented InChI = "+logFileInChI + " . InChI could not be found in the MOPAC input file. You should manually check that the output file contains the ended species.")
                     return False
         
-    def successfulMopacResultExistsQ(self):
+    def successfulMopacResultExists(self):
         '''
         
         Returns a boolean flag that states whether a successful MOPAC simulation already exists for the molecule with the 
@@ -127,7 +127,7 @@ class QMVerifier:
        
     def verify(self):
        
-       self.mopacResultExists = self.successfulMopacResultExistsQ()
+       self.mopacResultExists = self.successfulMopacResultExists()
         
     def verifyNoFailure(self):
         '''
