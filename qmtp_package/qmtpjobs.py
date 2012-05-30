@@ -103,17 +103,9 @@ class MOPACJob(QMJob):
         self.command = os.path.join(self.molfile.directory ,self.molfile.name+ self.inputFileExtension)
         
     def check(self):
-        failure = False
-        error = ['IMAGINARY FREQUENCIES', 'EXCESS NUMBER OF OPTIMIZATION CYCLES', 'NOT ENOUGH TIME FOR ANOTHER CYCLE']
-        with open(os.path.join(self.directory,self.name+self.outputFileExtension)) as output:            
-            for each_line in output:
-                for err in error:
-                    if err in each_line.rstrip():
-                        failure = True
-                        break
-                if failure:
-                    break
-        return not failure;
+        verifier = verif.QMVerifier(self.molfile)
+        return verifier.verifyNoFailure()
+         
     
     def run(self):
         process = subprocess.Popen([self.executable, self.command])

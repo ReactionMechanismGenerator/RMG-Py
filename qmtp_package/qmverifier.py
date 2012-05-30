@@ -59,7 +59,7 @@ class QMVerifier:
                         return True
                     
                 else:
-                    logging.info("*****Warning: potential InChIKey collision: InChIKey(augmented) = " + self.molfile.name + " RMG Augmented InChI = "+ self.InChIaug + " Log file Augmented InChI = "+logFileInChI + " . InChI could not be found in the MOPAC input file. You should manually check that the output file contains the ended species.")
+                    logging.info("*****Warning: potential InChIKey collision: InChIKey(augmented) = " + self.molfile.name + " RMG Augmented InChI = "+ self.molfile.InChIAug + " Log file Augmented InChI = "+logFileInChI + " . InChI could not be found in the MOPAC input file. You should manually check that the output file contains the ended species.")
                     return False
         
     def successfulMopacResultExistsQ(self):
@@ -129,7 +129,22 @@ class QMVerifier:
        
        self.mopacResultExists = self.successfulMopacResultExistsQ()
         
-       
+    def verifyNoFailure(self):
+        '''
+        checks whether the output file contains any of the 
+        failure keywords
+        '''
+        file = os.path.join(self.molfile.directory,self.molfile.name+self.outputExtension)
+        with open(file) as qmfile:    
+                   for each_line in qmfile:
+                       each_line = each_line.rstrip().strip()
+                       for element in self.failureKeys:#search for failure keywords
+                           if element in each_line:
+                               logging.error("MOPAC output file contains the following error %s")%element
+                               return False
+                           
+        return True
+    
     def succesfulJobExists(self):
      '''
       /**
