@@ -7,17 +7,20 @@ import unittest
 import qmtp_package.qmtp as qm
 import os
 import qmtp_package.qmverifier as verif
-
+import rmgpy.molecule as mol
 class Test(unittest.TestCase):
 
     def testVerifierDoesNotExist(self):
         driver = qm.QMTP('both', 'pm3')
         driver.qmMethod = 'pm3'
         
+        molecule = mol.Molecule()
         name = 'UMRZSTCPUPJPOJ-UHFFFAOYSA'
-        InChIaug = 'InChI=1S/C7H12/c1-2-7-4-3-6(1)5-7/h6-7H,1-5H2'
         dir = os.path.join(os.getcwd(),'data/QMfiles')
-        verifier = verif.QMVerifier(name, InChIaug, dir, QMTP = driver)
+        InChIaug = 'InChI=1S/C7H12/c1-2-7-4-3-6(1)5-7/h6-7H,1-5H2'
+        molfile = qm.molFile(molecule, name, dir, InChIaug)
+        
+        verifier = verif.QMVerifier(molfile, QMTP = driver)
         verifier.verify()
         
         self.assertFalse(verifier.succesfulJobExists())
@@ -25,11 +28,13 @@ class Test(unittest.TestCase):
     def testVerifierMOPACResultExists(self):
         driver = qm.QMTP('mopac', 'pm3')
 
-        
+        molecule = mol.Molecule()
         name = 'GRWFGVWFFZKLTI-UHFFFAOYAF'
-        InChIaug = 'InChI=1/C10H16/c1-7-4-5-8-6-9(7)10(8,2)3/h4,8-9H,5-6H2,1-3H3'
         dir = os.path.join(os.getcwd(),'data/QMfiles/MOPAC')
-        verifier = verif.QMVerifier(name, InChIaug, dir, driver)
+        InChIaug = 'InChI=1/C10H16/c1-7-4-5-8-6-9(7)10(8,2)3/h4,8-9H,5-6H2,1-3H3'
+        molfile = qm.molFile(molecule, name, dir, InChIaug)
+        
+        verifier = verif.QMVerifier(molfile, driver)
         verifier.verify()
         self.assertTrue(verifier.succesfulJobExists())
         self.assertTrue(verifier.mopacResultExists)

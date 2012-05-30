@@ -14,10 +14,8 @@ class QMVerifier:
  * searching for specific keywords in the output files, 
  * located in a specific directory (e.g. "QMFiles")
     '''
-    def __init__(self,name,InChIaug, directory, QMTP):
-        self.name = name
-        self.InChIaug = InChIaug
-        self.directory = directory
+    def __init__(self,molfile, QMTP):
+        self.molfile = molfile
         self.QMTP = QMTP
         self.gaussianResultExists = False
         self.mopacResultExists = False
@@ -45,7 +43,7 @@ class QMVerifier:
             '''
             # if InChIPartialMatch == 1:#case where the InChI in memory begins with the InChI in the log file we will continue and check the input file, pring a warning if there is no match
             #look in the input file if the InChI doesn't match (apparently, certain characters can be deleted in MOPAC output file for long InChIs)
-            inputFile = os.path.join(self.directory,self.name+self.inputExtension)
+            inputFile = os.path.join(self.molfile.directory,self.molfile.name+self.inputExtension)
                 
             assert os.path.exists(inputFile)
 
@@ -56,13 +54,13 @@ class QMVerifier:
                         inputFileInChI = lineI.rstrip()
                         break
                 
-                if inputFileInChI == self.InChIaug:
+                if inputFileInChI == self.molfile.InChIAug:
                         logging.info('An InChI match could be found in the input file, but not in the output file. Anywho, a\
                         pre-existing successful MOPAC result exists.')
                         return True
                     
                 else:
-                    logging.info("*****Warning: potential InChIKey collision: InChIKey(augmented) = " + self.name + " RMG Augmented InChI = "+ self.InChIaug + " Log file Augmented InChI = "+logFileInChI + " . InChI could not be found in the MOPAC input file. You should manually check that the output file contains the ended species.")
+                    logging.info("*****Warning: potential InChIKey collision: InChIKey(augmented) = " + self.molfile.name + " RMG Augmented InChI = "+ self.InChIaug + " Log file Augmented InChI = "+logFileInChI + " . InChI could not be found in the MOPAC input file. You should manually check that the output file contains the ended species.")
                     return False
         
     def successfulMopacResultExistsQ(self):
@@ -81,7 +79,7 @@ class QMVerifier:
         will be initiated.
         
         '''
-        file = os.path.join(self.directory,self.name+self.outputExtension)
+        file = os.path.join(self.molfile.directory,self.molfile.name+self.outputExtension)
         
         if os.path.exists(file):#if the file exists, do further checks otherwise, we will skip to final statement and return False
             InChIMatch=False#flag (1 or 0) indicating whether the InChI in the file matches InChIaug this can only be 1 if InChIFound is also 1
@@ -103,7 +101,7 @@ class QMVerifier:
                        if "InChI=" in each_line:
                             logFileInChI = each_line#output files should take up to 240 characters of the name in the input file
                             InChIFound=True
-                            if logFileInChI == self.InChIaug:
+                            if logFileInChI == self.molfile.InChIAug:
                                 InChIMatch = True
                                 
                    #check if ALL 'success' keywords were found in the file.    
@@ -115,13 +113,13 @@ class QMVerifier:
             
             #if the failure flag is still 0, the process should have been successful
             if InChIMatch:
-                logging.info("Pre-existing successful MOPAC quantum result for " + self.name + " ("+self.InChIaug+") has been found. This log file will be used.")
+                logging.info("Pre-existing successful MOPAC quantum result for " + self.molfile.name + " ("+self.molfile.InChIAug+") has been found. This log file will be used.")
                 return True
 
             elif InChIFound:#InChIs do not match (most likely due to limited name length mirrored in log file (240 characters), but possibly due to a collision)
                 return self.checkForInChiKeyCollision(logFileInChI)          
             else:
-                logging.critical("An InChI was not found in the MOPAC output file: " +self.name+".out nor in the input file.")
+                logging.critical("An InChI was not found in the MOPAC output file: " +self.molfile.name+".out nor in the input file.")
                 return False  
         
         return False
