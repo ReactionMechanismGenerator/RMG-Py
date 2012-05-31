@@ -2133,7 +2133,48 @@ class KineticsFamily(Database):
                 sortLbl += 1
             return molecule
         
-        if len(reaction.products) != len(reaction.reactants):
+        # A --> B or A + B --> C + D               
+        if len(reaction.reactants) == len(reaction.products):
+            # 1 reactant
+            if len(reaction.reactants) == 1:
+                pass
+            
+            # 2 reactants
+            else:
+                for action in reaction.family.forwardRecipe.actions:
+                    if action[0].lower() == 'form_bond':
+                        lbl1 = action[1]
+                        lbl2 = action[3]
+                    elif action[0].lower() == 'break_bond':
+                        lbl3 = action[1]
+                        lbl4 = action[3]
+                
+                # Find the atom being transferred in the reaction
+                if lbl1 == lbl3 or lbl1 == lbl4:
+                    lblAt = lbl1
+                else:
+                    lblAt = lbl2
+                
+                # Derive the bounds matrix from the reactants and products
+                import ipdb; ipdb.set_trace()
+                for reactant in reaction.reactants:
+                    try:
+                        reactant.getLabeledAtom(lblAt)
+                        boundsMat1 = rdkit.Chem.rdDistGeom.GetMoleculeBoundsMatrix(reactant.rdMol)
+                    except ValueError:
+                        lblAt = lblAt
+                    
+                for product in reaction.products:
+                    try:
+                        products.getLabeledAtom(lblAt)
+                        boundsMat2 = rdkit.Chem.rdDistGeom.GetMoleculeBoundsMatrix(product.rdMol)
+                    except ValueError:
+                        lblAt = lblAt
+                        
+                boundsMat = boundsMat1
+            
+        # A --> B + C or A + B --> C
+        else:
             # Fix the sorting label for the molecule if it has not been done.
             # Set the action list to forward or reverse depending on the species
             # the transition state is being built from.
@@ -2188,12 +2229,11 @@ class KineticsFamily(Database):
                     buildTS.rdMol.RemoveConformer(conf)
             
             # Smooth the bounds matrix to speed up the optimization
+            # Optimize the TS geometry in place, outputing the initial and final energies
             rdkit.DistanceGeometry.DistGeom.DoTriangleSmoothing(boundsMat)
-            # Optimizes the TS geometry in place, outputing the initial and final energies
             rdkit.Chem.Pharm3D.EmbedLib.OptimizeMol(buildTS.rdMol, boundsMat, maxPasses = 10)
-                       
-        elif len(reaction.products) == 2:
-            pass
+            
+            # Need to output gaussian script
                         
     def applyRecipe(self, reactantStructures, forward=True, unique=True):
         """
