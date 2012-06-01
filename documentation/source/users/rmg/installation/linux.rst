@@ -8,7 +8,7 @@ RMG-Py and all of its dependencies may be easily installed through a short serie
 
 * Install compilers and libraries: ::
 
-	sudo apt-get install git g++ gfortran python-dev liblapack-dev python-openbabel
+	sudo apt-get install git g++ gfortran python-dev liblapack-dev python-openbabel python-setuptools python-pip
 
 * After creating a `Github account <https://github.com/signup/free>`_, generate your public key: ::
 
@@ -20,21 +20,15 @@ RMG-Py and all of its dependencies may be easily installed through a short serie
 
 * Install dependencies: ::
 
-	mkdir ~/tmp; cd ~/tmp
-	wget http://python-distribute.org/distribute_setup.py
-	sudo python distribute_setup.py
-	sudo easy_install pip
-	
 	sudo pip install numpy		# install NumPy before other packages
 	
 	sudo pip install scipy cython nose matplotlib quantities guppy sphinx psutil xlwt
 	
+	cd ~
 	git clone git@github.com:jwallen/PyDAS.git
 	git clone git@github.com:jwallen/PyDQED.git
 	cd PyDAS; make F77=gfortran; sudo make install
 	cd ../PyDQED; make F77=gfortran; sudo make install
-	
-	rm -rf ~/tmp			# remove unnecessary installation files if desired
 
 * Install RMG-Py: ::
 
