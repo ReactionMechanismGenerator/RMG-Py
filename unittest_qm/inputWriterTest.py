@@ -25,11 +25,28 @@ class Test(unittest.TestCase):
         mf = qm.molFile(molecule, name, dir)
         
         writer = writers.MOPACPM3InputWriter(mf, attemptNumber=1, multiplicity=1)
-        inputFile = writer.write()
+        writer.write()
         
         time.sleep(3)#otherwise assertion fails before the file is written!
         self.assertTrue(os.path.exists(os.path.join(dir,name+'.mop')))
+    
+    def testG03InputWriter(self):
+        '''
+        Checks whether the .gjf output file has been written based on the 3D coords file (.mol)
+        '''
+        name = 'WTARULDDTDQWMU-UHFFFAOYAW'
+        inchi = 'InChI=1/C10H16/c1-7-4-5-8-6-9(7)10(8,2)3/h8-9H,1,4-6H2,2-3H3'
+        dir = os.path.join(os.getcwd(),'data/QMfiles/3DMolfiles')
+        if os.path.exists(os.path.join(dir,name+'.gjf')):
+            os.remove(os.path.join(dir,name+'.gjf'))
+        molecule = mol.Molecule().fromInChI(inchi)
+        mf = qm.molFile(molecule, name, dir)
         
+        writer = writers.GaussianPM3InputWriter(mf, attemptNumber=1, multiplicity=1)
+        writer.write()
+        
+        time.sleep(3)#otherwise assertion fails before the file is written!
+        self.assertTrue(os.path.exists(os.path.join(dir,name+'.gjf')))
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']
