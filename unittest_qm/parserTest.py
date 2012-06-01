@@ -11,16 +11,17 @@ import rmgpy.molecule as mol
 import qmtp_package.calculator as calc
 from rmgpy.thermo import ThermoData
 import re
+
 class Test(unittest.TestCase):
-    
+
     def testMOPAC_PM3_Parser(self):
         driver = qm.QMTP('mopac')
         name = 'GRWFGVWFFZKLTI-UHFFFAOYAF'
         InChIaug = 'InChI=1/C10H16/c1-7-4-5-8-6-9(7)10(8,2)3/h4,8-9H,5-6H2,1-3H3'
         molecule = mol.Molecule().fromInChI(InChIaug)
         dir = os.path.join(os.getcwd(),'data/QMfiles/MOPAC')
-
-        parser = pars.MOPACPM3Parser(name, dir, molecule, driver)
+        mf = qm.molFile(molecule, name, dir)
+        parser = pars.MOPACPM3Parser(mf, driver)
         result = parser.parse()
         assert isinstance(result, ThermoData)
         

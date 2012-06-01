@@ -24,7 +24,7 @@ class Test(unittest.TestCase):
         molecule = mol.Molecule().fromInChI(inchi)
         mf = qm.molFile(molecule, name, dir)
         
-        writer = writers.MOPACPM3InputWriter(name, dir, mf, attemptNumber=1, multiplicity=1)
+        writer = writers.MOPACPM3InputWriter(mf, attemptNumber=1, multiplicity=1)
         inputFile = writer.write()
         
         time.sleep(3)#otherwise assertion fails before the file is written!

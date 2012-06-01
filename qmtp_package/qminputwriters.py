@@ -32,10 +32,7 @@ class QMInputWriter:
     maxAttemptNumber = 0
 
         
-    def __init__(self, name, directory, molfile ='', attemptNumber = 0, multiplicity = -1):
-        self.name = name
-        
-        self.directory = directory
+    def __init__(self, molfile ='', attemptNumber = 0, multiplicity = -1):
         
         self.molfile = molfile
         
@@ -67,8 +64,8 @@ class MOPACPM3InputWriter(QMInputWriter):
         self.multiplicityKeywords[8] = 'uhf octet'
         self.multiplicityKeywords[9] = 'uhf nonet'
         
-    def __init__(self, name, directory, p_molfile, attemptNumber, multiplicity):
-        QMInputWriter.__init__(self, name = name, directory = directory, molfile = p_molfile, attemptNumber = attemptNumber, multiplicity = multiplicity)
+    def __init__(self, p_molfile, attemptNumber, multiplicity):
+        QMInputWriter.__init__(self, p_molfile, attemptNumber, multiplicity)
         self.multiplicityKeywords = {}
         self.fillMultiplicityKeywords()
         self.keywords = {}
@@ -88,8 +85,7 @@ class MOPACPM3InputWriter(QMInputWriter):
         self.keywordsBottom[5] = "oldgeo thermo nosym precise "
         
         self.inputExtension = '.mop'
-    
-     
+
     def createKeywords(self):
         '''
         Based on the attempt number keywords will be added to an QM input file.
@@ -134,15 +130,15 @@ class MOPACPM3InputWriter(QMInputWriter):
         mol.SetTitle(self.molfile.molecule.toAugmentedInChI()) 
         obConversion.SetOptions('k', openbabel.OBConversion.OUTOPTIONS)
         'TODO still dont know how to write keywords, therefore they will be prepended afterwards...'
-        obConversion.WriteFile(mol, os.path.join(self.directory,self.name + self.inputExtension))
+        obConversion.WriteFile(mol, os.path.join(self.molfile.directory,self.molfile.name + self.inputExtension))
 
         #pre-pend keywords:
-        with open(os.path.join(self.directory,self.name + self.inputExtension), 'r+') as mop:
+        with open(os.path.join(self.molfile.directory,self.molfile.name + self.inputExtension), 'r+') as mop:
             old = mop.read() # read everything in the file
             mop.seek(0) # rewind
             mop.write(inpKeyStrTopCombined + old) # write the new line before
 
-        with open(os.path.join(self.directory,self.name + self.inputExtension), 'a') as mop:#append 'a' instead of overwrite 'w'
+        with open(os.path.join(self.molfile.directory,self.molfile.name + self.inputExtension), 'a') as mop:#append 'a' instead of overwrite 'w'
             mop.write('\n'+self.keywords[MOPACKEYWORDS.BOTTOM]+self.keywords[MOPACKEYWORDS.BOTH]+self.keywords[MOPACKEYWORDS.POLAR])
         
-        return self.name + '.mop'
+        return self.molfile.name + '.mop'

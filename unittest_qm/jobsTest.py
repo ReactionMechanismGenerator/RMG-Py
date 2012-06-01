@@ -12,6 +12,7 @@ import qmtp_package.calculator as calc
 from rmgpy.thermo import ThermoData
 import qmtp_package.qmtpjobs as job
 from qmtp_package.qmtpjobs import MOPACJob
+import qmtp_package.qmtp as qm
 class Test(unittest.TestCase):
 
     def testMOPACJob(self):
@@ -30,8 +31,6 @@ class Test(unittest.TestCase):
         os.remove(os.path.join(dir,name+'.out'))
         os.remove(os.path.join(dir,name+'.arc'))
         
-        
-
     def testSymmetryJob(self):
         '''
         Check whether external call to symmetry tool works fine. 

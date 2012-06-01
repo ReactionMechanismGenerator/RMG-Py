@@ -10,7 +10,7 @@ import qmtp_package.qmtp as qm
 from rmgpy.thermo import ThermoData
 
 class QMTest(unittest.TestCase):
-    
+    '''
     def testGenerateIdentifiers(self):
         molecule = Molecule().fromSMILES('C12CC(CC1)CC2')#norbornane
         qmprogram = ''
@@ -34,7 +34,7 @@ class QMTest(unittest.TestCase):
         
         self.assertTrue(isinstance(threedmolfile, qm.molFile))
         
-    
+    '''
     def testGenerateQMThermoData(self):
         '''
         Checks whether the QMTP.generateQMThermoData() finds the output file of the molecule
