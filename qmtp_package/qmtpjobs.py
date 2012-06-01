@@ -163,25 +163,18 @@ class SymmetryJob(QMJob):
         self.pointGroupFound = False
      
      def check(self, output):
-        result = "";
         output = output.split('\n')
-        try:
             #check for errors and display the error if there is one
-            for line in output:
+        for line in output:
                 if line.startswith("It seems to be the "):#last line, ("It seems to be the [x] point group") indicates point group
                     lineArray = line.split(" ")#split the line around spaces
                     result = lineArray[5]#point group string should be the 6th word
-            
-        except Exception as e:
-            err = "Error in veryfying point group calculation process using SYMMETRY \n";
-            err += e.toString();
-            logging.error(err+str(e))
 
         logging.info("Point group: "+ result)#print result, at least for debugging purposes
         return result;
            
      def run(self):
-        pp = subprocess.Popen(self.command, stdout=subprocess.PIPE)
+        pp = subprocess.Popen(self.command)
         stdout, stderr = pp.communicate()
         
         return self.check(stdout)    
