@@ -17,7 +17,7 @@ from symmetry import *
 import logging
 import os
 import math
-
+import openbabel
 
 
 class QMInputWriter:
@@ -120,20 +120,27 @@ class MOPACPM3InputWriter(QMInputWriter):
         return self.createInputFile()
     
     def createInputFile(self):
-        '''
-        TODO instead calling the external executable, import obabel directly!!!
-        '''
+
         inpKeyStrTopCombined = self.keywords[MOPACKEYWORDS.BOTH] + self.keywords[MOPACKEYWORDS.TOP]
+        obConversion = openbabel.OBConversion()
+        obConversion.SetInAndOutFormats("mol", "mop")
+        mol = openbabel.OBMol()
+        
         if self.attemptNumber <= self.scriptAttempts: #use UFF-refined coordinates
-                command = ["babel", "-imol", self.molfile.path, "-xk", inpKeyStrTopCombined,"--title", self.molfile.molecule.toAugmentedInChI(),"-omop", os.path.join(self.directory,self.name + self.inputExtension) ]
+                obConversion.ReadFile(mol, self.molfile.path)
         else:
-                command = [ "babel", "-imol", self.molfile.crudepath, "-xk",  inpKeyStrTopCombined,"--title", self.molfile.molecule.toAugmentedInChI(),"-omop",os.path.join(self.directory,self.name + self.inputExtension) ]        
-        try:   
-            process = Popen(command)
-            process.communicate()#necessary to wait for completion of process!
-        except Exception as e:
-            err = 'Error in running OpenBabel MOL to MOP process \n' + str(e)
-            logging.error(err)   
+                obConversion.ReadFile(mol, self.molfile.crudepath)
+        
+        mol.SetTitle(self.molfile.molecule.toAugmentedInChI()) 
+        obConversion.SetOptions('k', openbabel.OBConversion.OUTOPTIONS)
+        'TODO still dont know how to write keywords, therefore they will be prepended afterwards...'
+        obConversion.WriteFile(mol, os.path.join(self.directory,self.name + self.inputExtension))
+
+        #pre-pend keywords:
+        with open(os.path.join(self.directory,self.name + self.inputExtension), 'r+') as mop:
+            old = mop.read() # read everything in the file
+            mop.seek(0) # rewind
+            mop.write(inpKeyStrTopCombined + old) # write the new line before
 
         with open(os.path.join(self.directory,self.name + self.inputExtension), 'a') as mop:#append 'a' instead of overwrite 'w'
             mop.write('\n'+self.keywords[MOPACKEYWORDS.BOTTOM]+self.keywords[MOPACKEYWORDS.BOTH]+self.keywords[MOPACKEYWORDS.POLAR])

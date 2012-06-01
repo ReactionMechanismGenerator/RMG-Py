@@ -19,7 +19,8 @@ class Test(unittest.TestCase):
         name = 'WTARULDDTDQWMU-UHFFFAOYAW'
         inchi = 'InChI=1/C10H16/c1-7-4-5-8-6-9(7)10(8,2)3/h8-9H,1,4-6H2,2-3H3'
         dir = os.path.join(os.getcwd(),'data/QMfiles/3DMolfiles')
-        os.remove(os.path.join(dir,name+'.mop'))
+        if os.path.exists(os.path.join(dir,name+'.mop')):
+            os.remove(os.path.join(dir,name+'.mop'))
         molecule = mol.Molecule().fromInChI(inchi)
         mf = qm.molFile(molecule, name, dir)
         
