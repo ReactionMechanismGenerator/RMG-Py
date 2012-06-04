@@ -12,13 +12,17 @@ import qmtp_package.calculator as calc
 from rmgpy.thermo import ThermoData
 import qmtp_package.qmtpjobs as job
 from qmtp_package.qmtpjobs import MOPACJob
-
+import qmtp_package.qmtp as qm
 class Test(unittest.TestCase):
 
     def testMOPACJob(self):
+        molecule = mol.Molecule()
         name = 'UMRZSTCPUPJPOJ-UHFFFAOYAR'
         directory = os.path.join(os.path.dirname(__file__),'data','QMfiles','MOPAC')
-        mj = MOPACJob(name, directory)
+        InChIAug = ''
+        
+        molfile = qm.molFile(molecule, name, directory, InChIAug)
+        mj = MOPACJob(molfile)
         success = mj.run()
         
         self.assertTrue(success)
@@ -27,23 +31,24 @@ class Test(unittest.TestCase):
         os.remove(os.path.join(directory, name+'.out'))
         os.remove(os.path.join(directory, name+'.arc'))
         
-        
-
     def testSymmetryJob(self):
         '''
         Check whether external call to symmetry tool works fine. 
         '''
         name = 'AAAOFKFEDKWQNN-UHFFFAOYAY'
+        directory = os.path.join(os.path.dirname(__file__),'data','QMfiles','G03')
         InChIaug = 'InChI=1/C9H14O2/c1-6(2)9-5-8(11-10)4-7(9)3/h4-6,8,10H,1-3H3'
         molecule = mol.Molecule().fromInChI(InChIaug)
+        molfile = qm.molFile(molecule, name, directory, InChIaug)
+        
         inputFileExtension = '.log'
         driver = qm.QMTP('gaussian03', 'pm3')
-        directory = os.path.join(os.path.dirname(__file__),'data','QMfiles','G03')
-        parsingTool = pars.CCLibParser(os.path.join(directory, name+inputFileExtension), driver)
+
+        parsingTool = pars.CCLibParser(os.path.join(directory,name+inputFileExtension), driver)
 
         iqmdata = parsingTool.parse(molecule);
         path = os.environ.get('RMG_workingDirectory')
-        symm_job = job.SymmetryJob(name, directory, iqmdata)
+        symm_job = job.SymmetryJob(molfile, iqmdata)
         pointGroup = symm_job.calculate()
         self.assertTrue(os.path.exists(os.path.join(directory, 'AAAOFKFEDKWQNN-UHFFFAOYAY.symm')))
         

@@ -36,7 +36,8 @@ class Test(unittest.TestCase):
         parsingTool = pars.CCLibParser(os.path.join(directory, name+inputFileExtension), driver)
         
         data = parsingTool.parse(molecule)
-        pgc = symm.PointGroupCalculator(name, directory, data)
+        mf = qm.molFile(molecule, name, directory)
+        pgc = symm.PointGroupCalculator(mf, data)
         pg = pgc.calculate()
         
         self.assertTrue(isinstance(pg, symm.PointGroup))

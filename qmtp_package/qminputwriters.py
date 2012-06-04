@@ -17,7 +17,7 @@ from symmetry import *
 import logging
 import os
 import math
-
+import openbabel
 
 
 class QMInputWriter:
@@ -32,10 +32,7 @@ class QMInputWriter:
     maxAttemptNumber = 0
 
         
-    def __init__(self, name, directory, molfile ='', attemptNumber = 0, multiplicity = -1):
-        self.name = name
-        
-        self.directory = directory
+    def __init__(self, molfile ='', attemptNumber = 0, multiplicity = -1):
         
         self.molfile = molfile
         
@@ -67,105 +64,36 @@ class MOPACPM3InputWriter(QMInputWriter):
         self.multiplicityKeywords[8] = 'uhf octet'
         self.multiplicityKeywords[9] = 'uhf nonet'
         
-    def __init__(self, name, directory, p_molfile, attemptNumber, multiplicity):
-        QMInputWriter.__init__(self, name = name, directory = directory, molfile = p_molfile, attemptNumber = attemptNumber, multiplicity = multiplicity)
+    def __init__(self, p_molfile, attemptNumber, multiplicity):
+        QMInputWriter.__init__(self, p_molfile, attemptNumber, multiplicity)
         self.multiplicityKeywords = {}
         self.fillMultiplicityKeywords()
         self.keywords = {}
         
-        self.inputExtension = '.mop'
-   
-    def getMopacRadicalString(self, multipl):
-        '''
+        self.keywordsTop = {}#keywords that will be added at the top of the qm input file
+        self.keywordsTop[1] = " precise nosym"
+        self.keywordsTop[2] = " precise nosym gnorm=0.0 nonr"
+        self.keywordsTop[3] = " precise nosym gnorm=0.0"
+        self.keywordsTop[4] = " precise nosym gnorm=0.0 bfgs"
+        self.keywordsTop[5] = " precise nosym recalc=10 dmax=0.10 nonr cycles=2000 t=2000"
         
-        returns the extra Mopac keywords to use for radical species, given the spin multiplicity 
-        (radical number + 1)
-     
-        '''
-        try:
-            keyword = self.multiplicityKeywords.get(multipl)
-        except Exception as e:
-            logging.critical('Invalid multiplicity encountered: "+multipl'+str(multipl))
-        return keyword  
-    
-    
-     
+        self.keywordsBottom = {}#keywords that will be added at the bottom of the qm input file
+        self.keywordsBottom[1] = "oldgeo thermo nosym precise "
+        self.keywordsBottom[2] = "oldgeo thermo nosym precise "
+        self.keywordsBottom[3] = "oldgeo thermo nosym precise "
+        self.keywordsBottom[4] = "oldgeo thermo nosym precise "
+        self.keywordsBottom[5] = "oldgeo thermo nosym precise "
+        
+        self.inputExtension = '.mop'
+
     def createKeywords(self):
-        radicalString = self.getMopacRadicalString(self.multiplicity)
-        try:
-            if self.attemptNumber % MOPACPM3InputWriter.scriptAttempts == 1:
-                inpKeyStrBoth="pm3 "+radicalString
-                inpKeyStrTop=" precise nosym"
-                '''
-                 * 7/10/09: based on a quick review of recent results, 
-                 * keyword combo #1 rarely works, and when it did (CJAINEUZFLXGFA-UHFFFAOYAUmult3 
-                 * (InChI=1/C8H16O5Si/c1-4-11-14(9,12-5-2)13-8-6-10-7(8)3/h7-8H,3-6H2,1-2H3/mult3)), 
-                 * the grad. norm on the force step was about 1.7 (too large) 
-                 * I manually removed this result and re-ran...the entropy was increased 
-                 * by nearly 20 cal/mol-K...perhaps we should add a check for the "WARNING" 
-                 * that MOPAC prints out when the gradient is high 7/22/09: for the case of 
-                 * FUGDBSHZYPTWLG-UHFFFAOYADmult3 (InChI=1/C5H8/c1-4-3-5(4)2/h4-5H,1-3H2/mult3), 
-                 * adding nosym seemed to resolve 1. large discrepancies from Gaussian and 2. 
-                 * negative frequencies in mass-weighted coordinates and possibly related issue 
-                 * in discrepancies between regular and mass-weighted coordinate frequencies
-                 '''
-                inpKeyStrBottom="oldgeo thermo nosym precise "
-            elif self.attemptNumber%self.scriptAttempts == 2:
-                '''
-                 * #7/9/09: used for VCSJVABXVCFDRA-UHFFFAOYAI 
-                 * (InChI=1/C8H19O5Si/c1-5-10-8(4)13-14(9,11-6-2)12-7-3/h8H,5-7H2,1-4H3) 
-                 * all existing Gaussian keywords also failed the Gaussian result 
-                 * was also rectified, but the resulting molecule was over 70 kcal/mol less stable,
-                 *  probably due to a large amount of spin contamination (~1.75 in fixed Gaussian 
-                 *  result vs. 0.754 for MOPAC)
-                '''
-                inpKeyStrBoth="pm3 "+radicalString
-                inpKeyStrTop=" precise nosym gnorm=0.0 nonr"
-                inpKeyStrBottom="oldgeo thermo nosym precise "
-            elif self.attemptNumber%self.scriptAttempts == 3:
-                '''
-                 * #7/8/09: used for ADMPQLGIEMRGAT-UHFFFAOYAUmult3 
-                 * (InChI=1/C6H14O5Si/c1-4-9-12(8,10-5-2)11-6(3)7/h6-7H,3-5H2,1-2H3/mult3) 
-                 * all existing Gaussian keywords also failed however, the Gaussian result
-                 *  was also rectified, and the resulting conformation was about 1.0 kcal/mol 
-                 *  more stable than the one resulting from this, so fixed Gaussian result was 
-                 *  manually copied to QMFiles folder
-                '''
-                inpKeyStrBoth="pm3 "+radicalString
-                inpKeyStrTop=" precise nosym gnorm=0.0"
-                '''
-                 * #precise appeared to be necessary for the problematic case (to avoid negative frequencies)
-                '''
-                inpKeyStrBottom="oldgeo thermo nosym precise " 
-            elif self.attemptNumber%self.scriptAttempts == 4:
-                '''
-                 * #7/8/09: used for GYFVJYRUZAKGFA-UHFFFAOYALmult3 
-                 * (InChI=1/C6H14O6Si/c1-3-10-13(8,11-4-2)12-6-5-9-7/h6-7H,3-5H2,1-2H3/mult3) 
-                 * case (negative frequency issues in MOPAC) (also, none of the existing Gaussian
-                 *  combinations worked with it) note that the Gaussian result appears to be a 
-                 *  different conformation as it is about 0.85 kcal/mol more stable, so the Gaussian 
-                 *  result was manually copied to QMFiles directory note that the MOPAC output included 
-                 *  a very low frequency (4-5 cm^-1)
-                '''
-                inpKeyStrBoth="pm3 "+radicalString
-                inpKeyStrTop=" precise nosym gnorm=0.0 bfgs"
-                '''
-                 * precise appeared to be necessary for the problematic case (to avoid negative frequencies)
-                '''
-                inpKeyStrBottom="oldgeo thermo nosym precise " 
-            elif self.attemptNumber%self.scriptAttempts == 0:
-                '''
-                 * used for troublesome HGRZRPHFLAXXBT-UHFFFAOYAVmult3 
-                 * (InChI=1/C3H2O4/c4-2(5)1-3(6)7/h1H2/mult3) case 
-                 * (negative frequency and large gradient issues)                
-                '''
-                inpKeyStrBoth="pm3 "+radicalString
-                inpKeyStrTop=" precise nosym recalc=10 dmax=0.10 nonr cycles=2000 t=2000"
-                inpKeyStrBottom="oldgeo thermo nosym precise "
-        except Exception as e:
-            logging.error('Error in writing inputkeywords.txt \n'+str(e))
-            
-            
+        '''
+        Based on the attempt number keywords will be added to an QM input file.
+        '''
+        inpKeyStrBoth = "pm3 "+self.multiplicityKeywords[self.multiplicity]
+        inpKeyStrTop = self.keywordsTop[self.attemptNumber]
+        inpKeyStrBottom = self.keywordsBottom[self.attemptNumber]
+           
         if qmtp.QMTP.usePolar:
             if self.multiplicity == 1:
                polarString = "\n" + "\n" + "\n"+ "oldgeo polar nosym precise " + inpKeyStrBoth
@@ -179,7 +107,6 @@ class MOPACPM3InputWriter(QMInputWriter):
         self.keywords[MOPACKEYWORDS.TOP] = inpKeyStrTop
         self.keywords[MOPACKEYWORDS.BOTTOM] = inpKeyStrBottom
 
-        
         return self.keywords
     
     
@@ -189,22 +116,108 @@ class MOPACPM3InputWriter(QMInputWriter):
         return self.createInputFile()
     
     def createInputFile(self):
-        '''
-        TODO instead calling the external executable, import obabel directly!!!
-        '''
-        inpKeyStrTopCombined = self.keywords[MOPACKEYWORDS.BOTH] + self.keywords[MOPACKEYWORDS.TOP]
-        if self.attemptNumber <= self.scriptAttempts: #use UFF-refined coordinates
-                command = ["babel", "-imol", self.molfile.path, "-xk", inpKeyStrTopCombined,"--title", self.molfile.molecule.toAugmentedInChI(),"-omop", os.path.join(self.directory,self.name + self.inputExtension) ]
-        else:
-                command = [ "babel", "-imol", self.molfile.crudepath, "-xk",  inpKeyStrTopCombined,"--title", self.molfile.molecule.toAugmentedInChI(),"-omop",os.path.join(self.directory,self.name + self.inputExtension) ]        
-        try:   
-            process = Popen(command)
-            process.communicate()#necessary to wait for completion of process!
-        except Exception as e:
-            err = 'Error in running OpenBabel MOL to MOP process \n' + str(e)
-            logging.error(err)   
 
-        with open(os.path.join(self.directory,self.name + self.inputExtension), 'a') as mop:#append 'a' instead of overwrite 'w'
+        inpKeyStrTopCombined = self.keywords[MOPACKEYWORDS.BOTH] + self.keywords[MOPACKEYWORDS.TOP]
+        obConversion = openbabel.OBConversion()
+        obConversion.SetInAndOutFormats("mol", "mop")
+        mol = openbabel.OBMol()
+        
+        if self.attemptNumber <= self.scriptAttempts: #use UFF-refined coordinates
+                obConversion.ReadFile(mol, self.molfile.path)
+        else:
+                obConversion.ReadFile(mol, self.molfile.crudepath)
+        
+        mol.SetTitle(self.molfile.molecule.toAugmentedInChI()) 
+        obConversion.SetOptions('k', openbabel.OBConversion.OUTOPTIONS)
+        'TODO still dont know how to write keywords, therefore they will be prepended afterwards...'
+        obConversion.WriteFile(mol, os.path.join(self.molfile.directory,self.molfile.name + self.inputExtension))
+
+        #pre-pend keywords:
+        with open(os.path.join(self.molfile.directory,self.molfile.name + self.inputExtension), 'r+') as mop:
+            old = mop.read() # read everything in the file
+            mop.seek(0) # rewind
+            mop.write(inpKeyStrTopCombined + old) # write the new line before
+
+        with open(os.path.join(self.molfile.directory,self.molfile.name + self.inputExtension), 'a') as mop:#append 'a' instead of overwrite 'w'
             mop.write('\n'+self.keywords[MOPACKEYWORDS.BOTTOM]+self.keywords[MOPACKEYWORDS.BOTH]+self.keywords[MOPACKEYWORDS.POLAR])
         
-        return self.name + '.mop'
+        return self.molfile.name + '.mop'
+
+class G03PM3KEYWORDS:
+    INPUT = 'Input'
+    
+    
+class GaussianPM3InputWriter(QMInputWriter):
+    
+    '''static fields'''
+    scriptAttempts = 18
+    
+    maxAttemptNumber = 2* scriptAttempts
+    
+    def __init__(self, p_molfile, attemptNumber, multiplicity):
+        QMInputWriter.__init__(self, p_molfile, attemptNumber, multiplicity)
+        
+        self.keywords = {}
+        
+        self.inputExtension = '.gjf'
+        
+        self.keywordsTop = {}#keywords that will be added to the qm input file based on the attempt number
+        self.keywordsTop[1] = "# pm3 opt=(verytight,gdiis) freq IOP(2/16=3)"
+        self.keywordsTop[2] = "# pm3 opt=(verytight,gdiis) freq IOP(2/16=3) IOP(4/21=2)"
+        self.keywordsTop[3] = "# pm3 opt=(verytight,calcfc,maxcyc=200) freq IOP(2/16=3) nosymm" 
+        self.keywordsTop[4] = "# pm3 opt=(verytight,calcfc,maxcyc=200) freq=numerical IOP(2/16=3) nosymm"
+        self.keywordsTop[5] = "# pm3 opt=(verytight,gdiis,small) freq IOP(2/16=3)"
+        self.keywordsTop[6] = "# pm3 opt=(verytight,nolinear,calcfc,small) freq IOP(2/16=3)"
+        self.keywordsTop[7] = "# pm3 opt=(verytight,gdiis,maxcyc=200) freq=numerical IOP(2/16=3)"
+        self.keywordsTop[8] = "# pm3 opt=tight freq IOP(2/16=3)"
+        self.keywordsTop[9] = "# pm3 opt=tight freq=numerical IOP(2/16=3)"
+        self.keywordsTop[10] = "# pm3 opt=(tight,nolinear,calcfc,small,maxcyc=200) freq IOP(2/16=3)"
+        self.keywordsTop[11] = "# pm3 opt freq IOP(2/16=3)"
+        self.keywordsTop[12] = "# pm3 opt=(verytight,gdiis) freq=numerical IOP(2/16=3) IOP(4/21=200)"
+        self.keywordsTop[13] = "# pm3 opt=(calcfc,verytight,newton,notrustupdate,small,maxcyc=100,maxstep=100) freq=(numerical,step=10) IOP(2/16=3) nosymm"
+        self.keywordsTop[14] = "# pm3 opt=(tight,gdiis,small,maxcyc=200,maxstep=100) freq=numerical IOP(2/16=3) nosymm"
+        self.keywordsTop[15] = "# pm3 opt=(tight,gdiis,small,maxcyc=200,maxstep=100) freq=numerical IOP(2/16=3) nosymm"
+        self.keywordsTop[16] = "# pm3 opt=(verytight,gdiis,calcall,small,maxcyc=200) IOP(2/16=3) IOP(4/21=2) nosymm"
+        self.keywordsTop[17] = "# pm3 opt=(verytight,gdiis,calcall,small) IOP(2/16=3) nosymm"
+        self.keywordsTop[18] = "# pm3 opt=(calcall,small,maxcyc=100) IOP(2/16=3)"
+        
+    def createInputFile(self):
+        obConversion = openbabel.OBConversion()
+        obConversion.SetInAndOutFormats("mol", "gjf")
+        mol = openbabel.OBMol()
+        
+        if self.attemptNumber <= GaussianPM3InputWriter.scriptAttempts: #use UFF-refined coordinates
+                obConversion.ReadFile(mol, self.molfile.path)
+        else:
+                obConversion.ReadFile(mol, self.molfile.crudepath)
+        
+        mol.SetTitle(self.molfile.molecule.toAugmentedInChI()) 
+        obConversion.SetOptions('k', openbabel.OBConversion.OUTOPTIONS)
+        'TODO still dont know how to write keywords, therefore they will be prepended afterwards...'
+        obConversion.WriteFile(mol, os.path.join(self.molfile.directory,self.molfile.name + self.inputExtension))
+
+        #pre-pend keywords:
+        with open(os.path.join(self.molfile.directory,self.molfile.name + self.inputExtension), 'r+') as gjf:
+            old = gjf.read() # read everything in the file
+            gjf.seek(0) # rewind
+            gjf.write(self.keywords[G03PM3KEYWORDS.INPUT] + old) # write the new line before
+ 
+        return self.molfile.name+".gjf"
+    
+    def write(self):
+        self.createKeywords()
+        inputFile = self.createInputFile()
+        return inputFile
+    
+    def createKeywords(self):
+            inpKeyStr ="%chk=" + self.molfile.directory + "/RMGrunCHKfile.chk\n"
+            inpKeyStr =inpKeyStr + "%mem=6MW\n"
+            inpKeyStr =inpKeyStr + "%nproc=1\n"
+            inpKeyStr =inpKeyStr + self.keywordsTop[self.attemptNumber]
+            
+            if qmtp.QMTP.usePolar:
+                   inpKeyStr = inpKeyStr+" polar"
+  
+            self.keywords[G03PM3KEYWORDS.INPUT] = inpKeyStr
+            
+            return self.keywords

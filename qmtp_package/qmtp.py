@@ -34,11 +34,12 @@ class molFile:
     may eventually want to have a super class threeDGeom and say "public class molFile extends threeDGeom {"
     '''
     
-    def __init__(self, molecule, name='', directory=''):
+    def __init__(self, molecule, name='', directory='', InChIAug = ''):
         #construct a molFile object while writing a file with text determined by chemGraph
         self.name = name
         self.directory = directory
         self.molecule = molecule
+        self.InChIAug = InChIAug#Augmented InChI
         self.path = os.path.join(self.directory,self.name +'.mol')
         self.crudepath = os.path.join(self.directory, self.name+'.cmol')
      
@@ -172,7 +173,7 @@ class QMTP:
         inchi_mod = molecule.toAugmentedInChI()#
         return inchikey_mod, inchi_mod
  
-    def parseOutput(self, name, molecule):
+    def parseOutput(self, molfile):
         '''
         wrapper method for parser types
         '''
@@ -180,10 +181,10 @@ class QMTP:
         if self.qmMethod == "pm3" :
                         
             if  self.qmprogram == "mopac" or self.qmprogram == "both" :
-                parser = pars.MOPACPM3Parser(name, QMTP.qmfolder, molecule, self)
+                parser = pars.MOPACPM3Parser(molfile, self)
                 result = parser.parse()
                 result.comment = result.comment +'MOPAC PM3 calculation'
-                logging.info("Thermo for " + name + ": "+ result.__repr__())#print result, at least for debugging purposes
+                logging.info("Thermo for " + molfile.name + ": "+ result.__repr__())#print result, at least for debugging purposes
                 return result
             
         else:
@@ -217,9 +218,9 @@ class QMTP:
              time.sleep(60) # delays for 60 seconds
         
          #verify whether a succesful QM results exists for this particular species:
-         verifier = verif.QMVerifier(name, InChIaug, QMTP.qmfolder, self)
-         verifier.verify() 
-         
+         molfile = molFile(Molecule(), name, InChIaug, QMTP.qmfolder)
+         verifier = verif.QMVerifier(molfile)
+         verifier.verify()   
           
          #if a succesful job exists (by one of the QM Programs), you can readily parse it.
          if verifier.succesfulJobExists():
@@ -227,13 +228,14 @@ class QMTP:
                 return result
          else:#no successful result exists, we have to calculate from zero
                 molfile = self.generate3DCoords(molecule, name)
+                molfile.InChIAug = InChIaug
                 multiplicity = sum([i.radicalElectrons for i in molecule.atoms]) + 1
                 attemptNumber = 1
                 success = False
                 maxAttemptNumber = self.mapMaxAttemptNumber[self.qmprogram]
                 while not success and (attemptNumber <= maxAttemptNumber):
-                    self.createQMInput(name, molecule, molfile, attemptNumber, InChIaug, multiplicity)
-                    success = self.runQM(name)
+                    self.createQMInput(molfile, attemptNumber, multiplicity)
+                    success = self.runQM(molfile)
                     if success:
                         logging.info('Attempt {0} on species {1} succeeded.'.format(attemptNumber, InChIaug))
                         '''
@@ -242,10 +244,10 @@ class QMTP:
                     else:
                         if attemptNumber == maxAttemptNumber:
                             logging.info('Last attempt on species {0} failed.'.format(InChIaug))
-                result = self.parseOutput(name, molecule)
+                result = self.parseOutput(molfile)
                 return result
     
-    def runQM(self, name):
+    def runQM(self, molfile):
         if self.qmprogram == "mopac"  or  self.qmprogram == "both":
             '''
              * name and directory are the name and directory for the input (and output) file
@@ -253,7 +255,7 @@ class QMTP:
              * returns an integer indicating success or failure of the MOPAC calculation: 1 for success, 0 for failure
              * this function is based on the Gaussian analogue
             '''
-            jobMOPAC = job.MOPACJob(name, QMTP.qmfolder) 
+            jobMOPAC = job.MOPACJob(molfile) 
             return jobMOPAC.run()
          
         else :
@@ -261,11 +263,11 @@ class QMTP:
          
         return -1 
     
-    def createQMInput(self, name, molecule, molfile, attemptNumber, inChIaug, multiplicity):
+    def createQMInput(self, molfile, attemptNumber, multiplicity):
         #3. create the Gaussian or MOPAC input file
         if self.qmprogram == "mopac"  or  self.qmprogram == "both":
             #write a file with the input keywords
-            writer = writers.MOPACPM3InputWriter(name, QMTP.qmfolder, molfile, attemptNumber, multiplicity)
+            writer = writers.MOPACPM3InputWriter(molfile, attemptNumber, multiplicity)
             inputFile = writer.write()
             
          
