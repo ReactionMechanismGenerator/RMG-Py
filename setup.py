@@ -57,12 +57,14 @@ Cython.Compiler.Options.annotate = True
 
 def getMainExtensionModules():
     return [
-        Extension('rmgpy.atomtype', ['rmgpy/atomtype.py'], include_dirs=['.']),
-        Extension('rmgpy.element', ['rmgpy/element.py'], include_dirs=['.']),
-        Extension('rmgpy.graph', ['rmgpy/graph.py'], include_dirs=['.']),
-        Extension('rmgpy.group', ['rmgpy/group.py'], include_dirs=['.']),
+        # Molecules and molecular representations
+        Extension('rmgpy.molecule.atomtype', ['rmgpy/molecule/atomtype.py'], include_dirs=['.']),
+        Extension('rmgpy.molecule.element', ['rmgpy/molecule/element.py'], include_dirs=['.']),
+        Extension('rmgpy.molecule.graph', ['rmgpy/molecule/graph.py'], include_dirs=['.']),
+        Extension('rmgpy.molecule.group', ['rmgpy/molecule/group.py'], include_dirs=['.']),
+        Extension('rmgpy.molecule.molecule', ['rmgpy/molecule/molecule.py'], include_dirs=['.']),
+        # Miscellaneous
         Extension('rmgpy.kinetics', ['rmgpy/kinetics.py'], include_dirs=['.']),
-        Extension('rmgpy.molecule', ['rmgpy/molecule.py'], include_dirs=['.']),
         Extension('rmgpy.quantity', ['rmgpy/quantity.py'], include_dirs=['.']),
         Extension('rmgpy.reaction', ['rmgpy/reaction.py'], include_dirs=['.']),
         Extension('rmgpy.species', ['rmgpy/species.py'], include_dirs=['.']),
