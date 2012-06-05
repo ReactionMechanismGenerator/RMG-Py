@@ -58,6 +58,7 @@ class Vertex(object):
     """
 
     def __init__(self):
+        self.edges = {}
         self.resetConnectivityValues()
 
     def __reduce__(self):
@@ -65,6 +66,7 @@ class Vertex(object):
         A helper function used when pickling an object.
         """
         d = {
+            'edges': self.edges,
             'connectivity1': self.connectivity1,
             'connectivity2': self.connectivity2,
             'connectivity3': self.connectivity3,
@@ -73,6 +75,7 @@ class Vertex(object):
         return (Vertex, (), d)
 
     def __setstate__(self, d):
+        self.edges = d['edges']
         self.connectivity1 = d['connectivity1']
         self.connectivity2 = d['connectivity2']
         self.connectivity3 = d['connectivity3']
@@ -128,14 +131,15 @@ class Edge(object):
     in the derived class.
     """
 
-    def __init__(self):
-        pass
+    def __init__(self, vertex1, vertex2):
+        self.vertex1 = vertex1
+        self.vertex2 = vertex2
 
     def __reduce__(self):
         """
         A helper function used when pickling an object.
         """
-        return (Edge, ())
+        return (Edge, (self.vertex1, self.vertex2))
 
     def equivalent(self, other):
         """
@@ -153,6 +157,19 @@ class Edge(object):
         """
         return True
 
+    def getOtherVertex(self, vertex):
+        """
+        Given a vertex that makes up part of the edge, return the other vertex.
+        Raise a :class:`ValueError` if the given vertex is not part of the
+        edge.
+        """
+        if self.vertex1 is not vertex and self.vertex2 is not vertex:
+            raise ValueError('The given vertex is not one of the vertices of this edge.')
+        elif self.vertex1 is vertex:
+            return self.vertex2
+        elif self.vertex2 is vertex:
+            return self.vertex1
+
 ################################################################################
 
 class Graph:
@@ -166,44 +183,48 @@ class Graph:
     or the :meth:`getEdges` method.
     """
 
-    def __init__(self, vertices=None, edges=None):
+    def __init__(self, vertices=None):
         self.vertices = vertices or []
-        self.edges = edges or {}
         
     def __reduce__(self):
         """
         A helper function used when pickling an object.
         """
-        return (Graph, (self.vertices, self.edges))
+        return (Graph, (self.vertices,))
 
     def addVertex(self, vertex):
         """
         Add a `vertex` to the graph. The vertex is initialized with no edges.
         """
         self.vertices.append(vertex)
-        self.edges[vertex] = dict()
+        vertex.edges = dict()
         return vertex
 
-    def addEdge(self, vertex1, vertex2, edge):
+    def addEdge(self, edge):
         """
-        Add an `edge` to the graph as an edge connecting the two vertices
-        `vertex1` and `vertex2`.
+        Add an `edge` to the graph. The two vertices in the edge must already
+        exist in the graph, or a :class:`ValueError` is raised.
         """
-        self.edges[vertex1][vertex2] = edge
-        self.edges[vertex2][vertex1] = edge
+        if edge.vertex1 not in self.vertices or edge.vertex2 not in self.vertices:
+            raise ValueError('Attempted to add edge between vertices not in the graph.')
+        edge.vertex1.edges[edge.vertex2] = edge
+        edge.vertex2.edges[edge.vertex1] = edge
         return edge
 
     def getEdges(self, vertex):
         """
         Return a list of the edges involving the specified `vertex`.
         """
-        return self.edges[vertex]
+        return vertex.edges
 
     def getEdge(self, vertex1, vertex2):
         """
         Returns the edge connecting vertices `vertex1` and `vertex2`.
         """
-        return self.edges[vertex1][vertex2]
+        try:
+            return vertex1.edges[vertex2]
+        except KeyError:
+            raise ValueError('The specified vertices are not connected by an edge in this graph.')
 
     def hasVertex(self, vertex):
         """
@@ -217,7 +238,7 @@ class Graph:
         Returns ``True`` if vertices `vertex1` and `vertex2` are connected
         by an edge, or ``False`` if not.
         """
-        return vertex2 in self.edges[vertex1] if vertex1 in self.edges else False
+        return vertex1 in self.vertices and vertex2 in vertex1.edges
 
     def removeVertex(self, vertex):
         """
@@ -225,21 +246,20 @@ class Graph:
         not remove vertices that no longer have any edges as a result of this
         removal.
         """
-        for vertex2 in self.vertices:
-            if vertex2 is not vertex:
-                if vertex in self.edges[vertex2]:
-                    del self.edges[vertex2][vertex]
-        del self.edges[vertex]
+        cython.declare(vertex2=Vertex)
+        for vertex2 in vertex.edges:
+            del vertex2.edges[vertex]
+        vertex.edges = dict()
         self.vertices.remove(vertex)
 
-    def removeEdge(self, vertex1, vertex2):
+    def removeEdge(self, edge):
         """
         Remove the edge having vertices `vertex1` and `vertex2` from the graph.
         Does not remove vertices that no longer have any edges as a result of
         this removal.
         """
-        del self.edges[vertex1][vertex2]
-        del self.edges[vertex2][vertex1]
+        del edge.vertex1.edges[edge.vertex2]
+        del edge.vertex2.edges[edge.vertex1]
 
     def copy(self, deep=False):
         """
@@ -248,43 +268,50 @@ class Graph:
         If `deep` is ``False`` or not specified, a shallow copy is made: the
         original vertices and edges are used in the new graph.
         """
-        other = cython.declare(Graph)
+        cython.declare(other=Graph)
+        cython.declare(vertex=Vertex, vertex1=Vertex, vertex2=Vertex)
+        cython.declare(edge=Edge)
+        cython.declare(edges=dict)
+        cython.declare(index1=cython.int, index2=cython.int)
+        
         other = Graph()
         for vertex in self.vertices:
-            other.addVertex(vertex.copy() if deep else vertex)
+            if deep:
+                other.addVertex(vertex.copy())
+            else:
+                edges = vertex.edges
+                other.addVertex(vertex)
+                vertex.edges = edges
         for vertex1 in self.vertices:
-            for vertex2 in self.edges[vertex1]:
+            for vertex2 in vertex1.edges:
                 if deep:
                     index1 = self.vertices.index(vertex1)
                     index2 = self.vertices.index(vertex2)
-                    other.addEdge(other.vertices[index1], other.vertices[index2],
-                    self.edges[vertex1][vertex2].copy())
-                else:
-                    other.addEdge(vertex1, vertex2, self.edges[vertex1][vertex2])
+                    edge = vertex1.edges[vertex2].copy()
+                    edge.vertex1 = other.vertices[index1]
+                    edge.vertex2 = other.vertices[index2]
+                    other.addEdge(edge)            
         return other
 
     def merge(self, other):
         """
         Merge two graphs so as to store them in a single Graph object.
         """
-
+        cython.declare(new=Graph)
+        cython.declare(vertex=Vertex, vertex1=Vertex, vertex2=Vertex)
+        
         # Create output graph
-        new = cython.declare(Graph)
         new = Graph()
 
         # Add vertices to output graph
         for vertex in self.vertices:
+            edges = vertex.edges
             new.addVertex(vertex)
+            vertex.edges = edges
         for vertex in other.vertices:
+            edges = vertex.edges
             new.addVertex(vertex)
-
-        # Add edges to output graph
-        for v1 in self.vertices:
-            for v2 in self.edges[v1]:
-                new.edges[v1][v2] = self.edges[v1][v2]
-        for v1 in other.vertices:
-            for v2 in other.edges[v1]:
-                new.edges[v1][v2] = other.edges[v1][v2]
+            vertex.edges = edges
 
         return new
 
@@ -293,13 +320,12 @@ class Graph:
         Convert a single Graph object containing two or more unconnected graphs
         into separate graphs.
         """
-
+        cython.declare(new1=Graph, new2=Graph)
+        cython.declare(vertex=Vertex, vertex1=Vertex, vertex2=Vertex)
+        cython.declare(verticesToMove=list)
+        cython.declare(index=cython.int)
+        
         # Create potential output graphs
-        new1 = cython.declare(Graph)
-        new2 = cython.declare(Graph)
-        verticesToMove = cython.declare(list)
-        index = cython.declare(cython.int)
-
         new1 = self.copy()
         new2 = Graph()
 
@@ -312,30 +338,20 @@ class Graph:
         # Iterate until there are no more atoms to move
         index = 0
         while index < len(verticesToMove):
-            for v2 in self.edges[verticesToMove[index]]:
+            for v2 in verticesToMove[index].edges:
                 if v2 not in verticesToMove:
                     verticesToMove.append(v2)
             index += 1
-
+        
         # If all atoms are to be moved, simply return new1
         if len(new1.vertices) == len(verticesToMove):
             return [new1]
 
-        # Copy to new graph
+        # Copy to new graph and remove from old graph
         for vertex in verticesToMove:
-            new2.addVertex(vertex)
-        for v1 in verticesToMove:
-            for v2, edge in new1.edges[v1].iteritems():
-                new2.edges[v1][v2] = edge
-
-        # Remove from old graph
-        for v1 in new2.vertices:
-            for v2 in new2.edges[v1]:
-                if v1 in verticesToMove and v2 in verticesToMove:
-                    del new1.edges[v1][v2]
-        for vertex in verticesToMove:
-            new1.removeVertex(vertex)
-
+            new2.vertices.append(vertex)
+            new1.vertices.remove(vertex)
+        
         new = [new2]
         new.extend(new1.split())
         return new
@@ -353,22 +369,19 @@ class Graph:
         Update the connectivity values for each vertex in the graph. These are
         used to accelerate the isomorphism checking.
         """
-
-        cython.declare(count=cython.short, edges=dict)
         cython.declare(vertex1=Vertex, vertex2=Vertex)
-
+        cython.declare(count=cython.short)
+        
         for vertex1 in self.vertices:
-            count = len(self.edges[vertex1])
+            count = len(vertex1.edges)
             vertex1.connectivity1 = count
         for vertex1 in self.vertices:
             count = 0
-            edges = self.edges[vertex1]
-            for vertex2 in edges: count += vertex2.connectivity1
+            for vertex2 in vertex1.edges: count += vertex2.connectivity1
             vertex1.connectivity2 = count
         for vertex1 in self.vertices:
             count = 0
-            edges = self.edges[vertex1]
-            for vertex2 in edges: count += vertex2.connectivity2
+            for vertex2 in vertex1.edges: count += vertex2.connectivity2
             vertex1.connectivity3 = count
         
     def sortVertices(self):
@@ -422,9 +435,10 @@ class Graph:
 
     def isCyclic(self):
         """
-        Return :data:`True` if one or more cycles are present in the structure
-        and :data:`False` otherwise.
+        Return ``True`` if one or more cycles are present in the graph or
+        ``False`` otherwise.
         """
+        cython.declare(vertex=Vertex)
         for vertex in self.vertices:
             if self.isVertexInCycle(vertex):
                 return True
@@ -432,46 +446,46 @@ class Graph:
 
     def isVertexInCycle(self, vertex):
         """
-        Return :data:`True` if `vertex` is in one or more cycles in the graph,
-        or :data:`False` if not.
+        Return ``True`` if the given `vertex` is contained in one or more
+        cycles in the graph, or ``False`` if not.
         """
-        chain = cython.declare(list)
-        chain = [vertex]
-        return self.__isChainInCycle(chain)
+        return self.__isChainInCycle([vertex])
 
-    def isEdgeInCycle(self, vertex1, vertex2):
+    def isEdgeInCycle(self, edge):
         """
         Return :data:`True` if the edge between vertices `vertex1` and `vertex2`
         is in one or more cycles in the graph, or :data:`False` if not.
         """
-        cycle_list = self.getAllCycles(vertex1)
-        for cycle in cycle_list:
-            if vertex2 in cycle:
+        cython.declare(cycles=list)
+        cycles = self.getAllCycles(edge.vertex1)
+        for cycle in cycles:
+            if edge.vertex2 in cycle:
                 return True
         return False
 
     def __isChainInCycle(self, chain):
         """
-        Is the `chain` in a cycle?
-        Returns True/False.
-        Recursively calls itself
+        Return ``True`` if the given `chain` of vertices is contained in one
+        or more cycles or ``False`` otherwise. This function recursively calls
+        itself.
         """
-        # Note that this function no longer returns the cycle; just True/False
-        vertex2 = cython.declare(Vertex)
-        edge = cython.declare(Edge)
-        found = cython.declare(cython.bint)
+        cython.declare(vertex1=Vertex, vertex2=Vertex)
+        cython.declare(edge=Edge)
 
-        for vertex2, edge in self.edges[chain[-1]].iteritems():
+        vertex1 = chain[-1]
+        for vertex2 in vertex1.edges:
             if vertex2 is chain[0] and len(chain) > 2:
                 return True
             elif vertex2 not in chain:
-                # make the chain a little longer and explore again
+                # Make the chain a little longer and explore again
                 chain.append(vertex2)
-                found = self.__isChainInCycle(chain)
-                if found: return True
-                # didn't find a cycle down this path (-vertex2),
-                # so remove the vertex from the chain
-                chain.remove(vertex2)
+                if self.__isChainInCycle(chain):
+                    # We found a cycle, so the return value must be True
+                    return True
+                else:
+                    # We did not find a cycle down this path, so remove the vertex from the chain
+                    chain.remove(vertex2)
+        # If we reach this point then we did not find any cycles involving this chain
         return False
 
     def getAllCycles(self, startingVertex):
@@ -479,49 +493,31 @@ class Graph:
         Given a starting vertex, returns a list of all the cycles containing
         that vertex.
         """
-        chain = cython.declare(list)
-        cycleList = cython.declare(list)
+        return self.__exploreCyclesRecursively([startingVertex], [])
 
-        cycleList=list()
-        chain = [startingVertex]
-
-        #chainLabels=range(len(self.keys()))
-        #print "Starting at %s in graph: %s"%(self.keys().index(startingVertex),chainLabels)
-
-        cycleList = self.__exploreCyclesRecursively(chain, cycleList)
-        return cycleList
-
-    def __exploreCyclesRecursively(self, chain, cycleList):
+    def __exploreCyclesRecursively(self, chain, cycles):
         """
-        Finds cycles by spidering through a graph.
-        Give it a chain of atoms that are connected, `chain`,
-        and a list of cycles found so far `cycleList`.
-        If `chain` is a cycle, it is appended to `cycleList`.
-        Then chain is expanded by one atom (in each available direction)
-        and the function is called again. This recursively spiders outwards
-        from the starting chain, finding all the cycles.
+        Search the graph for cycles by recursive spidering. Given a `chain`
+        (list) of connected atoms and a list of `cycles` found so far, find any
+        cycles involving the chain of atoms and append them to the list of
+        cycles. This function recursively calls itself.
         """
-        vertex2 = cython.declare(Vertex)
-        edge = cython.declare(Edge)
+        cython.declare(vertex1=Vertex, vertex2=Vertex)
 
-        # chainLabels = cython.declare(list)
-        # chainLabels=[self.keys().index(v) for v in chain]
-        # print "found %d so far. Chain=%s"%(len(cycleList),chainLabels)
-
-        for vertex2, edge in self.edges[chain[-1]].iteritems():
-            # vertex2 will loop through each of the atoms
-            # that are bonded to the last atom in the chain.
+        vertex1 = chain[-1]
+        # Loop over each of the atoms neighboring the last atom in the chain
+        for vertex2 in vertex1.edges:
             if vertex2 is chain[0] and len(chain) > 2:
-                # it is the first atom in the chain - so the chain IS a cycle!
-                cycleList.append(chain[:])
+                # It is the first atom in the chain, so the chain is a cycle!
+                cycles.append(chain[:])
             elif vertex2 not in chain:
-                # make the chain a little longer and explore again
+                # Make the chain a little longer and explore again
                 chain.append(vertex2)
-                cycleList = self.__exploreCyclesRecursively(chain, cycleList)
-                # any cycles down this path (-vertex2) have now been found,
-                # so remove the vertex from the chain
+                cycles = self.__exploreCyclesRecursively(chain, cycles)
+                # Any cycles down this path have now been found, so remove vertex2 from the chain
                 chain.pop(-1)
-        return cycleList
+        # At this point we should have discovered all of the cycles involving the current chain
+        return cycles
 
     def getSmallestSetOfSmallestRings(self):
         """
@@ -534,27 +530,21 @@ class Graph:
         from a Connection Table." *J. Chem. Inf. Comput. Sci.* **33**,
         p. 657-662 (1993).
         """
-
-        graph = cython.declare(Graph)
-        done = cython.declare(cython.bint)
-        verticesToRemove = cython.declare(list)
-        cycleList = cython.declare(list)
-        cycles = cython.declare(list)
-        vertex = cython.declare(Vertex)
-        rootVertex = cython.declare(Vertex)
-        found = cython.declare(cython.bint)
-        cycle = cython.declare(list)
-        graphs = cython.declare(list)
+        cython.declare(graph=Graph)
+        cython.declare(done=cython.bint, found=cython.bint)
+        cython.declare(cycleList=list, cycles=list, cycle=list, graphs=list, neighbors=list)
+        cython.declare(verticesToRemove=list)
+        cython.declare(vertex=Vertex, rootVertex=Vertex)
 
         # Make a copy of the graph so we don't modify the original
-        graph = self.copy()
+        graph = self.copy(deep=True)
         
         # Step 1: Remove all terminal vertices
         done = False
         while not done:
             verticesToRemove = []
-            for vertex1, value in graph.edges.iteritems():
-                if len(value) == 1: verticesToRemove.append(vertex1)
+            for vertex in graph.vertices:
+                if len(vertex.edges) == 1: verticesToRemove.append(vertex)
             done = len(verticesToRemove) == 0
             # Remove identified vertices from graph
             for vertex in verticesToRemove:
@@ -570,8 +560,6 @@ class Graph:
         for vertex in verticesToRemove:
             graph.removeVertex(vertex)
 
-        ### also need to remove EDGES that are not in ring
-
         # Step 3: Split graph into remaining subgraphs
         graphs = graph.split()
 
@@ -586,22 +574,15 @@ class Graph:
                 for vertex in graph.vertices:
                     if rootVertex is None:
                         rootVertex = vertex
-                    elif len(graph.edges[vertex]) < len(graph.edges[rootVertex]):
+                    elif len(vertex.edges) < len(rootVertex.edges):
                         rootVertex = vertex
 
                 # Get all cycles involving the root vertex
                 cycles = graph.getAllCycles(rootVertex)
                 if len(cycles) == 0:
-                    # this vertex is no longer in a ring.
-                    # remove all its edges
-                    neighbours = graph.edges[rootVertex].keys()[:]
-                    for vertex2 in neighbours:
-                        graph.removeEdge(rootVertex, vertex2)
-                    # then remove it
+                    # This vertex is no longer in a ring, so remove it
                     graph.removeVertex(rootVertex)
-                    #print("Removed vertex that's no longer in ring")
-                    continue # (pick a new root Vertex)
-#                   raise Exception('Did not find expected cycle!')
+                    continue
 
                 # Keep the smallest of the cycles found above
                 cycle = cycles[0]
@@ -613,13 +594,13 @@ class Graph:
                 # Remove from the graph all vertices in the cycle that have only two edges
                 verticesToRemove = []
                 for vertex in cycle:
-                    if len(graph.edges[vertex]) <= 2:
+                    if len(vertex.edges) <= 2:
                         verticesToRemove.append(vertex)
                 if len(verticesToRemove) == 0:
                     # there are no vertices in this cycle that with only two edges
-
                     # Remove edge between root vertex and any one vertex it is connected to
-                    graph.removeEdge(rootVertex, graph.edges[rootVertex].keys()[0])
+                    vertex = rootVertex.edges.keys()[0]
+                    graph.removeEdge(rootVertex.edges[vertex])
                 else:
                     for vertex in verticesToRemove:
                         graph.removeVertex(vertex)
@@ -632,17 +613,21 @@ class Graph:
         is valid by checking that the vertices and edges involved in the
         mapping are mutually equivalent.
         """
-        #cython.declare(vertex1=Vertex, vertex2=Vertex, vertices1=cython.list, vertices2=cython.list)
-        #cython.declare(i=cython.int, j=cython.int)
+        cython.declare(vertex1=Vertex, vertex2=Vertex)
+        cython.declare(vertices1=list, vertices2=list)
+        cython.declare(selfHasEdge=cython.bint, otherHasEdge=cython.bint)
+        cython.declare(i=cython.int, j=cython.int)
+        
         # Check that the mapped pairs of vertices are equivalent
-        for vertex1, vertex2 in mapping.iteritems():
+        for vertex1, vertex2 in mapping.items():
             if not vertex1.equivalent(vertex2):
                 return False
+        
         # Check that any edges connected mapped vertices are equivalent
         vertices1 = mapping.keys()
         vertices2 = mapping.values()
-        for i in range(len(mapping)):
-            for j in range(i+1, len(mapping)):
+        for i in range(len(vertices1)):
+            for j in range(i+1, len(vertices1)):
                 selfHasEdge = self.hasEdge(vertices1[i], vertices1[j])
                 otherHasEdge = other.hasEdge(vertices2[i], vertices2[j])
                 if selfHasEdge and otherHasEdge:
@@ -654,6 +639,7 @@ class Graph:
                 elif selfHasEdge or otherHasEdge:
                     # Only one of the graphs has the edge, so the mapping must be invalid
                     return False
+        
         # If we're here then the vertices and edges are equivalent, so the
         # mapping is valid
         return True

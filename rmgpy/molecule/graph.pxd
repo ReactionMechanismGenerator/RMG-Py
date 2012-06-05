@@ -26,6 +26,8 @@
 
 cdef class Vertex(object):
 
+    cdef readonly dict edges
+
     cdef public short connectivity1
     cdef public short connectivity2
     cdef public short connectivity3
@@ -45,32 +47,37 @@ cpdef short getVertexSortingLabel(Vertex vertex) except -1 # all values should b
 
 cdef class Edge(object):
 
-    cpdef bint equivalent(Edge self, Edge other)
+    cdef readonly Vertex vertex1, vertex2
+    
+    cpdef Edge copy(self)
 
-    cpdef bint isSpecificCaseOf(self, Edge other)
+    cpdef bint equivalent(Edge self, Edge other) except -2
+
+    cpdef bint isSpecificCaseOf(self, Edge other) except -2
+
+    cpdef Vertex getOtherVertex(self, Vertex vertex)
 
 ################################################################################
 
 cdef class Graph:
 
     cdef public list vertices
-    cdef public dict edges
 
     cpdef Vertex addVertex(self, Vertex vertex)
 
-    cpdef Edge addEdge(self, Vertex vertex1, Vertex vertex2, Edge edge)
+    cpdef Edge addEdge(self, Edge edge)
 
     cpdef dict getEdges(self, Vertex vertex)
 
     cpdef Edge getEdge(self, Vertex vertex1, Vertex vertex2)
 
-    cpdef bint hasVertex(self, Vertex vertex)
+    cpdef bint hasVertex(self, Vertex vertex) except -2
 
-    cpdef bint hasEdge(self, Vertex vertex1, Vertex vertex2)
+    cpdef bint hasEdge(self, Vertex vertex1, Vertex vertex2) except -2
 
     cpdef removeVertex(self, Vertex vertex)
 
-    cpdef removeEdge(self, Vertex vertex1, Vertex vertex2)
+    cpdef removeEdge(self, Edge edge)
 
     cpdef Graph copy(self, bint deep=?)
 
