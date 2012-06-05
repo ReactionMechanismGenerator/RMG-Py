@@ -3,8 +3,8 @@
 
 import unittest
 
-from rmgpy.group import *
-from rmgpy.atomtype import atomTypes
+from rmgpy.molecule.group import *
+from rmgpy.molecule.atomtype import atomTypes
 
 ################################################################################
 

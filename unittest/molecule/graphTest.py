@@ -3,7 +3,7 @@
 
 import unittest
 
-from rmgpy.graph import *
+from rmgpy.molecule.graph import *
 
 ################################################################################
 

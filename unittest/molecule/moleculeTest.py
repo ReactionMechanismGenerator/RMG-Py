@@ -3,9 +3,9 @@
 
 import unittest
 
-from rmgpy.molecule import *
-from rmgpy.group import Group
-from rmgpy.element import getElement, elementList
+from rmgpy.molecule.molecule import *
+from rmgpy.molecule.group import Group
+from rmgpy.molecule.element import getElement, elementList
 
 ################################################################################
 
