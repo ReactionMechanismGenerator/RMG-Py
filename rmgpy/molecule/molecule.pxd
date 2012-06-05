@@ -36,7 +36,6 @@ cdef class Atom(Vertex):
     cdef public Element element
     cdef public short radicalElectrons
     cdef public short spinMultiplicity
-    cdef public short implicitHydrogens
     cdef public short charge
     cdef public str label
     cdef public AtomType atomType
@@ -106,10 +105,6 @@ cdef class Molecule(Graph):
 
     cpdef deleteHydrogens(self)
 
-    cpdef makeHydrogensImplicit(self)
-
-    cpdef makeHydrogensExplicit(self)
-
     cpdef clearLabeledAtoms(self)
 
     cpdef bint containsLabeledAtom(self, str label)
@@ -118,9 +113,9 @@ cdef class Molecule(Graph):
 
     cpdef dict getLabeledAtoms(self)
 
-    cpdef bint isIsomorphic(self, Graph other0, dict initialMap=?)
+    cpdef bint isIsomorphic(self, Graph other, dict initialMap=?)
 
-    cpdef tuple findIsomorphism(self, Graph other0, dict initialMap=?)
+    cpdef tuple findIsomorphism(self, Graph other, dict initialMap=?)
 
     cpdef bint isSubgraphIsomorphic(self, Graph other, dict initialMap=?)
 
@@ -132,13 +127,13 @@ cdef class Molecule(Graph):
 
     cpdef draw(self, str path)
 
-    cpdef fromCML(self, str cmlstr, bint implicitH=?)
+    cpdef fromCML(self, str cmlstr)
 
-    cpdef fromInChI(self, str inchistr, bint implicitH=?)
+    cpdef fromInChI(self, str inchistr)
 
-    cpdef fromSMILES(self, str smilesstr, bint implicitH=?)
+    cpdef fromSMILES(self, str smilesstr)
 
-    cpdef fromOBMol(self, obmol, bint implicitH=?)
+    cpdef fromOBMol(self, obmol)
 
     cpdef fromAdjacencyList(self, str adjlist)
 

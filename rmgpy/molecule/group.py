@@ -70,8 +70,7 @@ class GroupAtom(Vertex):
     group if it matches *any* item in the list. However, the
     `radicalElectrons`, `spinMultiplicity`, and `charge` attributes are linked
     such that an atom must match values from the same index in each of these in
-    order to match. Unlike an :class:`Atom` object, an :class:`GroupAtom`
-    cannot store implicit hydrogen atoms.
+    order to match.
     """
 
     def __init__(self, atomType=None, radicalElectrons=None, spinMultiplicity=None, charge=None, label=''):
@@ -763,7 +762,7 @@ def fromAdjacencyList(adjlist, group=False, addH=False):
             if group:
                 atom = GroupAtom(atomType, radicalElectrons, spinMultiplicity, [0 for e in radicalElectrons], label)
             else:
-                atom = Atom(atomType[0], radicalElectrons[0], spinMultiplicity[0], 0, 0, label)
+                atom = Atom(atomType[0], radicalElectrons[0], spinMultiplicity[0], 0, label)
 
             # Add the atom to the list
             atoms.append(atom)
@@ -835,7 +834,7 @@ def fromAdjacencyList(adjlist, group=False, addH=False):
                     order += orders[bond.order]
                 count = valence - radical - int(order)
                 for i in range(count):
-                    a = Atom('H', 0, 1, 0, 0, '')
+                    a = Atom('H', 0, 1, 0, '')
                     b = Bond('S')
                     newAtoms.append(a)
                     bonds[atom][a] = b

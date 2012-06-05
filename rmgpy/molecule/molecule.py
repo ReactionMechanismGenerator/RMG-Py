@@ -56,7 +56,6 @@ class Atom(Vertex):
     `element`           :class:`Element`    The chemical element the atom represents
     `radicalElectrons`  ``short``           The number of radical electrons
     `spinMultiplicity`  ``short``           The spin multiplicity of the atom
-    `implicitHydrogens` ``short``           The number of implicit hydrogen atoms bonded to this atom
     `charge`            ``short``           The formal charge of the atom
     `label`             ``str``             A string label that can be used to tag individual atoms
     =================== =================== ====================================
@@ -66,7 +65,7 @@ class Atom(Vertex):
     e.g. ``atom.symbol`` instead of ``atom.element.symbol``.
     """
 
-    def __init__(self, element=None, radicalElectrons=0, spinMultiplicity=1, implicitHydrogens=0, charge=0, label=''):
+    def __init__(self, element=None, radicalElectrons=0, spinMultiplicity=1, charge=0, label=''):
         Vertex.__init__(self)
         if isinstance(element, str):
             self.element = elements.__dict__[element]
@@ -74,7 +73,6 @@ class Atom(Vertex):
             self.element = element
         self.radicalElectrons = radicalElectrons
         self.spinMultiplicity = spinMultiplicity
-        self.implicitHydrogens = implicitHydrogens
         self.charge = charge
         self.label = label
         self.atomType = None
@@ -93,7 +91,7 @@ class Atom(Vertex):
         """
         Return a representation that can be used to reconstruct the object.
         """
-        return 'Atom(element="{0}", radicalElectrons={1}, spinMultiplicity={2}, implicitHydrogens={3}, charge={4}, label="{5}")'.format(self.element, self.radicalElectrons, self.spinMultiplicity, self.implicitHydrogens, self.charge, self.label)
+        return 'Atom(element="{0}", radicalElectrons={1}, spinMultiplicity={2}, charge={3}, label="{4}")'.format(self.element, self.radicalElectrons, self.spinMultiplicity, self.charge, self.label)
 
     def __reduce__(self):
         """
@@ -106,7 +104,7 @@ class Atom(Vertex):
             'sortingLabel': self.sortingLabel,
             'atomType': self.atomType.label if self.atomType else None,
         }
-        return (Atom, (self.element.symbol, self.radicalElectrons, self.spinMultiplicity, self.implicitHydrogens, self.charge, self.label), d)
+        return (Atom, (self.element.symbol, self.radicalElectrons, self.spinMultiplicity, self.charge, self.label), d)
 
     def __setstate__(self, d):
         """
@@ -141,7 +139,6 @@ class Atom(Vertex):
             return (self.element is atom.element and
                 self.radicalElectrons == atom.radicalElectrons and
                 self.spinMultiplicity == atom.spinMultiplicity and
-                self.implicitHydrogens == atom.implicitHydrogens and
                 self.charge == atom.charge)
         elif isinstance(other, GroupAtom):
             cython.declare(a=AtomType, radical=cython.short, spin=cython.short, charge=cython.short)
@@ -192,7 +189,7 @@ class Atom(Vertex):
         Generate a deep copy of the current atom. Modifying the
         attributes of the copy will not affect the original.
         """
-        a = Atom(self.element, self.radicalElectrons, self.spinMultiplicity, self.implicitHydrogens, self.charge, self.label)
+        a = Atom(self.element, self.radicalElectrons, self.spinMultiplicity, self.charge, self.label)
         a.atomType = self.atomType
         return a
 
@@ -439,7 +436,6 @@ class Molecule(Graph):
     ======================= =========== ========================================
     Attribute               Type        Description
     ======================= =========== ========================================
-    `implicitHydrogens`     ``bool``    ``True`` if the hydrogen atoms are stored implicitly, ``False`` if stored explicity
     `symmetryNumber`        ``int``     The (estimated) external + internal symmetry number of the molecule
     ======================= =========== ========================================
 
@@ -447,12 +443,11 @@ class Molecule(Graph):
     `InChI` string representing the molecular structure.
     """
 
-    def __init__(self, atoms=None, bonds=None, implicitH=False, symmetry=1, SMILES='', InChI=''):
+    def __init__(self, atoms=None, bonds=None, symmetry=1, SMILES='', InChI=''):
         Graph.__init__(self, atoms, bonds)
-        self.implicitHydrogens = implicitH
         self.symmetryNumber = symmetry
-        if SMILES != '': self.fromSMILES(SMILES, implicitH)
-        elif InChI != '': self.fromInChI(InChI, implicitH)
+        if SMILES != '': self.fromSMILES(SMILES)
+        elif InChI != '': self.fromInChI(InChI)
     
     def __str__(self):
         """
@@ -470,7 +465,7 @@ class Molecule(Graph):
         """
         A helper function used when pickling an object.
         """
-        return (Molecule, (self.vertices, self.edges, self.implicitHydrogens, self.symmetryNumber))
+        return (Molecule, (self.vertices, self.edges, self.symmetryNumber))
 
     def __getAtoms(self): return self.vertices
     def __setAtoms(self, atoms): self.vertices = atoms
@@ -558,7 +553,6 @@ class Molecule(Graph):
         H = elements.getElement('H')
         for atom in self.vertices:
             mass += atom.element.mass
-            mass += atom.implicitHydrogens * H.mass
         return mass
 
     def copy(self, deep=False):
@@ -596,10 +590,8 @@ class Molecule(Graph):
 
     def deleteHydrogens(self):
         """
-        Irreversibly delete all non-labeled hydrogens, without incrementing
-        the "implicitHydrogens" count of the neighbouring atom, or updating
-        Connectivity Values or the implicitHydrogens flag. If there's nothing
-        but Hydrogens, it does nothing.
+        Irreversibly delete all non-labeled hydrogens without updating
+        connectivity values. If there's nothing but hydrogens, it does nothing.
         It destroys information; be careful with it.
         """
         cython.declare(atom=Atom, neighbor=Atom, hydrogens=list)
@@ -618,86 +610,6 @@ class Molecule(Graph):
         # Remove the hydrogen atoms from the structure
         for atom in hydrogens:
             self.removeAtom(atom)
-
-
-    def makeHydrogensImplicit(self):
-        """
-        Convert all explicitly stored hydrogen atoms to be stored implicitly,
-        unless they are labeled atoms (then they remain explicit).
-        An implicit hydrogen atom is stored on the heavy atom it is connected
-        to as a single integer counter. This is done to save memory.
-        """
-
-        cython.declare(atom=Atom, neighbor=Atom, hydrogens=list)
-
-        # Check that the structure contains at least one heavy atom
-        for atom in self.vertices:
-            if not atom.isHydrogen():
-                break
-        else:
-            # No heavy atoms, so leave explicit
-            return
-        
-        # Count the hydrogen atoms on each non-hydrogen atom and set the
-        # `implicitHydrogens` attribute accordingly
-        hydrogens = []
-        for atom in self.vertices:
-            if atom.isHydrogen() and atom.label == '':
-                neighbor = self.edges[atom].keys()[0]
-                neighbor.implicitHydrogens += 1
-                hydrogens.append(atom)
-
-        # Remove the hydrogen atoms from the structure
-        for atom in hydrogens:
-            self.removeAtom(atom)
-        
-        # The connectivity values are different in implicit and explicit mode,
-        # so reset them so they are recomputed when needed
-        if hydrogens:
-            self.resetConnectivityValues()
-
-        # Set implicitHydrogens flag to True
-        self.implicitHydrogens = True
-
-    def makeHydrogensExplicit(self):
-        """
-        Convert all implicitly stored hydrogen atoms to be stored explicitly.
-        An explicit hydrogen atom is stored as its own atom in the graph, with
-        a single bond to the heavy atom it is attached to. This consumes more
-        memory, but may be required for certain tasks (e.g. subgraph matching).
-        """
-
-        cython.declare(atom=Atom, H=Atom, bond=Bond, hydrogens=list, numAtoms=cython.short)
-
-        # Create new hydrogen atoms for each implicit hydrogen
-        hydrogens = []
-        for atom in self.vertices:
-            while atom.implicitHydrogens > 0:
-                H = Atom(element='H')
-                bond = Bond(order='S')
-                hydrogens.append((H, atom, bond))
-                atom.implicitHydrogens -= 1
-
-        # Add the hydrogens to the graph
-        numAtoms = len(self.vertices)
-        for H, atom, bond in hydrogens:
-            self.addAtom(H)
-            self.addBond(H, atom, bond)
-            H.atomType = getAtomType(H, {atom:bond})
-            # If known, set the connectivity information
-            H.connectivity1 = 1
-            H.connectivity2 = atom.connectivity1
-            H.connectivity3 = atom.connectivity2
-            H.sortingLabel = numAtoms
-            numAtoms += 1
-
-        # The connectivity values are different in implicit and explicit mode,
-        # so reset them so they are recomputed when needed
-        if hydrogens:
-            self.resetConnectivityValues()
-
-        # Set implicitHydrogens flag to False
-        self.implicitHydrogens = False
 
     def updateAtomTypes(self):
         """
@@ -748,7 +660,7 @@ class Molecule(Graph):
                     labeled[atom.label] = atom
         return labeled
 
-    def isIsomorphic(self, other0, initialMap=None):
+    def isIsomorphic(self, other, initialMap=None):
         """
         Returns :data:`True` if two graphs are isomorphic and :data:`False`
         otherwise. The `initialMap` attribute can be used to specify a required
@@ -756,27 +668,15 @@ class Molecule(Graph):
         while the atoms of `other` are the values). The `other` parameter must
         be a :class:`Molecule` object, or a :class:`TypeError` is raised.
         """
-        cython.declare(other=Molecule, selfImplicitH=cython.bint, otherImplicitH=cython.bint)
         # It only makes sense to compare a Molecule to a Molecule for full
         # isomorphism, so raise an exception if this is not what was requested
-        if not isinstance(other0, Molecule):
-            raise TypeError('Got a {0} object for parameter "other0", when a Molecule object is required.'.format(other0.__class__))
-        other = other0
-        # Ensure that both self and other have the same implicit hydrogen status
-        # If not, make them both explicit just to be safe
-        selfImplicitH = self.implicitHydrogens
-        otherImplicitH = other.implicitHydrogens
-        if not selfImplicitH or not otherImplicitH:
-            self.makeHydrogensExplicit()
-            other.makeHydrogensExplicit()
+        if not isinstance(other, Molecule):
+            raise TypeError('Got a {0} object for parameter "other", when a Molecule object is required.'.format(other.__class__))
         # Do the isomorphism comparison
         result = Graph.isIsomorphic(self, other, initialMap)
-        # Restore implicit status if needed
-        if selfImplicitH and not self.implicitHydrogens: self.makeHydrogensImplicit()
-        if otherImplicitH and not other.implicitHydrogens: other.makeHydrogensImplicit()
         return result
 
-    def findIsomorphism(self, other0, initialMap=None):
+    def findIsomorphism(self, other, initialMap=None):
         """
         Returns :data:`True` if `other` is isomorphic and :data:`False`
         otherwise, and the matching mapping. The `initialMap` attribute can be
@@ -786,24 +686,12 @@ class Molecule(Graph):
         and the atoms of `other` for the values. The `other` parameter must
         be a :class:`Molecule` object, or a :class:`TypeError` is raised.
         """
-        cython.declare(other=Molecule, selfImplicitH=cython.bint, otherImplicitH=cython.bint)
         # It only makes sense to compare a Molecule to a Molecule for full
         # isomorphism, so raise an exception if this is not what was requested
-        if not isinstance(other0, Molecule):
-            raise TypeError('Got a {0} object for parameter "other0", when a Molecule object is required.'.format(other0.__class__))
-        other = other0
-        # Ensure that both self and other have the same implicit hydrogen status
-        # If not, make them both explicit just to be safe
-        selfImplicitH = self.implicitHydrogens
-        otherImplicitH = other.implicitHydrogens
-        if not selfImplicitH or not otherImplicitH:
-            self.makeHydrogensExplicit()
-            other.makeHydrogensExplicit()
+        if not isinstance(other, Molecule):
+            raise TypeError('Got a {0} object for parameter "other", when a Molecule object is required.'.format(other.__class__))
         # Do the isomorphism comparison
         result = Graph.findIsomorphism(self, other, initialMap)
-        # Restore implicit status if needed
-        if selfImplicitH and not self.implicitHydrogens: self.makeHydrogensImplicit()
-        if otherImplicitH and not other.implicitHydrogens: other.makeHydrogensImplicit()
         return result
 
     def isSubgraphIsomorphic(self, other, initialMap=None):
@@ -818,13 +706,8 @@ class Molecule(Graph):
         # isomorphism, so raise an exception if this is not what was requested
         if not isinstance(other, Group):
             raise TypeError('Got a {0} object for parameter "other", when a Molecule object is required.'.format(other.__class__))
-        # Ensure that self is explicit (assume other is explicit)
-        implicitH = self.implicitHydrogens
-        if implicitH: self.makeHydrogensExplicit()
         # Do the isomorphism comparison
         result = Graph.isSubgraphIsomorphic(self, other, initialMap)
-        # Restore implicit status if needed
-        if implicitH and not self.implicitHydrogens: self.makeHydrogensImplicit()
         return result
 
     def findSubgraphIsomorphisms(self, other, initialMap=None):
@@ -842,13 +725,8 @@ class Molecule(Graph):
         # isomorphism, so raise an exception if this is not what was requested
         if not isinstance(other, Group):
             raise TypeError('Got a {0} object for parameter "other", when a Molecule object is required.'.format(other.__class__))
-        # Ensure that self is explicit (assume other is explicit)
-        implicitH = self.implicitHydrogens
-        if implicitH: self.makeHydrogensExplicit()
         # Do the isomorphism comparison
         result = Graph.findSubgraphIsomorphisms(self, other, initialMap)
-        # Restore implicit status if needed
-        if implicitH and not self.implicitHydrogens: self.makeHydrogensImplicit()
         return result
 
     def isAtomInCycle(self, atom):
@@ -889,7 +767,7 @@ class Molecule(Graph):
         return png
         
 
-    def fromCML(self, cmlstr, implicitH=False):
+    def fromCML(self, cmlstr):
         """
         Convert a string of CML `cmlstr` to a molecular structure. Uses
         `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
@@ -897,10 +775,10 @@ class Molecule(Graph):
         import pybel
         cmlstr = cmlstr.replace('\t', '')
         mol = pybel.readstring('cml', cmlstr)
-        self.fromOBMol(mol.OBMol, implicitH)
+        self.fromOBMol(mol.OBMol)
         return self
 
-    def fromInChI(self, inchistr, implicitH=False):
+    def fromInChI(self, inchistr):
         """
         Convert an InChI string `inchistr` to a molecular structure. Uses
         `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
@@ -910,10 +788,10 @@ class Molecule(Graph):
             return self.fromAdjacencyList('1 H 1')
         import pybel
         mol = pybel.readstring('inchi', inchistr)
-        self.fromOBMol(mol.OBMol, implicitH)
+        self.fromOBMol(mol.OBMol)
         return self
 
-    def fromSMILES(self, smilesstr, implicitH=False):
+    def fromSMILES(self, smilesstr):
         """
         Convert a SMILES string `smilesstr` to a molecular structure. Uses
         `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
@@ -923,10 +801,10 @@ class Molecule(Graph):
             return self.fromAdjacencyList('1 H 1')
         import pybel
         mol = pybel.readstring('smiles', smilesstr)
-        self.fromOBMol(mol.OBMol, implicitH)
+        self.fromOBMol(mol.OBMol)
         return self
 
-    def fromOBMol(self, obmol, implicitH=False):
+    def fromOBMol(self, obmol):
         """
         Convert an OpenBabel OBMol object `obmol` to a molecular structure. Uses
         `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
@@ -969,7 +847,7 @@ class Molecule(Graph):
             # Process charge
             charge = obatom.GetFormalCharge()
 
-            atom = Atom(element, radicalElectrons, spinMultiplicity, 0, charge)
+            atom = Atom(element, radicalElectrons, spinMultiplicity, charge)
             self.vertices.append(atom)
             self.edges[atom] = {}
             
@@ -996,9 +874,6 @@ class Molecule(Graph):
         self.updateConnectivityValues()
         self.updateAtomTypes()
 
-        # Make hydrogens implicit to conserve memory
-        if implicitH: self.makeHydrogensImplicit()
-
         return self
 
     def fromAdjacencyList(self, adjlist):
@@ -1010,7 +885,6 @@ class Molecule(Graph):
         self.vertices, self.edges = fromAdjacencyList(adjlist, False, True)
         self.updateConnectivityValues()
         self.updateAtomTypes()
-        self.makeHydrogensImplicit()
         return self
 
     def toCML(self):
@@ -1098,13 +972,8 @@ class Molecule(Graph):
 
         import openbabel
         
-        cython.declare(implicitH=cython.bint)
         cython.declare(atom=Atom, atom1=Atom, bonds=dict, atom2=Atom, bond=Bond)
         cython.declare(index1=cython.int, index2=cython.int, order=cython.int)
-
-        # Make hydrogens explicit while we perform the conversion
-        implicitH = self.implicitHydrogens
-        self.makeHydrogensExplicit()
 
         # Sort the atoms before converting to ensure output is consistent
         # between different runs
@@ -1129,19 +998,13 @@ class Molecule(Graph):
 
         obmol.AssignSpinMultiplicity(True)
 
-        # Restore implicit hydrogens if necessary
-        if implicitH: self.makeHydrogensImplicit()
-
         return obmol
 
     def toAdjacencyList(self, label='', removeH=False):
         """
         Convert the molecular structure to a string adjacency list.
         """
-        implicitH = self.implicitHydrogens
-        self.makeHydrogensExplicit()
         result = toAdjacencyList(self, label=label, group=False, removeH=removeH)
-        if implicitH: self.makeHydrogensImplicit()
         return result
 
     def isLinear(self):
@@ -1150,7 +1013,7 @@ class Molecule(Graph):
         otherwise.
         """
 
-        atomCount = len(self.vertices) + sum([atom.implicitHydrogens for atom in self.vertices])
+        atomCount = len(self.vertices)
 
         # Monatomic molecules are definitely nonlinear
         if atomCount == 1:
@@ -1165,15 +1028,12 @@ class Molecule(Graph):
         # True if all bonds are double bonds (e.g. O=C=O)
         allDoubleBonds = True
         for atom1 in self.edges:
-            if atom1.implicitHydrogens > 0: allDoubleBonds = False
             for bond in self.edges[atom1].values():
                 if not bond.isDouble(): allDoubleBonds = False
         if allDoubleBonds: return True
 
         # True if alternating single-triple bonds (e.g. H-C#C-H)
         # This test requires explicit hydrogen atoms
-        implicitH = self.implicitHydrogens
-        self.makeHydrogensExplicit()
         for atom in self.vertices:
             bonds = self.edges[atom].values()
             if len(bonds)==1:
@@ -1187,11 +1047,9 @@ class Molecule(Graph):
             break # fail if we haven't continued
         else:
             # didn't fail
-            if implicitH: self.makeHydrogensImplicit()
             return True
         
         # not returned yet? must be nonlinear
-        if implicitH: self.makeHydrogensImplicit()
         return False
 
     def countInternalRotors(self):
@@ -1204,7 +1062,7 @@ class Molecule(Graph):
         for atom1 in self.edges:
             for atom2, bond in self.edges[atom1].iteritems():
                 if self.vertices.index(atom1) < self.vertices.index(atom2) and bond.isSingle() and not self.isBondInCycle(atom1, atom2):
-                    if len(self.edges[atom1]) + atom1.implicitHydrogens > 1 and len(self.edges[atom2]) + atom2.implicitHydrogens > 1:
+                    if len(self.edges[atom1]) > 1 and len(self.edges[atom2]) > 1:
                         count += 1
         return count
 
@@ -1221,9 +1079,6 @@ class Molecule(Graph):
         """
         Generate and return all of the resonance isomers of this molecule.
         """
-
-        implicitH = self.implicitHydrogens
-        self.makeHydrogensExplicit()
         
         isomers = [self]
 
@@ -1244,10 +1099,6 @@ class Molecule(Graph):
                         isomers.append(newIsomer)
                 # Move to next resonance isomer
                 index += 1
-
-        if implicitH:
-            for isomer in isomers:
-                isomer.makeHydrogensImplicit()
         
         return isomers
 

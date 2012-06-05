@@ -394,9 +394,6 @@ def calculateSymmetryNumber(molecule):
     """
     symmetryNumber = 1
 
-    implicitH = molecule.implicitHydrogens
-    molecule.makeHydrogensExplicit()
-
     for atom in molecule.vertices:
         if not molecule.isAtomInCycle(atom):
             symmetryNumber *= calculateAtomSymmetryNumber(molecule, atom)
@@ -410,7 +407,5 @@ def calculateSymmetryNumber(molecule):
 
     #if molecule.isCyclic():
     #   symmetryNumber *= calculateCyclicSymmetryNumber(molecule)
-
-    if implicitH: molecule.makeHydrogensImplicit()
 
     return symmetryNumber

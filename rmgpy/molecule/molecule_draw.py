@@ -1138,7 +1138,7 @@ def drawMolecule(molecule, path=None, surface=''):
     # We will delete them from the *copied* list of atoms, and store them here:
     implicitHydrogensToDraw = {}
     for atom in molecule.atoms:
-        implicitHydrogensToDraw[atom] = atom.implicitHydrogens
+        implicitHydrogensToDraw[atom] = 0
 
     atoms = molecule.atoms[:]
     # bonds = molecule.bonds.copy() is too shallow for a dict-of-dicts,

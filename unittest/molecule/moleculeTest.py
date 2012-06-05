@@ -18,7 +18,7 @@ class TestAtom(unittest.TestCase):
         """
         A method called before each unit test in this class.
         """
-        self.atom = Atom(element=getElement('C'), radicalElectrons=1, spinMultiplicity=2, implicitHydrogens=3, charge=0, label='*1')
+        self.atom = Atom(element=getElement('C'), radicalElectrons=1, spinMultiplicity=2, charge=0, label='*1')
     
     def testMass(self):
         """
@@ -43,7 +43,7 @@ class TestAtom(unittest.TestCase):
         Test the Atom.isHydrogen() method.
         """
         for element in elementList:
-            atom = Atom(element=element, radicalElectrons=1, spinMultiplicity=2, implicitHydrogens=0, charge=0, label='*1')
+            atom = Atom(element=element, radicalElectrons=1, spinMultiplicity=2, charge=0, label='*1')
             if element.symbol == 'H':
                 self.assertTrue(atom.isHydrogen())
             else:
@@ -54,7 +54,7 @@ class TestAtom(unittest.TestCase):
         Test the Atom.isNonHydrogen() method.
         """
         for element in elementList:
-            atom = Atom(element=element, radicalElectrons=1, spinMultiplicity=2, implicitHydrogens=0, charge=0, label='*1')
+            atom = Atom(element=element, radicalElectrons=1, spinMultiplicity=2, charge=0, label='*1')
             if element.symbol == 'H':
                 self.assertFalse(atom.isNonHydrogen())
             else:
@@ -65,7 +65,7 @@ class TestAtom(unittest.TestCase):
         Test the Atom.isCarbon() method.
         """
         for element in elementList:
-            atom = Atom(element=element, radicalElectrons=1, spinMultiplicity=2, implicitHydrogens=0, charge=0, label='*1')
+            atom = Atom(element=element, radicalElectrons=1, spinMultiplicity=2, charge=0, label='*1')
             if element.symbol == 'C':
                 self.assertTrue(atom.isCarbon())
             else:
@@ -76,7 +76,7 @@ class TestAtom(unittest.TestCase):
         Test the Atom.isOxygen() method.
         """
         for element in elementList:
-            atom = Atom(element=element, radicalElectrons=1, spinMultiplicity=2, implicitHydrogens=0, charge=0, label='*1')
+            atom = Atom(element=element, radicalElectrons=1, spinMultiplicity=2, charge=0, label='*1')
             if element.symbol == 'O':
                 self.assertTrue(atom.isOxygen())
             else:
@@ -108,13 +108,12 @@ class TestAtom(unittest.TestCase):
         """
         action = ['BREAK_BOND', '*1', 'S', '*2']
         for element in elementList:
-            atom0 = Atom(element=element, radicalElectrons=1, spinMultiplicity=2, implicitHydrogens=3, charge=0, label='*1')
+            atom0 = Atom(element=element, radicalElectrons=1, spinMultiplicity=2, charge=0, label='*1')
             atom = atom0.copy()
             atom.applyAction(action)
             self.assertEqual(atom0.element, atom.element)
             self.assertEqual(atom0.radicalElectrons, atom.radicalElectrons)
             self.assertEqual(atom0.spinMultiplicity, atom.spinMultiplicity)
-            self.assertEqual(atom0.implicitHydrogens, atom.implicitHydrogens)
             self.assertEqual(atom0.charge, atom.charge)
             self.assertEqual(atom0.label, atom.label)
     
@@ -124,13 +123,12 @@ class TestAtom(unittest.TestCase):
         """
         action = ['FORM_BOND', '*1', 'S', '*2']
         for element in elementList:
-            atom0 = Atom(element=element, radicalElectrons=1, spinMultiplicity=2, implicitHydrogens=3, charge=0, label='*1')
+            atom0 = Atom(element=element, radicalElectrons=1, spinMultiplicity=2, charge=0, label='*1')
             atom = atom0.copy()
             atom.applyAction(action)
             self.assertEqual(atom0.element, atom.element)
             self.assertEqual(atom0.radicalElectrons, atom.radicalElectrons)
             self.assertEqual(atom0.spinMultiplicity, atom.spinMultiplicity)
-            self.assertEqual(atom0.implicitHydrogens, atom.implicitHydrogens)
             self.assertEqual(atom0.charge, atom.charge)
             self.assertEqual(atom0.label, atom.label)
     
@@ -140,13 +138,12 @@ class TestAtom(unittest.TestCase):
         """
         action = ['CHANGE_BOND', '*1', 1, '*2']
         for element in elementList:
-            atom0 = Atom(element=element, radicalElectrons=1, spinMultiplicity=2, implicitHydrogens=3, charge=0, label='*1')
+            atom0 = Atom(element=element, radicalElectrons=1, spinMultiplicity=2, charge=0, label='*1')
             atom = atom0.copy()
             atom.applyAction(action)
             self.assertEqual(atom0.element, atom.element)
             self.assertEqual(atom0.radicalElectrons, atom.radicalElectrons)
             self.assertEqual(atom0.spinMultiplicity, atom.spinMultiplicity)
-            self.assertEqual(atom0.implicitHydrogens, atom.implicitHydrogens)
             self.assertEqual(atom0.charge, atom.charge)
             self.assertEqual(atom0.label, atom.label)
     
@@ -156,13 +153,12 @@ class TestAtom(unittest.TestCase):
         """
         action = ['CHANGE_BOND', '*1', -1, '*2']
         for element in elementList:
-            atom0 = Atom(element=element, radicalElectrons=1, spinMultiplicity=2, implicitHydrogens=3, charge=0, label='*1')
+            atom0 = Atom(element=element, radicalElectrons=1, spinMultiplicity=2, charge=0, label='*1')
             atom = atom0.copy()
             atom.applyAction(action)
             self.assertEqual(atom0.element, atom.element)
             self.assertEqual(atom0.radicalElectrons, atom.radicalElectrons)
             self.assertEqual(atom0.spinMultiplicity, atom.spinMultiplicity)
-            self.assertEqual(atom0.implicitHydrogens, atom.implicitHydrogens)
             self.assertEqual(atom0.charge, atom.charge)
             self.assertEqual(atom0.label, atom.label)
     
@@ -172,13 +168,12 @@ class TestAtom(unittest.TestCase):
         """
         action = ['GAIN_RADICAL', '*1', 1]
         for element in elementList:
-            atom0 = Atom(element=element, radicalElectrons=1, spinMultiplicity=2, implicitHydrogens=3, charge=0, label='*1')
+            atom0 = Atom(element=element, radicalElectrons=1, spinMultiplicity=2, charge=0, label='*1')
             atom = atom0.copy()
             atom.applyAction(action)
             self.assertEqual(atom0.element, atom.element)
             self.assertEqual(atom0.radicalElectrons, atom.radicalElectrons - 1)
             self.assertEqual(atom0.spinMultiplicity, atom.spinMultiplicity - 1)
-            self.assertEqual(atom0.implicitHydrogens, atom.implicitHydrogens)
             self.assertEqual(atom0.charge, atom.charge)
             self.assertEqual(atom0.label, atom.label)
     
@@ -188,13 +183,12 @@ class TestAtom(unittest.TestCase):
         """
         action = ['LOSE_RADICAL', '*1', 1]
         for element in elementList:
-            atom0 = Atom(element=element, radicalElectrons=1, spinMultiplicity=2, implicitHydrogens=3, charge=0, label='*1')
+            atom0 = Atom(element=element, radicalElectrons=1, spinMultiplicity=2, charge=0, label='*1')
             atom = atom0.copy()
             atom.applyAction(action)
             self.assertEqual(atom0.element, atom.element)
             self.assertEqual(atom0.radicalElectrons, atom.radicalElectrons + 1)
             self.assertEqual(atom0.spinMultiplicity, atom.spinMultiplicity + 1)
-            self.assertEqual(atom0.implicitHydrogens, atom.implicitHydrogens)
             self.assertEqual(atom0.charge, atom.charge)
             self.assertEqual(atom0.label, atom.label)
     
@@ -235,7 +229,6 @@ class TestAtom(unittest.TestCase):
         self.assertEqual(self.atom.atomType, atom.atomType)
         self.assertEqual(self.atom.radicalElectrons, atom.radicalElectrons)
         self.assertEqual(self.atom.spinMultiplicity, atom.spinMultiplicity)
-        self.assertEqual(self.atom.implicitHydrogens, atom.implicitHydrogens)
         self.assertEqual(self.atom.charge, atom.charge)
         self.assertEqual(self.atom.label, atom.label)
     
@@ -250,7 +243,6 @@ class TestAtom(unittest.TestCase):
         self.assertEqual(self.atom.atomType, atom.atomType)
         self.assertEqual(self.atom.radicalElectrons, atom.radicalElectrons)
         self.assertEqual(self.atom.spinMultiplicity, atom.spinMultiplicity)
-        self.assertEqual(self.atom.implicitHydrogens, atom.implicitHydrogens)
         self.assertEqual(self.atom.charge, atom.charge)
         self.assertEqual(self.atom.label, atom.label)
         
@@ -264,7 +256,6 @@ class TestAtom(unittest.TestCase):
         self.assertEqual(self.atom.atomType, atom.atomType)
         self.assertEqual(self.atom.radicalElectrons, atom.radicalElectrons)
         self.assertEqual(self.atom.spinMultiplicity, atom.spinMultiplicity)
-        self.assertEqual(self.atom.implicitHydrogens, atom.implicitHydrogens)
         self.assertEqual(self.atom.charge, atom.charge)
         self.assertEqual(self.atom.label, atom.label)
 
@@ -567,7 +558,7 @@ class TestMolecule(unittest.TestCase):
         """
         Test the Molecule.fromAdjacencyList() method.
         """
-        atom1, atom2, atom3 = self.molecule.atoms
+        atom1, atom2, atom3 = self.molecule.atoms[0:3]
         self.assertTrue(self.molecule.hasBond(atom1,atom2))
         self.assertTrue(self.molecule.hasBond(atom1,atom3))
         self.assertFalse(self.molecule.hasBond(atom2,atom3))
@@ -578,21 +569,18 @@ class TestMolecule(unittest.TestCase):
         self.assertTrue(atom1.element.symbol == 'C')
         self.assertTrue(atom1.radicalElectrons == 1)
         self.assertTrue(atom1.spinMultiplicity == 2)
-        self.assertTrue(atom1.implicitHydrogens == 0)
         self.assertTrue(atom1.charge == 0)
         
         self.assertTrue(atom2.label == '*1')
         self.assertTrue(atom2.element.symbol == 'O')
         self.assertTrue(atom2.radicalElectrons == 0)
         self.assertTrue(atom2.spinMultiplicity == 1)
-        self.assertTrue(atom2.implicitHydrogens == 0)
         self.assertTrue(atom2.charge == 0)
         
         self.assertTrue(atom3.label == '')
         self.assertTrue(atom3.element.symbol == 'C')
         self.assertTrue(atom3.radicalElectrons == 0)
         self.assertTrue(atom3.spinMultiplicity == 1)
-        self.assertTrue(atom3.implicitHydrogens == 3)
         self.assertTrue(atom3.charge == 0)
 
         self.assertTrue(bond12.isDouble())
@@ -663,8 +651,6 @@ class TestMolecule(unittest.TestCase):
         4   H 0 {1,S}
         """)
 
-        molecule.makeHydrogensExplicit()
-
         labeled1 = molecule.getLabeledAtoms().values()[0]
         labeled2 = group.getLabeledAtoms().values()[0]
 
@@ -725,24 +711,6 @@ class TestMolecule(unittest.TestCase):
         6 C 0 {5,S}
         """)
         molecule2 = Molecule().fromSMILES('C=CC=C[CH]C')
-        
-        molecule1.makeHydrogensExplicit()
-        molecule2.makeHydrogensExplicit()
-        self.assertTrue(molecule1.isIsomorphic(molecule2))
-        self.assertTrue(molecule2.isIsomorphic(molecule1))
-        
-        molecule1.makeHydrogensImplicit()
-        molecule2.makeHydrogensImplicit()
-        self.assertTrue(molecule1.isIsomorphic(molecule2))
-        self.assertTrue(molecule2.isIsomorphic(molecule1))
-        
-        molecule1.makeHydrogensExplicit()
-        molecule2.makeHydrogensImplicit()
-        self.assertTrue(molecule1.isIsomorphic(molecule2))
-        self.assertTrue(molecule2.isIsomorphic(molecule1))
-        
-        molecule1.makeHydrogensImplicit()
-        molecule2.makeHydrogensExplicit()
         self.assertTrue(molecule1.isIsomorphic(molecule2))
         self.assertTrue(molecule2.isIsomorphic(molecule1))
 
@@ -784,40 +752,6 @@ class TestMolecule(unittest.TestCase):
                     self.assertTrue(molecule.isBondInCycle(atom1, atom2))
                 else:
                     self.assertFalse(molecule.isBondInCycle(atom1, atom2))
-
-    def testImplicitHydrogens(self):
-        """
-        Test that a molecule can be converted to and from implicit hydrogen
-        mode with no loss of data.
-        """
-        self.assertTrue(self.molecule.implicitHydrogens)
-        self.assertEqual(len(self.molecule.atoms), 3)
-        self.assertEqual(self.molecule.atoms[0].implicitHydrogens, 0)
-        self.assertEqual(self.molecule.atoms[1].implicitHydrogens, 0)
-        self.assertEqual(self.molecule.atoms[2].implicitHydrogens, 3)
-        self.assertEqual(sum([1 for atom in self.molecule.atoms if atom.isHydrogen()]), 0)
-        self.assertEqual(self.molecule.getFormula(), 'C2H3O')
-        self.assertAlmostEqual(self.molecule.getMolecularWeight() * 1000, 43.04, 2)
-        
-        self.molecule.makeHydrogensExplicit()
-        self.assertFalse(self.molecule.implicitHydrogens)
-        self.assertEqual(len(self.molecule.atoms), 6)
-        self.assertEqual(self.molecule.atoms[0].implicitHydrogens, 0)
-        self.assertEqual(self.molecule.atoms[1].implicitHydrogens, 0)
-        self.assertEqual(self.molecule.atoms[2].implicitHydrogens, 0)
-        self.assertEqual(sum([1 for atom in self.molecule.atoms if atom.isHydrogen()]), 3)
-        self.assertEqual(self.molecule.getFormula(), 'C2H3O')
-        self.assertAlmostEqual(self.molecule.getMolecularWeight() * 1000, 43.04, 2)
-        
-        self.molecule.makeHydrogensImplicit()
-        self.assertTrue(self.molecule.implicitHydrogens)
-        self.assertEqual(len(self.molecule.atoms), 3)
-        self.assertEqual(self.molecule.atoms[0].implicitHydrogens, 3)
-        self.assertEqual(self.molecule.atoms[1].implicitHydrogens, 0)
-        self.assertEqual(self.molecule.atoms[2].implicitHydrogens, 0)
-        self.assertEqual(sum([1 for atom in self.molecule.atoms if atom.isHydrogen()]), 0)
-        self.assertEqual(self.molecule.getFormula(), 'C2H3O')
-        self.assertAlmostEqual(self.molecule.getMolecularWeight() * 1000, 43.04, 2)
         
     def testFromSMILESH(self):
         """
