@@ -41,7 +41,7 @@ def calculateAtomSymmetryNumber(molecule, atom):
 
     single = 0; double = 0; triple = 0; benzene = 0
     numNeighbors = 0
-    for bond in molecule.edges[atom].values():
+    for bond in atom.edges.values():
         if bond.isSingle(): single += 1
         elif bond.isDouble(): double += 1
         elif bond.isTriple(): triple += 1
@@ -52,8 +52,9 @@ def calculateAtomSymmetryNumber(molecule, atom):
     if numNeighbors < 2: return symmetryNumber
 
     # Create temporary structures for each functional group attached to atom
-    molecule = molecule.copy()
-    for atom2 in molecule.bonds[atom].keys(): molecule.removeBond(atom, atom2)
+    molecule0 = molecule
+    molecule = molecule0.copy(True)
+    atom = molecule.vertices[molecule0.vertices.index(atom)]
     molecule.removeAtom(atom)
     groups = molecule.split()
 
@@ -108,7 +109,7 @@ def calculateBondSymmetryNumber(molecule, atom1, atom2):
     """
     Return the symmetry number centered at `bond` in the structure.
     """
-    bond = molecule.edges[atom1][atom2]
+    bond = atom1.edges[atom2]
     symmetryNumber = 1
     if bond.isSingle() or bond.isDouble() or bond.isTriple():
         if atom1.equivalent(atom2):
@@ -123,9 +124,14 @@ def calculateBondSymmetryNumber(molecule, atom1, atom2):
             elif len(molecule.vertices) == 2:
                 symmetryNumber = 2
             else:
-                molecule = molecule.copy()
-                molecule.removeBond(atom1, atom2)
-                fragments = molecule.split()
+                molecule.removeBond(bond)
+                structure = molecule.copy(True)
+                molecule.addBond(bond)
+
+                atom1 = structure.atoms[molecule.atoms.index(atom1)]
+                atom2 = structure.atoms[molecule.atoms.index(atom2)]
+                fragments = structure.split()
+                
                 if len(fragments) != 2: return symmetryNumber
 
                 fragment1, fragment2 = fragments
@@ -149,7 +155,8 @@ def calculateBondSymmetryNumber(molecule, atom1, atom2):
                     elif groups1[0].isIsomorphic(groups2[1]) and groups1[1].isIsomorphic(groups2[0]) and groups1[2].isIsomorphic(groups2[2]): symmetryNumber *= 2
                     elif groups1[0].isIsomorphic(groups2[2]) and groups1[1].isIsomorphic(groups2[0]) and groups1[2].isIsomorphic(groups2[1]): symmetryNumber *= 2
                     elif groups1[0].isIsomorphic(groups2[2]) and groups1[1].isIsomorphic(groups2[1]) and groups1[2].isIsomorphic(groups2[0]): symmetryNumber *= 2
-
+                
+                
     return symmetryNumber
 
 ################################################################################
@@ -189,9 +196,9 @@ def calculateAxisSymmetryNumber(molecule):
 
     # List all double bonds in the structure
     doubleBonds = []
-    for atom1 in molecule.edges:
-        for atom2 in molecule.edges[atom1]:
-            if molecule.edges[atom1][atom2].isDouble() and molecule.vertices.index(atom1) < molecule.vertices.index(atom2):
+    for atom1 in molecule.vertices:
+        for atom2 in atom1.edges:
+            if atom1.edges[atom2].isDouble() and molecule.vertices.index(atom1) < molecule.vertices.index(atom2):
                 doubleBonds.append((atom1, atom2))
 
     # Search for adjacent double bonds
@@ -228,7 +235,7 @@ def calculateAxisSymmetryNumber(molecule):
         # Do nothing if axis is in cycle
         found = False
         for atom1, atom2 in bonds:
-           if molecule.isBondInCycle(atom1, atom2): found = True
+           if molecule.isBondInCycle(atom1.edges[atom2]): found = True
         if found: continue
 
         # Find terminal atoms in axis
@@ -241,12 +248,19 @@ def calculateAxisSymmetryNumber(molecule):
         if len(terminalAtoms) != 2: continue
         
         # Remove axis from (copy of) structure
-        structure = molecule.copy()
+        bondlist = []
         for atom1, atom2 in bonds:
-            structure.removeBond(atom1, atom2)
+            bond = atom1.edges[atom2]
+            bondlist.append(bond)
+            molecule.removeBond(bond)
+        structure = molecule.copy(True)
+        terminalAtoms = [structure.vertices[molecule.vertices.index(atom)] for atom in terminalAtoms]
+        for bond in bondlist:
+            molecule.addBond(bond)
+        
         atomsToRemove = []
-        for atom in structure.atoms:
-            if len(structure.bonds[atom]) == 0 and atom not in terminalAtoms: # it's not bonded to anything
+        for atom in structure.vertices:
+            if len(atom.edges) == 0 and atom not in terminalAtoms: # it's not bonded to anything
                 atomsToRemove.append(atom)
         for atom in atomsToRemove: structure.removeAtom(atom)
 
@@ -398,9 +412,9 @@ def calculateSymmetryNumber(molecule):
         if not molecule.isAtomInCycle(atom):
             symmetryNumber *= calculateAtomSymmetryNumber(molecule, atom)
 
-    for atom1 in molecule.edges:
-        for atom2 in molecule.edges[atom1]:
-            if molecule.vertices.index(atom1) < molecule.vertices.index(atom2) and not molecule.isBondInCycle(atom1, atom2):
+    for atom1 in molecule.vertices:
+        for atom2 in atom1.edges:
+            if molecule.vertices.index(atom1) < molecule.vertices.index(atom2) and not molecule.isBondInCycle(atom1.edges[atom2]):
                 symmetryNumber *= calculateBondSymmetryNumber(molecule, atom1, atom2)
 
     symmetryNumber *= calculateAxisSymmetryNumber(molecule)
