@@ -28,14 +28,19 @@ cdef class Vertex(object):
 
     cdef readonly dict edges
 
+    # These attributes are used in the VF2 graph isomorphism algorithm
     cdef public short connectivity1
     cdef public short connectivity2
     cdef public short connectivity3
     cdef public short sortingLabel
+    cdef public bint terminal
+    cdef public Vertex mapping
 
-    cpdef bint equivalent(self, Vertex other)
+    cpdef Vertex copy(self)
 
-    cpdef bint isSpecificCaseOf(self, Vertex other)
+    cpdef bint equivalent(self, Vertex other) except -2
+
+    cpdef bint isSpecificCaseOf(self, Vertex other) except -2
 
     cpdef resetConnectivityValues(self)
 
@@ -91,21 +96,21 @@ cdef class Graph:
 
     cpdef sortVertices(self)
 
-    cpdef bint isIsomorphic(self, Graph other, dict initialMap=?)
+    cpdef bint isIsomorphic(self, Graph other, dict initialMap=?) except -2
 
-    cpdef tuple findIsomorphism(self, Graph other, dict initialMap=?)
+    cpdef list findIsomorphism(self, Graph other, dict initialMap=?)
 
-    cpdef bint isSubgraphIsomorphic(self, Graph other, dict initialMap=?)
+    cpdef bint isSubgraphIsomorphic(self, Graph other, dict initialMap=?) except -2
 
-    cpdef tuple findSubgraphIsomorphisms(self, Graph other, dict initialMap=?)
+    cpdef list findSubgraphIsomorphisms(self, Graph other, dict initialMap=?)
 
-    cpdef bint isCyclic(self)
+    cpdef bint isCyclic(self) except -2
 
-    cpdef bint isVertexInCycle(self, Vertex vertex)
+    cpdef bint isVertexInCycle(self, Vertex vertex) except -2
 
-    cpdef bint isEdgeInCycle(self, Vertex vertex1, Vertex vertex2)
+    cpdef bint isEdgeInCycle(self, Edge edge) except -2
 
-    cpdef bint __isChainInCycle(self, list chain)
+    cpdef bint __isChainInCycle(self, list chain) except -2
 
     cpdef getAllCycles(self, Vertex startingVertex)
 
@@ -113,22 +118,16 @@ cdef class Graph:
 
     cpdef getSmallestSetOfSmallestRings(self)
     
-    cpdef bint isMappingValid(self, Graph other, dict mapping)
+    cpdef bint isMappingValid(self, Graph other, dict mapping) except -2
 
 ################################################################################
 
-cpdef VF2_isomorphism(Graph graph1, Graph graph2, bint subgraph=?, 
-    bint findAll=?, dict initialMap=?)
+cdef VF2_isomorphism(Graph graph1, Graph graph2, bint subgraph=?, bint findAll=?, dict initialMapping=?)
 
-cpdef bint __VF2_feasible(Graph graph1, Graph graph2, Vertex vertex1,
-    Vertex vertex2, dict map21, dict map12, list terminals1, list terminals2,
-    bint subgraph) except -2 # bint should be 0 or 1
+cpdef bint VF2_feasible(Graph graph1, Graph graph2, Vertex vertex1, Vertex vertex2, bint subgraph) except -2
 
-cpdef bint __VF2_match(Graph graph1, Graph graph2, dict map21, dict map12,
-    list terminals1, list terminals2, bint subgraph, bint findAll,
-    list map21List, list map12List, int call_depth) except -2 # bint should be 0 or 1
+cpdef bint VF2_match(Graph graph1, Graph graph2, bint subgraph, bint findAll, list mappingList, int callDepth) except -2
 
-cpdef list __VF2_terminals(Graph graph, dict mapping)
+cpdef VF2_addToMapping(Vertex vertex1, Vertex vertex2)
 
-cpdef list __VF2_updateTerminals(Graph graph, dict mapping, list old_terminals,
-    Vertex new_vertex)
+cpdef VF2_removeFromMapping(Vertex vertex1, Vertex vertex2)
