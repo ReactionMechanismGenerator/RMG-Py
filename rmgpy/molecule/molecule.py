@@ -39,9 +39,9 @@ import cython
 import os
 import re
 import element as elements
-from graph import Vertex, Edge, Graph
-from group import GroupAtom, GroupBond, Group, ActionError, fromAdjacencyList, toAdjacencyList
-from atomtype import AtomType, atomTypes, getAtomType
+from .graph import Vertex, Edge, Graph
+from .group import GroupAtom, GroupBond, Group, ActionError, fromAdjacencyList, toAdjacencyList
+from .atomtype import AtomType, atomTypes, getAtomType
 
 ################################################################################
 

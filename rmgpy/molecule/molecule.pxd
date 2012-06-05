@@ -24,10 +24,10 @@
 #
 ################################################################################
 
-from graph cimport Vertex, Edge, Graph
-from atomtype cimport AtomType
-from group cimport GroupAtom, GroupBond, Group
-from element cimport Element
+from .graph cimport Vertex, Edge, Graph
+from .atomtype cimport AtomType
+from .group cimport GroupAtom, GroupBond, Group
+from .element cimport Element
 
 ################################################################################
 

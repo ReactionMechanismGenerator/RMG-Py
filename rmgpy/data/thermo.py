@@ -43,8 +43,7 @@ from base import Database, Entry, makeLogicNode
 
 from rmgpy.quantity import constants
 from rmgpy.thermo import *
-from rmgpy.molecule import Molecule, Atom, Bond
-from rmgpy.group import Group
+from rmgpy.molecule import Molecule, Atom, Bond, Group
 
 ################################################################################
 

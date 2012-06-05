@@ -35,8 +35,8 @@ reaction sites).
 
 import cython
 
-from graph import Vertex, Edge, Graph
-from atomtype import atomTypes
+from .graph import Vertex, Edge, Graph
+from .atomtype import atomTypes
 
 ################################################################################
 

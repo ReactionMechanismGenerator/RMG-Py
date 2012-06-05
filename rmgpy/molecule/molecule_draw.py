@@ -92,7 +92,6 @@ import re
 import logging
 
 from numpy.linalg import LinAlgError
-from rmgpy.molecule import *
 
 ################################################################################
 
@@ -1238,6 +1237,8 @@ def drawMolecule(molecule, path=None, surface=''):
 ################################################################################
 
 if __name__ == '__main__':
+
+    from rmgpy.molecule.molecule import Molecule
 
     molecule = Molecule()
 
