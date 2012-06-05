@@ -63,6 +63,7 @@ def getMainExtensionModules():
         Extension('rmgpy.molecule.graph', ['rmgpy/molecule/graph.py'], include_dirs=['.']),
         Extension('rmgpy.molecule.group', ['rmgpy/molecule/group.py'], include_dirs=['.']),
         Extension('rmgpy.molecule.molecule', ['rmgpy/molecule/molecule.py'], include_dirs=['.']),
+        Extension('rmgpy.molecule.symmetry', ['rmgpy/molecule/symmetry.py'], include_dirs=['.']),
         # Miscellaneous
         Extension('rmgpy.kinetics', ['rmgpy/kinetics.py'], include_dirs=['.']),
         Extension('rmgpy.quantity', ['rmgpy/quantity.py'], include_dirs=['.']),
