@@ -81,23 +81,24 @@ class Atom(Vertex):
         """
         Return a human-readable string representation of the object.
         """
-        return "<Atom '{0}'>".format(
-            str(self.element) +
-            '.' * self.radicalElectrons +
-            '+' * self.charge if self.charge > 0 else '-' * -self.charge
+        return '{0}{1}{2}'.format(
+            str(self.element),
+            '.' * self.radicalElectrons,
+            '+' * self.charge if self.charge > 0 else '-' * -self.charge,
         )
 
     def __repr__(self):
         """
         Return a representation that can be used to reconstruct the object.
         """
-        return 'Atom(element="{0}", radicalElectrons={1}, spinMultiplicity={2}, charge={3}, label="{4}")'.format(self.element, self.radicalElectrons, self.spinMultiplicity, self.charge, self.label)
+        return "<Atom '{0}'>".format(str(self))
 
     def __reduce__(self):
         """
         A helper function used when pickling an object.
         """
         d = {
+            'edges': self.edges,
             'connectivity1': self.connectivity1,
             'connectivity2': self.connectivity2,
             'connectivity3': self.connectivity3,
@@ -110,6 +111,7 @@ class Atom(Vertex):
         """
         A helper function used when unpickling an object.
         """
+        self.edges = d['edges']
         self.connectivity1 = d['connectivity1']
         self.connectivity2 = d['connectivity2']
         self.connectivity3 = d['connectivity3']
@@ -124,6 +126,9 @@ class Atom(Vertex):
 
     @property
     def symbol(self): return self.element.symbol
+
+    @property
+    def bonds(self): return self.edges
 
     def equivalent(self, other):
         """
@@ -289,27 +294,35 @@ class Bond(Edge):
 
     """
 
-    def __init__(self, order=1):
-        Edge.__init__(self)
+    def __init__(self, atom1, atom2, order=1):
+        Edge.__init__(self, atom1, atom2)
         self.order = order
 
     def __str__(self):
         """
         Return a human-readable string representation of the object.
         """
-        return '<Bond "{0}">'.format(self.order)
+        return self.order
 
     def __repr__(self):
         """
         Return a representation that can be used to reconstruct the object.
         """
-        return 'Bond(order="{0}")'.format(self.order)
+        return '<Bond "{0}">'.format(self.order)
 
     def __reduce__(self):
         """
         A helper function used when pickling an object.
         """
-        return (Bond, (self.order,))
+        return (Bond, (self.vertex1, self.vertex2, self.order))
+
+    @property
+    def atom1(self):
+        return self.vertex1
+
+    @property
+    def atom2(self):
+        return self.vertex2
 
     def equivalent(self, other):
         """
@@ -339,7 +352,7 @@ class Bond(Edge):
         Generate a deep copy of the current bond. Modifying the
         attributes of the copy will not affect the original.
         """
-        return Bond(self.order)
+        return Bond(self.vertex1, self.vertex2, self.order)
 
     def isSingle(self):
         """
@@ -443,8 +456,8 @@ class Molecule(Graph):
     `InChI` string representing the molecular structure.
     """
 
-    def __init__(self, atoms=None, bonds=None, symmetry=1, SMILES='', InChI=''):
-        Graph.__init__(self, atoms, bonds)
+    def __init__(self, atoms=None, symmetry=1, SMILES='', InChI=''):
+        Graph.__init__(self, atoms)
         self.symmetryNumber = symmetry
         if SMILES != '': self.fromSMILES(SMILES)
         elif InChI != '': self.fromInChI(InChI)
@@ -465,15 +478,11 @@ class Molecule(Graph):
         """
         A helper function used when pickling an object.
         """
-        return (Molecule, (self.vertices, self.edges, self.symmetryNumber))
+        return (Molecule, (self.vertices, self.symmetryNumber))
 
     def __getAtoms(self): return self.vertices
     def __setAtoms(self, atoms): self.vertices = atoms
     atoms = property(__getAtoms, __setAtoms)
-
-    def __getBonds(self): return self.edges
-    def __setBonds(self, bonds): self.edges = bonds
-    bonds = property(__getBonds, __setBonds)
 
     def addAtom(self, atom):
         """
@@ -481,12 +490,12 @@ class Molecule(Graph):
         """
         return self.addVertex(atom)
     
-    def addBond(self, atom1, atom2, bond):
+    def addBond(self, bond):
         """
         Add a `bond` to the graph as an edge connecting the two atoms `atom1`
         and `atom2`.
         """
-        return self.addEdge(atom1, atom2, bond)
+        return self.addEdge(bond)
 
     def getBonds(self, atom):
         """
@@ -522,13 +531,13 @@ class Molecule(Graph):
         """
         return self.removeVertex(atom)
 
-    def removeBond(self, atom1, atom2):
+    def removeBond(self, bond):
         """
         Remove the bond between atoms `atom1` and `atom2` from the graph.
         Does not remove atoms that no longer have any bonds as a result of
         this removal.
         """
-        return self.removeEdge(atom1, atom2)
+        return self.removeEdge(bond)
 
     def sortAtoms(self):
         """
@@ -564,7 +573,7 @@ class Molecule(Graph):
         """
         other = cython.declare(Molecule)
         g = Graph.copy(self, deep)
-        other = Molecule(g.vertices, g.edges)
+        other = Molecule(g.vertices)
         return other
 
     def merge(self, other):
@@ -573,7 +582,7 @@ class Molecule(Graph):
         object. The merged :class:`Molecule` object is returned.
         """
         g = Graph.merge(self, other)
-        molecule = Molecule(atoms=g.vertices, bonds=g.edges)
+        molecule = Molecule(atoms=g.vertices)
         return molecule
 
     def split(self):
@@ -584,7 +593,7 @@ class Molecule(Graph):
         graphs = Graph.split(self)
         molecules = []
         for g in graphs:
-            molecule = Molecule(atoms=g.vertices, bonds=g.edges)
+            molecule = Molecule(atoms=g.vertices)
             molecules.append(molecule)
         return molecules
 
@@ -605,7 +614,7 @@ class Molecule(Graph):
         hydrogens = []
         for atom in self.vertices:
             if atom.isHydrogen() and atom.label == '':
-                neighbor = self.edges[atom].keys()[0]
+                neighbor = atom.edges.keys()[0]
                 hydrogens.append(atom)
         # Remove the hydrogen atoms from the structure
         for atom in hydrogens:
@@ -618,7 +627,7 @@ class Molecule(Graph):
         environment) and complete (i.e. are as detailed as possible).
         """
         for atom in self.vertices:
-            atom.atomType = getAtomType(atom, self.edges[atom])
+            atom.atomType = getAtomType(atom, atom.edges)
 
     def clearLabeledAtoms(self):
         """
@@ -736,12 +745,12 @@ class Molecule(Graph):
         """
         return self.isVertexInCycle(atom)
 
-    def isBondInCycle(self, atom1, atom2):
+    def isBondInCycle(self, bond):
         """
         Return :data:`True` if the bond between atoms `atom1` and `atom2`
         is in one or more cycles in the graph, or :data:`False` if not.
         """
-        return self.isEdgeInCycle(atom1, atom2)
+        return self.isEdgeInCycle(bond)
 
     def draw(self, path):
         """
@@ -815,7 +824,6 @@ class Molecule(Graph):
         cython.declare(atom=Atom, atom1=Atom, atom2=Atom, bond=Bond)
 
         self.vertices = []
-        self.edges = {}
 
         # Add hydrogen atoms to complete molecule if needed
         obmol.AddHydrogens()
@@ -849,7 +857,6 @@ class Molecule(Graph):
 
             atom = Atom(element, radicalElectrons, spinMultiplicity, charge)
             self.vertices.append(atom)
-            self.edges[atom] = {}
             
             # Add bonds by iterating again through atoms
             for j in range(0, i):
@@ -864,11 +871,8 @@ class Molecule(Graph):
                     elif obbond.IsTriple(): order = 'T'
                     elif obbond.IsAromatic(): order = 'B'
 
-                    bond = Bond(order)
-                    atom1 = self.vertices[i]
-                    atom2 = self.vertices[j]
-                    self.edges[atom1][atom2] = bond
-                    self.edges[atom2][atom1] = bond
+                    bond = Bond(self.vertices[i], self.vertices[j], order)
+                    self.addBond(bond)
 
         # Set atom types and connectivity values
         self.updateConnectivityValues()
@@ -981,7 +985,6 @@ class Molecule(Graph):
         self.sortAtoms()
 
         atoms = self.vertices
-        bonds = self.edges
 
         obmol = openbabel.OBMol()
         for atom in atoms:
@@ -989,8 +992,8 @@ class Molecule(Graph):
             a.SetAtomicNum(atom.number)
             a.SetFormalCharge(atom.charge)
         orders = {'S': 1, 'D': 2, 'T': 3, 'B': 5}
-        for atom1, bonds in bonds.iteritems():
-            for atom2, bond in bonds.iteritems():
+        for atom1 in self.vertices:
+            for atom2, bond in atom1.edges.iteritems():
                 index1 = atoms.index(atom1)
                 index2 = atoms.index(atom2)
                 if index1 < index2:
@@ -1029,15 +1032,15 @@ class Molecule(Graph):
 
         # True if all bonds are double bonds (e.g. O=C=O)
         allDoubleBonds = True
-        for atom1 in self.edges:
-            for bond in self.edges[atom1].values():
+        for atom1 in self.vertices:
+            for bond in atom1.edges.values():
                 if not bond.isDouble(): allDoubleBonds = False
         if allDoubleBonds: return True
 
         # True if alternating single-triple bonds (e.g. H-C#C-H)
         # This test requires explicit hydrogen atoms
         for atom in self.vertices:
-            bonds = self.edges[atom].values()
+            bonds = atom.edges.values()
             if len(bonds)==1:
                 continue # ok, next atom
             if len(bonds)>2:
@@ -1061,10 +1064,10 @@ class Molecule(Graph):
         are considered to be internal rotors.
         """
         count = 0
-        for atom1 in self.edges:
-            for atom2, bond in self.edges[atom1].iteritems():
-                if self.vertices.index(atom1) < self.vertices.index(atom2) and bond.isSingle() and not self.isBondInCycle(atom1, atom2):
-                    if len(self.edges[atom1]) > 1 and len(self.edges[atom2]) > 1:
+        for atom1 in self.vertices:
+            for atom2, bond in atom1.edges.items():
+                if self.vertices.index(atom1) < self.vertices.index(atom2) and bond.isSingle() and not self.isBondInCycle(bond):
+                    if len(atom1.edges) > 1 and len(atom2.edges) > 1:
                         count += 1
         return count
 
@@ -1154,12 +1157,12 @@ class Molecule(Graph):
 
         # Find all delocalization paths
         paths = []
-        for atom2, bond12 in self.edges[atom1].iteritems():
+        for atom2, bond12 in atom1.edges.items():
             # Vinyl bond must be capable of gaining an order
             if bond12.order in ['S', 'D']:
-                for atom3, bond23 in self.getBonds(atom2).iteritems():
+                for atom3, bond23 in atom2.edges.items():
                     # Allyl bond must be capable of losing an order without breaking
-                    if atom1 is not atom3 and bond23.order in ['D', 'T']:
+                    if atom1 is not atom3 and (bond23.order == 'D' or bond23.order == 'T'):
                         paths.append([atom1, atom2, atom3, bond12, bond23])
         return paths
 
