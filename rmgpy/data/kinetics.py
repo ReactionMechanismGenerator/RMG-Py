@@ -2491,8 +2491,6 @@ class KineticsFamily(Database):
         for i in range(len(reactants)):
             for j in range(len(reactants[i])):
                 reactants[i][j] = reactants[i][j].copy(deep=True)
-                # Each molecule must have explicit hydrogen atoms
-                reactants[i][j].makeHydrogensExplicit()
                 
         if forward:
             template = self.forwardTemplate

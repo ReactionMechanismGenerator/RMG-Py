@@ -606,12 +606,7 @@ class ThermoDatabase:
         :class:`Species` object `species` by estimation using the group
         additivity values. If no group additivity values are loaded, a
         :class:`DatabaseError` is raised.
-        """
-        # Ensure molecules are using explicit hydrogens
-        implicitH = [mol.implicitHydrogens for mol in species.molecule]
-        for molecule in species.molecule:
-            molecule.makeHydrogensExplicit()
-        
+        """       
         thermo = []
         for molecule in species.molecule:
             molecule.clearLabeledAtoms()
@@ -623,11 +618,6 @@ class ThermoDatabase:
         indices = H298.argsort()
         
         species.molecule = [species.molecule[ind] for ind in indices]
-        implicitH = [implicitH[ind] for ind in indices]
-        
-        # Restore implicit hydrogens if necessary
-        for implicit, molecule in zip(implicitH, species.molecule):
-            if implicit: molecule.makeHydrogensImplicit()
         
         return (thermo[indices[0]], None, None)
         
@@ -638,9 +628,6 @@ class ThermoDatabase:
         additivity values. If no group additivity values are loaded, a
         :class:`DatabaseError` is raised.
         """
-        implicitH = molecule.implicitHydrogens
-        molecule.makeHydrogensExplicit()
-
         # For thermo estimation we need the atoms to already be sorted because we
         # iterate over them; if the order changes during the iteration then we
         # will probably not visit the right atoms, and so will get the thermo wrong
@@ -766,8 +753,6 @@ class ThermoDatabase:
         # Correct entropy for symmetry number
         molecule.calculateSymmetryNumber()
         thermoData.S298.value -= constants.R * math.log(molecule.symmetryNumber)
-
-        if implicitH: molecule.makeHydrogensImplicit()
 
         return thermoData
 
