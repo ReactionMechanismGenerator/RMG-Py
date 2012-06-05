@@ -40,7 +40,7 @@ import os
 import re
 import element as elements
 from .graph import Vertex, Edge, Graph
-from .group import GroupAtom, GroupBond, Group, ActionError, fromAdjacencyList, toAdjacencyList
+from .group import GroupAtom, GroupBond, Group, ActionError
 from .atomtype import AtomType, atomTypes, getAtomType
         
 ################################################################################
@@ -882,7 +882,8 @@ class Molecule(Graph):
         Skips the first line (assuming it's a label) unless `withLabel` is
         ``False``.
         """
-        self.vertices, self.edges = fromAdjacencyList(adjlist, False, True)
+        from .adjlist import fromAdjacencyList
+        self.vertices = fromAdjacencyList(adjlist, False)
         self.updateConnectivityValues()
         self.updateAtomTypes()
         return self
@@ -1004,7 +1005,8 @@ class Molecule(Graph):
         """
         Convert the molecular structure to a string adjacency list.
         """
-        result = toAdjacencyList(self, label=label, group=False, removeH=removeH)
+        from .adjlist import toAdjacencyList
+        result = toAdjacencyList(self.vertices, label=label, group=False, removeH=removeH)
         return result
 
     def isLinear(self):

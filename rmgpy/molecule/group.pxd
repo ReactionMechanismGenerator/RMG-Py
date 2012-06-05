@@ -113,9 +113,3 @@ cdef class Group(Graph):
     cpdef bint isSubgraphIsomorphic(self, Graph other, dict initialMap=?)
 
     cpdef tuple findSubgraphIsomorphisms(self, Graph other, dict initialMap=?)
-
-################################################################################
-
-cpdef fromAdjacencyList(str adjlist, bint group=?, bint addH=?)
-
-cpdef toAdjacencyList(Graph molecule, str label=?, bint group=?, bint removeH=?)
