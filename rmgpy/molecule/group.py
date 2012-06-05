@@ -88,23 +88,42 @@ class GroupAtom(Vertex):
         """
         A helper function used when pickling an object.
         """
+        d = {
+            'edges': self.edges,
+            'connectivity1': self.connectivity1,
+            'connectivity2': self.connectivity2,
+            'connectivity3': self.connectivity3,
+            'sortingLabel': self.sortingLabel,
+        }
         atomType = self.atomType
         if atomType is not None:
             atomType = [a.label for a in atomType]
-        return (GroupAtom, (atomType, self.radicalElectrons, self.spinMultiplicity, self.charge, self.label))
+        return (GroupAtom, (atomType, self.radicalElectrons, self.spinMultiplicity, self.charge, self.label), d)
+
+    def __setstate__(self, d):
+        """
+        A helper function used when unpickling an object.
+        """
+        self.edges = d['edges']
+        self.connectivity1 = d['connectivity1']
+        self.connectivity2 = d['connectivity2']
+        self.connectivity3 = d['connectivity3']
+        self.sortingLabel = d['sortingLabel']
 
     def __str__(self):
         """
         Return a human-readable string representation of the object.
         """
-        return "<GroupAtom '{0}'>".format(self.atomType)
+        return '[{0}]'.format(','.join([repr(a.label) for a in self.atomType]))
 
     def __repr__(self):
         """
         Return a representation that can be used to reconstruct the object.
         """
-        atomType = ','.join(['"{0}"'.format(a.label) for a in self.atomType])
-        return "GroupAtom(atomType=[{0}], radicalElectrons={1}, spinMultiplicity={2}, charge={3}, label='{4}')".format(atomType, self.radicalElectrons, self.spinMultiplicity, self.charge, self.label)
+        return "<GroupAtom {0!s}>".format(self)
+
+    @property
+    def bonds(self): return self.edges
 
     def copy(self):
         """
@@ -308,34 +327,34 @@ class GroupBond(Edge):
     group if it matches *any* item in the list.
     """
 
-    def __init__(self, order=None):
-        Edge.__init__(self)
+    def __init__(self, atom1, atom2, order=None):
+        Edge.__init__(self, atom1, atom2)
         self.order = order or []
 
     def __str__(self):
         """
         Return a human-readable string representation of the object.
         """
-        return "<GroupBond {0}>".format(self.order)
+        return str(self.order)
 
     def __repr__(self):
         """
         Return a representation that can be used to reconstruct the object.
         """
-        return "GroupBond(order={0})".format(self.order)
+        return "<GroupBond {0!r}>".format(self.order)
 
     def __reduce__(self):
         """
         A helper function used when pickling an object.
         """
-        return (GroupBond, (self.order,))
+        return (GroupBond, (self.vertex1, self.vertex2, self.order))
 
     def copy(self):
         """
         Return a deep copy of the :class:`GroupBond` object. Modifying the
         attributes of the copy will not affect the original.
         """
-        return GroupBond(self.order[:])
+        return GroupBond(self.vertex1, self.vertex2, self.order[:])
 
     def __changeBond(self, order):
         """
@@ -434,23 +453,19 @@ class Group(Graph):
     Corresponding alias methods have also been provided.
     """
 
-    def __init__(self, atoms=None, bonds=None):
-        Graph.__init__(self, atoms, bonds)
+    def __init__(self, atoms=None):
+        Graph.__init__(self, atoms)
         self.updateConnectivityValues()
     
     def __reduce__(self):
         """
         A helper function used when pickling an object.
         """
-        return (Group, (self.vertices, self.edges))
+        return (Group, (self.vertices,))
 
     def __getAtoms(self): return self.vertices
     def __setAtoms(self, atoms): self.vertices = atoms
     atoms = property(__getAtoms, __setAtoms)
-
-    def __getBonds(self): return self.edges
-    def __setBonds(self, bonds): self.edges = bonds
-    bonds = property(__getBonds, __setBonds)
 
     def addAtom(self, atom):
         """
@@ -458,12 +473,12 @@ class Group(Graph):
         """
         return self.addVertex(atom)
 
-    def addBond(self, atom1, atom2, bond):
+    def addBond(self, bond):
         """
         Add a `bond` to the graph as an edge connecting the two atoms `atom1`
         and `atom2`.
         """
-        return self.addEdge(atom1, atom2, bond)
+        return self.addEdge(bond)
 
     def getBonds(self, atom):
         """
@@ -499,13 +514,13 @@ class Group(Graph):
         """
         return self.removeVertex(atom)
 
-    def removeBond(self, atom1, atom2):
+    def removeBond(self, bond):
         """
         Remove the bond between atoms `atom1` and `atom2` from the graph.
         Does not remove atoms that no longer have any bonds as a result of
         this removal.
         """
-        return self.removeEdge(atom1, atom2)
+        return self.removeEdge(bond)
 
     def sortAtoms(self):
         """
@@ -523,7 +538,7 @@ class Group(Graph):
         """
         other = cython.declare(Group)
         g = Graph.copy(self, deep)
-        other = Group(g.vertices, g.edges)
+        other = Group(g.vertices)
         return other
 
     def merge(self, other):
@@ -533,7 +548,7 @@ class Group(Graph):
         object is returned.
         """
         g = Graph.merge(self, other)
-        molecule = Group(atoms=g.vertices, bonds=g.edges)
+        molecule = Group(atoms=g.vertices)
         return molecule
 
     def split(self):
@@ -544,7 +559,7 @@ class Group(Graph):
         graphs = Graph.split(self)
         molecules = []
         for g in graphs:
-            molecule = Group(atoms=g.vertices, bonds=g.edges)
+            molecule = Group(atoms=g.vertices)
             molecules.append(molecule)
         return molecules
 

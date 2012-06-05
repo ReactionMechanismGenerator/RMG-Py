@@ -192,19 +192,6 @@ class TestGroupAtom(unittest.TestCase):
         self.assertEqual(self.atom.spinMultiplicity, atom.spinMultiplicity)
         self.assertEqual(self.atom.charge, atom.charge)
         self.assertEqual(self.atom.label, atom.label)
-        
-    def testOutput(self):
-        """
-        Test that we can reconstruct a GroupAtom object from its repr()
-        output with no loss of information.
-        """
-        exec('atom = {0!r}'.format(self.atom))
-        self.assertEqual(len(self.atom.atomType), len(atom.atomType))
-        self.assertEqual(self.atom.atomType[0].label, atom.atomType[0].label)
-        self.assertEqual(self.atom.radicalElectrons, atom.radicalElectrons)
-        self.assertEqual(self.atom.spinMultiplicity, atom.spinMultiplicity)
-        self.assertEqual(self.atom.charge, atom.charge)
-        self.assertEqual(self.atom.label, atom.label)
 
 ################################################################################
 
@@ -217,7 +204,7 @@ class TestGroupBond(unittest.TestCase):
         """
         A method called before each unit test in this class.
         """
-        self.bond = GroupBond(order=['D'])
+        self.bond = GroupBond(None, None, order=['D'])
         self.orderList = [['S'], ['D'], ['T'], ['B'], ['S','D'], ['D','S'], ['D','T'], ['S','D','T']]
     
     def testApplyActionBreakBond(self):
@@ -226,7 +213,7 @@ class TestGroupBond(unittest.TestCase):
         """
         action = ['BREAK_BOND', '*1', 'S', '*2']
         for order0 in self.orderList:
-            bond0 = GroupBond(order=order0)
+            bond0 = GroupBond(None, None, order=order0)
             bond = bond0.copy()
             try:
                 bond.applyAction(action)
@@ -240,7 +227,7 @@ class TestGroupBond(unittest.TestCase):
         """
         action = ['FORM_BOND', '*1', 'S', '*2']
         for order0 in self.orderList:
-            bond0 = GroupBond(order=order0)
+            bond0 = GroupBond(None, None, order=order0)
             bond = bond0.copy()
             try:
                 bond.applyAction(action)
@@ -254,7 +241,7 @@ class TestGroupBond(unittest.TestCase):
         """
         action = ['CHANGE_BOND', '*1', 1, '*2']
         for order0 in self.orderList:
-            bond0 = GroupBond(order=order0)
+            bond0 = GroupBond(None, None, order=order0)
             bond = bond0.copy()
             try:
                 bond.applyAction(action)
@@ -267,7 +254,7 @@ class TestGroupBond(unittest.TestCase):
         """
         action = ['CHANGE_BOND', '*1', -1, '*2']
         for order0 in self.orderList:
-            bond0 = GroupBond(order=order0)
+            bond0 = GroupBond(None, None, order=order0)
             bond = bond0.copy()
             try:
                 bond.applyAction(action)
@@ -280,7 +267,7 @@ class TestGroupBond(unittest.TestCase):
         """
         action = ['GAIN_RADICAL', '*1', 1]
         for order0 in self.orderList:
-            bond0 = GroupBond(order=order0)
+            bond0 = GroupBond(None, None, order=order0)
             bond = bond0.copy()
             try:
                 bond.applyAction(action)
@@ -294,7 +281,7 @@ class TestGroupBond(unittest.TestCase):
         """
         action = ['LOSE_RADICAL', '*1', 1]
         for order0 in self.orderList:
-            bond0 = GroupBond(order=order0)
+            bond0 = GroupBond(None, None, order=order0)
             bond = bond0.copy()
             try:
                 bond.applyAction(action)
@@ -308,8 +295,8 @@ class TestGroupBond(unittest.TestCase):
         """
         for order1 in self.orderList:
             for order2 in self.orderList:
-                bond1 = GroupBond(order=order1)
-                bond2 = GroupBond(order=order2)
+                bond1 = GroupBond(None, None, order=order1)
+                bond2 = GroupBond(None, None, order=order2)
                 if order1 == order2 or (all([o in order2 for o in order1]) and all([o in order1 for o in order2])):
                     self.assertTrue(bond1.equivalent(bond2))
                     self.assertTrue(bond2.equivalent(bond1))
@@ -323,8 +310,8 @@ class TestGroupBond(unittest.TestCase):
         """
         for order1 in self.orderList:
             for order2 in self.orderList:
-                bond1 = GroupBond(order=order1)
-                bond2 = GroupBond(order=order2)
+                bond1 = GroupBond(None, None, order=order1)
+                bond2 = GroupBond(None, None, order=order2)
                 if order1 == order2 or all([o in order2 for o in order1]):
                     self.assertTrue(bond1.isSpecificCaseOf(bond2))
                 else:
@@ -347,15 +334,6 @@ class TestGroupBond(unittest.TestCase):
         bond = cPickle.loads(cPickle.dumps(self.bond))
         self.assertEqual(len(self.bond.order), len(bond.order))
         self.assertEqual(self.bond.order, bond.order)
-        
-    def testOutput(self):
-        """
-        Test that we can reconstruct a GroupBond object from its repr()
-        output with no loss of information.
-        """
-        exec('bond = {0!r}'.format(self.bond))
-        self.assertEqual(len(self.bond.order), len(bond.order))
-        self.assertEqual(self.bond.order, bond.order)
 
 ################################################################################
 
@@ -366,9 +344,9 @@ class TestGroup(unittest.TestCase):
 
     def setUp(self):
         self.adjlist = """
-1  *2 {Cs,Cd} 0 {2,{S,D}} {3,S}
-2  *1 {Os,Od} 0 {1,{S,D}}
-3     R!H 0 {1,S}
+1 *2 {Cs,Cd} 0 {2,{S,D}} {3,S}
+2 *1 {Os,Od} 0 {1,{S,D}}
+3    R!H     0 {1,S}
             """
         self.group = Group().fromAdjacencyList(self.adjlist)
         
@@ -426,8 +404,8 @@ class TestGroup(unittest.TestCase):
         self.assertTrue(self.group.hasBond(atom1,atom2))
         self.assertTrue(self.group.hasBond(atom1,atom3))
         self.assertFalse(self.group.hasBond(atom2,atom3))
-        bond12 = self.group.bonds[atom1][atom2]
-        bond13 = self.group.bonds[atom1][atom3]
+        bond12 = atom1.bonds[atom2]
+        bond13 = atom1.bonds[atom3]
            
         self.assertTrue(atom1.label == '*2')
         self.assertTrue(atom1.atomType[0].label in ['Cs','Cd'])
@@ -477,18 +455,17 @@ class TestGroup(unittest.TestCase):
             """
         group = Group().fromAdjacencyList(adjlist)
         result = self.group.findIsomorphism(group)
-        self.assertTrue(result[0])
-        self.assertEqual(len(result[1]), 1)
-        for atom1, atom2 in result[1][0].iteritems():
+        self.assertEqual(len(result), 1)
+        for atom1, atom2 in result[0].items():
             self.assertTrue(atom1 in self.group.atoms)
             self.assertTrue(atom2 in group.atoms)
             self.assertTrue(atom1.equivalent(atom2))
-            for atom3 in self.group.bonds[atom1]:
-                atom4 = result[1][0][atom3]
-                self.assertTrue(atom4 in group.bonds[atom2])
+            for atom3 in atom1.bonds:
+                atom4 = result[0][atom3]
+                self.assertTrue(atom4 in atom2.bonds)
                 self.assertTrue(atom3.equivalent(atom4))
-                bond1 = self.group.bonds[atom1][atom3]
-                bond2 = group.bonds[atom2][atom4]
+                bond1 = atom1.bonds[atom3]
+                bond2 = atom2.bonds[atom4]
                 self.assertTrue(bond1.equivalent(bond2))
         
     def testIsSubgraphIsomorphic(self):
@@ -511,9 +488,8 @@ class TestGroup(unittest.TestCase):
             """
         group = Group().fromAdjacencyList(adjlist)
         result = self.group.findSubgraphIsomorphisms(group)
-        self.assertTrue(result[0])
-        self.assertEqual(len(result[1]), 1)
-        for atom1, atom2 in result[1][0].iteritems():
+        self.assertEqual(len(result), 1)
+        for atom1, atom2 in result[0].iteritems():
             self.assertTrue(atom1 in self.group.atoms)
             self.assertTrue(atom2 in group.atoms)
             self.assertTrue(atom1.equivalent(atom2))
