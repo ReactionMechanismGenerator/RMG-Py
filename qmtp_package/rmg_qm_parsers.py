@@ -31,10 +31,8 @@ class QMParser:
         *qmdata
     '''
     
-    def __init__(self, name, directory, molecule, qmtp, environ = os.environ.get("RMG_workingDirectory")):
-        self.name = name
-        self.directory = directory
-        self.molecule = molecule
+    def __init__(self, molfile, qmtp, environ = os.environ.get("RMG_workingDirectory")):
+        self.molfile = molfile
         
         self.environ = environ#working directory
         
@@ -44,13 +42,13 @@ class QMParser:
 
         
     def read(self):
-            self.qmdata = self.parsingTool.parse(self.molecule)    
+            self.qmdata = self.parsingTool.parse(self.molfile.molecule)    
             return self.qmdata
 
     def parse(self) :
         self.read()
         
-        calculator = calc.TDPropertiesCalculator(self.name, self.directory, self.qmdata, environ = self.environ)
+        calculator = calc.TDPropertiesCalculator(self.molfile, self.qmdata, environ = self.environ)
         
         return calculator.calculate()
 
@@ -98,12 +96,12 @@ class CCLibParser:
         return self.qmdata
         
 class MOPACPM3Parser(QMParser):
-    def __init__(self, name, directory, molecule, qmtp, environ = os.environ.get("RMG_workingDirectory")):
-        QMParser.__init__(self, name, directory, molecule, qmtp, environ)
+    def __init__(self, molfile, qmtp, environ = os.environ.get("RMG_workingDirectory")):
+        QMParser.__init__(self, molfile, qmtp, environ)
         
         self.inputFileExtension = ".out"
         
-        path = os.path.join(self.directory,self.name+self.inputFileExtension)
+        path = os.path.join(self.molfile.directory,self.molfile.name+self.inputFileExtension)
         
         self.parsingTool = CCLibParser(path, qmtp)
             
