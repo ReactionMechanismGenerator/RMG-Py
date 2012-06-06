@@ -543,7 +543,7 @@ def findLongestPath(chemGraph, atoms0):
     """
     atom1 = atoms0[-1]
     paths = [atoms0]
-    for atom2 in chemGraph.bonds[atom1]:
+    for atom2 in atom1.bonds:
         if atom2 not in atoms0:
             atoms = atoms0[:]
             atoms.append(atom2)
@@ -588,7 +588,7 @@ def findBackbone(chemGraph, ringSystems):
         # Find the terminal atoms - those that only have one explicit bond
         terminalAtoms = []
         for atom in chemGraph.atoms:
-            if len(chemGraph.bonds[atom]) == 1:
+            if len(atom.bonds) == 1:
                 terminalAtoms.append(atom)
 
         # Starting from each terminal atom, find the longest straight path to
@@ -1132,6 +1132,8 @@ def drawMolecule(molecule, path=None, surface=''):
     except ImportError:
         print 'Cairo not found; molecule will not be drawn.'
         return
+    
+    molecule = molecule.copy(deep=True)
 
     # This algorithm now works with explicit hydrogen atoms on the molecule.
     # Please ensure all the subroutines do also.
@@ -1144,8 +1146,8 @@ def drawMolecule(molecule, path=None, surface=''):
     # bonds = molecule.bonds.copy() is too shallow for a dict-of-dicts,
     # so we loop one level deep and copy the inner dicts.
     bonds = dict()
-    for atom1,atom2dict in molecule.bonds.iteritems():
-        bonds[atom1] = atom2dict.copy()
+    for atom1 in molecule.atoms:
+        bonds[atom1] = atom1.edges.copy()
 
     cycles = molecule.getSmallestSetOfSmallestRings()
 
