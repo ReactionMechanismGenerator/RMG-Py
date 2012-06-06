@@ -22,7 +22,7 @@ The following implementations of QMJob are created:
     
 '''
 
-import subprocess
+from subprocess import Popen, PIPE
 import logging
 import platform
 import os
@@ -110,7 +110,7 @@ class MOPACJob(QMJob):
          
     
     def run(self):
-        process = subprocess.Popen([self.executable, self.command])
+        process = Popen([self.executable, self.command])
         process.communicate()# necessary to wait for executable termination!
 
 
@@ -176,7 +176,7 @@ class SymmetryJob(QMJob):
         return result;
            
      def run(self):
-        pp = subprocess.Popen(self.command)
+        pp = Popen(self.command, stdout=PIPE, stderr=PIPE)
         stdout, stderr = pp.communicate()
         
         return self.check(stdout)    
