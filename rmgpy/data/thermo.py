@@ -646,9 +646,9 @@ class ThermoDatabase:
             for atom in saturatedStruct.atoms:
                 for i in range(atom.radicalElectrons):
                     H = Atom('H')
-                    bond = Bond('S')
+                    bond = Bond(atom, H, 'S')
                     saturatedStruct.addAtom(H)
-                    saturatedStruct.addBond(atom, H, bond)
+                    saturatedStruct.addBond(bond)
                     if atom not in added:
                         added[atom] = []
                     added[atom].append([H, bond])
@@ -675,7 +675,7 @@ class ThermoDatabase:
 
                 # Remove the added hydrogen atoms and bond and restore the radical
                 for H, bond in added[atom]:
-                    saturatedStruct.removeBond(atom, H)
+                    saturatedStruct.removeBond(bond)
                     saturatedStruct.removeAtom(H)
                     atom.incrementRadical()
 
@@ -692,7 +692,7 @@ class ThermoDatabase:
                 # Re-saturate
                 for H, bond in added[atom]:
                     saturatedStruct.addAtom(H)
-                    saturatedStruct.addBond(atom, H, bond)
+                    saturatedStruct.addBond(bond)
                     atom.decrementRadical()
 
                 # Subtract the enthalpy of the added hydrogens
