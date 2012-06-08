@@ -47,7 +47,7 @@ finalPadding = 5                # The number of seconds to display the final flu
 
 ################################################################################
 
-def generateFluxDiagram(reactionModel, times, concentrations, reactionRates, outputDirectory, speciesDirectory=None):
+def generateFluxDiagram(reactionModel, times, concentrations, reactionRates, outputDirectory, speciesDirectory=None, settings = None):
     """
     For a given `reactionModel` and simulation results stored as arrays of
     `times`, species `concentrations`, and `reactionRates`, generate a series
@@ -55,6 +55,14 @@ def generateFluxDiagram(reactionModel, times, concentrations, reactionRates, out
     a movie. The individual frames and the final movie are saved on disk at
     `outputDirectory.`
     """
+    
+    # Allow user defined settings for flux diagram generation if given
+    if settings:
+        maximumNodeCount = settings['maximumNodeCount']       
+        maximumEdgeCount = settings['maximumEdgeCount']  
+        timeStep = settings['timeStep']
+        concentrationTolerance = settings['concentrationTolerance']   
+        speciesRateTolerance = settings['speciesRateTolerance']
     
     # Get the species and reactions corresponding to the provided concentrations and reaction rates
     speciesList = reactionModel.core.species[:]
@@ -469,7 +477,7 @@ def loadRMGPyJob(inputFile, chemkinFile=None, speciesDict=None):
 
 ################################################################################
 
-def createFluxDiagram(savePath, inputFile, chemkinFile, speciesDict, java = False, chemkinOutput = ''):
+def createFluxDiagram(savePath, inputFile, chemkinFile, speciesDict, java = False, settings = None, chemkinOutput = ''):
     """
     Generates the flux diagram based on a condition 'inputFile', chemkin.inp chemkinFile,
     a speciesDict txt file, plus an optional chemkinOutput file.
@@ -492,7 +500,7 @@ def createFluxDiagram(savePath, inputFile, chemkinFile, speciesDict, java = Fals
         time, coreSpeciesConcentrations, coreReactionRates, edgeReactionRates = loadChemkinOutput(chemkinOutput, rmg.reactionModel)
 
         print 'Generating flux diagram for chemkin output...'
-        generateFluxDiagram(rmg.reactionModel, time, coreSpeciesConcentrations, coreReactionRates, os.path.join(savePath, '1'), speciesPath)
+        generateFluxDiagram(rmg.reactionModel, time, coreSpeciesConcentrations, coreReactionRates, os.path.join(savePath, '1'), speciesPath, settings)
 
     else:
         # Generate a flux diagram video for each reaction system
@@ -514,7 +522,8 @@ def createFluxDiagram(savePath, inputFile, chemkinFile, speciesDict, java = Fals
             time, coreSpeciesConcentrations, coreReactionRates, edgeReactionRates = simulate(rmg.reactionModel, reactionSystem)
 
             print 'Generating flux diagram for reaction system {0:d}...'.format(index+1)
-            generateFluxDiagram(rmg.reactionModel, time, coreSpeciesConcentrations, coreReactionRates, os.path.join(savePath, '{0:d}'.format(index+1)), speciesPath)
+            generateFluxDiagram(rmg.reactionModel, time, coreSpeciesConcentrations, coreReactionRates, 
+                                os.path.join(savePath, '{0:d}'.format(index+1)), speciesPath, settings)
 
 ################################################################################
 
