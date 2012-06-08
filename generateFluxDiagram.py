@@ -136,11 +136,12 @@ def generateFluxDiagram(reactionModel, times, concentrations, reactionRates, out
             node.set_label("")
     # Add an edge for each species-species rate
     for reactantIndex, productIndex in edges:
-        reactant = speciesList[reactantIndex]
-        product = speciesList[productIndex]
-        edge = pydot.Edge(reactant.label, product.label)
-        edge.set_penwidth(maximumEdgePenWidth)
-        graph.add_edge(edge) 
+        if reactantIndex in nodes and productIndex in nodes:
+            reactant = speciesList[reactantIndex]
+            product = speciesList[productIndex]
+            edge = pydot.Edge(reactant.label, product.label)
+            edge.set_penwidth(maximumEdgePenWidth)
+            graph.add_edge(edge) 
     
     # Generate the coordinates for all of the nodes using the specified program
     graph = pydot.graph_from_dot_data(graph.create_dot(prog=program))
@@ -164,23 +165,24 @@ def generateFluxDiagram(reactionModel, times, concentrations, reactionRates, out
         slope = -maximumEdgePenWidth / math.log10(speciesRateTolerance)
         for index in range(len(edges)):
             reactantIndex, productIndex = edges[index]
-            reactant = speciesList[reactantIndex]
-            product = speciesList[productIndex]
-            edge = graph.get_edge('"{0}"'.format(reactant.label), '"{0}"'.format(product.label))[0]
-            # Determine direction of arrow based on sign of rate
-            speciesRate = speciesRates[t,reactantIndex,productIndex] / maxSpeciesRate
-            if speciesRate < 0:
-                edge.set_dir("back")
-                speciesRate = -speciesRate
-            else:
-                edge.set_dir("forward")
-            # Set the edge pen width
-            if speciesRate < speciesRateTolerance:
-                penwidth = 0.0
-                edge.set_dir("none")
-            else:
-                penwidth = slope * math.log10(speciesRate) + maximumEdgePenWidth
-            edge.set_penwidth(penwidth)
+            if reactantIndex in nodes and productIndex in nodes:
+                reactant = speciesList[reactantIndex]
+                product = speciesList[productIndex]
+                edge = graph.get_edge('"{0}"'.format(reactant.label), '"{0}"'.format(product.label))[0]
+                # Determine direction of arrow based on sign of rate
+                speciesRate = speciesRates[t,reactantIndex,productIndex] / maxSpeciesRate
+                if speciesRate < 0:
+                    edge.set_dir("back")
+                    speciesRate = -speciesRate
+                else:
+                    edge.set_dir("forward")
+                # Set the edge pen width
+                if speciesRate < speciesRateTolerance:
+                    penwidth = 0.0
+                    edge.set_dir("none")
+                else:
+                    penwidth = slope * math.log10(speciesRate) + maximumEdgePenWidth
+                edge.set_penwidth(penwidth)
         # Save the graph at this time to a dot file and a PNG image
         if times[t] == 0:
             label = 't = 0 s'
@@ -217,11 +219,19 @@ def generateFluxDiagram(reactionModel, times, concentrations, reactionRates, out
     
 ################################################################################
 
-def simulate(reactionModel, reactionSystem):
+def simulate(reactionModel, reactionSystem, settings = None):
     """
     Generate and return a set of core and edge species and reaction fluxes
     by simulating the given `reactionSystem` using the given `reactionModel`.
     """
+    
+    # Allow user defined settings for flux diagram generation if given
+    if settings:
+        maximumNodeCount = settings['maximumNodeCount']       
+        maximumEdgeCount = settings['maximumEdgeCount']  
+        timeStep = settings['timeStep']
+        concentrationTolerance = settings['concentrationTolerance']   
+        speciesRateTolerance = settings['speciesRateTolerance']
     
     coreSpecies = reactionModel.core.species
     coreReactions = reactionModel.core.reactions
@@ -519,7 +529,7 @@ def createFluxDiagram(savePath, inputFile, chemkinFile, speciesDict, java = Fals
                 reactionSystem.termination.append(TerminationTime((1e10,'s')))
 
             print 'Conducting simulation of reaction system {0:d}...'.format(index+1)
-            time, coreSpeciesConcentrations, coreReactionRates, edgeReactionRates = simulate(rmg.reactionModel, reactionSystem)
+            time, coreSpeciesConcentrations, coreReactionRates, edgeReactionRates = simulate(rmg.reactionModel, reactionSystem, settings)
 
             print 'Generating flux diagram for reaction system {0:d}...'.format(index+1)
             generateFluxDiagram(rmg.reactionModel, time, coreSpeciesConcentrations, coreReactionRates, 
