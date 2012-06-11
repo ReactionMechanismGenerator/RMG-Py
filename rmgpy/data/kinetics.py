@@ -2141,7 +2141,8 @@ class KineticsFamily(Database):
             
             # 2 reactants
             else:
-                for action in reaction.family.forwardRecipe.actions:
+                actionList = reaction.family.forwardRecipe.actions
+                for action in actionList:
                     if action[0].lower() == 'form_bond':
                         lbl1 = action[1]
                         lbl2 = action[3]
