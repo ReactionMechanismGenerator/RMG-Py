@@ -186,7 +186,7 @@ class CoreEdgeReactionModel:
     =========================  ==============================================================
     `core`                     The species and reactions of the current model core
     `edge`                     The species and reactions of the current model edge
-    `unirxnNetworks`           A list of unimolecular reaction networks (:class:`unirxn.network.Network` objects)
+    `networkDict`              A list of pressure-dependent reaction networks (:class:`Network` objects)
     `networkCount`             A counter for the number of unirxn networks created
     =========================  ==============================================================
 
@@ -205,7 +205,7 @@ class CoreEdgeReactionModel:
         # The default tolerances mimic the original RMG behavior; no edge
         # pruning takes place, and the simulation is interrupted as soon as
         # a species flux higher than the validity
-        self.unirxnNetworks = []
+        self.networkDict = {}
         self.networkCount = 0
         self.speciesDict = {}
         self.reactionDict = {}
@@ -569,23 +569,24 @@ class CoreEdgeReactionModel:
 
             # If there are any core species among the unimolecular product channels
             # of any existing network, they need to be made included
-            for network in self.unirxnNetworks:
-                network.updateConfigurations(self)
-                index = 0
-                while index < len(self.core.species):
-                    species = self.core.species[index]
-                    if species in network.isomers and species not in network.explored:
-                        network.explored.append(species)
-                        continue
-                    for products in network.products:
-                        if len(products) == 1 and products[0] == species:
-                            newReactions = network.exploreIsomer(species, self, database)
-                            self.processNewReactions(newReactions, species, network)
-                            network.updateConfigurations(self)
-                            index = 0
-                            break
-                    else:
-                        index += 1
+            for source, networks in self.networkDict.items():
+                for network in networks:
+                    network.updateConfigurations(self)
+                    index = 0
+                    while index < len(self.core.species):
+                        species = self.core.species[index]
+                        if species in network.isomers and species not in network.explored:
+                            network.explored.append(species)
+                            continue
+                        for products in network.products:
+                            if len(products) == 1 and products[0] == species:
+                                newReactions = network.exploreIsomer(species, self, database)
+                                self.processNewReactions(newReactions, species, network)
+                                network.updateConfigurations(self)
+                                index = 0
+                                break
+                        else:
+                            index += 1
             
             if isinstance(obj, Species) and objectWasInEdge:
                 # moved one species from edge to core
@@ -873,7 +874,7 @@ class CoreEdgeReactionModel:
 
         numCoreSpecies = len(self.core.species)
         numEdgeSpecies = len(self.edge.species)
-        numPdepNetworks = len(self.unirxnNetworks)
+        numPdepNetworks = self.networkCount
 
         # All edge species that have not existed for more than two enlarge
         # iterations are ineligible for pruning
@@ -890,11 +891,13 @@ class CoreEdgeReactionModel:
                 rate = reactionSystem.maxEdgeSpeciesRates[i]
                 if maxEdgeSpeciesRates[i] < rate:
                     maxEdgeSpeciesRates[i] = rate
-            for i in range(numPdepNetworks):
-                network = self.unirxnNetworks[i]
-                rate = reactionSystem.maxNetworkLeakRates[i]
-                if maxNetworkLeakRates[i] < rate:
-                    maxNetworkLeakRates[i] = rate
+            i = 0
+            for source, networks in self.networkDict.items():
+                for network in networks:
+                    i += 1
+                    rate = reactionSystem.maxNetworkLeakRates[i]
+                    if maxNetworkLeakRates[i] < rate:
+                        maxNetworkLeakRates[i] = rate
 
                 # Add the fraction of the network leak rate contributed by
                 # each unexplored species to that species' rate
@@ -947,7 +950,7 @@ class CoreEdgeReactionModel:
                 logging.info('Deleting {0:d} empty pressure-dependent reaction networks'.format(len(networksToDelete)))
                 for network in networksToDelete:
                     logging.debug('    Deleting empty pressure dependent reaction network #{0:d}'.format(network.index))
-                    self.unirxnNetworks.remove(network)
+                    self.networkDict.remove(network)
 
         logging.info('')
 
@@ -969,25 +972,26 @@ class CoreEdgeReactionModel:
         
         # Remove the species from any unirxn networks it is in
         if self.pressureDependence:
-            for network in self.unirxnNetworks:
-                # Delete all path reactions involving the species
-                rxnList = []
-                for rxn in network.pathReactions:
-                    if spec in rxn.reactants or spec in rxn.products:
-                        rxnList.append(rxn)
-                if len(rxnList) > 0:
-                    for rxn in rxnList:
-                        network.pathReactions.remove(rxn)
-                    # Delete all net reactions involving the species
+            for source, networks in self.networkDict.items():
+                for network in networks:
+                    # Delete all path reactions involving the species
                     rxnList = []
-                    for rxn in network.netReactions:
+                    for rxn in network.pathReactions:
                         if spec in rxn.reactants or spec in rxn.products:
                             rxnList.append(rxn)
-                    for rxn in rxnList:
-                        network.netReactions.remove(rxn)
-                        
-                    # Recompute the isomers, reactants, and products for this network
-                    network.updateConfigurations()
+                    if len(rxnList) > 0:
+                        for rxn in rxnList:
+                            network.pathReactions.remove(rxn)
+                        # Delete all net reactions involving the species
+                        rxnList = []
+                        for rxn in network.netReactions:
+                            if spec in rxn.reactants or spec in rxn.products:
+                                rxnList.append(rxn)
+                        for rxn in rxnList:
+                            network.netReactions.remove(rxn)
+                            
+                        # Recompute the isomers, reactants, and products for this network
+                        network.updateConfigurations()
 
         # Remove from the global list of reactions
         # also remove it from the global list of reactions
@@ -1216,22 +1220,30 @@ class CoreEdgeReactionModel:
             products = newReaction.products[:]
         reactants.sort()
         products.sort()
+        
+        source = tuple(reactants)
 
         # Only search for a network if we don't specify it as a parameter
         if network is None:
             if len(reactants) == 1:
                 # Find the network containing the reactant as the source
-                for n in self.unirxnNetworks:
-                    if reactants == n.source:
-                        assert network is None
-                        network = n
+                try:
+                    networks = self.networkDict[source]
+                    assert len(networks) == 1
+                    network = networks[0]
+                except KeyError:
+                    pass
             elif len(reactants) > 1:
                 # Find the network containing the reactants as the source AND the
                 # product as an explored isomer
-                for n in self.unirxnNetworks:
-                    if reactants == n.source and products[0] in n.explored:
-                        assert network is None
-                        network = n
+                try:
+                    networks = self.networkDict[source]
+                    for n in networks:
+                        if products[0] in n.explored:
+                            assert network is None
+                            network = n
+                except KeyError:
+                    pass
             else:
                 return None
 
@@ -1239,8 +1251,11 @@ class CoreEdgeReactionModel:
             if network is None:
                 self.networkCount += 1
                 network = PDepNetwork(index=self.networkCount, source=reactants[:])
-                self.unirxnNetworks.append(network)
-
+                try:
+                    self.networkDict[source].append(network)
+                except KeyError:
+                    self.networkDict[source] = [network]
+                    
         # Add the path reaction to that network
         network.addPathReaction(newReaction, newSpecies)
         
@@ -1260,36 +1275,40 @@ class CoreEdgeReactionModel:
         # Two partial networks having the same source and containing one or
         # more explored isomers in common must be merged together to avoid
         # double-counting of rates
-        networkCount = len(self.unirxnNetworks)
-        for index0, network0 in enumerate(self.unirxnNetworks):
-            index = index0 + 1
-            while index < networkCount:
-                found = False
-                network = self.unirxnNetworks[index]
-                if network0.source == network.source:
-                    # The networks contain the same source, but do they contain any common included isomers (other than the source)?
-                    for isomer in network0.explored:
-                        if isomer != network.source and isomer in network.explored:
-                            # The networks contain an included isomer in common, so we need to merge them
-                            found = True
-                            break
-                if found:
-                    # The networks contain the same source and one or more common included isomers
-                    # Therefore they need to be merged together
-                    logging.info('Merging PDepNetwork #{0:d} and PDepNetwork #{1:d}'.format(network0.index, network.index))
-                    network0.merge(network)
-                    self.unirxnNetworks.remove(network)
-                    networkCount -= 1
-                else:
-                    index += 1
+        for source, networks in self.networkDict.items():
+            networkCount = len(networks)
+            for index0, network0 in enumerate(networks):
+                index = index0 + 1
+                while index < networkCount:
+                    found = False
+                    network = networks[index]
+                    if network0.source == network.source:
+                        # The networks contain the same source, but do they contain any common included isomers (other than the source)?
+                        for isomer in network0.explored:
+                            if isomer != network.source and isomer in network.explored:
+                                # The networks contain an included isomer in common, so we need to merge them
+                                found = True
+                                break
+                    if found:
+                        # The networks contain the same source and one or more common included isomers
+                        # Therefore they need to be merged together
+                        logging.info('Merging PDepNetwork #{0:d} and PDepNetwork #{1:d}'.format(network0.index, network.index))
+                        network0.merge(network)
+                        networks.remove(network)
+                        networkCount -= 1
+                    else:
+                        index += 1
 
-        count = sum([1 for network in self.unirxnNetworks if not network.valid and not (len(network.explored) == 0 and len(network.source) > 1)])
+        count = 0
+        for source, networks in self.networkDict.items():
+            count += sum([1 for network in networks if not network.valid and not (len(network.explored) == 0 and len(network.source) > 1)])
         logging.info('Updating {0:d} modified unimolecular reaction networks...'.format(count))
         
         # Iterate over all the networks, updating the invalid ones as necessary
         # self = reactionModel object
-        for network in self.unirxnNetworks:
-            network.update(self, database, self.pressureDependence)
+        for source, networks in self.networkDict.items():
+            for network in networks:
+                network.update(self, database, self.pressureDependence)
             
         # PDepReaction objects generated from partial networks are irreversible
         # However, it makes more sense to have reversible reactions in the core
