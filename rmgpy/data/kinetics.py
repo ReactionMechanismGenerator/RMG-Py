@@ -2157,23 +2157,45 @@ class KineticsFamily(Database):
                     lblAt = lbl2
                 
                 # Derive the bounds matrix from the reactants and products
-                import ipdb; ipdb.set_trace()
-                for reactant in reaction.reactants:
-                    try:
-                        reactant.getLabeledAtom(lblAt)
-                        boundsMat1 = rdkit.Chem.rdDistGeom.GetMoleculeBoundsMatrix(reactant.rdMol)
-                    except ValueError:
-                        lblAt = lblAt
+                try:
+                    reaction.reactants[0].getLabeledAtom(lblAt)
+                    reactant = reaction.reactants[0]
+                    reactant2 = reaction.reactants[1]
+                except ValueError:
+                    reactant = reaction.reactants[1]
+                    reactant2 = reaction.reactants[0]
                     
-                for product in reaction.products:
-                    try:
-                        products.getLabeledAtom(lblAt)
-                        boundsMat2 = rdkit.Chem.rdDistGeom.GetMoleculeBoundsMatrix(product.rdMol)
-                    except ValueError:
-                        lblAt = lblAt
-                        
-                boundsMat = boundsMat1
-            
+                try:
+                    reaction.products[0].getLabeledAtom(lblAt)
+                    product = reaction.products[0]
+                except ValueError:
+                    product = reaction.products[1]
+                
+                # Check for sorting labels
+                if reactant.atoms[0].sortingLabel == -1:
+                    reactant = fixSortLabel(reactant)
+                if product.atoms[0].sortingLabel == -1:
+                    product = fixSortLabel(product)
+                
+                # Check for rdkit molecules
+                if reactant.rdMol == None:
+                    Molecule.generate3dGeometry(reactant)
+                if product.rdMol == None:
+                    Molecule.generate3dGeometry(product)
+                
+                # Generate the bounds matrices for the reactant and product with the transfered atom
+                boundsMat1 = rdkit.Chem.rdDistGeom.GetMoleculeBoundsMatrix(reactant.rdMol)
+                boundsMat2 = rdkit.Chem.rdDistGeom.GetMoleculeBoundsMatrix(product.rdMol)
+                
+                # Get the total size of the TS bounds matrix and initialize it
+                totSize = len(boundsMat1) + len(boundsMat2) - 1
+                boundsMat = numpy.zeros((totSize, totSize))
+                
+                # Add each term from bounds matrix 1 to corresponding place in the TS bounds matrix
+                for fst in range(0, len(boundsMat1)):
+                    for snd in range(0, len(boundsMat1)):
+                        boundsMat[fst][snd] = boundsMat1[fst][snd]
+                
         # A --> B + C or A + B --> C
         else:
             # Fix the sorting label for the molecule if it has not been done.
