@@ -2229,10 +2229,14 @@ class KineticsFamily(Database):
                 if conf != buildTS.rdMolConfId:
                     buildTS.rdMol.RemoveConformer(conf)
             
-            # Smooth the bounds matrix to speed up the optimization
-            # Optimize the TS geometry in place, outputing the initial and final energies
-            rdkit.DistanceGeometry.DistGeom.DoTriangleSmoothing(boundsMat)
-            rdkit.Chem.Pharm3D.EmbedLib.OptimizeMol(buildTS.rdMol, boundsMat, maxPasses = 10)
+                # Smooth the bounds matrix to speed up the optimization
+                # Optimize the TS geometry in place, outputing the initial and final energies
+                rdkit.DistanceGeometry.DistGeom.DoTriangleSmoothing(boundsMat)
+                try:
+                    rdkit.Chem.Pharm3D.EmbedLib.OptimizeMol(buildTS.rdMol, boundsMat, maxPasses = 10)
+                except RuntimeError:
+                    pass
+            
             
             # Need to output gaussian script
                         
