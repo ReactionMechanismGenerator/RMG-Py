@@ -2237,8 +2237,46 @@ class KineticsFamily(Database):
                 except RuntimeError:
                     pass
             
+            # Ensure the spin multiplicity is ok for gaussian
+            spinMult = 1
+            for atom in buildTS.atoms:
+                if atom.spinMultiplicity !=1:
+                    spinMult += 1
             
-            # Need to output gaussian script
+            # # Need to output gaussian script
+            # title = reaction.reactants[0].toInChI().replace('/','_').strip('InChI=1S_') + reaction.reactants[1].toInChI().replace('/','_').strip('InChI=1S_')
+            # filename = title + '.gif'
+            # newPath = os.path.join(os.curdir, 'tsScripts')
+            # # Need to makedirs if gaussScripts not there
+            # fout = open(os.path.join(newPath, filename), "w")
+            # fout.write("# PM3 Opt=(TS, CalcAll, NoEigenTest)\n\n")
+            # fout.write(title+"\n\n")
+            # fout.write('0   ' + str(spinMult) + '\n')
+            # for idx in range(0, len(buildTS.atoms)):
+            #     atSym = buildTS.rdMol.GetAtomWithIdx(idx).GetSymbol()
+            #     position = buildTS.rdMol.GetConformer(buildTS.rdMolConfId).GetAtomPosition(idx)
+            #     xPt = "  " + "%.7f" %position.x
+            #     yPt = "  " + "%.7f" %position.y
+            #     zPt = "  " + "%.7f" %position.z
+            #     if position.x >= 0.0:
+            #         xPt = " " + xPt
+            #     if position.y >= 0.0:
+            #         yPt = " " + yPt
+            #     if position.z >= 0.0:
+            #         zPt = " " + zPt
+            #     fout.write(atSym + xPt + yPt + zPt + "\n")
+            # fout.write("\n")
+            # fout.close()
+            # 
+            # fout = open(os.path.join(newPath, title+'.sh'), "w")
+            # fout.write('#!/bin/sh\n')
+            # fout.write('#BSUB -q normal\n')
+            # fout.write('#BSUB -o ./output/' + title + '.out\n')
+            # fout.write('#BSUB -J reactionTS\n\n')
+            # fout.write('export GAUSS_EXEDIR=/share/apps/g09\n')
+            # fout.write('export PATH=$GAUSS_EXEDIR:$PATH\n\n')
+            # fout.write('g09 < ' + filename + ' > ./log/' + title + '.log\n\n')
+            # fout.close()
                         
     def applyRecipe(self, reactantStructures, forward=True, unique=True):
         """
