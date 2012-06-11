@@ -2200,9 +2200,36 @@ class KineticsFamily(Database):
                 boundsMat = numpy.ones((totSize, totSize)) * 1000
                 
                 # Add each term from bounds matrix 1 to corresponding place in the TS bounds matrix
-                for fst in range(0, len(boundsMat1)):
-                    for snd in range(0, len(boundsMat1)):
-                        boundsMat[fst][snd] = boundsMat1[fst][snd]
+                for i in range(0, len(boundsMat1)):
+                    for k in range(0, len(boundsMat1)):
+                        boundsMat[i][k] = boundsMat1[i][k]
+                
+                # Add bounds matrix 2, but it has to shift to the end of bounds matrix 1, and shift 
+                # numbers for the reacting atom which has already been included from above
+                rAtLbl = reactant.getLabeledAtom(lblAt).sortingLabel
+                pAtLbl = product.getLabeledAtom(lblAt).sortingLabel
+                for idx in range(0, len(boundsMat2)):
+                    # ********change
+                    if idx != pAtLbl:
+                        boundsMat[len(boundsMat1) + idx][rAtLbl] = boundsMat2[idx][pAtLbl]
+                        boundsMat[rAtLbl][len(boundsMat1) + idx] = boundsMat2[pAtLbl][idx]
+                
+                # Remove all the parts of the transfered atom from the second bounds matrix
+                # Incorporate the rest into the TS bounds matrix
+                pBndsMat = numpy.delete(numpy.delete(boundsMat2, pAtLbl, 1), pAtLbl, 0)
+                for i in range(0, len(pBndsMat)):
+                    for k in range(0, len(pBndsMat)):
+                        boundsMat[i + len(boundsMat1)][k + len(boundsMat1)] = pBndsMat[i][k]
+                
+                import ipdb; ipdb.set_trace()
+                # Fill out the bottom left of the bounds matrix (minima)
+                for i in range(len(0), len(boundsMat1)):
+                    for j in range(len(boundsMat1), len(boundsMat)):
+                        if boundsMat[i][j] != 1000:
+                            pass
+                        else:
+                            # Check for atom and put minimum distance
+                            boundsMat[i][j] = 1.68 # 1.07 is the smallest
                 
         # A --> B + C or A + B --> C
         else:
