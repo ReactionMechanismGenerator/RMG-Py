@@ -2177,19 +2177,27 @@ class KineticsFamily(Database):
                 if product.atoms[0].sortingLabel == -1:
                     product = fixSortLabel(product)
                 
+                for atom in reactant2.atoms:
+                    atom.sortingLabel = atom.sortingLabel + len(reactant.atoms)
+                
+                # Merge the reactants to generate the TS template
+                buildTS = reactant.merge(reactant2)
+                
                 # Check for rdkit molecules
                 if reactant.rdMol == None:
                     Molecule.generate3dGeometry(reactant)
                 if product.rdMol == None:
                     Molecule.generate3dGeometry(product)
-                
+                if buildTS.rdMol == None:
+                    Molecule.generate3dGeometry(buildTS)
+                    
                 # Generate the bounds matrices for the reactant and product with the transfered atom
                 boundsMat1 = rdkit.Chem.rdDistGeom.GetMoleculeBoundsMatrix(reactant.rdMol)
                 boundsMat2 = rdkit.Chem.rdDistGeom.GetMoleculeBoundsMatrix(product.rdMol)
                 
                 # Get the total size of the TS bounds matrix and initialize it
                 totSize = len(boundsMat1) + len(boundsMat2) - 1
-                boundsMat = numpy.zeros((totSize, totSize))
+                boundsMat = numpy.ones((totSize, totSize)) * 1000
                 
                 # Add each term from bounds matrix 1 to corresponding place in the TS bounds matrix
                 for fst in range(0, len(boundsMat1)):
