@@ -1260,9 +1260,10 @@ class CoreEdgeReactionModel:
         # Two partial networks having the same source and containing one or
         # more explored isomers in common must be merged together to avoid
         # double-counting of rates
+        networkCount = len(self.unirxnNetworks)
         for index0, network0 in enumerate(self.unirxnNetworks):
             index = index0 + 1
-            while index < len(self.unirxnNetworks):
+            while index < networkCount:
                 found = False
                 network = self.unirxnNetworks[index]
                 if network0.source == network.source:
@@ -1278,6 +1279,7 @@ class CoreEdgeReactionModel:
                     logging.info('Merging PDepNetwork #{0:d} and PDepNetwork #{1:d}'.format(network0.index, network.index))
                     network0.merge(network)
                     self.unirxnNetworks.remove(network)
+                    networkCount -= 1
                 else:
                     index += 1
 
@@ -1296,7 +1298,8 @@ class CoreEdgeReactionModel:
         # Note that well-skipping reactions may not have a reverse if the well
         # that they skip over is not itself in the core
         index = 0
-        while index < len(self.core.reactions):
+        coreReactionCount = len(self.core.reactions)
+        while index < coreReactionCount:
             reaction = self.core.reactions[index]
             if isinstance(reaction, PDepReaction):
                 for reaction2 in self.core.reactions[index+1:]:
@@ -1334,6 +1337,7 @@ class CoreEdgeReactionModel:
                             self.core.reactions.remove(reaction2)
                             self.core.reactions.insert(index, reaction2)
                             reaction2.reversible = True
+                        coreReactionCount -= 1
                         # There should be only one reverse, so we can stop searching once we've found it
                         break
                 else:
