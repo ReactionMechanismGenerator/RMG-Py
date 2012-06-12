@@ -1306,9 +1306,12 @@ class CoreEdgeReactionModel:
         
         # Iterate over all the networks, updating the invalid ones as necessary
         # self = reactionModel object
+        updatedNetworks = []
         for source, networks in self.networkDict.items():
             for network in networks:
-                network.update(self, database, self.pressureDependence)
+                if not network.valid:
+                    network.update(self, database, self.pressureDependence)
+                    updatedNetworks.append(network)
             
         # PDepReaction objects generated from partial networks are irreversible
         # However, it makes more sense to have reversible reactions in the core
@@ -1316,12 +1319,13 @@ class CoreEdgeReactionModel:
         # direction from the list of core reactions
         # Note that well-skipping reactions may not have a reverse if the well
         # that they skip over is not itself in the core
-        index = 0
-        coreReactionCount = len(self.core.reactions)
-        while index < coreReactionCount:
-            reaction = self.core.reactions[index]
-            if isinstance(reaction, PDepReaction):
-                for reaction2 in self.core.reactions[index+1:]:
+        for network in updatedNetworks:
+            for reaction in network.netReactions:
+                try:
+                    index = self.core.reactions.index(reaction)
+                except ValueError:
+                    continue
+                for index2, reaction2 in enumerate(self.core.reactions):
                     if isinstance(reaction2, PDepReaction) and reaction.reactants == reaction2.products and reaction.products == reaction2.reactants:
                         # We've found the PDepReaction for the reverse direction
                         kf = reaction.getRateCoefficient(1000,1e5)
@@ -1356,13 +1360,10 @@ class CoreEdgeReactionModel:
                             self.core.reactions.remove(reaction2)
                             self.core.reactions.insert(index, reaction2)
                             reaction2.reversible = True
-                        coreReactionCount -= 1
                         # There should be only one reverse, so we can stop searching once we've found it
                         break
                 else:
                     reaction.reversible = True
-            # Move to the next core reaction
-            index += 1
 
     def loadSeedMechanism(self, path):
         """
