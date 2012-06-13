@@ -149,6 +149,12 @@ cdef class Molecule(Graph):
 
     cpdef str toInChI(self)
 
+    cpdef str toAugmentedInChI(self)
+
+    cpdef str toInChIKey(self)
+
+    cpdef str toAugmentedInChIKey(self)
+
     cpdef str toSMILES(self)
 
     cpdef toOBMol(self)
