@@ -47,7 +47,7 @@ finalPadding = 5                # The number of seconds to display the final flu
 
 ################################################################################
 
-def generateFluxDiagram(reactionModel, times, concentrations, reactionRates, outputDirectory, speciesDirectory=None):
+def generateFluxDiagram(reactionModel, times, concentrations, reactionRates, outputDirectory, centralSpecies = None, speciesDirectory=None):
     """
     For a given `reactionModel` and simulation results stored as arrays of
     `times`, species `concentrations`, and `reactionRates`, generate a series
@@ -61,6 +61,13 @@ def generateFluxDiagram(reactionModel, times, concentrations, reactionRates, out
     numSpecies = len(speciesList)
     reactionList = reactionModel.core.reactions[:]
     numReactions = len(reactionList)
+    
+    #search index of central species:
+    if centralSpecies is not None:
+        for i, species in enumerate(speciesList):
+            if species.label == centralSpecies:
+                centralSpeciesIndex = i
+                break 
     
     # Compute the rates between each pair of species (big matrix warning!)
     speciesRates = numpy.zeros((len(times),numSpecies,numSpecies), numpy.float64)
@@ -84,22 +91,40 @@ def generateFluxDiagram(reactionModel, times, concentrations, reactionRates, out
     
     # Determine the nodes and edges to keep
     nodes = []; edges = []
-    for i in range(numSpecies*numSpecies):
-        productIndex, reactantIndex = divmod(speciesIndex[-i-1], numSpecies)
-        if reactantIndex > productIndex:
-            # Both reactant -> product and product -> reactant are in this list,
-            # so only keep one of them
-            continue
-        if maxSpeciesRates[reactantIndex, productIndex] == 0:
-            break
-        if reactantIndex not in nodes and len(nodes) < maximumNodeCount: nodes.append(reactantIndex)
-        if productIndex not in nodes and len(nodes) < maximumNodeCount: nodes.append(productIndex)
-        if len(nodes) > maximumNodeCount: 
-            break
-        edges.append([reactantIndex, productIndex])
-        if len(edges) >= maximumEdgeCount:
-            break
-    
+    if centralSpecies is None:
+        for i in range(numSpecies*numSpecies):
+            productIndex, reactantIndex = divmod(speciesIndex[-i-1], numSpecies)
+            if reactantIndex > productIndex:
+                # Both reactant -> product and product -> reactant are in this list,
+                # so only keep one of them
+                continue
+            if maxSpeciesRates[reactantIndex, productIndex] == 0:
+                break
+            if reactantIndex not in nodes and len(nodes) < maximumNodeCount: nodes.append(reactantIndex)
+            if productIndex not in nodes and len(nodes) < maximumNodeCount: nodes.append(productIndex)
+            if len(nodes) > maximumNodeCount: 
+                break
+            edges.append([reactantIndex, productIndex])
+            if len(edges) >= maximumEdgeCount:
+                break
+    else:
+        nodes.append(centralSpeciesIndex)
+        for index, reaction in enumerate(reactionList):
+            for reactant, product in reaction.pairs:
+                reactantIndex = speciesList.index(reactant)
+                productIndex = speciesList.index(product)
+                if maxSpeciesRates[reactantIndex, productIndex] == 0:
+                    break
+                if len(nodes) > maximumNodeCount or len(edges) >= maximumEdgeCount: 
+                    break
+                if reactantIndex == centralSpeciesIndex: 
+                    if productIndex not in nodes:
+                        nodes.append(productIndex)
+                        edges.append([reactantIndex, productIndex])
+                if productIndex == centralSpeciesIndex: 
+                    if reactantIndex not in nodes:
+                        nodes.append(reactantIndex)
+                        edges.append([reactantIndex, productIndex])
     # Create the master graph
     # First we're going to generate the coordinates for all of the nodes; for
     # this we use the thickest pen widths for all nodes and edges 
@@ -469,7 +494,7 @@ def loadRMGPyJob(inputFile, chemkinFile=None, speciesDict=None):
 
 ################################################################################
 
-def createFluxDiagram(savePath, inputFile, chemkinFile, speciesDict, java = False, chemkinOutput = ''):
+def createFluxDiagram(savePath, inputFile, chemkinFile, speciesDict, java = False, chemkinOutput = '', centralSpecies = None):
     """
     Generates the flux diagram based on a condition 'inputFile', chemkin.inp chemkinFile,
     a speciesDict txt file, plus an optional chemkinOutput file.
@@ -492,7 +517,7 @@ def createFluxDiagram(savePath, inputFile, chemkinFile, speciesDict, java = Fals
         time, coreSpeciesConcentrations, coreReactionRates, edgeReactionRates = loadChemkinOutput(chemkinOutput, rmg.reactionModel)
 
         print 'Generating flux diagram for chemkin output...'
-        generateFluxDiagram(rmg.reactionModel, time, coreSpeciesConcentrations, coreReactionRates, os.path.join(savePath, '1'), speciesPath)
+        generateFluxDiagram(rmg.reactionModel, time, coreSpeciesConcentrations, coreReactionRates, os.path.join(savePath, '1'), centralSpecies, speciesPath)
 
     else:
         # Generate a flux diagram video for each reaction system
@@ -514,7 +539,7 @@ def createFluxDiagram(savePath, inputFile, chemkinFile, speciesDict, java = Fals
             time, coreSpeciesConcentrations, coreReactionRates, edgeReactionRates = simulate(rmg.reactionModel, reactionSystem)
 
             print 'Generating flux diagram for reaction system {0:d}...'.format(index+1)
-            generateFluxDiagram(rmg.reactionModel, time, coreSpeciesConcentrations, coreReactionRates, os.path.join(savePath, '{0:d}'.format(index+1)), speciesPath)
+            generateFluxDiagram(rmg.reactionModel, time, coreSpeciesConcentrations, coreReactionRates, os.path.join(savePath, '{0:d}'.format(index+1)), centralSpecies, speciesPath)
 
 ################################################################################
 
