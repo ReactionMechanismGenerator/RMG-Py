@@ -188,12 +188,12 @@ class Edge(object):
         Raise a :class:`ValueError` if the given vertex is not part of the
         edge.
         """
-        if self.vertex1 is not vertex and self.vertex2 is not vertex:
-            raise ValueError('The given vertex is not one of the vertices of this edge.')
-        elif self.vertex1 is vertex:
+        if self.vertex1 is vertex:
             return self.vertex2
         elif self.vertex2 is vertex:
             return self.vertex1
+        else:
+            raise ValueError('The given vertex is not one of the vertices of this edge.')
 
 ################################################################################
 
@@ -307,9 +307,9 @@ class Graph:
                 edges = vertex.edges
                 other.addVertex(vertex)
                 vertex.edges = edges
-        for vertex1 in self.vertices:
-            for vertex2 in vertex1.edges:
-                if deep:
+        if deep:
+            for vertex1 in self.vertices:
+                for vertex2 in vertex1.edges:
                     index1 = self.vertices.index(vertex1)
                     index2 = self.vertices.index(vertex2)
                     edge = vertex1.edges[vertex2].copy()
