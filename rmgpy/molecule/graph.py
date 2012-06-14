@@ -279,7 +279,7 @@ class Graph:
 
     def removeEdge(self, edge):
         """
-        Remove the edge having vertices `vertex1` and `vertex2` from the graph.
+        Remove the specified `edge` from the graph.
         Does not remove vertices that no longer have any edges as a result of
         this removal.
         """
@@ -697,7 +697,6 @@ def VF2_isomorphism(graph1, graph2, subgraph=False, findAll=False, initialMappin
       from `graph1` to those in `subgraph` that are fixed in the isomorphism
       check; this mapping will appear in every returned mapping. Note that no
       validation of this initial mapping is performed in this function.
-    
     """
     cython.declare(vertex1=Vertex, vertex2=Vertex)
     cython.declare(mappingList=list)
@@ -717,7 +716,7 @@ def VF2_isomorphism(graph1, graph2, subgraph=False, findAll=False, initialMappin
         # a subgraph of the first
         return list() if findAll else False
 
-    # Initialize callDepth with the size of the largest graph
+    # Initialize callDepth with the size of the smallest graph
     # Each recursive call to VF2_match will decrease it by one;
     # when the whole graph has been explored, it should reach 0
     # It should never go below zero!
