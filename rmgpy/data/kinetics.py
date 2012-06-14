@@ -2217,6 +2217,8 @@ class KineticsFamily(Database):
                 boundsMat2 = numpy.delete(numpy.delete(boundsMat2, pAtLbl, 1), pAtLbl, 0)
                 boundsMat[-len(boundsMat2):, -len(boundsMat2):] = boundsMat2
                 
+                #********what now!!!??!?
+                
         # A --> B + C or A + B --> C
         else:
             # Fix the sorting label for the molecule if it has not been done.
@@ -2267,7 +2269,7 @@ class KineticsFamily(Database):
                     boundsMat[idx1][idx2] += 0.25
                     boundsMat[idx2][idx1] += 0.25
                 elif action[0].lower() == 'gain_radical':
-                    boundsMat[idx]
+                    pass
                 elif action[0].lower() == 'lose_radical':
                     pass
             
