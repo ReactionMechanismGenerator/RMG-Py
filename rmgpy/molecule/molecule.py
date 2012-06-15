@@ -765,8 +765,9 @@ class Molecule(Graph):
         ``.ps``; of these, the first is a raster format and the remainder are
         vector formats.
         """
-        from .draw import drawMolecule
-        drawMolecule(self, path=path)
+        from .draw import MoleculeDrawer
+        format = os.path.splitext(path)[-1][1:].lower()
+        MoleculeDrawer().draw(self, format, path=path)
     
     def _repr_png_(self):
         """
