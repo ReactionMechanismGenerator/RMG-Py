@@ -633,7 +633,7 @@ class Graph:
 
         # Map atoms in cycles back to atoms in original graph
         for i in range(len(cycleList)):
-            cycleList[i] = [self.vertices[vertices.index(v)] for v in cycles[i]]    
+            cycleList[i] = [self.vertices[vertices.index(v)] for v in cycleList[i]]
 
         return cycleList
 
