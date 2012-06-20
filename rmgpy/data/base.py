@@ -85,9 +85,20 @@ class Entry:
 
     """
 
-    def __init__(self, index=-1, label='', item=None, parent=None,
-        children=None, data=None, reference=None, referenceType='',
-        shortDesc='', longDesc='', rank=None, history=None):
+    def __init__(self,
+                 index=-1,
+                 label='',
+                 item=None,
+                 parent=None,
+                 children=None,
+                 data=None,
+                 reference=None,
+                 referenceType='',
+                 shortDesc='',
+                 longDesc='',
+                 rank=None,
+                 history=None
+                 ):
         self.index = index
         self.label = label
         self.item = item
@@ -140,7 +151,15 @@ class Database:
     local_context['Book'] = Book
     local_context['Thesis'] = Thesis
 
-    def __init__(self, entries=None, top=None, label='', name='', shortDesc='', longDesc='', recommended=False):
+    def __init__(self,
+                 entries=None,
+                 top=None,
+                 label='',
+                 name='',
+                 shortDesc='',
+                 longDesc='',
+                 recommended=False
+                 ):
         self.entries = entries or {}
         self.top = top or []
         self.label = label
@@ -1099,7 +1118,11 @@ class ForbiddenStructures(Database):
         if molecule is not None:
             item = Molecule.fromAdjacencyList(molecule)
         elif group is not None:
-            if group[0:3].upper() == 'OR{' or group[0:4].upper() == 'AND{' or group[0:7].upper() == 'NOT OR{' or group[0:8].upper() == 'NOT AND{':
+            if ( group[0:3].upper() == 'OR{' or
+                 group[0:4].upper() == 'AND{' or
+                 group[0:7].upper() == 'NOT OR{' or
+                 group[0:8].upper() == 'NOT AND{'
+                ):
                 item = makeLogicNode(group)
             else:
                 item = Group().fromAdjacencyList(group)
