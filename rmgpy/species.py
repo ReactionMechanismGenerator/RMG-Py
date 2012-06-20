@@ -234,7 +234,7 @@ class Species:
     
 ################################################################################
 
-class TransitionState(Molecule):
+class TransitionState():
     """
     A chemical transition state, representing a first-order saddle point on a
     potential energy surface. The attributes are:
