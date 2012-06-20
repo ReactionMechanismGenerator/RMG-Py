@@ -115,24 +115,24 @@ class MOPACJob(QMJob):
         return self.check()
 
 class SymmetryJob(QMJob):
-     """
-     Determine the point group using the SYMMETRY program 
-     (http://www.cobalt.chem.ucalgary.ca/ps/symmetry/).
-     
-     
-     Required input is a line with number of atoms followed by lines for each atom 
-     including:
-     1) atom number
-     2) x,y,z coordinates
-     
-     finalTol determines how loose the point group criteria are;
-     values are comparable to those specified in the GaussView point group interface
-      
-     """   
+    """
+    Determine the point group using the SYMMETRY program 
+    (http://www.cobalt.chem.ucalgary.ca/ps/symmetry/).
     
-     maxAttemptNumber = 4;
-         
-     def __init__(self, molfile, iqmdata, environ = os.environ.get("RMG_workingDirectory")):
+    
+    Required input is a line with number of atoms followed by lines for each atom 
+    including:
+    1) atom number
+    2) x,y,z coordinates
+    
+    finalTol determines how loose the point group criteria are;
+    values are comparable to those specified in the GaussView point group interface
+     
+    """   
+   
+    maxAttemptNumber = 4;
+        
+    def __init__(self, molfile, iqmdata, environ = os.environ.get("RMG_workingDirectory")):
         QMJob.__init__(self, molfile)
         
         self.executable = 'bin/symmetry'
@@ -160,43 +160,42 @@ class SymmetryJob(QMJob):
         
         self.pointGroupFound = False
      
-     def check(self, output):
+    def check(self, output):
         output = output.split('\n')
             #check for errors and display the error if there is one
         for line in output:
-                if line.startswith("It seems to be the "):#last line, ("It seems to be the [x] point group") indicates point group
-                    lineArray = line.split(" ")#split the line around spaces
-                    result = lineArray[5]#point group string should be the 6th word
+            if line.startswith("It seems to be the "):#last line, ("It seems to be the [x] point group") indicates point group
+                lineArray = line.split(" ")#split the line around spaces
+                result = lineArray[5]#point group string should be the 6th word
 
         logging.info("Point group: "+ result)#print result, at least for debugging purposes
         return result;
            
-     def run(self):
+    def run(self):
         pp = Popen(self.command, stdout=PIPE, stderr=PIPE)
         stdout, stderr = pp.communicate()
         
         return self.check(stdout)    
     
-     def writeInputFile(self):
+    def writeInputFile(self):
+        """
+        Write the input file for the SYMMETRY program.
+        """
         geom = str(self.qmdata.numberOfAtoms) + "\n"
         for i in range(self.qmdata.numberOfAtoms):
-          geom = geom + " ".join(( str(self.qmdata.atomicNumbers[i]),
-                                   str(self.qmdata.atomCoords[i][0]),
-                                   str(self.qmdata.atomCoords[i][1]),
-                                   str(self.qmdata.atomCoords[i][2]) 
-                                )) + "\n"
-            
-          """
-          Write the input file for the SYMMETRY program based on the passed-in string.
-          """
-          with open(os.path.join(self.molfile.directory, self.inputFile), 'w') as input_file:
-               input_file.write(geom)
-          input_file.close()
-          logging.info('Symmetry input file written to %s'%os.path.join(self.molfile.directory, self.inputFile))
-          return input_file     
-        
-     def calculate(self):
-            
+            geom = geom + " ".join((str(self.qmdata.atomicNumbers[i]),
+                                    str(self.qmdata.atomCoords[i][0]),
+                                    str(self.qmdata.atomCoords[i][1]),
+                                    str(self.qmdata.atomCoords[i][2])
+                                   )) + "\n"
+        with open(os.path.join(self.molfile.directory, self.inputFile), 'w') as input_file:
+            input_file.write(geom)
+        input_file.close()
+        logging.info("Symmetry input file written to %s"%os.path.join(self.molfile.directory, self.inputFile))
+        return input_file
+          
+    def calculate(self):
+
         self.writeInputFile();
 
         result = "";
@@ -230,4 +229,4 @@ class SymmetryJob(QMJob):
                 self.attemptNumber = self.attemptNumber + 1
                  
             return sym.PointGroup(result)
-        
+

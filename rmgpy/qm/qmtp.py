@@ -75,9 +75,9 @@ class ThreeDMolFileCreator:
             rdAtom.SetNumRadicalElectrons(atom.radicalElectrons)
             rdMol.AddAtom(rdAtom)
             rdAtomIdx[atom] = index
-        
+
         # Add the bonds
-        for atom1 in self.molecule.vertices: 
+        for atom1 in self.molecule.vertices:
             for atom2, bond in atom1.edges.items():
                 index1 = rdAtomIdx[atom1] # atom1.sortingLabel
                 index2 = rdAtomIdx[atom2] # atom2.sortingLabel
@@ -94,11 +94,11 @@ class ThreeDMolFileCreator:
                     else:
                         print "Unknown bond order"
                     rdMol.AddBond(index1, index2, rdBond)
-        
+
         # Make editable mol into a mol and rectify the molecule
         rdMol = rdMol.GetMol()
         Chem.SanitizeMol(rdMol)
-        
+
         return rdMol, rdAtomIdx
         
     def embed3D(self, numConfAttempts):
@@ -209,65 +209,65 @@ class QMTP:
                 return result
             
         else:
-                logging.critical("Unexpected situation in QMTP thermo estimation"   )    
+            logging.critical("Unexpected situation in QMTP thermo estimation"   )    
 
         return result
 
     
     def generateQMThermoData(self, molecule):
-         """
-               /**
-         * #if there is no data in the libraries, calculate the result based on QM or MM calculations
-         *  the below steps will be generalized later to allow for other quantum mechanics packages, etc.
-         *  
-         *  Several steps can be identified:
-         *  <LI> InChI generation of ChemGraph
-         *  <LI> Verification whether this species has already been processed (and parse it if so)
-         *  <LI> Generating 3D coords
-         *  <LI> Creating QM input file and Feeding species to QM Program
-         *  <LI> QM Program Output File Parsing
-         * @param molecule
-         * @return
-         */
-         """
-         name, InChIaug = self.generateIdentifiers(molecule)#determine the filename (InChIKey) and InChI with appended info for triplets, etc.
-         
-         #check for existing hold file before starting calculations (to avoid the possibility of interference with other jobs using the same QMfiles folder)
-         while os.path.exists(os.path.join(QMTP.qmfolder,name+'.hold')):#can lead to race condition!
-             logging.info("Existence of hold file for "+name+" suggests that another RMG process is currently running calculations on this molecule; waiting for other RMG process to finish; will check again in 60 seconds...")
-             import time
-             time.sleep(60) # delays for 60 seconds
+        """
+              /**
+        * #if there is no data in the libraries, calculate the result based on QM or MM calculations
+        *  the below steps will be generalized later to allow for other quantum mechanics packages, etc.
+        *  
+        *  Several steps can be identified:
+        *  <LI> InChI generation of ChemGraph
+        *  <LI> Verification whether this species has already been processed (and parse it if so)
+        *  <LI> Generating 3D coords
+        *  <LI> Creating QM input file and Feeding species to QM Program
+        *  <LI> QM Program Output File Parsing
+        * @param molecule
+        * @return
+        */
+        """
+        name, InChIaug = self.generateIdentifiers(molecule)#determine the filename (InChIKey) and InChI with appended info for triplets, etc.
         
-         #verify whether a succesful QM results exists for this particular species:
-         molfile = molFile(Molecule(), name, InChIaug, QMTP.qmfolder)
-         verifier = verif.QMVerifier(molfile)
-         verifier.verify()   
-          
-         #if a succesful job exists (by one of the QM Programs), you can readily parse it.
-         if verifier.succesfulJobExists():
-                result = self.parseOutput(name, molecule)
-                return result
-         else:#no successful result exists, we have to calculate from zero
-                molfile = self.generate3DCoords(molecule, name)
-                molfile.InChIAug = InChIaug
-                multiplicity = sum([i.radicalElectrons for i in molecule.atoms]) + 1
-                attemptNumber = 1
-                success = False
-                maxAttemptNumber = self.mapMaxAttemptNumber[self.qmprogram]
-                while not success and (attemptNumber <= maxAttemptNumber):
-                    self.createQMInput(molfile, attemptNumber, multiplicity)
-                    success = self.runQM(molfile)
-                    if success:
-                        logging.info('Attempt {0} on species {1} succeeded.'.format(attemptNumber, InChIaug))
-                        """
-                        TODO Rotor Scan not yet implemented here.
-                        """
-                    else:
-                        if attemptNumber == maxAttemptNumber:
-                            logging.info('Last attempt on species {0} failed.'.format(InChIaug))
-                result = self.parseOutput(molfile)
-                return result
-    
+        #check for existing hold file before starting calculations (to avoid the possibility of interference with other jobs using the same QMfiles folder)
+        while os.path.exists(os.path.join(QMTP.qmfolder,name+'.hold')):#can lead to race condition!
+            logging.info("Existence of hold file for "+name+" suggests that another RMG process is currently running calculations on this molecule; waiting for other RMG process to finish; will check again in 60 seconds...")
+            import time
+            time.sleep(60) # delays for 60 seconds
+       
+        #verify whether a succesful QM results exists for this particular species:
+        molfile = molFile(Molecule(), name, InChIaug, QMTP.qmfolder)
+        verifier = verif.QMVerifier(molfile)
+        verifier.verify()   
+         
+        #if a succesful job exists (by one of the QM Programs), you can readily parse it.
+        if verifier.succesfulJobExists():
+            result = self.parseOutput(name, molecule)
+            return result
+        else:#no successful result exists, we have to calculate from zero
+            molfile = self.generate3DCoords(molecule, name)
+            molfile.InChIAug = InChIaug
+            multiplicity = sum([i.radicalElectrons for i in molecule.atoms]) + 1
+            attemptNumber = 1
+            success = False
+            maxAttemptNumber = self.mapMaxAttemptNumber[self.qmprogram]
+            while not success and (attemptNumber <= maxAttemptNumber):
+                self.createQMInput(molfile, attemptNumber, multiplicity)
+                success = self.runQM(molfile)
+                if success:
+                    logging.info('Attempt {0} on species {1} succeeded.'.format(attemptNumber, InChIaug))
+                    """
+                    TODO Rotor Scan not yet implemented here.
+                    """
+                else:
+                    if attemptNumber == maxAttemptNumber:
+                        logging.info('Last attempt on species {0} failed.'.format(InChIaug))
+            result = self.parseOutput(molfile)
+            return result
+
     def runQM(self, molfile):
         if self.qmprogram == "mopac"  or  self.qmprogram == "both":
             """
@@ -300,4 +300,3 @@ class QMTP:
         return molfile
      
     
-     

@@ -42,10 +42,10 @@ class QMParser:
 
         
     def read(self):
-            self.qmdata = self.parsingTool.parse(self.molfile.molecule)    
-            return self.qmdata
+        self.qmdata = self.parsingTool.parse(self.molfile.molecule)
+        return self.qmdata
 
-    def parse(self) :
+    def parse(self):
         self.read()
         
         calculator = calc.TDPropertiesCalculator(self.molfile, self.qmdata, environ = self.environ)
@@ -104,4 +104,4 @@ class MOPACPM3Parser(QMParser):
         path = os.path.join(self.molfile.directory,self.molfile.name+self.inputFileExtension)
         
         self.parsingTool = CCLibParser(path, qmtp)
-            
+

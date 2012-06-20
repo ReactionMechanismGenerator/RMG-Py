@@ -92,9 +92,9 @@ class MOPACPM3InputWriter(QMInputWriter):
            
         if qmtp.QMTP.usePolar:
             if self.multiplicity == 1:
-               polarString = "\n" + "\n" + "\n"+ "oldgeo polar nosym precise " + inpKeyStrBoth
+                polarString = "\n" + "\n" + "\n"+ "oldgeo polar nosym precise " + inpKeyStrBoth
             else:
-               polarString = "\n" + "\n" + "\n"+ "oldgeo static nosym precise " + inpKeyStrBoth
+                polarString = "\n" + "\n" + "\n"+ "oldgeo static nosym precise " + inpKeyStrBoth
             self.keywords[MOPACKEYWORDS.POLAR] = polarString
         else:
             self.keywords[MOPACKEYWORDS.POLAR] = ''
@@ -119,10 +119,10 @@ class MOPACPM3InputWriter(QMInputWriter):
         mol = openbabel.OBMol()
         
         if self.attemptNumber <= self.scriptAttempts: #use UFF-refined coordinates
-                obConversion.ReadFile(mol, self.molfile.path)
+            obConversion.ReadFile(mol, self.molfile.path)
         else:
-                obConversion.ReadFile(mol, self.molfile.crudepath)
-        
+            obConversion.ReadFile(mol, self.molfile.crudepath)
+    
         mol.SetTitle(self.molfile.molecule.toAugmentedInChI()) 
         obConversion.SetOptions('k', openbabel.OBConversion.OUTOPTIONS)
         'TODO still dont know how to write keywords, therefore they will be prepended afterwards...'
@@ -183,10 +183,10 @@ class GaussianPM3InputWriter(QMInputWriter):
         mol = openbabel.OBMol()
         
         if self.attemptNumber <= GaussianPM3InputWriter.scriptAttempts: #use UFF-refined coordinates
-                obConversion.ReadFile(mol, self.molfile.path)
+            obConversion.ReadFile(mol, self.molfile.path)
         else:
-                obConversion.ReadFile(mol, self.molfile.crudepath)
-        
+            obConversion.ReadFile(mol, self.molfile.crudepath)
+    
         mol.SetTitle(self.molfile.molecule.toAugmentedInChI()) 
         obConversion.SetOptions('k', openbabel.OBConversion.OUTOPTIONS)
         'TODO still dont know how to write keywords, therefore they will be prepended afterwards...'
@@ -206,14 +206,14 @@ class GaussianPM3InputWriter(QMInputWriter):
         return inputFile
     
     def createKeywords(self):
-            inpKeyStr ="%chk=" + self.molfile.directory + "/RMGrunCHKfile.chk\n"
-            inpKeyStr =inpKeyStr + "%mem=6MW\n"
-            inpKeyStr =inpKeyStr + "%nproc=1\n"
-            inpKeyStr =inpKeyStr + self.keywordsTop[self.attemptNumber]
-            
-            if qmtp.QMTP.usePolar:
-                   inpKeyStr = inpKeyStr+" polar"
-  
-            self.keywords[G03PM3KEYWORDS.INPUT] = inpKeyStr
-            
-            return self.keywords
+        inpKeyStr ="%chk=" + self.molfile.directory + "/RMGrunCHKfile.chk\n"
+        inpKeyStr =inpKeyStr + "%mem=6MW\n"
+        inpKeyStr =inpKeyStr + "%nproc=1\n"
+        inpKeyStr =inpKeyStr + self.keywordsTop[self.attemptNumber]
+        
+        if qmtp.QMTP.usePolar:
+            inpKeyStr = inpKeyStr+" polar"
+
+        self.keywords[G03PM3KEYWORDS.INPUT] = inpKeyStr
+        
+        return self.keywords

@@ -231,4 +231,3 @@ class PointGroup:
     def isLinear(self):
         return self.linear;
     
-        

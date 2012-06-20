@@ -62,4 +62,3 @@ class TDPropertiesCalculator:
         comment = "PM3 or MM4 calculation"
         
         return ThermoData(Tdata, Cp, Hf298, S298, Tmin, Tmax, comment)
-    
