@@ -101,7 +101,7 @@ class MOPACJob(QMJob):
         assert os.path.exists(self.executable), "Please set the environment variable MOPAC_DIR to the directory containing MOPAC2009.exe"
 
         'specify the input file'
-        self.command = os.path.join(self.molfile.directory ,self.molfile.name+ self.inputFileExtension)
+        self.command = os.path.join(self.molfile.directory, self.molfile.name + self.inputFileExtension)
         
     def check(self):
         verifier = verif.QMVerifier(self.molfile)
@@ -178,13 +178,13 @@ class SymmetryJob(QMJob):
         return self.check(stdout)    
     
      def writeInputFile(self):
-          geom = str(self.qmdata.numberOfAtoms) + "\n"
-          for i in range(self.qmdata.numberOfAtoms):
-            geom = geom +\
-            str(self.qmdata.atomicNumbers[i]) +\
-            " "+ str(self.qmdata.atomCoords[i][0]) +\
-            " " +str(self.qmdata.atomCoords[i][1]) +\
-            " " +str(self.qmdata.atomCoords[i][2]) +"\n"
+        geom = str(self.qmdata.numberOfAtoms) + "\n"
+        for i in range(self.qmdata.numberOfAtoms):
+          geom = geom + " ".join(( str(self.qmdata.atomicNumbers[i]),
+                                   str(self.qmdata.atomCoords[i][0]),
+                                   str(self.qmdata.atomCoords[i][1]),
+                                   str(self.qmdata.atomCoords[i][2]) 
+                                )) + "\n"
             
           """
           Write the input file for the SYMMETRY program based on the passed-in string.
