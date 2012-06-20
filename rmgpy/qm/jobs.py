@@ -167,6 +167,10 @@ class SymmetryJob(QMJob):
             if line.startswith("It seems to be the "):#last line, ("It seems to be the [x] point group") indicates point group
                 lineArray = line.split(" ")#split the line around spaces
                 result = lineArray[5]#point group string should be the 6th word
+                break
+        else:
+            logging.exception("Couldn't find point group from symmetry output:\n%s"%output)
+            raise RuntimeError("Couldn't find point group in symmetry output.")
 
         logging.info("Point group: "+ result)#print result, at least for debugging purposes
         return result;
