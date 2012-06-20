@@ -47,7 +47,6 @@ class Test(unittest.TestCase):
         parsingTool = pars.CCLibParser(os.path.join(directory,name+inputFileExtension), driver)
 
         iqmdata = parsingTool.parse(molecule);
-        path = os.environ.get('RMG_workingDirectory')
         symm_job = job.SymmetryJob(molfile, iqmdata)
         pointGroup = symm_job.calculate()
         self.assertTrue(os.path.exists(os.path.join(directory, 'AAAOFKFEDKWQNN-UHFFFAOYAY.symm')))

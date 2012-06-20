@@ -14,12 +14,10 @@ import symmetry
  
 class TDPropertiesCalculator:
     
-    def __init__(self, molfile, qmdata, environ = os.environ.get("RMG.workingDirectory"), pointGroup = None):
+    def __init__(self, molfile, qmdata, pointGroup = None):
         self.qmdata = qmdata
                
         self.molfile = molfile
-        
-        self.environ = environ   
         
         self.determinePointGroup()
         
@@ -32,7 +30,7 @@ class TDPropertiesCalculator:
     def determinePointGroup(self):
         #determine point group using the SYMMETRY Program
 
-        pgc = symmetry.PointGroupCalculator(self.molfile, self.qmdata, self.environ);
+        pgc = symmetry.PointGroupCalculator(self.molfile, self.qmdata);
         self.pointGroup = pgc.calculate();
     
     def calculateChiralityCorrection(self):

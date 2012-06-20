@@ -195,11 +195,10 @@ class PointGroupCalculator:
      
     Will point to a specific algorithm, like SYMMETRY that is able to do this.
     """
-    def __init__(self, molfile, iqmdata, environ = os.environ.get("RMG_workingDirectory")):
+    def __init__(self, molfile, iqmdata):
         self.molfile = molfile
         self.qmdata = iqmdata#data object that contains 3D coords of molecule used in symmetry calculation
-        self.environ = environ
-        self.calculator = jobs.SymmetryJob(molfile, iqmdata, environ)
+        self.calculator = jobs.SymmetryJob(molfile, iqmdata)
 
     def calculate(self):
         return self.calculator.calculate();

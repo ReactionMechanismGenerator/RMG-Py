@@ -25,16 +25,11 @@ class QMParser:
         *qmdata
     """
     
-    def __init__(self, molfile, qmtp, environ = os.environ.get("RMG_workingDirectory")):
+    def __init__(self, molfile, qmtp):
         self.molfile = molfile
         
-        self.environ = environ#working directory
-        
         self.qmtp = qmtp
-        
-        self.scripts = "scripts/"##directory of parsing scripts
 
-        
     def read(self):
         self.qmdata = self.parsingTool.parse(self.molfile.molecule)
         return self.qmdata
@@ -42,7 +37,7 @@ class QMParser:
     def parse(self):
         self.read()
         
-        calculator = TDPropertiesCalculator(self.molfile, self.qmdata, environ = self.environ)
+        calculator = TDPropertiesCalculator(self.molfile, self.qmdata)
         
         return calculator.calculate()
 
@@ -89,8 +84,8 @@ class CCLibParser:
         return self.qmdata
         
 class MOPACPM3Parser(QMParser):
-    def __init__(self, molfile, qmtp, environ = os.environ.get("RMG_workingDirectory")):
-        QMParser.__init__(self, molfile, qmtp, environ)
+    def __init__(self, molfile, qmtp):
+        QMParser.__init__(self, molfile, qmtp)
         
         self.inputFileExtension = ".out"
         

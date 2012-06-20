@@ -43,15 +43,17 @@ class QMJob:
     -the output file extension which will be used to check the output file for the correct termination.
     """
     
+    "The path to the executable."
+    executablePath = ''
+    inputFileExtension = ''
+    outputFileExtension = ''
+    
     def __init__(self, molfile):
+        "The molfile associated with this job."
+        # does everything have to be done via molfiles? do we even mean molfile?
         self.molfile = molfile
-        self.inputFileExtension = ''
-        self.outputFileExtension = ''
-        
-        'the keywords denoting the executable'
-        self.executable = ''
-        
-        'the command line command'
+
+        "The command line command."
         self.command = ''
  
     def run(self):
@@ -84,20 +86,15 @@ class MOPACJob(QMJob):
     
     The output file is of extension .out.
     
+    """
     
-    """ 
+    inputFileExtension = '.mop'
+    outputFileExtension = '.out'
+    executablePath = os.path.join(os.getenv('MOPAC_DIR') , 'MOPAC2009.exe')
+    
     def __init__(self, molfile):
         QMJob.__init__(self, molfile)
-        
-        self.inputFileExtension = '.mop'
-        self.outputFileExtension = '.out'
-        
-        """
-        TODO maybe it's better to call the alias 'mopac'. However, this did not work yet... 
-        """
-        assert os.getenv('MOPAC_DIR'), "Please set the environment variable MOPAC_DIR to the directory containing MOPAC2009.exe"
-        self.executable = os.path.join(os.getenv('MOPAC_DIR') , 'MOPAC2009.exe')#assumes this env var is pointing to install directory of mopac!
-        assert os.path.exists(self.executable), "Please set the environment variable MOPAC_DIR to the directory containing MOPAC2009.exe"
+        assert os.path.exists(self.executablePath), "Please set the environment variable MOPAC_DIR to the directory containing MOPAC2009.exe"
 
         'specify the input file'
         self.command = os.path.join(self.molfile.directory, self.molfile.name + self.inputFileExtension)
@@ -105,10 +102,9 @@ class MOPACJob(QMJob):
     def check(self):
         verifier = QMVerifier(self.molfile)
         return verifier.verifyNoFailure()
-         
     
     def run(self):
-        process = Popen([self.executable, self.command])
+        process = Popen([self.executablePath, self.command])
         process.communicate()# necessary to wait for executable termination!
 
         return self.check()
@@ -127,57 +123,61 @@ class SymmetryJob(QMJob):
     finalTol determines how loose the point group criteria are;
     values are comparable to those specified in the GaussView point group interface
      
-    """   
+    """
+    
+    RMG_path = os.environ.get("RMGpy")
+    if RMG_path is None:
+        RMG_path = os.path.abspath(os.path.join(os.path.dirname(__file__),'..','..'))
+        logging.info("Setting RMG_path to {0}".format(RMG_path))
+    executable_path = os.path.join(RMG_path, 'bin', 'symmetry')
+    if not os.path.exists(executable_path):
+        raise Exception("Symmetry program not found at {0}.".format(executable_path))
    
-    maxAttemptNumber = 4;
+    'Argumenst that will be passed as an argument for the consecutive attempts'
+    argumentsList = [
+         ['-final', '0.02'],
+         ['-final', '0.1'],
+         ['-primary', '0.2', '-final' ,'0.1'],
+         ['-final', '0.0'],
+        ]
+
+    inputFileExtension = '.symm'
         
-    def __init__(self, molfile, iqmdata, environ = os.environ.get("RMG_workingDirectory")):
+    def __init__(self, molfile, iqmdata):
         QMJob.__init__(self, molfile)
-        
-        self.executable = 'bin/symmetry'
-        
+
         'the command line command'
         self.command = []
-        
-        'keywords that will be passed as an argument for the consecutive attempts'
-        self.keywords = {}
-        self.keywords[1] = ['-final', '0.02']
-        self.keywords[2] = ['-final', '0.1']
-        self.keywords[3] = ['-primary', '0.2', '-final' ,'0.1']
-        self.keywords[4] = ['-final', '0.0']
-        
         
         "IQMData is the object that holds information from a previous QM Job on 3D coords, molecule etc..."
         self.qmdata = iqmdata
         
-        self.inputFileExtension = '.symm'
         self.inputFile = self.molfile.name + self.inputFileExtension
         
-        self.environ = environ
-        
         self.attemptNumber = 1
-        
         self.pointGroupFound = False
      
     def check(self, output):
-        output = output.split('\n')
-            #check for errors and display the error if there is one
-        for line in output:
-            if line.startswith("It seems to be the "):#last line, ("It seems to be the [x] point group") indicates point group
-                lineArray = line.split(" ")#split the line around spaces
-                result = lineArray[5]#point group string should be the 6th word
+        """
+        Check the `output` string and extract the resulting point group, which is returned.
+        """
+        for line in output.split('\n'):
+            if line.startswith("It seems to be the "): # "It seems to be the [x] point group" indicates point group.
+                result = line.split(" ")[5]
                 break
         else:
-            logging.exception("Couldn't find point group from symmetry output:\n%s"%output)
+            logging.exception("Couldn't find point group from symmetry output:\n{0}".format(output))
             raise RuntimeError("Couldn't find point group in symmetry output.")
 
-        logging.info("Point group: "+ result)#print result, at least for debugging purposes
+        logging.info("Point group: "+ result)
         return result;
            
     def run(self):
+        """
+        Run the command and wait for it to finish.
+        """
         pp = Popen(self.command, stdout=PIPE, stderr=PIPE)
         stdout, stderr = pp.communicate()
-        
         return self.check(stdout)    
     
     def writeInputFile(self):
@@ -198,20 +198,23 @@ class SymmetryJob(QMJob):
         return input_file
           
     def calculate(self):
-
+        """
+        Do the entire point group calculation.
+        
+        This writes the input file, then tries several times to run 'symmetry'
+        with different parameters, until a point group is found and returned.
+        """
         self.writeInputFile();
 
         result = "";
 
         #continue trying to generate symmetry group until too many no. of attempts or until a point group is found: 
-        while self.attemptNumber <= SymmetryJob.maxAttemptNumber and not self.pointGroupFound:
+        for attempt, arguments in enumerate(self.argumentsList):
             """
             TODO only *nix case works!
             """
-
-            self.command.append(os.path.join(self.environ, self.executable))
-            for t in self.keywords[self.attemptNumber]:
-                self.command.append(t)
+            self.command = [self.executable_path]
+            self.command.extend(arguments)
             self.command.append(os.path.join(self.molfile.directory, self.inputFile))
             
             #call the program and read the result
@@ -219,17 +222,12 @@ class SymmetryJob(QMJob):
 
             #check for a recognized point group
             symmPGC = symmetry.PointGroupDictionary()
-            #symmPGC.initiate()
-                        
+
             if symmPGC.contains(result):
                 self.pointGroupFound = True;
+                return symmetry.PointGroup(result)
             else:
-                if self.attemptNumber < self.maxAttemptNumber:
-                    logging.info("Attempt number "+self.attemptNumber+" did not identify a recognized point group (" +result+"). Will retry with looser point group criteria.")
-                else:
-                    logging.critical("Final attempt number "+self.attemptNumber+" did not identify a recognized point group (" +result+"). Exiting.")
-
-                self.attemptNumber = self.attemptNumber + 1
-                 
-            return symmetry.PointGroup(result)
+                logging.info("Attempt number {0} did not identify a recognized point group ({1}).".format(attempt,result))
+        logging.critical("Final attempt did not identify a recognized point group. Exiting.")
+        return None
 
