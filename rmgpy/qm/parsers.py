@@ -1,12 +1,12 @@
 
-'''
+"""
 Module that collects all parsers that read in a output file of a successfully finished 
 QM run (G03, MOPAC, MM4, etc...) and parses this to a workable object using an external parser library.
 
 Next this data is converted in to useful thermodynamic quantities such as H, S, Cp by calling a calculator module.
 
  
-'''
+"""
 
 from rmgpy.molecule import Molecule
 from rmgpy.thermo import ThermoData
@@ -20,7 +20,7 @@ from qmdata import CCLibData
 from cclib.parser import ccopen, MM4, Mopac
 
 class QMParser:
-    '''
+    """
     
     All sub-classes of QMParser have the following attributes:
         *inputFileExtension
@@ -29,7 +29,7 @@ class QMParser:
         *scriptFile##parsing script file
         *parsingTool
         *qmdata
-    '''
+    """
     
     def __init__(self, molfile, qmtp, environ = os.environ.get("RMG_workingDirectory")):
         self.molfile = molfile
@@ -61,7 +61,7 @@ class CCLibParser:
     def parse(self, molecule):
         try:
             #parse the Mopac file using cclib
-            '''
+            """
             
             energy = 0#PM3 energy (Hf298) in Hartree (***note: in the case of MOPAC, the MOPAC file will contain in units of kcal/mol, but modified ccLib will return in Hartree)
             
@@ -72,7 +72,7 @@ class CCLibParser:
              *  note that this is not always correct, as there can apparently be additional 
              *  spatial degeneracy for non-symmetric linear molecules like OH radical 
              *  (cf. http:#cccbdb.nist.gov/thermo.asp)            
-            '''
+            """
             if self.qmtp.qmprogram == 'gaussian03':
                 myfile=ccopen(self.path)
             elif self.qmtp.qmprogram == 'mm4':

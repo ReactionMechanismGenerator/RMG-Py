@@ -1,5 +1,5 @@
 
-'''
+"""
 QMTP Jobs is a module that collects all classes that execute external programs in the 
 framework of on-the-fly generation of thermodynamic properties via quantum chemical software packages.
 
@@ -19,8 +19,7 @@ The following implementations of QMJob are created:
 -MOPACJob
     Calls MOPAC2009 from the command line
 
-    
-'''
+"""
 
 from subprocess import Popen, PIPE
 import logging
@@ -31,7 +30,7 @@ import qmverifier as verif
 import qmtp as qm
 
 class QMJob:
-    '''
+    """
     supertype for all wrapper classes of 
     third-party quantum chemistry packages such as 
     OpenMopac, Gaussian 03, MM4.
@@ -43,7 +42,7 @@ class QMJob:
     -the directory in which the input file can be found
     -the input file extension which will be appended to the name and used in the command
     -the output file extension which will be used to check the output file for the correct termination.
-    '''
+    """
     
     def __init__(self, molfile):
         self.molfile = molfile
@@ -57,23 +56,23 @@ class QMJob:
         self.command = ''
  
     def run(self):
-        '''
+        """
         run the quantum chemistry package by initiating 
         a Process and pointing to the external executable
-        ''' 
+        """ 
         return -1
     
 
     def check(self, output):
-        '''
+        """
         Check whether the Process has terminated succesfully
         
         Returns boolean flag
-        '''
+        """
         return -1
     
 class MOPACJob(QMJob):
-    '''
+    """
     MOPACJob is the wrapper class for the Open Mopac executable.
     
     The executable is in a directory stored in an environment variable $MOPAC_DIR and is named
@@ -87,16 +86,16 @@ class MOPACJob(QMJob):
     The output file is of extension .out.
     
     
-    ''' 
+    """ 
     def __init__(self, molfile):
         QMJob.__init__(self, molfile)
         
         self.inputFileExtension = '.mop'
         self.outputFileExtension = '.out'
         
-        '''
+        """
         TODO maybe it's better to call the alias 'mopac'. However, this did not work yet... 
-        '''
+        """
         assert os.getenv('MOPAC_DIR'), "Please set the environment variable MOPAC_DIR to the directory containing MOPAC2009.exe"
         self.executable = os.path.join(os.getenv('MOPAC_DIR') , 'MOPAC2009.exe')#assumes this env var is pointing to install directory of mopac!
         assert os.path.exists(self.executable), "Please set the environment variable MOPAC_DIR to the directory containing MOPAC2009.exe"
@@ -113,11 +112,10 @@ class MOPACJob(QMJob):
         process = Popen([self.executable, self.command])
         process.communicate()# necessary to wait for executable termination!
 
-
         return self.check()
 
 class SymmetryJob(QMJob):
-     '''
+     """
      Determine the point group using the SYMMETRY program 
      (http://www.cobalt.chem.ucalgary.ca/ps/symmetry/).
      
@@ -130,7 +128,7 @@ class SymmetryJob(QMJob):
      finalTol determines how loose the point group criteria are;
      values are comparable to those specified in the GaussView point group interface
       
-     '''   
+     """   
     
      maxAttemptNumber = 4;
          
@@ -150,9 +148,7 @@ class SymmetryJob(QMJob):
         self.keywords[4] = ['-final', '0.0']
         
         
-        '''
-        IQMData is the object that holds information from a previous QM Job on 3D coords, molecule etc...
-        '''
+        "IQMData is the object that holds information from a previous QM Job on 3D coords, molecule etc..."
         self.qmdata = iqmdata
         
         self.inputFileExtension = '.symm'
@@ -190,9 +186,9 @@ class SymmetryJob(QMJob):
             " " +str(self.qmdata.atomCoords[i][1]) +\
             " " +str(self.qmdata.atomCoords[i][2]) +"\n"
             
-          '''
+          """
           Write the input file for the SYMMETRY program based on the passed-in string.
-          '''
+          """
           with open(os.path.join(self.molfile.directory, self.inputFile), 'w') as input_file:
                input_file.write(geom)
           input_file.close()
@@ -207,9 +203,9 @@ class SymmetryJob(QMJob):
 
         #continue trying to generate symmetry group until too many no. of attempts or until a point group is found: 
         while self.attemptNumber <= SymmetryJob.maxAttemptNumber and not self.pointGroupFound:
-            '''
+            """
             TODO only *nix case works!
-            '''
+            """
 
             self.command.append(os.path.join(self.environ, self.executable))
             for t in self.keywords[self.attemptNumber]:

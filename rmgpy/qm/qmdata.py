@@ -1,16 +1,16 @@
 class CCLibData:
-    '''
+    """
     This data objects collects information that CCLib was able to
     retrieve from a quantum chemistry output file.
     @author nmvdewie
-    '''
+    """
+
     def __init__(self, cclib_data, groundStateDegeneracy = -1, numberOfAtoms = -1, stericEnergy = -1, molecularMass = -1, energy = 0, atomicNumbers = [], rotationalConstants = [], atomCoords = [], frequencies = []):
-        
-         '''
+         """
          * Electronic ground state degeneracy
          * 
          * in RMG taken as number of radicals +1
-         '''
+         """
          self.groundStateDegeneracy = groundStateDegeneracy
         
          self.cclib_data = cclib_data#data object returned by a parsing tool like CCLib.parse()
@@ -18,7 +18,6 @@ class CCLibData:
          self.numberOfAtoms = cclib_data.natom
          if hasattr(cclib_data, 'stericenergy'):
              self.stericEnergy = cclib_data.stericenergy/27.2113845#steric energy (in Hartree)
-
          
          self.molecularMass = cclib_data.molmass #print the molecular mass (in amu)
          
@@ -31,4 +30,3 @@ class CCLibData:
          self.atomCoords = cclib_data.atomcoords[-1]
          
          self.frequencies = cclib_data.vibfreqs
-     

@@ -1,8 +1,8 @@
-'''
+"""
 Created on May 19, 2012
 
 @author: nmvdewie
-'''
+"""
 import unittest
 import rmgpy.qm.qmtp as qm
 import rmgpy.qm.parsers as pars
@@ -32,9 +32,9 @@ class Test(unittest.TestCase):
         os.remove(os.path.join(directory, name+'.arc'))
         
     def testSymmetryJob(self):
-        '''
+        """
         Check whether external call to symmetry tool works fine. 
-        '''
+        """
         name = 'AAAOFKFEDKWQNN-UHFFFAOYAY'
         directory = os.path.join(os.path.dirname(__file__),'data','QMfiles','G03')
         InChIaug = 'InChI=1/C9H14O2/c1-6(2)9-5-8(11-10)4-7(9)3/h4-6,8,10H,1-3H3'

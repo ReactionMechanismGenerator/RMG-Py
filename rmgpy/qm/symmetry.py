@@ -1,20 +1,20 @@
-'''
+"""
 Created on Apr 29, 2012
 
 @author: nmvdewie
-'''
+"""
 
-'''
+"""
 Module that collects all classes related to symmetry of molecules
-'''
+"""
 import os
 import jobs as job
 
 
 class PointGroupDictionary:
-    '''
+    """
      Dictionary type with all the  symmetry groups supported in RMG
-    '''
+    """
     def __init__(self):
         #Map with the symmetry groups and their associated symmmetry numbers
         self.library = {}
@@ -25,9 +25,9 @@ class PointGroupDictionary:
         self.initiate()
     
     def populateGroups(self):
-        '''
+        """
         Could be externalized, so that users could add/remove symmetry groups
-        '''
+        """
         self.library["C1"] = 1
         self.library["Cs"] = 1
         self.library["Ci"] = 1
@@ -96,9 +96,9 @@ class PointGroupDictionary:
         self.library["Kh"] = 1
         
     def populateChiralityFlags(self):
-        '''
+        """
         Could be externalized, so that users could add/remove symmetry groups
-        '''
+        """
         self.chiralLibrary["C1"] = True
         self.chiralLibrary["Cs"] = False
         self.chiralLibrary["Ci"] = False
@@ -192,13 +192,13 @@ class PointGroupDictionary:
         
 
 class PointGroupCalculator:
-    '''
+    """
  
  Wrapper type to determine molecular symmetry point groups based on 3D coords information.
   
  Will point to a specific algorithm, like SYMMETRY that is able to do this.
  
-    '''
+    """
     def __init__(self, molfile, iqmdata, environ = os.environ.get("RMG_workingDirectory")):
         self.molfile = molfile
         self.qmdata = iqmdata#data object that contains 3D coords of molecule used in symmetry calculation

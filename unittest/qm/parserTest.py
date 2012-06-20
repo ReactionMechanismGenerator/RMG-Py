@@ -1,8 +1,8 @@
-'''
+"""
 Created on May 17, 2012
 
 @author: nmvdewie
-'''
+"""
 import unittest
 import rmgpy.qm.qmtp as qm
 import rmgpy.qm.parsers as pars

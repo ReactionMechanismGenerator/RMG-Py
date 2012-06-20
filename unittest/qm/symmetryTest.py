@@ -1,8 +1,8 @@
-'''
+"""
 Created on May 18, 2012
 
 @author: nmvdewie
-'''
+"""
 import unittest
 import os
 import rmgpy.molecule as mol
@@ -15,18 +15,18 @@ import rmgpy.qm.symmetry as symm
 class Test(unittest.TestCase):
 
     def testPGDictionary(self):
-        '''
+        """
         Check the dictionary class that collects information on symmetry groups, and their
         chirality flags
-        '''
+        """
         pgd = symm.PointGroupDictionary()
         
         self.assertFalse(len(pgd.library.keys()) == 0)
 
     def testPointGroupCalculator(self):
-        '''
+        """
         Tests PointGroupCalculator
-        '''
+        """
         name = 'AAAOFKFEDKWQNN-UHFFFAOYAY'
         InChIaug = 'InChI=1/C9H14O2/c1-6(2)9-5-8(11-10)4-7(9)3/h4-6,8,10H,1-3H3'
         molecule = mol.Molecule().fromInChI(InChIaug)

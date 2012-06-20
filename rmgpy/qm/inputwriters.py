@@ -1,14 +1,11 @@
-'''
+"""
 Module that writes input files for the various QM packages.
 
 Input files contain information on the 3D coordinates of the molecule, but also 
 command strings to specify the level of theory, and other flags.
 
 
-
-'''
-
-
+"""
 
 import qmtp
 import platform
@@ -19,11 +16,10 @@ import os
 import math
 import openbabel
 
-
 class QMInputWriter:
-    '''
+    """
      Supertype for all input writers for quantum chemistry methods
-    '''
+    """
     
     #the number of keyword permutations available update as additional options are added
     scriptAttempts = 0
@@ -87,9 +83,9 @@ class MOPACPM3InputWriter(QMInputWriter):
         self.inputExtension = '.mop'
 
     def createKeywords(self):
-        '''
+        """
         Based on the attempt number keywords will be added to an QM input file.
-        '''
+        """
         inpKeyStrBoth = "pm3 "+self.multiplicityKeywords[self.multiplicity]
         inpKeyStrTop = self.keywordsTop[self.attemptNumber]
         inpKeyStrBottom = self.keywordsBottom[self.attemptNumber]
@@ -149,7 +145,7 @@ class G03PM3KEYWORDS:
     
 class GaussianPM3InputWriter(QMInputWriter):
     
-    '''static fields'''
+    """static fields"""
     scriptAttempts = 18
     
     maxAttemptNumber = 2* scriptAttempts

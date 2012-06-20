@@ -1,19 +1,19 @@
-''''
+"""
 Created on Apr 29, 2012
 
 @author: nmvdewie
-'''
+"""
 
 import os
 import qmtp as qm
 import logging
 
 class QMVerifier:
-    '''
-     * Verifies whether a QM job (externalized) was succesfully completed by 
- * searching for specific keywords in the output files, 
- * located in a specific directory (e.g. "QMFiles")
-    '''
+    """
+    Verifies whether a QM job (externalized) was succesfully completed by 
+      * searching for specific keywords in the output files, 
+      * located in a specific directory (e.g. "QMFiles")
+    """
     def __init__(self,molfile):
         self.molfile = molfile
         self.gaussianResultExists = False
@@ -29,7 +29,7 @@ class QMVerifier:
         self.successKeys['DESCRIPTION OF VIBRATIONS'] = False
     
     def checkForInChiKeyCollision(self,logFileInChI):
-            '''
+            """
             This method is designed in the case a MOPAC output file was found but the InChI found in the file did not
             correspond to the InChI of the given molecule.
             
@@ -39,7 +39,7 @@ class QMVerifier:
             second line and only a part of the InChI was actually taken as the 'whole' InChI.
             
             This method reads in the MOPAC input file and compares the found InChI in there to the InChI of the given molecule.
-            '''
+            """
             # if InChIPartialMatch == 1:#case where the InChI in memory begins with the InChI in the log file we will continue and check the input file, pring a warning if there is no match
             #look in the input file if the InChI doesn't match (apparently, certain characters can be deleted in MOPAC output file for long InChIs)
             inputFile = os.path.join(self.molfile.directory,self.molfile.name+self.inputExtension)
@@ -63,8 +63,7 @@ class QMVerifier:
                     return False
         
     def successfulMopacResultExists(self):
-        '''
-        
+        """
         Returns a boolean flag that states whether a successful MOPAC simulation already exists for the molecule with the 
         given (augmented) InChI Key.
         
@@ -77,7 +76,7 @@ class QMVerifier:
         If any of the above criteria is not matched, False will be returned and the procedures to start a new calculation 
         will be initiated.
         
-        '''
+        """
         file = os.path.join(self.molfile.directory,self.molfile.name+self.outputExtension)
         
         if os.path.exists(file):#if the file exists, do further checks otherwise, we will skip to final statement and return False
@@ -130,10 +129,10 @@ class QMVerifier:
        self.mopacResultExists = self.successfulMopacResultExists()
         
     def verifyNoFailure(self):
-        '''
+        """
         checks whether the output file contains any of the 
         failure keywords
-        '''
+        """
         file = os.path.join(self.molfile.directory,self.molfile.name+self.outputExtension)
         with open(file) as qmfile:    
                    for each_line in qmfile:
@@ -146,13 +145,8 @@ class QMVerifier:
         return True
     
     def succesfulJobExists(self):
-     '''
-      /**
-     * checks whether one of the flags is true.
-     * If so, it returns true.
-     * @return
-     */
-     '''
+        """
+        checks whether one of the flags is true.
+        If so, it returns true.
+        """
      return self.gaussianResultExists or self.mopacResultExists or self.mm4ResultExists
-     
-    
