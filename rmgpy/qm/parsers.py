@@ -1,27 +1,21 @@
-
 """
 Module that collects all parsers that read in a output file of a successfully finished 
 QM run (G03, MOPAC, MM4, etc...) and parses this to a workable object using an external parser library.
 
 Next this data is converted in to useful thermodynamic quantities such as H, S, Cp by calling a calculator module.
 
- 
 """
 
-from rmgpy.molecule import Molecule
-from rmgpy.thermo import ThermoData
-import calculator as calc
-import logging
-import re
-from subprocess import Popen
-import platform
 import os
+
+import cclib.parser
+
+import logging
+from calculator import TDPropertiesCalculator
 from qmdata import CCLibData
-from cclib.parser import ccopen, MM4, Mopac
 
 class QMParser:
     """
-    
     All sub-classes of QMParser have the following attributes:
         *inputFileExtension
         *executable #the keywords denoting the executable
@@ -48,7 +42,7 @@ class QMParser:
     def parse(self):
         self.read()
         
-        calculator = calc.TDPropertiesCalculator(self.molfile, self.qmdata, environ = self.environ)
+        calculator = TDPropertiesCalculator(self.molfile, self.qmdata, environ = self.environ)
         
         return calculator.calculate()
 
@@ -62,7 +56,6 @@ class CCLibParser:
         try:
             #parse the Mopac file using cclib
             """
-            
             energy = 0#PM3 energy (Hf298) in Hartree (***note: in the case of MOPAC, the MOPAC file will contain in units of kcal/mol, but modified ccLib will return in Hartree)
             
              * calculate ground state degeneracy from the number of radicals 
@@ -74,11 +67,11 @@ class CCLibParser:
              *  (cf. http:#cccbdb.nist.gov/thermo.asp)            
             """
             if self.qmtp.qmprogram == 'gaussian03':
-                myfile=ccopen(self.path)
+                myfile=cclib.parser.ccopen(self.path)
             elif self.qmtp.qmprogram == 'mm4':
-                myfile=MM4(self.path)
+                myfile=cclib.parser.MM4(self.path)
             elif self.qmtp.qmprogram == 'mopac':
-                myfile=Mopac(self.path)
+                myfile=cclib.parser.Mopac(self.path)
                 
             myfile.logger.setLevel(logging.ERROR) #cf. http://cclib.sourceforge.net/wiki/index.php/Using_cclib#Additional_information
             

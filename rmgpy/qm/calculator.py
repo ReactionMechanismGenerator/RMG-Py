@@ -3,14 +3,14 @@ Created on Apr 29, 2012
 
 @author: nmvdewie
 """
-
-
-import symmetry as symm
-from rmgpy.quantity import constants as cnts, Quantity
 import os
 import math
+
+import rmgpy.quantity
 from rmgpy.thermo import ThermoData
-from rmgpy.statmech import *
+from rmgpy.statmech import RigidRotor, HarmonicOscillator, Translation, StatesModel
+
+import symmetry
  
 class TDPropertiesCalculator:
     
@@ -32,12 +32,12 @@ class TDPropertiesCalculator:
     def determinePointGroup(self):
         #determine point group using the SYMMETRY Program
 
-        pgc = symm.PointGroupCalculator(self.molfile, self.qmdata, self.environ);
+        pgc = symmetry.PointGroupCalculator(self.molfile, self.qmdata, self.environ);
         self.pointGroup = pgc.calculate();
     
     def calculateChiralityCorrection(self):
         if self.pointGroup.chiral:
-            return cnts.R * math.log(2);
+            return rmgpy.quantity.constants.R * math.log(2);
         else:
             return 0.
 

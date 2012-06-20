@@ -21,13 +21,12 @@ The following implementations of QMJob are created:
 
 """
 
-from subprocess import Popen, PIPE
-import logging
-import platform
 import os
-import symmetry as sym
-import qmverifier as verif
-import qmtp as qm
+from subprocess import Popen, PIPE
+
+import logging
+import symmetry
+from qmverifier import QMVerifier
 
 class QMJob:
     """
@@ -104,7 +103,7 @@ class MOPACJob(QMJob):
         self.command = os.path.join(self.molfile.directory, self.molfile.name + self.inputFileExtension)
         
     def check(self):
-        verifier = verif.QMVerifier(self.molfile)
+        verifier = QMVerifier(self.molfile)
         return verifier.verifyNoFailure()
          
     
@@ -219,7 +218,7 @@ class SymmetryJob(QMJob):
             result = self.run();
 
             #check for a recognized point group
-            symmPGC = sym.PointGroupDictionary()
+            symmPGC = symmetry.PointGroupDictionary()
             #symmPGC.initiate()
                         
             if symmPGC.contains(result):
@@ -232,5 +231,5 @@ class SymmetryJob(QMJob):
 
                 self.attemptNumber = self.attemptNumber + 1
                  
-            return sym.PointGroup(result)
+            return symmetry.PointGroup(result)
 

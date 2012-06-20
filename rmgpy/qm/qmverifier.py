@@ -5,7 +5,7 @@ Created on Apr 29, 2012
 """
 
 import os
-import qmtp as qm
+
 import logging
 
 class QMVerifier:

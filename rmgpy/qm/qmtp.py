@@ -15,18 +15,17 @@ ThreeDMolFileCreator is a wrapper class that:
 """
 
 import os
-import platform
-from subprocess import Popen
-from rmgpy.molecule import Molecule
-import qmverifier as verif
-import parsers as pars
-import jobs as job
-import inputwriters as writers
-import symmetry as symm
-import logging
-import openbabel
+
 from rdkit import Chem
 from rdkit.Chem import AllChem
+
+import logging
+from rmgpy.molecule import Molecule
+import qmverifier
+import parsers
+import jobs
+import inputwriters
+
 
 class molFile:
     """
@@ -202,7 +201,7 @@ class QMTP:
         if self.qmMethod == "pm3" :
                         
             if  self.qmprogram == "mopac" or self.qmprogram == "both" :
-                parser = pars.MOPACPM3Parser(molfile, self)
+                parser = parsers.MOPACPM3Parser(molfile, self)
                 result = parser.parse()
                 result.comment = result.comment +'MOPAC PM3 calculation'
                 logging.info("Thermo for " + molfile.name + ": "+ result.__repr__())#print result, at least for debugging purposes
@@ -240,7 +239,7 @@ class QMTP:
        
         #verify whether a succesful QM results exists for this particular species:
         molfile = molFile(Molecule(), name, InChIaug, QMTP.qmfolder)
-        verifier = verif.QMVerifier(molfile)
+        verifier = qmverifier.QMVerifier(molfile)
         verifier.verify()   
          
         #if a succesful job exists (by one of the QM Programs), you can readily parse it.
@@ -276,7 +275,7 @@ class QMTP:
              * returns an integer indicating success or failure of the MOPAC calculation: 1 for success, 0 for failure
              * this function is based on the Gaussian analogue
             """
-            jobMOPAC = job.MOPACJob(molfile) 
+            jobMOPAC = jobs.MOPACJob(molfile) 
             return jobMOPAC.run()
          
         else :
@@ -288,7 +287,7 @@ class QMTP:
         #3. create the Gaussian or MOPAC input file
         if self.qmprogram == "mopac"  or  self.qmprogram == "both":
             #write a file with the input keywords
-            writer = writers.MOPACPM3InputWriter(molfile, attemptNumber, multiplicity)
+            writer = inputwriters.MOPACPM3InputWriter(molfile, attemptNumber, multiplicity)
             inputFile = writer.write()
             
          

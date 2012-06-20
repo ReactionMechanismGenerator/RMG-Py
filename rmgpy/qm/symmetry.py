@@ -8,7 +8,7 @@ Created on Apr 29, 2012
 Module that collects all classes related to symmetry of molecules
 """
 import os
-import jobs as job
+import jobs
 
 
 class PointGroupDictionary:
@@ -203,9 +203,8 @@ class PointGroupCalculator:
         self.molfile = molfile
         self.qmdata = iqmdata#data object that contains 3D coords of molecule used in symmetry calculation
         self.environ = environ
-        self.calculator = job.SymmetryJob(molfile, iqmdata, environ)
-        
-        
+        self.calculator = jobs.SymmetryJob(molfile, iqmdata, environ)
+
     def calculate(self):
         return self.calculator.calculate();
 

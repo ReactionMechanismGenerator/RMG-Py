@@ -7,14 +7,16 @@ command strings to specify the level of theory, and other flags.
 
 """
 
-import qmtp
-import platform
-from subprocess import Popen
-from symmetry import *
-import logging
 import os
 import math
+import platform
+from subprocess import Popen
+
 import openbabel
+
+import logging
+import qmtp
+
 
 class QMInputWriter:
     """
