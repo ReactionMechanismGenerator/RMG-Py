@@ -21,7 +21,7 @@ from rmgpy.molecule import Molecule
 import qmverifier as verif
 import parsers as pars
 import jobs as job
-import qminputwriters as writers
+import inputwriters as writers
 import symmetry as symm
 import logging
 import openbabel

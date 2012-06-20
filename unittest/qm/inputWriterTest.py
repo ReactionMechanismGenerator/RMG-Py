@@ -5,7 +5,7 @@ Created on May 23, 2012
 '''
 import time
 import unittest
-import rmgpy.qm.qminputwriters as writers
+import rmgpy.qm.inputwriters as writers
 import os
 import rmgpy.qm.qmtp as qm
 import rmgpy.molecule as mol
