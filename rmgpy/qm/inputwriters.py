@@ -126,34 +126,44 @@ class GaussianPM3InputWriter(QMInputWriter):
     
     maxAttemptNumber = 2* scriptAttempts
     
-    def __init__(self, p_molfile, attemptNumber, multiplicity):
-        QMInputWriter.__init__(self, p_molfile, attemptNumber, multiplicity)
-        
-        self.keywords = {}
-        
-        self.inputExtension = '.gjf'
-        
-        self.keywordsTop = {}#keywords that will be added to the qm input file based on the attempt number
-        self.keywordsTop[1] = "# pm3 opt=(verytight,gdiis) freq IOP(2/16=3)"
-        self.keywordsTop[2] = "# pm3 opt=(verytight,gdiis) freq IOP(2/16=3) IOP(4/21=2)"
-        self.keywordsTop[3] = "# pm3 opt=(verytight,calcfc,maxcyc=200) freq IOP(2/16=3) nosymm" 
-        self.keywordsTop[4] = "# pm3 opt=(verytight,calcfc,maxcyc=200) freq=numerical IOP(2/16=3) nosymm"
-        self.keywordsTop[5] = "# pm3 opt=(verytight,gdiis,small) freq IOP(2/16=3)"
-        self.keywordsTop[6] = "# pm3 opt=(verytight,nolinear,calcfc,small) freq IOP(2/16=3)"
-        self.keywordsTop[7] = "# pm3 opt=(verytight,gdiis,maxcyc=200) freq=numerical IOP(2/16=3)"
-        self.keywordsTop[8] = "# pm3 opt=tight freq IOP(2/16=3)"
-        self.keywordsTop[9] = "# pm3 opt=tight freq=numerical IOP(2/16=3)"
-        self.keywordsTop[10] = "# pm3 opt=(tight,nolinear,calcfc,small,maxcyc=200) freq IOP(2/16=3)"
-        self.keywordsTop[11] = "# pm3 opt freq IOP(2/16=3)"
-        self.keywordsTop[12] = "# pm3 opt=(verytight,gdiis) freq=numerical IOP(2/16=3) IOP(4/21=200)"
-        self.keywordsTop[13] = "# pm3 opt=(calcfc,verytight,newton,notrustupdate,small,maxcyc=100,maxstep=100) freq=(numerical,step=10) IOP(2/16=3) nosymm"
-        self.keywordsTop[14] = "# pm3 opt=(tight,gdiis,small,maxcyc=200,maxstep=100) freq=numerical IOP(2/16=3) nosymm"
-        self.keywordsTop[15] = "# pm3 opt=(tight,gdiis,small,maxcyc=200,maxstep=100) freq=numerical IOP(2/16=3) nosymm"
-        self.keywordsTop[16] = "# pm3 opt=(verytight,gdiis,calcall,small,maxcyc=200) IOP(2/16=3) IOP(4/21=2) nosymm"
-        self.keywordsTop[17] = "# pm3 opt=(verytight,gdiis,calcall,small) IOP(2/16=3) nosymm"
-        self.keywordsTop[18] = "# pm3 opt=(calcall,small,maxcyc=100) IOP(2/16=3)"
+    keywords = {}
+    
+    inputExtension = '.gjf'
+    
+    keywordsTop = {}#keywords that will be added to the qm input file based on the attempt number
+    keywordsTop[1] = "# pm3 opt=(verytight,gdiis) freq IOP(2/16=3)"
+    keywordsTop[2] = "# pm3 opt=(verytight,gdiis) freq IOP(2/16=3) IOP(4/21=2)"
+    keywordsTop[3] = "# pm3 opt=(verytight,calcfc,maxcyc=200) freq IOP(2/16=3) nosymm" 
+    keywordsTop[4] = "# pm3 opt=(verytight,calcfc,maxcyc=200) freq=numerical IOP(2/16=3) nosymm"
+    keywordsTop[5] = "# pm3 opt=(verytight,gdiis,small) freq IOP(2/16=3)"
+    keywordsTop[6] = "# pm3 opt=(verytight,nolinear,calcfc,small) freq IOP(2/16=3)"
+    keywordsTop[7] = "# pm3 opt=(verytight,gdiis,maxcyc=200) freq=numerical IOP(2/16=3)"
+    keywordsTop[8] = "# pm3 opt=tight freq IOP(2/16=3)"
+    keywordsTop[9] = "# pm3 opt=tight freq=numerical IOP(2/16=3)"
+    keywordsTop[10] = "# pm3 opt=(tight,nolinear,calcfc,small,maxcyc=200) freq IOP(2/16=3)"
+    keywordsTop[11] = "# pm3 opt freq IOP(2/16=3)"
+    keywordsTop[12] = "# pm3 opt=(verytight,gdiis) freq=numerical IOP(2/16=3) IOP(4/21=200)"
+    keywordsTop[13] = "# pm3 opt=(calcfc,verytight,newton,notrustupdate,small,maxcyc=100,maxstep=100) freq=(numerical,step=10) IOP(2/16=3) nosymm"
+    keywordsTop[14] = "# pm3 opt=(tight,gdiis,small,maxcyc=200,maxstep=100) freq=numerical IOP(2/16=3) nosymm"
+    keywordsTop[15] = "# pm3 opt=(tight,gdiis,small,maxcyc=200,maxstep=100) freq=numerical IOP(2/16=3) nosymm"
+    keywordsTop[16] = "# pm3 opt=(verytight,gdiis,calcall,small,maxcyc=200) IOP(2/16=3) IOP(4/21=2) nosymm"
+    keywordsTop[17] = "# pm3 opt=(verytight,gdiis,calcall,small) IOP(2/16=3) nosymm"
+    keywordsTop[18] = "# pm3 opt=(calcall,small,maxcyc=100) IOP(2/16=3)"
+    
+    def __init__(self, molfile, attemptNumber, multiplicity):
+        QMInputWriter.__init__(self, molfile, attemptNumber, multiplicity)
+
         
     def createInputFile(self):
+        
+        keywords = "\n".join((
+            "%chk={0}/RMGrunCHKfile.chk".format(self.molfile.directory),
+            "%mem=6MW",
+            "%nproc=1",
+            self.keywordsTop[self.attemptNumber] + ' polar' if qmtp.QMTP.usePolar else ''
+            ))
+        inputFilePath = os.path.join(self.molfile.directory,self.molfile.name + self.inputExtension)
+        
         obConversion = openbabel.OBConversion()
         obConversion.SetInAndOutFormats("mol", "gjf")
         mol = openbabel.OBMol()
@@ -163,33 +173,18 @@ class GaussianPM3InputWriter(QMInputWriter):
         else:
             obConversion.ReadFile(mol, self.molfile.crudepath)
     
-        mol.SetTitle(self.molfile.molecule.toAugmentedInChI()) 
+        mol.SetTitle(self.molfile.molecule.toAugmentedInChI())
         obConversion.SetOptions('k', openbabel.OBConversion.OUTOPTIONS)
-        'TODO still dont know how to write keywords, therefore they will be prepended afterwards...'
-        obConversion.WriteFile(mol, os.path.join(self.molfile.directory,self.molfile.name + self.inputExtension))
+        
+        input_string = obConversion.WriteString(mol)
+        
+        with open(inputFilePath, 'w') as gjfFile:
+            gjfFile.write(keywords)
+            gjfFile.write(input_string)
 
-        #pre-pend keywords:
-        with open(os.path.join(self.molfile.directory,self.molfile.name + self.inputExtension), 'r+') as gjf:
-            old = gjf.read() # read everything in the file
-            gjf.seek(0) # rewind
-            gjf.write(self.keywords[G03PM3KEYWORDS.INPUT] + old) # write the new line before
- 
-        return self.molfile.name+".gjf"
+        return self.molfile.name + self.inputExtension
     
     def write(self):
-        self.createKeywords()
         inputFile = self.createInputFile()
         return inputFile
     
-    def createKeywords(self):
-        inpKeyStr ="%chk=" + self.molfile.directory + "/RMGrunCHKfile.chk\n"
-        inpKeyStr =inpKeyStr + "%mem=6MW\n"
-        inpKeyStr =inpKeyStr + "%nproc=1\n"
-        inpKeyStr =inpKeyStr + self.keywordsTop[self.attemptNumber]
-        
-        if qmtp.QMTP.usePolar:
-            inpKeyStr = inpKeyStr+" polar"
-
-        self.keywords[G03PM3KEYWORDS.INPUT] = inpKeyStr
-        
-        return self.keywords
