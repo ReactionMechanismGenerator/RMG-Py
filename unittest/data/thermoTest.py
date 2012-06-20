@@ -6,12 +6,15 @@ import unittest
 import sys
 sys.path.append('.')
 
-from rmgpy.data.thermo import loadThermoDatabase, ThermoEntry, generateThermoData
+import rmgpy.data.thermo
+
 from rmgpy.data.base import LogicNode
 from rmgpy.chem.molecule import Molecule
 from rmgpy.chem.pattern import MoleculePattern
 from rmgpy.chem.thermo import ThermoData
 from rmgpy.chem.species import Species
+
+from rmgpy import settings
 
 ################################################################################
 
@@ -21,7 +24,7 @@ class ThermoDatabaseCheck(unittest.TestCase):
         """
         Check the database load functions.
         """
-
+        
         thermoDatabase = loadThermoDatabase('database/output/RMG_Database/thermo_groups', group=True, old=True)
 
         for database in [thermoDatabase.groupDatabase,
@@ -75,15 +78,15 @@ class ThermoDatabaseCheck(unittest.TestCase):
         """
         Check the database load functions.
         """
-
-        thermoDatabase = loadThermoDatabase('database/input/RMG_database/thermo_groups', group=True, old=False)
+        thermoDatabase = rmgpy.data.thermo.ThermoDatabase()
+        thermoDatabase.load(os.path.join(settings['database.path'],'RMG_Database'))
 
         for database in [thermoDatabase.groupDatabase,
-            thermoDatabase.int15Database,
-            thermoDatabase.gaucheDatabase,
-            thermoDatabase.otherDatabase,
-            thermoDatabase.radicalDatabase,
-            thermoDatabase.ringDatabase]:
+                thermoDatabase.int15Database,
+                thermoDatabase.gaucheDatabase,
+                thermoDatabase.otherDatabase,
+                thermoDatabase.radicalDatabase,
+                thermoDatabase.ringDatabase]:
 
             # All nodes in library should be in tree and dictionary
             # All nodes in tree should be in dictionary
