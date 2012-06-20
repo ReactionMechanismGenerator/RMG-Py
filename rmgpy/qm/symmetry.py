@@ -1,12 +1,10 @@
 """
 Created on Apr 29, 2012
-
 @author: nmvdewie
-"""
 
-"""
 Module that collects all classes related to symmetry of molecules
 """
+
 import os
 import jobs
 
@@ -164,7 +162,7 @@ class PointGroupDictionary:
         self.chiralLibrary["Dinfh"] = False
         self.chiralLibrary["I"] = True
         self.chiralLibrary["Ih"] = False
-        self.chiralLibrary["Kh"] = False        
+        self.chiralLibrary["Kh"] = False
     
     def initiate(self):
         self.populateGroups()
@@ -193,11 +191,9 @@ class PointGroupDictionary:
 
 class PointGroupCalculator:
     """
- 
- Wrapper type to determine molecular symmetry point groups based on 3D coords information.
-  
- Will point to a specific algorithm, like SYMMETRY that is able to do this.
- 
+    Wrapper type to determine molecular symmetry point groups based on 3D coords information.
+     
+    Will point to a specific algorithm, like SYMMETRY that is able to do this.
     """
     def __init__(self, molfile, iqmdata, environ = os.environ.get("RMG_workingDirectory")):
         self.molfile = molfile
