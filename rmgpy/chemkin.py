@@ -843,13 +843,6 @@ def writeThermoEntry(species):
             elementCounts.append(1)
         else:
             elementCounts[elements.index(symbol)] += 1
-        # Also handle implicit hydrogen atoms
-        symbol = 'H'
-        if symbol not in elements:
-            elements.append(symbol)
-            elementCounts.append(atom.implicitHydrogens)
-        else:
-            elementCounts[elements.index(symbol)] += atom.implicitHydrogens
     # Remove elements with zero count
     index = 0
     while index < len(elementCounts):

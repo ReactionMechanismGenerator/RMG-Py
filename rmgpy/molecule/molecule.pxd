@@ -24,10 +24,10 @@
 #
 ################################################################################
 
-from graph cimport Vertex, Edge, Graph
-from atomtype cimport AtomType
-from group cimport GroupAtom, GroupBond, Group
-from element cimport Element
+from .graph cimport Vertex, Edge, Graph
+from .atomtype cimport AtomType
+from .group cimport GroupAtom, GroupBond, Group
+from .element cimport Element
 
 ################################################################################
 
@@ -36,16 +36,15 @@ cdef class Atom(Vertex):
     cdef public Element element
     cdef public short radicalElectrons
     cdef public short spinMultiplicity
-    cdef public short implicitHydrogens
     cdef public short charge
     cdef public str label
     cdef public AtomType atomType
 
-    cpdef bint equivalent(self, Vertex other)
+    cpdef bint equivalent(self, Vertex other) except -2
 
-    cpdef bint isSpecificCaseOf(self, Vertex other)
+    cpdef bint isSpecificCaseOf(self, Vertex other) except -2
 
-    cpdef Atom copy(self)
+    cpdef Vertex copy(self)
 
     cpdef bint isHydrogen(self)
 
@@ -57,21 +56,23 @@ cdef class Atom(Vertex):
 
 ################################################################################
 
+cpdef object SMILEwriter
+    
 cdef class Bond(Edge):
 
     cdef public str order
 
-    cpdef bint equivalent(self, Edge other)
+    cpdef bint equivalent(self, Edge other) except -2
 
-    cpdef bint isSpecificCaseOf(self, Edge other)
+    cpdef bint isSpecificCaseOf(self, Edge other) except -2
 
-    cpdef Bond copy(self)
+    cpdef Edge copy(self)
 
-    cpdef bint isSingle(self)
+    cpdef bint isSingle(self) except -2
 
-    cpdef bint isDouble(self)
+    cpdef bint isDouble(self) except -2
 
-    cpdef bint isTriple(self)
+    cpdef bint isTriple(self) except -2
 
 ################################################################################
 
@@ -82,7 +83,7 @@ cdef class Molecule(Graph):
 
     cpdef addAtom(self, Atom atom)
 
-    cpdef addBond(self, Atom atom1, Atom atom2, Bond bond)
+    cpdef addBond(self, Bond bond)
 
     cpdef dict getBonds(self, Atom atom)
 
@@ -94,7 +95,7 @@ cdef class Molecule(Graph):
 
     cpdef removeAtom(self, Atom atom)
 
-    cpdef removeBond(self, Atom atom1, Atom atom2)
+    cpdef removeBond(self, Bond bond)
 
     cpdef sortAtoms(self)
 
@@ -106,39 +107,35 @@ cdef class Molecule(Graph):
 
     cpdef deleteHydrogens(self)
 
-    cpdef makeHydrogensImplicit(self)
-
-    cpdef makeHydrogensExplicit(self)
-
     cpdef clearLabeledAtoms(self)
 
-    cpdef bint containsLabeledAtom(self, str label)
+    cpdef bint containsLabeledAtom(self, str label) except -2
 
     cpdef Atom getLabeledAtom(self, str label)
 
     cpdef dict getLabeledAtoms(self)
 
-    cpdef bint isIsomorphic(self, Graph other0, dict initialMap=?)
+    cpdef bint isIsomorphic(self, Graph other, dict initialMap=?) except -2
 
-    cpdef tuple findIsomorphism(self, Graph other0, dict initialMap=?)
+    cpdef list findIsomorphism(self, Graph other, dict initialMap=?)
 
-    cpdef bint isSubgraphIsomorphic(self, Graph other, dict initialMap=?)
+    cpdef bint isSubgraphIsomorphic(self, Graph other, dict initialMap=?) except -2
 
-    cpdef tuple findSubgraphIsomorphisms(self, Graph other, dict initialMap=?)
+    cpdef list findSubgraphIsomorphisms(self, Graph other, dict initialMap=?)
 
-    cpdef bint isAtomInCycle(self, Atom atom)
+    cpdef bint isAtomInCycle(self, Atom atom) except -2
 
-    cpdef bint isBondInCycle(self, Atom atom1, Atom atom2)
+    cpdef bint isBondInCycle(self, Bond bond) except -2
 
     cpdef draw(self, str path)
 
-    cpdef fromCML(self, str cmlstr, bint implicitH=?)
+    cpdef fromCML(self, str cmlstr)
 
-    cpdef fromInChI(self, str inchistr, bint implicitH=?)
+    cpdef fromInChI(self, str inchistr)
 
-    cpdef fromSMILES(self, str smilesstr, bint implicitH=?)
+    cpdef fromSMILES(self, str smilesstr)
 
-    cpdef fromOBMol(self, obmol, bint implicitH=?)
+    cpdef fromOBMol(self, obmol)
 
     cpdef fromAdjacencyList(self, str adjlist)
 
@@ -158,20 +155,12 @@ cdef class Molecule(Graph):
 
     cpdef toAdjacencyList(self, str label=?, bint removeH=?)
 
-    cpdef bint isLinear(self)
+    cpdef bint isLinear(self) except -2
 
-    cpdef int countInternalRotors(self)
+    cpdef int countInternalRotors(self) except -2
 
     cpdef getAdjacentResonanceIsomers(self)
 
     cpdef findAllDelocalizationPaths(self, Atom atom1)
 
-    cpdef int calculateAtomSymmetryNumber(self, Atom atom)
-
-    cpdef int calculateBondSymmetryNumber(self, Atom atom1, Atom atom2)
-
-    cpdef int calculateAxisSymmetryNumber(self)
-
-    cpdef int calculateCyclicSymmetryNumber(self)
-
-    cpdef int calculateSymmetryNumber(self)
+    cpdef int calculateSymmetryNumber(self) except -1

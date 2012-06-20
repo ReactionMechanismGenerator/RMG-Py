@@ -7,8 +7,8 @@ This module contains unit tests of the rmgpy.element module.
 
 import unittest
 
-from rmgpy.element import Element
-import rmgpy.element
+from rmgpy.molecule.element import Element
+import rmgpy.molecule.element
 
 ################################################################################
 
@@ -21,7 +21,7 @@ class TestElement(unittest.TestCase):
         """
         A function run before each unit test in this class.
         """
-        self.element = rmgpy.element.C
+        self.element = rmgpy.molecule.element.C
         
     def testPickle(self):
         """
@@ -50,8 +50,8 @@ class TestElement(unittest.TestCase):
         """
         Test the rmgpy.elements.getElement() method.
         """
-        self.assertTrue(rmgpy.element.getElement(6) is self.element)
-        self.assertTrue(rmgpy.element.getElement('C') is self.element)
+        self.assertTrue(rmgpy.molecule.element.getElement(6) is self.element)
+        self.assertTrue(rmgpy.molecule.element.getElement('C') is self.element)
         
 ################################################################################
 

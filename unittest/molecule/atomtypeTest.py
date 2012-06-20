@@ -7,8 +7,8 @@ This module contains unit tests of the rmgpy.atomtype module.
 
 import unittest
 
-import rmgpy.atomtype
-from rmgpy.atomtype import AtomType, getAtomType
+import rmgpy.molecule.atomtype
+from rmgpy.molecule.atomtype import AtomType, getAtomType
 
 ################################################################################
 
@@ -21,7 +21,7 @@ class TestAtomType(unittest.TestCase):
         """
         A function run before each unit test in this class.
         """
-        self.atomType = rmgpy.atomtype.atomTypes['Cd']
+        self.atomType = rmgpy.molecule.atomtype.atomTypes['Cd']
         
     def testPickle(self):
         """

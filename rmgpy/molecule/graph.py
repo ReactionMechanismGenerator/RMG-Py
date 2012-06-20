@@ -58,6 +58,7 @@ class Vertex(object):
     """
 
     def __init__(self):
+        self.edges = {}
         self.resetConnectivityValues()
 
     def __reduce__(self):
@@ -65,18 +66,33 @@ class Vertex(object):
         A helper function used when pickling an object.
         """
         d = {
+            'edges': self.edges,
             'connectivity1': self.connectivity1,
             'connectivity2': self.connectivity2,
             'connectivity3': self.connectivity3,
             'sortingLabel': self.sortingLabel,
+            'terminal': self.terminal,
+            'mapping': self.mapping,
         }
         return (Vertex, (), d)
 
     def __setstate__(self, d):
+        self.edges = d['edges']
         self.connectivity1 = d['connectivity1']
         self.connectivity2 = d['connectivity2']
         self.connectivity3 = d['connectivity3']
         self.sortingLabel = d['sortingLabel']
+        self.terminal = d['terminal']
+        self.mapping = d['mapping']
+
+    def copy(self):
+        """
+        Return a copy of the vertex. The default implementation assumes that no
+        semantic information is associated with each vertex, and therefore
+        simply returns a new :class:`Vertex` object.
+        """
+        new = Vertex()
+        return new
 
     def equivalent(self, other):
         """
@@ -102,6 +118,8 @@ class Vertex(object):
         self.connectivity2 = -1
         self.connectivity3 = -1
         self.sortingLabel = -1
+        self.terminal = False
+        self.mapping = None
 
 def getVertexConnectivityValue(vertex):
     """
@@ -128,14 +146,25 @@ class Edge(object):
     in the derived class.
     """
 
-    def __init__(self):
-        pass
+    def __init__(self, vertex1, vertex2):
+        self.vertex1 = vertex1
+        self.vertex2 = vertex2
 
     def __reduce__(self):
         """
         A helper function used when pickling an object.
         """
-        return (Edge, ())
+        return (Edge, (self.vertex1, self.vertex2))
+
+    def copy(self):
+        """
+        Return a copy of the edge. The default implementation assumes that no
+        semantic information is associated with each edge, and therefore
+        simply returns a new :class:`Edge` object. Note that the vertices are
+        not copied in this implementation.
+        """
+        new = Edge(self.vertex1, self.vertex2)
+        return new
 
     def equivalent(self, other):
         """
@@ -153,6 +182,19 @@ class Edge(object):
         """
         return True
 
+    def getOtherVertex(self, vertex):
+        """
+        Given a vertex that makes up part of the edge, return the other vertex.
+        Raise a :class:`ValueError` if the given vertex is not part of the
+        edge.
+        """
+        if self.vertex1 is vertex:
+            return self.vertex2
+        elif self.vertex2 is vertex:
+            return self.vertex1
+        else:
+            raise ValueError('The given vertex is not one of the vertices of this edge.')
+
 ################################################################################
 
 class Graph:
@@ -166,44 +208,48 @@ class Graph:
     or the :meth:`getEdges` method.
     """
 
-    def __init__(self, vertices=None, edges=None):
+    def __init__(self, vertices=None):
         self.vertices = vertices or []
-        self.edges = edges or {}
         
     def __reduce__(self):
         """
         A helper function used when pickling an object.
         """
-        return (Graph, (self.vertices, self.edges))
+        return (Graph, (self.vertices,))
 
     def addVertex(self, vertex):
         """
         Add a `vertex` to the graph. The vertex is initialized with no edges.
         """
         self.vertices.append(vertex)
-        self.edges[vertex] = dict()
+        vertex.edges = dict()
         return vertex
 
-    def addEdge(self, vertex1, vertex2, edge):
+    def addEdge(self, edge):
         """
-        Add an `edge` to the graph as an edge connecting the two vertices
-        `vertex1` and `vertex2`.
+        Add an `edge` to the graph. The two vertices in the edge must already
+        exist in the graph, or a :class:`ValueError` is raised.
         """
-        self.edges[vertex1][vertex2] = edge
-        self.edges[vertex2][vertex1] = edge
+        if edge.vertex1 not in self.vertices or edge.vertex2 not in self.vertices:
+            raise ValueError('Attempted to add edge between vertices not in the graph.')
+        edge.vertex1.edges[edge.vertex2] = edge
+        edge.vertex2.edges[edge.vertex1] = edge
         return edge
 
     def getEdges(self, vertex):
         """
         Return a list of the edges involving the specified `vertex`.
         """
-        return self.edges[vertex]
+        return vertex.edges
 
     def getEdge(self, vertex1, vertex2):
         """
         Returns the edge connecting vertices `vertex1` and `vertex2`.
         """
-        return self.edges[vertex1][vertex2]
+        try:
+            return vertex1.edges[vertex2]
+        except KeyError:
+            raise ValueError('The specified vertices are not connected by an edge in this graph.')
 
     def hasVertex(self, vertex):
         """
@@ -217,7 +263,7 @@ class Graph:
         Returns ``True`` if vertices `vertex1` and `vertex2` are connected
         by an edge, or ``False`` if not.
         """
-        return vertex2 in self.edges[vertex1] if vertex1 in self.edges else False
+        return vertex1 in self.vertices and vertex2 in vertex1.edges
 
     def removeVertex(self, vertex):
         """
@@ -225,21 +271,20 @@ class Graph:
         not remove vertices that no longer have any edges as a result of this
         removal.
         """
-        for vertex2 in self.vertices:
-            if vertex2 is not vertex:
-                if vertex in self.edges[vertex2]:
-                    del self.edges[vertex2][vertex]
-        del self.edges[vertex]
+        cython.declare(vertex2=Vertex)
+        for vertex2 in vertex.edges:
+            del vertex2.edges[vertex]
+        vertex.edges = dict()
         self.vertices.remove(vertex)
 
-    def removeEdge(self, vertex1, vertex2):
+    def removeEdge(self, edge):
         """
-        Remove the edge having vertices `vertex1` and `vertex2` from the graph.
+        Remove the specified `edge` from the graph.
         Does not remove vertices that no longer have any edges as a result of
         this removal.
         """
-        del self.edges[vertex1][vertex2]
-        del self.edges[vertex2][vertex1]
+        del edge.vertex1.edges[edge.vertex2]
+        del edge.vertex2.edges[edge.vertex1]
 
     def copy(self, deep=False):
         """
@@ -248,43 +293,50 @@ class Graph:
         If `deep` is ``False`` or not specified, a shallow copy is made: the
         original vertices and edges are used in the new graph.
         """
-        other = cython.declare(Graph)
+        cython.declare(other=Graph)
+        cython.declare(vertex=Vertex, vertex1=Vertex, vertex2=Vertex)
+        cython.declare(edge=Edge)
+        cython.declare(edges=dict)
+        cython.declare(index1=cython.int, index2=cython.int)
+        
         other = Graph()
         for vertex in self.vertices:
-            other.addVertex(vertex.copy() if deep else vertex)
-        for vertex1 in self.vertices:
-            for vertex2 in self.edges[vertex1]:
-                if deep:
+            if deep:
+                other.addVertex(vertex.copy())
+            else:
+                edges = vertex.edges
+                other.addVertex(vertex)
+                vertex.edges = edges
+        if deep:
+            for vertex1 in self.vertices:
+                for vertex2 in vertex1.edges:
                     index1 = self.vertices.index(vertex1)
                     index2 = self.vertices.index(vertex2)
-                    other.addEdge(other.vertices[index1], other.vertices[index2],
-                    self.edges[vertex1][vertex2].copy())
-                else:
-                    other.addEdge(vertex1, vertex2, self.edges[vertex1][vertex2])
+                    edge = vertex1.edges[vertex2].copy()
+                    edge.vertex1 = other.vertices[index1]
+                    edge.vertex2 = other.vertices[index2]
+                    other.addEdge(edge)            
         return other
 
     def merge(self, other):
         """
         Merge two graphs so as to store them in a single Graph object.
         """
-
+        cython.declare(new=Graph)
+        cython.declare(vertex=Vertex, vertex1=Vertex, vertex2=Vertex)
+        
         # Create output graph
-        new = cython.declare(Graph)
         new = Graph()
 
         # Add vertices to output graph
         for vertex in self.vertices:
+            edges = vertex.edges
             new.addVertex(vertex)
+            vertex.edges = edges
         for vertex in other.vertices:
+            edges = vertex.edges
             new.addVertex(vertex)
-
-        # Add edges to output graph
-        for v1 in self.vertices:
-            for v2 in self.edges[v1]:
-                new.edges[v1][v2] = self.edges[v1][v2]
-        for v1 in other.vertices:
-            for v2 in other.edges[v1]:
-                new.edges[v1][v2] = other.edges[v1][v2]
+            vertex.edges = edges
 
         return new
 
@@ -293,13 +345,12 @@ class Graph:
         Convert a single Graph object containing two or more unconnected graphs
         into separate graphs.
         """
-
+        cython.declare(new1=Graph, new2=Graph)
+        cython.declare(vertex=Vertex, vertex1=Vertex, vertex2=Vertex)
+        cython.declare(verticesToMove=list)
+        cython.declare(index=cython.int)
+        
         # Create potential output graphs
-        new1 = cython.declare(Graph)
-        new2 = cython.declare(Graph)
-        verticesToMove = cython.declare(list)
-        index = cython.declare(cython.int)
-
         new1 = self.copy()
         new2 = Graph()
 
@@ -312,30 +363,20 @@ class Graph:
         # Iterate until there are no more atoms to move
         index = 0
         while index < len(verticesToMove):
-            for v2 in self.edges[verticesToMove[index]]:
+            for v2 in verticesToMove[index].edges:
                 if v2 not in verticesToMove:
                     verticesToMove.append(v2)
             index += 1
-
+        
         # If all atoms are to be moved, simply return new1
         if len(new1.vertices) == len(verticesToMove):
             return [new1]
 
-        # Copy to new graph
+        # Copy to new graph and remove from old graph
         for vertex in verticesToMove:
-            new2.addVertex(vertex)
-        for v1 in verticesToMove:
-            for v2, edge in new1.edges[v1].iteritems():
-                new2.edges[v1][v2] = edge
-
-        # Remove from old graph
-        for v1 in new2.vertices:
-            for v2 in new2.edges[v1]:
-                if v1 in verticesToMove and v2 in verticesToMove:
-                    del new1.edges[v1][v2]
-        for vertex in verticesToMove:
-            new1.removeVertex(vertex)
-
+            new2.vertices.append(vertex)
+            new1.vertices.remove(vertex)
+        
         new = [new2]
         new.extend(new1.split())
         return new
@@ -353,22 +394,19 @@ class Graph:
         Update the connectivity values for each vertex in the graph. These are
         used to accelerate the isomorphism checking.
         """
-
-        cython.declare(count=cython.short, edges=dict)
         cython.declare(vertex1=Vertex, vertex2=Vertex)
-
+        cython.declare(count=cython.short)
+        
         for vertex1 in self.vertices:
-            count = len(self.edges[vertex1])
+            count = len(vertex1.edges)
             vertex1.connectivity1 = count
         for vertex1 in self.vertices:
             count = 0
-            edges = self.edges[vertex1]
-            for vertex2 in edges: count += vertex2.connectivity1
+            for vertex2 in vertex1.edges: count += vertex2.connectivity1
             vertex1.connectivity2 = count
         for vertex1 in self.vertices:
             count = 0
-            edges = self.edges[vertex1]
-            for vertex2 in edges: count += vertex2.connectivity2
+            for vertex2 in vertex1.edges: count += vertex2.connectivity2
             vertex1.connectivity3 = count
         
     def sortVertices(self):
@@ -394,7 +432,7 @@ class Graph:
         Returns :data:`True` if two graphs are isomorphic and :data:`False`
         otherwise. Uses the VF2 algorithm of Vento and Foggia.
         """
-        return VF2_isomorphism(self, other, False, False, initialMap)[0]
+        return VF2_isomorphism(self, other, False, False, initialMap)
 
     def findIsomorphism(self, other, initialMap=None):
         """
@@ -409,7 +447,7 @@ class Graph:
         Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
         otherwise. Uses the VF2 algorithm of Vento and Foggia.
         """
-        return VF2_isomorphism(self, other, True, False, initialMap)[0]
+        return VF2_isomorphism(self, other, True, False, initialMap)
 
     def findSubgraphIsomorphisms(self, other, initialMap=None):
         """
@@ -422,9 +460,10 @@ class Graph:
 
     def isCyclic(self):
         """
-        Return :data:`True` if one or more cycles are present in the structure
-        and :data:`False` otherwise.
+        Return ``True`` if one or more cycles are present in the graph or
+        ``False`` otherwise.
         """
+        cython.declare(vertex=Vertex)
         for vertex in self.vertices:
             if self.isVertexInCycle(vertex):
                 return True
@@ -432,46 +471,46 @@ class Graph:
 
     def isVertexInCycle(self, vertex):
         """
-        Return :data:`True` if `vertex` is in one or more cycles in the graph,
-        or :data:`False` if not.
+        Return ``True`` if the given `vertex` is contained in one or more
+        cycles in the graph, or ``False`` if not.
         """
-        chain = cython.declare(list)
-        chain = [vertex]
-        return self.__isChainInCycle(chain)
+        return self.__isChainInCycle([vertex])
 
-    def isEdgeInCycle(self, vertex1, vertex2):
+    def isEdgeInCycle(self, edge):
         """
         Return :data:`True` if the edge between vertices `vertex1` and `vertex2`
         is in one or more cycles in the graph, or :data:`False` if not.
         """
-        cycle_list = self.getAllCycles(vertex1)
-        for cycle in cycle_list:
-            if vertex2 in cycle:
+        cython.declare(cycles=list)
+        cycles = self.getAllCycles(edge.vertex1)
+        for cycle in cycles:
+            if edge.vertex2 in cycle:
                 return True
         return False
 
     def __isChainInCycle(self, chain):
         """
-        Is the `chain` in a cycle?
-        Returns True/False.
-        Recursively calls itself
+        Return ``True`` if the given `chain` of vertices is contained in one
+        or more cycles or ``False`` otherwise. This function recursively calls
+        itself.
         """
-        # Note that this function no longer returns the cycle; just True/False
-        vertex2 = cython.declare(Vertex)
-        edge = cython.declare(Edge)
-        found = cython.declare(cython.bint)
+        cython.declare(vertex1=Vertex, vertex2=Vertex)
+        cython.declare(edge=Edge)
 
-        for vertex2, edge in self.edges[chain[-1]].iteritems():
+        vertex1 = chain[-1]
+        for vertex2 in vertex1.edges:
             if vertex2 is chain[0] and len(chain) > 2:
                 return True
             elif vertex2 not in chain:
-                # make the chain a little longer and explore again
+                # Make the chain a little longer and explore again
                 chain.append(vertex2)
-                found = self.__isChainInCycle(chain)
-                if found: return True
-                # didn't find a cycle down this path (-vertex2),
-                # so remove the vertex from the chain
-                chain.remove(vertex2)
+                if self.__isChainInCycle(chain):
+                    # We found a cycle, so the return value must be True
+                    return True
+                else:
+                    # We did not find a cycle down this path, so remove the vertex from the chain
+                    chain.remove(vertex2)
+        # If we reach this point then we did not find any cycles involving this chain
         return False
 
     def getAllCycles(self, startingVertex):
@@ -479,49 +518,31 @@ class Graph:
         Given a starting vertex, returns a list of all the cycles containing
         that vertex.
         """
-        chain = cython.declare(list)
-        cycleList = cython.declare(list)
+        return self.__exploreCyclesRecursively([startingVertex], [])
 
-        cycleList=list()
-        chain = [startingVertex]
-
-        #chainLabels=range(len(self.keys()))
-        #print "Starting at %s in graph: %s"%(self.keys().index(startingVertex),chainLabels)
-
-        cycleList = self.__exploreCyclesRecursively(chain, cycleList)
-        return cycleList
-
-    def __exploreCyclesRecursively(self, chain, cycleList):
+    def __exploreCyclesRecursively(self, chain, cycles):
         """
-        Finds cycles by spidering through a graph.
-        Give it a chain of atoms that are connected, `chain`,
-        and a list of cycles found so far `cycleList`.
-        If `chain` is a cycle, it is appended to `cycleList`.
-        Then chain is expanded by one atom (in each available direction)
-        and the function is called again. This recursively spiders outwards
-        from the starting chain, finding all the cycles.
+        Search the graph for cycles by recursive spidering. Given a `chain`
+        (list) of connected atoms and a list of `cycles` found so far, find any
+        cycles involving the chain of atoms and append them to the list of
+        cycles. This function recursively calls itself.
         """
-        vertex2 = cython.declare(Vertex)
-        edge = cython.declare(Edge)
+        cython.declare(vertex1=Vertex, vertex2=Vertex)
 
-        # chainLabels = cython.declare(list)
-        # chainLabels=[self.keys().index(v) for v in chain]
-        # print "found %d so far. Chain=%s"%(len(cycleList),chainLabels)
-
-        for vertex2, edge in self.edges[chain[-1]].iteritems():
-            # vertex2 will loop through each of the atoms
-            # that are bonded to the last atom in the chain.
+        vertex1 = chain[-1]
+        # Loop over each of the atoms neighboring the last atom in the chain
+        for vertex2 in vertex1.edges:
             if vertex2 is chain[0] and len(chain) > 2:
-                # it is the first atom in the chain - so the chain IS a cycle!
-                cycleList.append(chain[:])
+                # It is the first atom in the chain, so the chain is a cycle!
+                cycles.append(chain[:])
             elif vertex2 not in chain:
-                # make the chain a little longer and explore again
+                # Make the chain a little longer and explore again
                 chain.append(vertex2)
-                cycleList = self.__exploreCyclesRecursively(chain, cycleList)
-                # any cycles down this path (-vertex2) have now been found,
-                # so remove the vertex from the chain
+                cycles = self.__exploreCyclesRecursively(chain, cycles)
+                # Any cycles down this path have now been found, so remove vertex2 from the chain
                 chain.pop(-1)
-        return cycleList
+        # At this point we should have discovered all of the cycles involving the current chain
+        return cycles
 
     def getSmallestSetOfSmallestRings(self):
         """
@@ -534,27 +555,22 @@ class Graph:
         from a Connection Table." *J. Chem. Inf. Comput. Sci.* **33**,
         p. 657-662 (1993).
         """
-
-        graph = cython.declare(Graph)
-        done = cython.declare(cython.bint)
-        verticesToRemove = cython.declare(list)
-        cycleList = cython.declare(list)
-        cycles = cython.declare(list)
-        vertex = cython.declare(Vertex)
-        rootVertex = cython.declare(Vertex)
-        found = cython.declare(cython.bint)
-        cycle = cython.declare(list)
-        graphs = cython.declare(list)
+        cython.declare(graph=Graph)
+        cython.declare(done=cython.bint, found=cython.bint)
+        cython.declare(cycleList=list, cycles=list, cycle=list, graphs=list, neighbors=list)
+        cython.declare(verticesToRemove=list, vertices=list)
+        cython.declare(vertex=Vertex, rootVertex=Vertex)
 
         # Make a copy of the graph so we don't modify the original
-        graph = self.copy()
+        graph = self.copy(deep=True)
+        vertices = graph.vertices[:]
         
         # Step 1: Remove all terminal vertices
         done = False
         while not done:
             verticesToRemove = []
-            for vertex1, value in graph.edges.iteritems():
-                if len(value) == 1: verticesToRemove.append(vertex1)
+            for vertex in graph.vertices:
+                if len(vertex.edges) == 1: verticesToRemove.append(vertex)
             done = len(verticesToRemove) == 0
             # Remove identified vertices from graph
             for vertex in verticesToRemove:
@@ -570,8 +586,6 @@ class Graph:
         for vertex in verticesToRemove:
             graph.removeVertex(vertex)
 
-        ### also need to remove EDGES that are not in ring
-
         # Step 3: Split graph into remaining subgraphs
         graphs = graph.split()
 
@@ -586,22 +600,15 @@ class Graph:
                 for vertex in graph.vertices:
                     if rootVertex is None:
                         rootVertex = vertex
-                    elif len(graph.edges[vertex]) < len(graph.edges[rootVertex]):
+                    elif len(vertex.edges) < len(rootVertex.edges):
                         rootVertex = vertex
 
                 # Get all cycles involving the root vertex
                 cycles = graph.getAllCycles(rootVertex)
                 if len(cycles) == 0:
-                    # this vertex is no longer in a ring.
-                    # remove all its edges
-                    neighbours = graph.edges[rootVertex].keys()[:]
-                    for vertex2 in neighbours:
-                        graph.removeEdge(rootVertex, vertex2)
-                    # then remove it
+                    # This vertex is no longer in a ring, so remove it
                     graph.removeVertex(rootVertex)
-                    #print("Removed vertex that's no longer in ring")
-                    continue # (pick a new root Vertex)
-#                   raise Exception('Did not find expected cycle!')
+                    continue
 
                 # Keep the smallest of the cycles found above
                 cycle = cycles[0]
@@ -613,16 +620,20 @@ class Graph:
                 # Remove from the graph all vertices in the cycle that have only two edges
                 verticesToRemove = []
                 for vertex in cycle:
-                    if len(graph.edges[vertex]) <= 2:
+                    if len(vertex.edges) <= 2:
                         verticesToRemove.append(vertex)
                 if len(verticesToRemove) == 0:
                     # there are no vertices in this cycle that with only two edges
-
                     # Remove edge between root vertex and any one vertex it is connected to
-                    graph.removeEdge(rootVertex, graph.edges[rootVertex].keys()[0])
+                    vertex = rootVertex.edges.keys()[0]
+                    graph.removeEdge(rootVertex.edges[vertex])
                 else:
                     for vertex in verticesToRemove:
                         graph.removeVertex(vertex)
+
+        # Map atoms in cycles back to atoms in original graph
+        for i in range(len(cycleList)):
+            cycleList[i] = [self.vertices[vertices.index(v)] for v in cycleList[i]]
 
         return cycleList
 
@@ -632,17 +643,21 @@ class Graph:
         is valid by checking that the vertices and edges involved in the
         mapping are mutually equivalent.
         """
-        #cython.declare(vertex1=Vertex, vertex2=Vertex, vertices1=cython.list, vertices2=cython.list)
-        #cython.declare(i=cython.int, j=cython.int)
+        cython.declare(vertex1=Vertex, vertex2=Vertex)
+        cython.declare(vertices1=list, vertices2=list)
+        cython.declare(selfHasEdge=cython.bint, otherHasEdge=cython.bint)
+        cython.declare(i=cython.int, j=cython.int)
+        
         # Check that the mapped pairs of vertices are equivalent
-        for vertex1, vertex2 in mapping.iteritems():
+        for vertex1, vertex2 in mapping.items():
             if not vertex1.equivalent(vertex2):
                 return False
+        
         # Check that any edges connected mapped vertices are equivalent
         vertices1 = mapping.keys()
         vertices2 = mapping.values()
-        for i in range(len(mapping)):
-            for j in range(i+1, len(mapping)):
+        for i in range(len(vertices1)):
+            for j in range(i+1, len(vertices1)):
                 selfHasEdge = self.hasEdge(vertices1[i], vertices1[j])
                 otherHasEdge = other.hasEdge(vertices2[i], vertices2[j])
                 if selfHasEdge and otherHasEdge:
@@ -654,112 +669,101 @@ class Graph:
                 elif selfHasEdge or otherHasEdge:
                     # Only one of the graphs has the edge, so the mapping must be invalid
                     return False
+        
         # If we're here then the vertices and edges are equivalent, so the
         # mapping is valid
         return True
 
 ################################################################################
 
-def VF2_isomorphism(graph1, graph2, subgraph=False, findAll=False, initialMap=None):
+class VF2Error(Exception):
     """
-    Determines if two :class:`Graph` objects `graph1` and `graph2` are
-    isomorphic. A number of options affect how the isomorphism check is
-    performed:
-
-    * If `subgraph` is ``True``, the isomorphism function will treat `graph2`
-      as a subgraph of `graph1`. In this instance a   subgraph can either mean a
-      smaller graph (i.e. fewer vertices and/or edges) or a less specific graph.
-
-    * If `findAll` is ``True``, all valid isomorphisms will be found and
-      returned; otherwise only the first valid isomorphism will be returned.
-
-    * The `initialMap` parameter can be used to pass a previously-established
-      mapping. This mapping will be preserved in all returned valid
-      isomorphisms.
-
-    The isomorphism algorithm used is the VF2 algorithm of Vento and Foggia.
-    The function returns a boolean `isMatch` indicating whether or not one or
-    more valid isomorphisms have been found, and a list `mapList` of the valid
-    isomorphisms, each consisting of a dictionary mapping from vertices of
-    `graph1` to corresponding vertices of `graph2`.
+    An exception raised if an error occurs within the VF2 graph isomorphism
+    algorithm. Pass a string describing the error.
     """
+    pass
 
-    cython.declare(isMatch=cython.bint, map12List=list, map21List=list)
-    cython.declare(terminals1=list, terminals2=list, callDepth=cython.int)
-    cython.declare(vert=Vertex)
-
-    map21List = list()
-
-    # Some quick initial checks to avoid using the full algorithm if the
-    # graphs are obviously not isomorphic (based on graph size)
-    if not subgraph:
-        if len(graph2.vertices) != len(graph1.vertices):
-            # The two graphs don't have the same number of vertices, so they
-            # cannot be isomorphic
-            return False, map21List
-        elif len(graph1.vertices) == len(graph2.vertices) == 0:
-            logging.warning("Tried matching empty graphs (returning True)")
-            # The two graphs don't have any vertices; this means they are
-            # trivially isomorphic
-            return True, map21List
-    else:
-        if len(graph2.vertices) > len(graph1.vertices):
-            # The second graph has more vertices than the first, so it cannot be
-            # a subgraph of the first
-            return False, map21List
-
-    if initialMap is None: initialMap = {}
-    map12List = list()
+def VF2_isomorphism(graph1, graph2, subgraph=False, findAll=False, initialMapping=None):
+    """
+    Use the VF2 algorithm of Vento and Foggia to evaluate the isomorphism of
+    the graphs `graph1` and `graph2`. A number of options affect how the
+    isomorphism check is performed:
     
-    # Initialize callDepth with the size of the largest graph
-    # Each recursive call to __VF2_match will decrease it by one;
+    * If `subgraph` is ``True``, the function will determine if `graph2` is a
+      subgraph of `graph1` instead of a full graph.
+    
+    * If `findAll` is ``True``, this function returns a list of valid mappings
+      from `graph1` to `graph2`; each mapping is a ``dict`` with vertices from
+      `graph1` as the keys and vertices from `graph2` as the values. If
+      `findAll` is ``False``, this function simply returns ``True`` if a
+      valid mapping was found, or ``False`` if not.
+    
+    * The `initialMapping` parameter is used to specify a mapping of vertices
+      from `graph1` to those in `subgraph` that are fixed in the isomorphism
+      check; this mapping will appear in every returned mapping. Note that no
+      validation of this initial mapping is performed in this function.
+    """
+    cython.declare(vertex1=Vertex, vertex2=Vertex)
+    cython.declare(mappingList=list)
+    cython.declare(callDepth=cython.int)
+    
+    # Some quick isomorphism checks based on graph sizes
+    if not subgraph and len(graph2.vertices) != len(graph1.vertices):
+        # The two graphs don't have the same number of vertices, so they
+        # cannot be isomorphic
+        return list() if findAll else False
+    elif not subgraph and len(graph2.vertices) == len(graph1.vertices) == 0:
+        # The two graphs don't have any vertices; this means they are
+        # trivially isomorphic
+        return list() if findAll else True
+    elif subgraph and len(graph2.vertices) > len(graph1.vertices):
+        # The second graph has more vertices than the first, so it cannot be
+        # a subgraph of the first
+        return list() if findAll else False
+
+    # Initialize callDepth with the size of the smallest graph
+    # Each recursive call to VF2_match will decrease it by one;
     # when the whole graph has been explored, it should reach 0
     # It should never go below zero!
-    callDepth = min(len(graph1.vertices), len(graph2.vertices)) - len(initialMap)
+    callDepth = len(graph2.vertices)
 
     # Sort the vertices in each graph to make the isomorphism more efficient
     graph1.sortVertices()
     graph2.sortVertices()
 
-    # Generate initial mapping pairs
-    #   map21 = map to 2 from 1
-    #   map12 = map to 1 from 2
-    map21 = initialMap
-    map12 = dict([(v,k) for k,v in initialMap.iteritems()])
-    
-    # Generate an initial set of terminals
-    terminals1 = __VF2_terminals(graph1, map21)
-    terminals2 = __VF2_terminals(graph2, map12)
+    # Initialize mapping by clearing any previous mapping information
+    for vertex1 in graph1.vertices:
+        vertex1.mapping = None
+        vertex1.terminal = False
+    for vertex2 in graph2.vertices:
+        vertex2.mapping = None
+        vertex2.terminal = False
+    # Set the initial mapping if provided
+    if initialMapping is not None:
+        for vertex1, vertex2 in initialMapping.items():
+            VF2_addToMapping(vertex1, vertex2)
+        callDepth -= len(initialMapping)
 
-    isMatch = __VF2_match(graph1, graph2, map21, map12, \
-        terminals1, terminals2, subgraph, findAll, map21List, map12List, callDepth)
+    mappingList = []
+    isMatch = VF2_match(graph1, graph2, subgraph, findAll, mappingList, callDepth)
 
-    if findAll:
-        return len(map21List) > 0, map21List
-    else:
-        return isMatch, map21
+    return mappingList if findAll else isMatch
 
-def __VF2_feasible(graph1, graph2, vertex1, vertex2, map21, map12, terminals1,
-    terminals2, subgraph):
+def VF2_feasible(graph1, graph2, vertex1, vertex2, subgraph):
     """
-    Returns :data:`True` if two vertices `vertex1` and `vertex2` from graphs
-    `graph1` and `graph2`, respectively, are feasible matches. `mapping21` and
-    `mapping12` are the current state of the mapping from `graph1` to `graph2`
-    and vice versa, respectively. `terminals1` and `terminals2` are lists of
-    the vertices that are directly connected to the already-mapped vertices.
-    `subgraph` is :data:`True` if graph2 is to be treated as a potential
-    subgraph of graph1. i.e. graph1 is a specific case of graph2.
+    Return ``True`` if two vertices `vertex1` and `vertex2` from graphs
+    `graph1` and `graph2`, respectively, are feasible matches. The `subgraph` 
+    flag indicates whether or not to treat `graph2` as a subgraph of `graph1`.
 
-    Uses the VF2 algorithm of Vento and Foggia. The feasibility is assessed
-    through a series of semantic and structural checks. Only the combination
-    of the semantic checks and the level 0 structural check are both
-    necessary and sufficient to ensure feasibility. (This does *not* mean that
-    vertex1 and vertex2 are always a match, although the level 1 and level 2
-    checks preemptively eliminate a number of false positives.)
+    The feasibility is assessed through a series of semantic and structural
+    checks. Only the combination of the semantic checks and the level 0
+    structural check are both necessary and sufficient to ensure feasibility.
+    (This does *not* mean that `vertex1` and `vertex2` are always a match,
+    although the level 1 and level 2 checks preemptively eliminate a number of
+    false positives.)
     """
-
-    cython.declare(vert1=Vertex, vert2=Vertex, edge1=Edge, edge2=Edge, edges1=dict, edges2=dict)
-    cython.declare(i=cython.int)
+    cython.declare(vert1=Vertex, vert2=Vertex)
+    cython.declare(edge1=Edge, edge2=Edge)
     cython.declare(term1Count=cython.int, term2Count=cython.int, neither1Count=cython.int, neither2Count=cython.int)
 
     if not subgraph:
@@ -767,48 +771,45 @@ def __VF2_feasible(graph1, graph2, vertex1, vertex2, map21, map12, terminals1,
         if vertex1.connectivity1 != vertex2.connectivity1: return False
         if vertex1.connectivity2 != vertex2.connectivity2: return False
         if vertex1.connectivity3 != vertex2.connectivity3: return False
-
+    
     # Semantic check #1: vertex1 and vertex2 must be equivalent
     if subgraph:
         if not vertex1.isSpecificCaseOf(vertex2): return False
     else:
         if not vertex1.equivalent(vertex2): return False
-
-    # Get edges adjacent to each vertex
-    edges1 = graph1.edges[vertex1]
-    edges2 = graph2.edges[vertex2]
-
+    
     # Semantic check #2: adjacent vertices to vertex1 and vertex2 that are
     # already mapped should be connected by equivalent edges
-    for vert2 in edges2:
-        if vert2 in map12:
-            vert1 = map12[vert2]
-            if not vert1 in edges1: # atoms not joined in graph1
+    for vert2 in vertex2.edges:
+        if vert2.mapping is not None:
+            vert1 = vert2.mapping
+            if vert1 not in vertex1.edges:
+                # The vertices are joined in graph2, but not in graph1
                 return False
-            edge1 = edges1[vert1]
-            edge2 = edges2[vert2]
+            edge1 = vertex1.edges[vert1]
+            edge2 = vertex2.edges[vert2]
             if subgraph:
                 if not edge1.isSpecificCaseOf(edge2): return False
-            else: # exact match required
+            else:
                 if not edge1.equivalent(edge2): return False
 
-    # there could still be edges in graph1 that aren't in graph2.
-    # this is ok for subgraph matching, but not for exact matching
+    # There could still be edges in graph1 that aren't in graph2; this is okay
+    # for subgraph matching, but not for exact matching
     if not subgraph:
-        for vert1 in edges1:
-            if vert1 in map21:
-                vert2 = map21[vert1]
-                if not vert2 in edges2: return False
+        for vert1 in vertex1.edges:
+            if vert1.mapping is not None:
+                if vert1.mapping not in vertex2.edges: 
+                    # The vertices are joined in graph1, but not in graph2
+                    return False
 
     # Count number of terminals adjacent to vertex1 and vertex2
     term1Count = 0; term2Count = 0; neither1Count = 0; neither2Count = 0
-
-    for vert1 in edges1:
-        if vert1 in terminals1: term1Count += 1
-        elif vert1 not in map21: neither1Count += 1
-    for vert2 in edges2:
-        if vert2 in terminals2: term2Count += 1
-        elif vert2 not in map12: neither2Count += 1
+    for vert1 in vertex1.edges:
+        if vert1.terminal: term1Count += 1
+        elif vert1.mapping is not None: neither1Count += 1
+    for vert2 in vertex2.edges:
+        if vert2.terminal: term2Count += 1
+        elif vert2.mapping is not None: neither2Count += 1
 
     # Level 2 look-ahead: the number of adjacent vertices of vertex1 and
     # vertex2 that are non-terminals must be equal
@@ -826,172 +827,139 @@ def __VF2_feasible(graph1, graph2, vertex1, vertex2, map21, map12, terminals1,
 
     # Level 0 look-ahead: all adjacent vertices of vertex2 already in the
     # mapping must map to adjacent vertices of vertex1
-    for vert2 in edges2:
-        if vert2 in map12:
-            vert1 = map12[vert2]
-            if vert1 not in edges1: return False
+    for vert2 in vertex2.edges:
+        if vert2.mapping is not None:
+            if vert2.mapping not in vertex1.edges: return False
     # Also, all adjacent vertices of vertex1 already in the mapping must map to
     # adjacent vertices of vertex2, unless we are subgraph matching
     if not subgraph:
-        for vert1 in edges1:
-            if vert1 in map21:
-                vert2 = map21[vert1]
-                if vert2 not in edges2: return False
+        for vert1 in vertex1.edges:
+            if vert1.mapping is not None:
+                if vert1.mapping not in vertex2.edges: return False
 
-    # All of our tests have been passed, so the two vertices are a feasible
-    # pair
+    # All of our tests have been passed, so the two vertices are a feasible pair
     return True
 
-def __VF2_match(graph1, graph2, map21, map12, terminals1, terminals2, subgraph,
-    findAll, map21List, map12List, callDepth):
+def VF2_match(graph1, graph2, subgraph, findAll, mappingList, callDepth):
     """
-    A recursive function used to explore two graphs `graph1` and `graph2` for
-    isomorphism by attempting to map them to one another. `mapping21` and
-    `mapping12` are the current state of the mapping from `graph1` to `graph2`
-    and vice versa, respectively. `terminals1` and `terminals2` are lists of
-    the vertices that are directly connected to the already-mapped vertices.
-    `subgraph` is :data:`True` if graph2 is to be treated as a potential
-    subgraph of graph1. i.e. graph1 is a specific case of graph2.
-
-    If findAll=True then it adds valid mappings to map21List and
-    map12List, but returns False when done (or True if the initial mapping is complete)
-
-    Uses the VF2 algorithm of Vento and Foggia, which is O(N) in spatial complexity
-    and O(N**2) (best-case) to O(N! * N) (worst-case) in temporal complexity.
+    Recursively explore two graphs `graph1` and `graph2` in search of one or
+    more isomorphism relationships by attempting to map vertices to one
+    another. The `subgraph` flag indicates whether or not to treat `graph2` as
+    a subgraph of `graph1`. The `findAll` flag indicates whether to find all
+    isomorphisms or only the first. The `mappingList` parameter stores the
+    current list of found mappings. The `callDepth` parameter keeps track of
+    how many matching pairs of vertices have been identified, and is used to
+    know when an isomorphism is found. Returns ``True`` if at least one
+    isomorphism was found or ``False`` if none were found.
     """
-
-    cython.declare(vertices1=list, new_terminals1=list, new_terminals2=list)
     cython.declare(vertex1=Vertex, vertex2=Vertex)
-    cython.declare(ismatch=cython.bint)
-
-    # Make sure we don't get cause in an infinite recursive loop
+    cython.declare(mapping=dict)
+    
+    # The call depth should never be negative!
     if callDepth < 0:
-        logging.error("Recursing too deep. Now {0:d}".format(callDepth))
-        if callDepth < -100:
-            raise Exception("Recursing infinitely deep!")
+        raise VF2Error('Negative call depth encountered in VF2_match().')
 
     # Done if we have mapped to all vertices in graph
     if callDepth == 0:
-        if not subgraph:
-            assert len(map21) == len(graph1.vertices), \
-                "Calldepth mismatch: callDepth = {0:d}, len(map21) = {1:d}, len(map12) = {2:d}, len(graph1.vertices) = {3:d}, len(graph2.vertices) = {4:d}".format(callDepth, len(map21), len(map12), len(graph1.vertices), len(graph2.vertices))
-            if findAll:
-                map21List.append(map21.copy())
-                map12List.append(map12.copy())
-            return True
-        else:
-            assert len(map12) == len(graph2.vertices), \
-                "Calldepth mismatch: callDepth = {0:d}, len(map21) = {1:d}, len(map12) = {2:d}, len(graph1.vertices) = {3:d}, len(graph2.vertices) = {4:d}".format(callDepth, len(map21), len(map12), len(graph1.vertices), len(graph2.vertices))
-            if findAll:
-                map21List.append(map21.copy())
-                map12List.append(map12.copy())
-            return True
+        if findAll:
+            mapping = {}
+            for vertex2 in graph2.vertices:
+                assert vertex2.mapping is not None
+                assert vertex2.mapping.mapping is vertex2
+                mapping[vertex2.mapping] = vertex2
+            mappingList.append(mapping)
+        return True
 
     # Create list of pairs of candidates for inclusion in mapping
-    # Note that the extra Python overhead is not worth making this a standalone
-    # method, so we simply put it inline here
-    # If we have terminals for both graphs, then use those as a basis for the
-    # pairs
-    if len(terminals1) > 0 and len(terminals2) > 0:
-        vertices1 = terminals1
-        vertex2 = terminals2[0]
-    # Otherwise construct list from all *remaining* vertices (not matched)
+    vertices1 = []
+    for vertex2 in graph2.vertices:
+        if vertex2.terminal:
+            # graph2 has terminals, so graph1 also must have terminals
+            for vertex1 in graph1.vertices:
+                if vertex1.terminal:
+                    vertices1.append(vertex1)
+            break
     else:
-        # vertex2 is the lowest-labelled un-mapped vertex from graph2
-        # Note that this assumes that graph2.vertices is properly sorted
-        vertices1 = []
-        for vertex1 in graph1.vertices:
-            if vertex1 not in map21:
-                vertices1.append(vertex1)
-        for vertex2 in graph2.vertices:
-            if vertex2 not in map12:
-                break
-        else:
-            raise Exception("Could not find a pair to propose!")
+        # graph2 does not have terminals, so graph1 also must not have terminals
+        vertex2 = graph2.vertices[0]
+        vertices1 = graph1.vertices[:]
     
     for vertex1 in vertices1:
-        # propose a pairing
-        if __VF2_feasible(graph1, graph2, vertex1, vertex2, map21, map12, \
-                terminals1, terminals2, subgraph):
-            # Update mapping accordingly
-            map21[vertex1] = vertex2
-            map12[vertex2] = vertex1
-
-            # update terminals
-            new_terminals1 = __VF2_updateTerminals(graph1, map21, terminals1, vertex1)
-            new_terminals2 = __VF2_updateTerminals(graph2, map12, terminals2, vertex2)
-
+        # Propose a pairing
+        if VF2_feasible(graph1, graph2, vertex1, vertex2, subgraph):
+            # Add proposed match to mapping
+            VF2_addToMapping(vertex1, vertex2)
             # Recurse
-            ismatch = __VF2_match(graph1, graph2, \
-                map21, map12, new_terminals1, new_terminals2, subgraph, findAll, \
-                map21List, map12List, callDepth-1)
-            if ismatch:
+            isMatch = VF2_match(graph1, graph2, subgraph, findAll, mappingList, callDepth-1)
+            if isMatch:
                 if not findAll:
                     return True
             # Undo proposed match
-            del map21[vertex1]
-            del map12[vertex2]
-            # changes to 'new_terminals' will be discarded and 'terminals' is unchanged
+            VF2_removeFromMapping(vertex1, vertex2)
 
+    # None of the proposed matches led to a complete isomorphism, so return False
     return False
 
-def __VF2_terminals(graph, mapping):
+def VF2_addToMapping(vertex1, vertex2):
     """
-    For a given graph `graph` and associated partial mapping `mapping`,
-    generate a list of terminals, vertices that are directly connected to
-    vertices that have already been mapped.
-
-    List is sorted (using key=__getSortLabel) before returning.
+    Add a pair of vertices `vertex1` and `vertex2` to the current mapping,
+    and update the terminals information for the neighbors of each vertex.
     """
+    cython.declare(v=Vertex)
+    
+    # Map the vertices to one another
+    vertex1.mapping = vertex2
+    vertex2.mapping = vertex1
+    
+    # Remove these vertices from the set of terminals
+    vertex1.terminal = False
+    vertex2.terminal = False
+    
+    # Add any neighboring vertices not already in mapping to terminals
+    for v in vertex1.edges:
+        v.terminal = v.mapping is None
+    for v in vertex2.edges:
+        v.terminal = v.mapping is None
 
-    cython.declare(terminals=list)
-    terminals = list()
-    for vertex2 in graph.vertices:
-        if vertex2 not in mapping:
-            for vertex1 in mapping:
-                if vertex2 in graph.edges[vertex1]:
-                    terminals.append(vertex2)
-                    break
-    return terminals
-
-def __VF2_updateTerminals(graph, mapping, old_terminals, new_vertex):
+def VF2_removeFromMapping(vertex1, vertex2):
     """
-    For a given graph `graph` and associated partial mapping `mapping`,
-    *updates* a list of terminals, vertices that are directly connected to
-    vertices that have already been mapped. You have to pass it the previous
-    list of terminals `old_terminals` and the vertex `vertex` that has been
-    added to the mapping. Returns a new *copy* of the terminals.
+    Remove a pair of vertices `vertex1` and `vertex2` from the current mapping,
+    and update the terminals information for the neighbors of each vertex.
     """
-
-    cython.declare(terminals=list, vertex1=Vertex, vertex2=Vertex, edges=dict)
-    cython.declare(i=cython.int, sorting_label=cython.short, sorting_label2=cython.short)
-
-    # Copy the old terminals, leaving out the new_vertex
-    terminals = old_terminals[:]
-    if new_vertex in terminals: terminals.remove(new_vertex)
-
-    # Add the terminals of new_vertex
-    edges = graph.edges[new_vertex]
-    for vertex1 in edges:
-        if vertex1 not in mapping: # only add if not already mapped
-            # find spot in the sorted terminals list where we should put this vertex
-            sorting_label = vertex1.sortingLabel
-            i=0; sorting_label2=-1 # in case terminals list empty
-            for i in range(len(terminals)):
-                vertex2 = terminals[i]
-                sorting_label2 = vertex2.sortingLabel
-                if sorting_label2 >= sorting_label:
-                    break
-                # else continue going through the list of terminals
-            else: # got to end of list without breaking,
-                # so add one to index to make sure vertex goes at end
-                i+=1
-            if sorting_label2 == sorting_label: # this vertex already in terminals.
-                continue # try next vertex in graph[new_vertex]
-
-            # insert vertex in right spot in terminals
-            terminals.insert(i,vertex1)
-
-    return terminals
-
-################################################################################
+    cython.declare(v=Vertex, v2=Vertex)
+    
+    # Unmap the vertices from one another
+    vertex1.mapping = None
+    vertex2.mapping = None
+    
+    # Restore these vertices to the set of terminals
+    for v in vertex1.edges:
+        if v.mapping is not None:
+            vertex1.terminal = True
+            break
+        else:
+            vertex1.terminal = False
+    for v in vertex2.edges:
+        if v.mapping is not None:
+            vertex2.terminal = True
+            break
+        else:
+            vertex2.terminal = False
+    
+    # Recompute the terminal status of any neighboring atoms
+    for v in vertex1.edges:
+        if v.mapping is not None: continue
+        for v2 in v.edges:
+            if v2.mapping is not None:
+                v.terminal = True
+                break
+        else:
+            v.terminal = False
+    for v in vertex2.edges:
+        if v.mapping is not None: continue
+        for v2 in v.edges:
+            if v2.mapping is not None:
+                v.terminal = True
+                break
+        else:
+            v.terminal = False

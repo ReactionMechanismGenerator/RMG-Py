@@ -24,7 +24,7 @@
 #
 ################################################################################
 
-from graph cimport Vertex, Edge, Graph
+from .graph cimport Vertex, Edge, Graph
 
 ################################################################################
 
@@ -36,7 +36,7 @@ cdef class GroupAtom(Vertex):
     cdef public list charge
     cdef public str label
 
-    cpdef copy(self)
+    cpdef Vertex copy(self)
 
     cpdef __changeBond(self, short order)
 
@@ -60,7 +60,7 @@ cdef class GroupBond(Edge):
 
     cdef public list order
 
-    cpdef copy(self)
+    cpdef Edge copy(self)
 
     cpdef __changeBond(self, short order)
 
@@ -76,7 +76,7 @@ cdef class Group(Graph):
 
     cpdef addAtom(self, GroupAtom atom)
 
-    cpdef addBond(self, GroupAtom atom1, GroupAtom atom2, GroupBond bond)
+    cpdef addBond(self, GroupBond bond)
 
     cpdef dict getBonds(self, GroupAtom atom)
 
@@ -88,7 +88,7 @@ cdef class Group(Graph):
 
     cpdef removeAtom(self, GroupAtom atom)
 
-    cpdef removeBond(self, GroupAtom atom1, GroupAtom GroupAtom2)
+    cpdef removeBond(self, GroupBond bond)
 
     cpdef sortAtoms(self)
 
@@ -106,16 +106,10 @@ cdef class Group(Graph):
 
     cpdef toAdjacencyList(self, str label=?)
 
-    cpdef bint isIsomorphic(self, Graph other, dict initialMap=?)
+    cpdef bint isIsomorphic(self, Graph other, dict initialMap=?) except -2
 
-    cpdef tuple findIsomorphism(self, Graph other, dict initialMap=?)
+    cpdef list findIsomorphism(self, Graph other, dict initialMap=?)
 
-    cpdef bint isSubgraphIsomorphic(self, Graph other, dict initialMap=?)
+    cpdef bint isSubgraphIsomorphic(self, Graph other, dict initialMap=?) except -2
 
-    cpdef tuple findSubgraphIsomorphisms(self, Graph other, dict initialMap=?)
-
-################################################################################
-
-cpdef fromAdjacencyList(str adjlist, bint group=?, bint addH=?)
-
-cpdef toAdjacencyList(Graph molecule, str label=?, bint group=?, bint removeH=?)
+    cpdef list findSubgraphIsomorphisms(self, Graph other, dict initialMap=?)

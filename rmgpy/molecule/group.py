@@ -35,8 +35,8 @@ reaction sites).
 
 import cython
 
-from graph import Vertex, Edge, Graph
-from atomtype import atomTypes
+from .graph import Vertex, Edge, Graph
+from .atomtype import atomTypes
 
 ################################################################################
 
@@ -70,8 +70,7 @@ class GroupAtom(Vertex):
     group if it matches *any* item in the list. However, the
     `radicalElectrons`, `spinMultiplicity`, and `charge` attributes are linked
     such that an atom must match values from the same index in each of these in
-    order to match. Unlike an :class:`Atom` object, an :class:`GroupAtom`
-    cannot store implicit hydrogen atoms.
+    order to match.
     """
 
     def __init__(self, atomType=None, radicalElectrons=None, spinMultiplicity=None, charge=None, label=''):
@@ -89,23 +88,42 @@ class GroupAtom(Vertex):
         """
         A helper function used when pickling an object.
         """
+        d = {
+            'edges': self.edges,
+            'connectivity1': self.connectivity1,
+            'connectivity2': self.connectivity2,
+            'connectivity3': self.connectivity3,
+            'sortingLabel': self.sortingLabel,
+        }
         atomType = self.atomType
         if atomType is not None:
             atomType = [a.label for a in atomType]
-        return (GroupAtom, (atomType, self.radicalElectrons, self.spinMultiplicity, self.charge, self.label))
+        return (GroupAtom, (atomType, self.radicalElectrons, self.spinMultiplicity, self.charge, self.label), d)
+
+    def __setstate__(self, d):
+        """
+        A helper function used when unpickling an object.
+        """
+        self.edges = d['edges']
+        self.connectivity1 = d['connectivity1']
+        self.connectivity2 = d['connectivity2']
+        self.connectivity3 = d['connectivity3']
+        self.sortingLabel = d['sortingLabel']
 
     def __str__(self):
         """
         Return a human-readable string representation of the object.
         """
-        return "<GroupAtom '{0}'>".format(self.atomType)
+        return '[{0}]'.format(','.join([repr(a.label) for a in self.atomType]))
 
     def __repr__(self):
         """
         Return a representation that can be used to reconstruct the object.
         """
-        atomType = ','.join(['"{0}"'.format(a.label) for a in self.atomType])
-        return "GroupAtom(atomType=[{0}], radicalElectrons={1}, spinMultiplicity={2}, charge={3}, label='{4}')".format(atomType, self.radicalElectrons, self.spinMultiplicity, self.charge, self.label)
+        return "<GroupAtom {0!s}>".format(self)
+
+    @property
+    def bonds(self): return self.edges
 
     def copy(self):
         """
@@ -309,34 +327,34 @@ class GroupBond(Edge):
     group if it matches *any* item in the list.
     """
 
-    def __init__(self, order=None):
-        Edge.__init__(self)
+    def __init__(self, atom1, atom2, order=None):
+        Edge.__init__(self, atom1, atom2)
         self.order = order or []
 
     def __str__(self):
         """
         Return a human-readable string representation of the object.
         """
-        return "<GroupBond {0}>".format(self.order)
+        return str(self.order)
 
     def __repr__(self):
         """
         Return a representation that can be used to reconstruct the object.
         """
-        return "GroupBond(order={0})".format(self.order)
+        return "<GroupBond {0!r}>".format(self.order)
 
     def __reduce__(self):
         """
         A helper function used when pickling an object.
         """
-        return (GroupBond, (self.order,))
+        return (GroupBond, (self.vertex1, self.vertex2, self.order))
 
     def copy(self):
         """
         Return a deep copy of the :class:`GroupBond` object. Modifying the
         attributes of the copy will not affect the original.
         """
-        return GroupBond(self.order[:])
+        return GroupBond(self.vertex1, self.vertex2, self.order[:])
 
     def __changeBond(self, order):
         """
@@ -435,23 +453,19 @@ class Group(Graph):
     Corresponding alias methods have also been provided.
     """
 
-    def __init__(self, atoms=None, bonds=None):
-        Graph.__init__(self, atoms, bonds)
+    def __init__(self, atoms=None):
+        Graph.__init__(self, atoms)
         self.updateConnectivityValues()
     
     def __reduce__(self):
         """
         A helper function used when pickling an object.
         """
-        return (Group, (self.vertices, self.edges))
+        return (Group, (self.vertices,))
 
     def __getAtoms(self): return self.vertices
     def __setAtoms(self, atoms): self.vertices = atoms
     atoms = property(__getAtoms, __setAtoms)
-
-    def __getBonds(self): return self.edges
-    def __setBonds(self, bonds): self.edges = bonds
-    bonds = property(__getBonds, __setBonds)
 
     def addAtom(self, atom):
         """
@@ -459,12 +473,12 @@ class Group(Graph):
         """
         return self.addVertex(atom)
 
-    def addBond(self, atom1, atom2, bond):
+    def addBond(self, bond):
         """
         Add a `bond` to the graph as an edge connecting the two atoms `atom1`
         and `atom2`.
         """
-        return self.addEdge(atom1, atom2, bond)
+        return self.addEdge(bond)
 
     def getBonds(self, atom):
         """
@@ -500,13 +514,13 @@ class Group(Graph):
         """
         return self.removeVertex(atom)
 
-    def removeBond(self, atom1, atom2):
+    def removeBond(self, bond):
         """
         Remove the bond between atoms `atom1` and `atom2` from the graph.
         Does not remove atoms that no longer have any bonds as a result of
         this removal.
         """
-        return self.removeEdge(atom1, atom2)
+        return self.removeEdge(bond)
 
     def sortAtoms(self):
         """
@@ -524,7 +538,7 @@ class Group(Graph):
         """
         other = cython.declare(Group)
         g = Graph.copy(self, deep)
-        other = Group(g.vertices, g.edges)
+        other = Group(g.vertices)
         return other
 
     def merge(self, other):
@@ -534,7 +548,7 @@ class Group(Graph):
         object is returned.
         """
         g = Graph.merge(self, other)
-        molecule = Group(atoms=g.vertices, bonds=g.edges)
+        molecule = Group(atoms=g.vertices)
         return molecule
 
     def split(self):
@@ -545,7 +559,7 @@ class Group(Graph):
         graphs = Graph.split(self)
         molecules = []
         for g in graphs:
-            molecule = Group(atoms=g.vertices, bonds=g.edges)
+            molecule = Group(atoms=g.vertices)
             molecules.append(molecule)
         return molecules
 
@@ -596,7 +610,8 @@ class Group(Graph):
         Skips the first line (assuming it's a label) unless `withLabel` is
         ``False``.
         """
-        self.vertices, self.edges = fromAdjacencyList(adjlist, group=True, addH=False)
+        from .adjlist import fromAdjacencyList
+        self.vertices = fromAdjacencyList(adjlist, group=True)
         self.updateConnectivityValues()
         return self
 
@@ -604,7 +619,8 @@ class Group(Graph):
         """
         Convert the molecular structure to a string adjacency list.
         """
-        return toAdjacencyList(self, label='', group=True)
+        from .adjlist import toAdjacencyList
+        return toAdjacencyList(self.vertices, label='', group=True)
 
     def isIsomorphic(self, other, initialMap=None):
         """
@@ -670,276 +686,3 @@ class Group(Graph):
             raise TypeError('Got a {0} object for parameter "other", when a Group object is required.'.format(other.__class__))
         # Do the isomorphism comparison
         return Graph.findSubgraphIsomorphisms(self, other, initialMap)
-
-################################################################################
-
-class InvalidAdjacencyListError(Exception):
-    """
-    An exception used to indicate that an RMG-style adjacency list is invalid.
-    Pass a string giving specifics about the particular exceptional behavior.
-    """
-    pass
-
-def fromAdjacencyList(adjlist, group=False, addH=False):
-    """
-    Convert a string adjacency list `adjlist` into a set of :class:`Atom` and
-    :class:`Bond` objects (if `group` is ``False``) or a set of
-    :class:`GroupAtom` and :class:`GroupBond` objects (if `group` is
-    ``True``). Only adds hydrogen atoms if `addH` is ``True``. Skips the first
-    line (assuming it's a label) unless `withLabel` is ``False``.
-    """
-
-    from molecule import Atom, Bond
-
-    atoms = []; atomdict = {}; bonds = {}
-
-    try:
-        
-        adjlist = adjlist.strip()
-        if adjlist == '':
-            raise InvalidAdjacencyListError('Empty adjacency list.')
-
-        lines = adjlist.splitlines()
-        # Skip the first line if it contains a label
-        if len(lines) > 0 and len(lines[0].split()) == 1:
-            label = lines.pop(0)
-        # Iterate over the remaining lines, generating Atom or GroupAtom objects
-        if len(lines) == 0:
-            raise InvalidAdjacencyListError('No atoms specified in adjacency list.')
-        for line in lines:
-
-            # Sometimes commas are used to delimit bonds in the bond list,
-            # so replace them just in case
-            line = line.replace('},{', '} {')
-            
-            data = line.split()
-
-            # Skip if blank line
-            if len(data) == 0: continue
-
-            # First item is index for atom
-            # Sometimes these have a trailing period (as if in a numbered list),
-            # so remove it just in case
-            aid = int(data[0].strip('.'))
-
-            # If second item starts with '*', then atom is labeled
-            label = ''; index = 1
-            if data[1][0] == '*':
-                label = data[1]; index = 2
-
-            # Next is the element or functional group element
-            # A list can be specified with the {,} syntax
-            atomType = data[index]
-            if atomType[0] == '{':
-                atomType = atomType[1:-1].split(',')
-            else:
-                atomType = [atomType]
-
-            # Next is the electron state
-            radicalElectrons = []; spinMultiplicity = []
-            elecState = data[index+1].upper()
-            if elecState[0] == '{':
-                elecState = elecState[1:-1].split(',')
-            else:
-                elecState = [elecState]
-            for e in elecState:
-                if e == '0':
-                    radicalElectrons.append(0); spinMultiplicity.append(1)
-                elif e == '1':
-                    radicalElectrons.append(1); spinMultiplicity.append(2)
-                elif e == '2':
-                    radicalElectrons.append(2); spinMultiplicity.append(1)
-                    radicalElectrons.append(2); spinMultiplicity.append(3)
-                elif e == '2S':
-                    radicalElectrons.append(2); spinMultiplicity.append(1)
-                elif e == '2T':
-                    radicalElectrons.append(2); spinMultiplicity.append(3)
-                elif e == '3':
-                    radicalElectrons.append(3); spinMultiplicity.append(4)
-                elif e == '4':
-                    radicalElectrons.append(4); spinMultiplicity.append(5)
-
-            # Create a new atom based on the above information
-            if group:
-                atom = GroupAtom(atomType, radicalElectrons, spinMultiplicity, [0 for e in radicalElectrons], label)
-            else:
-                atom = Atom(atomType[0], radicalElectrons[0], spinMultiplicity[0], 0, 0, label)
-
-            # Add the atom to the list
-            atoms.append(atom)
-            atomdict[aid] = atom
-            
-            # Process list of bonds
-            bonds[aid] = {}
-            for datum in data[index+2:]:
-
-                # Sometimes commas are used to delimit bonds in the bond list,
-                # so strip them just in case
-                datum = datum.strip(',')
-                
-                aid2, comma, order = datum[1:-1].partition(',')
-                aid2 = int(aid2)
-                if aid == aid2:
-                    raise InvalidAdjacencyListError('Attempted to create a bond between atom {0:d} and itself.'.format(aid))
-                
-                if order[0] == '{':
-                    order = order[1:-1].split(',')
-                else:
-                    order = [order]
-
-                bonds[aid][aid2] = order
-
-        # Check consistency using bonddict
-        for atom1 in bonds:
-            for atom2 in bonds[atom1]:
-                if atom2 not in bonds:
-                    raise InvalidAdjacencyListError('Atom {0:d} not in bond dictionary.'.format(atom2))
-                elif atom1 not in bonds[atom2]:
-                    raise InvalidAdjacencyListError('Found bond between {0:d} and {1:d}, but not the reverse.'.format(atom1, atom2))
-                elif bonds[atom1][atom2] != bonds[atom2][atom1]:
-                    raise InvalidAdjacencyListError('Found bonds between {0:d} and {1:d}, but of different orders "{2}" and "{3}".'.format(atom1, atom2, bonds[atom1][atom2], bonds[atom2][atom1]))
-
-        # Convert bonddict to use Atom[group] and Bond[group] objects
-        atomkeys = atomdict.keys()
-        atomkeys.sort()
-        for aid1 in atomkeys:
-            bonds[atomdict[aid1]] = {}
-            atomkeys2 = bonds[aid1].keys()
-            atomkeys2.sort()
-            for aid2 in atomkeys2:
-                if aid1 < aid2:
-                    order = bonds[aid1][aid2]
-                    if group:
-                        bonds[atomdict[aid1]][atomdict[aid2]] = GroupBond(order)
-                    elif len(order) == 1:
-                        bonds[atomdict[aid1]][atomdict[aid2]] = Bond(order[0])
-                    else:
-                        raise InvalidAdjacencyListError('Multiple bond orders specified for an atom in a Molecule.')
-                else:
-                    bonds[atomdict[aid1]][atomdict[aid2]] = bonds[atomdict[aid2]][atomdict[aid1]]
-            del bonds[aid1]
-            
-        # Add explicit hydrogen atoms to complete structure if desired
-        if addH and not group:
-            valences = {'H': 1, 'C': 4, 'O': 2, 'N': 3, 'S': 2, 'Si': 4, 'He': 0, 'Ne': 0, 'Ar': 0}
-            orders = {'S': 1, 'D': 2, 'T': 3, 'B': 1.5}
-            newAtoms = []
-            for atom in atoms:
-                try:
-                    valence = valences[atom.symbol]
-                except KeyError:
-                    raise InvalidAdjacencyListError('Cannot add hydrogens to adjacency list: Unknown valence for atom "{0}".'.format(atom.symbol))
-                radical = atom.radicalElectrons
-                order = 0
-                for atom2, bond in bonds[atom].iteritems():
-                    order += orders[bond.order]
-                count = valence - radical - int(order)
-                for i in range(count):
-                    a = Atom('H', 0, 1, 0, 0, '')
-                    b = Bond('S')
-                    newAtoms.append(a)
-                    bonds[atom][a] = b
-                    bonds[a] = {atom: b}
-            atoms.extend(newAtoms)
-    
-    except InvalidAdjacencyListError:
-        print adjlist
-        raise
-    
-    return atoms, bonds
-
-def toAdjacencyList(molecule, label='', group=False, removeH=False):
-    """
-    Convert the `molecule` object to an adjacency list. `group` specifies
-    whether the graph object is a complete molecule (if ``False``) or a
-    substructure group (if ``True``). The `label` parameter is an optional
-    string to put as the first line of the adjacency list; if set to the empty
-    string, this line will be omitted. If `removeH` is ``True``, hydrogen atoms
-    (that do not have labels) will not be printed; this is a valid shorthand,
-    as they can usually be inferred as long as the free electron numbers are
-    accurate.
-    """
-
-    adjlist = ''
-
-    # Don't remove hydrogen atoms if the molecule consists only of hydrogen atoms
-    try:
-        if removeH and all([atom.isHydrogen() for atom in molecule.atoms]): removeH = False
-    except AttributeError:
-        pass
-
-    if label != '': adjlist += label + '\n'
-
-    molecule.updateConnectivityValues() # so we can sort by them
-    molecule.sortAtoms()
-    atoms = molecule.atoms
-    bonds = molecule.bonds
-
-    # Determine the numbers to use for each atom
-    atomNumbers = {}; index = 0
-    for atom in atoms:
-        if removeH and atom.isHydrogen() and atom.label=='': continue
-        atomNumbers[atom] = index + 1
-        index += 1
-
-    for atom in atoms:
-        if removeH and atom.isHydrogen() and atom.label=='': continue
-
-        # Atom number
-        adjlist += '{0:<2} '.format(atomNumbers[atom])
-
-        # Atom label
-        adjlist += '{0:<2} '.format(atom.label)
-
-        if group:
-            # Atom type(s)
-            if len(atom.atomType) == 1:
-                adjlist += atom.atomType[0].label + ' '
-            else:
-                adjlist += '{{{0}}} '.format(','.join([a.label for a in atom.atomType]))
-            # Electron state(s)
-            if len(atom.radicalElectrons) > 1: adjlist += '{'
-            for radical, spin in zip(atom.radicalElectrons, atom.spinMultiplicity):
-                if radical == 0: adjlist += '0'
-                elif radical == 1: adjlist += '1'
-                elif radical == 2 and spin == 1: adjlist += '2S'
-                elif radical == 2 and spin == 3: adjlist += '2T'
-                elif radical == 3: adjlist += '3'
-                elif radical == 4: adjlist += '4'
-                if len(atom.radicalElectrons) > 1: adjlist += ','
-            if len(atom.radicalElectrons) > 1: adjlist = adjlist[0:-1] + '}'
-        else:
-            # Atom type
-            adjlist += "{0:<5} ".format(atom.symbol)
-            # Electron state(s)
-            if atom.radicalElectrons == 0: adjlist += '0'
-            elif atom.radicalElectrons == 1: adjlist += '1'
-            elif atom.radicalElectrons == 2 and atom.spinMultiplicity == 1: adjlist += '2S'
-            elif atom.radicalElectrons == 2 and atom.spinMultiplicity == 3: adjlist += '2T'
-            elif atom.radicalElectrons == 3: adjlist += '3'
-            elif atom.radicalElectrons == 4: adjlist += '4'
-        
-        # Bonds list
-        atoms2 = bonds[atom].keys()
-        # sort them the same way as the atoms
-        atoms2.sort(key=atoms.index)
-
-        for atom2 in atoms2:
-            if removeH and atom2.isHydrogen() and atom2.label=='': continue
-            bond = bonds[atom][atom2]
-            adjlist += ' {{{0:d},'.format(atomNumbers[atom2])
-
-            # Bond type(s)
-            if group:
-                if len(bond.order) == 1:
-                    adjlist += bond.order[0]
-                else:
-                    adjlist += '{{{0}}}'.format(','.join(bond.order))
-            else:
-                adjlist += bond.order
-            adjlist += '}'
-
-        # Each atom begins on a new line
-        adjlist += '\n'
-
-    return adjlist
