@@ -8,114 +8,88 @@ command strings to specify the level of theory, and other flags.
 """
 
 import os
-import math
-import platform
-from subprocess import Popen
 
 import openbabel
 
-import logging
 import qmtp
-
 
 class QMInputWriter:
     """
-     Supertype for all input writers for quantum chemistry methods
+    Supertype for all input writers for quantum chemistry methods
     """
     
-    #the number of keyword permutations available update as additional options are added
+    "the number of keyword permutations available. update as additional options are added"
     scriptAttempts = 0
     
     #we will try a second time with crude coordinates if the UFF refined coordinates do not work
+    "Maximum number of attempts"
     maxAttemptNumber = 0
 
-        
-    def __init__(self, molfile ='', attemptNumber = 0, multiplicity = -1):
+    def __init__(self, molfile='', attemptNumber=0, multiplicity=-1):
         
         self.molfile = molfile
-        
         self.attemptNumber = attemptNumber
-        
         self.multiplicity = multiplicity
-        
-        self.keywords = ''
-         
-class MOPACKEYWORDS:
-    BOTH = 'Both'
-    BOTTOM = 'Bottom'
-    TOP = 'Top'
-    POLAR = 'Polar'
-    
+
 class MOPACPM3InputWriter(QMInputWriter):
     
     scriptAttempts = 5
-    maxAttemptNumber = 2* scriptAttempts
+    maxAttemptNumber = 2 * scriptAttempts
     
-    def fillMultiplicityKeywords(self):
-        self.multiplicityKeywords[1] = ''
-        self.multiplicityKeywords[2] = 'uhf doublet'
-        self.multiplicityKeywords[3] = 'uhf triplet'
-        self.multiplicityKeywords[4] = 'uhf quartet'
-        self.multiplicityKeywords[5] = 'uhf quintet'
-        self.multiplicityKeywords[6] = 'uhf sextet'
-        self.multiplicityKeywords[7] = 'uhf septet'
-        self.multiplicityKeywords[8] = 'uhf octet'
-        self.multiplicityKeywords[9] = 'uhf nonet'
+    inputExtension = '.mop'
+    
+    "Keywords for the multiplicity"
+    multiplicityKeywords = {}
+    multiplicityKeywords[1] = ''
+    multiplicityKeywords[2] = 'uhf doublet'
+    multiplicityKeywords[3] = 'uhf triplet'
+    multiplicityKeywords[4] = 'uhf quartet'
+    multiplicityKeywords[5] = 'uhf quintet'
+    multiplicityKeywords[6] = 'uhf sextet'
+    multiplicityKeywords[7] = 'uhf septet'
+    multiplicityKeywords[8] = 'uhf octet'
+    multiplicityKeywords[9] = 'uhf nonet'
+    
+    "Keywords that will be added at the top of the qm input file"
+    keywordsTop = {}
+    keywordsTop[1] = "precise nosym"
+    keywordsTop[2] = "precise nosym gnorm=0.0 nonr"
+    keywordsTop[3] = "precise nosym gnorm=0.0"
+    keywordsTop[4] = "precise nosym gnorm=0.0 bfgs"
+    keywordsTop[5] = "precise nosym recalc=10 dmax=0.10 nonr cycles=2000 t=2000"
+    
+    "Keywords that will be added at the bottom of the qm input file"
+    keywordsBottom = {}
+    keywordsBottom[1] = "oldgeo thermo nosym precise "
+    keywordsBottom[2] = "oldgeo thermo nosym precise "
+    keywordsBottom[3] = "oldgeo thermo nosym precise "
+    keywordsBottom[4] = "oldgeo thermo nosym precise "
+    keywordsBottom[5] = "oldgeo thermo nosym precise "
         
-    def __init__(self, p_molfile, attemptNumber, multiplicity):
-        QMInputWriter.__init__(self, p_molfile, attemptNumber, multiplicity)
-        self.multiplicityKeywords = {}
-        self.fillMultiplicityKeywords()
-        self.keywords = {}
-        
-        self.keywordsTop = {}#keywords that will be added at the top of the qm input file
-        self.keywordsTop[1] = " precise nosym"
-        self.keywordsTop[2] = " precise nosym gnorm=0.0 nonr"
-        self.keywordsTop[3] = " precise nosym gnorm=0.0"
-        self.keywordsTop[4] = " precise nosym gnorm=0.0 bfgs"
-        self.keywordsTop[5] = " precise nosym recalc=10 dmax=0.10 nonr cycles=2000 t=2000"
-        
-        self.keywordsBottom = {}#keywords that will be added at the bottom of the qm input file
-        self.keywordsBottom[1] = "oldgeo thermo nosym precise "
-        self.keywordsBottom[2] = "oldgeo thermo nosym precise "
-        self.keywordsBottom[3] = "oldgeo thermo nosym precise "
-        self.keywordsBottom[4] = "oldgeo thermo nosym precise "
-        self.keywordsBottom[5] = "oldgeo thermo nosym precise "
-        
-        self.inputExtension = '.mop'
+    def __init__(self, molfile, attemptNumber, multiplicity):
+        QMInputWriter.__init__(self, molfile, attemptNumber, multiplicity)
 
-    def createKeywords(self):
-        """
-        Based on the attempt number keywords will be added to an QM input file.
-        """
-        inpKeyStrBoth = "pm3 "+self.multiplicityKeywords[self.multiplicity]
-        inpKeyStrTop = self.keywordsTop[self.attemptNumber]
-        inpKeyStrBottom = self.keywordsBottom[self.attemptNumber]
-           
-        if qmtp.QMTP.usePolar:
-            if self.multiplicity == 1:
-                polarString = "\n" + "\n" + "\n"+ "oldgeo polar nosym precise " + inpKeyStrBoth
-            else:
-                polarString = "\n" + "\n" + "\n"+ "oldgeo static nosym precise " + inpKeyStrBoth
-            self.keywords[MOPACKEYWORDS.POLAR] = polarString
-        else:
-            self.keywords[MOPACKEYWORDS.POLAR] = ''
-            
-        self.keywords[MOPACKEYWORDS.BOTH] = inpKeyStrBoth
-        self.keywords[MOPACKEYWORDS.TOP] = inpKeyStrTop
-        self.keywords[MOPACKEYWORDS.BOTTOM] = inpKeyStrBottom
 
-        return self.keywords
-    
-    
     def write(self):
-        self.createKeywords()
-
         return self.createInputFile()
     
     def createInputFile(self):
-
-        inpKeyStrTopCombined = self.keywords[MOPACKEYWORDS.BOTH] + self.keywords[MOPACKEYWORDS.TOP]
+        multiplicity_keywords = self.multiplicityKeywords[self.multiplicity]
+        top_keywords = "pm3 {0} {1}".format(
+                multiplicity_keywords,
+                self.keywordsTop[self.attemptNumber],
+                )
+        bottom_keywords = "{0} pm3 {1}".format(
+                self.keywordsBottom[self.attemptNumber],
+                multiplicity_keywords,
+                )
+        polar_keywords = "oldgeo {0} nosym precise pm3 {1}".format(
+                'polar' if self.multiplicity == 1 else 'static',
+                multiplicity_keywords,
+                )
+        
+        inputFilePath = os.path.join(self.molfile.directory, self.molfile.name + self.inputExtension)
+        
         obConversion = openbabel.OBConversion()
         obConversion.SetInAndOutFormats("mol", "mop")
         mol = openbabel.OBMol()
@@ -124,20 +98,20 @@ class MOPACPM3InputWriter(QMInputWriter):
             obConversion.ReadFile(mol, self.molfile.path)
         else:
             obConversion.ReadFile(mol, self.molfile.crudepath)
-    
+        
         mol.SetTitle(self.molfile.molecule.toAugmentedInChI()) 
         obConversion.SetOptions('k', openbabel.OBConversion.OUTOPTIONS)
-        'TODO still dont know how to write keywords, therefore they will be prepended afterwards...'
-        obConversion.WriteFile(mol, os.path.join(self.molfile.directory,self.molfile.name + self.inputExtension))
 
-        #pre-pend keywords:
-        with open(os.path.join(self.molfile.directory,self.molfile.name + self.inputExtension), 'r+') as mop:
-            old = mop.read() # read everything in the file
-            mop.seek(0) # rewind
-            mop.write(inpKeyStrTopCombined + old) # write the new line before
-
-        with open(os.path.join(self.molfile.directory,self.molfile.name + self.inputExtension), 'a') as mop:#append 'a' instead of overwrite 'w'
-            mop.write('\n'+self.keywords[MOPACKEYWORDS.BOTTOM]+self.keywords[MOPACKEYWORDS.BOTH]+self.keywords[MOPACKEYWORDS.POLAR])
+        input_string = obConversion.WriteString(mol)
+        
+        with open(inputFilePath, 'w') as mopacFile:
+            mopacFile.write(top_keywords)
+            mopacFile.write(input_string)
+            mopacFile.write('\n')
+            mopacFile.write(bottom_keywords)
+            if qmtp.QMTP.usePolar:
+                mopacFile.write('\n\n\n')
+                mopacFile.write(polar_keywords)
         
         return self.molfile.name + '.mop'
 
