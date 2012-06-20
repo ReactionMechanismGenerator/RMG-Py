@@ -19,7 +19,7 @@ import platform
 from subprocess import Popen
 from rmgpy.molecule import Molecule
 import qmverifier as verif
-import rmg_qm_parsers as pars
+import parsers as pars
 import qmtpjobs as job
 import qminputwriters as writers
 import symmetry as symm

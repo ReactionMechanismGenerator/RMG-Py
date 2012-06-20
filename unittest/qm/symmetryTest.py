@@ -10,7 +10,7 @@ import rmgpy.qm.calculator as calc
 from rmgpy.thermo import ThermoData
 import re
 import rmgpy.qm.qmtp as qm
-import rmgpy.qm.rmg_qm_parsers as pars
+import rmgpy.qm.parsers as pars
 import rmgpy.qm.symmetry as symm
 class Test(unittest.TestCase):
 

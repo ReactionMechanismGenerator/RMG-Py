@@ -5,7 +5,7 @@ Created on May 17, 2012
 '''
 import unittest
 import rmgpy.qm.qmtp as qm
-import rmgpy.qm.rmg_qm_parsers as pars
+import rmgpy.qm.parsers as pars
 import os
 import rmgpy.molecule as mol
 import rmgpy.qm.calculator as calc
