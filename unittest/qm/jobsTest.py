@@ -10,8 +10,8 @@ import os
 import rmgpy.molecule as mol
 import rmgpy.qm.calculator as calc
 from rmgpy.thermo import ThermoData
-import rmgpy.qm.qmtpjobs as job
-from rmgpy.qm.qmtpjobs import MOPACJob
+import rmgpy.qm.jobs as job
+from rmgpy.qm.jobs import MOPACJob
 import rmgpy.qm.qmtp as qm
 class Test(unittest.TestCase):
 

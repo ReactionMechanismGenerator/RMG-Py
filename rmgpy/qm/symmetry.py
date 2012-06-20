@@ -8,7 +8,7 @@ Created on Apr 29, 2012
 Module that collects all classes related to symmetry of molecules
 '''
 import os
-import qmtpjobs as job
+import jobs as job
 
 
 class PointGroupDictionary:
