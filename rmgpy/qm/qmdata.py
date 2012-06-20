@@ -5,21 +5,27 @@ class CCLibData:
     @author nmvdewie
     """
 
-    def __init__(self, cclib_data, groundStateDegeneracy = -1, numberOfAtoms = -1, stericEnergy = -1, molecularMass = -1, energy = 0, atomicNumbers = [], rotationalConstants = [], atomCoords = [], frequencies = []):
+    def __init__(self,
+                 cclib_data,
+                 groundStateDegeneracy = -1,
+                 numberOfAtoms = -1,
+                 stericEnergy = -1,
+                 molecularMass = -1,
+                 energy = 0,
+                 atomicNumbers = [],
+                 rotationalConstants = [],
+                 atomCoords = [],
+                 frequencies = []
+                 ):
         
-        """
-        * Electronic ground state degeneracy
-        * 
-        * in RMG taken as number of radicals +1
-        """
+        "Electronic ground state degeneracy in RMG taken as number of radicals +1"
         self.groundStateDegeneracy = groundStateDegeneracy
        
-        self.cclib_data = cclib_data#data object returned by a parsing tool like CCLib.parse()
+        self.cclib_data = cclib_data #data object returned by a parsing tool like CCLib.parse()
         
         self.numberOfAtoms = cclib_data.natom
         if hasattr(cclib_data, 'stericenergy'):
             self.stericEnergy = cclib_data.stericenergy/27.2113845#steric energy (in Hartree)
-
         
         self.molecularMass = cclib_data.molmass #print the molecular mass (in amu)
         

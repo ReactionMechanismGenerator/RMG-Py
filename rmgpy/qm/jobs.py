@@ -61,7 +61,7 @@ class QMJob:
         run the quantum chemistry package by initiating 
         a Process and pointing to the external executable
         """ 
-        return -1
+        return False
     
 
     def check(self, output):
@@ -70,7 +70,7 @@ class QMJob:
         
         Returns boolean flag
         """
-        return -1
+        return False
     
 class MOPACJob(QMJob):
     """
