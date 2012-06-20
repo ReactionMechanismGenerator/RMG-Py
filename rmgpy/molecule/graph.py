@@ -558,11 +558,12 @@ class Graph:
         cython.declare(graph=Graph)
         cython.declare(done=cython.bint, found=cython.bint)
         cython.declare(cycleList=list, cycles=list, cycle=list, graphs=list, neighbors=list)
-        cython.declare(verticesToRemove=list)
+        cython.declare(verticesToRemove=list, vertices=list)
         cython.declare(vertex=Vertex, rootVertex=Vertex)
 
         # Make a copy of the graph so we don't modify the original
         graph = self.copy(deep=True)
+        vertices = graph.vertices[:]
         
         # Step 1: Remove all terminal vertices
         done = False
@@ -629,6 +630,10 @@ class Graph:
                 else:
                     for vertex in verticesToRemove:
                         graph.removeVertex(vertex)
+
+        # Map atoms in cycles back to atoms in original graph
+        for i in range(len(cycleList)):
+            cycleList[i] = [self.vertices[vertices.index(v)] for v in cycleList[i]]
 
         return cycleList
 

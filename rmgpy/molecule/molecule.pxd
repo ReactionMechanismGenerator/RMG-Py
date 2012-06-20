@@ -57,6 +57,8 @@ cdef class Atom(Vertex):
 
 ################################################################################
 
+cpdef object SMILEwriter
+    
 cdef class Bond(Edge):
 
     cdef public str order

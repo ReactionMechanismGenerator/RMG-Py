@@ -732,14 +732,17 @@ class ThermoDatabase:
             # each ring one time; this doesn't work yet
             rings = molecule.getSmallestSetOfSmallestRings()
             for ring in rings:
-
                 # Make a temporary structure containing only the atoms in the ring
+                # NB. if any of the ring corrections depend on ligands not in the ring, they will not be found!
                 ringStructure = Molecule()
-                for atom in ring: ringStructure.addAtom(atom)
+                newAtoms = dict()
+                for atom in ring:
+                    newAtoms[atom] = atom.copy()
+                    ringStructure.addAtom(newAtoms[atom]) # (addAtom deletes the atom's bonds)
                 for atom1 in ring:
                     for atom2 in ring:
                         if molecule.hasBond(atom1, atom2):
-                            ringStructure.addBond(atom1, atom2, molecule.getBond(atom1, atom2))
+                            ringStructure.addBond(Bond(newAtoms[atom1], newAtoms[atom2], atom1.bonds[atom2].order ))
 
                 # Get thermo correction for this ring
                 try:

@@ -40,10 +40,11 @@ import logging
 import os
 import re
 import element as elements
+import openbabel
 from .graph import Vertex, Edge, Graph
 from .group import GroupAtom, GroupBond, Group, ActionError
 from .atomtype import AtomType, atomTypes, getAtomType
-        
+
 ################################################################################
 
 class Atom(Vertex):
@@ -443,7 +444,10 @@ class Bond(Edge):
             raise ActionError('Unable to update GroupBond: Invalid action {0}.'.format(action))
 
 ################################################################################
-
+SMILEwriter = openbabel.OBConversion()
+SMILEwriter.SetOutFormat('smi')
+SMILEwriter.SetOptions("i",SMILEwriter.OUTOPTIONS) # turn off isomer and stereochemistry information (the @ signs!)
+    
 class Molecule(Graph):
     """
     A representation of a molecular structure using a graph data type, extending
@@ -911,7 +915,6 @@ class Molecule(Graph):
         Convert a molecular structure to an InChI string. Uses
         `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
         """
-        import openbabel
         # This version does not write a warning to stderr if stereochemistry is undefined
         obmol = self.toOBMol()
         obConversion = openbabel.OBConversion()
@@ -963,24 +966,21 @@ class Molecule(Graph):
             return key+'mult'+str(radicalNumber+1)
         else:
             return key
-        
+
+
     def toSMILES(self):
         """
         Convert a molecular structure to an SMILES string. Uses
         `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
         """
-        import pybel
-        mol = pybel.Molecule(self.toOBMol())
-        return mol.write('smiles').strip()
+        mol = self.toOBMol()
+        return SMILEwriter.WriteString(mol).strip()
 
     def toOBMol(self):
         """
         Convert a molecular structure to an OpenBabel OBMol object. Uses
         `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
         """
-
-        import openbabel
-        
         cython.declare(atom=Atom, atom1=Atom, bonds=dict, atom2=Atom, bond=Bond)
         cython.declare(index1=cython.int, index2=cython.int, order=cython.int)
 
