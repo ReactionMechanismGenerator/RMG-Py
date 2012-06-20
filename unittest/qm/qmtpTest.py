@@ -6,7 +6,7 @@ Created on May 17, 2012
 import unittest
 
 from rmgpy.molecule import *
-import qmtp_package.qmtp as qm
+import rmgpy.qm.qmtp as qm
 from rmgpy.thermo import ThermoData
 
 class QMTest(unittest.TestCase):

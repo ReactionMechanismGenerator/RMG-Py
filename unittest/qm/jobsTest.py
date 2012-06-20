@@ -4,15 +4,15 @@ Created on May 19, 2012
 @author: nmvdewie
 '''
 import unittest
-import qmtp_package.qmtp as qm
-import qmtp_package.rmg_qm_parsers as pars
+import rmgpy.qm.qmtp as qm
+import rmgpy.qm.rmg_qm_parsers as pars
 import os
 import rmgpy.molecule as mol
-import qmtp_package.calculator as calc
+import rmgpy.qm.calculator as calc
 from rmgpy.thermo import ThermoData
-import qmtp_package.qmtpjobs as job
-from qmtp_package.qmtpjobs import MOPACJob
-import qmtp_package.qmtp as qm
+import rmgpy.qm.qmtpjobs as job
+from rmgpy.qm.qmtpjobs import MOPACJob
+import rmgpy.qm.qmtp as qm
 class Test(unittest.TestCase):
 
     def testMOPACJob(self):

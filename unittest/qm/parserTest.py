@@ -4,11 +4,11 @@ Created on May 17, 2012
 @author: nmvdewie
 '''
 import unittest
-import qmtp_package.qmtp as qm
-import qmtp_package.rmg_qm_parsers as pars
+import rmgpy.qm.qmtp as qm
+import rmgpy.qm.rmg_qm_parsers as pars
 import os
 import rmgpy.molecule as mol
-import qmtp_package.calculator as calc
+import rmgpy.qm.calculator as calc
 from rmgpy.thermo import ThermoData
 import re
 

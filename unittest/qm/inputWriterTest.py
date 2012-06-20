@@ -5,9 +5,9 @@ Created on May 23, 2012
 '''
 import time
 import unittest
-import qmtp_package.qminputwriters as writers
+import rmgpy.qm.qminputwriters as writers
 import os
-import qmtp_package.qmtp as qm
+import rmgpy.qm.qmtp as qm
 import rmgpy.molecule as mol
 
 class Test(unittest.TestCase):

@@ -4,9 +4,9 @@ Created on May 17, 2012
 @author: nmvdewie
 '''
 import unittest
-import qmtp_package.qmtp as qm
+import rmgpy.qm.qmtp as qm
 import os
-import qmtp_package.qmverifier as verif
+import rmgpy.qm.qmverifier as verif
 import rmgpy.molecule as mol
 class Test(unittest.TestCase):
 

@@ -6,12 +6,12 @@ Created on May 18, 2012
 import unittest
 import os
 import rmgpy.molecule as mol
-import qmtp_package.calculator as calc
+import rmgpy.qm.calculator as calc
 from rmgpy.thermo import ThermoData
 import re
-import qmtp_package.qmtp as qm
-import qmtp_package.rmg_qm_parsers as pars
-import qmtp_package.symmetry as symm
+import rmgpy.qm.qmtp as qm
+import rmgpy.qm.rmg_qm_parsers as pars
+import rmgpy.qm.symmetry as symm
 class Test(unittest.TestCase):
 
     def testPGDictionary(self):
