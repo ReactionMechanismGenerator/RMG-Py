@@ -410,8 +410,8 @@ class Arrhenius(KineticsModel):
     
     """
     
-    def __init__(self, A=0.0, n=0.0, Ea=0.0, T0=1.0, Tmin=None, Tmax=None, comment=''):
-        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, comment=comment)
+    def __init__(self, A=0.0, n=0.0, Ea=0.0, T0=1.0, Tmin=None, Tmax=None, Pmin=None, Pmax=None, comment=''):
+        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, comment=comment)
         self.A = Quantity(A)
         self.T0 = Quantity(T0)
         self.n = Quantity(n)
@@ -429,6 +429,8 @@ class Arrhenius(KineticsModel):
         string += u'    T0 = {0!r},\n'.format(self.T0)
         if self.Tmin is not None: string += '    Tmin = {0!r},\n'.format(self.Tmin)
         if self.Tmax is not None: string += '    Tmax = {0!r},\n'.format(self.Tmax)
+        if self.Pmin is not None: string += '    Pmin = {0!r},\n'.format(self.Pmin)
+        if self.Pmax is not None: string += '    Pmax = {0!r},\n'.format(self.Pmax)
         if self.comment != '': string += '    comment = """{0}""",\n'.format(self.comment)
         return string + u')'
     
@@ -443,7 +445,7 @@ class Arrhenius(KineticsModel):
         """
         A helper function used when pickling an Arrhenius object.
         """
-        return (Arrhenius, (self.A, self.n, self.Ea, self.T0, self.Tmin, self.Tmax, self.comment))
+        return (Arrhenius, (self.A, self.n, self.Ea, self.T0, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.comment))
 
     def isPressureDependent(self):
         """
