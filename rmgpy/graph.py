@@ -619,7 +619,7 @@ class Graph:
                     # there are no vertices in this cycle that with only two edges
 
                     # Remove edge between root vertex and any one vertex it is connected to
-                    graph.removeEdge(rootVertex, graph[rootVertex].keys()[0])
+                    graph.removeEdge(rootVertex, graph.edges[rootVertex].keys()[0])
                 else:
                     for vertex in verticesToRemove:
                         graph.removeVertex(vertex)

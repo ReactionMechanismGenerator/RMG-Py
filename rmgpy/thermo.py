@@ -167,6 +167,50 @@ class ThermoModel:
         """
         return numpy.array([self.getFreeEnergy(T) for T in Tlist], numpy.float)
 
+    def isSimilarTo(self, other):
+        """
+        Returns ``True`` if `self` and `other` report similar thermo values
+        for heat capacity, enthalpy, entropy, and free energy over a wide
+        range of temperatures, or ``False`` otherwise.
+        """
+        cython.declare(T=cython.double)
+        cython.declare(Tdata=list)
+        
+        Tdata = [300,400,500,600,800,1000,1500,2000]
+        for T in Tdata:
+            if not (0.8 < self.getHeatCapacity(T) / other.getHeatCapacity(T) < 1.25):
+                return False
+            elif not (0.8 < self.getEnthalpy(T) / other.getEnthalpy(T) < 1.25):
+                return False
+            elif not (0.8 < self.getEntropy(T) / other.getEntropy(T) < 1.25):
+                return False
+            elif not (0.8 < self.getFreeEnergy(T) / other.getFreeEnergy(T) < 1.25):
+                return False
+
+        return True
+
+    def isIdenticalTo(self, other):
+        """
+        Returns ``True`` if `self` and `other` report very similar thermo values
+        for heat capacity, enthalpy, entropy, and free energy over a wide
+        range of temperatures, or ``False`` otherwise.
+        """
+        cython.declare(T=cython.double)
+        cython.declare(Tdata=list)
+        
+        Tdata = [300,400,500,600,800,1000,1500,2000]
+        for T in Tdata:
+            if not (0.95 < self.getHeatCapacity(T) / other.getHeatCapacity(T) < 1.05):
+                return False
+            elif not (0.95 < self.getEnthalpy(T) / other.getEnthalpy(T) < 1.05):
+                return False
+            elif not (0.95 < self.getEntropy(T) / other.getEntropy(T) < 1.05):
+                return False
+            elif not (0.95 < self.getFreeEnergy(T) / other.getFreeEnergy(T) < 1.05):
+                return False
+
+        return True
+    
 ################################################################################
 
 class ThermoData(ThermoModel):

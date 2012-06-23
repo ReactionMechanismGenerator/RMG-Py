@@ -343,6 +343,9 @@ class RMG:
                     worksheet = None
                 
                 # Conduct simulation
+                pdepNetworks = []
+                for source, networks in self.reactionModel.networkDict.items():
+                    pdepNetworks.extend(networks)
                 logging.info('Conducting simulation of reaction system %s...' % (index+1))
                 terminated, obj = reactionSystem.simulate(
                     coreSpecies = self.reactionModel.core.species,
@@ -352,7 +355,7 @@ class RMG:
                     toleranceKeepInEdge = self.fluxToleranceKeepInEdge,
                     toleranceMoveToCore = self.fluxToleranceMoveToCore,
                     toleranceInterruptSimulation = self.fluxToleranceInterrupt,
-                    pdepNetworks = self.reactionModel.unirxnNetworks,
+                    pdepNetworks = pdepNetworks,
                     worksheet = worksheet,
                     absoluteTolerance = self.absoluteTolerance,
                     relativeTolerance = self.relativeTolerance,

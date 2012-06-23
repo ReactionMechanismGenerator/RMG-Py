@@ -337,14 +337,14 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
     # Prepare parameters to pass to jinja template
     title = 'RMG Model Comparison'
 
-    species = commonSpeciesList + speciesList1 + speciesList2
+    speciesList = [spec1 for spec1, spec2 in commonSpeciesList] + [spec2 for spec1, spec2 in commonSpeciesList] + speciesList1 + speciesList2
 
     re_index = re.compile(r'\((\d+)\)$')
 
     if not os.path.isdir(os.path.join(dirname,'species')):
         os.makedirs(os.path.join(dirname,'species'))
 
-    for spec in species:
+    for spec in speciesList:
         # if the species dictionary came from an RMG-Java job, make them prettier
         # We use the presence of a trailing index on the label to discern this
         # (A single open parenthesis is not enough (e.g. when using SMILES strings as labels!)
@@ -534,15 +534,76 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
 
 <h2 align="center">Common Species ({{ commonSpecies|length }})</h2>
 
-<table width="50%" align="center">
-    <tr><th>Index</th><th>Structure</th><th>Label</th><th>Mol. Wt. (g/mol)</th></tr>
-    {% for spec in commonSpecies %}
-    <tr class="species">
-        <td class="index" align="center">
-        {{ spec.index }}.</td>
-        <td class="structure" align="center"><a href="{{spec.molecule[0].getURL()}}"><img src="species/{{ spec|replace('#','%23') }}.png" alt="{{ spec }}" title="{{ spec }}"></a></td>
-        <td class="label" align="center">{{ spec.label }}</td>
-        <td>{{ "%.2f"|format(spec.molecule[0].getMolecularWeight() * 1000) }}</td>
+<table width="100%">
+    {% for spec1, spec2 in commonSpecies %}
+    <tr>
+        <td width="100%" colspan="4">
+            <table align="center">
+                <tr class="species">
+                    <td>{{ spec1.label }}</td>
+                    <td class="structure" align="center"><a href="{{spec1.molecule[0].getURL()}}"><img src="species/{{ spec1|replace('#','%23') }}.png" alt="{{ spec1 }}" title="{{ spec1 }}"></a></td>
+                    <td>{{ "%.2f"|format(spec1.molecule[0].getMolecularWeight() * 1000) }}</td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+    {% if spec1.thermo and spec2.thermo %}
+    {% if spec1.thermo.isIdenticalTo(spec2.thermo) %}
+    <tr width=100%>
+         <td colspan="4" valign="top" width=50%><div align="center"><font color="blue">IDENTICAL THERMO WAS FOUND FOR THIS SPECIES.</font></div>
+    </tr>
+    {% elif spec1.thermo.isSimilarTo(spec2.thermo) %}
+    <tr width=100%>
+         <td colspan="4" valign="top" width=50%><div align="center"><font color="green">SIMILAR THERMO WAS FOUND FOR THIS SPECIES.</font></div>
+    </tr>
+    {% endif%}
+    <tr>
+        <td width="10%">{{ spec1.index }}. </td>
+        <td width="40%">
+            <table width="100%">
+                <tr>
+                    <th>H298</th>
+                    <th>S298</th>
+                    <th>Cp300</th>
+                    <th>Cp500</th>
+                    <th>Cp1000</th>
+                    <th>Cp1500</th>
+                </tr>
+                <tr>
+                    <td>{{ "%.2f"|format(spec1.thermo.getEnthalpy(298) / 4184) }}</td>
+                    <td>{{ "%.2f"|format(spec1.thermo.getEntropy(298) / 4.184) }}</td>
+                    <td>{{ "%.2f"|format(spec1.thermo.getHeatCapacity(300) / 4.184) }}</td>
+                    <td>{{ "%.2f"|format(spec1.thermo.getHeatCapacity(500) / 4.184) }}</td>
+                    <td>{{ "%.2f"|format(spec1.thermo.getHeatCapacity(1000) / 4.184) }}</td>
+                    <td>{{ "%.2f"|format(spec1.thermo.getHeatCapacity(1500) / 4.184) }}</td>
+                </tr>
+            </table>
+        </td>
+        <td width="10%">{{ spec2.index }}.</td>
+        <td width="40%">
+            <table width="100%">
+                <tr>
+                    <th>H298</th>
+                    <th>S298</th>
+                    <th>Cp300</th>
+                    <th>Cp500</th>
+                    <th>Cp1000</th>
+                    <th>Cp1500</th>
+                </tr>
+                <tr>
+                    <td>{{ "%.2f"|format(spec2.thermo.getEnthalpy(298) / 4184) }}</td>
+                    <td>{{ "%.2f"|format(spec2.thermo.getEntropy(298) / 4.184) }}</td>
+                    <td>{{ "%.2f"|format(spec2.thermo.getHeatCapacity(300) / 4.184) }}</td>
+                    <td>{{ "%.2f"|format(spec2.thermo.getHeatCapacity(500) / 4.184) }}</td>
+                    <td>{{ "%.2f"|format(spec2.thermo.getHeatCapacity(1000) / 4.184) }}</td>
+                    <td>{{ "%.2f"|format(spec2.thermo.getHeatCapacity(1500) / 4.184) }}</td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+    {% endif %}
+    <tr>
+        <td width="100%" colspan="4"><hr/></td>
     </tr>
     {% endfor %}
 </table>
@@ -695,8 +756,8 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
 </tr>
 
 <tr width=100%>
-    <td colspan="2" valign="top" width=50%><font size="1pt" face="courier">{{ rxn1.toChemkin(commonSpecies) }}</font></td>
-    <td colspan="2" valign="top" width=50%><font size="1pt" face="courier">{{ rxn2.toChemkin(commonSpecies) }}</font></td>
+    <td colspan="2" valign="top" width=50%><font size="1pt" face="courier">{{ rxn1.toChemkin(speciesList) }}</font></td>
+    <td colspan="2" valign="top" width=50%><font size="1pt" face="courier">{{ rxn2.toChemkin(speciesList) }}</font></td>
 </tr>
 
 <tr width=100%>
@@ -779,5 +840,5 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
 </html>
 """)
     f = open(path, 'w')
-    f.write(template.render(title=title, commonSpecies=commonSpeciesList, speciesList1=speciesList1, speciesList2 = speciesList2, commonReactions=commonReactions, uniqueReactions1=uniqueReactions1, uniqueReactions2=uniqueReactions2, families1=families1, families2=families2, familyCount1=familyCount1,familyCount2=familyCount2))
+    f.write(template.render(title=title, commonSpecies=commonSpeciesList, speciesList1=speciesList1, speciesList2 = speciesList2, commonReactions=commonReactions, uniqueReactions1=uniqueReactions1, uniqueReactions2=uniqueReactions2, families1=families1, families2=families2, familyCount1=familyCount1,familyCount2=familyCount2, speciesList=speciesList))
     f.close()

@@ -55,6 +55,10 @@ cdef class ThermoModel:
     cpdef numpy.ndarray getEntropies(self, numpy.ndarray Tlist)
 
     cpdef numpy.ndarray getFreeEnergies(self, numpy.ndarray Tlist)
+    
+    cpdef bint isSimilarTo(self, ThermoModel other) except -2
+
+    cpdef bint isIdenticalTo(self, ThermoModel other) except -2
 
 ################################################################################
 
