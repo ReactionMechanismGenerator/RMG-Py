@@ -33,8 +33,15 @@ help:
 	@echo "  linkcheck  to check all external links for integrity"
 	@echo "  doctest    to run all doctests embedded in the documentation (if enabled)"
 
+
 clean:
+# set aside the git repository info used to push pages to github
+	mkdir build_temp
+	mv $(BUILDDIR)/html/.git build_temp/.git
 	-rm -rf $(BUILDDIR)/*
+	mkdir $(BUILDDIR)/html
+	mv build_temp/.git $(BUILDDIR)/html/
+	rm -rf build_temp
 
 html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
