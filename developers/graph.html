@@ -1,0 +1,425 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>rmgpy.graph — Graph Data Type &mdash; RMG Py 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  false
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../index.html" />
+    <link rel="up" title="RMG Developer’s Guide" href="index.html" />
+    <link rel="next" title="rmgpy.group — Functional Groups" href="group.html" />
+    <link rel="prev" title="rmgpy.element — Chemical Elements" href="element.html" /> 
+  </head>
+  <body>
+<div class="header">
+&nbsp;
+</div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="group.html" title="rmgpy.group — Functional Groups"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="element.html" title="rmgpy.element — Chemical Elements"
+             accesskey="P">previous</a> |</li>
+<li><a href="../index.html">Documentation</a> &raquo;</li>
+
+          <li><a href="index.html" accesskey="U">RMG Developer&#8217;s Guide</a> &raquo;</li> 
+      </ul>
+    </div>
+            
+  <div class="section" id="module-rmgpy.graph">
+<span id="rmgpy-graph-graph-data-type"></span><h1><a class="reference internal" href="#module-rmgpy.graph" title="rmgpy.graph"><tt class="xref py py-mod docutils literal"><span class="pre">rmgpy.graph</span></tt></a> &#8212; Graph Data Type<a class="headerlink" href="#module-rmgpy.graph" title="Permalink to this headline">¶</a></h1>
+<p>This module contains an implementation of a graph data structure (the 
+<a class="reference internal" href="#rmgpy.graph.Graph" title="rmgpy.graph.Graph"><tt class="xref py py-class docutils literal"><span class="pre">Graph</span></tt></a> class) and functions for manipulating that graph, including 
+efficient isomorphism functions. This module also contains base classes for
+the vertices and edges (<a class="reference internal" href="#rmgpy.graph.Vertex" title="rmgpy.graph.Vertex"><tt class="xref py py-class docutils literal"><span class="pre">Vertex</span></tt></a> and <a class="reference internal" href="#rmgpy.graph.Edge" title="rmgpy.graph.Edge"><tt class="xref py py-class docutils literal"><span class="pre">Edge</span></tt></a>, respectively) that
+are the components of a graph.</p>
+<div class="section" id="vertices-and-edges">
+<h2>Vertices and Edges<a class="headerlink" href="#vertices-and-edges" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="rmgpy.graph.Vertex">
+<em class="property">class </em><tt class="descclassname">rmgpy.graph.</tt><tt class="descname">Vertex</tt><a class="headerlink" href="#rmgpy.graph.Vertex" title="Permalink to this definition">¶</a></dt>
+<dd><p>A base class for vertices in a graph. Contains several connectivity values
+useful for accelerating isomorphism searches, as proposed by
+<a class="reference external" href="http://dx.doi.org/10.1021/c160017a018">Morgan (1965)</a>.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="23%" />
+<col width="18%" />
+<col width="59%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Attribute</th>
+<th class="head">Type</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><cite>connectivity1</cite></td>
+<td><tt class="docutils literal"><span class="pre">int</span></tt></td>
+<td>The number of nearest neighbors</td>
+</tr>
+<tr class="row-odd"><td><cite>connectivity2</cite></td>
+<td><tt class="docutils literal"><span class="pre">int</span></tt></td>
+<td>The sum of the neighbors&#8217; <cite>connectivity1</cite> values</td>
+</tr>
+<tr class="row-even"><td><cite>connectivity3</cite></td>
+<td><tt class="docutils literal"><span class="pre">int</span></tt></td>
+<td>The sum of the neighbors&#8217; <cite>connectivity2</cite> values</td>
+</tr>
+<tr class="row-odd"><td><cite>sortingLabel</cite></td>
+<td><tt class="docutils literal"><span class="pre">int</span></tt></td>
+<td>An integer label used to sort the vertices</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="rmgpy.graph.Vertex.equivalent">
+<tt class="descname">equivalent</tt><big>(</big><em>other</em><big>)</big><a class="headerlink" href="#rmgpy.graph.Vertex.equivalent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <tt class="xref py py-data docutils literal"><span class="pre">True</span></tt> if two vertices <cite>self</cite> and <cite>other</cite> are semantically
+equivalent, or <tt class="xref py py-data docutils literal"><span class="pre">False</span></tt> if not. You should reimplement this
+function in a derived class if your vertices have semantic information.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.graph.Vertex.isSpecificCaseOf">
+<tt class="descname">isSpecificCaseOf</tt><big>(</big><em>other</em><big>)</big><a class="headerlink" href="#rmgpy.graph.Vertex.isSpecificCaseOf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if <cite>self</cite> is semantically more specific than <cite>other</cite>,
+or <tt class="docutils literal"><span class="pre">False</span></tt> if not. You should reimplement this function in a derived
+class if your edges have semantic information.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.graph.Vertex.resetConnectivityValues">
+<tt class="descname">resetConnectivityValues</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.graph.Vertex.resetConnectivityValues" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reset the cached structure information for this vertex.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="rmgpy.graph.Edge">
+<em class="property">class </em><tt class="descclassname">rmgpy.graph.</tt><tt class="descname">Edge</tt><a class="headerlink" href="#rmgpy.graph.Edge" title="Permalink to this definition">¶</a></dt>
+<dd><p>A base class for edges in a graph. This class does <em>not</em> store the vertex
+pair that comprises the edge; that functionality would need to be included
+in the derived class.</p>
+<dl class="method">
+<dt id="rmgpy.graph.Edge.equivalent">
+<tt class="descname">equivalent</tt><big>(</big><em>other</em><big>)</big><a class="headerlink" href="#rmgpy.graph.Edge.equivalent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if two edges <cite>self</cite> and <cite>other</cite> are semantically
+equivalent, or <tt class="docutils literal"><span class="pre">False</span></tt> if not. You should reimplement this
+function in a derived class if your edges have semantic information.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.graph.Edge.isSpecificCaseOf">
+<tt class="descname">isSpecificCaseOf</tt><big>(</big><em>other</em><big>)</big><a class="headerlink" href="#rmgpy.graph.Edge.isSpecificCaseOf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if <cite>self</cite> is semantically more specific than <cite>other</cite>,
+or <tt class="docutils literal"><span class="pre">False</span></tt> if not. You should reimplement this function in a derived
+class if your edges have semantic information.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="graph-objects">
+<h2>Graph Objects<a class="headerlink" href="#graph-objects" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="rmgpy.graph.Graph">
+<em class="property">class </em><tt class="descclassname">rmgpy.graph.</tt><tt class="descname">Graph</tt><big>(</big><em>vertices=None</em>, <em>edges=None</em><big>)</big><a class="headerlink" href="#rmgpy.graph.Graph" title="Permalink to this definition">¶</a></dt>
+<dd><p>A graph data type. The vertices of the graph are stored in a list
+<cite>vertices</cite>; this provides a consistent traversal order. The edges of the
+graph are stored in a dictionary of dictionaries <cite>edges</cite>. A single edge can
+be accessed using <tt class="docutils literal"><span class="pre">graph.edges[vertex1][vertex2]</span></tt> or the <a class="reference internal" href="#rmgpy.graph.Graph.getEdge" title="rmgpy.graph.Graph.getEdge"><tt class="xref py py-meth docutils literal"><span class="pre">getEdge()</span></tt></a>
+method; in either case, an exception will be raised if the edge does not
+exist. All edges of a vertex can be accessed using <tt class="docutils literal"><span class="pre">graph.edges[vertex]</span></tt>
+or the <a class="reference internal" href="#rmgpy.graph.Graph.getEdges" title="rmgpy.graph.Graph.getEdges"><tt class="xref py py-meth docutils literal"><span class="pre">getEdges()</span></tt></a> method.</p>
+<dl class="method">
+<dt id="rmgpy.graph.Graph.addEdge">
+<tt class="descname">addEdge</tt><big>(</big><em>vertex1</em>, <em>vertex2</em>, <em>edge</em><big>)</big><a class="headerlink" href="#rmgpy.graph.Graph.addEdge" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add an <cite>edge</cite> to the graph as an edge connecting the two vertices
+<cite>vertex1</cite> and <cite>vertex2</cite>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.graph.Graph.addVertex">
+<tt class="descname">addVertex</tt><big>(</big><em>vertex</em><big>)</big><a class="headerlink" href="#rmgpy.graph.Graph.addVertex" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a <cite>vertex</cite> to the graph. The vertex is initialized with no edges.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.graph.Graph.copy">
+<tt class="descname">copy</tt><big>(</big><em>deep=False</em><big>)</big><a class="headerlink" href="#rmgpy.graph.Graph.copy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a copy of the current graph. If <cite>deep</cite> is <tt class="docutils literal"><span class="pre">True</span></tt>, a deep copy
+is made: copies of the vertices and edges are used in the new graph.
+If <cite>deep</cite> is <tt class="docutils literal"><span class="pre">False</span></tt> or not specified, a shallow copy is made: the
+original vertices and edges are used in the new graph.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.graph.Graph.findIsomorphism">
+<tt class="descname">findIsomorphism</tt><big>(</big><em>other</em>, <em>initialMap=None</em><big>)</big><a class="headerlink" href="#rmgpy.graph.Graph.findIsomorphism" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns <tt class="xref py py-data docutils literal"><span class="pre">True</span></tt> if <cite>other</cite> is subgraph isomorphic and <tt class="xref py py-data docutils literal"><span class="pre">False</span></tt>
+otherwise, and the matching mapping.
+Uses the VF2 algorithm of Vento and Foggia.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.graph.Graph.findSubgraphIsomorphisms">
+<tt class="descname">findSubgraphIsomorphisms</tt><big>(</big><em>other</em>, <em>initialMap=None</em><big>)</big><a class="headerlink" href="#rmgpy.graph.Graph.findSubgraphIsomorphisms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns <tt class="xref py py-data docutils literal"><span class="pre">True</span></tt> if <cite>other</cite> is subgraph isomorphic and <tt class="xref py py-data docutils literal"><span class="pre">False</span></tt>
+otherwise. Also returns the lists all of valid mappings.</p>
+<p>Uses the VF2 algorithm of Vento and Foggia.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.graph.Graph.getAllCycles">
+<tt class="descname">getAllCycles</tt><big>(</big><em>startingVertex</em><big>)</big><a class="headerlink" href="#rmgpy.graph.Graph.getAllCycles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a starting vertex, returns a list of all the cycles containing
+that vertex.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.graph.Graph.getEdge">
+<tt class="descname">getEdge</tt><big>(</big><em>vertex1</em>, <em>vertex2</em><big>)</big><a class="headerlink" href="#rmgpy.graph.Graph.getEdge" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the edge connecting vertices <cite>vertex1</cite> and <cite>vertex2</cite>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.graph.Graph.getEdges">
+<tt class="descname">getEdges</tt><big>(</big><em>vertex</em><big>)</big><a class="headerlink" href="#rmgpy.graph.Graph.getEdges" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of the edges involving the specified <cite>vertex</cite>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.graph.Graph.getSmallestSetOfSmallestRings">
+<tt class="descname">getSmallestSetOfSmallestRings</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.graph.Graph.getSmallestSetOfSmallestRings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of the smallest set of smallest rings in the graph. The
+algorithm implements was adapted from a description by Fan, Panaye,
+Doucet, and Barbu (doi: 10.1021/ci00015a002)</p>
+<p>B. T. Fan, A. Panaye, J. P. Doucet, and A. Barbu. &#8220;Ring Perception: A
+New Algorithm for Directly Finding the Smallest Set of Smallest Rings
+from a Connection Table.&#8221; <em>J. Chem. Inf. Comput. Sci.</em> <strong>33</strong>,
+p. 657-662 (1993).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.graph.Graph.hasEdge">
+<tt class="descname">hasEdge</tt><big>(</big><em>vertex1</em>, <em>vertex2</em><big>)</big><a class="headerlink" href="#rmgpy.graph.Graph.hasEdge" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns <tt class="docutils literal"><span class="pre">True</span></tt> if vertices <cite>vertex1</cite> and <cite>vertex2</cite> are connected
+by an edge, or <tt class="docutils literal"><span class="pre">False</span></tt> if not.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.graph.Graph.hasVertex">
+<tt class="descname">hasVertex</tt><big>(</big><em>vertex</em><big>)</big><a class="headerlink" href="#rmgpy.graph.Graph.hasVertex" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns <tt class="docutils literal"><span class="pre">True</span></tt> if <cite>vertex</cite> is a vertex in the graph, or <tt class="docutils literal"><span class="pre">False</span></tt> if
+not.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.graph.Graph.isCyclic">
+<tt class="descname">isCyclic</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.graph.Graph.isCyclic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <tt class="xref py py-data docutils literal"><span class="pre">True</span></tt> if one or more cycles are present in the structure
+and <tt class="xref py py-data docutils literal"><span class="pre">False</span></tt> otherwise.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.graph.Graph.isEdgeInCycle">
+<tt class="descname">isEdgeInCycle</tt><big>(</big><em>vertex1</em>, <em>vertex2</em><big>)</big><a class="headerlink" href="#rmgpy.graph.Graph.isEdgeInCycle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <tt class="xref py py-data docutils literal"><span class="pre">True</span></tt> if the edge between vertices <cite>vertex1</cite> and <cite>vertex2</cite>
+is in one or more cycles in the graph, or <tt class="xref py py-data docutils literal"><span class="pre">False</span></tt> if not.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.graph.Graph.isIsomorphic">
+<tt class="descname">isIsomorphic</tt><big>(</big><em>other</em>, <em>initialMap=None</em><big>)</big><a class="headerlink" href="#rmgpy.graph.Graph.isIsomorphic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns <tt class="xref py py-data docutils literal"><span class="pre">True</span></tt> if two graphs are isomorphic and <tt class="xref py py-data docutils literal"><span class="pre">False</span></tt>
+otherwise. Uses the VF2 algorithm of Vento and Foggia.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.graph.Graph.isMappingValid">
+<tt class="descname">isMappingValid</tt><big>(</big><em>other</em>, <em>mapping</em><big>)</big><a class="headerlink" href="#rmgpy.graph.Graph.isMappingValid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check that a proposed <cite>mapping</cite> of vertices from <cite>self</cite> to <cite>other</cite>
+is valid by checking that the vertices and edges involved in the
+mapping are mutually equivalent.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.graph.Graph.isSubgraphIsomorphic">
+<tt class="descname">isSubgraphIsomorphic</tt><big>(</big><em>other</em>, <em>initialMap=None</em><big>)</big><a class="headerlink" href="#rmgpy.graph.Graph.isSubgraphIsomorphic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns <tt class="xref py py-data docutils literal"><span class="pre">True</span></tt> if <cite>other</cite> is subgraph isomorphic and <tt class="xref py py-data docutils literal"><span class="pre">False</span></tt>
+otherwise. Uses the VF2 algorithm of Vento and Foggia.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.graph.Graph.isVertexInCycle">
+<tt class="descname">isVertexInCycle</tt><big>(</big><em>vertex</em><big>)</big><a class="headerlink" href="#rmgpy.graph.Graph.isVertexInCycle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <tt class="xref py py-data docutils literal"><span class="pre">True</span></tt> if <cite>vertex</cite> is in one or more cycles in the graph,
+or <tt class="xref py py-data docutils literal"><span class="pre">False</span></tt> if not.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.graph.Graph.merge">
+<tt class="descname">merge</tt><big>(</big><em>other</em><big>)</big><a class="headerlink" href="#rmgpy.graph.Graph.merge" title="Permalink to this definition">¶</a></dt>
+<dd><p>Merge two graphs so as to store them in a single Graph object.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.graph.Graph.removeEdge">
+<tt class="descname">removeEdge</tt><big>(</big><em>vertex1</em>, <em>vertex2</em><big>)</big><a class="headerlink" href="#rmgpy.graph.Graph.removeEdge" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove the edge having vertices <cite>vertex1</cite> and <cite>vertex2</cite> from the graph.
+Does not remove vertices that no longer have any edges as a result of
+this removal.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.graph.Graph.removeVertex">
+<tt class="descname">removeVertex</tt><big>(</big><em>vertex</em><big>)</big><a class="headerlink" href="#rmgpy.graph.Graph.removeVertex" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove <cite>vertex</cite> and all edges associated with it from the graph. Does
+not remove vertices that no longer have any edges as a result of this
+removal.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.graph.Graph.resetConnectivityValues">
+<tt class="descname">resetConnectivityValues</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.graph.Graph.resetConnectivityValues" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reset any cached connectivity information. Call this method when you
+have modified the graph.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.graph.Graph.sortVertices">
+<tt class="descname">sortVertices</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.graph.Graph.sortVertices" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sort the vertices in the graph. This can make certain operations, e.g.
+the isomorphism functions, much more efficient.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.graph.Graph.split">
+<tt class="descname">split</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.graph.Graph.split" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a single Graph object containing two or more unconnected graphs
+into separate graphs.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.graph.Graph.updateConnectivityValues">
+<tt class="descname">updateConnectivityValues</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.graph.Graph.updateConnectivityValues" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the connectivity values for each vertex in the graph. These are
+used to accelerate the isomorphism checking.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="isomorphism-functions">
+<h2>Isomorphism Functions<a class="headerlink" href="#isomorphism-functions" title="Permalink to this headline">¶</a></h2>
+<dl class="staticmethod">
+<dt id="rmgpy.graph.VF2_isomorphism">
+<em class="property">static </em><tt class="descclassname">graph.</tt><tt class="descname">VF2_isomorphism</tt><big>(</big><em>graph1</em>, <em>graph2</em>, <em>subgraph=False</em>, <em>findAll=False</em>, <em>initialMap=None</em><big>)</big><a class="headerlink" href="#rmgpy.graph.VF2_isomorphism" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determines if two <a class="reference internal" href="#rmgpy.graph.Graph" title="rmgpy.graph.Graph"><tt class="xref py py-class docutils literal"><span class="pre">Graph</span></tt></a> objects <cite>graph1</cite> and <cite>graph2</cite> are
+isomorphic. A number of options affect how the isomorphism check is
+performed:</p>
+<ul class="simple">
+<li>If <cite>subgraph</cite> is <tt class="docutils literal"><span class="pre">True</span></tt>, the isomorphism function will treat <cite>graph2</cite>
+as a subgraph of <cite>graph1</cite>. In this instance a   subgraph can either mean a
+smaller graph (i.e. fewer vertices and/or edges) or a less specific graph.</li>
+<li>If <cite>findAll</cite> is <tt class="docutils literal"><span class="pre">True</span></tt>, all valid isomorphisms will be found and
+returned; otherwise only the first valid isomorphism will be returned.</li>
+<li>The <cite>initialMap</cite> parameter can be used to pass a previously-established
+mapping. This mapping will be preserved in all returned valid
+isomorphisms.</li>
+</ul>
+<p>The isomorphism algorithm used is the VF2 algorithm of Vento and Foggia.
+The function returns a boolean <cite>isMatch</cite> indicating whether or not one or
+more valid isomorphisms have been found, and a list <cite>mapList</cite> of the valid
+isomorphisms, each consisting of a dictionary mapping from vertices of
+<cite>graph1</cite> to corresponding vertices of <cite>graph2</cite>.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div class="sidebarlogo">
+<img src="../_static/rmg-logo-small.png" alt="RMG" />
+</div>
+  <h3><a href="../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#"><tt class="docutils literal"><span class="pre">rmgpy.graph</span></tt> &#8212; Graph Data Type</a><ul>
+<li><a class="reference internal" href="#vertices-and-edges">Vertices and Edges</a></li>
+<li><a class="reference internal" href="#graph-objects">Graph Objects</a></li>
+<li><a class="reference internal" href="#isomorphism-functions">Isomorphism Functions</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="element.html"
+                        title="previous chapter"><tt class="docutils literal docutils literal docutils literal"><span class="pre">rmgpy.element</span></tt> &#8212; Chemical Elements</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="group.html"
+                        title="next chapter"><tt class="docutils literal"><span class="pre">rmgpy.group</span></tt> &#8212; Functional Groups</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, William H. Green and the RMG Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

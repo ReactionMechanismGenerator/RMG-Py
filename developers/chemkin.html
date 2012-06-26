@@ -1,0 +1,144 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>rmgpy.chemkin — Writing Chemkin Output &mdash; RMG Py 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  false
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../index.html" />
+    <link rel="up" title="RMG Developer’s Guide" href="index.html" />
+    <link rel="next" title="rmgpy.element — Chemical Elements" href="element.html" />
+    <link rel="prev" title="rmgpy.atomtype — Atom Types" href="atomtype.html" /> 
+  </head>
+  <body>
+<div class="header">
+&nbsp;
+</div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="element.html" title="rmgpy.element — Chemical Elements"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="atomtype.html" title="rmgpy.atomtype — Atom Types"
+             accesskey="P">previous</a> |</li>
+<li><a href="../index.html">Documentation</a> &raquo;</li>
+
+          <li><a href="index.html" accesskey="U">RMG Developer&#8217;s Guide</a> &raquo;</li> 
+      </ul>
+    </div>
+            
+  <div class="section" id="module-rmgpy.chemkin">
+<span id="rmgpy-chemkin-writing-chemkin-output"></span><h1><a class="reference internal" href="#module-rmgpy.chemkin" title="rmgpy.chemkin"><tt class="xref py py-mod docutils literal"><span class="pre">rmgpy.chemkin</span></tt></a> &#8212; Writing Chemkin Output<a class="headerlink" href="#module-rmgpy.chemkin" title="Permalink to this headline">¶</a></h1>
+<p>This module contains functions for writing of Chemkin input files.</p>
+<dl class="class">
+<dt id="rmgpy.chemkin.ChemkinError">
+<em class="property">class </em><tt class="descclassname">rmgpy.chemkin.</tt><tt class="descname">ChemkinError</tt><a class="headerlink" href="#rmgpy.chemkin.ChemkinError" title="Permalink to this definition">¶</a></dt>
+<dd><p>An exception class for exceptional behavior involving Chemkin files. Pass a
+string describing the circumstances that caused the exceptional behavior.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="rmgpy.chemkin.getSpeciesIdentifier">
+<tt class="descclassname">rmgpy.chemkin.</tt><tt class="descname">getSpeciesIdentifier</tt><big>(</big><em>species</em><big>)</big><a class="headerlink" href="#rmgpy.chemkin.getSpeciesIdentifier" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a string identifier for the provided <cite>species</cite> that can be used in a
+Chemkin file. Although the Chemkin format allows up to 16 characters for a
+species identifier, this function uses a maximum of 10 to ensure that all
+reaction equations fit in the maximum limit of 52 characters.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="rmgpy.chemkin.saveChemkinFile">
+<tt class="descclassname">rmgpy.chemkin.</tt><tt class="descname">saveChemkinFile</tt><big>(</big><em>path</em>, <em>species</em>, <em>reactions</em><big>)</big><a class="headerlink" href="#rmgpy.chemkin.saveChemkinFile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save a Chemkin input file to <cite>path</cite> on disk containing the provided lists
+of <cite>species</cite> and <cite>reactions</cite>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="rmgpy.chemkin.writeKineticsEntry">
+<tt class="descclassname">rmgpy.chemkin.</tt><tt class="descname">writeKineticsEntry</tt><big>(</big><em>reaction</em>, <em>speciesList</em><big>)</big><a class="headerlink" href="#rmgpy.chemkin.writeKineticsEntry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a string representation of the reaction as used in a Chemkin
+file.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="rmgpy.chemkin.writeThermoEntry">
+<tt class="descclassname">rmgpy.chemkin.</tt><tt class="descname">writeThermoEntry</tt><big>(</big><em>species</em><big>)</big><a class="headerlink" href="#rmgpy.chemkin.writeThermoEntry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a string representation of the NASA model readable by Chemkin.
+To use this method you must have exactly two NASA polynomials in your
+model, and you must use the seven-coefficient forms for each.</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div class="sidebarlogo">
+<img src="../_static/rmg-logo-small.png" alt="RMG" />
+</div>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="atomtype.html"
+                        title="previous chapter"><tt class="docutils literal docutils literal"><span class="pre">rmgpy.atomtype</span></tt> &#8212; Atom Types</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="element.html"
+                        title="next chapter"><tt class="docutils literal"><span class="pre">rmgpy.element</span></tt> &#8212; Chemical Elements</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, William H. Green and the RMG Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

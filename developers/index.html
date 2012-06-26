@@ -1,0 +1,209 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>RMG Developer’s Guide &mdash; RMG Py 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  false
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../index.html" />
+    <link rel="next" title="Introduction" href="introduction.html" />
+    <link rel="prev" title="7. Credits" href="../users/measure/credits.html" /> 
+  </head>
+  <body>
+<div class="header">
+&nbsp;
+</div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="introduction.html" title="Introduction"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../users/measure/credits.html" title="7. Credits"
+             accesskey="P">previous</a> |</li>
+<li><a href="../index.html">Documentation</a> &raquo;</li>
+ 
+      </ul>
+    </div>
+            
+  <div class="section" id="rmg-developer-s-guide">
+<h1>RMG Developer&#8217;s Guide<a class="headerlink" href="#rmg-developer-s-guide" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="introduction.html#dependencies">Dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="introduction.html#cython-support">Cython Support</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="atomtype.html"><tt class="docutils literal"><span class="pre">rmgpy.atomtype</span></tt> &#8212; Atom Types</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="atomtype.html#atom-types">Atom Types</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="chemkin.html"><tt class="docutils literal"><span class="pre">rmgpy.chemkin</span></tt> &#8212; Writing Chemkin Output</a></li>
+<li class="toctree-l1"><a class="reference internal" href="element.html"><tt class="docutils literal"><span class="pre">rmgpy.element</span></tt> &#8212; Chemical Elements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="graph.html"><tt class="docutils literal"><span class="pre">rmgpy.graph</span></tt> &#8212; Graph Data Type</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="graph.html#vertices-and-edges">Vertices and Edges</a></li>
+<li class="toctree-l2"><a class="reference internal" href="graph.html#graph-objects">Graph Objects</a></li>
+<li class="toctree-l2"><a class="reference internal" href="graph.html#isomorphism-functions">Isomorphism Functions</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="group.html"><tt class="docutils literal"><span class="pre">rmgpy.group</span></tt> &#8212; Functional Groups</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="group.html#bond-types">Bond Types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="group.html#reaction-recipe-actions">Reaction Recipe Actions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="group.html#adjacency-lists">Adjacency Lists</a></li>
+<li class="toctree-l2"><a class="reference internal" href="group.html#groupatom-objects">GroupAtom Objects</a></li>
+<li class="toctree-l2"><a class="reference internal" href="group.html#groupbond-objects">GroupBond Objects</a></li>
+<li class="toctree-l2"><a class="reference internal" href="group.html#group-objects">Group Objects</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="kinetics.html"><tt class="docutils literal"><span class="pre">rmgpy.kinetics</span></tt> &#8212; Kinetics Models</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="kinetics.html#base-class-for-kinetics-models">Base Class for Kinetics Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kinetics.html#pressure-independent-kinetics-models">Pressure-Independent Kinetics Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kinetics.html#pressure-dependent-kinetics-models">Pressure-Dependent Kinetics Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kinetics.html#other-kinetics-models">Other Kinetics Models</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="molecule.html"><tt class="docutils literal"><span class="pre">rmgpy.molecule</span></tt> &#8212; Structure and Properties of Molecules</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="molecule.html#atom-objects">Atom Objects</a></li>
+<li class="toctree-l2"><a class="reference internal" href="molecule.html#bond-objects">Bond Objects</a></li>
+<li class="toctree-l2"><a class="reference internal" href="molecule.html#molecule-objects">Molecule Objects</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="molecule_draw.html"><tt class="docutils literal"><span class="pre">rmgpy.molecule_draw</span></tt> &#8212; Drawing of Molecules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quantity.html"><tt class="docutils literal"><span class="pre">rmgpy.quantity</span></tt> &#8212; Physical Quantities and Constants</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="quantity.html#physical-constants">Physical Constants</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quantity.html#quantity-objects">Quantity Objects</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="reaction.html"><tt class="docutils literal"><span class="pre">rmgpy.reaction</span></tt> &#8212; Chemical Reactions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="reaction.html#reactions">Reactions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reaction.html#reaction-models">Reaction Models</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="species.html"><tt class="docutils literal"><span class="pre">rmgpy.species</span></tt> &#8212; Chemical Species</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="species.html#species">Species</a></li>
+<li class="toctree-l2"><a class="reference internal" href="species.html#transition-states">Transition States</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="statmech.html"><tt class="docutils literal"><span class="pre">rmgpy.statmech</span></tt> &#8212; Molecular Degrees of Freedom</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="statmech.html#working-with-molecular-degrees-of-freedom">Working With Molecular Degrees of Freedom</a></li>
+<li class="toctree-l2"><a class="reference internal" href="statmech.html#representing-molecular-degrees-of-freedom">Representing Molecular Degrees of Freedom</a></li>
+<li class="toctree-l2"><a class="reference internal" href="statmech.html#external-degrees-of-freedom">External Degrees of Freedom</a></li>
+<li class="toctree-l2"><a class="reference internal" href="statmech.html#internal-degrees-of-freedom">Internal Degrees of Freedom</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="thermo.html"><tt class="docutils literal"><span class="pre">rmgpy.thermo</span></tt> &#8212; Thermodynamics Models</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="thermo.html#base-class-for-thermodynamics-models">Base Class for Thermodynamics Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="thermo.html#group-additivity-thermodynamics-model">Group-Additivity Thermodynamics Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="thermo.html#wilhoit-polynomial-thermodynamics-model">Wilhoit Polynomial Thermodynamics Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="thermo.html#nasa-polynomial-thermodynamics-model">NASA Polynomial Thermodynamics Model</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cantherm/index.html">CanTherm API Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="cantherm/geometry.html"><tt class="docutils literal"><span class="pre">rmgpy.cantherm.geometry</span></tt> &#8212; Molecular Geometries</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="data/index.html">Data API Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="data/introduction.html">1. Introduction to RMG Database</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data/base.html">2. <tt class="docutils literal"><span class="pre">rmgpy.data.base</span></tt> &#8212; Common Database Classes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data/thermo.html">3. <tt class="docutils literal"><span class="pre">rmgpy.data.thermo</span></tt> &#8212; Thermodynamics Database</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data/kinetics.html">4. <tt class="docutils literal"><span class="pre">rmgpy.data.kinetics</span></tt> &#8212; Kinetics Database</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data/states.html">5. <tt class="docutils literal"><span class="pre">rmgpy.data.states</span></tt> &#8212; Frequency Database</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data/statesfit.html">6. <tt class="docutils literal"><span class="pre">rmgpy.data.statesfit</span></tt> &#8212; Fitting Frequencies to Heat Capacity Data</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="measure/index.html">MEASURE API Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="measure/introduction.html">1. Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="measure/input.html">2. <tt class="docutils literal"><span class="pre">rmgpy.measure.input</span></tt> - Input file reading</a></li>
+<li class="toctree-l2"><a class="reference internal" href="measure/network.html">3. <tt class="docutils literal"><span class="pre">rmgpy.measure.network</span></tt> - Unimolecular reaction network objects</a></li>
+<li class="toctree-l2"><a class="reference internal" href="measure/collision.html">4. <tt class="docutils literal"><span class="pre">rmgpy.measure.collision</span></tt> - Collision models and parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="measure/reaction.html">5. <tt class="docutils literal"><span class="pre">rmgpy.measure.reaction</span></tt> - Working with reaction rate coefficients</a></li>
+<li class="toctree-l2"><a class="reference internal" href="measure/msc.html">6. <tt class="docutils literal"><span class="pre">rmgpy.measure.msc</span></tt> - The modified strong collision method</a></li>
+<li class="toctree-l2"><a class="reference internal" href="measure/rs.html">7. <tt class="docutils literal"><span class="pre">rmgpy.measure.rs</span></tt> - The reservoir state method</a></li>
+<li class="toctree-l2"><a class="reference internal" href="measure/cse.html">8. <tt class="docutils literal"><span class="pre">rmgpy.measure.cse</span></tt> - The chemically-significant eigenvalues method</a></li>
+<li class="toctree-l2"><a class="reference internal" href="measure/output.html">9. <tt class="docutils literal"><span class="pre">rmgpy.measure.output</span></tt> - Output file writing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="measure/simulate.html">10. <tt class="docutils literal"><span class="pre">rmgpy.measure.simulate</span></tt> - Simulating population distributions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="measure/settings.html">11. <tt class="docutils literal"><span class="pre">rmgpy.measure.settings</span></tt> - Execution settings</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="rmg/index.html">RMG API Reference</a><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="solver/index.html">Solver API Reference</a><ul class="simple">
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div class="sidebarlogo">
+<img src="../_static/rmg-logo-small.png" alt="RMG" />
+</div>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../users/measure/credits.html"
+                        title="previous chapter">7. Credits</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="introduction.html"
+                        title="next chapter">Introduction</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, William H. Green and the RMG Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

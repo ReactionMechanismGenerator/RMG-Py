@@ -1,0 +1,328 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>3. Creating Input Files &mdash; RMG Py 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  false
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
+    <link rel="up" title="CanTherm User’s Guide" href="index.html" />
+    <link rel="next" title="4. Running CanTherm" href="running.html" />
+    <link rel="prev" title="2. Installation" href="installation.html" /> 
+  </head>
+  <body>
+<div class="header">
+&nbsp;
+</div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="running.html" title="4. Running CanTherm"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="installation.html" title="2. Installation"
+             accesskey="P">previous</a> |</li>
+<li><a href="../../index.html">Documentation</a> &raquo;</li>
+
+          <li><a href="../index.html" >User&#8217;s Guide</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">CanTherm User&#8217;s Guide</a> &raquo;</li> 
+      </ul>
+    </div>
+            
+  <div class="section" id="creating-input-files">
+<h1>3. Creating Input Files<a class="headerlink" href="#creating-input-files" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="syntax">
+<h2>3.1. Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
+<p>The format of CanTherm input files is based on Python syntax. In fact, CanTherm
+input files are valid Python source code, and this is used to facilitate
+reading of the file.</p>
+<p>Each section is made up of one or more function calls, where parameters are
+specified as text strings, numbers, or objects. Text strings must be wrapped in
+either single or double quotes.</p>
+</div>
+<div class="section" id="model-chemistry">
+<h2>3.2. Model Chemistry<a class="headerlink" href="#model-chemistry" title="Permalink to this headline">¶</a></h2>
+<p>The first item in the input file should be a <tt class="docutils literal"><span class="pre">modelChemistry()</span></tt> function,
+which accepts a string describing the model chemistry. Currently the only
+allowed model chemistries are <tt class="docutils literal"><span class="pre">'CBS-QB3'</span></tt> and <tt class="docutils literal"><span class="pre">'G3'</span></tt>. CanTherm uses this
+information to adjust the computed energies to the usual gas-phase reference
+states. For example, below demonstrates how to specify CBS-QB3 as a model
+chemistry:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">modelChemistry</span><span class="p">(</span><span class="s">&quot;CBS-QB3&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="species">
+<h2>3.3. Species<a class="headerlink" href="#species" title="Permalink to this headline">¶</a></h2>
+<p>Each species of interest must be specified using a <tt class="docutils literal"><span class="pre">species()</span></tt> function,
+which accepts the following parameters:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="22%" />
+<col width="78%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Parameter</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">label</span></tt></td>
+<td>A unique string label used as an identifier</td>
+</tr>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">geomLog</span></tt></td>
+<td>The path to the Gaussian log file containing the optimized geometry</td>
+</tr>
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">statesLog</span></tt></td>
+<td>The path to the Gaussian log file containing the computed frequencies</td>
+</tr>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">extSymmetry</span></tt></td>
+<td>The external symmetry number for rotation</td>
+</tr>
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">freqScaleFactor</span></tt></td>
+<td>A factor by which to scale all frequencies</td>
+</tr>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">linear</span></tt></td>
+<td><tt class="docutils literal"><span class="pre">True</span></tt> if the molecule is linear, <tt class="docutils literal"><span class="pre">False</span></tt> if not</td>
+</tr>
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">rotors</span></tt></td>
+<td>A list of <tt class="xref py py-class docutils literal"><span class="pre">HinderedRotor()</span></tt> objects describing the hindered rotors</td>
+</tr>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">atoms</span></tt></td>
+<td>A dict associating atom symbols with the number of each atom in the molecule</td>
+</tr>
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">bonds</span></tt></td>
+<td>A dict associating bond types with the number of each bond in the molecule</td>
+</tr>
+</tbody>
+</table>
+<p>The geometry and states log files can be identical if you computed them in the
+same Gaussian output. Allowed atom symbols for the <tt class="docutils literal"><span class="pre">atoms</span></tt> parameter are
+<tt class="docutils literal"><span class="pre">'C'</span></tt>, <tt class="docutils literal"><span class="pre">'H'</span></tt>, <tt class="docutils literal"><span class="pre">'N'</span></tt>, <tt class="docutils literal"><span class="pre">'O'</span></tt>, and <tt class="docutils literal"><span class="pre">'P'</span></tt>. Allowed bond types for the
+<tt class="docutils literal"><span class="pre">bonds</span></tt> parameter are <tt class="docutils literal"><span class="pre">'C-H'</span></tt>, <tt class="docutils literal"><span class="pre">'C-C'</span></tt>, <tt class="docutils literal"><span class="pre">'C=C'</span></tt>, <tt class="docutils literal"><span class="pre">'C#C'</span></tt>, <tt class="docutils literal"><span class="pre">'O-H'</span></tt>,
+<tt class="docutils literal"><span class="pre">'C-O'</span></tt>, <tt class="docutils literal"><span class="pre">'C-O'</span></tt>, <tt class="docutils literal"><span class="pre">'C=O'</span></tt>, <tt class="docutils literal"><span class="pre">'N#N'</span></tt>, <tt class="docutils literal"><span class="pre">'O=O'</span></tt>, <tt class="docutils literal"><span class="pre">'H-H'</span></tt>, and
+<tt class="docutils literal"><span class="pre">'C#N'</span></tt>. In both cases you can omit atoms and bonds not present in your
+species, and their counts will be automatically set to zero.</p>
+<p>Each <tt class="xref py py-class docutils literal"><span class="pre">HinderedRotor()</span></tt> object requires the following parameters:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="21%" />
+<col width="79%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Parameter</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">scanLog</span></tt></td>
+<td>The path to the Gaussian log file containing the scan</td>
+</tr>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">pivots</span></tt></td>
+<td>The indices of the atoms in the hindered rotor torsional bond</td>
+</tr>
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">top</span></tt></td>
+<td>The indices of all atoms on one side of the torsional bond (including the pivot atom)</td>
+</tr>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">symmetry</span></tt></td>
+<td>The symmetry number for the torsional rotation</td>
+</tr>
+</tbody>
+</table>
+<p>The following is an example of a typical species item, based on ethane:</p>
+<div class="highlight-python"><pre>species(
+    label = 'ethane',
+    geomLog = 'ethane_cbs.log',
+    statesLog = 'ethane_cbs.log',
+    extSymmetry = 2,
+    freqScaleFactor = 0.99,
+    linear = False,
+    rotors = [
+        HinderedRotor(scanLog='ethane_scan_1.log', pivots=[0,4], top=[0,1,2,3], symmetry=3),
+    ]
+    atoms = {'C': 2, 'H': 6},
+    bonds = {'C-C': 1, 'C-H': 6},
+)</pre>
+</div>
+</div>
+<div class="section" id="transition-state">
+<h2>3.4. Transition State<a class="headerlink" href="#transition-state" title="Permalink to this headline">¶</a></h2>
+<p>Each transition state of interest must be specified using a
+<tt class="docutils literal"><span class="pre">transitionState()</span></tt> function, which accepts exactly the same parameters as
+the <tt class="docutils literal"><span class="pre">species()</span></tt> function described above. This is only required if you wish
+to perform a kinetics computation.</p>
+<p>The following is an example of a typical transition state item:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">transitionState</span><span class="p">(</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="s">&#39;TS&#39;</span><span class="p">,</span>
+    <span class="n">geomLog</span> <span class="o">=</span> <span class="s">&#39;H+C2H4.log&#39;</span><span class="p">,</span>
+    <span class="n">statesLog</span> <span class="o">=</span> <span class="s">&#39;H+C2H4.log&#39;</span><span class="p">,</span>
+    <span class="n">extSymmetry</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="n">freqScaleFactor</span> <span class="o">=</span> <span class="mf">0.99</span><span class="p">,</span>
+    <span class="n">linear</span> <span class="o">=</span> <span class="bp">False</span><span class="p">,</span>
+    <span class="n">rotors</span> <span class="o">=</span> <span class="p">[],</span>
+    <span class="n">atoms</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;C&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s">&#39;H&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">},</span>
+    <span class="n">bonds</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;C-C&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&#39;C-H&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">},</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="reaction">
+<h2>3.5. Reaction<a class="headerlink" href="#reaction" title="Permalink to this headline">¶</a></h2>
+<p>Each reaction of interest must be specified using a <tt class="docutils literal"><span class="pre">reaction()</span></tt> function,
+which accepts the following parameters:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="26%" />
+<col width="74%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Parameter</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">label</span></tt></td>
+<td>A unique string label used as an identifier</td>
+</tr>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">reactants</span></tt></td>
+<td>A list of strings indicating the labels of the reactant species</td>
+</tr>
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">products</span></tt></td>
+<td>A list of strings indicating the labels of the product species</td>
+</tr>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">transitionState</span></tt></td>
+<td>The string label of the transition state</td>
+</tr>
+</tbody>
+</table>
+<p>This is only required if you wish to perform a kinetics computation. The
+following is an example of a typical reaction item:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">reaction</span><span class="p">(</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="s">&#39;H + C2H4 &lt;=&gt; C2H5&#39;</span><span class="p">,</span>
+    <span class="n">reactants</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;H&#39;</span><span class="p">,</span> <span class="s">&#39;C2H4&#39;</span><span class="p">],</span>
+    <span class="n">products</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;C2H5&#39;</span><span class="p">],</span>
+    <span class="n">transitionState</span> <span class="o">=</span> <span class="s">&#39;TS&#39;</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="thermodynamics-computations">
+<h2>3.6. Thermodynamics Computations<a class="headerlink" href="#thermodynamics-computations" title="Permalink to this headline">¶</a></h2>
+<p>Use a <tt class="docutils literal"><span class="pre">thermo()</span></tt> function to compute the thermodynamic parameters for a
+species. Pass the string label of the species you wish to compute the
+thermodynamic parameters for and the type of thermodynamics model to
+generate (either <tt class="docutils literal"><span class="pre">'Wilhoit'</span></tt> or &#8216;&#8217;<cite>NASA</cite>&#8216;&#8217; for a Wilhoit polynomial
+model or NASA polynomial model). If you would like to see a plot of the
+fitted thermodynamics, set the <cite>plot</cite> parameter to <tt class="docutils literal"><span class="pre">True</span></tt>.</p>
+<p>Below is a typical <tt class="docutils literal"><span class="pre">thermo()</span></tt> function:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">thermo</span><span class="p">(</span><span class="s">&#39;ethane&#39;</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s">&#39;Wilhoit&#39;</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="kinetics-computations">
+<h2>3.7. Kinetics Computations<a class="headerlink" href="#kinetics-computations" title="Permalink to this headline">¶</a></h2>
+<p>Use a <tt class="docutils literal"><span class="pre">kinetics()</span></tt> function to compute the kinetic parameters for a
+reaction. Pass the string label of the reaction you wish to compute the
+reaction parameters for and the type of tunneling to use (<tt class="docutils literal"><span class="pre">'Wigner'</span></tt>,
+<tt class="docutils literal"><span class="pre">'Eckart'</span></tt>, or <tt class="docutils literal"><span class="pre">''</span></tt> for no tunneling). A modified Arrhenius model will
+automatically be fit to the generated rate coefficients. If you would like to
+see a plot of the fitted kinetics, set the <cite>plot</cite> parameter to <tt class="docutils literal"><span class="pre">True</span></tt>.</p>
+<p>Below is a typical <tt class="docutils literal"><span class="pre">kinetics()</span></tt> function:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">kinetics</span><span class="p">(</span><span class="s">&#39;H + C2H4 -&gt; C2H5&#39;</span><span class="p">,</span> <span class="n">tunneling</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="examples">
+<h2>3.8. Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<p>Perhaps the best way to learn the input file syntax is by example. To that end,
+a number of example input files and their corresponding output have been given
+in the <tt class="docutils literal"><span class="pre">examples</span></tt> directory.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div class="sidebarlogo">
+<img src="../../_static/rmg-logo-small.png" alt="RMG" />
+</div>
+  <h3><a href="../../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">3. Creating Input Files</a><ul>
+<li><a class="reference internal" href="#syntax">3.1. Syntax</a></li>
+<li><a class="reference internal" href="#model-chemistry">3.2. Model Chemistry</a></li>
+<li><a class="reference internal" href="#species">3.3. Species</a></li>
+<li><a class="reference internal" href="#transition-state">3.4. Transition State</a></li>
+<li><a class="reference internal" href="#reaction">3.5. Reaction</a></li>
+<li><a class="reference internal" href="#thermodynamics-computations">3.6. Thermodynamics Computations</a></li>
+<li><a class="reference internal" href="#kinetics-computations">3.7. Kinetics Computations</a></li>
+<li><a class="reference internal" href="#examples">3.8. Examples</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="installation.html"
+                        title="previous chapter">2. Installation</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="running.html"
+                        title="next chapter">4. Running CanTherm</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, William H. Green and the RMG Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

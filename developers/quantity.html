@@ -1,0 +1,305 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>rmgpy.quantity — Physical Quantities and Constants &mdash; RMG Py 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  false
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../index.html" />
+    <link rel="up" title="RMG Developer’s Guide" href="index.html" />
+    <link rel="next" title="rmgpy.reaction — Chemical Reactions" href="reaction.html" />
+    <link rel="prev" title="rmgpy.molecule_draw — Drawing of Molecules" href="molecule_draw.html" /> 
+  </head>
+  <body>
+<div class="header">
+&nbsp;
+</div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="reaction.html" title="rmgpy.reaction — Chemical Reactions"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="molecule_draw.html" title="rmgpy.molecule_draw — Drawing of Molecules"
+             accesskey="P">previous</a> |</li>
+<li><a href="../index.html">Documentation</a> &raquo;</li>
+
+          <li><a href="index.html" accesskey="U">RMG Developer&#8217;s Guide</a> &raquo;</li> 
+      </ul>
+    </div>
+            
+  <div class="section" id="module-rmgpy.quantity">
+<span id="rmgpy-quantity-physical-quantities-and-constants"></span><h1><a class="reference internal" href="#module-rmgpy.quantity" title="rmgpy.quantity"><tt class="xref py py-mod docutils literal"><span class="pre">rmgpy.quantity</span></tt></a> &#8212; Physical Quantities and Constants<a class="headerlink" href="#module-rmgpy.quantity" title="Permalink to this headline">¶</a></h1>
+<p>This module contains classes and methods for working with physical quantities,
+particularly the <a class="reference internal" href="#rmgpy.quantity.Quantity" title="rmgpy.quantity.Quantity"><tt class="xref py py-class docutils literal"><span class="pre">Quantity</span></tt></a> class for representing physical quantities
+and the <a class="reference internal" href="#rmgpy.quantity.Constants" title="rmgpy.quantity.Constants"><tt class="xref py py-class docutils literal"><span class="pre">Constants</span></tt></a> class for defining relevant physical constants.</p>
+<div class="section" id="physical-constants">
+<h2>Physical Constants<a class="headerlink" href="#physical-constants" title="Permalink to this headline">¶</a></h2>
+<p>The constants available are listed below. All values were taken from
+<a class="reference external" href="http://physics.nist.gov/cuu/Constants/index.html">NIST</a>.</p>
+<dl class="class">
+<dt id="rmgpy.quantity.Constants">
+<em class="property">class </em><tt class="descclassname">rmgpy.quantity.</tt><tt class="descname">Constants</tt><a class="headerlink" href="#rmgpy.quantity.Constants" title="Permalink to this definition">¶</a></dt>
+<dd><p>A class defining several physical constants:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="15%" />
+<col width="11%" />
+<col width="73%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Attribute</th>
+<th class="head">Type</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><cite>Na</cite></td>
+<td><tt class="docutils literal"><span class="pre">double</span></tt></td>
+<td>The Avogadro constant <img class="math" src="../_images/math/0dccd99c294f03302b7aa3d06611b54f84098f77.png" alt="N_\mathrm{A}"/>, in <img class="math" src="../_images/math/8bc54fa78b07c90e94ae7dbe842f697a7df865b5.png" alt="\mathrm{mol^{-1}}"/></td>
+</tr>
+<tr class="row-odd"><td><cite>kB</cite></td>
+<td><tt class="docutils literal"><span class="pre">double</span></tt></td>
+<td>The Boltzmann constant <img class="math" src="../_images/math/87660cb33b0d7f77743b0d52822cfa1d50d2e469.png" alt="k_\mathrm{B}"/>, in <img class="math" src="../_images/math/3acba4b7f2cd5de167cc8fc5b71c683de1927f6c.png" alt="\mathrm{J/K}"/></td>
+</tr>
+<tr class="row-even"><td><cite>R</cite></td>
+<td><tt class="docutils literal"><span class="pre">double</span></tt></td>
+<td>The gas law constant <img class="math" src="../_images/math/eff43e84f8a3bcf7b6965f0a3248bc4d3a9d0cd4.png" alt="R"/>, in <img class="math" src="../_images/math/5a27b2cc7d4373febcf94b21661d239c2c291219.png" alt="\mathrm{J/mol \cdot K}"/></td>
+</tr>
+<tr class="row-odd"><td><cite>h</cite></td>
+<td><tt class="docutils literal"><span class="pre">double</span></tt></td>
+<td>The Planck constant <img class="math" src="../_images/math/8189a5b5a0917b8c93350827be4038af1839139d.png" alt="h"/>, in <img class="math" src="../_images/math/454fc74d5783fd4e1b6a1a4f26413bce9646cc7e.png" alt="\mathrm{J \cdot s}"/></td>
+</tr>
+<tr class="row-even"><td><cite>c</cite></td>
+<td><tt class="docutils literal"><span class="pre">double</span></tt></td>
+<td>The speed of light in a vacuum <img class="math" src="../_images/math/3372c1cb6d68cf97c2d231acc0b47b95a9ed04cc.png" alt="c"/>, in <img class="math" src="../_images/math/8cd6dbe3565f9f1a1d46b7cd3afaebac3ac0529e.png" alt="\mathrm{m/s}"/></td>
+</tr>
+<tr class="row-odd"><td><cite>pi</cite></td>
+<td><tt class="docutils literal"><span class="pre">double</span></tt></td>
+<td>The mathematical constant <img class="math" src="../_images/math/3a271027cf3166ff43d5fb40f210294e7ba6f0fc.png" alt="\pi = 3.14159..."/></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="quantity-objects">
+<h2>Quantity Objects<a class="headerlink" href="#quantity-objects" title="Permalink to this headline">¶</a></h2>
+<p>Many of the physical quantities encountered throughout the <tt class="docutils literal"><span class="pre">chem</span></tt> package
+have associated units and/or uncertainties. To represent these quantities in
+a consistent manner, the <a class="reference internal" href="#rmgpy.quantity.Quantity" title="rmgpy.quantity.Quantity"><tt class="xref py py-class docutils literal"><span class="pre">Quantity</span></tt></a> class has been provided.
+<a class="reference internal" href="#rmgpy.quantity.Quantity" title="rmgpy.quantity.Quantity"><tt class="xref py py-class docutils literal"><span class="pre">Quantity</span></tt></a> objects are primarily used with the classes in the <tt class="docutils literal"><span class="pre">chem</span></tt>
+package to store the physical quantities behind-the-scenes. Generally you
+should not need to create <a class="reference internal" href="#rmgpy.quantity.Quantity" title="rmgpy.quantity.Quantity"><tt class="xref py py-class docutils literal"><span class="pre">Quantity</span></tt></a> objects by hand.</p>
+<dl class="class">
+<dt id="rmgpy.quantity.QuantityError">
+<em class="property">class </em><tt class="descclassname">rmgpy.quantity.</tt><tt class="descname">QuantityError</tt><a class="headerlink" href="#rmgpy.quantity.QuantityError" title="Permalink to this definition">¶</a></dt>
+<dd><p>An exception to be raised when an error occurs while working with physical
+quantities in RMG. Pass a string describing the circumstances of the
+exceptional behavior.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="rmgpy.quantity.Quantity">
+<em class="property">class </em><tt class="descclassname">rmgpy.quantity.</tt><tt class="descname">Quantity</tt><a class="headerlink" href="#rmgpy.quantity.Quantity" title="Permalink to this definition">¶</a></dt>
+<dd><p>A representation of a physical quantity, with optional units and 
+uncertainty information. The attributes are:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="17%" />
+<col width="17%" />
+<col width="67%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Attribute</th>
+<th class="head">Type</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><cite>value</cite></td>
+<td><tt class="docutils literal"><span class="pre">double</span></tt></td>
+<td>The numeric value of the quantity in SI units</td>
+</tr>
+<tr class="row-odd"><td><cite>units</cite></td>
+<td><tt class="docutils literal"><span class="pre">str</span></tt></td>
+<td>The units the value was specified in</td>
+</tr>
+<tr class="row-even"><td><cite>uncertainty</cite></td>
+<td><tt class="docutils literal"><span class="pre">double</span></tt></td>
+<td>The numeric uncertainty in the value</td>
+</tr>
+<tr class="row-odd"><td><cite>uncertaintyType</cite></td>
+<td><tt class="docutils literal"><span class="pre">str</span></tt></td>
+<td>The type of uncertainty: <tt class="docutils literal"><span class="pre">'+|-'</span></tt> for additive, <tt class="docutils literal"><span class="pre">'*|/'</span></tt> for multiplicative</td>
+</tr>
+<tr class="row-even"><td><cite>values</cite></td>
+<td><tt class="docutils literal"><span class="pre">numpy.ndarray</span></tt></td>
+<td>The numeric values of the quantity in SI units</td>
+</tr>
+<tr class="row-odd"><td><cite>uncertainties</cite></td>
+<td><tt class="docutils literal"><span class="pre">numpy.ndarray</span></tt></td>
+<td>The numeric uncertainty of the values in SI units</td>
+</tr>
+</tbody>
+</table>
+<p>Only one of <cite>value</cite> and <cite>values</cite> is meaningful at a time. If <cite>values</cite> is
+not <tt class="docutils literal"><span class="pre">None</span></tt>, then the class assumes that it represents an array of
+quantities and uses the <cite>values</cite> attribute. If <cite>values</cite> is <cite>None</cite>, the
+class assumed that it represents a single quantity and uses the <cite>value</cite>
+attribute. You can test for this using the <a class="reference internal" href="#rmgpy.quantity.Quantity.isArray" title="rmgpy.quantity.Quantity.isArray"><tt class="xref py py-meth docutils literal"><span class="pre">isArray()</span></tt></a> method.</p>
+<p>In order to preserve the efficiency that Cythonization provides, the actual
+value of the quantity is stored in SI units in the <cite>value</cite> (for a single
+quantity) or <cite>values</cite> (for an array of quantities) attributes. The methods
+<a class="reference internal" href="#rmgpy.quantity.Quantity.getConversionFactorToSI" title="rmgpy.quantity.Quantity.getConversionFactorToSI"><tt class="xref py py-meth docutils literal"><span class="pre">getConversionFactorToSI()</span></tt></a> and <a class="reference internal" href="#rmgpy.quantity.Quantity.getConversionFactorFromSI" title="rmgpy.quantity.Quantity.getConversionFactorFromSI"><tt class="xref py py-meth docutils literal"><span class="pre">getConversionFactorFromSI()</span></tt></a> 
+have been provided to facilitate unit conversions when reading and writing 
+the quantity data. These methods use the <tt class="docutils literal"><span class="pre">quantities</span></tt> package, and are
+generally not optimized for speed.</p>
+<p>When providing an array of quantities, you have the option of providing
+no uncertainty data, a single uncertainty value to use for all values in
+the array, or an array of uncertainties corresponding to each value. When
+providing a single quantity, you can either provide no uncertainty or a
+single uncertainty value for that quantity. The uncertainty data can be
+specified as either additive or multiplicative, and must be symmetric.</p>
+<dl class="method">
+<dt id="rmgpy.quantity.Quantity.equals">
+<tt class="descname">equals</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.quantity.Quantity.equals" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if the everything in a quantity object matches
+the parameters in this object.  If there are lists of values or uncertainties,
+each item in the list must be matching and in the same order.
+Otherwise, return <tt class="docutils literal"><span class="pre">False</span></tt>
+(Originally intended to return warning if units capitalization was
+different, however, Quantity object only parses units matching in case, so
+this will not be a problem.)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.quantity.Quantity.getConversionFactorFromSI">
+<tt class="descname">getConversionFactorFromSI</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.quantity.Quantity.getConversionFactorFromSI" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the conversion factor for converting a quantity to a given set of
+<cite>units</cite> from the SI equivalent units.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.quantity.Quantity.getConversionFactorToSI">
+<tt class="descname">getConversionFactorToSI</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.quantity.Quantity.getConversionFactorToSI" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the conversion factor for converting a quantity in a given set of
+<cite>units</cite> to the SI equivalent units.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.quantity.Quantity.getValueInGivenUnits">
+<tt class="descname">getValueInGivenUnits</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.quantity.Quantity.getValueInGivenUnits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the value of the quantity in the stored units. (The value is
+stored internally in SI units.)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.quantity.Quantity.isArray">
+<tt class="descname">isArray</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.quantity.Quantity.isArray" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if this quantity contains an array of values or 
+<tt class="docutils literal"><span class="pre">False</span></tt> if it contains only a single value. If the former, you should
+use the <cite>values</cite> attribute to get the values (in SI units) of the
+quantities as a NumPy array. If the latter, you should use the <cite>value</cite> 
+attribute to get the value of the quantity as a <tt class="docutils literal"><span class="pre">float</span></tt>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.quantity.Quantity.isUncertaintyAdditive">
+<tt class="descname">isUncertaintyAdditive</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.quantity.Quantity.isUncertaintyAdditive" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if the uncertainty is specified in additive format
+and <tt class="docutils literal"><span class="pre">False</span></tt> otherwise.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.quantity.Quantity.isUncertaintyMultiplicative">
+<tt class="descname">isUncertaintyMultiplicative</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.quantity.Quantity.isUncertaintyMultiplicative" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if the uncertainty is specified in multiplicative 
+format and <tt class="docutils literal"><span class="pre">False</span></tt> otherwise.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div class="sidebarlogo">
+<img src="../_static/rmg-logo-small.png" alt="RMG" />
+</div>
+  <h3><a href="../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#"><tt class="docutils literal"><span class="pre">rmgpy.quantity</span></tt> &#8212; Physical Quantities and Constants</a><ul>
+<li><a class="reference internal" href="#physical-constants">Physical Constants</a></li>
+<li><a class="reference internal" href="#quantity-objects">Quantity Objects</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="molecule_draw.html"
+                        title="previous chapter"><tt class="docutils literal docutils literal docutils literal"><span class="pre">rmgpy.molecule_draw</span></tt> &#8212; Drawing of Molecules</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="reaction.html"
+                        title="next chapter"><tt class="docutils literal"><span class="pre">rmgpy.reaction</span></tt> &#8212; Chemical Reactions</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, William H. Green and the RMG Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

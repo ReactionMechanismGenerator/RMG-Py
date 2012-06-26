@@ -1,0 +1,365 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>1. Introduction &mdash; RMG Py 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  false
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
+    <link rel="up" title="MEASURE Theory Guide" href="index.html" />
+    <link rel="next" title="2. The Master Equation" href="master_equation.html" />
+    <link rel="prev" title="MEASURE Theory Guide" href="index.html" /> 
+  </head>
+  <body>
+<div class="header">
+&nbsp;
+</div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="master_equation.html" title="2. The Master Equation"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="MEASURE Theory Guide"
+             accesskey="P">previous</a> |</li>
+<li><a href="../../index.html">Documentation</a> &raquo;</li>
+
+          <li><a href="../index.html" >RMG Theory Guide</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">MEASURE Theory Guide</a> &raquo;</li> 
+      </ul>
+    </div>
+            
+  <div class="section" id="introduction">
+<h1>1. Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="unimolecular-reactions">
+<h2>1.1. Unimolecular Reactions<a class="headerlink" href="#unimolecular-reactions" title="Permalink to this headline">¶</a></h2>
+<p>Unimolecular reactions are those that involve a single reactant or product
+molecule, the union of isomerization and dissociation/association reactions:</p>
+<div class="math">
+<p><img src="../../_images/math/7cfccfb013af0eea604d15990cb643380c30a234.png" alt="\ce{A &lt;=&gt; B} &amp; \hspace{40pt} \text{isomerization} \\
+\ce{A &lt;=&gt; B + C} &amp; \hspace{40pt} \text{dissociation/association}"/></p>
+</div><p>Gas-phase chemical reactions occur as the result of bimolecular collisions
+between two reactant molecules. This presents a problem when there is only one
+participating reactant molecule! The conclusion is that the above reactions
+cannot be elementary as written; another step must be involved.</p>
+<p>For a unimolecular reaction to proceed, the reactant molecule <img class="math" src="../../_images/math/6fc61577fac74061e04862df08b14af9d81e1da0.png" alt="\ce{A}"/>
+must first be excited to an energy that exceeds the barrier for reaction. A
+molecule that is sufficiently excited to react is called an <em>activated
+species</em> and often labeled with an asterisk <img class="math" src="../../_images/math/0fc0ce91f8f8b4710508585a1556caaaa653427b.png" alt="\ce{A}^\ast"/>. If we
+replace the stable species with the activated species in the reactions above,
+the reactions become elementary again:</p>
+<div class="math">
+<p><img src="../../_images/math/4237ec6d7b88277a679a95bab8da127812ed9dca.png" alt="\ce{A}^\ast &amp; \ce{&lt;=&gt; B}^\ast \\
+\ce{A}^\ast &amp; \ce{&lt;=&gt; B + C}"/></p>
+</div><p>There are a number of ways that an activated species <img class="math" src="../../_images/math/0fc0ce91f8f8b4710508585a1556caaaa653427b.png" alt="\ce{A}^\ast"/> can
+be produced:</p>
+<ul>
+<li><p class="first"><strong>Chemical activation</strong>. <img class="math" src="../../_images/math/0fc0ce91f8f8b4710508585a1556caaaa653427b.png" alt="\ce{A}^\ast"/> is produced as the adduct of
+an association reaction:</p>
+<div class="math">
+<p><img src="../../_images/math/6f32c5bc218d14495d8817042ff51fbbaa215517.png" alt="\ce{B + C &lt;=&gt; A}^\ast"/></p>
+</div></li>
+<li><p class="first"><strong>Thermal activation</strong>. <img class="math" src="../../_images/math/0fc0ce91f8f8b4710508585a1556caaaa653427b.png" alt="\ce{A}^\ast"/> is produced via transfer of
+energy from an otherwise inert species <img class="math" src="../../_images/math/2c686c4a8b0de7712925b47792007e9a4ce344c8.png" alt="\ce{M}"/> via bimolecular
+collision:</p>
+<div class="math">
+<p><img src="../../_images/math/53826c54e5dfaf408672e0f655e06de1e5f4f0c0.png" alt="\ce{A + M &lt;=&gt; A}^\ast \ce{\mbox{} + M}"/></p>
+</div></li>
+<li><p class="first"><strong>Photoactivation</strong>. <img class="math" src="../../_images/math/0fc0ce91f8f8b4710508585a1556caaaa653427b.png" alt="\ce{A}^\ast"/> is produced as a result of
+absorption of a photon:</p>
+<div class="math">
+<p><img src="../../_images/math/c47831dea37190307ecc0b18ee20fc3512e0f23f.png" alt="\ce{A} + h \nu \ce{-&gt; A}^\ast"/></p>
+</div></li>
+</ul>
+<p>Once an activated molecule has been produced, multiple isomerization and
+dissociation reactions may become competitive with one another and with
+collisional stabilization (thermal deactivation); these combine to form a
+network of unimolecular reactions. The major pathway will depend on the
+relative rates of collision and reaction, which in turn is a function of
+both temperature and pressure. At high pressure the collision rate will be
+fast, and activated molecules will tend to be collisionally stabilized before
+reactive events can occur; this is called the <em>high-pressure limit</em>. At low
+pressures the collision rate will be slow, and activated molecules will
+tend to isomerize and dissociate, often traversing multiple reactive events
+before collisional stabilization can occur.</p>
+<p>The onset of the pressure-dependent regime varies with both temperature and
+molecular size. The figure below shows the approximate pressure at which
+pressure-dependence becomes important as a function of temperature and
+molecular size. The parameter <img class="math" src="../../_images/math/494fba1236b73aa6f29027591450cd9212e1441a.png" alt="m \equiv N_\mathrm{vib} + \frac{1}{2} N_\mathrm{rot}"/>
+represents a count of the internal degrees of freedom (vibrations and hindered
+rotors, respectively). The ranges of the x-axis and y-axis suggest that
+pressure dependence is in fact important over a wide regime of conditions of
+practical interest, particularly in high-temperature processes such as
+pyrolysis and combustion <a class="reference internal" href="#wong2003">[Wong2003]</a>.</p>
+<div class="figure">
+<img alt="../../_images/switchover_pressure.png" src="../../_images/switchover_pressure.png" style="width: 67%;" />
+<p class="caption">Plot of the switchover pressure &#8211; indicating the onset of pressure
+dependence &#8211; as a function of temperature and molecular size. The
+value <img class="math" src="../../_images/math/494fba1236b73aa6f29027591450cd9212e1441a.png" alt="m \equiv N_\mathrm{vib} + \frac{1}{2} N_\mathrm{rot}"/>
+represents a count of the internal degrees of freedom. Over a wide
+variety of conditions of practical interest, even very large
+molecules exhibit significant pressure dependence. Figure adapted from
+<a class="reference internal" href="#wong2003">[Wong2003]</a>.</p>
+</div>
+<table class="docutils citation" frame="void" id="wong2003" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[Wong2003]</td><td><em>(<a class="fn-backref" href="#id1">1</a>, <a class="fn-backref" href="#id2">2</a>)</em> B. M. Wong, D. M. Matheu, and W. H. Green. <em>J. Phys. Chem. A</em>
+<strong>107</strong>, p. 6206-6211 (2003).
+<a class="reference external" href="http://dx.doi.org/10.1021/jp034165g">doi:10.1021/jp034165g</a></td></tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="historical-context">
+<h2>1.2. Historical Context<a class="headerlink" href="#historical-context" title="Permalink to this headline">¶</a></h2>
+<p>The importance of bimolecular collisions in unimolecular reactions was first
+proposed by Lindemann in 1922 <a class="reference internal" href="#lindemann1922">[Lindemann1922]</a>. It was soon recognized by
+Hinshelwood and others that a rigorous treatment of these processes required
+consideration of molecular energy levels <a class="reference internal" href="#hinshelwood1926">[Hinshelwood1926]</a>. The RRKM
+expression for the microcanonical rate coefficient $k(E)$ was derived in the
+early 1950s <a class="reference internal" href="#rice1927">[Rice1927]</a> <a class="reference internal" href="#kassel1928">[Kassel1928]</a> <a class="reference internal" href="#marcus1951">[Marcus1951]</a>. In the late 1950s master
+equation models of chemical systems began appearing <a class="reference internal" href="#siegert1949">[Siegert1949]</a>
+<a class="reference internal" href="#bartholomay1958">[Bartholomay1958]</a> <a class="reference internal" href="#montroll1958">[Montroll1958]</a> <a class="reference internal" href="#krieger1960">[Krieger1960]</a> <a class="reference internal" href="#gans1960">[Gans1960]</a>, including an
+early linear integral-differential equation formulation by Widom <a class="reference internal" href="#widom1959">[Widom1959]</a>.
+Analytical solutions for a variety of simple models soon followed <a class="reference internal" href="#keck1965">[Keck1965]</a>
+<a class="reference internal" href="#troe1967">[Troe1967]</a> <a class="reference internal" href="#troe1973">[Troe1973]</a>, as did the first numerical approaches <a class="reference internal" href="#tardy1966">[Tardy1966]</a>.
+Numerical methods &#8211; which are required for complex unimolecular reaction
+networks &#8211; became much more attractive in the 1970s with the appearance of
+new algorithms, including Gear&#8217;s method for solving stiff systems of ordinary
+differential equations <a class="reference internal" href="#gear1971">[Gear1971]</a> and efficient algorithms for calculating
+the density of states <a class="reference internal" href="#beyer1973">[Beyer1973]</a> <a class="reference internal" href="#stein1973">[Stein1973]</a> <a class="reference internal" href="#astholz1979">[Astholz1979]</a>. In the 1990s
+computing power had increased to the point where it was practical to solve
+them numerically by discretizing the integrals over energy.</p>
+<table class="docutils citation" frame="void" id="lindemann1922" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id3">[Lindemann1922]</a></td><td>F. A. Lindemann. <em>Trans. Faraday Soc.</em> <strong>17</strong>,
+p. 598-606 (1922).</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="hinshelwood1926" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id4">[Hinshelwood1926]</a></td><td>C. N. Hinshelwood. <em>Proc. Royal Soc. A</em> <strong>17</strong>,
+p. 230-233 (1926).
+<a class="reference external" href="http://www.jstor.org/stable/94593">JSTOR:94593</a></td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="rice1927" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id5">[Rice1927]</a></td><td>O. K. Rice and H. C. Ramsperger. <em>J. Am. Chem. Soc.</em> <strong>49</strong>,
+p. 1617-1629 (1927).
+<a class="reference external" href="http://dx.doi.org/10.1021/ja01406a001">doi:10.1021/ja01406a001</a></td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="kassel1928" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id6">[Kassel1928]</a></td><td>L. S. Kassel. <em>J. Phys. Chem.</em> <strong>32</strong>,
+p. 1065-1079 (1928).
+<a class="reference external" href="http://dx.doi.org/10.1021/j150289a011">doi:10.1021/j150289a011</a></td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="marcus1951" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id7">[Marcus1951]</a></td><td>R. A. Marcus and O. K. Rice. <em>J. Phys. Coll. Chem.</em> <strong>55</strong>,
+p. 894-908 (1951).
+<a class="reference external" href="http://dx.doi.org/10.1021/j150489a013">doi:10.1021/j150489a013</a></td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="siegert1949" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id8">[Siegert1949]</a></td><td>A. J. F. Siegert. <em>Phys. Rev.</em> <strong>76</strong>,
+p. 1708-1714 (1949).
+<a class="reference external" href="http://dx.doi.org/10.1103/PhysRev.76.1708">doi:10.1103/PhysRev.76.1708</a></td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="bartholomay1958" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id9">[Bartholomay1958]</a></td><td>A. F. Bartholomay. <em>Bull. Math. Biophys.</em> <strong>20</strong>,
+p. 175-190 (1958).
+<a class="reference external" href="http://dx.doi.org/10.1007/BF02478297">doi:10.1007/BF02478297</a></td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="montroll1958" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id10">[Montroll1958]</a></td><td>E. W. Montroll and K. E. Shuler. <em>Adv. Chem. Phys.</em> <strong>1</strong>,
+p. 361-399 (1958).</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="krieger1960" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id11">[Krieger1960]</a></td><td>I. M. Krieger and P. J. Gans. <em>J. Chem. Phys.</em> <strong>32</strong>,
+p. 247-250 (1960).
+<a class="reference external" href="http://dx.doi.org/10.1063/1.1700909">doi:10.1063/1.1700909</a></td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="gans1960" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id12">[Gans1960]</a></td><td>P. J. Gans. <em>J. Chem. Phys.</em> <strong>33</strong>,
+p. 691-694 (1960).
+<a class="reference external" href="http://dx.doi.org/10.1063/1.1731239">doi:10.1063/1.1731239</a></td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="widom1959" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id13">[Widom1959]</a></td><td>B. Widom. <em>J. Chem. Phys.</em> <strong>31</strong>,
+p. 1387-1394 (1959).
+<a class="reference external" href="http://dx.doi.org/10.1063/1.1730604">doi:10.1063/1.1730604</a></td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="keck1965" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id14">[Keck1965]</a></td><td>J. Keck and G. Carrier. <em>J. Chem. Phys.</em> <strong>43</strong>,
+p. 2284-2298 (1965).
+<a class="reference external" href="http://dx.doi.org/10.1063/1.1697125">doi:10.1063/1.1697125</a></td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="troe1967" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id15">[Troe1967]</a></td><td>J. Troe and H. Gg. Wagner. <em>Ber. Bunsenges. Phys. Chem.</em> <strong>71</strong>,
+p. 937 (1967).
+<a class="reference external" href="http://dx.doi.org/10.1002/bbpc.19670710904">doi:10.1002/bbpc.19670710904</a></td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="troe1973" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id16">[Troe1973]</a></td><td>J. Troe. <em>Ber. Bunsenges. Phys. Chem.</em> <strong>77</strong>,
+p. 665 (1973).
+<a class="reference external" href="http://dx.doi.org/10.1002/bbpc.19730770903">doi:10.1002/bbpc.19730770903</a></td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="tardy1966" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id17">[Tardy1966]</a></td><td>D. C. Tardy and B. S. Rabinovitch. <em>J. Chem. Phys.</em>
+<strong>45</strong>, p. 3720-3730 (1966).
+<a class="reference external" href="http://dx.doi.org/10.1063/1.1727392">doi:10.1063/1.1727392</a></td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="gear1971" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id18">[Gear1971]</a></td><td>C. W. Gear. <em>Commun. ACM</em> <strong>14</strong>,
+p. 176-179 (1971).
+<a class="reference external" href="http://dx.doi.org/10.1145/362566.362571">doi:10.1145/362566.362571</a></td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="beyer1973" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id19">[Beyer1973]</a></td><td>T. Beyer and D. F. Swinehart. <em>Commun. ACM</em> <strong>16</strong>,
+p. 379 (1973).
+<a class="reference external" href="http://dx.doi.org/10.1145/362248.362275">doi:10.1145/362248.362275</a></td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="stein1973" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id20">[Stein1973]</a></td><td>S. E. Stein and B. S. Rabinovitch. <em>J. Chem. Phys.</em> <strong>58</strong>,
+p. 2438-2444 (1973).
+<a class="reference external" href="http://dx.doi.org/10.1063/1.1679522">doi:10.1063/1.1679522</a></td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="astholz1979" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id21">[Astholz1979]</a></td><td>D. C. Astholz, J. Troe, and W. Wieters. <em>J. Chem. Phys.</em>
+<strong>70</strong>, p. 5107-5116 (1979).
+<a class="reference external" href="http://dx.doi.org/10.1063/1.437352">doi:10.1063/1.437352</a></td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div class="sidebarlogo">
+<img src="../../_static/rmg-logo-small.png" alt="RMG" />
+</div>
+  <h3><a href="../../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">1. Introduction</a><ul>
+<li><a class="reference internal" href="#unimolecular-reactions">1.1. Unimolecular Reactions</a></li>
+<li><a class="reference internal" href="#historical-context">1.2. Historical Context</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">MEASURE Theory Guide</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="master_equation.html"
+                        title="next chapter">2. The Master Equation</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, William H. Green and the RMG Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

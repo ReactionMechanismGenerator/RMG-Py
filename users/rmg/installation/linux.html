@@ -1,0 +1,145 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>2.2. Linux Installation &mdash; RMG Py 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  false
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../../index.html" />
+    <link rel="up" title="2. Installation" href="index.html" />
+    <link rel="next" title="2.3. MacOS X Installation" href="macos.html" />
+    <link rel="prev" title="2.1. Windows Installation" href="windows.html" /> 
+  </head>
+  <body>
+<div class="header">
+&nbsp;
+</div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="macos.html" title="2.3. MacOS X Installation"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="windows.html" title="2.1. Windows Installation"
+             accesskey="P">previous</a> |</li>
+<li><a href="../../../index.html">Documentation</a> &raquo;</li>
+
+          <li><a href="../../index.html" >User&#8217;s Guide</a> &raquo;</li>
+          <li><a href="../index.html" >RMG User&#8217;s Guide</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">2. Installation</a> &raquo;</li> 
+      </ul>
+    </div>
+            
+  <div class="section" id="linux-installation">
+<span id="linux"></span><h1>2.2. Linux Installation<a class="headerlink" href="#linux-installation" title="Permalink to this headline">¶</a></h1>
+<p>RMG-Py and all of its dependencies may be easily installed through a short series of Terminal commands. The instructions listed below have been confirmed on a fresh Ubuntu 12.04 installation and should generally apply to other distributions.</p>
+<ul>
+<li><p class="first">Install compilers and libraries:</p>
+<div class="highlight-python"><pre>sudo apt-get install git g++ gfortran python-dev liblapack-dev python-openbabel python-setuptools python-pip</pre>
+</div>
+</li>
+<li><p class="first">After creating a <a class="reference external" href="https://github.com/signup/free">Github account</a>, generate your public key:</p>
+<div class="highlight-python"><pre>cd ~; ssh-keygen                # press enter to save to the default directory
+                                # create a password if desired
+cat .ssh/id_rsa.pub</pre>
+</div>
+<p>Copy this public key to your <a class="reference external" href="https://github.com/settings/ssh">Github profile</a>.</p>
+</li>
+<li><p class="first">Install dependencies:</p>
+<div class="highlight-python"><pre>sudo pip install numpy          # install NumPy before other packages
+
+sudo pip install scipy cython nose matplotlib quantities guppy sphinx psutil xlwt
+
+cd ~
+git clone git@github.com:jwallen/PyDAS.git
+git clone git@github.com:jwallen/PyDQED.git
+cd PyDAS; make F77=gfortran; sudo make install
+cd ../PyDQED; make F77=gfortran; sudo make install</pre>
+</div>
+</li>
+<li><p class="first">Install RMG-Py:</p>
+<div class="highlight-python"><pre>cd ~
+git clone git@github.com:GreenGroup/RMG-database.git
+git clone git@github.com:GreenGroup/RMG-Py.git
+cd RMG-Py; make</pre>
+</div>
+</li>
+<li><p class="first">Run an example:</p>
+<div class="highlight-python"><pre>python rmg.py examples/rmg/minimal/input.py</pre>
+</div>
+<p>Verify your installation by opening the resulting output.html file under the &#8220;examples/rmg/minimal&#8221; directory.</p>
+</li>
+</ul>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div class="sidebarlogo">
+<img src="../../../_static/rmg-logo-small.png" alt="RMG" />
+</div>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="windows.html"
+                        title="previous chapter">2.1. Windows Installation</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="macos.html"
+                        title="next chapter">2.3. MacOS X Installation</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, William H. Green and the RMG Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

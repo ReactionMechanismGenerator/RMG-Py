@@ -1,0 +1,167 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Introduction &mdash; RMG Py 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  false
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../index.html" />
+    <link rel="up" title="RMG Developer’s Guide" href="index.html" />
+    <link rel="next" title="rmgpy.atomtype — Atom Types" href="atomtype.html" />
+    <link rel="prev" title="RMG Developer’s Guide" href="index.html" /> 
+  </head>
+  <body>
+<div class="header">
+&nbsp;
+</div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="atomtype.html" title="rmgpy.atomtype — Atom Types"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="RMG Developer’s Guide"
+             accesskey="P">previous</a> |</li>
+<li><a href="../index.html">Documentation</a> &raquo;</li>
+
+          <li><a href="index.html" accesskey="U">RMG Developer&#8217;s Guide</a> &raquo;</li> 
+      </ul>
+    </div>
+            
+  <div class="section" id="introduction">
+<h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
+<p>The <tt class="xref py py-mod docutils literal"><span class="pre">rmgpy</span></tt> package contains all of the functionality of RMG.</p>
+<div class="section" id="dependencies">
+<h2>Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this headline">¶</a></h2>
+<p>This package builds on a number of Python packages (in addition to those in the
+Python standard library):</p>
+<ul class="simple">
+<li><a class="reference external" href="http://www.cython.org/">Cython</a>. Provides a means to compile annotated
+Python modules to C, combining the rapid development of Python with near-C
+execution speeds.</li>
+<li><a class="reference external" href="http://numpy.scipy.org/">NumPy</a>. Provides efficient matrix algebra.</li>
+<li><a class="reference external" href="http://www.scipy.org/">SciPy</a>. Extends NumPy with a variety of mathematics
+tools useful in scientific computing.</li>
+<li><a class="reference external" href="http://openbabel.org/">OpenBabel</a>. Provides functionality for converting
+between a variety of chemical formats.</li>
+<li><a class="reference external" href="http://cairographics.org/">Cairo</a>. Provides functionality for generation
+of 2D graphics figures.</li>
+</ul>
+</div>
+<div class="section" id="cython-support">
+<h2>Cython Support<a class="headerlink" href="#cython-support" title="Permalink to this headline">¶</a></h2>
+<p>All of the contained modules are written in pure <a class="reference external" href="http://www.python.org/">Python</a>.
+However, since certain operations can be computationally expensive &#8211; either
+due to the operation itself or simply the frequency by which the operation is
+performed &#8211; most of the modules can also be compiled using
+<a class="reference external" href="http://www.cython.org/">Cython</a> for a signficant speed boost. Cython is a
+modification of the Python programming language with syntax to enable
+compilation to efficient C code, particularly through the ability to statically
+declare the type of variables at compile time. Most Python syntax can be
+compiled via Cython as-is (especially with recent versions of Cython), though
+you won&#8217;t see much of a speed increase without declaring static types in your
+bottleneck code.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Our use of Cython inherently ties RMG Py to the CPython implementation
+of the Python language. Jython (Java), IronPython (Common Language
+Runtime), etc. cannot be used with compiled Cython modules at this time.</p>
+</div>
+<p>Cython is one of several attempts to combine the ease and flexibility of Python
+with the efficiency of a compiled language. As of this writing, a summary and
+simple comparison of several such approaches is available from
+<a class="reference external" href="http://www.scipy.org/PerformancePython">http://www.scipy.org/PerformancePython</a>. That page suggests that
+Cython <a class="footnote-reference" href="#id3" id="id2">[1]</a> is among the best at approaching the efficiency of a pure C
+implementation.</p>
+<table class="docutils footnote" frame="void" id="id3" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id2">[1]</a></td><td>The authors actually used Pyrex, a similar project that Cython was
+forked from, in their comparison. Cython has advanced significantly
+since that document was written, and today likely performs even more
+efficiently than Pyrex.</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div class="sidebarlogo">
+<img src="../_static/rmg-logo-small.png" alt="RMG" />
+</div>
+  <h3><a href="../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Introduction</a><ul>
+<li><a class="reference internal" href="#dependencies">Dependencies</a></li>
+<li><a class="reference internal" href="#cython-support">Cython Support</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">RMG Developer&#8217;s Guide</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="atomtype.html"
+                        title="next chapter"><tt class="docutils literal docutils literal docutils literal"><span class="pre">rmgpy.atomtype</span></tt> &#8212; Atom Types</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, William H. Green and the RMG Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

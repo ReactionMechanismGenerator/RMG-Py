@@ -1,8 +1,3 @@
-/**
- * Sphinx stylesheet -- default theme
- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- */
-
 @import url("basic.css");
 
 /* -- page layout ----------------------------------------------------------- */
@@ -10,14 +5,21 @@
 body {
     font-family: sans-serif;
     font-size: 100%;
-    background-color: #11303d;
+    background-color: #F0F0F0;
     color: #000;
     margin: 0;
     padding: 0;
 }
 
+div.header {
+    color: #993333;
+    font-size: 0.8em;
+    text-align: right;
+    padding: 4px 10px 4px 0;
+}
+
 div.document {
-    background-color: #1c4e63;
+    
 }
 
 div.documentwrapper {
@@ -26,44 +28,62 @@ div.documentwrapper {
 }
 
 div.bodywrapper {
+    background-color: #FFFFFF;
+    border: 1px solid #993333;
+    border-right: 0px;
     margin: 0 0 0 230px;
 }
 
 div.body {
-    background-color: #ffffff;
     color: #000000;
-    padding: 0 20px 30px 20px;
+    padding: 0px 10px 0px 10px;
 }
 
 div.footer {
-    color: #ffffff;
+    color: #808080;
     width: 100%;
-    padding: 9px 0 9px 0;
+    padding: 4px 0 4px 0;
+    margin: 40px 0 0 0;
     text-align: center;
-    font-size: 75%;
+    font-size: 0.7em;
 }
 
 div.footer a {
-    color: #ffffff;
+    color: #808080;
     text-decoration: underline;
 }
 
 div.related {
-    background-color: #133f52;
-    line-height: 30px;
-    color: #ffffff;
+    color: #993333;
+    font-size: 0.8em;
+    padding: 4px 0 2px 0;
+    border-bottom: 1px solid #993333;
 }
 
 div.related a {
-    color: #ffffff;
+    color: #993333;
+}
+
+div.related ul {
+    padding: 0 0 0 0;
+}
+
+div.related ul li {
+    margin-right: 0px;
+    padding: 0 0 0 0;
 }
 
 div.sphinxsidebar {
 }
 
+div.sidebarlogo {
+    text-align: center;
+    margin: 0 0 20px 0;
+}
+
 div.sphinxsidebar h3 {
-    font-family: 'Trebuchet MS', sans-serif;
-    color: #ffffff;
+    font-family: sans-serif;
+    color: #993333;
     font-size: 1.4em;
     font-weight: normal;
     margin: 0;
@@ -71,12 +91,12 @@ div.sphinxsidebar h3 {
 }
 
 div.sphinxsidebar h3 a {
-    color: #ffffff;
+    color: #993333;
 }
 
 div.sphinxsidebar h4 {
-    font-family: 'Trebuchet MS', sans-serif;
-    color: #ffffff;
+    font-family: sans-serif;
+    color: #993333;
     font-size: 1.3em;
     font-weight: normal;
     margin: 5px 0 0 0;
@@ -84,7 +104,7 @@ div.sphinxsidebar h4 {
 }
 
 div.sphinxsidebar p {
-    color: #ffffff;
+    color: #993333;
 }
 
 div.sphinxsidebar p.topless {
@@ -98,19 +118,26 @@ div.sphinxsidebar ul {
 }
 
 div.sphinxsidebar a {
-    color: #98dbcc;
+    color: #993333;
 }
 
 div.sphinxsidebar input {
-    border: 1px solid #98dbcc;
+    border: 1px solid #993333;
     font-family: sans-serif;
     font-size: 1em;
 }
 
-/* -- body styles ----------------------------------------------------------- */
+
+
+/* -- hyperlink styles ------------------------------------------------------ */
 
 a {
-    color: #355f7c;
+    color: #993333;
+    text-decoration: none;
+}
+
+a:visited {
+    color: #993333;
     text-decoration: none;
 }
 
@@ -118,10 +145,9 @@ a:hover {
     text-decoration: underline;
 }
 
-div.body p, div.body dd, div.body li {
-    text-align: justify;
-    line-height: 130%;
-}
+
+
+/* -- body styles ----------------------------------------------------------- */
 
 div.body h1,
 div.body h2,
@@ -129,13 +155,11 @@ div.body h3,
 div.body h4,
 div.body h5,
 div.body h6 {
-    font-family: 'Trebuchet MS', sans-serif;
-    background-color: #f2f2f2;
+    font-family: sans-serif;
     font-weight: normal;
-    color: #20435c;
-    border-bottom: 1px solid #ccc;
-    margin: 20px -20px 10px -20px;
-    padding: 3px 0 3px 10px;
+    color: #993333;
+    margin: 20px 0px 10px 0px;
+    padding: 3px 0px 3px 0px;
 }
 
 div.body h1 { margin-top: 0; font-size: 200%; }
@@ -164,6 +188,18 @@ div.body p, div.body dd, div.body li {
 
 div.admonition p.admonition-title + p {
     display: inline;
+}
+
+div.admonition p {
+    margin-bottom: 5px;
+}
+
+div.admonition pre {
+    margin-bottom: 5px;
+}
+
+div.admonition ul, div.admonition ol {
+    margin-bottom: 5px;
 }
 
 div.note {
@@ -208,3 +244,42 @@ tt {
     padding: 0 1px 0 1px;
     font-size: 0.95em;
 }
+
+.warning tt {
+    background: #efc2c2;
+}
+
+.note tt {
+    background: #d6d6d6;
+}
+
+.viewcode-back {
+    font-family: sans-serif;
+}
+
+div.viewcode-block:target {
+    background-color: #f4debf;
+    border-top: 1px solid #ac9;
+    border-bottom: 1px solid #ac9;
+}
+
+p.caption {
+    font-size: 0.9em;
+}
+
+
+/* -- table styles ----------------------------------------------------------- */
+
+table.docutils,
+table.docutils colgroup, 
+table.docutils th, 
+table.docutils tr, 
+table.docutils td {
+    border: 1px inset #FFFFFF;
+}
+
+table.docutils, table.docutils thead, table.docutils tbody {
+    border-top: 1px solid #000000;
+    border-bottom: 1px solid #000000;
+}
+

@@ -1,0 +1,499 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>rmgpy.thermo — Thermodynamics Models &mdash; RMG Py 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  false
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../index.html" />
+    <link rel="up" title="RMG Developer’s Guide" href="index.html" />
+    <link rel="next" title="CanTherm API Reference" href="cantherm/index.html" />
+    <link rel="prev" title="rmgpy.statmech — Molecular Degrees of Freedom" href="statmech.html" /> 
+  </head>
+  <body>
+<div class="header">
+&nbsp;
+</div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="cantherm/index.html" title="CanTherm API Reference"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="statmech.html" title="rmgpy.statmech — Molecular Degrees of Freedom"
+             accesskey="P">previous</a> |</li>
+<li><a href="../index.html">Documentation</a> &raquo;</li>
+
+          <li><a href="index.html" accesskey="U">RMG Developer&#8217;s Guide</a> &raquo;</li> 
+      </ul>
+    </div>
+            
+  <div class="section" id="module-rmgpy.thermo">
+<span id="rmgpy-thermo-thermodynamics-models"></span><h1><a class="reference internal" href="#module-rmgpy.thermo" title="rmgpy.thermo"><tt class="xref py py-mod docutils literal"><span class="pre">rmgpy.thermo</span></tt></a> &#8212; Thermodynamics Models<a class="headerlink" href="#module-rmgpy.thermo" title="Permalink to this headline">¶</a></h1>
+<p>This module contains classes and methods for working with thermodynamics 
+models. All such models derive from the <a class="reference internal" href="#rmgpy.thermo.ThermoModel" title="rmgpy.thermo.ThermoModel"><tt class="xref py py-class docutils literal"><span class="pre">ThermoModel</span></tt></a> base class, and
+generally vary by how the heat capacity data is represented:</p>
+<ul class="simple">
+<li><a class="reference internal" href="#rmgpy.thermo.ThermoData" title="rmgpy.thermo.ThermoData"><tt class="xref py py-class docutils literal"><span class="pre">ThermoData</span></tt></a> - A thermodynamics model using a discrete set of heat
+capacity data points.</li>
+<li><a class="reference internal" href="#rmgpy.thermo.Wilhoit" title="rmgpy.thermo.Wilhoit"><tt class="xref py py-class docutils literal"><span class="pre">Wilhoit</span></tt></a> - A thermodynamics model using the Wilhoit polynomial
+equation for heat capacity.</li>
+<li><a class="reference internal" href="#rmgpy.thermo.MultiNASA" title="rmgpy.thermo.MultiNASA"><tt class="xref py py-class docutils literal"><span class="pre">MultiNASA</span></tt></a> - A thermodynamics model using a set of
+<a class="reference internal" href="#rmgpy.thermo.NASA" title="rmgpy.thermo.NASA"><tt class="xref py py-class docutils literal"><span class="pre">NASA</span></tt></a> objects, each representing a seven-coefficient or
+nine-coefficient polynomial equation for heat capacity, enthalpy, and entropy.</li>
+</ul>
+<div class="section" id="base-class-for-thermodynamics-models">
+<h2>Base Class for Thermodynamics Models<a class="headerlink" href="#base-class-for-thermodynamics-models" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="rmgpy.thermo.ThermoError">
+<em class="property">class </em><tt class="descclassname">rmgpy.thermo.</tt><tt class="descname">ThermoError</tt><a class="headerlink" href="#rmgpy.thermo.ThermoError" title="Permalink to this definition">¶</a></dt>
+<dd><p>An exception to be raised when an error occurs while working with 
+thermodynamics data. Pass a string describing the circumstances of the
+exceptional behavior.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="rmgpy.thermo.ThermoModel">
+<em class="property">class </em><tt class="descclassname">rmgpy.thermo.</tt><tt class="descname">ThermoModel</tt><big>(</big><em>Tmin=None</em>, <em>Tmax=None</em>, <em>comment=''</em><big>)</big><a class="headerlink" href="#rmgpy.thermo.ThermoModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>A base class for thermodynamics models, containing several attributes
+common to all models:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="12%" />
+<col width="16%" />
+<col width="72%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Attribute</th>
+<th class="head">Type</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><cite>Tmin</cite></td>
+<td><tt class="xref py py-class docutils literal"><span class="pre">Quantity</span></tt></td>
+<td>The minimum temperature at which the model is valid, or <tt class="docutils literal"><span class="pre">None</span></tt> if unknown or undefined</td>
+</tr>
+<tr class="row-odd"><td><cite>Tmax</cite></td>
+<td><tt class="xref py py-class docutils literal"><span class="pre">Quantity</span></tt></td>
+<td>The maximum temperature at which the model is valid, or <tt class="docutils literal"><span class="pre">None</span></tt> if unknown or undefined</td>
+</tr>
+<tr class="row-even"><td><cite>comment</cite></td>
+<td><tt class="docutils literal"><span class="pre">str</span></tt></td>
+<td>Information about the model (e.g. its source)</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="rmgpy.thermo.ThermoModel.getEnthalpies">
+<tt class="descname">getEnthalpies</tt><big>(</big><em>Tlist</em><big>)</big><a class="headerlink" href="#rmgpy.thermo.ThermoModel.getEnthalpies" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the enthalpy in J/mol at the specified temperatures <cite>Tlist</cite> in
+K, as a numpy array.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.thermo.ThermoModel.getEnthalpy">
+<tt class="descname">getEnthalpy</tt><big>(</big><em>T</em><big>)</big><a class="headerlink" href="#rmgpy.thermo.ThermoModel.getEnthalpy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the enthalpy in J/mol at temperature <cite>T</cite> in K. This method must 
+be overloaded in the derived class.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.thermo.ThermoModel.getEntropies">
+<tt class="descname">getEntropies</tt><big>(</big><em>Tlist</em><big>)</big><a class="headerlink" href="#rmgpy.thermo.ThermoModel.getEntropies" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the entropy in J/mol*K at the specified temperatures <cite>Tlist</cite> in
+K, as a numpy array.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.thermo.ThermoModel.getEntropy">
+<tt class="descname">getEntropy</tt><big>(</big><em>T</em><big>)</big><a class="headerlink" href="#rmgpy.thermo.ThermoModel.getEntropy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the entropy in J/mol*K at temperature <cite>T</cite> in K. This method must 
+be overloaded in the derived class.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.thermo.ThermoModel.getFreeEnergies">
+<tt class="descname">getFreeEnergies</tt><big>(</big><em>Tlist</em><big>)</big><a class="headerlink" href="#rmgpy.thermo.ThermoModel.getFreeEnergies" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the Gibbs free energy in J/mol at the specified temperatures
+<cite>Tlist</cite> in K, as a numpy array.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.thermo.ThermoModel.getFreeEnergy">
+<tt class="descname">getFreeEnergy</tt><big>(</big><em>T</em><big>)</big><a class="headerlink" href="#rmgpy.thermo.ThermoModel.getFreeEnergy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the Gibbs free energy in J/mol at temperature <cite>T</cite> in K. This 
+method must be overloaded in the derived class.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.thermo.ThermoModel.getHeatCapacities">
+<tt class="descname">getHeatCapacities</tt><big>(</big><em>Tlist</em><big>)</big><a class="headerlink" href="#rmgpy.thermo.ThermoModel.getHeatCapacities" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the constant-pressure heat capacity in J/mol*K at the
+specified temperatures <cite>Tlist</cite> in K, as a numpy array.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.thermo.ThermoModel.getHeatCapacity">
+<tt class="descname">getHeatCapacity</tt><big>(</big><em>T</em><big>)</big><a class="headerlink" href="#rmgpy.thermo.ThermoModel.getHeatCapacity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the constant-pressure heat capacity in J/mol*K at temperature 
+<cite>T</cite> in K. This method must be overloaded in the derived class.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.thermo.ThermoModel.isIdenticalTo">
+<tt class="descname">isIdenticalTo</tt><big>(</big><em>other</em><big>)</big><a class="headerlink" href="#rmgpy.thermo.ThermoModel.isIdenticalTo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns <tt class="docutils literal"><span class="pre">True</span></tt> if <cite>self</cite> and <cite>other</cite> report very similar thermo values
+for heat capacity, enthalpy, entropy, and free energy over a wide
+range of temperatures, or <tt class="docutils literal"><span class="pre">False</span></tt> otherwise.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.thermo.ThermoModel.isSimilarTo">
+<tt class="descname">isSimilarTo</tt><big>(</big><em>other</em><big>)</big><a class="headerlink" href="#rmgpy.thermo.ThermoModel.isSimilarTo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns <tt class="docutils literal"><span class="pre">True</span></tt> if <cite>self</cite> and <cite>other</cite> report similar thermo values
+for heat capacity, enthalpy, entropy, and free energy over a wide
+range of temperatures, or <tt class="docutils literal"><span class="pre">False</span></tt> otherwise.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.thermo.ThermoModel.isTemperatureValid">
+<tt class="descname">isTemperatureValid</tt><big>(</big><em>T</em><big>)</big><a class="headerlink" href="#rmgpy.thermo.ThermoModel.isTemperatureValid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if the temperature <cite>T</cite> in K is within the valid
+temperature range of the thermodynamic data, or <tt class="docutils literal"><span class="pre">False</span></tt> if not. If
+the minimum and maximum temperature are not defined, <tt class="docutils literal"><span class="pre">True</span></tt> is 
+returned.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="group-additivity-thermodynamics-model">
+<h2>Group-Additivity Thermodynamics Model<a class="headerlink" href="#group-additivity-thermodynamics-model" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="rmgpy.thermo.ThermoData">
+<em class="property">class </em><tt class="descclassname">rmgpy.thermo.</tt><tt class="descname">ThermoData</tt><big>(</big><em>Tdata</em>, <em>Cpdata</em>, <em>H298</em>, <em>S298</em>, <em>Tmin=None</em>, <em>Tmax=None</em>, <em>comment=''</em><big>)</big><a class="headerlink" href="#rmgpy.thermo.ThermoData" title="Permalink to this definition">¶</a></dt>
+<dd><p>A thermodynamic model defined by a set of heat capacities. The attributes
+are:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="12%" />
+<col width="21%" />
+<col width="67%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Attribute</th>
+<th class="head">Type</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><cite>Tdata</cite></td>
+<td><tt class="xref py py-class docutils literal"><span class="pre">Quantity</span></tt></td>
+<td>The temperatures at which the heat capacity data is provided</td>
+</tr>
+<tr class="row-odd"><td><cite>Cpdata</cite></td>
+<td><tt class="xref py py-class docutils literal"><span class="pre">Quantity</span></tt></td>
+<td>The standard heat capacity at each temperature in <cite>Tdata</cite></td>
+</tr>
+<tr class="row-even"><td><cite>H298</cite></td>
+<td><tt class="xref py py-class docutils literal"><span class="pre">Quantity</span></tt></td>
+<td>The standard enthalpy of formation at 298 K</td>
+</tr>
+<tr class="row-odd"><td><cite>S298</cite></td>
+<td><tt class="xref py py-class docutils literal"><span class="pre">Quantity</span></tt></td>
+<td>The standard entropy of formation at 298 K</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="rmgpy.thermo.ThermoData.getEnthalpy">
+<tt class="descname">getEnthalpy</tt><big>(</big><em>T</em><big>)</big><a class="headerlink" href="#rmgpy.thermo.ThermoData.getEnthalpy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the enthalpy in J/mol at temperature <cite>T</cite> in K.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.thermo.ThermoData.getEntropy">
+<tt class="descname">getEntropy</tt><big>(</big><em>T</em><big>)</big><a class="headerlink" href="#rmgpy.thermo.ThermoData.getEntropy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the entropy in J/mol*K at temperature <cite>T</cite> in K.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.thermo.ThermoData.getFreeEnergy">
+<tt class="descname">getFreeEnergy</tt><big>(</big><em>T</em><big>)</big><a class="headerlink" href="#rmgpy.thermo.ThermoData.getFreeEnergy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the Gibbs free energy in J/mol at temperature <cite>T</cite> in K.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.thermo.ThermoData.getHeatCapacity">
+<tt class="descname">getHeatCapacity</tt><big>(</big><em>T</em><big>)</big><a class="headerlink" href="#rmgpy.thermo.ThermoData.getHeatCapacity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the constant-pressure heat capacity in J/mol*K at temperature 
+<cite>T</cite> in K.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="wilhoit-polynomial-thermodynamics-model">
+<h2>Wilhoit Polynomial Thermodynamics Model<a class="headerlink" href="#wilhoit-polynomial-thermodynamics-model" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="rmgpy.thermo.Wilhoit">
+<em class="property">class </em><tt class="descclassname">rmgpy.thermo.</tt><tt class="descname">Wilhoit</tt><big>(</big><em>cp0=0.0</em>, <em>cpInf=0.0</em>, <em>a0=0.0</em>, <em>a1=0.0</em>, <em>a2=0.0</em>, <em>a3=0.0</em>, <em>H0=0.0</em>, <em>S0=0.0</em>, <em>B=500.0</em>, <em>Tmin=None</em>, <em>Tmax=None</em>, <em>comment=''</em><big>)</big><a class="headerlink" href="#rmgpy.thermo.Wilhoit" title="Permalink to this definition">¶</a></dt>
+<dd><p>A thermodynamics model based on the Wilhoit equation for heat capacity,</p>
+<div class="math">
+<p><img src="../_images/math/ec2afa8510f8e8aba5ffa41e511fee06063d2853.png" alt="C_\mathrm{p}(T) = C_\mathrm{p}(0) + \left[ C_\mathrm{p}(\infty) -
+C_\mathrm{p}(0) \right] y^2 \left[ 1 + (y - 1) \sum_{i=0}^3 a_i y^i \right]"/></p>
+</div><p>where <img class="math" src="../_images/math/e826963750316277953cf2540200864291ce2a3a.png" alt="y \equiv \frac{T}{T + B}"/> is a scaled temperature that ranges
+from zero to one. (The characteristic temperature <img class="math" src="../_images/math/ff5fb3d775862e2123b007eb4373ff6cc1a34d4e.png" alt="B"/> is chosen by
+default to be 500 K.) This formulation has the advantage of correctly
+reproducting the heat capacity behavior as <img class="math" src="../_images/math/3ed3cccf70b60d46263245cee8401597355e7cf4.png" alt="T \rightarrow 0"/> and
+<img class="math" src="../_images/math/461ae57f2ff9324b7ad705ebb396db423c3de4d1.png" alt="T \rightarrow \infty"/>. The low-temperature limit 
+<img class="math" src="../_images/math/39e6e4d4577c99f443ce4542c53bf5d6beaf8c71.png" alt="C_\mathrm{p}(0)"/> is taken to be <img class="math" src="../_images/math/5a71ee2dab5c99b58df89ac416af7e638e2c347b.png" alt="3.5R"/> for linear molecules
+and <img class="math" src="../_images/math/763a9338d28d3828442e517b79bbc36acae90231.png" alt="4R"/> for nonlinear molecules. The high-temperature limit 
+<img class="math" src="../_images/math/ed40b30c4a5dfa996a3e5541d7034750ce5bfd84.png" alt="C_\mathrm{p}(\infty)"/> is taken to be 
+<img class="math" src="../_images/math/a09105a9c27d1304964cc92c065cf0128a73bb2a.png" alt="\left[ 3 N_\mathrm{atoms} - 1.5 \right] R"/> for linear molecules and
+<img class="math" src="../_images/math/e3f35e9652ad843f00f9ce45a7c926a230a42027.png" alt="\left[ 3 N_\mathrm{atoms} - (2 + 0.5 N_\mathrm{rotors}) \right] R"/>
+for nonlinear molecules, for a molecule composed of <img class="math" src="../_images/math/dcd1fb7cd882dbf1df8a980c9b05650011465015.png" alt="N_\mathrm{atoms}"/>
+atoms and <img class="math" src="../_images/math/8310f00b584ab744bcf747702a56a50336215485.png" alt="N_\mathrm{rotors}"/> internal rotors.</p>
+<p>The Wilhoit parameters are stored in the attributes <cite>cp0</cite>, <cite>cpInf</cite>, <cite>a0</cite>,
+<cite>a1</cite>, <cite>a2</cite>, <cite>a3</cite>, and <cite>B</cite>. There are also integration constants <cite>H0</cite> and
+<cite>S0</cite> that are needed to evaluate the enthalpy and entropy, respectively.</p>
+<dl class="method">
+<dt id="rmgpy.thermo.Wilhoit.fitToData">
+<tt class="descname">fitToData</tt><big>(</big><em>Tlist</em>, <em>Cplist</em>, <em>linear</em>, <em>nFreq</em>, <em>nRotors</em>, <em>H298</em>, <em>S298</em>, <em>B0=500.0</em>, <em>Bmin=300.0</em>, <em>Bmax=1000.0</em><big>)</big><a class="headerlink" href="#rmgpy.thermo.Wilhoit.fitToData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fit a Wilhoit model to the data points provided, allowing the 
+characteristic temperature <cite>B</cite> to vary so as to improve the fit. This
+procedure requires an optimization, using the <tt class="docutils literal"><span class="pre">fminbound</span></tt> function
+in the <tt class="docutils literal"><span class="pre">scipy.optimize</span></tt> module. The data consists of a set
+of dimensionless heat capacity points <cite>Cplist</cite> at a given set of
+temperatures <cite>Tlist</cite> in K. The linearity of the molecule, number of
+vibrational frequencies (not including internal rotors), and number
+of internal rotors (<cite>linear</cite>,`nFreq`, and <cite>nRotors</cite>, respectively) is
+used to set the limits at zero and infinite temperature.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.thermo.Wilhoit.fitToDataForConstantB">
+<tt class="descname">fitToDataForConstantB</tt><big>(</big><em>Tlist</em>, <em>Cplist</em>, <em>linear</em>, <em>nFreq</em>, <em>nRotors</em>, <em>B</em>, <em>H298</em>, <em>S298</em><big>)</big><a class="headerlink" href="#rmgpy.thermo.Wilhoit.fitToDataForConstantB" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fit a Wilhoit model to the data points provided using a specified value
+of the characteristic temperature <cite>B</cite>. The data consists of a set
+of dimensionless heat capacity points <cite>Cplist</cite> at a given set of
+temperatures <cite>Tlist</cite> in K. The linearity of the molecule, number of
+vibrational frequencies, and number of internal rotors (<cite>linear</cite>,
+<cite>nFreq</cite>, and <cite>nRotors</cite>, respectively) is used to set the limits at
+zero and infinite temperature.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.thermo.Wilhoit.getEnthalpy">
+<tt class="descname">getEnthalpy</tt><big>(</big><em>T</em><big>)</big><a class="headerlink" href="#rmgpy.thermo.Wilhoit.getEnthalpy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the enthalpy in J/mol at the specified temperature <cite>T</cite> in
+K. The formula is</p>
+<div class="math">
+<p><img src="../_images/math/f2db4fdc41a7472400a0e67aa4094e87fbf4121e.png" alt="H(T) &amp; = H_0 +
+C_\mathrm{p}(0) T + \left[ C_\mathrm{p}(\infty) - C_\mathrm{p}(0) \right] T \\
+&amp; \left\{ \left[ 2 + \sum_{i=0}^3 a_i \right]
+\left[ \frac{1}{2}y - 1 + \left( \frac{1}{y} - 1 \right) \ln \frac{T}{y} \right]
++ y^2 \sum_{i=0}^3 \frac{y^i}{(i+2)(i+3)} \sum_{j=0}^3 f_{ij} a_j
+\right\}"/></p>
+</div><p>where <img class="math" src="../_images/math/941c3745b1bebe8fce0ca5981db3fa2d403b28eb.png" alt="f_{ij} = 3 + j"/> if <img class="math" src="../_images/math/3799ffcebc202623d060cc962304a9b0d851e15e.png" alt="i = j"/>, <img class="math" src="../_images/math/9685a95090e0b03a3e882bca9acf9ca8d03e2cdd.png" alt="f_{ij} = 1"/> if
+<img class="math" src="../_images/math/23166a59a6df7d262929f4e7e4803c9da65e6504.png" alt="i &gt; j"/>, and <img class="math" src="../_images/math/fbafd15e6152f608dbb1a2f9640c450012a88f9b.png" alt="f_{ij} = 0"/> if <img class="math" src="../_images/math/478f5d7d31a103e7a383486cdf317eb599ac9ebf.png" alt="i &lt; j"/>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.thermo.Wilhoit.getEntropy">
+<tt class="descname">getEntropy</tt><big>(</big><em>T</em><big>)</big><a class="headerlink" href="#rmgpy.thermo.Wilhoit.getEntropy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the entropy in J/mol*K at the specified temperature <cite>T</cite> in
+K. The formula is</p>
+<div class="math">
+<p><img src="../_images/math/b2bc938f953d6504d12c74ed5babd79c064d4052.png" alt="S(T) = S_0 +
+C_\mathrm{p}(\infty) \ln T - \left[ C_\mathrm{p}(\infty) - C_\mathrm{p}(0) \right]
+\left[ \ln y + \left( 1 + y \sum_{i=0}^3 \frac{a_i y^i}{2+i} \right) y
+\right]"/></p>
+</div></dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.thermo.Wilhoit.getFreeEnergy">
+<tt class="descname">getFreeEnergy</tt><big>(</big><em>T</em><big>)</big><a class="headerlink" href="#rmgpy.thermo.Wilhoit.getFreeEnergy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the Gibbs free energy in J/mol at the specified temperature
+<cite>T</cite> in K.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.thermo.Wilhoit.getHeatCapacity">
+<tt class="descname">getHeatCapacity</tt><big>(</big><em>T</em><big>)</big><a class="headerlink" href="#rmgpy.thermo.Wilhoit.getHeatCapacity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the constant-pressure heat capacity in J/mol*K at the
+specified temperature <cite>T</cite> in K.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="nasa-polynomial-thermodynamics-model">
+<h2>NASA Polynomial Thermodynamics Model<a class="headerlink" href="#nasa-polynomial-thermodynamics-model" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="rmgpy.thermo.NASA">
+<em class="property">class </em><tt class="descclassname">rmgpy.thermo.</tt><tt class="descname">NASA</tt><big>(</big><em>coeffs</em>, <em>Tmin=None</em>, <em>Tmax=None</em>, <em>comment=''</em><big>)</big><a class="headerlink" href="#rmgpy.thermo.NASA" title="Permalink to this definition">¶</a></dt>
+<dd><p>A single NASA polynomial for thermodynamic data. The <cite>coeffs</cite> attribute
+stores the seven or nine polynomial coefficients
+<img class="math" src="../_images/math/57e980cc061e2ba7cb4b4a928fd081a386dc1bbd.png" alt="\mathbf{a} = \left[a_{-2}\ a_{-1}\ a_0\ a_1\ a_2\ a_3\ a_4\ a_5\ a_6 \right]"/>
+from which the relevant thermodynamic parameters are evaluated via the
+expressions</p>
+<div class="math">
+<p><img src="../_images/math/44785a33b26d0eb58761b43c4627fb77f18df8cf.png" alt="\frac{C_\mathrm{p}(T)}{R} = a_{-2} T^{-2} + a_{-1} T^{-1} + a_0 + a_1 T + a_2 T^2 + a_3 T^3 + a_4 T^4"/></p>
+</div><div class="math">
+<p><img src="../_images/math/7a3dd835fec47e0edd7b282fd447294036e428a8.png" alt="\frac{H(T)}{RT} = - a_{-2} T^{-2} + a_{-1} T^{-1} \ln T + a_0 + \frac{1}{2} a_1 T + \frac{1}{3} a_2 T^2 + \frac{1}{4} a_3 T^3 + \frac{1}{5} a_4 T^4 + \frac{a_5}{T}"/></p>
+</div><div class="math">
+<p><img src="../_images/math/56f3262138978d80e147d07131865ef61e475497.png" alt="\frac{S(T)}{R} = -\frac{1}{2} a_{-2} T^{-2} - a_{-1} T^{-1} + a_0 \ln T + a_1 T + \frac{1}{2} a_2 T^2 + \frac{1}{3} a_3 T^3 + \frac{1}{4} a_4 T^4 + a_6"/></p>
+</div><p>The coefficients are stored internally in the nine-coefficient format, even
+when only seven coefficients are provided.</p>
+<dl class="method">
+<dt id="rmgpy.thermo.NASA.getEnthalpy">
+<tt class="descname">getEnthalpy</tt><big>(</big><em>T</em><big>)</big><a class="headerlink" href="#rmgpy.thermo.NASA.getEnthalpy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the enthalpy in J/mol at the specified temperature <cite>T</cite> in
+K.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.thermo.NASA.getEntropy">
+<tt class="descname">getEntropy</tt><big>(</big><em>T</em><big>)</big><a class="headerlink" href="#rmgpy.thermo.NASA.getEntropy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the entropy in J/mol*K at the specified temperature <cite>T</cite> in
+K.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.thermo.NASA.getFreeEnergy">
+<tt class="descname">getFreeEnergy</tt><big>(</big><em>T</em><big>)</big><a class="headerlink" href="#rmgpy.thermo.NASA.getFreeEnergy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the Gibbs free energy in J/mol at the specified temperature
+<cite>T</cite> in K.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.thermo.NASA.getHeatCapacity">
+<tt class="descname">getHeatCapacity</tt><big>(</big><em>T</em><big>)</big><a class="headerlink" href="#rmgpy.thermo.NASA.getHeatCapacity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the constant-pressure heat capacity in J/mol*K at the
+specified temperature <cite>T</cite> in K.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="rmgpy.thermo.MultiNASA">
+<em class="property">class </em><tt class="descclassname">rmgpy.thermo.</tt><tt class="descname">MultiNASA</tt><big>(</big><em>polynomials=None</em>, <em>Tmin=0.0</em>, <em>Tmax=0.0</em>, <em>comment=''</em><big>)</big><a class="headerlink" href="#rmgpy.thermo.MultiNASA" title="Permalink to this definition">¶</a></dt>
+<dd><p>A set of thermodynamic parameters given by NASA polynomials. This class
+stores a list of <a class="reference internal" href="#rmgpy.thermo.NASA" title="rmgpy.thermo.NASA"><tt class="xref py py-class docutils literal"><span class="pre">NASA</span></tt></a> objects in the <cite>polynomials</cite>
+attribute. When evaluating a thermodynamic quantity, a polynomial that
+contains the desired temperature within its valid range will be used.</p>
+<dl class="method">
+<dt id="rmgpy.thermo.MultiNASA.getEnthalpy">
+<tt class="descname">getEnthalpy</tt><big>(</big><em>T</em><big>)</big><a class="headerlink" href="#rmgpy.thermo.MultiNASA.getEnthalpy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the enthalpy in J/mol at the specified temperature <cite>T</cite> in K.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.thermo.MultiNASA.getEntropy">
+<tt class="descname">getEntropy</tt><big>(</big><em>T</em><big>)</big><a class="headerlink" href="#rmgpy.thermo.MultiNASA.getEntropy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the entropy in J/mol*K at the specified temperature <cite>T</cite> in K.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.thermo.MultiNASA.getFreeEnergy">
+<tt class="descname">getFreeEnergy</tt><big>(</big><em>T</em><big>)</big><a class="headerlink" href="#rmgpy.thermo.MultiNASA.getFreeEnergy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the Gibbs free energy in J/mol at the specified temperature
+<cite>T</cite> in K.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.thermo.MultiNASA.getHeatCapacity">
+<tt class="descname">getHeatCapacity</tt><big>(</big><em>T</em><big>)</big><a class="headerlink" href="#rmgpy.thermo.MultiNASA.getHeatCapacity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the constant-pressure heat capacity in J/mol*K at the
+specified temperature <cite>T</cite> in K.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div class="sidebarlogo">
+<img src="../_static/rmg-logo-small.png" alt="RMG" />
+</div>
+  <h3><a href="../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#"><tt class="docutils literal"><span class="pre">rmgpy.thermo</span></tt> &#8212; Thermodynamics Models</a><ul>
+<li><a class="reference internal" href="#base-class-for-thermodynamics-models">Base Class for Thermodynamics Models</a></li>
+<li><a class="reference internal" href="#group-additivity-thermodynamics-model">Group-Additivity Thermodynamics Model</a></li>
+<li><a class="reference internal" href="#wilhoit-polynomial-thermodynamics-model">Wilhoit Polynomial Thermodynamics Model</a></li>
+<li><a class="reference internal" href="#nasa-polynomial-thermodynamics-model">NASA Polynomial Thermodynamics Model</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="statmech.html"
+                        title="previous chapter"><tt class="docutils literal docutils literal docutils literal"><span class="pre">rmgpy.statmech</span></tt> &#8212; Molecular Degrees of Freedom</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="cantherm/index.html"
+                        title="next chapter">CanTherm API Reference</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, William H. Green and the RMG Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

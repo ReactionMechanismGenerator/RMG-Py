@@ -1,0 +1,346 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>5. rmgpy.data.states — Frequency Database &mdash; RMG Py 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  false
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
+    <link rel="up" title="Data API Reference" href="index.html" />
+    <link rel="next" title="6. rmgpy.data.statesfit — Fitting Frequencies to Heat Capacity Data" href="statesfit.html" />
+    <link rel="prev" title="4. rmgpy.data.kinetics — Kinetics Database" href="kinetics.html" /> 
+  </head>
+  <body>
+<div class="header">
+&nbsp;
+</div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="statesfit.html" title="6. rmgpy.data.statesfit — Fitting Frequencies to Heat Capacity Data"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="kinetics.html" title="4. rmgpy.data.kinetics — Kinetics Database"
+             accesskey="P">previous</a> |</li>
+<li><a href="../../index.html">Documentation</a> &raquo;</li>
+
+          <li><a href="../index.html" >RMG Developer&#8217;s Guide</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Data API Reference</a> &raquo;</li> 
+      </ul>
+    </div>
+            
+  <div class="section" id="module-rmgpy.data.states">
+<span id="rmgpy-data-states-frequency-database"></span><h1>5. <a class="reference internal" href="#module-rmgpy.data.states" title="rmgpy.data.states"><tt class="xref py py-mod docutils literal"><span class="pre">rmgpy.data.states</span></tt></a> &#8212; Frequency Database<a class="headerlink" href="#module-rmgpy.data.states" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="group-frequency-database">
+<h2>5.1. Group Frequency Database<a class="headerlink" href="#group-frequency-database" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="rmgpy.data.states.GroupFrequencies">
+<em class="property">class </em><tt class="descclassname">rmgpy.data.states.</tt><tt class="descname">GroupFrequencies</tt><big>(</big><em>frequencies=None</em>, <em>symmetry=1</em><big>)</big><a class="headerlink" href="#rmgpy.data.states.GroupFrequencies" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represent a set of characteristic frequencies for a group in the frequency
+database. These frequencies are stored in the <cite>frequencies</cite> attribute, which
+is a <tt class="docutils literal"><span class="pre">list</span></tt> of <tt class="docutils literal"><span class="pre">tuples</span></tt>, where each <tt class="docutils literal"><span class="pre">tuple</span></tt> defines a lower bound,
+upper bound, and degeneracy. Each group also has a <cite>symmetry</cite> correction.</p>
+<dl class="method">
+<dt id="rmgpy.data.states.GroupFrequencies.generateFrequencies">
+<tt class="descname">generateFrequencies</tt><big>(</big><em>count=1</em><big>)</big><a class="headerlink" href="#rmgpy.data.states.GroupFrequencies.generateFrequencies" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a set of frequencies. For each characteristic frequency group,
+the number of frequencies returned is degeneracy * count, and these are
+distributed linearly between the lower and upper bounds.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="rmgpy.data.states.StatesDatabase">
+<em class="property">class </em><tt class="descclassname">rmgpy.data.states.</tt><tt class="descname">StatesDatabase</tt><a class="headerlink" href="#rmgpy.data.states.StatesDatabase" title="Permalink to this definition">¶</a></dt>
+<dd><p>A class for working with the RMG states (frequencies) database.</p>
+<dl class="method">
+<dt id="rmgpy.data.states.StatesDatabase.getStatesData">
+<tt class="descname">getStatesData</tt><big>(</big><em>molecule</em>, <em>thermoModel=None</em><big>)</big><a class="headerlink" href="#rmgpy.data.states.StatesDatabase.getStatesData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the thermodynamic parameters for a given <tt class="xref py py-class docutils literal"><span class="pre">Molecule</span></tt>
+object <cite>molecule</cite>. This function first searches the loaded libraries
+in order, returning the first match found, before falling back to
+estimation via group additivity.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.states.StatesDatabase.getStatesDataFromDepository">
+<tt class="descname">getStatesDataFromDepository</tt><big>(</big><em>molecule</em><big>)</big><a class="headerlink" href="#rmgpy.data.states.StatesDatabase.getStatesDataFromDepository" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return states data for the given <tt class="xref py py-class docutils literal"><span class="pre">Molecule</span></tt> object <cite>molecule</cite>
+by searching the entries in the depository.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.states.StatesDatabase.getStatesDataFromGroups">
+<tt class="descname">getStatesDataFromGroups</tt><big>(</big><em>molecule</em>, <em>thermoModel</em><big>)</big><a class="headerlink" href="#rmgpy.data.states.StatesDatabase.getStatesDataFromGroups" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return states data for the given <tt class="xref py py-class docutils literal"><span class="pre">Molecule</span></tt> object <cite>molecule</cite>
+by estimating using characteristic group frequencies and fitting the
+remaining internal modes to heat capacity data from the given thermo
+model <cite>thermoModel</cite>. This always returns valid degrees of freedom data.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.states.StatesDatabase.getStatesDataFromLibrary">
+<tt class="descname">getStatesDataFromLibrary</tt><big>(</big><em>molecule</em>, <em>library</em><big>)</big><a class="headerlink" href="#rmgpy.data.states.StatesDatabase.getStatesDataFromLibrary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return states data for the given <tt class="xref py py-class docutils literal"><span class="pre">Molecule</span></tt> object <cite>molecule</cite>
+by searching the entries in the specified <a class="reference internal" href="#rmgpy.data.states.StatesLibrary" title="rmgpy.data.states.StatesLibrary"><tt class="xref py py-class docutils literal"><span class="pre">StatesLibrary</span></tt></a> object
+<cite>library</cite>. Returns <tt class="docutils literal"><span class="pre">None</span></tt> if no data was found.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.states.StatesDatabase.load">
+<tt class="descname">load</tt><big>(</big><em>path</em>, <em>libraries=None</em>, <em>depository=True</em><big>)</big><a class="headerlink" href="#rmgpy.data.states.StatesDatabase.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the states database from the given <cite>path</cite> on disk, where <cite>path</cite>
+points to the top-level folder of the thermo database.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.states.StatesDatabase.loadDepository">
+<tt class="descname">loadDepository</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#rmgpy.data.states.StatesDatabase.loadDepository" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the states database from the given <cite>path</cite> on disk, where <cite>path</cite>
+points to the top-level folder of the thermo database.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.states.StatesDatabase.loadGroups">
+<tt class="descname">loadGroups</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#rmgpy.data.states.StatesDatabase.loadGroups" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the states database from the given <cite>path</cite> on disk, where <cite>path</cite>
+points to the top-level folder of the thermo database.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.states.StatesDatabase.loadLibraries">
+<tt class="descname">loadLibraries</tt><big>(</big><em>path</em>, <em>libraries=None</em><big>)</big><a class="headerlink" href="#rmgpy.data.states.StatesDatabase.loadLibraries" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the states database from the given <cite>path</cite> on disk, where <cite>path</cite>
+points to the top-level folder of the thermo database.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.states.StatesDatabase.loadOld">
+<tt class="descname">loadOld</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#rmgpy.data.states.StatesDatabase.loadOld" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the old RMG thermo database from the given <cite>path</cite> on disk, where
+<cite>path</cite> points to the top-level folder of the old RMG database.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.states.StatesDatabase.save">
+<tt class="descname">save</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#rmgpy.data.states.StatesDatabase.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the states database to the given <cite>path</cite> on disk, where <cite>path</cite>
+points to the top-level folder of the states database.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.states.StatesDatabase.saveDepository">
+<tt class="descname">saveDepository</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#rmgpy.data.states.StatesDatabase.saveDepository" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the states depository to the given <cite>path</cite> on disk, where <cite>path</cite>
+points to the top-level folder of the states depository.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.states.StatesDatabase.saveGroups">
+<tt class="descname">saveGroups</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#rmgpy.data.states.StatesDatabase.saveGroups" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the states groups to the given <cite>path</cite> on disk, where <cite>path</cite>
+points to the top-level folder of the states groups.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.states.StatesDatabase.saveLibraries">
+<tt class="descname">saveLibraries</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#rmgpy.data.states.StatesDatabase.saveLibraries" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the states libraries to the given <cite>path</cite> on disk, where <cite>path</cite>
+points to the top-level folder of the states libraries.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.states.StatesDatabase.saveOld">
+<tt class="descname">saveOld</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#rmgpy.data.states.StatesDatabase.saveOld" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the old RMG thermo database to the given <cite>path</cite> on disk, where
+<cite>path</cite> points to the top-level folder of the old RMG database.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="rmgpy.data.states.StatesDepository">
+<em class="property">class </em><tt class="descclassname">rmgpy.data.states.</tt><tt class="descname">StatesDepository</tt><big>(</big><em>label=''</em>, <em>name=''</em>, <em>shortDesc=''</em>, <em>longDesc=''</em><big>)</big><a class="headerlink" href="#rmgpy.data.states.StatesDepository" title="Permalink to this definition">¶</a></dt>
+<dd><p>A class for working with the RMG states (frequencies) depository.</p>
+<dl class="method">
+<dt id="rmgpy.data.states.StatesDepository.saveEntry">
+<tt class="descname">saveEntry</tt><big>(</big><em>f</em>, <em>entry</em><big>)</big><a class="headerlink" href="#rmgpy.data.states.StatesDepository.saveEntry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write the given <cite>entry</cite> in the thermo database to the file object <cite>f</cite>.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="rmgpy.data.states.StatesLibrary">
+<em class="property">class </em><tt class="descclassname">rmgpy.data.states.</tt><tt class="descname">StatesLibrary</tt><big>(</big><em>label=''</em>, <em>name=''</em>, <em>shortDesc=''</em>, <em>longDesc=''</em><big>)</big><a class="headerlink" href="#rmgpy.data.states.StatesLibrary" title="Permalink to this definition">¶</a></dt>
+<dd><p>A class for working with a RMG states (frequencies) library.</p>
+<dl class="method">
+<dt id="rmgpy.data.states.StatesLibrary.generateOldLibraryEntry">
+<tt class="descname">generateOldLibraryEntry</tt><big>(</big><em>data</em><big>)</big><a class="headerlink" href="#rmgpy.data.states.StatesLibrary.generateOldLibraryEntry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of values used to save entries to the old-style RMG
+thermo database based on the thermodynamics object <cite>data</cite>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.states.StatesLibrary.processOldLibraryEntry">
+<tt class="descname">processOldLibraryEntry</tt><big>(</big><em>data</em><big>)</big><a class="headerlink" href="#rmgpy.data.states.StatesLibrary.processOldLibraryEntry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Process a list of parameters <cite>data</cite> as read from an old-style RMG
+thermo database, returning the corresponding thermodynamics object.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.states.StatesLibrary.saveEntry">
+<tt class="descname">saveEntry</tt><big>(</big><em>f</em>, <em>entry</em><big>)</big><a class="headerlink" href="#rmgpy.data.states.StatesLibrary.saveEntry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write the given <cite>entry</cite> in the thermo database to the file object <cite>f</cite>.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="rmgpy.data.states.StatesGroups">
+<em class="property">class </em><tt class="descclassname">rmgpy.data.states.</tt><tt class="descname">StatesGroups</tt><big>(</big><em>label=''</em>, <em>name=''</em>, <em>shortDesc=''</em>, <em>longDesc=''</em><big>)</big><a class="headerlink" href="#rmgpy.data.states.StatesGroups" title="Permalink to this definition">¶</a></dt>
+<dd><p>A class for working with an RMG states (frequencies) group database.</p>
+<dl class="method">
+<dt id="rmgpy.data.states.StatesGroups.generateOldLibraryEntry">
+<tt class="descname">generateOldLibraryEntry</tt><big>(</big><em>data</em><big>)</big><a class="headerlink" href="#rmgpy.data.states.StatesGroups.generateOldLibraryEntry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of values used to save entries to the old-style RMG
+thermo database based on the thermodynamics object <cite>data</cite>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.states.StatesGroups.getFrequencyGroups">
+<tt class="descname">getFrequencyGroups</tt><big>(</big><em>molecule</em><big>)</big><a class="headerlink" href="#rmgpy.data.states.StatesGroups.getFrequencyGroups" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the set of characteristic group frequencies corresponding to the
+speficied <cite>molecule</cite>. This is done by searching the molecule for
+certain functional groups for which characteristic frequencies are
+known, and using those frequencies.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.states.StatesGroups.getStatesData">
+<tt class="descname">getStatesData</tt><big>(</big><em>molecule</em>, <em>thermoModel</em><big>)</big><a class="headerlink" href="#rmgpy.data.states.StatesGroups.getStatesData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use the previously-loaded frequency database to generate a set of
+characteristic group frequencies corresponding to the speficied
+<cite>molecule</cite>. The provided thermo data in <cite>thermoModel</cite> is used to fit
+some frequencies and all hindered rotors to heat capacity data.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.states.StatesGroups.processOldLibraryEntry">
+<tt class="descname">processOldLibraryEntry</tt><big>(</big><em>data</em><big>)</big><a class="headerlink" href="#rmgpy.data.states.StatesGroups.processOldLibraryEntry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Process a list of parameters <cite>data</cite> as read from an old-style RMG
+states database, returning the corresponding thermodynamics object.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.states.StatesGroups.saveEntry">
+<tt class="descname">saveEntry</tt><big>(</big><em>f</em>, <em>entry</em><big>)</big><a class="headerlink" href="#rmgpy.data.states.StatesGroups.saveEntry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write the given <cite>entry</cite> in the thermo database to the file object <cite>f</cite>.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="rmgpy.data.states.generateOldLibraryEntry">
+<tt class="descclassname">rmgpy.data.states.</tt><tt class="descname">generateOldLibraryEntry</tt><big>(</big><em>data</em><big>)</big><a class="headerlink" href="#rmgpy.data.states.generateOldLibraryEntry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of values used to save entries to the old-style RMG
+thermo database based on the thermodynamics object <cite>data</cite>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="rmgpy.data.states.processOldLibraryEntry">
+<tt class="descclassname">rmgpy.data.states.</tt><tt class="descname">processOldLibraryEntry</tt><big>(</big><em>data</em>, <em>format</em><big>)</big><a class="headerlink" href="#rmgpy.data.states.processOldLibraryEntry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Process a list of parameters <cite>data</cite> as read from an old-style RMG
+thermo database, returning the corresponding thermodynamics object.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="rmgpy.data.states.saveEntry">
+<tt class="descclassname">rmgpy.data.states.</tt><tt class="descname">saveEntry</tt><big>(</big><em>f</em>, <em>entry</em><big>)</big><a class="headerlink" href="#rmgpy.data.states.saveEntry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write a Pythonic string representation of the given <cite>entry</cite> in the thermo
+database to the file object <cite>f</cite>.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div class="sidebarlogo">
+<img src="../../_static/rmg-logo-small.png" alt="RMG" />
+</div>
+  <h3><a href="../../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">5. <tt class="docutils literal"><span class="pre">rmgpy.data.states</span></tt> &#8212; Frequency Database</a><ul>
+<li><a class="reference internal" href="#group-frequency-database">5.1. Group Frequency Database</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="kinetics.html"
+                        title="previous chapter">4. <tt class="docutils literal docutils literal"><span class="pre">rmgpy.data.kinetics</span></tt> &#8212; Kinetics Database</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="statesfit.html"
+                        title="next chapter">6. <tt class="docutils literal"><span class="pre">rmgpy.data.statesfit</span></tt> &#8212; Fitting Frequencies to Heat Capacity Data</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, William H. Green and the RMG Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

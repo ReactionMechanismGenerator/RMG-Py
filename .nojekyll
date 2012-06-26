@@ -1,2 +1,0 @@
-This should prevent http://pages.github.com/ from processing the sphinx pages with jekyll,
-which mangles the folders beginning _
