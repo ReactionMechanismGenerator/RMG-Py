@@ -6,36 +6,7 @@ Introduction
 
 **Reaction Mechanism Generator (RMG)** is an automatic chemical reaction mechanism generator that constructs kinetic models composed of elementary chemical reaction steps using a general understanding of how molecules react.
 
-Dependencies
-============
 
-.. NOTE::
-	RMG has been tested on the Python 2.5, 2.6, and 2.7 releases; dependency issues render it incompatible with Python 3.x releases
-
-
-Briefly, RMG depends on the following packages:
-
-* **NumPy:** fast matrix operations
-* **SciPy:** fast mathematical toolkit
-* **matplotlib:** generating plots
-* **guppy:** memory profiling tools
-* **OpenBabel:** species format conversion
-* **Cython:** compiling Python modules to C
-* **quantities:** unit conversion
-* **nose:** advanced unit test controls
-* **Sphinx:** documentation generation
-* **pydot:** interface to Dot graph language
-* **cairo:** molecular diagram generation
-* **psutil:** system utilization diagnostic tool
-* **xlwt:** generating Excel output files
-* **Graphviz:** generating flux diagrams
-* **PyDAS:** differential algebraic system solver
-* **PyDQED:** constrained nonlinear optimization
-* **RMG-database:** thermodynamic and kinetic libraries
-
-Refer to platform-specific instructions for details on the best ways to install these packages before attempting to build RMG-Py:
-
-* `Windows <installation/windows.html>`_
 
 License
 =======
