@@ -12,7 +12,7 @@ PAPEROPT_a4     = -D latex_paper_size=a4
 PAPEROPT_letter = -D latex_paper_size=letter
 ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) source
 
-.PHONY: help clean html dirhtml singlehtml pickle json htmlhelp qthelp devhelp epub latex latexpdf text man changes linkcheck doctest
+.PHONY: help clean html dirhtml singlehtml pickle json htmlhelp qthelp devhelp epub latex latexpdf text man changes linkcheck doctest setup_github_pages publish
 
 help:
 	@echo "Please use \`make <target>' where <target> is one of"
@@ -32,9 +32,29 @@ help:
 	@echo "  changes    to make an overview of all changed/added/deprecated items"
 	@echo "  linkcheck  to check all external links for integrity"
 	@echo "  doctest    to run all doctests embedded in the documentation (if enabled)"
+	@echo "  setup_github_pages to set up the link to github-pages (should only be required once)"
+	@echo "  publish    to save the current HTML files and publish to github-pages."
+
+setup_github_pages:
+# Turn the build/html directory into a git repository linked to github ready to push to gh-pages branch!
+# Should only need to be run once.
+	rm -rf $(BUILDDIR)/html
+	mkdir -p $(BUILDDIR)/html
+	git clone --shared --branch gh-pages --config remote.greengroup.url=git@github.com:GreenGroup/RMG-Py.git --config remote.greengroup.fetch=+refs/heads/*:refs/remotes/greengroup/* --config branch.gh-pages.remote=greengroup --config branch.gh-pages.merge=refs/heads/gh-pages ../.git $(BUILDDIR)/html
+
+publish: $(BUILDDIR)/html/.git
+# Commit changes to gh-pages and push to github, to publish the results!
+	touch $(BUILDDIR)/html/.nojekyll
+	cd $(BUILDDIR)/html; git add -A .; git commit; git push greengroup gh-pages
 
 clean:
+# set aside the git repository info used to push pages to github
+	mkdir build_temp
+	mv $(BUILDDIR)/html/.git build_temp/.git
 	-rm -rf $(BUILDDIR)/*
+	mkdir $(BUILDDIR)/html
+	mv build_temp/.git $(BUILDDIR)/html/
+	rm -rf build_temp
 
 html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html

@@ -1363,7 +1363,7 @@ class Lindemann(ThirdBody):
 
     def isIdenticalTo(self,otherKinetics):
         """
-        Return ``True if all parameters matches that of other kinetics
+        Return ``True`` if all parameters matches that of other kinetics
         """
         if isinstance(otherKinetics,Lindemann):
             if ThirdBody.isIdenticalTo(self,otherKinetics):

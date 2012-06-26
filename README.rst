@@ -6,24 +6,18 @@ This repository contains the Python version of Reaction Mechanism Generator
 (RMG), a tool for automatically generating kinetic models of chemical reaction
 mechanisms, and related projects. RMG is developed primarily by researchers in 
 `Prof. Green's research group <http://web.mit.edu/greengp/>`_ at the 
-`Massachusetts Institute of Technology <http://web.mit.edu/>`_. 
-Details can be found at `Sourceforge <http://rmg.sourceforge.net/>`_ or by 
-emailing `rmg_dev@mit.edu <mailto:rmg_dev@mit.edu>`_.
+`Massachusetts Institute of Technology <http://web.mit.edu/>`_ 
+and `Prof. West's research group <http://www.northeastern.edu/comocheng/>`_ at 
+`Northeastern University <http://www.northeastern.edu/>`_ 
 
-The current projects in this repository are:
+There are some instructions at  http://greengroup.github.com/RMG-Py/ including
+details on `how to install RMG-Py
+<http://greengroup.github.com/RMG-Py/users/rmg/installation/index.html>`_
+and its numerous dependencies.
 
-* **CanTherm** - A tool for extracting useful information from quantum 
-  chemistry calculations
+Details of the (earlier established) Java version of RMG can be found
+on `Sourceforge <http://rmg.sourceforge.net/>`_ (although it too is 
+developed `here on github <https://github.com/GreenGroup/RMG-Java/>`_.
 
-* **ChemPy** - A base library of common chemistry classes and functions
-
-* **RMG Database** - A database of chemical knowledge used by RMG to determine
-  thermodynamic and kinetic parameters for its models
-
-* **MEASURE** - Master Equation Automatic Solver for Unimolecular REactions
-
-* **RMG** - The main Reaction Mechanism Generator code
-
-* **StatesFit** - A small library for fitting of vibrational modes to heat 
-  capacity data
+Please email `rmg_dev@mit.edu <mailto:rmg_dev@mit.edu>`_ if you have any questions.
 
