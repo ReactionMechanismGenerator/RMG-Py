@@ -47,7 +47,7 @@ finalPadding = 5                # The number of seconds to display the final flu
 
 ################################################################################
 
-def generateFluxDiagram(reactionModel, times, concentrations, reactionRates, outputDirectory, centralSpecies = None, speciesDirectory=None, settings = None):
+def generateFluxDiagram(reactionModel, times, concentrations, reactionRates, outputDirectory, centralSpecies=None, speciesDirectory=None, settings=None):
     """
     For a given `reactionModel` and simulation results stored as arrays of
     `times`, species `concentrations`, and `reactionRates`, generate a series
@@ -599,4 +599,3 @@ if __name__ == '__main__':
         
         print 'Generating flux diagram for reaction system {0:d}...'.format(index+1)
         generateFluxDiagram(rmg.reactionModel, time, coreSpeciesConcentrations, coreReactionRates, os.path.join(rmg.outputDirectory, 'flux', '{0:d}'.format(index+1)), speciesPath)
-        
