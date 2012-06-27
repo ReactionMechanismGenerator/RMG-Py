@@ -1,4 +1,9 @@
-.. _installation:************Installation************
+.. _installation:
+
+************
+Installation
+************
+
 .. NOTE::
     RMG has been tested on the Python 2.5, 2.6, and 2.7 releases; dependency issues render it incompatible with Python 3.x releases
 
@@ -24,5 +29,10 @@ Briefly, RMG depends on the following packages:
 * **RMG-database:** thermodynamic and kinetic libraries
 
 Refer to these platform-specific instructions for details on the best ways to install these packages before attempting to build RMG-Py:
-.. toctree::    :maxdepth: 1    windows    linux
-    macos
+
+.. toctree::
+    :maxdepth: 1
+
+    windows
+    linux
+    macos
