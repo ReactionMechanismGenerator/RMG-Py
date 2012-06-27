@@ -597,5 +597,6 @@ if __name__ == '__main__':
         print 'Conducting simulation of reaction system {0:d}...'.format(index+1)
         time, coreSpeciesConcentrations, coreReactionRates, edgeReactionRates = simulate(rmg.reactionModel, reactionSystem)
         
+        centralSpecies = None
         print 'Generating flux diagram for reaction system {0:d}...'.format(index+1)
-        generateFluxDiagram(rmg.reactionModel, time, coreSpeciesConcentrations, coreReactionRates, os.path.join(rmg.outputDirectory, 'flux', '{0:d}'.format(index+1)), speciesPath)
+        generateFluxDiagram(rmg.reactionModel, time, coreSpeciesConcentrations, coreReactionRates, os.path.join(rmg.outputDirectory, 'flux', '{0:d}'.format(index+1)), centralSpecies, speciesPath)
