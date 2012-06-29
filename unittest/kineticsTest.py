@@ -226,7 +226,7 @@ class TestArrhenius(unittest.TestCase):
         """
         Tdata = numpy.array([300,400,500,600,700,800,900,1000,1100,1200,1300,1400,1500], numpy.float)
         kdata = numpy.array([self.kinetics.getRateCoefficient(T) for T in Tdata], numpy.float)
-        kinetics = Arrhenius().fitToData(Tdata, kdata, kunits="m^3/(mol*s)")
+        kinetics = Arrhenius().fitToData(Tdata, kdata, kunits="m^3/(mol*s)", T0=300)
         self.assertEqual(self.kinetics.T0.value, 300)
         self.assertEqual(self.kinetics.T0.units, "K")
         for T, k in zip(Tdata, kdata):
