@@ -90,7 +90,7 @@ class MOPACJob(QMJob):
     
     inputFileExtension = '.mop'
     outputFileExtension = '.out'
-    executablePath = os.path.join(os.getenv('MOPAC_DIR') , 'MOPAC2009.exe')
+    executablePath = os.path.join(os.getenv('MOPAC_DIR', default="/opt/mopac") , 'MOPAC2009.exe')
     
     def __init__(self, molfile):
         QMJob.__init__(self, molfile)
