@@ -10,7 +10,7 @@ import rmgpy.qm.qmtp as qm
 from rmgpy.thermo import ThermoData
 
 class QMTest(unittest.TestCase):
-    """
+
     def testGenerateIdentifiers(self):
         molecule = Molecule().fromSMILES('C12CC(CC1)CC2')#norbornane
         qmprogram = ''
@@ -18,7 +18,7 @@ class QMTest(unittest.TestCase):
         name, inchi = driver.generateIdentifiers(molecule)
         self.assertEqual(name,'UMRZSTCPUPJPOJ-UHFFFAOYSA')
         self.assertEqual(inchi , 'InChI=1S/C7H12/c1-2-7-4-3-6(1)5-7/h6-7H,1-5H2')
-    
+
     def test3DMolFileCreator(self):
 
         molecule = Molecule().fromSMILES('C12CC(CC1)CC2')#norbornane
@@ -34,7 +34,7 @@ class QMTest(unittest.TestCase):
         
         self.assertTrue(isinstance(threedmolfile, qm.molFile))
         
-    """
+
     def testGenerateQMThermoData(self):
         """
         Checks whether the QMTP.generateQMThermoData() finds the output file of the molecule
