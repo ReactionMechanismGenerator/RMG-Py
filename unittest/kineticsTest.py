@@ -115,7 +115,6 @@ class TestKineticsData(unittest.TestCase):
     def testIsPressureDependent(self):
         """
         Test the KineticsData.isPressureDependent() method.
-        
         """
         self.assertFalse(self.kinetics.isPressureDependent())
     
@@ -195,7 +194,6 @@ class TestArrhenius(unittest.TestCase):
     def testIsPressureDependent(self):
         """
         Test the Arrhenius.isPressureDependent() method.
-        
         """
         self.assertFalse(self.kinetics.isPressureDependent())
     
@@ -305,7 +303,6 @@ class TestArrheniusEP(unittest.TestCase):
     def testIsPressureDependent(self):
         """
         Test the ArrheniusEP.isPressureDependent() method.
-        
         """
         self.assertFalse(self.kinetics.isPressureDependent())
     
@@ -429,7 +426,6 @@ class TestMultiKinetics(unittest.TestCase):
     def testIsPressureDependent(self):
         """
         Test the MultiKinetics.isPressureDependent() method.
-        
         """
         self.assertFalse(self.kinetics.isPressureDependent())
     
@@ -536,7 +532,6 @@ class TestPDepArrhenius(unittest.TestCase):
     def testIsPressureDependent(self):
         """
         Test the PDepArrhenius.isPressureDependent() method.
-        
         """
         self.assertTrue(self.kinetics.isPressureDependent())
     
@@ -669,7 +664,6 @@ class TestChebyshev(unittest.TestCase):
     def testIsPressureDependent(self):
         """
         Test the Chebyshev.isPressureDependent() method.
-        
         """
         self.assertTrue(self.kinetics.isPressureDependent())
     
@@ -804,7 +798,6 @@ class TestThirdBody(unittest.TestCase):
     def testIsPressureDependent(self):
         """
         Test the ThirdBody.isPressureDependent() method.
-        
         """
         self.assertTrue(self.kinetics.isPressureDependent())
     
@@ -937,7 +930,6 @@ class TestLindemann(unittest.TestCase):
     def testIsPressureDependent(self):
         """
         Test the Lindemann.isPressureDependent() method.
-        
         """
         self.assertTrue(self.kinetics.isPressureDependent())
     
@@ -1072,7 +1064,6 @@ class TestTroe(unittest.TestCase):
     def testIsPressureDependent(self):
         """
         Test the Troe.isPressureDependent() method.
-        
         """
         self.assertTrue(self.kinetics.isPressureDependent())
     
