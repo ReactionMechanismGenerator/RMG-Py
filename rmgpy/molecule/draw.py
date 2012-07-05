@@ -334,7 +334,11 @@ class MoleculeDrawer:
         non-cyclics this is the largest straight chain between atoms. If carbon
         atoms are present, then we define the backbone only in terms of them.
         """
-        terminalAtoms = [atom for atom in self.molecule.atoms if len(atom.bonds) == 1]
+        # Find the terminal carbon atoms - those that only have one explicit bond
+        terminalAtoms = [atom for atom in self.molecule.atoms if atom.isCarbon() and len(atom.bonds) == 1]
+        if len(terminalAtoms) == 0:
+            # No terminal carbon atoms found, so allow any atom
+            terminalAtoms = [atom for atom in self.molecule.atoms if len(atom.bonds) == 1]
             
         # Starting from each terminal atom, find the longest straight path to
         # another terminal
