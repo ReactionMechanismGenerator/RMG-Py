@@ -19,7 +19,7 @@
         VERSION:     '0.1.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  false
+        HAS_SOURCE:  true
       };
     </script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
@@ -97,7 +97,7 @@ exceptional behavior.</p>
 
 <dl class="class">
 <dt id="rmgpy.kinetics.KineticsModel">
-<em class="property">class </em><tt class="descclassname">rmgpy.kinetics.</tt><tt class="descname">KineticsModel</tt><big>(</big><em>Tmin=None</em>, <em>Tmax=None</em>, <em>Pmin=None</em>, <em>Pmax=None</em>, <em>comment=''</em><big>)</big><a class="headerlink" href="#rmgpy.kinetics.KineticsModel" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">rmgpy.kinetics.</tt><tt class="descname">KineticsModel</tt><a class="headerlink" href="#rmgpy.kinetics.KineticsModel" title="Permalink to this definition">¶</a></dt>
 <dd><p>A base class for kinetics models, containing several attributes common to 
 all models:</p>
 <table border="1" class="docutils">
@@ -137,14 +137,14 @@ all models:</p>
 </table>
 <dl class="method">
 <dt id="rmgpy.kinetics.KineticsModel.getRateCoefficients">
-<tt class="descname">getRateCoefficients</tt><big>(</big><em>Tlist</em><big>)</big><a class="headerlink" href="#rmgpy.kinetics.KineticsModel.getRateCoefficients" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getRateCoefficients</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.kinetics.KineticsModel.getRateCoefficients" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the rate coefficients k(T) in SI units at temperatures
 <cite>Tlist</cite> in K.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.kinetics.KineticsModel.isIdenticalTo">
-<tt class="descname">isIdenticalTo</tt><big>(</big><em>otherKinetics</em><big>)</big><a class="headerlink" href="#rmgpy.kinetics.KineticsModel.isIdenticalTo" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">isIdenticalTo</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.kinetics.KineticsModel.isIdenticalTo" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <tt class="docutils literal"><span class="pre">True</span></tt> if Tmin, Tmax, Pmin, Pmax for both objects match.
 Otherwise returns <tt class="docutils literal"><span class="pre">False</span></tt></p>
 </dd></dl>
@@ -159,7 +159,7 @@ derived class.</p>
 
 <dl class="method">
 <dt id="rmgpy.kinetics.KineticsModel.isPressureValid">
-<tt class="descname">isPressureValid</tt><big>(</big><em>P</em><big>)</big><a class="headerlink" href="#rmgpy.kinetics.KineticsModel.isPressureValid" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">isPressureValid</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.kinetics.KineticsModel.isPressureValid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if the pressure <cite>P</cite> in Pa is within the valid
 pressure range of the kinetic data, or <tt class="docutils literal"><span class="pre">False</span></tt> if not. If
 the minimum and maximum pressure are not defined, <tt class="docutils literal"><span class="pre">True</span></tt> is 
@@ -168,14 +168,14 @@ returned.</p>
 
 <dl class="method">
 <dt id="rmgpy.kinetics.KineticsModel.isSimilarTo">
-<tt class="descname">isSimilarTo</tt><big>(</big><em>otherKinetics</em><big>)</big><a class="headerlink" href="#rmgpy.kinetics.KineticsModel.isSimilarTo" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">isSimilarTo</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.kinetics.KineticsModel.isSimilarTo" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <tt class="docutils literal"><span class="pre">True</span></tt> if rates of reaction at temperatures 500,1000,1500,2000 K
 and 1 and 10 bar are within +/ .3 for log(k), in other words, within a factor of 2.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.kinetics.KineticsModel.isTemperatureValid">
-<tt class="descname">isTemperatureValid</tt><big>(</big><em>T</em><big>)</big><a class="headerlink" href="#rmgpy.kinetics.KineticsModel.isTemperatureValid" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">isTemperatureValid</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.kinetics.KineticsModel.isTemperatureValid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if the temperature <cite>T</cite> in K is within the valid
 temperature range of the kinetic data, or <tt class="docutils literal"><span class="pre">False</span></tt> if not. If
 the minimum and maximum temperature are not defined, <tt class="docutils literal"><span class="pre">True</span></tt> is 
@@ -202,7 +202,7 @@ KineticsModel object.</p>
 <h2>Pressure-Independent Kinetics Models<a class="headerlink" href="#pressure-independent-kinetics-models" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="rmgpy.kinetics.KineticsData">
-<em class="property">class </em><tt class="descclassname">rmgpy.kinetics.</tt><tt class="descname">KineticsData</tt><big>(</big><em>Tdata=None</em>, <em>kdata=None</em>, <em>Tmin=None</em>, <em>Tmax=None</em>, <em>comment=''</em><big>)</big><a class="headerlink" href="#rmgpy.kinetics.KineticsData" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">rmgpy.kinetics.</tt><tt class="descname">KineticsData</tt><a class="headerlink" href="#rmgpy.kinetics.KineticsData" title="Permalink to this definition">¶</a></dt>
 <dd><p>A kinetics model based around a set of discrete (high-pressure limit)
 rate coefficients at various temperatures. The attributes are:</p>
 <table border="1" class="docutils">
@@ -230,14 +230,14 @@ rate coefficients at various temperatures. The attributes are:</p>
 </table>
 <dl class="method">
 <dt id="rmgpy.kinetics.KineticsData.getRateCoefficient">
-<tt class="descname">getRateCoefficient</tt><big>(</big><em>T</em>, <em>P=100000.0</em><big>)</big><a class="headerlink" href="#rmgpy.kinetics.KineticsData.getRateCoefficient" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getRateCoefficient</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.kinetics.KineticsData.getRateCoefficient" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the rate coefficient k(T) in SI units at temperature
 <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.kinetics.KineticsData.isIdenticalTo">
-<tt class="descname">isIdenticalTo</tt><big>(</big><em>otherKinetics</em><big>)</big><a class="headerlink" href="#rmgpy.kinetics.KineticsData.isIdenticalTo" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">isIdenticalTo</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.kinetics.KineticsData.isIdenticalTo" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <tt class="docutils literal"><span class="pre">True</span></tt> if the kdata and Tdata match. Returns <tt class="docutils literal"><span class="pre">False</span></tt> otherwise.</p>
 </dd></dl>
 
@@ -271,7 +271,7 @@ reconstruct the object.</p>
 
 <dl class="class">
 <dt id="rmgpy.kinetics.Arrhenius">
-<em class="property">class </em><tt class="descclassname">rmgpy.kinetics.</tt><tt class="descname">Arrhenius</tt><big>(</big><em>A=0.0</em>, <em>n=0.0</em>, <em>Ea=0.0</em>, <em>T0=1.0</em>, <em>Tmin=None</em>, <em>Tmax=None</em>, <em>Pmin=None</em>, <em>Pmax=None</em>, <em>comment=''</em><big>)</big><a class="headerlink" href="#rmgpy.kinetics.Arrhenius" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">rmgpy.kinetics.</tt><tt class="descname">Arrhenius</tt><a class="headerlink" href="#rmgpy.kinetics.Arrhenius" title="Permalink to this definition">¶</a></dt>
 <dd><p>Represent a set of modified Arrhenius kinetics. The kinetic expression has
 the form</p>
 <div class="math">
@@ -312,14 +312,14 @@ the gas law constant. The attributes are:</p>
 </table>
 <dl class="method">
 <dt id="rmgpy.kinetics.Arrhenius.changeT0">
-<tt class="descname">changeT0</tt><big>(</big><em>T0</em><big>)</big><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.changeT0" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">changeT0</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.changeT0" title="Permalink to this definition">¶</a></dt>
 <dd><p>Changes the reference temperature used in the exponent to <cite>T0</cite> in K, and
 adjusts the preexponential accordingly.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.kinetics.Arrhenius.fitToData">
-<tt class="descname">fitToData</tt><big>(</big><em>Tlist</em>, <em>klist</em>, <em>kunits</em>, <em>T0=1</em>, <em>weights=None</em><big>)</big><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.fitToData" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">fitToData</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.fitToData" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fit the Arrhenius parameters to a set of rate coefficient data <cite>klist</cite>
 in units of <cite>kunits</cite> corresponding to a set of temperatures <cite>Tlist</cite> in 
 K. A linear least-squares fit is used, which guarantees that the 
@@ -329,14 +329,14 @@ data.</p>
 
 <dl class="method">
 <dt id="rmgpy.kinetics.Arrhenius.getRateCoefficient">
-<tt class="descname">getRateCoefficient</tt><big>(</big><em>T</em>, <em>P=100000.0</em><big>)</big><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.getRateCoefficient" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getRateCoefficient</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.getRateCoefficient" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the rate coefficient k(T) in SI units at temperature 
 <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.kinetics.Arrhenius.isIdenticalTo">
-<tt class="descname">isIdenticalTo</tt><big>(</big><em>otherKinetics</em><big>)</big><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.isIdenticalTo" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">isIdenticalTo</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.isIdenticalTo" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <tt class="docutils literal"><span class="pre">True</span></tt> if kinetics matches that of another kinetics model.  Must match temperature
 and pressure range of kinetics model, as well as parameters: A, n, Ea, T0. (Shouldn&#8217;t have pressure
 range if it&#8217;s Arrhenius.) Otherwise returns <tt class="docutils literal"><span class="pre">False</span></tt>.</p>
@@ -359,7 +359,7 @@ reconstruct the object.</p>
 
 <dl class="class">
 <dt id="rmgpy.kinetics.ArrheniusEP">
-<em class="property">class </em><tt class="descclassname">rmgpy.kinetics.</tt><tt class="descname">ArrheniusEP</tt><big>(</big><em>A=0.0</em>, <em>n=0.0</em>, <em>alpha=0.0</em>, <em>E0=0.0</em>, <em>Tmin=None</em>, <em>Tmax=None</em>, <em>comment=''</em><big>)</big><a class="headerlink" href="#rmgpy.kinetics.ArrheniusEP" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">rmgpy.kinetics.</tt><tt class="descname">ArrheniusEP</tt><a class="headerlink" href="#rmgpy.kinetics.ArrheniusEP" title="Permalink to this definition">¶</a></dt>
 <dd><p>Represent a set of modified Arrhenius kinetics with Evans-Polanyi data. The
 kinetic expression has the form</p>
 <div class="math">
@@ -398,14 +398,14 @@ kinetic expression has the form</p>
 </table>
 <dl class="method">
 <dt id="rmgpy.kinetics.ArrheniusEP.getActivationEnergy">
-<tt class="descname">getActivationEnergy</tt><big>(</big><em>dHrxn</em><big>)</big><a class="headerlink" href="#rmgpy.kinetics.ArrheniusEP.getActivationEnergy" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getActivationEnergy</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.kinetics.ArrheniusEP.getActivationEnergy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the activation energy in J/mol using the enthalpy of reaction 
 <cite>dHrxn</cite> in J/mol.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.kinetics.ArrheniusEP.getRateCoefficient">
-<tt class="descname">getRateCoefficient</tt><big>(</big><em>T</em>, <em>dHrxn</em><big>)</big><a class="headerlink" href="#rmgpy.kinetics.ArrheniusEP.getRateCoefficient" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getRateCoefficient</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.kinetics.ArrheniusEP.getRateCoefficient" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the rate coefficient k(T, P) in SI units at a 
 temperature <cite>T</cite> in K for a reaction having an enthalpy of reaction 
 <cite>dHrxn</cite> in J/mol.</p>
@@ -413,7 +413,7 @@ temperature <cite>T</cite> in K for a reaction having an enthalpy of reaction
 
 <dl class="method">
 <dt id="rmgpy.kinetics.ArrheniusEP.isIdenticalTo">
-<tt class="descname">isIdenticalTo</tt><big>(</big><em>otherKinetics</em><big>)</big><a class="headerlink" href="#rmgpy.kinetics.ArrheniusEP.isIdenticalTo" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">isIdenticalTo</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.kinetics.ArrheniusEP.isIdenticalTo" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <tt class="docutils literal"><span class="pre">True</span></tt> if kinetics matches that of another kinetics model.  Must match temperature
 range of kinetics model, as well as parameters: A, n, alpha, E0. (Shouldn&#8217;t have pressure
 range if it&#8217;s ArrheniusEP.)  Otherwise returns <tt class="docutils literal"><span class="pre">False</span></tt></p>
@@ -427,7 +427,7 @@ range if it&#8217;s ArrheniusEP.)  Otherwise returns <tt class="docutils literal
 
 <dl class="method">
 <dt id="rmgpy.kinetics.ArrheniusEP.toArrhenius">
-<tt class="descname">toArrhenius</tt><big>(</big><em>dHrxn</em><big>)</big><a class="headerlink" href="#rmgpy.kinetics.ArrheniusEP.toArrhenius" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">toArrhenius</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.kinetics.ArrheniusEP.toArrhenius" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return an <a class="reference internal" href="#rmgpy.kinetics.Arrhenius" title="rmgpy.kinetics.Arrhenius"><tt class="xref py py-class docutils literal"><span class="pre">Arrhenius</span></tt></a> object corresponding to this object
 by using the provided enthalpy of reaction <cite>dHrxn</cite> in J/mol to calculate
 the activation energy.</p>
@@ -449,7 +449,7 @@ reconstruct the object.</p>
 <h3>Single-Well Models<a class="headerlink" href="#single-well-models" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="rmgpy.kinetics.ThirdBody">
-<em class="property">class </em><tt class="descclassname">rmgpy.kinetics.</tt><tt class="descname">ThirdBody</tt><big>(</big><em>arrheniusHigh=None</em>, <em>efficiencies=None</em>, <em>Tmin=None</em>, <em>Tmax=None</em>, <em>Pmin=None</em>, <em>Pmax=None</em>, <em>comment=''</em><big>)</big><a class="headerlink" href="#rmgpy.kinetics.ThirdBody" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">rmgpy.kinetics.</tt><tt class="descname">ThirdBody</tt><a class="headerlink" href="#rmgpy.kinetics.ThirdBody" title="Permalink to this definition">¶</a></dt>
 <dd><p>A kinetic model of a phenomenological rate coefficient k(T, P) using the
 expression</p>
 <div class="math">
@@ -484,7 +484,7 @@ the value of <img class="math" src="../_images/math/c93ef2271f42445cc7a12cf6322a
 </table>
 <dl class="method">
 <dt id="rmgpy.kinetics.ThirdBody.getColliderEfficiency">
-<tt class="descname">getColliderEfficiency</tt><big>(</big><em>collider</em><big>)</big><a class="headerlink" href="#rmgpy.kinetics.ThirdBody.getColliderEfficiency" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getColliderEfficiency</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.kinetics.ThirdBody.getColliderEfficiency" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the collider efficiency for the specified <cite>collider</cite>, which can
 take one of two forms:</p>
 <ul class="simple">
@@ -503,7 +503,7 @@ will be returned.</p>
 
 <dl class="method">
 <dt id="rmgpy.kinetics.ThirdBody.getRateCoefficient">
-<tt class="descname">getRateCoefficient</tt><big>(</big><em>T</em>, <em>P</em>, <em>collider=None</em><big>)</big><a class="headerlink" href="#rmgpy.kinetics.ThirdBody.getRateCoefficient" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getRateCoefficient</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.kinetics.ThirdBody.getRateCoefficient" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the rate constant k(T, P) in SI units at a temperature
 <cite>T</cite> in K and pressure <cite>P</cite> in Pa by evaluating the third-body expression.
 If a <cite>collider</cite> is specified the rate coefficient will be modified
@@ -512,7 +512,7 @@ accordingly.</p>
 
 <dl class="method">
 <dt id="rmgpy.kinetics.ThirdBody.isIdenticalTo">
-<tt class="descname">isIdenticalTo</tt><big>(</big><em>otherKinetics</em><big>)</big><a class="headerlink" href="#rmgpy.kinetics.ThirdBody.isIdenticalTo" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">isIdenticalTo</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.kinetics.ThirdBody.isIdenticalTo" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if arrheniusHigh and efficiences match that of other Kinetics model.
 Otherwise return <tt class="docutils literal"><span class="pre">False</span></tt>.</p>
 </dd></dl>
@@ -534,7 +534,7 @@ reconstruct the object.</p>
 
 <dl class="class">
 <dt id="rmgpy.kinetics.Lindemann">
-<em class="property">class </em><tt class="descclassname">rmgpy.kinetics.</tt><tt class="descname">Lindemann</tt><big>(</big><em>arrheniusLow=None</em>, <em>arrheniusHigh=None</em>, <em>efficiencies=None</em>, <em>Tmin=None</em>, <em>Tmax=None</em>, <em>Pmin=None</em>, <em>Pmax=None</em>, <em>comment=''</em><big>)</big><a class="headerlink" href="#rmgpy.kinetics.Lindemann" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">rmgpy.kinetics.</tt><tt class="descname">Lindemann</tt><a class="headerlink" href="#rmgpy.kinetics.Lindemann" title="Permalink to this definition">¶</a></dt>
 <dd><p>A kinetic model of a phenomenological rate coefficient k(T, P) using the
 expression</p>
 <div class="math">
@@ -582,7 +582,7 @@ further correct the value of <img class="math" src="../_images/math/c93ef2271f42
 </table>
 <dl class="method">
 <dt id="rmgpy.kinetics.Lindemann.getRateCoefficient">
-<tt class="descname">getRateCoefficient</tt><big>(</big><em>T</em>, <em>P</em>, <em>collider=None</em><big>)</big><a class="headerlink" href="#rmgpy.kinetics.Lindemann.getRateCoefficient" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getRateCoefficient</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.kinetics.Lindemann.getRateCoefficient" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the rate constant k(T, P) in SI units at a temperature
 <cite>T</cite> in K and pressure <cite>P</cite> in Pa by evaluating the Lindemann expression.
 If a <cite>collider</cite> is specified the rate coefficient will be modified
@@ -591,7 +591,7 @@ accordingly.</p>
 
 <dl class="method">
 <dt id="rmgpy.kinetics.Lindemann.isIdenticalTo">
-<tt class="descname">isIdenticalTo</tt><big>(</big><em>otherKinetics</em><big>)</big><a class="headerlink" href="#rmgpy.kinetics.Lindemann.isIdenticalTo" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">isIdenticalTo</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.kinetics.Lindemann.isIdenticalTo" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if all parameters matches that of other kinetics</p>
 </dd></dl>
 
@@ -606,7 +606,7 @@ reconstruct the object.</p>
 
 <dl class="class">
 <dt id="rmgpy.kinetics.Troe">
-<em class="property">class </em><tt class="descclassname">rmgpy.kinetics.</tt><tt class="descname">Troe</tt><big>(</big><em>arrheniusLow=None</em>, <em>arrheniusHigh=None</em>, <em>efficiencies=None</em>, <em>alpha=0.0</em>, <em>T3=0.0</em>, <em>T1=0.0</em>, <em>T2=None</em>, <em>Tmin=None</em>, <em>Tmax=None</em>, <em>Pmin=None</em>, <em>Pmax=None</em>, <em>comment=''</em><big>)</big><a class="headerlink" href="#rmgpy.kinetics.Troe" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">rmgpy.kinetics.</tt><tt class="descname">Troe</tt><a class="headerlink" href="#rmgpy.kinetics.Troe" title="Permalink to this definition">¶</a></dt>
 <dd><p>A kinetic model of a phenomenological rate coefficient k(T, P) using the
 expression</p>
 <div class="math">
@@ -681,7 +681,7 @@ F_\mathrm{cent} &amp;= (1 - \alpha) \exp \left( -T/T_3 \right) + \alpha \exp \le
 </table>
 <dl class="method">
 <dt id="rmgpy.kinetics.Troe.getRateCoefficient">
-<tt class="descname">getRateCoefficient</tt><big>(</big><em>T</em>, <em>P</em>, <em>collider=None</em><big>)</big><a class="headerlink" href="#rmgpy.kinetics.Troe.getRateCoefficient" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getRateCoefficient</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.kinetics.Troe.getRateCoefficient" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the rate constant k(T, P) in SI units at a temperature
 <cite>T</cite> in K and pressure <cite>P</cite> in Pa by evaluating the Lindemann expression.
 If a <cite>collider</cite> is specified the rate coefficient will be modified
@@ -690,7 +690,7 @@ accordingly.</p>
 
 <dl class="method">
 <dt id="rmgpy.kinetics.Troe.isIdenticalTo">
-<tt class="descname">isIdenticalTo</tt><big>(</big><em>otherKinetics</em><big>)</big><a class="headerlink" href="#rmgpy.kinetics.Troe.isIdenticalTo" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">isIdenticalTo</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.kinetics.Troe.isIdenticalTo" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if all parameters are identical to that of otherKinetics.
 Otherwise return <tt class="docutils literal"><span class="pre">False</span></tt>.</p>
 </dd></dl>
@@ -706,7 +706,7 @@ reconstruct the object.</p>
 
 <dl class="class">
 <dt id="rmgpy.kinetics.PDepArrhenius">
-<em class="property">class </em><tt class="descclassname">rmgpy.kinetics.</tt><tt class="descname">PDepArrhenius</tt><big>(</big><em>pressures=None</em>, <em>arrhenius=None</em>, <em>highPlimit=None</em>, <em>Tmin=None</em>, <em>Tmax=None</em>, <em>Pmin=None</em>, <em>Pmax=None</em>, <em>comment=''</em><big>)</big><a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">rmgpy.kinetics.</tt><tt class="descname">PDepArrhenius</tt><a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius" title="Permalink to this definition">¶</a></dt>
 <dd><p>A kinetic model of a phenomenological rate coefficient k(T, P) using the
 expression</p>
 <div class="math">
@@ -743,7 +743,7 @@ and interpolated between on a logarithmic scale. The attributes are:</p>
 <p>Note that <cite>highPlimit</cite> is not used in evaluating k(T,P).</p>
 <dl class="method">
 <dt id="rmgpy.kinetics.PDepArrhenius.fitToData">
-<tt class="descname">fitToData</tt><big>(</big><em>Tlist</em>, <em>Plist</em>, <em>K</em>, <em>kunits</em>, <em>T0=298.0</em><big>)</big><a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius.fitToData" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">fitToData</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius.fitToData" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fit the pressure-dependent Arrhenius model to a matrix of rate
 coefficient data <cite>K</cite> with units of <cite>kunits</cite> corresponding to a set of 
 temperatures <cite>Tlist</cite> in K and pressures <cite>Plist</cite> in Pa. An Arrhenius 
@@ -752,7 +752,7 @@ model is fit at each pressure.</p>
 
 <dl class="method">
 <dt id="rmgpy.kinetics.PDepArrhenius.getRateCoefficient">
-<tt class="descname">getRateCoefficient</tt><big>(</big><em>T</em>, <em>P</em><big>)</big><a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius.getRateCoefficient" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getRateCoefficient</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius.getRateCoefficient" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the rate constant k(T, P) in SI units at a temperature 
 <cite>T</cite> in K and pressure <cite>P</cite> in Pa by evaluating the pressure-
 dependent Arrhenius expression.</p>
@@ -765,7 +765,7 @@ one of them is zero and the other is not, so we have to assume something.)</p>
 
 <dl class="method">
 <dt id="rmgpy.kinetics.PDepArrhenius.isIdenticalTo">
-<tt class="descname">isIdenticalTo</tt><big>(</big><em>otherKinetics</em><big>)</big><a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius.isIdenticalTo" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">isIdenticalTo</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius.isIdenticalTo" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <tt class="docutils literal"><span class="pre">True</span></tt> if kinetics matches that of another kinetics model.  Must match
 pressures, arrhenius list, and highPlimit. Otherwise returns <tt class="docutils literal"><span class="pre">False</span></tt></p>
 </dd></dl>
@@ -797,7 +797,7 @@ reconstruct the object.</p>
 <h3>Multi-Well Models<a class="headerlink" href="#multi-well-models" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="rmgpy.kinetics.Chebyshev">
-<em class="property">class </em><tt class="descclassname">rmgpy.kinetics.</tt><tt class="descname">Chebyshev</tt><big>(</big><em>coeffs=None</em>, <em>kunits=''</em>, <em>Tmin=None</em>, <em>Tmax=None</em>, <em>Pmin=None</em>, <em>Pmax=None</em>, <em>comment=''</em><big>)</big><a class="headerlink" href="#rmgpy.kinetics.Chebyshev" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">rmgpy.kinetics.</tt><tt class="descname">Chebyshev</tt><a class="headerlink" href="#rmgpy.kinetics.Chebyshev" title="Permalink to this definition">¶</a></dt>
 <dd><p>A kinetic model of a phenomenological rate coefficient k(T, P) using the
 expression</p>
 <div class="math">
@@ -845,7 +845,7 @@ The attributes are:</p>
 </table>
 <dl class="method">
 <dt id="rmgpy.kinetics.Chebyshev.fitToData">
-<tt class="descname">fitToData</tt><big>(</big><em>Tlist</em>, <em>Plist</em>, <em>K</em>, <em>kunits</em>, <em>degreeT</em>, <em>degreeP</em>, <em>Tmin</em>, <em>Tmax</em>, <em>Pmin</em>, <em>Pmax</em><big>)</big><a class="headerlink" href="#rmgpy.kinetics.Chebyshev.fitToData" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">fitToData</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.kinetics.Chebyshev.fitToData" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fit a Chebyshev kinetic model to a set of rate coefficients <cite>K</cite>, which
 is a matrix corresponding to the temperatures <cite>Tlist</cite> in K and pressures
 <cite>Plist</cite> in Pa. <cite>degreeT</cite> and <cite>degreeP</cite> are the degree of the polynomials
@@ -856,7 +856,7 @@ respectively.</p>
 
 <dl class="method">
 <dt id="rmgpy.kinetics.Chebyshev.getRateCoefficient">
-<tt class="descname">getRateCoefficient</tt><big>(</big><em>T</em>, <em>P</em><big>)</big><a class="headerlink" href="#rmgpy.kinetics.Chebyshev.getRateCoefficient" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getRateCoefficient</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.kinetics.Chebyshev.getRateCoefficient" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the rate constant k(T, P) in SI units at a temperature 
 <cite>T</cite> in K and pressure <cite>P</cite> in Pa by evaluating the Chebyshev 
 expression.</p>
@@ -864,7 +864,7 @@ expression.</p>
 
 <dl class="method">
 <dt id="rmgpy.kinetics.Chebyshev.isIdenticalTo">
-<tt class="descname">isIdenticalTo</tt><big>(</big><em>otherKinetics</em><big>)</big><a class="headerlink" href="#rmgpy.kinetics.Chebyshev.isIdenticalTo" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">isIdenticalTo</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.kinetics.Chebyshev.isIdenticalTo" title="Permalink to this definition">¶</a></dt>
 <dd><p>Checks to see if kinetics matches that of other kinetics and returns <tt class="docutils literal"><span class="pre">True</span></tt>
 if coeffs, kunits, Tmin,</p>
 </dd></dl>
@@ -891,7 +891,7 @@ reconstruct the object.</p>
 <h2>Other Kinetics Models<a class="headerlink" href="#other-kinetics-models" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="rmgpy.kinetics.MultiKinetics">
-<em class="property">class </em><tt class="descclassname">rmgpy.kinetics.</tt><tt class="descname">MultiKinetics</tt><big>(</big><em>kineticsList=None</em>, <em>Tmin=None</em>, <em>Tmax=None</em>, <em>Pmin=None</em>, <em>Pmax=None</em>, <em>comment=''</em><big>)</big><a class="headerlink" href="#rmgpy.kinetics.MultiKinetics" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">rmgpy.kinetics.</tt><tt class="descname">MultiKinetics</tt><a class="headerlink" href="#rmgpy.kinetics.MultiKinetics" title="Permalink to this definition">¶</a></dt>
 <dd><p>Represent a rate coefficient as multiple sets of kinetics expressions</p>
 <div class="math">
 <p><img src="../_images/math/ec69f3185ef027c454265ec0ab51829568e92e5e.png" alt="k(T,P) = \sum_{i=1}^N k_i(T,P)"/></p>
@@ -917,14 +917,14 @@ reconstruct the object.</p>
 </table>
 <dl class="method">
 <dt id="rmgpy.kinetics.MultiKinetics.getRateCoefficient">
-<tt class="descname">getRateCoefficient</tt><big>(</big><em>T</em>, <em>P=100000.0</em><big>)</big><a class="headerlink" href="#rmgpy.kinetics.MultiKinetics.getRateCoefficient" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getRateCoefficient</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.kinetics.MultiKinetics.getRateCoefficient" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the rate coefficient k(T) in SI units at temperature
 <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.kinetics.MultiKinetics.isIdenticalTo">
-<tt class="descname">isIdenticalTo</tt><big>(</big><em>otherKinetics</em><big>)</big><a class="headerlink" href="#rmgpy.kinetics.MultiKinetics.isIdenticalTo" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">isIdenticalTo</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.kinetics.MultiKinetics.isIdenticalTo" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <tt class="docutils literal"><span class="pre">True</span></tt> if kinetics matches that of another kinetics model.  Each duplicate
 reaction must be matched and equal to that in the other MultiKinetics model
 in the same order.  Otherwise returns <tt class="docutils literal"><span class="pre">False</span></tt></p>
@@ -979,6 +979,11 @@ reconstruct the object.</p>
   <h4>Next topic</h4>
   <p class="topless"><a href="molecule.html"
                         title="next chapter"><tt class="docutils literal"><span class="pre">rmgpy.molecule</span></tt> &#8212; Structure and Properties of Molecules</a></p>
+  <h3>This Page </h3>
+  <ul class="this-page-menu">
+    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/developers/kinetics.rst"
+           rel="nofollow">Edit this page</a></li>
+  </ul>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
@@ -997,7 +1002,7 @@ reconstruct the object.</p>
       <div class="clearer"></div>
     </div>
     <div class="footer">
-        &copy; Copyright 2011, William H. Green and the RMG Team.
+        &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>

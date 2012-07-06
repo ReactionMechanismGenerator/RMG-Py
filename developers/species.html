@@ -19,7 +19,7 @@
         VERSION:     '0.1.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  false
+        HAS_SOURCE:  true
       };
     </script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
@@ -84,7 +84,7 @@ exceptional behavior.</p>
 
 <dl class="class">
 <dt id="rmgpy.species.Species">
-<em class="property">class </em><tt class="descclassname">rmgpy.species.</tt><tt class="descname">Species</tt><big>(</big><em>index=-1</em>, <em>label=''</em>, <em>thermo=None</em>, <em>states=None</em>, <em>molecule=None</em>, <em>E0=None</em>, <em>lennardJones=None</em>, <em>molecularWeight=None</em>, <em>collisionModel=None</em>, <em>reactive=True</em><big>)</big><a class="headerlink" href="#rmgpy.species.Species" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">rmgpy.species.</tt><tt class="descname">Species</tt><a class="headerlink" href="#rmgpy.species.Species" title="Permalink to this definition">¶</a></dt>
 <dd><p>A chemical species, representing a local minimum on a potential energy
 surface. The attributes are:</p>
 <table border="1" class="docutils">
@@ -144,7 +144,7 @@ surface. The attributes are:</p>
 </table>
 <dl class="method">
 <dt id="rmgpy.species.Species.fromAdjacencyList">
-<tt class="descname">fromAdjacencyList</tt><big>(</big><em>adjlist</em><big>)</big><a class="headerlink" href="#rmgpy.species.Species.fromAdjacencyList" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">fromAdjacencyList</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.species.Species.fromAdjacencyList" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load the structure of a species as a <tt class="xref py py-class docutils literal"><span class="pre">Molecule</span></tt> object from the
 given adjacency list <cite>adjlist</cite> and store it as the first entry of a 
 list in the <cite>molecule</cite> attribute. Does not generate resonance isomers
@@ -162,7 +162,7 @@ resonance isomers have already been generated.</p>
 
 <dl class="method">
 <dt id="rmgpy.species.Species.isIsomorphic">
-<tt class="descname">isIsomorphic</tt><big>(</big><em>other</em><big>)</big><a class="headerlink" href="#rmgpy.species.Species.isIsomorphic" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">isIsomorphic</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.species.Species.isIsomorphic" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if the species is isomorphic to <cite>other</cite>, which can be
 either a <tt class="xref py py-class docutils literal"><span class="pre">Molecule</span></tt> object or a <a class="reference internal" href="#rmgpy.species.Species" title="rmgpy.species.Species"><tt class="xref py py-class docutils literal"><span class="pre">Species</span></tt></a> object.</p>
 </dd></dl>
@@ -180,7 +180,7 @@ either a <tt class="xref py py-class docutils literal"><span class="pre">Molecul
 <h2>Transition States<a class="headerlink" href="#transition-states" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="rmgpy.species.TransitionState">
-<em class="property">class </em><tt class="descclassname">rmgpy.species.</tt><tt class="descname">TransitionState</tt><big>(</big><em>label=''</em>, <em>states=None</em>, <em>E0=None</em>, <em>frequency=None</em>, <em>degeneracy=1</em><big>)</big><a class="headerlink" href="#rmgpy.species.TransitionState" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">rmgpy.species.</tt><tt class="descname">TransitionState</tt><a class="headerlink" href="#rmgpy.species.TransitionState" title="Permalink to this definition">¶</a></dt>
 <dd><p>A chemical transition state, representing a first-order saddle point on a
 potential energy surface. The attributes are:</p>
 <table border="1" class="docutils">
@@ -247,6 +247,11 @@ potential energy surface. The attributes are:</p>
   <h4>Next topic</h4>
   <p class="topless"><a href="statmech.html"
                         title="next chapter"><tt class="docutils literal"><span class="pre">rmgpy.statmech</span></tt> &#8212; Molecular Degrees of Freedom</a></p>
+  <h3>This Page </h3>
+  <ul class="this-page-menu">
+    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/developers/species.rst"
+           rel="nofollow">Edit this page</a></li>
+  </ul>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
@@ -265,7 +270,7 @@ potential energy surface. The attributes are:</p>
       <div class="clearer"></div>
     </div>
     <div class="footer">
-        &copy; Copyright 2011, William H. Green and the RMG Team.
+        &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>

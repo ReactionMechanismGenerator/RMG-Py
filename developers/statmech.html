@@ -19,7 +19,7 @@
         VERSION:     '0.1.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  false
+        HAS_SOURCE:  true
       };
     </script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
@@ -137,7 +137,7 @@ molecular degree of freedom are additive.</p>
 <h2>Representing Molecular Degrees of Freedom<a class="headerlink" href="#representing-molecular-degrees-of-freedom" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="rmgpy.statmech.StatesModel">
-<em class="property">class </em><tt class="descclassname">rmgpy.statmech.</tt><tt class="descname">StatesModel</tt><big>(</big><em>modes=None</em>, <em>spinMultiplicity=1</em><big>)</big><a class="headerlink" href="#rmgpy.statmech.StatesModel" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">rmgpy.statmech.</tt><tt class="descname">StatesModel</tt><a class="headerlink" href="#rmgpy.statmech.StatesModel" title="Permalink to this definition">¶</a></dt>
 <dd><p>A set of molecular degrees of freedom data for a given molecule. The
 attributes are:</p>
 <table border="1" class="docutils">
@@ -165,7 +165,7 @@ attributes are:</p>
 </table>
 <dl class="method">
 <dt id="rmgpy.statmech.StatesModel.getDensityOfStates">
-<tt class="descname">getDensityOfStates</tt><big>(</big><em>Elist</em><big>)</big><a class="headerlink" href="#rmgpy.statmech.StatesModel.getDensityOfStates" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getDensityOfStates</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.statmech.StatesModel.getDensityOfStates" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the value of the density of states in mol/J at the specified
 energies <cite>Elist</cite> in J/mol above the ground state. An active K-rotor is
 automatically included if there are no translational or external 
@@ -174,7 +174,7 @@ rotational modes.</p>
 
 <dl class="method">
 <dt id="rmgpy.statmech.StatesModel.getDensityOfStatesILT">
-<tt class="descname">getDensityOfStatesILT</tt><big>(</big><em>Elist</em>, <em>order=1</em><big>)</big><a class="headerlink" href="#rmgpy.statmech.StatesModel.getDensityOfStatesILT" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getDensityOfStatesILT</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.statmech.StatesModel.getDensityOfStatesILT" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the value of the density of states in mol/J at the specified
 energies <cite>Elist</cite> in J/mol above the ground state, calculated by
 numerical inverse Laplace transform of the partition function using
@@ -184,7 +184,7 @@ with the partition function. The optional <cite>order</cite> attribute controls
 the order of the steepest descents approximation applied (1 = first,
 2 = second); the first-order approximation is slightly less accurate,
 smoother, and faster to calculate than the second-order approximation.
-This method is adapted from the discussion in Forst <a class="reference internal" href="../theory/measure/master_equation.html#forst2003">[Forst2003]</a>.</p>
+This method is adapted from the discussion in Forst <a class="reference internal" href="#forst2003">[Forst2003]</a>.</p>
 <table class="docutils citation" frame="void" id="forst2003" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
@@ -198,26 +198,26 @@ Cambridge University Press (2003).
 
 <dl class="method">
 <dt id="rmgpy.statmech.StatesModel.getEnthalpy">
-<tt class="descname">getEnthalpy</tt><big>(</big><em>T</em><big>)</big><a class="headerlink" href="#rmgpy.statmech.StatesModel.getEnthalpy" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getEnthalpy</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.statmech.StatesModel.getEnthalpy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the enthalpy in J/mol at the specified temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.statmech.StatesModel.getEntropy">
-<tt class="descname">getEntropy</tt><big>(</big><em>T</em><big>)</big><a class="headerlink" href="#rmgpy.statmech.StatesModel.getEntropy" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getEntropy</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.statmech.StatesModel.getEntropy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the entropy in J/mol*K at the specified temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.statmech.StatesModel.getHeatCapacity">
-<tt class="descname">getHeatCapacity</tt><big>(</big><em>T</em><big>)</big><a class="headerlink" href="#rmgpy.statmech.StatesModel.getHeatCapacity" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getHeatCapacity</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.statmech.StatesModel.getHeatCapacity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the constant-pressure heat capacity in J/mol*K at the specified
 temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.statmech.StatesModel.getPartitionFunction">
-<tt class="descname">getPartitionFunction</tt><big>(</big><em>T</em><big>)</big><a class="headerlink" href="#rmgpy.statmech.StatesModel.getPartitionFunction" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getPartitionFunction</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.statmech.StatesModel.getPartitionFunction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the the partition function at the specified temperatures <cite>T</cite> in 
 K. An active K-rotor is automatically included if there are no 
 translational or external rotational modes.</p>
@@ -225,7 +225,7 @@ translational or external rotational modes.</p>
 
 <dl class="method">
 <dt id="rmgpy.statmech.StatesModel.getSumOfStates">
-<tt class="descname">getSumOfStates</tt><big>(</big><em>Elist</em><big>)</big><a class="headerlink" href="#rmgpy.statmech.StatesModel.getSumOfStates" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getSumOfStates</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.statmech.StatesModel.getSumOfStates" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the value of the sum of states at the specified energies <cite>Elist</cite>
 in J/mol above the ground state. The sum of states is computed via
 numerical integration of the density of states.</p>
@@ -239,28 +239,28 @@ numerical integration of the density of states.</p>
 <dd><p>The base class for all molecular degrees of freedom.</p>
 <dl class="method">
 <dt id="rmgpy.statmech.Mode.getEnthalpies">
-<tt class="descname">getEnthalpies</tt><big>(</big><em>Tlist</em><big>)</big><a class="headerlink" href="#rmgpy.statmech.Mode.getEnthalpies" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getEnthalpies</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.statmech.Mode.getEnthalpies" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the enthalpy in J/mol at the specified temperatures <cite>Tlist</cite> in
 K, as a numpy array.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.statmech.Mode.getEntropies">
-<tt class="descname">getEntropies</tt><big>(</big><em>Tlist</em><big>)</big><a class="headerlink" href="#rmgpy.statmech.Mode.getEntropies" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getEntropies</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.statmech.Mode.getEntropies" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the entropy in J/mol*K at the specified temperatures <cite>Tlist</cite> in
 K, as a numpy array.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.statmech.Mode.getHeatCapacities">
-<tt class="descname">getHeatCapacities</tt><big>(</big><em>Tlist</em><big>)</big><a class="headerlink" href="#rmgpy.statmech.Mode.getHeatCapacities" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getHeatCapacities</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.statmech.Mode.getHeatCapacities" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the constant-pressure heat capacity (Cp) in J/mol*K at the
 specified temperatures <cite>Tlist</cite> in K, as a numpy array.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.statmech.Mode.getPartitionFunctions">
-<tt class="descname">getPartitionFunctions</tt><big>(</big><em>Tlist</em><big>)</big><a class="headerlink" href="#rmgpy.statmech.Mode.getPartitionFunctions" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getPartitionFunctions</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.statmech.Mode.getPartitionFunctions" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the partition functions at the specified temperatures <cite>Tlist</cite> in
 K, as a numpy array.</p>
 </dd></dl>
@@ -274,7 +274,7 @@ K, as a numpy array.</p>
 <h3>Translation<a class="headerlink" href="#translation" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="rmgpy.statmech.Translation">
-<em class="property">class </em><tt class="descclassname">rmgpy.statmech.</tt><tt class="descname">Translation</tt><big>(</big><em>mass=0.0</em><big>)</big><a class="headerlink" href="#rmgpy.statmech.Translation" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">rmgpy.statmech.</tt><tt class="descname">Translation</tt><a class="headerlink" href="#rmgpy.statmech.Translation" title="Permalink to this definition">¶</a></dt>
 <dd><p>A representation of translational motion in three dimensions for an ideal
 gas. The attributes are:</p>
 <table border="1" class="docutils">
@@ -300,7 +300,7 @@ gas. The attributes are:</p>
 entropy &#8211; are evaluated at a standard pressure of 1 atm.</p>
 <dl class="method">
 <dt id="rmgpy.statmech.Translation.getDensityOfStates">
-<tt class="descname">getDensityOfStates</tt><big>(</big><em>Elist</em><big>)</big><a class="headerlink" href="#rmgpy.statmech.Translation.getDensityOfStates" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getDensityOfStates</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.statmech.Translation.getDensityOfStates" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the density of states at the specified energies <cite>Elist</cite> in J/mol
 above the ground state. The formula is</p>
 <div class="math">
@@ -311,7 +311,7 @@ the Boltzmann constant, and <img class="math" src="../_images/math/eff43e84f8a3b
 
 <dl class="method">
 <dt id="rmgpy.statmech.Translation.getEnthalpy">
-<tt class="descname">getEnthalpy</tt><big>(</big><em>T</em><big>)</big><a class="headerlink" href="#rmgpy.statmech.Translation.getEnthalpy" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getEnthalpy</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.statmech.Translation.getEnthalpy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the contribution to the enthalpy due to translation in J/mol
 at the specified temperature <cite>T</cite> in K. The formula is</p>
 <div class="math">
@@ -321,7 +321,7 @@ at the specified temperature <cite>T</cite> in K. The formula is</p>
 
 <dl class="method">
 <dt id="rmgpy.statmech.Translation.getEntropy">
-<tt class="descname">getEntropy</tt><big>(</big><em>T</em><big>)</big><a class="headerlink" href="#rmgpy.statmech.Translation.getEntropy" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getEntropy</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.statmech.Translation.getEntropy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the contribution to the entropy due to translation in J/mol*K
 at the specified temperature <cite>T</cite> in K. The formula      is</p>
 <div class="math">
@@ -332,7 +332,7 @@ partition function, and <img class="math" src="../_images/math/eff43e84f8a3bcf7b
 
 <dl class="method">
 <dt id="rmgpy.statmech.Translation.getHeatCapacity">
-<tt class="descname">getHeatCapacity</tt><big>(</big><em>T</em><big>)</big><a class="headerlink" href="#rmgpy.statmech.Translation.getHeatCapacity" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getHeatCapacity</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.statmech.Translation.getHeatCapacity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the contribution to the heat capacity due to translation in
 J/mol*K at the specified temperature <cite>T</cite> in K. The formula is</p>
 <div class="math">
@@ -342,7 +342,7 @@ J/mol*K at the specified temperature <cite>T</cite> in K. The formula is</p>
 
 <dl class="method">
 <dt id="rmgpy.statmech.Translation.getPartitionFunction">
-<tt class="descname">getPartitionFunction</tt><big>(</big><em>T</em><big>)</big><a class="headerlink" href="#rmgpy.statmech.Translation.getPartitionFunction" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getPartitionFunction</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.statmech.Translation.getPartitionFunction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the value of the partition function at the specified temperature
 <cite>T</cite> in K. The formula is</p>
 <div class="math">
@@ -354,7 +354,7 @@ constant, and <img class="math" src="../_images/math/8189a5b5a0917b8c93350827be4
 
 <dl class="method">
 <dt id="rmgpy.statmech.Translation.getSumOfStates">
-<tt class="descname">getSumOfStates</tt><big>(</big><em>Elist</em><big>)</big><a class="headerlink" href="#rmgpy.statmech.Translation.getSumOfStates" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getSumOfStates</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.statmech.Translation.getSumOfStates" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the sum of states at the specified energies <cite>Elist</cite> in J/mol
 above the ground state. The formula is</p>
 <div class="math">
@@ -370,7 +370,7 @@ the Boltzmann constant, and <img class="math" src="../_images/math/eff43e84f8a3b
 <h3>Rotation<a class="headerlink" href="#rotation" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="rmgpy.statmech.RigidRotor">
-<em class="property">class </em><tt class="descclassname">rmgpy.statmech.</tt><tt class="descname">RigidRotor</tt><big>(</big><em>linear=False</em>, <em>inertia=None</em>, <em>symmetry=1</em><big>)</big><a class="headerlink" href="#rmgpy.statmech.RigidRotor" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">rmgpy.statmech.</tt><tt class="descname">RigidRotor</tt><a class="headerlink" href="#rmgpy.statmech.RigidRotor" title="Permalink to this definition">¶</a></dt>
 <dd><p>A rigid rotor approximation of (external) rotational modes. The attributes
 are:</p>
 <table border="1" class="docutils">
@@ -402,7 +402,7 @@ are:</p>
 </table>
 <dl class="method">
 <dt id="rmgpy.statmech.RigidRotor.getDensityOfStates">
-<tt class="descname">getDensityOfStates</tt><big>(</big><em>Elist</em><big>)</big><a class="headerlink" href="#rmgpy.statmech.RigidRotor.getDensityOfStates" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getDensityOfStates</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.statmech.RigidRotor.getDensityOfStates" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the density of states at the specified energies <cite>Elist</cite> in J/mol
 above the ground state in mol/J. The formula is</p>
 <div class="math">
@@ -418,7 +418,7 @@ Planck constant.</p>
 
 <dl class="method">
 <dt id="rmgpy.statmech.RigidRotor.getEnthalpy">
-<tt class="descname">getEnthalpy</tt><big>(</big><em>T</em><big>)</big><a class="headerlink" href="#rmgpy.statmech.RigidRotor.getEnthalpy" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getEnthalpy</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.statmech.RigidRotor.getEnthalpy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the contribution to the enthalpy due to rigid rotation in J/mol
 at the specified temperature <cite>T</cite> in K. The formula is</p>
 <div class="math">
@@ -432,7 +432,7 @@ the gas law constant.</p>
 
 <dl class="method">
 <dt id="rmgpy.statmech.RigidRotor.getEntropy">
-<tt class="descname">getEntropy</tt><big>(</big><em>T</em><big>)</big><a class="headerlink" href="#rmgpy.statmech.RigidRotor.getEntropy" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getEntropy</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.statmech.RigidRotor.getEntropy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the contribution to the entropy due to rigid rotation in J/mol*K
 at the specified temperature <cite>T</cite> in K. The formula is</p>
 <div class="math">
@@ -446,7 +446,7 @@ function for a rigid rotor and <img class="math" src="../_images/math/eff43e84f8
 
 <dl class="method">
 <dt id="rmgpy.statmech.RigidRotor.getHeatCapacity">
-<tt class="descname">getHeatCapacity</tt><big>(</big><em>T</em><big>)</big><a class="headerlink" href="#rmgpy.statmech.RigidRotor.getHeatCapacity" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getHeatCapacity</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.statmech.RigidRotor.getHeatCapacity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the contribution to the heat capacity due to rigid rotation
 in J/mol*K at the specified temperature <cite>T</cite> in K. The formula is</p>
 <div class="math">
@@ -460,7 +460,7 @@ law constant.</p>
 
 <dl class="method">
 <dt id="rmgpy.statmech.RigidRotor.getPartitionFunction">
-<tt class="descname">getPartitionFunction</tt><big>(</big><em>T</em><big>)</big><a class="headerlink" href="#rmgpy.statmech.RigidRotor.getPartitionFunction" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getPartitionFunction</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.statmech.RigidRotor.getPartitionFunction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the value of the partition function at the specified temperature
 <cite>T</cite> in K. The formula is</p>
 <div class="math">
@@ -476,7 +476,7 @@ Planck constant.</p>
 
 <dl class="method">
 <dt id="rmgpy.statmech.RigidRotor.getSumOfStates">
-<tt class="descname">getSumOfStates</tt><big>(</big><em>Elist</em><big>)</big><a class="headerlink" href="#rmgpy.statmech.RigidRotor.getSumOfStates" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getSumOfStates</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.statmech.RigidRotor.getSumOfStates" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the sum of states at the specified energies <cite>Elist</cite> in J/mol
 above the ground state. The formula is</p>
 <div class="math">
@@ -500,7 +500,7 @@ Planck constant.</p>
 <h3>Vibration<a class="headerlink" href="#vibration" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="rmgpy.statmech.HarmonicOscillator">
-<em class="property">class </em><tt class="descclassname">rmgpy.statmech.</tt><tt class="descname">HarmonicOscillator</tt><big>(</big><em>frequencies=None</em><big>)</big><a class="headerlink" href="#rmgpy.statmech.HarmonicOscillator" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">rmgpy.statmech.</tt><tt class="descname">HarmonicOscillator</tt><a class="headerlink" href="#rmgpy.statmech.HarmonicOscillator" title="Permalink to this definition">¶</a></dt>
 <dd><p>A representation of a set of vibrational modes as one-dimensional quantum
 harmonic oscillator. The attributes are:</p>
 <table border="1" class="docutils">
@@ -524,7 +524,7 @@ harmonic oscillator. The attributes are:</p>
 </table>
 <dl class="method">
 <dt id="rmgpy.statmech.HarmonicOscillator.getDensityOfStates">
-<tt class="descname">getDensityOfStates</tt><big>(</big><em>Elist</em>, <em>rho0=None</em><big>)</big><a class="headerlink" href="#rmgpy.statmech.HarmonicOscillator.getDensityOfStates" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getDensityOfStates</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.statmech.HarmonicOscillator.getDensityOfStates" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the density of states at the specified energies <cite>Elist</cite> in J/mol
 above the ground state. The Beyer-Swinehart method is used to
 efficiently convolve the vibrational density of states into the
@@ -534,7 +534,7 @@ density of states of other modes. To be accurate, this requires a small
 
 <dl class="method">
 <dt id="rmgpy.statmech.HarmonicOscillator.getEnthalpy">
-<tt class="descname">getEnthalpy</tt><big>(</big><em>T</em><big>)</big><a class="headerlink" href="#rmgpy.statmech.HarmonicOscillator.getEnthalpy" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getEnthalpy</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.statmech.HarmonicOscillator.getEnthalpy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the contribution to the enthalpy due to vibration in J/mol at
 the specified temperature <cite>T</cite> in K. The formula is</p>
 <div class="math">
@@ -547,7 +547,7 @@ is the Planck constant, and <img class="math" src="../_images/math/eff43e84f8a3b
 
 <dl class="method">
 <dt id="rmgpy.statmech.HarmonicOscillator.getEntropy">
-<tt class="descname">getEntropy</tt><big>(</big><em>T</em><big>)</big><a class="headerlink" href="#rmgpy.statmech.HarmonicOscillator.getEntropy" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getEntropy</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.statmech.HarmonicOscillator.getEntropy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the contribution to the entropy due to vibration in J/mol*K at
 the specified temperature <cite>T</cite> in K. The formula is</p>
 <div class="math">
@@ -560,7 +560,7 @@ is the Planck constant, and <img class="math" src="../_images/math/eff43e84f8a3b
 
 <dl class="method">
 <dt id="rmgpy.statmech.HarmonicOscillator.getHeatCapacity">
-<tt class="descname">getHeatCapacity</tt><big>(</big><em>T</em><big>)</big><a class="headerlink" href="#rmgpy.statmech.HarmonicOscillator.getHeatCapacity" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getHeatCapacity</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.statmech.HarmonicOscillator.getHeatCapacity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the contribution to the heat capacity due to vibration
 in J/mol*K at the specified temperature <cite>T</cite> in K. The formula is</p>
 <div class="math">
@@ -573,7 +573,7 @@ is the Planck constant, and <img class="math" src="../_images/math/eff43e84f8a3b
 
 <dl class="method">
 <dt id="rmgpy.statmech.HarmonicOscillator.getPartitionFunction">
-<tt class="descname">getPartitionFunction</tt><big>(</big><em>T</em><big>)</big><a class="headerlink" href="#rmgpy.statmech.HarmonicOscillator.getPartitionFunction" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getPartitionFunction</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.statmech.HarmonicOscillator.getPartitionFunction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the value of the partition function at the specified temperature
 <cite>T</cite> in K. The formula is</p>
 <div class="math">
@@ -588,7 +588,7 @@ of the molecule, <em>not</em> the bottom of the potential well.</p>
 
 <dl class="method">
 <dt id="rmgpy.statmech.HarmonicOscillator.getSumOfStates">
-<tt class="descname">getSumOfStates</tt><big>(</big><em>Elist</em>, <em>sumStates0=None</em><big>)</big><a class="headerlink" href="#rmgpy.statmech.HarmonicOscillator.getSumOfStates" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getSumOfStates</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.statmech.HarmonicOscillator.getSumOfStates" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the sum of states at the specified energies <cite>Elist</cite> in J/mol
 above the ground state. The Beyer-Swinehart method is used to
 efficiently convolve the vibrational sum of states into the
@@ -603,7 +603,7 @@ sum of states of other modes. To be accurate, this requires a small
 <h3>Torsion<a class="headerlink" href="#torsion" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="rmgpy.statmech.HinderedRotor">
-<em class="property">class </em><tt class="descclassname">rmgpy.statmech.</tt><tt class="descname">HinderedRotor</tt><big>(</big><em>inertia=0.0</em>, <em>barrier=None</em>, <em>symmetry=1</em>, <em>fourier=None</em><big>)</big><a class="headerlink" href="#rmgpy.statmech.HinderedRotor" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">rmgpy.statmech.</tt><tt class="descname">HinderedRotor</tt><a class="headerlink" href="#rmgpy.statmech.HinderedRotor" title="Permalink to this definition">¶</a></dt>
 <dd><p>A one-dimensional hindered rotor using one of two potential functions:
 the the cosine potential function</p>
 <div class="math">
@@ -651,7 +651,7 @@ as it is more accurate. However, it is also significantly more
 computationally demanding.</p>
 <dl class="method">
 <dt id="rmgpy.statmech.HinderedRotor.getDensityOfStates">
-<tt class="descname">getDensityOfStates</tt><big>(</big><em>Elist</em><big>)</big><a class="headerlink" href="#rmgpy.statmech.HinderedRotor.getDensityOfStates" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getDensityOfStates</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.statmech.HinderedRotor.getDensityOfStates" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the density of states at the specified energies <cite>Elist</cite> in J/mol
 above the ground state. For the cosine potential, the formula is</p>
 <div class="math">
@@ -670,7 +670,7 @@ potential.</p>
 
 <dl class="method">
 <dt id="rmgpy.statmech.HinderedRotor.getEnthalpy">
-<tt class="descname">getEnthalpy</tt><big>(</big><em>T</em><big>)</big><a class="headerlink" href="#rmgpy.statmech.HinderedRotor.getEnthalpy" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getEnthalpy</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.statmech.HinderedRotor.getEnthalpy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the contribution to the heat capacity due to hindered rotation
 in J/mol at the specified temperature <cite>T</cite> in K. For the cosine
 potential, this is calculated numerically from the partition function.
@@ -684,7 +684,7 @@ utilize the expression</p>
 
 <dl class="method">
 <dt id="rmgpy.statmech.HinderedRotor.getEntropy">
-<tt class="descname">getEntropy</tt><big>(</big><em>T</em><big>)</big><a class="headerlink" href="#rmgpy.statmech.HinderedRotor.getEntropy" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getEntropy</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.statmech.HinderedRotor.getEntropy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the contribution to the heat capacity due to hindered rotation
 in J/mol*K at the specified temperature <cite>T</cite> in K. For the cosine
 potential, this is calculated numerically from the partition function.
@@ -710,7 +710,7 @@ units of the returned frequency are cm^-1.</p>
 
 <dl class="method">
 <dt id="rmgpy.statmech.HinderedRotor.getHeatCapacity">
-<tt class="descname">getHeatCapacity</tt><big>(</big><em>T</em><big>)</big><a class="headerlink" href="#rmgpy.statmech.HinderedRotor.getHeatCapacity" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getHeatCapacity</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.statmech.HinderedRotor.getHeatCapacity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the contribution to the heat capacity due to hindered rotation
 in J/mol*K at the specified temperature <cite>T</cite> in K.</p>
 <p>For the cosine potential, the formula is</p>
@@ -730,7 +730,7 @@ utilize the expression</p>
 
 <dl class="method">
 <dt id="rmgpy.statmech.HinderedRotor.getPartitionFunction">
-<tt class="descname">getPartitionFunction</tt><big>(</big><em>T</em><big>)</big><a class="headerlink" href="#rmgpy.statmech.HinderedRotor.getPartitionFunction" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getPartitionFunction</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.statmech.HinderedRotor.getPartitionFunction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the value of the partition function at the specified temperature
 <cite>T</cite> in K. For the cosine potential, the formula makes use of the
 Pitzer-Gwynn approximation:</p>
@@ -757,14 +757,14 @@ utilize the expression</p>
 
 <dl class="method">
 <dt id="rmgpy.statmech.HinderedRotor.getPotential">
-<tt class="descname">getPotential</tt><big>(</big><em>phi</em><big>)</big><a class="headerlink" href="#rmgpy.statmech.HinderedRotor.getPotential" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getPotential</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.statmech.HinderedRotor.getPotential" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the values of the hindered rotor potential <img class="math" src="../_images/math/3f518ea4fa7d6c0241b90da46419cc8143d9814d.png" alt="V(\phi)"/>
 in J/mol at the angles <cite>phi</cite> in radians.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.statmech.HinderedRotor.getSumOfStates">
-<tt class="descname">getSumOfStates</tt><big>(</big><em>Elist</em><big>)</big><a class="headerlink" href="#rmgpy.statmech.HinderedRotor.getSumOfStates" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getSumOfStates</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.statmech.HinderedRotor.getSumOfStates" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the sum of states at the specified energies <cite>Elist</cite> in J/mol
 above the ground state. For the cosine potential, the formula is</p>
 <div class="math">
@@ -821,6 +821,11 @@ currently no functionality for using the Fourier series potential.</p>
   <h4>Next topic</h4>
   <p class="topless"><a href="thermo.html"
                         title="next chapter"><tt class="docutils literal docutils literal"><span class="pre">rmgpy.thermo</span></tt> &#8212; Thermodynamics Models</a></p>
+  <h3>This Page </h3>
+  <ul class="this-page-menu">
+    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/developers/statmech.rst"
+           rel="nofollow">Edit this page</a></li>
+  </ul>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
@@ -839,7 +844,7 @@ currently no functionality for using the Fourier series potential.</p>
       <div class="clearer"></div>
     </div>
     <div class="footer">
-        &copy; Copyright 2011, William H. Green and the RMG Team.
+        &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>

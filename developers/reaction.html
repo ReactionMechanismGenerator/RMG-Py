@@ -19,7 +19,7 @@
         VERSION:     '0.1.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  false
+        HAS_SOURCE:  true
       };
     </script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
@@ -81,7 +81,7 @@ exceptional behavior.</p>
 
 <dl class="class">
 <dt id="rmgpy.reaction.Reaction">
-<em class="property">class </em><tt class="descclassname">rmgpy.reaction.</tt><tt class="descname">Reaction</tt><big>(</big><em>index=-1</em>, <em>reactants=None</em>, <em>products=None</em>, <em>kinetics=None</em>, <em>reversible=True</em>, <em>transitionState=None</em>, <em>thirdBody=False</em>, <em>duplicate=False</em>, <em>degeneracy=1</em>, <em>pairs=None</em><big>)</big><a class="headerlink" href="#rmgpy.reaction.Reaction" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">rmgpy.reaction.</tt><tt class="descname">Reaction</tt><a class="headerlink" href="#rmgpy.reaction.Reaction" title="Permalink to this definition">¶</a></dt>
 <dd><p>A chemical reaction. The attributes are:</p>
 <table border="1" class="docutils">
 <colgroup>
@@ -140,7 +140,7 @@ exceptional behavior.</p>
 </table>
 <dl class="method">
 <dt id="rmgpy.reaction.Reaction.calculateEckartTunnelingCorrection">
-<tt class="descname">calculateEckartTunnelingCorrection</tt><big>(</big><em>T</em><big>)</big><a class="headerlink" href="#rmgpy.reaction.Reaction.calculateEckartTunnelingCorrection" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">calculateEckartTunnelingCorrection</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.reaction.Reaction.calculateEckartTunnelingCorrection" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate and return the value of the Eckart tunneling correction for
 the reaction with corresponding transition state <cite>TS</cite> at the list of
 temperatures <cite>Tlist</cite> in K. The Eckart formula is</p>
@@ -177,7 +177,7 @@ better result than the Wignet correction.</p>
 
 <dl class="method">
 <dt id="rmgpy.reaction.Reaction.calculateTSTRateCoefficient">
-<tt class="descname">calculateTSTRateCoefficient</tt><big>(</big><em>T</em>, <em>tunneling=''</em><big>)</big><a class="headerlink" href="#rmgpy.reaction.Reaction.calculateTSTRateCoefficient" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">calculateTSTRateCoefficient</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.reaction.Reaction.calculateTSTRateCoefficient" title="Permalink to this definition">¶</a></dt>
 <dd><p>Evaluate the forward rate coefficient for the reaction with
 corresponding transition state <cite>TS</cite> at temperature <cite>T</cite> in K using
 (canonical) transition state theory. The TST equation is</p>
@@ -194,7 +194,7 @@ correction.</p>
 
 <dl class="method">
 <dt id="rmgpy.reaction.Reaction.calculateWignerTunnelingCorrection">
-<tt class="descname">calculateWignerTunnelingCorrection</tt><big>(</big><em>T</em><big>)</big><a class="headerlink" href="#rmgpy.reaction.Reaction.calculateWignerTunnelingCorrection" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">calculateWignerTunnelingCorrection</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.reaction.Reaction.calculateWignerTunnelingCorrection" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate and return the value of the Wigner tunneling correction for
 the reaction with corresponding transition state <cite>TS</cite> at the list of
 temperatures <cite>Tlist</cite> in K. The Wigner formula is</p>
@@ -210,7 +210,7 @@ accurate than the Eckart correction.</p>
 
 <dl class="method">
 <dt id="rmgpy.reaction.Reaction.draw">
-<tt class="descname">draw</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#rmgpy.reaction.Reaction.draw" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">draw</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.reaction.Reaction.draw" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate a pictorial representation of the chemical reaction using the
 <tt class="xref py py-mod docutils literal"><span class="pre">molecule_draw</span></tt> module. Use <cite>path</cite> to specify the file to save
 the generated image to; the image type is automatically determined by
@@ -282,35 +282,35 @@ Currently this only works if the <cite>kinetics</cite> attribute is an
 
 <dl class="method">
 <dt id="rmgpy.reaction.Reaction.getEnthalpiesOfReaction">
-<tt class="descname">getEnthalpiesOfReaction</tt><big>(</big><em>Tlist</em><big>)</big><a class="headerlink" href="#rmgpy.reaction.Reaction.getEnthalpiesOfReaction" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getEnthalpiesOfReaction</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.reaction.Reaction.getEnthalpiesOfReaction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the enthalpies of reaction in J/mol evaluated at temperatures
 <cite>Tlist</cite> in K.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.reaction.Reaction.getEnthalpyOfReaction">
-<tt class="descname">getEnthalpyOfReaction</tt><big>(</big><em>T</em><big>)</big><a class="headerlink" href="#rmgpy.reaction.Reaction.getEnthalpyOfReaction" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getEnthalpyOfReaction</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.reaction.Reaction.getEnthalpyOfReaction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the enthalpy of reaction in J/mol evaluated at temperature
 <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.reaction.Reaction.getEntropiesOfReaction">
-<tt class="descname">getEntropiesOfReaction</tt><big>(</big><em>Tlist</em><big>)</big><a class="headerlink" href="#rmgpy.reaction.Reaction.getEntropiesOfReaction" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getEntropiesOfReaction</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.reaction.Reaction.getEntropiesOfReaction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the entropies of reaction in J/mol*K evaluated at temperatures
 <cite>Tlist</cite> in K.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.reaction.Reaction.getEntropyOfReaction">
-<tt class="descname">getEntropyOfReaction</tt><big>(</big><em>T</em><big>)</big><a class="headerlink" href="#rmgpy.reaction.Reaction.getEntropyOfReaction" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getEntropyOfReaction</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.reaction.Reaction.getEntropyOfReaction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the entropy of reaction in J/mol*K evaluated at temperature <cite>T</cite>
 in K.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.reaction.Reaction.getEquilibriumConstant">
-<tt class="descname">getEquilibriumConstant</tt><big>(</big><em>T</em>, <em>type='Kc'</em><big>)</big><a class="headerlink" href="#rmgpy.reaction.Reaction.getEquilibriumConstant" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getEquilibriumConstant</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.reaction.Reaction.getEquilibriumConstant" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the equilibrium constant for the reaction at the specified
 temperature <cite>T</cite> in K. The <cite>type</cite> parameter lets you specify the
 quantities used in the equilibrium constant: <tt class="docutils literal"><span class="pre">Ka</span></tt> for activities,
@@ -320,7 +320,7 @@ this function currently assumes an ideal gas mixture.</p>
 
 <dl class="method">
 <dt id="rmgpy.reaction.Reaction.getEquilibriumConstants">
-<tt class="descname">getEquilibriumConstants</tt><big>(</big><em>Tlist</em>, <em>type='Kc'</em><big>)</big><a class="headerlink" href="#rmgpy.reaction.Reaction.getEquilibriumConstants" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getEquilibriumConstants</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.reaction.Reaction.getEquilibriumConstants" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the equilibrium constants for the reaction at the specified
 temperatures <cite>Tlist</cite> in K. The <cite>type</cite> parameter lets you specify the
 quantities used in the equilibrium constant: <tt class="docutils literal"><span class="pre">Ka</span></tt> for activities,
@@ -330,21 +330,21 @@ this function currently assumes an ideal gas mixture.</p>
 
 <dl class="method">
 <dt id="rmgpy.reaction.Reaction.getFreeEnergiesOfReaction">
-<tt class="descname">getFreeEnergiesOfReaction</tt><big>(</big><em>Tlist</em><big>)</big><a class="headerlink" href="#rmgpy.reaction.Reaction.getFreeEnergiesOfReaction" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getFreeEnergiesOfReaction</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.reaction.Reaction.getFreeEnergiesOfReaction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the Gibbs free energies of reaction in J/mol evaluated at
 temperatures <cite>Tlist</cite> in K.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.reaction.Reaction.getFreeEnergyOfReaction">
-<tt class="descname">getFreeEnergyOfReaction</tt><big>(</big><em>T</em><big>)</big><a class="headerlink" href="#rmgpy.reaction.Reaction.getFreeEnergyOfReaction" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getFreeEnergyOfReaction</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.reaction.Reaction.getFreeEnergyOfReaction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the Gibbs free energy of reaction in J/mol evaluated at
 temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.reaction.Reaction.getRate">
-<tt class="descname">getRate</tt><big>(</big><em>T</em>, <em>P</em>, <em>conc</em>, <em>totalConc=-1.0</em><big>)</big><a class="headerlink" href="#rmgpy.reaction.Reaction.getRate" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getRate</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.reaction.Reaction.getRate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the net rate of reaction at temperature <cite>T</cite> and pressure <cite>P</cite>. The
 parameter <cite>conc</cite> is a map with species as keys and concentrations as
 values. A reactant not found in the <cite>conc</cite> map is treated as having zero
@@ -354,7 +354,7 @@ concentration.</p>
 
 <dl class="method">
 <dt id="rmgpy.reaction.Reaction.getRateCoefficient">
-<tt class="descname">getRateCoefficient</tt><big>(</big><em>T</em>, <em>P</em><big>)</big><a class="headerlink" href="#rmgpy.reaction.Reaction.getRateCoefficient" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getRateCoefficient</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.reaction.Reaction.getRateCoefficient" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the overall rate coefficient for the forward reaction at
 temperature <cite>T</cite> in K and pressure <cite>P</cite> in Pa, including any reaction
 path degeneracies.</p>
@@ -362,7 +362,7 @@ path degeneracies.</p>
 
 <dl class="method">
 <dt id="rmgpy.reaction.Reaction.getStoichiometricCoefficient">
-<tt class="descname">getStoichiometricCoefficient</tt><big>(</big><em>spec</em><big>)</big><a class="headerlink" href="#rmgpy.reaction.Reaction.getStoichiometricCoefficient" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getStoichiometricCoefficient</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.reaction.Reaction.getStoichiometricCoefficient" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the stoichiometric coefficient of species <cite>spec</cite> in the reaction.
 The stoichiometric coefficient is increased by one for each time <cite>spec</cite>
 appears as a product and decreased by one for each time <cite>spec</cite> appears
@@ -377,7 +377,7 @@ as a reactant.</p>
 
 <dl class="method">
 <dt id="rmgpy.reaction.Reaction.hasTemplate">
-<tt class="descname">hasTemplate</tt><big>(</big><em>reactants</em>, <em>products</em><big>)</big><a class="headerlink" href="#rmgpy.reaction.Reaction.hasTemplate" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">hasTemplate</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.reaction.Reaction.hasTemplate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if the reaction matches the template of <cite>reactants</cite>
 and <cite>products</cite>, which are both lists of <tt class="xref py py-class docutils literal"><span class="pre">Species</span></tt> objects, or
 <tt class="docutils literal"><span class="pre">False</span></tt> if not.</p>
@@ -413,7 +413,7 @@ each side of the reaction equation, or <tt class="docutils literal"><span class=
 
 <dl class="method">
 <dt id="rmgpy.reaction.Reaction.isIsomorphic">
-<tt class="descname">isIsomorphic</tt><big>(</big><em>other</em>, <em>eitherDirection=True</em><big>)</big><a class="headerlink" href="#rmgpy.reaction.Reaction.isIsomorphic" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">isIsomorphic</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.reaction.Reaction.isIsomorphic" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if this reaction is the same as the <cite>other</cite> reaction,
 or <tt class="docutils literal"><span class="pre">False</span></tt> if they are different. 
 If <cite>eitherDirection=False</cite> then the directions must match.</p>
@@ -421,7 +421,7 @@ If <cite>eitherDirection=False</cite> then the directions must match.</p>
 
 <dl class="method">
 <dt id="rmgpy.reaction.Reaction.matchesMolecules">
-<tt class="descname">matchesMolecules</tt><big>(</big><em>reactants</em><big>)</big><a class="headerlink" href="#rmgpy.reaction.Reaction.matchesMolecules" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">matchesMolecules</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.reaction.Reaction.matchesMolecules" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if the given <tt class="docutils literal"><span class="pre">reactants</span></tt> represent the total set of
 reactants or products for the current <tt class="docutils literal"><span class="pre">reaction</span></tt>, or <tt class="docutils literal"><span class="pre">False</span></tt> if not.
 The reactants should be <tt class="xref py py-class docutils literal"><span class="pre">Molecule</span></tt> objects.</p>
@@ -429,7 +429,7 @@ The reactants should be <tt class="xref py py-class docutils literal"><span clas
 
 <dl class="method">
 <dt id="rmgpy.reaction.Reaction.toChemkin">
-<tt class="descname">toChemkin</tt><big>(</big><em>speciesList</em><big>)</big><a class="headerlink" href="#rmgpy.reaction.Reaction.toChemkin" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">toChemkin</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.reaction.Reaction.toChemkin" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the chemkin-formatted string for this reaction.</p>
 <p>Requires the <cite>speciesList</cite> to figure out third body colliders.</p>
 </dd></dl>
@@ -441,7 +441,7 @@ The reactants should be <tt class="xref py py-class docutils literal"><span clas
 <h2>Reaction Models<a class="headerlink" href="#reaction-models" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="rmgpy.reaction.ReactionModel">
-<em class="property">class </em><tt class="descclassname">rmgpy.reaction.</tt><tt class="descname">ReactionModel</tt><big>(</big><em>species=None</em>, <em>reactions=None</em><big>)</big><a class="headerlink" href="#rmgpy.reaction.ReactionModel" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">rmgpy.reaction.</tt><tt class="descname">ReactionModel</tt><a class="headerlink" href="#rmgpy.reaction.ReactionModel" title="Permalink to this definition">¶</a></dt>
 <dd><p>A chemical reaction model, composed of a list of species and a list of
 reactions involving those species. The attributes are:</p>
 <table border="1" class="docutils">
@@ -478,7 +478,7 @@ the columns correspond to the <cite>index</cite> attribute of each reaction obje
 
 <dl class="method">
 <dt id="rmgpy.reaction.ReactionModel.getReactionRates">
-<tt class="descname">getReactionRates</tt><big>(</big><em>T</em>, <em>P</em>, <em>Ci</em><big>)</big><a class="headerlink" href="#rmgpy.reaction.ReactionModel.getReactionRates" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getReactionRates</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.reaction.ReactionModel.getReactionRates" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return an array of reaction rates for each reaction in the model core
 and edge. The id of the reaction is the index into the vector.</p>
 </dd></dl>
@@ -512,6 +512,11 @@ and edge. The id of the reaction is the index into the vector.</p>
   <h4>Next topic</h4>
   <p class="topless"><a href="species.html"
                         title="next chapter"><tt class="docutils literal"><span class="pre">rmgpy.species</span></tt> &#8212; Chemical Species</a></p>
+  <h3>This Page </h3>
+  <ul class="this-page-menu">
+    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/developers/reaction.rst"
+           rel="nofollow">Edit this page</a></li>
+  </ul>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
@@ -530,7 +535,7 @@ and edge. The id of the reaction is the index into the vector.</p>
       <div class="clearer"></div>
     </div>
     <div class="footer">
-        &copy; Copyright 2011, William H. Green and the RMG Team.
+        &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>
