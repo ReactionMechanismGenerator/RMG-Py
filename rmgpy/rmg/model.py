@@ -72,12 +72,6 @@ class Species(rmgpy.species.Species):
         Generates the thermo data for each structure (resonance isomer),
         picks that with lowest H298 value, and saves it to `self.thermoData`.
         """
-
-        # Ensure molecules are using explicit hydrogens
-        implicitH = [mol.implicitHydrogens for mol in self.molecule]
-        for molecule in self.molecule:
-            molecule.makeHydrogensExplicit()
-
         # Get the thermo data for the species from the database
         thermo0 = database.thermo.getThermoData(self)
 
@@ -112,10 +106,6 @@ class Species(rmgpy.species.Species):
             err = math.sqrt(numpy.sum((self.thermo.getHeatCapacities(Tlist) - thermo0.getHeatCapacities(Tlist))**2)/len(Tlist))/constants.R
             logging.log(logging.WARNING if err > 0.1 else 0, 'Average RMS error in heat capacity fit to {0} = {1:g}*R'.format(self, err))
 
-        # Restore implicit hydrogens if necessary
-        for implicit, molecule in zip(implicitH, self.molecule):
-            if implicit: molecule.makeHydrogensImplicit()
-
         return self.thermo
 
     def generateStatesData(self, database):
@@ -127,10 +117,7 @@ class Species(rmgpy.species.Species):
         if not self.thermo:
             raise Exception("Unable to determine states model for species {0}: No thermodynamics model found.".format(self))
         molecule = self.molecule[0]
-        implicitH = molecule.implicitHydrogens
-        molecule.makeHydrogensExplicit()
         self.states = database.states.getStatesData(molecule, self.thermo)
-        if implicitH: molecule.makeHydrogensImplicit()
 
     def generateLennardJonesParameters(self):
         """
@@ -264,7 +251,6 @@ class CoreEdgeReactionModel:
             molecule = object
             
         molecule.clearLabeledAtoms()
-        molecule.makeHydrogensImplicit()
 
         # If desired, check to ensure that the species is new; return the
         # existing species if not new
@@ -293,11 +279,6 @@ class CoreEdgeReactionModel:
             self.speciesDict[formula].append(spec)
         else:
             self.speciesDict[formula] = [spec]
-
-        # Store hydrogens implicitly to conserve memory and speed up isomorphism
-        for mol in spec.molecule:
-            #mol.updateConnectivityValues()
-            mol.makeHydrogensImplicit()
 
         self.speciesCounter += 1
 
@@ -490,15 +471,12 @@ class CoreEdgeReactionModel:
             for moleculeA in speciesA.molecule:
                 reactionList.extend(database.kinetics.generateReactions([moleculeA]))
                 moleculeA.clearLabeledAtoms()
-                moleculeA.makeHydrogensImplicit()
         else:
             for moleculeA in speciesA.molecule:
                 for moleculeB in speciesB.molecule:
                     reactionList.extend(database.kinetics.generateReactions([moleculeA, moleculeB]))
                     moleculeA.clearLabeledAtoms()
-                    moleculeA.makeHydrogensImplicit()
                     moleculeB.clearLabeledAtoms()
-                    moleculeB.makeHydrogensImplicit()
         return reactionList
 
     def enlarge(self, newObject):

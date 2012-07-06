@@ -39,9 +39,10 @@ import cython
 import os
 import re
 import element as elements
-from graph import Vertex, Edge, Graph
-from group import GroupAtom, GroupBond, Group, ActionError, fromAdjacencyList, toAdjacencyList
-from atomtype import AtomType, atomTypes, getAtomType
+import openbabel
+from .graph import Vertex, Edge, Graph
+from .group import GroupAtom, GroupBond, Group, ActionError
+from .atomtype import AtomType, atomTypes, getAtomType
 
 ################################################################################
 
@@ -56,7 +57,6 @@ class Atom(Vertex):
     `element`           :class:`Element`    The chemical element the atom represents
     `radicalElectrons`  ``short``           The number of radical electrons
     `spinMultiplicity`  ``short``           The spin multiplicity of the atom
-    `implicitHydrogens` ``short``           The number of implicit hydrogen atoms bonded to this atom
     `charge`            ``short``           The formal charge of the atom
     `label`             ``str``             A string label that can be used to tag individual atoms
     =================== =================== ====================================
@@ -66,7 +66,7 @@ class Atom(Vertex):
     e.g. ``atom.symbol`` instead of ``atom.element.symbol``.
     """
 
-    def __init__(self, element=None, radicalElectrons=0, spinMultiplicity=1, implicitHydrogens=0, charge=0, label=''):
+    def __init__(self, element=None, radicalElectrons=0, spinMultiplicity=1, charge=0, label=''):
         Vertex.__init__(self)
         if isinstance(element, str):
             self.element = elements.__dict__[element]
@@ -74,7 +74,6 @@ class Atom(Vertex):
             self.element = element
         self.radicalElectrons = radicalElectrons
         self.spinMultiplicity = spinMultiplicity
-        self.implicitHydrogens = implicitHydrogens
         self.charge = charge
         self.label = label
         self.atomType = None
@@ -83,35 +82,37 @@ class Atom(Vertex):
         """
         Return a human-readable string representation of the object.
         """
-        return "<Atom '{0}'>".format(
-            str(self.element) +
-            '.' * self.radicalElectrons +
-            '+' * self.charge if self.charge > 0 else '-' * -self.charge
+        return '{0}{1}{2}'.format(
+            str(self.element),
+            '.' * self.radicalElectrons,
+            '+' * self.charge if self.charge > 0 else '-' * -self.charge,
         )
 
     def __repr__(self):
         """
         Return a representation that can be used to reconstruct the object.
         """
-        return 'Atom(element="{0}", radicalElectrons={1}, spinMultiplicity={2}, implicitHydrogens={3}, charge={4}, label="{5}")'.format(self.element, self.radicalElectrons, self.spinMultiplicity, self.implicitHydrogens, self.charge, self.label)
+        return "<Atom '{0}'>".format(str(self))
 
     def __reduce__(self):
         """
         A helper function used when pickling an object.
         """
         d = {
+            'edges': self.edges,
             'connectivity1': self.connectivity1,
             'connectivity2': self.connectivity2,
             'connectivity3': self.connectivity3,
             'sortingLabel': self.sortingLabel,
             'atomType': self.atomType.label if self.atomType else None,
         }
-        return (Atom, (self.element.symbol, self.radicalElectrons, self.spinMultiplicity, self.implicitHydrogens, self.charge, self.label), d)
+        return (Atom, (self.element.symbol, self.radicalElectrons, self.spinMultiplicity, self.charge, self.label), d)
 
     def __setstate__(self, d):
         """
         A helper function used when unpickling an object.
         """
+        self.edges = d['edges']
         self.connectivity1 = d['connectivity1']
         self.connectivity2 = d['connectivity2']
         self.connectivity3 = d['connectivity3']
@@ -127,6 +128,9 @@ class Atom(Vertex):
     @property
     def symbol(self): return self.element.symbol
 
+    @property
+    def bonds(self): return self.edges
+
     def equivalent(self, other):
         """
         Return ``True`` if `other` is indistinguishable from this atom, or
@@ -141,7 +145,6 @@ class Atom(Vertex):
             return (self.element is atom.element and
                 self.radicalElectrons == atom.radicalElectrons and
                 self.spinMultiplicity == atom.spinMultiplicity and
-                self.implicitHydrogens == atom.implicitHydrogens and
                 self.charge == atom.charge)
         elif isinstance(other, GroupAtom):
             cython.declare(a=AtomType, radical=cython.short, spin=cython.short, charge=cython.short)
@@ -192,7 +195,7 @@ class Atom(Vertex):
         Generate a deep copy of the current atom. Modifying the
         attributes of the copy will not affect the original.
         """
-        a = Atom(self.element, self.radicalElectrons, self.spinMultiplicity, self.implicitHydrogens, self.charge, self.label)
+        a = Atom(self.element, self.radicalElectrons, self.spinMultiplicity, self.charge, self.label)
         a.atomType = self.atomType
         return a
 
@@ -292,27 +295,35 @@ class Bond(Edge):
 
     """
 
-    def __init__(self, order=1):
-        Edge.__init__(self)
+    def __init__(self, atom1, atom2, order=1):
+        Edge.__init__(self, atom1, atom2)
         self.order = order
 
     def __str__(self):
         """
         Return a human-readable string representation of the object.
         """
-        return '<Bond "{0}">'.format(self.order)
+        return self.order
 
     def __repr__(self):
         """
         Return a representation that can be used to reconstruct the object.
         """
-        return 'Bond(order="{0}")'.format(self.order)
+        return '<Bond "{0}">'.format(self.order)
 
     def __reduce__(self):
         """
         A helper function used when pickling an object.
         """
-        return (Bond, (self.order,))
+        return (Bond, (self.vertex1, self.vertex2, self.order))
+
+    @property
+    def atom1(self):
+        return self.vertex1
+
+    @property
+    def atom2(self):
+        return self.vertex2
 
     def equivalent(self, other):
         """
@@ -342,7 +353,7 @@ class Bond(Edge):
         Generate a deep copy of the current bond. Modifying the
         attributes of the copy will not affect the original.
         """
-        return Bond(self.order)
+        return Bond(self.vertex1, self.vertex2, self.order)
 
     def isSingle(self):
         """
@@ -429,7 +440,10 @@ class Bond(Edge):
             raise ActionError('Unable to update GroupBond: Invalid action {0}.'.format(action))
 
 ################################################################################
-
+SMILEwriter = openbabel.OBConversion()
+SMILEwriter.SetOutFormat('smi')
+SMILEwriter.SetOptions("i",SMILEwriter.OUTOPTIONS) # turn off isomer and stereochemistry information (the @ signs!)
+    
 class Molecule(Graph):
     """
     A representation of a molecular structure using a graph data type, extending
@@ -439,7 +453,6 @@ class Molecule(Graph):
     ======================= =========== ========================================
     Attribute               Type        Description
     ======================= =========== ========================================
-    `implicitHydrogens`     ``bool``    ``True`` if the hydrogen atoms are stored implicitly, ``False`` if stored explicity
     `symmetryNumber`        ``int``     The (estimated) external + internal symmetry number of the molecule
     ======================= =========== ========================================
 
@@ -447,12 +460,11 @@ class Molecule(Graph):
     `InChI` string representing the molecular structure.
     """
 
-    def __init__(self, atoms=None, bonds=None, implicitH=False, symmetry=1, SMILES='', InChI=''):
-        Graph.__init__(self, atoms, bonds)
-        self.implicitHydrogens = implicitH
+    def __init__(self, atoms=None, symmetry=1, SMILES='', InChI=''):
+        Graph.__init__(self, atoms)
         self.symmetryNumber = symmetry
-        if SMILES != '': self.fromSMILES(SMILES, implicitH)
-        elif InChI != '': self.fromInChI(InChI, implicitH)
+        if SMILES != '': self.fromSMILES(SMILES)
+        elif InChI != '': self.fromInChI(InChI)
     
     def __str__(self):
         """
@@ -470,15 +482,11 @@ class Molecule(Graph):
         """
         A helper function used when pickling an object.
         """
-        return (Molecule, (self.vertices, self.edges, self.implicitHydrogens, self.symmetryNumber))
+        return (Molecule, (self.vertices, self.symmetryNumber))
 
     def __getAtoms(self): return self.vertices
     def __setAtoms(self, atoms): self.vertices = atoms
     atoms = property(__getAtoms, __setAtoms)
-
-    def __getBonds(self): return self.edges
-    def __setBonds(self, bonds): self.edges = bonds
-    bonds = property(__getBonds, __setBonds)
 
     def addAtom(self, atom):
         """
@@ -486,12 +494,12 @@ class Molecule(Graph):
         """
         return self.addVertex(atom)
     
-    def addBond(self, atom1, atom2, bond):
+    def addBond(self, bond):
         """
         Add a `bond` to the graph as an edge connecting the two atoms `atom1`
         and `atom2`.
         """
-        return self.addEdge(atom1, atom2, bond)
+        return self.addEdge(bond)
 
     def getBonds(self, atom):
         """
@@ -527,13 +535,13 @@ class Molecule(Graph):
         """
         return self.removeVertex(atom)
 
-    def removeBond(self, atom1, atom2):
+    def removeBond(self, bond):
         """
         Remove the bond between atoms `atom1` and `atom2` from the graph.
         Does not remove atoms that no longer have any bonds as a result of
         this removal.
         """
-        return self.removeEdge(atom1, atom2)
+        return self.removeEdge(bond)
 
     def sortAtoms(self):
         """
@@ -558,7 +566,6 @@ class Molecule(Graph):
         H = elements.getElement('H')
         for atom in self.vertices:
             mass += atom.element.mass
-            mass += atom.implicitHydrogens * H.mass
         return mass
 
     def copy(self, deep=False):
@@ -570,7 +577,7 @@ class Molecule(Graph):
         """
         other = cython.declare(Molecule)
         g = Graph.copy(self, deep)
-        other = Molecule(g.vertices, g.edges)
+        other = Molecule(g.vertices)
         return other
 
     def merge(self, other):
@@ -579,7 +586,7 @@ class Molecule(Graph):
         object. The merged :class:`Molecule` object is returned.
         """
         g = Graph.merge(self, other)
-        molecule = Molecule(atoms=g.vertices, bonds=g.edges)
+        molecule = Molecule(atoms=g.vertices)
         return molecule
 
     def split(self):
@@ -590,16 +597,14 @@ class Molecule(Graph):
         graphs = Graph.split(self)
         molecules = []
         for g in graphs:
-            molecule = Molecule(atoms=g.vertices, bonds=g.edges)
+            molecule = Molecule(atoms=g.vertices)
             molecules.append(molecule)
         return molecules
 
     def deleteHydrogens(self):
         """
-        Irreversibly delete all non-labeled hydrogens, without incrementing
-        the "implicitHydrogens" count of the neighbouring atom, or updating
-        Connectivity Values or the implicitHydrogens flag. If there's nothing
-        but Hydrogens, it does nothing.
+        Irreversibly delete all non-labeled hydrogens without updating
+        connectivity values. If there's nothing but hydrogens, it does nothing.
         It destroys information; be careful with it.
         """
         cython.declare(atom=Atom, neighbor=Atom, hydrogens=list)
@@ -613,91 +618,11 @@ class Molecule(Graph):
         hydrogens = []
         for atom in self.vertices:
             if atom.isHydrogen() and atom.label == '':
-                neighbor = self.edges[atom].keys()[0]
+                neighbor = atom.edges.keys()[0]
                 hydrogens.append(atom)
         # Remove the hydrogen atoms from the structure
         for atom in hydrogens:
             self.removeAtom(atom)
-
-
-    def makeHydrogensImplicit(self):
-        """
-        Convert all explicitly stored hydrogen atoms to be stored implicitly,
-        unless they are labeled atoms (then they remain explicit).
-        An implicit hydrogen atom is stored on the heavy atom it is connected
-        to as a single integer counter. This is done to save memory.
-        """
-
-        cython.declare(atom=Atom, neighbor=Atom, hydrogens=list)
-
-        # Check that the structure contains at least one heavy atom
-        for atom in self.vertices:
-            if not atom.isHydrogen():
-                break
-        else:
-            # No heavy atoms, so leave explicit
-            return
-        
-        # Count the hydrogen atoms on each non-hydrogen atom and set the
-        # `implicitHydrogens` attribute accordingly
-        hydrogens = []
-        for atom in self.vertices:
-            if atom.isHydrogen() and atom.label == '':
-                neighbor = self.edges[atom].keys()[0]
-                neighbor.implicitHydrogens += 1
-                hydrogens.append(atom)
-
-        # Remove the hydrogen atoms from the structure
-        for atom in hydrogens:
-            self.removeAtom(atom)
-        
-        # The connectivity values are different in implicit and explicit mode,
-        # so reset them so they are recomputed when needed
-        if hydrogens:
-            self.resetConnectivityValues()
-
-        # Set implicitHydrogens flag to True
-        self.implicitHydrogens = True
-
-    def makeHydrogensExplicit(self):
-        """
-        Convert all implicitly stored hydrogen atoms to be stored explicitly.
-        An explicit hydrogen atom is stored as its own atom in the graph, with
-        a single bond to the heavy atom it is attached to. This consumes more
-        memory, but may be required for certain tasks (e.g. subgraph matching).
-        """
-
-        cython.declare(atom=Atom, H=Atom, bond=Bond, hydrogens=list, numAtoms=cython.short)
-
-        # Create new hydrogen atoms for each implicit hydrogen
-        hydrogens = []
-        for atom in self.vertices:
-            while atom.implicitHydrogens > 0:
-                H = Atom(element='H')
-                bond = Bond(order='S')
-                hydrogens.append((H, atom, bond))
-                atom.implicitHydrogens -= 1
-
-        # Add the hydrogens to the graph
-        numAtoms = len(self.vertices)
-        for H, atom, bond in hydrogens:
-            self.addAtom(H)
-            self.addBond(H, atom, bond)
-            H.atomType = getAtomType(H, {atom:bond})
-            # If known, set the connectivity information
-            H.connectivity1 = 1
-            H.connectivity2 = atom.connectivity1
-            H.connectivity3 = atom.connectivity2
-            H.sortingLabel = numAtoms
-            numAtoms += 1
-
-        # The connectivity values are different in implicit and explicit mode,
-        # so reset them so they are recomputed when needed
-        if hydrogens:
-            self.resetConnectivityValues()
-
-        # Set implicitHydrogens flag to False
-        self.implicitHydrogens = False
 
     def updateAtomTypes(self):
         """
@@ -706,7 +631,7 @@ class Molecule(Graph):
         environment) and complete (i.e. are as detailed as possible).
         """
         for atom in self.vertices:
-            atom.atomType = getAtomType(atom, self.edges[atom])
+            atom.atomType = getAtomType(atom, atom.edges)
 
     def clearLabeledAtoms(self):
         """
@@ -748,7 +673,7 @@ class Molecule(Graph):
                     labeled[atom.label] = atom
         return labeled
 
-    def isIsomorphic(self, other0, initialMap=None):
+    def isIsomorphic(self, other, initialMap=None):
         """
         Returns :data:`True` if two graphs are isomorphic and :data:`False`
         otherwise. The `initialMap` attribute can be used to specify a required
@@ -756,27 +681,15 @@ class Molecule(Graph):
         while the atoms of `other` are the values). The `other` parameter must
         be a :class:`Molecule` object, or a :class:`TypeError` is raised.
         """
-        cython.declare(other=Molecule, selfImplicitH=cython.bint, otherImplicitH=cython.bint)
         # It only makes sense to compare a Molecule to a Molecule for full
         # isomorphism, so raise an exception if this is not what was requested
-        if not isinstance(other0, Molecule):
-            raise TypeError('Got a {0} object for parameter "other0", when a Molecule object is required.'.format(other0.__class__))
-        other = other0
-        # Ensure that both self and other have the same implicit hydrogen status
-        # If not, make them both explicit just to be safe
-        selfImplicitH = self.implicitHydrogens
-        otherImplicitH = other.implicitHydrogens
-        if not selfImplicitH or not otherImplicitH:
-            self.makeHydrogensExplicit()
-            other.makeHydrogensExplicit()
+        if not isinstance(other, Molecule):
+            raise TypeError('Got a {0} object for parameter "other", when a Molecule object is required.'.format(other.__class__))
         # Do the isomorphism comparison
         result = Graph.isIsomorphic(self, other, initialMap)
-        # Restore implicit status if needed
-        if selfImplicitH and not self.implicitHydrogens: self.makeHydrogensImplicit()
-        if otherImplicitH and not other.implicitHydrogens: other.makeHydrogensImplicit()
         return result
 
-    def findIsomorphism(self, other0, initialMap=None):
+    def findIsomorphism(self, other, initialMap=None):
         """
         Returns :data:`True` if `other` is isomorphic and :data:`False`
         otherwise, and the matching mapping. The `initialMap` attribute can be
@@ -786,24 +699,12 @@ class Molecule(Graph):
         and the atoms of `other` for the values. The `other` parameter must
         be a :class:`Molecule` object, or a :class:`TypeError` is raised.
         """
-        cython.declare(other=Molecule, selfImplicitH=cython.bint, otherImplicitH=cython.bint)
         # It only makes sense to compare a Molecule to a Molecule for full
         # isomorphism, so raise an exception if this is not what was requested
-        if not isinstance(other0, Molecule):
-            raise TypeError('Got a {0} object for parameter "other0", when a Molecule object is required.'.format(other0.__class__))
-        other = other0
-        # Ensure that both self and other have the same implicit hydrogen status
-        # If not, make them both explicit just to be safe
-        selfImplicitH = self.implicitHydrogens
-        otherImplicitH = other.implicitHydrogens
-        if not selfImplicitH or not otherImplicitH:
-            self.makeHydrogensExplicit()
-            other.makeHydrogensExplicit()
+        if not isinstance(other, Molecule):
+            raise TypeError('Got a {0} object for parameter "other", when a Molecule object is required.'.format(other.__class__))
         # Do the isomorphism comparison
         result = Graph.findIsomorphism(self, other, initialMap)
-        # Restore implicit status if needed
-        if selfImplicitH and not self.implicitHydrogens: self.makeHydrogensImplicit()
-        if otherImplicitH and not other.implicitHydrogens: other.makeHydrogensImplicit()
         return result
 
     def isSubgraphIsomorphic(self, other, initialMap=None):
@@ -818,13 +719,8 @@ class Molecule(Graph):
         # isomorphism, so raise an exception if this is not what was requested
         if not isinstance(other, Group):
             raise TypeError('Got a {0} object for parameter "other", when a Molecule object is required.'.format(other.__class__))
-        # Ensure that self is explicit (assume other is explicit)
-        implicitH = self.implicitHydrogens
-        if implicitH: self.makeHydrogensExplicit()
         # Do the isomorphism comparison
         result = Graph.isSubgraphIsomorphic(self, other, initialMap)
-        # Restore implicit status if needed
-        if implicitH and not self.implicitHydrogens: self.makeHydrogensImplicit()
         return result
 
     def findSubgraphIsomorphisms(self, other, initialMap=None):
@@ -842,13 +738,8 @@ class Molecule(Graph):
         # isomorphism, so raise an exception if this is not what was requested
         if not isinstance(other, Group):
             raise TypeError('Got a {0} object for parameter "other", when a Molecule object is required.'.format(other.__class__))
-        # Ensure that self is explicit (assume other is explicit)
-        implicitH = self.implicitHydrogens
-        if implicitH: self.makeHydrogensExplicit()
         # Do the isomorphism comparison
         result = Graph.findSubgraphIsomorphisms(self, other, initialMap)
-        # Restore implicit status if needed
-        if implicitH and not self.implicitHydrogens: self.makeHydrogensImplicit()
         return result
 
     def isAtomInCycle(self, atom):
@@ -858,12 +749,12 @@ class Molecule(Graph):
         """
         return self.isVertexInCycle(atom)
 
-    def isBondInCycle(self, atom1, atom2):
+    def isBondInCycle(self, bond):
         """
         Return :data:`True` if the bond between atoms `atom1` and `atom2`
         is in one or more cycles in the graph, or :data:`False` if not.
         """
-        return self.isEdgeInCycle(atom1, atom2)
+        return self.isEdgeInCycle(bond)
 
     def draw(self, path):
         """
@@ -889,7 +780,7 @@ class Molecule(Graph):
         return png
         
 
-    def fromCML(self, cmlstr, implicitH=False):
+    def fromCML(self, cmlstr):
         """
         Convert a string of CML `cmlstr` to a molecular structure. Uses
         `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
@@ -897,10 +788,10 @@ class Molecule(Graph):
         import pybel
         cmlstr = cmlstr.replace('\t', '')
         mol = pybel.readstring('cml', cmlstr)
-        self.fromOBMol(mol.OBMol, implicitH)
+        self.fromOBMol(mol.OBMol)
         return self
 
-    def fromInChI(self, inchistr, implicitH=False):
+    def fromInChI(self, inchistr):
         """
         Convert an InChI string `inchistr` to a molecular structure. Uses
         `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
@@ -910,10 +801,10 @@ class Molecule(Graph):
             return self.fromAdjacencyList('1 H 1')
         import pybel
         mol = pybel.readstring('inchi', inchistr)
-        self.fromOBMol(mol.OBMol, implicitH)
+        self.fromOBMol(mol.OBMol)
         return self
 
-    def fromSMILES(self, smilesstr, implicitH=False):
+    def fromSMILES(self, smilesstr):
         """
         Convert a SMILES string `smilesstr` to a molecular structure. Uses
         `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
@@ -923,10 +814,10 @@ class Molecule(Graph):
             return self.fromAdjacencyList('1 H 1')
         import pybel
         mol = pybel.readstring('smiles', smilesstr)
-        self.fromOBMol(mol.OBMol, implicitH)
+        self.fromOBMol(mol.OBMol)
         return self
 
-    def fromOBMol(self, obmol, implicitH=False):
+    def fromOBMol(self, obmol):
         """
         Convert an OpenBabel OBMol object `obmol` to a molecular structure. Uses
         `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
@@ -937,7 +828,6 @@ class Molecule(Graph):
         cython.declare(atom=Atom, atom1=Atom, atom2=Atom, bond=Bond)
 
         self.vertices = []
-        self.edges = {}
 
         # Add hydrogen atoms to complete molecule if needed
         obmol.AddHydrogens()
@@ -969,9 +859,8 @@ class Molecule(Graph):
             # Process charge
             charge = obatom.GetFormalCharge()
 
-            atom = Atom(element, radicalElectrons, spinMultiplicity, 0, charge)
+            atom = Atom(element, radicalElectrons, spinMultiplicity, charge)
             self.vertices.append(atom)
-            self.edges[atom] = {}
             
             # Add bonds by iterating again through atoms
             for j in range(0, i):
@@ -986,18 +875,12 @@ class Molecule(Graph):
                     elif obbond.IsTriple(): order = 'T'
                     elif obbond.IsAromatic(): order = 'B'
 
-                    bond = Bond(order)
-                    atom1 = self.vertices[i]
-                    atom2 = self.vertices[j]
-                    self.edges[atom1][atom2] = bond
-                    self.edges[atom2][atom1] = bond
+                    bond = Bond(self.vertices[i], self.vertices[j], order)
+                    self.addBond(bond)
 
         # Set atom types and connectivity values
         self.updateConnectivityValues()
         self.updateAtomTypes()
-
-        # Make hydrogens implicit to conserve memory
-        if implicitH: self.makeHydrogensImplicit()
 
         return self
 
@@ -1007,10 +890,10 @@ class Molecule(Graph):
         Skips the first line (assuming it's a label) unless `withLabel` is
         ``False``.
         """
-        self.vertices, self.edges = fromAdjacencyList(adjlist, False, True)
+        from .adjlist import fromAdjacencyList
+        self.vertices = fromAdjacencyList(adjlist, False)
         self.updateConnectivityValues()
         self.updateAtomTypes()
-        self.makeHydrogensImplicit()
         return self
 
     def toCML(self):
@@ -1028,7 +911,6 @@ class Molecule(Graph):
         Convert a molecular structure to an InChI string. Uses
         `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
         """
-        import openbabel
         # This version does not write a warning to stderr if stereochemistry is undefined
         obmol = self.toOBMol()
         obConversion = openbabel.OBConversion()
@@ -1080,38 +962,29 @@ class Molecule(Graph):
             return key+'mult'+str(radicalNumber+1)
         else:
             return key
-        
+
+
     def toSMILES(self):
         """
         Convert a molecular structure to an SMILES string. Uses
         `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
         """
-        import pybel
-        mol = pybel.Molecule(self.toOBMol())
-        return mol.write('smiles').strip()
+        mol = self.toOBMol()
+        return SMILEwriter.WriteString(mol).strip()
 
     def toOBMol(self):
         """
         Convert a molecular structure to an OpenBabel OBMol object. Uses
         `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
         """
-
-        import openbabel
-        
-        cython.declare(implicitH=cython.bint)
         cython.declare(atom=Atom, atom1=Atom, bonds=dict, atom2=Atom, bond=Bond)
         cython.declare(index1=cython.int, index2=cython.int, order=cython.int)
-
-        # Make hydrogens explicit while we perform the conversion
-        implicitH = self.implicitHydrogens
-        self.makeHydrogensExplicit()
 
         # Sort the atoms before converting to ensure output is consistent
         # between different runs
         self.sortAtoms()
 
         atoms = self.vertices
-        bonds = self.edges
 
         obmol = openbabel.OBMol()
         for atom in atoms:
@@ -1119,8 +992,8 @@ class Molecule(Graph):
             a.SetAtomicNum(atom.number)
             a.SetFormalCharge(atom.charge)
         orders = {'S': 1, 'D': 2, 'T': 3, 'B': 5}
-        for atom1, bonds in bonds.iteritems():
-            for atom2, bond in bonds.iteritems():
+        for atom1 in self.vertices:
+            for atom2, bond in atom1.edges.iteritems():
                 index1 = atoms.index(atom1)
                 index2 = atoms.index(atom2)
                 if index1 < index2:
@@ -1129,19 +1002,14 @@ class Molecule(Graph):
 
         obmol.AssignSpinMultiplicity(True)
 
-        # Restore implicit hydrogens if necessary
-        if implicitH: self.makeHydrogensImplicit()
-
         return obmol
 
     def toAdjacencyList(self, label='', removeH=False):
         """
         Convert the molecular structure to a string adjacency list.
         """
-        implicitH = self.implicitHydrogens
-        self.makeHydrogensExplicit()
-        result = toAdjacencyList(self, label=label, group=False, removeH=removeH)
-        if implicitH: self.makeHydrogensImplicit()
+        from .adjlist import toAdjacencyList
+        result = toAdjacencyList(self.vertices, label=label, group=False, removeH=removeH)
         return result
 
     def isLinear(self):
@@ -1150,7 +1018,7 @@ class Molecule(Graph):
         otherwise.
         """
 
-        atomCount = len(self.vertices) + sum([atom.implicitHydrogens for atom in self.vertices])
+        atomCount = len(self.vertices)
 
         # Monatomic molecules are definitely nonlinear
         if atomCount == 1:
@@ -1164,18 +1032,15 @@ class Molecule(Graph):
 
         # True if all bonds are double bonds (e.g. O=C=O)
         allDoubleBonds = True
-        for atom1 in self.edges:
-            if atom1.implicitHydrogens > 0: allDoubleBonds = False
-            for bond in self.edges[atom1].values():
+        for atom1 in self.vertices:
+            for bond in atom1.edges.values():
                 if not bond.isDouble(): allDoubleBonds = False
         if allDoubleBonds: return True
 
         # True if alternating single-triple bonds (e.g. H-C#C-H)
         # This test requires explicit hydrogen atoms
-        implicitH = self.implicitHydrogens
-        self.makeHydrogensExplicit()
         for atom in self.vertices:
-            bonds = self.edges[atom].values()
+            bonds = atom.edges.values()
             if len(bonds)==1:
                 continue # ok, next atom
             if len(bonds)>2:
@@ -1187,11 +1052,9 @@ class Molecule(Graph):
             break # fail if we haven't continued
         else:
             # didn't fail
-            if implicitH: self.makeHydrogensImplicit()
             return True
         
         # not returned yet? must be nonlinear
-        if implicitH: self.makeHydrogensImplicit()
         return False
 
     def countInternalRotors(self):
@@ -1201,397 +1064,26 @@ class Molecule(Graph):
         are considered to be internal rotors.
         """
         count = 0
-        for atom1 in self.edges:
-            for atom2, bond in self.edges[atom1].iteritems():
-                if self.vertices.index(atom1) < self.vertices.index(atom2) and bond.isSingle() and not self.isBondInCycle(atom1, atom2):
-                    if len(self.edges[atom1]) + atom1.implicitHydrogens > 1 and len(self.edges[atom2]) + atom2.implicitHydrogens > 1:
+        for atom1 in self.vertices:
+            for atom2, bond in atom1.edges.items():
+                if self.vertices.index(atom1) < self.vertices.index(atom2) and bond.isSingle() and not self.isBondInCycle(bond):
+                    if len(atom1.edges) > 1 and len(atom2.edges) > 1:
                         count += 1
         return count
-
-    def calculateAtomSymmetryNumber(self, atom):
-        """
-        Return the symmetry number centered at `atom` in the structure. The
-        `atom` of interest must not be in a cycle.
-        """
-        symmetryNumber = 1
-
-        single = 0; double = 0; triple = 0; benzene = 0
-        numNeighbors = 0
-        for bond in self.edges[atom].values():
-            if bond.isSingle(): single += 1
-            elif bond.isDouble(): double += 1
-            elif bond.isTriple(): triple += 1
-            elif bond.isBenzene(): benzene += 1
-            numNeighbors += 1
-        
-        # If atom has zero or one neighbors, the symmetry number is 1
-        if numNeighbors < 2: return symmetryNumber
-
-        # Create temporary structures for each functional group attached to atom
-        molecule = self.copy()
-        for atom2 in molecule.bonds[atom].keys(): molecule.removeBond(atom, atom2)
-        molecule.removeAtom(atom)
-        groups = molecule.split()
-
-        # Determine equivalence of functional groups around atom
-        groupIsomorphism = dict([(group, dict()) for group in groups])
-        for group1 in groups:
-            for group2 in groups:
-                if group1 is not group2 and group2 not in groupIsomorphism[group1]:
-                    groupIsomorphism[group1][group2] = group1.isIsomorphic(group2)
-                    groupIsomorphism[group2][group1] = groupIsomorphism[group1][group2]
-                elif group1 is group2:
-                    groupIsomorphism[group1][group1] = True
-        count = [sum([int(groupIsomorphism[group1][group2]) for group2 in groups]) for group1 in groups]
-        for i in range(count.count(2) / 2):
-            count.remove(2)
-        for i in range(count.count(3) / 3):
-            count.remove(3); count.remove(3)
-        for i in range(count.count(4) / 4):
-            count.remove(4); count.remove(4); count.remove(4)
-        count.sort(); count.reverse()
-        
-        if atom.radicalElectrons == 0:
-            if single == 4:
-                # Four single bonds
-                if count == [4]: symmetryNumber *= 12
-                elif count == [3, 1]: symmetryNumber *= 3
-                elif count == [2, 2]: symmetryNumber *= 2
-                elif count == [2, 1, 1]: symmetryNumber *= 1
-                elif count == [1, 1, 1, 1]: symmetryNumber *= 1
-            elif single == 2:
-                # Two single bonds
-                if count == [2]: symmetryNumber *= 2
-            elif double == 2:
-                # Two double bonds
-                if count == [2]: symmetryNumber *= 2
-        elif atom.radicalElectrons == 1:
-            if single == 3:
-                # Three single bonds
-                if count == [3]: symmetryNumber *= 6
-                elif count == [2, 1]: symmetryNumber *= 2
-                elif count == [1, 1, 1]: symmetryNumber *= 1
-        elif atom.radicalElectrons == 2:
-            if single == 2:
-                # Two single bonds
-                if count == [2]: symmetryNumber *= 2
-
-        return symmetryNumber
-
-    def calculateBondSymmetryNumber(self, atom1, atom2):
-        """
-        Return the symmetry number centered at `bond` in the structure.
-        """
-        bond = self.edges[atom1][atom2]
-        symmetryNumber = 1
-        if bond.isSingle() or bond.isDouble() or bond.isTriple():
-            if atom1.equivalent(atom2):
-                # An O-O bond is considered to be an "optical isomer" and so no
-                # symmetry correction will be applied
-                if atom1.atomType == atom2.atomType == 'Os' and \
-                    atom1.radicalElectrons == atom2.radicalElectrons == 0:
-                    pass
-                # If the molecule is diatomic, then we don't have to check the
-                # ligands on the two atoms in this bond (since we know there
-                # aren't any)
-                elif len(self.vertices) == 2:
-                    symmetryNumber = 2
-                else:
-                    molecule = self.copy()
-                    molecule.removeBond(atom1, atom2)
-                    fragments = molecule.split()
-                    if len(fragments) != 2: return symmetryNumber
-
-                    fragment1, fragment2 = fragments
-                    if atom1 in fragment1.atoms: fragment1.removeAtom(atom1)
-                    if atom2 in fragment1.atoms: fragment1.removeAtom(atom2)
-                    if atom1 in fragment2.atoms: fragment2.removeAtom(atom1)
-                    if atom2 in fragment2.atoms: fragment2.removeAtom(atom2)
-                    groups1 = fragment1.split()
-                    groups2 = fragment2.split()
-
-                    # Test functional groups for symmetry
-                    if len(groups1) == len(groups2) == 1:
-                        if groups1[0].isIsomorphic(groups2[0]): symmetryNumber *= 2
-                    elif len(groups1) == len(groups2) == 2:
-                        if groups1[0].isIsomorphic(groups2[0]) and groups1[1].isIsomorphic(groups2[1]): symmetryNumber *= 2
-                        elif groups1[1].isIsomorphic(groups2[0]) and groups1[0].isIsomorphic(groups2[1]): symmetryNumber *= 2
-                    elif len(groups1) == len(groups2) == 3:
-                        if groups1[0].isIsomorphic(groups2[0]) and groups1[1].isIsomorphic(groups2[1]) and groups1[2].isIsomorphic(groups2[2]): symmetryNumber *= 2
-                        elif groups1[0].isIsomorphic(groups2[0]) and groups1[1].isIsomorphic(groups2[2]) and groups1[2].isIsomorphic(groups2[1]): symmetryNumber *= 2
-                        elif groups1[0].isIsomorphic(groups2[1]) and groups1[1].isIsomorphic(groups2[2]) and groups1[2].isIsomorphic(groups2[0]): symmetryNumber *= 2
-                        elif groups1[0].isIsomorphic(groups2[1]) and groups1[1].isIsomorphic(groups2[0]) and groups1[2].isIsomorphic(groups2[2]): symmetryNumber *= 2
-                        elif groups1[0].isIsomorphic(groups2[2]) and groups1[1].isIsomorphic(groups2[0]) and groups1[2].isIsomorphic(groups2[1]): symmetryNumber *= 2
-                        elif groups1[0].isIsomorphic(groups2[2]) and groups1[1].isIsomorphic(groups2[1]) and groups1[2].isIsomorphic(groups2[0]): symmetryNumber *= 2
-
-        return symmetryNumber
-
-    def calculateAxisSymmetryNumber(self):
-        """
-        Get the axis symmetry number correction. The "axis" refers to a series
-        of two or more cumulated double bonds (e.g. C=C=C, etc.). Corrections
-        for single C=C bonds are handled in getBondSymmetryNumber().
-        
-        Each axis (C=C=C) has the potential to double the symmetry number.
-        If an end has 0 or 1 groups (eg. =C=CJJ or =C=C-R) then it cannot 
-        alter the axis symmetry and is disregarded::
-        
-            A=C=C=C..        A-C=C=C=C-A
-            
-              s=1                s=1
-        
-        If an end has 2 groups that are different then it breaks the symmetry 
-        and the symmetry for that axis is 1, no matter what's at the other end::
-        
-            A\               A\         /A
-              T=C=C=C=C-A      T=C=C=C=T
-            B/               A/         \B
-                  s=1             s=1
-        
-        If you have one or more ends with 2 groups, and neither end breaks the 
-        symmetry, then you have an axis symmetry number of 2::
-        
-            A\         /B      A\         
-              C=C=C=C=C          C=C=C=C-B
-            A/         \B      A/         
-                  s=2                s=2
-        """
-
-        symmetryNumber = 1
-
-        # List all double bonds in the structure
-        doubleBonds = []
-        for atom1 in self.edges:
-            for atom2 in self.edges[atom1]:
-                if self.edges[atom1][atom2].isDouble() and self.vertices.index(atom1) < self.vertices.index(atom2):
-                    doubleBonds.append((atom1, atom2))
-
-        # Search for adjacent double bonds
-        cumulatedBonds = []
-        for i, bond1 in enumerate(doubleBonds):
-            atom11, atom12 = bond1
-            for bond2 in doubleBonds[i+1:]:
-                atom21, atom22 = bond2
-                if atom11 is atom21 or atom11 is atom22 or atom12 is atom21 or atom12 is atom22:
-                    listToAddTo = None
-                    for cumBonds in cumulatedBonds:
-                        if (atom11, atom12) in cumBonds or (atom21, atom22) in cumBonds:
-                            listToAddTo = cumBonds
-                    if listToAddTo is not None:
-                        if (atom11, atom12) not in listToAddTo: listToAddTo.append((atom11, atom12))
-                        if (atom21, atom22) not in listToAddTo: listToAddTo.append((atom21, atom22))
-                    else:
-                        cumulatedBonds.append([(atom11, atom12), (atom21, atom22)])
-        
-        # Also keep isolated double bonds
-        for bond1 in doubleBonds:
-            for bonds in cumulatedBonds:
-                if bond1 in bonds:
-                    break
-            else:
-                cumulatedBonds.append([bond1])
-               
-        # For each set of adjacent double bonds, check for axis symmetry
-        for bonds in cumulatedBonds:
-            
-            # Do nothing if less than two cumulated bonds
-            if len(bonds) < 1: continue
-
-            # Do nothing if axis is in cycle
-            found = False
-            for atom1, atom2 in bonds:
-               if self.isBondInCycle(atom1, atom2): found = True
-            if found: continue
-
-            # Find terminal atoms in axis
-            # Terminal atoms labelled T:  T=C=C=C=T
-            axis = []
-            for bond in bonds: axis.extend(bond)
-            terminalAtoms = []
-            for atom in axis:
-                if axis.count(atom) == 1: terminalAtoms.append(atom)
-            if len(terminalAtoms) != 2: continue
-            
-            # Remove axis from (copy of) structure
-            structure = self.copy()
-            for atom1, atom2 in bonds:
-                structure.removeBond(atom1, atom2)
-            atomsToRemove = []
-            for atom in structure.atoms:
-                if len(structure.bonds[atom]) == 0 and atom not in terminalAtoms: # it's not bonded to anything
-                    atomsToRemove.append(atom)
-            for atom in atomsToRemove: structure.removeAtom(atom)
-
-            # Split remaining fragments of structure
-            end_fragments = structure.split()
-            
-            # 
-            # there can be two groups at each end     A\         /B
-            #                                           T=C=C=C=T
-            #                                         A/         \B
-            
-            # to start with nothing has broken symmetry about the axis
-            symmetry_broken=False
-            end_fragments_to_remove = []
-            for fragment in end_fragments: # a fragment is one end of the axis
-                
-                # remove the atom that was at the end of the axis and split what's left into groups
-                terminalAtom = None
-                for atom in terminalAtoms:
-                    if atom in fragment.atoms: 
-                        terminalAtom = atom
-                        fragment.removeAtom(atom)
-                        break
-                else:
-                    continue
-                
-                groups = []
-                if len(fragment.atoms) > 0:
-                    groups = fragment.split()
-                
-                # If end has only one group then it can't contribute to (nor break) axial symmetry
-                #   Eg. this has no axis symmetry:   A-T=C=C=C=T-A
-                # so we remove this end from the list of interesting end fragments
-                if len(groups) == 0:
-                    end_fragments_to_remove.append(fragment)
-                    continue # next end fragment
-                elif len(groups)==1 and terminalAtom.radicalElectrons == 0:
-                    end_fragments_to_remove.append(fragment)
-                    continue # next end fragment
-                elif len(groups)==1 and terminalAtom.radicalElectrons != 0:
-                    symmetry_broken = True
-                elif len(groups)==2:
-                    if not groups[0].isIsomorphic(groups[1]):
-                        # this end has broken the symmetry of the axis
-                        symmetry_broken = True
-            
-            for fragment in end_fragments_to_remove:
-                end_fragments.remove(fragment)
-                                
-            # If there are end fragments left that can contribute to symmetry,
-            # and none of them broke it, then double the symmetry number
-            # NB>> This assumes coordination number of 4 (eg. Carbon).
-            #      And would be wrong if we had /B
-            #                         =C=C=C=C=T-B
-            #                                   \B
-            #      (for some T with coordination number 5).
-            if end_fragments and not symmetry_broken:
-                symmetryNumber *= 2
-                    
-        return symmetryNumber
-
-    def calculateCyclicSymmetryNumber(self):
-        """
-        Get the symmetry number correction for cyclic regions of a molecule.
-        For complicated fused rings the smallest set of smallest rings is used.
-        """
-
-        symmetryNumber = 1
-
-        # Get symmetry number for each ring in structure
-        rings = self.getSmallestSetOfSmallestRings()
-        for ring in rings:
-
-            # Make copy of structure
-            structure = self.copy()
-
-            # Remove bonds of ring from structure
-            for i, atom1 in enumerate(ring):
-                for atom2 in ring[i+1:]:
-                    if structure.hasBond(atom1, atom2):
-                        structure.removeBond(atom1, atom2)
-
-            structures = structure.split()
-            groups = []
-            for struct in structures:
-                for atom in ring:
-                    if atom in struct.atoms(): struct.removeAtom(atom)
-                groups.append(struct.split())
-
-            # Find equivalent functional groups on ring
-            equivalentGroups = []
-            for group in groups:
-                found = False
-                for eqGroup in equivalentGroups:
-                    if not found:
-                        if group.isIsomorphic(eqGroup[0]):
-                            eqGroup.append(group)
-                            found = True
-                if not found:
-                    equivalentGroups.append([group])
-
-            # Find equivalent bonds on ring
-            equivalentBonds = []
-            for i, atom1 in enumerate(ring):
-                for atom2 in ring[i+1:]:
-                    if self.hasBond(atom1, atom2):
-                        bond = self.getBond(atom1, atom2)
-                        found = False
-                        for eqBond in equivalentBonds:
-                            if not found:
-                                if bond.equivalent(eqBond[0]):
-                                    eqBond.append(group)
-                                    found = True
-                        if not found:
-                            equivalentBonds.append([bond])
-
-            # Find maximum number of equivalent groups and bonds
-            maxEquivalentGroups = 0
-            for groups in equivalentGroups:
-                if len(groups) > maxEquivalentGroups:
-                    maxEquivalentGroups = len(groups)
-            maxEquivalentBonds = 0
-            for bonds in equivalentBonds:
-                if len(bonds) > maxEquivalentBonds:
-                    maxEquivalentBonds = len(bonds)
-
-            if maxEquivalentGroups == maxEquivalentBonds == len(ring):
-                symmetryNumber *= len(ring)
-            else:
-                symmetryNumber *= max(maxEquivalentGroups, maxEquivalentBonds)
-
-            print len(ring), maxEquivalentGroups, maxEquivalentBonds, symmetryNumber
-
-
-        return symmetryNumber
 
     def calculateSymmetryNumber(self):
         """
         Return the symmetry number for the structure. The symmetry number
         includes both external and internal modes.
         """
-        symmetryNumber = 1
-
-        implicitH = self.implicitHydrogens
-        self.makeHydrogensExplicit()
-
-        for atom in self.vertices:
-            if not self.isAtomInCycle(atom):
-                symmetryNumber *= self.calculateAtomSymmetryNumber(atom)
-
-        for atom1 in self.edges:
-            for atom2 in self.edges[atom1]:
-                if self.vertices.index(atom1) < self.vertices.index(atom2) and not self.isBondInCycle(atom1, atom2):
-                    symmetryNumber *= self.calculateBondSymmetryNumber(atom1, atom2)
-
-        symmetryNumber *= self.calculateAxisSymmetryNumber()
-
-        #if self.isCyclic():
-        #   symmetryNumber *= self.calculateCyclicSymmetryNumber()
-
-        self.symmetryNumber = symmetryNumber
-
-        if implicitH: self.makeHydrogensImplicit()
-
-        return symmetryNumber
-
+        from rmgpy.molecule.symmetry import calculateSymmetryNumber
+        self.symmetryNumber = calculateSymmetryNumber(self)
+        return self.symmetryNumber
+    
     def generateResonanceIsomers(self):
         """
         Generate and return all of the resonance isomers of this molecule.
         """
-
-        implicitH = self.implicitHydrogens
-        self.makeHydrogensExplicit()
         
         isomers = [self]
 
@@ -1612,10 +1104,6 @@ class Molecule(Graph):
                         isomers.append(newIsomer)
                 # Move to next resonance isomer
                 index += 1
-
-        if implicitH:
-            for isomer in isomers:
-                isomer.makeHydrogensImplicit()
         
         return isomers
 
@@ -1669,12 +1157,12 @@ class Molecule(Graph):
 
         # Find all delocalization paths
         paths = []
-        for atom2, bond12 in self.edges[atom1].iteritems():
+        for atom2, bond12 in atom1.edges.items():
             # Vinyl bond must be capable of gaining an order
             if bond12.order in ['S', 'D']:
-                for atom3, bond23 in self.getBonds(atom2).iteritems():
+                for atom3, bond23 in atom2.edges.items():
                     # Allyl bond must be capable of losing an order without breaking
-                    if atom1 is not atom3 and bond23.order in ['D', 'T']:
+                    if atom1 is not atom3 and (bond23.order == 'D' or bond23.order == 'T'):
                         paths.append([atom1, atom2, atom3, bond12, bond23])
         return paths
 

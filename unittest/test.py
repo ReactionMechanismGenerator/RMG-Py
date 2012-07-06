@@ -10,12 +10,13 @@ import unittest
 from cantherm.gaussianTest import *
 from cantherm.geometryTest import *
 
-from atomtypeTest import *
-from elementTest import *
-from graphTest import *
-from groupTest import *
+from molecule.atomtypeTest import *
+from molecule.elementTest import *
+from molecule.graphTest import *
+from molecule.groupTest import *
+from molecule.moleculeTest import *
+
 from kineticsTest import *
-from moleculeTest import *
 from quantityTest import *
 from reactionTest import *
 from speciesTest import *

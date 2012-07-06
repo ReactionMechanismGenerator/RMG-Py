@@ -41,8 +41,7 @@ import re
 import codecs
 
 from rmgpy.quantity import *
-from rmgpy.molecule import Molecule
-from rmgpy.group import Group, InvalidAdjacencyListError
+from rmgpy.molecule import Molecule, Group, InvalidAdjacencyListError
 
 from reference import *
 

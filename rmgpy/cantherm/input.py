@@ -200,7 +200,7 @@ def loadTransitionState(label, geomLog, statesLog, extSymmetry, spinMultiplicity
             rotor[0] = os.path.join(directory, rotor[0])
     E0, geom, states = loadConfiguration(energyLog, geomLog, statesLog, extSymmetry, spinMultiplicity, freqScaleFactor, linear, rotors, atoms, bonds, E0, TS=True)
     log = GaussianLog(statesLog)
-    frequency = log.loadNegativeFrequency()
+    frequency = log.loadNegativeFrequency() * freqScaleFactor
     transitionStateDict[label] = TransitionState(label=label, states=states, frequency=(frequency,"cm^-1"), E0=(E0/1000.,"kJ/mol"))
     geometryDict[label] = geom
     

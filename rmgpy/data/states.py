@@ -34,7 +34,7 @@ import numpy
 
 from rmgpy.quantity import constants
 from rmgpy.statmech import *
-from rmgpy.group import Group
+from rmgpy.molecule import Group
 
 from base import *
 

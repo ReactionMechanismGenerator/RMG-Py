@@ -40,8 +40,7 @@ from base import *
 from rmgpy.quantity import Quantity
 from rmgpy.reaction import Reaction, ReactionError
 from rmgpy.kinetics import *
-from rmgpy.group import GroupBond, Group
-from rmgpy.molecule import Bond
+from rmgpy.molecule import Bond, GroupBond, Group
 from rmgpy.species import Species
 
 ################################################################################
@@ -349,15 +348,15 @@ class ReactionRecipe:
                         atom2.applyAction(['CHANGE_BOND', label1, -info, label2])
                         bond.applyAction(['CHANGE_BOND', label1, -info, label2])
                 elif (action[0] == 'FORM_BOND' and doForward) or (action[0] == 'BREAK_BOND' and not doForward):
-                    bond = GroupBond(order=['S']) if pattern else Bond(order='S')
-                    struct.addBond(atom1, atom2, bond)
+                    bond = GroupBond(atom1, atom2, order=['S']) if pattern else Bond(atom1, atom2, order='S')
+                    struct.addBond(bond)
                     atom1.applyAction(['FORM_BOND', label1, info, label2])
                     atom2.applyAction(['FORM_BOND', label1, info, label2])
                 elif (action[0] == 'BREAK_BOND' and doForward) or (action[0] == 'FORM_BOND' and not doForward):
                     if not struct.hasBond(atom1, atom2):
                         raise InvalidActionError('Attempted to remove a nonexistent bond.')
                     bond = struct.getBond(atom1, atom2)
-                    struct.removeBond(atom1, atom2)
+                    struct.removeBond(bond)
                     atom1.applyAction(['BREAK_BOND', label1, info, label2])
                     atom2.applyAction(['BREAK_BOND', label1, info, label2])
 
@@ -2207,7 +2206,7 @@ class KineticsFamily(Database):
             data.changeT0(1)
             
             # Estimate the thermo for the reactants and products
-            item = deepcopy(entry.item)
+            item = Reaction(reactants=[m.copy(deep=True) for m in entry.item.reactants], products=[m.copy(deep=True) for m in entry.item.products])
             item.reactants = [Species(molecule=[m]) for m in item.reactants]
             for reactant in item.reactants:
                 reactant.generateResonanceIsomers()
@@ -2582,9 +2581,8 @@ class KineticsFamily(Database):
         if isinstance(struct, LogicNode):
             mappings = []
             for child_structure in struct.getPossibleStructures(self.groups.entries):
-                ismatch, map = reactant.findSubgraphIsomorphisms(child_structure)
-                if ismatch: mappings.extend(map)
-            return len(mappings) > 0, mappings
+                mappings.extend(reactant.findSubgraphIsomorphisms(child_structure))
+            return mappings
         elif isinstance(struct, Group):
             return reactant.findSubgraphIsomorphisms(struct)
 
@@ -2718,8 +2716,6 @@ class KineticsFamily(Database):
         for i in range(len(reactants)):
             for j in range(len(reactants[i])):
                 reactants[i][j] = reactants[i][j].copy(deep=True)
-                # Each molecule must have explicit hydrogen atoms
-                reactants[i][j].makeHydrogensExplicit()
                 
         if forward:
             template = self.forwardTemplate
@@ -2734,18 +2730,17 @@ class KineticsFamily(Database):
             # Iterate over all resonance isomers of the reactant
             for molecule in reactants[0]:
 
-                ismatch, mappings = self.__matchReactantToTemplate(molecule, template.reactants[0])
-                if ismatch:
-                    for map in mappings:
-                        reactantStructures = [molecule]
-                        try:
-                            productStructures = self.__generateProductStructures(reactantStructures, [map], forward)
-                        except ForbiddenStructureException:
-                            pass
-                        else:
-                            if productStructures is not None:
-                                rxn = self.__createReaction(reactantStructures, productStructures, forward)
-                                if rxn: rxnList.append(rxn)
+                mappings = self.__matchReactantToTemplate(molecule, template.reactants[0])
+                for map in mappings:
+                    reactantStructures = [molecule]
+                    try:
+                        productStructures = self.__generateProductStructures(reactantStructures, [map], forward)
+                    except ForbiddenStructureException:
+                        pass
+                    else:
+                        if productStructures is not None:
+                            rxn = self.__createReaction(reactantStructures, productStructures, forward)
+                            if rxn: rxnList.append(rxn)
 
         # Bimolecular reactants: A + B --> products
         elif len(reactants) == 2 and len(template.reactants) == 2:
@@ -2758,11 +2753,30 @@ class KineticsFamily(Database):
                 for moleculeB in moleculesB:
 
                     # Reactants stored as A + B
-                    ismatchA, mappingsA = self.__matchReactantToTemplate(moleculeA, template.reactants[0])
-                    ismatchB, mappingsB = self.__matchReactantToTemplate(moleculeB, template.reactants[1])
+                    mappingsA = self.__matchReactantToTemplate(moleculeA, template.reactants[0])
+                    mappingsB = self.__matchReactantToTemplate(moleculeB, template.reactants[1])
 
                     # Iterate over each pair of matches (A, B)
-                    if ismatchA and ismatchB:
+                    for mapA in mappingsA:
+                        for mapB in mappingsB:
+                            reactantStructures = [moleculeA, moleculeB]
+                            try:
+                                productStructures = self.__generateProductStructures(reactantStructures, [mapA, mapB], forward)
+                            except ForbiddenStructureException:
+                                pass
+                            else:
+                                if productStructures is not None:
+                                    rxn = self.__createReaction(reactantStructures, productStructures, forward)
+                                    if rxn: rxnList.append(rxn)
+
+                    # Only check for swapped reactants if they are different
+                    if reactants[0] is not reactants[1]:
+
+                        # Reactants stored as B + A
+                        mappingsA = self.__matchReactantToTemplate(moleculeA, template.reactants[1])
+                        mappingsB = self.__matchReactantToTemplate(moleculeB, template.reactants[0])
+
+                        # Iterate over each pair of matches (A, B)
                         for mapA in mappingsA:
                             for mapB in mappingsB:
                                 reactantStructures = [moleculeA, moleculeB]
@@ -2774,27 +2788,6 @@ class KineticsFamily(Database):
                                     if productStructures is not None:
                                         rxn = self.__createReaction(reactantStructures, productStructures, forward)
                                         if rxn: rxnList.append(rxn)
-
-                    # Only check for swapped reactants if they are different
-                    if reactants[0] is not reactants[1]:
-
-                        # Reactants stored as B + A
-                        ismatchA, mappingsA = self.__matchReactantToTemplate(moleculeA, template.reactants[1])
-                        ismatchB, mappingsB = self.__matchReactantToTemplate(moleculeB, template.reactants[0])
-
-                        # Iterate over each pair of matches (A, B)
-                        if ismatchA and ismatchB:
-                            for mapA in mappingsA:
-                                for mapB in mappingsB:
-                                    reactantStructures = [moleculeA, moleculeB]
-                                    try:
-                                        productStructures = self.__generateProductStructures(reactantStructures, [mapA, mapB], forward)
-                                    except ForbiddenStructureException:
-                                        pass
-                                    else:
-                                        if productStructures is not None:
-                                            rxn = self.__createReaction(reactantStructures, productStructures, forward)
-                                            if rxn: rxnList.append(rxn)
 
         # Remove duplicates from the reaction list
         index0 = 0
