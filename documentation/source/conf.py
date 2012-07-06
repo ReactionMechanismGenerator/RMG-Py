@@ -41,7 +41,7 @@ master_doc = 'contents'
 
 # General information about the project.
 project = u'RMG Py'
-copyright = u'2011, William H. Green and the RMG Team'
+copyright = u'2012, William H. Green, Richard H. West, and the RMG Team'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -183,7 +183,7 @@ html_copy_source = False
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
   ('index', 'RMGPy.tex', u'RMG Py Documentation',
-   u'William H. Green and the RMG Team', 'manual'),
+   u'William H. Green, Richard H. West, and the RMG Team', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -225,5 +225,5 @@ pngmath_latex_preamble = latex_preamble
 # (source start file, name, description, authors, manual section).
 man_pages = [
     ('index', 'rmgpy', u'RMG Py Documentation',
-     [u'William H. Green and the RMG Team'], 1)
+     [u'William H. Green, Richard H. West, and the RMG Team'], 1)
 ]
