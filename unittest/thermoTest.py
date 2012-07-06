@@ -144,7 +144,7 @@ class TestThermoData(unittest.TestCase):
         Test the ThermoData.getFreeEnergy() method.
         """
         for T in [300,400,500,600,800,1000,1500,2000]:
-            self.assertEqual(self.thermo.getFreeEnergy(T), self.thermo.getEnthalpy(T) - T * self.thermo.getEntropy(T))
+            self.assertAlmostEqual(self.thermo.getFreeEnergy(T), self.thermo.getEnthalpy(T) - T * self.thermo.getEntropy(T), 9)
     
     def testPickle(self):
         """
@@ -271,7 +271,7 @@ class TestWilhoit(unittest.TestCase):
         Test the Wilhoit.getFreeEnergy() method.
         """
         for T in [300,400,500,600,800,1000,1500,2000]:
-            self.assertEqual(self.thermo.getFreeEnergy(T), self.thermo.getEnthalpy(T) - T * self.thermo.getEntropy(T))
+            self.assertAlmostEqual(self.thermo.getFreeEnergy(T), self.thermo.getEnthalpy(T) - T * self.thermo.getEntropy(T), 9)
     
     def testPickle(self):
         """
@@ -394,7 +394,7 @@ class TestNASA(unittest.TestCase):
         Test the NASA.getFreeEnergy() method.
         """
         for T in [300,400,500,600,800,1000,1500,2000]:
-            self.assertEqual(self.thermo.getFreeEnergy(T), self.thermo.getEnthalpy(T) - T * self.thermo.getEntropy(T))
+            self.assertAlmostEqual(self.thermo.getFreeEnergy(T), self.thermo.getEnthalpy(T) - T * self.thermo.getEntropy(T), 9)
     
     def testPickle(self):
         """

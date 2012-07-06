@@ -3,6 +3,7 @@
 
 import numpy
 import unittest
+import os
 
 from rmgpy.cantherm.gaussian import *
 from rmgpy.statmech import *
@@ -21,7 +22,7 @@ class GaussianTest(unittest.TestCase):
         molecular degrees of freedom can be properly read.
         """
 
-        log = GaussianLog('unittest/cantherm/ethylene.log')
+        log = GaussianLog(os.path.join(os.path.dirname(__file__),'ethylene.log'))
         s = log.loadStates()
         E0 = log.loadEnergy()
         
@@ -47,7 +48,7 @@ class GaussianTest(unittest.TestCase):
         molecular degrees of freedom can be properly read.
         """
 
-        log = GaussianLog('unittest/cantherm/oxygen.log')
+        log = GaussianLog(os.path.join(os.path.dirname(__file__),'oxygen.log'))
         s = log.loadStates()
         E0 = log.loadEnergy()
         
