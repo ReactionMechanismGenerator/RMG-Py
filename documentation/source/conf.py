@@ -147,7 +147,8 @@ html_additional_pages = {'index': 'index.html'}
 #html_split_index = False
 
 # If true, links to the reST sources are added to the pages.
-#html_show_sourcelink = True
+# nb. sourcelink.html template has been modified to point to the source's blob on github.
+html_show_sourcelink = True
 
 # If true, "Created using Sphinx" is shown in the HTML footer. Default is True.
 #html_show_sphinx = True
@@ -169,7 +170,7 @@ htmlhelp_basename = 'RMGPydoc'
 # If true, documentation source files will be copied to the build directory,
 # and a link to view the source for the current page will be available in the
 # sidebar. Default is True.
-html_copy_source = False
+html_copy_source = True
 
 # -- Options for LaTeX output --------------------------------------------------
 
