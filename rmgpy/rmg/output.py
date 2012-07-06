@@ -61,7 +61,7 @@ def saveOutputHTML(path, reactionModel):
 
     from model import PDepReaction
     
-    from rmgpy.molecule_draw import drawMolecule
+    from rmgpy.molecule import drawMolecule
     try:
         import jinja2
     except ImportError:

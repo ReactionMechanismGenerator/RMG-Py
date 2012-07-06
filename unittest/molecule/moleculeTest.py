@@ -3,9 +3,9 @@
 
 import unittest
 
-from rmgpy.molecule import *
-from rmgpy.group import Group
-from rmgpy.element import getElement, elementList
+from rmgpy.molecule.molecule import *
+from rmgpy.molecule.group import Group
+from rmgpy.molecule.element import getElement, elementList
 
 ################################################################################
 
@@ -18,7 +18,7 @@ class TestAtom(unittest.TestCase):
         """
         A method called before each unit test in this class.
         """
-        self.atom = Atom(element=getElement('C'), radicalElectrons=1, spinMultiplicity=2, implicitHydrogens=3, charge=0, label='*1')
+        self.atom = Atom(element=getElement('C'), radicalElectrons=1, spinMultiplicity=2, charge=0, label='*1')
     
     def testMass(self):
         """
@@ -43,7 +43,7 @@ class TestAtom(unittest.TestCase):
         Test the Atom.isHydrogen() method.
         """
         for element in elementList:
-            atom = Atom(element=element, radicalElectrons=1, spinMultiplicity=2, implicitHydrogens=0, charge=0, label='*1')
+            atom = Atom(element=element, radicalElectrons=1, spinMultiplicity=2, charge=0, label='*1')
             if element.symbol == 'H':
                 self.assertTrue(atom.isHydrogen())
             else:
@@ -54,7 +54,7 @@ class TestAtom(unittest.TestCase):
         Test the Atom.isNonHydrogen() method.
         """
         for element in elementList:
-            atom = Atom(element=element, radicalElectrons=1, spinMultiplicity=2, implicitHydrogens=0, charge=0, label='*1')
+            atom = Atom(element=element, radicalElectrons=1, spinMultiplicity=2, charge=0, label='*1')
             if element.symbol == 'H':
                 self.assertFalse(atom.isNonHydrogen())
             else:
@@ -65,7 +65,7 @@ class TestAtom(unittest.TestCase):
         Test the Atom.isCarbon() method.
         """
         for element in elementList:
-            atom = Atom(element=element, radicalElectrons=1, spinMultiplicity=2, implicitHydrogens=0, charge=0, label='*1')
+            atom = Atom(element=element, radicalElectrons=1, spinMultiplicity=2, charge=0, label='*1')
             if element.symbol == 'C':
                 self.assertTrue(atom.isCarbon())
             else:
@@ -76,7 +76,7 @@ class TestAtom(unittest.TestCase):
         Test the Atom.isOxygen() method.
         """
         for element in elementList:
-            atom = Atom(element=element, radicalElectrons=1, spinMultiplicity=2, implicitHydrogens=0, charge=0, label='*1')
+            atom = Atom(element=element, radicalElectrons=1, spinMultiplicity=2, charge=0, label='*1')
             if element.symbol == 'O':
                 self.assertTrue(atom.isOxygen())
             else:
@@ -108,13 +108,12 @@ class TestAtom(unittest.TestCase):
         """
         action = ['BREAK_BOND', '*1', 'S', '*2']
         for element in elementList:
-            atom0 = Atom(element=element, radicalElectrons=1, spinMultiplicity=2, implicitHydrogens=3, charge=0, label='*1')
+            atom0 = Atom(element=element, radicalElectrons=1, spinMultiplicity=2, charge=0, label='*1')
             atom = atom0.copy()
             atom.applyAction(action)
             self.assertEqual(atom0.element, atom.element)
             self.assertEqual(atom0.radicalElectrons, atom.radicalElectrons)
             self.assertEqual(atom0.spinMultiplicity, atom.spinMultiplicity)
-            self.assertEqual(atom0.implicitHydrogens, atom.implicitHydrogens)
             self.assertEqual(atom0.charge, atom.charge)
             self.assertEqual(atom0.label, atom.label)
     
@@ -124,13 +123,12 @@ class TestAtom(unittest.TestCase):
         """
         action = ['FORM_BOND', '*1', 'S', '*2']
         for element in elementList:
-            atom0 = Atom(element=element, radicalElectrons=1, spinMultiplicity=2, implicitHydrogens=3, charge=0, label='*1')
+            atom0 = Atom(element=element, radicalElectrons=1, spinMultiplicity=2, charge=0, label='*1')
             atom = atom0.copy()
             atom.applyAction(action)
             self.assertEqual(atom0.element, atom.element)
             self.assertEqual(atom0.radicalElectrons, atom.radicalElectrons)
             self.assertEqual(atom0.spinMultiplicity, atom.spinMultiplicity)
-            self.assertEqual(atom0.implicitHydrogens, atom.implicitHydrogens)
             self.assertEqual(atom0.charge, atom.charge)
             self.assertEqual(atom0.label, atom.label)
     
@@ -140,13 +138,12 @@ class TestAtom(unittest.TestCase):
         """
         action = ['CHANGE_BOND', '*1', 1, '*2']
         for element in elementList:
-            atom0 = Atom(element=element, radicalElectrons=1, spinMultiplicity=2, implicitHydrogens=3, charge=0, label='*1')
+            atom0 = Atom(element=element, radicalElectrons=1, spinMultiplicity=2, charge=0, label='*1')
             atom = atom0.copy()
             atom.applyAction(action)
             self.assertEqual(atom0.element, atom.element)
             self.assertEqual(atom0.radicalElectrons, atom.radicalElectrons)
             self.assertEqual(atom0.spinMultiplicity, atom.spinMultiplicity)
-            self.assertEqual(atom0.implicitHydrogens, atom.implicitHydrogens)
             self.assertEqual(atom0.charge, atom.charge)
             self.assertEqual(atom0.label, atom.label)
     
@@ -156,13 +153,12 @@ class TestAtom(unittest.TestCase):
         """
         action = ['CHANGE_BOND', '*1', -1, '*2']
         for element in elementList:
-            atom0 = Atom(element=element, radicalElectrons=1, spinMultiplicity=2, implicitHydrogens=3, charge=0, label='*1')
+            atom0 = Atom(element=element, radicalElectrons=1, spinMultiplicity=2, charge=0, label='*1')
             atom = atom0.copy()
             atom.applyAction(action)
             self.assertEqual(atom0.element, atom.element)
             self.assertEqual(atom0.radicalElectrons, atom.radicalElectrons)
             self.assertEqual(atom0.spinMultiplicity, atom.spinMultiplicity)
-            self.assertEqual(atom0.implicitHydrogens, atom.implicitHydrogens)
             self.assertEqual(atom0.charge, atom.charge)
             self.assertEqual(atom0.label, atom.label)
     
@@ -172,13 +168,12 @@ class TestAtom(unittest.TestCase):
         """
         action = ['GAIN_RADICAL', '*1', 1]
         for element in elementList:
-            atom0 = Atom(element=element, radicalElectrons=1, spinMultiplicity=2, implicitHydrogens=3, charge=0, label='*1')
+            atom0 = Atom(element=element, radicalElectrons=1, spinMultiplicity=2, charge=0, label='*1')
             atom = atom0.copy()
             atom.applyAction(action)
             self.assertEqual(atom0.element, atom.element)
             self.assertEqual(atom0.radicalElectrons, atom.radicalElectrons - 1)
             self.assertEqual(atom0.spinMultiplicity, atom.spinMultiplicity - 1)
-            self.assertEqual(atom0.implicitHydrogens, atom.implicitHydrogens)
             self.assertEqual(atom0.charge, atom.charge)
             self.assertEqual(atom0.label, atom.label)
     
@@ -188,13 +183,12 @@ class TestAtom(unittest.TestCase):
         """
         action = ['LOSE_RADICAL', '*1', 1]
         for element in elementList:
-            atom0 = Atom(element=element, radicalElectrons=1, spinMultiplicity=2, implicitHydrogens=3, charge=0, label='*1')
+            atom0 = Atom(element=element, radicalElectrons=1, spinMultiplicity=2, charge=0, label='*1')
             atom = atom0.copy()
             atom.applyAction(action)
             self.assertEqual(atom0.element, atom.element)
             self.assertEqual(atom0.radicalElectrons, atom.radicalElectrons + 1)
             self.assertEqual(atom0.spinMultiplicity, atom.spinMultiplicity + 1)
-            self.assertEqual(atom0.implicitHydrogens, atom.implicitHydrogens)
             self.assertEqual(atom0.charge, atom.charge)
             self.assertEqual(atom0.label, atom.label)
     
@@ -235,7 +229,6 @@ class TestAtom(unittest.TestCase):
         self.assertEqual(self.atom.atomType, atom.atomType)
         self.assertEqual(self.atom.radicalElectrons, atom.radicalElectrons)
         self.assertEqual(self.atom.spinMultiplicity, atom.spinMultiplicity)
-        self.assertEqual(self.atom.implicitHydrogens, atom.implicitHydrogens)
         self.assertEqual(self.atom.charge, atom.charge)
         self.assertEqual(self.atom.label, atom.label)
     
@@ -250,24 +243,9 @@ class TestAtom(unittest.TestCase):
         self.assertEqual(self.atom.atomType, atom.atomType)
         self.assertEqual(self.atom.radicalElectrons, atom.radicalElectrons)
         self.assertEqual(self.atom.spinMultiplicity, atom.spinMultiplicity)
-        self.assertEqual(self.atom.implicitHydrogens, atom.implicitHydrogens)
         self.assertEqual(self.atom.charge, atom.charge)
         self.assertEqual(self.atom.label, atom.label)
         
-    def testOutput(self):
-        """
-        Test that we can reconstruct a Atom object from its repr()
-        output with no loss of information.
-        """
-        exec('atom = {0!r}'.format(self.atom))
-        self.assertEqual(self.atom.element.symbol, atom.element.symbol)
-        self.assertEqual(self.atom.atomType, atom.atomType)
-        self.assertEqual(self.atom.radicalElectrons, atom.radicalElectrons)
-        self.assertEqual(self.atom.spinMultiplicity, atom.spinMultiplicity)
-        self.assertEqual(self.atom.implicitHydrogens, atom.implicitHydrogens)
-        self.assertEqual(self.atom.charge, atom.charge)
-        self.assertEqual(self.atom.label, atom.label)
-
 ################################################################################
 
 class TestBond(unittest.TestCase):
@@ -279,7 +257,7 @@ class TestBond(unittest.TestCase):
         """
         A method called before each unit test in this class.
         """
-        self.bond = Bond(order='D')
+        self.bond = Bond(atom1=None, atom2=None, order='D')
         self.orderList = ['S','D','T','B']
     
     def testIsSingle(self):
@@ -287,7 +265,7 @@ class TestBond(unittest.TestCase):
         Test the Bond.isSingle() method.
         """
         for order in self.orderList:
-            bond = Bond(order=order)
+            bond = Bond(None, None, order=order)
             if order == 'S':
                 self.assertTrue(bond.isSingle())
             else:
@@ -298,7 +276,7 @@ class TestBond(unittest.TestCase):
         Test the Bond.isDouble() method.
         """
         for order in self.orderList:
-            bond = Bond(order=order)
+            bond = Bond(None, None, order=order)
             if order == 'D':
                 self.assertTrue(bond.isDouble())
             else:
@@ -309,7 +287,7 @@ class TestBond(unittest.TestCase):
         Test the Bond.isTriple() method.
         """
         for order in self.orderList:
-            bond = Bond(order=order)
+            bond = Bond(None, None, order=order)
             if order == 'T':
                 self.assertTrue(bond.isTriple())
             else:
@@ -320,7 +298,7 @@ class TestBond(unittest.TestCase):
         Test the Bond.isBenzene() method.
         """
         for order in self.orderList:
-            bond = Bond(order=order)
+            bond = Bond(None, None, order=order)
             if order == 'B':
                 self.assertTrue(bond.isBenzene())
             else:
@@ -331,7 +309,7 @@ class TestBond(unittest.TestCase):
         Test the Bond.incrementOrder() method.
         """
         for order in self.orderList:
-            bond = Bond(order=order)
+            bond = Bond(None, None, order=order)
             try:
                 bond.incrementOrder()
                 if order == 'S': 
@@ -346,7 +324,7 @@ class TestBond(unittest.TestCase):
         Test the Bond.decrementOrder() method.
         """
         for order in self.orderList:
-            bond = Bond(order=order)
+            bond = Bond(None, None, order=order)
             try:
                 bond.decrementOrder()
                 if order == 'D': 
@@ -362,7 +340,7 @@ class TestBond(unittest.TestCase):
         """
         action = ['BREAK_BOND', '*1', 'S', '*2']
         for order0 in self.orderList:
-            bond0 = Bond(order=order0)
+            bond0 = Bond(None, None, order=order0)
             bond = bond0.copy()
             try:
                 bond.applyAction(action)
@@ -376,7 +354,7 @@ class TestBond(unittest.TestCase):
         """
         action = ['FORM_BOND', '*1', 'S', '*2']
         for order0 in self.orderList:
-            bond0 = Bond(order=order0)
+            bond0 = Bond(None, None, order=order0)
             bond = bond0.copy()
             try:
                 bond.applyAction(action)
@@ -390,7 +368,7 @@ class TestBond(unittest.TestCase):
         """
         action = ['CHANGE_BOND', '*1', 1, '*2']
         for order0 in self.orderList:
-            bond0 = Bond(order=order0)
+            bond0 = Bond(None, None, order=order0)
             bond = bond0.copy()
             try:
                 bond.applyAction(action)
@@ -403,7 +381,7 @@ class TestBond(unittest.TestCase):
         """
         action = ['CHANGE_BOND', '*1', -1, '*2']
         for order0 in self.orderList:
-            bond0 = Bond(order=order0)
+            bond0 = Bond(None, None, order=order0)
             bond = bond0.copy()
             try:
                 bond.applyAction(action)
@@ -416,7 +394,7 @@ class TestBond(unittest.TestCase):
         """
         action = ['GAIN_RADICAL', '*1', 1]
         for order0 in self.orderList:
-            bond0 = Bond(order=order0)
+            bond0 = Bond(None, None, order=order0)
             bond = bond0.copy()
             try:
                 bond.applyAction(action)
@@ -430,7 +408,7 @@ class TestBond(unittest.TestCase):
         """
         action = ['LOSE_RADICAL', '*1', 1]
         for order0 in self.orderList:
-            bond0 = Bond(order=order0)
+            bond0 = Bond(None, None, order=order0)
             bond = bond0.copy()
             try:
                 bond.applyAction(action)
@@ -444,8 +422,8 @@ class TestBond(unittest.TestCase):
         """
         for order1 in self.orderList:
             for order2 in self.orderList:
-                bond1 = Bond(order=order1)
-                bond2 = Bond(order=order2)
+                bond1 = Bond(None, None, order=order1)
+                bond2 = Bond(None, None, order=order2)
                 if order1 == order2:
                     self.assertTrue(bond1.equivalent(bond2))
                     self.assertTrue(bond2.equivalent(bond1))
@@ -459,8 +437,8 @@ class TestBond(unittest.TestCase):
         """
         for order1 in self.orderList:
             for order2 in self.orderList:
-                bond1 = Bond(order=order1)
-                bond2 = Bond(order=order2)
+                bond1 = Bond(None, None, order=order1)
+                bond2 = Bond(None, None, order=order2)
                 if order1 == order2:
                     self.assertTrue(bond1.isSpecificCaseOf(bond2))
                 else:
@@ -482,14 +460,6 @@ class TestBond(unittest.TestCase):
         bond = cPickle.loads(cPickle.dumps(self.bond))
         self.assertEqual(self.bond.order, bond.order)
         
-    def testOutput(self):
-        """
-        Test that we can reconstruct a Bond object from its repr()
-        output with no loss of information.
-        """
-        exec('bond = {0!r}'.format(self.bond))
-        self.assertEqual(self.bond.order, bond.order)
-
 ################################################################################
 
 class TestMolecule(unittest.TestCase):
@@ -499,9 +469,9 @@ class TestMolecule(unittest.TestCase):
     
     def setUp(self):
         self.adjlist = """
-1  *2 C     1 {2,D} {3,S}
-2  *1 O     0 {1,D}
-3     C     0 {1,S}
+1 *2 C 1 {2,D} {3,S}
+2 *1 O 0 {1,D}
+3    C 0 {1,S}
             """
         self.molecule = Molecule().fromAdjacencyList(self.adjlist)
         
@@ -567,32 +537,29 @@ class TestMolecule(unittest.TestCase):
         """
         Test the Molecule.fromAdjacencyList() method.
         """
-        atom1, atom2, atom3 = self.molecule.atoms
+        atom1, atom2, atom3 = self.molecule.atoms[0:3]
         self.assertTrue(self.molecule.hasBond(atom1,atom2))
         self.assertTrue(self.molecule.hasBond(atom1,atom3))
         self.assertFalse(self.molecule.hasBond(atom2,atom3))
-        bond12 = self.molecule.bonds[atom1][atom2]
-        bond13 = self.molecule.bonds[atom1][atom3]
+        bond12 = atom1.bonds[atom2]
+        bond13 = atom1.bonds[atom3]
            
         self.assertTrue(atom1.label == '*2')
         self.assertTrue(atom1.element.symbol == 'C')
         self.assertTrue(atom1.radicalElectrons == 1)
         self.assertTrue(atom1.spinMultiplicity == 2)
-        self.assertTrue(atom1.implicitHydrogens == 0)
         self.assertTrue(atom1.charge == 0)
         
         self.assertTrue(atom2.label == '*1')
         self.assertTrue(atom2.element.symbol == 'O')
         self.assertTrue(atom2.radicalElectrons == 0)
         self.assertTrue(atom2.spinMultiplicity == 1)
-        self.assertTrue(atom2.implicitHydrogens == 0)
         self.assertTrue(atom2.charge == 0)
         
         self.assertTrue(atom3.label == '')
         self.assertTrue(atom3.element.symbol == 'C')
         self.assertTrue(atom3.radicalElectrons == 0)
         self.assertTrue(atom3.spinMultiplicity == 1)
-        self.assertTrue(atom3.implicitHydrogens == 3)
         self.assertTrue(atom3.charge == 0)
 
         self.assertTrue(bond12.isDouble())
@@ -625,8 +592,7 @@ class TestMolecule(unittest.TestCase):
         """)
 
         self.assertTrue(molecule.isSubgraphIsomorphic(group))
-        match, mapping = molecule.findSubgraphIsomorphisms(group)
-        self.assertTrue(match)
+        mapping = molecule.findSubgraphIsomorphisms(group)
         self.assertTrue(len(mapping) == 4, "len(mapping) = %d, should be = 4" % (len(mapping)))
         for map in mapping:
             self.assertTrue(len(map) == min(len(molecule.atoms), len(group.atoms)))
@@ -663,8 +629,6 @@ class TestMolecule(unittest.TestCase):
         4   H 0 {1,S}
         """)
 
-        molecule.makeHydrogensExplicit()
-
         labeled1 = molecule.getLabeledAtoms().values()[0]
         labeled2 = group.getLabeledAtoms().values()[0]
 
@@ -672,8 +636,7 @@ class TestMolecule(unittest.TestCase):
         self.assertTrue(molecule.isSubgraphIsomorphic(group, initialMap))
 
         initialMap = {labeled1: labeled2}
-        match, mapping = molecule.findSubgraphIsomorphisms(group, initialMap)
-        self.assertTrue(match)
+        mapping = molecule.findSubgraphIsomorphisms(group, initialMap)
         self.assertTrue(len(mapping) == 2,  "len(mapping) = %d, should be = 2" % (len(mapping)))
         for map in mapping:
             self.assertTrue(len(map) == min(len(molecule.atoms), len(group.atoms)))
@@ -703,8 +666,7 @@ class TestMolecule(unittest.TestCase):
             initialMap[atom1] = labeled2[label]
         self.assertTrue(molecule.isSubgraphIsomorphic(group, initialMap))
 
-        match, mapping = molecule.findSubgraphIsomorphisms(group, initialMap)
-        self.assertTrue(match)
+        mapping = molecule.findSubgraphIsomorphisms(group, initialMap)
         self.assertTrue(len(mapping) == 1)
         for map in mapping:
             self.assertTrue(len(map) == min(len(molecule.atoms), len(group.atoms)))
@@ -725,24 +687,6 @@ class TestMolecule(unittest.TestCase):
         6 C 0 {5,S}
         """)
         molecule2 = Molecule().fromSMILES('C=CC=C[CH]C')
-        
-        molecule1.makeHydrogensExplicit()
-        molecule2.makeHydrogensExplicit()
-        self.assertTrue(molecule1.isIsomorphic(molecule2))
-        self.assertTrue(molecule2.isIsomorphic(molecule1))
-        
-        molecule1.makeHydrogensImplicit()
-        molecule2.makeHydrogensImplicit()
-        self.assertTrue(molecule1.isIsomorphic(molecule2))
-        self.assertTrue(molecule2.isIsomorphic(molecule1))
-        
-        molecule1.makeHydrogensExplicit()
-        molecule2.makeHydrogensImplicit()
-        self.assertTrue(molecule1.isIsomorphic(molecule2))
-        self.assertTrue(molecule2.isIsomorphic(molecule1))
-        
-        molecule1.makeHydrogensImplicit()
-        molecule2.makeHydrogensExplicit()
         self.assertTrue(molecule1.isIsomorphic(molecule2))
         self.assertTrue(molecule2.isIsomorphic(molecule1))
 
@@ -764,9 +708,9 @@ class TestMolecule(unittest.TestCase):
         molecule = Molecule().fromSMILES('CC')
         for atom in molecule.atoms:
             self.assertFalse(molecule.isAtomInCycle(atom))
-        for atom1 in molecule.bonds:
-            for atom2 in molecule.bonds[atom1]:
-                self.assertFalse(molecule.isBondInCycle(atom1, atom2))
+        for atom1 in molecule.atoms:
+            for atom2, bond in atom1.bonds.items():
+                self.assertFalse(molecule.isBondInCycle(bond))
 
     def testIsInCycleCyclohexane(self):
         """
@@ -778,46 +722,12 @@ class TestMolecule(unittest.TestCase):
                 self.assertFalse(molecule.isAtomInCycle(atom))
             elif atom.isCarbon():
                 self.assertTrue(molecule.isAtomInCycle(atom))
-        for atom1 in molecule.bonds:
-            for atom2 in molecule.bonds[atom1]:
+        for atom1 in molecule.atoms:
+            for atom2, bond in atom1.bonds.items():
                 if atom1.isCarbon() and atom2.isCarbon():
-                    self.assertTrue(molecule.isBondInCycle(atom1, atom2))
+                    self.assertTrue(molecule.isBondInCycle(bond))
                 else:
-                    self.assertFalse(molecule.isBondInCycle(atom1, atom2))
-
-    def testImplicitHydrogens(self):
-        """
-        Test that a molecule can be converted to and from implicit hydrogen
-        mode with no loss of data.
-        """
-        self.assertTrue(self.molecule.implicitHydrogens)
-        self.assertEqual(len(self.molecule.atoms), 3)
-        self.assertEqual(self.molecule.atoms[0].implicitHydrogens, 0)
-        self.assertEqual(self.molecule.atoms[1].implicitHydrogens, 0)
-        self.assertEqual(self.molecule.atoms[2].implicitHydrogens, 3)
-        self.assertEqual(sum([1 for atom in self.molecule.atoms if atom.isHydrogen()]), 0)
-        self.assertEqual(self.molecule.getFormula(), 'C2H3O')
-        self.assertAlmostEqual(self.molecule.getMolecularWeight() * 1000, 43.04, 2)
-        
-        self.molecule.makeHydrogensExplicit()
-        self.assertFalse(self.molecule.implicitHydrogens)
-        self.assertEqual(len(self.molecule.atoms), 6)
-        self.assertEqual(self.molecule.atoms[0].implicitHydrogens, 0)
-        self.assertEqual(self.molecule.atoms[1].implicitHydrogens, 0)
-        self.assertEqual(self.molecule.atoms[2].implicitHydrogens, 0)
-        self.assertEqual(sum([1 for atom in self.molecule.atoms if atom.isHydrogen()]), 3)
-        self.assertEqual(self.molecule.getFormula(), 'C2H3O')
-        self.assertAlmostEqual(self.molecule.getMolecularWeight() * 1000, 43.04, 2)
-        
-        self.molecule.makeHydrogensImplicit()
-        self.assertTrue(self.molecule.implicitHydrogens)
-        self.assertEqual(len(self.molecule.atoms), 3)
-        self.assertEqual(self.molecule.atoms[0].implicitHydrogens, 3)
-        self.assertEqual(self.molecule.atoms[1].implicitHydrogens, 0)
-        self.assertEqual(self.molecule.atoms[2].implicitHydrogens, 0)
-        self.assertEqual(sum([1 for atom in self.molecule.atoms if atom.isHydrogen()]), 0)
-        self.assertEqual(self.molecule.getFormula(), 'C2H3O')
-        self.assertAlmostEqual(self.molecule.getMolecularWeight() * 1000, 43.04, 2)
+                    self.assertFalse(molecule.isBondInCycle(bond))
         
     def testFromSMILESH(self):
         """
@@ -902,14 +812,7 @@ class TestMolecule(unittest.TestCase):
         """)
         
         self.assertEqual(mol.toAugmentedInChIKey(), 'VGGSQFUCUMXWEO-UHFFFAOYSAmult3')
-################################################################################
 
-class TestMoleculeSymmetry(unittest.TestCase):
-    """
-    Contains unit tests of the methods for computing symmetry numbers for a
-    given Molecule object.
-    """
-    
     def testLinearMethane(self):
         """
         Test the Molecule.isLinear() method.
@@ -1006,311 +909,7 @@ class TestMoleculeSymmetry(unittest.TestCase):
         This is a "hard" test that currently fails.
         """
         self.assertEqual(Molecule().fromSMILES('CC#CC').countInternalRotors(), 1)
-    
-    def testAtomSymmetryNumberMethane(self):
-        """
-        Test the Molecule.calculateAtomSymmtryNumber() method.
-        """
-        molecule = Molecule().fromSMILES('C')
-        symmetryNumber = 1
-        for atom in molecule.atoms:
-            if not molecule.isAtomInCycle(atom):
-                symmetryNumber *= molecule.calculateAtomSymmetryNumber(atom)
-        self.assertEqual(symmetryNumber, 12)
-        
-    def testAtomSymmetryNumberMethyl(self):
-        """
-        Test the Molecule.calculateAtomSymmtryNumber() method.
-        """
-        molecule = Molecule().fromSMILES('[CH3]')
-        symmetryNumber = 1
-        for atom in molecule.atoms:
-            if not molecule.isAtomInCycle(atom):
-                symmetryNumber *= molecule.calculateAtomSymmetryNumber(atom)
-        self.assertEqual(symmetryNumber, 6)
-        
-    def testAtomSymmetryNumberEthane(self):
-        """
-        Test the Molecule.calculateAtomSymmtryNumber() method.
-        """
-        molecule = Molecule().fromSMILES('CC')
-        symmetryNumber = 1
-        for atom in molecule.atoms:
-            if not molecule.isAtomInCycle(atom):
-                symmetryNumber *= molecule.calculateAtomSymmetryNumber(atom)
-        self.assertEqual(symmetryNumber, 9)
-    
-    def testAtomSymmetryNumberPropane(self):
-        """
-        Test the Molecule.calculateAtomSymmtryNumber() method.
-        """
-        molecule = Molecule().fromSMILES('CCC')
-        symmetryNumber = 1
-        for atom in molecule.atoms:
-            if not molecule.isAtomInCycle(atom):
-                symmetryNumber *= molecule.calculateAtomSymmetryNumber(atom)
-        self.assertEqual(symmetryNumber, 18)
-    
-    def testAtomSymmetryNumberIsobutane(self):
-        """
-        Test the Molecule.calculateAtomSymmtryNumber() method.
-        """
-        molecule = Molecule().fromSMILES('CC(C)C')
-        symmetryNumber = 1
-        for atom in molecule.atoms:
-            if not molecule.isAtomInCycle(atom):
-                symmetryNumber *= molecule.calculateAtomSymmetryNumber(atom)
-        self.assertEqual(symmetryNumber, 81)
 
-    def testBondSymmetryNumberEthane(self):
-        """
-        Test the Molecule.calculateBondSymmtryNumber() method.
-        """
-        molecule = Molecule().fromSMILES('CC')
-        symmetryNumber = 1
-        for atom1 in molecule.bonds:
-            for atom2 in molecule.bonds[atom1]:
-                if molecule.atoms.index(atom1) < molecule.atoms.index(atom2):
-                    symmetryNumber *= molecule.calculateBondSymmetryNumber(atom1, atom2)
-        self.assertEqual(symmetryNumber, 2)
-        
-    def testBondSymmetryNumberPropane(self):
-        """
-        Test the Molecule.calculateBondSymmtryNumber() method.
-        """
-        molecule = Molecule().fromSMILES('CCC')
-        symmetryNumber = 1
-        for atom1 in molecule.bonds:
-            for atom2 in molecule.bonds[atom1]:
-                if molecule.atoms.index(atom1) < molecule.atoms.index(atom2):
-                    symmetryNumber *= molecule.calculateBondSymmetryNumber(atom1, atom2)
-        self.assertEqual(symmetryNumber, 1)
-    
-    def testBondSymmetryNumberButane(self):
-        """
-        Test the Molecule.calculateBondSymmtryNumber() method.
-        """
-        molecule = Molecule().fromSMILES('CCCC')
-        symmetryNumber = 1
-        for atom1 in molecule.bonds:
-            for atom2 in molecule.bonds[atom1]:
-                if molecule.atoms.index(atom1) < molecule.atoms.index(atom2):
-                    symmetryNumber *= molecule.calculateBondSymmetryNumber(atom1, atom2)
-        self.assertEqual(symmetryNumber, 2)
-    
-    def testBondSymmetryNumberEthylene(self):
-        """
-        Test the Molecule.calculateBondSymmtryNumber() method.
-        """
-        molecule = Molecule().fromSMILES('C=C')
-        symmetryNumber = 1
-        for atom1 in molecule.bonds:
-            for atom2 in molecule.bonds[atom1]:
-                if molecule.atoms.index(atom1) < molecule.atoms.index(atom2):
-                    symmetryNumber *= molecule.calculateBondSymmetryNumber(atom1, atom2)
-        self.assertEqual(symmetryNumber, 2)
-    
-    def testBondSymmetryNumberAcetylene(self):
-        """
-        Test the Molecule.calculateBondSymmtryNumber() method.
-        """
-        molecule = Molecule().fromSMILES('C#C')
-        symmetryNumber = 1
-        for atom1 in molecule.bonds:
-            for atom2 in molecule.bonds[atom1]:
-                if molecule.atoms.index(atom1) < molecule.atoms.index(atom2):
-                    symmetryNumber *= molecule.calculateBondSymmetryNumber(atom1, atom2)
-        self.assertEqual(symmetryNumber, 2)
-    
-    def testAxisSymmetryNumberEthylene(self):
-        """
-        Test the Molecule.calculateAxisSymmtryNumber() method.
-        """
-        self.assertEqual(Molecule().fromSMILES('C=C').calculateAxisSymmetryNumber(), 2)
-        
-    def testAxisSymmetryNumberPropadiene(self):
-        """
-        Test the Molecule.calculateAxisSymmtryNumber() method.
-        """
-        self.assertEqual(Molecule().fromSMILES('C=C=C').calculateAxisSymmetryNumber(), 2)
-        
-    def testAxisSymmetryNumberButatriene(self):
-        """
-        Test the Molecule.calculateAxisSymmtryNumber() method.
-        """
-        self.assertEqual(Molecule().fromSMILES('C=C=C=C').calculateAxisSymmetryNumber(), 2)
-        
-    def testAxisSymmetryNumberButatrienyl(self):
-        """
-        Test the Molecule.calculateAxisSymmtryNumber() method.
-        """
-        self.assertEqual(Molecule().fromSMILES('C=C=C=[CH]').calculateAxisSymmetryNumber(), 1)
-    
-    def testAxisSymmetryNumberPropadienyl(self):
-        """
-        Test the Molecule.calculateAxisSymmtryNumber() method.
-        """
-        self.assertEqual(Molecule().fromSMILES('C=C=[C]').calculateAxisSymmetryNumber(), 2)
-        
-    def testAxisSymmetryNumber12Butadienyl(self):
-        """
-        Test the Molecule.calculateAxisSymmtryNumber() method.
-        """
-        self.assertEqual(Molecule().fromSMILES('CC=C=[C]').calculateAxisSymmetryNumber(), 1)
-    
-    def testAxisSymmetryNumber12Hexadienyl(self):
-        """
-        Test the Molecule.calculateAxisSymmtryNumber() method.
-        """
-        self.assertEqual(Molecule().fromSMILES('C=C=CCCC').calculateAxisSymmetryNumber(), 1)
-    
-    def testAxisSymmetryNumber1(self):
-        """
-        Test the Molecule.calculateAxisSymmtryNumber() method.
-        """
-        self.assertEqual(Molecule().fromSMILES('CC(C)=C=C(CC)CC').calculateAxisSymmetryNumber(), 2)
-    
-    def testAxisSymmetryNumber2(self):
-        """
-        Test the Molecule.calculateAxisSymmtryNumber() method.
-        """
-        self.assertEqual(Molecule().fromSMILES('C=C=C(C(C(C(C=C=C)=C=C)=C=C)=C=C)').calculateAxisSymmetryNumber(), 2)
-    
-    def testAxisSymmetryNumber3(self):
-        """
-        Test the Molecule.calculateAxisSymmtryNumber() method.
-        """
-        self.assertEqual(Molecule().fromSMILES('C=C=[C]C(C)(C)[C]=C=C').calculateAxisSymmetryNumber(), 4)
-    
-    def testAxisSymmetryNumber4(self):
-        """
-        Test the Molecule.calculateAxisSymmtryNumber() method.
-        """
-        self.assertEqual(Molecule().fromSMILES('C=C=C=O').calculateAxisSymmetryNumber(), 2)
-    
-    def testAxisSymmetryNumber5(self):
-        """
-        Test the Molecule.calculateAxisSymmtryNumber() method.
-        """
-        self.assertEqual(Molecule().fromSMILES('CC=C=C=O').calculateAxisSymmetryNumber(), 1)
-    
-    def testAxisSymmetryNumber5(self):
-        """
-        Test the Molecule.calculateAxisSymmtryNumber() method.
-        """
-        self.assertEqual(Molecule().fromSMILES('C=C=C=N').calculateAxisSymmetryNumber(), 1)
-    
-    def testAxisSymmetryNumber5(self):
-        """
-        Test the Molecule.calculateAxisSymmtryNumber() method.
-        """
-        self.assertEqual(Molecule().fromSMILES('C=C=C=[N]').calculateAxisSymmetryNumber(), 2)
-    
-#   def testCyclicSymmetryNumber(self):
-#
-#		# cyclohexane
-#       molecule = Molecule().fromInChI('InChI=1/C6H12/c1-2-4-6-5-3-1/h1-6H2')
-#       molecule.makeHydrogensExplicit()
-#       symmetryNumber = molecule.calculateCyclicSymmetryNumber()
-#       self.assertEqual(symmetryNumber, 12)
-
-    def testTotalSymmetryNumberEthane(self):
-        """
-        Test the Molecule.calculateSymmtryNumber() method.
-        """
-        self.assertEqual(Molecule().fromSMILES('CC').calculateSymmetryNumber(), 18)
-    
-    def testTotalSymmetryNumber1(self):
-        """
-        Test the Molecule.calculateSymmtryNumber() method.
-        """
-        self.assertEqual(Molecule().fromSMILES('C=C=[C]C(C)(C)[C]=C=C').calculateSymmetryNumber(), '???')
-    
-    def testTotalSymmetryNumber2(self):
-        """
-        Test the Molecule.calculateSymmtryNumber() method.
-        """
-        self.assertEqual(Molecule().fromSMILES('C(=CC(c1ccccc1)C([CH]CCCCCC)C=Cc1ccccc1)[CH]CCCCCC').calculateSymmetryNumber(), 1)
-    
-    def testSymmetryNumberHydroxyl(self):
-        """
-        Test the Molecule.calculateSymmtryNumber() method.
-        """
-        self.assertEqual(Molecule().fromSMILES('[OH]').calculateSymmetryNumber(), 1)
-       
-    def testSymmetryNumberOxygen(self):
-        """
-        Test the Molecule.calculateSymmtryNumber() method.
-        """
-        self.assertEqual(Molecule().fromSMILES('O=O').calculateAxisSymmetryNumber(), 1)
-        self.assertEqual(Molecule().fromSMILES('O=O').calculateSymmetryNumber(), 2)
-        
-    def testSymmetryNumberDicarbon(self):
-        """
-        Test the Molecule.calculateSymmtryNumber() method.
-        """
-        self.assertEqual(Molecule().fromSMILES('[C]#[C]').calculateSymmetryNumber(), 2)
-    
-    def testSymmetryNumberHydrogen(self):
-        """
-        Test the Molecule.calculateSymmtryNumber() method.
-        """
-        self.assertEqual(Molecule().fromSMILES('[H][H]').calculateSymmetryNumber(), 2)
-    
-    def testSymmetryNumberAcetylene(self):
-        """
-        Test the Molecule.calculateSymmtryNumber() method.
-        """
-        self.assertEqual(Molecule().fromSMILES('C#C').calculateSymmetryNumber(), 2)
-    
-    def testSymmetryNumberButadiyne(self):
-        """
-        Test the Molecule.calculateSymmtryNumber() method.
-        """
-        self.assertEqual(Molecule().fromSMILES('C#CC#C').calculateSymmetryNumber(), 2)
-    
-    def testSymmetryNumberMethane(self):
-        """
-        Test the Molecule.calculateSymmtryNumber() method.
-        """
-        self.assertEqual(Molecule().fromSMILES('C').calculateSymmetryNumber(), 12)
-    
-    def testSymmetryNumberFormaldehyde(self):
-        """
-        Test the Molecule.calculateSymmtryNumber() method.
-        """
-        self.assertEqual(Molecule().fromSMILES('C=O').calculateSymmetryNumber(), 2)
-    
-    def testSymmetryNumberMethyl(self):
-        """
-        Test the Molecule.calculateSymmtryNumber() method.
-        """
-        self.assertEqual(Molecule().fromSMILES('[CH3]').calculateSymmetryNumber(), 6)
-    
-    def testSymmetryNumberWater(self):
-        """
-        Test the Molecule.calculateSymmtryNumber() method.
-        """
-        self.assertEqual(Molecule().fromSMILES('O').calculateSymmetryNumber(), 2)
-    
-    def testSymmetryNumberEthylene(self):
-        """
-        Test the Molecule.calculateSymmtryNumber() method.
-        """
-        self.assertEqual(Molecule().fromSMILES('C=C').calculateSymmetryNumber(), 4)
-    
-    def testSymmetryNumberEthenyl(self):
-        """
-        Test the Molecule.calculateSymmtryNumber() method.
-        """
-        self.assertEqual(Molecule().fromSMILES('C=[CH]').calculateSymmetryNumber(), 1)
-    
-    def testSymmetryNumberCyclic(self):
-        """
-        Test the Molecule.calculateSymmtryNumber() method.
-        """
-        self.assertEqual(Molecule().fromSMILES('C1=C=C=1').calculateSymmetryNumber(), '6?')
-    
 ################################################################################
 
 if __name__ == '__main__':
