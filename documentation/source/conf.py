@@ -16,7 +16,7 @@ import sys, os
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-#sys.path.insert(0, os.path.abspath('.'))
+sys.path.insert(0, os.path.abspath('../../'))
 
 # -- General configuration -----------------------------------------------------
 
@@ -41,7 +41,7 @@ master_doc = 'contents'
 
 # General information about the project.
 project = u'RMG Py'
-copyright = u'2011, William H. Green and the RMG Team'
+copyright = u'2012, William H. Green, Richard H. West, and the RMG Team'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -147,7 +147,8 @@ html_additional_pages = {'index': 'index.html'}
 #html_split_index = False
 
 # If true, links to the reST sources are added to the pages.
-#html_show_sourcelink = True
+# nb. sourcelink.html template has been modified to point to the source's blob on github.
+html_show_sourcelink = True
 
 # If true, "Created using Sphinx" is shown in the HTML footer. Default is True.
 #html_show_sphinx = True
@@ -169,7 +170,7 @@ htmlhelp_basename = 'RMGPydoc'
 # If true, documentation source files will be copied to the build directory,
 # and a link to view the source for the current page will be available in the
 # sidebar. Default is True.
-html_copy_source = False
+html_copy_source = True
 
 # -- Options for LaTeX output --------------------------------------------------
 
@@ -183,7 +184,7 @@ html_copy_source = False
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
   ('index', 'RMGPy.tex', u'RMG Py Documentation',
-   u'William H. Green and the RMG Team', 'manual'),
+   u'William H. Green, Richard H. West, and the RMG Team', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -225,5 +226,5 @@ pngmath_latex_preamble = latex_preamble
 # (source start file, name, description, authors, manual section).
 man_pages = [
     ('index', 'rmgpy', u'RMG Py Documentation',
-     [u'William H. Green and the RMG Team'], 1)
+     [u'William H. Green, Richard H. West, and the RMG Team'], 1)
 ]
