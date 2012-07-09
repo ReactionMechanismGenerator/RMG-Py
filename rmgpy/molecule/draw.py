@@ -234,12 +234,14 @@ class MoleculeDrawer:
         self.__render(cr0)
         
         # Create the real surface with the appropriate size
+        xoff = self.left
+        yoff = self.top
         width = self.right - self.left
         height = self.bottom - self.top
         self.surface = createNewSurface(format=format, path=path, width=width, height=height)
         self.cr = cairo.Context(self.surface)
-        self.__render(self.cr, offset=(-self.left,-self.top))
-        
+        self.__render(self.cr, offset=(-xoff,-yoff))
+
         if path is not None:
             # Finish Cairo drawing
             # Save PNG of drawing if appropriate
@@ -249,7 +251,7 @@ class MoleculeDrawer:
             else:
                 self.surface.finish()
     
-        return self.surface, self.cr, (0, 0, width, height)
+        return self.surface, self.cr, (xoff, yoff, width, height)
 
     def __findRingGroups(self):
         """
@@ -279,8 +281,9 @@ class MoleculeDrawer:
         """
         Generate the 2D coordinates to be used when drawing the current 
         molecule. The vertices are arranged based on a standard bond length of
-        unity, and can be scaled later for longer bond lengths. This function
-        ignores any previously-existing coordinate information.
+        unity, and can be scaled later for longer bond lengths. The coordinates
+        are arranged such that the "center" of the molecule is at the origin.
+        This function ignores any previously-existing coordinate information.
         """
         atoms = self.molecule.atoms
         Natoms = len(atoms)
@@ -294,8 +297,8 @@ class MoleculeDrawer:
             self.coordinates[0,:] = [0.0, 0.0]
             return self.coordinates
         elif Natoms == 2:
-            self.coordinates[0,:] = [0.0, 0.0]
-            self.coordinates[1,:] = [1.0, 0.0]
+            self.coordinates[0,:] = [-0.5, 0.0]
+            self.coordinates[1,:] = [0.5, 0.0]
             return self.coordinates
     
         if len(self.cycles) > 0:
@@ -323,14 +326,16 @@ class MoleculeDrawer:
                 coordinates = numpy.dot(coordinates, rot)
             
         # Center backbone at origin
-        origin = numpy.zeros(2, numpy.float64)
+        xmin = numpy.min(coordinates[:,0])
+        xmax = numpy.max(coordinates[:,0])
+        ymin = numpy.min(coordinates[:,1])
+        ymax = numpy.max(coordinates[:,1])
+        xmid = 0.5 * (xmax - xmin)
+        ymid = 0.5 * (ymax - ymin)
         for atom in backbone:
             index = atoms.index(atom)
-            origin += coordinates[index,:]
-        origin /= len(backbone)
-        for atom in backbone:
-            index = atoms.index(atom)
-            coordinates[index,:] -= origin
+            coordinates[index,0] -= xmid
+            coordinates[index,1] -= ymid
         
         # We now proceed by calculating the coordinates of the functional groups
         # attached to the backbone
@@ -1222,3 +1227,154 @@ class MoleculeDrawer:
             self.right = boundingRect[2]
         if boundingRect[3] > self.bottom:
             self.bottom = boundingRect[3]
+
+################################################################################
+
+class ReactionDrawer:
+    """
+    This class provides functionality for drawing chemical reactions using the
+    skeletal formula of each reactant and product molecule via the Cairo 2D
+    graphics engine. The most common use case is simply::
+    
+        ReactionDrawer().draw(reaction, format='png', path='reaction.png')
+    
+    where ``reaction`` is the :class:`Reaction` object to draw. You can also
+    pass a dict of options to the constructor to affect how the molecules are
+    drawn.
+    """
+    
+    def __init__(self, options=None):
+        self.options = MoleculeDrawer().options.copy()
+        if options: self.options.update(options)
+    
+    def draw(self, reaction, format, path=None):
+        """
+        Draw the given `reaction` using the given image `format` - pdf, svg, 
+        ps, or png. If `path` is given, the drawing is saved to that location
+        on disk.
+        
+        This function returns the Cairo surface and context used to create the
+        drawing, as well as a bounding box for the molecule being drawn as the
+        tuple (`left`, `top`, `width`, `height`).
+        """
+        # The Cairo 2D graphics library (and its Python wrapper) is required for
+        # the reaction drawing algorithm
+        try:
+            import cairo
+        except ImportError:
+            print 'Cairo not found; molecule will not be drawn.'
+            return
+
+        from .molecule import Molecule
+        from rmgpy.species import Species
+
+        fontFamily = self.options['fontFamily']
+        fontSizeNormal = self.options['fontSizeNormal']
+        
+        # First draw each of the reactants and products
+        reactants = []; products = []
+        for reactant in reaction.reactants:
+            if isinstance(reactant, Species):
+                molecule = reactant.molecule[0]
+            elif isinstance(reactant, Molecule):
+                molecule = reactant
+            reactants.append(MoleculeDrawer().draw(molecule, format))
+        for product in reaction.products:
+            if isinstance(product, Species):
+                molecule = product.molecule[0]
+            elif isinstance(product, Molecule):
+                molecule = product
+            products.append(MoleculeDrawer().draw(molecule, format))
+            
+        # Next determine size required for surface
+        rxn_width = 0; rxn_height = 0
+        for surface, cr, rect in reactants:
+            left, top, width, height = rect
+            rxn_width += width
+            if height > rxn_height: rxn_height = height
+        for surface, cr, rect in products:
+            left, top, width, height = rect
+            rxn_width += width
+            if height > rxn_height: rxn_height = height
+        
+        # Also include '+' and reaction arrow in width
+        cr.set_font_size(fontSizeNormal)
+        plus_extents = cr.text_extents(' + ')
+        arrow_width = 36
+        rxn_width += (len(reactants)-1) * plus_extents[4] + arrow_width + (len(products)-1) * plus_extents[4]
+        
+        # Now make the surface for the reaction and render each molecule on it
+        rxn_surface = createNewSurface(format, path, width=rxn_width, height=rxn_height)
+        rxn_cr = cairo.Context(rxn_surface)
+        
+        # Draw white background
+        rxn_cr.set_source_rgba(1.0, 1.0, 1.0, 1.0)
+        rxn_cr.paint()
+    
+        # Draw reactants
+        rxn_x = 0.0; rxn_y = 0.0
+        for index, reactant in enumerate(reactants):
+            surface, cr, rect = reactant
+            left, top, width, height = rect
+            if index > 0:
+                # Draw the "+" between the reactants
+                rxn_cr.save()
+                rxn_cr.set_font_size(fontSizeNormal)
+                rxn_y = (rxn_height - plus_extents[3]) / 2.0
+                rxn_cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
+                rxn_cr.move_to(rxn_x, rxn_y - plus_extents[1])
+                rxn_cr.show_text(' + ')
+                rxn_cr.restore()
+                rxn_x += plus_extents[4]
+            # Draw the reactant
+            rxn_y = (rxn_height - height) / 2.0
+            rxn_cr.save()
+            rxn_cr.set_source_surface(surface, rxn_x, rxn_y)
+            rxn_cr.paint()
+            rxn_cr.restore()
+            rxn_x += width            
+        
+        # Draw reaction arrow
+        # Unfortunately Cairo does not have arrow drawing built-in, so we must
+        # draw the arrow head ourselves
+        rxn_cr.save()
+        rxn_cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
+        rxn_cr.set_line_width(1.0)
+        rxn_cr.move_to(rxn_x + 8, rxn_height / 2.0)
+        rxn_cr.line_to(rxn_x + arrow_width - 8, rxn_height / 2.0)
+        rxn_cr.move_to(rxn_x + arrow_width - 14, rxn_height / 2.0 - 3.0)
+        rxn_cr.line_to(rxn_x + arrow_width - 8, rxn_height / 2.0)
+        rxn_cr.line_to(rxn_x + arrow_width - 14, rxn_height / 2.0 + 3.0)
+        rxn_cr.stroke()
+        rxn_cr.restore()
+        rxn_x += arrow_width
+        
+        # Draw products
+        for index, product in enumerate(products):
+            surface, cr, rect = product
+            left, top, width, height = rect
+            if index > 0:
+                # Draw the "+" between the products
+                rxn_cr.save()
+                rxn_cr.set_font_size(fontSizeNormal)
+                rxn_y = (rxn_height - plus_extents[3]) / 2.0
+                rxn_cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
+                rxn_cr.move_to(rxn_x, rxn_y - plus_extents[1])
+                rxn_cr.show_text(' + ')
+                rxn_cr.restore()
+                rxn_x += plus_extents[4]
+            # Draw the product
+            rxn_y = (rxn_height - height) / 2.0
+            rxn_cr.save()
+            rxn_cr.set_source_surface(surface, rxn_x, rxn_y)
+            rxn_cr.paint()
+            rxn_cr.restore()
+            rxn_x += width            
+        
+        # Finish Cairo drawing
+        if format == 'png':
+            surface.write_to_png(path)
+        else:
+            surface.finish()
+
+        return (0, 0, rxn_width, rxn_height)
