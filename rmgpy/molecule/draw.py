@@ -1287,15 +1287,19 @@ class ReactionDrawer:
             products.append(MoleculeDrawer().draw(molecule, format))
             
         # Next determine size required for surface
-        rxn_width = 0; rxn_height = 0
+        rxn_width = 0; rxn_height = 0; rxn_top = -100000
         for surface, cr, rect in reactants:
             left, top, width, height = rect
             rxn_width += width
             if height > rxn_height: rxn_height = height
+            if top > rxn_top: rxn_top = top
         for surface, cr, rect in products:
             left, top, width, height = rect
             rxn_width += width
             if height > rxn_height: rxn_height = height
+            if top > rxn_top: rxn_top = top
+        
+        rxn_top = -rxn_top + 0.5 * self.options['padding']
         
         # Also include '+' and reaction arrow in width
         cr.set_font_size(fontSizeNormal)
@@ -1320,14 +1324,14 @@ class ReactionDrawer:
                 # Draw the "+" between the reactants
                 rxn_cr.save()
                 rxn_cr.set_font_size(fontSizeNormal)
-                rxn_y = (rxn_height - plus_extents[3]) / 2.0
+                rxn_y = rxn_top + 0.5 * (rxn_height - plus_extents[3])
                 rxn_cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
                 rxn_cr.move_to(rxn_x, rxn_y - plus_extents[1])
                 rxn_cr.show_text(' + ')
                 rxn_cr.restore()
                 rxn_x += plus_extents[4]
             # Draw the reactant
-            rxn_y = (rxn_height - height) / 2.0
+            rxn_y = top + rxn_top + 0.5 * rxn_height
             rxn_cr.save()
             rxn_cr.set_source_surface(surface, rxn_x, rxn_y)
             rxn_cr.paint()
@@ -1340,11 +1344,11 @@ class ReactionDrawer:
         rxn_cr.save()
         rxn_cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
         rxn_cr.set_line_width(1.0)
-        rxn_cr.move_to(rxn_x + 8, rxn_height / 2.0)
-        rxn_cr.line_to(rxn_x + arrow_width - 8, rxn_height / 2.0)
-        rxn_cr.move_to(rxn_x + arrow_width - 14, rxn_height / 2.0 - 3.0)
-        rxn_cr.line_to(rxn_x + arrow_width - 8, rxn_height / 2.0)
-        rxn_cr.line_to(rxn_x + arrow_width - 14, rxn_height / 2.0 + 3.0)
+        rxn_cr.move_to(rxn_x + 8, rxn_top + 0.5 * rxn_height)
+        rxn_cr.line_to(rxn_x + arrow_width - 8, rxn_top + 0.5 * rxn_height)
+        rxn_cr.move_to(rxn_x + arrow_width - 14, rxn_top + 0.5 * rxn_height - 3.0)
+        rxn_cr.line_to(rxn_x + arrow_width - 8, rxn_top + 0.5 * rxn_height)
+        rxn_cr.line_to(rxn_x + arrow_width - 14, rxn_top + 0.5 * rxn_height + 3.0)
         rxn_cr.stroke()
         rxn_cr.restore()
         rxn_x += arrow_width
@@ -1357,24 +1361,22 @@ class ReactionDrawer:
                 # Draw the "+" between the products
                 rxn_cr.save()
                 rxn_cr.set_font_size(fontSizeNormal)
-                rxn_y = (rxn_height - plus_extents[3]) / 2.0
+                rxn_y = rxn_top + 0.5 * (rxn_height - plus_extents[3])
                 rxn_cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
                 rxn_cr.move_to(rxn_x, rxn_y - plus_extents[1])
                 rxn_cr.show_text(' + ')
                 rxn_cr.restore()
                 rxn_x += plus_extents[4]
             # Draw the product
-            rxn_y = (rxn_height - height) / 2.0
+            rxn_y = top + rxn_top + 0.5 * rxn_height
             rxn_cr.save()
             rxn_cr.set_source_surface(surface, rxn_x, rxn_y)
             rxn_cr.paint()
             rxn_cr.restore()
-            rxn_x += width            
+            rxn_x += width
         
         # Finish Cairo drawing
         if format == 'png':
             surface.write_to_png(path)
         else:
             surface.finish()
-
-        return (0, 0, rxn_width, rxn_height)
