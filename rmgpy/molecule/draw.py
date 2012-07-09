@@ -1245,6 +1245,9 @@ class ReactionDrawer:
     
     def __init__(self, options=None):
         self.options = MoleculeDrawer().options.copy()
+        self.options.update({
+            'arrowLength': 36,
+        })
         if options: self.options.update(options)
     
     def draw(self, reaction, format, path=None):
@@ -1290,21 +1293,24 @@ class ReactionDrawer:
         rxn_width = 0; rxn_height = 0; rxn_top = -100000
         for surface, cr, rect in reactants:
             left, top, width, height = rect
+            print left, top, width, height
             rxn_width += width
             if height > rxn_height: rxn_height = height
             if top > rxn_top: rxn_top = top
         for surface, cr, rect in products:
             left, top, width, height = rect
+            print left, top, width, height
             rxn_width += width
             if height > rxn_height: rxn_height = height
             if top > rxn_top: rxn_top = top
         
         rxn_top = -rxn_top + 0.5 * self.options['padding']
+        rxn_top = 0
         
         # Also include '+' and reaction arrow in width
         cr.set_font_size(fontSizeNormal)
         plus_extents = cr.text_extents(' + ')
-        arrow_width = 36
+        arrow_width = self.options['arrowLength']
         rxn_width += (len(reactants)-1) * plus_extents[4] + arrow_width + (len(products)-1) * plus_extents[4]
         
         # Now make the surface for the reaction and render each molecule on it
@@ -1332,6 +1338,7 @@ class ReactionDrawer:
                 rxn_x += plus_extents[4]
             # Draw the reactant
             rxn_y = top + rxn_top + 0.5 * rxn_height
+            print top, rxn_top, rxn_y
             rxn_cr.save()
             rxn_cr.set_source_surface(surface, rxn_x, rxn_y)
             rxn_cr.paint()
