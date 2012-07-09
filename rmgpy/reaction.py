@@ -906,7 +906,10 @@ class Reaction:
         vector formats.
         """
         import cairo
-        from rmgpy.molecule.molecule_draw import drawMolecule, createNewSurface, fontFamily, fontSizeNormal
+        from rmgpy.molecule.draw import MoleculeDrawer, createNewSurface
+        
+        fontFamily = MoleculeDrawer().options['fontFamily']
+        fontSizeNormal = MoleculeDrawer().options['fontSizeNormal']
         
         format = os.path.splitext(path)[1].lower()[1:]
         
@@ -917,13 +920,13 @@ class Reaction:
                 molecule = reactant.molecule[0]
             elif isinstance(reactant, Molecule):
                 molecule = reactant
-            reactants.append(drawMolecule(molecule, surface=format))
+            reactants.append(MoleculeDrawer().draw(molecule, format))
         for product in self.products:
             if isinstance(product, Species):
                 molecule = product.molecule[0]
             elif isinstance(product, Molecule):
                 molecule = product
-            products.append(drawMolecule(molecule, surface=format))
+            products.append(MoleculeDrawer().draw(molecule, format))
             
         # Next determine size required for surface
         rxn_width = 0; rxn_height = 0
@@ -943,7 +946,7 @@ class Reaction:
         rxn_width += (len(reactants)-1) * plus_extents[4] + arrow_width + (len(products)-1) * plus_extents[4]
         
         # Now make the surface for the reaction and render each molecule on it
-        rxn_surface = createNewSurface(type=format, path=path, width=rxn_width, height=rxn_height)
+        rxn_surface = createNewSurface(format, path, width=rxn_width, height=rxn_height)
         rxn_cr = cairo.Context(rxn_surface)
         
         # Draw white background

@@ -95,6 +95,32 @@ from numpy.linalg import LinAlgError
 
 ################################################################################
 
+def createNewSurface(format, path=None, width=1024, height=768):
+    """
+    Create a new surface of the specified `type`: "png" for
+    :class:`ImageSurface`, "svg" for :class:`SVGSurface`, "pdf" for
+    :class:`PDFSurface`, or "ps" for :class:`PSSurface`. If the surface is to
+    be saved to a file, use the `path` parameter to give the path to the file.
+    You can also optionally specify the `width` and `height` of the generated
+    surface if you know what it is; otherwise a default size of 1024 by 768 is
+    used.
+    """
+    import cairo
+    format = format.lower()
+    if format == 'png':
+        surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, int(width), int(height))
+    elif format == 'svg':
+        surface = cairo.SVGSurface(path, width, height)
+    elif format == 'pdf':
+        surface = cairo.PDFSurface(path, width, height)
+    elif format == 'ps':
+        surface = cairo.PSSurface(path, width, height)
+    else:
+        raise ValueError('Invalid value "{0}" for type parameter; valid values are "png", "svg", "pdf", and "ps".'.format(type))
+    return surface
+    
+################################################################################
+
 class MoleculeDrawer:
     """
     This class provides functionality for drawing the skeletal formula of
@@ -201,7 +227,7 @@ class MoleculeDrawer:
             
         # Create a dummy surface to draw to, since we don't know the bounding rect
         # We will copy this to another surface with the correct bounding rect
-        surface0 = self.__createNewSurface(format=format, path=None)
+        surface0 = createNewSurface(format=format, path=None)
         cr0 = cairo.Context(surface0)
     
         # Render using Cairo
@@ -210,7 +236,7 @@ class MoleculeDrawer:
         # Create the real surface with the appropriate size
         width = self.right - self.left
         height = self.bottom - self.top
-        self.surface = self.__createNewSurface(format=format, path=path, width=width, height=height)
+        self.surface = createNewSurface(format=format, path=path, width=width, height=height)
         self.cr = cairo.Context(self.surface)
         self.__render(self.cr, offset=(-self.left,-self.top))
         
@@ -775,30 +801,6 @@ class MoleculeDrawer:
         
         return symbols
 
-    def __createNewSurface(self, format, path=None, width=1024, height=768):
-        """
-        Create a new surface of the specified `type`: "png" for
-        :class:`ImageSurface`, "svg" for :class:`SVGSurface`, "pdf" for
-        :class:`PDFSurface`, or "ps" for :class:`PSSurface`. If the surface is to
-        be saved to a file, use the `path` parameter to give the path to the file.
-        You can also optionally specify the `width` and `height` of the generated
-        surface if you know what it is; otherwise a default size of 1024 by 768 is
-        used.
-        """
-        import cairo
-        format = format.lower()
-        if format == 'png':
-            surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, int(width), int(height))
-        elif format == 'svg':
-            surface = cairo.SVGSurface(path, width, height)
-        elif format == 'pdf':
-            surface = cairo.PDFSurface(path, width, height)
-        elif format == 'ps':
-            surface = cairo.PSSurface(path, width, height)
-        else:
-            raise ValueError('Invalid value "{0}" for type parameter; valid values are "png", "svg", "pdf", and "ps".'.format(type))
-        return surface
-    
     def __render(self, cr, offset=None):
         """
         Uses the Cairo graphics library to create a skeletal formula drawing of a
