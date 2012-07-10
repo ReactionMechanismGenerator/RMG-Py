@@ -69,28 +69,39 @@ class Species(rmgpy.species.Species):
         """
         return (Species, (self.index, self.label, self.thermo, self.states, self.molecule, self.E0, self.lennardJones, self.molecularWeight, self.reactive, self.coreSizeAtCreation),)
 
-    def generateThermoDataFromQM(self, thermoClass=MultiNASA):
+    def generateThermoDataFromQM(self):
         """
-        Generate thermo data from first principles
+        Generate thermo data from first principles.
+        
+        See also :meth:`processThermoData`.
         """
         from rmgpy.qm import qmtp
         
         qmThermoOb = qmtp.QMTP('mopac')
-        # not the right format. need to convert the thermo data before returning.
-        # convertThermoModel?
-        self.thermo = qmThermoOb.generateQMThermoData(self.molecule[0])
+        thermo0 = qmThermoOb.generateQMThermoData(self.molecule[0])
         
-        return self.thermo
-            
-    def generateThermoDataFromDB(self, database, thermoClass=MultiNASA):
+        return thermo0
+    
+    def generateThermoDataFromDB(self, database):
         """
         Generate thermodynamic data for the species using the thermo database.
 
         Generates the thermo data for each structure (resonance isomer),
-        picks that with lowest H298 value, and saves it to `self.thermoData`.
+        picks that with lowest H298 value, and saves it to `self.thermo`.
+        
+        See also :meth:`processThermoData`.
         """
         # Get the thermo data for the species from the database
         thermo0 = database.thermo.getThermoData(self)
+        
+        return thermo0
+        
+    def processThermoData(self, thermo0, thermoClass=MultiNASA):
+        """
+        Converts via Wilhoit into required `thermoClass` and sets `E0`.
+        
+        Resulting thermo is stored (`self.thermo`) and returned.
+        """
 
         # Always convert to Wilhoit so we can compute E0
         if isinstance(thermo0, Wilhoit):
