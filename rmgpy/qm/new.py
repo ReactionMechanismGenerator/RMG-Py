@@ -88,17 +88,3 @@ class QM_Reaction:
         "parse result"
         "process result"
         return kineticData
-        
-## This goes in methods:
-
-class QMMethod:
-    max_attempts = 0
-    def writeInputFile(self, geometry, attempt):
-    def runJob(self):
-    def parseResult(self):
-
-
-class MopacPM3(QMMethod):
-    writeInputFile = qm.inputwriters.MOPACPM3InputWriter.write
-    max_attempts = qm.inputwriters.MOPACPM3InputWriter.max_attempts
-    
