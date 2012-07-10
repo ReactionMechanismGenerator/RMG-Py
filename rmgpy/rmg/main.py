@@ -299,11 +299,7 @@ class RMG:
             self.reactionModel.enlarge([spec for spec in self.initialSpecies if not spec.reactive])
             # Then add remaining reactive species
             for spec in self.initialSpecies:
-                if spec.molecule[0].isCyclic():
-                    thermo0 = spec.generateThermoDataFromQM()
-                else:
-                    thermo0 = spec.generateThermoDataFromDB(self.database)
-                spec.processThermoData(thermo0)
+                spec.generateThermoData(self.database)
                     
             self.reactionModel.enlarge([spec for spec in self.initialSpecies if spec.reactive])
             

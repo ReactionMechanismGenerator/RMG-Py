@@ -68,6 +68,18 @@ class Species(rmgpy.species.Species):
         A helper function used when pickling an object.
         """
         return (Species, (self.index, self.label, self.thermo, self.states, self.molecule, self.E0, self.lennardJones, self.molecularWeight, self.reactive, self.coreSizeAtCreation),)
+    
+    def generateThermoData(self, database, thermoClass=MultiNASA):
+        """
+        Generates thermo data, using either QM or Database.
+        
+        Result stored in `self.thermo` and returned.
+        """
+        if self.molecule[0].isCyclic():
+            thermo0 = self.generateThermoDataFromQM()
+        else:
+            thermo0 = self.generateThermoDataFromDB(database)
+        return self.processThermoData(thermo0, thermoClass)
 
     def generateThermoDataFromQM(self):
         """
@@ -94,7 +106,7 @@ class Species(rmgpy.species.Species):
         # Get the thermo data for the species from the database
         thermo0 = database.thermo.getThermoData(self)
         
-        return thermo0
+        return thermo0        
         
     def processThermoData(self, thermo0, thermoClass=MultiNASA):
         """
