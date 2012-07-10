@@ -52,6 +52,7 @@ import rmgpy.data.rmg
 from rmgpy.reaction import Reaction
 
 from pdep import PDepReaction, PDepNetwork, PressureDependenceError
+# generateThermoDataFromQM under the Species class imports the qm package
 
 
 ################################################################################
@@ -68,7 +69,15 @@ class Species(rmgpy.species.Species):
         """
         return (Species, (self.index, self.label, self.thermo, self.states, self.molecule, self.E0, self.lennardJones, self.molecularWeight, self.reactive, self.coreSizeAtCreation),)
 
-    def generateThermoData(self, database, thermoClass=MultiNASA):
+    def generateThermoDataFromQM(self, thermoClass=MultiNASA):
+        """
+        Generate thermo data from first principles
+        """
+        from rmgpy.qm import qmtp
+        qmFile = qmtp.QMTP(self)
+        qmtp.QMTP.generateQMThermoData(qmFile, self.molecule[0])
+            
+    def generateThermoDataFromDB(self, database, thermoClass=MultiNASA):
         """
         Generate thermodynamic data for the species using the thermo database.
 
