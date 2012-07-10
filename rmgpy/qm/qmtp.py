@@ -10,7 +10,7 @@ A molfile class is a rather artificial and probably redundant class from RMG-Jav
 that collects information on paths to the 3D mol files.
 
 ThreeDMolFileCreator is a wrapper class that:
--converts a RMG-Py molecule into a 2D mol file using OpenBabel
+-converts a RMG-Py molecule into a RDKit molecule
 -generates 3D coordinates using RDKit 
 """
 

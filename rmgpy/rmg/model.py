@@ -74,8 +74,13 @@ class Species(rmgpy.species.Species):
         Generate thermo data from first principles
         """
         from rmgpy.qm import qmtp
-        qmFile = qmtp.QMTP(self)
-        qmtp.QMTP.generateQMThermoData(qmFile, self.molecule[0])
+        
+        qmThermoOb = qmtp.QMTP('mopac')
+        # not the right format. need to convert the thermo data before returning.
+        # convertThermoModel?
+        self.thermo = qmThermoOb.generateQMThermoData(self.molecule[0])
+        
+        return self.thermo
             
     def generateThermoDataFromDB(self, database, thermoClass=MultiNASA):
         """
