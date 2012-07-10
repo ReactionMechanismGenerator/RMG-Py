@@ -722,7 +722,7 @@ class Network:
         self.calculateFirstReactiveEnergies()
         self.calculateDensitiesOfStates()
         
-    def setConditions(self, T, P):
+    def setConditions(self, T, P, check=True):
         """
         Set the current network conditions to the temperature `T` in K and
         pressure `P` in Pa. All of the internal variables are updated 
@@ -758,7 +758,7 @@ class Network:
             # Also shift each density of states to a common zero of energy
             densStates = self.mapDensitiesOfStates()
             # Calculate microcanonical rate coefficients for each path reaction
-            self.calculateMicrocanonicalRates()
+            self.calculateMicrocanonicalRates(check=check)
             # Rescale densities of states such that, when they are integrated
             # using the Boltzmann factor as a weighting factor, the result is unity
             for i in range(Nisom+Nreac):

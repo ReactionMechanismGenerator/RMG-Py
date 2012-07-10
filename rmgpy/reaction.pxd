@@ -26,8 +26,8 @@
 
 from quantity cimport constants
 from species cimport Species, TransitionState
-from molecule cimport Atom, Molecule
-from element cimport Element
+from rmgpy.molecule.molecule cimport Atom, Molecule
+from rmgpy.molecule.element cimport Element
 from kinetics cimport KineticsModel, Arrhenius
 
 cimport numpy

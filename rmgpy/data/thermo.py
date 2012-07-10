@@ -43,8 +43,7 @@ from base import Database, Entry, makeLogicNode
 
 from rmgpy.quantity import constants
 from rmgpy.thermo import *
-from rmgpy.molecule import Molecule, Atom, Bond
-from rmgpy.group import Group
+from rmgpy.molecule import Molecule, Atom, Bond, Group
 
 ################################################################################
 
@@ -209,7 +208,17 @@ class ThermoLibrary(Database):
     def __init__(self, label='', name='', shortDesc='', longDesc=''):
         Database.__init__(self, label=label, name=name, shortDesc=shortDesc, longDesc=longDesc)
 
-    def loadEntry(self, index, label, molecule, thermo, reference=None, referenceType='', shortDesc='', longDesc='', history=None):
+    def loadEntry(self,
+                  index,
+                  label,
+                  molecule,
+                  thermo,
+                  reference=None,
+                  referenceType='',
+                  shortDesc='',
+                  longDesc='',
+                  history=None
+                  ):
         self.entries[label] = Entry(
             index = index,
             label = label,
@@ -252,7 +261,17 @@ class ThermoGroups(Database):
     def __init__(self, label='', name='', shortDesc='', longDesc=''):
         Database.__init__(self, label=label, name=name, shortDesc=shortDesc, longDesc=longDesc)
 
-    def loadEntry(self, index, label, group, thermo, reference=None, referenceType='', shortDesc='', longDesc='', history=None):
+    def loadEntry(self,
+                  index,
+                  label,
+                  group,
+                  thermo,
+                  reference=None,
+                  referenceType='',
+                  shortDesc='',
+                  longDesc='',
+                  history=None
+                  ):
         if group[0:3].upper() == 'OR{' or group[0:4].upper() == 'AND{' or group[0:7].upper() == 'NOT OR{' or group[0:8].upper() == 'NOT AND{':
             item = makeLogicNode(group)
         else:
@@ -607,12 +626,7 @@ class ThermoDatabase:
         :class:`Species` object `species` by estimation using the group
         additivity values. If no group additivity values are loaded, a
         :class:`DatabaseError` is raised.
-        """
-        # Ensure molecules are using explicit hydrogens
-        implicitH = [mol.implicitHydrogens for mol in species.molecule]
-        for molecule in species.molecule:
-            molecule.makeHydrogensExplicit()
-        
+        """       
         thermo = []
         for molecule in species.molecule:
             molecule.clearLabeledAtoms()
@@ -624,11 +638,6 @@ class ThermoDatabase:
         indices = H298.argsort()
         
         species.molecule = [species.molecule[ind] for ind in indices]
-        implicitH = [implicitH[ind] for ind in indices]
-        
-        # Restore implicit hydrogens if necessary
-        for implicit, molecule in zip(implicitH, species.molecule):
-            if implicit: molecule.makeHydrogensImplicit()
         
         return (thermo[indices[0]], None, None)
         
@@ -639,9 +648,6 @@ class ThermoDatabase:
         additivity values. If no group additivity values are loaded, a
         :class:`DatabaseError` is raised.
         """
-        implicitH = molecule.implicitHydrogens
-        molecule.makeHydrogensExplicit()
-
         # For thermo estimation we need the atoms to already be sorted because we
         # iterate over them; if the order changes during the iteration then we
         # will probably not visit the right atoms, and so will get the thermo wrong
@@ -660,9 +666,9 @@ class ThermoDatabase:
             for atom in saturatedStruct.atoms:
                 for i in range(atom.radicalElectrons):
                     H = Atom('H')
-                    bond = Bond('S')
+                    bond = Bond(atom, H, 'S')
                     saturatedStruct.addAtom(H)
-                    saturatedStruct.addBond(atom, H, bond)
+                    saturatedStruct.addBond(bond)
                     if atom not in added:
                         added[atom] = []
                     added[atom].append([H, bond])
@@ -689,7 +695,7 @@ class ThermoDatabase:
 
                 # Remove the added hydrogen atoms and bond and restore the radical
                 for H, bond in added[atom]:
-                    saturatedStruct.removeBond(atom, H)
+                    saturatedStruct.removeBond(bond)
                     saturatedStruct.removeAtom(H)
                     atom.incrementRadical()
 
@@ -706,7 +712,7 @@ class ThermoDatabase:
                 # Re-saturate
                 for H, bond in added[atom]:
                     saturatedStruct.addAtom(H)
-                    saturatedStruct.addBond(atom, H, bond)
+                    saturatedStruct.addBond(bond)
                     atom.decrementRadical()
 
                 # Subtract the enthalpy of the added hydrogens
@@ -746,14 +752,17 @@ class ThermoDatabase:
             # each ring one time; this doesn't work yet
             rings = molecule.getSmallestSetOfSmallestRings()
             for ring in rings:
-
                 # Make a temporary structure containing only the atoms in the ring
+                # NB. if any of the ring corrections depend on ligands not in the ring, they will not be found!
                 ringStructure = Molecule()
-                for atom in ring: ringStructure.addAtom(atom)
+                newAtoms = dict()
+                for atom in ring:
+                    newAtoms[atom] = atom.copy()
+                    ringStructure.addAtom(newAtoms[atom]) # (addAtom deletes the atom's bonds)
                 for atom1 in ring:
                     for atom2 in ring:
                         if molecule.hasBond(atom1, atom2):
-                            ringStructure.addBond(atom1, atom2, molecule.getBond(atom1, atom2))
+                            ringStructure.addBond(Bond(newAtoms[atom1], newAtoms[atom2], atom1.bonds[atom2].order ))
 
                 # Get thermo correction for this ring
                 try:
@@ -767,8 +776,6 @@ class ThermoDatabase:
         # Correct entropy for symmetry number
         molecule.calculateSymmetryNumber()
         thermoData.S298.value -= constants.R * math.log(molecule.symmetryNumber)
-
-        if implicitH: molecule.makeHydrogensImplicit()
 
         return thermoData
 

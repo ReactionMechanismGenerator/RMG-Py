@@ -690,7 +690,10 @@ class HinderedRotor(Mode):
         cython.declare(rho=numpy.ndarray, q1f=cython.double, pre=cython.double, V0=cython.double, i=cython.int)
         rho = numpy.zeros_like(Elist)
         q1f = math.sqrt(8 * math.pi * math.pi * math.pi * self.inertia.value / constants.h / constants.h / constants.Na) / self.symmetry
-        V0 = self.barrier.value
+        if self.fourier is not None:
+            V0 = -2.0 * numpy.sum(self.fourier.values[0,:])
+        else:
+            V0 = self.barrier.value
         pre = 2.0 * q1f / math.sqrt(math.pi * math.pi * math.pi * V0)
         # The following is only valid in the classical limit
         # Note that cellipk(1) = infinity, so we must skip that value
@@ -724,7 +727,10 @@ class HinderedRotor(Mode):
         cython.declare(sumStates=numpy.ndarray, q1f=cython.double, pre=cython.double, V0=cython.double, i=cython.int)
         sumStates = numpy.zeros_like(Elist)
         q1f = math.sqrt(8 * math.pi * math.pi * math.pi * self.inertia.value / constants.h / constants.h / constants.Na) / self.symmetry
-        V0 = self.barrier.value
+        if self.fourier is not None:
+            V0 = -2.0 * numpy.sum(self.fourier.values[0,:])
+        else:
+            V0 = self.barrier.value
         pre = 4.0 * q1f * math.sqrt(V0) / math.sqrt(math.pi * math.pi * math.pi)
         # The following is only valid in the classical limit
         # Note that cellipk(1) = infinity, so we must skip that value
@@ -746,9 +752,10 @@ class HinderedRotor(Mode):
         height, and :math:`I` the reduced moment of inertia of the rotor. The
         units of the returned frequency are cm^-1.
         """
-        V0 = self.barrier.value
         if self.fourier is not None:
-            V0 = -numpy.sum(self.fourier.values[0,:])
+            V0 = -2.0 * numpy.sum(self.fourier.values[0,:])
+        else:
+            V0 = self.barrier.value
         return self.symmetry / 2.0 / math.pi * math.sqrt(V0 / constants.Na / 2 / self.inertia.value) / (constants.c * 100)
 
 def besseli0(x):

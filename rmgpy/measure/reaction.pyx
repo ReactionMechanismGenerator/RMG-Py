@@ -281,7 +281,7 @@ def applyInverseLaplaceTransformMethod(kinetics, double E0,
         if Ea < 0:
             A *= exp(-Ea / R / T)
             Ea = 0.0
-        if n != 0:
+        if n < 0:
             A *= T**n
             n = 0.0
 

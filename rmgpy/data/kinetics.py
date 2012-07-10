@@ -40,8 +40,7 @@ from base import *
 from rmgpy.quantity import Quantity
 from rmgpy.reaction import Reaction, ReactionError
 from rmgpy.kinetics import *
-from rmgpy.group import GroupBond, Group
-from rmgpy.molecule import Bond
+from rmgpy.molecule import Bond, GroupBond, Group
 from rmgpy.species import Species
 
 ################################################################################
@@ -71,8 +70,33 @@ class DepositoryReaction(Reaction):
     store the library and the entry in that depository that it was created from.
     """
 
-    def __init__(self, index=-1, reactants=None, products=None, kinetics=None, reversible=True, transitionState=None, thirdBody=False, duplicate=False, degeneracy=1, pairs=None, depository=None, family=None, entry=None):
-        Reaction.__init__(self, index=index, reactants=reactants, products=products, kinetics=kinetics, reversible=reversible, transitionState=transitionState, thirdBody=thirdBody, duplicate=duplicate, degeneracy=degeneracy, pairs=pairs)
+    def __init__(self,
+                 index=-1,
+                 reactants=None,
+                 products=None,
+                 kinetics=None,
+                 reversible=True,
+                 transitionState=None,
+                 thirdBody=False,
+                 duplicate=False,
+                 degeneracy=1,
+                 pairs=None,
+                 depository=None,
+                 family=None,
+                 entry=None
+                 ):
+        Reaction.__init__(self,
+                          index=index,
+                          reactants=reactants,
+                          products=products,
+                          kinetics=kinetics,
+                          reversible=reversible,
+                          transitionState=transitionState,
+                          thirdBody=thirdBody,
+                          duplicate=duplicate,
+                          degeneracy=degeneracy,
+                          pairs=pairs
+                          )
         self.depository = depository
         self.family = family
         self.entry = entry
@@ -81,7 +105,20 @@ class DepositoryReaction(Reaction):
         """
         A helper function used when pickling an object.
         """
-        return (DepositoryReaction, (self.index, self.reactants, self.products, self.kinetics, self.reversible, self.transitionState, self.thirdBody, self.duplicate, self.degeneracy, self.pairs, self.depository, self.family, self.entry))
+        return (DepositoryReaction, (self.index,
+                                     self.reactants,
+                                     self.products,
+                                     self.kinetics,
+                                     self.reversible,
+                                     self.transitionState,
+                                     self.thirdBody,
+                                     self.duplicate,
+                                     self.degeneracy,
+                                     self.pairs,
+                                     self.depository,
+                                     self.family,
+                                     self.entry
+                                     ))
 
     def getSource(self):
         """
@@ -99,8 +136,32 @@ class LibraryReaction(Reaction):
     store the library and the entry in that library that it was created from.
     """
     
-    def __init__(self, index=-1, reactants=None, products=None, kinetics=None, reversible=True, transitionState=None, thirdBody=False, duplicate=False, degeneracy=1, pairs=None, library=None, entry=None):
-        Reaction.__init__(self, index=index, reactants=reactants, products=products, kinetics=kinetics, reversible=reversible, transitionState=transitionState, thirdBody=thirdBody, duplicate=duplicate, degeneracy=degeneracy, pairs=pairs)
+    def __init__(self,
+                 index=-1,
+                 reactants=None,
+                 products=None,
+                 kinetics=None,
+                 reversible=True,
+                 transitionState=None,
+                 thirdBody=False,
+                 duplicate=False,
+                 degeneracy=1,
+                 pairs=None,
+                 library=None,
+                 entry=None
+                 ):
+        Reaction.__init__(self,
+                          index=index,
+                          reactants=reactants,
+                          products=products,
+                          kinetics=kinetics,
+                          reversible=reversible,
+                          transitionState=transitionState,
+                          thirdBody=thirdBody,
+                          duplicate=duplicate,
+                          degeneracy=degeneracy,
+                          pairs=pairs
+                          )
         self.library = library
         self.family = library
         self.entry = entry
@@ -109,7 +170,19 @@ class LibraryReaction(Reaction):
         """
         A helper function used when pickling an object.
         """
-        return (LibraryReaction, (self.index, self.reactants, self.products, self.kinetics, self.reversible, self.transitionState, self.thirdBody, self.duplicate, self.degeneracy, self.pairs, self.library, self.entry))
+        return (LibraryReaction, (self.index,
+                                  self.reactants,
+                                  self.products,
+                                  self.kinetics,
+                                  self.reversible,
+                                  self.transitionState,
+                                  self.thirdBody,
+                                  self.duplicate,
+                                  self.degeneracy,
+                                  self.pairs,
+                                  self.library,
+                                  self.entry
+                                  ))
 
     def getSource(self):
         """
@@ -127,8 +200,32 @@ class TemplateReaction(Reaction):
     family that it was created from.
     """
 
-    def __init__(self, index=-1, reactants=None, products=None, kinetics=None, reversible=True, transitionState=None, thirdBody=False, duplicate=False, degeneracy=1, pairs=None, family=None, template=None):
-        Reaction.__init__(self, index=index, reactants=reactants, products=products, kinetics=kinetics, reversible=reversible, transitionState=transitionState, thirdBody=thirdBody, duplicate=duplicate, degeneracy=degeneracy, pairs=pairs)
+    def __init__(self,
+                index=-1,
+                reactants=None,
+                products=None,
+                kinetics=None,
+                reversible=True,
+                transitionState=None,
+                thirdBody=False,
+                duplicate=False,
+                degeneracy=1,
+                pairs=None,
+                family=None,
+                template=None
+                ):
+        Reaction.__init__(self,
+                          index=index,
+                          reactants=reactants,
+                          products=products,
+                          kinetics=kinetics,
+                          reversible=reversible,
+                          transitionState=transitionState,
+                          thirdBody=thirdBody,
+                          duplicate=duplicate,
+                          degeneracy=degeneracy,
+                          pairs=pairs
+                          )
         self.family = family
         self.template = template
 
@@ -136,7 +233,19 @@ class TemplateReaction(Reaction):
         """
         A helper function used when pickling an object.
         """
-        return (TemplateReaction, (self.index, self.reactants, self.products, self.kinetics, self.reversible, self.transitionState, self.thirdBody, self.duplicate, self.degeneracy, self.pairs, self.family, self.template))
+        return (TemplateReaction, (self.index,
+                                   self.reactants,
+                                   self.products,
+                                   self.kinetics,
+                                   self.reversible,
+                                   self.transitionState,
+                                   self.thirdBody,
+                                   self.duplicate,
+                                   self.degeneracy,
+                                   self.pairs,
+                                   self.family,
+                                   self.template
+                                   ))
 
     def getSource(self):
         """
@@ -239,15 +348,15 @@ class ReactionRecipe:
                         atom2.applyAction(['CHANGE_BOND', label1, -info, label2])
                         bond.applyAction(['CHANGE_BOND', label1, -info, label2])
                 elif (action[0] == 'FORM_BOND' and doForward) or (action[0] == 'BREAK_BOND' and not doForward):
-                    bond = GroupBond(order=['S']) if pattern else Bond(order='S')
-                    struct.addBond(atom1, atom2, bond)
+                    bond = GroupBond(atom1, atom2, order=['S']) if pattern else Bond(atom1, atom2, order='S')
+                    struct.addBond(bond)
                     atom1.applyAction(['FORM_BOND', label1, info, label2])
                     atom2.applyAction(['FORM_BOND', label1, info, label2])
                 elif (action[0] == 'BREAK_BOND' and doForward) or (action[0] == 'FORM_BOND' and not doForward):
                     if not struct.hasBond(atom1, atom2):
                         raise InvalidActionError('Attempted to remove a nonexistent bond.')
                     bond = struct.getBond(atom1, atom2)
-                    struct.removeBond(atom1, atom2)
+                    struct.removeBond(bond)
                     atom1.applyAction(['BREAK_BOND', label1, info, label2])
                     atom2.applyAction(['BREAK_BOND', label1, info, label2])
 
@@ -410,7 +519,27 @@ class KineticsDepository(Database):
     def __repr__(self):
         return '<KineticsDepository "{0}">'.format(self.label)
 
-    def loadEntry(self, index, reactant1=None, reactant2=None, reactant3=None, product1=None, product2=None, product3=None, group1=None, group2=None, group3=None, kinetics=None, degeneracy=1, label='', reference=None, referenceType='', shortDesc='', longDesc='', rank=None, history=None):
+    def loadEntry(self,
+                  index,
+                  reactant1=None,
+                  reactant2=None,
+                  reactant3=None,
+                  product1=None,
+                  product2=None,
+                  product3=None,
+                  group1=None,
+                  group2=None,
+                  group3=None,
+                  kinetics=None,
+                  degeneracy=1,
+                  label='',
+                  reference=None,
+                  referenceType='',
+                  shortDesc='',
+                  longDesc='',
+                  rank=None,
+                  history=None
+                  ):
         
         if reactant1 is not None and product1 is not None:
             # The reaction involves real reactants and products
@@ -480,9 +609,32 @@ class KineticsDepository(Database):
         """
         # This is hardcoding of reaction families!
         label = os.path.split(self.label)[-2]
-        if label in ['H_Abstraction', 'R_Addition_MultipleBond', 'R_Recombination', 'Disproportionation', '1+2_Cycloaddition', '2+2_cycloaddition_Cd', '2+2_cycloaddition_CO', '2+2_cycloaddition_CCO', 'Diels_alder_addition', '1,2_Insertion', '1,3_Insertion_CO2', '1,3_Insertion_ROR', 'R_Addition_COm', 'Oa_R_Recombination']:
+        if label in ['H_Abstraction',
+                     'R_Addition_MultipleBond',
+                     'R_Recombination',
+                     'Disproportionation',
+                     '1+2_Cycloaddition',
+                     '2+2_cycloaddition_Cd',
+                     '2+2_cycloaddition_CO',
+                     '2+2_cycloaddition_CCO',
+                     'Diels_alder_addition',
+                     '1,2_Insertion',
+                     '1,3_Insertion_CO2',
+                     '1,3_Insertion_ROR',
+                     'R_Addition_COm',
+                     'Oa_R_Recombination'
+                     ]:
             Aunits = 'cm^3/(mol*s)'
-        elif label in ['intra_H_migration', 'Birad_recombination', 'intra_OH_migration', 'HO2_Elimination_from_PeroxyRadical', 'Cyclic_Ether_Formation', 'Intra_R_Add_Exocyclic', 'Intra_R_Add_Endocyclic', '1,2-Birad_to_alkene', 'Intra_Disproportionation']:
+        elif label in ['intra_H_migration',
+                      'Birad_recombination',
+                      'intra_OH_migration',
+                      'HO2_Elimination_from_PeroxyRadical',
+                      'Cyclic_Ether_Formation',
+                      'Intra_R_Add_Exocyclic',
+                      'Intra_R_Add_Endocyclic',
+                      '1,2-Birad_to_alkene',
+                      'Intra_Disproportionation'
+                      ]:
             Aunits = 's^-1'
         else:
             raise ValueError('Unable to determine preexponential units for old reaction family "{0}".'.format(self.label))
@@ -620,9 +772,32 @@ class KineticsDepository(Database):
         
         # This is hardcoding of reaction families!
         label = os.path.split(self.label)[-2]
-        if label in ['H_Abstraction', 'R_Addition_MultipleBond', 'R_Recombination', 'Disproportionation', '1+2_Cycloaddition', '2+2_cycloaddition_Cd', '2+2_cycloaddition_CO', '2+2_cycloaddition_CCO', 'Diels_alder_addition', '1,2_Insertion', '1,3_Insertion_CO2', '1,3_Insertion_ROR', 'R_Addition_COm', 'Oa_R_Recombination']:
+        if label in ['H_Abstraction',
+                     'R_Addition_MultipleBond',
+                     'R_Recombination',
+                     'Disproportionation',
+                     '1+2_Cycloaddition',
+                     '2+2_cycloaddition_Cd',
+                     '2+2_cycloaddition_CO',
+                     '2+2_cycloaddition_CCO',
+                     'Diels_alder_addition',
+                     '1,2_Insertion',
+                     '1,3_Insertion_CO2',
+                     '1,3_Insertion_ROR',
+                     'R_Addition_COm',
+                     'Oa_R_Recombination'
+                     ]:
             factor = 1.0e6
-        elif label in ['intra_H_migration', 'Birad_recombination', 'intra_OH_migration', 'Cyclic_Ether_Formation', 'HO2_Elimination_from_PeroxyRadical', 'Intra_R_Add_Exocyclic', 'Intra_R_Add_Endocyclic', '1,2-Birad_to_alkene', 'Intra_Disproportionation']:
+        elif label in ['intra_H_migration',
+                       'Birad_recombination',
+                       'intra_OH_migration',
+                       'Cyclic_Ether_Formation',
+                       'HO2_Elimination_from_PeroxyRadical',
+                       'Intra_R_Add_Exocyclic',
+                       'Intra_R_Add_Endocyclic',
+                       '1,2-Birad_to_alkene',
+                       'Intra_Disproportionation'
+                       ]:
             factor = 1.0
         else:
             raise ValueError('Unable to determine preexponential units for old reaction family "{0}".'.format(self.label))
@@ -649,12 +824,21 @@ class KineticsDepository(Database):
             else:
                 Trange = '{0:g}-{1:g}    '.format(entry.data.Tmin.value, entry.data.Tmax.value)
             flib.write('{0:<12}'.format(Trange))
-            flib.write('{0:11.2e} {1:9.2f} {2:9.2f} {3:11.2f} '.format(entry.data.A.value * factor, entry.data.n.value, entry.data.alpha.value, entry.data.E0.value / 4184.))
+            flib.write('{0:11.2e} {1:9.2f} {2:9.2f} {3:11.2f} '.format(
+                            entry.data.A.value * factor,
+                            entry.data.n.value,
+                            entry.data.alpha.value,
+                            entry.data.E0.value / 4184.
+                            ))
             if entry.data.A.isUncertaintyMultiplicative():
                 flib.write('*{0:<6g} '.format(entry.data.A.uncertainty))
             else:
                 flib.write('{0:<7g} '.format(entry.data.A.uncertainty * factor))
-            flib.write('{0:6g} {1:6g} {2:6g} '.format(entry.data.n.uncertainty, entry.data.alpha.uncertainty, entry.data.E0.uncertainty / 4184.))
+            flib.write('{0:6g} {1:6g} {2:6g} '.format(
+                            entry.data.n.uncertainty,
+                            entry.data.alpha.uncertainty,
+                            entry.data.E0.uncertainty / 4184.
+                            ))
             flib.write('    {0:<4d}     {1}\n'.format(entry.rank, entry.shortDesc))
             
             fcom.write('------\n')
@@ -787,7 +971,24 @@ class KineticsLibrary(Database):
             
         self.checkForDuplicates()
         
-    def loadEntry(self, index, reactant1, product1, kinetics, reactant2=None, reactant3=None, product2=None, product3=None, degeneracy=1, label='', duplicate=False, reference=None, referenceType='', shortDesc='', longDesc='', history=None):
+    def loadEntry(self,
+                  index,
+                  reactant1,
+                  product1,
+                  kinetics,
+                  reactant2=None,
+                  reactant3=None,
+                  product2=None,
+                  product3=None,
+                  degeneracy=1,
+                  label='',
+                  duplicate=False,
+                  reference=None,
+                  referenceType='',
+                  shortDesc='',
+                  longDesc='',
+                  history=None
+                  ):
         
         reactants = [Species(label=reactant1.strip().splitlines()[0].strip(), molecule=[Molecule().fromAdjacencyList(reactant1)])]
         if reactant2 is not None: reactants.append(Species(label=reactant2.strip().splitlines()[0].strip(), molecule=[Molecule().fromAdjacencyList(reactant2)]))
@@ -1260,7 +1461,19 @@ class KineticsGroups(Database):
     A class for working with an RMG kinetics family group additivity values. 
     """
 
-    def __init__(self, entries=None, top=None, label='', name='', shortDesc='', longDesc='', forwardTemplate=None, forwardRecipe=None, reverseTemplate=None, reverseRecipe=None, forbidden=None):
+    def __init__(self,
+                 entries=None,
+                 top=None,
+                 label='',
+                 name='',
+                 shortDesc='',
+                 longDesc='',
+                 forwardTemplate=None,
+                 forwardRecipe=None,
+                 reverseTemplate=None,
+                 reverseRecipe=None,
+                 forbidden=None
+                 ):
         Database.__init__(self, entries, top, label, name, shortDesc, longDesc)
         self.numReactants = 0
         
@@ -1483,7 +1696,19 @@ class KineticsFamily(Database):
     `reverseTemplate` and `reverseRecipe` will both be ``None``.
     """
 
-    def __init__(self, entries=None, top=None, label='', name='', shortDesc='', longDesc='', forwardTemplate=None, forwardRecipe=None, reverseTemplate=None, reverseRecipe=None, forbidden=None):
+    def __init__(self,
+                 entries=None,
+                 top=None,
+                 label='',
+                 name='',
+                 shortDesc='',
+                 longDesc='',
+                 forwardTemplate=None,
+                 forwardRecipe=None,
+                 reverseTemplate=None,
+                 reverseRecipe=None,
+                 forbidden=None
+                 ):
         Database.__init__(self, entries, top, label, name, shortDesc, longDesc)
         self.forwardTemplate = forwardTemplate
         self.forwardRecipe = forwardRecipe
@@ -1981,7 +2206,7 @@ class KineticsFamily(Database):
             data.changeT0(1)
             
             # Estimate the thermo for the reactants and products
-            item = deepcopy(entry.item)
+            item = Reaction(reactants=[m.copy(deep=True) for m in entry.item.reactants], products=[m.copy(deep=True) for m in entry.item.products])
             item.reactants = [Species(molecule=[m]) for m in item.reactants]
             for reactant in item.reactants:
                 reactant.generateResonanceIsomers()
@@ -2356,9 +2581,8 @@ class KineticsFamily(Database):
         if isinstance(struct, LogicNode):
             mappings = []
             for child_structure in struct.getPossibleStructures(self.groups.entries):
-                ismatch, map = reactant.findSubgraphIsomorphisms(child_structure)
-                if ismatch: mappings.extend(map)
-            return len(mappings) > 0, mappings
+                mappings.extend(reactant.findSubgraphIsomorphisms(child_structure))
+            return mappings
         elif isinstance(struct, Group):
             return reactant.findSubgraphIsomorphisms(struct)
 
@@ -2492,8 +2716,6 @@ class KineticsFamily(Database):
         for i in range(len(reactants)):
             for j in range(len(reactants[i])):
                 reactants[i][j] = reactants[i][j].copy(deep=True)
-                # Each molecule must have explicit hydrogen atoms
-                reactants[i][j].makeHydrogensExplicit()
                 
         if forward:
             template = self.forwardTemplate
@@ -2508,18 +2730,17 @@ class KineticsFamily(Database):
             # Iterate over all resonance isomers of the reactant
             for molecule in reactants[0]:
 
-                ismatch, mappings = self.__matchReactantToTemplate(molecule, template.reactants[0])
-                if ismatch:
-                    for map in mappings:
-                        reactantStructures = [molecule]
-                        try:
-                            productStructures = self.__generateProductStructures(reactantStructures, [map], forward)
-                        except ForbiddenStructureException:
-                            pass
-                        else:
-                            if productStructures is not None:
-                                rxn = self.__createReaction(reactantStructures, productStructures, forward)
-                                if rxn: rxnList.append(rxn)
+                mappings = self.__matchReactantToTemplate(molecule, template.reactants[0])
+                for map in mappings:
+                    reactantStructures = [molecule]
+                    try:
+                        productStructures = self.__generateProductStructures(reactantStructures, [map], forward)
+                    except ForbiddenStructureException:
+                        pass
+                    else:
+                        if productStructures is not None:
+                            rxn = self.__createReaction(reactantStructures, productStructures, forward)
+                            if rxn: rxnList.append(rxn)
 
         # Bimolecular reactants: A + B --> products
         elif len(reactants) == 2 and len(template.reactants) == 2:
@@ -2532,11 +2753,30 @@ class KineticsFamily(Database):
                 for moleculeB in moleculesB:
 
                     # Reactants stored as A + B
-                    ismatchA, mappingsA = self.__matchReactantToTemplate(moleculeA, template.reactants[0])
-                    ismatchB, mappingsB = self.__matchReactantToTemplate(moleculeB, template.reactants[1])
+                    mappingsA = self.__matchReactantToTemplate(moleculeA, template.reactants[0])
+                    mappingsB = self.__matchReactantToTemplate(moleculeB, template.reactants[1])
 
                     # Iterate over each pair of matches (A, B)
-                    if ismatchA and ismatchB:
+                    for mapA in mappingsA:
+                        for mapB in mappingsB:
+                            reactantStructures = [moleculeA, moleculeB]
+                            try:
+                                productStructures = self.__generateProductStructures(reactantStructures, [mapA, mapB], forward)
+                            except ForbiddenStructureException:
+                                pass
+                            else:
+                                if productStructures is not None:
+                                    rxn = self.__createReaction(reactantStructures, productStructures, forward)
+                                    if rxn: rxnList.append(rxn)
+
+                    # Only check for swapped reactants if they are different
+                    if reactants[0] is not reactants[1]:
+
+                        # Reactants stored as B + A
+                        mappingsA = self.__matchReactantToTemplate(moleculeA, template.reactants[1])
+                        mappingsB = self.__matchReactantToTemplate(moleculeB, template.reactants[0])
+
+                        # Iterate over each pair of matches (A, B)
                         for mapA in mappingsA:
                             for mapB in mappingsB:
                                 reactantStructures = [moleculeA, moleculeB]
@@ -2548,27 +2788,6 @@ class KineticsFamily(Database):
                                     if productStructures is not None:
                                         rxn = self.__createReaction(reactantStructures, productStructures, forward)
                                         if rxn: rxnList.append(rxn)
-
-                    # Only check for swapped reactants if they are different
-                    if reactants[0] is not reactants[1]:
-
-                        # Reactants stored as B + A
-                        ismatchA, mappingsA = self.__matchReactantToTemplate(moleculeA, template.reactants[1])
-                        ismatchB, mappingsB = self.__matchReactantToTemplate(moleculeB, template.reactants[0])
-
-                        # Iterate over each pair of matches (A, B)
-                        if ismatchA and ismatchB:
-                            for mapA in mappingsA:
-                                for mapB in mappingsB:
-                                    reactantStructures = [moleculeA, moleculeB]
-                                    try:
-                                        productStructures = self.__generateProductStructures(reactantStructures, [mapA, mapB], forward)
-                                    except ForbiddenStructureException:
-                                        pass
-                                    else:
-                                        if productStructures is not None:
-                                            rxn = self.__createReaction(reactantStructures, productStructures, forward)
-                                            if rxn: rxnList.append(rxn)
 
         # Remove duplicates from the reaction list
         index0 = 0

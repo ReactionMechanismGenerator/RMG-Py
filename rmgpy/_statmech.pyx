@@ -85,7 +85,7 @@ def convolve(numpy.ndarray[numpy.float64_t,ndim=1] rho1,
         nE = Elist.shape[0]
         for i in range(nE):
             for j in range(i+1):
-                rho[i] += rho2[i-j] * rho1[i] * dE
+                rho[i] += rho2[i-j] * rho1[j] * dE
 
     return rho
 

@@ -34,7 +34,7 @@ import numpy
 
 from rmgpy.quantity import constants
 from rmgpy.statmech import *
-from rmgpy.group import Group
+from rmgpy.molecule import Group
 
 from base import *
 
@@ -131,7 +131,17 @@ class StatesDepository(Database):
     def __init__(self, label='', name='', shortDesc='', longDesc=''):
         Database.__init__(self, label=label, name=name, shortDesc=shortDesc, longDesc=longDesc)
 
-    def loadEntry(self, index, label, molecule, states, reference=None, referenceType='', shortDesc='', longDesc='', history=None):
+    def loadEntry(self,
+                  index,
+                  label,
+                  molecule,
+                  states,
+                  reference=None,
+                  referenceType='',
+                  shortDesc='',
+                  longDesc='',
+                  history=None
+                  ):
         self.entries[label] = Entry(
             index = index,
             label = label,
@@ -160,7 +170,17 @@ class StatesLibrary(Database):
     def __init__(self, label='', name='', shortDesc='', longDesc=''):
         Database.__init__(self, label=label, name=name, shortDesc=shortDesc, longDesc=longDesc)
 
-    def loadEntry(self, index, label, molecule, states, reference=None, referenceType='', shortDesc='', longDesc='', history=None):
+    def loadEntry(self,
+                  index,
+                  label,
+                  molecule,
+                  states,
+                  reference=None,
+                  referenceType='',
+                  shortDesc='',
+                  longDesc='',
+                  history=None
+                  ):
         self.entries[label] = Entry(
             index = index,
             label = label,
@@ -203,8 +223,22 @@ class StatesGroups(Database):
     def __init__(self, label='', name='', shortDesc='', longDesc=''):
         Database.__init__(self, label=label, name=name, shortDesc=shortDesc, longDesc=longDesc)
 
-    def loadEntry(self, index, label, group, states, reference=None, referenceType='', shortDesc='', longDesc='', history=None):
-        if group[0:3].upper() == 'OR{' or group[0:4].upper() == 'AND{' or group[0:7].upper() == 'NOT OR{' or group[0:8].upper() == 'NOT AND{':
+    def loadEntry(self,
+                  index,
+                  label,
+                  group,
+                  states,
+                  reference=None,
+                  referenceType='',
+                  shortDesc='',
+                  longDesc='',
+                  history=None
+                  ):
+        if ( group[0:3].upper() == 'OR{' or
+             group[0:4].upper() == 'AND{' or
+             group[0:7].upper() == 'NOT OR{' or
+             group[0:8].upper() == 'NOT AND{'
+            ):
             item = makeLogicNode(group)
         else:
             item = Group().fromAdjacencyList(group)
