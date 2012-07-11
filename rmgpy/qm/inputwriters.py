@@ -37,34 +37,7 @@ class MOPACPM3InputWriter(QMInputWriter):
     maxAttemptNumber = 2 * scriptAttempts
     
     inputExtension = '.mop'
-    
-    "Keywords for the multiplicity"
-    multiplicityKeywords = {}
-    multiplicityKeywords[1] = ''
-    multiplicityKeywords[2] = 'uhf doublet'
-    multiplicityKeywords[3] = 'uhf triplet'
-    multiplicityKeywords[4] = 'uhf quartet'
-    multiplicityKeywords[5] = 'uhf quintet'
-    multiplicityKeywords[6] = 'uhf sextet'
-    multiplicityKeywords[7] = 'uhf septet'
-    multiplicityKeywords[8] = 'uhf octet'
-    multiplicityKeywords[9] = 'uhf nonet'
-    
-    "Keywords that will be added at the top of the qm input file"
-    keywordsTop = {}
-    keywordsTop[1] = "precise nosym"
-    keywordsTop[2] = "precise nosym gnorm=0.0 nonr"
-    keywordsTop[3] = "precise nosym gnorm=0.0"
-    keywordsTop[4] = "precise nosym gnorm=0.0 bfgs"
-    keywordsTop[5] = "precise nosym recalc=10 dmax=0.10 nonr cycles=2000 t=2000"
-    
-    "Keywords that will be added at the bottom of the qm input file"
-    keywordsBottom = {}
-    keywordsBottom[1] = "oldgeo thermo nosym precise "
-    keywordsBottom[2] = "oldgeo thermo nosym precise "
-    keywordsBottom[3] = "oldgeo thermo nosym precise "
-    keywordsBottom[4] = "oldgeo thermo nosym precise "
-    keywordsBottom[5] = "oldgeo thermo nosym precise "
+
         
     def __init__(self, molfile, attemptNumber, multiplicity):
         QMInputWriter.__init__(self, molfile, attemptNumber, multiplicity)
@@ -74,47 +47,8 @@ class MOPACPM3InputWriter(QMInputWriter):
         return self.createInputFile()
     
     def createInputFile(self):
-        multiplicity_keywords = self.multiplicityKeywords[self.multiplicity]
-        top_keywords = "pm3 {0} {1}".format(
-                multiplicity_keywords,
-                self.keywordsTop[self.attemptNumber],
-                )
-        bottom_keywords = "{0} pm3 {1}".format(
-                self.keywordsBottom[self.attemptNumber],
-                multiplicity_keywords,
-                )
-        polar_keywords = "oldgeo {0} nosym precise pm3 {1}".format(
-                'polar' if self.multiplicity == 1 else 'static',
-                multiplicity_keywords,
-                )
+        # moved
         
-        inputFilePath = os.path.join(self.molfile.directory, self.molfile.name + self.inputExtension)
-        
-        obConversion = openbabel.OBConversion()
-        obConversion.SetInAndOutFormats("mol", "mop")
-        mol = openbabel.OBMol()
-        
-        if self.attemptNumber <= self.scriptAttempts: #use UFF-refined coordinates
-            obConversion.ReadFile(mol, self.molfile.path)
-        else:
-            obConversion.ReadFile(mol, self.molfile.crudepath)
-        
-        mol.SetTitle(self.molfile.molecule.toAugmentedInChI()) 
-        obConversion.SetOptions('k', openbabel.OBConversion.OUTOPTIONS)
-
-        input_string = obConversion.WriteString(mol)
-        
-        with open(inputFilePath, 'w') as mopacFile:
-            mopacFile.write(top_keywords)
-            mopacFile.write(input_string)
-            mopacFile.write('\n')
-            mopacFile.write(bottom_keywords)
-            if qmtp.QMTP.usePolar:
-                mopacFile.write('\n\n\n')
-                mopacFile.write(polar_keywords)
-        
-        return self.molfile.name + '.mop'
-
 class G03PM3KEYWORDS:
     INPUT = 'Input'
     
