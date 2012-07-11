@@ -1,8 +1,8 @@
-************************************
-:mod:`rmgpy.atomtype` --- Atom Types
-************************************
+*********************************************
+:mod:`rmgpy.molecule.atomtype` --- Atom Types
+*********************************************
 
-.. automodule:: rmgpy.atomtype
+.. automodule:: rmgpy.molecule.atomtype
 
 Atom Types
 ==========
@@ -60,11 +60,11 @@ Atom type       Description
 ``Sa``          sulfur atom with no bonds
 =============== ============================================================
 
-.. autoclass:: rmgpy.atomtype.AtomTypeError
+.. autoclass:: rmgpy.molecule.atomtype.AtomTypeError
     :members:
 
-.. autoclass:: rmgpy.atomtype.AtomType
+.. autoclass:: rmgpy.molecule.atomtype.AtomType
     :members:
 
-.. autofunction:: rmgpy.atomtype.getAtomType
+.. autofunction:: rmgpy.molecule.atomtype.getAtomType
 

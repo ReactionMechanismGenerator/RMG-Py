@@ -1,8 +1,8 @@
-****************************************
-:mod:`rmgpy.group` --- Functional Groups
-****************************************
+*************************************************
+:mod:`rmgpy.molecule.group` --- Functional Groups
+*************************************************
 
-.. automodule:: rmgpy.group
+.. automodule:: rmgpy.molecule.group
 
 Bond Types
 ==========
@@ -44,7 +44,7 @@ GAIN_RADICAL  `center`, `radical`           increase the number of free electron
 LOSE_RADICAL  `center`, `radical`           decrease the number of free electrons on `center` by `radical`
 ============= ============================= ================================
 
-.. autoclass:: rmgpy.group.ActionError
+.. autoclass:: rmgpy.molecule.group.ActionError
     :members:
 
 Adjacency Lists
@@ -102,26 +102,26 @@ can be omitted if desired, as their presence is inferred::
     5 *1 C 0 {4,S} {6,S}
     6 *2 C 0 {5,S}
 
-.. autofunction:: rmgpy.group.fromAdjacencyList
+.. autofunction:: rmgpy.molecule.adjlist.fromAdjacencyList
 
-.. autofunction:: rmgpy.group.toAdjacencyList
+.. autofunction:: rmgpy.molecule.adjlist.toAdjacencyList
 
 
 GroupAtom Objects
 =================
 
-.. autoclass:: rmgpy.group.GroupAtom
+.. autoclass:: rmgpy.molecule.group.GroupAtom
     :members:
 
 GroupBond Objects
 =================
 
-.. autoclass:: rmgpy.group.GroupBond
+.. autoclass:: rmgpy.molecule.group.GroupBond
     :members:
 
 Group Objects
 =============
 
-.. autoclass:: rmgpy.group.Group
+.. autoclass:: rmgpy.molecule.group.Group
     :members:
 
