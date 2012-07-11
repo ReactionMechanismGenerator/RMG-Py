@@ -50,14 +50,12 @@ class ThreeDMolFileCreator:
         self.directory = directory
         self.molecule = molecule
         
-        self.mol2D = name + '.mol2D'
         self.mol3D = name + '.mol'
         self.mol3Dcrude = name + '.cmol'
         
-        self.dir2D = os.path.join(directory,'2DMolfiles/')
         self.dir3D = os.path.join(directory,'3DMolfiles/')
         
-        for directory in (self.dir2D, self.dir3D):
+        for directory in (self.dir3D,):
             if not os.path.exists(directory):
                 logging.info("Creating directory %s for mol files."%os.path.abspath(directory))
                 os.makedirs(directory)
