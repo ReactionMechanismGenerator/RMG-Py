@@ -7,6 +7,15 @@ class Geometry:
     def __init__(self, uniqueID, rmg_molecule ):
         self.uniqueID = uniqueID
         self.rmg_molecule = rmg_molecule
+        self.multiplicity = # get it from rmg_molecule
+        
+    def getCrudeMolFilePath(self):
+        # os.join, uniqueID, suffix
+        return self.file_store_path + self.uniqueID + '.crude.mol'
+        
+    def getRefinedMolFilePath(self):
+        "Returns the path the the refined mol file"
+        return self.file_store_path + self.uniqueID + '.refined.mol'
         
     def generateRDKitGeometries(boundsMatrix=None):
         """
@@ -15,21 +24,22 @@ class Geometry:
         Save mol files of both crude and refined.
         Saves coordinates on atoms.
         """
-        rdmol, rdAtIdx = self.rd_embed(boundsMatrix)
+        rdmol = self.rd_build()
+        rdmol, rdAtIdx = self.rd_embed(rdmol, boundsMatrix)
         rdmol = self.rd_optimize(rdmol, boundsMatrix)
         self.save_coordinates(rdmol, rdAtIdx)
 
-    def rd_embed(boundsMatrix=None):
+    def rd_build():
         """
         Import rmg molecule and create rdkit molecule with the same atom labeling.
         """
         rdAtomIdx = {} # dictionary of rdkit atom indices
         # Initialize a blank Editable molecule and add all the atoms from RMG molecule
-        rdMol = AllChem.rdchem.EditableMol(AllChem.rdchem.Mol())
+        rdmol = AllChem.rdchem.EditableMol(AllChem.rdchem.Mol())
         for index, atom in enumerate(self.molecule.vertices):
             rdAtom = AllChem.rdchem.Atom(atom.element.symbol)
             rdAtom.SetNumRadicalElectrons(atom.radicalElectrons)
-            rdMol.AddAtom(rdAtom)
+            rdmol.AddAtom(rdAtom)
             rdAtomIdx[atom] = index
         
         # Add the bonds
@@ -49,22 +59,31 @@ class Geometry:
                         rdBond = AllChem.rdchem.BondType.AROMATIC
                     else:
                         print "Unknown bond order"
-                    rdMol.AddBond(index1, index2, rdBond)
+                    rdmol.AddBond(index1, index2, rdBond)
         
         # Make editable mol into a mol and rectify the molecule
-        rdMol = rdMol.GetMol()
-        Chem.SanitizeMol(rdMol)
+        rdmol = rdmol.GetMol()
+        Chem.SanitizeMol(rdmol)
         
+        return rdmol
+        
+    def rd_embed(rdmol, boundsMatrix=None):
+        """
+        Embed the RDKit molecule and create the crude molecule file.
+        """
         AllChem.EmbedMultipleConfs(rdMol, numConfAttempts,randomSeed=1)
         crude = Chem.Mol(rdMol.ToBinary()) 
         
         with open(uniqueID + '.crude.mol', 'w') as out3Dcrude:
             out3Dcrude.write(Chem.MolToMolBlock(crude,confId=minEid))
             
-        return rdMol, rdAtIdx
+        return rdmol, rdAtIdx
         
     def rd_optimize(rdmol, boundsMatrix=None):
-        
+        """
+        Optimize the RDKit molecule and create the refined molecule file from this
+        UFF-optimized molecular structure.
+        """
         energy=0.0
         minEid=0;
         lowestE=9.999999e99;#start with a very high number, which would never be reached
@@ -106,7 +125,8 @@ class QM_Molecule:
         elif option.program == 'gaussian03':
             method = qm.methods.Gaussian03PM3
         else:
-            logging.info('Unknown QM Method')
+            raise Exception('Unknown QM Method')
+            
         
         success = False
         for attempt in range(method.max_attempts):
