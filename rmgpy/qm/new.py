@@ -1,10 +1,13 @@
 class Geometry:
     file_store_path = 'QMfiles'
+    if not os.path.exists(file_store_path):
+        logging.info("Creating directory %s for mol files."%os.path.abspath(file_store_path))
+        os.makedirs(file_store_path)
     
-    def __init__( uniqueID, rmg_molecule ):
+    def __init__(self, uniqueID, rmg_molecule ):
         self.uniqueID = uniqueID
         self.rmg_molecule = rmg_molecule
-    
+        
     def generateRDKitGeometries(boundsMatrix=None):
         """
         Use RDKit to guess geometry.
@@ -12,23 +15,72 @@ class Geometry:
         Save mol files of both crude and refined.
         Saves coordinates on atoms.
         """
-        rdmol = self.rd_embed(boundsMatrix)
+        rdmol, rdAtIdx = self.rd_embed(boundsMatrix)
         rdmol = self.rd_optimize(rdmol, boundsMatrix)
-        self.save_coordinates(rdmol)
+        self.save_coordinates(rdmol, rdAtIdx)
 
     def rd_embed(boundsMatrix=None):
-        "Create rdmol from rmg_molecule"
-        "Embed in 3D using rdkit"
-        "Save crude geom in mol file, named  uniqueID.crude.mol"
-        return rdmol
-
+        """
+        Import rmg molecule and create rdkit molecule with the same atom labeling.
+        """
+        rdAtomIdx = {} # dictionary of rdkit atom indices
+        # Initialize a blank Editable molecule and add all the atoms from RMG molecule
+        rdMol = AllChem.rdchem.EditableMol(AllChem.rdchem.Mol())
+        for index, atom in enumerate(self.molecule.vertices):
+            rdAtom = AllChem.rdchem.Atom(atom.element.symbol)
+            rdAtom.SetNumRadicalElectrons(atom.radicalElectrons)
+            rdMol.AddAtom(rdAtom)
+            rdAtomIdx[atom] = index
+        
+        # Add the bonds
+        for atom1 in self.molecule.vertices:
+            for atom2, bond in atom1.edges.items():
+                index1 = rdAtomIdx[atom1] # atom1.sortingLabel
+                index2 = rdAtomIdx[atom2] # atom2.sortingLabel
+                if index1 > index2:
+                    # Check the RMG bond order and add the appropriate rdkit bond.
+                    if bond.order == 'S':
+                        rdBond = AllChem.rdchem.BondType.SINGLE
+                    elif bond.order == 'D':
+                        rdBond = AllChem.rdchem.BondType.DOUBLE
+                    elif bond.order == 'T':
+                        rdBond = AllChem.rdchem.BondType.TRIPLE
+                    elif bond.order == 'B':
+                        rdBond = AllChem.rdchem.BondType.AROMATIC
+                    else:
+                        print "Unknown bond order"
+                    rdMol.AddBond(index1, index2, rdBond)
+        
+        # Make editable mol into a mol and rectify the molecule
+        rdMol = rdMol.GetMol()
+        Chem.SanitizeMol(rdMol)
+        
+        AllChem.EmbedMultipleConfs(rdMol, numConfAttempts,randomSeed=1)
+        crude = Chem.Mol(rdMol.ToBinary()) 
+        
+        with open(uniqueID + '.crude.mol', 'w') as out3Dcrude:
+            out3Dcrude.write(Chem.MolToMolBlock(crude,confId=minEid))
+            
+        return rdMol, rdAtIdx
+        
     def rd_optimize(rdmol, boundsMatrix=None):
-        "Optimize using UFF in RDKit"
-        "Save optimized geom in mol file, named after uniqueID.refined.mol"
+        
+        energy=0.0
+        minEid=0;
+        lowestE=9.999999e99;#start with a very high number, which would never be reached
+        
+        for i in range(rdmol.GetNumConformers()):
+            AllChem.UFFOptimizeMolecule(rdmol,confId=i)
+            energy=AllChem.UFFGetMoleculeForceField(rdmol,confId=i).CalcEnergy()
+            if energy < lowestE:
+                minEid = i
+                lowestE = energy
+        with open(uniqueID + '.refined.mol', 'w') as out3D:
+            out3D.write(Chem.MolToMolBlock(rdmol,confId=minEid))
         
         return rdmol
     
-    def save_coordinates(rdmol):
+    def save_coordinates(rdmol, rdAtIdx):
         "Save xyz coordinates on each atom in rmg_molecule"
 
 
@@ -49,9 +101,9 @@ class QM_Molecule:
         
         self.createGeometry()
         
-        if option.method == 'mopac':
+        if option.program == 'mopac':
             method = qm.methods.MopacPM3 # for example
-        elif option.method == 'gaussian03':
+        elif option.program == 'gaussian03':
             method = qm.methods.Gaussian03PM3
         else:
             logging.info('Unknown QM Method')
