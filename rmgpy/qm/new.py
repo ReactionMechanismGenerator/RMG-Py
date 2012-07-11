@@ -46,19 +46,26 @@ class QM_Molecule:
         
 
     def generateThermoData(self, option):
+        
         self.createGeometry()
         
-        method = qm.methods.MopacPM3 # for example
+        if option.method == 'mopac':
+            method = qm.methods.MopacPM3 # for example
+        elif option.method == 'gaussian03':
+            method = qm.methods.Gaussian03PM3
+        else:
+            logging.info('Unknown QM Method')
         
+        success = False
         for attempt in range(method.max_attempts):
             method.writeInputFile(self.geometry, attempt)
-            method.runJob()
+            success = method.runJob()
             method.parseResult()
-            success = method.validate()
             if success: break
         else:
-            raise Exception("Couldn't generate thermo data")
+            raise Exception("Couldn't generate thermo data.")
         thermoData = method.processResult()
+        
         return thermoData
         
     def getInChiAug(self):
