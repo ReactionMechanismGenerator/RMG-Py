@@ -1,187 +1,113 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+import os
 import unittest
 
-import sys
-sys.path.append('.')
-
-import rmgpy.data.thermo
-
-from rmgpy.data.base import LogicNode
-from rmgpy.chem.molecule import Molecule
-from rmgpy.chem.pattern import MoleculePattern
-from rmgpy.chem.thermo import ThermoData
-from rmgpy.chem.species import Species
-
 from rmgpy import settings
+from rmgpy.species import Species
+from rmgpy.data.thermo import ThermoDatabase
+from rmgpy.molecule.molecule import Molecule
 
 ################################################################################
 
-class ThermoDatabaseCheck(unittest.TestCase):
-
-    def testOldThermoDatabase(self):
+class TestThermoDatabase(unittest.TestCase):
+    """
+    Contains unit tests of the ThermoDatabase class.
+    """
+    
+    def setUp(self):
         """
-        Check the database load functions.
+        A function run before each unit test in this class.
         """
         
-        thermoDatabase = loadThermoDatabase('database/output/RMG_Database/thermo_groups', group=True, old=True)
-
-        for database in [thermoDatabase.groupDatabase,
-            thermoDatabase.int15Database,
-            thermoDatabase.gaucheDatabase,
-            thermoDatabase.otherDatabase,
-            thermoDatabase.radicalDatabase,
-            thermoDatabase.ringDatabase]:
-
-            # All nodes in library should be in tree and dictionary
-            # All nodes in tree should be in dictionary
-            for node in database.library:
-                self.assertTrue(node in database.tree.parent)
-                self.assertTrue(node in database.tree.children)
-                self.assertTrue(node in database.dictionary)
-            for node in database.tree.parent:
-                self.assertTrue(node in database.tree.children)
-                self.assertTrue(node in database.dictionary)
-            for node in database.tree.children:
-                self.assertTrue(node in database.tree.parent)
-                self.assertTrue(node in database.dictionary)
-
-            # All parents in tree should be in tree
-            for node in database.tree.parent:
-                parentNode = database.tree.parent[node]
-                if parentNode is not None:
-                    self.assertTrue(parentNode in database.tree.parent)
-                    self.assertTrue(parentNode in database.tree.children)
-
-            # All children in tree should be in tree
-            for node in database.tree.children:
-                for childNode in database.tree.children[node]:
-                    if childNode is not None:
-                        self.assertTrue(childNode in database.tree.parent)
-                        self.assertTrue(childNode in database.tree.children)
-
-            # All values in dictionary should be chemical structures
-            for node in database.dictionary:
-                self.assertTrue(isinstance(database.dictionary[node], MoleculePattern) or isinstance(database.dictionary[node], LogicNode))
-
-            # All values in library should be ThermoEntry objects
-            for node in database.library:
-                self.assertTrue(isinstance(database.library[node], ThermoEntry), '"%s" is of unexpected type "%s".' % (node, database.library[node].__class__))
-                self.assertTrue(database.library[node].model is not None or database.library[node].node != '')
-
-        molecule = Molecule(SMILES='CC')
-        print
-        print thermoDatabase.generateThermoData(molecule)
-
-    def testThermoDatabase(self):
-        """
-        Check the database load functions.
-        """
-        thermoDatabase = rmgpy.data.thermo.ThermoDatabase()
-        thermoDatabase.load(os.path.join(settings['database.path'],'RMG_Database'))
-
-        for database in [thermoDatabase.groupDatabase,
-                thermoDatabase.int15Database,
-                thermoDatabase.gaucheDatabase,
-                thermoDatabase.otherDatabase,
-                thermoDatabase.radicalDatabase,
-                thermoDatabase.ringDatabase]:
-
-            # All nodes in library should be in tree and dictionary
-            # All nodes in tree should be in dictionary
-            for node in database.library:
-                self.assertTrue(node in database.tree.parent, 'Expected node "%s" from library to be in parent attribute of tree.' % node)
-                self.assertTrue(node in database.tree.children, 'Expected node "%s" from library from library to be in children attribute of tree.' % node)
-                self.assertTrue(node in database.dictionary, 'Expected node "%s" to be in dictionary.' % node)
-            for node in database.tree.parent:
-                self.assertTrue(node in database.tree.children, 'Expected node "%s" from parent attribute of tree to be in children attribute of tree.' % node)
-                self.assertTrue(node in database.dictionary, 'Expected node "%s" from parent attribute of tree to be in dictionary.' % node)
-            for node in database.tree.children:
-                self.assertTrue(node in database.tree.parent, 'Expected node "%s" from children attribute of tree to be in parent attribute of tree.' % node)
-                self.assertTrue(node in database.dictionary, 'Expected node "%s" from children attribute of tree to be in dictionary.' % node)
-
-            # All parents in tree should be in tree
-            for node in database.tree.parent:
-                parentNode = database.tree.parent[node]
-                if parentNode is not None:
-                    self.assertTrue(parentNode in database.tree.parent)
-                    self.assertTrue(parentNode in database.tree.children)
-
-            # All children in tree should be in tree
-            for node in database.tree.children:
-                for childNode in database.tree.children[node]:
-                    if childNode is not None:
-                        self.assertTrue(childNode in database.tree.parent)
-                        self.assertTrue(childNode in database.tree.children)
-
-            # All values in dictionary should be chemical structures
-            for node in database.dictionary:
-                self.assertTrue(isinstance(database.dictionary[node], MoleculePattern) or isinstance(database.dictionary[node], LogicNode))
-
-            # All values in library should be ThermoEntry objects
-            for node in database.library:
-                self.assertTrue(isinstance(database.library[node], ThermoEntry), '"%s" is of unexpected type "%s".' % (node, database.library[node].__class__))
-                self.assertTrue(database.library[node].model is not None or database.library[node].node != '')
-
-        molecule = Molecule(SMILES='CC')
-        print
-        print thermoDatabase.generateThermoData(molecule)
-
-    def testThermoGeneration(self):
+        self.database = ThermoDatabase()
+        self.database.load(os.path.join(settings['database.directory'], 'thermo'))
         
-        # The test cases represent 1,3-hexadiene and all of its possible 
-        # unimolecular bond fission products (i.e. products resulting from the
-        # breaking of any single bond in 1,3-hexadiene)
-        testCases = [
-            # SMILES         symm  H298     S298       Cp300  Cp400  Cp500  Cp600  Cp800  Cp1000 Cp1500
-            ['C=CC=CCC',     3,    13.45,   86.3671,   29.49, 37.67, 44.54, 50.12, 58.66, 64.95, 74.71],
-            ['[CH]=CC=CCC',  3,    72.55,   87.7571,   29.3 , 36.92, 43.18, 48.20, 55.84, 61.46, 70.18],
-            ['C=[C]C=CCC',   3,    61.15,   87.0771,   29.68, 36.91, 43.03, 48.11, 55.96, 61.78, 71.54],
-            ['C=C[C]=CCC',   3,    61.15,   87.0771,   29.68, 36.91, 43.03, 48.11, 55.96, 61.78, 71.54],
-            ['C=CC=[C]CC',   3,    70.35,   88.1771,   29.15, 36.46, 42.6 , 47.60, 55.32, 61.04, 69.95],
-            ['C=CC=C[CH]C',  6,    38.24,   84.4098,   27.79, 35.46, 41.94, 47.43, 55.74, 61.92, 71.86],
-            ['C=CC=CC[CH2]', 2,    62.45,   89.7827,   28.72, 36.31, 42.63, 47.72, 55.5 , 61.21, 70.05],
-            #['[H]',          1,    49.00,    2.61  ,   -0.77, -1.36, -1.91, -2.4 , -3.16, -3.74, -4.66],
-            ['[CH3]',        6,    34.81,   46.3698,    9.14, 10.18, 10.81, 11.34, 12.57, 13.71, 15.2 ],
-            ['C=CC=C[CH2]',  2,    46.11,   75.8227,   22.54, 28.95, 34.24, 38.64, 45.14, 49.97, 57.85],
-            ['[CH2]C',       6,    28.60,   59.8698,   11.73, 14.46, 17.05, 19.34, 23.02, 25.91, 31.53],
-            ['C=CC=[CH]',    1,    85.18,   69.37  ,   18.93, 23.55, 27.16, 29.92, 34.02, 37.03, 41.81],
-            ['C=[CH]',       1,    71.62,   56.61  ,   10.01, 11.97, 13.66, 15.08, 17.32, 19.05, 21.85],
-            ['[CH]=CCC',     3,    58.99,   74.9971,   20.38, 25.34, 29.68, 33.36, 39.14, 43.48, 50.22],
+        self.oldDatabase = ThermoDatabase()
+        self.oldDatabase.loadOld(os.path.join(settings['database.directory'], '../output/RMG_database'))
+        
+        self.Tlist = [300, 400, 500, 600, 800, 1000, 1500]
+        
+        self.testCases = [
+            # SMILES            symm  H298     S298     Cp300  Cp400  Cp500  Cp600  Cp800  Cp1000 Cp1500
+            
+            # 1,3-hexadiene decomposition products
+            ['C=CC=CCC',        3,    13.5090, 86.5641, 29.49, 37.67, 44.54, 50.12, 58.66, 64.95, 74.71],
+            ['[CH]=CC=CCC',     3,    72.6056, 87.9528, 29.30, 36.92, 43.18, 48.20, 55.84, 61.46, 70.18],
+            ['C=[C]C=CCC',      3,    61.2064, 87.2754, 29.68, 36.91, 43.03, 48.11, 55.96, 61.78, 71.54],
+            ['C=C[C]=CCC',      3,    61.2064, 87.2754, 29.68, 36.91, 43.03, 48.11, 55.96, 61.78, 71.54],
+            ['C=CC=[C]CC',      3,    70.4053, 88.3718, 29.15, 36.46, 42.60, 47.60, 55.32, 61.04, 69.95],
+            ['C=CC=C[CH]C',     6,    38.2926, 84.5953, 27.79, 35.46, 41.94, 47.43, 55.74, 61.92, 71.86],
+            ['C=CC=CC[CH2]',    2,    62.5044, 89.9747, 28.72, 36.31, 42.63, 47.72, 55.50, 61.21, 70.05],
+            ['[CH3]',           6,    35.1084, 46.3644,  9.20,  9.98, 10.75, 11.50, 12.86, 14.08, 16.29],
+            ['C=CC=C[CH2]',     2,    46.1521, 75.9733, 22.54, 28.95, 34.24, 38.64, 45.14, 49.97, 57.85],
+            ['[CH2]C',          6,    28.3580, 59.0565, 12.11, 14.59, 17.08, 19.35, 22.93, 25.78, 30.30],
+            ['C=CC=[CH]',       1,    85.2149, 69.4966, 18.93, 23.55, 27.16, 29.92, 34.02, 37.03, 41.81],
+            ['C=[CH]',          1,    71.6377, 55.8964, 10.24, 12.03, 13.71, 15.17, 17.35, 19.07, 21.82],
+            ['[CH]=CCC',        3,    59.0278, 75.1332, 20.38, 25.34, 29.68, 33.36, 39.14, 43.48, 50.22],
+            
+            # Cyclic structures
+            ['c1ccccc1',        1,    19.8389, 69.3100, 19.44, 26.64, 32.76, 37.80, 45.24, 50.46, 58.38],
+            ['C1CCCCC1',        1,   -29.4456, 74.8296, 27.20, 37.60, 46.60, 54.80, 67.50, 76.20, 88.50],
+            ['c1ccc2ccccc2c1',  1,    36.0639, 82.4536, 31.94, 42.88, 52.08, 59.62, 70.72, 78.68, 90.24],
+            ['C1CCC1',          1,     6.5148, 67.5963, 17.39, 23.91, 29.86, 34.76, 42.40, 47.98, 56.33],
+            ['C1C=CC=C1',       1,    32.5363, 67.0035, 18.16, 24.71, 30.25, 34.70, 41.25, 45.83, 52.61],
         ]
-               
-        thermoDatabase = loadThermoDatabase('database/output/RMG_Database/thermo_groups', group=True, old=True)
+
+    def testNewThermoGeneration(self):
+        """
+        Test that the new ThermoDatabase generates appropriate thermo data.
+        """
         
-        failMessage = '\n'
-        
-        for smiles, symm, H298, S298, Cp300, Cp400, Cp500, Cp600, Cp800, Cp1000, Cp1500 in testCases:
+        for smiles, symm, H298, S298, Cp300, Cp400, Cp500, Cp600, Cp800, Cp1000, Cp1500 in self.testCases:
+            Cplist = [Cp300, Cp400, Cp500, Cp600, Cp800, Cp1000, Cp1500]
             species = Species(molecule=[Molecule(SMILES=smiles)])
             species.generateResonanceIsomers()
-            thermoData = generateThermoData(species.molecule[0])
+            thermoData = self.database.getThermoData(Species(molecule=[species.molecule[0]]))
             molecule = species.molecule[0]
             for mol in species.molecule[1:]:
-                thermoData0 = generateThermoData(mol)
+                thermoData0 = self.database.getAllThermoData(Species(molecule=[mol]))[0][0]
+                for data in self.database.getAllThermoData(Species(molecule=[mol]))[1:]:
+                    if data.getEnthalpy(298) < thermoData0.getEnthalpy(298):
+                        thermoData0 = data
                 if thermoData0.getEnthalpy(298) < thermoData.getEnthalpy(298):
                     thermoData = thermoData0
                     molecule = mol
             
-            if molecule.calculateSymmetryNumber() != symm:
-                failMessage += "For %s, expected symmetry number of %g, got %g\n" % (smiles, symm, molecule.calculateSymmetryNumber())
-            
-            if abs(1 - thermoData.getEnthalpy(298) / 4184 / H298) > 0.001:
-                failMessage += "For %s, expected H298 of %g kcal/mol, got %g kcal/mol\n" % (smiles, H298, thermoData.getEnthalpy(298) / 4184)
-            if abs(1 - thermoData.getEntropy(298) / 4.184 / S298) > 0.001:
-                failMessage += "For %s, expected S298 of %g cal/mol*K, got %g cal/mol*K\n" % (smiles, S298, thermoData.getEntropy(298) / 4.184)
-            for T, Cp in zip([300, 400, 500, 600, 800, 1000, 1500], [Cp300, Cp400, Cp500, Cp600, Cp800, Cp1000, Cp1500]):
-                if abs(1 - thermoData.getHeatCapacity(T) / 4.184 / Cp) > 0.001:
-                    failMessage += "For %s, expected Cp at %g K of %g cal/mol*K, got %g cal/mol*K\n" % (smiles, T, Cp, thermoData.getHeatCapacity(T) / 4.184)
+            self.assertEqual(molecule.calculateSymmetryNumber(), symm)
+            self.assertTrue(1 - thermoData.getEnthalpy(298) / 4184 / H298 < 0.001)
+            self.assertTrue(1 - thermoData.getEntropy(298) / 4.184 / S298 < 0.001)
+            for T, Cp in zip(self.Tlist, Cplist):
+                self.assertTrue(1 - thermoData.getHeatCapacity(T) / 4.184 / Cp < 0.001)
+
+    def testOldThermoGeneration(self):
+        """
+        Test that the old ThermoDatabase generates relatively accurate thermo data.
+        """
         
-        
-        self.assertEqual(failMessage, '\n', failMessage)
+        for smiles, symm, H298, S298, Cp300, Cp400, Cp500, Cp600, Cp800, Cp1000, Cp1500 in self.testCases:
+            Cplist = [Cp300, Cp400, Cp500, Cp600, Cp800, Cp1000, Cp1500]
+            species = Species(molecule=[Molecule(SMILES=smiles)])
+            species.generateResonanceIsomers()
+            thermoData = self.oldDatabase.getThermoData(Species(molecule=[species.molecule[0]]))
+            molecule = species.molecule[0]
+            for mol in species.molecule[1:]:
+                thermoData0 = self.oldDatabase.getAllThermoData(Species(molecule=[mol]))[0][0]
+                for data in self.oldDatabase.getAllThermoData(Species(molecule=[mol]))[1:]:
+                    if data.getEnthalpy(298) < thermoData0.getEnthalpy(298):
+                        thermoData0 = data
+                if thermoData0.getEnthalpy(298) < thermoData.getEnthalpy(298):
+                    thermoData = thermoData0
+                    molecule = mol
             
+            self.assertEqual(molecule.calculateSymmetryNumber(), symm)
+            self.assertTrue(1 - thermoData.getEnthalpy(298) / 4184 / H298 < 0.01)
+            self.assertTrue(1 - thermoData.getEntropy(298) / 4.184 / S298 < 0.01)
+            for T, Cp in zip(self.Tlist, Cplist):
+                self.assertTrue(1 - thermoData.getHeatCapacity(T) / 4.184 / Cp < 0.1)
+
 ################################################################################
 
 if __name__ == '__main__':
-    unittest.main( testRunner = unittest.TextTestRunner(verbosity=2) )
-
+    unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))
