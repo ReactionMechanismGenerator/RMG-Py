@@ -45,7 +45,11 @@ setup_github_pages:
 publish: $(BUILDDIR)/html/.git
 # Commit changes to gh-pages and push to github, to publish the results!
 	touch $(BUILDDIR)/html/.nojekyll
+ifdef COMMITMESSAGE # Use the provided COMMITMESSAGE variable for noninteractive use.
+	cd $(BUILDDIR)/html; git add -A .; git commit -m "$(COMMITMESSAGE)"; git push greengroup gh-pages
+else # Prompt for a commit message
 	cd $(BUILDDIR)/html; git add -A .; git commit; git push greengroup gh-pages
+endif
 
 clean:
 # set aside the git repository info used to push pages to github
