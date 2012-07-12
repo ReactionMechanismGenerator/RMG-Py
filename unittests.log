@@ -1,0 +1,377 @@
+testLoadEthyleneFromGaussianLog (cantherm.gaussianTest.GaussianTest) ... ERROR
+testLoadOxygenFromGaussianLog (cantherm.gaussianTest.GaussianTest) ... ERROR
+testButanolInternalReducedMomentOfInertia (cantherm.geometryTest.GeometryTest) ... ok
+testEthaneInternalReducedMomentOfInertia (cantherm.geometryTest.GeometryTest) ... ok
+testOutput (cantherm.geometryTest.GeometryTest) ... ok
+testPickle (cantherm.geometryTest.GeometryTest) ... ok
+testDensityOfStatesILTRotation (statmechTest.StatesModelTest) ... ok
+testDensityOfStatesILTTranslation (statmechTest.StatesModelTest) ... ok
+testDensityOfStatesILTVibration (statmechTest.StatesModelTest) ... ok
+testModesForEthylene (statmechTest.StatesModelTest) ... ok
+testModesForOxygen (statmechTest.StatesModelTest) ... Exception ZeroDivisionError: 'float division' in 'rmgpy.statmech.RigidRotor.getPartitionFunction' ignored
+FAIL
+testChangeT0 (kineticsTest.TestArrhenius) ... ok
+testFitToData (kineticsTest.TestArrhenius) ... FAIL
+testIsPressureDependent (kineticsTest.TestArrhenius) ... ok
+testOutput (kineticsTest.TestArrhenius) ... ok
+testPickle (kineticsTest.TestArrhenius) ... ok
+testRateCoefficient (kineticsTest.TestArrhenius) ... ok
+testGetActivationEnergy (kineticsTest.TestArrheniusEP) ... ok
+testIsPressureDependent (kineticsTest.TestArrheniusEP) ... ok
+testOutput (kineticsTest.TestArrheniusEP) ... ok
+testPickle (kineticsTest.TestArrheniusEP) ... ok
+testRateCoefficient (kineticsTest.TestArrheniusEP) ... ok
+testApplyActionBreakBond (molecule.moleculeTest.TestAtom) ... ok
+testApplyActionDecrementBond (molecule.moleculeTest.TestAtom) ... ok
+testApplyActionFormBond (molecule.moleculeTest.TestAtom) ... ok
+testApplyActionGainRadical (molecule.moleculeTest.TestAtom) ... ok
+testApplyActionIncrementBond (molecule.moleculeTest.TestAtom) ... ok
+testApplyActionLoseRadical (molecule.moleculeTest.TestAtom) ... ok
+testCopy (molecule.moleculeTest.TestAtom) ... ok
+testDecrementRadical (molecule.moleculeTest.TestAtom) ... ok
+testEquivalent (molecule.moleculeTest.TestAtom) ... ok
+testIncrementRadical (molecule.moleculeTest.TestAtom) ... ok
+testIsCarbon (molecule.moleculeTest.TestAtom) ... ok
+testIsHydrogen (molecule.moleculeTest.TestAtom) ... ok
+testIsNonHydrogen (molecule.moleculeTest.TestAtom) ... ok
+testIsOxygen (molecule.moleculeTest.TestAtom) ... ok
+testIsSpecificCaseOf (molecule.moleculeTest.TestAtom) ... ok
+testMass (molecule.moleculeTest.TestAtom) ... ok
+testNumber (molecule.moleculeTest.TestAtom) ... ok
+testPickle (molecule.moleculeTest.TestAtom) ... ok
+testSymbol (molecule.moleculeTest.TestAtom) ... ok
+testPickle (molecule.atomtypeTest.TestAtomType) ... ok
+testApplyActionBreakBond (molecule.moleculeTest.TestBond) ... ok
+testApplyActionDecrementBond (molecule.moleculeTest.TestBond) ... ok
+testApplyActionFormBond (molecule.moleculeTest.TestBond) ... ok
+testApplyActionGainRadical (molecule.moleculeTest.TestBond) ... ok
+testApplyActionIncrementBond (molecule.moleculeTest.TestBond) ... ok
+testApplyActionLoseRadical (molecule.moleculeTest.TestBond) ... ok
+testCopy (molecule.moleculeTest.TestBond) ... ok
+testDecrementOrder (molecule.moleculeTest.TestBond) ... ok
+testEquivalent (molecule.moleculeTest.TestBond) ... ok
+testIncrementOrder (molecule.moleculeTest.TestBond) ... ok
+testIsBenzene (molecule.moleculeTest.TestBond) ... ok
+testIsDouble (molecule.moleculeTest.TestBond) ... ok
+testIsSingle (molecule.moleculeTest.TestBond) ... ok
+testIsSpecificCaseOf (molecule.moleculeTest.TestBond) ... ok
+testIsTriple (molecule.moleculeTest.TestBond) ... ok
+testPickle (molecule.moleculeTest.TestBond) ... ok
+testFitToData (kineticsTest.TestChebyshev) ... ok
+testIsPressureDependent (kineticsTest.TestChebyshev) ... ok
+testOutput (kineticsTest.TestChebyshev) ... ok
+testPickle (kineticsTest.TestChebyshev) ... ok
+testRateCoefficient (kineticsTest.TestChebyshev) ... ok
+testAvogadroConstant (quantityTest.TestConstants) ... ok
+testBoltzmannConstant (quantityTest.TestConstants) ... ok
+testGasLawConstant (quantityTest.TestConstants) ... ok
+testPi (quantityTest.TestConstants) ... ok
+testPlanckConstant (quantityTest.TestConstants) ... ok
+testSpeedOfLight (quantityTest.TestConstants) ... ok
+testMultiNASAToThermoData (thermoTest.TestConversion) ... ok
+testMultiNASAToWilhoit (thermoTest.TestConversion) ... ok
+testThermoDataToMultiNASA (thermoTest.TestConversion) ... ok
+testThermoDataToWilhoit (thermoTest.TestConversion) ... ok
+testWilhoitToMultiNASA (thermoTest.TestConversion) ... ok
+testWilhoitToThermoData (thermoTest.TestConversion) ... ok
+testJPerMol (quantityTest.TestCustomUnits) ... ok
+testKJPerMol (quantityTest.TestCustomUnits) ... ok
+testKcalPerMol (quantityTest.TestCustomUnits) ... ok
+testMolecule (quantityTest.TestCustomUnits) ... ok
+testMolecules (quantityTest.TestCustomUnits) ... ok
+testGetElement (molecule.elementTest.TestElement) ... ok
+testOutput (molecule.elementTest.TestElement) ... ok
+testPickle (molecule.elementTest.TestElement) ... ok
+test_addEdge (molecule.graphTest.TestGraph) ... ok
+test_addVertex (molecule.graphTest.TestGraph) ... ok
+test_copy (molecule.graphTest.TestGraph) ... ok
+test_getAllCycles (molecule.graphTest.TestGraph) ... ok
+test_getEdge (molecule.graphTest.TestGraph) ... ok
+test_getEdges (molecule.graphTest.TestGraph) ... ok
+test_getSmallestSetOfSmallestRings (molecule.graphTest.TestGraph) ... ok
+test_hasEdge (molecule.graphTest.TestGraph) ... ok
+test_hasVertex (molecule.graphTest.TestGraph) ... ok
+test_isCyclic (molecule.graphTest.TestGraph) ... ok
+test_isEdgeInCycle (molecule.graphTest.TestGraph) ... ok
+test_isVertexInCycle (molecule.graphTest.TestGraph) ... ok
+test_isomorphism (molecule.graphTest.TestGraph) ... ok
+test_merge (molecule.graphTest.TestGraph) ... ok
+test_pickle (molecule.graphTest.TestGraph) ... ok
+test_removeEdge (molecule.graphTest.TestGraph) ... ok
+test_removeVertex (molecule.graphTest.TestGraph) ... ok
+test_resetConnectivityValues (molecule.graphTest.TestGraph) ... ok
+test_sortVertices (molecule.graphTest.TestGraph) ... ok
+test_split (molecule.graphTest.TestGraph) ... ok
+test_subgraphIsomorphism (molecule.graphTest.TestGraph) ... ok
+test_updateConnectivityValues (molecule.graphTest.TestGraph) ... ok
+test_vertex_connectivity_values (molecule.graphTest.TestGraph) ... ok
+testClearLabeledAtoms (molecule.groupTest.TestGroup) ... ok
+testContainsLabeledAtom (molecule.groupTest.TestGroup) ... ok
+testFindIsomorphism (molecule.groupTest.TestGroup) ... ok
+testFindSubgraphIsomorphisms (molecule.groupTest.TestGroup) ... ok
+testFromAdjacencyList (molecule.groupTest.TestGroup) ... ok
+testGetLabeledAtom (molecule.groupTest.TestGroup) ... ok
+testGetLabeledAtoms (molecule.groupTest.TestGroup) ... ok
+testIsIsomorphic (molecule.groupTest.TestGroup) ... ok
+testIsSubgraphIsomorphic (molecule.groupTest.TestGroup) ... ok
+testPickle (molecule.groupTest.TestGroup) ... ok
+testToAdjacencyList (molecule.groupTest.TestGroup) ... ok
+testApplyActionBreakBond (molecule.groupTest.TestGroupAtom) ... ok
+testApplyActionDecrementBond (molecule.groupTest.TestGroupAtom) ... ok
+testApplyActionFormBond (molecule.groupTest.TestGroupAtom) ... ok
+testApplyActionGainRadical (molecule.groupTest.TestGroupAtom) ... ok
+testApplyActionIncrementBond (molecule.groupTest.TestGroupAtom) ... ok
+testApplyActionLoseRadical (molecule.groupTest.TestGroupAtom) ... ok
+testCopy (molecule.groupTest.TestGroupAtom) ... ok
+testEquivalent (molecule.groupTest.TestGroupAtom) ... ok
+testIsSpecificCaseOf (molecule.groupTest.TestGroupAtom) ... ok
+testPickle (molecule.groupTest.TestGroupAtom) ... ok
+testApplyActionBreakBond (molecule.groupTest.TestGroupBond) ... ok
+testApplyActionDecrementBond (molecule.groupTest.TestGroupBond) ... ok
+testApplyActionFormBond (molecule.groupTest.TestGroupBond) ... ok
+testApplyActionGainRadical (molecule.groupTest.TestGroupBond) ... ok
+testApplyActionIncrementBond (molecule.groupTest.TestGroupBond) ... ok
+testApplyActionLoseRadical (molecule.groupTest.TestGroupBond) ... ok
+testCopy (molecule.groupTest.TestGroupBond) ... ok
+testEquivalent (molecule.groupTest.TestGroupBond) ... ok
+testIsSpecificCaseOf (molecule.groupTest.TestGroupBond) ... ok
+testPickle (molecule.groupTest.TestGroupBond) ... ok
+testDensityOfStates (statmechTest.TestHarmonicOscillator) ... ok
+testEnthalpy (statmechTest.TestHarmonicOscillator) ... ok
+testEntropy (statmechTest.TestHarmonicOscillator) ... ok
+testHeatCapacity (statmechTest.TestHarmonicOscillator) ... ok
+testOutput (statmechTest.TestHarmonicOscillator) ... ok
+testPartitionFunction (statmechTest.TestHarmonicOscillator) ... ok
+testPickle (statmechTest.TestHarmonicOscillator) ... ok
+testDensityOfStates (statmechTest.TestHinderedRotor) ... ok
+testEnthalpy (statmechTest.TestHinderedRotor) ... ok
+testEntropy (statmechTest.TestHinderedRotor) ... ok
+testFrequency (statmechTest.TestHinderedRotor) ... FAIL
+testHeatCapacity (statmechTest.TestHinderedRotor) ... ok
+testLowBarrierRotor (statmechTest.TestHinderedRotor) ... ok
+testModerateBarrierRotor (statmechTest.TestHinderedRotor) ... ok
+testOutput (statmechTest.TestHinderedRotor) ... ok
+testPartitionFunction (statmechTest.TestHinderedRotor) ... ok
+testPickle (statmechTest.TestHinderedRotor) ... ok
+testIdentity (kineticsTest.TestIdentity) ... ok
+testIsPressureDependent (kineticsTest.TestKineticsData) ... ok
+testOutput (kineticsTest.TestKineticsData) ... ok
+testPickle (kineticsTest.TestKineticsData) ... ok
+testRateCoefficient (kineticsTest.TestKineticsData) ... ok
+testPickle (kineticsTest.TestKineticsModel) ... ok
+testPressureRange (kineticsTest.TestKineticsModel) ... ok
+testTemperatureRange (kineticsTest.TestKineticsModel) ... ok
+testIsPressureDependent (kineticsTest.TestLindemann) ... ok
+testOutput (kineticsTest.TestLindemann) ... ok
+testPickle (kineticsTest.TestLindemann) ... ok
+testRateCoefficient (kineticsTest.TestLindemann) ... ok
+testAdjacencyList (molecule.moleculeTest.TestMolecule) ... ok
+testAugmentedInChI (molecule.moleculeTest.TestMolecule) ... ok
+testAugmentedInChIKey (molecule.moleculeTest.TestMolecule) ... ok
+testClearLabeledAtoms (molecule.moleculeTest.TestMolecule) ... ok
+testContainsLabeledAtom (molecule.moleculeTest.TestMolecule) ... ok
+testCountInternalRotorsAcetylene (molecule.moleculeTest.TestMolecule) ... ok
+testCountInternalRotorsDimethylAcetylene (molecule.moleculeTest.TestMolecule) ... FAIL
+testCountInternalRotorsEthane (molecule.moleculeTest.TestMolecule) ... ok
+testCountInternalRotorsEthylene (molecule.moleculeTest.TestMolecule) ... ok
+testCountInternalRotorsMethylCyclohexane (molecule.moleculeTest.TestMolecule) ... ok
+testCountInternalRotorsNeopentane (molecule.moleculeTest.TestMolecule) ... ok
+testCountInternalRotorsPropane (molecule.moleculeTest.TestMolecule) ... ok
+testFromAdjacencyList (molecule.moleculeTest.TestMolecule) ... ok
+testFromInChIH (molecule.moleculeTest.TestMolecule) ... ok
+testFromSMILESH (molecule.moleculeTest.TestMolecule) ... ok
+testGetFormula (molecule.moleculeTest.TestMolecule) ... ok
+testGetLabeledAtom (molecule.moleculeTest.TestMolecule) ... ok
+testGetLabeledAtoms (molecule.moleculeTest.TestMolecule) ... ok
+testGetMolecularWeight (molecule.moleculeTest.TestMolecule) ... ok
+testInChIKey (molecule.moleculeTest.TestMolecule) ... ok
+testIsInCycleCyclohexane (molecule.moleculeTest.TestMolecule) ... ok
+testIsInCycleEthane (molecule.moleculeTest.TestMolecule) ... ok
+testIsomorphism (molecule.moleculeTest.TestMolecule) ... ok
+testLinear135Hexatriyne (molecule.moleculeTest.TestMolecule) ... ok
+testLinearAcetylene (molecule.moleculeTest.TestMolecule) ... ok
+testLinearCarbonDioxide (molecule.moleculeTest.TestMolecule) ... ok
+testLinearEthane (molecule.moleculeTest.TestMolecule) ... ok
+testLinearHydrogen (molecule.moleculeTest.TestMolecule) ... ok
+testLinearMethane (molecule.moleculeTest.TestMolecule) ... ok
+testLinearNeopentane (molecule.moleculeTest.TestMolecule) ... ok
+testLinearOxygen (molecule.moleculeTest.TestMolecule) ... ok
+testLinearPropane (molecule.moleculeTest.TestMolecule) ... ok
+testPickle (molecule.moleculeTest.TestMolecule) ... ok
+testRadicalCH (molecule.moleculeTest.TestMolecule) ... ok
+testRadicalCH2 (molecule.moleculeTest.TestMolecule) ... ok
+testSSSR (molecule.moleculeTest.TestMolecule) ... ok
+testSubgraphIsomorphism (molecule.moleculeTest.TestMolecule) ... ok
+testSubgraphIsomorphismAgain (molecule.moleculeTest.TestMolecule) ... ok
+testSubgraphIsomorphismManyLabels (molecule.moleculeTest.TestMolecule) ... FAIL
+testToAdjacencyList (molecule.moleculeTest.TestMolecule) ... ok
+testIsPressureDependent (kineticsTest.TestMultiKinetics) ... ok
+testOutput (kineticsTest.TestMultiKinetics) ... ok
+testPickle (kineticsTest.TestMultiKinetics) ... ok
+testRateCoefficient (kineticsTest.TestMultiKinetics) ... ok
+testOutput (thermoTest.TestMultiNASA) ... ok
+testPickle (thermoTest.TestMultiNASA) ... ok
+testEnthalpy (thermoTest.TestNASA) ... ok
+testEntropy (thermoTest.TestNASA) ... ok
+testFreeEnergy (thermoTest.TestNASA) ... ok
+testHeatCapacity (thermoTest.TestNASA) ... ok
+testOutput (thermoTest.TestNASA) ... ok
+testPickle (thermoTest.TestNASA) ... ok
+testFitToData (kineticsTest.TestPDepArrhenius) ... ok
+testIsPressureDependent (kineticsTest.TestPDepArrhenius) ... ok
+testOutput (kineticsTest.TestPDepArrhenius) ... ok
+testPickle (kineticsTest.TestPDepArrhenius) ... ok
+testRateCoefficient (kineticsTest.TestPDepArrhenius) ... ok
+testEquals (quantityTest.TestQuantity) ... ok
+testFromQuantity (quantityTest.TestQuantity) ... ok
+testFromTuple (quantityTest.TestQuantity) ... ok
+testInvalidUncertaintyType (quantityTest.TestQuantity) ... ok
+testOutput (quantityTest.TestQuantity) ... ok
+testPickle (quantityTest.TestQuantity) ... ok
+testValue (quantityTest.TestQuantity) ... ok
+testValueWithAdditiveUncertainty (quantityTest.TestQuantity) ... ok
+testValueWithMultiplicativeUncertainty (quantityTest.TestQuantity) ... ok
+testValueWithUncertainties (quantityTest.TestQuantity) ... ok
+testValueWithUncertainty (quantityTest.TestQuantity) ... ok
+testValueWithUnits (quantityTest.TestQuantity) ... ok
+testValues (quantityTest.TestQuantity) ... ok
+testValuesWithInvalidUncertainties (quantityTest.TestQuantity) ... ok
+testValuesWithUncertainties (quantityTest.TestQuantity) ... ok
+testValuesWithUncertainty (quantityTest.TestQuantity) ... ok
+testValuesWithUnits (quantityTest.TestQuantity) ... ok
+testEnthalpyOfReaction (reactionTest.TestReaction) ... ok
+testEntropyOfReaction (reactionTest.TestReaction) ... ok
+testEquilibriumConstantKa (reactionTest.TestReaction) ... ok
+testEquilibriumConstantKc (reactionTest.TestReaction) ... ok
+testEquilibriumConstantKp (reactionTest.TestReaction) ... ok
+testFreeEnergyOfReaction (reactionTest.TestReaction) ... ok
+testGenerateReverseRateCoefficient (reactionTest.TestReaction) ... ok
+testHasTemplate (reactionTest.TestReaction) ... ok
+testIsAssociation (reactionTest.TestReaction) ... ok
+testIsDissociation (reactionTest.TestReaction) ... ok
+testIsIsomerization (reactionTest.TestReaction) ... ok
+testOutput (reactionTest.TestReaction) ... ok
+testPickle (reactionTest.TestReaction) ... ok
+testRateCoefficient (reactionTest.TestReaction) ... ok
+testStoichiometricCoefficient (reactionTest.TestReaction) ... ok
+testTSTCalculation (reactionTest.TestReaction) ... FAIL
+test1to1 (reactionTest.TestReactionIsomorphism) ... ok
+test1to2 (reactionTest.TestReactionIsomorphism) ... ok
+test2to2 (reactionTest.TestReactionIsomorphism) ... ok
+test2to3 (reactionTest.TestReactionIsomorphism) ... ok
+testDensityOfStates (statmechTest.TestRigidRotor) ... ok
+testEnthalpy (statmechTest.TestRigidRotor) ... ok
+testEntropy (statmechTest.TestRigidRotor) ... ok
+testHeatCapacity (statmechTest.TestRigidRotor) ... ok
+testOutput (statmechTest.TestRigidRotor) ... ok
+testPartitionFunction (statmechTest.TestRigidRotor) ... ok
+testPickle (statmechTest.TestRigidRotor) ... ok
+testOutput (speciesTest.TestSpecies) ... ok
+testPickle (speciesTest.TestSpecies) ... ok
+testToAdjacencyList (speciesTest.TestSpecies) ... ok
+testOutput (statmechTest.TestStatmechModel) ... ok
+testPickle (statmechTest.TestStatmechModel) ... ok
+testEnthalpy (thermoTest.TestThermoData) ... ok
+testEntropy (thermoTest.TestThermoData) ... ok
+testFreeEnergy (thermoTest.TestThermoData) ... ok
+testHeatCapacity (thermoTest.TestThermoData) ... ok
+testOutput (thermoTest.TestThermoData) ... ok
+testPickle (thermoTest.TestThermoData) ... ok
+testOutput (thermoTest.TestThermoModel) ... ok
+testPickle (thermoTest.TestThermoModel) ... ok
+testTemperatureRange (thermoTest.TestThermoModel) ... ok
+testGetColliderEfficiency (kineticsTest.TestThirdBody) ... ok
+testIsPressureDependent (kineticsTest.TestThirdBody) ... ok
+testOutput (kineticsTest.TestThirdBody) ... ok
+testPickle (kineticsTest.TestThirdBody) ... ok
+testRateCoefficient (kineticsTest.TestThirdBody) ... ok
+testDensityOfStates (statmechTest.TestTranslation) ... ok
+testEnthalpy (statmechTest.TestTranslation) ... ok
+testEntropy (statmechTest.TestTranslation) ... ok
+testHeatCapacity (statmechTest.TestTranslation) ... ok
+testOutput (statmechTest.TestTranslation) ... ok
+testPartitionFunction (statmechTest.TestTranslation) ... ok
+testPickle (statmechTest.TestTranslation) ... ok
+testIsPressureDependent (kineticsTest.TestTroe) ... ok
+testOutput (kineticsTest.TestTroe) ... ok
+testPickle (kineticsTest.TestTroe) ... ok
+testRateCoefficient (kineticsTest.TestTroe) ... ok
+testEnthalpy (thermoTest.TestWilhoit) ... ok
+testEntropy (thermoTest.TestWilhoit) ... ok
+testFreeEnergy (thermoTest.TestWilhoit) ... ok
+testHeatCapacity (thermoTest.TestWilhoit) ... ok
+testOutput (thermoTest.TestWilhoit) ... ok
+testPickle (thermoTest.TestWilhoit) ... ok
+
+======================================================================
+ERROR: testLoadEthyleneFromGaussianLog (cantherm.gaussianTest.GaussianTest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/cantherm/gaussianTest.py", line 25, in testLoadEthyleneFromGaussianLog
+    s = log.loadStates()
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/cantherm/gaussian.py", line 171, in loadStates
+    f = open(self.path, 'r')
+IOError: [Errno 2] No such file or directory: 'unittest/cantherm/ethylene.log'
+
+======================================================================
+ERROR: testLoadOxygenFromGaussianLog (cantherm.gaussianTest.GaussianTest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/cantherm/gaussianTest.py", line 51, in testLoadOxygenFromGaussianLog
+    s = log.loadStates()
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/cantherm/gaussian.py", line 171, in loadStates
+    f = open(self.path, 'r')
+IOError: [Errno 2] No such file or directory: 'unittest/cantherm/oxygen.log'
+
+======================================================================
+FAIL: testModesForOxygen (statmechTest.StatesModelTest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/statmechTest.py", line 488, in testModesForOxygen
+    self.assertAlmostEqual(rot.getPartitionFunction(T) / 7.13316e1, 1.0, 3)
+AssertionError: 0.0 != 1.0 within 3 places
+
+======================================================================
+FAIL: testFitToData (kineticsTest.TestArrhenius)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/kineticsTest.py", line 234, in testFitToData
+    self.assertAlmostEqual(kinetics.A.value / self.kinetics.A.value, 1, 4)
+AssertionError: 0.0033333333333327407 != 1 within 4 places
+
+======================================================================
+FAIL: testFrequency (statmechTest.TestHinderedRotor)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/statmechTest.py", line 301, in testFrequency
+    self.assertAlmostEqual(freq, 50.9164, 3)
+AssertionError: 72.00663702257225 != 50.9164 within 3 places
+
+======================================================================
+FAIL: testCountInternalRotorsDimethylAcetylene (molecule.moleculeTest.TestMolecule)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/molecule/moleculeTest.py", line 911, in testCountInternalRotorsDimethylAcetylene
+    self.assertEqual(Molecule().fromSMILES('CC#CC').countInternalRotors(), 1)
+AssertionError: 2 != 1
+
+======================================================================
+FAIL: testSubgraphIsomorphismManyLabels (molecule.moleculeTest.TestMolecule)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/molecule/moleculeTest.py", line 670, in testSubgraphIsomorphismManyLabels
+    self.assertTrue(len(mapping) == 1)
+AssertionError: False is not true
+
+======================================================================
+FAIL: testTSTCalculation (reactionTest.TestReaction)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/reactionTest.py", line 315, in testTSTCalculation
+    self.assertAlmostEqual(arrhenius.A.value/1.07506e+07, 1.0, 3)
+AssertionError: 0.00021814730300778404 != 1.0 within 3 places
+
+----------------------------------------------------------------------
+Ran 303 tests.
+
+FAILED (failures=6, errors=2)
