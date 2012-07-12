@@ -1,0 +1,183 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>6. rmgpy.molecule.molecule_draw — Drawing of Molecules &mdash; RMG Py 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
+    <link rel="up" title="Molecule API Reference" href="index.html" />
+    <link rel="next" title="CanTherm API Reference" href="../cantherm/index.html" />
+    <link rel="prev" title="5. rmgpy.molecule.molecule — Structure and Properties of Molecules" href="molecule.html" /> 
+  </head>
+  <body>
+<div class="header">
+&nbsp;
+</div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../cantherm/index.html" title="CanTherm API Reference"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="molecule.html" title="5. rmgpy.molecule.molecule — Structure and Properties of Molecules"
+             accesskey="P">previous</a> |</li>
+<li><a href="../../index.html">Documentation</a> &raquo;</li>
+
+          <li><a href="../index.html" >RMG Developer&#8217;s Guide</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Molecule API Reference</a> &raquo;</li> 
+      </ul>
+    </div>
+            
+  <div class="section" id="module-rmgpy.molecule.molecule_draw">
+<span id="rmgpy-molecule-molecule-draw-drawing-of-molecules"></span><h1>6. <a class="reference internal" href="#module-rmgpy.molecule.molecule_draw" title="rmgpy.molecule.molecule_draw"><tt class="xref py py-mod docutils literal"><span class="pre">rmgpy.molecule.molecule_draw</span></tt></a> &#8212; Drawing of Molecules<a class="headerlink" href="#module-rmgpy.molecule.molecule_draw" title="Permalink to this headline">¶</a></h1>
+<p>This module provides functionality for automatic two-dimensional drawing of the
+<a class="reference external" href="http://en.wikipedia.org/wiki/Skeletal_formula">skeletal formulae</a> of a wide
+variety of organic and inorganic molecules. The general method for creating
+these drawings is to utilize the <tt class="xref py py-meth docutils literal"><span class="pre">draw()</span></tt> method of the <tt class="xref py py-class docutils literal"><span class="pre">Molecule</span></tt>
+or <tt class="xref py py-class docutils literal"><span class="pre">ChemGraph</span></tt> you wish to draw; this wraps a call to 
+<a class="reference internal" href="#rmgpy.molecule.molecule_draw.drawMolecule" title="rmgpy.molecule.molecule_draw.drawMolecule"><tt class="xref py py-meth docutils literal"><span class="pre">drawMolecule()</span></tt></a>, where the molecule drawing algorithm begins. Advanced
+use may require calling of the <a class="reference internal" href="#rmgpy.molecule.molecule_draw.drawMolecule" title="rmgpy.molecule.molecule_draw.drawMolecule"><tt class="xref py py-meth docutils literal"><span class="pre">drawMolecule()</span></tt></a> method directly.</p>
+<p>The <a class="reference external" href="http://cairographics.org/">Cairo</a> 2D graphics library is used to create
+the drawings. The <a class="reference internal" href="#rmgpy.molecule.molecule_draw.drawMolecule" title="rmgpy.molecule.molecule_draw.drawMolecule"><tt class="xref py py-meth docutils literal"><span class="pre">drawMolecule()</span></tt></a> method module will fail gracefully if
+Cairo is not installed.</p>
+<p>The general procedure for creating drawings of skeletal formula is as follows:</p>
+<ol class="arabic simple">
+<li><strong>Find the molecular backbone.</strong> If the molecule contains no cycles, the
+longest straight chain of heavy atoms is used as the backbone. If the 
+molecule contains cycles, the largest independent cycle group is used as the
+backbone. The <tt class="xref py py-meth docutils literal"><span class="pre">findBackbone()</span></tt> method is used for this purpose.</li>
+<li><strong>Generate coordinates for the backbone atoms.</strong> Straight-chain backbones
+are laid out in a horizontal seesaw pattern. Cyclic backbones are laid out
+as regular polygons (or as close to this as is possible). The
+<tt class="xref py py-meth docutils literal"><span class="pre">generateStraightChainCoordinates()</span></tt> and 
+<tt class="xref py py-meth docutils literal"><span class="pre">generateRingSystemCoordinates()</span></tt> methods are used for this purpose.</li>
+<li><strong>Generate coordinates for immediate neighbors to backbone.</strong> Each neighbor
+atom represents the start of a functional group attached to the backbone.
+Generating coordinates for these means that we have determined the bonds
+for all backbone atoms. The <tt class="xref py py-meth docutils literal"><span class="pre">generateNeighborCoordinates()</span></tt> method is
+used for this purpose.</li>
+<li><strong>Continue generating coordinates for atoms in functional groups.</strong> Moving
+away from the molecular backbone and its immediate neighbors, the
+coordinates for each atom in each functional group are determined such that
+the functional groups tend to radiate away from the center of the backbone
+(to reduce chances of overlap). If cycles are encountered in the functional
+groups, their coordinates are processed as a unit. This continues until
+the coordinates of all atoms in the molecule have been assigned. The
+<tt class="xref py py-meth docutils literal"><span class="pre">generateFunctionalGroupCoordinates()</span></tt> recursive method is used for
+this.</li>
+<li><strong>Use the generated coordinates and the atom and bond types to render the
+skeletal formula.</strong> The <tt class="xref py py-meth docutils literal"><span class="pre">render()</span></tt>,  and <tt class="xref py py-meth docutils literal"><span class="pre">renderBond()</span></tt>, and
+<tt class="xref py py-meth docutils literal"><span class="pre">renderAtom()</span></tt> methods are used for this.</li>
+</ol>
+<p>The developed procedure seems to be rather robust, but occasionally it will
+encounter a molecule that it renders incorrectly. In particular, features which
+have not yet been implemented by this drawing algorithm include:</p>
+<ul class="simple">
+<li>cis-trans isomerism</li>
+<li>stereoisomerism</li>
+<li>bridging atoms in fused rings</li>
+</ul>
+<dl class="class">
+<dt id="rmgpy.molecule.molecule_draw.MoleculeRenderError">
+<em class="property">class </em><tt class="descclassname">rmgpy.molecule.molecule_draw.</tt><tt class="descname">MoleculeRenderError</tt><a class="headerlink" href="#rmgpy.molecule.molecule_draw.MoleculeRenderError" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="rmgpy.molecule.molecule_draw.drawMolecule">
+<tt class="descclassname">rmgpy.molecule.molecule_draw.</tt><tt class="descname">drawMolecule</tt><big>(</big><em>molecule</em>, <em>path=None</em>, <em>surface=''</em><big>)</big><a class="headerlink" href="#rmgpy.molecule.molecule_draw.drawMolecule" title="Permalink to this definition">¶</a></dt>
+<dd><p>Primary function for generating a drawing of a <tt class="xref py py-class docutils literal"><span class="pre">Molecule</span></tt> object
+<cite>molecule</cite>. You can specify the render target in a few ways:</p>
+<ul class="simple">
+<li>If you wish to create an image file (PNG, SVG, PDF, or PS), use the <cite>path</cite>
+parameter to pass a string containing the location at which you wish to
+save the file; the extension will be used to identify the proper target
+type.</li>
+<li>If you want to render the molecule onto a Cairo surface without saving it
+to a file (e.g. as part of another drawing you are constructing), use the
+<cite>surface</cite> paramter to pass the type of surface you wish to use: &#8220;png&#8221;,
+&#8220;svg&#8221;, &#8220;pdf&#8221;, or &#8220;ps&#8221;.</li>
+</ul>
+<p>This function returns the Cairo surface and context used to create the
+drawing, as well as a bounding box for the molecule being drawn as the
+tuple (<cite>left</cite>, <cite>top</cite>, <cite>width</cite>, <cite>height</cite>).</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div class="sidebarlogo">
+<img src="../../_static/rmg-logo-small.png" alt="RMG" />
+</div>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="molecule.html"
+                        title="previous chapter">5. <tt class="docutils literal docutils literal docutils literal"><span class="pre">rmgpy.molecule.molecule</span></tt> &#8212; Structure and Properties of Molecules</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../cantherm/index.html"
+                        title="next chapter">CanTherm API Reference</a></p>
+  <h3>This Page </h3>
+  <ul class="this-page-menu">
+    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/developers/molecule/molecule_draw.rst"
+           rel="nofollow">Edit this page</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

@@ -6,19 +6,14 @@ RMG Developer's Guide
     :maxdepth: 2
 
     introduction
-    atomtype
     chemkin
-    element
-    graph
-    group
     kinetics
-    molecule
-    molecule_draw
     quantity
     reaction
     species
     statmech
     thermo
+    molecule/index
     cantherm/index
     data/index
     measure/index
