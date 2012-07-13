@@ -5,7 +5,7 @@ Introduction
 ************
 
 **Reaction Mechanism Generator (RMG)** is an automatic chemical reaction mechanism generator that constructs kinetic models composed of elementary chemical reaction steps using a general understanding of how molecules react.
-
+This version is written in Python, and called RMG-Py.
 
 
 License
