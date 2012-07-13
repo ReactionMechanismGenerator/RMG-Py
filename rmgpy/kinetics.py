@@ -489,14 +489,20 @@ class Arrhenius(KineticsModel):
                 b[n] *= weights[n]
         x, residues, rank, s = numpy.linalg.lstsq(A,b)
         
-        # Determine covarianace matrix to obtain parameter uncertainties
-        count = klist.size
-        cov = residues[0] / (count - 3) * numpy.linalg.inv(numpy.dot(A.T, A))
-        t = scipy.stats.t.ppf(0.975, count - 3)
+        if residues:
+            # Determine covarianace matrix to obtain parameter uncertainties
+            count = klist.size
+            t = scipy.stats.t.ppf(0.975, count - 3)
+            cov = residues[0] / (count - 3) * numpy.linalg.inv(numpy.dot(A.T, A))
             
-        self.A = Quantity(math.exp(x[0]), kunits, '*|/', t * math.exp(math.sqrt(cov[0,0])))
-        self.n = Quantity(x[1], '', '+|-', t * math.sqrt(cov[1,1]))
-        self.Ea = Quantity(x[2], "J/mol", '+|-', t * math.sqrt(cov[2,2]))
+            self.A = Quantity(math.exp(x[0]), kunits, '*|/', t * math.exp(math.sqrt(cov[0,0])))
+            self.n = Quantity(x[1], '', '+|-', t * math.sqrt(cov[1,1]))
+            self.Ea = Quantity(x[2], "J/mol", '+|-', t * math.sqrt(cov[2,2]))
+        else:
+            # Ignore uncertainty if fitting to three or less points
+            self.A = Quantity(math.exp(x[0]), kunits)
+            self.n = Quantity(x[1], '')
+            self.Ea = Quantity(x[2], "J/mol")
         self.T0 = Quantity(T0, "K")
         return self
 
