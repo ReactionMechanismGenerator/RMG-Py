@@ -1,5 +1,5 @@
-testLoadEthyleneFromGaussianLog (cantherm.gaussianTest.GaussianTest) ... ERROR
-testLoadOxygenFromGaussianLog (cantherm.gaussianTest.GaussianTest) ... ERROR
+testLoadEthyleneFromGaussianLog (cantherm.gaussianTest.GaussianTest) ... ok
+testLoadOxygenFromGaussianLog (cantherm.gaussianTest.GaussianTest) ... ok
 testButanolInternalReducedMomentOfInertia (cantherm.geometryTest.GeometryTest) ... ok
 testEthaneInternalReducedMomentOfInertia (cantherm.geometryTest.GeometryTest) ... ok
 testOutput (cantherm.geometryTest.GeometryTest) ... ok
@@ -8,10 +8,9 @@ testDensityOfStatesILTRotation (statmechTest.StatesModelTest) ... ok
 testDensityOfStatesILTTranslation (statmechTest.StatesModelTest) ... ok
 testDensityOfStatesILTVibration (statmechTest.StatesModelTest) ... ok
 testModesForEthylene (statmechTest.StatesModelTest) ... ok
-testModesForOxygen (statmechTest.StatesModelTest) ... Exception ZeroDivisionError: 'float division' in 'rmgpy.statmech.RigidRotor.getPartitionFunction' ignored
-FAIL
+testModesForOxygen (statmechTest.StatesModelTest) ... ok
 testChangeT0 (kineticsTest.TestArrhenius) ... ok
-testFitToData (kineticsTest.TestArrhenius) ... FAIL
+testFitToData (kineticsTest.TestArrhenius) ... ok
 testIsPressureDependent (kineticsTest.TestArrhenius) ... ok
 testOutput (kineticsTest.TestArrhenius) ... ok
 testPickle (kineticsTest.TestArrhenius) ... ok
@@ -40,7 +39,11 @@ testMass (molecule.moleculeTest.TestAtom) ... ok
 testNumber (molecule.moleculeTest.TestAtom) ... ok
 testPickle (molecule.moleculeTest.TestAtom) ... ok
 testSymbol (molecule.moleculeTest.TestAtom) ... ok
+testEquivalent (molecule.atomtypeTest.TestAtomType) ... ok
+testIsSpecficCaseOf (molecule.atomtypeTest.TestAtomType) ... ok
+testOutput (molecule.atomtypeTest.TestAtomType) ... ok
 testPickle (molecule.atomtypeTest.TestAtomType) ... ok
+testSetActions (molecule.atomtypeTest.TestAtomType) ... ok
 testApplyActionBreakBond (molecule.moleculeTest.TestBond) ... ok
 testApplyActionDecrementBond (molecule.moleculeTest.TestBond) ... ok
 testApplyActionFormBond (molecule.moleculeTest.TestBond) ... ok
@@ -82,6 +85,12 @@ testMolecules (quantityTest.TestCustomUnits) ... ok
 testGetElement (molecule.elementTest.TestElement) ... ok
 testOutput (molecule.elementTest.TestElement) ... ok
 testPickle (molecule.elementTest.TestElement) ... ok
+testCarbonTypes (molecule.atomtypeTest.TestGetAtomType) ... ok
+testHydrogenType (molecule.atomtypeTest.TestGetAtomType) ... ok
+testNoneTypes (molecule.atomtypeTest.TestGetAtomType) ... ok
+testOxygenTypes (molecule.atomtypeTest.TestGetAtomType) ... ok
+testSiliconTypes (molecule.atomtypeTest.TestGetAtomType) ... ok
+testSulfurTypes (molecule.atomtypeTest.TestGetAtomType) ... ok
 test_addEdge (molecule.graphTest.TestGraph) ... ok
 test_addVertex (molecule.graphTest.TestGraph) ... ok
 test_copy (molecule.graphTest.TestGraph) ... ok
@@ -119,9 +128,9 @@ testToAdjacencyList (molecule.groupTest.TestGroup) ... ok
 testApplyActionBreakBond (molecule.groupTest.TestGroupAtom) ... ok
 testApplyActionDecrementBond (molecule.groupTest.TestGroupAtom) ... ok
 testApplyActionFormBond (molecule.groupTest.TestGroupAtom) ... ok
-testApplyActionGainRadical (molecule.groupTest.TestGroupAtom) ... ok
+testApplyActionGainRadical (molecule.groupTest.TestGroupAtom) ... FAIL
 testApplyActionIncrementBond (molecule.groupTest.TestGroupAtom) ... ok
-testApplyActionLoseRadical (molecule.groupTest.TestGroupAtom) ... ok
+testApplyActionLoseRadical (molecule.groupTest.TestGroupAtom) ... FAIL
 testCopy (molecule.groupTest.TestGroupAtom) ... ok
 testEquivalent (molecule.groupTest.TestGroupAtom) ... ok
 testIsSpecificCaseOf (molecule.groupTest.TestGroupAtom) ... ok
@@ -304,40 +313,20 @@ testOutput (thermoTest.TestWilhoit) ... ok
 testPickle (thermoTest.TestWilhoit) ... ok
 
 ======================================================================
-ERROR: testLoadEthyleneFromGaussianLog (cantherm.gaussianTest.GaussianTest)
+FAIL: testApplyActionGainRadical (molecule.groupTest.TestGroupAtom)
 ----------------------------------------------------------------------
 Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/cantherm/gaussianTest.py", line 25, in testLoadEthyleneFromGaussianLog
-    s = log.loadStates()
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/cantherm/gaussian.py", line 171, in loadStates
-    f = open(self.path, 'r')
-IOError: [Errno 2] No such file or directory: 'unittest/cantherm/ethylene.log'
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/molecule/groupTest.py", line 114, in testApplyActionGainRadical
+    self.assertTrue(a in atom.atomType)
+AssertionError: False is not true
 
 ======================================================================
-ERROR: testLoadOxygenFromGaussianLog (cantherm.gaussianTest.GaussianTest)
+FAIL: testApplyActionLoseRadical (molecule.groupTest.TestGroupAtom)
 ----------------------------------------------------------------------
 Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/cantherm/gaussianTest.py", line 51, in testLoadOxygenFromGaussianLog
-    s = log.loadStates()
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/cantherm/gaussian.py", line 171, in loadStates
-    f = open(self.path, 'r')
-IOError: [Errno 2] No such file or directory: 'unittest/cantherm/oxygen.log'
-
-======================================================================
-FAIL: testModesForOxygen (statmechTest.StatesModelTest)
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/statmechTest.py", line 488, in testModesForOxygen
-    self.assertAlmostEqual(rot.getPartitionFunction(T) / 7.13316e1, 1.0, 3)
-AssertionError: 0.0 != 1.0 within 3 places
-
-======================================================================
-FAIL: testFitToData (kineticsTest.TestArrhenius)
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/kineticsTest.py", line 234, in testFitToData
-    self.assertAlmostEqual(kinetics.A.value / self.kinetics.A.value, 1, 4)
-AssertionError: 0.0033333333333327407 != 1 within 4 places
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/molecule/groupTest.py", line 134, in testApplyActionLoseRadical
+    self.assertTrue(a in atom.atomType)
+AssertionError: False is not true
 
 ======================================================================
 FAIL: testFrequency (statmechTest.TestHinderedRotor)
@@ -372,6 +361,6 @@ Traceback (most recent call last):
 AssertionError: 0.00021814730300778404 != 1.0 within 3 places
 
 ----------------------------------------------------------------------
-Ran 303 tests.
+Ran 313 tests.
 
-FAILED (failures=6, errors=2)
+FAILED (failures=6)
