@@ -481,7 +481,7 @@ class StatesModelTest(unittest.TestCase):
         T = 298.15
 
         trans = Translation(mass=0.03199)
-        rot = RigidRotor(linear=True, inertia=[1.9271e-46], symmetry=2)
+        rot = RigidRotor(linear=True, inertia=1.9271e-46, symmetry=2)
         vib = HarmonicOscillator(frequencies=[1637.9])
 
         self.assertAlmostEqual(trans.getPartitionFunction(T) / 7.11169e6, 1.0, 3)

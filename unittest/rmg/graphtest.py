@@ -6,8 +6,8 @@ import unittest
 import sys
 sys.path.append('.')
 
-from rmg.graph import *
-from rmg.chem import Atom, Bond
+from rmgpy.graph import *
+from rmgpy.molecule import Atom, Bond
 
 # Horrible hack because Cythonised graph class now demands vertices and edges are 
 # instances of chem.Atom and chem.Bond 

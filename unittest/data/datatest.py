@@ -7,9 +7,11 @@ import sys
 sys.path.append('.')
 
 from rmgpy.data.base import *
-from rmgpy.chem.pattern import MoleculePattern
+from rmgpy.group import Group
 
-thermoDatabase = 'database/output/RMG_Database/thermo_groups'
+from rmgpy import settings
+
+thermoDatabase = os.path.join(settings['database.directory'],'../output/RMG_Database/thermo_groups')
 
 ################################################################################
 
@@ -24,7 +26,7 @@ class DatabaseCheck(unittest.TestCase):
 		libstr = thermoDatabase + '/Group_Library.txt'
 		
 		database = Database()
-		database.load(dictstr, treestr, libstr)
+		database.loadOld(dictstr, treestr, libstr, 12)
 		
 		# All nodes in library should be in tree and dictionary
 		# All nodes in tree should be in dictionary
@@ -55,7 +57,7 @@ class DatabaseCheck(unittest.TestCase):
 		
 		# All values in dictionary should be chemical structures
 		for node in database.dictionary:
-			self.assertTrue(isinstance(database.dictionary[node], MoleculePattern))
+			self.assertTrue(isinstance(database.dictionary[node], Group))
 
 ################################################################################
 

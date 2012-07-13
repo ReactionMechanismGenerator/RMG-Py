@@ -115,7 +115,6 @@ class TestKineticsData(unittest.TestCase):
     def testIsPressureDependent(self):
         """
         Test the KineticsData.isPressureDependent() method.
-        
         """
         self.assertFalse(self.kinetics.isPressureDependent())
     
@@ -195,7 +194,6 @@ class TestArrhenius(unittest.TestCase):
     def testIsPressureDependent(self):
         """
         Test the Arrhenius.isPressureDependent() method.
-        
         """
         self.assertFalse(self.kinetics.isPressureDependent())
     
@@ -226,7 +224,7 @@ class TestArrhenius(unittest.TestCase):
         """
         Tdata = numpy.array([300,400,500,600,700,800,900,1000,1100,1200,1300,1400,1500], numpy.float)
         kdata = numpy.array([self.kinetics.getRateCoefficient(T) for T in Tdata], numpy.float)
-        kinetics = Arrhenius().fitToData(Tdata, kdata, kunits="m^3/(mol*s)")
+        kinetics = Arrhenius().fitToData(Tdata, kdata, kunits="m^3/(mol*s)", T0=300)
         self.assertEqual(self.kinetics.T0.value, 300)
         self.assertEqual(self.kinetics.T0.units, "K")
         for T, k in zip(Tdata, kdata):
@@ -305,7 +303,6 @@ class TestArrheniusEP(unittest.TestCase):
     def testIsPressureDependent(self):
         """
         Test the ArrheniusEP.isPressureDependent() method.
-        
         """
         self.assertFalse(self.kinetics.isPressureDependent())
     
@@ -429,7 +426,6 @@ class TestMultiKinetics(unittest.TestCase):
     def testIsPressureDependent(self):
         """
         Test the MultiKinetics.isPressureDependent() method.
-        
         """
         self.assertFalse(self.kinetics.isPressureDependent())
     
@@ -536,7 +532,6 @@ class TestPDepArrhenius(unittest.TestCase):
     def testIsPressureDependent(self):
         """
         Test the PDepArrhenius.isPressureDependent() method.
-        
         """
         self.assertTrue(self.kinetics.isPressureDependent())
     
@@ -669,7 +664,6 @@ class TestChebyshev(unittest.TestCase):
     def testIsPressureDependent(self):
         """
         Test the Chebyshev.isPressureDependent() method.
-        
         """
         self.assertTrue(self.kinetics.isPressureDependent())
     
@@ -804,7 +798,6 @@ class TestThirdBody(unittest.TestCase):
     def testIsPressureDependent(self):
         """
         Test the ThirdBody.isPressureDependent() method.
-        
         """
         self.assertTrue(self.kinetics.isPressureDependent())
     
@@ -937,7 +930,6 @@ class TestLindemann(unittest.TestCase):
     def testIsPressureDependent(self):
         """
         Test the Lindemann.isPressureDependent() method.
-        
         """
         self.assertTrue(self.kinetics.isPressureDependent())
     
@@ -1072,7 +1064,6 @@ class TestTroe(unittest.TestCase):
     def testIsPressureDependent(self):
         """
         Test the Troe.isPressureDependent() method.
-        
         """
         self.assertTrue(self.kinetics.isPressureDependent())
     

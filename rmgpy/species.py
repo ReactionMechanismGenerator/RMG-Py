@@ -220,6 +220,17 @@ class Species:
             self.label = label.strip()
         # Return a reference to itself so we can use e.g. Species().fromAdjacencyList()
         return self
+        
+    def fromSMILES(self, smiles):
+        """
+        Load the structure of a species as a :class:`Molecule` object from the
+        given SMILES string `smiles` and store it as the first entry of a 
+        list in the `molecule` attribute. Does not generate resonance isomers
+        of the loaded molecule.
+        """
+        self.molecule = [Molecule().fromSMILES(smiles)]
+        # Return a reference to itself so we can use e.g. Species().fromAdjacencyList()
+        return self
     
     def toAdjacencyList(self):
         """
