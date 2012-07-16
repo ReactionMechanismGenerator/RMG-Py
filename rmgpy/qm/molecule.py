@@ -100,7 +100,7 @@ class Geometry:
         return rdmol
 
     def save_coordinates(rdmol, rdAtIdx):
-        "Save xyz coordinates on each atom in rmg_molecule"
+        # Save xyz coordinates on each atom in rmg_molecule ****
 
 
 class QMMolecule:
