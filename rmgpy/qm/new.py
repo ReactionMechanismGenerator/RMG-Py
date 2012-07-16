@@ -121,16 +121,18 @@ class QM_Molecule:
         self.createGeometry()
         
         if option.program == 'mopac':
-            method = qm.methods.MopacPM3 # for example
+            method = qm.methods.mopac_pm3 # for example
         elif option.program == 'gaussian03':
             method = qm.methods.Gaussian03PM3
         else:
             raise Exception('Unknown QM Method')
             
+        writer = method.InputWriter()
+        verifier = method.Verifier()
         
         success = False
         for attempt in range(method.max_attempts):
-            method.writeInputFile(self.geometry, attempt)
+            writer.writeInputFile(self.geometry, attempt)
             success = method.runJob()
             method.parseResult()
             if success: break
