@@ -252,6 +252,8 @@ def saveInputFile(path, rmg):
     f.write('    reactionLibraries = {0!r},\n'.format(rmg.reactionLibraries))
     f.write('    seedMechanisms = {0!r},\n'.format(rmg.seedMechanisms))
     f.write('    kineticsDepositories = {0!r},\n'.format(rmg.kineticsDepositories))
+    f.write('    kineticsFamilies = {0!r},\n'.format(rmg.kineticsFamilies))
+    f.write('    kineticsEstimator = {0!r},\n'.format(rmg.kineticsEstimator))
     f.write(')\n\n')
 
     # Species
@@ -275,20 +277,24 @@ def saveInputFile(path, rmg):
         f.write('    initialMoleFractions={\n')
         for species, molfrac in system.initialMoleFractions.iteritems():
             f.write('        "{0!s}": {1:g},\n'.format(species.label, molfrac))
-        f.write('    },\n')
+        f.write('    },\n')               
+        
+        # Termination criteria
+        conversions = ''
+        for term in system.termination:
+            if isinstance(term, TerminationTime):
+                f.write('    terminationTime = ({0:g},"{1!s}"),\n'.format(term.time.getValueInGivenUnits(),term.time.units))
+                
+            else:
+                conversions += '        "{0:s}": {1:g},\n'.format(term.species.label, term.conversion)
+        if conversions:        
+            f.write('    terminationConversion = {\n')
+            f.write(conversions)
+            f.write('    },\n')
+        
         f.write(')\n\n')
-
-    # Termination
-    f.write('termination(\n')
-    for term in rmg.termination:
-        if isinstance(term,TerminationTime):
-            f.write('    time = ({0:g},"{1!s}"),\n'.format(term.time.getValueInGivenUnits(),term.time.units))
-        if isinstance(term,TerminationConversion):
-            f.write('    conversion = {\n')
-            f.write('        "{0:s}": {1:g},\n'.format(term.species.label, term.conversion))
-            f.write('    }\n')
-    f.write(')\n\n')
-
+        
+        
     # Simulator tolerances
     f.write('simulator(\n')
     f.write('    atol = {0:g},\n'.format(rmg.absoluteTolerance))
