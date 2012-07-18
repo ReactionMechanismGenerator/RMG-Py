@@ -2221,111 +2221,112 @@ class KineticsFamily(Database):
                 
         # A --> B + C or A + B --> C
         else:
-            # Fix the sorting label for the molecule if it has not been done.
-            # Set the action list to forward or reverse depending on the species
-            # the transition state is being built from.
-            if len(reaction.reactants) == 1:
-                if reaction.reactants[0].atoms[0].sortingLabel == -1:
-                    reaction.reactants[0] = fixSortLabel(reaction.reactants[0])
-                buildTS = reaction.reactants[0]
-                actionList = reaction.family.forwardRecipe.actions
-            else:
-                if reaction.products[0].atoms[0].sortingLabel == -1:
-                    reaction.products[0] = fixSortLabel(reaction.products[0])
-                buildTS = reaction.products[0]
-                actionList = reaction.family.reverseRecipe.actions
-            
-            # Generate the RDKit::Mol from the RMG molecule and get the bounds matrix
-            if buildTS.rdMol == None:
-                Molecule.generate3dGeometry(buildTS)
-            boundsMat = rdkit.Chem.rdDistGeom.GetMoleculeBoundsMatrix(buildTS.rdMol)
-            
-            # Alter the bounds matrix based on the reaction recipe
-            for action in actionList:
-                lbl1 = action[1]
-                atom1 = buildTS.getLabeledAtom(lbl1)
-                idx1 = atom1.sortingLabel
-                if len(action) ==4:
-                    lbl2 = action[3]
-                    atom2 = buildTS.getLabeledAtom(lbl2)
-                    idx2 = atom2.sortingLabel
-                if action[0].lower() == 'change_bond':
-                    # bond was added
-                    if action[2] == '1':
-                        # make the bond shorter
-                        boundsMat[idx1][idx2] -= 0.15
-                        boundsMat[idx2][idx1] -= 0.15
-                    # bond was removed
-                    elif action[2] == '-1':
-                        # make bond shorter
-                        boundsMat[idx1][idx2] += 0.15
-                        boundsMat[idx2][idx1] += 0.15
-                elif action[0].lower() == 'form_bond':
-                    # move them further
-                    boundsMat[idx1][idx2] -= 0.25
-                    boundsMat[idx2][idx1] -= 0.25
-                elif action[0].lower() == 'break_bond':
-                    # move them closer
-                    boundsMat[idx1][idx2] += 0.25
-                    boundsMat[idx2][idx1] += 0.25
-                elif action[0].lower() == 'gain_radical':
-                    pass
-                elif action[0].lower() == 'lose_radical':
-                    pass
-            
-            # Keep the most stable conformer, remove the rest
-            for conf in range(0, buildTS.rdMol.GetNumConformers()):
-                if conf != buildTS.rdMolConfId:
-                    buildTS.rdMol.RemoveConformer(conf)
-            
-            # Smooth the bounds matrix to speed up the optimization
-            # Optimize the TS geometry in place, outputing the initial and final energies
-            rdkit.DistanceGeometry.DistGeom.DoTriangleSmoothing(boundsMat)
-            try:
-                rdkit.Chem.Pharm3D.EmbedLib.OptimizeMol(buildTS.rdMol, boundsMat, maxPasses = 10)
-            except RuntimeError:
-                pass
-            
-            # Ensure the spin multiplicity is ok for gaussian
-            spinMult = 1
-            for atom in buildTS.atoms:
-                if atom.spinMultiplicity !=1:
-                    spinMult += 1
-            
-            # Need to output gaussian script
-            title = reaction.reactants[0].toInChI().replace('/','_').strip('InChI=1S_') + reaction.reactants[1].toInChI().replace('/','_').strip('InChI=1S_')
-            filename = title + '.gif'
-            newPath = os.path.join(os.curdir, 'tsScripts')
-            # Need to makedirs if gaussScripts not there
-            fout = open(os.path.join(newPath, filename), "w")
-            fout.write("# PM3 Opt=(TS, CalcAll, NoEigenTest)\n\n")
-            fout.write(title+"\n\n")
-            fout.write('0   ' + str(spinMult) + '\n')
-            for idx in range(0, len(buildTS.atoms)):
-                atSym = buildTS.rdMol.GetAtomWithIdx(idx).GetSymbol()
-                position = buildTS.rdMol.GetConformer(buildTS.rdMolConfId).GetAtomPosition(idx)
-                xPt = "  " + "%.7f" %position.x
-                yPt = "  " + "%.7f" %position.y
-                zPt = "  " + "%.7f" %position.z
-                if position.x >= 0.0:
-                    xPt = " " + xPt
-                if position.y >= 0.0:
-                    yPt = " " + yPt
-                if position.z >= 0.0:
-                    zPt = " " + zPt
-                fout.write(atSym + xPt + yPt + zPt + "\n")
-            fout.write("\n")
-            fout.close()
-            
-            fout = open(os.path.join(newPath, title+'.sh'), "w")
-            fout.write('#!/bin/sh\n')
-            fout.write('#BSUB -q normal\n')
-            fout.write('#BSUB -o ./output/' + title + '.out\n')
-            fout.write('#BSUB -J reactionTS\n\n')
-            fout.write('export GAUSS_EXEDIR=/share/apps/g09\n')
-            fout.write('export PATH=$GAUSS_EXEDIR:$PATH\n\n')
-            fout.write('g09 < ' + filename + ' > ./log/' + title + '.log\n\n')
-            fout.close()
+            pass
+            # # Fix the sorting label for the molecule if it has not been done.
+            # # Set the action list to forward or reverse depending on the species
+            # # the transition state is being built from.
+            # if len(reaction.reactants) == 1:
+            #     if reaction.reactants[0].atoms[0].sortingLabel == -1:
+            #         reaction.reactants[0] = fixSortLabel(reaction.reactants[0])
+            #     buildTS = reaction.reactants[0]
+            #     actionList = reaction.family.forwardRecipe.actions
+            # else:
+            #     if reaction.products[0].atoms[0].sortingLabel == -1:
+            #         reaction.products[0] = fixSortLabel(reaction.products[0])
+            #     buildTS = reaction.products[0]
+            #     actionList = reaction.family.reverseRecipe.actions
+            # 
+            # # Generate the RDKit::Mol from the RMG molecule and get the bounds matrix
+            # if buildTS.rdMol == None:
+            #     Molecule.generate3dGeometry(buildTS)
+            # boundsMat = rdkit.Chem.rdDistGeom.GetMoleculeBoundsMatrix(buildTS.rdMol)
+            # 
+            # # Alter the bounds matrix based on the reaction recipe
+            # for action in actionList:
+            #     lbl1 = action[1]
+            #     atom1 = buildTS.getLabeledAtom(lbl1)
+            #     idx1 = atom1.sortingLabel
+            #     if len(action) ==4:
+            #         lbl2 = action[3]
+            #         atom2 = buildTS.getLabeledAtom(lbl2)
+            #         idx2 = atom2.sortingLabel
+            #     if action[0].lower() == 'change_bond':
+            #         # bond was added
+            #         if action[2] == '1':
+            #             # make the bond shorter
+            #             boundsMat[idx1][idx2] -= 0.15
+            #             boundsMat[idx2][idx1] -= 0.15
+            #         # bond was removed
+            #         elif action[2] == '-1':
+            #             # make bond shorter
+            #             boundsMat[idx1][idx2] += 0.15
+            #             boundsMat[idx2][idx1] += 0.15
+            #     elif action[0].lower() == 'form_bond':
+            #         # move them further
+            #         boundsMat[idx1][idx2] -= 0.25
+            #         boundsMat[idx2][idx1] -= 0.25
+            #     elif action[0].lower() == 'break_bond':
+            #         # move them closer
+            #         boundsMat[idx1][idx2] += 0.25
+            #         boundsMat[idx2][idx1] += 0.25
+            #     elif action[0].lower() == 'gain_radical':
+            #         pass
+            #     elif action[0].lower() == 'lose_radical':
+            #         pass
+            # 
+            # # Keep the most stable conformer, remove the rest
+            # for conf in range(0, buildTS.rdMol.GetNumConformers()):
+            #     if conf != buildTS.rdMolConfId:
+            #         buildTS.rdMol.RemoveConformer(conf)
+            # 
+            # # Smooth the bounds matrix to speed up the optimization
+            # # Optimize the TS geometry in place, outputing the initial and final energies
+            # rdkit.DistanceGeometry.DistGeom.DoTriangleSmoothing(boundsMat)
+            # try:
+            #     rdkit.Chem.Pharm3D.EmbedLib.OptimizeMol(buildTS.rdMol, boundsMat, maxPasses = 10)
+            # except RuntimeError:
+            #     pass
+            # 
+            # # Ensure the spin multiplicity is ok for gaussian
+            # spinMult = 1
+            # for atom in buildTS.atoms:
+            #     if atom.spinMultiplicity !=1:
+            #         spinMult += 1
+            # 
+            # # Need to output gaussian script
+            # title = reaction.reactants[0].toInChI().replace('/','_').strip('InChI=1S_') + reaction.reactants[1].toInChI().replace('/','_').strip('InChI=1S_')
+            # filename = title + '.gif'
+            # newPath = os.path.join(os.curdir, 'tsScripts')
+            # # Need to makedirs if gaussScripts not there
+            # fout = open(os.path.join(newPath, filename), "w")
+            # fout.write("# PM3 Opt=(TS, CalcAll, NoEigenTest)\n\n")
+            # fout.write(title+"\n\n")
+            # fout.write('0   ' + str(spinMult) + '\n')
+            # for idx in range(0, len(buildTS.atoms)):
+            #     atSym = buildTS.rdMol.GetAtomWithIdx(idx).GetSymbol()
+            #     position = buildTS.rdMol.GetConformer(buildTS.rdMolConfId).GetAtomPosition(idx)
+            #     xPt = "  " + "%.7f" %position.x
+            #     yPt = "  " + "%.7f" %position.y
+            #     zPt = "  " + "%.7f" %position.z
+            #     if position.x >= 0.0:
+            #         xPt = " " + xPt
+            #     if position.y >= 0.0:
+            #         yPt = " " + yPt
+            #     if position.z >= 0.0:
+            #         zPt = " " + zPt
+            #     fout.write(atSym + xPt + yPt + zPt + "\n")
+            # fout.write("\n")
+            # fout.close()
+            # 
+            # fout = open(os.path.join(newPath, title+'.sh'), "w")
+            # fout.write('#!/bin/sh\n')
+            # fout.write('#BSUB -q normal\n')
+            # fout.write('#BSUB -o ./output/' + title + '.out\n')
+            # fout.write('#BSUB -J reactionTS\n\n')
+            # fout.write('export GAUSS_EXEDIR=/share/apps/g09\n')
+            # fout.write('export PATH=$GAUSS_EXEDIR:$PATH\n\n')
+            # fout.write('g09 < ' + filename + ' > ./log/' + title + '.log\n\n')
+            # fout.close()
                         
     def applyRecipe(self, reactantStructures, forward=True, unique=True):
         """

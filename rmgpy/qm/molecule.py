@@ -37,10 +37,9 @@ class Geometry:
         if atoms > 3:#this check prevents the number of attempts from being negative
             distGeomAttempts = 5*(atoms-3) #number of conformer attempts is just a linear scaling with molecule size, due to time considerations in practice, it is probably more like 3^(n-3) or something like that
         
-        rdmol= self.rd_embed(rdmol, distGeomAttempts, boundsMatrix)
-        import ipdb; ipdb.set_trace()
-        self.save_coordinates(rdmol, rdAtIdx)
-
+        rdmol, minEid = self.rd_embed(rdmol, distGeomAttempts, boundsMatrix)
+        self.save_coordinates(rdmol, minEid, rdAtIdx)
+        
     def rd_build(self):
         """
         Import rmg molecule and create rdkit molecule with the same atom labeling.
@@ -77,7 +76,7 @@ class Geometry:
         rdmol = rdmol.GetMol()
         Chem.SanitizeMol(rdmol)
 
-        return rdmol, rdAtIdx
+        return rdmol, rdAtomIdx
 
     def rd_embed(self, rdmol, numConfAttempts, boundsMatrix=None):
         """
@@ -104,12 +103,13 @@ class Geometry:
         with open(self.getRefinedMolFilePath(), 'w') as out3D:
             out3D.write(Chem.MolToMolBlock(rdmol,confId=minEid))
 
-        return rdmol
+        return rdmol, minEid
 
-    def save_coordinates(self, rdmol, rdAtIdx):
+    def save_coordinates(self, rdmol, minEid, rdAtIdx):
         # Save xyz coordinates on each atom in molecule ****
         for atom in self.molecule.atoms:
-            pass
+            point = rdmol.GetConformer(minEid).GetAtomPosition(atom.sortingLabel)
+            atom.coords = [point.x, point.y, point.z]
             
 
 
@@ -131,19 +131,10 @@ class QMMolecule:
     def generateThermoData(self):
 
         self.createGeometry()
-
-        if option.program == 'mopac':
-            method = qm.methods.mopac_pm3 # for example
-        elif option.program == 'gaussian03':
-            method = qm.methods.Gaussian03PM3
-        else:
-            raise Exception('Unknown QM Method')
-
-        writer = method.InputWriter()
-        verifier = method.Verifier()
-
+        
+        attemptNumber = 1
         success = False
-        for attempt in range(method.max_attempts):
+        for attempt in range(method.maxAttempts):
             writer.writeInputFile(self.geometry, attempt)
             success = method.runJob()
             method.parseResult()
