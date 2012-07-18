@@ -1,5 +1,8 @@
+import os
+
 class Mopac:
     
+    where_stuff_lives = 'QMfiles'
     inputFileExtension = '.mop'
     outputFileExtension = '.out'
     executablePath = os.path.join(os.getenv('MOPAC_DIR', default="/opt/mopac") , 'MOPAC2009.exe')
@@ -35,8 +38,6 @@ class Mopac:
     keywordsBottom[4] = "oldgeo thermo nosym precise "
     keywordsBottom[5] = "oldgeo thermo nosym precise "
     
-    # **may need to have some check to verify the mopac directory    
-    
     def __init__(self):
         self.failureKeys = ['IMAGINARY FREQUENCIES', 'EXCESS NUMBER OF OPTIMIZATION CYCLES', 'NOT ENOUGH TIME FOR ANOTHER CYCLE']
         
@@ -46,8 +47,8 @@ class Mopac:
         for the `attmept`th attempt.
         """
         multiplicity_keyword = this.multiplicityKeywords[geometry.multiplicity]
-    
-        inputFilePath = os.path.join( where_stuff_lives , geometry.uniqueID + self.inputExtension)
+        
+        inputFilePath = os.path.join(where_stuff_lives , geometry.uniqueID + self.inputExtension)
     
         obConversion = openbabel.OBConversion()
         obConversion.SetInAndOutFormats("mol", "mop")
@@ -72,14 +73,14 @@ class Mopac:
                 mopacFile.write('\n\n\n')
                 mopacFile.write(polar_keywords)
     
-        return self.molfile.name + '.mop'
+        return self.geometry.uniqueID + self.inputExtension
        
     def run(self):
         # submits the input file to mopac
         process = Popen([self.executablePath, self.command])
         process.communicate()# necessary to wait for executable termination!
     
-        return self.check()
+        return self.checkNoFailure()
         
     def checkNoFailure(self):
         """
@@ -99,9 +100,15 @@ class Mopac:
         
     def read():
         # reads the output file
+        import ipdb; ipdb.set_trace()
+        pass
     
     def calculate():
         # calculators for the parsing
+        import ipdb; ipdb.set_trace()
+        pass
         
     def parse():
         # parses the output file to generate the TPs
+        import ipdb; ipdb.set_trace()
+        pass

@@ -1,13 +1,19 @@
+import os
+import logging
+
+from rdkit import Chem
+from rdkit.Chem import AllChem
+
 class Geometry:
-    file_store_path = 'QMfiles'
+    file_store_path = 'QMfiles/'
     if not os.path.exists(file_store_path):
         logging.info("Creating directory %s for mol files."%os.path.abspath(file_store_path))
         os.makedirs(file_store_path)
 
-    def __init__(self, uniqueID, rmg_molecule ):
+    def __init__(self, uniqueID, molecule, multiplicity):
         self.uniqueID = uniqueID
-        self.rmg_molecule = rmg_molecule
-        self.multiplicity = # get it from rmg_molecule
+        self.molecule = molecule
+        self.multiplicity = multiplicity
 
     def getCrudeMolFilePath(self):
         # os.join, uniqueID, suffix
@@ -17,19 +23,25 @@ class Geometry:
         "Returns the path the the refined mol file"
         return self.file_store_path + self.uniqueID + '.refined.mol'
 
-    def generateRDKitGeometries(boundsMatrix=None):
+    def generateRDKitGeometries(self, boundsMatrix=None):
         """
         Use RDKit to guess geometry.
 
         Save mol files of both crude and refined.
         Saves coordinates on atoms.
         """
-        rdmol = self.rd_build()
-        rdmol, rdAtIdx = self.rd_embed(rdmol, boundsMatrix)
-        rdmol = self.rd_optimize(rdmol, boundsMatrix)
+        rdmol, rdAtIdx = self.rd_build()
+        
+        atoms = len(self.molecule.atoms)
+        distGeomAttempts=1
+        if atoms > 3:#this check prevents the number of attempts from being negative
+            distGeomAttempts = 5*(atoms-3) #number of conformer attempts is just a linear scaling with molecule size, due to time considerations in practice, it is probably more like 3^(n-3) or something like that
+        
+        rdmol= self.rd_embed(rdmol, distGeomAttempts, boundsMatrix)
+        import ipdb; ipdb.set_trace()
         self.save_coordinates(rdmol, rdAtIdx)
 
-    def rd_build():
+    def rd_build(self):
         """
         Import rmg molecule and create rdkit molecule with the same atom labeling.
         """
@@ -65,58 +77,58 @@ class Geometry:
         rdmol = rdmol.GetMol()
         Chem.SanitizeMol(rdmol)
 
-        return rdmol
+        return rdmol, rdAtIdx
 
-    def rd_embed(rdmol, boundsMatrix=None):
+    def rd_embed(self, rdmol, numConfAttempts, boundsMatrix=None):
         """
         Embed the RDKit molecule and create the crude molecule file.
         """
-        AllChem.EmbedMultipleConfs(rdMol, numConfAttempts,randomSeed=1)
-        crude = Chem.Mol(rdMol.ToBinary()) 
-
-        with open(uniqueID + '.crude.mol', 'w') as out3Dcrude:
-            out3Dcrude.write(Chem.MolToMolBlock(crude,confId=minEid))
-
-        return rdmol, rdAtIdx
-
-    def rd_optimize(rdmol, boundsMatrix=None):
-        """
-        Optimize the RDKit molecule and create the refined molecule file from this
-        UFF-optimized molecular structure.
-        """
+        AllChem.EmbedMultipleConfs(rdmol, numConfAttempts,randomSeed=1)
+        
         energy=0.0
         minEid=0;
         lowestE=9.999999e99;#start with a very high number, which would never be reached
 
+        crude = Chem.Mol(rdmol.ToBinary())
+        
         for i in range(rdmol.GetNumConformers()):
             AllChem.UFFOptimizeMolecule(rdmol,confId=i)
             energy=AllChem.UFFGetMoleculeForceField(rdmol,confId=i).CalcEnergy()
             if energy < lowestE:
                 minEid = i
-                lowestE = energy
-        with open(uniqueID + '.refined.mol', 'w') as out3D:
+                lowestE = energy 
+        
+        with open(self.getCrudeMolFilePath(), 'w') as out3Dcrude:
+            out3Dcrude.write(Chem.MolToMolBlock(crude,confId=minEid))
+        
+        with open(self.getRefinedMolFilePath(), 'w') as out3D:
             out3D.write(Chem.MolToMolBlock(rdmol,confId=minEid))
 
         return rdmol
 
-    def save_coordinates(rdmol, rdAtIdx):
-        # Save xyz coordinates on each atom in rmg_molecule ****
+    def save_coordinates(self, rdmol, rdAtIdx):
+        # Save xyz coordinates on each atom in molecule ****
+        for atom in self.molecule.atoms:
+            pass
+            
 
 
 class QMMolecule:
-    def __init__( rmg_molecule ):
-        self.rmg_molecule = rmg_molecule
+    def __init__(self, molecule ):
+        self.molecule = molecule
 
     def createGeometry(self):
         """
         Creates self.geometry with RDKit geometries
         """
-        uniqueID = self.generateInChiAug()
-        self.geometry = Geometry( uniqueID, rmg_molecule )
+        uniqueID = self.getInChiAug()
+        multiplicity = sum([i.radicalElectrons for i in self.molecule.atoms]) + 1
+        self.geometry = Geometry(uniqueID, self.molecule, multiplicity)
         self.geometry.generateRDKitGeometries()
-
-
-    def generateThermoData(self, option):
+        
+        return self.geometry
+        
+    def generateThermoData(self):
 
         self.createGeometry()
 
@@ -144,6 +156,7 @@ class QMMolecule:
 
     def getInChiAug(self):
         """
-        Returns the augmented InChI from self.rmg_molecule 
+        Returns the augmented InChI from self.molecule 
         """
-        return augmented_InChI
+        
+        return self.molecule.toAugmentedInChIKey()

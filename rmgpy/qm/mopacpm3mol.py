@@ -1,9 +1,11 @@
+import os
+
 from mopacmol import MopacMol
 
 class MopacPM3(MopacMol):
-    def __init__():
-        # what it needs to be initialized
-    
+    def __init__(self, molecule):
+        self.molecule = molecule
+        
     def createInputFile():
         """
         Inherits the writeInputFile methods from mopac.py
@@ -24,14 +26,34 @@ class MopacPM3(MopacMol):
         self.writeInputFile(top_keywords, bottom_keywords, polar_keywords, geometry, attempt)
         
     def run():
-        MopacMol.run()
+        # Send the file to run
+        self.MopacMol.run()
             
     def check():
         # might have more or less keywords to search for
+        pass
     
     def parse():
         # might have different parsing
+        pass
     
-    def generateQMThermoData():
+    def generateQMThermoData(self):
         # call the methods to generate the thermodata
+        self.createGeometry()
         
+        import ipdb; ipdb.set_trace()
+        writer = method.InputWriter()
+        verifier = method.Verifier()
+        
+        success = False
+        for attempt in range(method.max_attempts):
+            writer.writeInputFile(self.geometry, attempt)
+            success = method.runJob()
+            method.parseResult()
+            if success: break
+        else:
+            raise Exception("Couldn't generate thermo data.")
+        thermoData = method.processResult()
+        thermo = MopacMol.generateQMThermoData(molecule)
+        
+        return thermo
