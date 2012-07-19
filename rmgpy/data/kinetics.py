@@ -492,7 +492,7 @@ def saveEntry(f, entry):
     f.write('    shortDesc = u"""{0}""",\n'.format(entry.shortDesc))
     f.write('    longDesc = \n')
     f.write('u"""\n')
-    f.write(entry.longDesc.strip() + "\n")
+    f.write(entry.longDesc.strip().encode('utf-8') + "\n")
     f.write('""",\n')
 
     f.write('    history = [\n')
