@@ -3,8 +3,9 @@ import os
 import openbabel
 import cclib.parser
 import logging
-
 from subprocess import Popen, PIPE
+
+from qmdata import CCLibData
 
 class Mopac:
     
@@ -48,12 +49,17 @@ class Mopac:
     
     failureKeys = ['IMAGINARY FREQUENCIES', 'EXCESS NUMBER OF OPTIMIZATION CYCLES', 'NOT ENOUGH TIME FOR ANOTHER CYCLE']
     
-    def writeInputFile(self, top_keys, bottom_keys, polar_keys, attempt):
+    def writeInputFile(self, attempt):
         """
         Using the :class:`Geometry` object, write the input file
         for the `attmept`th attempt.
         """
+        from mopacpm3mol import MopacPM3
+        
         inputFilePath = os.path.join(self.directory , self.geometry.uniqueID + self.inputFileExtension)
+        
+        method = MopacPM3(self)
+        top_keys, bottom_keys, polar_keys = method.inputFileKeys(attempt)
         
         obConversion = openbabel.OBConversion()
         obConversion.SetInAndOutFormats("mol", "mop")
@@ -122,10 +128,13 @@ class Mopac:
             myfile.logger.setLevel(logging.ERROR) #cf. http://cclib.sourceforge.net/wiki/index.php/Using_cclib#Additional_information
             
             cclibData = myfile.parse()
+            radicalNumber = sum([i.radicalElectrons for i in self.molecule.atoms])
+            
+            qmData = CCLibData(cclibData, radicalNumber+1)
                 
         except Exception as e:
             logging.error('Error in reading/parsing ccLib Python process.')
             logging.error(str(e))
             raise
         
-        return cclibData
+        return qmData

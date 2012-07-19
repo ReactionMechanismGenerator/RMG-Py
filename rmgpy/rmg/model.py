@@ -87,8 +87,8 @@ class Species(rmgpy.species.Species):
         
         See also :meth:`processThermoData`.
         """
-        from rmgpy.qm import mopacpm3mol
-        mopThermoOb = mopacpm3mol.MopacPM3(self.molecule[0])
+        from rmgpy.qm import mopacmol
+        mopThermoOb = mopacmol.MopacMol(self.molecule[0])
         thermo0 = mopThermoOb.generateQMThermoData()
         #thermo0 = qmThermoOb.generateQMThermoData(self.molecule[0])
         
