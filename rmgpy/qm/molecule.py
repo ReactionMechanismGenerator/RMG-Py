@@ -114,7 +114,7 @@ class Geometry:
 
 
 class QMMolecule:
-    def __init__(self, molecule ):
+    def __init__(self, molecule):
         self.molecule = molecule
 
     def createGeometry(self):

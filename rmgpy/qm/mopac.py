@@ -1,7 +1,10 @@
 import os
-from subprocess import Popen, PIPE
 
 import openbabel
+import cclib.parser
+import logging
+
+from subprocess import Popen, PIPE
 
 class Mopac:
     
@@ -111,7 +114,18 @@ class Mopac:
         import ipdb; ipdb.set_trace()
         pass
         
-    def parse():
+    def parse(self):
         # parses the output file to generate the TPs
-        import ipdb; ipdb.set_trace()
-        pass
+        path = os.path.join(self.directory,self.geometry.uniqueID+'.out')
+        try:
+            myfile = cclib.parser.Mopac(path)
+            myfile.logger.setLevel(logging.ERROR) #cf. http://cclib.sourceforge.net/wiki/index.php/Using_cclib#Additional_information
+            
+            cclibData = myfile.parse()
+                
+        except Exception as e:
+            logging.error('Error in reading/parsing ccLib Python process.')
+            logging.error(str(e))
+            raise
+        
+        return cclibData

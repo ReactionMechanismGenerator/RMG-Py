@@ -1,5 +1,7 @@
 import os
 
+import logging
+
 from mopacmol import MopacMol
 from mopac import Mopac
 
@@ -35,27 +37,17 @@ class MopacPM3(MopacMol):
         # call the methods to generate the thermodata
         self.createGeometry()
         
-        attemptNumber = 1
         success = False
-        while not success and (attemptNumber <= self.maxAttempts):
-            inputFileName = self.createInputFile(self.geometry, attemptNumber)
+        for attempt in range(1, self.maxAttempts+1):
+            inputFileName = self.createInputFile(self.geometry, attempt)
             success = self.run(inputFileName)
             if success:
-                logging.info('Attempt {0} on species {1} succeeded.'.format(attemptNumber, InChIaug))
-                """
-                TODO Rotor Scan not yet implemented here.
-                """
-            else:
-                if attemptNumber == maxAttemptNumber:
-                    logging.info('Last attempt on species {0} failed.'.format(InChIaug))
-        for attempt in range(method.max_attempts):
-            writer.writeInputFile(self.geometry, attempt)
-            success = method.runJob()
-            method.parseResult()
-            if success: break
+                logging.info('Attempt {0} of {1} on species {2} succeeded.'.format(attempt, self.maxAttempts, self.molecule.toAugmentedInChI()))
+                result = self.parse() # parsed in cclib
+                break
         else:
-            raise Exception("Couldn't generate thermo data.")
-        thermoData = method.processResult()
-        thermo = MopacMol.generateQMThermoData(molecule)
-        
+            raise Exception('QM thermo calculation failed for {0}.'.format(InChIaug))
+        import ipdb; ipdb.set_trace()
+        # so far, result has our calculated values from cclib
+        # need to be converted to thermo        
         return thermo
