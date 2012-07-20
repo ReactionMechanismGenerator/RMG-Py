@@ -328,7 +328,8 @@ def loadChemkinOutput(outputFile, reactionModel):
     from rmgpy.quantity import Quantity, constants
 
     coreReactions = reactionModel.core.reactions
-    edgeReactions = reactionModel.edge.reactions
+    edgeReactions = reactionModel.edge.reactions    
+    speciesList = reactionModel.core.species
 
     time = []
     coreSpeciesConcentrations = []
@@ -338,35 +339,49 @@ def loadChemkinOutput(outputFile, reactionModel):
     with open(outputFile, 'r') as f:
 
         line = f.readline()
-        while line != '' and 'SPECIFIED END TIME' not in line:
+        while line != '' and 'SPECIFIED END' not in line:
             line.strip()
             tokens = line.split()
-            if 'DDASPK Transient Solution' in line:
+            if ' TIME ' in line:
                 # Time is in seconds
                 time.append(float(tokens[-2]))
-            elif 'PRESSURE' in line:
-                # Time from Chemkin is in atm
-                P = Quantity(float(tokens[1]),'atm')
-            elif 'TEMPERATURE' in line:
+            elif ' PRESSURE ' in line:
+                # Pressure from Chemkin is in atm    
+                P = Quantity(float(tokens[-2]),'atm')
+            elif ' TEMPERATURE ' in line:
                 # Temperature from Chemkin in in K
-                T = Quantity(float(tokens[1]),'K')
-            elif 'MOLE FRACTIONS' in line:
+                T = Quantity(float(tokens[-2]),'K')
+            elif ' MOLE FRACTIONS ' in line:
                 # Species always come in the same order as listed in chem.inp
                 molefractions = []
                 line = f.readline() # This one reads the blank line which follows
                 line = f.readline()
                 while line.strip() != '':
                     tokens = line.split()
-                    molefractions.extend([float(value) for value in tokens[2::3]])
+                    for value in tokens[2::3]:      
+                        
+                        # Make all concentrations positive 
+                        if value.find('-') == 0:
+                                value = value.replace('-','',1) 
+                        # Sometimes chemkin removes the `E` in scientific notation due to lack of space, 
+                        # rendering invalid float values.  If this is the case, add it in.      
+                        if value.find('-') != -1:
+                            if value.find('E') == -1:
+                                value = value.replace('-','E-')
+                                                 
+                        molefractions.append(float(value))       
+           
                     line = f.readline()
 
                 totalConcentration = P.value/constants.R/T.value
                 coreSpeciesConcentrations.append([molefrac*totalConcentration for molefrac in molefractions])
-
                 coreRates = []
                 edgeRates = []
-                for reaction in coreReactions:
-                    coreRates.append(reaction.getRateCoefficient(T.value,P.value))
+                for reaction in coreReactions:                    
+                    rate = reaction.getRateCoefficient(T.value,P.value)
+                    for reactant in reaction.reactants:
+                        rate *= molefractions[speciesList.index(reactant)]*totalConcentration                    
+                    coreRates.append(rate)
                 for reaction in edgeReactions:
                     edgeRates.append(reaction.getRateCoefficient(T.value,P.value))
 
