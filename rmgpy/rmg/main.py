@@ -957,13 +957,20 @@ def initializeLog(verbose, log_file_name):
 
     # create file handler
     if os.path.exists(log_file_name):
-        backup_name = '_backup'.join(os.path.splitext(log_file_name))
-        if os.path.exists(backup_name):
-            print "Removing old file %s" % backup_name
-            os.remove(backup_name)
-        print "Renaming %s to %s"%(log_file_name, backup_name)
-        print
-        os.rename(log_file_name, backup_name)
+        backups = []
+        backup = os.path.join(log_file_name[:-7], 'RMG_backup')
+        backups.append('{0}.log'.format(backup))
+        i = 1
+        while os.path.exists(backups[-1]):
+            backups.append('{0}_{1}.log'.format(backup, i + 1))
+            i += 1
+        backups.reverse()
+        print '\n'
+        for j in range(1, len(backups)):
+            print 'Renaming {0} to {1}'.format(backups[j], backups[j - 1])
+            os.rename(backups[j], backups[j - 1])
+        print 'Renaming {0} to {1}\n'.format(log_file_name, backups[-1])
+        os.rename(log_file_name, backups[-1])
     fh = logging.FileHandler(filename=log_file_name) #, backupCount=3)
     fh.setLevel(min(logging.DEBUG,verbose)) # always at least VERBOSE in the file
     fh.setFormatter(formatter)
