@@ -482,15 +482,13 @@ class RMG:
         logging.info('RMG execution terminated at ' + time.asctime())
     
     def getGitCommit(self):
+        import subprocess
+        from rmgpy import getPath
         try:
-            f = os.popen('git log --format="%H %n %cd" -1')
-            lines = []
-            for line in f: lines.append(line)
-            f.close()
-            head = lines[0].strip()
-            date = lines[1].strip()
-            return head, date
-        except IndexError:
+            return subprocess.check_output(['git', 'log',
+                                            '--format=%H%n%cd', '-1'],
+                                            cwd=getPath()).splitlines()
+        except:
             return '', ''
     
     def logHeader(self, level=logging.INFO):
