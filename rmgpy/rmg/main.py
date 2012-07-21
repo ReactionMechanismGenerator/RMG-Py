@@ -400,7 +400,13 @@ class RMG:
             edgeSpeciesCount.append(edgeSpec)
             edgeReactionCount.append(edgeReac)
             execTime.append(time.time() - self.initializationTime)
-            logging.info('    Execution time (HH:MM:SS): %s' % (time.strftime("%H:%M:%S", time.gmtime(execTime[-1]))))
+            elapsed = execTime[-1]
+            seconds = elapsed % 60
+            minutes = (elapsed - seconds) % 3600 / 60
+            hours = (elapsed - seconds - minutes * 60) % (3600 * 24) / 3600
+            days = (elapsed - seconds - minutes * 60 - hours * 3600) / (3600 * 24)
+            logging.info('    Execution time (DD:HH:MM:SS): '
+                '{0:02}:{1:02}:{2:02}:{3:02}'.format(int(days), int(hours), int(minutes), int(seconds)))
             try:
                 import psutil
                 process = psutil.Process(os.getpid())
