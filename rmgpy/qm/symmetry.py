@@ -6,7 +6,7 @@ Module that collects all classes related to symmetry of molecules
 """
 
 import os
-import jobs
+import mopac
 
 
 class PointGroupDictionary:
@@ -198,7 +198,7 @@ class PointGroupCalculator:
     def __init__(self, molfile, iqmdata):
         self.molfile = molfile
         self.qmdata = iqmdata#data object that contains 3D coords of molecule used in symmetry calculation
-        self.calculator = jobs.SymmetryJob(molfile, iqmdata)
+        self.calculator = mopac.SymmetryJob(molfile, iqmdata)
 
     def calculate(self):
         return self.calculator.calculate();

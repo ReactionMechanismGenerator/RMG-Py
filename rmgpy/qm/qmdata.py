@@ -50,7 +50,7 @@ class CCLibData(QMData):
         #: data object returned by a parsing tool like CCLib.parse()
         self.cclib_data = cclib_data
 
-        
+
         QMData.__init__(
             self,
             groundStateDegeneracy = groundStateDegeneracy,

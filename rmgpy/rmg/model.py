@@ -90,7 +90,6 @@ class Species(rmgpy.species.Species):
         from rmgpy.qm import mopacmol
         mopThermoOb = mopacmol.MopacMol(self.molecule[0])
         thermo0 = mopThermoOb.generateQMThermoData()
-        #thermo0 = qmThermoOb.generateQMThermoData(self.molecule[0])
         
         return thermo0
     

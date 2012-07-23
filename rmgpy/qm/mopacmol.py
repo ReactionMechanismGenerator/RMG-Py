@@ -2,7 +2,7 @@ import os
 
 import logging
 
-from molecule import QMMolecule
+from molecule import QMMolecule, TDPropertiesCalculator
 from mopac import Mopac
 
 class MopacMol(QMMolecule, Mopac):
@@ -24,7 +24,6 @@ class MopacMol(QMMolecule, Mopac):
         else:
             raise Exception('QM thermo calculation failed for {0}.'.format(InChIaug))
         
-        import ipdb; ipdb.set_trace()
-        # so far, result has our calculated values from cclib
-        # need to be converted to thermo        
-        return thermo
+        thermo = TDPropertiesCalculator(result, self.getInChiAug())
+
+        return thermo.calculate()

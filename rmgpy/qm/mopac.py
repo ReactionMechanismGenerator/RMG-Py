@@ -6,6 +6,7 @@ import logging
 from subprocess import Popen, PIPE
 
 from qmdata import CCLibData
+import symmetry
 
 class Mopac:
     
@@ -13,9 +14,6 @@ class Mopac:
     inputFileExtension = '.mop'
     outputFileExtension = '.out'
     executablePath = os.path.join(os.getenv('MOPAC_DIR', default="/opt/mopac") , 'MOPAC2009.exe')
-    
-    scriptAttempts = 5
-    maxAttempts = 2 * scriptAttempts
     
     usePolar = False#use polar keyword in MOPAC
     
@@ -46,6 +44,10 @@ class Mopac:
     keywordsBottom[3] = "oldgeo thermo nosym precise "
     keywordsBottom[4] = "oldgeo thermo nosym precise "
     keywordsBottom[5] = "oldgeo thermo nosym precise "
+    
+    import ipdb; ipdb.set_trace()
+    scriptAttempts = len(keywordsTop)
+    maxAttempts = 2 * scriptAttempts
     
     failureKeys = ['IMAGINARY FREQUENCIES', 'EXCESS NUMBER OF OPTIMIZATION CYCLES', 'NOT ENOUGH TIME FOR ANOTHER CYCLE']
     
@@ -138,3 +140,126 @@ class Mopac:
             raise
         
         return qmData
+        
+class SymmetryJob:
+    """
+    Determine the point group using the SYMMETRY program 
+    (http://www.cobalt.chem.ucalgary.ca/ps/symmetry/).
+
+
+    Required input is a line with number of atoms followed by lines for each atom 
+    including:
+    1) atom number
+    2) x,y,z coordinates
+
+    finalTol determines how loose the point group criteria are;
+    values are comparable to those specified in the GaussView point group interface
+
+    """
+    directory = 'QMfiles'
+    
+    RMG_path = os.environ.get("RMGpy")
+    if RMG_path is None:
+        RMG_path = os.path.abspath(os.path.join(os.path.dirname(__file__),'..','..'))
+        logging.info("Setting RMG_path to {0}".format(RMG_path))
+    executable_path = os.path.join(RMG_path, 'bin', 'symmetry')
+    if not os.path.exists(executable_path):
+        raise Exception("Symmetry program not found at {0}.".format(executable_path))
+
+    'Argumenst that will be passed as an argument for the consecutive attempts'
+    argumentsList = [
+         ['-final', '0.02'],
+         ['-final', '0.1'],
+         ['-primary', '0.2', '-final' ,'0.1'],
+         ['-final', '0.0'],
+        ]
+
+    inputFileExtension = '.symm'
+
+    def __init__(self, molfile, iqmdata):
+        self.molfile = molfile
+        
+        'the command line command'
+        self.command = []
+
+        "IQMData is the object that holds information from a previous QM Job on 3D coords, molecule etc..."
+        self.qmdata = iqmdata
+
+        self.inputFile = self.molfile + self.inputFileExtension
+
+        self.attemptNumber = 1
+        self.pointGroupFound = False
+
+    def check(self, output):
+        """
+        Check the `output` string and extract the resulting point group, which is returned.
+        """
+        for line in output.split('\n'):
+            if line.startswith("It seems to be the "): # "It seems to be the [x] point group" indicates point group.
+                result = line.split(" ")[5]
+                break
+        else:
+            logging.exception("Couldn't find point group from symmetry output:\n{0}".format(output))
+            raise RuntimeError("Couldn't find point group in symmetry output.")
+
+        logging.info("Point group: "+ result)
+        return result;
+
+    def run(self):
+        """
+        Run the command and wait for it to finish.
+        """
+        pp = Popen(self.command, stdout=PIPE, stderr=PIPE)
+        stdout, stderr = pp.communicate()
+        return self.check(stdout)    
+
+    def writeInputFile(self):
+        """
+        Write the input file for the SYMMETRY program.
+        """
+        geom = str(self.qmdata.numberOfAtoms) + "\n"
+        for i in range(self.qmdata.numberOfAtoms):
+            geom = geom + " ".join((str(self.qmdata.atomicNumbers[i]),
+                                    str(self.qmdata.atomCoords[i][0]),
+                                    str(self.qmdata.atomCoords[i][1]),
+                                    str(self.qmdata.atomCoords[i][2])
+                                   )) + "\n"
+        with open(os.path.join(self.directory, self.inputFile), 'w') as input_file:
+            input_file.write(geom)
+        input_file.close()
+        logging.info("Symmetry input file written to %s"%os.path.join(self.directory, self.inputFile))
+        return input_file
+
+    def calculate(self):
+        """
+        Do the entire point group calculation.
+
+        This writes the input file, then tries several times to run 'symmetry'
+        with different parameters, until a point group is found and returned.
+        """
+        self.writeInputFile();
+
+        result = "";
+
+        #continue trying to generate symmetry group until too many no. of attempts or until a point group is found: 
+        for attempt, arguments in enumerate(self.argumentsList):
+            """
+            TODO only *nix case works!
+            """
+            self.command = [self.executable_path]
+            self.command.extend(arguments)
+            self.command.append(os.path.join(self.directory, self.inputFile))
+
+            #call the program and read the result
+            result = self.run();
+
+            #check for a recognized point group
+            symmPGC = symmetry.PointGroupDictionary()
+
+            if symmPGC.contains(result):
+                self.pointGroupFound = True;
+                return symmetry.PointGroup(result)
+            else:
+                logging.info("Attempt number {0} did not identify a recognized point group ({1}).".format(attempt,result))
+        logging.critical("Final attempt did not identify a recognized point group. Exiting.")
+        return None
