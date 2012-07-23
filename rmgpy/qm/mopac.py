@@ -45,23 +45,18 @@ class Mopac:
     keywordsBottom[4] = "oldgeo thermo nosym precise "
     keywordsBottom[5] = "oldgeo thermo nosym precise "
     
-    import ipdb; ipdb.set_trace()
     scriptAttempts = len(keywordsTop)
     maxAttempts = 2 * scriptAttempts
     
     failureKeys = ['IMAGINARY FREQUENCIES', 'EXCESS NUMBER OF OPTIMIZATION CYCLES', 'NOT ENOUGH TIME FOR ANOTHER CYCLE']
     
-    def writeInputFile(self, attempt):
+    def writeInputFile(self, attempt, top_keys, bottom_keys, polar_keys):
         """
         Using the :class:`Geometry` object, write the input file
         for the `attmept`th attempt.
         """
-        from mopacpm3mol import MopacPM3
         
         inputFilePath = os.path.join(self.directory , self.geometry.uniqueID + self.inputFileExtension)
-        
-        method = MopacPM3(self)
-        top_keys, bottom_keys, polar_keys = method.inputFileKeys(attempt)
         
         obConversion = openbabel.OBConversion()
         obConversion.SetInAndOutFormats("mol", "mop")
