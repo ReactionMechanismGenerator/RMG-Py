@@ -158,7 +158,7 @@ def generateFluxDiagram(reactionModel, times, concentrations, reactionRates, out
                     break
         if os.path.exists(imagePath):
             node.set_image(imagePath)
-            node.set_label("")
+            node.set_label(" ")
     # Add an edge for each species-species rate
     for reactantIndex, productIndex in edges:
         if reactantIndex in nodes and productIndex in nodes:
