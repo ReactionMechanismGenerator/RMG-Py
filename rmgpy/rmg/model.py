@@ -48,9 +48,6 @@ from rmgpy.data.kinetics import *
 from rmgpy.data.states import *
 import rmgpy.data.rmg
 
-#needed to call the generate3dTS method in Reaction class
-from rmgpy.reaction import Reaction
-
 from pdep import PDepReaction, PDepNetwork, PressureDependenceError
 # generateThermoDataFromQM under the Species class imports the qm package
 
