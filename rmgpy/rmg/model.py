@@ -75,10 +75,10 @@ class Species(rmgpy.species.Species):
         
         Result stored in `self.thermo` and returned.
         """
-        if self.molecule[0].isCyclic():
-            thermo0 = self.generateThermoDataFromQM()
-        else:
-            thermo0 = self.generateThermoDataFromDB(database)
+        # if self.molecule[0].isCyclic():
+        #     thermo0 = self.generateThermoDataFromQM()
+        # else:
+        thermo0 = self.generateThermoDataFromDB(database)
         return self.processThermoData(thermo0, thermoClass)
 
     def generateThermoDataFromQM(self):
