@@ -2387,7 +2387,9 @@ class KineticsFamily(Database):
         
         # Generate transition states
         for rxn in reactionList:
-            rxn.transitionState = self.generateTransitionState(rxn)
+            from rmgpy.qm.reaction import QMReaction
+            qmRxn = QMReaction(rxn)
+            rxn.transitionState = qmRxn.generateTransitionState()
         
         reverseReactions = []
         if self.ownReverse:
