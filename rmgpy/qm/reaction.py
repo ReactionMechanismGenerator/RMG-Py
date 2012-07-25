@@ -6,6 +6,7 @@ import rdkit
 from rdkit.Chem.Pharm3D import EmbedLib
 
 class QMReaction:
+    
     file_store_path = 'QMfiles/'
     if not os.path.exists(file_store_path):
         logging.info("Creating directory %s for mol files."%os.path.abspath(file_store_path))
@@ -25,9 +26,21 @@ class QMReaction:
             sortLbl += 1
         return molecule
     
+    def checkRDKitMol(self, molecule):
+        # check if the RDKit molcule file was already generated
+        pass
+        
     def write(self):
         pass
     
+    def createBoundsMatrix(self, rdkitMolecule):
+        """
+        Uses rdkit to generate the bounds matrix of a rdkit molecule.
+        """
+        boundsMatrix = rdkit.Chem.rdDistGeom.GetMoleculeBoundsMatrix(rdkitMolecule)
+        
+        return boundsMatrix
+        
     def editBoundsMatrix(rdMol, boundsMatrix, actionList):
         for action in actionList:
             lbl1 = action[1]
@@ -57,15 +70,11 @@ class QMReaction:
                 pass
         
         return boundsMatrix
-        
-    def createBoundsMatrix(self, rdkitMolecule):
-        """
-        Uses rdkit to generate the bounds matrix of a rdkit molecule.
-        """
-        boundsMatrix = rdkit.Chem.rdDistGeom.GetMoleculeBoundsMatrix(rdkitMolecule)
-        
-        return boundsMatrix
-        
+    
+    def combineBoundsMatrices(bM1, bM2):
+        # creates a bounds matrix for a TS by merging the matrices for its 2 reactants
+        pass
+    
     def generateTransitionState(self, reaction):
         """
         make TS geometry
