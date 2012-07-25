@@ -6,9 +6,6 @@ from molecule import QMMolecule, TDPropertiesCalculator
 from mopac import Mopac
 
 class MopacMol(QMMolecule, Mopac):
-    def __init__(self, molecule):
-        self.molecule = molecule
-    
     def generateQMThermoData(self):
         # call the methods to generate the thermodata
         self.createGeometry()

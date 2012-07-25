@@ -125,11 +125,11 @@ class SymmetryJob:
             result = self.run();
 
             #check for a recognized point group
-            symmPGC = symmetry.PointGroupDictionary()
+            symmPGC = PointGroupDictionary()
 
             if symmPGC.contains(result):
                 self.pointGroupFound = True;
-                return symmetry.PointGroup(result)
+                return PointGroup(result)
             else:
                 logging.info("Attempt number {0} did not identify a recognized point group ({1}).".format(attempt,result))
         logging.critical("Final attempt did not identify a recognized point group. Exiting.")
