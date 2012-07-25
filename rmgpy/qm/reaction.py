@@ -1,19 +1,26 @@
 import os
+import logging
 
 from rmgpy.molecule import Molecule
 from rmgpy.species import TransitionState
+from geometry import Geometry
+
 import rdkit
 from rdkit.Chem.Pharm3D import EmbedLib
 
 class QMReaction:
     
-    file_store_path = 'QMfiles/'
+    file_store_path = 'QMfiles'
     if not os.path.exists(file_store_path):
         logging.info("Creating directory %s for mol files."%os.path.abspath(file_store_path))
         os.makedirs(file_store_path)
     
     def __init__(self, reaction):
-        self.reaction = rection
+        self.reaction = reaction
+        self.reactants = reaction.reactants
+        self.products = reaction.products
+        self.family = reaction.family
+        self.transitionState = None
         
     def fixSortLabel(molecule):
         """
@@ -28,7 +35,6 @@ class QMReaction:
     
     def checkRDKitMol(self, molecule):
         # check if the RDKit molcule file was already generated
-        pass
         
     def write(self):
         pass
@@ -42,6 +48,7 @@ class QMReaction:
         return boundsMatrix
         
     def editBoundsMatrix(rdMol, boundsMatrix, actionList):
+        
         for action in actionList:
             lbl1 = action[1]
             atom1 = rdMol.getLabeledAtom(lbl1)
@@ -75,20 +82,20 @@ class QMReaction:
         # creates a bounds matrix for a TS by merging the matrices for its 2 reactants
         pass
     
-    def generateTransitionState(self, reaction):
+    def generateTransitionState(self):
         """
         make TS geometry
         """
-        
+        import ipdb; ipdb.set_trace()
         # A --> B or A + B --> C + D               
-        if len(reaction.reactants) == len(reaction.products):
+        if len(self.reactants) == len(self.products):
             # 1 reactant
-            if len(reaction.reactants) == 1:
+            if len(self.reactants) == 1:
                 pass
             
             # 2 reactants
             else:
-                actionList = reaction.family.forwardRecipe.actions
+                actionList = self.family.forwardRecipe.actions
                 for action in actionList:
                     if action[0].lower() == 'form_bond':
                         lbl1 = action[1]
@@ -105,25 +112,25 @@ class QMReaction:
                 
                 # Derive the bounds matrix from the reactants and products
                 try:
-                    reaction.reactants[0].getLabeledAtom(lblAt)
-                    reactant = reaction.reactants[0]
-                    reactant2 = reaction.reactants[1]
+                    self.reactants[0].getLabeledAtom(lblAt)
+                    reactant = self.reactants[0]
+                    reactant2 = self.reactants[1]
                 except ValueError:
-                    reactant = reaction.reactants[1]
-                    reactant2 = reaction.reactants[0]
+                    reactant = self.reactants[1]
+                    reactant2 = self.reactants[0]
                     
                 try:
-                    reaction.products[0].getLabeledAtom(lblAt)
-                    product = reaction.products[0]
+                    self.products[0].getLabeledAtom(lblAt)
+                    product = self.products[0]
                 except ValueError:
-                    product = reaction.products[1]
+                    product = self.products[1]
                 
                 # Merge the reactants to generate the TS template
                 import ipdb; ipdb.set_trace()
-                buildTS = reactant.merge(reactant2)
+                buildTS = self.reactant.merge(reactant2)
                 
                 # Check for rdkit molecules
-                # done differently, search for rdmolecule file in QMfiles
+                # done differently, search for rdkit mol file in QMfiles
                 if reactant.rdMol == None:
                     Molecule.generate3dGeometry(reactant)
                 if product.rdMol == None:
@@ -172,18 +179,19 @@ class QMReaction:
             # Fix the sorting label for the molecule if it has not been done.
             # Set the action list to forward or reverse depending on the species
             # the transition state is being built from.
-            if len(reaction.reactants) == 1:
-                if reaction.reactants[0].atoms[0].sortingLabel == -1:
-                    reaction.reactants[0] = fixSortLabel(reaction.reactants[0])
-                buildTS = reaction.reactants[0]
-                actionList = reaction.family.forwardRecipe.actions
+            if len(self.reactants) == 1:
+                if self.reactants[0].atoms[0].sortingLabel == -1:
+                    self.reactants[0] = self.fixSortLabel(self.reactants[0])
+                buildTS = self.reactants[0].copy()
+                actionList = self.family.forwardRecipe.actions
             else:
-                if reaction.products[0].atoms[0].sortingLabel == -1:
-                    reaction.products[0] = fixSortLabel(reaction.products[0])
-                buildTS = reaction.products[0]
-                actionList = reaction.family.reverseRecipe.actions
+                if self.products[0].atoms[0].sortingLabel == -1:
+                    self.products[0] = self.fixSortLabel(reaction.products[0])
+                buildTS = self.products[0].copy()
+                actionList = self.family.reverseRecipe.actions
             
             # Generate the RDKit::Mol from the RMG molecule and get the bounds matrix
+            tsGeom = Geometry(buildTS.toAugmentedInChIKey(), buildTS, multiplicity)
             if buildTS.rdMol == None:
                 Molecule.generate3dGeometry(buildTS)
             boundsMat = rdkit.Chem.rdDistGeom.GetMoleculeBoundsMatrix(buildTS.rdMol)
