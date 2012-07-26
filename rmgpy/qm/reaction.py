@@ -3,7 +3,7 @@ import logging
 
 from rmgpy.molecule import Molecule
 from rmgpy.species import TransitionState
-from geometry import Geometry
+from molecule import QMMolecule, Geometry
 
 import rdkit
 from rdkit.Chem.Pharm3D import EmbedLib
@@ -20,6 +20,7 @@ class QMReaction:
         self.reactants = reaction.reactants
         self.products = reaction.products
         self.family = reaction.family
+        self.rdmol = None
         self.transitionState = None
         
     def fixSortLabel(molecule):
@@ -33,8 +34,15 @@ class QMReaction:
             sortLbl += 1
         return molecule
     
-    def checkRDKitMol(self, molecule):
-        # check if the RDKit molcule file was already generated
+    def getRDKitMol(self, geometry):
+        """
+        Check there is no RDKit mol file already made. If so, use rdkit to make a rdmol from
+        a mol file. If not, make rdmol from geometry.
+        """ 
+        if not os.path.exists(geometry.getCrudeMolFilePath()):
+            geometry.generateRDKitGeometries()
+        
+        self.rdmol = rdkit.Chem.MolFromMolBlock(path)      
         
     def write(self):
         pass
@@ -135,7 +143,7 @@ class QMReaction:
                     Molecule.generate3dGeometry(reactant)
                 if product.rdMol == None:
                     Molecule.generate3dGeometry(product)
-                if buildTS.rdMol == None:
+                if self.rdmol == None:
                     Molecule.generate3dGeometry(buildTS)
                     
                 # Check for sorting labels
@@ -191,24 +199,25 @@ class QMReaction:
                 actionList = self.family.reverseRecipe.actions
             
             # Generate the RDKit::Mol from the RMG molecule and get the bounds matrix
+            multiplicity = sum([i.radicalElectrons for i in buildTS.atoms]) + 1
             tsGeom = Geometry(buildTS.toAugmentedInChIKey(), buildTS, multiplicity)
-            if buildTS.rdMol == None:
-                Molecule.generate3dGeometry(buildTS)
-            boundsMat = rdkit.Chem.rdDistGeom.GetMoleculeBoundsMatrix(buildTS.rdMol)
+            
+            self.getRDKitMol(tsGeom)
+            boundsMat = self.createBoundsMatrix(self.rdmol)
             
             # Alter the bounds matrix based on the reaction recipe
             boundsMat = self.editBoundsMatrix(boundsMat, actionList)
             
             # Keep the most stable conformer, remove the rest
-            for conf in range(0, buildTS.rdMol.GetNumConformers()):
-                if conf != buildTS.rdMolConfId:
-                    buildTS.rdMol.RemoveConformer(conf)
+            for conf in range(0, self.rdmol.GetNumConformers()):
+                if conf != self.rdmolConfId:
+                    self.rdmol.RemoveConformer(conf)
             
             # Smooth the bounds matrix to speed up the optimization
             # Optimize the TS geometry in place, outputing the initial and final energies
             rdkit.DistanceGeometry.DistGeom.DoTriangleSmoothing(boundsMat)
             try:
-                rdkit.Chem.Pharm3D.EmbedLib.OptimizeMol(buildTS.rdMol, boundsMat, maxPasses = 10)
+                rdkit.Chem.Pharm3D.EmbedLib.OptimizeMol(self.rdmol, boundsMat, maxPasses = 10)
             except RuntimeError:
                 pass
             
