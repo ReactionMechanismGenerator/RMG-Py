@@ -324,7 +324,7 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
     from model import PDepReaction
     from rmgpy.kinetics import Arrhenius, MultiKinetics
 
-    from rmgpy.molecule_draw import drawMolecule
+    from rmgpy.molecule.molecule_draw import drawMolecule
     try:
         import jinja2
     except ImportError:

@@ -1234,7 +1234,7 @@ class Network:
         surface is dictated by the `ext` parameter.
         """
 
-        from rmgpy.molecule_draw import createNewSurface, fontSizeNormal
+        from rmgpy.molecule.molecule_draw import createNewSurface, fontSizeNormal
         import cairo
 
         surface0 = createNewSurface(type=ext[1:])
@@ -1261,7 +1261,7 @@ class Network:
         will be used.
         """
 
-        from rmgpy.molecule_draw import createNewSurface, drawMolecule
+        from rmgpy.molecule.molecule_draw import createNewSurface, drawMolecule
         import cairo
         
         # Determine whether or not to use the molecular structures in the
