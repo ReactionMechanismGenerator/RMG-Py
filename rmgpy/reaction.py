@@ -906,7 +906,7 @@ class Reaction:
         vector formats.
         """
         import cairo
-        from molecule_draw import drawMolecule, createNewSurface, fontFamily, fontSizeNormal
+        from rmgpy.molecule.molecule_draw import drawMolecule, createNewSurface, fontFamily, fontSizeNormal
         
         format = os.path.splitext(path)[1].lower()[1:]
         

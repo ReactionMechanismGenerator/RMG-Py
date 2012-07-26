@@ -1261,7 +1261,7 @@ class Network:
         will be used.
         """
 
-        from rmgpy.molecule_draw import createNewSurface, drawMolecule
+        from rmgpy.molecule.molecule_draw import createNewSurface, drawMolecule
         import cairo
         
         # Determine whether or not to use the molecular structures in the
