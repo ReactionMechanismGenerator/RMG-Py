@@ -34,6 +34,13 @@ class QMReaction:
             sortLbl += 1
         return molecule
     
+    def getGeometry(self, molecule):
+        
+        multiplicity = sum([i.radicalElectrons for i in molecule.atoms]) + 1
+        geom = Geometry(molecule.toAugmentedInChIKey(), molecule, multiplicity)
+        
+        return geom
+        
     def getRDKitMol(self, geometry):
         """
         Check there is no RDKit mol file already made. If so, use rdkit to make a rdmol from
@@ -47,11 +54,27 @@ class QMReaction:
     def write(self):
         pass
     
-    def createBoundsMatrix(self, rdkitMolecule):
+    def chooseMol(self):
+        if len(self.reactants) == 1:
+            if self.reactants[0].atoms[0].sortingLabel == -1:
+                self.reactants[0] = self.fixSortLabel(self.reactants[0])
+            buildTS = self.reactants[0].copy()
+            actionList = self.family.forwardRecipe.actions
+        else:
+            if self.products[0].atoms[0].sortingLabel == -1:
+                self.products[0] = self.fixSortLabel(reaction.products[0])
+            buildTS = self.products[0].copy()
+            actionList = self.family.reverseRecipe.actions
+        
+        return buildTS, actionList
+        
+    def generateBoundsMatrix(self, molecule):
         """
         Uses rdkit to generate the bounds matrix of a rdkit molecule.
         """
-        boundsMatrix = rdkit.Chem.rdDistGeom.GetMoleculeBoundsMatrix(rdkitMolecule)
+        geom = self.getGeometry(molecule)
+        self.getRDKitMol(geom)
+        boundsMatrix = rdkit.Chem.rdDistGeom.GetMoleculeBoundsMatrix(self.rdmol)
         
         return boundsMatrix
         
@@ -84,6 +107,7 @@ class QMReaction:
             elif action[0].lower() == 'lose_radical':
                 pass
         
+        rdkit.DistanceGeometry.DistGeom.DoTriangleSmoothing(boundsMatrix)
         return boundsMatrix
     
     def combineBoundsMatrices(bM1, bM2):
@@ -94,7 +118,6 @@ class QMReaction:
         """
         make TS geometry
         """
-        import ipdb; ipdb.set_trace()
         # A --> B or A + B --> C + D               
         if len(self.reactants) == len(self.products):
             # 1 reactant
@@ -180,34 +203,18 @@ class QMReaction:
                 boundsMat2 = numpy.delete(numpy.delete(boundsMat2, pAtLbl, 1), pAtLbl, 0)
                 boundsMat[-len(boundsMat2):, -len(boundsMat2):] = boundsMat2
                 
-                #********what now!!!??!?
-                
         # A --> B + C or A + B --> C
         else:
-            # Fix the sorting label for the molecule if it has not been done.
-            # Set the action list to forward or reverse depending on the species
-            # the transition state is being built from.
-            if len(self.reactants) == 1:
-                if self.reactants[0].atoms[0].sortingLabel == -1:
-                    self.reactants[0] = self.fixSortLabel(self.reactants[0])
-                buildTS = self.reactants[0].copy()
-                actionList = self.family.forwardRecipe.actions
-            else:
-                if self.products[0].atoms[0].sortingLabel == -1:
-                    self.products[0] = self.fixSortLabel(reaction.products[0])
-                buildTS = self.products[0].copy()
-                actionList = self.family.reverseRecipe.actions
+            # The single species is used as the base for the transition state 
+            buildTS, actionList = self.chooseMol()
             
             # Generate the RDKit::Mol from the RMG molecule and get the bounds matrix
-            multiplicity = sum([i.radicalElectrons for i in buildTS.atoms]) + 1
-            tsGeom = Geometry(buildTS.toAugmentedInChIKey(), buildTS, multiplicity)
-            
-            self.getRDKitMol(tsGeom)
-            boundsMat = self.createBoundsMatrix(self.rdmol)
+            boundsMat = self.generateBoundsMatrix(buildTS)
             
             # Alter the bounds matrix based on the reaction recipe
             boundsMat = self.editBoundsMatrix(boundsMat, actionList)
             
+            import ipdb; ipdb.set_trace()
             # Keep the most stable conformer, remove the rest
             for conf in range(0, self.rdmol.GetNumConformers()):
                 if conf != self.rdmolConfId:
@@ -215,7 +222,6 @@ class QMReaction:
             
             # Smooth the bounds matrix to speed up the optimization
             # Optimize the TS geometry in place, outputing the initial and final energies
-            rdkit.DistanceGeometry.DistGeom.DoTriangleSmoothing(boundsMat)
             try:
                 rdkit.Chem.Pharm3D.EmbedLib.OptimizeMol(self.rdmol, boundsMat, maxPasses = 10)
             except RuntimeError:
