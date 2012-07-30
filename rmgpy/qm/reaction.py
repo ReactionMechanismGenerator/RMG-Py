@@ -49,7 +49,9 @@ class QMReaction:
         if not os.path.exists(geometry.getCrudeMolFilePath()):
             geometry.generateRDKitGeometries()
         
-        self.rdmol = rdkit.Chem.MolFromMolBlock(path)      
+        rdKitMol = rdkit.Chem.MolFromMolFile(geometry.getCrudeMolFilePath())      
+        
+        return rdKitMol
         
     def write(self):
         pass
@@ -73,20 +75,20 @@ class QMReaction:
         Uses rdkit to generate the bounds matrix of a rdkit molecule.
         """
         geom = self.getGeometry(molecule)
-        self.getRDKitMol(geom)
-        boundsMatrix = rdkit.Chem.rdDistGeom.GetMoleculeBoundsMatrix(self.rdmol)
+        rdKitMol = self.getRDKitMol(geom)
+        boundsMatrix = rdkit.Chem.rdDistGeom.GetMoleculeBoundsMatrix(rdKitMol)
         
-        return boundsMatrix
+        return rdKitMol, boundsMatrix
         
-    def editBoundsMatrix(rdMol, boundsMatrix, actionList):
+    def editBoundsMatrix(self, molecule, boundsMatrix, actionList):
         
         for action in actionList:
             lbl1 = action[1]
-            atom1 = rdMol.getLabeledAtom(lbl1)
+            atom1 = molecule.getLabeledAtom(lbl1)
             idx1 = atom1.sortingLabel
             if len(action) ==4:
                 lbl2 = action[3]
-                atom2 = rdMol.getLabeledAtom(lbl2)
+                atom2 = molecule.getLabeledAtom(lbl2)
                 idx2 = atom2.sortingLabel
             if action[0].lower() == 'change_bond':
                 if action[2] == '1':
@@ -209,16 +211,10 @@ class QMReaction:
             buildTS, actionList = self.chooseMol()
             
             # Generate the RDKit::Mol from the RMG molecule and get the bounds matrix
-            boundsMat = self.generateBoundsMatrix(buildTS)
+            self.rdmol, boundsMat = self.generateBoundsMatrix(buildTS)
             
             # Alter the bounds matrix based on the reaction recipe
-            boundsMat = self.editBoundsMatrix(boundsMat, actionList)
-            
-            import ipdb; ipdb.set_trace()
-            # Keep the most stable conformer, remove the rest
-            for conf in range(0, self.rdmol.GetNumConformers()):
-                if conf != self.rdmolConfId:
-                    self.rdmol.RemoveConformer(conf)
+            boundsMat = self.editBoundsMatrix(buildTS, boundsMat, actionList)
             
             # Smooth the bounds matrix to speed up the optimization
             # Optimize the TS geometry in place, outputing the initial and final energies
@@ -228,7 +224,4 @@ class QMReaction:
                 pass
             
             # Ensure the spin multiplicity is ok for gaussian
-            spinMult = 1
-            for atom in buildTS.atoms:
-                if atom.spinMultiplicity !=1:
-                    spinMult += 1
+            multiplicity = sum([i.radicalElectrons for i in self.molecule.atoms]) + 1
