@@ -17,52 +17,20 @@ class Mopac:
     
     usePolar = False#use polar keyword in MOPAC
     
-    "Keywords for the multiplicity"
-    multiplicityKeywords = {}
-    multiplicityKeywords[1] = ''
-    multiplicityKeywords[2] = 'uhf doublet'
-    multiplicityKeywords[3] = 'uhf triplet'
-    multiplicityKeywords[4] = 'uhf quartet'
-    multiplicityKeywords[5] = 'uhf quintet'
-    multiplicityKeywords[6] = 'uhf sextet'
-    multiplicityKeywords[7] = 'uhf septet'
-    multiplicityKeywords[8] = 'uhf octet'
-    multiplicityKeywords[9] = 'uhf nonet'
-    
-    "Keywords that will be added at the top of the qm input file"
-    keywordsTop = {}
-    keywordsTop[1] = "precise nosym"
-    keywordsTop[2] = "precise nosym gnorm=0.0 nonr"
-    keywordsTop[3] = "precise nosym gnorm=0.0"
-    keywordsTop[4] = "precise nosym gnorm=0.0 bfgs"
-    keywordsTop[5] = "precise nosym recalc=10 dmax=0.10 nonr cycles=2000 t=2000"
-    
-    "Keywords that will be added at the bottom of the qm input file"
-    keywordsBottom = {}
-    keywordsBottom[1] = "oldgeo thermo nosym precise "
-    keywordsBottom[2] = "oldgeo thermo nosym precise "
-    keywordsBottom[3] = "oldgeo thermo nosym precise "
-    keywordsBottom[4] = "oldgeo thermo nosym precise "
-    keywordsBottom[5] = "oldgeo thermo nosym precise "
-    
-    scriptAttempts = len(keywordsTop)
-    maxAttempts = 2 * scriptAttempts
-    
     failureKeys = ['IMAGINARY FREQUENCIES', 'EXCESS NUMBER OF OPTIMIZATION CYCLES', 'NOT ENOUGH TIME FOR ANOTHER CYCLE']
     
-    def writeInputFile(self, attempt, top_keys, bottom_keys, polar_keys):
+    def writeInputFile(self, attempt, top_keys, bottom_keys, polar_keys, scriptAttempts):
         """
         Using the :class:`Geometry` object, write the input file
         for the `attmept`th attempt.
         """
-        
         inputFilePath = os.path.join(self.directory , self.geometry.uniqueID + self.inputFileExtension)
         
         obConversion = openbabel.OBConversion()
         obConversion.SetInAndOutFormats("mol", "mop")
         mol = openbabel.OBMol()
     
-        if attempt <= self.scriptAttempts: #use UFF-refined coordinates
+        if attempt <= scriptAttempts: #use UFF-refined coordinates
             obConversion.ReadFile(mol, self.geometry.getRefinedMolFilePath() )
         else:
             obConversion.ReadFile(mol, self.geometry.getCrudeMolFilePath() )

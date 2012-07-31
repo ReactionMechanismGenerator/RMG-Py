@@ -101,14 +101,15 @@ class Geometry:
                 minEid = i
                 lowestE = energy 
         
-        with open(self.getCrudeMolFilePath(), 'w') as out3Dcrude:
-            out3Dcrude.write(Chem.MolToMolBlock(crude,confId=minEid))
+        self.writeMolFile(crude, self.getCrudeMolFilePath(), minEid)
+        self.writeMolFile(rdmol, self.getRefinedMolFilePath(), minEid)
         
-        with open(self.getRefinedMolFilePath(), 'w') as out3D:
-            out3D.write(Chem.MolToMolBlock(rdmol,confId=minEid))
-
         return rdmol, minEid
-
+    
+    def writeMolFile(self, mol, path, minEid):
+        with open(path, 'w') as out3Dcrude:
+            out3Dcrude.write(Chem.MolToMolBlock(mol,confId=minEid))
+    
     def save_coordinates(self, rdmol, minEid, rdAtIdx):
         # Save xyz coordinates on each atom in molecule ****
         for atom in self.molecule.atoms:
