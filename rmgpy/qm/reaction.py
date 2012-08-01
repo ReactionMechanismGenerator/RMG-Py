@@ -1,5 +1,6 @@
 import os
 import logging
+import numpy
 
 from rmgpy.molecule import Molecule
 from rmgpy.species import TransitionState
@@ -19,7 +20,7 @@ class QMReaction:
         self.geometry = None
         self.transitionState = None
         
-    def fixSortLabel(molecule):
+    def fixSortLabel(self, molecule):
         """
         This may not be required anymore. Was needed as when molecules were created, the
         rmg sorting labels would be set after where we tried to generate the TS.
@@ -107,6 +108,27 @@ class QMReaction:
         rdkit.DistanceGeometry.DistGeom.DoTriangleSmoothing(boundsMatrix)
         return boundsMatrix
     
-    def combineBoundsMatrices(bM1, bM2):
+    def combineBoundsMatrices(self, boundsMat1, boundsMat2, lblAt1, lblAt2):
         # creates a bounds matrix for a TS by merging the matrices for its 2 reactants
-        pass
+        # Add bounds matrix 1 to corresponding place of the TS bounds matrix
+        totSize = len(boundsMat1) + len(boundsMat2) - 1
+        boundsMat = numpy.ones((totSize, totSize)) * 1000
+        
+        boundsMat[:len(boundsMat1),:len(boundsMat1)] = boundsMat1
+        
+        # Fill the bottom left of the bounds matrix with minima
+        boundsMat[len(boundsMat1):, :len(boundsMat1)] = numpy.ones((len(boundsMat)-len(boundsMat1), len(boundsMat1))) * 1.07
+        
+        # Add bounds matrix 2, but it has to shift to the end of bounds matrix 1, and shift 
+        # numbers for the reacting atom which has already been included from above
+        boundsMat[len(boundsMat1):len(boundsMat1)+lblAt2, lblAt1] = boundsMat2[lblAt2, :lblAt2]
+        boundsMat[lblAt1, len(boundsMat1):len(boundsMat1)+lblAt2] = boundsMat2[:lblAt2, lblAt2]
+        boundsMat[lblAt1, len(boundsMat1)+lblAt2+1:] = boundsMat2[lblAt2, lblAt2+1:]
+        boundsMat[len(boundsMat1)+lblAt2+1:, lblAt1] = boundsMat2[lblAt2+1:, lblAt2]
+        
+        # Remove all the parts of the transfered atom from the second bounds matrix
+        # Incorporate the rest into the TS bounds matrix
+        boundsMat2 = numpy.delete(numpy.delete(boundsMat2, lblAt2, 1), lblAt2, 0)
+        boundsMat[-len(boundsMat2):, -len(boundsMat2):] = boundsMat2
+        
+        return boundsMat

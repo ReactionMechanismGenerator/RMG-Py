@@ -22,10 +22,10 @@ class MopacTS(QMReaction, Mopac):
     
     "Keywords that will be added at the top of the qm input file"
     keywordsTop = {}
-    keywordsTop[1] = "ts"
-    keywordsTop[2] = "ts recalc=5"
-    keywordsTop[3] = "ts ddmin=0.0001"
-    keywordsTop[4] = "ts recalc=5 ddmin=0.0001"
+    keywordsTop[1] = "ts vectors xyz"
+    keywordsTop[2] = "ts vectors xyz recalc=5"
+    keywordsTop[3] = "ts vectors xyz ddmin=0.0001"
+    keywordsTop[4] = "ts vectors xyz recalc=5 ddmin=0.0001"
     
     "Keywords that will be added at the bottom of the qm input file"
     keywordsBottom = {}
@@ -54,9 +54,7 @@ class MopacTS(QMReaction, Mopac):
         for attempt in range(1, self.scriptAttempts+1):    
             top_keys, bottom_keys, polar_keys = method.inputFileKeys(attempt, multiplicity)
             inputFileName = self.writeInputFile(attempt, top_keys, bottom_keys, polar_keys, self.scriptAttempts)
-            import ipdb; ipdb.set_trace()
             success = self.run(inputFileName)
-            
     
     def generateGeometry(self):
         # A --> B or A + B --> C + D
@@ -85,64 +83,43 @@ class MopacTS(QMReaction, Mopac):
                 # Derive the bounds matrix from the reactants and products
                 try:
                     self.reactants[0].getLabeledAtom(lblAt)
-                    reactant = self.reactants[0]
-                    reactant2 = self.reactants[1]
+                    reactant = self.reactants[0].copy(deep=True)
+                    reactant2 = self.reactants[1].copy(deep=True)
                 except ValueError:
-                    reactant = self.reactants[1]
-                    reactant2 = self.reactants[0]
+                    reactant = self.reactants[1].copy(deep=True)
+                    reactant2 = self.reactants[0].copy(deep=True)
                     
                 try:
                     self.products[0].getLabeledAtom(lblAt)
-                    product = self.products[0]
+                    product = self.products[0].copy(deep=True)
                 except ValueError:
-                    product = self.products[1]
+                    product = self.products[1].copy(deep=True)
                 
                 # Merge the reactants to generate the TS template
-                import ipdb; ipdb.set_trace()
-                buildTS = self.reactant.merge(reactant2)
+                buildTS = reactant.merge(reactant2)
                 
-                # Check for rdkit molecules
-                # done differently, search for rdkit mol file in QMfiles
-                if reactant.rdMol == None:
-                    Molecule.generate3dGeometry(reactant)
-                if product.rdMol == None:
-                    Molecule.generate3dGeometry(product)
-                if self.rdmol == None:
-                    Molecule.generate3dGeometry(buildTS)
-                    
                 # Check for sorting labels
                 if reactant.atoms[0].sortingLabel != 0:
-                    reactant = fixSortLabel(reactant)
+                    reactant = self.fixSortLabel(reactant)
                 if product.atoms[0].sortingLabel != 0:
-                    product = fixSortLabel(product)
+                    product = self.fixSortLabel(product)
                 
                 # Generate the bounds matrices for the reactant and product with the transfered atom
-                boundsMat1 = rdkit.Chem.rdDistGeom.GetMoleculeBoundsMatrix(reactant.rdMol)
-                boundsMat2 = rdkit.Chem.rdDistGeom.GetMoleculeBoundsMatrix(product.rdMol)
+                reactant.rdmol, boundsMatR, multiplicityR = self.generateBoundsMatrix(reactant)
+                product.rdmol, boundsMatP, multiplicityP = self.generateBoundsMatrix(product)
                 
-                # Get the total size of the TS bounds matrix and initialize it
-                totSize = len(boundsMat1) + len(boundsMat2) - 1
-                boundsMat = numpy.ones((totSize, totSize)) * 1000
+                # Calculate the multiplicity
+                multiplicity = multiplicityR + sum([i.radicalElectrons for i in reactant2.atoms])
                 
-                # Add bounds matrix 1 to corresponding place of the TS bounds matrix
-                boundsMat[:len(boundsMat1),:len(boundsMat1)] = boundsMat1
-                
-                # Fill the bottom left of the bounds matrix with minima
-                boundsMat[len(boundsMat1):, :len(boundsMat1)] = numpy.ones((len(boundsMat)-len(boundsMat1), len(boundsMat1))) * 1.07
-                
-                # Add bounds matrix 2, but it has to shift to the end of bounds matrix 1, and shift 
-                # numbers for the reacting atom which has already been included from above
                 rAtLbl = reactant.getLabeledAtom(lblAt).sortingLabel
                 pAtLbl = product.getLabeledAtom(lblAt).sortingLabel
-                boundsMat[len(boundsMat1):len(boundsMat1)+pAtLbl, rAtLbl] = boundsMat2[pAtLbl, :pAtLbl]
-                boundsMat[rAtLbl, len(boundsMat1):len(boundsMat1)+pAtLbl] = boundsMat2[:pAtLbl, pAtLbl]
-                boundsMat[rAtLbl, len(boundsMat1)+pAtLbl+1:] = boundsMat2[pAtLbl, pAtLbl+1:]
-                boundsMat[len(boundsMat1)+pAtLbl+1:, rAtLbl] = boundsMat2[pAtLbl+1:, pAtLbl]
                 
-                # Remove all the parts of the transfered atom from the second bounds matrix
-                # Incorporate the rest into the TS bounds matrix
-                boundsMat2 = numpy.delete(numpy.delete(boundsMat2, pAtLbl, 1), pAtLbl, 0)
-                boundsMat[-len(boundsMat2):, -len(boundsMat2):] = boundsMat2
+                # Get the total size of the TS bounds matrix and initialize it
+                boundsMat = self.combineBoundsMatrices(boundsMatR, boundsMatP, rAtLbl, pAtLbl)
+                
+                import ipdb; ipdb.set_trace()
+                boundsMat = self.editBoundsMatrix(buildTS, boundsMat, actionList)
+                # now edit the bounds matrix
                 
         # A --> B + C or A + B --> C
         else:
