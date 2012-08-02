@@ -60,8 +60,8 @@ class Geometry:
         # Add the bonds
         for atom1 in self.molecule.vertices:
             for atom2, bond in atom1.edges.items():
-                index1 = rdAtomIdx[atom1] # atom1.sortingLabel
-                index2 = rdAtomIdx[atom2] # atom2.sortingLabel
+                index1 = rdAtomIdx[atom1]
+                index2 = rdAtomIdx[atom2]
                 if index1 > index2:
                     # Check the RMG bond order and add the appropriate rdkit bond.
                     if bond.order == 'S':
