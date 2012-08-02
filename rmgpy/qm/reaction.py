@@ -48,9 +48,15 @@ class QMReaction:
         rdKitMol = rdkit.Chem.MolFromMolFile(geometry.getCrudeMolFilePath(), removeHs=False)      
         
         return rdKitMol
+    
+    def getDeepCopy(self, molecule):
+        """
+        Gets a deep copy of the molecule so that any edits to the molecule does not affect the
+        original rmg molecule.
+        """
+        copyMol = molecule.copy(deep=True)
         
-    def write(self):
-        pass
+        return copyMol
     
     def chooseMol(self):
         if len(self.reactants) == 1:
@@ -105,7 +111,9 @@ class QMReaction:
             elif action[0].lower() == 'lose_radical':
                 pass
         
+        # Smooth the bounds matrix to speed up the optimization
         rdkit.DistanceGeometry.DistGeom.DoTriangleSmoothing(boundsMatrix)
+        
         return boundsMatrix
     
     def combineBoundsMatrices(self, boundsMat1, boundsMat2, lblAt1, lblAt2):
@@ -132,3 +140,94 @@ class QMReaction:
         boundsMat[-len(boundsMat2):, -len(boundsMat2):] = boundsMat2
         
         return boundsMat
+        
+    def generateGeometry(self):
+        # A --> B or A + B --> C + D
+        if len(self.reactants) == len(self.products):
+            # 1 reactant
+            if len(self.reactants) == 1:
+                pass
+            
+            # 2 reactants
+            else:
+                actionList = self.family.forwardRecipe.actions
+                for action in actionList:
+                    if action[0].lower() == 'form_bond':
+                        lbl1 = action[1]
+                        lbl2 = action[3]
+                    elif action[0].lower() == 'break_bond':
+                        lbl3 = action[1]
+                        lbl4 = action[3]
+                
+                # Find the atom being transferred in the reaction
+                if lbl1 == lbl3 or lbl1 == lbl4:
+                    lblAt = lbl1
+                else:
+                    lblAt = lbl2
+                
+                # Derive the bounds matrix from the reactants and products
+                try:
+                    self.reactants[0].getLabeledAtom(lblAt)
+                    reactant = self.getDeepCopy(self.reactants[0])
+                    reactant2 = self.getDeepCopy(self.reactants[1])
+                except ValueError:
+                    reactant = self.getDeepCopy(self.reactants[1])
+                    reactant2 = self.getDeepCopy(self.reactants[0])
+                    
+                try:
+                    self.products[0].getLabeledAtom(lblAt)
+                    product = self.getDeepCopy(self.products[0])
+                except ValueError:
+                    product = self.getDeepCopy(self.products[1])
+                
+                # Merge the reactants to generate the TS template
+                buildTS = reactant.merge(reactant2)
+                
+                # Check for sorting labels
+                if reactant.atoms[0].sortingLabel != 0:
+                    reactant = self.fixSortLabel(reactant)
+                if product.atoms[0].sortingLabel != 0:
+                    product = self.fixSortLabel(product)
+                
+                # Generate the bounds matrices for the reactant and product with the transfered atom
+                reactant.rdmol, boundsMatR, multiplicityR = self.generateBoundsMatrix(reactant)
+                product.rdmol, boundsMatP, multiplicityP = self.generateBoundsMatrix(product)
+                
+                # Calculate the multiplicity
+                multiplicity = sum([i.radicalElectrons for i in buildTS.atoms]) +1
+                
+                rAtLbl = reactant.getLabeledAtom(lblAt).sortingLabel
+                pAtLbl = product.getLabeledAtom(lblAt).sortingLabel
+                
+                # Get the total size of the TS bounds matrix and initialize it
+                boundsMat = self.combineBoundsMatrices(boundsMatR, boundsMatP, rAtLbl, pAtLbl)
+                
+                self.fixSortLabel(buildTS)
+                
+                boundsMat = self.editBoundsMatrix(buildTS, boundsMat, actionList)
+                
+                try:
+                    rdkit.Chem.Pharm3D.EmbedLib.OptimizeMol(self.rdmol, boundsMat, maxPasses = 10)
+                except RuntimeError:
+                    pass
+                
+                multiplicity = sum([i.radicalElectrons for i in buildTS.atoms]) +1
+                
+        # A --> B + C or A + B --> C
+        else:
+            # The single species is used as the base for the transition state 
+            buildTS, actionList = self.chooseMol()
+            
+            # Generate the RDKit::Mol from the RMG molecule and get the bounds matrix
+            self.rdmol, boundsMat, multiplicity = self.generateBoundsMatrix(buildTS)
+            
+            # Alter the bounds matrix based on the reaction recipe
+            boundsMat = self.editBoundsMatrix(buildTS, boundsMat, actionList)
+            
+            # Optimize the TS geometry in place, outputing the initial and final energies
+            try:
+                rdkit.Chem.Pharm3D.EmbedLib.OptimizeMol(self.rdmol, boundsMat, maxPasses = 10)
+            except RuntimeError:
+                pass
+        
+        return buildTS, boundsMat, multiplicity
