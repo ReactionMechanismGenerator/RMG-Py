@@ -129,14 +129,14 @@ class QMReaction:
         
         # Add bounds matrix 2, but it has to shift to the end of bounds matrix 1, and shift 
         # numbers for the reacting atom which has already been included from above
-        boundsMat[len(boundsMat1):len(boundsMat1)+lblAt2, lblAt1] = boundsMat2[lblAt2, :lblAt2]
-        boundsMat[lblAt1, len(boundsMat1):len(boundsMat1)+lblAt2] = boundsMat2[:lblAt2, lblAt2]
-        boundsMat[lblAt1, len(boundsMat1)+lblAt2+1:] = boundsMat2[lblAt2, lblAt2+1:]
-        boundsMat[len(boundsMat1)+lblAt2+1:, lblAt1] = boundsMat2[lblAt2+1:, lblAt2]
+        boundsMat[len(boundsMat1):len(boundsMat1)+atLbl2, atLbl1] = boundsMat2[atLbl2, :atLbl2]
+        boundsMat[atLbl1, len(boundsMat1):len(boundsMat1)+atLbl2] = boundsMat2[:atLbl2, atLbl2]
+        boundsMat[atLbl1, len(boundsMat1)+atLbl2:] = boundsMat2[atLbl2, atLbl2+1:]
+        boundsMat[len(boundsMat1)+atLbl2:, atLbl1] = boundsMat2[atLbl2+1:, atLbl2]
         
         # Remove all the parts of the transfered atom from the second bounds matrix
         # Incorporate the rest into the TS bounds matrix
-        boundsMat2 = numpy.delete(numpy.delete(boundsMat2, lblAt2, 1), lblAt2, 0)
+        boundsMat2 = numpy.delete(numpy.delete(boundsMat2, atLbl2, 1), atLbl2, 0)
         boundsMat[-len(boundsMat2):, -len(boundsMat2):] = boundsMat2
         
         return boundsMat
