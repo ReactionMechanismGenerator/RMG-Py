@@ -224,7 +224,34 @@ class MoleculeDrawer:
             self.molecule.removeAtom(self.molecule.atoms[-1])
             self.symbols = ['H2']
             self.coordinates = numpy.array([[0,0]], numpy.float64)
-            
+        elif self.symbols == ['O', 'O']:
+            # Render as O2 instead of O-O
+            self.molecule.removeAtom(self.molecule.atoms[-1])
+            self.molecule.atoms[0].radicalElectrons = 0
+            self.symbols = ['O2']
+            self.coordinates = numpy.array([[0,0]], numpy.float64)
+        elif self.symbols == ['OH', 'O'] or self.symbols == ['O', 'OH']:
+            # Render as HO2 instead of HO-O or O-OH
+            self.molecule.removeAtom(self.molecule.atoms[-1])
+            self.symbols = ['O2H']
+            self.coordinates = numpy.array([[0,0]], numpy.float64)
+        elif self.symbols == ['OH', 'OH']:
+            # Render as H2O2 instead of HO-OH or O-OH
+            self.molecule.removeAtom(self.molecule.atoms[-1])
+            self.symbols = ['O2H2']
+            self.coordinates = numpy.array([[0,0]], numpy.float64)
+        elif self.symbols == ['C', 'O'] or self.symbols == ['O', 'C']:
+            # Render as CO instead of C=O
+            self.molecule.removeAtom(self.molecule.atoms[-1])
+            self.symbols = ['CO']
+            self.coordinates = numpy.array([[0,0]], numpy.float64)
+        elif self.symbols == ['O', 'C', 'O']:
+            # Render as CO2 instead of O=C=O
+            self.molecule.removeAtom(self.molecule.atoms[0])
+            self.molecule.removeAtom(self.molecule.atoms[-1])
+            self.symbols = ['CO2']
+            self.coordinates = numpy.array([[0,0]], numpy.float64)
+        
         # Create a dummy surface to draw to, since we don't know the bounding rect
         # We will copy this to another surface with the correct bounding rect
         surface0 = createNewSurface(format=format, path=None)
@@ -987,6 +1014,7 @@ class MoleculeDrawer:
             # Split label by atoms
             labels = re.findall('[A-Z][a-z]*[0-9]*', symbol)
             if not heavyFirst: labels.reverse()
+            if 'C' not in symbol: labels.sort()
             symbol = ''.join(labels)
     
             # Determine positions of each character in the symbol
