@@ -330,8 +330,8 @@ class MoleculeDrawer:
         xmax = numpy.max(coordinates[:,0])
         ymin = numpy.min(coordinates[:,1])
         ymax = numpy.max(coordinates[:,1])
-        xmid = 0.5 * (xmax - xmin)
-        ymid = 0.5 * (ymax - ymin)
+        xmid = 0.5 * (xmax + xmin)
+        ymid = 0.5 * (ymax + ymin)
         for atom in backbone:
             index = atoms.index(atom)
             coordinates[index,0] -= xmid
@@ -1308,22 +1308,19 @@ class ReactionDrawer:
             products.append(MoleculeDrawer().draw(molecule, format))
             
         # Next determine size required for surface
-        rxn_width = 0; rxn_height = 0; rxn_top = -100000
+        rxn_width = 0; rxn_height = 0; rxn_top = 0
         for surface, cr, rect in reactants:
             left, top, width, height = rect
-            print left, top, width, height
             rxn_width += width
             if height > rxn_height: rxn_height = height
-            if top > rxn_top: rxn_top = top
+            if height + top > rxn_top: rxn_top = height + top
         for surface, cr, rect in products:
             left, top, width, height = rect
-            print left, top, width, height
             rxn_width += width
             if height > rxn_height: rxn_height = height
-            if top > rxn_top: rxn_top = top
+            if height + top > rxn_top: rxn_top = height + top
         
-        rxn_top = -rxn_top + 0.5 * self.options['padding']
-        rxn_top = 0
+        rxn_top = 0.5 * rxn_height - rxn_top
         
         # Also include '+' and reaction arrow in width
         cr.set_font_size(fontSizeNormal)
@@ -1356,7 +1353,6 @@ class ReactionDrawer:
                 rxn_x += plus_extents[4]
             # Draw the reactant
             rxn_y = top + rxn_top + 0.5 * rxn_height
-            print top, rxn_top, rxn_y
             rxn_cr.save()
             rxn_cr.set_source_surface(surface, rxn_x, rxn_y)
             rxn_cr.paint()
