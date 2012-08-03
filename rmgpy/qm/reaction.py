@@ -51,6 +51,16 @@ class QMReaction:
         
         return self.getLabel(lbl1, lbl2, lbl3, lbl4)
     
+    def getSwitchedAtomLabel(self, actionList):
+        for action in actionList:
+            if action[0].lower() == 'form_bond':
+                lbl1 = action[1]
+                lbl2 = action[3]
+            elif action[0].lower() == 'change_bond':
+                lbl3 = action[1]
+                lbl4 = action[3]
+                
+        return self.getLabel(lbl1, lbl2, lbl3, lbl4)
     
     def getBaseMolecules(self, atomLabel):
         try:
@@ -185,8 +195,21 @@ class QMReaction:
             actionList = self.family.forwardRecipe.actions
             # 1 reactant
             if len(self.reactants) == 1:
-                pass
-            
+                reactant = self.getDeepCopy(self.reactants[0])
+                product = self.getDeepCopy(self.products[0])
+                reactantRDMol, boundsMatR, multiplicityR = self.generateBoundsMatrix(reactant)
+                productRDMmol, boundsMatP, multiplicityP = self.generateBoundsMatrix(product)
+                
+                # Edit one bounds matrix with values from the other
+                atLbl = self.getSwitchedAtomLabel(actionList)
+                
+                rAtLbl = reactant.getLabeledAtom(atLbl).sortingLabel
+                pAtLbl = product.getLabeledAtom(atLbl).sortingLabel
+                
+                # to do this properly I will have to match atoms from the product and reactant
+                boundsMatR[:][rAtLbl] = boundsMatP[:][pAtLbl]
+                boundsMatR[rAtLbl][:] = boundsMatP[pAtLbl][:]
+                
             # 2 reactants
             else:
                 atLbl = self.getShiftedAtomLabel(actionList)
