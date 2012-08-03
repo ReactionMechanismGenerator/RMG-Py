@@ -709,7 +709,8 @@ class MoleculeDrawer:
         # Determine the vector of any currently-existing bond from this atom
         # (We use the bond to the previous atom here)
         vector = coordinates[index0,:] - coordinates[index1,:]
-    
+        bondAngle = math.atan2(vector[1], vector[0])
+        
         # Check to see if atom1 is in any cycles in the molecule
         ringSystem = None
         for ringSys in self.ringSystems:
@@ -763,8 +764,10 @@ class MoleculeDrawer:
                     rot2 = numpy.array([[math.cos(angle), math.sin(angle)], [-math.sin(angle), math.cos(angle)]], numpy.float64)
                     vector1 = coordinates[index1,:] + numpy.dot(rot1, vector)
                     vector2 = coordinates[index1,:] + numpy.dot(rot2, vector)
-                    if numpy.linalg.norm(vector1) < numpy.linalg.norm(vector2):
-                        angle = -angle
+                    if bondAngle < -0.5 * math.pi or bondAngle > 0.5 * math.pi:
+                        angle = abs(angle)
+                    else:
+                        angle = -abs(angle)
             else:
                 angle = 2 * math.pi / numBonds
             rot = numpy.array([[math.cos(angle), -math.sin(angle)], [math.sin(angle), math.cos(angle)]], numpy.float64)
