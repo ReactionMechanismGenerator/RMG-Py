@@ -31,6 +31,23 @@ class QMReaction:
             sortLbl += 1
         return molecule
     
+    
+    def getBaseMolecules(self, atomLabel):
+        try:
+            self.reactants[0].getLabeledAtom(atomLabel)
+            reactant1 = self.getDeepCopy(self.reactants[0])
+            reactant2 = self.getDeepCopy(self.reactants[1])
+        except ValueError:
+            reactant1 = self.getDeepCopy(self.reactants[1])
+            reactant2 = self.getDeepCopy(self.reactants[0])
+            
+        try:
+            self.products[0].getLabeledAtom(atomLabel)
+            product = self.getDeepCopy(self.products[0])
+        except ValueError:
+            product = self.getDeepCopy(self.products[1])
+            
+        return reactant1, reactant2, product
     def getGeometry(self, molecule):
         
         multiplicity = sum([i.radicalElectrons for i in molecule.atoms]) + 1
@@ -62,12 +79,12 @@ class QMReaction:
         if len(self.reactants) == 1:
             if self.reactants[0].atoms[0].sortingLabel == -1:
                 self.reactants[0] = self.fixSortLabel(self.reactants[0])
-            buildTS = self.reactants[0].copy()
+            buildTS = self.getDeepCopy(self.reactants[0])
             actionList = self.family.forwardRecipe.actions
         else:
             if self.products[0].atoms[0].sortingLabel == -1:
                 self.products[0] = self.fixSortLabel(reaction.products[0])
-            buildTS = self.products[0].copy()
+            buildTS = self.getDeepCopy(self.products[0])
             actionList = self.family.reverseRecipe.actions
         
         return buildTS, actionList
