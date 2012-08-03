@@ -365,39 +365,57 @@ class MoleculeDrawer:
         non-cyclics this is the largest straight chain between atoms. If carbon
         atoms are present, then we define the backbone only in terms of them.
         """
-        # Find the terminal carbon atoms - those that only have one explicit bond
-        terminalAtoms = [atom for atom in self.molecule.atoms if atom.isCarbon() and len(atom.bonds) == 1]
-        if len(terminalAtoms) == 0:
-            # No terminal carbon atoms found, so allow any atom
-            terminalAtoms = [atom for atom in self.molecule.atoms if len(atom.bonds) == 1]
-            
+        # Find the terminal atoms - those that only have one explicit bond
+        terminalAtoms = [atom for atom in self.molecule.atoms if len(atom.bonds) == 1]
+        assert len(terminalAtoms) >= 2
+        
         # Starting from each terminal atom, find the longest straight path to
         # another terminal
         # The longest found is the backbone
         backbone = []
+        paths = []
         for atom in terminalAtoms:
-            path = self.__findLongestPath([atom])
-            if len(path) > len(backbone):
-                backbone = path
+            paths.extend(self.__findStraightChainPaths([atom]))
+        
+        # Remove any paths that don't end in a terminal atom
+        # (I don't think this should remove any!)
+        paths = [path for path in paths if path[-1] in terminalAtoms]
+        
+        # Remove all paths shorter than the maximum
+        length = max([len(path) for path in paths])
+        paths = [path for path in paths if len(path) == length]
+        
+        # Prefer the paths with the most carbon atoms
+        carbons = [sum([1 for atom in path if atom.isCarbon()]) for path in paths]
+        maxCarbons = max(carbons)
+        paths = [path for path, carbon in zip(paths, carbons) if carbon == maxCarbons]
+        
+        # At this point we could choose any remaining path, so simply choose the first
+        backbone = paths[0]
 
+        assert len(backbone) > 1
+        assert backbone[0] in terminalAtoms
+        assert backbone[-1] in terminalAtoms
+        
         return backbone
     
-    def __findLongestPath(self, atoms0):
+    def __findStraightChainPaths(self, atoms0):
         """
-        Finds the longest path containing the list of atoms `atoms0` in the
+        Finds the paths containing the list of atoms `atoms0` in the
         current molecule. The atoms are assumed to already be in a path, with
          ``atoms0[0]`` being a terminal atom.
         """
         atom1 = atoms0[-1]
-        paths = [atoms0]
+        paths = []
         for atom2 in atom1.bonds:
             if atom2 not in atoms0:
                 atoms = atoms0[:]
                 atoms.append(atom2)
-                paths.append(self.__findLongestPath(atoms))
-        lengths = [len(path) for path in paths]
-        index = lengths.index(max(lengths))
-        return paths[index]
+                if not self.molecule.isAtomInCycle(atom2):
+                    paths.extend(self.__findStraightChainPaths(atoms))
+        if len(paths) == 0:
+            paths.append(atoms0[:])
+        return paths
 
     def __generateRingSystemCoordinates(self, atoms):
         """
