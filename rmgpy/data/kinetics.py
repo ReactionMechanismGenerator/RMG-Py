@@ -3450,13 +3450,11 @@ class KineticsDatabase:
 
             reaction = Reaction(reactants=[], products=[])
             for molecule in entry.item.reactants:
-                molecule.makeHydrogensExplicit()
                 reactant = Species(molecule=[molecule])
                 reactant.generateResonanceIsomers()
                 reactant.thermo = generateThermoData(reactant, thermoDatabase)
                 reaction.reactants.append(reactant)
             for molecule in entry.item.products:
-                molecule.makeHydrogensExplicit()
                 product = Species(molecule=[molecule])
                 product.generateResonanceIsomers()
                 product.thermo = generateThermoData(product, thermoDatabase)
