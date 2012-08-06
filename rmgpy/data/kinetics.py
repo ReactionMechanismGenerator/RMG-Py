@@ -3408,7 +3408,7 @@ class KineticsDatabase:
         """
 
         def generateThermoData(species, thermoDatabase):
-            thermoData = [thermoDatabase.getThermoData(molecule) for molecule in species.molecule]
+            thermoData = [thermoDatabase.getThermoData(species)]
             thermoData.sort(key=lambda x: x.getEnthalpy(298))
             return thermoData[0]
         
