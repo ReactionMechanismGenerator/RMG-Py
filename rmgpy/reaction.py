@@ -899,7 +899,7 @@ class Reaction:
     def draw(self, path):
         """
         Generate a pictorial representation of the chemical reaction using the
-        :mod:`molecule_draw` module. Use `path` to specify the file to save
+        :mod:`draw` module. Use `path` to specify the file to save
         the generated image to; the image type is automatically determined by
         extension. Valid extensions are ``.png``, ``.svg``, ``.pdf``, and
         ``.ps``; of these, the first is a raster format and the remainder are
