@@ -262,10 +262,52 @@ class QMReaction:
         return boundsMat
     
     def matchAtoms(self, reactant, product):
-        reactant.toAdjacencyList().strip().splitlines()
-    
+        newadjlist = reactant.toAdjacencyList().strip().splitlines()
+        radjlist = reactant.toAdjacencyList().strip().splitlines()
+        padjlist = product.toAdjacencyList().strip().splitlines()
+        rdict = {}
+        for line in radjlist:
+            if line.find('*') > -1:
+                rdict[line.split()[1]] = int(line.split()[0])
+        pdict = {}
+        for line in padjlist:
+            if line.find('*') > -1:
+                pdict[line.split()[1]] = int(line.split()[0])
+        
+        rlabeldict = {} # label: (atom idx, atom symbol, bond type, radical)
+        plabeldict = {}
+        for label in sorted(reactant.getLabeledAtoms()):
+            ridx = rdict[label] - 1
+            pidx = pdict[label] - 1
+            assert newadjlist[ridx].find('*') > -1
+            removeline = newadjlist.pop(ridx)
+            addline = padjlist[pidx]
+            import ipdb; ipdb.set_trace()
+            for cut in removeline.split('{'):
+                if cut.find('}') > -1:
+                    check = int(cut.split(',')[0]) - 1
+                    if radjlist[check].find('*') == -1:
+                        changes = radjlist[check].split()
+                        for i in range(3, len(changes)):
+                            bondcheck = changes[i].strip('{').split(',')
+                            if str(ridx + 1) == bondcheck[0]:
+                                bond = bondcheck[1][0]
+                        rlabeldict[label] = changes[0], changes[1], bond, changes[2]
+            for cut in addline.split('{'):
+                if cut.find('}') > -1:
+                    check = int(cut.split(',')[0]) - 1
+                    if padjlist[check].find('*') == -1:
+                        changes = padjlist[check].split()
+                        for i in range(3, len(changes)):
+                            bondcheck = changes[i].strip('{').split(',')
+                            if str(pidx + 1) == bondcheck[0]:
+                                bond = bondcheck[1][0]
+                        plabeldict[label] = changes[0], changes[1], bond, changes[2]
+            import ipdb; ipdb.set_trace()
+                        
+        return newadjlist
+        
     def twoEnded(self):
-        import ipdb; ipdb.set_trace()
         if len(self.reactants) == len(self.products):
             if len(self.reactants) == 1:
                 reactant = self.getDeepCopy(self.reactants[0])
@@ -289,7 +331,7 @@ class QMReaction:
                 product = self.getDeepCopy(self.products[0])
                 reactant = reactant1.merge(reactant2)
         
-        adjlist = self.convert(reactant, product)
+        adjlist = self.matchAtoms(reactant, product)
         if product == product.fromAdjacencyList(adjlist):
             product = product.fromAdjacencyList(adjlist)
         else:
