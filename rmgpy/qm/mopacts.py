@@ -47,7 +47,7 @@ class MopacTS(QMReaction, Mopac):
         """
         make TS geometry
         """
-        tsMol, boundsMat, multiplicity = self.generateGeometry()
+        reactants, products = self.twoEnded()
         self.geometry.uniqueID = self.geometry.uniqueID + 'ts'
         self.geometry.writeMolFile(self.rdmol, self.geometry.getRefinedMolFilePath(), 0)
         method = MopacPM3(self)

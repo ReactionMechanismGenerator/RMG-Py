@@ -1,3 +1,6 @@
+"""
+authors: P Bhoorasingh, S Troiano
+"""
 import os
 import logging
 import numpy
@@ -31,50 +34,75 @@ class QMReaction:
             sortLbl += 1
         return molecule
     
-    def matchAtoms(self, reactant, product):
-        """
-        Takes the reactant and product molecules and matches the sorting labels
-        """
-        labelsSet = []
-        rAdList = reactant.toAdjacencyList()
-        rAdList = rAdList.strip()
-        rLines = rAdList.splitlines()
-        pAdList = product.toAdjacencyList()
-        pAdList = pAdList.strip()
-        pLines = pAdList.splitlines()
-        assert len(rLines) == len(pLines)
-        
-        for i, lineR in enumerate(rLines):
-            if lineR.find('*') > -1:
-                lblIdx = lineR.index('*') + 1
-                atLbl = lineR[lblIdx]
-                splitR = lineR.split('{')
-                for j, lineP in enumerate(pLines):
-                    if '*' + atLbl in lineP and i not in labelsSet:
-                        product.atoms[j].sortingLabel = i
-                        product.vertices[j].sortingLabel = i
-                        pIdx = j
-                        labelsSet.append(i)
-                for rSplit in splitR:
-                    if rSplit.find('}') > -1:
-                        check = rSplit.split(',')[0]
-                        idxSet = int(check) - 1
-                        if rLines[idxSet].find('*') == -1:
-                            if pLines[pIdx].find('*' + atLbl) > -1:
-                                splitP = pLines[pIdx].split('{')
-                                success = False
-                                for pSplit in splitP:
-                                    if pSplit.find('}') > -1:
-                                        check2 = pSplit.split(',')[0]
-                                        setIdx = int(check2) - 1
-                                        if not success and pLines[setIdx].find('*') == -1 and idxSet not in labelsSet:
-                                            product.atoms[setIdx].sortingLabel = idxSet
-                                            product.vertices[setIdx].sortingLabel = idxSet
-                                            labelsSet.append(idxSet)
-                                            success = True
-        
-        return reactant, product
-        
+    def atoms(self, mol):
+        atoms = {}
+        for atom in mol:
+            args = atom.split()
+            index = int(args.pop(0))
+            if '*' in args[0]:
+                label = args.pop(0)
+            else:
+                label = '  '
+            type = args.pop(0)
+            rad = args.pop(0)
+            bonds = {}
+            while args:
+                bond = args.pop(0)[1:-1].split(',')
+                bonds[int(bond[0])] = bond[1]
+            atoms[index] = {'label': label, 'type': type,
+                            'rad': rad, 'bonds': bonds}
+        return atoms
+    
+    def adjlist(self, atoms):
+        str = ''
+        for key in atoms:
+            atom = atoms[key]
+            str += '\n{0:<{1}}{2}'.format(key,
+                                          len('{0}'.format(max(atoms.keys()))) + 1,
+                                          atom['label'])
+            str += ' {0} {1}'.format(atom['type'], atom['rad'])
+            for key0 in sorted(atom['bonds'].keys()):
+                str += ' {' + '{0},{1}'.format(key0, atom['bonds'][key0]) + '}'
+        return str.strip()
+    
+    def convert(self, rRMGMol, pRMGMol):
+        rstrip = rRMGMol.toAdjacencyList().strip().splitlines()
+        pstrip = pRMGMol.toAdjacencyList().strip().splitlines()
+        reactant = self.atoms(rstrip)
+        product = self.atoms(pstrip)
+        output = {}
+        swaps = {}
+        import ipdb; ipdb.set_trace()
+        for i in sorted(reactant.keys()):
+            r_atom = reactant[i]
+            if r_atom['label'].strip():
+                for j in sorted(product.keys()):
+                    p_atom = product[j]
+                    if p_atom['label'] == r_atom['label']:
+                        break
+                output[i] = product.pop(j)
+                if i != j:
+                    swaps[j] = i
+        for key in sorted(product.keys()):
+            output[len(output) + 1] = product[key]
+        for atom in output.values():
+            bonds_in = {}
+            bonds_out = {}
+            for key in sorted(atom['bonds'].keys()):
+                bonds_in[key] = atom['bonds'][key]
+            for key in sorted(bonds_in.keys()):
+                for old in swaps:
+                    if key == old:
+                        bonds_out[swaps[old]] = bonds_in[key]
+                        bonds_in.pop(key)
+                        break
+            for key in sorted(bonds_in.keys()):
+                bonds_out[key] = bonds_in[key]
+            atom['bonds'] = {}
+            for key in sorted(bonds_out.keys()):
+                atom['bonds'][key] = bonds_out[key]
+        return self.adjlist(output) + '\n'
+    
     def getLabel(self, lbl1, lbl2, lbl3, lbl4):
         # Find the atom being transferred in the reaction
         if lbl1 == lbl3 or lbl1 == lbl4:
@@ -232,6 +260,42 @@ class QMReaction:
         boundsMat[-len(boundsMat2):, -len(boundsMat2):] = boundsMat2
         
         return boundsMat
+    
+    def matchAtoms(self, reactant, product):
+        reactant.toAdjacencyList().strip().splitlines()
+    
+    def twoEnded(self):
+        import ipdb; ipdb.set_trace()
+        if len(self.reactants) == len(self.products):
+            if len(self.reactants) == 1:
+                reactant = self.getDeepCopy(self.reactants[0])
+                product = self.getDeepCopy(self.products[0])
+            else:
+                reactant1 = self.getDeepCopy(self.reactants[0])
+                reactant2 = self.getDeepCopy(self.reactants[1])
+                product1 = self.getDeepCopy(self.products[0])
+                product2 = self.getDeepCopy(self.products[1])
+                reactant = reactant1.merge(reactant2)
+                product = product1.merge(product2)
+        else:
+            if len(self.reactants) == 1:
+                reactant = self.getDeepCopy(self.reactants[0])
+                product1 = self.getDeepCopy(self.products[0])
+                product2 = self.getDeepCopy(self.products[1])
+                product = product1.merge(product2)
+            else:
+                reactant1 = self.getDeepCopy(self.reactants[0])
+                reactant2 = self.getDeepCopy(self.reactants[1])
+                product = self.getDeepCopy(self.products[0])
+                reactant = reactant1.merge(reactant2)
+        
+        adjlist = self.convert(reactant, product)
+        if product == product.fromAdjacencyList(adjlist):
+            product = product.fromAdjacencyList(adjlist)
+        else:
+            logging.info("Couldn't generate transition state geometry")
+            
+        return reactant, product
         
     def generateGeometry(self):
         # A --> B or A + B --> C + D
@@ -241,16 +305,20 @@ class QMReaction:
             if len(self.reactants) == 1:
                 reactant = self.getDeepCopy(self.reactants[0])
                 product = self.getDeepCopy(self.products[0])
+                adjlist = self.convert(reactant, product)
+                if product == product.fromAdjacencyList(adjlist):
+                    product = product.fromAdjacencyList(adjlist)
+                else:
+                    logging.info("Couldn't generate transition state geometry")
+                    
                 reactantRDMol, boundsMatR, multiplicityR = self.generateBoundsMatrix(reactant)
                 productRDMmol, boundsMatP, multiplicityP = self.generateBoundsMatrix(product)
                 
                 # Edit one bounds matrix with values from the other
                 atLbl = self.getSwitchedAtomLabel(actionList)
                 
-                reactant, product = self.matchAtoms(reactant, product)
                 rAtLbl = reactant.getLabeledAtom(atLbl).sortingLabel
                 pAtLbl = product.getLabeledAtom(atLbl).sortingLabel
-                
                 # to do this properly I will have to match atoms from the product and reactant
                 boundsMatR[:][rAtLbl] = boundsMatP[:][pAtLbl]
                 boundsMatR[rAtLbl][:] = boundsMatP[pAtLbl][:]
