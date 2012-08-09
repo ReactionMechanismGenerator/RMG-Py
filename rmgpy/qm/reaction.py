@@ -31,6 +31,50 @@ class QMReaction:
             sortLbl += 1
         return molecule
     
+    def matchAtoms(self, reactant, product):
+        """
+        Takes the reactant and product molecules and matches the sorting labels
+        """
+        labelsSet = []
+        rAdList = reactant.toAdjacencyList()
+        rAdList = rAdList.strip()
+        rLines = rAdList.splitlines()
+        pAdList = product.toAdjacencyList()
+        pAdList = pAdList.strip()
+        pLines = pAdList.splitlines()
+        assert len(rLines) == len(pLines)
+        
+        for i, lineR in enumerate(rLines):
+            if lineR.find('*') > -1:
+                lblIdx = lineR.index('*') + 1
+                atLbl = lineR[lblIdx]
+                splitR = lineR.split('{')
+                for j, lineP in enumerate(pLines):
+                    if '*' + atLbl in lineP and i not in labelsSet:
+                        product.atoms[j].sortingLabel = i
+                        product.vertices[j].sortingLabel = i
+                        pIdx = j
+                        labelsSet.append(i)
+                for rSplit in splitR:
+                    if rSplit.find('}') > -1:
+                        check = rSplit.split(',')[0]
+                        idxSet = int(check) - 1
+                        if rLines[idxSet].find('*') == -1:
+                            if pLines[pIdx].find('*' + atLbl) > -1:
+                                splitP = pLines[pIdx].split('{')
+                                success = False
+                                for pSplit in splitP:
+                                    if pSplit.find('}') > -1:
+                                        check2 = pSplit.split(',')[0]
+                                        setIdx = int(check2) - 1
+                                        if not success and pLines[setIdx].find('*') == -1 and idxSet not in labelsSet:
+                                            product.atoms[setIdx].sortingLabel = idxSet
+                                            product.vertices[setIdx].sortingLabel = idxSet
+                                            labelsSet.append(idxSet)
+                                            success = True
+        
+        return reactant, product
+        
     def getLabel(self, lbl1, lbl2, lbl3, lbl4):
         # Find the atom being transferred in the reaction
         if lbl1 == lbl3 or lbl1 == lbl4:
@@ -203,6 +247,7 @@ class QMReaction:
                 # Edit one bounds matrix with values from the other
                 atLbl = self.getSwitchedAtomLabel(actionList)
                 
+                reactant, product = self.matchAtoms(reactant, product)
                 rAtLbl = reactant.getLabeledAtom(atLbl).sortingLabel
                 pAtLbl = product.getLabeledAtom(atLbl).sortingLabel
                 
