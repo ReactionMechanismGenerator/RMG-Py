@@ -1233,9 +1233,10 @@ class Network:
         `text` with an optional amount of `padding` on all sides. The type of
         surface is dictated by the `ext` parameter.
         """
-
-        from rmgpy.molecule.molecule_draw import createNewSurface, fontSizeNormal
+        from rmgpy.molecule.draw import MoleculeDrawer, createNewSurface
         import cairo
+        
+        fontSizeNormal = MoleculeDrawer().options['fontSizeNormal']
 
         surface0 = createNewSurface(type=ext[1:])
         cr0 = cairo.Context(surface0)
@@ -1261,7 +1262,7 @@ class Network:
         will be used.
         """
 
-        from rmgpy.molecule.molecule_draw import createNewSurface, drawMolecule
+        from rmgpy.molecule.draw import MoleculeDrawer, createNewSurface
         import cairo
         
         # Determine whether or not to use the molecular structures in the
@@ -1283,7 +1284,7 @@ class Network:
             if useLabels:
                 surface0, cr0, boundingRect0 = self.__drawText(spec.label, ext, padding=2)
             else:
-                surface0, cr0, boundingRect0 = drawMolecule(spec.molecule[0], surface=ext[1:])
+                surface0, cr0, boundingRect0 = MoleculeDrawer().draw(spec.molecule[0], format=ext[1:])
             surfaces.append(surface0)
             boundingRects.append(list(boundingRect0))
             if width < boundingRect0[2]: width = boundingRect0[2]

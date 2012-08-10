@@ -759,22 +759,23 @@ class Molecule(Graph):
     def draw(self, path):
         """
         Generate a pictorial representation of the chemical graph using the
-        :mod:`ext.molecule_draw` module. Use `path` to specify the file to save
+        :mod:`draw` module. Use `path` to specify the file to save
         the generated image to; the image type is automatically determined by
         extension. Valid extensions are ``.png``, ``.svg``, ``.pdf``, and
         ``.ps``; of these, the first is a raster format and the remainder are
         vector formats.
         """
-        from molecule_draw import drawMolecule
-        drawMolecule(self, path=path)
+        from .draw import MoleculeDrawer
+        format = os.path.splitext(path)[-1][1:].lower()
+        MoleculeDrawer().draw(self, format, path=path)
     
     def _repr_png_(self):
         """
         Return a png picture of the molecule, useful for ipython-qtconsole.
         """
-        from molecule_draw import drawMolecule
+        from .draw import MoleculeDrawer
         tempFileName = 'temp_molecule.png'
-        drawMolecule(self, path=tempFileName)
+        MoleculeDrawer().draw(self, 'png', tempFileName)
         png = open(tempFileName,'rb').read()
         os.unlink(tempFileName)
         return png

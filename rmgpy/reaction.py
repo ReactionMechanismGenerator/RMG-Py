@@ -899,122 +899,15 @@ class Reaction:
     def draw(self, path):
         """
         Generate a pictorial representation of the chemical reaction using the
-        :mod:`molecule_draw` module. Use `path` to specify the file to save
+        :mod:`draw` module. Use `path` to specify the file to save
         the generated image to; the image type is automatically determined by
         extension. Valid extensions are ``.png``, ``.svg``, ``.pdf``, and
         ``.ps``; of these, the first is a raster format and the remainder are
         vector formats.
         """
-        import cairo
-        from rmgpy.molecule.molecule_draw import drawMolecule, createNewSurface, fontFamily, fontSizeNormal
-        
+        from rmgpy.molecule.draw import ReactionDrawer
         format = os.path.splitext(path)[1].lower()[1:]
-        
-        # First draw each of the reactants and products
-        reactants = []; products = []
-        for reactant in self.reactants:
-            if isinstance(reactant, Species):
-                molecule = reactant.molecule[0]
-            elif isinstance(reactant, Molecule):
-                molecule = reactant
-            reactants.append(drawMolecule(molecule, surface=format))
-        for product in self.products:
-            if isinstance(product, Species):
-                molecule = product.molecule[0]
-            elif isinstance(product, Molecule):
-                molecule = product
-            products.append(drawMolecule(molecule, surface=format))
-            
-        # Next determine size required for surface
-        rxn_width = 0; rxn_height = 0
-        for surface, cr, rect in reactants:
-            left, top, width, height = rect
-            rxn_width += width
-            if height > rxn_height: rxn_height = height
-        for surface, cr, rect in products:
-            left, top, width, height = rect
-            rxn_width += width
-            if height > rxn_height: rxn_height = height
-        
-        # Also include '+' and reaction arrow in width
-        cr.set_font_size(fontSizeNormal)
-        plus_extents = cr.text_extents(' + ')
-        arrow_width = 36
-        rxn_width += (len(reactants)-1) * plus_extents[4] + arrow_width + (len(products)-1) * plus_extents[4]
-        
-        # Now make the surface for the reaction and render each molecule on it
-        rxn_surface = createNewSurface(type=format, path=path, width=rxn_width, height=rxn_height)
-        rxn_cr = cairo.Context(rxn_surface)
-        
-        # Draw white background
-        rxn_cr.set_source_rgba(1.0, 1.0, 1.0, 1.0)
-        rxn_cr.paint()
-    
-        # Draw reactants
-        rxn_x = 0.0; rxn_y = 0.0
-        for index, reactant in enumerate(reactants):
-            surface, cr, rect = reactant
-            left, top, width, height = rect
-            if index > 0:
-                # Draw the "+" between the reactants
-                rxn_cr.save()
-                rxn_cr.set_font_size(fontSizeNormal)
-                rxn_y = (rxn_height - plus_extents[3]) / 2.0
-                rxn_cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
-                rxn_cr.move_to(rxn_x, rxn_y - plus_extents[1])
-                rxn_cr.show_text(' + ')
-                rxn_cr.restore()
-                rxn_x += plus_extents[4]
-            # Draw the reactant
-            rxn_y = (rxn_height - height) / 2.0
-            rxn_cr.save()
-            rxn_cr.set_source_surface(surface, rxn_x, rxn_y)
-            rxn_cr.paint()
-            rxn_cr.restore()
-            rxn_x += width            
-        
-        # Draw reaction arrow
-        # Unfortunately Cairo does not have arrow drawing built-in, so we must
-        # draw the arrow head ourselves
-        rxn_cr.save()
-        rxn_cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
-        rxn_cr.set_line_width(1.0)
-        rxn_cr.move_to(rxn_x + 8, rxn_height / 2.0)
-        rxn_cr.line_to(rxn_x + arrow_width - 8, rxn_height / 2.0)
-        rxn_cr.move_to(rxn_x + arrow_width - 14, rxn_height / 2.0 - 3.0)
-        rxn_cr.line_to(rxn_x + arrow_width - 8, rxn_height / 2.0)
-        rxn_cr.line_to(rxn_x + arrow_width - 14, rxn_height / 2.0 + 3.0)
-        rxn_cr.stroke()
-        rxn_cr.restore()
-        rxn_x += arrow_width
-        
-        # Draw products
-        for index, product in enumerate(products):
-            surface, cr, rect = product
-            left, top, width, height = rect
-            if index > 0:
-                # Draw the "+" between the products
-                rxn_cr.save()
-                rxn_cr.set_font_size(fontSizeNormal)
-                rxn_y = (rxn_height - plus_extents[3]) / 2.0
-                rxn_cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
-                rxn_cr.move_to(rxn_x, rxn_y - plus_extents[1])
-                rxn_cr.show_text(' + ')
-                rxn_cr.restore()
-                rxn_x += plus_extents[4]
-            # Draw the product
-            rxn_y = (rxn_height - height) / 2.0
-            rxn_cr.save()
-            rxn_cr.set_source_surface(surface, rxn_x, rxn_y)
-            rxn_cr.paint()
-            rxn_cr.restore()
-            rxn_x += width            
-        
-        # Finish Cairo drawing
-        if format == 'png':
-            surface.write_to_png(path)
-        else:
-            surface.finish()
+        ReactionDrawer().draw(self, format, path)
                 
 ################################################################################
 

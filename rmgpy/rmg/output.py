@@ -54,14 +54,15 @@ def saveOutputHTML(path, reactionModel):
     Save the current set of core species and reactions of `reactionModel` to
     an HTML file `path` on disk. As part of this process, drawings of all core
     species are created in the species folder (if they don't already exist)
-    using the :mod:`rmgpy.chem.ext.molecule_draw` module. The :mod:`jinja`
+    using the :mod:`rmgpy.molecule.draw` module. The :mod:`jinja`
     package is used to generate the HTML; if this package is not found, no
     HTML will be generated (but the program will carry on).
     """
 
     from model import PDepReaction
     
-    from rmgpy.molecule import drawMolecule
+    from rmgpy.molecule.draw import MoleculeDrawer
+
     try:
         import jinja2
     except ImportError:
@@ -91,7 +92,7 @@ def saveOutputHTML(path, reactionModel):
         # Draw molecules if necessary
         fstr = os.path.join(dirname, 'species', '{0}.png'.format(spec))
         if not os.path.exists(fstr):
-            drawMolecule(spec.molecule[0], fstr)
+            MoleculeDrawer().draw(spec.molecule[0], 'png', fstr)
 
     # We want to keep species sorted in the original order in which they were added to the RMG core.
     # Rather than ordered by index
@@ -324,7 +325,7 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
     from model import PDepReaction
     from rmgpy.kinetics import Arrhenius, MultiKinetics
 
-    from rmgpy.molecule.molecule_draw import drawMolecule
+    from rmgpy.molecule.draw import MoleculeDrawer
     try:
         import jinja2
     except ImportError:
@@ -355,7 +356,7 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
         # Draw molecules if necessary
         fstr = os.path.join(dirname, 'species', '{0}.png'.format(spec))
         if not os.path.exists(fstr):
-            drawMolecule(spec.molecule[0], fstr)
+            MoleculeDrawer().draw(spec.molecule[0], 'png', fstr)
 
 
     familyCount1 = {}
