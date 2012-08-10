@@ -8,6 +8,7 @@ import numpy
 from rmgpy.molecule import Molecule
 from rmgpy.species import TransitionState
 from molecule import QMMolecule, Geometry
+from collections import defaultdict
 
 import rdkit
 from rdkit.Chem.Pharm3D import EmbedLib
@@ -262,6 +263,7 @@ class QMReaction:
         return boundsMat
     
     def matchAtoms(self, reactant, product):
+        
         newadjlist = reactant.toAdjacencyList().strip().splitlines()
         radjlist = reactant.toAdjacencyList().strip().splitlines()
         padjlist = product.toAdjacencyList().strip().splitlines()
@@ -274,37 +276,34 @@ class QMReaction:
             if line.find('*') > -1:
                 pdict[line.split()[1]] = int(line.split()[0])
         
-        rlabeldict = {} # label: (atom idx, atom symbol, bond type, radical)
-        plabeldict = {}
+        rlabeldict = defaultdict(list) # label: (atom idx, atom symbol, bond type, radical)
+        plabeldict = defaultdict(list)
         for label in sorted(reactant.getLabeledAtoms()):
             ridx = rdict[label] - 1
             pidx = pdict[label] - 1
             assert newadjlist[ridx].find('*') > -1
-            removeline = newadjlist.pop(ridx)
-            addline = padjlist[pidx]
-            import ipdb; ipdb.set_trace()
-            for cut in removeline.split('{'):
+            line = newadjlist.pop(ridx)
+            otherline = padjlist[pidx]
+            for cut in otherline.split('{'):
                 if cut.find('}') > -1:
                     check = int(cut.split(',')[0]) - 1
-                    if radjlist[check].find('*') == -1:
-                        changes = radjlist[check].split()
-                        for i in range(3, len(changes)):
-                            bondcheck = changes[i].strip('{').split(',')
-                            if str(ridx + 1) == bondcheck[0]:
-                                bond = bondcheck[1][0]
-                        rlabeldict[label] = changes[0], changes[1], bond, changes[2]
-            for cut in addline.split('{'):
+                    seg = padjlist[check]
+                    if seg.find('*') > -1:
+                        new = str(rdict[seg.split()[1]])
+                        cut = cut.replace(cut.split(',')[0], new)
+                        plabeldict[label].append('{' + cut)
+            for cut in line.split('{'):
                 if cut.find('}') > -1:
                     check = int(cut.split(',')[0]) - 1
-                    if padjlist[check].find('*') == -1:
-                        changes = padjlist[check].split()
-                        for i in range(3, len(changes)):
-                            bondcheck = changes[i].strip('{').split(',')
-                            if str(pidx + 1) == bondcheck[0]:
-                                bond = bondcheck[1][0]
-                        plabeldict[label] = changes[0], changes[1], bond, changes[2]
-            import ipdb; ipdb.set_trace()
-                        
+                    seg = radjlist[check]
+                    if seg.find('*') > -1:
+                        rlabeldict[label].append('{' + cut)
+            for bond in rlabeldict[label]:
+                line = line.replace(bond, '')
+            for bond in plabeldict[label]:
+                line = line + ' ' + bond.replace(' ', '')
+            newadjlist.insert(ridx, line)
+        
         return newadjlist
         
     def twoEnded(self):
@@ -331,8 +330,10 @@ class QMReaction:
                 product = self.getDeepCopy(self.products[0])
                 reactant = reactant1.merge(reactant2)
         
-        adjlist = self.matchAtoms(reactant, product)
-        if product == product.fromAdjacencyList(adjlist):
+        newadjlist = self.matchAtoms(reactant, product)
+        newadjlist = self.adjlist(self.atoms(newadjlist))
+        test = Molecule()
+        if product.isIsomorphic(test.fromAdjacencyList(newadjlist)):
             product = product.fromAdjacencyList(adjlist)
         else:
             logging.info("Couldn't generate transition state geometry")
