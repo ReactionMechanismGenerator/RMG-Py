@@ -492,7 +492,7 @@ def saveEntry(f, entry):
     f.write('    shortDesc = u"""{0}""",\n'.format(entry.shortDesc))
     f.write('    longDesc = \n')
     f.write('u"""\n')
-    f.write(entry.longDesc.strip() + "\n")
+    f.write(entry.longDesc.strip().encode('utf-8') + "\n")
     f.write('""",\n')
 
     f.write('    history = [\n')
@@ -3408,7 +3408,7 @@ class KineticsDatabase:
         """
 
         def generateThermoData(species, thermoDatabase):
-            thermoData = [thermoDatabase.getThermoData(molecule) for molecule in species.molecule]
+            thermoData = [thermoDatabase.getThermoData(species)]
             thermoData.sort(key=lambda x: x.getEnthalpy(298))
             return thermoData[0]
         
@@ -3450,13 +3450,11 @@ class KineticsDatabase:
 
             reaction = Reaction(reactants=[], products=[])
             for molecule in entry.item.reactants:
-                molecule.makeHydrogensExplicit()
                 reactant = Species(molecule=[molecule])
                 reactant.generateResonanceIsomers()
                 reactant.thermo = generateThermoData(reactant, thermoDatabase)
                 reaction.reactants.append(reactant)
             for molecule in entry.item.products:
-                molecule.makeHydrogensExplicit()
                 product = Species(molecule=[molecule])
                 product.generateResonanceIsomers()
                 product.thermo = generateThermoData(product, thermoDatabase)
