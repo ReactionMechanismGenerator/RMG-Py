@@ -1014,7 +1014,7 @@ class MoleculeDrawer:
             # Split label by atoms
             labels = re.findall('[A-Z][a-z]*[0-9]*', symbol)
             if not heavyFirst: labels.reverse()
-            if 'C' not in symbol: labels.sort()
+            if 'C' not in symbol and len(atoms) == 1: labels.sort()
             symbol = ''.join(labels)
     
             # Determine positions of each character in the symbol
