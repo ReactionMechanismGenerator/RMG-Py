@@ -13,7 +13,7 @@ Molecule API Reference
     graph
     group
     molecule
-    molecule_draw
+    draw
     
 * :ref:`genindex`
 * :ref:`modindex`
