@@ -47,8 +47,18 @@ class Mopac:
     scriptAttempts = len(keywordsTop)
     maxAttempts = 2 * scriptAttempts
     
-    failureKeys = ['IMAGINARY FREQUENCIES', 'EXCESS NUMBER OF OPTIMIZATION CYCLES', 'NOT ENOUGH TIME FOR ANOTHER CYCLE']
-    
+    #: List of phrases that indicate failure
+    #: NONE of these must be present in a succesful job.
+    failureKeys = [
+                   'IMAGINARY FREQUENCIES',
+                   'EXCESS NUMBER OF OPTIMIZATION CYCLES',
+                   'NOT ENOUGH TIME FOR ANOTHER CYCLE',
+                   ]
+    #: List of phrases to indicate success.
+    #: ALL of these must be present in a successful job.
+    successKeys = [
+                   'DESCRIPTION OF VIBRATIONS',
+                  ]
 
     @property
     def outputFilePath(self):
@@ -95,24 +105,73 @@ class Mopac:
         process = Popen([self.executablePath, self.inputFilePath])
         process.communicate()# necessary to wait for executable termination!
     
-        return self.checkNoFailure()
+        return self.verifyOutputFile()
         
-    def checkNoFailure(self):
+    def verifyOutputFile(self):
         """
-        checks whether the output file contains any of the 
-        failure keywords
+        Check's that an output file exists and was successful.
+        
+        Returns a boolean flag that states whether a successful MOPAC simulation already exists for the molecule with the 
+        given (augmented) InChI Key.
+        
+        The definition of finding a successful simulation is based on these criteria:
+        1) finding an output file with the file name equal to the InChI Key
+        2) NOT finding any of the keywords that are denote a calculation failure
+        3) finding all the keywords that denote a calculation success.
+        4) finding a match between the InChI of the given molecule and the InchI found in the calculation files
+        
+        If any of the above criteria is not matched, False will be returned and the procedures to start a new calculation 
+        will be initiated.
         """
-        file = os.path.join(self.directory,self.geometry.uniqueID+self.outputFileExtension)
-        with open(file) as qmfile:    
-            for each_line in qmfile:
-                each_line = each_line.rstrip().strip()
-                for element in self.failureKeys:#search for failure keywords
-                    if element in each_line:
-                        logging.error("MOPAC output file contains the following error %s")%element
+        
+        if not os.path.exists(self.outputFilePath):
+            logging.info("Output file {0} does not exist.".format(self.outputFilePath))
+            return False
+    
+        InChIMatch=False #flag (1 or 0) indicating whether the InChI in the file matches InChIaug this can only be 1 if InChIFound is also 1
+        InChIFound=False #flag (1 or 0) indicating whether an InChI was found in the log file
+        
+        # Initialize dictionary with "False"s 
+        successKeysFound = dict([(key, False) for key in self.successKeys])
+        
+        with open(self.outputFilePath) as outputFile:
+            for line in outputFile:
+                line = line.strip()
+                
+                for element in self.failureKeys: #search for failure keywords
+                    if element in line:
+                        logging.error("MOPAC output file contains the following error: %s")%element
                         return False
                     
-        return True
+                for element in self.successKeys: #search for success keywords
+                    if element in line:
+                        successKeysFound[element] = True
+               
+                if "InChI=" in line:
+                    logFileInChI = line #output files should take up to 240 characters of the name in the input file
+                    InChIFound = True
+                    if logFileInChI == self.geometry.uniqueIDlong:
+                        InChIMatch = True
+                    else:
+                        logging.info("InChI in log file didn't match that in geometry.")
         
+        # Check that ALL 'success' keywords were found in the file.
+        if not all( successKeysFound.values() ):
+            logging.error('Not all of the required keywords for sucess were found in the output file!')
+            return False
+        
+        if not InChIFound:
+            logging.error("No InChI was found in the MOPAC output file {0}".format(self.outputFilePath))
+            return False
+        
+        if InChIMatch:
+            logging.info("Successful MOPAC quantum result found in {0}".format(self.outputFilePath))
+            # " + self.molfile.name + " ("+self.molfile.InChIAug+") has been found. This log file will be used.")
+            return True
+        
+        #InChIs do not match (most likely due to limited name length mirrored in log file (240 characters), but possibly due to a collision)
+        return self.checkForInChiKeyCollision(logFileInChI) # Not yet implemented!
+
     def read():
         # reads the output file
         import ipdb; ipdb.set_trace()
