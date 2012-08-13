@@ -92,7 +92,7 @@ class QMVerifier:
                             logging.error("MOPAC output file contains the following error %s")%element
                             return False
                         
-                    for element in self.successKeys:#search for success keywords
+                    for element in self.successKeys: #search for success keywords
                         if element in each_line:
                             self.successKeys[element] = True
                    
@@ -102,9 +102,8 @@ class QMVerifier:
                         if logFileInChI == self.molfile.InChIAug:
                             InChIMatch = True
                             
-                #check if ALL 'success' keywords were found in the file.    
-                success = True     
-                success = [success and t for t in self.successKeys.values()]
+                #check if ALL 'success' keywords were found in the file.
+                success = all( self.successKeys.values() )
                 if not success:
                     logging.info('Not all of the required keywords for sucess were found in the output file!')
                     return False
