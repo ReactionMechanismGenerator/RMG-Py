@@ -16,10 +16,17 @@ class Geometry:
         logging.info("Creating directory %s for mol files."%os.path.abspath(file_store_path))
         os.makedirs(file_store_path)
 
-    def __init__(self, uniqueID, molecule, multiplicity):
+    def __init__(self, uniqueID, molecule, multiplicity, uniqueIDlong=None):
+        #: A short unique ID such as an augmented InChI Key.
         self.uniqueID = uniqueID
         self.molecule = molecule
+        #: The multiplicity, eg. the number of free radicals plus one.
         self.multiplicity = multiplicity
+        if uniqueIDlong is None:
+            self.uniqueIDlong = uniqueID
+        else:
+            #: Long, truly unique, ID, such as the augmented InChI.
+            self.uniqueIDlong = uniqueIDlong
 
     def getCrudeMolFilePath(self):
         # os.join, uniqueID, suffix
@@ -127,9 +134,11 @@ class QMMolecule:
         """
         Creates self.geometry with RDKit geometries
         """
-        uniqueID = self.getInChiAug()
+        uniqueID = self.molecule.toAugmentedInChIKey()
+        uniqueIDlong = self.molecule.toAugmentedInChI()
         multiplicity = sum([i.radicalElectrons for i in self.molecule.atoms]) + 1
-        self.geometry = Geometry(uniqueID, self.molecule, multiplicity)
+        self.geometry = Geometry(uniqueID, self.molecule, multiplicity, uniqueIDlong=uniqueIDlong)
+        
         self.geometry.generateRDKitGeometries()
         
         return self.geometry
@@ -151,7 +160,7 @@ class QMMolecule:
 
         return thermoData
 
-    def getInChiAug(self):
+    def getInChiKeyAug(self):
         """
         Returns the augmented InChI from self.molecule 
         """

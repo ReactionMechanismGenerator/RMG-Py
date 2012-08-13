@@ -23,7 +23,7 @@ class MopacMol(QMMolecule, Mopac):
         else:
             raise Exception('QM thermo calculation failed for {0}.'.format(InChIaug))
         
-        thermo = TDPropertiesCalculator(result, self.getInChiAug())
+        thermo = TDPropertiesCalculator(result, self.getInChiKeyAug())
 
         return thermo.calculate()
 
