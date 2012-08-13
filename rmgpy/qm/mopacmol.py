@@ -18,7 +18,7 @@ class MopacMol(QMMolecule, Mopac):
             logging.info("Found a successful output file already; using that.")
         else:
             for attempt in range(1, self.maxAttempts+1):
-                top_keys, bottom_keys, polar_keys = method.inputFileKeys(attempt)
+                top_keys, bottom_keys, polar_keys = method.inputFileKeys( (attempt-1)%self.scriptAttempts+1 )
                 self.writeInputFile(attempt, top_keys, bottom_keys, polar_keys)
                 success = self.run()
                 if success:
