@@ -49,13 +49,22 @@ class Mopac:
     
     failureKeys = ['IMAGINARY FREQUENCIES', 'EXCESS NUMBER OF OPTIMIZATION CYCLES', 'NOT ENOUGH TIME FOR ANOTHER CYCLE']
     
+
+    @property
+    def outputFilePath(self):
+        """Get the Mopac output file name."""
+        return os.path.join(self.directory, self.geometry.uniqueID + self.outputFileExtension)
+
+    @property
+    def inputFilePath(self):
+        """Get the Mopac input file name."""
+        return os.path.join(self.directory, self.geometry.uniqueID + self.inputFileExtension)
+
     def writeInputFile(self, attempt, top_keys, bottom_keys, polar_keys):
         """
         Using the :class:`Geometry` object, write the input file
         for the `attmept`th attempt.
         """
-        
-        inputFilePath = os.path.join(self.directory , self.geometry.uniqueID + self.inputFileExtension)
         
         obConversion = openbabel.OBConversion()
         obConversion.SetInAndOutFormats("mol", "mop")
@@ -71,7 +80,7 @@ class Mopac:
         
         input_string = obConversion.WriteString(mol)
         
-        with open(inputFilePath, 'w') as mopacFile:
+        with open(self.inputFilePath, 'w') as mopacFile:
             mopacFile.write(top_keys)
             mopacFile.write(input_string)
             mopacFile.write('\n')
@@ -79,13 +88,11 @@ class Mopac:
             if self.usePolar:
                 mopacFile.write('\n\n\n')
                 mopacFile.write(polar_keys)
-        
-        return self.geometry.uniqueID + self.inputFileExtension
-       
-    def run(self, inputFileName):
+
+
+    def run(self):
         # submits the input file to mopac
-        command = os.path.join(self.directory, self.geometry.uniqueID + self.inputFileExtension)
-        process = Popen([self.executablePath, command])
+        process = Popen([self.executablePath, self.inputFilePath])
         process.communicate()# necessary to wait for executable termination!
     
         return self.checkNoFailure()

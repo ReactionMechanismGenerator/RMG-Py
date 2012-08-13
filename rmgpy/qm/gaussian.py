@@ -77,7 +77,7 @@ class Gaussian:
         
         return self.geometry.uniqueID + self.inputFileExtension
         
-    def run(self, inputFileName):
+    def run(self):
         # submits the input file to gaussian
         command = os.path.join(self.directory, self.geometry.uniqueID + self.inputFileExtension)
         process = Popen([self.executablePath, command])
