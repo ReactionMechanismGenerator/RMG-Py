@@ -1,9 +1,11 @@
 import os
 import logging
+import math
 
 from rdkit import Chem
 from rdkit.Chem import AllChem
 
+import rmgpy.quantity
 from rmgpy.thermo import ThermoData
 from rmgpy.statmech import RigidRotor, HarmonicOscillator, Translation, StatesModel
 import symmetry
