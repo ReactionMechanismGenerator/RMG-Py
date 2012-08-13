@@ -34,6 +34,27 @@ class MopacMol(QMMolecule, Mopac):
 
         
 class MopacPM3(MopacMol):
+    
+    "Keywords that will be added at the top of the qm input file"
+    keywordsTop = {}
+    keywordsTop[1] = "precise nosym"
+    keywordsTop[2] = "precise nosym gnorm=0.0 nonr"
+    keywordsTop[3] = "precise nosym gnorm=0.0"
+    keywordsTop[4] = "precise nosym gnorm=0.0 bfgs"
+    keywordsTop[5] = "precise nosym recalc=10 dmax=0.10 nonr cycles=2000 t=2000"
+    
+    "Keywords that will be added at the bottom of the qm input file"
+    keywordsBottom = {}
+    keywordsBottom[1] = "oldgeo thermo nosym precise "
+    keywordsBottom[2] = "oldgeo thermo nosym precise "
+    keywordsBottom[3] = "oldgeo thermo nosym precise "
+    keywordsBottom[4] = "oldgeo thermo nosym precise "
+    keywordsBottom[5] = "oldgeo thermo nosym precise "
+    
+    scriptAttempts = len(keywordsTop)
+    maxAttempts = 2 * scriptAttempts
+    
+    
     def inputFileKeys(self, attempt):
         """
         Inherits the writeInputFile methods from mopac.py
