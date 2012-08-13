@@ -144,7 +144,10 @@ class QMMolecule:
         return self.geometry
         
     def generateThermoData(self):
-
+        """
+        Currently broken: 'method' is undefined.
+        This method is probably overwritten by a subclass.
+        """
         self.createGeometry()
         
         attemptNumber = 1

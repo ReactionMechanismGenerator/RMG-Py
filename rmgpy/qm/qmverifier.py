@@ -55,7 +55,10 @@ class QMVerifier:
                 return True
             
             else:
-                logging.info("*****Warning: potential InChIKey collision: InChIKey(augmented) = " + self.molfile.name + " RMG Augmented InChI = "+ self.molfile.InChIAug + " Log file Augmented InChI = "+logFileInChI + " . InChI could not be found in the MOPAC input file. You should manually check that the output file contains the ended species.")
+                logging.info("*****Warning: potential InChIKey collision: InChIKey(augmented) = " +
+                             self.molfile.name + " RMG Augmented InChI = "+ self.molfile.InChIAug +
+                             " Log file Augmented InChI = "+logFileInChI + 
+                             " . InChI could not be found in the MOPAC input file. You should manually check that the output file contains the ended species.")
                 return False
     
 
