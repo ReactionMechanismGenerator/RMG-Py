@@ -15,8 +15,8 @@ class Gaussian:
     # edit for gaussian
     #executablePath = os.path.join(os.getenv('MOPAC_DIR', default="/opt/mopac") , 'MOPAC2009.exe')
 
-    usePolar = False#use polar keyword in MOPAC
-
+    usePolar = False
+    
     "Keywords that will be added at the top of the qm input file"
     # these are just for pm3. need to edit and put a keyword editor in specific gausspm3 class
     keywordsTop = {}#keywords that will be added to the qm input file based on the attempt number
@@ -44,7 +44,7 @@ class Gaussian:
 
     failureKeys = ['IMAGINARY FREQUENCIES', 'EXCESS NUMBER OF OPTIMIZATION CYCLES', 'NOT ENOUGH TIME FOR ANOTHER CYCLE']
 
-    def writeInputFile(self, attempt, top_keys, bottom_keys, polar_keys):
+    def writeInputFile(self, attempt, keywordsTop):
         """
         Using the :class:`Geometry` object, write the input file
         for the `attmept`th attempt.
@@ -96,7 +96,7 @@ class Gaussian:
                 each_line = each_line.rstrip().strip()
                 for element in self.failureKeys:#search for failure keywords
                     if element in each_line:
-                        logging.error("MOPAC output file contains the following error %s")%element
+                        logging.error("G09 output file contains the following error %s")%element
                         return False
 
         return True
