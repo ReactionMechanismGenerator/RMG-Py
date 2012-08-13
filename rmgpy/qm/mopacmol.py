@@ -6,23 +6,27 @@ from molecule import QMMolecule, TDPropertiesCalculator
 from mopac import Mopac
 
 class MopacMol(QMMolecule, Mopac):
+    
     def generateQMThermoData(self):
         # call the methods to generate the thermodata
         self.createGeometry()
         
         success = False
         method = MopacPM3(self)
-        for attempt in range(1, self.maxAttempts+1):
-            top_keys, bottom_keys, polar_keys = method.inputFileKeys(attempt)
-            inputFileName = self.writeInputFile(attempt, top_keys, bottom_keys, polar_keys)
-            success = self.run(inputFileName)
-            if success:
-                logging.info('Attempt {0} of {1} on species {2} succeeded.'.format(attempt, self.maxAttempts, self.molecule.toAugmentedInChI()))
-                result = self.parse() # parsed in cclib
-                break
-        else:
-            raise Exception('QM thermo calculation failed for {0}.'.format(InChIaug))
         
+        if self.verifyOutputFile():
+            logging.info("Found a successful output file already; using that.")
+        else:
+            for attempt in range(1, self.maxAttempts+1):
+                top_keys, bottom_keys, polar_keys = method.inputFileKeys(attempt)
+                self.writeInputFile(attempt, top_keys, bottom_keys, polar_keys)
+                success = self.run()
+                if success:
+                    logging.info('Attempt {0} of {1} on species {2} succeeded.'.format(attempt, self.maxAttempts, self.molecule.toAugmentedInChI()))
+                    break
+            else:
+                raise Exception('QM thermo calculation failed for {0}.'.format(self.molecule.toAugmentedInChI()))
+        result = self.parse() # parsed in cclib
         thermo = TDPropertiesCalculator(result, self.getInChiKeyAug())
 
         return thermo.calculate()
