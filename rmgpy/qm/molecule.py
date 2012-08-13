@@ -9,6 +9,7 @@ import rmgpy.quantity
 from rmgpy.thermo import ThermoData
 from rmgpy.statmech import RigidRotor, HarmonicOscillator, Translation, StatesModel
 import symmetry
+import qmdata
 
 class Geometry:
     file_store_path = 'QMfiles/'
@@ -142,38 +143,40 @@ class QMMolecule:
         self.geometry.generateRDKitGeometries()
         
         return self.geometry
+    
+    def generateQMData(self):
+        """
+        Calculate the QM data somehow and return a CCLibData object.
+        """
+        raise NotImplementedError("This should be defined in a subclass that inherits from QMMolecule")
+        return qmdata.QMData()
         
+    
     def generateThermoData(self):
         """
-        Currently broken: 'method' is undefined.
-        This method is probably overwritten by a subclass.
+        Generate Thermo Data via a QM calc
         """
-        self.createGeometry()
         
-        attemptNumber = 1
-        success = False
-        for attempt in range(method.maxAttempts):
-            writer.writeInputFile(self.geometry, attempt)
-            success = method.runJob()
-            method.parseResult()
-            if success: break
-        else:
-            raise Exception("Couldn't generate thermo data.")
-        thermoData = method.processResult()
-
-        return thermoData
+        # First generate the QM data
+        result = self.generateQMData()
+        
+        
+        thermo = TDPropertiesCalculator(result, self.getInChiKeyAug())
+        
+        
+        return thermo.calculate()
 
     def getInChiKeyAug(self):
         """
         Returns the augmented InChI from self.molecule 
-        """
-        
+        """        
         return self.molecule.toAugmentedInChIKey()
 
 
-
 class TDPropertiesCalculator:
-
+    """
+    A thermodynamic properties calculator.
+    """
     def __init__(self, qmdata, molfile, pointGroup = None):
         self.qmdata = qmdata
 

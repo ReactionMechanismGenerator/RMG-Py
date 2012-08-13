@@ -6,7 +6,6 @@ Module that collects all classes related to symmetry of molecules
 """
 
 import os
-import mopac
 
 import logging
 from subprocess import Popen, PIPE
