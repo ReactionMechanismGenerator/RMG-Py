@@ -184,7 +184,7 @@ class MopacMol(QMMolecule, Mopac):
         
     def generateQMData(self):
         """
-        Calculate the QM data and return a QMData object.
+        Calculate the QM data and return a QMData object, or None if it fails.
         """
         self.createGeometry()
         if self.verifyOutputFile():
@@ -198,7 +198,8 @@ class MopacMol(QMMolecule, Mopac):
                     logging.info('Attempt {0} of {1} on species {2} succeeded.'.format(attempt, self.maxAttempts, self.molecule.toAugmentedInChI()))
                     break
             else:
-                raise Exception('QM thermo calculation failed for {0}.'.format(self.molecule.toAugmentedInChI()))
+                logging.error('QM thermo calculation failed for {0}.'.format(self.molecule.toAugmentedInChI()))
+                return None
         result = self.parse() # parsed in cclib
         return result
 

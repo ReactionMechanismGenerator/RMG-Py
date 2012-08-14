@@ -144,18 +144,22 @@ class QMMolecule:
     
     def generateQMData(self):
         """
-        Calculate the QM data somehow and return a CCLibData object.
+        Calculate the QM data somehow and return a CCLibData object, or None if it fails.
         """
         raise NotImplementedError("This should be defined in a subclass that inherits from QMMolecule")
-        return qmdata.QMData()
+        return qmdata.QMData() or None
         
     
     def generateThermoData(self):
         """
-        Generate Thermo Data via a QM calc
+        Generate Thermo Data via a QM calc. 
+        
+        Returns None if it fails.
         """
         # First generate the QM data
         result = self.generateQMData()
+        if result is None:
+            return None
         thermo = TDPropertiesCalculator(result, self.getInChiKeyAug())
         return thermo.calculate()
 
