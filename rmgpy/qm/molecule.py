@@ -172,6 +172,17 @@ class QMMolecule:
         """        
         return self.molecule.toAugmentedInChIKey()
 
+    def getMolFilePathForCalculation(self, attempt):
+        """
+        Get the path to the MOL file of the geometry to use for calculation `attempt`.
+        
+        If attempt <= self.scriptAttempts then we use the refined coordinates,
+        then we start to use the crude coordinates.
+        """
+        if attempt <= self.scriptAttempts: # use UFF-refined coordinates
+            return self.geometry.getRefinedMolFilePath()
+        else:
+            return self.geometry.getCrudeMolFilePath()
 
 class TDPropertiesCalculator:
     """

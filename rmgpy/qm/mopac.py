@@ -152,11 +152,8 @@ class MopacMol(QMMolecule, Mopac):
         obConversion = openbabel.OBConversion()
         obConversion.SetInAndOutFormats("mol", "mop")
         mol = openbabel.OBMol()
-        
-        if attempt <= self.scriptAttempts: #use UFF-refined coordinates
-            obConversion.ReadFile(mol, self.geometry.getRefinedMolFilePath() )
-        else:
-            obConversion.ReadFile(mol, self.geometry.getCrudeMolFilePath() )
+
+        obConversion.ReadFile(mol, self.getMolFilePathForCalculation(attempt) )
         
         mol.SetTitle(self.geometry.uniqueIDlong)
         obConversion.SetOptions('k', openbabel.OBConversion.OUTOPTIONS)
