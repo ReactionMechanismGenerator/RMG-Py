@@ -126,16 +126,7 @@ class Mopac:
         #InChIs do not match (most likely due to limited name length mirrored in log file (240 characters), but possibly due to a collision)
         return self.checkForInChiKeyCollision(logFileInChI) # Not yet implemented!
 
-    def read():
-        # reads the output file
-        import ipdb; ipdb.set_trace()
-        pass
-    
-    def calculate():
-        # calculators for the parsing
-        import ipdb; ipdb.set_trace()
-        pass
-        
+
     def parse(self):
         """
         Parses the results of the Mopac calculation, and returns a CCLibData object.
