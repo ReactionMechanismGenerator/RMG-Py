@@ -18,16 +18,17 @@ class Mopac:
     usePolar = False#use polar keyword in MOPAC
     
     "Keywords for the multiplicity"
-    multiplicityKeywords = {}
-    multiplicityKeywords[1] = ''
-    multiplicityKeywords[2] = 'uhf doublet'
-    multiplicityKeywords[3] = 'uhf triplet'
-    multiplicityKeywords[4] = 'uhf quartet'
-    multiplicityKeywords[5] = 'uhf quintet'
-    multiplicityKeywords[6] = 'uhf sextet'
-    multiplicityKeywords[7] = 'uhf septet'
-    multiplicityKeywords[8] = 'uhf octet'
-    multiplicityKeywords[9] = 'uhf nonet'
+    multiplicityKeywords = {
+                            1: '',
+                            2: 'uhf doublet',
+                            3: 'uhf triplet',
+                            4: 'uhf quartet',
+                            5: 'uhf quintet',
+                            6: 'uhf sextet',
+                            7: 'uhf septet',
+                            8: 'uhf octet',
+                            9: 'uhf nonet',
+                           }
     
     #: List of phrases that indicate failure
     #: NONE of these must be present in a succesful job.
@@ -51,35 +52,6 @@ class Mopac:
     def inputFilePath(self):
         """Get the Mopac input file name."""
         return os.path.join(self.directory, self.geometry.uniqueID + self.inputFileExtension)
-
-    def writeInputFile(self, attempt, top_keys, bottom_keys, polar_keys):
-        """
-        Using the :class:`Geometry` object, write the input file
-        for the `attmept`th attempt.
-        """
-        
-        obConversion = openbabel.OBConversion()
-        obConversion.SetInAndOutFormats("mol", "mop")
-        mol = openbabel.OBMol()
-        
-        if attempt <= self.scriptAttempts: #use UFF-refined coordinates
-            obConversion.ReadFile(mol, self.geometry.getRefinedMolFilePath() )
-        else:
-            obConversion.ReadFile(mol, self.geometry.getCrudeMolFilePath() )
-        
-        mol.SetTitle(self.geometry.uniqueIDlong)
-        obConversion.SetOptions('k', openbabel.OBConversion.OUTOPTIONS)
-        
-        input_string = obConversion.WriteString(mol)
-        
-        with open(self.inputFilePath, 'w') as mopacFile:
-            mopacFile.write(top_keys)
-            mopacFile.write(input_string)
-            mopacFile.write('\n')
-            mopacFile.write(bottom_keys)
-            if self.usePolar:
-                mopacFile.write('\n\n\n')
-                mopacFile.write(polar_keys)
 
 
     def run(self):
@@ -180,6 +152,40 @@ class Mopac:
 
 class MopacMol(QMMolecule, Mopac):
 
+    def writeInputFile(self, attempt):
+        """
+        Using the :class:`Geometry` object, write the input file
+        for the `attmept`th attempt.
+        """
+        
+        obConversion = openbabel.OBConversion()
+        obConversion.SetInAndOutFormats("mol", "mop")
+        mol = openbabel.OBMol()
+        
+        if attempt <= self.scriptAttempts: #use UFF-refined coordinates
+            obConversion.ReadFile(mol, self.geometry.getRefinedMolFilePath() )
+        else:
+            obConversion.ReadFile(mol, self.geometry.getCrudeMolFilePath() )
+        
+        mol.SetTitle(self.geometry.uniqueIDlong)
+        obConversion.SetOptions('k', openbabel.OBConversion.OUTOPTIONS)
+        input_string = obConversion.WriteString(mol)
+        top_keys, bottom_keys, polar_keys = self.inputFileKeywords(attempt)
+        with open(self.inputFilePath, 'w') as mopacFile:
+            mopacFile.write(top_keys)
+            mopacFile.write(input_string)
+            mopacFile.write('\n')
+            mopacFile.write(bottom_keys)
+            if self.usePolar:
+                mopacFile.write('\n\n\n')
+                mopacFile.write(polar_keys)
+                
+    def inputFileKeywords(self, attempt):
+        """
+        Return the top, bottom, and polar keywords.
+        """
+        raise NotImplementedError("Should be defined by subclass, eg. MopacMolPM3")
+        
     def generateQMData(self):
         """
         Calculate the QM data and return a QMData object.
@@ -187,15 +193,12 @@ class MopacMol(QMMolecule, Mopac):
 
         self.createGeometry()
 
-        success = False
-        method = MopacMolPM3(self)
-
         if self.verifyOutputFile():
             logging.info("Found a successful output file already; using that.")
         else:
+            success = False
             for attempt in range(1, self.maxAttempts+1):
-                top_keys, bottom_keys, polar_keys = method.inputFileKeys( (attempt-1)%self.scriptAttempts+1 )
-                self.writeInputFile(attempt, top_keys, bottom_keys, polar_keys)
+                self.writeInputFile(attempt)
                 success = self.run()
                 if success:
                     logging.info('Attempt {0} of {1} on species {2} succeeded.'.format(attempt, self.maxAttempts, self.molecule.toAugmentedInChI()))
@@ -207,31 +210,37 @@ class MopacMol(QMMolecule, Mopac):
 
 
 class MopacMolPM3(MopacMol):
+    
 
-    "Keywords that will be added at the top and bottom of the qm input file"
+    #: Keywords that will be added at the top and bottom of the qm input file
     keywords = [
-                ("precise nosym", "oldgeo thermo nosym precise "),
-                ("precise nosym gnorm=0.0 nonr", "oldgeo thermo nosym precise "),
-                ("precise nosym gnorm=0.0", "oldgeo thermo nosym precise "),
-                ("precise nosym gnorm=0.0 bfgs", "oldgeo thermo nosym precise "),
-                ("precise nosym recalc=10 dmax=0.10 nonr cycles=2000 t=2000", "oldgeo thermo nosym precise "),
+                {'top':"precise nosym", 'bottom':"oldgeo thermo nosym precise "},
+                {'top':"precise nosym gnorm=0.0 nonr", 'bottom':"oldgeo thermo nosym precise "},
+                {'top':"precise nosym gnorm=0.0", 'bottom':"oldgeo thermo nosym precise "},
+                {'top':"precise nosym gnorm=0.0 bfgs", 'bottom':"oldgeo thermo nosym precise "},
+                {'top':"precise nosym recalc=10 dmax=0.10 nonr cycles=2000 t=2000", 'bottom':"oldgeo thermo nosym precise "},
                 ]
 
     scriptAttempts = len(keywords)
     maxAttempts = 2 * scriptAttempts
 
-    def inputFileKeys(self, attempt):
+    def inputFileKeywords(self, attempt):
         """
-        Inherits the writeInputFile methods from mopac.py
+        Return the top, bottom, and polar keywords.
         """
+        assert attempt <= self.maxAttempts
+        
+        if attempt > self.scriptAttempts:
+            attempt -= self.scriptAttempts
+        
         multiplicity_keys = self.multiplicityKeywords[self.molecule.geometry.multiplicity]
 
         top_keys = "pm3 {0} {1}".format(
                 multiplicity_keys,
-                self.keywordsTop[attempt],
+                self.keywords[attempt]['top'],
                 )
         bottom_keys = "{0} pm3 {1}".format(
-                self.keywordsBottom[attempt],
+                self.keywords[attempt]['bottom'],
                 multiplicity_keys,
                 )
         polar_keys = "oldgeo {0} nosym precise pm3 {1}".format(
