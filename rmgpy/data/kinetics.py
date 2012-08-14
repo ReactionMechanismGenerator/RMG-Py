@@ -2327,7 +2327,7 @@ class KineticsFamily(Database):
             # fout.write('export PATH=$GAUSS_EXEDIR:$PATH\n\n')
             # fout.write('g09 < ' + filename + ' > ./log/' + title + '.log\n\n')
             # fout.close()
-                        
+
     def applyRecipe(self, reactantStructures, forward=True, unique=True):
         """
         Apply the recipe for this reaction family to the list of
