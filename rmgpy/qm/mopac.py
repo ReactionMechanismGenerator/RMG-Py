@@ -100,7 +100,7 @@ class Mopac:
                 
                 for element in self.failureKeys: #search for failure keywords
                     if element in line:
-                        logging.error("MOPAC output file contains the following error: %s")%element
+                        logging.error("MOPAC output file contains the following error: {0}".format(element) )
                         return False
                     
                 for element in self.successKeys: #search for success keywords
