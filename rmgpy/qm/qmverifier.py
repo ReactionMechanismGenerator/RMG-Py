@@ -22,7 +22,6 @@ class QMVerifier:
         
         self.outputExtension = '.out'
         self.inputExtension = '.mop'
-        
     
     def checkForInChiKeyCollision(self,logFileInChI):
         """
@@ -63,27 +62,7 @@ class QMVerifier:
     
 
         #returns True if an MM4 output file for the given name and directory (.mm4out suffix) exists and indicates successful completion (same criteria as used after calculation runs) terminates if the InChI doesn't match the InChI in the file or if there is no InChI in the file returns False otherwise
-       
-    def verify(self):
-       
-        self.mopacResultExists = self.successfulMopacResultExists()
-         
-    def verifyNoFailure(self):
-        """
-        checks whether the output file contains any of the 
-        failure keywords
-        """
-        file = os.path.join(self.molfile.directory,self.molfile.name+self.outputExtension)
-        with open(file) as qmfile:    
-            for each_line in qmfile:
-                each_line = each_line.rstrip().strip()
-                for element in self.failureKeys:#search for failure keywords
-                    if element in each_line:
-                        logging.error("MOPAC output file contains the following error %s")%element
-                        return False
-                    
-        return True
-    
+
     def succesfulJobExists(self):
         """
         checks whether one of the flags is true.
