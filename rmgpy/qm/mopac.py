@@ -6,9 +6,15 @@ import logging
 from subprocess import Popen, PIPE
 
 from qmdata import CCLibData
-from molecule import QMMolecule, TDPropertiesCalculator
+from molecule import QMMolecule
 
 class Mopac:
+    """
+    A base class for all QM calculations that use MOPAC.
+    
+    Classes such as :class:`MopacMol` will inherit from this class.
+    """
+    
     
     directory = 'QMfiles'
     inputFileExtension = '.mop'
@@ -133,15 +139,17 @@ class Mopac:
         """
         parser = cclib.parser.Mopac(self.outputFilePath)
         parser.logger.setLevel(logging.ERROR) #cf. http://cclib.sourceforge.net/wiki/index.php/Using_cclib#Additional_information
-        
         cclibData = parser.parse()
         radicalNumber = sum([i.radicalElectrons for i in self.molecule.atoms])
-        
         qmData = CCLibData(cclibData, radicalNumber+1)
-            
         return qmData
 
 class MopacMol(QMMolecule, Mopac):
+    """
+    A base Class for calculations of molecules using MOPAC. 
+    
+    Inherits from both :class:`QMMolecule` and :class:`Mopac`.
+    """
 
     def writeInputFile(self, attempt):
         """
@@ -178,9 +186,7 @@ class MopacMol(QMMolecule, Mopac):
         """
         Calculate the QM data and return a QMData object.
         """
-
         self.createGeometry()
-
         if self.verifyOutputFile():
             logging.info("Found a successful output file already; using that.")
         else:
@@ -198,7 +204,6 @@ class MopacMol(QMMolecule, Mopac):
 
 
 class MopacMolPM3(MopacMol):
-    
 
     #: Keywords that will be added at the top and bottom of the qm input file
     keywords = [

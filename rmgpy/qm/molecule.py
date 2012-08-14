@@ -139,9 +139,7 @@ class QMMolecule:
         uniqueIDlong = self.molecule.toAugmentedInChI()
         multiplicity = sum([i.radicalElectrons for i in self.molecule.atoms]) + 1
         self.geometry = Geometry(uniqueID, self.molecule, multiplicity, uniqueIDlong=uniqueIDlong)
-        
         self.geometry.generateRDKitGeometries()
-        
         return self.geometry
     
     def generateQMData(self):
@@ -156,14 +154,9 @@ class QMMolecule:
         """
         Generate Thermo Data via a QM calc
         """
-        
         # First generate the QM data
         result = self.generateQMData()
-        
-        
         thermo = TDPropertiesCalculator(result, self.getInChiKeyAug())
-        
-        
         return thermo.calculate()
 
     def getInChiKeyAug(self):
@@ -190,11 +183,8 @@ class TDPropertiesCalculator:
     """
     def __init__(self, qmdata, molfile, pointGroup = None):
         self.qmdata = qmdata
-
         self.molfile = molfile
-
         self.determinePointGroup()
-
         trans = Translation(mass=(qmdata.molecularMass,"amu"))
         rot = RigidRotor(linear=self.pointGroup.linear, inertia=self.qmdata.rotationalConstants, symmetry=self.pointGroup.symmetryNumber)
         vib = HarmonicOscillator(frequencies=qmdata.frequencies)
