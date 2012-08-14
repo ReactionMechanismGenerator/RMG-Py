@@ -227,7 +227,9 @@ class MopacMolPM3(MopacMol):
 
     def inputFileKeywords(self, attempt):
         """
-        Return the top, bottom, and polar keywords.
+        Return the top, bottom, and polar keywords for attempt number `attempt`.
+        
+        NB. `attempt`s begin at 1, not 0.
         """
         assert attempt <= self.maxAttempts
         
@@ -238,10 +240,10 @@ class MopacMolPM3(MopacMol):
 
         top_keys = "pm3 {0} {1}".format(
                 multiplicity_keys,
-                self.keywords[attempt]['top'],
+                self.keywords[attempt-1]['top'],
                 )
         bottom_keys = "{0} pm3 {1}".format(
-                self.keywords[attempt]['bottom'],
+                self.keywords[attempt-1]['bottom'],
                 multiplicity_keys,
                 )
         polar_keys = "oldgeo {0} nosym precise pm3 {1}".format(
