@@ -839,6 +839,9 @@ class KineticsDepository(Database):
                             entry.data.alpha.uncertainty,
                             entry.data.E0.uncertainty / 4184.
                             ))
+
+            if not entry.rank:
+                entry.rank = 0
             flib.write('    {0:<4d}     {1}\n'.format(entry.rank, entry.shortDesc))
             
             fcom.write('------\n')
@@ -1382,12 +1385,21 @@ class KineticsLibrary(Database):
         f.write('Reactions:\n')
         for entry in entries:
             kinetics = entry.data
-            if not kinetics.isPressureDependent():
+            if kinetics.isPressureDependent():
+                continue
+            rateList = []
+            if isinstance(kinetics, MultiKinetics):
+                entry.item.duplicate = True
+                for rate in kinetics.kineticsList:
+                    rateList.append(rate)
+            else:
+                rateList.append(kinetics)
+            for rate in rateList:
                 # Write reaction equation
                 f.write('{0:<48}'.format(entry.item))
                 # Write kinetics
-                if isinstance(kinetics, Arrhenius):
-                    writeArrhenius(f, kinetics)
+                if isinstance(rate, Arrhenius):
+                    writeArrhenius(f, rate)
                 else:
                     raise DatabaseError('Unexpected kinetics type "{0}" encountered while saving old kinetics library (reactions.txt).'.format(kinetics.__class__))
                 # Mark as duplicate if needed
@@ -1404,51 +1416,60 @@ class KineticsLibrary(Database):
         f.write('Reactions:\n')
         for entry in entries:
             kinetics = entry.data
-            if entry.data.isPressureDependent():
+            if not kinetics.isPressureDependent():
+                continue
+            rateList = []
+            if isinstance(kinetics, MultiKinetics):
+                entry.item.duplicate = True
+                for rate in kinetics.kineticsList:
+                    rateList.append(rate)
+            else:
+                rateList.append(kinetics)
+            for rate in rateList:
                 # Write reaction equation
                 equation = str(entry.item)
                 index = equation.find('<=>')
-                if isinstance(kinetics, ThirdBody) and not isinstance(kinetics, Lindemann):
+                if isinstance(rate, ThirdBody) and not isinstance(rate, Lindemann):
                     equation = '{0}+ M {1} + M'.format(equation[0:index], equation[index:])
-                elif isinstance(kinetics, PDepArrhenius):
+                elif isinstance(rate, PDepArrhenius):
                     pass
                 else:
                     equation = '{0}(+M) {1} (+M)'.format(equation[0:index], equation[index:]) 
                 f.write('{0:<48}'.format(equation))
                 # Write kinetics
-                if isinstance(kinetics, ThirdBody):
-                    writeArrhenius(f, kinetics.arrheniusHigh)
-                    if len(kinetics.efficiencies) > 0:
-                        for molecule, efficiency in kinetics.efficiencies.iteritems():
+                if isinstance(rate, ThirdBody):
+                    writeArrhenius(f, rate.arrheniusHigh)
+                    if len(rate.efficiencies) > 0:
+                        for molecule, efficiency in rate.efficiencies.iteritems():
                             for spec in speciesDict.values():
                                 if molecule in spec.molecule:
                                     f.write('{0}/{1:.2f}/ '.format(spec.label, efficiency)) 
                             else:
                                 f.write('{0}/{1:.2f}/ '.format(molecule.getFormula().upper(), efficiency)) 
                         f.write('\n')
-                    if isinstance(kinetics, Lindemann):
+                    if isinstance(rate, Lindemann):
                         f.write('     LOW  /  {0:10.3e} {1:9.3f} {2:10.2f}/\n'.format(
-                            kinetics.arrheniusLow.A.value,
-                            kinetics.arrheniusLow.n.value,
-                            kinetics.arrheniusLow.Ea.value / 4.184,
+                            rate.arrheniusLow.A.value,
+                            rate.arrheniusLow.n.value,
+                            rate.arrheniusLow.Ea.value / 4.184,
                         ))
-                    if isinstance(kinetics, Troe):
-                        if kinetics.T2 is not None:
+                    if isinstance(rate, Troe):
+                        if rate.T2 is not None:
                             f.write('     TROE /  {0:10.4f} {1:10.2g} {2:10.2g} {3:10.2g}/\n'.format(
-                                kinetics.alpha.value,
-                                kinetics.T3.value,
-                                kinetics.T1.value,
-                                kinetics.T2.value,
+                                rate.alpha.value,
+                                rate.T3.value,
+                                rate.T1.value,
+                                rate.T2.value,
                             ))
                         else:
                             f.write('     TROE /  {0:10.4f} {1:10.2g} {2:10.2g}/\n'.format(
-                                kinetics.alpha.value,
-                                kinetics.T3.value,
-                                kinetics.T1.value,
+                                rate.alpha.value,
+                                rate.T3.value,
+                                rate.T1.value,
                             ))
                         
-                elif isinstance(kinetics, PDepArrhenius):
-                    for pressure, arrhenius in zip(kinetics.pressures.values, kinetics.arrhenius):
+                elif isinstance(rate, PDepArrhenius):
+                    for pressure, arrhenius in zip(rate.pressures.values, rate.arrhenius):
                         f.write('     PLOG /  {0:10g} {1:10.3e} {2:9.3f} {3:10.2f} /\n'.format(
                             pressure / 1e5,
                             arrhenius.A.value,
