@@ -154,7 +154,7 @@ cdef class Chebyshev(KineticsModel):
 
 cdef class ThirdBody(KineticsModel):
 
-    cdef public Arrhenius arrheniusHigh
+    cdef public Arrhenius arrheniusLow
     cdef public dict efficiencies
     
     cpdef toPrettyRepr(self)
@@ -169,7 +169,7 @@ cdef class ThirdBody(KineticsModel):
 
 cdef class Lindemann(ThirdBody):
 
-    cdef public Arrhenius arrheniusLow
+    cdef public Arrhenius arrheniusHigh
     
     cpdef toPrettyRepr(self)
 

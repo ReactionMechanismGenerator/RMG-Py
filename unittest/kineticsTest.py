@@ -775,7 +775,7 @@ class TestThirdBody(unittest.TestCase):
         """
         A function run before each unit test in this class.
         """
-        arrhHigh = Arrhenius(
+        arrhLow = Arrhenius(
             A = (1.0e6,"cm^3/(mol*s)"), 
             n = 1.0, 
             Ea = (10,"kJ/mol"), 
@@ -786,7 +786,7 @@ class TestThirdBody(unittest.TestCase):
         )
         efficiencies = {'N#N': 0.5, '[Ar]': 1.5}
         self.kinetics = ThirdBody(
-            arrheniusHigh = arrhHigh, 
+            arrheniusLow = arrhLow, 
             efficiencies = efficiencies, 
             Tmin = (300.0,"K"), 
             Tmax = (2000.0,"K"), 
@@ -808,7 +808,7 @@ class TestThirdBody(unittest.TestCase):
         for T in [300,400,500,600,700,800,900,1000,1100,1200,1300,1400,1500]:
             for P in [1e4,1e5,1e6]:
                 k0 = self.kinetics.getRateCoefficient(T, P)
-                k = self.kinetics.arrheniusHigh.getRateCoefficient(T) * (P / 8.314472 / T)
+                k = self.kinetics.arrheniusLow.getRateCoefficient(T) * (P / 8.314472 / T)
                 self.assertAlmostEqual(k / k0, 1, 6)
         
     def testGetColliderEfficiency(self):
@@ -834,10 +834,10 @@ class TestThirdBody(unittest.TestCase):
         import cPickle
         kinetics = cPickle.loads(cPickle.dumps(self.kinetics))
         
-        self.assertEqual(self.kinetics.arrheniusHigh.A.value, kinetics.arrheniusHigh.A.value)
-        self.assertEqual(self.kinetics.arrheniusHigh.n.value, kinetics.arrheniusHigh.n.value)
-        self.assertEqual(self.kinetics.arrheniusHigh.T0.value, kinetics.arrheniusHigh.T0.value)
-        self.assertEqual(self.kinetics.arrheniusHigh.Ea.value, kinetics.arrheniusHigh.Ea.value)
+        self.assertEqual(self.kinetics.arrheniusLow.A.value, kinetics.arrheniusLow.A.value)
+        self.assertEqual(self.kinetics.arrheniusLow.n.value, kinetics.arrheniusLow.n.value)
+        self.assertEqual(self.kinetics.arrheniusLow.T0.value, kinetics.arrheniusLow.T0.value)
+        self.assertEqual(self.kinetics.arrheniusLow.Ea.value, kinetics.arrheniusLow.Ea.value)
         for collider, efficiency in self.kinetics.efficiencies.iteritems():
             for collider0 in kinetics.efficiencies:
                 if collider.toSMILES() == collider0.toSMILES():
@@ -864,10 +864,10 @@ class TestThirdBody(unittest.TestCase):
 
         exec('kinetics = {0!r}'.format(self.kinetics))
         
-        self.assertEqual(self.kinetics.arrheniusHigh.A.value, kinetics.arrheniusHigh.A.value)
-        self.assertEqual(self.kinetics.arrheniusHigh.n.value, kinetics.arrheniusHigh.n.value)
-        self.assertEqual(self.kinetics.arrheniusHigh.T0.value, kinetics.arrheniusHigh.T0.value)
-        self.assertEqual(self.kinetics.arrheniusHigh.Ea.value, kinetics.arrheniusHigh.Ea.value)
+        self.assertEqual(self.kinetics.arrheniusLow.A.value, kinetics.arrheniusLow.A.value)
+        self.assertEqual(self.kinetics.arrheniusLow.n.value, kinetics.arrheniusLow.n.value)
+        self.assertEqual(self.kinetics.arrheniusLow.T0.value, kinetics.arrheniusLow.T0.value)
+        self.assertEqual(self.kinetics.arrheniusLow.Ea.value, kinetics.arrheniusLow.Ea.value)
         for collider, efficiency in self.kinetics.efficiencies.iteritems():
             for collider0 in kinetics.efficiencies:
                 if collider.toSMILES() == collider0.toSMILES():
@@ -1181,13 +1181,13 @@ class TestIdentity(unittest.TestCase):
         chebyshev1=Chebyshev(coeffs=[[12.71,0.052197,-0.0026878,5.7448e-06], [-0.43104,0.099138,-0.0048957,-1.404e-05], [-0.281,0.084727,-0.0036625,-7.4128e-05], [-0.19107,0.064542,-0.0021801,-0.0001291]], Tmin=(300,"K"), Tmax=(2500,"K"), Pmin=(4.93462,"atm"), Pmax=(59.2154,"atm"), comment="""NetReaction from PDepNetwork #2 (DMP) High-P Limit: R_Recombination exact:  [ C_rad/H/NonDeC , CO_rad/NonDe ] For the above reaction, deltaHrxn(T=298K) = -87.3 kcal/mol""")
         chebyshev1b=Chebyshev(coeffs=[[12.71,0.052197,-0.0026878,5.7448e-06], [-0.43104,0.099138,-0.0048957,-1.404e-05], [-0.281,0.084727,-0.0036625,-7.4128e-05], [-0.19107,0.064542,-0.0021801,-0.0001291]], Tmin=(300,"K"), Tmax=(2500,"K"), Pmin=(4.93462,"atm"), Pmax=(59.2154,"atm"), comment="""NetReaction from PDepNetwork #2 (DMP) High-P Limit: R_Recombination exact:  [ C_rad/H/NonDeC , CO_rad/NonDe ]""")
         chebyshev2=Chebyshev(coeffs=[[7.9506,0.53959,-1.586e-06,-3.1831e-07], [-0.60789,4.1618e-06,1.2168e-06,2.4422e-07], [-0.217,7.4673e-07,2.1833e-07,4.382e-08], [-0.075306,2.4397e-08,7.1345e-09,1.4325e-09]], Tmin=(300,"K"), Tmax=(2500,"K"), Pmin=(4.93462,"atm"), Pmax=(59.2154,"atm"), comment="""NetReaction from PDepNetwork #5 (HO2) High-P Limit: Oa_R_Recombination estimate: (Average:) [ O_pri_rad , Oa ] For the above reaction, deltaHrxn(T=298K) = -66.0 kcal/mol""")
-        thirdbody1=ThirdBody(arrheniusHigh=Arrhenius(A=(1.2e+17,"cm^6/(mol^2*s)"),n=-1,Ea=(0,"kcal/mol"),T0=(1,"K"),),efficiencies={
+        thirdbody1=ThirdBody(arrheniusLow=Arrhenius(A=(1.2e+17,"cm^6/(mol^2*s)"),n=-1,Ea=(0,"kcal/mol"),T0=(1,"K"),),efficiencies={
             "C":2,"C(=O)=O":3.6,"CC":3,"O":15.4,"[Ar]":0.83,"[C]=O":1.75,"[H][H]":2.4,},comment="""ReactionLibrary:GRI-Mech3.0""")
-        thirdbody1b=ThirdBody(arrheniusHigh=Arrhenius(A=(1.2e+17,"cm^6/(mol^2*s)"),n=-1,Ea=(0,"kcal/mol"),T0=(1,"K"),),efficiencies={
+        thirdbody1b=ThirdBody(arrheniusLow=Arrhenius(A=(1.2e+17,"cm^6/(mol^2*s)"),n=-1,Ea=(0,"kcal/mol"),T0=(1,"K"),),efficiencies={
             "C":2,"C(=O)=O":3.6,"CC":3,"O":15.4,"[Ar]":0.83,"[C]=O":1.75,"[H][H]":2.4,},comment="""ReactionLibrary""")
-        thirdbody2=ThirdBody(arrheniusHigh=Arrhenius(A=(1.2e+17,"cm^6/(mol^2*s)"),n=-.5,Ea=(0,"kcal/mol"),T0=(1,"K"),),efficiencies={
+        thirdbody2=ThirdBody(arrheniusLow=Arrhenius(A=(1.2e+17,"cm^6/(mol^2*s)"),n=-.5,Ea=(0,"kcal/mol"),T0=(1,"K"),),efficiencies={
                 "C":2,"C(=O)=O":3.6,"CC":3,"O":15.4,"[Ar]":0.83,"[C]=O":1.75,"[H][H]":2.4,},comment="""ReactionLibrary:GRI-Mech3.0""")
-        thirdbody3=ThirdBody(arrheniusHigh=Arrhenius(A=(1.2e+17,"cm^6/(mol^2*s)"),n=-1,Ea=(0,"kcal/mol"),T0=(1,"K"),),efficiencies={
+        thirdbody3=ThirdBody(arrheniusLow=Arrhenius(A=(1.2e+17,"cm^6/(mol^2*s)"),n=-1,Ea=(0,"kcal/mol"),T0=(1,"K"),),efficiencies={
             "C":2,"CC=O":3.6,"CC":3,"O":15.4,"[Ar]":0.83,"[C]=O":1.75,"[H][H]":2.4,},comment="""ReactionLibrary:GRI-Mech3.0""")
         troe1 = Troe(arrheniusHigh=Arrhenius(A=(7.4e+13,"cm^3/(mol*s)"),n=-0.37,Ea=(0,"kcal/mol"),T0=(1,"K"), ), arrheniusLow=Arrhenius(A=(2.3e+18,"cm^6/(mol^2*s)"),n=-0.9,Ea=(-1.7,"kcal/mol"),T0=(1,"K"), ), alpha=0.7346, T3=(94,"K"), T1=(1756,"K"), T2=(5182,"K"), efficiencies={
             "C": 2,"C(=O)=O": 2,"CC": 3,"O": 6,"[Ar]": 0.7,"[C]=O": 1.5,"[H][H]": 2, }, comment="""ReactionLibrary: GRI-Mech3.0   """)

@@ -1142,15 +1142,15 @@ class ThirdBody(KineticsModel):
     =============== ======================= ====================================
     Attribute       Type                    Description
     =============== ======================= ====================================
-    `arrheniusHigh` :class:`Arrhenius`      The Arrhenius kinetics
+    `arrheniusLow`  :class:`Arrhenius`      The low-pressure limit Arrhenius kinetics
     `efficiencies`  ``dict``                A mapping of species to collider efficiencies
     =============== ======================= ====================================
 
     """
 
-    def __init__(self, arrheniusHigh=None, efficiencies=None, Tmin=None, Tmax=None, Pmin=None, Pmax=None, comment=''):
+    def __init__(self, arrheniusLow=None, efficiencies=None, Tmin=None, Tmax=None, Pmin=None, Pmax=None, comment=''):
         KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, comment=comment)
-        self.arrheniusHigh = arrheniusHigh
+        self.arrheniusLow = arrheniusLow
         self.efficiencies = {}
         if efficiencies is not None:
             for mol, eff in efficiencies.iteritems():
@@ -1166,8 +1166,8 @@ class ThirdBody(KineticsModel):
         """
         string = u'ThirdBody(\n'
         
-        lines = self.arrheniusHigh.toPrettyRepr().splitlines()
-        string += u'    arrheniusHigh = {0}\n'.format(lines[0])
+        lines = self.arrheniusLow.toPrettyRepr().splitlines()
+        string += u'    arrheniusLow = {0}\n'.format(lines[0])
         for line in lines[1:-1]:
             string += u'    {0}\n'.format(line)
         string += u'    ),\n'
@@ -1191,7 +1191,7 @@ class ThirdBody(KineticsModel):
         """
         A helper function used when pickling a ThirdBody object.
         """
-        return (ThirdBody, (self.arrheniusHigh, self.efficiencies, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.comment))
+        return (ThirdBody, (self.arrheniusLow, self.efficiencies, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.comment))
 
     def isPressureDependent(self):
         """
@@ -1245,18 +1245,18 @@ class ThirdBody(KineticsModel):
         """
         cython.declare(C=cython.double, k=cython.double, efficiency=cython.double)
         C = P / constants.R / T # bath gas concentration in mol/m^3
-        k = self.arrheniusHigh.getRateCoefficient(T)
+        k = self.arrheniusLow.getRateCoefficient(T)
         efficiency = self.getColliderEfficiency(collider)
         return efficiency * k * C
 
     def isIdenticalTo(self,otherKinetics):
         """
-        Return ``True`` if arrheniusHigh and efficiences match that of other Kinetics model.
+        Return ``True`` if arrheniusLow and efficiences match that of other Kinetics model.
         Otherwise return ``False``.
         """
         if isinstance(otherKinetics,ThirdBody):
             if KineticsModel.isIdenticalTo(self,otherKinetics):
-                if self.arrheniusHigh.isIdenticalTo(otherKinetics.arrheniusHigh):
+                if self.arrheniusLow.isIdenticalTo(otherKinetics.arrheniusLow):
                     if len(self.efficiencies) == len(otherKinetics.efficiencies):
                         selfEff = {}
                         otherEff = {}
@@ -1307,8 +1307,8 @@ class Lindemann(ThirdBody):
     """
 
     def __init__(self, arrheniusLow=None, arrheniusHigh=None, efficiencies=None, Tmin=None, Tmax=None, Pmin=None, Pmax=None, comment=''):
-        ThirdBody.__init__(self, arrheniusHigh=arrheniusHigh, efficiencies=efficiencies, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, comment=comment)
-        self.arrheniusLow = arrheniusLow
+        ThirdBody.__init__(self, arrheniusLow=arrheniusLow, efficiencies=efficiencies, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, comment=comment)
+        self.arrheniusHigh = arrheniusHigh
 
     def toPrettyRepr(self):
         """
@@ -1373,7 +1373,7 @@ class Lindemann(ThirdBody):
         """
         if isinstance(otherKinetics,Lindemann):
             if ThirdBody.isIdenticalTo(self,otherKinetics):
-                if self.arrheniusLow.isIdenticalTo(otherKinetics.arrheniusLow):
+                if self.arrheniusHigh.isIdenticalTo(otherKinetics.arrheniusHigh):
                     return True
 
         return False
