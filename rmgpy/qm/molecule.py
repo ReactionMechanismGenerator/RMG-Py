@@ -148,8 +148,7 @@ class QMMolecule:
         """
         raise NotImplementedError("This should be defined in a subclass that inherits from QMMolecule")
         return qmdata.QMData() or None
-        
-    
+
     def generateThermoData(self):
         """
         Generate Thermo Data via a QM calc. 
@@ -160,8 +159,9 @@ class QMMolecule:
         result = self.generateQMData()
         if result is None:
             return None
-        thermo = TDPropertiesCalculator(result, self.getInChiKeyAug())
-        return thermo.calculate()
+        calculator = TDPropertiesCalculator(result, self.getInChiKeyAug())
+        self.thermo = calculator.calculate()
+        return self.thermo
 
     def getInChiKeyAug(self):
         """
@@ -202,29 +202,37 @@ class TDPropertiesCalculator:
         self.pointGroup = pgc.calculate();
 
     def calculateChiralityCorrection(self):
+        """
+        Returns the chirality correction to entropy (R*ln(2) if chiral) in J/mol/K.
+        """
         if self.pointGroup.chiral:
             return rmgpy.quantity.constants.R * math.log(2);
         else:
             return 0.
 
     def calculate(self):
+        """
+        Calculate the thermodynamic properties and return a ThermoData object.
+        """
+        
         #we will use number of atoms from above (alternatively, we could use the chemGraph); this is needed to test whether the species is monoatomic
-        Hartree_to_kcal = 627.5095#conversion from Hartree to kcal/mol taken from Gaussian thermo white paper
-        Hf298 = self.qmdata.energy * Hartree_to_kcal;
-
+        # Hartree_to_kcal = 627.5095 # from Gaussian thermo white paper
+        Hartree_to_kJmol = 2625.49962 # from Wikipedia, which cites CODATA2010
+        Hf298 = self.qmdata.energy * Hartree_to_kJmol
+        
         S298 = self.statesmodel.getEntropy(298.0)
-
-        Tdata = [300.0,400.0,500.0,600.0,800.0,1000.0,1500.0]
-        Cp = []
-        for T in Tdata:
-            Cp.append(self.statesmodel.getHeatCapacity(T))
-
+        Tdata = [300.0, 400.0, 500.0, 600.0, 800.0, 1000.0, 1500.0]
+        Cp = [self.statesmodel.getHeatCapacity(T) for T in Tdata]
         S298 = S298 + self.calculateChiralityCorrection()
-
-        Tmin = 300.0
-
-        Tmax = 2000.0
-
         comment = "PM3 or MM4 calculation"
 
-        return ThermoData(Tdata, Cp, Hf298, S298, Tmin, Tmax, comment)
+        thermo = ThermoData( 
+                           Tdata = (Tdata,"K"),
+                           Cpdata = (Cp,"J/(mol*K)"),
+                           H298 = (Hf298,"kJ/mol"),
+                           S298 = (S298,"J/(mol*K)"),
+                           Tmin = (300.0,"K"),
+                           Tmax = (2000.0,"K"),
+                           comment = comment
+                          )
+        return thermo
