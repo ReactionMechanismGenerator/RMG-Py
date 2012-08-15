@@ -1099,6 +1099,7 @@ class KineticsLibrary(Database):
 
                             # Strip out "(+M)" from line
                             line = line.replace("(+M)", "")
+                            line = line.replace("(+m)", "")
 
                             items = line.split()
 
@@ -1116,16 +1117,19 @@ class KineticsLibrary(Database):
                                 dataIndex = -3
 
                             # Find the reactant and product items
+                            hasThirdBody = False
                             reactantItems = []
                             for item in items[0:arrowIndex]:
                                 if item != '+':
                                     for i in item.split('+'):
-                                        if i != '' and i != 'M': reactantItems.append(i)
+                                        if i != '' and i != 'M' and i != 'm': reactantItems.append(i)
+                                        elif i != '' and (i == 'M' or i == 'm'): hasThirdBody = True
                             productItems = []
                             for item in items[arrowIndex+1:dataIndex]:
                                 if item != '+':
                                     for i in item.split('+'):
-                                        if i != '' and i != 'M': productItems.append(i)
+                                        if i != '' and i != 'M' and i != 'm': productItems.append(i)
+                                        elif i != '' and (i == 'M' or i == 'm'): hasThirdBody = True
                             
                             reactants = []; products = []
                             for item in reactantItems:
@@ -1147,14 +1151,15 @@ class KineticsLibrary(Database):
                                 dA = '0'; dn = '0'; dEa = '0'
                             
                             A = float(A)
+                            kunits = Aunits[len(reactants)+1] if hasThirdBody else Aunits[len(reactants)]
                             if dA[0] == '*':
-                                A = Quantity(A,Aunits[len(reactants)],'*|/',float(dA[1:]))
+                                A = Quantity(A,kunits,'*|/',float(dA[1:]))
                             else:
                                 dA = float(dA)
                                 if dA != 0:
-                                    A = Quantity(A,Aunits[len(reactants)],'+|-',dA)
+                                    A = Quantity(A,kunits,'+|-',dA)
                                 else:
-                                    A = Quantity(A,Aunits[len(reactants)])
+                                    A = Quantity(A,kunits)
 
                             n = float(n); dn = float(dn)
                             if dn != 0:
@@ -1169,7 +1174,9 @@ class KineticsLibrary(Database):
                                 Ea = Quantity(Ea,Eunits)
 
                             kinetics = Arrhenius(A=A, n=n, Ea=Ea, T0=(1.0,"K"))
-
+                            if hasThirdBody:
+                                kinetics = ThirdBody(arrheniusLow=kinetics)
+                            
                             reaction = Reaction(
                                 reactants=reactants,
                                 products=products,
@@ -1206,8 +1213,10 @@ class KineticsLibrary(Database):
                             # This line contains low-pressure-limit Arrhenius parameters in Chemkin format
 
                             # Upgrade the kinetics to a Lindemann if not already done
-                            if isinstance(kinetics, ThirdBody):
-                                kinetics = Lindemann(arrheniusHigh=kinetics.arrheniusHigh,
+                            if isinstance(kinetics, Lindemann):
+                                pass
+                            elif isinstance(kinetics, ThirdBody):
+                                kinetics = Lindemann(arrheniusHigh=kinetics.arrheniusLow,
                                                      efficiencies=kinetics.efficiencies,
                                                      comment=kinetics.comment)
                                 reaction.kinetics = kinetics
@@ -1218,7 +1227,7 @@ class KineticsLibrary(Database):
 
                             items = line.split('/')
                             A, n, Ea = items[1].split()
-                            A = Quantity(float(A), Aunits[len(reactants)])
+                            A = Quantity(float(A), Aunits[len(reactants)+1])
                             n = Quantity(float(n), '')
                             Ea = Quantity(float(Ea), Eunits)
                             kinetics.arrheniusLow = Arrhenius(A=A, n=n, Ea=Ea, T0=1.0)
@@ -1234,7 +1243,7 @@ class KineticsLibrary(Database):
                                                 comment=kinetics.comment)
                                 reaction.kinetics = kinetics
                             elif isinstance(kinetics, ThirdBody):
-                                kinetics = Troe(arrheniusHigh=kinetics.arrheniusHigh,
+                                kinetics = Troe(arrheniusHigh=kinetics.arrheniusLow,
                                                 efficiencies=kinetics.efficiencies,
                                                 comment=kinetics.comment)
                                 reaction.kinetics = kinetics
@@ -1264,9 +1273,9 @@ class KineticsLibrary(Database):
                         else:
                             # This line contains collider efficiencies
 
-                            # Upgrade the kinetics to a ThirdBody if not already done
+                            # Upgrade the kinetics to a Lindemann if not already done
                             if isinstance(kinetics, Arrhenius):
-                                kinetics = ThirdBody(arrheniusHigh=kinetics, comment=kinetics.comment)
+                                kinetics = Lindemann(arrheniusHigh=kinetics, comment=kinetics.comment)
                                 kinetics.arrheniusHigh.comment = ''
                                 reaction.kinetics = kinetics
 
