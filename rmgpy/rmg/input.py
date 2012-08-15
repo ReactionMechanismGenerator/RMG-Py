@@ -51,7 +51,15 @@ class InputError(Exception): pass
 rmg = None
 speciesDict = {}
 
-def database(thermoLibraries=None, reactionLibraries=None, frequenciesLibraries=None, seedMechanisms=None, kineticsFamilies='default', kineticsDepositories='default', kineticsEstimator='group additivity'):
+def database(
+             thermoLibraries = None,
+             reactionLibraries = None,
+             frequenciesLibraries = None,
+             seedMechanisms = None,
+             kineticsFamilies = 'default',
+             kineticsDepositories = 'default',
+             kineticsEstimator = 'group additivity',
+             ):
     # This function just stores the information about the database to be loaded
     # We don't actually load the database until after we're finished reading
     # the input file
@@ -100,7 +108,13 @@ def adjacencyList(string):
     return Molecule().fromAdjacencyList(string)
 
 # Reaction systems
-def simpleReactor(temperature, pressure, initialMoleFractions, terminationConversion=None, terminationTime=None):
+def simpleReactor(
+                  temperature,
+                  pressure,
+                  initialMoleFractions,
+                  terminationConversion = None,
+                  terminationTime = None,
+                  ):
     logging.debug('Found SimpleReactor reaction system')
 
     if sum(initialMoleFractions.values()) != 1:
@@ -133,7 +147,14 @@ def model(toleranceMoveToCore, toleranceKeepInEdge=0.0, toleranceInterruptSimula
     rmg.fluxToleranceInterrupt = toleranceInterruptSimulation
     rmg.maximumEdgeSpecies = maximumEdgeSpecies
 
-def pressureDependence(method, temperatures, pressures, maximumGrainSize=0.0, minimumNumberOfGrains=0, interpolation=None):
+def pressureDependence(
+                       method,
+                       temperatures,
+                       pressures,
+                       maximumGrainSize = 0.0,
+                       minimumNumberOfGrains = 0,
+                       interpolation = None,
+                       ):
 
     from rmgpy.measure.input import getTemperaturesForModel, getPressuresForModel
     from rmgpy.measure.main import MEASURE
@@ -167,7 +188,13 @@ def pressureDependence(method, temperatures, pressures, maximumGrainSize=0.0, mi
     # Process interpolation model
     rmg.pressureDependence.model = interpolation
 
-def options(units='si', saveRestartPeriod=None, drawMolecules=False, generatePlots=False, saveConcentrationProfiles=False):
+def options(
+            units='si',
+            saveRestartPeriod = None,
+            drawMolecules = False,
+            generatePlots = False,
+            saveConcentrationProfiles = False,
+            ):
     rmg.units = units
     rmg.saveRestartPeriod = Quantity(saveRestartPeriod) if saveRestartPeriod else None
     rmg.drawMolecules = drawMolecules
