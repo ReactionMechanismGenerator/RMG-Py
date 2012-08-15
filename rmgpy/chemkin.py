@@ -328,7 +328,7 @@ def readKineticsEntry(entry, speciesDict, energyUnits, moleculeUnits):
             reaction.kinetics = Lindemann(arrheniusHigh=arrheniusHigh, arrheniusLow=arrheniusLow)
             reaction.kinetics.efficiencies = efficiencies
         elif thirdBody:
-            reaction.kinetics = ThirdBody(arrheniusHigh=arrheniusHigh)
+            reaction.kinetics = ThirdBody(arrheniusLow=arrheniusHigh)
             reaction.kinetics.efficiencies = efficiencies
         elif reaction.duplicate:
             reaction.kinetics = arrheniusHigh
@@ -979,7 +979,7 @@ def writeKineticsEntry(reaction, speciesList):
             arrhenius.Ea.value / 4184.
         )
     elif isinstance(kinetics, ThirdBody):
-        arrhenius = kinetics.arrheniusHigh
+        arrhenius = kinetics.arrheniusLow
         string += '{0:<9.3e} {1:<9.3f} {2:<9.3f}'.format(
             arrhenius.A.value / (arrhenius.T0.value ** arrhenius.n.value) * 1.0e6 ** (numReactants),
             arrhenius.n.value,
