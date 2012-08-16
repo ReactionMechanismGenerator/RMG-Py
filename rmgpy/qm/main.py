@@ -102,10 +102,8 @@ class QMCalculator():
         """
         Do any startup tasks.
         """
-        
         self.checkReady()
 
-    
     def checkReady(self):
         """
         Check that it's ready to run calculations.
@@ -117,6 +115,8 @@ class QMCalculator():
         """
         Check the paths in the settings are OK. Make folders as necessary.
         """
+        self.settings.fileStore = os.path.expandvars(self.settings.fileStore) # to allow things like $HOME or $RMGpy
+        self.settings.scratchDirectory = os.path.expandvars(self.settings.scratchDirectory)
         for path in [self.settings.fileStore, self.settings.scratchDirectory]:
             if not os.path.exists(path):
                 logging.info("Creating directory %s for QM files."%os.path.abspath(path))
