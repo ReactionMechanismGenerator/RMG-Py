@@ -84,7 +84,7 @@ class Mopac:
         """
         
         if not os.path.exists(self.outputFilePath):
-            logging.info("Output file {0} does not exist.".format(self.outputFilePath))
+            logging.debug("Output file {0} does not (yet) exist.".format(self.outputFilePath))
             return False
     
         InChIMatch=False #flag (1 or 0) indicating whether the InChI in the file matches InChIaug this can only be 1 if InChIFound is also 1
@@ -193,10 +193,10 @@ class MopacMol(QMMolecule, Mopac):
             success = False
             for attempt in range(1, self.maxAttempts+1):
                 self.writeInputFile(attempt)
+                logging.info('Trying {3} attempt {0} of {1} on molecule {2}.'.format(attempt, self.maxAttempts, self.molecule.toSMILES(), self.__class__.__name__))
                 success = self.run()
                 if success:
                     source = "QM {0} calculation attempt {1}".format(self.__class__.__name__, attempt )
-                    logging.info('Attempt {0} of {1} on species {2} succeeded.'.format(attempt, self.maxAttempts, self.molecule.toAugmentedInChI()))
                     break
             else:
                 logging.error('QM thermo calculation failed for {0}.'.format(self.molecule.toAugmentedInChI()))
