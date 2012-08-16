@@ -7,7 +7,7 @@ from rdkit.Chem import AllChem
 
 import rmgpy.quantity
 from rmgpy.thermo import ThermoData
-from rmgpy.statmech import RigidRotor, HarmonicOscillator, Translation, StatesModel
+import rmgpy.statmech
 import symmetry
 import qmdata
 
@@ -139,15 +139,24 @@ class QMMolecule:
     def __init__(self, molecule, settings):
         self.molecule = molecule
         self.settings = settings
+        
+        self.uniqueID = self.molecule.toAugmentedInChIKey()
+        self.uniqueIDlong = self.molecule.toAugmentedInChI()
 
+    def getFilePath(self, extension):
+        """
+        Returns the path to the file with the given extension.
+        
+        The provided extension should include the leading dot.
+        """
+        return os.path.join(self.settings.fileStore, self.uniqueID  + extension)
+        
     def createGeometry(self):
         """
         Creates self.geometry with RDKit geometries
         """
-        uniqueID = self.molecule.toAugmentedInChIKey()
-        uniqueIDlong = self.molecule.toAugmentedInChI()
         multiplicity = sum([i.radicalElectrons for i in self.molecule.atoms]) + 1
-        self.geometry = Geometry(self.settings, uniqueID, self.molecule, multiplicity, uniqueIDlong=uniqueIDlong)
+        self.geometry = Geometry(self.settings, self.uniqueID, self.molecule, multiplicity, uniqueIDlong=self.uniqueIDlong)
         self.geometry.generateRDKitGeometries()
         return self.geometry
     
@@ -165,11 +174,13 @@ class QMMolecule:
         Returns None if it fails.
         """
         # First generate the QM data
-        result = self.generateQMData()
-        if result is None:
+        self.qmData = self.generateQMData()
+        
+        if self.qmData  is None:
             return None
-        calculator = TDPropertiesCalculator(result, self.getInChiKeyAug())
-        self.thermo = calculator.calculate()
+            
+        self.determinePointGroup()
+        self.calculateThermoData()
         return self.thermo
 
     def getInChiKeyAug(self):
@@ -189,45 +200,49 @@ class QMMolecule:
             return self.geometry.getRefinedMolFilePath()
         else:
             return self.geometry.getCrudeMolFilePath()
-
-class TDPropertiesCalculator:
-    """
-    A thermodynamic properties calculator.
-    """
-    def __init__(self, qmdata, molfile, pointGroup = None):
-        self.qmdata = qmdata
-        self.molfile = molfile
-        self.determinePointGroup()
-        trans = Translation(mass=(qmdata.molecularMass,"amu"))
-        rot = RigidRotor(linear=self.pointGroup.linear, inertia=self.qmdata.rotationalConstants, symmetry=self.pointGroup.symmetryNumber)
-        vib = HarmonicOscillator(frequencies=qmdata.frequencies)
-        self.statesmodel = StatesModel(modes=[trans, rot, vib], spinMultiplicity=self.qmdata.groundStateDegeneracy)
-
-
+    
     def determinePointGroup(self):
-        #determine point group using the SYMMETRY Program
-
-        pgc = symmetry.PointGroupCalculator(self.molfile, self.qmdata);
-        self.pointGroup = pgc.calculate();
+        """
+        Determine point group using the SYMMETRY Program
+        
+        Stores the resulting :class:`PointGroup` in self.pointGroup
+        """
+        assert self.qmData, "Need QM Data first in order to calculate point group."
+        pgc = symmetry.PointGroupCalculator(self.settings, self.uniqueID, self.qmData)
+        self.pointGroup = pgc.calculate()
 
     def calculateChiralityCorrection(self):
         """
         Returns the chirality correction to entropy (R*ln(2) if chiral) in J/mol/K.
         """
         if self.pointGroup.chiral:
-            return rmgpy.quantity.constants.R * math.log(2);
+            return rmgpy.quantity.constants.R * math.log(2)
         else:
             return 0.
 
-    def calculate(self):
+    def calculateThermoData(self):
         """
-        Calculate the thermodynamic properties and return a ThermoData object.
+        Calculate the thermodynamic properties.
+        
+        Stores and returns a ThermoData object as self.thermo.
+        self.qmData and self.pointGroup need to be generated before this method is called.
         """
+        assert self.qmData, "Need QM Data first in order to calculate thermo."
+        assert self.pointGroup, "Need Point Group first in order to calculate thermo."
+        
+        trans = rmgpy.statmech.Translation( mass=(self.qmData.molecularMass,"amu") )
+        rot = rmgpy.statmech.RigidRotor( linear = self.pointGroup.linear,
+                                         inertia = self.qmData.rotationalConstants,
+                                         symmetry = self.pointGroup.symmetryNumber,
+                                        )
+        vib = rmgpy.statmech.HarmonicOscillator( frequencies=self.qmData.frequencies )
+        self.statesmodel = rmgpy.statmech.StatesModel( modes=[trans, rot, vib],
+                                spinMultiplicity = self.qmData.groundStateDegeneracy )
         
         #we will use number of atoms from above (alternatively, we could use the chemGraph); this is needed to test whether the species is monoatomic
         # Hartree_to_kcal = 627.5095 # from Gaussian thermo white paper
         Hartree_to_kJmol = 2625.49962 # from Wikipedia, which cites CODATA2010
-        Hf298 = self.qmdata.energy * Hartree_to_kJmol
+        Hf298 = self.qmData.energy * Hartree_to_kJmol
         
         S298 = self.statesmodel.getEntropy(298.0)
         Tdata = [300.0, 400.0, 500.0, 600.0, 800.0, 1000.0, 1500.0]
@@ -244,4 +259,5 @@ class TDPropertiesCalculator:
                            Tmax = (2000.0,"K"),
                            comment = comment
                           )
+        self.thermo = thermo
         return thermo
