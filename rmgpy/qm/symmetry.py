@@ -1,6 +1,6 @@
 """
 Created on Apr 29, 2012
-@author: nmvdewie
+@author: nmvdewie and rwest
 
 Module that collects all classes related to symmetry of molecules
 """
@@ -10,12 +10,134 @@ import os
 import logging
 from subprocess import Popen, PIPE
 
+class PointGroup:
+    """
+    A symmetry Point Group.
+    
+    Attributes are:
+    
+     * pointGroup
+     * symmetryNumber
+     * chiral
+     * linear 
+    """
+    def __init__(self, pointGroup, symmetryNumber, chiral):
+
+        self.pointGroup = pointGroup
+        self.symmetryNumber = symmetryNumber
+        self.chiral = chiral
+
+        #determine linearity from 3D-geometry; changed to correctly consider linear ketene radical case
+        if self.pointGroup in ["Cinfv", "Dinfh"]:
+            self.linear = True;
+        else:
+            self.linear = False;
+
+    def __repr__(self):
+        return 'PointGroup("{0}", symmetryNumber={1}, chiral={2})'.format(self.pointGroup, self.symmetryNumber, self.chiral)
+
+def makePointGroupDictionary():
+    """
+    A function to make and fill the point group dictionary.
+    
+    This will be stored once as a module level variable.
+    """
+    pointGroupDictionary = dict()
+    for (pointGroup, symmetryNumber, chiral) in [
+        ("C1"   ,  1,  True ),
+        ("Cs"   ,  1,  False),
+        ("Ci"   ,  1,  False),
+        ("C2"   ,  2,  True ),
+        ("C3"   ,  3,  True ),
+        ("C4"   ,  4,  True ),
+        ("C5"   ,  5,  True ),
+        ("C6"   ,  6,  True ),
+        ("C7"   ,  7,  True ),
+        ("C8"   ,  8,  True ),
+    
+        ("D2"   ,  4,  True ),
+        ("D3"   ,  6,  True ),
+        ("D4"   ,  8,  True ),
+        ("D5"   , 10,  True ),
+        ("D6"   , 12,  True ),
+        ("D7"   , 14,  True ),
+        ("D8"   , 16,  True ),
+    
+        ("C2v"  ,  2,  False),
+        ("C3v"  ,  3,  False),
+        ("C4v"  ,  4,  False),
+        ("C5v"  ,  5,  False),
+        ("C6v"  ,  6,  False),
+        ("C7v"  ,  7,  False),
+        ("C8v"  ,  8,  False),
+    
+        ("C2h"  ,  2,  False),
+        ("C3h"  ,  3,  False),
+        ("C4h"  ,  4,  False),
+        ("C5h"  ,  5,  False),
+        ("C6h"  ,  6,  False),
+        ("C8h"  ,  8,  False),
+    
+        ("D2h"  ,  4,  False),
+        ("D3h"  ,  6,  False),
+        ("D4h"  ,  8,  False),
+        ("D5h"  , 10,  False),
+        ("D6h"  , 12,  False),
+        ("D7h"  , 14,  False),
+        ("D8h"  , 16,  False),
+    
+        ("D2d"  ,  4,  False),
+        ("D3d"  ,  6,  False),
+        ("D4d"  ,  8,  False),
+        ("D5d"  , 10,  False),
+        ("D6d"  , 12,  False),
+        ("D7d"  , 14,  False),
+        ("D8d"  , 16,  False),
+    
+        ("S4"   ,  2,  True ),
+        ("S6"   ,  3,  True ),
+        ("S8"   ,  4,  True ),
+    
+        ("T"    , 12,  True ),
+        ("Th"   , 12,  False),
+        ("Td"   , 12,  False),
+    
+        ("O"    , 24,  True ),
+        ("Oh"   , 24,  False),
+    
+        ("Cinfv",  1,  False),
+        ("Dinfh",  2,  False),
+        ("I"    , 60,  True ),
+        ("Ih"   , 60,  False),
+        ("Kh"   ,  1,  False),
+    ]:
+        pointGroupDictionary[pointGroup] = PointGroup(pointGroup, symmetryNumber, chiral)
+    return pointGroupDictionary
+    
+#: A dictionary of PointGroup objects, stored as a module level variable.
+pointGroupDictionary = makePointGroupDictionary()
+
+
+class PointGroupCalculator:
+    """
+    Wrapper type to determine molecular symmetry point groups based on 3D coords information.
+
+    Will point to a specific algorithm, like SYMMETRY that is able to do this.
+    """
+    def __init__(self, settings, uniqueID, qmData):
+        self.uniqueID = uniqueID
+        self.qmData = qmData # QMDdata object that contains 3D coords of molecule used in symmetry calculation
+        self.calculator = SymmetryJob(settings, uniqueID, qmData)
+
+    def calculate(self):
+        return self.calculator.calculate();
+
 
 class SymmetryJob:
     """
     Determine the point group using the SYMMETRY program 
+    
     (http://www.cobalt.chem.ucalgary.ca/ps/symmetry/).
-
 
     Required input is a line with number of atoms followed by lines for each atom 
     including:
@@ -26,17 +148,8 @@ class SymmetryJob:
     values are comparable to those specified in the GaussView point group interface
 
     """
-    directory = 'QMfiles'
 
-    RMG_path = os.environ.get("RMGpy")
-    if RMG_path is None:
-        RMG_path = os.path.abspath(os.path.join(os.path.dirname(__file__),'..','..'))
-        logging.info("Setting RMG_path to {0}".format(RMG_path))
-    executable_path = os.path.join(RMG_path, 'bin', 'symmetry')
-    if not os.path.exists(executable_path):
-        raise Exception("Symmetry program not found at {0}.".format(executable_path))
-
-    'Argumenst that will be passed as an argument for the consecutive attempts'
+    'Arguments that will be passed as an argument for the consecutive attempts'
     argumentsList = [
          ['-final', '0.02'],
          ['-final', '0.1'],
@@ -46,21 +159,26 @@ class SymmetryJob:
 
     inputFileExtension = '.symm'
 
-    def __init__(self, molfile, iqmdata):
-        self.molfile = molfile
+    def __init__(self, settings, uniqueID, qmData):
+        self.settings = settings
+        self.uniqueID = uniqueID
 
-        'the command line command'
-        self.command = []
-
-        "IQMData is the object that holds information from a previous QM Job on 3D coords, molecule etc..."
-        self.qmdata = iqmdata
-
-        self.inputFile = self.molfile + self.inputFileExtension
-
+        "The object that holds information from a previous QM Job on 3D coords, molecule etc..."
+        self.qmData = qmData
         self.attemptNumber = 1
         self.pointGroupFound = False
 
-    def check(self, output):
+        self.executable_path = os.path.join(settings.RMG_bin_path, 'symmetry')
+        if not os.path.exists(self.executable_path):
+            raise Exception("Symmetry program not found at {0}.".format(self.executable_path))
+        
+
+    @property
+    def inputFilePath(self):
+        "The input file's path"
+        return os.path.join(self.settings.fileStore, self.uniqueID + self.inputFileExtension)
+        
+    def parse(self, output):
         """
         Check the `output` string and extract the resulting point group, which is returned.
         """
@@ -75,29 +193,32 @@ class SymmetryJob:
         logging.info("Point group: "+ result)
         return result;
 
-    def run(self):
+    def run(self, command):
         """
-        Run the command and wait for it to finish.
+        Run the command, wait for it to finish, and return the stdout.
         """
-        pp = Popen(self.command, stdout=PIPE, stderr=PIPE)
+        pp = Popen(command, stdout=PIPE, stderr=PIPE)
         stdout, stderr = pp.communicate()
-        return self.check(stdout)    
+        if stderr:
+            logging.error("Error message from SYMMETRY calculation:")
+            logging.error(stderr)
+        return stdout
 
     def writeInputFile(self):
         """
         Write the input file for the SYMMETRY program.
         """
-        geom = str(self.qmdata.numberOfAtoms) + "\n"
-        for i in range(self.qmdata.numberOfAtoms):
-            geom = geom + " ".join((str(self.qmdata.atomicNumbers[i]),
-                                    str(self.qmdata.atomCoords[i][0]),
-                                    str(self.qmdata.atomCoords[i][1]),
-                                    str(self.qmdata.atomCoords[i][2])
+        geom = str(self.qmData.numberOfAtoms) + "\n"
+        for i in range(self.qmData.numberOfAtoms):
+            geom = geom + " ".join((str(self.qmData.atomicNumbers[i]),
+                                    str(self.qmData.atomCoords[i][0]),
+                                    str(self.qmData.atomCoords[i][1]),
+                                    str(self.qmData.atomCoords[i][2])
                                    )) + "\n"
-        with open(os.path.join(self.directory, self.inputFile), 'w') as input_file:
+        with open(self.inputFilePath, 'w') as input_file:
             input_file.write(geom)
         input_file.close()
-        logging.info("Symmetry input file written to %s"%os.path.join(self.directory, self.inputFile))
+        logging.info("Symmetry input file written to {0}".format(self.inputFilePath))
         return input_file
 
     def calculate(self):
@@ -116,238 +237,21 @@ class SymmetryJob:
             """
             TODO only *nix case works!
             """
-            self.command = [self.executable_path]
-            self.command.extend(arguments)
-            self.command.append(os.path.join(self.directory, self.inputFile))
+            command = [self.executable_path]
+            command.extend(arguments)
+            command.append(self.inputFilePath)
 
             #call the program and read the result
-            result = self.run();
-
-            #check for a recognized point group
-            symmPGC = PointGroupDictionary()
-
-            if symmPGC.contains(result):
+            output = self.run(command)
+            # parse the output to get a point group name
+            pointGroupName = self.parse(output)
+            
+            if pointGroupDictionary.has_key(pointGroupName):
                 self.pointGroupFound = True;
-                return PointGroup(result)
+                return pointGroupDictionary[pointGroupName]
             else:
-                logging.info("Attempt number {0} did not identify a recognized point group ({1}).".format(attempt,result))
+                logging.info("Attempt number {0} did not identify a recognized point group ({1}).".format(attempt,pointGroupName))
         logging.critical("Final attempt did not identify a recognized point group. Exiting.")
         return None
-        
 
-class PointGroupDictionary:
-    """
-     Dictionary type with all the  symmetry groups supported in RMG
-    """
-    def __init__(self):
-        #Map with the symmetry groups and their associated symmmetry numbers
-        self.library = {}
-        
-        #Map with the symmetry groups and a flag whether it is chiral or not
-        self.chiralLibrary = {}
-        
-        self.initiate()
-    
-    def populateGroups(self):
-        """
-        Could be externalized, so that users could add/remove symmetry groups
-        """
-        self.library["C1"] = 1
-        self.library["Cs"] = 1
-        self.library["Ci"] = 1
-        self.library["C2"] = 2
-        self.library["C3"] = 3
-        self.library["C4"] = 4
-        self.library["C5"] = 5
-        self.library["C6"] = 6
-        self.library["C7"] = 7
-        self.library["C8"] = 8
 
-        self.library["D2"] = 4
-        self.library["D3"] = 6
-        self.library["D4"] = 8
-        self.library["D5"] = 10
-        self.library["D6"] = 12
-        self.library["D7"] = 14
-        self.library["D8"] = 16
-
-        self.library["C2v"] = 2
-        self.library["C3v"] = 3
-        self.library["C4v"] = 4
-        self.library["C5v"] = 5
-        self.library["C6v"] = 6
-        self.library["C7v"] = 7
-        self.library["C8v"] = 8
-
-        self.library["C2h"] = 2
-        self.library["C3h"] = 3
-        self.library["C4h"] = 4
-        self.library["C5h"] = 5
-        self.library["C6h"] = 6
-        self.library["C8h"] = 8
-
-        self.library["D2h"] = 4
-        self.library["D3h"] = 6
-        self.library["D4h"] = 8
-        self.library["D5h"] = 10
-        self.library["D6h"] = 12
-        self.library["D7h"] = 14
-        self.library["D8h"] = 16
-
-        self.library["D2d"] = 4
-        self.library["D3d"] = 6
-        self.library["D4d"] = 8
-        self.library["D5d"] = 10
-        self.library["D6d"] = 12
-        self.library["D7d"] = 14
-        self.library["D8d"] = 16
-
-        self.library["S4"] = 2
-        self.library["S6"] = 3
-        self.library["S8"] = 4
-
-        self.library["T"] = 12
-        self.library["Th"] = 12
-        self.library["Td"] = 12
-
-        self.library["O"] = 24
-        self.library["Oh"] = 24
-
-        self.library["Cinfv"] = 1
-        self.library["Dinfh"] = 2
-        self.library["I"] = 60
-        self.library["Ih"] = 60
-        self.library["Kh"] = 1
-        
-    def populateChiralityFlags(self):
-        """
-        Could be externalized, so that users could add/remove symmetry groups
-        """
-        self.chiralLibrary["C1"] = True
-        self.chiralLibrary["Cs"] = False
-        self.chiralLibrary["Ci"] = False
-        self.chiralLibrary["C2"] = True
-        self.chiralLibrary["C3"] = True
-        self.chiralLibrary["C4"] = True
-        self.chiralLibrary["C5"] = True
-        self.chiralLibrary["C6"] = True
-        self.chiralLibrary["C7"] = True
-        self.chiralLibrary["C8"] = True
-
-        self.chiralLibrary["D2"] = True
-        self.chiralLibrary["D3"] = True
-        self.chiralLibrary["D4"] = True
-        self.chiralLibrary["D5"] = True
-        self.chiralLibrary["D6"] = True
-        self.chiralLibrary["D7"] = True
-        self.chiralLibrary["D8"] = True
-
-        self.chiralLibrary["C2v"] = False
-        self.chiralLibrary["C3v"] = False
-        self.chiralLibrary["C4v"] = False
-        self.chiralLibrary["C5v"] = False
-        self.chiralLibrary["C6v"] = False
-        self.chiralLibrary["C7v"] = False
-        self.chiralLibrary["C8v"] = False
-
-        self.chiralLibrary["C2h"] = False
-        self.chiralLibrary["C3h"] = False
-        self.chiralLibrary["C4h"] = False
-        self.chiralLibrary["C5h"] = False
-        self.chiralLibrary["C6h"] = False
-        self.chiralLibrary["C8h"] = False
-
-        self.chiralLibrary["D2h"] = False
-        self.chiralLibrary["D3h"] = False
-        self.chiralLibrary["D4h"] = False
-        self.chiralLibrary["D5h"] = False
-        self.chiralLibrary["D6h"] = False
-        self.chiralLibrary["D7h"] = False
-        self.chiralLibrary["D8h"] = False
-
-        self.chiralLibrary["D2d"] = False
-        self.chiralLibrary["D3d"] = False
-        self.chiralLibrary["D4d"] = False
-        self.chiralLibrary["D5d"] = False
-        self.chiralLibrary["D6d"] = False
-        self.chiralLibrary["D7d"] = False
-        self.chiralLibrary["D8d"] = False
-
-        self.chiralLibrary["S4"] = True
-        self.chiralLibrary["S6"] = True
-        self.chiralLibrary["S8"] = True
-
-        self.chiralLibrary["T"] = True
-        self.chiralLibrary["Th"] = False
-        self.chiralLibrary["Td"] = False
-
-        self.chiralLibrary["O"] = True
-        self.chiralLibrary["Oh"] = False
-
-        self.chiralLibrary["Cinfv"] = False
-        self.chiralLibrary["Dinfh"] = False
-        self.chiralLibrary["I"] = True
-        self.chiralLibrary["Ih"] = False
-        self.chiralLibrary["Kh"] = False
-    
-    def initiate(self):
-        self.populateGroups()
-        self.populateChiralityFlags()
-        
-    def contains(self,pointGroup):
-        return pointGroup in self.library
-    
-    def get(self, pointGroup):
-        symmNumber = self.library.get(pointGroup);
-
-        if symmNumber:
-            return symmNumber;
-        else:
-            return None;
-    
-    def isChiral(self, pointGroup):
-        chiral = self.chiralLibrary.get(pointGroup);
-
-        if chiral:
-            return chiral;
-        else:
-            return None;
-        
-        
-
-class PointGroupCalculator:
-    """
-    Wrapper type to determine molecular symmetry point groups based on 3D coords information.
-     
-    Will point to a specific algorithm, like SYMMETRY that is able to do this.
-    """
-    def __init__(self, molfile, iqmdata):
-        self.molfile = molfile
-        self.qmdata = iqmdata#data object that contains 3D coords of molecule used in symmetry calculation
-        self.calculator = SymmetryJob(molfile, iqmdata)
-
-    def calculate(self):
-        return self.calculator.calculate();
-
-class PointGroup:
-    
-    def __init__(self, pointGroup):
-        self.pointGroup = pointGroup
-        
-        dic = PointGroupDictionary()
-        
-        self.symmetryNumber = dic.get(pointGroup)#integer
-        self.chiral = dic.isChiral(pointGroup)#boolean
-        
-        #determine linearity from 3D-geometry; changed to correctly consider linear ketene radical case
-        if self.pointGroup == "Cinfv" or self.pointGroup == "Dinfh":
-            self.linear = True;
-        else:
-            self.linear = False;
-        
-    def equals(self,group):
-        return self.pointGroup == group
-    
-    def isLinear(self):
-        return self.linear;
-    
