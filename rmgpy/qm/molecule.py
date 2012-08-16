@@ -12,12 +12,13 @@ import symmetry
 import qmdata
 
 class Geometry:
-    file_store_path = 'QMfiles/'
-    if not os.path.exists(file_store_path):
-        logging.info("Creating directory %s for mol files."%os.path.abspath(file_store_path))
-        os.makedirs(file_store_path)
-
-    def __init__(self, uniqueID, molecule, multiplicity, uniqueIDlong=None):
+    """
+    A geometry, used for quantum calculations.
+    
+    Created from a molecule. Geometry estimated by RDKit.
+    """
+    def __init__(self, settings, uniqueID, molecule, multiplicity, uniqueIDlong=None):
+        self.settings = settings
         #: A short unique ID such as an augmented InChI Key.
         self.uniqueID = uniqueID
         self.molecule = molecule
@@ -29,13 +30,21 @@ class Geometry:
             #: Long, truly unique, ID, such as the augmented InChI.
             self.uniqueIDlong = uniqueIDlong
 
+    def getFilePath(self, extension):
+        """
+        Returns the path to the file with the given extension.
+        
+        The provided extension should include the leading dot.
+        """
+        return os.path.join(self.settings.fileStore, self.uniqueID  + extension)
+        
     def getCrudeMolFilePath(self):
-        # os.join, uniqueID, suffix
-        return self.file_store_path + self.uniqueID + '.crude.mol'
+        "Returns the path of the crude mol file."
+        return self.getFilePath('.crude.mol')
 
     def getRefinedMolFilePath(self):
-        "Returns the path the the refined mol file"
-        return self.file_store_path + self.uniqueID + '.refined.mol'
+        "Returns the path the the refined mol file."
+        return self.getFilePath('.refined.mol')
 
     def generateRDKitGeometries(self, boundsMatrix=None):
         """
@@ -124,12 +133,12 @@ class Geometry:
         for atom in self.molecule.atoms:
             point = rdmol.GetConformer(minEid).GetAtomPosition(atom.sortingLabel)
             atom.coords = [point.x, point.y, point.z]
-            
 
 
 class QMMolecule:
-    def __init__(self, molecule):
+    def __init__(self, molecule, settings):
         self.molecule = molecule
+        self.settings = settings
 
     def createGeometry(self):
         """
@@ -138,7 +147,7 @@ class QMMolecule:
         uniqueID = self.molecule.toAugmentedInChIKey()
         uniqueIDlong = self.molecule.toAugmentedInChI()
         multiplicity = sum([i.radicalElectrons for i in self.molecule.atoms]) + 1
-        self.geometry = Geometry(uniqueID, self.molecule, multiplicity, uniqueIDlong=uniqueIDlong)
+        self.geometry = Geometry(self.settings, uniqueID, self.molecule, multiplicity, uniqueIDlong=uniqueIDlong)
         self.geometry.generateRDKitGeometries()
         return self.geometry
     

@@ -14,12 +14,11 @@ class Mopac:
     
     Classes such as :class:`MopacMol` will inherit from this class.
     """
-    
-    
-    directory = 'QMfiles'
+
     inputFileExtension = '.mop'
     outputFileExtension = '.out'
     executablePath = os.path.join(os.getenv('MOPAC_DIR', default="/opt/mopac") , 'MOPAC2009.exe')
+    assert os.path.exists(executablePath), "Couldn't find MOPAC 2009 executable at {0}. Try setting your MOPAC_DIR environment variable.".format(executablePath)
     
     usePolar = False#use polar keyword in MOPAC
     
@@ -52,12 +51,12 @@ class Mopac:
     @property
     def outputFilePath(self):
         """Get the Mopac output file name."""
-        return os.path.join(self.directory, self.geometry.uniqueID + self.outputFileExtension)
+        return self.geometry.getFilePath(self.outputFileExtension)
 
     @property
     def inputFilePath(self):
         """Get the Mopac input file name."""
-        return os.path.join(self.directory, self.geometry.uniqueID + self.inputFileExtension)
+        return self.geometry.getFilePath(self.inputFileExtension)
 
 
     def run(self):

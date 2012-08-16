@@ -147,6 +147,20 @@ def model(toleranceMoveToCore, toleranceKeepInEdge=0.0, toleranceInterruptSimula
     rmg.fluxToleranceInterrupt = toleranceInterruptSimulation
     rmg.maximumEdgeSpecies = maximumEdgeSpecies
 
+def quantumMechanics(
+                    software,
+                    fileStore = None,
+                    scratchDirectory = None,
+                    onlyCyclics = False,
+                    ):
+    from rmgpy.qm.main import QMCalculator
+    rmg.quantumMechanics = QMCalculator()
+    rmg.quantumMechanics.settings.software = software
+    rmg.quantumMechanics.settings.fileStore = fileStore
+    rmg.quantumMechanics.settings.scratchDirectory = scratchDirectory
+    rmg.quantumMechanics.settings.onlyCyclics = onlyCyclics
+                    
+
 def pressureDependence(
                        method,
                        temperatures,
@@ -241,6 +255,7 @@ def readInputFile(path, rmg0):
         'simpleReactor': simpleReactor,
         'simulator': simulator,
         'model': model,
+        'quantumMechanics': quantumMechanics,
         'pressureDependence': pressureDependence,
         'options': options,
     }

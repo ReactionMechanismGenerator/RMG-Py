@@ -69,45 +69,26 @@ class Species(rmgpy.species.Species):
         """
         return (Species, (self.index, self.label, self.thermo, self.states, self.molecule, self.E0, self.lennardJones, self.molecularWeight, self.reactive, self.coreSizeAtCreation),)
     
-    def generateThermoData(self, database, thermoClass=MultiNASA):
+    def generateThermoData(self, database, thermoClass=MultiNASA, quantumMechanics=None):
         """
         Generates thermo data, using either QM or Database.
         
+        If quantumMechanics is not None, it is aksed to calculate the thermo.
+        Failing that, the database is used.
+        
+        The database enerates the thermo data for each structure (resonance isomer),
+        picks that with lowest H298 value.
+        
+        It then calls :meth:`processThermoData`.
         Result stored in `self.thermo` and returned.
         """
         thermo0 = None
-        if self.molecule[0].isCyclic():
-            thermo0 = self.generateThermoDataFromQM() # returns None if it fails
+        if quantumMechanics:
+            thermo0 = quantumMechanics.getThermoData(self) # returns None if it fails
         if thermo0 is None:
-            thermo0 = self.generateThermoDataFromDB(database)
+            thermo0 = database.thermo.getThermoData(self)
         return self.processThermoData(thermo0, thermoClass)
 
-    def generateThermoDataFromQM(self):
-        """
-        Generate thermo data from first principles.
-        
-        See also :meth:`processThermoData`.
-        """
-        from rmgpy.qm import mopac
-        mopThermoOb = mopac.MopacMolPM3(self.molecule[0])
-        thermo0 = mopThermoOb.generateThermoData()
-        
-        return thermo0
-    
-    def generateThermoDataFromDB(self, database):
-        """
-        Generate thermodynamic data for the species using the thermo database.
-
-        Generates the thermo data for each structure (resonance isomer),
-        picks that with lowest H298 value, and saves it to `self.thermo`.
-        
-        See also :meth:`processThermoData`.
-        """
-        # Get the thermo data for the species from the database
-        thermo0 = database.thermo.getThermoData(self)
-        
-        return thermo0        
-        
     def processThermoData(self, thermo0, thermoClass=MultiNASA):
         """
         Converts via Wilhoit into required `thermoClass` and sets `E0`.
@@ -244,6 +225,7 @@ class CoreEdgeReactionModel:
         self.outputSpeciesList = []
         self.outputReactionList = []
         self.pressureDependence = None
+        self.quantumMechanics = None
         self.kineticsEstimator = 'group additivity'
 
     def checkForExistingSpecies(self, molecule):
@@ -617,7 +599,7 @@ class CoreEdgeReactionModel:
         # Generate thermodynamics of new species
         logging.info('Generating thermodynamics for new species...')
         for spec in newSpeciesList:
-            spec.generateThermoData(database)
+            spec.generateThermoData(database, quantumMechanics=self.quantumMechanics)
         
         # Generate kinetics of new reactions
         logging.info('Generating kinetics for new reactions...')

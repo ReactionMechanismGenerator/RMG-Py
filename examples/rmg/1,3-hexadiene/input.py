@@ -81,6 +81,13 @@ model(
     maximumEdgeSpecies=100000
 )
 
+quantumMechanics(
+    software='mopac',
+    fileStore='QMfiles', # relative to where you run it? defaults to inside the output folder.
+    scratchDirectory = None, # not currently used
+    onlyCyclics = True,
+    )
+
 pressureDependence(
     method='modified strong collision',
     maximumGrainSize=(1.0,'kcal/mol'),
