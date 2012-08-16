@@ -248,7 +248,7 @@ class QMMolecule:
         Tdata = [300.0, 400.0, 500.0, 600.0, 800.0, 1000.0, 1500.0]
         Cp = [self.statesmodel.getHeatCapacity(T) for T in Tdata]
         S298 = S298 + self.calculateChiralityCorrection()
-        comment = "PM3 or MM4 calculation"
+        comment = self.qmData.source or "QM calculation of some sort."
 
         thermo = ThermoData( 
                            Tdata = (Tdata,"K"),

@@ -11,7 +11,8 @@ class QMData:
                  atomicNumbers = [],
                  rotationalConstants = [],
                  atomCoords = [],
-                 frequencies = []
+                 frequencies = [],
+                 source = None,
                  ):
         #: Electronic ground state degeneracy in RMG taken as number of radicals +1
         self.groundStateDegeneracy = groundStateDegeneracy
@@ -22,14 +23,14 @@ class QMData:
         
         Not sure why these units
         """
-        
         self.molecularMass = molecularMass
         self.energy = energy
         self.atomicNumbers = atomicNumbers
         self.rotationalConstants = rotationalConstants
         self.atomCoords = atomCoords
         self.frequencies = frequencies
-        
+        self.source = source
+
     def testValid(self):
         assert self.groundStateDegeneracy > 0
 
@@ -39,7 +40,6 @@ class CCLibData(QMData):
     
     This data objects collects information that CCLib was able to
     retrieve from a quantum chemistry output file.
-    @author nmvdewie
     """
 
     def __init__(self,
@@ -50,9 +50,7 @@ class CCLibData(QMData):
         #: data object returned by a parsing tool like CCLib.parse()
         self.cclib_data = cclib_data
 
-
-        QMData.__init__(
-            self,
+        QMData.__init__( self,
             groundStateDegeneracy = groundStateDegeneracy,
             numberOfAtoms = cclib_data.natom,
             molecularMass = cclib_data.molmass,

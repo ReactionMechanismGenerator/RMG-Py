@@ -20,7 +20,7 @@ class Mopac:
     executablePath = os.path.join(os.getenv('MOPAC_DIR', default="/opt/mopac") , 'MOPAC2009.exe')
     assert os.path.exists(executablePath), "Couldn't find MOPAC 2009 executable at {0}. Try setting your MOPAC_DIR environment variable.".format(executablePath)
     
-    usePolar = False#use polar keyword in MOPAC
+    usePolar = False #use polar keyword in MOPAC
     
     "Keywords for the multiplicity"
     multiplicityKeywords = {
@@ -188,19 +188,22 @@ class MopacMol(QMMolecule, Mopac):
         self.createGeometry()
         if self.verifyOutputFile():
             logging.info("Found a successful output file already; using that.")
+            source = "QM MOPAC result file found from previous run."
         else:
             success = False
             for attempt in range(1, self.maxAttempts+1):
                 self.writeInputFile(attempt)
                 success = self.run()
                 if success:
+                    source = "QM {0} calculation attempt {1}".format(self.__class__.__name__, attempt )
                     logging.info('Attempt {0} of {1} on species {2} succeeded.'.format(attempt, self.maxAttempts, self.molecule.toAugmentedInChI()))
                     break
             else:
                 logging.error('QM thermo calculation failed for {0}.'.format(self.molecule.toAugmentedInChI()))
                 return None
         result = self.parse() # parsed in cclib
-        return result
+        result.source = source
+        return result # a CCLibData object
 
 
 class MopacMolPM3(MopacMol):
