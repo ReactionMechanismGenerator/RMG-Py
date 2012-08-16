@@ -1,3 +1,6 @@
+
+import re
+
 class QMData:
     """
     General class for data extracted from a QM calculation
@@ -30,10 +33,30 @@ class QMData:
         self.atomCoords = atomCoords
         self.frequencies = frequencies
         self.source = source
+        
+        self.testValid()
 
     def testValid(self):
         assert self.groundStateDegeneracy > 0
-
+    
+    def __repr__(self):
+        things=[]
+        for attribute in ['groundStateDegeneracy',
+                          'numberOfAtoms',
+                          'stericEnergy',
+                          'molecularMass',
+                          'energy',
+                          'atomicNumbers',
+                          'rotationalConstants',
+                          'atomCoords',
+                          'frequencies',
+                          'source',
+                          ]:
+            things.append("{0!s}={1!r}".format(attribute, getattr(self,attribute)))
+        string = ', '.join(things)
+        string = re.sub('\s+',' ',string)
+        return 'QMData({0!s})'.format(string)
+        
 class CCLibData(QMData):
     """
     QM Data extracted from a cclib data object

@@ -2,6 +2,7 @@ import os
 import logging
 import math
 
+import numpy
 from rdkit import Chem
 from rdkit.Chem import AllChem
 
@@ -173,6 +174,11 @@ class QMMolecule:
         
         Returns None if it fails.
         """
+        
+        # First, see if we already have it!
+        if self.loadThermoData():
+            return self.thermo
+        
         # First generate the QM data
         self.qmData = self.generateQMData()
         
@@ -181,7 +187,66 @@ class QMMolecule:
             
         self.determinePointGroup()
         self.calculateThermoData()
+        self.saveThermoData()
+        #import ipdb; ipdb.set_trace()
         return self.thermo
+        
+    def saveThermoData(self):
+        """
+        Save the generated thermo data.
+        """
+        with open(self.getFilePath('.thermo'), 'w') as resultFile:
+            resultFile.write('InChI = "{0!s}"\n'.format(self.uniqueIDlong))
+            resultFile.write("thermoData = {0!r}\n".format(self.thermo))
+            resultFile.write("pointGroup = {0!r}\n".format(self.pointGroup))
+            resultFile.write("qmData = {0!r}\n".format(self.qmData))
+    
+    def loadThermoData(self):
+        """
+        Try loading a thermo data from a previous run.
+        """
+        filePath = self.getFilePath('.thermo')
+        if not os.path.exists(filePath):
+            return None
+        try:
+            with open(filePath) as resultFile:
+                logging.info('Reading existing thermo file {0}'.format(filePath))
+                global_context = { '__builtins__': None }
+                local_context = {
+                    '__builtins__': None,
+                    'True': True,
+                    'False': False,
+                    'ThermoData': rmgpy.thermo.ThermoData,
+                    'PointGroup': symmetry.PointGroup,
+                    'QMData': qmdata.QMData,
+                    'array': numpy.array,
+                    'int32': numpy.int32,
+                }
+                exec resultFile in global_context, local_context
+        except IOError, e:
+            logging.info("Couldn't read thermo file {0}".format(filePath))
+            return None
+        except (NameError, TypeError, SyntaxError), e:
+            logging.error('The thermo file "{0}" was invalid:'.format(filePath))
+            logging.exception(e)
+            return None
+        if not 'InChI' in local_context:
+            logging.error('The thermo file "{0}" did not contain an InChI.'.format(filePath))
+            return None
+        if local_context['InChI'] != self.uniqueIDlong:
+            logging.error('The InChI in the thermo file {0} did not match the current molecule {1}'.format(filePath,self.uniqueIDlong))
+            return None
+        if not 'thermoData' in local_context:
+            logging.error('The thermo file "{0}" did not contain thermoData.'.format(filePath))
+            return None
+        thermo = local_context['thermoData']
+        assert isinstance(thermo, rmgpy.thermo.ThermoData)
+        self.thermo = thermo
+        
+        self.pointGroup = symmetry.pointGroupDictionary[local_context['pointGroup'].pointGroup] # point to the one in the module level dictionary with the same name
+        self.qmData = local_context['qmData']
+        return thermo
+
 
     def getInChiKeyAug(self):
         """
