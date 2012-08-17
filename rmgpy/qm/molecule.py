@@ -295,9 +295,13 @@ class QMMolecule:
         assert self.qmData, "Need QM Data first in order to calculate thermo."
         assert self.pointGroup, "Need Point Group first in order to calculate thermo."
         
-        trans = rmgpy.statmech.Translation( mass=(self.qmData.molecularMass,"amu") )
+        # self.qmData.rotationalConstants is in Hz.
+        h_over_8_pi_squared = 8.39201316e-36 # kg m^2 / s
+        inertias = ([h_over_8_pi_squared / frequency for frequency in self.qmData.rotationalConstants], "kg*m^2")
+        
+        trans = rmgpy.statmech.Translation( mass=(self.qmData.molecularMass,"g/mol") )
         rot = rmgpy.statmech.RigidRotor( linear = self.pointGroup.linear,
-                                         inertia = self.qmData.rotationalConstants,
+                                         inertia = inertias,
                                          symmetry = self.pointGroup.symmetryNumber,
                                         )
         vib = rmgpy.statmech.HarmonicOscillator( frequencies=self.qmData.frequencies )
