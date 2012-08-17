@@ -195,11 +195,15 @@ class QMMolecule:
         """
         Save the generated thermo data.
         """
+        self.thermo.H298.units = 'kcal/mol'
+        self.thermo.S298.units = 'cal/mol/K'
+        self.thermo.Cpdata.units = 'cal/mol/K'
         with open(self.getFilePath('.thermo'), 'w') as resultFile:
             resultFile.write('InChI = "{0!s}"\n'.format(self.uniqueIDlong))
             resultFile.write("thermoData = {0!r}\n".format(self.thermo))
             resultFile.write("pointGroup = {0!r}\n".format(self.pointGroup))
             resultFile.write("qmData = {0!r}\n".format(self.qmData))
+            resultFile.write('adjacencyList = """\n{0!s}"""\n'.format(self.molecule.toAdjacencyList(removeH=True)))
     
     def loadThermoData(self):
         """
