@@ -137,12 +137,24 @@ class Geometry:
 
 
 class QMMolecule:
+    """ 
+    A base class for QM Molecule calculations.
+    
+    Specific programs and methods should inherit from this and define some
+    extra attributes and methods:
+    
+     * outputFileExtension
+     * inputFileExtension
+     * generateQMData() ...and whatever else is needed to make this method work.
+    """
+    
     def __init__(self, molecule, settings):
         self.molecule = molecule
         self.settings = settings
         
         self.uniqueID = self.molecule.toAugmentedInChIKey()
         self.uniqueIDlong = self.molecule.toAugmentedInChI()
+        
 
     def getFilePath(self, extension):
         """
@@ -151,6 +163,16 @@ class QMMolecule:
         The provided extension should include the leading dot.
         """
         return os.path.join(self.settings.fileStore, self.uniqueID  + extension)
+        
+    @property
+    def outputFilePath(self):
+        """Get the output file name."""
+        return self.getFilePath(self.outputFileExtension)
+    
+    @property
+    def inputFilePath(self):
+        """Get the input file name."""
+        return self.getFilePath(self.inputFileExtension)
         
     def createGeometry(self):
         """

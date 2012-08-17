@@ -48,15 +48,6 @@ class Mopac:
                    'DESCRIPTION OF VIBRATIONS',
                   ]
 
-    @property
-    def outputFilePath(self):
-        """Get the Mopac output file name."""
-        return self.getFilePath(self.outputFileExtension)
-
-    @property
-    def inputFilePath(self):
-        """Get the Mopac input file name."""
-        return self.getFilePath(self.inputFileExtension)
 
     def run(self):
         # submits the input file to mopac
