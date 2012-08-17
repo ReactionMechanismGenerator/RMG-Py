@@ -51,13 +51,12 @@ class Mopac:
     @property
     def outputFilePath(self):
         """Get the Mopac output file name."""
-        return self.geometry.getFilePath(self.outputFileExtension)
+        return self.getFilePath(self.outputFileExtension)
 
     @property
     def inputFilePath(self):
         """Get the Mopac input file name."""
-        return self.geometry.getFilePath(self.inputFileExtension)
-
+        return self.getFilePath(self.inputFileExtension)
 
     def run(self):
         # submits the input file to mopac
@@ -109,7 +108,7 @@ class Mopac:
                 if "InChI=" in line:
                     logFileInChI = line #output files should take up to 240 characters of the name in the input file
                     InChIFound = True
-                    if logFileInChI == self.geometry.uniqueIDlong:
+                    if logFileInChI == self.uniqueIDlong:
                         InChIMatch = True
                     else:
                         logging.info("InChI in log file didn't match that in geometry.")
@@ -185,11 +184,11 @@ class MopacMol(QMMolecule, Mopac):
         """
         Calculate the QM data and return a QMData object, or None if it fails.
         """
-        self.createGeometry()
         if self.verifyOutputFile():
             logging.info("Found a successful output file already; using that.")
             source = "QM MOPAC result file found from previous run."
         else:
+            self.createGeometry()
             success = False
             for attempt in range(1, self.maxAttempts+1):
                 self.writeInputFile(attempt)

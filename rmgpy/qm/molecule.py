@@ -175,20 +175,20 @@ class QMMolecule:
         Returns None if it fails.
         """
         
-        # First, see if we already have it!
+        # First, see if we already have it.
         if self.loadThermoData():
             return self.thermo
         
-        # First generate the QM data
+        # If not, generate the QM data
         self.qmData = self.generateQMData()
         
+        # If that fails, give up and return None.
         if self.qmData  is None:
             return None
             
         self.determinePointGroup()
         self.calculateThermoData()
         self.saveThermoData()
-        #import ipdb; ipdb.set_trace()
         return self.thermo
         
     def saveThermoData(self):
