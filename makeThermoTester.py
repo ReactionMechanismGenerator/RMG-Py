@@ -1,4 +1,7 @@
-
+"""
+A script to generate an input file to the RMG-Java QM Data estimator,
+to aid comparison.
+"""
 
 from rmgpy.molecule import Molecule
 from rmgpy.species import *
@@ -56,7 +59,7 @@ mopac
 //ForCyclicsOnly? true/false
 false
 //maxradnumforQM?
-0
+3
 //CheckConnectivity? off/check/confirm
 check
 
