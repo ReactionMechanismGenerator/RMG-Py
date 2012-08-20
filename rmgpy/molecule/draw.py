@@ -749,12 +749,17 @@ class MoleculeDrawer:
             # ring system at once
     
             # Generate coordinates for all atoms in the ring system
-            coordinates_cycle = self.__generateRingSystemCoordinates(ringSystem)
+            self.__generateRingSystemCoordinates(ringSystem)
+    
+            cycleAtoms = list(set([atom for ring in ringSystem for atom in ring]))
+            
+            coordinates_cycle = numpy.zeros_like(self.coordinates)
+            for atom in cycleAtoms:
+                coordinates_cycle[atoms.index(atom),:] = coordinates[atoms.index(atom),:]
     
             # Rotate the ring system coordinates so that the line connecting atom1
             # and the center of mass of the ring is parallel to that between
             # atom0 and atom1
-            cycleAtoms = list(set([atom for ring in ringSystem for atom in ring]))
             center = numpy.zeros(2, numpy.float64)
             for atom in cycleAtoms:
                 center += coordinates_cycle[atoms.index(atom),:]
