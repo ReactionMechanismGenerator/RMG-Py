@@ -530,6 +530,7 @@ class ThermoDatabase:
             libstr = os.path.join(groupsPath, 'Other_Library.txt'),
         )
 
+
     def getThermoData(self, species):
         """
         Return the thermodynamic parameters for a given :class:`Species`
@@ -537,15 +538,27 @@ class ThermoDatabase:
         in order, returning the first match found, before falling back to
         estimation via group additivity.
         """
-        thermoData = None
         # Check the libraries in order first; return the first successful match
-        for label in self.libraryOrder:
-            thermoData = self.getThermoDataFromLibrary(species, self.libraries[label])
-            if thermoData is not None: break
+        thermoData = self.getThermoDataFromLibraries(species)
+        if thermoData is not None:
+            return ThermoData
         else:
             # Thermo not found in any loaded libraries, so estimate
             thermoData = self.getThermoDataFromGroups(species)
         return thermoData[0]
+        
+    def getThermoDataFromLibraries(self, species):
+        """
+        Return the thermodynamic parameters for a given :class:`Species`
+        object `species`. This function first searches the loaded libraries
+        in order, returning the first match found, before failing and returning None."""
+        thermoData = None
+        # Check the libraries in order first; return the first successful match
+        for label in self.libraryOrder:
+            thermoData = self.getThermoDataFromLibrary(species, self.libraries[label])
+            if thermoData is not None:
+                return thermoData[0]
+        return None
 
     def getAllThermoData(self, species):
         """
