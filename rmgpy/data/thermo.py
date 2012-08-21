@@ -621,6 +621,80 @@ class ThermoDatabase:
         
         return (thermo[indices[0]], None, None)
         
+    def estimateRadicalThermoViaHBI(self, molecule, stableThermoEstimator ):
+        """
+        Estimate the thermodynamics of a radical by saturating it,
+        applying the provided stableThermoEstimator method on the saturated species,
+        then applying hydrogen bond increment corrections for the radical
+        site(s) and correcting for the symmetry.
+        """
+        assert sum([atom.radicalElectrons for atom in molecule.atoms]) > 0, "Method only valid for radicals."
+        
+        # Make a copy of the structure so we don't change the original
+        saturatedStruct = molecule.copy(deep=True)
+        
+        # Saturate structure by replacing all radicals with bonds to
+        # hydrogen atoms
+        added = {}
+        for atom in saturatedStruct.atoms:
+            for i in range(atom.radicalElectrons):
+                H = Atom('H')
+                bond = Bond(atom, H, 'S')
+                saturatedStruct.addAtom(H)
+                saturatedStruct.addBond(bond)
+                if atom not in added:
+                    added[atom] = []
+                added[atom].append([H, bond])
+                atom.decrementRadical()
+        
+        # Update the atom types of the saturated structure (not sure why
+        # this is necessary, because saturating with H shouldn't be
+        # changing atom types, but it doesn't hurt anything and is not
+        # very expensive, so will do it anyway)
+        saturatedStruct.updateConnectivityValues()
+        saturatedStruct.sortVertices()
+        saturatedStruct.updateAtomTypes()
+        
+        # Get thermo estimate for saturated form of structure
+        thermoData = stableThermoEstimator(saturatedStruct)
+        assert thermoData is not None, "Thermo data of saturated {0} of molecule {1} is None!".format(saturatedStruct, molecule)
+        
+        # Undo symmetry number correction for saturated structure
+        saturatedStruct.calculateSymmetryNumber()
+        thermoData.S298.value += constants.R * math.log(saturatedStruct.symmetryNumber)
+        # Correct entropy for symmetry number of radical structure
+        molecule.calculateSymmetryNumber()
+        thermoData.S298.value -= constants.R * math.log(molecule.symmetryNumber)
+        
+        # For each radical site, get radical correction
+        # Only one radical site should be considered at a time; all others
+        # should be saturated with hydrogen atoms
+        for atom in added:
+            # Remove the added hydrogen atoms and bond and restore the radical
+            for H, bond in added[atom]:
+                saturatedStruct.removeBond(bond)
+                saturatedStruct.removeAtom(H)
+                atom.incrementRadical()
+            saturatedStruct.updateConnectivityValues()
+            try:
+                thermoData = self.__addThermoData(thermoData, self.__getGroupThermoData(self.groups['radical'], saturatedStruct, {'*':atom}))
+            except KeyError:
+                logging.error("Couldn't find in radical thermo database:")
+                logging.error(molecule)
+                logging.error(molecule.toAdjacencyList())
+                raise
+            # Re-saturate
+            for H, bond in added[atom]:
+                saturatedStruct.addAtom(H)
+                saturatedStruct.addBond(bond)
+                atom.decrementRadical()
+            # Subtract the enthalpy of the added hydrogens
+            for H, bond in added[atom]:
+                thermoData.H298.value -= 52.103 * 4184
+
+        return thermoData
+        
+        
     def estimateThermoViaGroupAdditivity(self, molecule):
         """
         Return the set of thermodynamic parameters corresponding to a given
@@ -636,70 +710,7 @@ class ThermoDatabase:
         thermoData = None
 
         if sum([atom.radicalElectrons for atom in molecule.atoms]) > 0: # radical species
-
-            # Make a copy of the structure so we don't change the original
-            saturatedStruct = molecule.copy(deep=True)
-
-            # Saturate structure by replacing all radicals with bonds to
-            # hydrogen atoms
-            added = {}
-            for atom in saturatedStruct.atoms:
-                for i in range(atom.radicalElectrons):
-                    H = Atom('H')
-                    bond = Bond(atom, H, 'S')
-                    saturatedStruct.addAtom(H)
-                    saturatedStruct.addBond(bond)
-                    if atom not in added:
-                        added[atom] = []
-                    added[atom].append([H, bond])
-                    atom.decrementRadical()
-
-            # Update the atom types of the saturated structure (not sure why
-            # this is necessary, because saturating with H shouldn't be
-            # changing atom types, but it doesn't hurt anything and is not
-            # very expensive, so will do it anyway)
-            saturatedStruct.updateConnectivityValues()
-            saturatedStruct.sortVertices()
-            saturatedStruct.updateAtomTypes()
-
-            # Get thermo estimate for saturated form of structure
-            thermoData = self.estimateThermoViaGroupAdditivity(saturatedStruct)
-            assert thermoData is not None, "Thermo data of saturated {0} of molecule {1} is None!".format(saturatedStruct, molecule)
-            # Undo symmetry number correction for saturated structure
-            thermoData.S298.value += constants.R * math.log(saturatedStruct.symmetryNumber)
-
-            # For each radical site, get radical correction
-            # Only one radical site should be considered at a time; all others
-            # should be saturated with hydrogen atoms
-            for atom in added:
-
-                # Remove the added hydrogen atoms and bond and restore the radical
-                for H, bond in added[atom]:
-                    saturatedStruct.removeBond(bond)
-                    saturatedStruct.removeAtom(H)
-                    atom.incrementRadical()
-
-                saturatedStruct.updateConnectivityValues()
-                
-                try:
-                    thermoData = self.__addThermoData(thermoData, self.__getGroupThermoData(self.groups['radical'], saturatedStruct, {'*':atom}))
-                except KeyError:
-                    logging.error("Couldn't find in radical thermo database:")
-                    logging.error(molecule)
-                    logging.error(molecule.toAdjacencyList())
-                    raise
-                        
-                # Re-saturate
-                for H, bond in added[atom]:
-                    saturatedStruct.addAtom(H)
-                    saturatedStruct.addBond(bond)
-                    atom.decrementRadical()
-
-                # Subtract the enthalpy of the added hydrogens
-                for H, bond in added[atom]:
-                    thermoData.H298.value -= 52.103 * 4184
-
-            # Correct the entropy for the symmetry number
+            return self.estimateRadicalThermoViaHBI(molecule, self.estimateThermoViaGroupAdditivity )
 
         else: # non-radical species
             # Generate estimate of thermodynamics
@@ -743,7 +754,6 @@ class ThermoDatabase:
                     for atom2 in ring:
                         if molecule.hasBond(atom1, atom2):
                             ringStructure.addBond(Bond(newAtoms[atom1], newAtoms[atom2], atom1.bonds[atom2].order ))
-
                 # Get thermo correction for this ring
                 try:
                     thermoData = self.__addThermoData(thermoData, self.__getGroupThermoData(self.groups['ring'], ringStructure, {}))
@@ -756,7 +766,7 @@ class ThermoDatabase:
         # Correct entropy for symmetry number
         molecule.calculateSymmetryNumber()
         thermoData.S298.value -= constants.R * math.log(molecule.symmetryNumber)
-
+        
         return thermoData
 
     def __addThermoData(self, thermoData1, thermoData2):
