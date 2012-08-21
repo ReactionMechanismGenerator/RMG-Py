@@ -566,8 +566,8 @@ class Molecule(Graph):
         """
         Return the molecular weight of the molecule in kg/mol.
         """
+        cython.declare(atom=Atom, mass=cython.double)
         mass = 0
-        H = elements.getElement('H')
         for atom in self.vertices:
             mass += atom.element.mass
         return mass
@@ -611,7 +611,7 @@ class Molecule(Graph):
         connectivity values. If there's nothing but hydrogens, it does nothing.
         It destroys information; be careful with it.
         """
-        cython.declare(atom=Atom, neighbor=Atom, hydrogens=list)
+        cython.declare(atom=Atom, hydrogens=list)
         # Check that the structure contains at least one heavy atom
         for atom in self.vertices:
             if not atom.isHydrogen():
@@ -622,7 +622,6 @@ class Molecule(Graph):
         hydrogens = []
         for atom in self.vertices:
             if atom.isHydrogen() and atom.label == '':
-                neighbor = atom.edges.keys()[0]
                 hydrogens.append(atom)
         # Remove the hydrogen atoms from the structure
         for atom in hydrogens:
