@@ -83,17 +83,31 @@ class Species(rmgpy.species.Species):
         Result stored in `self.thermo` and returned.
         """
         thermo0 = None
-        if quantumMechanics:
-            if self.molecule[0].getRadicalCount() > quantumMechanics.settings.maxRadicalNumber:
-                logging.info("{0} radicals on {1} exceeds limit of {2}. Skipping QM calc.".format(
-                    self.molecule[0].getRadicalCount(),
-                    self.label,
-                    quantumMechanics.settings.maxRadicalNumber,
-                    ))
-            else:
-                thermo0 = quantumMechanics.getThermoData(self) # returns None if it fails
+        
+        thermo0 = database.thermo.getThermoDataFromLibraries(self)
+        
+        if thermo0 is not None:
+            logging.info("Found thermo for {0} in thermo library".format(self.label))
+            
+        elif quantumMechanics:
+            molecule = self.molecule[0]
+            if quantumMechanics.settings.onlyCyclics and not molecule.isCyclic():
+                pass
+                #logging.info("Skipping QM calculation for noncyclic molecule {0}".format(molecule.toSMILES()))
+            else: # try a QM calculation
+                if self.molecule[0].getRadicalCount() > quantumMechanics.settings.maxRadicalNumber:
+                    # Too many radicals for direct calculation: use HBI.
+                    logging.info("{0} radicals on {1} exceeds limit of {2}. Using HBI method.".format(
+                        self.molecule[0].getRadicalCount(),
+                        self.label,
+                        quantumMechanics.settings.maxRadicalNumber,
+                        ))
+                    thermo0 = database.thermo.estimateRadicalThermoViaHBI(molecule, quantumMechanics.getThermoData)
+                else: # Not too many radicals: do a direct calculation.
+                    thermo0 = quantumMechanics.getThermoData(molecule) # returns None if it fails
         if thermo0 is None:
             thermo0 = database.thermo.getThermoData(self)
+
         return self.processThermoData(thermo0, thermoClass)
 
     def processThermoData(self, thermo0, thermoClass=MultiNASA):

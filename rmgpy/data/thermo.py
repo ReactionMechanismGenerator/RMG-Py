@@ -670,6 +670,9 @@ class ThermoDatabase:
         
         # Get thermo estimate for saturated form of structure
         thermoData = stableThermoEstimator(saturatedStruct)
+        if thermoData is None:
+            logging.info("Thermo data of saturated {0} of molecule {1} is None.".format(saturatedStruct, molecule))
+            return None
         assert thermoData is not None, "Thermo data of saturated {0} of molecule {1} is None!".format(saturatedStruct, molecule)
         
         # Undo symmetry number correction for saturated structure

@@ -133,16 +133,13 @@ class QMCalculator():
             raise Exception("RMG-Py 'bin' directory {0} is not a directory.".format(self.settings.RMG_bin_path))
             
         
-    def getThermoData(self, species):
+    def getThermoData(self, molecule):
         """
-        Generate thermo data for the given :class:`Species` via a quantum mechanics calculation.
-        """
-                
-        molecule = species.molecule[0]
+        Generate thermo data for the given :class:`Molecule` via a quantum mechanics calculation.
         
-        if self.settings.onlyCyclics and not molecule.isCyclic():
-            logging.info("Skipping QM calculation for noncyclic species {0}".format(species.label))
-            return None
+        Ignores the settings onlyCyclics and maxRadicalNumber and does the calculation anyway if asked.
+        (I.e. the code that chooses whether to call this method should consider those settings).
+        """
         
         if self.settings.software == 'mopac':
             qm_molecule_calculator = rmgpy.qm.mopac.MopacMolPM3(molecule, self.settings)
