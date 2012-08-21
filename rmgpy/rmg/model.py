@@ -84,7 +84,14 @@ class Species(rmgpy.species.Species):
         """
         thermo0 = None
         if quantumMechanics:
-            thermo0 = quantumMechanics.getThermoData(self) # returns None if it fails
+            if self.molecule[0].getRadicalCount() > quantumMechanics.settings.maxRadicalNumber:
+                logging.info("{0} radicals on {1} exceeds limit of {2}. Skipping QM calc.".format(
+                    self.molecule[0].getRadicalCount(),
+                    self.label,
+                    quantumMechanics.settings.maxRadicalNumber,
+                    ))
+            else:
+                thermo0 = quantumMechanics.getThermoData(self) # returns None if it fails
         if thermo0 is None:
             thermo0 = database.thermo.getThermoData(self)
         return self.processThermoData(thermo0, thermoClass)

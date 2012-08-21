@@ -52,6 +52,7 @@ class QMSettings():
         self.fileStore = None
         self.scratchDirectory = None
         self.onlyCyclics = None
+        self.maxRadicalNumber = None
         
         RMGpy_path = os.getenv('RMGpy') or os.path.normpath(os.path.join(rmgpy.getPath(),'..'))
         self.RMG_bin_path = os.path.join(RMGpy_path, 'bin')
@@ -60,10 +61,14 @@ class QMSettings():
         """
         Check that all the required settings are set.
         """
+        from types import BooleanType, IntType
         assert self.fileStore
         assert self.scratchDirectory
         assert self.software
         assert self.onlyCyclics is not None # but it can be False
+        assert type(self.onlyCyclics) is BooleanType
+        assert self.maxRadicalNumber is not None # but it can be 0
+        assert type(self.maxRadicalNumber) is IntType
 
 class QMCalculator():
     """
