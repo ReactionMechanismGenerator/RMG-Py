@@ -104,6 +104,8 @@ cdef class Molecule(Graph):
 
     cpdef str getFormula(self)
 
+    cpdef short getRadicalCount(self)
+
     cpdef double getMolecularWeight(self)
 
     cpdef Graph copy(self, bint deep=?)

@@ -571,6 +571,16 @@ class Molecule(Graph):
         for atom in self.vertices:
             mass += atom.element.mass
         return mass
+    
+    def getRadicalCount(self):
+        """
+        Return the number of unpaired electrons.
+        """
+        cython.declare(atom=Atom, radicals=cython.short)
+        radicals = 0
+        for atom in self.vertices:
+            radicals += atom.radicalElectrons
+        return radicals
 
     def copy(self, deep=False):
         """
@@ -1091,7 +1101,7 @@ class Molecule(Graph):
         isomers = [self]
 
         # Radicals
-        if sum([atom.radicalElectrons for atom in isomers[0].atoms]) > 0:
+        if self.getRadicalCount() > 0:
             # Iterate over resonance isomers
             index = 0
             while index < len(isomers):
@@ -1118,7 +1128,7 @@ class Molecule(Graph):
         isomers = []
 
         # Radicals
-        if sum([atom.radicalElectrons for atom in self.vertices]) > 0:
+        if self.getRadicalCount() > 0:
             # Iterate over radicals in structure
             for atom in self.vertices:
                 paths = self.findAllDelocalizationPaths(atom)

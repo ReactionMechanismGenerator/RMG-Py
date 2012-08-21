@@ -628,7 +628,7 @@ class ThermoDatabase:
         then applying hydrogen bond increment corrections for the radical
         site(s) and correcting for the symmetry.
         """
-        assert sum([atom.radicalElectrons for atom in molecule.atoms]) > 0, "Method only valid for radicals."
+        assert molecule.getRadicalCount() > 0, "Method only valid for radicals."
         
         # Make a copy of the structure so we don't change the original
         saturatedStruct = molecule.copy(deep=True)
@@ -709,7 +709,7 @@ class ThermoDatabase:
 
         thermoData = None
 
-        if sum([atom.radicalElectrons for atom in molecule.atoms]) > 0: # radical species
+        if molecule.getRadicalCount() > 0: # radical species
             return self.estimateRadicalThermoViaHBI(molecule, self.estimateThermoViaGroupAdditivity )
 
         else: # non-radical species
