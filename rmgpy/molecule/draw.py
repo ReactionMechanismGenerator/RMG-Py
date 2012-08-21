@@ -299,7 +299,7 @@ class MoleculeDrawer:
                 for ringSystem in self.ringSystems:
                     for ring in ringSystem:
                         if any([atom in ring for atom in cycle]) and not found:
-                            self.ringSystem.append(cycle)
+                            ringSystem.append(cycle)
                             found = True
                 if not found:
                     self.ringSystems.append([cycle])
