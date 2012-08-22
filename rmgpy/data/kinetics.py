@@ -1467,7 +1467,12 @@ class KineticsLibrary(Database):
                 f.write('{0:<48}'.format(equation))
                 # Write kinetics
                 if isinstance(rate, ThirdBody):
-                    writeArrhenius(f, rate.arrheniusHigh)
+                    if isinstance(rate, Lindemann):
+                        # Lindemann (and Troe) fall-off have the High-P as default, and Low-P labeled LOW
+                        writeArrhenius(f, rate.arrheniusHigh)
+                    else:
+                        # Non-falloff ThirdBody reactions are always in the Low-P limit
+                        writeArrhenius(f, rate.arrheniusLow)
                     if len(rate.efficiencies) > 0:
                         for molecule, efficiency in rate.efficiencies.iteritems():
                             for spec in speciesDict.values():
