@@ -47,15 +47,29 @@ class MopacTS(QMReaction, Mopac):
         """
         make TS geometry
         """
-        reactants, products = self.twoEnded()
-        self.geometry.uniqueID = self.geometry.uniqueID + 'ts'
-        self.geometry.writeMolFile(self.rdmol, self.geometry.getRefinedMolFilePath(), 0)
-        method = MopacPM3(self)
-        for attempt in range(1, self.scriptAttempts+1):    
-            top_keys, bottom_keys, polar_keys = method.inputFileKeys(attempt, multiplicity)
-            inputFileName = self.writeInputFile(attempt, top_keys, bottom_keys, polar_keys, self.scriptAttempts)
-            success = self.run(inputFileName)
-    
+        if self.reaction.family.name.lower() == 'intra_r_add_exocyclic' or self.reaction.family.name.lower() == 'intra_r_add_endocyclic':
+            rdMol, tsBM, mult, lbl1, lbl2 = self.getTSBMatrix()
+            self.geometry.uniqueID = 'transitionState'
+            success = False
+            attempt = 0
+            if not success:
+                attempt += 1
+                tsBM = self.stretchBond(tsBM, lbl1, lbl2)
+                self.geometry.rd_embed(rdMol, 1, tsBM)
+                top_keys, bottom_keys, polar_keys = self.inputFileKeys(attempt, mult)
+                inputFileName = self.writeInputFile(attempt, top_keys, bottom_keys, polar_keys, self.scriptAttempts)
+                import ipdb; ipdb.set_trace()
+                success = self.run(inputFileName)
+            self.geometry.uniqueID = self.geometry.uniqueID + 'ts'
+            self.geometry.writeMolFile(self.rdmol, self.geometry.getRefinedMolFilePath(), 0)
+            method = MopacPM3(self)
+            for attempt in range(1, self.scriptAttempts+1):    
+                top_keys, bottom_keys, polar_keys = method.inputFileKeys(attempt, multiplicity)
+                inputFileName = self.writeInputFile(attempt, top_keys, bottom_keys, polar_keys, self.scriptAttempts)
+                success = self.run(inputFileName)
+        else:
+            pass
+        
 class MopacPM3(MopacTS):
     def inputFileKeys(self, attempt, multiplicity):
         """

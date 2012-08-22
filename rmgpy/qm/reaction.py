@@ -11,6 +11,7 @@ from molecule import QMMolecule, Geometry
 from collections import defaultdict
 
 import rdkit
+from rdkit import DistanceGeometry
 from rdkit.Chem.Pharm3D import EmbedLib
 
 class QMReaction:
@@ -202,8 +203,25 @@ class QMReaction:
         boundsMatrix = rdkit.Chem.rdDistGeom.GetMoleculeBoundsMatrix(rdKitMol)
         
         return rdKitMol, boundsMatrix, multiplicity
+    
+    def getBMParameters(self, reactant, product):
+        for action in self.reaction.family.forwardRecipe.actions:
+            if action[0].lower() == 'form_bond' or action[0].lower() == 'break_bond':
+                atlbl1 = action[1]
+                atlbl2 = action[3]
         
-    def editBoundsMatrix(self, molecule, boundsMatrix, actionList):
+        if reactant.isCyclic():
+            rdMol, bMatrix, mult = self.generateBoundsMatrix(reactant)
+            atlbl1 = reactant.getLabeledAtom(atlbl1).sortingLabel
+            atlbl2 = reactant.getLabeledAtom(atlbl2).sortingLabel
+        elif product.isCyclic():
+            rdMol, bMatrix, mult = self.generateBoundsMatrix(product)
+            atlbl1 = product.getLabeledAtom(atlbl1).sortingLabel
+            atlbl2 = product.getLabeledAtom(atlbl2).sortingLabel
+        
+        return rdMol, bMatrix, mult, atlbl1, atlbl2
+        
+    def editBondLimits(self, molecule, boundsMatrix, actionList):
         
         for action in actionList:
             lbl1 = action[1]
@@ -307,6 +325,7 @@ class QMReaction:
         return newadjlist
         
     def twoEnded(self):
+        fam = self.reaction.family.name
         if len(self.reactants) == len(self.products):
             if len(self.reactants) == 1:
                 reactant = self.getDeepCopy(self.reactants[0])
@@ -334,13 +353,37 @@ class QMReaction:
         newadjlist = self.adjlist(self.atoms(newadjlist))
         test = Molecule()
         if product.isIsomorphic(test.fromAdjacencyList(newadjlist)):
-            product = product.fromAdjacencyList(adjlist)
+            product = product.fromAdjacencyList(newadjlist)
         else:
             logging.info("Couldn't generate transition state geometry")
             
         return reactant, product
+    
+    def stretchBond(self, boundsMatrix, lbl1, lbl2):
+        boundsMatrix[lbl1][lbl2] += 2
+        boundsMatrix[lbl2][lbl1] += 2
+        
+        DistanceGeometry.DistGeom.DoTriangleSmoothing(boundsMatrix)
+        
+        return boundsMatrix
+    
+    def getTSBMatrix(self):
+        
+        reactant = self.getDeepCopy(self.reactants[0])
+        product = self.getDeepCopy(self.products[0])
+        if reactant.atoms[0].sortingLabel == -1:
+            reactant = self.fixSortLabel(reactant)
+        if product.atoms[0].sortingLabel == -1:
+            product = self.fixSortLabel(product)
+            
+        rdMol, tsBM, mult, lbl1, lbl2 = self.getBMParameters(reactant, product)
+        
+        return rdMol, tsBM, mult, lbl1, lbl2
         
     def generateGeometry(self):
+        """
+        This is for reactions in the family of intra R Add Exo/Endo-cyclic
+        """
         # A --> B or A + B --> C + D
         if len(self.reactants) == len(self.products):
             actionList = self.family.forwardRecipe.actions
@@ -392,7 +435,7 @@ class QMReaction:
                 # Merge the reactants to generate the TS template
                 buildTS = reactant.merge(reactant2)
                 self.fixSortLabel(buildTS)
-                boundsMat = self.editBoundsMatrix(buildTS, boundsMat, actionList)
+                boundsMat = self.editBondLimits(buildTS, boundsMat, actionList)
                 
                 self.geometry, multiplicity = self.getGeometry(buildTS)
                 
@@ -407,7 +450,7 @@ class QMReaction:
             self.rdmol, boundsMat, multiplicity = self.generateBoundsMatrix(buildTS)
             
             # Alter the bounds matrix based on the reaction recipe
-            boundsMat = self.editBoundsMatrix(buildTS, boundsMat, actionList)
+            boundsMat = self.editBondLimits(buildTS, boundsMat, actionList)
              
         # Optimize the TS geometry in place, outputing the initial and final energies
         try:
