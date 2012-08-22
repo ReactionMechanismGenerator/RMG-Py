@@ -135,6 +135,48 @@ class Geometry:
             point = rdmol.GetConformer(minEid).GetAtomPosition(atom.sortingLabel)
             atom.coords = [point.x, point.y, point.z]
 
+def loadThermoDataFile(filePath):
+    """
+    Load the specified thermo data file and return the dictionary of its contents.
+    
+    Returns `None` if the file is invalid or missing.
+    
+    Checks that the returned dictionary contains at least InChI, adjacencyList, thermoData.
+    """
+    if not os.path.exists(filePath):
+        return None
+    try:
+        with open(filePath) as resultFile:
+            logging.info('Reading existing thermo file {0}'.format(filePath))
+            global_context = { '__builtins__': None }
+            local_context = {
+                '__builtins__': None,
+                'True': True,
+                'False': False,
+                'ThermoData': rmgpy.thermo.ThermoData,
+                'PointGroup': symmetry.PointGroup,
+                'QMData': qmdata.QMData,
+                'array': numpy.array,
+                'int32': numpy.int32,
+            }
+            exec resultFile in global_context, local_context
+    except IOError, e:
+        logging.info("Couldn't read thermo file {0}".format(filePath))
+        return None
+    except (NameError, TypeError, SyntaxError), e:
+        logging.error('The thermo file "{0}" was invalid:'.format(filePath))
+        logging.exception(e)
+        return None
+    if not 'InChI' in local_context:
+        logging.error('The thermo file "{0}" did not contain an InChI.'.format(filePath))
+        return None
+    if not 'adjacencyList' in local_context:
+        logging.error('The thermo file "{0}" did not contain adjacencyList.'.format(filePath))
+        return None
+    if not 'thermoData' in local_context:
+        logging.error('The thermo file "{0}" did not contain thermoData.'.format(filePath))
+        return None
+    return local_context
 
 class QMMolecule:
     """ 
@@ -226,56 +268,13 @@ class QMMolecule:
             resultFile.write("pointGroup = {0!r}\n".format(self.pointGroup))
             resultFile.write("qmData = {0!r}\n".format(self.qmData))
             resultFile.write('adjacencyList = """\n{0!s}"""\n'.format(self.molecule.toAdjacencyList(removeH=True)))
-    
-    def loadThermoDataFile(self, filePath):
-        """
-        Load the specified thermo data file and return the dictionary of its contents.
-        
-        Returns `None` if the file is invalid or missing.
-        
-        Checks that the returned dictionary contains at least InChI, adjacencyList, thermoData.
-        """
-        if not os.path.exists(filePath):
-            return None
-        try:
-            with open(filePath) as resultFile:
-                logging.info('Reading existing thermo file {0}'.format(filePath))
-                global_context = { '__builtins__': None }
-                local_context = {
-                    '__builtins__': None,
-                    'True': True,
-                    'False': False,
-                    'ThermoData': rmgpy.thermo.ThermoData,
-                    'PointGroup': symmetry.PointGroup,
-                    'QMData': qmdata.QMData,
-                    'array': numpy.array,
-                    'int32': numpy.int32,
-                }
-                exec resultFile in global_context, local_context
-        except IOError, e:
-            logging.info("Couldn't read thermo file {0}".format(filePath))
-            return None
-        except (NameError, TypeError, SyntaxError), e:
-            logging.error('The thermo file "{0}" was invalid:'.format(filePath))
-            logging.exception(e)
-            return None
-        if not 'InChI' in local_context:
-            logging.error('The thermo file "{0}" did not contain an InChI.'.format(filePath))
-            return None
-        if not 'adjacencyList' in local_context:
-            logging.error('The thermo file "{0}" did not contain adjacencyList.'.format(filePath))
-            return None
-        if not 'thermoData' in local_context:
-            logging.error('The thermo file "{0}" did not contain thermoData.'.format(filePath))
-            return None
-        return local_context
-        
+
     def loadThermoData(self):
         """
         Try loading a thermo data from a previous run.
         """
         filePath = self.getFilePath('.thermo')
-        local_context = self.loadThermoDataFile(filePath)
+        local_context = loadThermoDataFile(filePath)
         if local_context['InChI'] != self.uniqueIDlong:
             logging.error('The InChI in the thermo file {0} did not match the current molecule {1}'.format(filePath,self.uniqueIDlong))
             return None
