@@ -2,7 +2,7 @@ import os
 import logging
 
 from rdkit import Chem
-from rdkit.Chem import AllChem
+from rdkit.Chem import AllChem, Pharm3D
 
 from rmgpy.thermo import ThermoData
 from rmgpy.statmech import RigidRotor, HarmonicOscillator, Translation, StatesModel
@@ -86,26 +86,39 @@ class Geometry:
         """
         Embed the RDKit molecule and create the crude molecule file.
         """
-        AllChem.EmbedMultipleConfs(rdmol, numConfAttempts,randomSeed=1)
-        
-        energy=0.0
-        minEid=0;
-        lowestE=9.999999e99;#start with a very high number, which would never be reached
-
-        crude = Chem.Mol(rdmol.ToBinary())
-        
-        for i in range(rdmol.GetNumConformers()):
-            AllChem.UFFOptimizeMolecule(rdmol,confId=i)
-            energy=AllChem.UFFGetMoleculeForceField(rdmol,confId=i).CalcEnergy()
-            if energy < lowestE:
-                minEid = i
-                lowestE = energy 
-        
+        if boundsMatrix == None:
+            AllChem.EmbedMultipleConfs(rdmol, numConfAttempts,randomSeed=1)
+            crude = Chem.Mol(rdmol.ToBinary())
+            rdmol, minEid = self.optimize(rdmol)
+        else:
+            Pharm3D.EmbedLib.EmbedMol(rdmol, boundsMatrix)
+            crude = Chem.Mol(rdmol.ToBinary())
+            rdmol, minEid = self.optimize(rdmol, boundsMatrix)
+            
         self.writeMolFile(crude, self.getCrudeMolFilePath(), minEid)
         self.writeMolFile(rdmol, self.getRefinedMolFilePath(), minEid)
         
         return rdmol, minEid
     
+    def optimize(self, rdmol, boundsMatrix = None):
+        
+        if boundsMatrix == None:
+            energy=0.0
+            minEid=0;
+            lowestE=9.999999e99;#start with a very high number, which would never be reached
+            
+            for i in range(rdmol.GetNumConformers()):
+                AllChem.UFFOptimizeMolecule(rdmol,confId=i)
+                energy=AllChem.UFFGetMoleculeForceField(rdmol,confId=i).CalcEnergy()
+                if energy < lowestE:
+                    minEid = i
+                    lowestE = energy 
+        else:
+            eBefore, eAfter = Pharm3D.EmbedLib.OptimizeMol(rdmol, boundsMatrix)
+            minEid = 0
+            
+        return rdmol, minEid
+        
     def writeMolFile(self, mol, path, minEid):
         with open(path, 'w') as out3Dcrude:
             out3Dcrude.write(Chem.MolToMolBlock(mol,confId=minEid))
