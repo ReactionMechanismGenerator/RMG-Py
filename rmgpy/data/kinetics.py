@@ -535,6 +535,7 @@ class KineticsDepository(Database):
                   kinetics=None,
                   degeneracy=1,
                   label='',
+                  duplicate=False,
                   reference=None,
                   referenceType='',
                   shortDesc='',
@@ -555,7 +556,7 @@ class KineticsDepository(Database):
             if product2 is not None: products.append(Molecule().fromAdjacencyList(product2))
             if product3 is not None: products.append(Molecule().fromAdjacencyList(product3))
             
-            reaction = Reaction(reactants=reactants, products=products, degeneracy=degeneracy)
+            reaction = Reaction(reactants=reactants, products=products, degeneracy=degeneracy, duplicate=duplicate)
         
         elif group1 is not None:
             # The reaction involves functional groups
