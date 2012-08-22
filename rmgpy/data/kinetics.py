@@ -903,7 +903,21 @@ class KineticsLibrary(Database):
                     raise DatabaseError('Species label "{0}" used for multiple species in kinetics library {1}.'.format(product.label, self.label))
         
         return speciesDict
-    
+
+    def markValidDuplicates(self, reactions1, reactions2):
+        """
+        Check for reactions that appear in both lists,
+        and mark them as (valid) duplicates.
+        """
+        for r1 in reactions1:
+            for r2 in reactions2:
+                if (r1.reactants == r2.reactants and
+                    r1.products == r2.products and
+                    r1.reversible == r2.reversible
+                    ):
+                    r1.duplicate = True
+                    r2.duplicate = True
+
     def checkForDuplicates(self):
         """
         Check that all duplicate reactions in the kinetics library are
@@ -917,7 +931,11 @@ class KineticsLibrary(Database):
                 # This means that if we find any duplicate reactions, it is an error
                 for entry in self.entries.values():
                     reaction = entry.item
-                    if reaction0 is not reaction and reaction0.reactants == reaction.reactants and reaction0.products == reaction.products:
+                    if (reaction0 is not reaction and
+                        reaction0.reactants == reaction.reactants and
+                        reaction0.products == reaction.products and
+                        reaction0.reversible == reaction.reversible
+                        ):
                         # We found a duplicate reaction that wasn't marked!
                         raise DatabaseError('Unexpected duplicate reaction {0} in kinetics library {1}.'.format(reaction0, self.label))                   
 
@@ -941,6 +959,9 @@ class KineticsLibrary(Database):
                 if reaction0 is reaction:
                     continue
                 if reaction0.isIsomorphic(reaction, eitherDirection=False):
+                    if reaction0.reversible != reaction.reversible:
+                        print "Reactions isomorphic but with different reversibilities"
+                        continue
                     duplicates.append(entry)
             
             assert len(duplicates)>1
@@ -1043,7 +1064,10 @@ class KineticsLibrary(Database):
         reactions = []
         reactions.extend(self.__loadOldReactions(os.path.join(path,'reactions.txt'), species))
         if os.path.exists(os.path.join(path,'pdepreactions.txt')):
-            reactions.extend(self.__loadOldReactions(os.path.join(path,'pdepreactions.txt'), species))
+            pdep_reactions = self.__loadOldReactions(os.path.join(path,'pdepreactions.txt'), species)
+            # RMG-Py likes otherwise equivalent PDep and non-pdep reactions to be marked as duplicates
+            self.markValidDuplicates(reactions, pdep_reactions)
+            reactions.extend(pdep_reactions)
 
         self.entries = {}
         for index, reaction in enumerate(reactions):
