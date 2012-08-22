@@ -452,6 +452,8 @@ def saveEntry(f, entry):
             f.write('    degeneracy = {0:d},\n'.format(entry.item.degeneracy))
         if entry.item.duplicate: 
             f.write('    duplicate = {0!r},\n'.format(entry.item.duplicate))
+        if not entry.item.reversible:
+            f.write('    reversible = {0!r},\n'.format(entry.item.reversible))
     elif isinstance(entry.item, Group):
         f.write('    group = \n')
         f.write('"""\n')
