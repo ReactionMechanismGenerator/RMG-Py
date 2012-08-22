@@ -37,6 +37,8 @@ class MopacMol(QMMolecule, Mopac):
     scriptAttempts = len(keywordsTop)
     maxAttempts = 2 * scriptAttempts
     
+    failureKeys = ['IMAGINARY FREQUENCIES', 'EXCESS NUMBER OF OPTIMIZATION CYCLES', 'NOT ENOUGH TIME FOR ANOTHER CYCLE']
+    
     def __init__(self, molecule):
         self.molecule = molecule
     

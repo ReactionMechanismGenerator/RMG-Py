@@ -4,6 +4,7 @@ from reaction import QMReaction
 from mopac import Mopac
 
 import rdkit
+from rdkit import DistanceGeometry
 from rdkit.Chem.Pharm3D import EmbedLib
 
 class MopacTS(QMReaction, Mopac):
@@ -22,10 +23,10 @@ class MopacTS(QMReaction, Mopac):
     
     "Keywords that will be added at the top of the qm input file"
     keywordsTop = {}
-    keywordsTop[1] = "ts vectors xyz"
-    keywordsTop[2] = "ts vectors xyz recalc=5"
-    keywordsTop[3] = "ts vectors xyz ddmin=0.0001"
-    keywordsTop[4] = "ts vectors xyz recalc=5 ddmin=0.0001"
+    keywordsTop[1] = "forcets esp vectors xyz"
+    keywordsTop[2] = "forcets esp vectors xyz recalc=5"
+    keywordsTop[3] = "forcets esp vectors xyz ddmin=0.0001"
+    keywordsTop[4] = "forcets esp vectors xyz recalc=5 ddmin=0.0001"
     
     "Keywords that will be added at the bottom of the qm input file"
     keywordsBottom = {}
@@ -35,6 +36,16 @@ class MopacTS(QMReaction, Mopac):
     keywordsBottom[4] = ""
     
     scriptAttempts = len(keywordsTop)
+    
+    failureKeys = ['GRADIENT IS TOO LARGE', 
+                'EXCESS NUMBER OF OPTIMIZATION CYCLES', 
+                'NOT ENOUGH TIME FOR ANOTHER CYCLE',
+                '6 IMAGINARY FREQUENCIES',
+                '5 IMAGINARY FREQUENCIES',
+                '4 IMAGINARY FREQUENCIES',
+                '3 IMAGINARY FREQUENCIES',
+                '2 IMAGINARY FREQUENCIES'
+                ]
     
     def __init__(self, reaction):
         self.reaction = reaction
@@ -48,25 +59,20 @@ class MopacTS(QMReaction, Mopac):
         make TS geometry
         """
         if self.reaction.family.name.lower() == 'intra_r_add_exocyclic' or self.reaction.family.name.lower() == 'intra_r_add_endocyclic':
-            rdMol, tsBM, mult, lbl1, lbl2 = self.getTSBMatrix()
+            rdMol, tsBM, mult, lbl, other = self.getTSBMatrix()
             self.geometry.uniqueID = 'transitionState'
             success = False
-            attempt = 0
-            if not success:
-                attempt += 1
-                tsBM = self.stretchBond(tsBM, lbl1, lbl2)
+            check = 0
+            while not success and check < self.scriptAttempts:
+                check += 1
+                attempt = 0
+                tsBM = self.stretchBond(tsBM, lbl)
                 self.geometry.rd_embed(rdMol, 1, tsBM)
-                top_keys, bottom_keys, polar_keys = self.inputFileKeys(attempt, mult)
-                inputFileName = self.writeInputFile(attempt, top_keys, bottom_keys, polar_keys, self.scriptAttempts)
-                import ipdb; ipdb.set_trace()
-                success = self.run(inputFileName)
-            self.geometry.uniqueID = self.geometry.uniqueID + 'ts'
-            self.geometry.writeMolFile(self.rdmol, self.geometry.getRefinedMolFilePath(), 0)
-            method = MopacPM3(self)
-            for attempt in range(1, self.scriptAttempts+1):    
-                top_keys, bottom_keys, polar_keys = method.inputFileKeys(attempt, multiplicity)
-                inputFileName = self.writeInputFile(attempt, top_keys, bottom_keys, polar_keys, self.scriptAttempts)
-                success = self.run(inputFileName)
+                while not success and attempt < self.scriptAttempts:
+                    attempt += 1
+                    top_keys, bottom_keys, polar_keys = self.inputFileKeys(attempt, mult)
+                    inputFileName = self.writeInputFile(attempt, top_keys, bottom_keys, polar_keys, self.scriptAttempts)
+                    success = self.run(inputFileName)
         else:
             pass
         

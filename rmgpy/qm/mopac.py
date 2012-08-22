@@ -17,7 +17,6 @@ class Mopac:
     
     usePolar = False#use polar keyword in MOPAC
     
-    failureKeys = ['IMAGINARY FREQUENCIES', 'EXCESS NUMBER OF OPTIMIZATION CYCLES', 'NOT ENOUGH TIME FOR ANOTHER CYCLE']
     
     def writeInputFile(self, attempt, top_keys, bottom_keys, polar_keys, scriptAttempts):
         """
@@ -70,7 +69,7 @@ class Mopac:
                 each_line = each_line.rstrip().strip()
                 for element in self.failureKeys:#search for failure keywords
                     if element in each_line:
-                        logging.error("MOPAC output file contains the following error %s")%element
+                        logging.error("MOPAC output file contains the following error {0}".format(element))
                         return False
                     
         return True

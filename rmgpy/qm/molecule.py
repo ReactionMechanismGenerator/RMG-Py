@@ -73,7 +73,7 @@ class Geometry:
                     elif bond.order == 'B':
                         rdBond = AllChem.rdchem.BondType.AROMATIC
                     else:
-                        print "Unknown bond order"
+                        logging.error('Unknown bond order')
                     rdmol.AddBond(index1, index2, rdBond)
 
         # Make editable mol into a mol and rectify the molecule
@@ -91,10 +91,13 @@ class Geometry:
             crude = Chem.Mol(rdmol.ToBinary())
             rdmol, minEid = self.optimize(rdmol)
         else:
-            Pharm3D.EmbedLib.EmbedMol(rdmol, boundsMatrix)
+            try:
+                Pharm3D.EmbedLib.EmbedMol(rdmol, boundsMatrix, randomSeed=10)
+            except RuntimeError:
+                logging.error('Could not embed from bounds matrix')
             crude = Chem.Mol(rdmol.ToBinary())
             rdmol, minEid = self.optimize(rdmol, boundsMatrix)
-            
+        
         self.writeMolFile(crude, self.getCrudeMolFilePath(), minEid)
         self.writeMolFile(rdmol, self.getRefinedMolFilePath(), minEid)
         

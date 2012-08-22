@@ -212,14 +212,18 @@ class QMReaction:
         
         if reactant.isCyclic():
             rdMol, bMatrix, mult = self.generateBoundsMatrix(reactant)
-            atlbl1 = reactant.getLabeledAtom(atlbl1).sortingLabel
-            atlbl2 = reactant.getLabeledAtom(atlbl2).sortingLabel
+            lbl = (reactant.getLabeledAtom(atlbl1).sortingLabel, reactant.getLabeledAtom(atlbl2).sortingLabel)
+            oRDMol, oBM, oMult = self.generateBoundsMatrix(product)
+            other = (product.getLabeledAtom(atlbl1).sortingLabel, product.getLabeledAtom(atlbl2).sortingLabel)
+            other = (oBM[other[0]][other[1]], oBM[other[1]][other[0]])
         elif product.isCyclic():
             rdMol, bMatrix, mult = self.generateBoundsMatrix(product)
-            atlbl1 = product.getLabeledAtom(atlbl1).sortingLabel
-            atlbl2 = product.getLabeledAtom(atlbl2).sortingLabel
+            lbl = (product.getLabeledAtom(atlbl1).sortingLabel, product.getLabeledAtom(atlbl2).sortingLabel)
+            oRDMol, oBM, oMult = self.generateBoundsMatrix(reactant)
+            other = (reactant.getLabeledAtom(atlbl1).sortingLabel, reactant.getLabeledAtom(atlbl2).sortingLabel)
+            other = (oBM[other[0]][other[1]], oBM[other[1]][other[0]])
         
-        return rdMol, bMatrix, mult, atlbl1, atlbl2
+        return rdMol, bMatrix, mult, lbl, other
         
     def editBondLimits(self, molecule, boundsMatrix, actionList):
         
@@ -359,9 +363,9 @@ class QMReaction:
             
         return reactant, product
     
-    def stretchBond(self, boundsMatrix, lbl1, lbl2):
-        boundsMatrix[lbl1][lbl2] += 2
-        boundsMatrix[lbl2][lbl1] += 2
+    def stretchBond(self, boundsMatrix, lbl):
+        boundsMatrix[lbl[0]][lbl[1]] += 0.24
+        boundsMatrix[lbl[1]][lbl[0]] += 0.24
         
         DistanceGeometry.DistGeom.DoTriangleSmoothing(boundsMatrix)
         
@@ -376,9 +380,9 @@ class QMReaction:
         if product.atoms[0].sortingLabel == -1:
             product = self.fixSortLabel(product)
             
-        rdMol, tsBM, mult, lbl1, lbl2 = self.getBMParameters(reactant, product)
+        rdMol, tsBM, mult, lbl, other = self.getBMParameters(reactant, product)
         
-        return rdMol, tsBM, mult, lbl1, lbl2
+        return rdMol, tsBM, mult, lbl, other
         
     def generateGeometry(self):
         """
