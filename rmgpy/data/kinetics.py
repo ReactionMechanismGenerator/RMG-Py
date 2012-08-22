@@ -1503,6 +1503,7 @@ class KineticsLibrary(Database):
                             ))
                         
                 elif isinstance(rate, PDepArrhenius):
+                    writeArrhenius(f, rate.arrhenius[-1])
                     for pressure, arrhenius in zip(rate.pressures.values, rate.arrhenius):
                         f.write('     PLOG /  {0:10g} {1:10.3e} {2:9.3f} {3:10.2f} /\n'.format(
                             pressure / 1e5,
