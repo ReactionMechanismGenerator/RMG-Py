@@ -596,7 +596,8 @@ class Database:
                 elif isinstance(entry.item, LogicOr):
                     f.write('{0}\n\n'.format(entry.item).replace('OR{', 'Union {'))
                 elif entry.label[0:7] == 'Others-':
-                    pass
+                    assert isinstance(entry.item, LogicNode)
+                    f.write('{0}\n\n'.format(entry.item))
                 else:
                     raise DatabaseError('Unexpected item with label {0} encountered in dictionary while attempting to save.'.format(label))
             f.close()
