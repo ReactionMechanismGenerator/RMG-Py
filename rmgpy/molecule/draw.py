@@ -497,7 +497,7 @@ class MoleculeDrawer:
                 if found:
                     center1 = numpy.zeros(2, numpy.float64)
                     for atom in cycle1:
-                        center1 += coordinates[atoms.index(atom),:]
+                        center1 += coordinates[cycle1.index(atom),:]
                     center1 /= len(cycle1)
                     center0 += center1
                     count += 1
@@ -548,9 +548,9 @@ class MoleculeDrawer:
                 endAngle = startAngle + 2 * math.pi
             elif len(commonAtoms) >= 2:
                 # Divide other atoms in cycle equally among unused angle
-                vector = coordinates[atoms.index(commonAtoms[-1]),:] - center
+                vector = coordinates[cycle.index(commonAtoms[-1]),:] - center
                 startAngle = math.atan2(vector[1], vector[0])
-                vector = coordinates[atoms.index(commonAtoms[0]),:] - center
+                vector = coordinates[cycle.index(commonAtoms[0]),:] - center
                 endAngle = math.atan2(vector[1], vector[0])
             
             # Place remaining atoms in cycle
