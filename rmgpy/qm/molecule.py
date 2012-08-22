@@ -227,11 +227,14 @@ class QMMolecule:
             resultFile.write("qmData = {0!r}\n".format(self.qmData))
             resultFile.write('adjacencyList = """\n{0!s}"""\n'.format(self.molecule.toAdjacencyList(removeH=True)))
     
-    def loadThermoData(self):
+    def loadThermoDataFile(self, filePath):
         """
-        Try loading a thermo data from a previous run.
+        Load the specified thermo data file and return the dictionary of its contents.
+        
+        Returns `None` if the file is invalid or missing.
+        
+        Checks that the returned dictionary contains at least InChI, adjacencyList, thermoData.
         """
-        filePath = self.getFilePath('.thermo')
         if not os.path.exists(filePath):
             return None
         try:
@@ -259,18 +262,26 @@ class QMMolecule:
         if not 'InChI' in local_context:
             logging.error('The thermo file "{0}" did not contain an InChI.'.format(filePath))
             return None
-        if local_context['InChI'] != self.uniqueIDlong:
-            logging.error('The InChI in the thermo file {0} did not match the current molecule {1}'.format(filePath,self.uniqueIDlong))
-            return None
         if not 'adjacencyList' in local_context:
             logging.error('The thermo file "{0}" did not contain adjacencyList.'.format(filePath))
+            return None
+        if not 'thermoData' in local_context:
+            logging.error('The thermo file "{0}" did not contain thermoData.'.format(filePath))
+            return None
+        return local_context
+        
+    def loadThermoData(self):
+        """
+        Try loading a thermo data from a previous run.
+        """
+        filePath = self.getFilePath('.thermo')
+        local_context = self.loadThermoDataFile(filePath)
+        if local_context['InChI'] != self.uniqueIDlong:
+            logging.error('The InChI in the thermo file {0} did not match the current molecule {1}'.format(filePath,self.uniqueIDlong))
             return None
         loadedMolecule = rmgpy.molecule.Molecule().fromAdjacencyList(local_context['adjacencyList'])
         if not loadedMolecule.isIsomorphic(self.molecule):
             logging.error('The adjacencyList in thermo file {0} did not match the current molecule {1}'.format(filePath,self.uniqueIDlong))
-            return None
-        if not 'thermoData' in local_context:
-            logging.error('The thermo file "{0}" did not contain thermoData.'.format(filePath))
             return None
         thermo = local_context['thermoData']
         assert isinstance(thermo, rmgpy.thermo.ThermoData)
