@@ -22,33 +22,9 @@ settings.onlyCyclics = False
 
 import os 
 
-mols = []
 
-for f in os.listdir(folder):
-    f = os.path.join(folder,f)
-    stem, ext = os.path.splitext(f)
-    if ext != '.thermo':
-        continue
-    
-    with open(f) as thermofile:
-        line = thermofile.readline()
-        match = re.match('InChI = "(.*?)(\/mult\d)*"',line)
-        if not match: continue
-        inchi = match.group(1)
-        mult = match.group(2)
-        if mult: continue
-        mol = Molecule()
-        mol.fromInChI(inchi)
-        mmol = rmgpy.qm.mopac.MopacMolPM3(mol, settings)
-        print mmol.uniqueID, f
-        thermo = mmol.loadThermoData()
-        if not thermo: continue
-        print "Trying ",mol
-        mols.append(mmol)
-
-
-with open('/Users/rwest/Code/RMG-Java/thermotest/input.txt','w') as f:
-    f.write(
+with open('/Users/rwest/Code/RMG-Java/thermotest/input.txt','w') as output:
+    output.write(
 """
 Database: RMG_database
 
@@ -59,7 +35,7 @@ mopac
 //ForCyclicsOnly? true/false
 false
 //maxradnumforQM?
-3
+0
 //CheckConnectivity? off/check/confirm
 check
 
@@ -78,7 +54,19 @@ Location: primaryThermoLibrary
 END
 
 """)
-    for mmol in mols:
-        f.write(mmol.molecule.toSMILES()+'\n')
-        f.write(mmol.molecule.toAdjacencyList()+'\n')
+
+
+    for f in os.listdir(folder):
+        f = os.path.join(folder,f)
+        stem, ext = os.path.splitext(f)
+        if ext != '.thermo':
+            continue
         
+        data = rmgpy.qm.molecule.loadThermoDataFile(f)
+        mol = Molecule().fromAdjacencyList(data['adjacencyList'])
+    
+        output.write('// {0!s}\n'.format(data['InChI']))
+        output.write('// {0!r}\n'.format(data['thermoData']).replace('),','),\n//           '))
+        output.write(mol.toSMILES())
+        output.write(data['adjacencyList']+'\n')
+            
