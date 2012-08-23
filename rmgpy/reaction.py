@@ -120,7 +120,7 @@ class Reaction:
         Return a string representation of the reaction, in the form 'A + B <=> C + D'.
         """
         arrow = ' <=> '
-        if not self.reversible: arrow = ' -> '
+        if not self.reversible: arrow = ' => '
         return arrow.join([' + '.join([str(s) for s in self.reactants]), ' + '.join([str(s) for s in self.products])])
 
     def __reduce__(self):
