@@ -1365,7 +1365,7 @@ class KineticsLibrary(Database):
             pass
         
         def writeArrhenius(f, arrhenius):
-            f.write('{0:<12.3E}{1:>8.3f}{2:>12.2f}    {3}{4:g} {5:g} {6:g}\n'.format(
+            f.write(' {0:<12.3E}{1:>8.3f}{2:>12.2f}    {3}{4:g} {5:g} {6:g}\n'.format(
                 arrhenius.A.value,
                 arrhenius.n.value,
                 arrhenius.Ea.value / 4.184,
@@ -1425,7 +1425,7 @@ class KineticsLibrary(Database):
                 rateList.append(kinetics)
             for rate in rateList:
                 # Write reaction equation
-                f.write('{0:<48}'.format(entry.item))
+                f.write('{0:<59}'.format(entry.item))
                 # Write kinetics
                 if isinstance(rate, Arrhenius):
                     writeArrhenius(f, rate)
@@ -1464,7 +1464,7 @@ class KineticsLibrary(Database):
                     pass
                 else:
                     equation = '{0}(+M) {1} (+M)'.format(equation[0:index], equation[index:]) 
-                f.write('{0:<48}'.format(equation))
+                f.write('{0:<59}'.format(equation))
                 # Write kinetics
                 if isinstance(rate, ThirdBody):
                     if isinstance(rate, Lindemann):
