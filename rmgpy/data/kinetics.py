@@ -1414,15 +1414,15 @@ class KineticsLibrary(Database):
         f.write('Reactions:\n')
         for entry in entries:
             kinetics = entry.data
-            if kinetics.isPressureDependent():
-                continue
             rateList = []
             if isinstance(kinetics, MultiKinetics):
                 entry.item.duplicate = True
                 for rate in kinetics.kineticsList:
-                    rateList.append(rate)
+                    if not rate.isPressureDependent():
+                        rateList.append(rate)
             else:
-                rateList.append(kinetics)
+                if not kinetics.isPressureDependent():
+                    rateList.append(kinetics)
             for rate in rateList:
                 # Write reaction equation
                 f.write('{0:<59}'.format(entry.item))
@@ -1451,7 +1451,8 @@ class KineticsLibrary(Database):
             if isinstance(kinetics, MultiKinetics):
                 entry.item.duplicate = True
                 for rate in kinetics.kineticsList:
-                    rateList.append(rate)
+                    if rate.isPressureDependent():
+                        rateList.append(rate)
             else:
                 rateList.append(kinetics)
             for rate in rateList:
