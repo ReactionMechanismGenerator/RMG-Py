@@ -1430,7 +1430,7 @@ class KineticsLibrary(Database):
                 if isinstance(rate, Arrhenius):
                     writeArrhenius(f, rate)
                 else:
-                    raise DatabaseError('Unexpected kinetics type "{0}" encountered while saving old kinetics library (reactions.txt).'.format(kinetics.__class__))
+                    raise DatabaseError('Unexpected kinetics type "{0}" encountered while saving old kinetics library (reactions.txt).'.format(rate.__class__))
                 # Mark as duplicate if needed
                 if entry.item.duplicate:
                     f.write(' DUPLICATE\n')
@@ -1514,7 +1514,7 @@ class KineticsLibrary(Database):
                             arrhenius.Ea.value / 4.184,
                         ))
                 else:
-                    raise DatabaseError('Unexpected kinetics type "{0}" encountered while saving old kinetics library (reactions.txt).'.format(kinetics.__class__))
+                    raise DatabaseError('Unexpected kinetics type "{0}" encountered while saving old kinetics library (reactions.txt).'.format(rate.__class__))
                 # Mark as duplicate if needed
                 if entry.item.duplicate:
                     f.write(' DUPLICATE\n')
