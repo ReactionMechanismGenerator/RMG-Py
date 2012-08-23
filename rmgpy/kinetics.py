@@ -647,8 +647,8 @@ class MultiKinetics(KineticsModel):
         string += u'    kineticsList = [\n'
         for kinetics in self.kineticsList:
             for line in kinetics.toPrettyRepr().splitlines()[:-1]:
-                string += u'    {0}\n'.format(line)
-            string += u'    ),\n'
+                string += u'        {0}\n'.format(line)
+            string += u'        ),\n'
         string += u'    ],\n'
         if self.Tmin is not None: string += '    Tmin = {0!r},\n'.format(self.Tmin)
         if self.Tmax is not None: string += '    Tmax = {0!r},\n'.format(self.Tmax)
