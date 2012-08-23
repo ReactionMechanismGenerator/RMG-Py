@@ -810,9 +810,11 @@ class Molecule(Graph):
         Convert a SMILES string `smilesstr` to a molecular structure. Uses
         `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
         """
-        if smilesstr == '[H]':
+        if smilesstr == '[H]' or smilesstr == 'H':
             # cope with a bug in OpenBabel < 2.3
             return self.fromAdjacencyList('1 H 1')
+        elif smilesstr == 'H2':
+            return self.fromSMILES('[H][H]')
         import pybel
         mol = pybel.readstring('smiles', smilesstr)
         self.fromOBMol(mol.OBMol)
@@ -971,6 +973,10 @@ class Molecule(Graph):
         `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
         """
         mol = self.toOBMol()
+        if self.getFormula() == 'H2':
+            return '[H][H]'
+        elif self.getFormula() == 'H':
+            return '[H]'
         return SMILEwriter.WriteString(mol).strip()
 
     def toOBMol(self):
