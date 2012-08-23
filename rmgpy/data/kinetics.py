@@ -1477,9 +1477,11 @@ class KineticsLibrary(Database):
                         for molecule, efficiency in rate.efficiencies.iteritems():
                             for spec in speciesDict.values():
                                 if molecule in spec.molecule:
-                                    f.write('{0}/{1:.2f}/ '.format(spec.label, efficiency)) 
+                                    eff_str = '{0}/{1:.3e}/'.format(spec.label, efficiency)
+                                    break
                             else:
-                                f.write('{0}/{1:.2f}/ '.format(molecule.getFormula().upper(), efficiency)) 
+                                eff_str = '{0}/{1:.3e}/'.format(molecule.getFormula().upper(), efficiency)
+                            f.write('{0:<{1}}'.format(eff_str, len(eff_str) + (16 - len(eff_str) % 8)))
                         f.write('\n')
                     if isinstance(rate, Lindemann):
                         f.write('     LOW  /  {0:10.3e} {1:9.3f} {2:10.2f}/\n'.format(
