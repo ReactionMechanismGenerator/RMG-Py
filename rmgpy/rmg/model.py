@@ -102,7 +102,12 @@ class Species(rmgpy.species.Species):
                         self.label,
                         quantumMechanics.settings.maxRadicalNumber,
                         ))
+                    #import ipdb; ipdb.set_trace()
                     thermo0 = database.thermo.estimateRadicalThermoViaHBI(molecule, quantumMechanics.getThermoData)
+                    with open('thermoHBIcheck.txt','a') as f:
+                        f.write('// {0!r}\n'.format(thermo0).replace('),','),\n//           '))
+                        f.write('{0}\n'.format(molecule.toSMILES()))
+                        f.write('{0}\n\n'.format(molecule.toAdjacencyList(removeH=True)))
                 else: # Not too many radicals: do a direct calculation.
                     thermo0 = quantumMechanics.getThermoData(molecule) # returns None if it fails
         if thermo0 is None:
