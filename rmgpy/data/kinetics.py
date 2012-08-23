@@ -1458,7 +1458,10 @@ class KineticsLibrary(Database):
             for rate in rateList:
                 # Write reaction equation
                 equation = str(entry.item)
-                index = equation.find('<=>')
+                if entry.item.reversible:
+                    index = equation.find('<=>')
+                else:
+                    index = equation.find('=>')
                 if isinstance(rate, ThirdBody) and not isinstance(rate, Lindemann):
                     equation = '{0}+ M {1} + M'.format(equation[0:index], equation[index:])
                 elif isinstance(rate, PDepArrhenius):
