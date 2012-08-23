@@ -733,12 +733,13 @@ class PDepArrhenius(KineticsModel):
         Return a string representation of the reference that can be used to
         reconstruct the object.
         """
-        string = u'MultiKinetics(\n'
+        string = u'PDepArrhenius(\n'
         string += u'    pressures = {0!r},\n'.format(self.pressures)
         string += u'    arrhenius = [\n'
         for kinetics in self.arrhenius:
-            for line in kinetics.toPrettyRepr().splitlines():
-                string += u'    {0}\n'.format(line)
+            for line in kinetics.toPrettyRepr().splitlines()[:-1]:
+                string += u'        {0}\n'.format(line)
+            string += '        ),\n'
         string += u'    ],\n'
         if self.Tmin is not None: string += '    Tmin = {0!r},\n'.format(self.Tmin)
         if self.Tmax is not None: string += '    Tmax = {0!r},\n'.format(self.Tmax)
