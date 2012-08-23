@@ -41,7 +41,7 @@ from copy import copy, deepcopy
 
 from base import Database, Entry, makeLogicNode
 
-from rmgpy.quantity import constants
+from rmgpy.quantity import constants, Quantity
 from rmgpy.thermo import *
 from rmgpy.molecule import Molecule, Atom, Bond, Group
 
@@ -792,11 +792,17 @@ class ThermoDatabase:
         """
         if len(thermoData1.Tdata.values) != len(thermoData2.Tdata.values) or any([T1 != T2 for T1, T2 in zip(thermoData1.Tdata.values, thermoData2.Tdata.values)]):
             raise ThermoError('Cannot add these ThermoData objects due to their having different temperature points.')
+        H298 = Quantity(thermoData1.H298.value + thermoData2.H298.value) # create with bare value
+        H298.units = thermoData1.H298.units # set preferred units
+        S298 = Quantity(thermoData1.S298.value + thermoData2.S298.value)
+        S298.units = thermoData1.S298.units
+        Cpdata = Quantity(thermoData1.Cpdata.values + thermoData2.Cpdata.values)
+        Cpdata.units = thermoData1.Cpdata.units
         new = ThermoData(
             Tdata = (thermoData1.Tdata.values, thermoData1.Tdata.units),
-            Cpdata = (thermoData1.Cpdata.values + thermoData2.Cpdata.values, thermoData1.Tdata.units),
-            H298 = (thermoData1.H298.value + thermoData2.H298.value, thermoData1.Tdata.units),
-            S298 = (thermoData1.S298.value + thermoData2.S298.value, thermoData1.Tdata.units),
+            Cpdata = Cpdata,
+            H298 = H298,
+            S298 = S298,
         )
         if thermoData1.comment == '': new.comment = thermoData2.comment
         elif thermoData2.comment == '': new.comment = thermoData1.comment
