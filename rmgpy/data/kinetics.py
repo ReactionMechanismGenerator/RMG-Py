@@ -637,7 +637,9 @@ class KineticsDepository(Database):
                       'Intra_R_Add_Exocyclic',
                       'Intra_R_Add_Endocyclic',
                       '1,2-Birad_to_alkene',
-                      'Intra_Disproportionation'
+                      'Intra_Disproportionation',
+                      'Korcek_step1',
+                      'Korcek_step2'
                       ]:
             Aunits = 's^-1'
         else:
@@ -800,7 +802,9 @@ class KineticsDepository(Database):
                        'Intra_R_Add_Exocyclic',
                        'Intra_R_Add_Endocyclic',
                        '1,2-Birad_to_alkene',
-                       'Intra_Disproportionation'
+                       'Intra_Disproportionation',
+                       'Korcek_step1',
+                       'Korcek_step2'
                        ]:
             factor = 1.0
         else:
