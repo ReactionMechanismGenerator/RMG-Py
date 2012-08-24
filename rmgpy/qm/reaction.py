@@ -94,8 +94,71 @@ class QMReaction:
         
         return rdMol, bMatrix, mult, lbl, other
     
-            
+    def insertString(self, string, insert):
+        num = len(string)
+        for i in range(1, len(string)):
+            j = num - i
+            string.insert(j, insert)
+        return string
+    
+    def fixBond(self, editLine, line):
+        bondLen = float(editLine.pop(1))
+        bondLen += 0.1
+        bondLen = str(round(bondLen, 6))
+        editLine.insert(12, bondLen)
+        difSplit = line.split('    ')
+        oSplit = difSplit[1].split()
+        oSplit.pop(0)
+        oSplit.insert(0, bondLen + '  ')
+        difSplit[1] = ''.join(oSplit)
         
+        return difSplit
+    
+    def nonEditableVar(self, splitString):
+        for i in range(1, 4):
+            splitString[i] = splitString[i][:-1] + '0'
+            
+        return splitString
+    
+    def stretchBond(self, inputString, lbl):
+        splits = inputString.splitlines()
+        if lbl[0] > lbl[1]:
+            line = splits[lbl[0] + 3]
+            otherLine = splits[lbl[1] + 3]
+            assert line.split()[-3] == str(lbl[1] + 1)
+            editLine = line.split()
+            difSplit = self.fixBond(editLine, line)
+            otherSplit = otherLine.split('    ')
+            difSplit = self.nonEditableVar(difSplit)
+            otherSplit = self.nonEditableVar(otherSplit)
+            difSplit = self.insertString(difSplit, '    ')
+            otherSplit = self.insertString(otherSplit, '    ')
+            
+            splits[lbl[0] + 3] = ''.join(difSplit)
+            splits[lbl[1] + 3] = ''.join(otherSplit)
+            splits = self.insertString(splits, '\n')
+            
+            inputString = ''.join(splits) + '\n'
+        elif lbl[1] > lbl[0]:
+            line = splits[lbl[1] + 3]
+            otherLine = splits[lbl[0] + 3]
+            assert line.split()[-3] == str(lbl[0] + 1)
+            editLine = line.split()
+            difSplit = self.fixBond(editLine, line)
+            otherSplit = otherLine.split('    ')
+            difSplit = self.nonEditableVar(difSplit)
+            otherSplit = self.nonEditableVar(otherSplit)
+            
+            difSplit = self.insertString(difSplit, '    ')
+            otherSplit = self.insertString(otherSplit, '    ')
+            
+            splits[lbl[1] + 3] = ''.join(difSplit)
+            splits[lbl[0] + 3] = ''.join(otherSplit)
+            splits = self.insertString(splits, '\n')
+            
+            inputString = ''.join(splits) + '\n'
+        
+        return inputString
     
     def getTSBMatrix(self):
         
