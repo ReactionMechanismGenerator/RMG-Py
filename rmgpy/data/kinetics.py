@@ -1808,6 +1808,7 @@ class KineticsFamily(Database):
         self.name = self.label
 
         self.groups = KineticsGroups(label='{0}/groups'.format(self.label))
+        self.groups.name = self.groups.label
         self.groups.loadOldDictionary(os.path.join(path, 'dictionary.txt'), pattern=True)
         self.groups.loadOldTree(os.path.join(path, 'tree.txt'))
         # The old kinetics groups use rate rules (not group additivity values),
@@ -1838,6 +1839,7 @@ class KineticsFamily(Database):
             entry.index = index + 1
             
         self.rules = KineticsDepository(label='{0}/rules'.format(self.label))
+        self.rules.name = self.rules.label
         self.rules.loadOldRateRules(path, self.groups, numLabels=max(len(self.forwardTemplate.reactants), len(self.groups.top)))
         self.depositories = {}
 
