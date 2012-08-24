@@ -18,26 +18,15 @@ class Mopac:
     usePolar = False#use polar keyword in MOPAC
     
     
-    def writeInputFile(self, attempt, top_keys, bottom_keys, polar_keys, scriptAttempts):
+    def writeInputFile(self, attempt, top_keys, bottom_keys, polar_keys, scriptAttempts, input_string=None):
         """
         Using the :class:`Geometry` object, write the input file
         for the `attmept`th attempt.
         """
         inputFilePath = os.path.join(self.directory , self.geometry.uniqueID + self.inputFileExtension)
         
-        obConversion = openbabel.OBConversion()
-        obConversion.SetInAndOutFormats("mol", "mop")
-        mol = openbabel.OBMol()
-    
-        if attempt <= scriptAttempts: #use UFF-refined coordinates
-            obConversion.ReadFile(mol, self.geometry.getRefinedMolFilePath() )
-        else:
-            obConversion.ReadFile(mol, self.geometry.getCrudeMolFilePath() )
-    
-        mol.SetTitle(self.geometry.uniqueID) 
-        obConversion.SetOptions('k', openbabel.OBConversion.OUTOPTIONS)
-    
-        input_string = obConversion.WriteString(mol)
+        if input_string == None:
+            input_string = self.convertMolFile('mop', attempt, scriptAttempts)
         
         with open(inputFilePath, 'w') as mopacFile:
             mopacFile.write(top_keys)
@@ -49,6 +38,22 @@ class Mopac:
                 mopacFile.write(polar_keys)
         
         return self.geometry.uniqueID + self.inputFileExtension
+    
+    def convertMolFile(self, outputType, attempt, scriptAttempts):
+        if attempt <= scriptAttempts: #use UFF-refined coordinates
+            inputFilePath = self.geometry.getRefinedMolFilePath()
+        else:
+            inputFilePath = self.geometry.getCrudeMolFilePath()
+                    
+        obConversion = openbabel.OBConversion()
+        obConversion.SetInAndOutFormats("mol", outputType)
+        mol = openbabel.OBMol()
+        obConversion.ReadFile(mol, inputFilePath)
+        mol.SetTitle(self.geometry.uniqueID) 
+        obConversion.SetOptions('k', openbabel.OBConversion.OUTOPTIONS)
+        input_string = obConversion.WriteString(mol)
+        
+        return input_string
        
     def run(self, inputFileName):
         # submits the input file to mopac

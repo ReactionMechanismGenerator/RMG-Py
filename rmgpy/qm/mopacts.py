@@ -4,7 +4,6 @@ from reaction import QMReaction
 from mopac import Mopac
 
 import rdkit
-from rdkit import DistanceGeometry
 from rdkit.Chem.Pharm3D import EmbedLib
 
 class MopacTS(QMReaction, Mopac):
@@ -63,16 +62,18 @@ class MopacTS(QMReaction, Mopac):
             self.geometry.uniqueID = 'transitionState'
             success = False
             check = 0
-            while not success and check < self.scriptAttempts:
+            self.geometry.rd_embed(rdMol, 1, tsBM)
+            inputString = self.convertMolFile('mopin', 1, self.scriptAttempts)
+            while not success and check <= self.scriptAttempts:
+                inputString = self.stretchBond(inputString, lbl)
                 check += 1
                 attempt = 0
-                tsBM = self.stretchBond(tsBM, lbl)
-                self.geometry.rd_embed(rdMol, 1, tsBM)
                 while not success and attempt < self.scriptAttempts:
                     attempt += 1
                     top_keys, bottom_keys, polar_keys = self.inputFileKeys(attempt, mult)
-                    inputFileName = self.writeInputFile(attempt, top_keys, bottom_keys, polar_keys, self.scriptAttempts)
+                    inputFileName = self.writeInputFile(attempt, top_keys, bottom_keys, polar_keys, self.scriptAttempts, input_string=inputString)
                     success = self.run(inputFileName)
+            import ipdb; ipdb.set_trace()
         else:
             pass
         
