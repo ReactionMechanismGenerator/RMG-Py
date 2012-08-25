@@ -95,15 +95,30 @@ class Species(rmgpy.species.Species):
                 pass
                 #logging.info("Skipping QM calculation for noncyclic molecule {0}".format(molecule.toSMILES()))
             else: # try a QM calculation
-                if self.molecule[0].getRadicalCount() > quantumMechanics.settings.maxRadicalNumber:
+                if molecule.getRadicalCount() > quantumMechanics.settings.maxRadicalNumber:
                     # Too many radicals for direct calculation: use HBI.
                     logging.info("{0} radicals on {1} exceeds limit of {2}. Using HBI method.".format(
                         self.molecule[0].getRadicalCount(),
                         self.label,
                         quantumMechanics.settings.maxRadicalNumber,
                         ))
+                    
+                    # Need to estimate thermo via each resonance isomer
+                    thermo = []
+                    for molecule in self.molecule:
+                        molecule.clearLabeledAtoms()
+                        molecule.updateAtomTypes()
+                        tdata = database.thermo.estimateRadicalThermoViaHBI(molecule, quantumMechanics.getThermoData)
+                        thermo.append(tdata)
+                    H298 = numpy.array([t.getEnthalpy(298.) for t in thermo])
+                    indices = H298.argsort()
+                    for i, ind in enumerate(indices):
+                        logging.info("Resonance isomer {0} {1} gives H298={2:.0f} J/mol".format(i, self.molecule[ind].toSMILES(), H298[ind]))
+                    self.molecule = [self.molecule[ind] for ind in indices]
+                    molecule = self.molecule[0]
+                    thermo0 = thermo[indices[0]]
                     #import ipdb; ipdb.set_trace()
-                    thermo0 = database.thermo.estimateRadicalThermoViaHBI(molecule, quantumMechanics.getThermoData)
+                    
                     with open('thermoHBIcheck.txt','a') as f:
                         f.write('// {0!r}\n'.format(thermo0).replace('),','),\n//           '))
                         f.write('{0}\n'.format(molecule.toSMILES()))
