@@ -275,6 +275,9 @@ class QMMolecule:
         """
         filePath = self.getFilePath('.thermo')
         local_context = loadThermoDataFile(filePath)
+        if local_context is None:
+            # file does not exist or is invalid
+            return None
         if local_context['InChI'] != self.uniqueIDlong:
             logging.error('The InChI in the thermo file {0} did not match the current molecule {1}'.format(filePath,self.uniqueIDlong))
             return None
