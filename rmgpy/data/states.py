@@ -32,7 +32,7 @@ import os.path
 import logging
 import numpy
 
-from rmgpy.quantity import constants
+import rmgpy.constants as constants
 from rmgpy.statmech import *
 from rmgpy.molecule import Group
 

@@ -36,7 +36,8 @@ import time
 import os.path
 import numpy
 
-from rmgpy.quantity import Quantity, constants
+import rmgpy.constants as constants
+from rmgpy.quantity import Quantity
 from rmgpy.kinetics import Chebyshev, PDepArrhenius
 from rmgpy.reaction import Reaction
 

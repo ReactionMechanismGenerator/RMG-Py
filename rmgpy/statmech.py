@@ -50,7 +50,8 @@ import math
 import cython
 import numpy
 
-from quantity import Quantity, constants
+import rmgpy.constants as constants
+from quantity import Quantity
 from _statmech import convolve, convolveBS
 
 ################################################################################

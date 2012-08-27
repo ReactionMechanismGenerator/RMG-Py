@@ -39,7 +39,7 @@ import cython
 import logging
 import os.path
 
-from rmgpy.quantity import constants
+import rmgpy.constants as constants
 from rmgpy.reaction import Reaction
 import rmgpy.statmech as states
 from rmgpy.reaction import Reaction

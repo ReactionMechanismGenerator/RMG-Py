@@ -11,7 +11,7 @@ from rmgpy.molecule import Molecule
 from rmgpy.species import *
 from rmgpy.thermo import ThermoData
 from rmgpy.statmech import *
-from rmgpy.quantity import constants
+import rmgpy.constants as constants
 
 ################################################################################
 

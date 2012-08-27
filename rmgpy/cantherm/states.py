@@ -31,7 +31,7 @@ import math
 import numpy
 import logging
 
-from rmgpy.quantity import constants
+import rmgpy.constants as constants
 from rmgpy.statmech import *
 
 ################################################################################

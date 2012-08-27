@@ -34,7 +34,7 @@ import numpy
 import matplotlib
 matplotlib.rc('mathtext', default='regular')
             
-from rmgpy.quantity import constants
+import rmgpy.constants as constants
 from rmgpy.statmech import HinderedRotor, HarmonicOscillator
 from rmgpy.species import Species, TransitionState
 from rmgpy.kinetics import Arrhenius

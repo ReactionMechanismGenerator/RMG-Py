@@ -68,7 +68,8 @@ import cython
 import re
 import logging
 
-from quantity import Quantity, constants
+import rmgpy.constants as constants
+from quantity import Quantity
 from molecule import Molecule
 
 ################################################################################

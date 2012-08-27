@@ -46,7 +46,7 @@ import logging
 import re
 import os.path
 
-from quantity import constants
+import rmgpy.constants as constants
 from rmgpy.molecule.molecule import Molecule
 from species import Species
 from kinetics import Arrhenius, KineticsData, ArrheniusEP, ThirdBody, Chebyshev, PDepArrhenius, MultiKinetics

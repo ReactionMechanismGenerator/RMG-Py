@@ -39,7 +39,8 @@ from kinetics import *
 from reaction import Reaction
 from species import Species
 from thermo import NASA, MultiNASA
-from quantity import constants, Quantity
+import rmgpy.constants as constants
+from quantity import Quantity
 from data.base import Entry
 from data.kinetics import TemplateReaction, LibraryReaction
 from rmg.pdep import PDepReaction

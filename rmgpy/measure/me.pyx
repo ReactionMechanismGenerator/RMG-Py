@@ -37,7 +37,7 @@ import numpy
 cimport numpy
 import cython
 
-from rmgpy.quantity cimport constants
+cimport rmgpy.constants as constants
 
 from simulate import solveFullME
 

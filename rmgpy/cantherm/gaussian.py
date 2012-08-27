@@ -32,7 +32,7 @@ import numpy
 
 from geometry import Geometry
 from rmgpy.statmech import Translation, RigidRotor, HinderedRotor, HarmonicOscillator, StatesModel
-from rmgpy.quantity import constants
+import rmgpy.constants as constants
 
 ################################################################################
 

@@ -10,7 +10,7 @@ import numpy
 import unittest
 
 from rmgpy.statmech import *
-from rmgpy.quantity import constants
+import rmgpy.constants as constants
 
 ################################################################################
 

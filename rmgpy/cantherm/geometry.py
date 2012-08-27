@@ -36,7 +36,8 @@ information, e.g. moments of inertia.
 import numpy
 import cython
 
-from rmgpy.quantity import Quantity, constants
+import rmgpy.constants as constants
+from rmgpy.quantity import Quantity
 
 ################################################################################
 

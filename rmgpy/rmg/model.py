@@ -39,7 +39,8 @@ import os.path
 
 from rmgpy.display import display
 
-from rmgpy.quantity import Quantity, constants
+import rmgpy.constants as constants
+from rmgpy.quantity import Quantity
 import rmgpy.species
 from rmgpy.thermo import Wilhoit, MultiNASA
 

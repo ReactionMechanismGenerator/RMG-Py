@@ -13,7 +13,7 @@ from rmgpy.reaction import *
 from rmgpy.statmech import *
 from rmgpy.kinetics import Arrhenius
 from rmgpy.thermo import Wilhoit
-from rmgpy.quantity import constants
+import rmgpy.constants as constants
 
 ################################################################################
 

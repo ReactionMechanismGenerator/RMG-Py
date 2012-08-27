@@ -41,7 +41,7 @@ from copy import copy, deepcopy
 
 from base import Database, Entry, makeLogicNode
 
-from rmgpy.quantity import constants
+import rmgpy.constants as constants
 from rmgpy.thermo import *
 from rmgpy.molecule import Molecule, Atom, Bond, Group
 

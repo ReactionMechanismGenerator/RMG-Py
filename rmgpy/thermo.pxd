@@ -26,7 +26,8 @@
 
 cimport numpy
 
-from quantity cimport Quantity, constants
+cimport rmgpy.constants as constants
+from quantity cimport Quantity
 
 cdef extern from "math.h":
     double log(double)

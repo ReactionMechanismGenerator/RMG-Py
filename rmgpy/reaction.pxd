@@ -24,7 +24,7 @@
 #
 ################################################################################
 
-from quantity cimport constants
+cimport rmgpy.constants as constants
 from species cimport Species, TransitionState
 from rmgpy.molecule.molecule cimport Atom, Molecule
 from rmgpy.molecule.element cimport Element

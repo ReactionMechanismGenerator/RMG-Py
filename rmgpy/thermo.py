@@ -49,7 +49,8 @@ import numpy
 import logging
 import cython
 
-from quantity import Quantity, constants
+import rmgpy.constants as constants
+from quantity import Quantity
 
 ################################################################################
 

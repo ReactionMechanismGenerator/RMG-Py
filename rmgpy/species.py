@@ -42,7 +42,8 @@ contains the :class:`TransitionState` class for representing chemical reaction
 transition states (first-order saddle points on a potential energy surface).
 """
 
-from quantity import Quantity, constants
+import rmgpy.constants as constants
+from quantity import Quantity
 from molecule import Molecule
 
 ################################################################################

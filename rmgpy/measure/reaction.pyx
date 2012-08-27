@@ -43,7 +43,8 @@ import numpy
 cimport numpy
 import logging
 
-from rmgpy.quantity cimport constants, Quantity
+cimport rmgpy.constants as constants
+from rmgpy.quantity cimport Quantity
 import rmgpy.reaction
 from rmgpy.kinetics import Arrhenius, PDepArrhenius, Chebyshev
 

@@ -46,8 +46,8 @@ object.
 
 ################################################################################
 
-from rmgpy.quantity import constants
-from rmgpy.quantity cimport constants
+import rmgpy.constants as constants
+cimport rmgpy.constants as constants
 
 import cython
 import numpy

@@ -24,7 +24,8 @@
 #
 ################################################################################
 
-from quantity cimport Quantity, constants
+cimport rmgpy.constants as constants
+from quantity cimport Quantity
 from thermo cimport ThermoModel
 from statmech cimport StatesModel
 
