@@ -101,11 +101,11 @@ class QMReaction:
             string.insert(j, insert)
         return string
     
-    def fixBond(self, editLine, line):
+    def stretchBond(self, editLine, line):
         bondLen = float(editLine.pop(1))
         bondLen += 0.1
         bondLen = str(round(bondLen, 6))
-        editLine.insert(12, bondLen)
+        editLine.insert(1, bondLen)
         difSplit = line.split('    ')
         oSplit = difSplit[1].split()
         oSplit.pop(0)
@@ -114,23 +114,40 @@ class QMReaction:
         
         return difSplit
     
+    def editAngle(self, editLine, line):
+        angle = float(editLine.pop(3))
+        angle -= 10
+        angle = str(round(angle, 6))
+        editLine.insert(3, angle)
+        difSplit = line.split('    ')
+        oSplit = difSplit[1].split()
+        oSplit.pop(0)
+        oSplit.insert(0, bondLen + '  ')
+        difSplit[1] = ''.join(oSplit)
+        
+        return difSplit
+        
     def nonEditableVar(self, splitString):
         for i in range(1, 4):
             splitString[i] = splitString[i][:-1] + '0'
             
         return splitString
     
-    def stretchBond(self, inputString, lbl):
+    def fixBond(self, inputString, lbl):
         splits = inputString.splitlines()
         if lbl[0] > lbl[1]:
             line = splits[lbl[0] + 3]
             otherLine = splits[lbl[1] + 3]
-            assert line.split()[-3] == str(lbl[1] + 1)
             editLine = line.split()
-            difSplit = self.fixBond(editLine, line)
+            if line.split()[-3] == str(lbl[1] + 1):
+                difSplit = self.stretchBond(editLine, line)
+            elif line.split()[-2] == str(lbl[1] + 1):
+                disSplit = self.editAngle(editLine, line)
+                import ipdb; ipdb.set_trace()
             otherSplit = otherLine.split('    ')
             difSplit = self.nonEditableVar(difSplit)
             otherSplit = self.nonEditableVar(otherSplit)
+            
             difSplit = self.insertString(difSplit, '    ')
             otherSplit = self.insertString(otherSplit, '    ')
             
@@ -142,9 +159,12 @@ class QMReaction:
         elif lbl[1] > lbl[0]:
             line = splits[lbl[1] + 3]
             otherLine = splits[lbl[0] + 3]
-            assert line.split()[-3] == str(lbl[0] + 1)
             editLine = line.split()
-            difSplit = self.fixBond(editLine, line)
+            if line.split()[-3] == str(lbl[0] + 1):
+                difSplit = self.stretchBond(editLine, line)
+            elif line.split()[-2] == str(lbl[0] + 1):
+                import ipdb; ipdb.set_trace()
+                disSplit = self.editAngle(editLine, line)
             otherSplit = otherLine.split('    ')
             difSplit = self.nonEditableVar(difSplit)
             otherSplit = self.nonEditableVar(otherSplit)

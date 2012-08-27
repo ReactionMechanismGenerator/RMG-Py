@@ -5,6 +5,7 @@ from mopac import Mopac
 
 import rdkit
 from rdkit.Chem.Pharm3D import EmbedLib
+import logging
 
 class MopacTS(QMReaction, Mopac):
     #*****change this stuff for TS
@@ -22,17 +23,17 @@ class MopacTS(QMReaction, Mopac):
     
     "Keywords that will be added at the top of the qm input file"
     keywordsTop = {}
-    keywordsTop[1] = "forcets esp vectors xyz"
-    keywordsTop[2] = "forcets esp vectors xyz recalc=5"
-    keywordsTop[3] = "forcets esp vectors xyz ddmin=0.0001"
-    keywordsTop[4] = "forcets esp vectors xyz recalc=5 ddmin=0.0001"
+    keywordsTop[1] = "ts"
+    keywordsTop[2] = "ts recalc=5"
+    keywordsTop[3] = "ts ddmin=0.0001"
+    keywordsTop[4] = "ts recalc=5 ddmin=0.0001"
     
     "Keywords that will be added at the bottom of the qm input file"
     keywordsBottom = {}
-    keywordsBottom[1] = ""
-    keywordsBottom[2] = ""
-    keywordsBottom[3] = ""
-    keywordsBottom[4] = ""
+    keywordsBottom[1] = "oldgeo force vectors esp"
+    keywordsBottom[2] = "oldgeo force vectors esp"
+    keywordsBottom[3] = "oldgeo force vectors esp"
+    keywordsBottom[4] = "oldgeo force vectors esp"
     
     scriptAttempts = len(keywordsTop)
     
@@ -57,25 +58,47 @@ class MopacTS(QMReaction, Mopac):
         """
         make TS geometry
         """
-        if self.reaction.family.name.lower() == 'intra_r_add_exocyclic' or self.reaction.family.name.lower() == 'intra_r_add_endocyclic':
-            rdMol, tsBM, mult, lbl, other = self.getTSBMatrix()
-            self.geometry.uniqueID = 'transitionState'
-            success = False
-            check = 0
-            self.geometry.rd_embed(rdMol, 1, tsBM)
-            inputString = self.convertMolFile('mopin', 1, self.scriptAttempts)
-            while not success and check <= self.scriptAttempts:
-                inputString = self.stretchBond(inputString, lbl)
-                check += 1
-                attempt = 0
-                while not success and attempt < self.scriptAttempts:
-                    attempt += 1
-                    top_keys, bottom_keys, polar_keys = self.inputFileKeys(attempt, mult)
-                    inputFileName = self.writeInputFile(attempt, top_keys, bottom_keys, polar_keys, self.scriptAttempts, input_string=inputString)
-                    success = self.run(inputFileName)
-            import ipdb; ipdb.set_trace()
-        else:
-            pass
+        if not os.path.exists(self.reaction.family.name):
+            logging.info("Creating directory %s for mol files."%os.path.abspath(self.reaction.family.name))
+            os.makedirs(self.reaction.family.name)
+        inputFilePath = os.path.join(self.reaction.family.name, self.reactants[0].toAugmentedInChIKey())
+        if os.path.exists(inputFilePath):
+            inputFilePath = os.path.join(self.reaction.family.name, self.products[0].toAugmentedInChIKey())
+            if os.path.exists(inputFilePath):
+                inputFilePath = os.path.join(self.reaction.family.name, self.reactants[0].toAugmentedInChIKey() + self.products[0].toAugmentedInChIKey())
+        with open(inputFilePath, 'w') as mopacFile:
+            for reactant in self.reactants:
+                mopacFile.write(reactant.toSMILES())
+                mopacFile.write('\n')
+                mopacFile.write(reactant.toAdjacencyList())
+                mopacFile.write('\n')
+            for product in self.products:
+                mopacFile.write(product.toSMILES())
+                mopacFile.write('\n')
+                mopacFile.write(product.toAdjacencyList())
+                mopacFile.write('\n')
+        # if self.reaction.family.name.lower() == 'intra_r_add_exocyclic' or self.reaction.family.name.lower() == 'intra_r_add_endocyclic':
+        #     rdMol, tsBM, mult, lbl, other = self.getTSBMatrix()
+        #     self.geometry.uniqueID = self.reactants[0].toSMILES() + '_' + self.products[0].toSMILES()
+        #     import copy
+        #     initialID = copy.deepcopy(self.geometry.uniqueID)
+        #     success = False
+        #     check = 0
+        #     self.geometry.rd_embed(rdMol, 1, tsBM)
+        #     inputString = self.convertMolFile('mopin', 1, self.scriptAttempts)
+        #     while not success and check <= 5:
+        #         inputString = self.fixBond(inputString, lbl)
+        #         check += 1
+        #         attempt = 0
+        #         while not success and attempt < self.scriptAttempts:
+        #             attempt += 1
+        #             self.geometry.uniqueID = initialID + str(check) + str(attempt)
+        #             top_keys, bottom_keys, polar_keys = self.inputFileKeys(attempt, mult)
+        #             inputFileName = self.writeInputFile(attempt, top_keys, bottom_keys, polar_keys, self.scriptAttempts, input_string=inputString)
+        #             success = self.run(inputFileName)
+        #     import ipdb; ipdb.set_trace()
+        # else:
+        #     pass
         
 class MopacPM3(MopacTS):
     def inputFileKeys(self, attempt, multiplicity):
