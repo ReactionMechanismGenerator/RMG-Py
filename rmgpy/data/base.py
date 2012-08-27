@@ -554,8 +554,14 @@ class Database:
         syntax.
         """
         self.saveOldDictionary(dictstr)
-        if treestr != '': self.saveOldTree(treestr)
-        self.saveOldLibrary(libstr)
+        if treestr != '':
+            self.saveOldTree(treestr)
+
+        # RMG-Java does not require a frequencies_groups/Library.txt file to
+        # operate, but errors are raised upon importing to Py if this file is
+        # not found. This check prevents the placeholder from being discarded.
+        if 'StatesGroups' not in self.__class__.__name__:
+            self.saveOldLibrary(libstr)
 
     def saveOldDictionary(self, path):
         """
