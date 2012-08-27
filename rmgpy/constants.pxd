@@ -24,22 +24,4 @@
 #
 ################################################################################
 
-cimport numpy
-
-################################################################################
-
-cdef class Quantity:
-
-    cdef public double value, uncertainty
-    cdef public numpy.ndarray values, uncertainties
-    cdef public str units, uncertaintyType
-
-    cpdef double getConversionFactorToSI(self)
-
-    cpdef double getConversionFactorFromSI(self)
-
-    cpdef bint isArray(self)
-
-    cpdef bint isUncertaintyAdditive(self)
-
-    cpdef bint isUncertaintyMultiplicative(self)
+cdef double pi, Na, kB, R, h, hbar, c, e, m_e, m_p, m_n, amu, a0, E_h

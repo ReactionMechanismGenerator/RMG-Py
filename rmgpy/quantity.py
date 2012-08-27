@@ -29,8 +29,7 @@
 
 """
 This module contains classes and methods for working with physical quantities,
-particularly the :class:`Quantity` class for representing physical quantities
-and the :class:`Constants` class for defining relevant physical constants.
+particularly the :class:`Quantity` class for representing physical quantities.
 """
 
 import math
@@ -407,38 +406,3 @@ class Quantity:
                 return True
 
         return False
-
-
-################################################################################
-
-class Constants:
-    """
-    A class defining several physical constants:
-
-    =============== =========== ================================================
-    Attribute       Type        Description
-    =============== =========== ================================================
-    `Na`            ``double``  The Avogadro constant :math:`N_\\mathrm{A}`, in :math:`\\mathrm{mol^{-1}}`
-    `kB`            ``double``  The Boltzmann constant :math:`k_\\mathrm{B}`, in :math:`\\mathrm{J/K}`
-    `R`             ``double``  The gas law constant :math:`R`, in :math:`\\mathrm{J/mol \\cdot K}`
-    `h`             ``double``  The Planck constant :math:`h`, in :math:`\\mathrm{J \\cdot s}`
-    `c`             ``double``  The speed of light in a vacuum :math:`c`, in :math:`\\mathrm{m/s}`
-    `pi`            ``double``  The mathematical constant :math:`\\pi = 3.14159...`
-    =============== =========== ================================================
-    
-    """
-    
-    def __init__(self):
-        self.Na = 6.02214179e23
-        self.kB = 1.3806504e-23
-        self.R = 8.314472
-        self.h = 6.62606896e-34
-        self.c = 299792458
-        self.pi = float(math.pi)
-
-# An instance of the Constants class providing easy access to the physical constants
-constants = Constants()
-
-globals().update({
-    'constants': constants,
-})

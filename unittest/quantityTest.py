@@ -9,6 +9,7 @@ import unittest
 import math
 import quantities as pq
 
+import rmgpy.constants as constants
 from rmgpy.quantity import *
 
 ################################################################################
@@ -396,32 +397,6 @@ class TestCustomUnits(unittest.TestCase):
     def testJPerMol(self):
         q = Quantity(1.0,"J/kmol")
         self.assertAlmostEqual(q.value / (1.0/1000.), 1.0, 6)
-    
-################################################################################
-
-class TestConstants(unittest.TestCase):
-    """
-    Contains unit tests of the Constants class. These tests ensure that the
-    values of the constants are correct (or at least that they do not change!)
-    """
-    
-    def testAvogadroConstant(self):
-        self.assertAlmostEqual(constants.Na / pq.constants.N_A.simplified, 1.0, 6)
-
-    def testBoltzmannConstant(self):
-        self.assertAlmostEqual(constants.kB / pq.constants.Boltzmann_constant.simplified, 1.0, 6)
-    
-    def testGasLawConstant(self):
-        self.assertAlmostEqual(constants.R / pq.constants.R.simplified, 1.0, 6)
-    
-    def testPlanckConstant(self):
-        self.assertAlmostEqual(constants.h / pq.constants.Planck_constant.simplified, 1.0, 6)
-    
-    def testSpeedOfLight(self):
-        self.assertAlmostEqual(constants.c / 299792458, 1.0, 6)
-    
-    def testPi(self):
-        self.assertAlmostEqual(constants.pi / math.pi, 1.0, 6)
 
 ################################################################################
 
