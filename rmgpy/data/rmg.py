@@ -160,7 +160,7 @@ class RMGDatabase:
         """
         Save the RMG database to the given `path` on disk.
         """
-        if not os.path.exists(path): os.mkdir(path)
+        if not os.path.exists(path): os.makedirs(path)
         self.forbiddenStructures.save(os.path.join(path, 'forbiddenStructures.py'))
         self.thermo.save(os.path.join(path, 'thermo'))
         self.kinetics.save(os.path.join(path, 'kinetics'))
@@ -170,7 +170,7 @@ class RMGDatabase:
         """
         Save the old RMG database to the given `path` on disk.
         """
-        if not os.path.exists(path): os.mkdir(path)
+        if not os.path.exists(path): os.makedirs(path)
         self.thermo.saveOld(path)
         self.forbiddenStructures.saveOld(os.path.join(path, 'ForbiddenStructures.txt'))
         self.kinetics.saveOld(path)
