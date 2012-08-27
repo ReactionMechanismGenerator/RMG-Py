@@ -565,8 +565,8 @@ class StatesDatabase:
         # Depository not used in old database, so it is not saved
 
         librariesPath = os.path.join(path, 'frequencies_libraries')
-        if not os.path.exists(librariesPath): os.mkdir(librariesPath)
         for library in self.libraries.values():
+            if not os.path.exists(librariesPath): os.mkdir(librariesPath)
             libraryPath = os.path.join(librariesPath, library.label)
             if not os.path.exists(libraryPath): os.mkdir(libraryPath)
             library.saveOld(
