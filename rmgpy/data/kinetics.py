@@ -1754,6 +1754,7 @@ class KineticsFamily(Database):
     =================== =============================== ========================
     Attribute           Type                            Description
     =================== =============================== ========================
+    `reverse`           ``string``                      The name of the reverse reaction family
     `forwardTemplate`   :class:`Reaction`               The forward reaction template
     `forwardRecipe`     :class:`ReactionRecipe`         The steps to take when applying the forward reaction to a set of reactants
     `reverseTemplate`   :class:`Reaction`               The reverse reaction template
@@ -1776,6 +1777,7 @@ class KineticsFamily(Database):
                  top=None,
                  label='',
                  name='',
+                 reverse='',
                  shortDesc='',
                  longDesc='',
                  forwardTemplate=None,
@@ -1785,6 +1787,7 @@ class KineticsFamily(Database):
                  forbidden=None
                  ):
         Database.__init__(self, entries, top, label, name, shortDesc, longDesc)
+        self.reverse = reverse
         self.forwardTemplate = forwardTemplate
         self.forwardRecipe = forwardRecipe
         self.reverseTemplate = reverseTemplate
@@ -1869,6 +1872,8 @@ class KineticsFamily(Database):
                     self.forwardRecipe.addAction(action)
                 elif 'thermo_consistence' in line:
                     self.ownReverse = True
+                elif 'reverse' in line:
+                    self.reverse = line.split(':')[1].strip()
                 elif '->' in line:
                     # This is the template line
                     tokens = line.split()
@@ -1921,7 +1926,7 @@ class KineticsFamily(Database):
             ftemp.write('thermo_consistence\n')
         else:
             ftemp.write('forward\n')
-            ftemp.write('reverse: {0}_reverse\n'.format(self.label))
+            ftemp.write('reverse: {0}\n'.format(self.reverse))
         ftemp.write('\n')
         
         # Write the reaction recipe
@@ -1960,6 +1965,7 @@ class KineticsFamily(Database):
             self.reverseTemplate = None
             self.reverseRecipe = None
         else:
+            self.reverse = local_context['reverse']
             self.forwardTemplate.products = self.generateProductTemplate(self.forwardTemplate.reactants)
             self.reverseTemplate = Reaction(reactants=self.forwardTemplate.products, products=self.forwardTemplate.reactants)
             self.reverseRecipe = self.forwardRecipe.getReverse()
@@ -2073,6 +2079,10 @@ class KineticsFamily(Database):
             ', '.join(['"{0}"'.format(entry.label) for entry in self.forwardTemplate.reactants]),
             ', '.join(['"{0}"'.format(entry.label) for entry in self.forwardTemplate.products]),
             self.ownReverse))
+
+        # Write reverse name
+        if not self.ownReverse:
+            f.write('reverse = "{0}"\n\n'.format(self.reverse))
 
         # Write the recipe
         f.write('recipe(actions=[\n')
