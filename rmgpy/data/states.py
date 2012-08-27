@@ -405,8 +405,8 @@ class StatesGroups(Database):
         modes = fitStatesToHeatCapacity(Tlist, Cv, numVibrations - len(frequencies), numRotors, molecule)
         for mode in modes:
             if isinstance(mode, HarmonicOscillator):
-                frequencies.extend(mode.frequencies.values)
-                mode.frequencies.values = numpy.array(frequencies, numpy.float)
+                frequencies.extend(mode.frequencies.value_si)
+                mode.frequencies.value_si = numpy.array(frequencies, numpy.float)
                 break
         else:
             modes.insert(0, HarmonicOscillator(frequencies=(frequencies,"cm^-1")))

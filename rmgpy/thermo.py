@@ -110,7 +110,7 @@ class ThermoModel:
         the minimum and maximum temperature are not defined, ``True`` is 
         returned.
         """
-        return (self.Tmin is None or self.Tmin.value <= T) and (self.Tmax is None or T <= self.Tmax.value)
+        return (self.Tmin is None or self.Tmin.value_si <= T) and (self.Tmax is None or T <= self.Tmax.value_si)
 
     def getHeatCapacity(self, T):
         """
@@ -265,12 +265,12 @@ class ThermoData(ThermoModel):
         Cp = 0.0
         if not self.isTemperatureValid(T):
             raise ThermoError('Invalid temperature {0:g} K for heat capacity estimation.'.format(T))
-        if T < numpy.min(self.Tdata.values):
-            Cp = self.Cpdata.values[0]
-        elif T >= numpy.max(self.Tdata.values):
-            Cp = self.Cpdata.values[-1]
+        if T < numpy.min(self.Tdata.value_si):
+            Cp = self.Cpdata.value_si[0]
+        elif T >= numpy.max(self.Tdata.value_si):
+            Cp = self.Cpdata.value_si[-1]
         else:
-            for Tmin, Tmax, Cpmin, Cpmax in zip(self.Tdata.values[:-1], self.Tdata.values[1:], self.Cpdata.values[:-1], self.Cpdata.values[1:]):
+            for Tmin, Tmax, Cpmin, Cpmax in zip(self.Tdata.value_si[:-1], self.Tdata.value_si[1:], self.Cpdata.value_si[:-1], self.Cpdata.value_si[1:]):
                 if Tmin <= T and T < Tmax:
                     Cp = (Cpmax - Cpmin) * ((T - Tmin) / (Tmax - Tmin)) + Cpmin
         return Cp
@@ -281,19 +281,19 @@ class ThermoData(ThermoModel):
         """
         cython.declare(H=cython.double, slope=cython.double, intercept=cython.double,
              Tmin=cython.double, Tmax=cython.double, Cpmin=cython.double, Cpmax=cython.double)
-        H = self.H298.value
-        if self.Tdata.values[0] > 298:
-            H += self.Cpdata.values[0] * (self.Tdata.values[0] - 298)
+        H = self.H298.value_si
+        if self.Tdata.value_si[0] > 298:
+            H += self.Cpdata.value_si[0] * (self.Tdata.value_si[0] - 298)
         if not self.isTemperatureValid(T):
             raise ThermoError('Invalid temperature {0:g} K for enthalpy estimation.'.format(T))
-        for Tmin, Tmax, Cpmin, Cpmax in zip(self.Tdata.values[:-1], self.Tdata.values[1:], self.Cpdata.values[:-1], self.Cpdata.values[1:]):
+        for Tmin, Tmax, Cpmin, Cpmax in zip(self.Tdata.value_si[:-1], self.Tdata.value_si[1:], self.Cpdata.value_si[:-1], self.Cpdata.value_si[1:]):
             if T > Tmin:
                 slope = (Cpmax - Cpmin) / (Tmax - Tmin)
                 intercept = (Cpmin * Tmax - Cpmax * Tmin) / (Tmax - Tmin)
                 if T < Tmax:	H += 0.5 * slope * (T*T - Tmin*Tmin) + intercept * (T - Tmin)
                 else:			H += 0.5 * slope * (Tmax*Tmax - Tmin*Tmin) + intercept * (Tmax - Tmin)
-        if T > self.Tdata.values[-1]:
-            H += self.Cpdata.values[-1] * (T - self.Tdata.values[-1])
+        if T > self.Tdata.value_si[-1]:
+            H += self.Cpdata.value_si[-1] * (T - self.Tdata.value_si[-1])
         return H
 
     def getEntropy(self, T):
@@ -302,19 +302,19 @@ class ThermoData(ThermoModel):
         """
         cython.declare(S=cython.double, slope=cython.double, intercept=cython.double,
              Tmin=cython.double, Tmax=cython.double, Cpmin=cython.double, Cpmax=cython.double)
-        S = self.S298.value
-        if self.Tdata.values[0] > 298:
-            S += self.Cpdata.values[0] * math.log(self.Tdata.values[0] / 298)
+        S = self.S298.value_si
+        if self.Tdata.value_si[0] > 298:
+            S += self.Cpdata.value_si[0] * math.log(self.Tdata.value_si[0] / 298)
         if not self.isTemperatureValid(T):
             raise ThermoError('Invalid temperature {0:g} K for entropy estimation.'.format(T))
-        for Tmin, Tmax, Cpmin, Cpmax in zip(self.Tdata.values[:-1], self.Tdata.values[1:], self.Cpdata.values[:-1], self.Cpdata.values[1:]):
+        for Tmin, Tmax, Cpmin, Cpmax in zip(self.Tdata.value_si[:-1], self.Tdata.value_si[1:], self.Cpdata.value_si[:-1], self.Cpdata.value_si[1:]):
             if T > Tmin:
                 slope = (Cpmax - Cpmin) / (Tmax - Tmin)
                 intercept = (Cpmin * Tmax - Cpmax * Tmin) / (Tmax - Tmin)
                 if T < Tmax:	S += slope * (T - Tmin) + intercept * math.log(T/Tmin)
                 else:			S += slope * (Tmax - Tmin) + intercept * math.log(Tmax/Tmin)
-        if T > self.Tdata.values[-1]:
-            S += self.Cpdata.values[-1] * math.log(T / self.Tdata.values[-1])
+        if T > self.Tdata.value_si[-1]:
+            S += self.Cpdata.value_si[-1] * math.log(T / self.Tdata.value_si[-1])
         return S
 
     def getFreeEnergy(self, T):
@@ -390,7 +390,7 @@ class Wilhoit(ThermoModel):
         """
         cython.declare(cp0=cython.double, cpInf=cython.double, B=cython.double, a0=cython.double, a1=cython.double, a2=cython.double, a3=cython.double)
         cython.declare(y=cython.double)
-        cp0, cpInf, B, a0, a1, a2, a3 = self.cp0.value, self.cpInf.value, self.B.value, self.a0, self.a1, self.a2, self.a3
+        cp0, cpInf, B, a0, a1, a2, a3 = self.cp0.value_si, self.cpInf.value_si, self.B.value_si, self.a0, self.a1, self.a2, self.a3
         y = T/(T+B)
         return cp0+(cpInf-cp0)*y*y*( 1 + (y-1)*(a0 + y*(a1 + y*(a2 + y*a3))) )
             
@@ -412,11 +412,11 @@ class Wilhoit(ThermoModel):
         """
         cython.declare(cp0=cython.double, cpInf=cython.double, B=cython.double, a0=cython.double, a1=cython.double, a2=cython.double, a3=cython.double)
         cython.declare(y=cython.double, y2=cython.double, logBplust=cython.double)
-        cp0, cpInf, B, a0, a1, a2, a3 = self.cp0.value, self.cpInf.value, self.B.value, self.a0, self.a1, self.a2, self.a3
+        cp0, cpInf, B, a0, a1, a2, a3 = self.cp0.value_si, self.cpInf.value_si, self.B.value_si, self.a0, self.a1, self.a2, self.a3
         y = T/(T+B)
         y2 = y*y
         logBplust = math.log(B + T)
-        return self.H0.value + cp0*T - (cpInf-cp0)*T*(y2*((3*a0 + a1 + a2 + a3)/6. + (4*a1 + a2 + a3)*y/12. + (5*a2 + a3)*y2/20. + a3*y2*y/5.) + (2 + a0 + a1 + a2 + a3)*( y/2. - 1 + (1/y-1)*logBplust))
+        return self.H0.value_si + cp0*T - (cpInf-cp0)*T*(y2*((3*a0 + a1 + a2 + a3)/6. + (4*a1 + a2 + a3)*y/12. + (5*a2 + a3)*y2/20. + a3*y2*y/5.) + (2 + a0 + a1 + a2 + a3)*( y/2. - 1 + (1/y-1)*logBplust))
     
     def getEntropy(self, T):
         """
@@ -432,11 +432,11 @@ class Wilhoit(ThermoModel):
         """
         cython.declare(cp0=cython.double, cpInf=cython.double, B=cython.double, a0=cython.double, a1=cython.double, a2=cython.double, a3=cython.double)
         cython.declare(y=cython.double, logt=cython.double, logy=cython.double)
-        cp0, cpInf, B, a0, a1, a2, a3 = self.cp0.value, self.cpInf.value, self.B.value, self.a0, self.a1, self.a2, self.a3
+        cp0, cpInf, B, a0, a1, a2, a3 = self.cp0.value_si, self.cpInf.value_si, self.B.value_si, self.a0, self.a1, self.a2, self.a3
         y = T/(T+B)
         logt = math.log(T)
         logy = math.log(y)
-        return self.S0.value + cpInf*logt-(cpInf-cp0)*(logy+y*(1+y*(a0/2+y*(a1/3 + y*(a2/4 + y*a3/5)))))
+        return self.S0.value_si + cpInf*logt-(cpInf-cp0)*(logy+y*(1+y*(a0/2+y*(a1/3 + y*(a2/4 + y*a3/5)))))
     
     def getFreeEnergy(self, T):
         """
@@ -475,7 +475,7 @@ class Wilhoit(ThermoModel):
         #note that IF the "residues" from the least squares fit was used instead, the error is
         #minimized with respect to Cpdata/(CpInf-Cp0) + const, so we would need to
         #scale back by (CpInf-Cp0) to get the error in Cpdata
-        rmsErr = math.sqrt(self.__residual(self.B.value, Tlist, Cplist, linear, nFreq, nRotors, H298, S298)/len(Tlist))/constants.R
+        rmsErr = math.sqrt(self.__residual(self.B.value_si, Tlist, Cplist, linear, nFreq, nRotors, H298, S298)/len(Tlist))/constants.R
         self.comment = self.comment + 'Wilhoit polynomial fit to ThermoData with RMS error = %.3f*R;'%(rmsErr)
         #print a warning if the rms fit is worse that 0.25*R
         if(rmsErr > 0.25):
@@ -511,7 +511,7 @@ class Wilhoit(ThermoModel):
     
             # Set the Cp(T) limits as T -> and T -> infinity
             self.cp0 = Quantity(3.5 * constants.R if linear else 4.0 * constants.R, "J/(mol*K)")
-            self.cpInf = Quantity(self.cp0.value + (nFreq + 0.5 * nRotors) * constants.R, "J/(mol*K)")
+            self.cpInf = Quantity(self.cp0.value_si + (nFreq + 0.5 * nRotors) * constants.R, "J/(mol*K)")
             
             # What remains is to fit the polynomial coefficients (a0, a1, a2, a3)
             # This can be done directly - no iteration required
@@ -519,7 +519,7 @@ class Wilhoit(ThermoModel):
             A = numpy.zeros((len(Cplist),4), numpy.float64)
             for j in range(4):
                 A[:,j] = (y*y*y - y*y) * y**j
-            b = ((Cplist - self.cp0.value) / (self.cpInf.value - self.cp0.value) - y*y)
+            b = ((Cplist - self.cp0.value_si) / (self.cpInf.value_si - self.cp0.value_si) - y*y)
             x, residues, rank, s = numpy.linalg.lstsq(A, b)
             
             self.B = Quantity(float(B), "K")
@@ -529,8 +529,8 @@ class Wilhoit(ThermoModel):
             self.a3 = float(x[3])
 
         self.H0 = Quantity(0.0,"J/mol"); self.S0 = Quantity(0.0,"J/(mol*K)")
-        self.H0.value = H298 - self.getEnthalpy(298.15)
-        self.S0.value = S298 - self.getEntropy(298.15)
+        self.H0.value_si = H298 - self.getEnthalpy(298.15)
+        self.S0.value_si = S298 - self.getEntropy(298.15)
 
         return self
 
@@ -731,14 +731,14 @@ def convertThermoModel(model, thermoClass, **kwargs):
             Bmax = kwargs['Bmax'] if ('Bmax' in kwargs) else 1000.0
         except KeyError:
             raise ValueError('To convert ThermoData to Wilhoit or MultiNASA, you must provide the keyword arguments linear, nFreq, and nRotors.')
-        output = Wilhoit().fitToData(model.Tdata.values, model.Cpdata.values, linear, nFreq, nRotors, model.H298.value, model.S298.value, B0=B0, Bmin=Bmin, Bmax=Bmax)
+        output = Wilhoit().fitToData(model.Tdata.value_si, model.Cpdata.value_si, linear, nFreq, nRotors, model.H298.value_si, model.S298.value_si, B0=B0, Bmin=Bmin, Bmax=Bmax)
     
     elif isinstance(model, ThermoData) and thermoClass == MultiNASA:
         # First convert it to a Wilhoit, then to a MultiNASA
         output = convertThermoModel(convertThermoModel(model, Wilhoit, **kwargs), MultiNASA, **kwargs)
 	# compute error for the overall conversion
-        Cp_fit = output.getHeatCapacities(model.Tdata.values)
-        rmsErr = math.sqrt(numpy.sum( (Cp_fit - model.Cpdata.values) * (Cp_fit - model.Cpdata.values) )/len(model.Tdata.values))/constants.R
+        Cp_fit = output.getHeatCapacities(model.Tdata.value_si)
+        rmsErr = math.sqrt(numpy.sum( (Cp_fit - model.Cpdata.value_si) * (Cp_fit - model.Cpdata.value_si) )/len(model.Tdata.value_si))/constants.R
         output.comment = output.comment + 'Overall conversion of ThermoData to MultiNASA with RMS error = %.3f*R;'%(rmsErr)
         #there is already a warning in model.py's generateThermoData
         #if(rmsErr > 0.50):#print a warning if the rms fit is worse that 0.50*R
@@ -789,7 +789,7 @@ def convertThermoModel(model, thermoClass, **kwargs):
     
     elif isinstance(model, MultiNASA) and thermoClass == Wilhoit:
         # First convert it to a ThermoData, then to a Wilhoit
-        Tdata = numpy.arange(model.Tmin.value, model.Tmax.value, 50.0)
+        Tdata = numpy.arange(model.Tmin.value_si, model.Tmax.value_si, 50.0)
         output = convertThermoModel(convertThermoModel(model, ThermoData, Tdata=Tdata), Wilhoit, **kwargs)
     
     return output
@@ -836,9 +836,9 @@ def convertWilhoitToNASA(wilhoit, Tmin, Tmax, Tint, fixedTint=False, weighting=T
     # Make copy of Wilhoit data so we don't modify the original
     wilhoit_scaled = Wilhoit(wilhoit.cp0, wilhoit.cpInf, wilhoit.a0, wilhoit.a1, wilhoit.a2, wilhoit.a3, wilhoit.H0, wilhoit.S0, wilhoit.B, Tmin=wilhoit.Tmin, Tmax=wilhoit.Tmax, comment=wilhoit.comment)
     # Rescale Wilhoit parameters
-    wilhoit_scaled.cp0.value /= constants.R
-    wilhoit_scaled.cpInf.value /= constants.R
-    wilhoit_scaled.B.value /= 1000.
+    wilhoit_scaled.cp0.value_si /= constants.R
+    wilhoit_scaled.cpInf.value_si /= constants.R
+    wilhoit_scaled.B.value_si /= 1000.
 
     #if we are using fixed Tint, do not allow Tint to float
     if fixedTint:
@@ -1163,7 +1163,7 @@ def Wilhoit_integral_T0(wilhoit, t):
     #output: the quantity Integrate[Cp(Wilhoit)/R, t'] evaluated at t'=t
     cython.declare(cp0=cython.double, cpInf=cython.double, B=cython.double, a0=cython.double, a1=cython.double, a2=cython.double, a3=cython.double)
     cython.declare(y=cython.double, y2=cython.double, logBplust=cython.double, result=cython.double)
-    cp0, cpInf, B, a0, a1, a2, a3 = wilhoit.cp0.value, wilhoit.cpInf.value, wilhoit.B.value, wilhoit.a0, wilhoit.a1, wilhoit.a2, wilhoit.a3
+    cp0, cpInf, B, a0, a1, a2, a3 = wilhoit.cp0.value_si, wilhoit.cpInf.value_si, wilhoit.B.value_si, wilhoit.a0, wilhoit.a1, wilhoit.a2, wilhoit.a3
     y = t/(t+B)
     y2 = y*y
     if cython.compiled:
@@ -1178,7 +1178,7 @@ def Wilhoit_integral_TM1(wilhoit, t):
     #output: the quantity Integrate[Cp(Wilhoit)/R*t^-1, t'] evaluated at t'=t
     cython.declare(cp0=cython.double, cpInf=cython.double, B=cython.double, a0=cython.double, a1=cython.double, a2=cython.double, a3=cython.double)
     cython.declare(y=cython.double, logt=cython.double, logy=cython.double, result=cython.double)
-    cp0, cpInf, B, a0, a1, a2, a3 = wilhoit.cp0.value, wilhoit.cpInf.value, wilhoit.B.value, wilhoit.a0, wilhoit.a1, wilhoit.a2, wilhoit.a3
+    cp0, cpInf, B, a0, a1, a2, a3 = wilhoit.cp0.value_si, wilhoit.cpInf.value_si, wilhoit.B.value_si, wilhoit.a0, wilhoit.a1, wilhoit.a2, wilhoit.a3
     y = t/(t+B)
     if cython.compiled:
         logy = log(y); logt = log(t)
@@ -1191,7 +1191,7 @@ def Wilhoit_integral_T1(wilhoit, t):
     #output: the quantity Integrate[Cp(Wilhoit)/R*t, t'] evaluated at t'=t
     cython.declare(cp0=cython.double, cpInf=cython.double, B=cython.double, a0=cython.double, a1=cython.double, a2=cython.double, a3=cython.double)
     cython.declare(logBplust=cython.double, result=cython.double)
-    cp0, cpInf, B, a0, a1, a2, a3 = wilhoit.cp0.value, wilhoit.cpInf.value, wilhoit.B.value, wilhoit.a0, wilhoit.a1, wilhoit.a2, wilhoit.a3
+    cp0, cpInf, B, a0, a1, a2, a3 = wilhoit.cp0.value_si, wilhoit.cpInf.value_si, wilhoit.B.value_si, wilhoit.a0, wilhoit.a1, wilhoit.a2, wilhoit.a3
     if cython.compiled:
         logBplust = log(B + t)
     else:
@@ -1205,7 +1205,7 @@ def Wilhoit_integral_T2(wilhoit, t):
     #output: the quantity Integrate[Cp(Wilhoit)/R*t^2, t'] evaluated at t'=t
     cython.declare(cp0=cython.double, cpInf=cython.double, B=cython.double, a0=cython.double, a1=cython.double, a2=cython.double, a3=cython.double)
     cython.declare(logBplust=cython.double, result=cython.double)
-    cp0, cpInf, B, a0, a1, a2, a3 = wilhoit.cp0.value, wilhoit.cpInf.value, wilhoit.B.value, wilhoit.a0, wilhoit.a1, wilhoit.a2, wilhoit.a3
+    cp0, cpInf, B, a0, a1, a2, a3 = wilhoit.cp0.value_si, wilhoit.cpInf.value_si, wilhoit.B.value_si, wilhoit.a0, wilhoit.a1, wilhoit.a2, wilhoit.a3
     if cython.compiled:
         logBplust = log(B + t)
     else:
@@ -1219,7 +1219,7 @@ def Wilhoit_integral_T3(wilhoit, t):
     #output: the quantity Integrate[Cp(Wilhoit)/R*t^3, t'] evaluated at t'=t
     cython.declare(cp0=cython.double, cpInf=cython.double, B=cython.double, a0=cython.double, a1=cython.double, a2=cython.double, a3=cython.double)
     cython.declare(logBplust=cython.double, result=cython.double)
-    cp0, cpInf, B, a0, a1, a2, a3 = wilhoit.cp0.value, wilhoit.cpInf.value, wilhoit.B.value, wilhoit.a0, wilhoit.a1, wilhoit.a2, wilhoit.a3
+    cp0, cpInf, B, a0, a1, a2, a3 = wilhoit.cp0.value_si, wilhoit.cpInf.value_si, wilhoit.B.value_si, wilhoit.a0, wilhoit.a1, wilhoit.a2, wilhoit.a3
     if cython.compiled:
         logBplust = log(B + t)
     else:
@@ -1234,7 +1234,7 @@ def Wilhoit_integral_T4(wilhoit, t):
     #output: the quantity Integrate[Cp(Wilhoit)/R*t^4, t'] evaluated at t'=t
     cython.declare(cp0=cython.double, cpInf=cython.double, B=cython.double, a0=cython.double, a1=cython.double, a2=cython.double, a3=cython.double)
     cython.declare(logBplust=cython.double, result=cython.double)
-    cp0, cpInf, B, a0, a1, a2, a3 = wilhoit.cp0.value, wilhoit.cpInf.value, wilhoit.B.value, wilhoit.a0, wilhoit.a1, wilhoit.a2, wilhoit.a3
+    cp0, cpInf, B, a0, a1, a2, a3 = wilhoit.cp0.value_si, wilhoit.cpInf.value_si, wilhoit.B.value_si, wilhoit.a0, wilhoit.a1, wilhoit.a2, wilhoit.a3
     if cython.compiled:
         logBplust = log(B + t)
     else:
@@ -1249,7 +1249,7 @@ def Wilhoit_integral2_T0(wilhoit, t):
     #output: the quantity Integrate[(Cp(Wilhoit)/R)^2, t'] evaluated at t'=t
     cython.declare(cp0=cython.double, cpInf=cython.double, B=cython.double, a0=cython.double, a1=cython.double, a2=cython.double, a3=cython.double)
     cython.declare(logBplust=cython.double, result=cython.double)
-    cp0, cpInf, B, a0, a1, a2, a3 = wilhoit.cp0.value, wilhoit.cpInf.value, wilhoit.B.value, wilhoit.a0, wilhoit.a1, wilhoit.a2, wilhoit.a3
+    cp0, cpInf, B, a0, a1, a2, a3 = wilhoit.cp0.value_si, wilhoit.cpInf.value_si, wilhoit.B.value_si, wilhoit.a0, wilhoit.a1, wilhoit.a2, wilhoit.a3
     if cython.compiled:
         logBplust = log(B + t)
     else:
@@ -1275,7 +1275,7 @@ def Wilhoit_integral2_TM1(wilhoit, t):
     #output: the quantity Integrate[(Cp(Wilhoit)/R)^2*t^-1, t'] evaluated at t'=t
     cython.declare(cp0=cython.double, cpInf=cython.double, B=cython.double, a0=cython.double, a1=cython.double, a2=cython.double, a3=cython.double)
     cython.declare(logBplust=cython.double, logt=cython.double, result=cython.double)
-    cp0, cpInf, B, a0, a1, a2, a3 = wilhoit.cp0.value, wilhoit.cpInf.value, wilhoit.B.value, wilhoit.a0, wilhoit.a1, wilhoit.a2, wilhoit.a3
+    cp0, cpInf, B, a0, a1, a2, a3 = wilhoit.cp0.value_si, wilhoit.cpInf.value_si, wilhoit.B.value_si, wilhoit.a0, wilhoit.a1, wilhoit.a2, wilhoit.a3
     if cython.compiled:
         logBplust = log(B + t); logt = log(t)
     else:
@@ -1302,7 +1302,7 @@ def Wilhoit_Dintegral_T0(wilhoit,t1,t2):
     #output: the quantity Integrate[Cp(Wilhoit)/R, {t',t1,t2}]
     cython.declare(cp0=cython.double, cpInf=cython.double, B=cython.double, a0=cython.double, a1=cython.double, a2=cython.double, a3=cython.double)
     cython.declare(z1=cython.double, z2=cython.double, z12=cython.double, z22=cython.double, logBplust=cython.double, result=cython.double)
-    cp0, cpInf, B, a0, a1, a2, a3 = wilhoit.cp0.value, wilhoit.cpInf.value, wilhoit.B.value, wilhoit.a0, wilhoit.a1, wilhoit.a2, wilhoit.a3
+    cp0, cpInf, B, a0, a1, a2, a3 = wilhoit.cp0.value_si, wilhoit.cpInf.value_si, wilhoit.B.value_si, wilhoit.a0, wilhoit.a1, wilhoit.a2, wilhoit.a3
     z1 = B/(t1+B)
     z12 = z1*z1
     z2 = B/(t2+B)
@@ -1319,7 +1319,7 @@ def Wilhoit_Dintegral_TM1(wilhoit, t1,t2):
     #output: the quantity Integrate[Cp(Wilhoit)/R*t^-1,{t',t1,t2}]
     cython.declare(cp0=cython.double, cpInf=cython.double, B=cython.double, a0=cython.double, a1=cython.double, a2=cython.double, a3=cython.double)
     cython.declare(z1=cython.double, z2=cython.double, z12=cython.double, z22=cython.double, logBplust=cython.double, logt=cython.double, result=cython.double)
-    cp0, cpInf, B, a0, a1, a2, a3 = wilhoit.cp0.value, wilhoit.cpInf.value, wilhoit.B.value, wilhoit.a0, wilhoit.a1, wilhoit.a2, wilhoit.a3
+    cp0, cpInf, B, a0, a1, a2, a3 = wilhoit.cp0.value_si, wilhoit.cpInf.value_si, wilhoit.B.value_si, wilhoit.a0, wilhoit.a1, wilhoit.a2, wilhoit.a3
     z1 = B/(t1+B)
     z12 = z1*z1
     z2 = B/(t2+B)
@@ -1338,7 +1338,7 @@ def Wilhoit_Dintegral_T1(wilhoit, t1,t2):
     #output: the quantity Integrate[Cp(Wilhoit)/R*t, {t',t1,t2}]
     cython.declare(cp0=cython.double, cpInf=cython.double, B=cython.double, a0=cython.double, a1=cython.double, a2=cython.double, a3=cython.double)
     cython.declare(z1=cython.double, z2=cython.double, z12=cython.double, z22=cython.double, logBplust=cython.double, result=cython.double)
-    cp0, cpInf, B, a0, a1, a2, a3 = wilhoit.cp0.value, wilhoit.cpInf.value, wilhoit.B.value, wilhoit.a0, wilhoit.a1, wilhoit.a2, wilhoit.a3
+    cp0, cpInf, B, a0, a1, a2, a3 = wilhoit.cp0.value_si, wilhoit.cpInf.value_si, wilhoit.B.value_si, wilhoit.a0, wilhoit.a1, wilhoit.a2, wilhoit.a3
     z1 = B/(t1+B)
     z12 = z1*z1
     z2 = B/(t2+B)
@@ -1356,7 +1356,7 @@ def Wilhoit_Dintegral_T2(wilhoit, t1,t2):
     #output: the quantity Integrate[Cp(Wilhoit)/R*t^2,{t',t1,t2}]
     cython.declare(cp0=cython.double, cpInf=cython.double, B=cython.double, a0=cython.double, a1=cython.double, a2=cython.double, a3=cython.double)
     cython.declare(z1=cython.double, z2=cython.double, z12=cython.double, z22=cython.double, t12=cython.double, t22=cython.double, logBplust=cython.double, result=cython.double)
-    cp0, cpInf, B, a0, a1, a2, a3 = wilhoit.cp0.value, wilhoit.cpInf.value, wilhoit.B.value, wilhoit.a0, wilhoit.a1, wilhoit.a2, wilhoit.a3
+    cp0, cpInf, B, a0, a1, a2, a3 = wilhoit.cp0.value_si, wilhoit.cpInf.value_si, wilhoit.B.value_si, wilhoit.a0, wilhoit.a1, wilhoit.a2, wilhoit.a3
     z1 = B/(t1+B)
     z12 = z1*z1
     z2 = B/(t2+B)
@@ -1376,7 +1376,7 @@ def Wilhoit_Dintegral_T3(wilhoit, t1,t2):
     #output: the quantity Integrate[Cp(Wilhoit)/R*t^3,{t',t1,t2}]
     cython.declare(cp0=cython.double, cpInf=cython.double, B=cython.double, a0=cython.double, a1=cython.double, a2=cython.double, a3=cython.double)
     cython.declare(z1=cython.double, z2=cython.double, z12=cython.double, z22=cython.double, t12=cython.double, t22=cython.double, logBplust=cython.double, result=cython.double)
-    cp0, cpInf, B, a0, a1, a2, a3 = wilhoit.cp0.value, wilhoit.cpInf.value, wilhoit.B.value, wilhoit.a0, wilhoit.a1, wilhoit.a2, wilhoit.a3
+    cp0, cpInf, B, a0, a1, a2, a3 = wilhoit.cp0.value_si, wilhoit.cpInf.value_si, wilhoit.B.value_si, wilhoit.a0, wilhoit.a1, wilhoit.a2, wilhoit.a3
     z1 = B/(t1+B)
     z12 = z1*z1
     z2 = B/(t2+B)
@@ -1397,7 +1397,7 @@ def Wilhoit_Dintegral_T4(wilhoit, t1,t2):
     #output: the quantity Integrate[Cp(Wilhoit)/R*t^4, {t',t1,t2}]
     cython.declare(cp0=cython.double, cpInf=cython.double, B=cython.double, a0=cython.double, a1=cython.double, a2=cython.double, a3=cython.double)
     cython.declare(z1=cython.double, z2=cython.double, z12=cython.double, z22=cython.double, t12=cython.double, t22=cython.double, logBplust=cython.double, result=cython.double)
-    cp0, cpInf, B, a0, a1, a2, a3 = wilhoit.cp0.value, wilhoit.cpInf.value, wilhoit.B.value, wilhoit.a0, wilhoit.a1, wilhoit.a2, wilhoit.a3
+    cp0, cpInf, B, a0, a1, a2, a3 = wilhoit.cp0.value_si, wilhoit.cpInf.value_si, wilhoit.B.value_si, wilhoit.a0, wilhoit.a1, wilhoit.a2, wilhoit.a3
     z1 = B/(t1+B)
     z12 = z1*z1
     z2 = B/(t2+B)
@@ -1418,7 +1418,7 @@ def Wilhoit_Dintegral2_T0(wilhoit, t1,t2):
     #output: the quantity Integrate[(Cp(Wilhoit)/R)^2, {t',t1,t2}]
     cython.declare(cp0=cython.double, cpInf=cython.double, B=cython.double, a0=cython.double, a1=cython.double, a2=cython.double, a3=cython.double)
     cython.declare(z1=cython.double, z2=cython.double, z12=cython.double, z22=cython.double, z14=cython.double, z24=cython.double, z18=cython.double, z28=cython.double, logBplust=cython.double, cdiff=cython.double, result=cython.double)
-    cp0, cpInf, B, a0, a1, a2, a3 = wilhoit.cp0.value, wilhoit.cpInf.value, wilhoit.B.value, wilhoit.a0, wilhoit.a1, wilhoit.a2, wilhoit.a3
+    cp0, cpInf, B, a0, a1, a2, a3 = wilhoit.cp0.value_si, wilhoit.cpInf.value_si, wilhoit.B.value_si, wilhoit.a0, wilhoit.a1, wilhoit.a2, wilhoit.a3
     cdiff = cpInf-cp0
     z1 = B/(t1+B)
     z12 = z1*z1
@@ -1448,7 +1448,7 @@ def Wilhoit_Dintegral2_TM1(wilhoit, t1,t2):
     #output: the quantity Integrate[(Cp(Wilhoit)/R)^2*t^-1, {t',t1,t2}]
     cython.declare(cp0=cython.double, cpInf=cython.double, B=cython.double, a0=cython.double, a1=cython.double, a2=cython.double, a3=cython.double)
     cython.declare(z1=cython.double, z2=cython.double, z12=cython.double, z22=cython.double, z14=cython.double, z24=cython.double, z18=cython.double, z28=cython.double, logBplust=cython.double, logt=cython.double, cdiff=cython.double, result=cython.double)
-    cp0, cpInf, B, a0, a1, a2, a3 = wilhoit.cp0.value, wilhoit.cpInf.value, wilhoit.B.value, wilhoit.a0, wilhoit.a1, wilhoit.a2, wilhoit.a3
+    cp0, cpInf, B, a0, a1, a2, a3 = wilhoit.cp0.value_si, wilhoit.cpInf.value_si, wilhoit.B.value_si, wilhoit.a0, wilhoit.a1, wilhoit.a2, wilhoit.a3
     cdiff = cpInf-cp0
     z1 = B/(t1+B)
     z12 = z1*z1

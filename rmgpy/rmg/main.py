@@ -172,10 +172,10 @@ class RMG:
         """
         if self.pressureDependence:
             for index, reactionSystem in enumerate(self.reactionSystems):
-                assert (reactionSystem.T.value < self.pressureDependence.Tmax.value), "Reaction system T is above pressureDependence range."
-                assert (reactionSystem.T.value > self.pressureDependence.Tmin.value), "Reaction system T is below pressureDependence range."
-                assert (reactionSystem.P.value < self.pressureDependence.Pmax.value), "Reaction system P is above pressureDependence range."
-                assert (reactionSystem.P.value > self.pressureDependence.Pmin.value), "Reaction system P is below pressureDependence range."
+                assert (reactionSystem.T.value_si < self.pressureDependence.Tmax.value_si), "Reaction system T is above pressureDependence range."
+                assert (reactionSystem.T.value_si > self.pressureDependence.Tmin.value_si), "Reaction system T is below pressureDependence range."
+                assert (reactionSystem.P.value_si < self.pressureDependence.Pmax.value_si), "Reaction system P is above pressureDependence range."
+                assert (reactionSystem.P.value_si > self.pressureDependence.Pmin.value_si), "Reaction system P is below pressureDependence range."
             assert any([not s.reactive for s in reactionSystem.initialMoleFractions.keys()]), \
                 "Pressure Dependence calculations require at least one inert (nonreacting) species for the bath gas."
 
@@ -370,7 +370,7 @@ class RMG:
                         # Determine which species in that network has the highest leak rate
                         # We do this here because we need a temperature and pressure
                         # Store the maximum leak species along with the associated network
-                        obj = (obj, obj.getMaximumLeakSpecies(reactionSystem.T.value, reactionSystem.P.value))
+                        obj = (obj, obj.getMaximumLeakSpecies(reactionSystem.T.value_si, reactionSystem.P.value_si))
                     objectsToEnlarge.append(obj)
                     self.done = False
     
@@ -475,7 +475,7 @@ class RMG:
         if self.saveRestartPeriod or self.done:
             self.saveRestartFile( os.path.join(self.outputDirectory,'restart.pkl'),
                                   self.reactionModel,
-                                  delay=0 if self.done else self.saveRestartPeriod.value
+                                  delay=0 if self.done else self.saveRestartPeriod.value_si
                                 )
             
             

@@ -40,7 +40,7 @@ from pydas cimport DASSL
 import cython
 import logging
 
-from rmgpy.quantity cimport Quantity
+from rmgpy.quantity import Quantity
 
 ################################################################################
 
@@ -237,9 +237,9 @@ cdef class ReactionSystem(DASSL):
             # Finish simulation if any of the termination criteria are satisfied
             for term in self.termination:
                 if isinstance(term, TerminationTime):
-                    if self.t > term.time.value:
+                    if self.t > term.time.value_si:
                         terminated = True
-                        logging.info('At time {0:10.4e} s, reached target termination time.'.format(term.time.value))
+                        logging.info('At time {0:10.4e} s, reached target termination time.'.format(term.time.value_si))
                         self.logConversions(speciesIndex, y0)
                         break
                 elif isinstance(term, TerminationConversion):

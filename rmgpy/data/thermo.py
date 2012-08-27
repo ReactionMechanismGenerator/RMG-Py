@@ -127,15 +127,15 @@ def generateOldLibraryEntry(data):
     """
     if isinstance(data, ThermoData):
         return '{0:9g} {1:9g} {2:9g} {3:9g} {4:9g} {5:9g} {6:9g} {7:9g} {8:9g} {9:9g} {10:9g} {11:9g}'.format(
-            data.H298.value/4184.,
-            data.S298.value/4.184,
-            data.Cpdata.values[0]/4.184,
-            data.Cpdata.values[1]/4.184,
-            data.Cpdata.values[2]/4.184,
-            data.Cpdata.values[3]/4.184,
-            data.Cpdata.values[4]/4.184,
-            data.Cpdata.values[5]/4.184,
-            data.Cpdata.values[6]/4.184,
+            data.H298.value_si/4184.,
+            data.S298.value_si/4.184,
+            data.Cpdata.value_si[0]/4.184,
+            data.Cpdata.value_si[1]/4.184,
+            data.Cpdata.value_si[2]/4.184,
+            data.Cpdata.value_si[3]/4.184,
+            data.Cpdata.value_si[4]/4.184,
+            data.Cpdata.value_si[5]/4.184,
+            data.Cpdata.value_si[6]/4.184,
             data.H298.uncertainty/4184.,
             data.S298.uncertainty/4.184,
             data.Cpdata.uncertainty/4.184,
@@ -686,7 +686,7 @@ class ThermoDatabase:
             thermoData = self.estimateThermoViaGroupAdditivity(saturatedStruct)
             assert thermoData is not None, "Thermo data of saturated {0} of molecule {1} is None!".format(saturatedStruct, molecule)
             # Undo symmetry number correction for saturated structure
-            thermoData.S298.value += constants.R * math.log(saturatedStruct.symmetryNumber)
+            thermoData.S298.value_si += constants.R * math.log(saturatedStruct.symmetryNumber)
 
             # For each radical site, get radical correction
             # Only one radical site should be considered at a time; all others
@@ -717,7 +717,7 @@ class ThermoDatabase:
 
                 # Subtract the enthalpy of the added hydrogens
                 for H, bond in added[atom]:
-                    thermoData.H298.value -= 52.103 * 4184
+                    thermoData.H298.value_si -= 52.103 * 4184
 
             # Correct the entropy for the symmetry number
 
@@ -775,7 +775,7 @@ class ThermoDatabase:
                 
         # Correct entropy for symmetry number
         molecule.calculateSymmetryNumber()
-        thermoData.S298.value -= constants.R * math.log(molecule.symmetryNumber)
+        thermoData.S298.value_si -= constants.R * math.log(molecule.symmetryNumber)
 
         return thermoData
 
@@ -784,11 +784,11 @@ class ThermoDatabase:
         Add two :class:`ThermoData` objects `thermoData1` and `thermoData2`
         together, returning their sum as a new :class:`ThermoData` object.
         """
-        if len(thermoData1.Tdata.values) != len(thermoData2.Tdata.values) or any([T1 != T2 for T1, T2 in zip(thermoData1.Tdata.values, thermoData2.Tdata.values)]):
+        if len(thermoData1.Tdata.value_si) != len(thermoData2.Tdata.value_si) or any([T1 != T2 for T1, T2 in zip(thermoData1.Tdata.value_si, thermoData2.Tdata.value_si)]):
             raise ThermoError('Cannot add these ThermoData objects due to their having different temperature points.')
         new = ThermoData(
-            Tdata = (thermoData1.Tdata.values, thermoData1.Tdata.units),
-            Cpdata = (thermoData1.Cpdata.values + thermoData2.Cpdata.values, thermoData1.Tdata.units),
+            Tdata = (thermoData1.Tdata.value, thermoData1.Tdata.units),
+            Cpdata = (thermoData1.Cpdata.value + thermoData2.Cpdata.value, thermoData1.Tdata.units),
             H298 = (thermoData1.H298.value + thermoData2.H298.value, thermoData1.Tdata.units),
             S298 = (thermoData1.S298.value + thermoData2.S298.value, thermoData1.Tdata.units),
         )

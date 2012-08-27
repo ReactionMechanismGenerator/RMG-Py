@@ -152,7 +152,7 @@ class KineticsModel:
         the minimum and maximum temperature are not defined, ``True`` is 
         returned.
         """
-        return self.Tmin is None or self.Tmax is None or (self.Tmin.value <= T and T <= self.Tmax.value)
+        return self.Tmin is None or self.Tmax is None or (self.Tmin.value_si <= T and T <= self.Tmax.value_si)
 
     def isPressureValid(self, P):
         """
@@ -161,7 +161,7 @@ class KineticsModel:
         the minimum and maximum pressure are not defined, ``True`` is 
         returned.
         """
-        return self.Pmin is None or self.Pmax is None or (self.Pmin.value <= P and P <= self.Pmax.value)
+        return self.Pmin is None or self.Pmax is None or (self.Pmin.value_si <= P and P <= self.Pmax.value_si)
 
     def isPressureDependent(self):
         """
@@ -335,10 +335,10 @@ class KineticsData(KineticsModel):
         cython.declare(T=cython.double, k=cython.double)
         cython.declare(string=str)
         string = '<table class="KineticsData"><tr class="KineticsData_Tdata"><th>T/[{0!s}]</th>\n   '.format(self.Tdata.units)
-        for T in self.Tdata.values:
+        for T in self.Tdata.value_si:
             string += '<td>{0:.0f}</td>'.format(T)
         string += '\n</tr><tr class="KineticsData_kdata"><th>log<sub>10</sub>(k/[{0!s}])\n    '.format(self.kdata.units)
-        for k in self.kdata.values:
+        for k in self.kdata.value_si:
             string += '<td>{0:+.1f}'.format(math.log10(k))
         string += '\n</tr></table>'
         return string
@@ -360,12 +360,12 @@ class KineticsData(KineticsModel):
         k = 0.0
         if not self.isTemperatureValid(T):
             raise KineticsError('Invalid temperature "{0:g} K" for heat capacity estimation.'.format(T))
-        if T < numpy.min(self.Tdata.values):
-            k = self.kdata.values[0]
-        elif T >= numpy.max(self.Tdata.values):
-            k = self.kdata.values[-1]
+        if T < numpy.min(self.Tdata.value_si):
+            k = self.kdata.value_si[0]
+        elif T >= numpy.max(self.Tdata.value_si):
+            k = self.kdata.value_si[-1]
         else:
-            for Tmin, Tmax, kmin, kmax in zip(self.Tdata.values[:-1], self.Tdata.values[1:], self.kdata.values[:-1], self.kdata.values[1:]):
+            for Tmin, Tmax, kmin, kmax in zip(self.Tdata.value_si[:-1], self.Tdata.value_si[1:], self.kdata.value_si[:-1], self.kdata.value_si[1:]):
                 if Tmin <= T and T < Tmax:
                     slope = (1.0/T - 1.0/Tmin) / (1.0/Tmax - 1.0/Tmin)
                     k = kmin * (kmax / kmin)**slope
@@ -375,7 +375,7 @@ class KineticsData(KineticsModel):
         """
         Return an :class:`Arrhenius` expression fitted to this data
         """
-        return Arrhenius(comment=self.comment, Tmin=self.Tmin, Tmax=self.Tmax).fitToData(Tlist=self.Tdata.values, klist=self.kdata.values, kunits=self.kdata.units)
+        return Arrhenius(comment=self.comment, Tmin=self.Tmin, Tmax=self.Tmax).fitToData(Tlist=self.Tdata.value_si, klist=self.kdata.value_si, kunits=self.kdata.units)
 
     def isIdenticalTo(self,otherKinetics):
         """
@@ -459,15 +459,15 @@ class Arrhenius(KineticsModel):
         Return the rate coefficient k(T) in SI units at temperature 
         `T` in K.
         """
-        return self.A.value * (T / self.T0.value)** self.n.value * math.exp(-self.Ea.value / constants.R / T)
+        return self.A.value_si * (T / self.T0.value_si)** self.n.value_si * math.exp(-self.Ea.value_si / constants.R / T)
 
     def changeT0(self, T0):
         """
         Changes the reference temperature used in the exponent to `T0` in K, and
         adjusts the preexponential accordingly.
         """
-        self.A.value /= (self.T0.value / T0)**self.n.value
-        self.T0.value = T0
+        self.A.value_si /= (self.T0.value_si / T0)**self.n.value_si
+        self.T0.value_si = T0
 
     def fitToData(self, Tlist, klist, kunits, T0=1, weights=None):
         """
@@ -583,7 +583,7 @@ class ArrheniusEP(KineticsModel):
         Return the activation energy in J/mol using the enthalpy of reaction 
         `dHrxn` in J/mol.
         """
-        return self.E0.value + self.alpha.value * dHrxn
+        return self.E0.value_si + self.alpha.value_si * dHrxn
     
     def getRateCoefficient(self, T, dHrxn):
         """
@@ -593,7 +593,7 @@ class ArrheniusEP(KineticsModel):
         """
         Ea = cython.declare(cython.double)
         Ea = self.getActivationEnergy(dHrxn)
-        return self.A.value * (T ** self.n.value) * math.exp(-Ea / constants.R / T)
+        return self.A.value_si * (T ** self.n.value_si) * math.exp(-Ea / constants.R / T)
 
     def toArrhenius(self, dHrxn):
         """
@@ -785,7 +785,7 @@ class PDepArrhenius(KineticsModel):
         cython.declare(arrh=Arrhenius)
         cython.declare(i=cython.int, ilow=cython.int, ihigh=cython.int)
 
-        pressures = [pressure for pressure in self.pressures.values]
+        pressures = [pressure for pressure in self.pressures.value_si]
         if P in pressures:
             arrh = self.arrhenius[pressures.index(P)]
             return P, P, arrh, arrh
@@ -848,10 +848,10 @@ class PDepArrhenius(KineticsModel):
         neither are empty.  Otherwise returns ``False``
         """
         if self.arrhenius and self.pressures is not None:
-            if len(self.arrhenius) == len(self.pressures.values):
+            if len(self.arrhenius) == len(self.pressures.value_si):
                 return True
             else:
-                logging.error('Number of pressures ({}) did not match number of Arrhenius data ({}) in PDepArrhenius object.'.format(len(self.pressures.values),len(self.arrhenius)))
+                logging.error('Number of pressures ({}) did not match number of Arrhenius data ({}) in PDepArrhenius object.'.format(len(self.pressures.value_si),len(self.arrhenius)))
                 return False
         else:
             logging.error('Empty arrhenius data or pressure list in PDepArrhenius object.')
@@ -940,7 +940,7 @@ class Chebyshev(KineticsModel):
     def __init__(self, coeffs=None, kunits='', Tmin=None, Tmax=None, Pmin=None, Pmax=None, comment=''):
         KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, comment=comment)
         if coeffs is not None:
-            self.coeffs = Quantity(numpy.array(coeffs, numpy.float64)).values
+            self.coeffs = Quantity(numpy.array(coeffs, numpy.float64)).value_si
             self.degreeT = self.coeffs.shape[0]
             self.degreeP = self.coeffs.shape[1]
         else:
@@ -1032,7 +1032,7 @@ class Chebyshev(KineticsModel):
         `T` in K. This maps the inverse of the temperature onto the domain 
         [-1, 1] using the `Tmin` and `Tmax` attributes as the limits.
         """
-        return (2.0/T - 1.0/self.Tmin.value - 1.0/self.Tmax.value) / (1.0/self.Tmax.value - 1.0/self.Tmin.value)
+        return (2.0/T - 1.0/self.Tmin.value_si - 1.0/self.Tmax.value_si) / (1.0/self.Tmax.value_si - 1.0/self.Tmin.value_si)
     
     def __getReducedPressure(self, P):
         """
@@ -1041,9 +1041,9 @@ class Chebyshev(KineticsModel):
         [-1, 1] using the `Pmin` and `Pmax` attributes as the limits.
         """
         if cython.compiled:
-            return (2.0*log10(P) - log10(self.Pmin.value) - log10(self.Pmax.value)) / (log10(self.Pmax.value) - log10(self.Pmin.value))
+            return (2.0*log10(P) - log10(self.Pmin.value_si) - log10(self.Pmax.value_si)) / (log10(self.Pmax.value_si) - log10(self.Pmin.value_si))
         else:
-            return (2.0*math.log(P) - math.log(self.Pmin.value) - math.log(self.Pmax.value)) / (math.log(self.Pmax.value) - math.log(self.Pmin.value))
+            return (2.0*math.log(P) - math.log(self.Pmin.value_si) - math.log(self.Pmax.value_si)) / (math.log(self.Pmax.value_si) - math.log(self.Pmin.value_si))
     
     def getRateCoefficient(self, T, P):
         """
@@ -1508,8 +1508,8 @@ class Troe(Lindemann):
         Pr = k0 * C / kinf
         efficiency = self.getColliderEfficiency(collider)
         
-        Fcent = (1 - self.alpha.value) * math.exp(-T / self.T3.value) + self.alpha.value * math.exp(-T / self.T1.value)
-        if self.T2 is not None: Fcent += math.exp(-self.T2.value / T)
+        Fcent = (1 - self.alpha.value_si) * math.exp(-T / self.T3.value_si) + self.alpha.value_si * math.exp(-T / self.T1.value_si)
+        if self.T2 is not None: Fcent += math.exp(-self.T2.value_si / T)
         d = 0.14
         n = 0.75 - 1.27 * math.log10(Fcent)
         c = -0.4 - 0.67 * math.log10(Fcent)

@@ -55,10 +55,10 @@ def generateThermoModel(species, model, plot=False):
         Nrotors = 0
     else:
         linear = species.states.modes[1].linear
-        Nfreq = len(species.states.modes[2].frequencies.values)
+        Nfreq = len(species.states.modes[2].frequencies.value_si)
         Nrotors = len(species.states.modes[3:])
 
-    H298 = species.states.getEnthalpy(298.15) + species.E0.value
+    H298 = species.states.getEnthalpy(298.15) + species.E0.value_si
     S298 = species.states.getEntropy(298.15)
     
     if model.lower() == 'group additivity':
@@ -75,7 +75,7 @@ def generateThermoModel(species, model, plot=False):
             wilhoit.B = Quantity(500,"K")
             wilhoit.H0 = Quantity(0,"J/mol")
             wilhoit.S0 = Quantity(0,"J/(mol*K)")
-            wilhoit.H0 = Quantity(species.states.getEnthalpy(298.15) - wilhoit.getEnthalpy(298.15) + species.E0.value,"J/mol")
+            wilhoit.H0 = Quantity(species.states.getEnthalpy(298.15) - wilhoit.getEnthalpy(298.15) + species.E0.value_si,"J/mol")
             wilhoit.S0 = Quantity(species.states.getEntropy(298.15) - wilhoit.getEntropy(298.15),"J/(mol*K)")
         else:
             wilhoit.fitToData(Tlist, Cplist, linear, Nfreq, Nrotors, H298, S298, B0=500.0)
@@ -94,7 +94,7 @@ def generateThermoModel(species, model, plot=False):
         Cplist1 = species.thermo.getHeatCapacities(Tlist)
         Slist = species.states.getEntropies(Tlist)
         Slist1 = species.thermo.getEntropies(Tlist)
-        Hlist = species.states.getEnthalpies(Tlist) + species.E0.value
+        Hlist = species.states.getEnthalpies(Tlist) + species.E0.value_si
         Hlist1 = species.thermo.getEnthalpies(Tlist)
         Glist = Hlist - Tlist * Slist
         Glist1 = species.thermo.getFreeEnergies(Tlist)

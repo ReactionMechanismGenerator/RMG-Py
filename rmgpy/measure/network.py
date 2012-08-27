@@ -272,16 +272,16 @@ class Network:
         logging.log(level, '-------------------')
         logging.log(level, 'Isomers:')
         for isomer in self.isomers:
-            logging.log(level, '    {0:<48s} {1:12g} kJ/mol'.format(str(isomer), isomer.E0.value / 1000.0))
+            logging.log(level, '    {0:<48s} {1:12g} kJ/mol'.format(str(isomer), isomer.E0.value_si / 1000.0))
         logging.log(level, 'Reactant channels:')
         for reactants in self.reactants:
-            logging.log(level, '    {0:<48s} {1:12g} kJ/mol'.format(' + '.join([str(spec) for spec in reactants]), sum([spec.E0.value for spec in reactants]) / 1000.0))
+            logging.log(level, '    {0:<48s} {1:12g} kJ/mol'.format(' + '.join([str(spec) for spec in reactants]), sum([spec.E0.value_si for spec in reactants]) / 1000.0))
         logging.log(level, 'Product channels:')
         for products in self.products:
-            logging.log(level, '    {0:<48s} {1:12g} kJ/mol'.format(' + '.join([str(spec) for spec in products]), sum([spec.E0.value for spec in products]) / 1000.0))
+            logging.log(level, '    {0:<48s} {1:12g} kJ/mol'.format(' + '.join([str(spec) for spec in products]), sum([spec.E0.value_si for spec in products]) / 1000.0))
         logging.log(level, 'Path reactions:')
         for rxn in self.pathReactions:
-            logging.log(level, '    {0:<48s} {1:12g} kJ/mol'.format(rxn, rxn.transitionState.E0.value / 1000.0))
+            logging.log(level, '    {0:<48s} {1:12g} kJ/mol'.format(rxn, rxn.transitionState.E0.value_si / 1000.0))
         logging.log(level, '========================================================================')
         logging.log(level, '')
 
@@ -339,28 +339,28 @@ class Network:
         # The minimum energy is the lowest isomer or reactant or product energy on the PES
         Emin = 1.0e25
         for isomer in self.isomers:
-            if isomer.E0.value < Emin: Emin = isomer.E0.value
+            if isomer.E0.value_si < Emin: Emin = isomer.E0.value_si
         for reactants in self.reactants:
-            E0 = sum([reactant.E0.value for reactant in reactants])
+            E0 = sum([reactant.E0.value_si for reactant in reactants])
             if E0 < Emin: Emin = E0
         for products in self.products:
-            E0 = sum([product.E0.value for product in products])
+            E0 = sum([product.E0.value_si for product in products])
             if E0 < Emin: Emin = E0
         Emin = math.floor(Emin) # Round to nearest whole number
 
         # Use the highest energy on the PES as the initial guess for Emax0
         Emax = -1.0e25
         for isomer in self.isomers:
-            if isomer.E0.value > Emax: Emax = isomer.E0.value
+            if isomer.E0.value_si > Emax: Emax = isomer.E0.value_si
         for reactants in self.reactants:
-            E0 = sum([reactant.E0.value for reactant in reactants])
+            E0 = sum([reactant.E0.value_si for reactant in reactants])
             if E0 > Emax: Emax = E0
         for products in self.products:
-            E0 = sum([product.E0.value for product in products])
+            E0 = sum([product.E0.value_si for product in products])
             if E0 > Emax: Emax = E0
         for rxn in self.pathReactions:
             if rxn.transitionState is not None:
-                E0 = rxn.transitionState.E0.value
+                E0 = rxn.transitionState.E0.value_si
                 if E0 > Emax: Emax = E0
         
         # Choose the actual Emax as many kB * T above the maximum energy on the PES
@@ -463,11 +463,11 @@ class Network:
         Nprod = len(self.products)
         E0 = numpy.zeros((Nisom+Nreac+Nprod), numpy.float64)
         for i in range(Nisom):
-            E0[i] = self.isomers[i].E0.value
+            E0[i] = self.isomers[i].E0.value_si
         for n in range(Nreac):
-            E0[n+Nisom] = sum([spec.E0.value for spec in self.reactants[n]])
+            E0[n+Nisom] = sum([spec.E0.value_si for spec in self.reactants[n]])
         for n in range(Nprod):
-            E0[n+Nisom+Nreac] = sum([spec.E0.value for spec in self.products[n]])
+            E0[n+Nisom+Nreac] = sum([spec.E0.value_si for spec in self.products[n]])
         self.E0 = E0
         return E0
     
@@ -480,8 +480,8 @@ class Network:
         for i in range(Nisom):
             for rxn in self.pathReactions:
                 if rxn.reactants[0] == self.isomers[i] or rxn.products[0] == self.isomers[i]:
-                    if rxn.transitionState.E0.value < Ereac[i]:
-                        Ereac[i] = rxn.transitionState.E0.value
+                    if rxn.transitionState.E0.value_si < Ereac[i]:
+                        Ereac[i] = rxn.transitionState.E0.value_si
         self.Ereac = Ereac
         return Ereac
 
@@ -1037,13 +1037,13 @@ class Network:
         wells.extend(self.products)
         
         # Get minimum and maximum energy on surface (so we can compute bounding box)
-        E0min = sum([spec.E0.value for spec in wells[0]]); E0max = E0min
+        E0min = sum([spec.E0.value_si for spec in wells[0]]); E0max = E0min
         for i, well in enumerate(wells):
-            E0 = sum([spec.E0.value for spec in well])
+            E0 = sum([spec.E0.value_si for spec in well])
             if E0 < E0min: E0min = E0
             if E0 > E0max: E0max = E0
         for rxn in self.pathReactions:
-            E0 = rxn.transitionState.E0.value
+            E0 = rxn.transitionState.E0.value_si
             if E0 < E0min: E0min = E0
             if E0 > E0max: E0max = E0
         
@@ -1053,8 +1053,8 @@ class Network:
         padding_top = padding_left / 2.0
         padding_bottom = padding_left / 2.0
         wellWidth = 64.0; wellSpacing = 64.0; Eslope = 5.0; TSwidth = 16.0
-        E0 = [sum([spec.E0.value for spec in well]) / 4184 for well in wells]
-        E0.extend([rxn.transitionState.E0.value / 4184 for rxn in self.pathReactions])
+        E0 = [sum([spec.E0.value_si for spec in well]) / 4184 for well in wells]
+        E0.extend([rxn.transitionState.E0.value_si / 4184 for rxn in self.pathReactions])
         y_E0 = (max(E0) - 0.0) * Eslope + padding_top
 
         ext = os.path.splitext(fstr)[1].lower()
@@ -1070,7 +1070,7 @@ class Network:
         coordinates = numpy.zeros((len(wells), 2), numpy.float64)
         x = padding_left + wellWidth / 2.0
         for i, well in enumerate(wells):
-            E0 = sum([spec.E0.value for spec in well]) / 4184
+            E0 = sum([spec.E0.value_si for spec in well]) / 4184
             y = y_E0 - E0 * Eslope
             coordinates[i] = [x, y]
             x += wellWidth + wellSpacing
@@ -1134,9 +1134,9 @@ class Network:
         for rxn in self.pathReactions:
             reac = wells.index(rxn.reactants)
             prod = wells.index(rxn.products)
-            E0_reac = sum([spec.E0.value for spec in wells[reac]]) / 4184
-            E0_prod = sum([spec.E0.value for spec in wells[prod]]) / 4184
-            E0_TS = rxn.transitionState.E0.value / 4184
+            E0_reac = sum([spec.E0.value_si for spec in wells[reac]]) / 4184
+            E0_prod = sum([spec.E0.value_si for spec in wells[prod]]) / 4184
+            E0_TS = rxn.transitionState.E0.value_si / 4184
             if reac < prod:
                 x1, y1 = coordinates[reac,:]
                 x2, y2 = coordinates[prod,:]
@@ -1163,7 +1163,7 @@ class Network:
                 cr.line_to(x0+TSwidth/2.0, y0)
                 cr.stroke()
                 # Add background and text for energy
-                E0 = "{0:.1f}".format(rxn.transitionState.E0.value * Emult)
+                E0 = "{0:.1f}".format(rxn.transitionState.E0.value_si * Emult)
                 extents = cr.text_extents(E0)
                 x = x0 - extents[2] / 2.0; y = y0 - 6.0
                 cr.rectangle(x + extents[0] - 2.0, y + extents[1] - 2.0, extents[2] + 4.0, extents[3] + 4.0)
@@ -1199,7 +1199,7 @@ class Network:
             cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
             cr.stroke()
             # Add background and text for energy
-            E0 = "{0:.1f}".format(sum([spec.E0.value for spec in well]) * Emult)
+            E0 = "{0:.1f}".format(sum([spec.E0.value_si for spec in well]) * Emult)
             extents = cr.text_extents(E0)
             x = x0 - extents[2] / 2.0; y = y0 - 6.0
             cr.rectangle(x + extents[0] - 2.0, y + extents[1] - 2.0, extents[2] + 4.0, extents[3] + 4.0)

@@ -881,7 +881,7 @@ class CoreEdgeReactionModel:
                 # Add the fraction of the network leak rate contributed by
                 # each unexplored species to that species' rate
                 # This is to ensure we have an overestimate of that species flux
-                ratios = network.getLeakBranchingRatios(reactionSystem.T.value,reactionSystem.P.value)
+                ratios = network.getLeakBranchingRatios(reactionSystem.T.value_si,reactionSystem.P.value_si)
                 for spec, frac in ratios.iteritems():
                     index = self.edge.species.index(spec)
                     maxEdgeSpeciesRates[index] += frac * rate

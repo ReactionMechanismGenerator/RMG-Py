@@ -27,7 +27,7 @@
 cimport numpy
 
 cimport rmgpy.constants as constants
-from quantity cimport Quantity
+from quantity cimport ScalarQuantity, ArrayQuantity
 
 cdef extern from "math.h":
     cdef double acos(double x)
@@ -41,7 +41,7 @@ cdef extern from "math.h":
 
 cdef class KineticsModel:
     
-    cdef public Quantity Tmin, Tmax, Pmin, Pmax
+    cdef public ScalarQuantity Tmin, Tmax, Pmin, Pmax
     cdef public str comment
     
     cpdef bint isTemperatureValid(self, double T) except -2
@@ -58,7 +58,7 @@ cdef class KineticsModel:
 
 cdef class Arrhenius(KineticsModel):
     
-    cdef public Quantity A, T0, Ea, n
+    cdef public ScalarQuantity A, T0, Ea, n
     
     cpdef toPrettyRepr(self)
 
@@ -74,7 +74,7 @@ cdef class Arrhenius(KineticsModel):
 
 cdef class KineticsData(KineticsModel):
 
-    cdef public Quantity Tdata, kdata
+    cdef public ArrayQuantity Tdata, kdata
 
     cpdef toPrettyRepr(self)
 
@@ -90,7 +90,7 @@ cdef class KineticsData(KineticsModel):
 
 cdef class ArrheniusEP(KineticsModel):
     
-    cdef public Quantity A, E0, n, alpha
+    cdef public ScalarQuantity A, E0, n, alpha
 
     cpdef bint isPressureDependent(self)
 
@@ -114,7 +114,7 @@ cdef class MultiKinetics(KineticsModel):
 
 cdef class PDepArrhenius(KineticsModel):
     
-    cdef public Quantity pressures
+    cdef public ArrayQuantity pressures
     cdef public list arrhenius
     cdef public Arrhenius highPlimit
     
@@ -182,7 +182,7 @@ cdef class Lindemann(ThirdBody):
 
 cdef class Troe(Lindemann):
 
-    cdef public Quantity alpha, T1, T2, T3
+    cdef public ScalarQuantity alpha, T1, T2, T3
     
     cpdef toPrettyRepr(self)
 

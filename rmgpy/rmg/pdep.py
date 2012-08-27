@@ -365,13 +365,13 @@ class PDepNetwork(rmgpy.measure.network.Network):
         measure.network = self
         outputDirectory = measure.outputFile
         
-        Tmin = measure.Tmin.value
-        Tmax = measure.Tmax.value
-        Pmin = measure.Pmin.value
-        Pmax = measure.Pmax.value
-        Tlist = measure.Tlist.values
-        Plist = measure.Plist.values
-        grainSize = measure.grainSize.value
+        Tmin = measure.Tmin.value_si
+        Tmax = measure.Tmax.value_si
+        Pmin = measure.Pmin.value_si
+        Pmax = measure.Pmax.value_si
+        Tlist = measure.Tlist.value_si
+        Plist = measure.Plist.value_si
+        grainSize = measure.grainSize.value_si
         grainCount = measure.grainCount
         method = measure.method
         model = measure.model
@@ -419,11 +419,11 @@ class PDepNetwork(rmgpy.measure.network.Network):
                     kunits = 'm^6/(mol^2*s)'
                 else:
                     kunits = ''
-                rxn.kinetics = Arrhenius().fitToData(Tlist=rxn.kinetics.Tdata.values, klist=rxn.kinetics.kdata.values, kunits=kunits)
+                rxn.kinetics = Arrhenius().fitToData(Tlist=rxn.kinetics.Tdata.value_si, klist=rxn.kinetics.kdata.value_si, kunits=kunits)
             elif not isinstance(rxn.kinetics, Arrhenius):
                 raise Exception('Path reaction "{0}" in PDepNetwork #{1:d} has invalid kinetics type "{2!s}".'.format(rxn, self.index, rxn.kinetics.__class__))
             rxn.transitionState = rmgpy.species.TransitionState(
-                E0=((sum([spec.E0.value for spec in rxn.reactants]) + rxn.kinetics.Ea.value)/1000.,"kJ/mol"),
+                E0=((sum([spec.E0.value for spec in rxn.reactants]) + rxn.kinetics.Ea.value_si)/1000.,"kJ/mol"),
             )
 
         # Set collision model

@@ -563,18 +563,18 @@ class Reaction:
         """
         cython.declare(H0=cython.double, H298=cython.double, Ea=cython.double)
         H298 = self.getEnthalpyOfReaction(298)
-        H0 = sum([spec.E0.value for spec in self.products]) - sum([spec.E0.value for spec in self.reactants])
+        H0 = sum([spec.E0.value_si for spec in self.products]) - sum([spec.E0.value_si for spec in self.reactants])
         if isinstance(self.kinetics, ArrheniusEP):
-            Ea = self.kinetics.E0.value # temporarily using Ea to store the intrinsic barrier height E0
+            Ea = self.kinetics.E0.value_si # temporarily using Ea to store the intrinsic barrier height E0
             self.kinetics = self.kinetics.toArrhenius(H298)
-            if Ea > 0 and self.kinetics.Ea.value < 0:
-                self.kinetics.comment += "\nEa raised from {0:.1f} to 0 kJ/mol.".format(self.kinetics.Ea.value/1000)
-                logging.info("For reaction {1!s} Ea raised from {0:.1f} to 0 kJ/mol.".format(self.kinetics.Ea.value/1000, self))
-                self.kinetics.Ea.value = 0
+            if Ea > 0 and self.kinetics.Ea.value_si < 0:
+                self.kinetics.comment += "\nEa raised from {0:.1f} to 0 kJ/mol.".format(self.kinetics.Ea.value_si/1000)
+                logging.info("For reaction {1!s} Ea raised from {0:.1f} to 0 kJ/mol.".format(self.kinetics.Ea.value_si/1000, self))
+                self.kinetics.Ea.value_si = 0
         if isinstance(self.kinetics, Arrhenius):
-            Ea = self.kinetics.Ea.value
+            Ea = self.kinetics.Ea.value_si
             if H0 > 0 and Ea < H0:
-                self.kinetics.Ea.value = H0
+                self.kinetics.Ea.value_si = H0
                 self.kinetics.comment += "\nEa raised from {0:.1f} to {1:.1f} kJ/mol to match endothermicity of reaction.".format(Ea/1000,H0/1000)
                 logging.info("For reaction {2!s}, Ea raised from {0:.1f} to {1:.1f} kJ/mol to match endothermicity of reaction.".format(Ea/1000, H0/1000, self))
 
@@ -600,7 +600,7 @@ class Reaction:
         kf = self.kinetics
         if isinstance(kf, KineticsData):
             
-            Tlist = kf.Tdata.values
+            Tlist = kf.Tdata.value_si
             klist = numpy.zeros_like(Tlist)
             print Tlist
             for i in range(len(Tlist)):
@@ -613,7 +613,7 @@ class Reaction:
         elif isinstance(kf, Arrhenius):
             
             if kf.Tmin is not None and kf.Tmax is not None:
-                Tlist = 1.0/numpy.linspace(1.0/kf.Tmax.value, 1.0/kf.Tmin.value, 50)
+                Tlist = 1.0/numpy.linspace(1.0/kf.Tmax.value_si, 1.0/kf.Tmin.value_si, 50)
             else:
                 Tlist = 1.0/numpy.arange(0.0005, 0.0035, 0.0001)
                 
@@ -623,7 +623,7 @@ class Reaction:
                 klist[i] = kf.getRateCoefficient(Tlist[i]) / self.getEquilibriumConstant(Tlist[i])
     
             kr = Arrhenius()
-            kr.fitToData(Tlist, klist, kunits, kf.T0.value)
+            kr.fitToData(Tlist, klist, kunits, kf.T0.value_si)
             return kr
                     
         elif isinstance (kf, Chebyshev):
@@ -686,7 +686,7 @@ class Reaction:
         """
         cython.declare(E0=cython.double)
         # Determine barrier height
-        E0 = self.transitionState.E0.value - sum([spec.E0.value for spec in self.reactants])
+        E0 = self.transitionState.E0.value_si - sum([spec.E0.value_si for spec in self.reactants])
         # Determine TST rate constant at each temperature
         Qreac = 1.0
         for spec in self.reactants: Qreac *= spec.states.getPartitionFunction(T) / (constants.R * T / 101325.)
@@ -716,7 +716,7 @@ class Reaction:
         state, not the reactants or products, but is also generally less 
         accurate than the Eckart correction.
         """
-        frequency = abs(self.transitionState.frequency.value)
+        frequency = abs(self.transitionState.frequency.value_si)
         return 1.0 + (constants.h * constants.c * 100.0 * frequency / constants.kB / T)**2 / 24.0
     
     def calculateEckartTunnelingCorrection(self, T):
@@ -761,13 +761,13 @@ class Reaction:
         cython.declare(kappa=cython.double, E_kT=numpy.ndarray, f=numpy.ndarray, integral=cython.double)
         cython.declare(i=cython.int, tol=cython.double, fcrit=cython.double, E_kTmin=cython.double, E_kTmax=cython.double)
         
-        frequency = abs(self.transitionState.frequency.value)
+        frequency = abs(self.transitionState.frequency.value_si)
         
         # Calculate intermediate constants
-        dV1 = self.transitionState.E0.value - sum([spec.E0.value for spec in self.reactants]) # [=] J/mol
+        dV1 = self.transitionState.E0.value_si - sum([spec.E0.value_si for spec in self.reactants]) # [=] J/mol
         #if all([spec.states is not None for spec in self.products]):
             # Product data available, so use asymmetric Eckart correction
-        dV2 = self.transitionState.E0.value - sum([spec.E0.value for spec in self.products]) # [=] J/mol
+        dV2 = self.transitionState.E0.value_si - sum([spec.E0.value_si for spec in self.products]) # [=] J/mol
         #else:
             ## Product data not available, so use asymmetric Eckart correction
             #dV2 = dV1

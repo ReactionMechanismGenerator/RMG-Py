@@ -298,7 +298,7 @@ def simulate(reactionModel, reactionSystem, settings = None):
         # Finish simulation if any of the termination criteria are satisfied
         for term in reactionSystem.termination:
             if isinstance(term, TerminationTime):
-                if reactionSystem.t > term.time.value:
+                if reactionSystem.t > term.time.value_si:
                     terminated = True
                     break
             elif isinstance(term, TerminationConversion):
@@ -325,7 +325,8 @@ def loadChemkinOutput(outputFile, reactionModel):
     Load the species concentrations from a Chemkin Output file in a simulation
     and generate the reaction rates at each time point.
     """
-    from rmgpy.quantity import Quantity, constants
+    import rmgpy.constants as constants
+    from rmgpy.quantity import Quantity
 
     coreReactions = reactionModel.core.reactions
     edgeReactions = reactionModel.edge.reactions    
@@ -373,17 +374,17 @@ def loadChemkinOutput(outputFile, reactionModel):
            
                     line = f.readline()
 
-                totalConcentration = P.value/constants.R/T.value
+                totalConcentration = P.value_si/constants.R/T.value_si
                 coreSpeciesConcentrations.append([molefrac*totalConcentration for molefrac in molefractions])
                 coreRates = []
                 edgeRates = []
                 for reaction in coreReactions:                    
-                    rate = reaction.getRateCoefficient(T.value,P.value)
+                    rate = reaction.getRateCoefficient(T.value_si,P.value_si)
                     for reactant in reaction.reactants:
                         rate *= molefractions[speciesList.index(reactant)]*totalConcentration                    
                     coreRates.append(rate)
                 for reaction in edgeReactions:
-                    edgeRates.append(reaction.getRateCoefficient(T.value,P.value))
+                    edgeRates.append(reaction.getRateCoefficient(T.value_si,P.value_si))
 
                 if coreRates:
                     coreReactionRates.append(coreRates)

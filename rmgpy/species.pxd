@@ -25,7 +25,7 @@
 ################################################################################
 
 cimport rmgpy.constants as constants
-from quantity cimport Quantity
+from quantity cimport ScalarQuantity, ArrayQuantity
 from thermo cimport ThermoModel
 from statmech cimport StatesModel
 
@@ -33,8 +33,8 @@ from statmech cimport StatesModel
 
 cdef class LennardJones:
 
-    cdef public Quantity sigma
-    cdef public Quantity epsilon
+    cdef public ScalarQuantity sigma
+    cdef public ScalarQuantity epsilon
 
 ################################################################################
 
@@ -45,9 +45,9 @@ cdef class Species:
     cdef public ThermoModel thermo
     cdef public StatesModel states
     cdef public LennardJones lennardJones
-    cdef public Quantity E0
+    cdef public ScalarQuantity E0
     cdef public list molecule
-    cdef public Quantity molecularWeight
+    cdef public ScalarQuantity molecularWeight
     cdef public bint reactive
     cdef public object collisionModel
     
@@ -66,6 +66,6 @@ cdef class TransitionState:
     
     cdef public str label
     cdef public StatesModel states
-    cdef public Quantity E0
-    cdef public Quantity frequency
+    cdef public ScalarQuantity E0
+    cdef public ScalarQuantity frequency
     cdef public int degeneracy

@@ -164,7 +164,7 @@ def loadConfiguration(energyLog, geomLog, statesLog, extSymmetry, spinMultiplici
         frequencies = list(projectRotors(geom, F, rotors, linear, TS))
         
     elif len(states.modes) > 2:
-        frequencies = states.modes[2].frequencies.values
+        frequencies = states.modes[2].frequencies.value_si
         rotors = []
     else:
         frequencies = []
@@ -172,7 +172,7 @@ def loadConfiguration(energyLog, geomLog, statesLog, extSymmetry, spinMultiplici
 
     for mode in states.modes:
         if isinstance(mode, HarmonicOscillator):
-            mode.frequencies.values = numpy.array(frequencies, numpy.float) * freqScaleFactor
+            mode.frequencies.value_si = numpy.array(frequencies, numpy.float) * freqScaleFactor
 
     return E0, geom, states
 

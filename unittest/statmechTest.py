@@ -67,7 +67,7 @@ class TestTranslation(unittest.TestCase):
         from its repr() output with no loss of information.
         """
         exec('mode = %r' % self.mode)
-        self.assertAlmostEqual(self.mode.mass.value, mode.mass.value, 6)
+        self.assertAlmostEqual(self.mode.mass.value_si, mode.mass.value_si, 6)
         self.assertEqual(self.mode.mass.units, mode.mass.units)
         
     def testPickle(self):
@@ -77,7 +77,7 @@ class TestTranslation(unittest.TestCase):
         """
         import cPickle
         mode = cPickle.loads(cPickle.dumps(self.mode))
-        self.assertAlmostEqual(self.mode.mass.value, mode.mass.value, 6)
+        self.assertAlmostEqual(self.mode.mass.value_si, mode.mass.value_si, 6)
         self.assertEqual(self.mode.mass.units, mode.mass.units)
         
 ################################################################################
@@ -135,8 +135,8 @@ class TestRigidRotor(unittest.TestCase):
         """
         exec('mode = %r' % self.mode)
         self.assertEqual(self.mode.linear, mode.linear)
-        self.assertEqual(len(self.mode.inertia.values), len(mode.inertia.values))
-        for I1, I2 in zip(self.mode.inertia.values, mode.inertia.values):
+        self.assertEqual(len(self.mode.inertia.value_si), len(mode.inertia.value_si))
+        for I1, I2 in zip(self.mode.inertia.value_si, mode.inertia.value_si):
             self.assertAlmostEqual(I1 * 6.022e46, I2 * 6.022e46, 6)
         self.assertEqual(self.mode.inertia.units, mode.inertia.units)
         self.assertEqual(self.mode.symmetry, mode.symmetry)
@@ -149,8 +149,8 @@ class TestRigidRotor(unittest.TestCase):
         import cPickle
         mode = cPickle.loads(cPickle.dumps(self.mode))
         self.assertEqual(self.mode.linear, mode.linear)
-        self.assertEqual(len(self.mode.inertia.values), len(mode.inertia.values))
-        for I1, I2 in zip(self.mode.inertia.values, mode.inertia.values):
+        self.assertEqual(len(self.mode.inertia.value_si), len(mode.inertia.value_si))
+        for I1, I2 in zip(self.mode.inertia.value_si, mode.inertia.value_si):
             self.assertAlmostEqual(I1 * 6.022e46, I2 * 6.022e46, 6)
         self.assertEqual(self.mode.inertia.units, mode.inertia.units)
         self.assertEqual(self.mode.symmetry, mode.symmetry)
@@ -209,8 +209,8 @@ class TestHarmonicOscillator(unittest.TestCase):
         from its repr() output with no loss of information.
         """
         exec('mode = %r' % self.mode)
-        self.assertEqual(len(self.mode.frequencies.values), len(mode.frequencies.values))
-        for freq1, freq2 in zip(self.mode.frequencies.values, mode.frequencies.values):
+        self.assertEqual(len(self.mode.frequencies.value_si), len(mode.frequencies.value_si))
+        for freq1, freq2 in zip(self.mode.frequencies.value_si, mode.frequencies.value_si):
             self.assertAlmostEqual(freq1, freq2, 4)
         self.assertEqual(self.mode.frequencies.units, mode.frequencies.units)
         
@@ -221,8 +221,8 @@ class TestHarmonicOscillator(unittest.TestCase):
         """
         import cPickle
         mode = cPickle.loads(cPickle.dumps(self.mode))
-        self.assertEqual(len(self.mode.frequencies.values), len(mode.frequencies.values))
-        for freq1, freq2 in zip(self.mode.frequencies.values, mode.frequencies.values):
+        self.assertEqual(len(self.mode.frequencies.value_si), len(mode.frequencies.value_si))
+        for freq1, freq2 in zip(self.mode.frequencies.value_si, mode.frequencies.value_si):
             self.assertAlmostEqual(freq1, freq2, 4)
         self.assertEqual(self.mode.frequencies.units, mode.frequencies.units)
         
@@ -306,16 +306,16 @@ class TestHinderedRotor(unittest.TestCase):
         from its repr() output with no loss of information.
         """
         exec('mode = %r' % self.mode)
-        self.assertAlmostEqual(self.mode.barrier.value / 1000., mode.barrier.value / 1000., 4)
+        self.assertAlmostEqual(self.mode.barrier.value_si / 1000., mode.barrier.value_si / 1000., 4)
         self.assertEqual(self.mode.barrier.units, mode.barrier.units)
-        self.assertAlmostEqual(self.mode.inertia.value * 6.022e46, mode.inertia.value * 6.022e46, 4)
+        self.assertAlmostEqual(self.mode.inertia.value_si * 6.022e46, mode.inertia.value_si * 6.022e46, 4)
         self.assertEqual(self.mode.inertia.units, mode.inertia.units)
         self.assertEqual(self.mode.symmetry, mode.symmetry)
-        self.assertEqual(self.mode.fourier.values.shape[0], mode.fourier.values.shape[0])
-        self.assertEqual(self.mode.fourier.values.shape[1], mode.fourier.values.shape[1])
-        for i in range(self.mode.fourier.values.shape[0]):
-            for j in range(self.mode.fourier.values.shape[1]):
-                self.assertAlmostEqual(self.mode.fourier.values[i,j] / 1000., mode.fourier.values[i,j] / 1000., 4)
+        self.assertEqual(self.mode.fourier.value_si.shape[0], mode.fourier.value_si.shape[0])
+        self.assertEqual(self.mode.fourier.value_si.shape[1], mode.fourier.value_si.shape[1])
+        for i in range(self.mode.fourier.value_si.shape[0]):
+            for j in range(self.mode.fourier.value_si.shape[1]):
+                self.assertAlmostEqual(self.mode.fourier.value_si[i,j] / 1000., mode.fourier.value_si[i,j] / 1000., 4)
         
     def testPickle(self):
         """
@@ -324,16 +324,16 @@ class TestHinderedRotor(unittest.TestCase):
         """
         import cPickle
         mode = cPickle.loads(cPickle.dumps(self.mode))
-        self.assertAlmostEqual(self.mode.barrier.value / 1000., mode.barrier.value / 1000., 4)
+        self.assertAlmostEqual(self.mode.barrier.value_si / 1000., mode.barrier.value_si / 1000., 4)
         self.assertEqual(self.mode.barrier.units, mode.barrier.units)
-        self.assertAlmostEqual(self.mode.inertia.value * 6.022e46, mode.inertia.value * 6.022e46, 4)
+        self.assertAlmostEqual(self.mode.inertia.value_si * 6.022e46, mode.inertia.value_si * 6.022e46, 4)
         self.assertEqual(self.mode.inertia.units, mode.inertia.units)
         self.assertEqual(self.mode.symmetry, mode.symmetry)
-        self.assertEqual(self.mode.fourier.values.shape[0], mode.fourier.values.shape[0])
-        self.assertEqual(self.mode.fourier.values.shape[1], mode.fourier.values.shape[1])
-        for i in range(self.mode.fourier.values.shape[0]):
-            for j in range(self.mode.fourier.values.shape[1]):
-                self.assertAlmostEqual(self.mode.fourier.values[i,j] / 1000., mode.fourier.values[i,j] / 1000., 4)
+        self.assertEqual(self.mode.fourier.value_si.shape[0], mode.fourier.value_si.shape[0])
+        self.assertEqual(self.mode.fourier.value_si.shape[1], mode.fourier.value_si.shape[1])
+        for i in range(self.mode.fourier.value_si.shape[0]):
+            for j in range(self.mode.fourier.value_si.shape[1]):
+                self.assertAlmostEqual(self.mode.fourier.value_si[i,j] / 1000., mode.fourier.value_si[i,j] / 1000., 4)
     
     def testModerateBarrierRotor(self):
         """
@@ -370,7 +370,7 @@ class TestHinderedRotor(unittest.TestCase):
         V1 = hr1.getPotential(phi)
         V2 = hr2.getPotential(phi)
         
-        Vmax = hr1.barrier.value
+        Vmax = hr1.barrier.value_si
         for i in range(len(phi)):
             self.assertTrue(abs(V2[i] - V1[i]) / Vmax < 0.1)
 
@@ -417,7 +417,7 @@ class TestStatmechModel(unittest.TestCase):
         from its repr() output with no loss of information.
         """
         exec('mode = %r' % self.mode)
-        self.assertAlmostEqual(self.mode.mass.value, mode.mass.value, 6)
+        self.assertAlmostEqual(self.mode.mass.value_si, mode.mass.value_si, 6)
         self.assertEqual(self.mode.mass.units, mode.mass.units)
         
     def testPickle(self):
@@ -427,7 +427,7 @@ class TestStatmechModel(unittest.TestCase):
         """
         import cPickle
         mode = cPickle.loads(cPickle.dumps(self.mode))
-        self.assertAlmostEqual(self.mode.mass.value, mode.mass.value, 6)
+        self.assertAlmostEqual(self.mode.mass.value_si, mode.mass.value_si, 6)
         self.assertEqual(self.mode.mass.units, mode.mass.units)
         
 ################################################################################

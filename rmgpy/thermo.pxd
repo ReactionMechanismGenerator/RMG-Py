@@ -27,7 +27,7 @@
 cimport numpy
 
 cimport rmgpy.constants as constants
-from quantity cimport Quantity
+from quantity cimport ScalarQuantity, ArrayQuantity
 
 cdef extern from "math.h":
     double log(double)
@@ -36,7 +36,7 @@ cdef extern from "math.h":
 
 cdef class ThermoModel:
     
-    cdef public Quantity Tmin, Tmax
+    cdef public ScalarQuantity Tmin, Tmax
     cdef public str comment
     
     cpdef bint isTemperatureValid(ThermoModel self, double T) except -2
@@ -65,7 +65,8 @@ cdef class ThermoModel:
 
 cdef class ThermoData(ThermoModel):
 
-    cdef public Quantity Tdata, Cpdata, H298, S298
+    cdef public ArrayQuantity Tdata, Cpdata
+    cdef public ScalarQuantity H298, S298
     
     cpdef double getHeatCapacity(self, double T)
 
@@ -79,7 +80,7 @@ cdef class ThermoData(ThermoModel):
 
 cdef class Wilhoit(ThermoModel):
     
-    cdef public Quantity cp0, cpInf, B, H0, S0
+    cdef public ScalarQuantity cp0, cpInf, B, H0, S0
     cdef public double a0, a1, a2, a3
     
     cpdef double getHeatCapacity(self, double T)

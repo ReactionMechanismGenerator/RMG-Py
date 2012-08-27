@@ -230,17 +230,17 @@ class MEASURE:
         Nprod = len(self.network.products)
 
         network = self.network   
-        Tmin = self.Tmin.value
-        Tmax = self.Tmax.value
-        Tlist = self.Tlist.values
-        Pmin = self.Pmin.value
-        Pmax = self.Pmax.value
-        Plist = self.Plist.values
+        Tmin = self.Tmin.value_si
+        Tmax = self.Tmax.value_si
+        Tlist = self.Tlist.value_si
+        Pmin = self.Pmin.value_si
+        Pmax = self.Pmax.value_si
+        Plist = self.Plist.value_si
         method = self.method
         model = self.model
         
         # Calculate the rate coefficients
-        K = network.calculateRateCoefficients(Tlist, Plist, method, grainCount=self.grainCount, grainSize=self.grainSize.value)
+        K = network.calculateRateCoefficients(Tlist, Plist, method, grainCount=self.grainCount, grainSize=self.grainSize.value_si)
 
         # Fit interpolation model
         from rmgpy.reaction import Reaction

@@ -828,15 +828,15 @@ class KineticsDepository(Database):
             for label in entry.label.split(';'):
                 flib.write('{0:<23} '.format(label))
             if entry.data.Tmax is None:
-                Trange = '{0:g}    '.format(entry.data.Tmin.value)
+                Trange = '{0:g}    '.format(entry.data.Tmin.value_si)
             else:
-                Trange = '{0:g}-{1:g}    '.format(entry.data.Tmin.value, entry.data.Tmax.value)
+                Trange = '{0:g}-{1:g}    '.format(entry.data.Tmin.value_si, entry.data.Tmax.value_si)
             flib.write('{0:<12}'.format(Trange))
             flib.write('{0:11.2e} {1:9.2f} {2:9.2f} {3:11.2f} '.format(
-                            entry.data.A.value * factor,
-                            entry.data.n.value,
-                            entry.data.alpha.value,
-                            entry.data.E0.value / 4184.
+                            entry.data.A.value_si * factor,
+                            entry.data.n.value_si,
+                            entry.data.alpha.value_si,
+                            entry.data.E0.value_si / 4184.
                             ))
             if entry.data.A.isUncertaintyMultiplicative():
                 flib.write('*{0:<6g} '.format(entry.data.A.uncertainty))
@@ -1239,9 +1239,9 @@ class KineticsLibrary(Database):
                                 assert isinstance(old_kinetics, Arrhenius)
                                 kinetics = PDepArrhenius(pressures=([P],"atm"), arrhenius=[arrhenius], highPlimit=old_kinetics, comment=comment)
                             else:
-                                pressures = list(kinetics.pressures.values)
+                                pressures = list(kinetics.pressures.value_si)
                                 pressures.append(P*101325.)
-                                kinetics.pressures.values = numpy.array(pressures, numpy.float)
+                                kinetics.pressures.value_si = numpy.array(pressures, numpy.float)
                                 kinetics.arrhenius.append(arrhenius)
                             reaction.kinetics = kinetics
                             
@@ -1370,9 +1370,9 @@ class KineticsLibrary(Database):
         
         def writeArrhenius(f, arrhenius):
             f.write(' {0:<12.3E} {1:>7.3f} {2:>11.2f}    {3}{4:g} {5:g} {6:g}\n'.format(
-                arrhenius.A.value,
-                arrhenius.n.value,
-                arrhenius.Ea.value / 4.184,
+                arrhenius.A.value_si,
+                arrhenius.n.value_si,
+                arrhenius.Ea.value_si / 4.184,
                 '*' if arrhenius.A.isUncertaintyMultiplicative() else '',
                 arrhenius.A.uncertainty,
                 arrhenius.n.uncertainty,
@@ -1494,33 +1494,33 @@ class KineticsLibrary(Database):
                         f.write(eff_line.strip() + '\n')
                     if isinstance(rate, Lindemann):
                         f.write('     LOW  /  {0:10.3e} {1:9.3f} {2:10.2f}/\n'.format(
-                            rate.arrheniusLow.A.value,
-                            rate.arrheniusLow.n.value,
-                            rate.arrheniusLow.Ea.value / 4.184,
+                            rate.arrheniusLow.A.value_si,
+                            rate.arrheniusLow.n.value_si,
+                            rate.arrheniusLow.Ea.value_si / 4.184,
                         ))
                     if isinstance(rate, Troe):
                         if rate.T2 is not None:
                             f.write('     TROE /  {0:10.4f} {1:10.2g} {2:10.2g} {3:10.2g}/\n'.format(
-                                rate.alpha.value,
-                                rate.T3.value,
-                                rate.T1.value,
-                                rate.T2.value,
+                                rate.alpha.value_si,
+                                rate.T3.value_si,
+                                rate.T1.value_si,
+                                rate.T2.value_si,
                             ))
                         else:
                             f.write('     TROE /  {0:10.4f} {1:10.2g} {2:10.2g}/\n'.format(
-                                rate.alpha.value,
-                                rate.T3.value,
-                                rate.T1.value,
+                                rate.alpha.value_si,
+                                rate.T3.value_si,
+                                rate.T1.value_si,
                             ))
                         
                 elif isinstance(rate, PDepArrhenius):
                     writeArrhenius(f, rate.arrhenius[-1])
-                    for pressure, arrhenius in zip(rate.pressures.values, rate.arrhenius):
+                    for pressure, arrhenius in zip(rate.pressures.value_si, rate.arrhenius):
                         f.write('     PLOG /  {0:10g} {1:10.3e} {2:9.3f} {3:10.2f} /\n'.format(
                             pressure / 1e5,
-                            arrhenius.A.value,
-                            arrhenius.n.value,
-                            arrhenius.Ea.value / 4.184,
+                            arrhenius.A.value_si,
+                            arrhenius.n.value_si,
+                            arrhenius.Ea.value_si / 4.184,
                         ))
                 else:
                     raise DatabaseError('Unexpected kinetics type "{0}" encountered while saving old kinetics library (reactions.txt).'.format(rate.__class__))
@@ -1674,9 +1674,9 @@ class KineticsGroups(Database):
 
         # Also include reaction-path degeneracy
         if isinstance(kinetics, KineticsData):
-            kinetics.kdata.values *= degeneracy
+            kinetics.kdata.value_si *= degeneracy
         elif isinstance(kinetics, Arrhenius):
-            kinetics.A.value *= degeneracy
+            kinetics.A.value_si *= degeneracy
         elif kinetics is not None:
             raise KineticsError('Unexpected kinetics type "{0}" encountered while generating kinetics from group values.'.format(kinetics.__class__))
         kinetics.comment += "Multiplied by reaction path degeneracy {0}".format(degeneracy)
@@ -1691,11 +1691,11 @@ class KineticsGroups(Database):
         :class:`Arrhenius` objects.
         """
         if isinstance(kinetics1, KineticsData) and isinstance(kinetics2, KineticsData):
-            if len(kinetics1.Tdata.values) != len(kinetics2.Tdata.values) or any([T1 != T2 for T1, T2 in zip(kinetics1.Tdata.values, kinetics2.Tdata.values)]):
+            if len(kinetics1.Tdata.value_si) != len(kinetics2.Tdata.value_si) or any([T1 != T2 for T1, T2 in zip(kinetics1.Tdata.value_si, kinetics2.Tdata.value_si)]):
                 raise KineticsError('Cannot add these KineticsData objects due to their having different temperature points.')
             kinetics = KineticsData(
-                Tdata = (kinetics1.Tdata.values, kinetics2.Tdata.units),
-                kdata = (kinetics1.kdata.values * kinetics2.kdata.values, kinetics1.kdata.units),
+                Tdata = (kinetics1.Tdata.value, kinetics2.Tdata.units),
+                kdata = (kinetics1.kdata.value * kinetics2.kdata.value, kinetics1.kdata.units),
             )
         elif isinstance(kinetics1, Arrhenius) and isinstance(kinetics2, Arrhenius):
             assert kinetics1.A.units == kinetics2.A.units
@@ -1712,28 +1712,28 @@ class KineticsGroups(Database):
             raise KineticsError('Unable to multiply kinetics types "{0}" and "{1}".'.format(kinetics1.__class__, kinetics2.__class__))
         
         if kinetics1.Tmin is not None and kinetics2.Tmin is not None:
-            kinetics.Tmin = kinetics1.Tmin if kinetics1.Tmin.value > kinetics2.Tmin.value else kinetics2.Tmin
+            kinetics.Tmin = kinetics1.Tmin if kinetics1.Tmin.value_si > kinetics2.Tmin.value_si else kinetics2.Tmin
         elif kinetics1.Tmin is not None and kinetics2.Tmin is None:
             kinetics.Tmin = kinetics1.Tmin
         elif kinetics1.Tmin is None and kinetics2.Tmin is not None:
             kinetics.Tmin = kinetics2.Tmin
         
         if kinetics1.Tmax is not None and kinetics2.Tmax is not None:
-            kinetics.Tmax = kinetics1.Tmax if kinetics1.Tmax.value < kinetics2.Tmax.value else kinetics2.Tmax
+            kinetics.Tmax = kinetics1.Tmax if kinetics1.Tmax.value_si < kinetics2.Tmax.value_si else kinetics2.Tmax
         elif kinetics1.Tmax is not None and kinetics2.Tmax is None:
             kinetics.Tmax = kinetics1.Tmax
         elif kinetics1.Tmax is None and kinetics2.Tmax is not None:
             kinetics.Tmax = kinetics2.Tmax
         
         if kinetics1.Pmin is not None and kinetics2.Pmin is not None:
-            kinetics.Pmin = kinetics1.Pmin if kinetics1.Pmin.value > kinetics2.Pmin.value else kinetics2.Pmin
+            kinetics.Pmin = kinetics1.Pmin if kinetics1.Pmin.value_si > kinetics2.Pmin.value_si else kinetics2.Pmin
         elif kinetics1.Pmin is not None and kinetics2.Pmin is None:
             kinetics.Pmin = kinetics1.Pmin
         elif kinetics1.Pmin is None and kinetics2.Pmin is not None:
             kinetics.Pmin = kinetics2.Pmin
         
         if kinetics1.Pmax is not None and kinetics2.Pmax is not None:
-            kinetics.Pmax = kinetics1.Pmax if kinetics1.Pmax.value < kinetics2.Pmax.value else kinetics2.Pmax
+            kinetics.Pmax = kinetics1.Pmax if kinetics1.Pmax.value_si < kinetics2.Pmax.value_si else kinetics2.Pmax
         elif kinetics1.Pmax is not None and kinetics2.Pmax is None:
             kinetics.Pmax = kinetics1.Pmax
         elif kinetics1.Pmax is None and kinetics2.Pmax is not None:
@@ -2285,7 +2285,7 @@ class KineticsFamily(Database):
                 ),
                 rank = 3,
             )
-            new_entry.data.A.value /= entry.item.degeneracy
+            new_entry.data.A.value_si /= entry.item.degeneracy
             self.rules.entries[index] = new_entry
             index += 1
         
@@ -2329,7 +2329,7 @@ class KineticsFamily(Database):
                 ),
                 rank = 3,
             )
-            new_entry.data.A.value /= item.degeneracy
+            new_entry.data.A.value_si /= item.degeneracy
             self.rules.entries[index] = new_entry
             index += 1
     
@@ -3046,7 +3046,7 @@ class KineticsFamily(Database):
                 if kinetics is not None:
                     # The rules are defined on a per-site basis, so we need to include the degeneracy manually
                     assert isinstance(kinetics, ArrheniusEP)
-                    kinetics.A.value *= degeneracy
+                    kinetics.A.value_si *= degeneracy
                     kinetics.comment += "Matched rule {0} {1} in {2}\n".format(entry.index, entry.label, depository.label)
                     kinetics.comment += "Multiplied by reaction path degeneracy {0}".format(degeneracy)
         else:
@@ -3122,17 +3122,17 @@ class KineticsFamily(Database):
             alpha = 0,
             E0 = (0,"kJ/mol"),
         )
-        averagedKinetics.A.value = 1.0
+        averagedKinetics.A.value_si = 1.0
         count = len(kineticsList)
         for kinetics in kineticsList:
-            averagedKinetics.A.value *= kinetics.A.value
-            averagedKinetics.n.value += kinetics.n.value
-            averagedKinetics.alpha.value += kinetics.alpha.value
-            averagedKinetics.E0.value += kinetics.E0.value
-        averagedKinetics.A.value **= (1.0/count)
-        averagedKinetics.n.value /= count
-        averagedKinetics.alpha.value /= count
-        averagedKinetics.E0.value /= count
+            averagedKinetics.A.value_si *= kinetics.A.value_si
+            averagedKinetics.n.value_si += kinetics.n.value_si
+            averagedKinetics.alpha.value_si += kinetics.alpha.value_si
+            averagedKinetics.E0.value_si += kinetics.E0.value_si
+        averagedKinetics.A.value_si **= (1.0/count)
+        averagedKinetics.n.value_si /= count
+        averagedKinetics.alpha.value_si /= count
+        averagedKinetics.E0.value_si /= count
         return averagedKinetics
         
     def __getTemplateLabel(self, template):
@@ -3162,7 +3162,7 @@ class KineticsFamily(Database):
                 kinetics.comment += '(Average of {0})'.format(
                     ' + '.join([k.comment for k, t in kineticsList]),
                 )
-                kinetics.A.value *= degeneracy
+                kinetics.A.value_si *= degeneracy
                 kinetics.comment += ' [{0}]'.format(','.join([g.label for g in template]))
                 return kinetics
             

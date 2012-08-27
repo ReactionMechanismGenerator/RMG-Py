@@ -84,7 +84,7 @@ class LennardJones:
         if self.epsilon.units == 'K':
             # We also accept K as valid units for epsilon
             # Let's convert it to proper energy units
-            self.epsilon.value *= constants.kB
+            self.epsilon.value_si *= constants.kB
             self.epsilon.uncertainty *= constants.kB
             self.epsilon.units = 'J'
 

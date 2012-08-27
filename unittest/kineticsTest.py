@@ -27,9 +27,9 @@ class TestKineticsModel(unittest.TestCase):
         """
         Test that the temperature range is set and handled appropriately.
         """
-        self.assertEqual(self.kinetics.Tmin.value, 300)
+        self.assertEqual(self.kinetics.Tmin.value_si, 300)
         self.assertEqual(self.kinetics.Tmin.units, "K")
-        self.assertEqual(self.kinetics.Tmax.value, 2000)
+        self.assertEqual(self.kinetics.Tmax.value_si, 2000)
         self.assertEqual(self.kinetics.Tmax.units, "K")
         self.assertFalse(self.kinetics.isTemperatureValid(200))
         self.assertTrue(self.kinetics.isTemperatureValid(300))
@@ -46,9 +46,9 @@ class TestKineticsModel(unittest.TestCase):
         """
         Test that the pressure range is set and handled appropriately.
         """
-        self.assertEqual(self.kinetics.Pmin.value, 1e3)
+        self.assertEqual(self.kinetics.Pmin.value_si, 1e3)
         self.assertEqual(self.kinetics.Pmin.units, "bar")
-        self.assertEqual(self.kinetics.Pmax.value, 1e7)
+        self.assertEqual(self.kinetics.Pmax.value_si, 1e7)
         self.assertEqual(self.kinetics.Pmax.units, "bar")
         self.assertFalse(self.kinetics.isPressureValid(1e2))
         self.assertTrue(self.kinetics.isPressureValid(1e3))
@@ -65,13 +65,13 @@ class TestKineticsModel(unittest.TestCase):
         """
         import cPickle
         kinetics = cPickle.loads(cPickle.dumps(self.kinetics))
-        self.assertEqual(self.kinetics.Tmin.value, kinetics.Tmin.value)
+        self.assertEqual(self.kinetics.Tmin.value_si, kinetics.Tmin.value_si)
         self.assertEqual(self.kinetics.Tmin.units, kinetics.Tmin.units)
-        self.assertEqual(self.kinetics.Tmax.value, kinetics.Tmax.value)
+        self.assertEqual(self.kinetics.Tmax.value_si, kinetics.Tmax.value_si)
         self.assertEqual(self.kinetics.Tmax.units, kinetics.Tmax.units)
-        self.assertEqual(self.kinetics.Pmin.value, kinetics.Pmin.value)
+        self.assertEqual(self.kinetics.Pmin.value_si, kinetics.Pmin.value_si)
         self.assertEqual(self.kinetics.Pmin.units, kinetics.Pmin.units)
-        self.assertEqual(self.kinetics.Pmax.value, kinetics.Pmax.value)
+        self.assertEqual(self.kinetics.Pmax.value_si, kinetics.Pmax.value_si)
         self.assertEqual(self.kinetics.Pmax.units, kinetics.Pmax.units)
         self.assertEqual(self.kinetics.comment, kinetics.comment)
     
@@ -82,13 +82,13 @@ class TestKineticsModel(unittest.TestCase):
 #        """
 #        # KineticsModel does not have repr since it must be from derived class.
 #        exec('kinetics = {0!r}'.format(self.kinetics))
-#        self.assertEqual(self.kinetics.Tmin.value, kinetics.Tmin.value)
+#        self.assertEqual(self.kinetics.Tmin.value_si, kinetics.Tmin.value_si)
 #        self.assertEqual(self.kinetics.Tmin.units, kinetics.Tmin.units)
-#        self.assertEqual(self.kinetics.Tmax.value, kinetics.Tmax.value)
+#        self.assertEqual(self.kinetics.Tmax.value_si, kinetics.Tmax.value_si)
 #        self.assertEqual(self.kinetics.Tmax.units, kinetics.Tmax.units)
-#        self.assertEqual(self.kinetics.Pmin.value, kinetics.Pmin.value)
+#        self.assertEqual(self.kinetics.Pmin.value_si, kinetics.Pmin.value_si)
 #        self.assertEqual(self.kinetics.Pmin.units, kinetics.Pmin.units)
-#        self.assertEqual(self.kinetics.Pmax.value, kinetics.Pmax.value)
+#        self.assertEqual(self.kinetics.Pmax.value_si, kinetics.Pmax.value_si)
 #        self.assertEqual(self.kinetics.Pmax.units, kinetics.Pmax.units)
 #        self.assertEqual(self.kinetics.comment, kinetics.comment)
         
@@ -132,17 +132,17 @@ class TestKineticsData(unittest.TestCase):
         """
         import cPickle
         kinetics = cPickle.loads(cPickle.dumps(self.kinetics))
-        self.assertEqual(len(self.kinetics.Tdata.values), len(kinetics.Tdata.values))
-        for T0, T in zip(self.kinetics.Tdata.values, kinetics.Tdata.values):
+        self.assertEqual(len(self.kinetics.Tdata.value_si), len(kinetics.Tdata.value_si))
+        for T0, T in zip(self.kinetics.Tdata.value_si, kinetics.Tdata.value_si):
             self.assertEqual(T0, T)
         self.assertEqual(self.kinetics.Tdata.units, kinetics.Tdata.units)
-        self.assertEqual(len(self.kinetics.kdata.values), len(kinetics.kdata.values))
-        for k0, k in zip(self.kinetics.kdata.values, kinetics.kdata.values):
+        self.assertEqual(len(self.kinetics.kdata.value_si), len(kinetics.kdata.value_si))
+        for k0, k in zip(self.kinetics.kdata.value_si, kinetics.kdata.value_si):
             self.assertEqual(k0, k)
         self.assertEqual(self.kinetics.kdata.units, kinetics.kdata.units)
-        self.assertEqual(self.kinetics.Tmin.value, kinetics.Tmin.value)
+        self.assertEqual(self.kinetics.Tmin.value_si, kinetics.Tmin.value_si)
         self.assertEqual(self.kinetics.Tmin.units, kinetics.Tmin.units)
-        self.assertEqual(self.kinetics.Tmax.value, kinetics.Tmax.value)
+        self.assertEqual(self.kinetics.Tmax.value_si, kinetics.Tmax.value_si)
         self.assertEqual(self.kinetics.Tmax.units, kinetics.Tmax.units)
         self.assertEqual(self.kinetics.Pmin, kinetics.Pmin)
         self.assertEqual(self.kinetics.Pmax, kinetics.Pmax)
@@ -154,17 +154,17 @@ class TestKineticsData(unittest.TestCase):
         output with no loss of information.
         """
         exec('kinetics = {0!r}'.format(self.kinetics))
-        self.assertEqual(len(self.kinetics.Tdata.values), len(kinetics.Tdata.values))
-        for T0, T in zip(self.kinetics.Tdata.values, kinetics.Tdata.values):
+        self.assertEqual(len(self.kinetics.Tdata.value_si), len(kinetics.Tdata.value_si))
+        for T0, T in zip(self.kinetics.Tdata.value_si, kinetics.Tdata.value_si):
             self.assertEqual(T0, T)
         self.assertEqual(self.kinetics.Tdata.units, kinetics.Tdata.units)
-        self.assertEqual(len(self.kinetics.kdata.values), len(kinetics.kdata.values))
-        for k0, k in zip(self.kinetics.kdata.values, kinetics.kdata.values):
+        self.assertEqual(len(self.kinetics.kdata.value_si), len(kinetics.kdata.value_si))
+        for k0, k in zip(self.kinetics.kdata.value_si, kinetics.kdata.value_si):
             self.assertAlmostEqual(k0, k, 2)
         self.assertEqual(self.kinetics.kdata.units, kinetics.kdata.units)
-        self.assertEqual(self.kinetics.Tmin.value, kinetics.Tmin.value)
+        self.assertEqual(self.kinetics.Tmin.value_si, kinetics.Tmin.value_si)
         self.assertEqual(self.kinetics.Tmin.units, kinetics.Tmin.units)
-        self.assertEqual(self.kinetics.Tmax.value, kinetics.Tmax.value)
+        self.assertEqual(self.kinetics.Tmax.value_si, kinetics.Tmax.value_si)
         self.assertEqual(self.kinetics.Tmax.units, kinetics.Tmax.units)
         self.assertEqual(self.kinetics.Pmin, kinetics.Pmin)
         self.assertEqual(self.kinetics.Pmax, kinetics.Pmax)
@@ -213,7 +213,7 @@ class TestArrhenius(unittest.TestCase):
         Tlist = [300,400,500,600,700,800,900,1000,1100,1200,1300,1400,1500]
         k0list = [self.kinetics.getRateCoefficient(T) for T in Tlist]
         self.kinetics.changeT0(1)
-        self.assertEqual(self.kinetics.T0.value, 1)
+        self.assertEqual(self.kinetics.T0.value_si, 1)
         self.assertEqual(self.kinetics.T0.units, "K")
         for T, k0 in zip(Tlist, k0list):
             self.assertAlmostEqual(k0 / self.kinetics.getRateCoefficient(T), 1, 6)
@@ -225,14 +225,14 @@ class TestArrhenius(unittest.TestCase):
         Tdata = numpy.array([300,400,500,600,700,800,900,1000,1100,1200,1300,1400,1500], numpy.float)
         kdata = numpy.array([self.kinetics.getRateCoefficient(T) for T in Tdata], numpy.float)
         kinetics = Arrhenius().fitToData(Tdata, kdata, kunits="m^3/(mol*s)", T0=300)
-        self.assertEqual(self.kinetics.T0.value, 300)
+        self.assertEqual(self.kinetics.T0.value_si, 300)
         self.assertEqual(self.kinetics.T0.units, "K")
         for T, k in zip(Tdata, kdata):
             self.assertAlmostEqual(k / kinetics.getRateCoefficient(T), 1, 6)
-        self.assertAlmostEqual(kinetics.A.value / self.kinetics.A.value, 1, 4)
-        self.assertAlmostEqual(kinetics.n.value / self.kinetics.n.value, 1, 4)
-        self.assertAlmostEqual(kinetics.Ea.value / self.kinetics.Ea.value, 1, 4)
-        self.assertAlmostEqual(kinetics.T0.value / self.kinetics.T0.value, 1, 4)
+        self.assertAlmostEqual(kinetics.A.value_si / self.kinetics.A.value_si, 1, 4)
+        self.assertAlmostEqual(kinetics.n.value_si / self.kinetics.n.value_si, 1, 4)
+        self.assertAlmostEqual(kinetics.Ea.value_si / self.kinetics.Ea.value_si, 1, 4)
+        self.assertAlmostEqual(kinetics.T0.value_si / self.kinetics.T0.value_si, 1, 4)
         
     def testPickle(self):
         """
@@ -241,17 +241,17 @@ class TestArrhenius(unittest.TestCase):
         """
         import cPickle
         kinetics = cPickle.loads(cPickle.dumps(self.kinetics))
-        self.assertEqual(self.kinetics.A.value, kinetics.A.value)
+        self.assertEqual(self.kinetics.A.value_si, kinetics.A.value_si)
         self.assertEqual(self.kinetics.A.units, kinetics.A.units)
-        self.assertEqual(self.kinetics.n.value, kinetics.n.value)
+        self.assertEqual(self.kinetics.n.value_si, kinetics.n.value_si)
         self.assertEqual(self.kinetics.n.units, kinetics.n.units)
-        self.assertEqual(self.kinetics.T0.value, kinetics.T0.value)
+        self.assertEqual(self.kinetics.T0.value_si, kinetics.T0.value_si)
         self.assertEqual(self.kinetics.T0.units, kinetics.T0.units)
-        self.assertEqual(self.kinetics.Ea.value, kinetics.Ea.value)
+        self.assertEqual(self.kinetics.Ea.value_si, kinetics.Ea.value_si)
         self.assertEqual(self.kinetics.Ea.units, kinetics.Ea.units)
-        self.assertEqual(self.kinetics.Tmin.value, kinetics.Tmin.value)
+        self.assertEqual(self.kinetics.Tmin.value_si, kinetics.Tmin.value_si)
         self.assertEqual(self.kinetics.Tmin.units, kinetics.Tmin.units)
-        self.assertEqual(self.kinetics.Tmax.value, kinetics.Tmax.value)
+        self.assertEqual(self.kinetics.Tmax.value_si, kinetics.Tmax.value_si)
         self.assertEqual(self.kinetics.Tmax.units, kinetics.Tmax.units)
         self.assertEqual(self.kinetics.Pmin, kinetics.Pmin)
         self.assertEqual(self.kinetics.Pmax, kinetics.Pmax)
@@ -263,17 +263,17 @@ class TestArrhenius(unittest.TestCase):
         output with no loss of information.
         """
         exec('kinetics = {0!r}'.format(self.kinetics))
-        self.assertEqual(self.kinetics.A.value, kinetics.A.value)
+        self.assertEqual(self.kinetics.A.value_si, kinetics.A.value_si)
         self.assertEqual(self.kinetics.A.units, kinetics.A.units)
-        self.assertEqual(self.kinetics.n.value, kinetics.n.value)
+        self.assertEqual(self.kinetics.n.value_si, kinetics.n.value_si)
         self.assertEqual(self.kinetics.n.units, kinetics.n.units)
-        self.assertEqual(self.kinetics.T0.value, kinetics.T0.value)
+        self.assertEqual(self.kinetics.T0.value_si, kinetics.T0.value_si)
         self.assertEqual(self.kinetics.T0.units, kinetics.T0.units)
-        self.assertEqual(self.kinetics.Ea.value, kinetics.Ea.value)
+        self.assertEqual(self.kinetics.Ea.value_si, kinetics.Ea.value_si)
         self.assertEqual(self.kinetics.Ea.units, kinetics.Ea.units)
-        self.assertEqual(self.kinetics.Tmin.value, kinetics.Tmin.value)
+        self.assertEqual(self.kinetics.Tmin.value_si, kinetics.Tmin.value_si)
         self.assertEqual(self.kinetics.Tmin.units, kinetics.Tmin.units)
-        self.assertEqual(self.kinetics.Tmax.value, kinetics.Tmax.value)
+        self.assertEqual(self.kinetics.Tmax.value_si, kinetics.Tmax.value_si)
         self.assertEqual(self.kinetics.Tmax.units, kinetics.Tmax.units)
         self.assertEqual(self.kinetics.Pmin, kinetics.Pmin)
         self.assertEqual(self.kinetics.Pmax, kinetics.Pmax)
@@ -321,7 +321,7 @@ class TestArrheniusEP(unittest.TestCase):
         """
         for dHrxn in [-100000, 0, 100000]:
             Ea0 = self.kinetics.getActivationEnergy(dHrxn)
-            Ea = self.kinetics.alpha.value * dHrxn + self.kinetics.E0.value
+            Ea = self.kinetics.alpha.value_si * dHrxn + self.kinetics.E0.value_si
             self.assertAlmostEqual(Ea0 / Ea, 1, 6)
     
     def TestToArrhenius(self):
@@ -331,14 +331,14 @@ class TestArrheniusEP(unittest.TestCase):
         for dHrxn in [-100000, 0, 100000]:
             kinetics = self.kinetics.toArrhenius(dHrxn)
             Ea0 = self.kinetics.getActivationEnergy(dHrxn)
-            Ea = self.kinetics.alpha.value * dHrxn + self.kinetics.E0.value
+            Ea = self.kinetics.alpha.value_si * dHrxn + self.kinetics.E0.value_si
             self.assertAlmostEqual(Ea0 / Ea, 1, 6)
             self.assertAlmostEqual(Ea0 / kinetics.Ea, 1, 6)
-            self.assertAlmostEqual(self.kinetics.A.value / kinetics.A.value, 1, 6)
-            self.assertAlmostEqual(self.kinetics.n.value / kinetics.n.value, 1, 6)
-            self.assertEqual(self.kinetics.Tmin.value, kinetics.Tmin.value)
+            self.assertAlmostEqual(self.kinetics.A.value_si / kinetics.A.value_si, 1, 6)
+            self.assertAlmostEqual(self.kinetics.n.value_si / kinetics.n.value_si, 1, 6)
+            self.assertEqual(self.kinetics.Tmin.value_si, kinetics.Tmin.value_si)
             self.assertEqual(self.kinetics.Tmin.units, kinetics.Tmin.units)
-            self.assertEqual(self.kinetics.Tmax.value, kinetics.Tmax.value)
+            self.assertEqual(self.kinetics.Tmax.value_si, kinetics.Tmax.value_si)
             self.assertEqual(self.kinetics.Tmax.units, kinetics.Tmax.units)
             self.assertEqual(self.kinetics.Pmin, kinetics.Pmin)
             self.assertEqual(self.kinetics.Pmax, kinetics.Pmax)
@@ -353,14 +353,14 @@ class TestArrheniusEP(unittest.TestCase):
         import cPickle
         kinetics = cPickle.loads(cPickle.dumps(self.kinetics))
         
-        self.assertAlmostEqual(self.kinetics.A.value, kinetics.A.value, 4)
-        self.assertAlmostEqual(self.kinetics.n.value, kinetics.n.value, 4)
-        self.assertAlmostEqual(self.kinetics.alpha.value, kinetics.alpha.value, 4)
-        self.assertAlmostEqual(self.kinetics.E0.value, kinetics.E0.value, 4)
+        self.assertAlmostEqual(self.kinetics.A.value_si, kinetics.A.value_si, 4)
+        self.assertAlmostEqual(self.kinetics.n.value_si, kinetics.n.value_si, 4)
+        self.assertAlmostEqual(self.kinetics.alpha.value_si, kinetics.alpha.value_si, 4)
+        self.assertAlmostEqual(self.kinetics.E0.value_si, kinetics.E0.value_si, 4)
 
-        self.assertEqual(self.kinetics.Tmin.value, kinetics.Tmin.value)
+        self.assertEqual(self.kinetics.Tmin.value_si, kinetics.Tmin.value_si)
         self.assertEqual(self.kinetics.Tmin.units, kinetics.Tmin.units)
-        self.assertEqual(self.kinetics.Tmax.value, kinetics.Tmax.value)
+        self.assertEqual(self.kinetics.Tmax.value_si, kinetics.Tmax.value_si)
         self.assertEqual(self.kinetics.Tmax.units, kinetics.Tmax.units)
         self.assertEqual(self.kinetics.Pmin, kinetics.Pmin)
         self.assertEqual(self.kinetics.Pmax, kinetics.Pmax)
@@ -374,14 +374,14 @@ class TestArrheniusEP(unittest.TestCase):
 
         exec('kinetics = {0!r}'.format(self.kinetics))
         
-        self.assertAlmostEqual(self.kinetics.A.value, kinetics.A.value, 4)
-        self.assertAlmostEqual(self.kinetics.n.value, kinetics.n.value, 4)
-        self.assertAlmostEqual(self.kinetics.alpha.value, kinetics.alpha.value, 4)
-        self.assertAlmostEqual(self.kinetics.E0.value, kinetics.E0.value, 4)
+        self.assertAlmostEqual(self.kinetics.A.value_si, kinetics.A.value_si, 4)
+        self.assertAlmostEqual(self.kinetics.n.value_si, kinetics.n.value_si, 4)
+        self.assertAlmostEqual(self.kinetics.alpha.value_si, kinetics.alpha.value_si, 4)
+        self.assertAlmostEqual(self.kinetics.E0.value_si, kinetics.E0.value_si, 4)
 
-        self.assertEqual(self.kinetics.Tmin.value, kinetics.Tmin.value)
+        self.assertEqual(self.kinetics.Tmin.value_si, kinetics.Tmin.value_si)
         self.assertEqual(self.kinetics.Tmin.units, kinetics.Tmin.units)
-        self.assertEqual(self.kinetics.Tmax.value, kinetics.Tmax.value)
+        self.assertEqual(self.kinetics.Tmax.value_si, kinetics.Tmax.value_si)
         self.assertEqual(self.kinetics.Tmax.units, kinetics.Tmax.units)
         self.assertEqual(self.kinetics.Pmin, kinetics.Pmin)
         self.assertEqual(self.kinetics.Pmax, kinetics.Pmax)
@@ -451,14 +451,14 @@ class TestMultiKinetics(unittest.TestCase):
         self.assertEqual(len(self.kinetics.kineticsList), Narrh)
         self.assertEqual(len(kinetics.kineticsList), Narrh)
         for i in range(Narrh):
-            self.assertEqual(self.kinetics.kineticsList[i].A.value, kinetics.kineticsList[i].A.value)
-            self.assertEqual(self.kinetics.kineticsList[i].n.value, kinetics.kineticsList[i].n.value)
-            self.assertEqual(self.kinetics.kineticsList[i].T0.value, kinetics.kineticsList[i].T0.value)
-            self.assertEqual(self.kinetics.kineticsList[i].Ea.value, kinetics.kineticsList[i].Ea.value)
+            self.assertEqual(self.kinetics.kineticsList[i].A.value_si, kinetics.kineticsList[i].A.value_si)
+            self.assertEqual(self.kinetics.kineticsList[i].n.value_si, kinetics.kineticsList[i].n.value_si)
+            self.assertEqual(self.kinetics.kineticsList[i].T0.value_si, kinetics.kineticsList[i].T0.value_si)
+            self.assertEqual(self.kinetics.kineticsList[i].Ea.value_si, kinetics.kineticsList[i].Ea.value_si)
 
-        self.assertEqual(self.kinetics.Tmin.value, kinetics.Tmin.value)
+        self.assertEqual(self.kinetics.Tmin.value_si, kinetics.Tmin.value_si)
         self.assertEqual(self.kinetics.Tmin.units, kinetics.Tmin.units)
-        self.assertEqual(self.kinetics.Tmax.value, kinetics.Tmax.value)
+        self.assertEqual(self.kinetics.Tmax.value_si, kinetics.Tmax.value_si)
         self.assertEqual(self.kinetics.Tmax.units, kinetics.Tmax.units)
         self.assertEqual(self.kinetics.Pmin, kinetics.Pmin)
         self.assertEqual(self.kinetics.Pmax, kinetics.Pmax)
@@ -476,14 +476,14 @@ class TestMultiKinetics(unittest.TestCase):
         self.assertEqual(len(self.kinetics.kineticsList), Narrh)
         self.assertEqual(len(kinetics.kineticsList), Narrh)
         for i in range(Narrh):
-            self.assertEqual(self.kinetics.kineticsList[i].A.value, kinetics.kineticsList[i].A.value)
-            self.assertEqual(self.kinetics.kineticsList[i].n.value, kinetics.kineticsList[i].n.value)
-            self.assertEqual(self.kinetics.kineticsList[i].T0.value, kinetics.kineticsList[i].T0.value)
-            self.assertEqual(self.kinetics.kineticsList[i].Ea.value, kinetics.kineticsList[i].Ea.value)
+            self.assertEqual(self.kinetics.kineticsList[i].A.value_si, kinetics.kineticsList[i].A.value_si)
+            self.assertEqual(self.kinetics.kineticsList[i].n.value_si, kinetics.kineticsList[i].n.value_si)
+            self.assertEqual(self.kinetics.kineticsList[i].T0.value_si, kinetics.kineticsList[i].T0.value_si)
+            self.assertEqual(self.kinetics.kineticsList[i].Ea.value_si, kinetics.kineticsList[i].Ea.value_si)
 
-        self.assertEqual(self.kinetics.Tmin.value, kinetics.Tmin.value)
+        self.assertEqual(self.kinetics.Tmin.value_si, kinetics.Tmin.value_si)
         self.assertEqual(self.kinetics.Tmin.units, kinetics.Tmin.units)
-        self.assertEqual(self.kinetics.Tmax.value, kinetics.Tmax.value)
+        self.assertEqual(self.kinetics.Tmax.value_si, kinetics.Tmax.value_si)
         self.assertEqual(self.kinetics.Tmax.units, kinetics.Tmax.units)
         self.assertEqual(self.kinetics.Pmin, kinetics.Pmin)
         self.assertEqual(self.kinetics.Pmax, kinetics.Pmax)
@@ -580,30 +580,30 @@ class TestPDepArrhenius(unittest.TestCase):
         kinetics = cPickle.loads(cPickle.dumps(self.kinetics))
         
         Narrh = 2
-        self.assertEqual(len(self.kinetics.pressures.values), Narrh)
-        self.assertEqual(len(kinetics.pressures.values), Narrh)
+        self.assertEqual(len(self.kinetics.pressures.value_si), Narrh)
+        self.assertEqual(len(kinetics.pressures.value_si), Narrh)
         self.assertEqual(len(self.kinetics.arrhenius), Narrh)
         self.assertEqual(len(kinetics.arrhenius), Narrh)
         for i in range(Narrh):
-            self.assertEqual(self.kinetics.pressures.values[i], kinetics.pressures.values[i])
-            self.assertEqual(self.kinetics.arrhenius[i].A.value, kinetics.arrhenius[i].A.value)
-            self.assertEqual(self.kinetics.arrhenius[i].n.value, kinetics.arrhenius[i].n.value)
-            self.assertEqual(self.kinetics.arrhenius[i].T0.value, kinetics.arrhenius[i].T0.value)
-            self.assertEqual(self.kinetics.arrhenius[i].Ea.value, kinetics.arrhenius[i].Ea.value)
+            self.assertEqual(self.kinetics.pressures.value_si[i], kinetics.pressures.value_si[i])
+            self.assertEqual(self.kinetics.arrhenius[i].A.value_si, kinetics.arrhenius[i].A.value_si)
+            self.assertEqual(self.kinetics.arrhenius[i].n.value_si, kinetics.arrhenius[i].n.value_si)
+            self.assertEqual(self.kinetics.arrhenius[i].T0.value_si, kinetics.arrhenius[i].T0.value_si)
+            self.assertEqual(self.kinetics.arrhenius[i].Ea.value_si, kinetics.arrhenius[i].Ea.value_si)
 
-        self.assertEqual(self.kinetics.Tmin.value, kinetics.Tmin.value)
+        self.assertEqual(self.kinetics.Tmin.value_si, kinetics.Tmin.value_si)
         self.assertEqual(self.kinetics.Tmin.units, kinetics.Tmin.units)
-        self.assertEqual(self.kinetics.Tmax.value, kinetics.Tmax.value)
+        self.assertEqual(self.kinetics.Tmax.value_si, kinetics.Tmax.value_si)
         self.assertEqual(self.kinetics.Tmax.units, kinetics.Tmax.units)
-        self.assertEqual(self.kinetics.Pmin.value, kinetics.Pmin.value)
+        self.assertEqual(self.kinetics.Pmin.value_si, kinetics.Pmin.value_si)
         self.assertEqual(self.kinetics.Pmin.units, kinetics.Pmin.units)
-        self.assertEqual(self.kinetics.Pmax.value, kinetics.Pmax.value)
+        self.assertEqual(self.kinetics.Pmax.value_si, kinetics.Pmax.value_si)
         self.assertEqual(self.kinetics.Pmax.units, kinetics.Pmax.units)
         self.assertEqual(self.kinetics.comment, kinetics.comment)
-        self.assertEqual(self.kinetics.highPlimit.A.value,  kinetics.highPlimit.A.value)
-        self.assertEqual(self.kinetics.highPlimit.n.value,  kinetics.highPlimit.n.value)
-        self.assertEqual(self.kinetics.highPlimit.T0.value, kinetics.highPlimit.T0.value)
-        self.assertEqual(self.kinetics.highPlimit.Ea.value, kinetics.highPlimit.Ea.value)
+        self.assertEqual(self.kinetics.highPlimit.A.value_si,  kinetics.highPlimit.A.value_si)
+        self.assertEqual(self.kinetics.highPlimit.n.value_si,  kinetics.highPlimit.n.value_si)
+        self.assertEqual(self.kinetics.highPlimit.T0.value_si, kinetics.highPlimit.T0.value_si)
+        self.assertEqual(self.kinetics.highPlimit.Ea.value_si, kinetics.highPlimit.Ea.value_si)
 
     def testOutput(self):
         """
@@ -614,30 +614,30 @@ class TestPDepArrhenius(unittest.TestCase):
         exec('kinetics = {0!r}'.format(self.kinetics))
         
         Narrh = 2
-        self.assertEqual(len(self.kinetics.pressures.values), Narrh)
-        self.assertEqual(len(kinetics.pressures.values), Narrh)
+        self.assertEqual(len(self.kinetics.pressures.value_si), Narrh)
+        self.assertEqual(len(kinetics.pressures.value_si), Narrh)
         self.assertEqual(len(self.kinetics.arrhenius), Narrh)
         self.assertEqual(len(kinetics.arrhenius), Narrh)
         for i in range(Narrh):
-            self.assertEqual(self.kinetics.pressures.values[i], kinetics.pressures.values[i])
-            self.assertEqual(self.kinetics.arrhenius[i].A.value, kinetics.arrhenius[i].A.value)
-            self.assertEqual(self.kinetics.arrhenius[i].n.value, kinetics.arrhenius[i].n.value)
-            self.assertEqual(self.kinetics.arrhenius[i].T0.value, kinetics.arrhenius[i].T0.value)
-            self.assertEqual(self.kinetics.arrhenius[i].Ea.value, kinetics.arrhenius[i].Ea.value)
+            self.assertEqual(self.kinetics.pressures.value_si[i], kinetics.pressures.value_si[i])
+            self.assertEqual(self.kinetics.arrhenius[i].A.value_si, kinetics.arrhenius[i].A.value_si)
+            self.assertEqual(self.kinetics.arrhenius[i].n.value_si, kinetics.arrhenius[i].n.value_si)
+            self.assertEqual(self.kinetics.arrhenius[i].T0.value_si, kinetics.arrhenius[i].T0.value_si)
+            self.assertEqual(self.kinetics.arrhenius[i].Ea.value_si, kinetics.arrhenius[i].Ea.value_si)
 
-        self.assertEqual(self.kinetics.Tmin.value, kinetics.Tmin.value)
+        self.assertEqual(self.kinetics.Tmin.value_si, kinetics.Tmin.value_si)
         self.assertEqual(self.kinetics.Tmin.units, kinetics.Tmin.units)
-        self.assertEqual(self.kinetics.Tmax.value, kinetics.Tmax.value)
+        self.assertEqual(self.kinetics.Tmax.value_si, kinetics.Tmax.value_si)
         self.assertEqual(self.kinetics.Tmax.units, kinetics.Tmax.units)
-        self.assertEqual(self.kinetics.Pmin.value, kinetics.Pmin.value)
+        self.assertEqual(self.kinetics.Pmin.value_si, kinetics.Pmin.value_si)
         self.assertEqual(self.kinetics.Pmin.units, kinetics.Pmin.units)
-        self.assertEqual(self.kinetics.Pmax.value, kinetics.Pmax.value)
+        self.assertEqual(self.kinetics.Pmax.value_si, kinetics.Pmax.value_si)
         self.assertEqual(self.kinetics.Pmax.units, kinetics.Pmax.units)
         self.assertEqual(self.kinetics.comment, kinetics.comment)
-        self.assertEqual(self.kinetics.highPlimit.A.value,  kinetics.highPlimit.A.value)
-        self.assertEqual(self.kinetics.highPlimit.n.value,  kinetics.highPlimit.n.value)
-        self.assertEqual(self.kinetics.highPlimit.T0.value, kinetics.highPlimit.T0.value)
-        self.assertEqual(self.kinetics.highPlimit.Ea.value, kinetics.highPlimit.Ea.value)
+        self.assertEqual(self.kinetics.highPlimit.A.value_si,  kinetics.highPlimit.A.value_si)
+        self.assertEqual(self.kinetics.highPlimit.n.value_si,  kinetics.highPlimit.n.value_si)
+        self.assertEqual(self.kinetics.highPlimit.T0.value_si, kinetics.highPlimit.T0.value_si)
+        self.assertEqual(self.kinetics.highPlimit.Ea.value_si, kinetics.highPlimit.Ea.value_si)
 
 ################################################################################
 
@@ -722,13 +722,13 @@ class TestChebyshev(unittest.TestCase):
             for j in range(degreeP):
                 self.assertEqual(self.kinetics.coeffs[i,j], kinetics.coeffs[i,j])
         
-        self.assertEqual(self.kinetics.Tmin.value, kinetics.Tmin.value)
+        self.assertEqual(self.kinetics.Tmin.value_si, kinetics.Tmin.value_si)
         self.assertEqual(self.kinetics.Tmin.units, kinetics.Tmin.units)
-        self.assertEqual(self.kinetics.Tmax.value, kinetics.Tmax.value)
+        self.assertEqual(self.kinetics.Tmax.value_si, kinetics.Tmax.value_si)
         self.assertEqual(self.kinetics.Tmax.units, kinetics.Tmax.units)
-        self.assertEqual(self.kinetics.Pmin.value, kinetics.Pmin.value)
+        self.assertEqual(self.kinetics.Pmin.value_si, kinetics.Pmin.value_si)
         self.assertEqual(self.kinetics.Pmin.units, kinetics.Pmin.units)
-        self.assertEqual(self.kinetics.Pmax.value, kinetics.Pmax.value)
+        self.assertEqual(self.kinetics.Pmax.value_si, kinetics.Pmax.value_si)
         self.assertEqual(self.kinetics.Pmax.units, kinetics.Pmax.units)
         self.assertEqual(self.kinetics.comment, kinetics.comment)
 
@@ -754,13 +754,13 @@ class TestChebyshev(unittest.TestCase):
             for j in range(degreeP):
                 self.assertEqual(self.kinetics.coeffs[i,j], kinetics.coeffs[i,j])
 
-        self.assertEqual(self.kinetics.Tmin.value, kinetics.Tmin.value)
+        self.assertEqual(self.kinetics.Tmin.value_si, kinetics.Tmin.value_si)
         self.assertEqual(self.kinetics.Tmin.units, kinetics.Tmin.units)
-        self.assertEqual(self.kinetics.Tmax.value, kinetics.Tmax.value)
+        self.assertEqual(self.kinetics.Tmax.value_si, kinetics.Tmax.value_si)
         self.assertEqual(self.kinetics.Tmax.units, kinetics.Tmax.units)
-        self.assertEqual(self.kinetics.Pmin.value, kinetics.Pmin.value)
+        self.assertEqual(self.kinetics.Pmin.value_si, kinetics.Pmin.value_si)
         self.assertEqual(self.kinetics.Pmin.units, kinetics.Pmin.units)
-        self.assertEqual(self.kinetics.Pmax.value, kinetics.Pmax.value)
+        self.assertEqual(self.kinetics.Pmax.value_si, kinetics.Pmax.value_si)
         self.assertEqual(self.kinetics.Pmax.units, kinetics.Pmax.units)
         self.assertEqual(self.kinetics.comment, kinetics.comment)
         
@@ -834,10 +834,10 @@ class TestThirdBody(unittest.TestCase):
         import cPickle
         kinetics = cPickle.loads(cPickle.dumps(self.kinetics))
         
-        self.assertEqual(self.kinetics.arrheniusLow.A.value, kinetics.arrheniusLow.A.value)
-        self.assertEqual(self.kinetics.arrheniusLow.n.value, kinetics.arrheniusLow.n.value)
-        self.assertEqual(self.kinetics.arrheniusLow.T0.value, kinetics.arrheniusLow.T0.value)
-        self.assertEqual(self.kinetics.arrheniusLow.Ea.value, kinetics.arrheniusLow.Ea.value)
+        self.assertEqual(self.kinetics.arrheniusLow.A.value_si, kinetics.arrheniusLow.A.value_si)
+        self.assertEqual(self.kinetics.arrheniusLow.n.value_si, kinetics.arrheniusLow.n.value_si)
+        self.assertEqual(self.kinetics.arrheniusLow.T0.value_si, kinetics.arrheniusLow.T0.value_si)
+        self.assertEqual(self.kinetics.arrheniusLow.Ea.value_si, kinetics.arrheniusLow.Ea.value_si)
         for collider, efficiency in self.kinetics.efficiencies.iteritems():
             for collider0 in kinetics.efficiencies:
                 if collider.toSMILES() == collider0.toSMILES():
@@ -846,13 +846,13 @@ class TestThirdBody(unittest.TestCase):
             else:
                 self.fail('Unable to find collider "{0}" in reconstructed object.'.format(collider))
 
-        self.assertEqual(self.kinetics.Tmin.value, kinetics.Tmin.value)
+        self.assertEqual(self.kinetics.Tmin.value_si, kinetics.Tmin.value_si)
         self.assertEqual(self.kinetics.Tmin.units, kinetics.Tmin.units)
-        self.assertEqual(self.kinetics.Tmax.value, kinetics.Tmax.value)
+        self.assertEqual(self.kinetics.Tmax.value_si, kinetics.Tmax.value_si)
         self.assertEqual(self.kinetics.Tmax.units, kinetics.Tmax.units)
-        self.assertEqual(self.kinetics.Pmin.value, kinetics.Pmin.value)
+        self.assertEqual(self.kinetics.Pmin.value_si, kinetics.Pmin.value_si)
         self.assertEqual(self.kinetics.Pmin.units, kinetics.Pmin.units)
-        self.assertEqual(self.kinetics.Pmax.value, kinetics.Pmax.value)
+        self.assertEqual(self.kinetics.Pmax.value_si, kinetics.Pmax.value_si)
         self.assertEqual(self.kinetics.Pmax.units, kinetics.Pmax.units)
         self.assertEqual(self.kinetics.comment, kinetics.comment)
 
@@ -864,10 +864,10 @@ class TestThirdBody(unittest.TestCase):
 
         exec('kinetics = {0!r}'.format(self.kinetics))
         
-        self.assertEqual(self.kinetics.arrheniusLow.A.value, kinetics.arrheniusLow.A.value)
-        self.assertEqual(self.kinetics.arrheniusLow.n.value, kinetics.arrheniusLow.n.value)
-        self.assertEqual(self.kinetics.arrheniusLow.T0.value, kinetics.arrheniusLow.T0.value)
-        self.assertEqual(self.kinetics.arrheniusLow.Ea.value, kinetics.arrheniusLow.Ea.value)
+        self.assertEqual(self.kinetics.arrheniusLow.A.value_si, kinetics.arrheniusLow.A.value_si)
+        self.assertEqual(self.kinetics.arrheniusLow.n.value_si, kinetics.arrheniusLow.n.value_si)
+        self.assertEqual(self.kinetics.arrheniusLow.T0.value_si, kinetics.arrheniusLow.T0.value_si)
+        self.assertEqual(self.kinetics.arrheniusLow.Ea.value_si, kinetics.arrheniusLow.Ea.value_si)
         for collider, efficiency in self.kinetics.efficiencies.iteritems():
             for collider0 in kinetics.efficiencies:
                 if collider.toSMILES() == collider0.toSMILES():
@@ -876,13 +876,13 @@ class TestThirdBody(unittest.TestCase):
             else:
                 self.fail('Unable to find collider "{0}" in reconstructed object.'.format(collider))
         
-        self.assertEqual(self.kinetics.Tmin.value, kinetics.Tmin.value)
+        self.assertEqual(self.kinetics.Tmin.value_si, kinetics.Tmin.value_si)
         self.assertEqual(self.kinetics.Tmin.units, kinetics.Tmin.units)
-        self.assertEqual(self.kinetics.Tmax.value, kinetics.Tmax.value)
+        self.assertEqual(self.kinetics.Tmax.value_si, kinetics.Tmax.value_si)
         self.assertEqual(self.kinetics.Tmax.units, kinetics.Tmax.units)
-        self.assertEqual(self.kinetics.Pmin.value, kinetics.Pmin.value)
+        self.assertEqual(self.kinetics.Pmin.value_si, kinetics.Pmin.value_si)
         self.assertEqual(self.kinetics.Pmin.units, kinetics.Pmin.units)
-        self.assertEqual(self.kinetics.Pmax.value, kinetics.Pmax.value)
+        self.assertEqual(self.kinetics.Pmax.value_si, kinetics.Pmax.value_si)
         self.assertEqual(self.kinetics.Pmax.units, kinetics.Pmax.units)
         self.assertEqual(self.kinetics.comment, kinetics.comment)
 
@@ -956,14 +956,14 @@ class TestLindemann(unittest.TestCase):
         import cPickle
         kinetics = cPickle.loads(cPickle.dumps(self.kinetics))
         
-        self.assertEqual(self.kinetics.arrheniusLow.A.value, kinetics.arrheniusLow.A.value)
-        self.assertEqual(self.kinetics.arrheniusLow.n.value, kinetics.arrheniusLow.n.value)
-        self.assertEqual(self.kinetics.arrheniusLow.T0.value, kinetics.arrheniusLow.T0.value)
-        self.assertEqual(self.kinetics.arrheniusLow.Ea.value, kinetics.arrheniusLow.Ea.value)
-        self.assertEqual(self.kinetics.arrheniusHigh.A.value, kinetics.arrheniusHigh.A.value)
-        self.assertEqual(self.kinetics.arrheniusHigh.n.value, kinetics.arrheniusHigh.n.value)
-        self.assertEqual(self.kinetics.arrheniusHigh.T0.value, kinetics.arrheniusHigh.T0.value)
-        self.assertEqual(self.kinetics.arrheniusHigh.Ea.value, kinetics.arrheniusHigh.Ea.value)
+        self.assertEqual(self.kinetics.arrheniusLow.A.value_si, kinetics.arrheniusLow.A.value_si)
+        self.assertEqual(self.kinetics.arrheniusLow.n.value_si, kinetics.arrheniusLow.n.value_si)
+        self.assertEqual(self.kinetics.arrheniusLow.T0.value_si, kinetics.arrheniusLow.T0.value_si)
+        self.assertEqual(self.kinetics.arrheniusLow.Ea.value_si, kinetics.arrheniusLow.Ea.value_si)
+        self.assertEqual(self.kinetics.arrheniusHigh.A.value_si, kinetics.arrheniusHigh.A.value_si)
+        self.assertEqual(self.kinetics.arrheniusHigh.n.value_si, kinetics.arrheniusHigh.n.value_si)
+        self.assertEqual(self.kinetics.arrheniusHigh.T0.value_si, kinetics.arrheniusHigh.T0.value_si)
+        self.assertEqual(self.kinetics.arrheniusHigh.Ea.value_si, kinetics.arrheniusHigh.Ea.value_si)
         for collider, efficiency in self.kinetics.efficiencies.iteritems():
             for collider0 in kinetics.efficiencies:
                 if collider.toSMILES() == collider0.toSMILES():
@@ -972,13 +972,13 @@ class TestLindemann(unittest.TestCase):
             else:
                 self.fail('Unable to find collider "{0}" in reconstructed object.'.format(collider))
         
-        self.assertEqual(self.kinetics.Tmin.value, kinetics.Tmin.value)
+        self.assertEqual(self.kinetics.Tmin.value_si, kinetics.Tmin.value_si)
         self.assertEqual(self.kinetics.Tmin.units, kinetics.Tmin.units)
-        self.assertEqual(self.kinetics.Tmax.value, kinetics.Tmax.value)
+        self.assertEqual(self.kinetics.Tmax.value_si, kinetics.Tmax.value_si)
         self.assertEqual(self.kinetics.Tmax.units, kinetics.Tmax.units)
-        self.assertEqual(self.kinetics.Pmin.value, kinetics.Pmin.value)
+        self.assertEqual(self.kinetics.Pmin.value_si, kinetics.Pmin.value_si)
         self.assertEqual(self.kinetics.Pmin.units, kinetics.Pmin.units)
-        self.assertEqual(self.kinetics.Pmax.value, kinetics.Pmax.value)
+        self.assertEqual(self.kinetics.Pmax.value_si, kinetics.Pmax.value_si)
         self.assertEqual(self.kinetics.Pmax.units, kinetics.Pmax.units)
         self.assertEqual(self.kinetics.comment, kinetics.comment)
 
@@ -990,14 +990,14 @@ class TestLindemann(unittest.TestCase):
 
         exec('kinetics = {0!r}'.format(self.kinetics))
         
-        self.assertEqual(self.kinetics.arrheniusLow.A.value, kinetics.arrheniusLow.A.value)
-        self.assertEqual(self.kinetics.arrheniusLow.n.value, kinetics.arrheniusLow.n.value)
-        self.assertEqual(self.kinetics.arrheniusLow.T0.value, kinetics.arrheniusLow.T0.value)
-        self.assertEqual(self.kinetics.arrheniusLow.Ea.value, kinetics.arrheniusLow.Ea.value)
-        self.assertEqual(self.kinetics.arrheniusHigh.A.value, kinetics.arrheniusHigh.A.value)
-        self.assertEqual(self.kinetics.arrheniusHigh.n.value, kinetics.arrheniusHigh.n.value)
-        self.assertEqual(self.kinetics.arrheniusHigh.T0.value, kinetics.arrheniusHigh.T0.value)
-        self.assertEqual(self.kinetics.arrheniusHigh.Ea.value, kinetics.arrheniusHigh.Ea.value)
+        self.assertEqual(self.kinetics.arrheniusLow.A.value_si, kinetics.arrheniusLow.A.value_si)
+        self.assertEqual(self.kinetics.arrheniusLow.n.value_si, kinetics.arrheniusLow.n.value_si)
+        self.assertEqual(self.kinetics.arrheniusLow.T0.value_si, kinetics.arrheniusLow.T0.value_si)
+        self.assertEqual(self.kinetics.arrheniusLow.Ea.value_si, kinetics.arrheniusLow.Ea.value_si)
+        self.assertEqual(self.kinetics.arrheniusHigh.A.value_si, kinetics.arrheniusHigh.A.value_si)
+        self.assertEqual(self.kinetics.arrheniusHigh.n.value_si, kinetics.arrheniusHigh.n.value_si)
+        self.assertEqual(self.kinetics.arrheniusHigh.T0.value_si, kinetics.arrheniusHigh.T0.value_si)
+        self.assertEqual(self.kinetics.arrheniusHigh.Ea.value_si, kinetics.arrheniusHigh.Ea.value_si)
         for collider, efficiency in self.kinetics.efficiencies.iteritems():
             for collider0 in kinetics.efficiencies:
                 if collider.toSMILES() == collider0.toSMILES():
@@ -1006,13 +1006,13 @@ class TestLindemann(unittest.TestCase):
             else:
                 self.fail('Unable to find collider "{0}" in reconstructed object.'.format(collider))
 
-        self.assertEqual(self.kinetics.Tmin.value, kinetics.Tmin.value)
+        self.assertEqual(self.kinetics.Tmin.value_si, kinetics.Tmin.value_si)
         self.assertEqual(self.kinetics.Tmin.units, kinetics.Tmin.units)
-        self.assertEqual(self.kinetics.Tmax.value, kinetics.Tmax.value)
+        self.assertEqual(self.kinetics.Tmax.value_si, kinetics.Tmax.value_si)
         self.assertEqual(self.kinetics.Tmax.units, kinetics.Tmax.units)
-        self.assertEqual(self.kinetics.Pmin.value, kinetics.Pmin.value)
+        self.assertEqual(self.kinetics.Pmin.value_si, kinetics.Pmin.value_si)
         self.assertEqual(self.kinetics.Pmin.units, kinetics.Pmin.units)
-        self.assertEqual(self.kinetics.Pmax.value, kinetics.Pmax.value)
+        self.assertEqual(self.kinetics.Pmax.value_si, kinetics.Pmax.value_si)
         self.assertEqual(self.kinetics.Pmax.units, kinetics.Pmax.units)
         self.assertEqual(self.kinetics.comment, kinetics.comment)
 
@@ -1078,8 +1078,8 @@ class TestTroe(unittest.TestCase):
                 klow = self.kinetics.arrheniusLow.getRateCoefficient(T)
                 C = P / 8.314472 / T
                 Pr = klow * C / khigh
-                Fcent = (1 - self.kinetics.alpha.value) * math.exp(-T / self.kinetics.T3.value) + self.kinetics.alpha.value * math.exp(-T / self.kinetics.T1.value)
-                if self.kinetics.T2 is not None: Fcent += math.exp(-self.kinetics.T2.value / T)
+                Fcent = (1 - self.kinetics.alpha.value_si) * math.exp(-T / self.kinetics.T3.value_si) + self.kinetics.alpha.value_si * math.exp(-T / self.kinetics.T1.value_si)
+                if self.kinetics.T2 is not None: Fcent += math.exp(-self.kinetics.T2.value_si / T)
                 d = 0.14
                 n = 0.75 - 1.27 * math.log10(Fcent)
                 c = -0.4 - 0.67 * math.log10(Fcent)
@@ -1096,18 +1096,18 @@ class TestTroe(unittest.TestCase):
         import cPickle
         kinetics = cPickle.loads(cPickle.dumps(self.kinetics))
 
-        self.assertEqual(self.kinetics.alpha.value, kinetics.alpha.value)
-        self.assertEqual(self.kinetics.T3.value, kinetics.T3.value)
-        self.assertEqual(self.kinetics.T1.value, kinetics.T1.value)
-        self.assertEqual(self.kinetics.T2.value, kinetics.T2.value)
-        self.assertEqual(self.kinetics.arrheniusLow.A.value, kinetics.arrheniusLow.A.value)
-        self.assertEqual(self.kinetics.arrheniusLow.n.value, kinetics.arrheniusLow.n.value)
-        self.assertEqual(self.kinetics.arrheniusLow.T0.value, kinetics.arrheniusLow.T0.value)
-        self.assertEqual(self.kinetics.arrheniusLow.Ea.value, kinetics.arrheniusLow.Ea.value)
-        self.assertEqual(self.kinetics.arrheniusHigh.A.value, kinetics.arrheniusHigh.A.value)
-        self.assertEqual(self.kinetics.arrheniusHigh.n.value, kinetics.arrheniusHigh.n.value)
-        self.assertEqual(self.kinetics.arrheniusHigh.T0.value, kinetics.arrheniusHigh.T0.value)
-        self.assertEqual(self.kinetics.arrheniusHigh.Ea.value, kinetics.arrheniusHigh.Ea.value)
+        self.assertEqual(self.kinetics.alpha.value_si, kinetics.alpha.value_si)
+        self.assertEqual(self.kinetics.T3.value_si, kinetics.T3.value_si)
+        self.assertEqual(self.kinetics.T1.value_si, kinetics.T1.value_si)
+        self.assertEqual(self.kinetics.T2.value_si, kinetics.T2.value_si)
+        self.assertEqual(self.kinetics.arrheniusLow.A.value_si, kinetics.arrheniusLow.A.value_si)
+        self.assertEqual(self.kinetics.arrheniusLow.n.value_si, kinetics.arrheniusLow.n.value_si)
+        self.assertEqual(self.kinetics.arrheniusLow.T0.value_si, kinetics.arrheniusLow.T0.value_si)
+        self.assertEqual(self.kinetics.arrheniusLow.Ea.value_si, kinetics.arrheniusLow.Ea.value_si)
+        self.assertEqual(self.kinetics.arrheniusHigh.A.value_si, kinetics.arrheniusHigh.A.value_si)
+        self.assertEqual(self.kinetics.arrheniusHigh.n.value_si, kinetics.arrheniusHigh.n.value_si)
+        self.assertEqual(self.kinetics.arrheniusHigh.T0.value_si, kinetics.arrheniusHigh.T0.value_si)
+        self.assertEqual(self.kinetics.arrheniusHigh.Ea.value_si, kinetics.arrheniusHigh.Ea.value_si)
         for collider, efficiency in self.kinetics.efficiencies.iteritems():
             for collider0 in kinetics.efficiencies:
                 if collider.toSMILES() == collider0.toSMILES():
@@ -1116,13 +1116,13 @@ class TestTroe(unittest.TestCase):
             else:
                 self.fail('Unable to find collider "{0}" in reconstructed object.'.format(collider))
 
-        self.assertEqual(self.kinetics.Tmin.value, kinetics.Tmin.value)
+        self.assertEqual(self.kinetics.Tmin.value_si, kinetics.Tmin.value_si)
         self.assertEqual(self.kinetics.Tmin.units, kinetics.Tmin.units)
-        self.assertEqual(self.kinetics.Tmax.value, kinetics.Tmax.value)
+        self.assertEqual(self.kinetics.Tmax.value_si, kinetics.Tmax.value_si)
         self.assertEqual(self.kinetics.Tmax.units, kinetics.Tmax.units)
-        self.assertEqual(self.kinetics.Pmin.value, kinetics.Pmin.value)
+        self.assertEqual(self.kinetics.Pmin.value_si, kinetics.Pmin.value_si)
         self.assertEqual(self.kinetics.Pmin.units, kinetics.Pmin.units)
-        self.assertEqual(self.kinetics.Pmax.value, kinetics.Pmax.value)
+        self.assertEqual(self.kinetics.Pmax.value_si, kinetics.Pmax.value_si)
         self.assertEqual(self.kinetics.Pmax.units, kinetics.Pmax.units)
         self.assertEqual(self.kinetics.comment, kinetics.comment)
 
@@ -1134,18 +1134,18 @@ class TestTroe(unittest.TestCase):
 
         exec('kinetics = {0!r}'.format(self.kinetics))
         
-        self.assertEqual(self.kinetics.alpha.value, kinetics.alpha.value)
-        self.assertEqual(self.kinetics.T3.value, kinetics.T3.value)
-        self.assertEqual(self.kinetics.T1.value, kinetics.T1.value)
-        self.assertEqual(self.kinetics.T2.value, kinetics.T2.value)
-        self.assertEqual(self.kinetics.arrheniusLow.A.value, kinetics.arrheniusLow.A.value)
-        self.assertEqual(self.kinetics.arrheniusLow.n.value, kinetics.arrheniusLow.n.value)
-        self.assertEqual(self.kinetics.arrheniusLow.T0.value, kinetics.arrheniusLow.T0.value)
-        self.assertEqual(self.kinetics.arrheniusLow.Ea.value, kinetics.arrheniusLow.Ea.value)
-        self.assertEqual(self.kinetics.arrheniusHigh.A.value, kinetics.arrheniusHigh.A.value)
-        self.assertEqual(self.kinetics.arrheniusHigh.n.value, kinetics.arrheniusHigh.n.value)
-        self.assertEqual(self.kinetics.arrheniusHigh.T0.value, kinetics.arrheniusHigh.T0.value)
-        self.assertEqual(self.kinetics.arrheniusHigh.Ea.value, kinetics.arrheniusHigh.Ea.value)
+        self.assertEqual(self.kinetics.alpha.value_si, kinetics.alpha.value_si)
+        self.assertEqual(self.kinetics.T3.value_si, kinetics.T3.value_si)
+        self.assertEqual(self.kinetics.T1.value_si, kinetics.T1.value_si)
+        self.assertEqual(self.kinetics.T2.value_si, kinetics.T2.value_si)
+        self.assertEqual(self.kinetics.arrheniusLow.A.value_si, kinetics.arrheniusLow.A.value_si)
+        self.assertEqual(self.kinetics.arrheniusLow.n.value_si, kinetics.arrheniusLow.n.value_si)
+        self.assertEqual(self.kinetics.arrheniusLow.T0.value_si, kinetics.arrheniusLow.T0.value_si)
+        self.assertEqual(self.kinetics.arrheniusLow.Ea.value_si, kinetics.arrheniusLow.Ea.value_si)
+        self.assertEqual(self.kinetics.arrheniusHigh.A.value_si, kinetics.arrheniusHigh.A.value_si)
+        self.assertEqual(self.kinetics.arrheniusHigh.n.value_si, kinetics.arrheniusHigh.n.value_si)
+        self.assertEqual(self.kinetics.arrheniusHigh.T0.value_si, kinetics.arrheniusHigh.T0.value_si)
+        self.assertEqual(self.kinetics.arrheniusHigh.Ea.value_si, kinetics.arrheniusHigh.Ea.value_si)
         for collider, efficiency in self.kinetics.efficiencies.iteritems():
             for collider0 in kinetics.efficiencies:
                 if collider.toSMILES() == collider0.toSMILES():
@@ -1154,13 +1154,13 @@ class TestTroe(unittest.TestCase):
             else:
                 self.fail('Unable to find collider "{0}" in reconstructed object.'.format(collider))
 
-        self.assertEqual(self.kinetics.Tmin.value, kinetics.Tmin.value)
+        self.assertEqual(self.kinetics.Tmin.value_si, kinetics.Tmin.value_si)
         self.assertEqual(self.kinetics.Tmin.units, kinetics.Tmin.units)
-        self.assertEqual(self.kinetics.Tmax.value, kinetics.Tmax.value)
+        self.assertEqual(self.kinetics.Tmax.value_si, kinetics.Tmax.value_si)
         self.assertEqual(self.kinetics.Tmax.units, kinetics.Tmax.units)
-        self.assertEqual(self.kinetics.Pmin.value, kinetics.Pmin.value)
+        self.assertEqual(self.kinetics.Pmin.value_si, kinetics.Pmin.value_si)
         self.assertEqual(self.kinetics.Pmin.units, kinetics.Pmin.units)
-        self.assertEqual(self.kinetics.Pmax.value, kinetics.Pmax.value)
+        self.assertEqual(self.kinetics.Pmax.value_si, kinetics.Pmax.value_si)
         self.assertEqual(self.kinetics.Pmax.units, kinetics.Pmax.units)
         self.assertEqual(self.kinetics.comment, kinetics.comment)
 

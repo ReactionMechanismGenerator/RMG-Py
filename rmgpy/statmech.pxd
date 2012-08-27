@@ -27,7 +27,7 @@
 cimport numpy
 
 cimport rmgpy.constants as constants
-from quantity cimport Quantity
+from quantity cimport ScalarQuantity, ArrayQuantity
 
 ################################################################################
 
@@ -45,7 +45,7 @@ cdef class Mode:
 
 cdef class Translation(Mode):
     
-    cdef public Quantity mass
+    cdef public ScalarQuantity mass
     
     cpdef double getPartitionFunction(self, double T)
     
@@ -63,7 +63,7 @@ cdef class Translation(Mode):
 
 cdef class RigidRotor(Mode):
     
-    cdef public Quantity inertia
+    cdef public ArrayQuantity inertia
     cdef public bint linear
     cdef public int symmetry
 
@@ -83,10 +83,10 @@ cdef class RigidRotor(Mode):
 
 cdef class HinderedRotor(Mode):
     
-    cdef public Quantity inertia
-    cdef public Quantity barrier
+    cdef public ScalarQuantity inertia
+    cdef public ScalarQuantity barrier
     cdef public int symmetry
-    cdef public Quantity fourier
+    cdef public ArrayQuantity fourier
     cdef public numpy.ndarray energies
 
     cpdef double getPartitionFunction(self, double T)
@@ -113,7 +113,7 @@ cdef double cellipk(double x)
 
 cdef class HarmonicOscillator(Mode):
     
-    cdef public Quantity frequencies
+    cdef public ArrayQuantity frequencies
     
     cpdef double getPartitionFunction(self, double T)
 

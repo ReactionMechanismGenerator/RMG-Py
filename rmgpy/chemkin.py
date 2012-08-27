@@ -830,8 +830,8 @@ def writeThermoEntry(species):
         raise ChemkinError('Cannot generate Chemkin string for species "{0}": Thermodynamics data must be a MultiNASA object.'.format(species))
 
     assert len(thermo.polynomials) == 2
-    assert thermo.polynomials[0].Tmin.value < thermo.polynomials[1].Tmin.value
-    assert thermo.polynomials[0].Tmax.value == thermo.polynomials[1].Tmin.value
+    assert thermo.polynomials[0].Tmin.value_si < thermo.polynomials[1].Tmin.value_si
+    assert thermo.polynomials[0].Tmax.value_si == thermo.polynomials[1].Tmin.value_si
     assert thermo.polynomials[0].cm2 == 0 and thermo.polynomials[0].cm1 == 0
     assert thermo.polynomials[1].cm2 == 0 and thermo.polynomials[1].cm1 == 0
 
@@ -863,7 +863,7 @@ def writeThermoEntry(species):
         string += '     ' * (4 - len(elements))
     else:
         string += '     ' * 4
-    string += 'G{0:<10.3f}{1:<10.3f}{2:<8.2f}      1'.format(thermo.polynomials[0].Tmin.value, thermo.polynomials[1].Tmax.value, thermo.polynomials[0].Tmax.value)
+    string += 'G{0:<10.3f}{1:<10.3f}{2:<8.2f}      1'.format(thermo.polynomials[0].Tmin.value_si, thermo.polynomials[1].Tmax.value_si, thermo.polynomials[0].Tmax.value_si)
     if len(elements) > 4:
         string += '&\n'
         # Use the new-style Chemkin syntax for the element counts
@@ -969,30 +969,30 @@ def writeKineticsEntry(reaction, speciesList):
 
     if isinstance(kinetics, Arrhenius):
         string += '{0:<9.3e} {1:<9.3f} {2:<9.3f}'.format(
-            kinetics.A.value/ (kinetics.T0.value ** kinetics.n.value) * 1.0e6 ** (numReactants - 1),
-            kinetics.n.value,
-            kinetics.Ea.value / 4184.
+            kinetics.A.value_si/ (kinetics.T0.value_si ** kinetics.n.value_si) * 1.0e6 ** (numReactants - 1),
+            kinetics.n.value_si,
+            kinetics.Ea.value_si / 4184.
         )
     elif isinstance(kinetics, Lindemann):
         arrhenius = kinetics.arrheniusHigh
         string += '{0:<9.3e} {1:<9.3f} {2:<9.3f}'.format(
-            arrhenius.A.value / (arrhenius.T0.value ** arrhenius.n.value) * 1.0e6 ** (numReactants - 1),
-            arrhenius.n.value,
-            arrhenius.Ea.value / 4184.
+            arrhenius.A.value_si / (arrhenius.T0.value_si ** arrhenius.n.value_si) * 1.0e6 ** (numReactants - 1),
+            arrhenius.n.value_si,
+            arrhenius.Ea.value_si / 4184.
         )
     elif isinstance(kinetics, ThirdBody):
         arrhenius = kinetics.arrheniusLow
         string += '{0:<9.3e} {1:<9.3f} {2:<9.3f}'.format(
-            arrhenius.A.value / (arrhenius.T0.value ** arrhenius.n.value) * 1.0e6 ** (numReactants),
-            arrhenius.n.value,
-            arrhenius.Ea.value / 4184.
+            arrhenius.A.value_si / (arrhenius.T0.value_si ** arrhenius.n.value_si) * 1.0e6 ** (numReactants),
+            arrhenius.n.value_si,
+            arrhenius.Ea.value_si / 4184.
         )
     elif hasattr(kinetics,'highPlimit') and kinetics.highPlimit is not None:
         arrhenius = kinetics.highPlimit
         string += '{0:<9.3e} {1:<9.3f} {2:<9.3f}'.format(
-            arrhenius.A.value / (arrhenius.T0.value ** arrhenius.n.value) * 1.0e6 ** (numReactants - 1),
-            arrhenius.n.value,
-            arrhenius.Ea.value / 4184.
+            arrhenius.A.value_si / (arrhenius.T0.value_si ** arrhenius.n.value_si) * 1.0e6 ** (numReactants - 1),
+            arrhenius.n.value_si,
+            arrhenius.Ea.value_si / 4184.
             )
     else:
         # Print dummy values that Chemkin parses but ignores
@@ -1013,26 +1013,26 @@ def writeKineticsEntry(reaction, speciesList):
             # Write low-P kinetics
             arrhenius = kinetics.arrheniusLow
             string += '    LOW/ {0:<9.3e} {1:<9.3f} {2:<9.3f}/\n'.format(
-                arrhenius.A.value / (arrhenius.T0.value ** arrhenius.n.value) * 1.0e6 ** (numReactants),
-                arrhenius.n.value,
-                arrhenius.Ea.value / 4184.
+                arrhenius.A.value_si / (arrhenius.T0.value_si ** arrhenius.n.value_si) * 1.0e6 ** (numReactants),
+                arrhenius.n.value_si,
+                arrhenius.Ea.value_si / 4184.
             )
             if isinstance(kinetics, Troe):
                 # Write Troe parameters
                 if kinetics.T2 is None:
-                    string += '    TROE/ {0:<9.3e} {1:<9.3g} {2:<9.3g}/\n'.format(kinetics.alpha.value, kinetics.T3.value, kinetics.T1.value)
+                    string += '    TROE/ {0:<9.3e} {1:<9.3g} {2:<9.3g}/\n'.format(kinetics.alpha.value_si, kinetics.T3.value_si, kinetics.T1.value_si)
                 else:
-                    string += '    TROE/ {0:<9.3e} {1:<9.3g} {2:<9.3g} {3:<9.3g}/\n'.format(kinetics.alpha.value, kinetics.T3.value, kinetics.T1.value, kinetics.T2.value)
+                    string += '    TROE/ {0:<9.3e} {1:<9.3g} {2:<9.3g} {3:<9.3g}/\n'.format(kinetics.alpha.value_si, kinetics.T3.value_si, kinetics.T1.value_si, kinetics.T2.value_si)
     elif isinstance(kinetics, PDepArrhenius):
-        for P, arrhenius in zip(kinetics.pressures.values, kinetics.arrhenius):
+        for P, arrhenius in zip(kinetics.pressures.value_si, kinetics.arrhenius):
             string += '    PLOG/ {0:<9.3f} {1:<9.3e} {2:<9.3f} {3:<9.3f}/\n'.format(P / 101325.,
-                arrhenius.A.value / (arrhenius.T0.value ** arrhenius.n.value) * 1.0e6 ** (numReactants - 1),
-                arrhenius.n.value,
-                arrhenius.Ea.value / 4184.
+                arrhenius.A.value_si / (arrhenius.T0.value_si ** arrhenius.n.value_si) * 1.0e6 ** (numReactants - 1),
+                arrhenius.n.value_si,
+                arrhenius.Ea.value_si / 4184.
             )
     elif isinstance(kinetics, Chebyshev):
-        string += '    TCHEB/ {0:<9.3f} {1:<9.3f}/\n'.format(kinetics.Tmin.value, kinetics.Tmax.value)
-        string += '    PCHEB/ {0:<9.3f} {1:<9.3f}/\n'.format(kinetics.Pmin.value / 101325., kinetics.Pmax.value / 101325.)
+        string += '    TCHEB/ {0:<9.3f} {1:<9.3f}/\n'.format(kinetics.Tmin.value_si, kinetics.Tmax.value_si)
+        string += '    PCHEB/ {0:<9.3f} {1:<9.3f}/\n'.format(kinetics.Pmin.value_si / 101325., kinetics.Pmax.value_si / 101325.)
         string += '    CHEB/ {0:d} {1:d}/\n'.format(kinetics.degreeT, kinetics.degreeP)
         if kinetics.degreeP < 6:
             coeffs = kinetics.coeffs.copy()

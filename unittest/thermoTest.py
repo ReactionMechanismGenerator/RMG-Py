@@ -26,9 +26,9 @@ class TestThermoModel(unittest.TestCase):
         """
         Test that the temperature range is set and handled appropriately.
         """
-        self.assertEqual(self.thermo.Tmin.value, 300)
+        self.assertEqual(self.thermo.Tmin.value_si, 300)
         self.assertEqual(self.thermo.Tmin.units, "K")
-        self.assertEqual(self.thermo.Tmax.value, 2000)
+        self.assertEqual(self.thermo.Tmax.value_si, 2000)
         self.assertEqual(self.thermo.Tmax.units, "K")
         self.assertFalse(self.thermo.isTemperatureValid(200))
         self.assertTrue(self.thermo.isTemperatureValid(300))
@@ -48,9 +48,9 @@ class TestThermoModel(unittest.TestCase):
         """
         import cPickle
         thermo = cPickle.loads(cPickle.dumps(self.thermo))
-        self.assertEqual(self.thermo.Tmin.value, thermo.Tmin.value)
+        self.assertEqual(self.thermo.Tmin.value_si, thermo.Tmin.value_si)
         self.assertEqual(self.thermo.Tmin.units, thermo.Tmin.units)
-        self.assertEqual(self.thermo.Tmax.value, thermo.Tmax.value)
+        self.assertEqual(self.thermo.Tmax.value_si, thermo.Tmax.value_si)
         self.assertEqual(self.thermo.Tmax.units, thermo.Tmax.units)
         self.assertEqual(self.thermo.comment, thermo.comment)
     
@@ -60,9 +60,9 @@ class TestThermoModel(unittest.TestCase):
         output with no loss of information.
         """
         exec('thermo = {0!r}'.format(self.thermo))
-        self.assertEqual(self.thermo.Tmin.value, thermo.Tmin.value)
+        self.assertEqual(self.thermo.Tmin.value_si, thermo.Tmin.value_si)
         self.assertEqual(self.thermo.Tmin.units, thermo.Tmin.units)
-        self.assertEqual(self.thermo.Tmax.value, thermo.Tmax.value)
+        self.assertEqual(self.thermo.Tmax.value_si, thermo.Tmax.value_si)
         self.assertEqual(self.thermo.Tmax.units, thermo.Tmax.units)
         self.assertEqual(self.thermo.comment, thermo.comment)
         
@@ -153,21 +153,21 @@ class TestThermoData(unittest.TestCase):
         """
         import cPickle
         thermo = cPickle.loads(cPickle.dumps(self.thermo))
-        self.assertEqual(len(self.thermo.Tdata.values), len(thermo.Tdata.values))
-        for T0, T in zip(self.thermo.Tdata.values, thermo.Tdata.values):
+        self.assertEqual(len(self.thermo.Tdata.value_si), len(thermo.Tdata.value_si))
+        for T0, T in zip(self.thermo.Tdata.value_si, thermo.Tdata.value_si):
             self.assertEqual(T0, T)
         self.assertEqual(self.thermo.Tdata.units, thermo.Tdata.units)
-        self.assertEqual(len(self.thermo.Cpdata.values), len(thermo.Cpdata.values))
-        for Cp0, Cp in zip(self.thermo.Cpdata.values, thermo.Cpdata.values):
+        self.assertEqual(len(self.thermo.Cpdata.value_si), len(thermo.Cpdata.value_si))
+        for Cp0, Cp in zip(self.thermo.Cpdata.value_si, thermo.Cpdata.value_si):
             self.assertEqual(Cp0, Cp)
         self.assertEqual(self.thermo.Cpdata.units, thermo.Cpdata.units)
-        self.assertEqual(self.thermo.H298.value, thermo.H298.value)
+        self.assertEqual(self.thermo.H298.value_si, thermo.H298.value_si)
         self.assertEqual(self.thermo.H298.units, thermo.H298.units)
-        self.assertEqual(self.thermo.S298.value, thermo.S298.value)
+        self.assertEqual(self.thermo.S298.value_si, thermo.S298.value_si)
         self.assertEqual(self.thermo.S298.units, thermo.S298.units)
-        self.assertEqual(self.thermo.Tmin.value, thermo.Tmin.value)
+        self.assertEqual(self.thermo.Tmin.value_si, thermo.Tmin.value_si)
         self.assertEqual(self.thermo.Tmin.units, thermo.Tmin.units)
-        self.assertEqual(self.thermo.Tmax.value, thermo.Tmax.value)
+        self.assertEqual(self.thermo.Tmax.value_si, thermo.Tmax.value_si)
         self.assertEqual(self.thermo.Tmax.units, thermo.Tmax.units)
         self.assertEqual(self.thermo.comment, thermo.comment)
 
@@ -177,21 +177,21 @@ class TestThermoData(unittest.TestCase):
         output with no loss of information.
         """
         exec('thermo = {0!r}'.format(self.thermo))
-        self.assertEqual(len(self.thermo.Tdata.values), len(thermo.Tdata.values))
-        for T0, T in zip(self.thermo.Tdata.values, thermo.Tdata.values):
+        self.assertEqual(len(self.thermo.Tdata.value_si), len(thermo.Tdata.value_si))
+        for T0, T in zip(self.thermo.Tdata.value_si, thermo.Tdata.value_si):
             self.assertEqual(T0, T)
         self.assertEqual(self.thermo.Tdata.units, thermo.Tdata.units)
-        self.assertEqual(len(self.thermo.Cpdata.values), len(thermo.Cpdata.values))
-        for Cp0, Cp in zip(self.thermo.Cpdata.values, thermo.Cpdata.values):
+        self.assertEqual(len(self.thermo.Cpdata.value_si), len(thermo.Cpdata.value_si))
+        for Cp0, Cp in zip(self.thermo.Cpdata.value_si, thermo.Cpdata.value_si):
             self.assertEqual(Cp0, Cp)
         self.assertEqual(self.thermo.Cpdata.units, thermo.Cpdata.units)
-        self.assertEqual(self.thermo.H298.value, thermo.H298.value)
+        self.assertEqual(self.thermo.H298.value_si, thermo.H298.value_si)
         self.assertEqual(self.thermo.H298.units, thermo.H298.units)
-        self.assertEqual(self.thermo.S298.value, thermo.S298.value)
+        self.assertEqual(self.thermo.S298.value_si, thermo.S298.value_si)
         self.assertEqual(self.thermo.S298.units, thermo.S298.units)
-        self.assertEqual(self.thermo.Tmin.value, thermo.Tmin.value)
+        self.assertEqual(self.thermo.Tmin.value_si, thermo.Tmin.value_si)
         self.assertEqual(self.thermo.Tmin.units, thermo.Tmin.units)
-        self.assertEqual(self.thermo.Tmax.value, thermo.Tmax.value)
+        self.assertEqual(self.thermo.Tmax.value_si, thermo.Tmax.value_si)
         self.assertEqual(self.thermo.Tmax.units, thermo.Tmax.units)
         self.assertEqual(self.thermo.comment, thermo.comment)
 
@@ -280,23 +280,23 @@ class TestWilhoit(unittest.TestCase):
         """
         import cPickle
         thermo = cPickle.loads(cPickle.dumps(self.thermo))
-        self.assertAlmostEqual(self.thermo.cp0.value, thermo.cp0.value, 4)
+        self.assertAlmostEqual(self.thermo.cp0.value_si, thermo.cp0.value_si, 4)
         self.assertEqual(self.thermo.cp0.units, thermo.cp0.units)
-        self.assertAlmostEqual(self.thermo.cpInf.value, thermo.cpInf.value, 3)
+        self.assertAlmostEqual(self.thermo.cpInf.value_si, thermo.cpInf.value_si, 3)
         self.assertEqual(self.thermo.cpInf.units, thermo.cpInf.units)
         self.assertAlmostEqual(self.thermo.a0, thermo.a0, 4)
         self.assertAlmostEqual(self.thermo.a1, thermo.a1, 4)
         self.assertAlmostEqual(self.thermo.a2, thermo.a2, 4)
         self.assertAlmostEqual(self.thermo.a3, thermo.a3, 4)
-        self.assertAlmostEqual(self.thermo.H0.value, thermo.H0.value, 4)
+        self.assertAlmostEqual(self.thermo.H0.value_si, thermo.H0.value_si, 4)
         self.assertEqual(self.thermo.H0.units, thermo.H0.units)
-        self.assertAlmostEqual(self.thermo.S0.value, thermo.S0.value, 4)
+        self.assertAlmostEqual(self.thermo.S0.value_si, thermo.S0.value_si, 4)
         self.assertEqual(self.thermo.S0.units, thermo.S0.units)
-        self.assertAlmostEqual(self.thermo.B.value, thermo.B.value, 4)
+        self.assertAlmostEqual(self.thermo.B.value_si, thermo.B.value_si, 4)
         self.assertEqual(self.thermo.B.units, thermo.B.units)
-        self.assertEqual(self.thermo.Tmin.value, thermo.Tmin.value)
+        self.assertEqual(self.thermo.Tmin.value_si, thermo.Tmin.value_si)
         self.assertEqual(self.thermo.Tmin.units, thermo.Tmin.units)
-        self.assertEqual(self.thermo.Tmax.value, thermo.Tmax.value)
+        self.assertEqual(self.thermo.Tmax.value_si, thermo.Tmax.value_si)
         self.assertEqual(self.thermo.Tmax.units, thermo.Tmax.units)
         self.assertEqual(self.thermo.comment, thermo.comment)
 
@@ -306,23 +306,23 @@ class TestWilhoit(unittest.TestCase):
         output with no loss of information.
         """
         exec('thermo = {0!r}'.format(self.thermo))
-        self.assertAlmostEqual(self.thermo.cp0.value, thermo.cp0.value, 4)
+        self.assertAlmostEqual(self.thermo.cp0.value_si, thermo.cp0.value_si, 4)
         self.assertEqual(self.thermo.cp0.units, thermo.cp0.units)
-        self.assertAlmostEqual(self.thermo.cpInf.value, thermo.cpInf.value, 3)
+        self.assertAlmostEqual(self.thermo.cpInf.value_si, thermo.cpInf.value_si, 3)
         self.assertEqual(self.thermo.cpInf.units, thermo.cpInf.units)
         self.assertAlmostEqual(self.thermo.a0, thermo.a0, 4)
         self.assertAlmostEqual(self.thermo.a1, thermo.a1, 4)
         self.assertAlmostEqual(self.thermo.a2, thermo.a2, 4)
         self.assertAlmostEqual(self.thermo.a3, thermo.a3, 4)
-        self.assertAlmostEqual(self.thermo.H0.value, thermo.H0.value, 4)
+        self.assertAlmostEqual(self.thermo.H0.value_si, thermo.H0.value_si, 4)
         self.assertEqual(self.thermo.H0.units, thermo.H0.units)
-        self.assertAlmostEqual(self.thermo.S0.value, thermo.S0.value, 4)
+        self.assertAlmostEqual(self.thermo.S0.value_si, thermo.S0.value_si, 4)
         self.assertEqual(self.thermo.S0.units, thermo.S0.units)
-        self.assertAlmostEqual(self.thermo.B.value, thermo.B.value, 4)
+        self.assertAlmostEqual(self.thermo.B.value_si, thermo.B.value_si, 4)
         self.assertEqual(self.thermo.B.units, thermo.B.units)
-        self.assertEqual(self.thermo.Tmin.value, thermo.Tmin.value)
+        self.assertEqual(self.thermo.Tmin.value_si, thermo.Tmin.value_si)
         self.assertEqual(self.thermo.Tmin.units, thermo.Tmin.units)
-        self.assertEqual(self.thermo.Tmax.value, thermo.Tmax.value)
+        self.assertEqual(self.thermo.Tmax.value_si, thermo.Tmax.value_si)
         self.assertEqual(self.thermo.Tmax.units, thermo.Tmax.units)
         self.assertEqual(self.thermo.comment, thermo.comment)
 
@@ -412,9 +412,9 @@ class TestNASA(unittest.TestCase):
         self.assertAlmostEqual(self.thermo.c4 / thermo.c4, 1.0, 4)
         self.assertAlmostEqual(self.thermo.c5 / thermo.c5, 1.0, 4)
         self.assertAlmostEqual(self.thermo.c6 / thermo.c6, 1.0, 4)
-        self.assertEqual(self.thermo.Tmin.value, thermo.Tmin.value)
+        self.assertEqual(self.thermo.Tmin.value_si, thermo.Tmin.value_si)
         self.assertEqual(self.thermo.Tmin.units, thermo.Tmin.units)
-        self.assertEqual(self.thermo.Tmax.value, thermo.Tmax.value)
+        self.assertEqual(self.thermo.Tmax.value_si, thermo.Tmax.value_si)
         self.assertEqual(self.thermo.Tmax.units, thermo.Tmax.units)
         self.assertEqual(self.thermo.comment, thermo.comment)
 
@@ -433,9 +433,9 @@ class TestNASA(unittest.TestCase):
         self.assertAlmostEqual(self.thermo.c4 / thermo.c4, 1.0, 4)
         self.assertAlmostEqual(self.thermo.c5 / thermo.c5, 1.0, 4)
         self.assertAlmostEqual(self.thermo.c6 / thermo.c6, 1.0, 4)
-        self.assertEqual(self.thermo.Tmin.value, thermo.Tmin.value)
+        self.assertEqual(self.thermo.Tmin.value_si, thermo.Tmin.value_si)
         self.assertEqual(self.thermo.Tmin.units, thermo.Tmin.units)
-        self.assertEqual(self.thermo.Tmax.value, thermo.Tmax.value)
+        self.assertEqual(self.thermo.Tmax.value_si, thermo.Tmax.value_si)
         self.assertEqual(self.thermo.Tmax.units, thermo.Tmax.units)
         self.assertEqual(self.thermo.comment, thermo.comment)
 
@@ -477,14 +477,14 @@ class TestMultiNASA(unittest.TestCase):
             self.assertEqual(poly0.c4, poly.c4)
             self.assertEqual(poly0.c5, poly.c5)
             self.assertEqual(poly0.c6, poly.c6)
-            self.assertEqual(poly0.Tmin.value, poly.Tmin.value)
+            self.assertEqual(poly0.Tmin.value_si, poly.Tmin.value_si)
             self.assertEqual(poly0.Tmin.units, poly.Tmin.units)
-            self.assertEqual(poly0.Tmax.value, poly.Tmax.value)
+            self.assertEqual(poly0.Tmax.value_si, poly.Tmax.value_si)
             self.assertEqual(poly0.Tmax.units, poly.Tmax.units)
             self.assertEqual(poly0.comment, poly.comment)
-        self.assertEqual(self.thermo.Tmin.value, thermo.Tmin.value)
+        self.assertEqual(self.thermo.Tmin.value_si, thermo.Tmin.value_si)
         self.assertEqual(self.thermo.Tmin.units, thermo.Tmin.units)
-        self.assertEqual(self.thermo.Tmax.value, thermo.Tmax.value)
+        self.assertEqual(self.thermo.Tmax.value_si, thermo.Tmax.value_si)
         self.assertEqual(self.thermo.Tmax.units, thermo.Tmax.units)
         self.assertEqual(self.thermo.comment, thermo.comment)
 
@@ -505,14 +505,14 @@ class TestMultiNASA(unittest.TestCase):
             self.assertEqual(poly0.c4, poly.c4)
             self.assertEqual(poly0.c5, poly.c5)
             self.assertEqual(poly0.c6, poly.c6)
-            self.assertEqual(poly0.Tmin.value, poly.Tmin.value)
+            self.assertEqual(poly0.Tmin.value_si, poly.Tmin.value_si)
             self.assertEqual(poly0.Tmin.units, poly.Tmin.units)
-            self.assertEqual(poly0.Tmax.value, poly.Tmax.value)
+            self.assertEqual(poly0.Tmax.value_si, poly.Tmax.value_si)
             self.assertEqual(poly0.Tmax.units, poly.Tmax.units)
             self.assertEqual(poly0.comment, poly.comment)
-        self.assertEqual(self.thermo.Tmin.value, thermo.Tmin.value)
+        self.assertEqual(self.thermo.Tmin.value_si, thermo.Tmin.value_si)
         self.assertEqual(self.thermo.Tmin.units, thermo.Tmin.units)
-        self.assertEqual(self.thermo.Tmax.value, thermo.Tmax.value)
+        self.assertEqual(self.thermo.Tmax.value_si, thermo.Tmax.value_si)
         self.assertEqual(self.thermo.Tmax.units, thermo.Tmax.units)
         self.assertEqual(self.thermo.comment, thermo.comment)
 

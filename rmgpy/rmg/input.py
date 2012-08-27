@@ -149,7 +149,7 @@ def pressureDependence(method, temperatures, pressures, maximumGrainSize=0.0, mi
     rmg.pressureDependence.Tmin = Quantity(Tmin, T_units)
     rmg.pressureDependence.Tmax = Quantity(Tmax, T_units)
     rmg.pressureDependence.Tcount = Tcount
-    Tlist = getTemperaturesForModel(interpolation, rmg.pressureDependence.Tmin.value, rmg.pressureDependence.Tmax.value, rmg.pressureDependence.Tcount)
+    Tlist = getTemperaturesForModel(interpolation, rmg.pressureDependence.Tmin.value_si, rmg.pressureDependence.Tmax.value_si, rmg.pressureDependence.Tcount)
     rmg.pressureDependence.Tlist = Quantity(Tlist,"K")
     
     # Process pressures
@@ -157,7 +157,7 @@ def pressureDependence(method, temperatures, pressures, maximumGrainSize=0.0, mi
     rmg.pressureDependence.Pmin = Quantity(Pmin, P_units)
     rmg.pressureDependence.Pmax = Quantity(Pmax, P_units)
     rmg.pressureDependence.Pcount = Pcount
-    Plist = getPressuresForModel(interpolation, rmg.pressureDependence.Pmin.value, rmg.pressureDependence.Pmax.value, rmg.pressureDependence.Pcount)
+    Plist = getPressuresForModel(interpolation, rmg.pressureDependence.Pmin.value_si, rmg.pressureDependence.Pmax.value_si, rmg.pressureDependence.Pcount)
     rmg.pressureDependence.Plist = Quantity(Plist,"Pa")
     
     # Process grain size and count

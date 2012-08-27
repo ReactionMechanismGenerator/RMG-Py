@@ -48,8 +48,8 @@ import cython
 
 import rmgpy.constants as constants
 cimport rmgpy.constants as constants
-from rmgpy.quantity import Quantity
-from rmgpy.quantity cimport Quantity
+from rmgpy.quantity import Quantity, ScalarQuantity, ArrayQuantity
+from rmgpy.quantity cimport ScalarQuantity, ArrayQuantity
 
 ################################################################################
 
@@ -82,17 +82,17 @@ cpdef double calculateCollisionFrequency(species, double T, double P, bathGas):
     bathGasSigma = 0.0; bathGasEpsilon = 1.0; bathGasMW = 0.0
     for key, value in bathGas.iteritems():
         try:
-            bathGasSigma += key.lennardJones.sigma.value * value
-            bathGasEpsilon *= key.lennardJones.epsilon.value ** value
+            bathGasSigma += key.lennardJones.sigma.value_si * value
+            bathGasEpsilon *= key.lennardJones.epsilon.value_si ** value
         except AttributeError:
             raise CollisionError('No Lennard-Jones parameters specified for component "{0}" in bath gas.'.format(bathGas))
-        bathGasMW += key.molecularWeight.value * value
+        bathGasMW += key.molecularWeight.value_si * value
         
     gasConc = P / constants.kB / T
-    mu = 1.0 / (1.0/species.molecularWeight.value + 1.0/bathGasMW) / 6.022e23
+    mu = 1.0 / (1.0/species.molecularWeight.value_si + 1.0/bathGasMW) / 6.022e23
     try:
-        sigma = 0.5 * (species.lennardJones.sigma.value + bathGasSigma)
-        epsilon = math.sqrt(species.lennardJones.epsilon.value * bathGasEpsilon)
+        sigma = 0.5 * (species.lennardJones.sigma.value_si + bathGasSigma)
+        epsilon = math.sqrt(species.lennardJones.epsilon.value_si * bathGasEpsilon)
     except AttributeError:
         raise CollisionError('No Lennard-Jones parameters specified for species "{0}".'.format(species))
 
@@ -225,13 +225,13 @@ cdef class SingleExponentialDown(CollisionModel):
     
     """
 
-    cdef public Quantity alpha0, T0, n
+    cdef public ScalarQuantity alpha0, T0, n
 
     def __init__(self, alpha0=None, T0=None, n=None):
         if alpha0 is not None:
             self.alpha0 = Quantity(alpha0)
             if self.alpha0.units == 'cm^-1':
-                self.alpha0.value *= 11.96
+                self.alpha0.value_si *= 11.96
                 self.alpha0.units = 'J/mol'
         else:
             self.alpha0 = None
@@ -267,9 +267,9 @@ cdef class SingleExponentialDown(CollisionModel):
         if self.alpha0 is None:
             return 0.0
         elif self.T0 is None or self.n is None:
-            return self.alpha0.value
+            return self.alpha0.value_si
         else:
-            return self.alpha0.value * (T / self.T0.value) ** self.n.value
+            return self.alpha0.value_si * (T / self.T0.value_si) ** self.n.value_si
 
     def generateCollisionMatrix(self,
         numpy.ndarray[numpy.float64_t,ndim=1] Elist,
