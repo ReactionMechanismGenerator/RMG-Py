@@ -1369,7 +1369,7 @@ class KineticsLibrary(Database):
             pass
         
         def writeArrhenius(f, arrhenius):
-            f.write(' {0:<12.3E}{1:>8.3f}{2:>12.2f}    {3}{4:g} {5:g} {6:g}\n'.format(
+            f.write(' {0:<12.3E} {1:>7.3f} {2:>11.2f}    {3}{4:g} {5:g} {6:g}\n'.format(
                 arrhenius.A.value,
                 arrhenius.n.value,
                 arrhenius.Ea.value / 4.184,
