@@ -10,41 +10,30 @@ from molecule import QMMolecule
 
 class Gaussian:
     """
-    A base class for all QM calculations that use MOPAC.
+    A base class for all QM calculations that use Gaussian.
     
-    Classes such as :class:`MopacMol` will inherit from this class.
+    Classes such as :class:`GaussianMol` will inherit from this class.
     """
     
     
-    directory = 'QMfiles'
-    inputFileExtension = '.gif'
+    inputFileExtension = '.gjf'
     outputFileExtension = '.out'
-    #executablePath = os.path.join(os.getenv('MOPAC_DIR', default="/opt/mopac") , 'MOPAC2009.exe')
+    executablePath = os.path.join(os.getenv('GAUSS_EXEDIR', default="$g09root/g09") , 'g09.exe')
 
     usePolar = False
     
     #: List of phrases that indicate failure
     #: NONE of these must be present in a succesful job.
     failureKeys = [
-                   'Error termination'
+                   'ERROR TERMINATION',
+                   'IMAGINARY FREQUENCIES'
                    ]
     
     #: List of phrases to indicate success.
     #: ALL of these must be present in a successful job.
     successKeys = [
-                   '',
+                   'NORMAL TERMINATION OF GAUSSIAN'
                   ]
-    
-    @property
-    def outputFilePath(self):
-        """Get the Gaussian output file name."""
-        return os.path.join(self.directory, self.geometry.uniqueID + self.outputFileExtension)
-    
-    @property
-    def inputFilePath(self):
-        """Get the Gaussian input file name."""
-        return os.path.join(self.directory, self.geometry.uniqueID + self.inputFileExtension)
-    
     
     def run(self):
         # submits the input file to Gaussian
@@ -57,7 +46,7 @@ class Gaussian:
         """
         Check's that an output file exists and was successful.
         
-        Returns a boolean flag that states whether a successful MOPAC simulation already exists for the molecule with the 
+        Returns a boolean flag that states whether a successful GAUSSIAN simulation already exists for the molecule with the 
         given (augmented) InChI Key.
         
         The definition of finding a successful simulation is based on these criteria:
@@ -120,7 +109,7 @@ class Gaussian:
         
     def parse(self):
         """
-        Parses the results of the Mopac calculation, and returns a CCLibData object.
+        Parses the results of the Gaussian calculation, and returns a CCLibData object.
         """
         parser = cclib.parser.Gaussian(self.outputFilePath)
         parser.logger.setLevel(logging.ERROR) #cf. http://cclib.sourceforge.net/wiki/index.php/Using_cclib#Additional_information
