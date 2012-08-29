@@ -2252,7 +2252,7 @@ class KineticsFamily(Database):
         else:
             raise Exception('Could not find training depository in family {0}.'.format(self.label))
         
-        index = max([e.index for e in self.rules.entries.values()]) + 1
+        index = max([e.index for e in self.rules.entries.values()] or [0]) + 1
         
         entries = depository.entries.values()
         entries.sort(key=lambda x: x.index)
