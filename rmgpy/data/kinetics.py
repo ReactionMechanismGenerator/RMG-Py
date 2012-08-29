@@ -1965,7 +1965,10 @@ class KineticsFamily(Database):
             self.reverseTemplate = None
             self.reverseRecipe = None
         else:
-            self.reverse = local_context['reverse']
+            try:
+                self.reverse = local_context['reverse']
+            except KeyError:
+                self.reverse = '{0}_reverse'.format(self.label)
             self.forwardTemplate.products = self.generateProductTemplate(self.forwardTemplate.reactants)
             self.reverseTemplate = Reaction(reactants=self.forwardTemplate.products, products=self.forwardTemplate.reactants)
             self.reverseRecipe = self.forwardRecipe.getReverse()
