@@ -512,3 +512,111 @@ def Quantity(*args, **kwargs):
     
     uncertainty = 0.0 if uncertainty is None else float(uncertainty)
     return ScalarQuantity(value, units, uncertainty, uncertaintyType)
+
+################################################################################
+
+class UnitType:
+    """
+    The :class:`UnitType` class represents a factory for producing
+    :class:`ScalarQuantity` or :class:`ArrayQuantity` objects of a given unit
+    type, e.g. time, volume, etc.
+    """
+
+    def __init__(self, units, extraDimensionality=None):
+        self.units = units
+        self.dimensionality = pq.Quantity(1.0, units).simplified.dimensionality
+        self.extraDimensionality = {}
+        if extraDimensionality:
+            for unit, factor in extraDimensionality.items():
+                self.extraDimensionality[pq.Quantity(1.0, unit).simplified.dimensionality] = factor
+        
+    def __call__(self, *args, **kwargs):
+        # Make a ScalarQuantity or ArrayQuantity object out of the given parameter
+        quantity = Quantity(*args, **kwargs)
+        if quantity is None:
+            return quantity
+        
+        # Check that the units are consistent with this unit type
+        units = pq.Quantity(1.0, quantity.units)
+        dimensionality = units.simplified.dimensionality
+        if dimensionality == self.dimensionality:
+            pass
+        elif dimensionality in self.extraDimensionality:
+            value = quantity.value_si * self.extraDimensionality[dimensionality]
+            units = self.units
+            return self(value, units)
+        else:
+            raise QuantityError('Invalid units {0!r}.'.format(quantity.units))
+        
+        # Return the Quantity or ArrayQuantity object object
+        return quantity
+
+Acceleration = UnitType('m/s^2')
+
+Area = UnitType('m^2')
+
+Concentration = UnitType('mol/m^3')
+
+Dimensionless = UnitType('')
+
+Energy = Enthalpy = FreeEnergy = UnitType('J/mol')
+
+Entropy = HeatCapacity = UnitType('J/(mol*K)')
+
+Flux = UnitType('mol/(m^2*s)')
+
+Frequency = UnitType('cm^-1', {
+    's^-1': 1.0 / (constants.c * 100.),
+    'Hz': 1.0 / (constants.c * 100.),
+    'J': 1.0 / (constants.h * constants.c * 100.),
+    'K': constants.kB / (constants.h * constants.c * 100.), 
+})
+
+Force = UnitType('N')
+
+Inertia = UnitType('kg*m^2')
+
+Length = UnitType('m')
+
+Mass = UnitType('amu', {'kg/mol': 1000.})
+
+Momentum = UnitType('kg*m/s^2')
+
+Power = UnitType('W')
+
+Pressure = UnitType('Pa')
+
+Temperature = UnitType('K')
+
+Time = UnitType('s')
+
+Velocity = UnitType('m/s')
+
+Volume = UnitType('m^3')
+
+# RateCoefficient is handled as a special case since it can take various
+# units depending on the reaction order
+RATECOEFFICIENT_CONVERSION_FACTORS = {
+    (1.0/pq.s).dimensionality: 1.0,              
+    (pq.m**3/pq.s).dimensionality: 1.0,              
+    (pq.m**6/pq.s).dimensionality: 1.0,              
+    (pq.m**9/pq.s).dimensionality: 1.0,              
+    (pq.m**3/(pq.mol*pq.s)).dimensionality: 1.0,              
+    (pq.m**6/(pq.mol**2*pq.s)).dimensionality: 1.0,              
+    (pq.m**9/(pq.mol**3*pq.s)).dimensionality: 1.0,              
+}
+def RateCoefficient(*args, **kwargs):
+    # Make a ScalarQuantity or ArrayQuantity object out of the given parameter
+    quantity = Quantity(*args, **kwargs)
+    if quantity is None:
+        return quantity
+    
+    dimensionality = pq.Quantity(1.0, quantity.units).simplified.dimensionality
+    try:
+        factor = RATECOEFFICIENT_CONVERSION_FACTORS[dimensionality]
+        quantity.value_si *= factor
+    except KeyError:
+        raise QuantityError('Invalid units {0!r}.'.format(quantity.units))
+
+    # Return the Quantity or ArrayQuantity object object
+    return quantity
