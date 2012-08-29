@@ -34,6 +34,7 @@ import logging
 import rmgpy
 import rmgpy.qm
 import rmgpy.qm.mopac
+import rmgpy.qm.gaussian
 
 class QMSettings():
     """
@@ -140,9 +141,11 @@ class QMCalculator():
         Ignores the settings onlyCyclics and maxRadicalNumber and does the calculation anyway if asked.
         (I.e. the code that chooses whether to call this method should consider those settings).
         """
-        
         if self.settings.software == 'mopac':
             qm_molecule_calculator = rmgpy.qm.mopac.MopacMolPM3(molecule, self.settings)
+            thermo0 = qm_molecule_calculator.generateThermoData()
+        elif self.settings.software == 'gaussian':
+            qm_molecule_calculator = rmgpy.qm.gaussian.GaussianMolPM3(molecule, self.settings)
             thermo0 = qm_molecule_calculator.generateThermoData()
         else:
             raise Exception("Unknown QM software '{0}'".format(self.settings.software))

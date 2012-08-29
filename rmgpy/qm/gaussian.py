@@ -15,10 +15,9 @@ class Gaussian:
     Classes such as :class:`GaussianMol` will inherit from this class.
     """
     
-    
     inputFileExtension = '.gjf'
     outputFileExtension = '.out'
-    executablePath = os.path.join(os.getenv('GAUSS_EXEDIR', default="$g09root/g09") , 'g09.exe')
+    executablePath = os.path.join(os.getenv('GAUSS_EXEDIR', default="$g09root/g09") , 'g09')
 
     usePolar = False
     
@@ -32,14 +31,14 @@ class Gaussian:
     #: List of phrases to indicate success.
     #: ALL of these must be present in a successful job.
     successKeys = [
-                   'NORMAL TERMINATION OF GAUSSIAN'
+                   'Normal termination of Gaussian'
                   ]
     
     def run(self):
         # submits the input file to Gaussian
-        process = Popen([self.executablePath, self.inputFilePath])
+        process = Popen([self.executablePath, self.inputFilePath, self.outputFilePath])
         process.communicate()# necessary to wait for executable termination!
-    
+        
         return self.verifyOutputFile()
         
     def verifyOutputFile(self):
@@ -58,7 +57,6 @@ class Gaussian:
         If any of the above criteria is not matched, False will be returned and the procedures to start a new calculation 
         will be initiated.
         """
-        
         if not os.path.exists(self.outputFilePath):
             logging.info("Output file {0} does not exist.".format(self.outputFilePath))
             return False
@@ -82,13 +80,18 @@ class Gaussian:
                     if element in line:
                         successKeysFound[element] = True
                
-                if "InChI=" in line:
+                if line.startswith("InChI="):
                     logFileInChI = line #output files should take up to 240 characters of the name in the input file
                     InChIFound = True
                     if logFileInChI == self.geometry.uniqueIDlong:
                         InChIMatch = True
+                    elif self.geometry.uniqueIDlong.startswith(logFileInChI):
+                        logging.info("InChI too long to check, but beginning matches so assuming OK.")
+                        InChIMatch = True
                     else:
                         logging.info("InChI in log file didn't match that in geometry.")
+                        logging.info(self.geometry.uniqueIDlong)
+                        logging.info(logFileInChI)
         
         # Check that ALL 'success' keywords were found in the file.
         if not all( successKeysFound.values() ):
@@ -103,6 +106,8 @@ class Gaussian:
             logging.info("Successful Gaussian quantum result found in {0}".format(self.outputFilePath))
             # " + self.molfile.name + " ("+self.molfile.InChIAug+") has been found. This log file will be used.")
             return True
+        else:
+            return False # until the next line works
         
         #InChIs do not match (most likely due to limited name length mirrored in log file (240 characters), but possibly due to a collision)
         return self.checkForInChiKeyCollision(logFileInChI) # Not yet implemented!
@@ -127,7 +132,7 @@ class GaussianMol(QMMolecule, Gaussian):
     Inherits from both :class:`QMMolecule` and :class:`Gaussian`.
     """
     
-    def writeInputFile(self, attempt, method):
+    def writeInputFile(self, attempt):
         """
         Using the :class:`Geometry` object, write the input file
         for the `attmept`th attempt.
@@ -137,12 +142,12 @@ class GaussianMol(QMMolecule, Gaussian):
         obConversion.SetInAndOutFormats("mol", "gjf")
         mol = openbabel.OBMol()
     
-        obConversion.ReadFile(mol, self.getMolFilePathForCalculation(attempt, method.scriptAttempts) )
+        obConversion.ReadFile(mol, self.getMolFilePathForCalculation(attempt) )
     
         mol.SetTitle(self.geometry.uniqueIDlong)
         obConversion.SetOptions('k', openbabel.OBConversion.OUTOPTIONS)
         input_string = obConversion.WriteString(mol)
-        top_keys = method.inputFileKeywords(attempt)
+        top_keys = self.inputFileKeywords(attempt)
         with open(self.inputFilePath, 'w') as gaussianFile:
             gaussianFile.write(top_keys)
             gaussianFile.write(input_string)
@@ -167,8 +172,7 @@ class GaussianMol(QMMolecule, Gaussian):
         else:
             success = False
             for attempt in range(1, self.maxAttempts+1):
-                self.writeInputFile(attempt, method)
-                import ipdb; ipdb.set_trace()
+                self.writeInputFile(attempt)
                 success = self.run()
                 if success:
                     logging.info('Attempt {0} of {1} on species {2} succeeded.'.format(attempt, self.maxAttempts, self.molecule.toAugmentedInChI()))
