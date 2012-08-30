@@ -1482,15 +1482,16 @@ class KineticsLibrary(Database):
                         # Non-falloff ThirdBody reactions are always in the Low-P limit
                         writeArrhenius(f, rate.arrheniusLow)
                     if len(rate.efficiencies) > 0:
+                        eff_line = ''
                         for molecule, efficiency in rate.efficiencies.iteritems():
                             for spec in speciesDict.values():
                                 if molecule in spec.molecule:
-                                    eff_str = '{0}/{1:.3e}/'.format(spec.label, efficiency)
+                                    mol_label = spec.label
                                     break
                             else:
-                                eff_str = '{0}/{1:.3e}/'.format(molecule.getFormula().upper(), efficiency)
-                            f.write('{0:<{1}}'.format(eff_str, len(eff_str) + (16 - len(eff_str) % 8)))
-                        f.write('\n')
+                                mol_label = molecule.getFormula().upper()
+                            eff_line += '{0}/{1:g}/  '.format(mol_label, efficiency)
+                        f.write(eff_line.strip() + '\n')
                     if isinstance(rate, Lindemann):
                         f.write('     LOW  /  {0:10.3e} {1:9.3f} {2:10.2f}/\n'.format(
                             rate.arrheniusLow.A.value,
