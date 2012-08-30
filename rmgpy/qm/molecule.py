@@ -4,7 +4,7 @@ import math
 
 import numpy
 from rdkit import Chem
-from rdkit.Chem import AllChem
+from rdkit.Chem import AllChem, Pharm3D
 
 import rmgpy.quantity
 from rmgpy.thermo import ThermoData
@@ -80,8 +80,8 @@ class Geometry:
         # Add the bonds
         for atom1 in self.molecule.vertices:
             for atom2, bond in atom1.edges.items():
-                index1 = rdAtomIdx[atom1] # atom1.sortingLabel
-                index2 = rdAtomIdx[atom2] # atom2.sortingLabel
+                index1 = rdAtomIdx[atom1]
+                index2 = rdAtomIdx[atom2]
                 if index1 > index2:
                     # Check the RMG bond order and add the appropriate rdkit bond.
                     if bond.order == 'S':
@@ -93,7 +93,7 @@ class Geometry:
                     elif bond.order == 'B':
                         rdBond = AllChem.rdchem.BondType.AROMATIC
                     else:
-                        print "Unknown bond order"
+                        logging.error('Unknown bond order')
                     rdmol.AddBond(index1, index2, rdBond)
 
         # Make editable mol into a mol and rectify the molecule
@@ -106,29 +106,46 @@ class Geometry:
         """
         Embed the RDKit molecule and create the crude molecule file.
         """
-        AllChem.EmbedMultipleConfs(rdmol, numConfAttempts,randomSeed=1)
+        if boundsMatrix == None:
+            AllChem.EmbedMultipleConfs(rdmol, numConfAttempts,randomSeed=1)
+            crude = Chem.Mol(rdmol.ToBinary())
+            rdmol, minEid = self.optimize(rdmol)
+        else:
+            try:
+                Pharm3D.EmbedLib.EmbedMol(rdmol, boundsMatrix, randomSeed=10)
+            except RuntimeError:
+                logging.error('Could not embed from bounds matrix')
+            crude = Chem.Mol(rdmol.ToBinary())
+            rdmol, minEid = self.optimize(rdmol, boundsMatrix)
         
-        energy=0.0
-        minEid=0;
-        lowestE=9.999999e99;#start with a very high number, which would never be reached
-
-        crude = Chem.Mol(rdmol.ToBinary())
+        self.writeMolFile(crude, self.getCrudeMolFilePath(), minEid)
+        self.writeMolFile(rdmol, self.getRefinedMolFilePath(), minEid)
         
-        for i in range(rdmol.GetNumConformers()):
-            AllChem.UFFOptimizeMolecule(rdmol,confId=i)
-            energy=AllChem.UFFGetMoleculeForceField(rdmol,confId=i).CalcEnergy()
-            if energy < lowestE:
-                minEid = i
-                lowestE = energy 
-        
-        with open(self.getCrudeMolFilePath(), 'w') as out3Dcrude:
-            out3Dcrude.write(Chem.MolToMolBlock(crude,confId=minEid))
-        
-        with open(self.getRefinedMolFilePath(), 'w') as out3D:
-            out3D.write(Chem.MolToMolBlock(rdmol,confId=minEid))
-
         return rdmol, minEid
-
+    
+    def optimize(self, rdmol, boundsMatrix = None):
+        
+        if boundsMatrix == None:
+            energy=0.0
+            minEid=0;
+            lowestE=9.999999e99;#start with a very high number, which would never be reached
+            
+            for i in range(rdmol.GetNumConformers()):
+                AllChem.UFFOptimizeMolecule(rdmol,confId=i)
+                energy=AllChem.UFFGetMoleculeForceField(rdmol,confId=i).CalcEnergy()
+                if energy < lowestE:
+                    minEid = i
+                    lowestE = energy 
+        else:
+            eBefore, eAfter = Pharm3D.EmbedLib.OptimizeMol(rdmol, boundsMatrix)
+            minEid = 0
+            
+        return rdmol, minEid
+        
+    def writeMolFile(self, mol, path, minEid):
+        with open(path, 'w') as out3Dcrude:
+            out3Dcrude.write(Chem.MolToMolBlock(mol,confId=minEid))
+    
     def save_coordinates(self, rdmol, minEid, rdAtIdx):
         # Save xyz coordinates on each atom in molecule ****
         for atom in self.molecule.atoms:

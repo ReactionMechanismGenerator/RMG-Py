@@ -20,7 +20,7 @@ class Mopac:
     executablePath = os.path.join(os.getenv('MOPAC_DIR', default="/opt/mopac") , 'MOPAC2009.exe')
     assert os.path.exists(executablePath), "Couldn't find MOPAC 2009 executable at {0}. Try setting your MOPAC_DIR environment variable.".format(executablePath)
     
-    usePolar = False #use polar keyword in MOPAC
+    usePolar = False#use polar keyword in MOPAC
     
     "Keywords for the multiplicity"
     multiplicityKeywords = {
@@ -63,22 +63,19 @@ class Mopac:
         Returns a boolean flag that states whether a successful MOPAC simulation already exists for the molecule with the 
         given (augmented) InChI Key.
         
-        The definition of finding a successful simulation is based on these criteria:
-        1) finding an output file with the file name equal to the InChI Key
-        2) NOT finding any of the keywords that are denote a calculation failure
-        3) finding all the keywords that denote a calculation success.
-        4) finding a match between the InChI of the given molecule and the InchI found in the calculation files
-        
-        If any of the above criteria is not matched, False will be returned and the procedures to start a new calculation 
-        will be initiated.
-        """
-        
-        if not os.path.exists(self.outputFilePath):
-            logging.debug("Output file {0} does not (yet) exist.".format(self.outputFilePath))
-            return False
+        obConversion = openbabel.OBConversion()
+        obConversion.SetInAndOutFormats("mol", "mop")
+        mol = openbabel.OBMol()
     
-        InChIMatch=False #flag (1 or 0) indicating whether the InChI in the file matches InChIaug this can only be 1 if InChIFound is also 1
-        InChIFound=False #flag (1 or 0) indicating whether an InChI was found in the log file
+        if attempt <= self.scriptAttempts: #use UFF-refined coordinates
+            obConversion.ReadFile(mol, self.geometry.getRefinedMolFilePath() )
+        else:
+            obConversion.ReadFile(mol, self.geometry.getCrudeMolFilePath() )
+    
+        mol.SetTitle(self.geometry.uniqueID) 
+        obConversion.SetOptions('k', openbabel.OBConversion.OUTOPTIONS)
+    
+        input_string = obConversion.WriteString(mol)
         
         # Initialize dictionary with "False"s 
         successKeysFound = dict([(key, False) for key in self.successKeys])
