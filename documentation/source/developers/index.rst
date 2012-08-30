@@ -4,11 +4,12 @@ RMG Developer's Guide
 
 .. toctree::
     :maxdepth: 2
-
+    :numbered:
+    
     introduction
     chemkin
     kinetics
-    quantity
+    quantities/index
     reaction
     species
     statmech
