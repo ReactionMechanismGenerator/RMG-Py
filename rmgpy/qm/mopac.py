@@ -62,6 +62,7 @@ class Mopac:
         
         Returns a boolean flag that states whether a successful MOPAC simulation already exists for the molecule with the 
         given (augmented) InChI Key.
+        """
         
         obConversion = openbabel.OBConversion()
         obConversion.SetInAndOutFormats("mol", "mop")
