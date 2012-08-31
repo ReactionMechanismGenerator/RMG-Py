@@ -259,6 +259,7 @@ def readKineticsEntry(entry, speciesDict, energyUnits, moleculeUnits):
                 # Chebyshev parameters
                 if chebyshev is None:
                     chebyshev = Chebyshev()
+                    chebyshev.kunits = kunits
                 tokens = [t.strip() for t in tokens]
                 if 'TCHEB' in line:
                     index = tokens.index('TCHEB')
