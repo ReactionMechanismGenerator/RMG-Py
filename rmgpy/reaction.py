@@ -49,7 +49,7 @@ import os.path
 from quantity import constants
 from rmgpy.molecule.molecule import Molecule
 from species import Species
-from kinetics import Arrhenius, KineticsData, ArrheniusEP, ThirdBody
+from kinetics import Arrhenius, KineticsData, ArrheniusEP, ThirdBody, Chebyshev, PDepArrhenius, MultiKinetics
 
 ################################################################################
 
@@ -625,9 +625,45 @@ class Reaction:
             kr = Arrhenius()
             kr.fitToData(Tlist, klist, kunits, kf.T0.value)
             return kr
+                    
+        elif isinstance (kf, Chebyshev):
+            Tlist = 1.0/numpy.linspace(1.0/kf.Tmax.value, 1.0/kf.Tmin.value, 50)
+            Plist = numpy.linspace(kf.Pmin.value, kf.Pmax.value, 20)
+            K = numpy.zeros((len(Tlist), len(Plist)), numpy.float64)
+            for Tindex, T in enumerate(Tlist):
+                for Pindex, P in enumerate(Plist):
+                    K[Tindex, Pindex] = kf.getRateCoefficient(T, P) / self.getEquilibriumConstant(T)
+            kr = Chebyshev()
+            kr.fitToData(Tlist, Plist, K, kunits, kf.degreeT, kf.degreeP, kf.Tmin.value, kf.Tmax.value, kf.Pmin.value, kf.Pmax.value)
+            return kr
+        
+        elif isinstance(kf, PDepArrhenius):  
+            if kf.Tmin is not None and kf.Tmax is not None:
+                Tlist = 1.0/numpy.linspace(1.0/kf.Tmax.value, 1.0/kf.Tmin.value, 50)
+            else:
+                Tlist = 1.0/numpy.arange(0.0005, 0.0035, 0.0001)
+            Plist = kf.pressures.values
+            K = numpy.zeros((len(Tlist), len(Plist)), numpy.float64)
+            for Tindex, T in enumerate(Tlist):
+                for Pindex, P in enumerate(Plist):
+                    K[Tindex, Pindex] = kf.getRateCoefficient(T, P) / self.getEquilibriumConstant(T)
+            kr = PDepArrhenius()
+            kr.fitToData(Tlist, Plist, K, kunits, kf.arrhenius[0].T0.value)
+            return kr       
+        
+        elif isinstance(kf, MultiKinetics):
+            kr = MultiKinetics()            
+            rxn = Reaction(reactants = self.reactants, products = self.products)            
+            for kinetics in kf.kineticsList:
+                if isinstance(kinetics, Arrhenius) or isinstance(kinetics, PDepArrhenius):
+                    rxn.kinetics = kinetics
+                    kr.kineticsList.append(rxn.generateReverseRateCoefficient())
+                else:
+                    raise ReactionError("Unexpected kinetics type {0} in MultiKinetics object; should be Arrhenius or PDepArrhenius.").format(kinetics.__class__)
+            return kr
         
         else:
-            raise ReactionError("Unexpected kinetics type {0}; should be Arrhenius or KineticsData.".format(self.kinetics.__class__))
+            raise ReactionError("Unexpected kinetics type {0}; should be Arrhenius, Chebyshev, PDepArrhenius, or KineticsData.".format(self.kinetics.__class__))
 
     def calculateTSTRateCoefficients(self, Tlist, tunneling=''):
         return numpy.array([self.calculateTSTRateCoefficient(T, tunneling) for T in Tlist], numpy.float64)
