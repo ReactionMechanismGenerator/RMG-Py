@@ -12,8 +12,8 @@ RMG Developer's Guide
     quantities/index
     reaction
     species
-    statmech
     thermo
+    statmech/index
     molecule/index
     cantherm/index
     data/index
