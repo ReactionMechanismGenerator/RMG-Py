@@ -68,6 +68,7 @@ def getMainExtensionModules():
         Extension('rmgpy.statmech.mode', ['rmgpy/statmech/mode.pyx']),
         Extension('rmgpy.statmech.rotation', ['rmgpy/statmech/rotation.pyx']),
         Extension('rmgpy.statmech.schrodinger', ['rmgpy/statmech/schrodinger.pyx']),
+        Extension('rmgpy.statmech.vibration', ['rmgpy/statmech/vibration.pyx']),
         # Miscellaneous
         Extension('rmgpy.constants', ['rmgpy/constants.py'], include_dirs=['.']),
         Extension('rmgpy.kinetics', ['rmgpy/kinetics.py'], include_dirs=['.']),
