@@ -65,6 +65,7 @@ def getMainExtensionModules():
         Extension('rmgpy.molecule.molecule', ['rmgpy/molecule/molecule.py'], include_dirs=['.']),
         Extension('rmgpy.molecule.symmetry', ['rmgpy/molecule/symmetry.py'], include_dirs=['.']),
         # Statistical mechanics
+        Extension('rmgpy.statmech.conformer', ['rmgpy/statmech/conformer.pyx']),
         Extension('rmgpy.statmech.mode', ['rmgpy/statmech/mode.pyx']),
         Extension('rmgpy.statmech.rotation', ['rmgpy/statmech/rotation.pyx']),
         Extension('rmgpy.statmech.schrodinger', ['rmgpy/statmech/schrodinger.pyx']),
