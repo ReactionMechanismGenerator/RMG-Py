@@ -66,6 +66,7 @@ def getMainExtensionModules():
         Extension('rmgpy.molecule.symmetry', ['rmgpy/molecule/symmetry.py'], include_dirs=['.']),
         # Statistical mechanics
         Extension('rmgpy.statmech.mode', ['rmgpy/statmech/mode.pyx']),
+        Extension('rmgpy.statmech.rotation', ['rmgpy/statmech/rotation.pyx']),
         Extension('rmgpy.statmech.schrodinger', ['rmgpy/statmech/schrodinger.pyx']),
         # Miscellaneous
         Extension('rmgpy.constants', ['rmgpy/constants.py'], include_dirs=['.']),
@@ -132,5 +133,5 @@ setup(name='RMG Py',
     scripts=scripts,
     cmdclass = {'build_ext': build_ext},
     ext_modules = ext_modules,
-    include_dirs=[numpy.get_include()],
+    include_dirs=['.', numpy.get_include()],
 )
