@@ -400,3 +400,225 @@ class TestNonlinearRotor(unittest.TestCase):
         self.assertEqual(self.mode.inertia.units, mode.inertia.units)
         self.assertEqual(self.mode.symmetry, mode.symmetry)
         self.assertEqual(self.mode.quantum, mode.quantum)
+
+################################################################################
+
+class TestKRotor(unittest.TestCase):
+    """
+    Contains unit tests of the KRotor class.
+    """
+    
+    def setUp(self):
+        """
+        A function run before each unit test in this class.
+        """
+        self.inertia = 11.75
+        self.symmetry = 2
+        self.quantum = False
+        self.mode = KRotor(
+            inertia = (self.inertia,"amu*angstrom^2"),
+            symmetry = self.symmetry, 
+            quantum = self.quantum,
+        )
+        
+    def test_getRotationalConstant(self):
+        """
+        Test getting the KRotor.rotationalConstant property.
+        """
+        Bexp = 1.434692
+        Bact = self.mode.rotationalConstant.value_si
+        self.assertAlmostEqual(Bexp, Bact, 4)
+        
+    def test_setRotationalConstant(self):
+        """
+        Test setting the KRotor.rotationalConstant property.
+        """
+        B = self.mode.rotationalConstant
+        B.value_si *= 2
+        self.mode.rotationalConstant = B
+        Iexp = 0.5 * self.inertia
+        Iact = self.mode.inertia.value_si * constants.Na * 1e23
+        self.assertAlmostEqual(Iexp, Iact, 4)
+        
+    def test_getLevelEnergy(self):
+        """
+        Test the KRotor.getLevelEnergy() method.
+        """
+        B = self.mode.rotationalConstant.value_si * constants.h * constants.c * 100.
+        B *= constants.Na
+        for J in range(0, 100):
+            Eexp = float(B * J * J)
+            Eact = float(self.mode.getLevelEnergy(J))
+            if J == 0:
+                self.assertEqual(Eact, 0)
+            else:
+                self.assertAlmostEqual(Eexp, Eact, delta=1e-4*Eexp)
+    
+    def test_getLevelDegeneracy(self):
+        """
+        Test the KRotor.getLevelDegeneracy() method.
+        """
+        for J in range(0, 100):
+            gexp = 1 if J == 0 else 2
+            gact = self.mode.getLevelDegeneracy(J)
+            self.assertEqual(gexp, gact, '{0} != {1}'.format(gact, gexp))
+    
+    def test_getPartitionFunction_classical(self):
+        """
+        Test the KRotor.getPartitionFunction() method for a classical
+        rotor.
+        """
+        self.mode.quantum = False
+        Tlist = numpy.array([300,500,1000,1500,2000])
+        Qexplist = numpy.array([10.6839, 13.7929, 19.5060, 23.8899, 27.5857])
+        for T, Qexp in zip(Tlist, Qexplist):
+            Qact = self.mode.getPartitionFunction(T)
+            self.assertAlmostEqual(Qexp, Qact, delta=1e-4*Qexp)
+            
+    def test_getPartitionFunction_quantum(self):
+        """
+        Test the KRotor.getPartitionFunction() method for a quantum
+        rotor.
+        """
+        self.mode.quantum = True
+        Tlist = numpy.array([300,500,1000,1500,2000])
+        Qexplist = numpy.array([10.6839, 13.7929, 19.5060, 23.8899, 27.5857])
+        for T, Qexp in zip(Tlist, Qexplist):
+            Qact = self.mode.getPartitionFunction(T)
+            self.assertAlmostEqual(Qexp, Qact, delta=1e-4*Qexp)
+            
+    def test_getHeatCapacity_classical(self):
+        """
+        Test the KRotor.getHeatCapacity() method using a classical rotor.
+        """
+        self.mode.quantum = False
+        Tlist = numpy.array([300,500,1000,1500,2000])
+        Cvexplist = numpy.array([0.5, 0.5, 0.5, 0.5, 0.5]) * constants.R
+        for T, Cvexp in zip(Tlist, Cvexplist):
+            Cvact = self.mode.getHeatCapacity(T)
+            self.assertAlmostEqual(Cvexp, Cvact, delta=1e-4*Cvexp)
+    
+    def test_getHeatCapacity_quantum(self):
+        """
+        Test the KRotor.getHeatCapacity() method using a quantum rotor.
+        """
+        self.mode.quantum = True
+        Tlist = numpy.array([300,500,1000,1500,2000])
+        Cvexplist = numpy.array([0.5, 0.5, 0.5, 0.5, 0.5]) * constants.R
+        for T, Cvexp in zip(Tlist, Cvexplist):
+            Cvact = self.mode.getHeatCapacity(T)
+            self.assertAlmostEqual(Cvexp, Cvact, delta=1e-4*Cvexp)
+       
+    def test_getEnthalpy_classical(self):
+        """
+        Test the KRotor.getEnthalpy() method using a classical rotor.
+        """
+        self.mode.quantum = False
+        Tlist = numpy.array([300,500,1000,1500,2000])
+        Hexplist = numpy.array([0.5, 0.5, 0.5, 0.5, 0.5]) * constants.R * Tlist
+        for T, Hexp in zip(Tlist, Hexplist):
+            Hact = self.mode.getEnthalpy(T)
+            self.assertAlmostEqual(Hexp, Hact, delta=1e-4*Hexp)
+    
+    def test_getEnthalpy_quantum(self):
+        """
+        Test the KRotor.getEnthalpy() method using a quantum rotor.
+        """
+        self.mode.quantum = True
+        Tlist = numpy.array([300,500,1000,1500,2000])
+        Hexplist = numpy.array([0.5, 0.5, 0.5, 0.5, 0.5]) * constants.R * Tlist
+        for T, Hexp in zip(Tlist, Hexplist):
+            Hact = self.mode.getEnthalpy(T)
+            self.assertAlmostEqual(Hexp, Hact, delta=1e-4*Hexp)
+
+    def test_getEntropy_classical(self):
+        """
+        Test the KRotor.getEntropy() method using a classical rotor.
+        """
+        self.mode.quantum = False
+        Tlist = numpy.array([300,500,1000,1500,2000])
+        Sexplist = numpy.array([2.86874, 3.12415, 3.47072, 3.67346, 3.81730]) * constants.R
+        for T, Sexp in zip(Tlist, Sexplist):
+            Sact = self.mode.getEntropy(T)
+            self.assertAlmostEqual(Sexp, Sact, delta=1e-4*Sexp)
+    
+    def test_getEntropy_quantum(self):
+        """
+        Test the KRotor.getEntropy() method using a quantum rotor.
+        """
+        self.mode.quantum = True
+        Tlist = numpy.array([300,500,1000,1500,2000])
+        Sexplist = numpy.array([2.86874, 3.12415, 3.47072, 3.67346, 3.81730]) * constants.R
+        for T, Sexp in zip(Tlist, Sexplist):
+            Sact = self.mode.getEntropy(T)
+            self.assertAlmostEqual(Sexp, Sact, delta=1e-4*Sexp)
+
+    def test_getSumOfStates_classical(self):
+        """
+        Test the KRotor.getSumOfStates() method using a classical rotor.
+        """
+        self.mode.quantum = False
+        Elist = numpy.arange(0, 1000*11.96, 1*11.96)
+        sumStates = self.mode.getSumOfStates(Elist)
+        densStates = self.mode.getDensityOfStates(Elist)
+        for n in range(10, len(Elist)):
+            self.assertTrue(0.75 < numpy.sum(densStates[0:n+1]) / sumStates[n] < 1.3333, '{0} != {1}'.format(numpy.sum(densStates[0:n+1]), sumStates[n]))
+
+    def test_getSumOfStates_quantum(self):
+        """
+        Test the KRotor.getSumOfStates() method using a quantum rotor.
+        """
+        self.mode.quantum = True
+        Elist = numpy.arange(0, 1000*11.96, 1*11.96)
+        sumStates = self.mode.getSumOfStates(Elist)
+        densStates = self.mode.getDensityOfStates(Elist)
+        for n in range(10, len(Elist)):
+            self.assertTrue(0.8 < numpy.sum(densStates[0:n+1]) / sumStates[n] < 1.25, '{0} != {1}'.format(numpy.sum(densStates[0:n+1]), sumStates[n]))
+
+    def test_getDensityOfStates_classical(self):
+        """
+        Test the KRotor.getDensityOfStates() method using a classical
+        rotor.
+        """
+        self.mode.quantum = False
+        Elist = numpy.arange(0, 3000*11.96, 0.05*11.96)
+        densStates = self.mode.getDensityOfStates(Elist)
+        T = 500
+        Qact = numpy.sum(densStates * numpy.exp(-Elist / constants.R / T))
+        Qexp = self.mode.getPartitionFunction(T)
+        self.assertAlmostEqual(Qexp, Qact, delta=1e-2*Qexp)
+
+    def test_getDensityOfStates_quantum(self):
+        """
+        Test the KRotor.getDensityOfStates() method using a quantum rotor.
+        """
+        self.mode.quantum = True
+        Elist = numpy.arange(0, 4000*11.96, 2*11.96)
+        densStates = self.mode.getDensityOfStates(Elist)
+        T = 500
+        Qact = numpy.sum(densStates * numpy.exp(-Elist / constants.R / T))
+        Qexp = self.mode.getPartitionFunction(T)
+        self.assertAlmostEqual(Qexp, Qact, delta=1e-2*Qexp)
+
+    def test_repr(self):
+        """
+        Test that a KRotor object can be reconstructed from its repr() output
+        with no loss of information.
+        """
+        exec('mode = {0!r}'.format(self.mode))
+        self.assertAlmostEqual(self.mode.inertia.value, mode.inertia.value, 6)
+        self.assertEqual(self.mode.inertia.units, mode.inertia.units)
+        self.assertEqual(self.mode.symmetry, mode.symmetry)
+        self.assertEqual(self.mode.quantum, mode.quantum)
+        
+    def test_pickle(self):
+        """
+        Test that a KRotor object can be pickled and unpickled with no loss
+        of information.
+        """
+        import cPickle
+        mode = cPickle.loads(cPickle.dumps(self.mode))
+        self.assertAlmostEqual(self.mode.inertia.value, mode.inertia.value, 6)
+        self.assertEqual(self.mode.inertia.units, mode.inertia.units)
+        self.assertEqual(self.mode.symmetry, mode.symmetry)
+        self.assertEqual(self.mode.quantum, mode.quantum)
