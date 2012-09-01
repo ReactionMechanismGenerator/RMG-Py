@@ -262,3 +262,141 @@ class TestLinearRotor(unittest.TestCase):
         self.assertEqual(self.mode.inertia.units, mode.inertia.units)
         self.assertEqual(self.mode.symmetry, mode.symmetry)
         self.assertEqual(self.mode.quantum, mode.quantum)
+
+################################################################################
+
+class TestNonlinearRotor(unittest.TestCase):
+    """
+    Contains unit tests of the NonlinearRotor class.
+    """
+    
+    def setUp(self):
+        """
+        A function run before each unit test in this class.
+        """
+        self.inertia = numpy.array([3.415, 16.65, 20.07])
+        self.symmetry = 4
+        self.quantum = False
+        self.mode = NonlinearRotor(
+            inertia = (self.inertia,"amu*angstrom^2"), 
+            symmetry = self.symmetry, 
+            quantum = self.quantum,
+        )
+        
+    def test_getRotationalConstant(self):
+        """
+        Test getting the NonlinearRotor.rotationalConstant property.
+        """
+        Bexp = numpy.array([4.93635, 1.0125, 0.839942])
+        Bact = self.mode.rotationalConstant.value_si
+        for B0, B in zip(Bexp, Bact):
+            self.assertAlmostEqual(B0, B, 4)
+        
+    def test_setRotationalConstant(self):
+        """
+        Test setting the NonlinearRotor.rotationalConstant property.
+        """
+        B = self.mode.rotationalConstant
+        B.value_si *= 2
+        self.mode.rotationalConstant = B
+        Iexp = 0.5 * self.inertia
+        Iact = self.mode.inertia.value_si * constants.Na * 1e23
+        for I0, I in zip(Iexp, Iact):
+            self.assertAlmostEqual(I0, I, 4)
+        
+    def test_getPartitionFunction_classical(self):
+        """
+        Test the NonlinearRotor.getPartitionFunction() method for a classical
+        rotor.
+        """
+        self.mode.quantum = False
+        Tlist = numpy.array([300,500,1000,1500,2000])
+        Qexplist = numpy.array([651.162, 1401.08, 3962.84, 7280.21, 11208.6])
+        for T, Qexp in zip(Tlist, Qexplist):
+            Qact = self.mode.getPartitionFunction(T)
+            self.assertAlmostEqual(Qexp, Qact, delta=1e-4*Qexp)
+            
+    def test_getHeatCapacity_classical(self):
+        """
+        Test the NonlinearRotor.getHeatCapacity() method using a classical
+        rotor.
+        """
+        self.mode.quantum = False
+        Tlist = numpy.array([300,500,1000,1500,2000])
+        Cvexplist = numpy.array([1.5, 1.5, 1.5, 1.5, 1.5]) * constants.R
+        for T, Cvexp in zip(Tlist, Cvexplist):
+            Cvact = self.mode.getHeatCapacity(T)
+            self.assertAlmostEqual(Cvexp, Cvact, delta=1e-4*Cvexp)
+    
+    def test_getEnthalpy_classical(self):
+        """
+        Test the NonlinearRotor.getEnthalpy() method using a classical rotor.
+        """
+        self.mode.quantum = False
+        Tlist = numpy.array([300,500,1000,1500,2000])
+        Hexplist = numpy.array([1.5, 1.5, 1.5, 1.5, 1.5]) * constants.R * Tlist
+        for T, Hexp in zip(Tlist, Hexplist):
+            Hact = self.mode.getEnthalpy(T)
+            self.assertAlmostEqual(Hexp, Hact, delta=1e-4*Hexp)
+   
+    def test_getEntropy_classical(self):
+        """
+        Test the NonlinearRotor.getEntropy() method using a classical rotor.
+        """
+        self.mode.quantum = False
+        Tlist = numpy.array([300,500,1000,1500,2000])
+        Sexplist = numpy.array([7.97876, 8.74500, 9.78472, 10.3929, 10.8244]) * constants.R
+        for T, Sexp in zip(Tlist, Sexplist):
+            Sact = self.mode.getEntropy(T)
+            self.assertAlmostEqual(Sexp, Sact, delta=1e-4*Sexp)
+    
+    def test_getSumOfStates_classical(self):
+        """
+        Test the NonlinearRotor.getSumOfStates() method using a classical rotor.
+        """
+        self.mode.quantum = False
+        Elist = numpy.arange(0, 1000*11.96, 1*11.96)
+        sumStates = self.mode.getSumOfStates(Elist)
+        densStates = self.mode.getDensityOfStates(Elist)
+        for n in range(10, len(Elist)):
+            self.assertTrue(0.8 < numpy.sum(densStates[0:n]) / sumStates[n] < 1.25, '{0} != {1}'.format(numpy.sum(densStates[0:n]), sumStates[n]))
+
+    def test_getDensityOfStates_classical(self):
+        """
+        Test the NonlinearRotor.getDensityOfStates() method using a classical
+        rotor.
+        """
+        self.mode.quantum = False
+        Elist = numpy.arange(0, 1000*11.96, 1*11.96)
+        densStates = self.mode.getDensityOfStates(Elist)
+        T = 100
+        Qact = numpy.sum(densStates * numpy.exp(-Elist / constants.R / T))
+        Qexp = self.mode.getPartitionFunction(T)
+        self.assertAlmostEqual(Qexp, Qact, delta=1e-2*Qexp)
+
+    def test_repr(self):
+        """
+        Test that a NonlinearRotor object can be reconstructed from its
+        repr() output with no loss of information.
+        """
+        exec('mode = {0!r}'.format(self.mode))
+        self.assertEqual(self.mode.inertia.value.shape, mode.inertia.value.shape)
+        for I0, I in zip(self.mode.inertia.value, mode.inertia.value):
+            self.assertAlmostEqual(I0, I, 6)
+        self.assertEqual(self.mode.inertia.units, mode.inertia.units)
+        self.assertEqual(self.mode.symmetry, mode.symmetry)
+        self.assertEqual(self.mode.quantum, mode.quantum)
+        
+    def test_pickle(self):
+        """
+        Test that a NonlinearRotor object can be pickled and unpickled with
+        no loss of information.
+        """
+        import cPickle
+        mode = cPickle.loads(cPickle.dumps(self.mode))
+        self.assertEqual(self.mode.inertia.value.shape, mode.inertia.value.shape)
+        for I0, I in zip(self.mode.inertia.value, mode.inertia.value):
+            self.assertAlmostEqual(I0, I, 6)
+        self.assertEqual(self.mode.inertia.units, mode.inertia.units)
+        self.assertEqual(self.mode.symmetry, mode.symmetry)
+        self.assertEqual(self.mode.quantum, mode.quantum)

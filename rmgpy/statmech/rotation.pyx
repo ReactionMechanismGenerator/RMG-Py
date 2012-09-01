@@ -259,3 +259,183 @@ cdef class LinearRotor(Rotation):
             if densStates0 is not None:
                 densStates = schrodinger.convolve(densStates0, densStates)
         return densStates
+
+################################################################################
+
+cdef class NonlinearRotor(Rotation):
+    """
+    A statistical mechanical model of an N-dimensional nonlinear rigid rotor.
+    The attributes are:
+    
+    ======================== ===================================================
+    Attribute                Description
+    ======================== ===================================================
+    `inertia`                The moments of inertia of the rotor
+    `rotationalConstant`     The rotational constants of the rotor
+    `symmetry`               The symmetry number of the rotor
+    `quantum`                ``True`` to use the quantum mechanical model, ``False`` to use the classical model
+    ======================== ===================================================
+
+    Note that the moments of inertia and the rotational constants are simply two
+    ways of representing the same quantity; only one set of these can be 
+    specified independently.
+    
+    In the majority of chemical applications, the energies involved in the
+    rigid rotor place it very nearly in the classical limit at all relevant
+    temperatures; therefore, the classical model is used by default. In the
+    current implementation, the quantum mechanical model has not been 
+    implemented, and a :class:`NotImplementedError` will be raised if you try
+    to use it. 
+    """
+    
+    def __init__(self, inertia=None, symmetry=1, quantum=False, rotationalConstant=None):
+        Rotation.__init__(self, symmetry, quantum)
+        if inertia is not None and rotationalConstant is not None:
+            raise ValueError('Only one of moment of inertia and rotational constant can be specified.')
+        elif rotationalConstant is not None:
+            self.rotationalConstant = rotationalConstant
+        else:
+            self.inertia = inertia
+
+    def __repr__(self):
+        """
+        Return a string representation that can be used to reconstruct the
+        NonlinearRotor object.
+        """
+        result = 'NonlinearRotor(inertia={0!r}, symmetry={1:d}'.format(self.inertia, self.symmetry)
+        if self.quantum:
+            result += ', quantum=True'
+        result += ')'
+        return result
+
+    def __reduce__(self):
+        """
+        A helper function used when pickling a NonlinearRotor object.
+        """
+        return (NonlinearRotor, (self.inertia, self.symmetry, self.quantum, None))
+
+    property inertia:
+        """The moments of inertia of the rotor."""
+        def __get__(self):
+            return self._inertia
+        def __set__(self, value):
+            self._inertia = quantity.Inertia(value)
+    
+    property rotationalConstant:
+        """The rotational constant of the rotor."""
+        def __get__(self):
+            cdef numpy.ndarray I = self._inertia.value_si
+            cdef numpy.ndarray B = constants.h / (8 * constants.pi * constants.pi * I) / (constants.c * 100.)
+            return quantity.Quantity(B,"cm^-1")
+        def __set__(self, B):
+            cdef numpy.ndarray I
+            B = quantity.Frequency(B)
+            I = constants.h / (8 * constants.pi * constants.pi * (B.value_si * constants.c * 100.))
+            self._inertia = quantity.ArrayQuantity(I / (constants.amu * 1e-20), "amu*angstrom^2")
+
+    cdef numpy.ndarray getRotationalConstantEnergy(self):
+        """
+        Return the values of the rotational constants in kJ/mol.
+        """
+        return constants.hbar * constants.hbar / (2 * self._inertia.value_si) * constants.Na
+
+    cpdef double getPartitionFunction(self, double T) except -1:
+        """
+        Return the value of the partition function :math:`Q(T)` at the
+        specified temperature `T` in K.
+        """
+        cdef double Q, theta = 1.0
+        cdef int i
+        cdef numpy.ndarray[numpy.float64_t,ndim=1] rotationalConstants
+        if self.quantum:
+            raise NotImplementedError('Quantum mechanical model not yet implemented for NonlinearRotor.')
+        else:
+            rotationalConstants = self.getRotationalConstantEnergy()
+            for i in range(rotationalConstants.shape[0]):
+                theta *= rotationalConstants[i] / constants.R
+            Q = sqrt(constants.pi * T**rotationalConstants.shape[0] / theta) / self.symmetry
+        return Q
+    
+    cpdef double getHeatCapacity(self, double T) except -100000000:
+        """
+        Return the heat capacity in J/mol*K for the degree of freedom at the
+        specified temperature `T` in K.
+        """
+        cdef double Cv
+        if self.quantum:
+            raise NotImplementedError('Quantum mechanical model not yet implemented for NonlinearRotor.')
+        else:
+            Cv = 0.5 * self._inertia.value_si.shape[0]
+        return Cv * constants.R
+
+    cpdef double getEnthalpy(self, double T) except 100000000:
+        """
+        Return the enthalpy in J/mol for the degree of freedom at the
+        specified temperature `T` in K.
+        """
+        cdef double H
+        if self.quantum:
+            raise NotImplementedError('Quantum mechanical model not yet implemented for NonlinearRotor.')
+        else:
+            H = 0.5 * self._inertia.value_si.shape[0]
+        return H * constants.R * T
+    
+    cpdef double getEntropy(self, double T) except -100000000:
+        """
+        Return the entropy in J/mol*K for the degree of freedom at the
+        specified temperature `T` in K.
+        """
+        cdef double S
+        if self.quantum:
+            raise NotImplementedError('Quantum mechanical model not yet implemented for NonlinearRotor.')
+        else:
+            S = numpy.log(self.getPartitionFunction(T)) + 0.5 * self._inertia.value_si.shape[0]
+        return S * constants.R
+    
+    cpdef numpy.ndarray getSumOfStates(self, numpy.ndarray Elist, numpy.ndarray sumStates0=None):
+        """
+        Return the sum of states :math:`N(E)` at the specified energies `Elist`
+        in J/mol above the ground state. If an initial sum of states 
+        `sumStates0` is given, the rotor sum of states will be convoluted into
+        these states.
+        """
+        cdef double theta = 1.0
+        cdef int i
+        cdef numpy.ndarray[numpy.float64_t,ndim=1] rotationalConstants
+        cdef numpy.ndarray sumStates
+        if self.quantum:
+            raise NotImplementedError('Quantum mechanical model not yet implemented for NonlinearRotor.')
+        else:
+            if sumStates0 is not None:
+                sumStates = schrodinger.convolve(sumStates0, self.getDensityOfStates(Elist, densStates0=None))
+            else:
+                rotationalConstants = self.getRotationalConstantEnergy()
+                assert rotationalConstants.shape[0] == 3
+                for i in range(rotationalConstants.shape[0]):
+                    theta *= rotationalConstants[i]
+                sumStates = 4.0/3.0 * Elist * numpy.sqrt(Elist / theta) / self.symmetry
+        return sumStates
+    
+    cpdef numpy.ndarray getDensityOfStates(self, numpy.ndarray Elist, numpy.ndarray densStates0=None):
+        """
+        Return the density of states :math:`\\rho(E) \\ dE` at the specified
+        energies `Elist` in J/mol above the ground state. If an initial density
+        of states `densStates0` is given, the rotor density of states will be
+        convoluted into these states.
+        """
+        cdef double theta = 1.0, inertia, dE
+        cdef int i
+        cdef numpy.ndarray[numpy.float64_t,ndim=1] rotationalConstants
+        cdef numpy.ndarray densStates
+        if self.quantum:
+            raise NotImplementedError('Quantum mechanical model not yet implemented for NonlinearRotor.')
+        else:
+            dE = Elist[1] - Elist[0]
+            rotationalConstants = self.getRotationalConstantEnergy()
+            assert rotationalConstants.shape[0] == 3
+            for i in range(rotationalConstants.shape[0]):
+                theta *= rotationalConstants[i]
+            densStates = 2.0 * numpy.sqrt(Elist / theta) / self.symmetry * dE
+            if densStates0 is not None:
+                densStates = schrodinger.convolve(densStates0, densStates)
+        return densStates
