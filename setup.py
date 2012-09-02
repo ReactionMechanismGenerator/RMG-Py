@@ -73,6 +73,7 @@ def getMainExtensionModules():
         Extension('rmgpy.statmech.translation', ['rmgpy/statmech/translation.pyx']),
         Extension('rmgpy.statmech.vibration', ['rmgpy/statmech/vibration.pyx']),
         # Thermodynamics
+        Extension('rmgpy.thermo.thermodata', ['rmgpy/thermo/thermodata.pyx']),
         Extension('rmgpy.thermo.model', ['rmgpy/thermo/model.pyx']),
         Extension('rmgpy.thermo.nasa', ['rmgpy/thermo/nasa.pyx']),
         Extension('rmgpy.thermo.wilhoit', ['rmgpy/thermo/wilhoit.pyx']),
