@@ -72,6 +72,8 @@ def getMainExtensionModules():
         Extension('rmgpy.statmech.torsion', ['rmgpy/statmech/torsion.pyx']),
         Extension('rmgpy.statmech.translation', ['rmgpy/statmech/translation.pyx']),
         Extension('rmgpy.statmech.vibration', ['rmgpy/statmech/vibration.pyx']),
+        # Thermodynamics
+        Extension('rmgpy.thermo.model', ['rmgpy/thermo/model.pyx']),
         # Miscellaneous
         Extension('rmgpy.constants', ['rmgpy/constants.py'], include_dirs=['.']),
         Extension('rmgpy.kinetics', ['rmgpy/kinetics.py'], include_dirs=['.']),
