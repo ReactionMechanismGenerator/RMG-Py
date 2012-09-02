@@ -27,3 +27,7 @@
 #   DEALINGS IN THE SOFTWARE.
 #
 ################################################################################
+
+from .thermodata import *
+from .nasa import *
+from .wilhoit import *
