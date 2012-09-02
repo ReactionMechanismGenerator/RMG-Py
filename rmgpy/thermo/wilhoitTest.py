@@ -251,3 +251,45 @@ class TestWilhoit(unittest.TestCase):
         self.assertAlmostEqual(self.wilhoit.Tmax.value, wilhoit.Tmax.value, 4)
         self.assertEqual(self.wilhoit.Tmax.units, wilhoit.Tmax.units)
         self.assertEqual(self.wilhoit.comment, wilhoit.comment)
+
+    def test_fitToData(self):
+        """
+        Test the Wilhoit.fitToData() method.
+        """
+        H298 = self.wilhoit.getEnthalpy(298)
+        S298 = self.wilhoit.getEntropy(298)
+        Tdata = numpy.array([300.,400.,500.,600.,800.,1000.,1500.])
+        Cpdata = numpy.zeros_like(Tdata)
+        for i in range(Tdata.shape[0]):
+            Cpdata[i] = self.wilhoit.getHeatCapacity(Tdata[i])
+        Cp0 = self.Cp0 * constants.R
+        CpInf = self.CpInf * constants.R
+        
+        # Fit the Wilhoit polynomial to the data
+        wilhoit = Wilhoit().fitToData(Tdata, Cpdata, Cp0, CpInf, H298, S298)
+        
+        # Check that the fit reproduces the input data
+        for T in Tdata:
+            Cpexp = self.wilhoit.getHeatCapacity(T)
+            Cpact = wilhoit.getHeatCapacity(T)
+            self.assertAlmostEqual(Cpact, Cpexp, 4)
+            Hexp = self.wilhoit.getEnthalpy(T)
+            Hact = wilhoit.getEnthalpy(T)
+            self.assertAlmostEqual(Hact, Hexp, 3)
+            Sexp = self.wilhoit.getEntropy(T)
+            Sact = wilhoit.getEntropy(T)
+            self.assertAlmostEqual(Sact, Sexp, 4)
+        
+        # Check that the fit reproduces the input parameters 
+        # Since we're fitting to data generated from a Wilhoit (and since the
+        # fitting algorithm is linear least-squares), we should get the same
+        # Wilhoit parameters (with a small allowance for fitting error)
+        self.assertAlmostEqual(wilhoit.Cp0.value_si, self.wilhoit.Cp0.value_si, 6)
+        self.assertAlmostEqual(wilhoit.CpInf.value_si, self.wilhoit.CpInf.value_si, 6)
+        self.assertAlmostEqual(wilhoit.a0, self.wilhoit.a0, 2)
+        self.assertAlmostEqual(wilhoit.a1, self.wilhoit.a1, 2)
+        self.assertAlmostEqual(wilhoit.a2, self.wilhoit.a2, 2)
+        self.assertAlmostEqual(wilhoit.a3, self.wilhoit.a3, 2)
+        self.assertAlmostEqual(wilhoit.B.value_si, self.wilhoit.B.value_si, 2)
+        self.assertAlmostEqual(wilhoit.H0.value_si, self.wilhoit.H0.value_si, 0)
+        self.assertAlmostEqual(wilhoit.S0.value_si, self.wilhoit.S0.value_si, 2)

@@ -44,3 +44,5 @@ cdef class Wilhoit(HeatCapacityModel):
     cpdef double getEntropy(self, double T) except -100000000
 
     cpdef double getFreeEnergy(self, double T) except 100000000
+    
+    cpdef Wilhoit copy(self)

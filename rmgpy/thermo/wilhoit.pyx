@@ -174,3 +174,105 @@ cdef class Wilhoit(HeatCapacityModel):
         in K.
         """
         return self.getEnthalpy(T) - self.getEntropy(T)
+    
+    cpdef Wilhoit copy(self):
+        """
+        Return a copy of the Wilhoit object.
+        """
+        return Wilhoit(
+            self.Cp0, self.CpInf, 
+            self.a0, self.a1, self.a2, self.a3, 
+            self.H0, self.S0, self.B, 
+            Tmin=self.Tmin, Tmax=self.Tmax, comment=self.comment,
+        )
+    
+    def __residual(self, B, Tdata, Cpdata, Cp0, CpInf, H298, S298):
+        # The residual corresponding to the fitToData() method
+        # Parameters are the same as for that method
+        cdef double res = 0.0, diff
+        cdef int i
+        self.fitToDataForConstantB(Tdata, Cpdata, Cp0, CpInf, H298, S298, B)
+        # Objective function is linear least-squares
+        for i in range(Cpdata.shape[0]):
+            diff = self.getHeatCapacity(Tdata[i]) - Cpdata[i]
+            res += diff * diff
+        return res
+    
+    def fitToData(self, 
+                  numpy.ndarray[numpy.float64_t, ndim=1] Tdata, 
+                  numpy.ndarray[numpy.float64_t, ndim=1] Cpdata, 
+                  double Cp0, double CpInf,
+                  double H298, double S298, double B0=500.0):
+        """
+        Fit a Wilhoit model to the data points provided, allowing the 
+        characteristic temperature `B` to vary so as to improve the fit. This
+        procedure requires an optimization, using the ``fminbound`` function
+        in the ``scipy.optimize`` module. The data consists of a set
+        of heat capacity points `Cpdata` in J/mol*K at a given set of 
+        temperatures `Tdata` in K, along with the enthalpy `H298` in kJ/mol and
+        entropy `S298` in J/mol*K at 298 K. The linearity of the molecule, 
+        number of vibrational frequencies, and number of internal rotors 
+        (`linear`, `Nfreq`, and `Nrotors`, respectively) is used to set the 
+        limits at zero and infinite temperature.
+        """
+        self.B = (B0,"K")
+        import scipy.optimize
+        scipy.optimize.fminbound(self.__residual, 300.0, 3000.0, args=(Tdata, Cpdata, Cp0, CpInf, H298, S298))
+        return self
+    
+    def fitToDataForConstantB(self, 
+                              numpy.ndarray[numpy.float64_t, ndim=1] Tdata, 
+                              numpy.ndarray[numpy.float64_t, ndim=1] Cpdata, 
+                              double Cp0, double CpInf,
+                              double H298, double S298, double B):
+        """
+        Fit a Wilhoit model to the data points provided using a specified value
+        of the characteristic temperature `B`. The data consists of a set
+        of dimensionless heat capacity points `Cpdata` at a given set of 
+        temperatures `Tdata` in K, along with the dimensionless heat capacity
+        at zero and infinite temperature, the dimensionless enthalpy `H298` at 
+        298 K, and the dimensionless entropy `S298` at 298 K. 
+        """
+        cdef numpy.ndarray[numpy.float64_t, ndim=1] b, x
+        cdef numpy.ndarray[numpy.float64_t, ndim=2] A
+        cdef double y
+        cdef int i, j
+        
+        self.Cp0 = (Cp0,"J/(mol*K)")
+        self.CpInf = (CpInf,"J/(mol*K)")
+            
+        if Cp0 == CpInf:
+            # The heat capacity is constant at all temperatures 
+            # (i.e. probably a monatomic species)
+            self.B = (B,"K")
+            self.a0 = 0.0
+            self.a1 = 0.0
+            self.a2 = 0.0
+            self.a3 = 0.0
+    
+        else:
+            # Polyatomic species
+                
+            # What remains is to fit the polynomial coefficients (a0, a1, a2, a3)
+            # This can be done directly - no iteration required
+            A = numpy.empty((Cpdata.shape[0],4), numpy.float64)
+            b = numpy.empty(Cpdata.shape[0], numpy.float64)
+            for i in range(Cpdata.shape[0]):
+                y = Tdata[i] / (Tdata[i] + B)
+                for j in range(4):
+                    A[i,j] = (y*y*y - y*y) * y**j
+                b[i] = ((Cpdata[i] - Cp0) / (CpInf - Cp0) - y*y)
+            x, residues, rank, s = numpy.linalg.lstsq(A, b)
+            
+            self.B = (float(B),"K")
+            self.a0 = float(x[0])
+            self.a1 = float(x[1])
+            self.a2 = float(x[2])
+            self.a3 = float(x[3])
+
+        self.H0 = (0.0,"kJ/mol")
+        self.S0 = (0.0,"J/(mol*K)")
+        self._H0.value_si = H298 - self.getEnthalpy(298)
+        self._S0.value_si = S298 - self.getEntropy(298)
+
+        return self
