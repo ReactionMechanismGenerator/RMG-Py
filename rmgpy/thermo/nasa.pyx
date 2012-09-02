@@ -127,6 +127,52 @@ cdef class NASAPolynomial(HeatCapacityModel):
         """
         return self.getEnthalpy(T) - T * self.getEntropy(T)
 
+    cdef double integral2_T0(self, double T):
+        """
+        Return the value of the dimensionless integral
+        
+        .. math:: \\int \\left[ \\frac{C_\\mathrm{p}^\\mathrm{NASA}(T')}{R} \\right]^2 \\ dT'
+        
+        evaluated at the given temperature `T` in K.
+        """
+        cdef double c0, c1, c2, c3, c4
+        cdef double T2, T4, T8, result
+        c0, c1, c2, c3, c4 = self.c0, self.c1, self.c2, self.c3, self.c4
+        T2 = T * T
+        T4 = T2 * T2
+        T8 = T4 * T4
+        result = (
+            c0*c0*T + c0*c1*T2 + 2./3.*c0*c2*T2*T + 0.5*c0*c3*T4 + 0.4*c0*c4*T4*T +
+            c1*c1*T2*T/3. + 0.5*c1*c2*T4 + 0.4*c1*c3*T4*T + c1*c4*T4*T2/3. +
+            0.2*c2*c2*T4*T + c2*c3*T4*T2/3. + 2./7.*c2*c4*T4*T2*T +
+            c3*c3*T4*T2*T/7. + 0.25*c3*c4*T8 +
+            c4*c4*T8*T/9.
+        )
+        return result
+    
+    cdef double integral2_TM1(self, double T):
+        """
+        Return the value of the dimensionless integral
+        
+        .. math:: \\int \\left[ \\frac{C_\\mathrm{p}^\\mathrm{NASA}(T')}{R} \\right]^2 (T')^{-1} \\ dT'
+        
+        evaluated at the given temperature `T` in K.
+        """
+        cdef double c0, c1, c2, c3, c4
+        cdef double T2, T4, logT, result
+        c0, c1, c2, c3, c4 = self.c0, self.c1, self.c2, self.c3, self.c4
+        T2 = T * T
+        T4 = T2 * T2
+        logT = log(T)
+        result = (
+            c0*c0*logT + 2*c0*c1*T + c0*c2*T2 + 2./3.*c0*c3*T2*T + 0.5*c0*c4*T4 +
+            0.5*c1*c1*T2 + 2./3.*c1*c2*T2*T + 0.5*c1*c3*T4 + 0.4*c1*c4*T4*T +
+            0.25*c2*c2*T4 + 0.4*c2*c3*T4*T + c2*c4*T4*T2/3. +
+            c3*c3*T4*T2/6. + 2./7.*c3*c4*T4*T2*T +
+            c4*c4*T4*T4/8.
+        )
+        return result
+
 ################################################################################
 
 cdef class NASA(HeatCapacityModel):
@@ -230,3 +276,50 @@ cdef class NASA(HeatCapacityModel):
         specified temperature `T` in K.
         """
         return self.selectPolynomial(T).getFreeEnergy(T)
+
+    cpdef ThermoData toThermoData(self, double Cp0=0.0, double CpInf=0.0):
+        """
+        Convert the Wilhoit model to a :class:`ThermoData` object.
+        """
+        from rmgpy.thermo.thermodata import ThermoData
+        
+        Tdata = [300,400,500,600,800,1000,1500]
+        Cpdata = [self.getHeatCapacity(T) for T in Tdata]
+        
+        return ThermoData(
+            Tdata = (Tdata,"K"),
+            Cpdata = (Cpdata,"J/(mol*K)"),
+            H298 = (self.getEnthalpy(298)*0.001,"kJ/mol"),
+            S298 = (self.getEntropy(298),"J/(mol*K)"),
+            Cp0 = (Cp0,"J/(mol*K)"),
+            CpInf = (CpInf,"J/(mol*K)"),
+        )
+
+    @cython.boundscheck(False)
+    cpdef Wilhoit toWilhoit(self, double Cp0, double CpInf):
+        """
+        Convert a :class:`MultiNASA` object `multiNASA` to a :class:`Wilhoit` 
+        object. You must specify the linearity of the molecule `linear`, the number
+        of vibrational modes `Nfreq`, and the number of hindered rotor modes
+        `Nrotors` so the algorithm can determine the appropriate heat capacity
+        limits at zero and infinite temperature.
+        """
+        cdef double Tmin, Tmax, dT, H298, S298
+        cdef numpy.ndarray[numpy.float64_t, ndim=1] Tdata, Cpdata
+        cdef int i
+        
+        from rmgpy.thermo.wilhoit import Wilhoit
+        
+        Tmin = self.Tmin.value_si
+        Tmax = self.Tmax.value_si
+        dT = min(50.0, (Tmax - Tmin) / 100.)
+        
+        Tdata = numpy.arange(Tmin, Tmax, dT)
+        Cpdata = numpy.zeros_like(Tdata)
+        
+        for i in range(Tdata.shape[0]):
+            Cpdata[i] = self.getHeatCapacity(Tdata[i])
+        H298 = self.getEnthalpy(298)
+        S298 = self.getEntropy(298)
+        
+        return Wilhoit().fitToData(Tdata, Cpdata, Cp0, CpInf, H298, S298)

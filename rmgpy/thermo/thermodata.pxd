@@ -28,6 +28,8 @@
 cimport numpy
 
 from rmgpy.thermo.model cimport HeatCapacityModel
+from rmgpy.thermo.wilhoit cimport Wilhoit
+from rmgpy.thermo.nasa cimport NASA
 from rmgpy.quantity cimport ScalarQuantity, ArrayQuantity
 
 ################################################################################
@@ -45,3 +47,7 @@ cdef class ThermoData(HeatCapacityModel):
     cpdef double getEntropy(self, double T) except -100000000
 
     cpdef double getFreeEnergy(self, double T) except 100000000
+
+    cpdef Wilhoit toWilhoit(self)
+
+    cpdef NASA toNASA(self, double Tmin, double Tmax, double Tint, bint fixedTint=?, bint weighting=?, int continuity=?)

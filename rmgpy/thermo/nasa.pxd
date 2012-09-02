@@ -28,6 +28,8 @@
 cimport numpy
 
 from rmgpy.thermo.model cimport HeatCapacityModel
+from rmgpy.thermo.thermodata cimport ThermoData
+from rmgpy.thermo.wilhoit cimport Wilhoit
 
 ################################################################################
 
@@ -42,6 +44,10 @@ cdef class NASAPolynomial(HeatCapacityModel):
     cpdef double getEntropy(self, double T) except -100000000
 
     cpdef double getFreeEnergy(self, double T) except 100000000
+
+    cdef double integral2_T0(self, double T)
+    
+    cdef double integral2_TM1(self, double T)
     
 cdef class NASA(HeatCapacityModel):
 

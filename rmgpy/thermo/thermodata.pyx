@@ -332,3 +332,57 @@ cdef class ThermoData(HeatCapacityModel):
             raise ValueError('Unable to compute Gibbs free energy at {0:g} K using ThermoData model; please supply a value for CpInf.'.format(T))
 
         return self.getEnthalpy(T) - T * self.getEntropy(T)
+
+    cpdef Wilhoit toWilhoit(self):
+        """
+        Convert the Benson model to a Wilhoit model. For the conversion to
+        succeed, you must have set the `Cp0` and `CpInf` attributes of the
+        Benson model.
+        """
+        if self.Cp0 == 0.0 or self.CpInf == 0.0:
+            raise Exception('Cannot convert Benson model to Wilhoit model; first specify Cp0 and CpInf.')
+        from rmgpy.thermo.wilhoit import Wilhoit
+        
+        Tdata = self._Tdata.value_si
+        Cpdata = self._Cpdata.value_si
+        H298 = self.getEnthalpy(298)
+        S298 = self.getEntropy(298)
+        Cp0 = self._Cp0.value_si
+        CpInf = self._CpInf.value_si
+        
+        return Wilhoit().fitToData(Tdata, Cpdata, Cp0, CpInf, H298, S298)
+
+    cpdef NASA toNASA(self, double Tmin, double Tmax, double Tint, bint fixedTint=False, bint weighting=True, int continuity=3):
+        """
+        Convert the object to a :class:`NASA` object. You must specify the
+        minimum and maximum temperatures of the fit `Tmin` and `Tmax` in K, as
+        well as the intermediate temperature `Tint` in K to use as the bridge
+        between the two fitted polynomials. The remaining parameters can be
+        used to modify the fitting algorithm used:
+        
+        * `fixedTint` - ``False`` to allow `Tint` to vary in order to improve the fit, or ``True`` to keep it fixed
+    
+        * `weighting` - ``True`` to weight the fit by :math:`T^{-1}` to emphasize good fit at lower temperatures, or ``False`` to not use weighting
+    
+        * `continuity` - The number of continuity constraints to enforce at `Tint`:
+    
+            - 0: no constraints on continuity of :math:`C_\\mathrm{p}(T)` at `Tint`
+    
+            - 1: constrain :math:`C_\\mathrm{p}(T)` to be continous at `Tint`
+    
+            - 2: constrain :math:`C_\\mathrm{p}(T)` and :math:`\\frac{d C_\\mathrm{p}}{dT}` to be continuous at `Tint`
+    
+            - 3: constrain :math:`C_\\mathrm{p}(T)`, :math:`\\frac{d C_\\mathrm{p}}{dT}`, and :math:`\\frac{d^2 C_\\mathrm{p}}{dT^2}` to be continuous at `Tint`
+    
+            - 4: constrain :math:`C_\\mathrm{p}(T)`, :math:`\\frac{d C_\\mathrm{p}}{dT}`, :math:`\\frac{d^2 C_\\mathrm{p}}{dT^2}`, and :math:`\\frac{d^3 C_\\mathrm{p}}{dT^3}` to be continuous at `Tint`
+    
+            - 5: constrain :math:`C_\\mathrm{p}(T)`, :math:`\\frac{d C_\\mathrm{p}}{dT}`, :math:`\\frac{d^2 C_\\mathrm{p}}{dT^2}`, :math:`\\frac{d^3 C_\\mathrm{p}}{dT^3}`, and :math:`\\frac{d^4 C_\\mathrm{p}}{dT^4}` to be continuous at `Tint`
+            
+        Note that values of `continuity` of 5 or higher effectively constrain all
+        the coefficients to be equal and should be equivalent to fitting only one
+        polynomial (rather than two).
+    
+        Returns the fitted :class:`NASA` object containing the two fitted
+        :class:`NASAPolynomial` objects.
+        """
+        return self.toWilhoit().toNASA(Tmin, Tmax, Tint, fixedTint, weighting, continuity)
