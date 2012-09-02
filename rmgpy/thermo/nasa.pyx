@@ -1,0 +1,232 @@
+# cython: embedsignature=True, cdivision=True
+
+################################################################################
+#
+#   RMG - Reaction Mechanism Generator
+#
+#   Copyright (c) 2002-2009 Prof. William H. Green (whgreen@mit.edu) and the
+#   RMG Team (rmg_dev@mit.edu)
+#
+#   Permission is hereby granted, free of charge, to any person obtaining a
+#   copy of this software and associated documentation files (the "Software"),
+#   to deal in the Software without restriction, including without limitation
+#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
+#   and/or sell copies of the Software, and to permit persons to whom the
+#   Software is furnished to do so, subject to the following conditions:
+#
+#   The above copyright notice and this permission notice shall be included in
+#   all copies or substantial portions of the Software.
+#
+#   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+#   THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+#   DEALINGS IN THE SOFTWARE.
+#
+################################################################################
+
+import numpy
+import cython
+from libc.math cimport log
+
+cimport rmgpy.constants as constants
+import rmgpy.quantity as quantity
+
+################################################################################
+
+cdef class NASAPolynomial(HeatCapacityModel):
+    """
+    A heat capacity model based on the NASA polynomial. Both the 
+    seven-coefficient and nine-coefficient variations are supported.
+    The attributes are:
+    
+    =============== ============================================================
+    Attribute       Description
+    =============== ============================================================
+    `coeffs`        The seven or nine NASA polynomial coefficients
+    `Tmin`          The minimum temperature in K at which the model is valid, or zero if unknown or undefined
+    `Tmax`          The maximum temperature in K at which the model is valid, or zero if unknown or undefined
+    `comment`       Information about the model (e.g. its source)
+    =============== ============================================================
+
+    """
+    
+    def __init__(self, coeffs=None, Tmin=None, Tmax=None, comment=''):
+        HeatCapacityModel.__init__(self, Tmin=Tmin, Tmax=Tmax, comment=comment)
+        self.coeffs = coeffs
+        
+    def __repr__(self):
+        """
+        Return a string representation that can be used to reconstruct the
+        object.
+        """
+        string = 'NASAPolynomial('
+        if self.cm2 == 0 and self.cm1 == 0:
+            string += 'coeffs=[{0:g},{1:g},{2:g},{3:g},{4:g},{5:g},{6:g}]'.format(self.c0, self.c1, self.c2, self.c3, self.c4, self.c5, self.c6)
+        else:
+            string += 'coeffs=[{0:g},{1:g},{2:g},{3:g},{4:g},{5:g},{6:g},{7:g},{8:g}]'.format(self.cm2, self.cm1, self.c0, self.c1, self.c2, self.c3, self.c4, self.c5, self.c6)
+        if self.Tmin is not None: string += ', Tmin={0!r}'.format(self.Tmin)
+        if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
+        if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
+        string += ')'
+        return string
+
+    def __reduce__(self):
+        """
+        A helper function used when pickling an object.
+        """
+        return (NASAPolynomial, ([self.cm2, self.cm1, self.c0, self.c1, self.c2, self.c3, self.c4, self.c5, self.c6], self.Tmin, self.Tmax, self.comment))
+
+    property coeffs:
+        """The set of seven or nine NASA polynomial coefficients."""
+        def __get__(self):
+            if self.cm2 == 0 and self.cm1 == 0:
+                return numpy.array([self.c0, self.c1, self.c2, self.c3, self.c4, self.c5, self.c6])
+            else:
+                return numpy.array([self.cm2, self.cm1, self.c0, self.c1, self.c2, self.c3, self.c4, self.c5, self.c6])
+        def __set__(self, value):
+            if value is None:
+                value = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+            if len(value) == 7:
+                self.c0, self.c1, self.c2, self.c3, self.c4, self.c5, self.c6 = value
+                self.cm2 = 0; self.cm1 = 0
+            elif len(value) == 9:
+                self.cm2, self.cm1, self.c0, self.c1, self.c2, self.c3, self.c4, self.c5, self.c6 = value
+            else:
+                raise ValueError('Invalid number of NASA polynomial coefficients; expected 7 or 9, got {0:d}.'.format(len(value)))
+    
+    cpdef double getHeatCapacity(self, double T) except -1000000000:
+        """
+        Return the constant-pressure heat capacity in J/mol*K at the specified 
+        temperature `T` in K.
+        """
+        return ((self.cm2 / T + self.cm1) / T + self.c0 + T*(self.c1 + T*(self.c2 + T*(self.c3 + self.c4*T)))) * constants.R
+    
+    cpdef double getEnthalpy(self, double T) except 1000000000:
+        """
+        Return the enthalpy in J/mol at the specified temperature `T` in K.
+        """
+        cdef double T2 = T * T
+        cdef double T4 = T2 * T2
+        return ((-self.cm2 / T + self.cm1 * log(T)) / T + self.c0 + self.c1*T/2. + self.c2*T2/3. + self.c3*T2*T/4. + self.c4*T4/5. + self.c5/T) * constants.R * T
+    
+    cpdef double getEntropy(self, double T) except -1000000000:
+        """
+        Return the entropy in J/mol*K at the specified temperature `T` in K.
+        """
+        cdef double T2 = T * T
+        cdef double T4 = T2 * T2
+        return ((-self.cm2 / T / 2. - self.cm1) / T + self.c0*log(T) + self.c1*T + self.c2*T2/2. + self.c3*T2*T/3. + self.c4*T4/4. + self.c6) * constants.R
+    
+    cpdef double getFreeEnergy(self, double T) except 1000000000:
+        """
+        Return the Gibbs free energy in J/mol at the specified temperature `T`
+        in K.
+        """
+        return self.getEnthalpy(T) - T * self.getEntropy(T)
+
+################################################################################
+
+cdef class NASA(HeatCapacityModel):
+    """
+    A heat capacity model based on a set of one, two, or three 
+    :class:`NASAPolynomial` objects. The attributes are:
+    
+    =============== ============================================================
+    Attribute       Description
+    =============== ============================================================
+    `polynomials`   The list of NASA polynomials to use in this model
+    `Tmin`          The minimum temperature in K at which the model is valid, or zero if unknown or undefined
+    `Tmax`          The maximum temperature in K at which the model is valid, or zero if unknown or undefined
+    `comment`       Information about the model (e.g. its source)
+    =============== ============================================================
+
+    """
+    
+    def __init__(self, polynomials=None, Tmin=None, Tmax=None, comment=''):
+        HeatCapacityModel.__init__(self, Tmin=Tmin, Tmax=Tmax, comment=comment)
+        self.polynomials = polynomials
+    
+    def __repr__(self):
+        """
+        Return a string representation that can be used to reconstruct the
+        object.
+        """
+        polys = self.polynomials
+        string = 'NASA(polynomials={0!r}'.format(polys if polys else None)
+        if self.Tmin is not None: string += ', Tmin={0!r}'.format(self.Tmin)
+        if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
+        if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
+        string += ')'
+        return string
+
+    def __reduce__(self):
+        """
+        A helper function used when pickling an object.
+        """
+        return (NASA, (self.polynomials, self.Tmin, self.Tmax, self.comment))
+
+    property polynomials:
+        """The set of one, two, or three NASA polynomials."""
+        def __get__(self):
+            polys = []
+            if self.poly1 is not None: polys.append(self.poly1)
+            if self.poly2 is not None: polys.append(self.poly2)
+            if self.poly3 is not None: polys.append(self.poly3)
+            return polys
+        def __set__(self, value):
+            self.poly1 = None
+            self.poly2 = None
+            self.poly3 = None
+            if value is not None:
+                if len(value) == 1:
+                    self.poly1 = value[0]
+                elif len(value) == 2:
+                    self.poly1 = value[0]
+                    self.poly2 = value[1]
+                elif len(value) == 3:
+                    self.poly1 = value[0]
+                    self.poly2 = value[1]
+                    self.poly3 = value[2]
+                elif len(value) > 3:
+                    raise ValueError('Only one, two, or three NASA polynomials can be stored in a single NASA object.')
+
+    cpdef NASAPolynomial selectPolynomial(self, double T):
+        if self.poly1 is not None and self.poly1.isTemperatureValid(T):
+            return self.poly1
+        elif self.poly2 is not None and self.poly2.isTemperatureValid(T):
+            return self.poly2
+        elif self.poly3 is not None and self.poly3.isTemperatureValid(T):
+            return self.poly3
+        else:
+            raise ValueError('No valid NASA polynomial at temperature {0:g} K.'.format(T))
+    
+    cpdef double getHeatCapacity(self, double T) except -1000000000:
+        """
+        Return the dimensionless constant-pressure heat capacity
+        :math:`C_\\mathrm{p}(T)/R` at the specified temperature `T` in K.
+        """
+        return self.selectPolynomial(T).getHeatCapacity(T)
+    
+    cpdef double getEnthalpy(self, double T) except 1000000000:
+        """
+        Return the dimensionless enthalpy :math:`H(T)/RT` at the specified
+        temperature `T` in K.
+        """
+        return self.selectPolynomial(T).getEnthalpy(T)
+    
+    cpdef double getEntropy(self, double T) except -1000000000:
+        """
+        Return the dimensionless entropy :math:`S(T)/R` at the specified
+        temperature `T` in K.
+        """
+        return self.selectPolynomial(T).getEntropy(T)
+    
+    cpdef double getFreeEnergy(self, double T) except 1000000000:
+        """
+        Return the dimensionless Gibbs free energy :math:`G(T)/RT` at the
+        specified temperature `T` in K.
+        """
+        return self.selectPolynomial(T).getFreeEnergy(T)
