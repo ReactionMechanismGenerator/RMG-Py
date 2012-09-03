@@ -230,3 +230,42 @@ cdef class PDepKineticsModel(KineticsModel):
         method must be overloaded in the derived class.
         """
         raise NotImplementedError('Unexpected call to PDepKineticsModel.getRateCoefficient(); you should be using a class derived from PDepKineticsModel.')
+
+################################################################################
+
+cdef class TunnelingModel:
+    """
+    A base class for models of quantum mechanical tunneling through a reaction
+    barrier. The attributes are:
+    
+    =============== ============================================================
+    Attribute       Description
+    =============== ============================================================
+    `frequency`     The negative frequency along the reaction coordinate
+    =============== ============================================================
+
+    """
+
+    def __init__(self, frequency=None):
+        self.frequency = frequency
+
+    property frequency:
+        """The negative frequency along the reaction coordinate."""
+        def __get__(self):
+            return self._frequency
+        def __set__(self, value):
+            self._frequency = quantity.Frequency(value)
+
+    cpdef double calculateTunnelingFactor(self, double T) except -100000000:
+        """
+        Calculate and return the value of the tunneling correction for
+        the reaction at the temperature `T` in K.
+        """
+        raise NotImplementedError('Unexpected call to Tunneling.calculateTunnelingFactor(); you should be using a class derived from TunnelingModel.')
+
+    cpdef numpy.ndarray calculateTunnelingFunction(self, numpy.ndarray Elist):
+        """
+        Calculate and return the value of the tunneling correction for
+        the reaction at the energies `Elist` in J/mol.
+        """
+        raise NotImplementedError('Unexpected call to Tunneling.calculateTunnelingFunction(); you should be using a class derived from TunnelingModel.')

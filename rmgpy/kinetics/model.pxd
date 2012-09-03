@@ -54,3 +54,13 @@ cdef class PDepKineticsModel(KineticsModel):
     cpdef double getEffectivePressure(self, double P, list species, numpy.ndarray fractions) except -1
 
     cpdef double getRateCoefficient(self, double T, double P=?) except -1
+
+################################################################################
+
+cdef class TunnelingModel:
+
+    cdef public ScalarQuantity _frequency
+
+    cpdef double calculateTunnelingFactor(self, double T) except -100000000
+
+    cpdef numpy.ndarray calculateTunnelingFunction(self, numpy.ndarray Elist)
