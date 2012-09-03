@@ -44,3 +44,16 @@ cdef class Arrhenius(KineticsModel):
     cpdef changeT0(self, double T0)
 
     cpdef fitToData(self, numpy.ndarray Tlist, numpy.ndarray klist, str kunits, double T0=?, numpy.ndarray weights=?, bint threeParams=?)
+
+################################################################################
+
+cdef class PDepArrhenius(PDepKineticsModel):
+    
+    cdef public ArrayQuantity _pressures
+    cdef public list arrhenius
+    
+    cdef getAdjacentExpressions(self, double P)
+    
+    cpdef double getRateCoefficient(self, double T, double P=?) except -1
+    
+    cpdef fitToData(self, numpy.ndarray Tlist, numpy.ndarray Plist, numpy.ndarray K, str kunits, double T0=?)

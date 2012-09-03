@@ -169,3 +169,116 @@ cdef class Arrhenius(KineticsModel):
         )
         
         return self
+
+################################################################################
+
+cdef class PDepArrhenius(PDepKineticsModel):
+    """
+    A kinetic model of a phenomenological rate coefficient :math:`k(T,P)` where
+    a set of Arrhenius kinetics are stored at a variety of pressures and
+    interpolated between on a logarithmic scale. The attributes are:
+
+    =============== ============================================================
+    Attribute       Description
+    =============== ============================================================
+    `pressures`     The list of pressures
+    `arrhenius`     The list of :class:`Arrhenius` objects at each pressure
+    `Tmin`          The minimum temperature in K at which the model is valid, or zero if unknown or undefined
+    `Tmax`          The maximum temperature in K at which the model is valid, or zero if unknown or undefined
+    `Pmin`          The minimum pressure in bar at which the model is valid, or zero if unknown or undefined
+    `Pmax`          The maximum pressure in bar at which the model is valid, or zero if unknown or undefined
+    `efficiencies`  A dict associating chemical species with associated efficiencies
+    `order`         The reaction order (1 = first, 2 = second, etc.)
+    `comment`       Information about the model (e.g. its source)
+    =============== ============================================================
+    
+    """
+
+    def __init__(self, pressures=None, arrhenius=None, Tmin=None, Tmax=None, Pmin=None, Pmax=None, comment=''):
+        PDepKineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, comment=comment)
+        self.pressures = pressures
+        self.arrhenius = arrhenius or []
+
+    def __repr__(self):
+        """
+        Return a string representation that can be used to reconstruct the
+        PDepArrhenius object.
+        """
+        string = 'PDepArrhenius(pressures={0!r}, arrhenius={1!r}'.format(self.pressures, self.arrhenius)
+        if self.Tmin is not None: string += ', Tmin={0!r}'.format(self.Tmin)
+        if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
+        if self.Pmin is not None: string += ', Pmin={0!r}'.format(self.Pmin)
+        if self.Pmax is not None: string += ', Pmax={0!r}'.format(self.Pmax)
+        if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
+        string += ')'
+        return string
+
+    def __reduce__(self):
+        """
+        A helper function used when pickling a PDepArrhenius object.
+        """
+        return (PDepArrhenius, (self.pressures, self.arrhenius, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.comment))
+    
+    property pressures:
+        """The list of pressures."""
+        def __get__(self):
+            return self._pressures
+        def __set__(self, value):
+            self._pressures = quantity.Pressure(value)
+
+    cdef getAdjacentExpressions(self, double P):
+        """
+        Returns the pressures and Arrhenius expressions for the pressures that
+        most closely bound the specified pressure `P` in Pa.
+        """
+        cdef Arrhenius arrh
+        cdef numpy.ndarray[numpy.float64_t,ndim=1] pressures
+        cdef int i, ilow, ihigh
+        
+        pressures = self._pressures.value_si
+        
+        ilow = 0; ihigh = -1
+        for i in range(pressures.shape[0]):
+            if pressures[i] <= P:
+                ilow = i
+            if pressures[i] >= P and ihigh == -1:
+                ihigh = i
+        return pressures[ilow], pressures[ihigh], self.arrhenius[ilow], self.arrhenius[ihigh]
+    
+    cpdef double getRateCoefficient(self, double T, double P=0) except -1:
+        """
+        Return the rate coefficient in the appropriate combination of cm^3, 
+        mol, and s at temperature `T` in K and pressure `P` in Pa.
+        """
+        cdef double Plow, Phigh, klow, khigh, k
+        cdef Arrhenius alow, ahigh
+        cdef int j
+        
+        if P == 0:
+            raise ValueError('No pressure specified to pressure-dependent PDepArrhenius.getRateCoefficient().')
+        
+        k = 0.0
+        Plow, Phigh, alow, ahigh = self.getAdjacentExpressions(P)
+        if Plow == Phigh:
+            k = alow.getRateCoefficient(T)
+        else:
+            klow = alow.getRateCoefficient(T)
+            khigh = ahigh.getRateCoefficient(T)
+            if klow == khigh == 0.0: return 0.0
+            k = klow * 10**(log10(P/Plow)/log10(Phigh/Plow)*log10(khigh/klow))
+        return k
+    
+    cpdef fitToData(self, numpy.ndarray Tlist, numpy.ndarray Plist, numpy.ndarray K, str kunits, double T0=1):
+        """
+        Fit the pressure-dependent Arrhenius model to a matrix of rate
+        coefficient data `K` with units of `kunits` corresponding to a set of 
+        temperatures `Tlist` in K and pressures `Plist` in Pa. An Arrhenius 
+        model is fit at each pressure.
+        """
+        cdef int i
+        self.pressures = (Plist*1e-5,"bar")
+        self.arrhenius = []
+        for i in range(len(Plist)):
+            arrhenius = Arrhenius().fitToData(Tlist, K[:,i], kunits, T0)
+            self.arrhenius.append(arrhenius)
+        return self
