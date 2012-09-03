@@ -8,7 +8,7 @@ RMG Developer's Guide
     
     introduction
     chemkin
-    kinetics
+    kinetics/index
     quantities/index
     reaction
     species
