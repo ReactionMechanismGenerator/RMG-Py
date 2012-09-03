@@ -57,3 +57,19 @@ cdef class PDepArrhenius(PDepKineticsModel):
     cpdef double getRateCoefficient(self, double T, double P=?) except -1
     
     cpdef fitToData(self, numpy.ndarray Tlist, numpy.ndarray Plist, numpy.ndarray K, str kunits, double T0=?)
+
+################################################################################
+
+cdef class MultiArrhenius(KineticsModel):
+    
+    cdef public list arrhenius
+    
+    cpdef double getRateCoefficient(self, double T, double P=?) except -1
+
+################################################################################
+
+cdef class MultiPDepArrhenius(PDepKineticsModel):
+    
+    cdef public list arrhenius
+    
+    cpdef double getRateCoefficient(self, double T, double P=?) except -1

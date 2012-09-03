@@ -282,3 +282,133 @@ cdef class PDepArrhenius(PDepKineticsModel):
             arrhenius = Arrhenius().fitToData(Tlist, K[:,i], kunits, T0)
             self.arrhenius.append(arrhenius)
         return self
+
+################################################################################
+
+cdef class MultiArrhenius(KineticsModel):
+    """
+    A kinetics model based on a set of (modified) Arrhenius equations, which
+    are summed to obtain the overall rate. The attributes are:
+
+    =============== =============================================================
+    Attribute       Description
+    =============== =============================================================
+    `arrhenius`     A list of the :class:`Arrhenius` kinetics
+    `Tmin`          The minimum temperature at which the model is valid, or zero if unknown or undefined
+    `Tmax`          The maximum temperature at which the model is valid, or zero if unknown or undefined
+    `comment`       Information about the model (e.g. its source)
+    =============== =============================================================
+    
+    """
+    
+    def __init__(self, arrhenius=None, Tmin=None, Tmax=None, comment=''):
+        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, comment=comment)
+        self.arrhenius = arrhenius
+        
+    def __repr__(self):
+        """
+        Return a string representation that can be used to reconstruct the
+        MultiArrhenius object.
+        """
+        string = 'MultiArrhenius(arrhenius={0!r}'.format(self.arrhenius)
+        if self.Tmin is not None: string += ', Tmin={0!r}'.format(self.Tmin)
+        if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
+        if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
+        string += ')'
+        return string
+
+    def __reduce__(self):
+        """
+        A helper function used when pickling an MultiArrhenius object.
+        """
+        return (MultiArrhenius, (self.arrhenius, self.Tmin, self.Tmax, self.comment))
+
+    cpdef double getRateCoefficient(self, double T, double P=0.0) except -1:
+        """
+        Return the rate coefficient in the appropriate combination of m^3, 
+        mol, and s at temperature `T` in K. 
+        """
+        cdef double k
+        cdef Arrhenius arrh
+        k = 0.0
+        for arrh in self.arrhenius:
+            k += arrh.getRateCoefficient(T)
+        return k
+
+################################################################################
+
+cdef class MultiPDepArrhenius(PDepKineticsModel):
+    """
+    A kinetic model of a phenomenological rate coefficient :math:`k(T,P)` where
+    sets of Arrhenius kinetics are stored at a variety of pressures and
+    interpolated between on a logarithmic scale. The attributes are:
+
+    =============== =============================================================
+    Attribute       Description
+    =============== =============================================================
+    `arrhenius`     A list of the :class:`PDepArrhenius` kinetics at each temperature
+    `Tmin`          The minimum temperature at which the model is valid, or zero if unknown or undefined
+    `Tmax`          The maximum temperature at which the model is valid, or zero if unknown or undefined
+    `comment`       Information about the model (e.g. its source)
+    =============== =============================================================
+    
+    """
+    
+    def __init__(self, arrhenius=None, Tmin=None, Tmax=None, Pmin=None, Pmax=None, comment=''):
+        PDepKineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, comment=comment)
+        self.arrhenius = arrhenius
+        
+    def __repr__(self):
+        """
+        Return a string representation that can be used to reconstruct the
+        MultiPDepArrhenius object.
+        """
+        string = 'MultiPDepArrhenius(arrhenius={0!r}'.format(self.arrhenius)
+        if self.Tmin is not None: string += ', Tmin={0!r}'.format(self.Tmin)
+        if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
+        if self.Pmin is not None: string += ', Pmin={0!r}'.format(self.Pmin)
+        if self.Pmax is not None: string += ', Pmax={0!r}'.format(self.Pmax)
+        if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
+        string += ')'
+        return string
+
+    def __reduce__(self):
+        """
+        A helper function used when pickling an MultiPDepArrhenius object.
+        """
+        return (MultiPDepArrhenius, (self.arrhenius, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.comment))
+
+    cpdef double getRateCoefficient(self, double T, double P=0.0) except -1:
+        """
+        Return the rate coefficient in the appropriate combination of m^3, 
+        mol, and s at temperature `T` in K and pressure `P` in Pa.
+        """
+        cdef double Plow, Phigh, klow, khigh, Plow0, Phigh0
+        cdef double k
+        cdef PDepArrhenius arrh
+        
+        if P == 0:
+            raise ValueError('No pressure specified to pressure-dependent MultiPDepArrhenius.getRateCoefficient().')
+        
+        Plow0 = 0.0; Phigh0 = 0.0; klow = 0.0; khigh = 0.0
+        
+        for arrh in self.arrhenius:
+            Plow, Phigh, alow, ahigh = arrh.getAdjacentExpressions(P)
+            if Plow0 != 0:
+                assert Plow0 == Plow
+            else:
+                Plow0 = Plow
+            if Phigh0 != 0:
+                assert Phigh0 == Phigh
+            else:
+                Phigh0 = Phigh
+                
+            klow += alow.getRateCoefficient(T)
+            khigh += ahigh.getRateCoefficient(T)
+        
+        if klow == khigh: 
+            k = khigh
+        else:
+            k = klow * 10**(log10(P/Plow)/log10(Phigh/Plow)*log10(khigh/klow))
+
+        return k

@@ -399,3 +399,315 @@ class TestPDepArrhenius(unittest.TestCase):
         self.assertAlmostEqual(self.kinetics.Pmax.value, kinetics.Pmax.value, 4)
         self.assertEqual(self.kinetics.Pmax.units, kinetics.Pmax.units)
         self.assertEqual(self.kinetics.comment, kinetics.comment)
+        
+################################################################################
+
+class TestMultiArrhenius(unittest.TestCase):
+    """
+    Contains unit tests of the :class:`MultiArrhenius` class.
+    """
+    
+    def setUp(self):
+        """
+        A function run before each unit test in this class.
+        """
+        self.Tmin = 350.
+        self.Tmax = 1500.
+        self.comment = ''
+        self.arrhenius = [
+            Arrhenius(
+                A = (9.3e-14,"cm^3/(molecule*s)"),
+                n = 0.0,
+                Ea = (4740*constants.R*0.001,"kJ/mol"),
+                T0 = (1,"K"),
+                Tmin = (self.Tmin,"K"),
+                Tmax = (self.Tmax,"K"),
+                comment = self.comment,
+            ),
+            Arrhenius(
+                A = (1.4e-9,"cm^3/(molecule*s)"),
+                n = 0.0,
+                Ea = (11200*constants.R*0.001,"kJ/mol"),
+                T0 = (1,"K"),
+                Tmin = (self.Tmin,"K"),
+                Tmax = (self.Tmax,"K"),
+                comment = self.comment,
+            ),
+        ]
+        self.kinetics = MultiArrhenius(
+            arrhenius = self.arrhenius,
+            Tmin = (self.Tmin,"K"),
+            Tmax = (self.Tmax,"K"),
+            comment = self.comment,
+        )
+    
+    def test_arrhenius(self):
+        """
+        Test that the MultiArrhenius A property was properly set.
+        """
+        self.assertEqual(self.kinetics.arrhenius, self.arrhenius)
+        
+    def test_Tmin(self):
+        """
+        Test that the MultiArrhenius Tmin property was properly set.
+        """
+        self.assertAlmostEqual(self.kinetics.Tmin.value_si, self.Tmin, 6)
+        
+    def test_Tmax(self):
+        """
+        Test that the MultiArrhenius Tmax property was properly set.
+        """
+        self.assertAlmostEqual(self.kinetics.Tmax.value_si, self.Tmax, 6)
+        
+    def test_comment(self):
+        """
+        Test that the MultiArrhenius comment property was properly set.
+        """
+        self.assertEqual(self.kinetics.comment, self.comment)
+        
+    def test_isTemperatureValid(self):
+        """
+        Test the MultiArrhenius.isTemperatureValid() method.
+        """
+        Tdata = numpy.array([200,400,600,800,1000,1200,1400,1600,1800,2000])
+        validdata = numpy.array([False,True,True,True,True,True,True,False,False,False], numpy.bool)
+        for T, valid in zip(Tdata, validdata):
+            valid0 = self.kinetics.isTemperatureValid(T)
+            self.assertEqual(valid0, valid)
+                
+    def test_getRateCoefficient(self):
+        """
+        Test the MultiArrhenius.getRateCoefficient() method.
+        """
+        Tlist = numpy.array([200,400,600,800,1000,1200,1400,1600,1800,2000])
+        kexplist = numpy.array([2.85400e-06, 4.00384e-01, 2.73563e+01, 8.50699e+02, 1.20181e+04, 7.56312e+04, 2.84724e+05, 7.71702e+05, 1.67743e+06, 3.12290e+06])
+        for T, kexp in zip(Tlist, kexplist):
+            kact = self.kinetics.getRateCoefficient(T)
+            self.assertAlmostEqual(kexp, kact, delta=1e-4*kexp)
+        
+    def test_pickle(self):
+        """
+        Test that a MultiArrhenius object can be pickled and unpickled with no loss
+        of information.
+        """
+        import cPickle
+        kinetics = cPickle.loads(cPickle.dumps(self.kinetics))
+        self.assertEqual(len(self.kinetics.arrhenius), len(kinetics.arrhenius))
+        for arrh0, arrh in zip(self.kinetics.arrhenius, kinetics.arrhenius):
+            self.assertAlmostEqual(arrh0.A.value, arrh.A.value, delta=1e-18)
+            self.assertEqual(arrh0.A.units, arrh.A.units)
+            self.assertAlmostEqual(arrh0.n, arrh.n, 4)
+            self.assertAlmostEqual(arrh0.Ea.value, arrh.Ea.value, 4)
+            self.assertEqual(arrh0.Ea.units, arrh.Ea.units)
+            self.assertAlmostEqual(arrh0.T0.value, arrh.T0.value, 4)
+            self.assertEqual(arrh0.T0.units, arrh.T0.units)
+        self.assertAlmostEqual(self.kinetics.Tmin.value, kinetics.Tmin.value, 4)
+        self.assertEqual(self.kinetics.Tmin.units, kinetics.Tmin.units)
+        self.assertAlmostEqual(self.kinetics.Tmax.value, kinetics.Tmax.value, 4)
+        self.assertEqual(self.kinetics.Tmax.units, kinetics.Tmax.units)
+        self.assertEqual(self.kinetics.comment, kinetics.comment)
+    
+    def test_repr(self):
+        """
+        Test that a MultiArrhenius object can be reconstructed from its repr()
+        output with no loss of information.
+        """
+        exec('kinetics = {0!r}'.format(self.kinetics))
+        self.assertEqual(len(self.kinetics.arrhenius), len(kinetics.arrhenius))
+        for arrh0, arrh in zip(self.kinetics.arrhenius, kinetics.arrhenius):
+            self.assertAlmostEqual(arrh0.A.value, arrh.A.value, delta=1e-18)
+            self.assertEqual(arrh0.A.units, arrh.A.units)
+            self.assertAlmostEqual(arrh0.n, arrh.n, 4)
+            self.assertAlmostEqual(arrh0.Ea.value, arrh.Ea.value, 4)
+            self.assertEqual(arrh0.Ea.units, arrh.Ea.units)
+            self.assertAlmostEqual(arrh0.T0.value, arrh.T0.value, 4)
+            self.assertEqual(arrh0.T0.units, arrh.T0.units)
+        self.assertAlmostEqual(self.kinetics.Tmin.value, kinetics.Tmin.value, 4)
+        self.assertEqual(self.kinetics.Tmin.units, kinetics.Tmin.units)
+        self.assertAlmostEqual(self.kinetics.Tmax.value, kinetics.Tmax.value, 4)
+        self.assertEqual(self.kinetics.Tmax.units, kinetics.Tmax.units)
+        self.assertEqual(self.kinetics.comment, kinetics.comment)
+
+################################################################################
+
+class TestMultiPDepArrhenius(unittest.TestCase):
+    """
+    Contains unit tests of the :class:`MultiPDepArrhenius` class.
+    """
+    
+    def setUp(self):
+        """
+        A function run before each unit test in this class.
+        """
+        self.Tmin = 350.
+        self.Tmax = 1500.
+        self.Pmin = 1e-1
+        self.Pmax = 1e1
+        self.pressures = numpy.array([1e-1,1e1])
+        self.comment = 'CH3 + C2H6 <=> CH4 + C2H5 (Baulch 2005)'
+        self.arrhenius = [
+            PDepArrhenius(
+                pressures = (self.pressures,"bar"),
+                arrhenius = [
+                    Arrhenius(
+                        A = (9.3e-16,"cm^3/(molecule*s)"),
+                        n = 0.0,
+                        Ea = (4740*constants.R*0.001,"kJ/mol"),
+                        T0 = (1,"K"),
+                        Tmin = (self.Tmin,"K"),
+                        Tmax = (self.Tmax,"K"),
+                        comment = self.comment,
+                    ),
+                    Arrhenius(
+                        A = (9.3e-14,"cm^3/(molecule*s)"),
+                        n = 0.0,
+                        Ea = (4740*constants.R*0.001,"kJ/mol"),
+                        T0 = (1,"K"),
+                        Tmin = (self.Tmin,"K"),
+                        Tmax = (self.Tmax,"K"),
+                        comment = self.comment,
+                    ),
+                ],
+                Tmin = (self.Tmin,"K"), 
+                Tmax = (self.Tmax,"K"), 
+                Pmin = (self.Pmin,"bar"), 
+                Pmax = (self.Pmax,"bar"),
+                comment = self.comment,
+            ),
+            PDepArrhenius(
+                pressures = (self.pressures,"bar"),
+                arrhenius = [
+                    Arrhenius(
+                        A = (1.4e-11,"cm^3/(molecule*s)"),
+                        n = 0.0,
+                        Ea = (11200*constants.R*0.001,"kJ/mol"),
+                        T0 = (1,"K"),
+                        Tmin = (self.Tmin,"K"),
+                        Tmax = (self.Tmax,"K"),
+                        comment = self.comment,
+                    ),
+                    Arrhenius(
+                        A = (1.4e-9,"cm^3/(molecule*s)"),
+                        n = 0.0,
+                        Ea = (11200*constants.R*0.001,"kJ/mol"),
+                        T0 = (1,"K"),
+                        Tmin = (self.Tmin,"K"),
+                        Tmax = (self.Tmax,"K"),
+                        comment = self.comment,
+                    ),
+                ],
+                Tmin = (self.Tmin,"K"), 
+                Tmax = (self.Tmax,"K"), 
+                Pmin = (self.Pmin,"bar"), 
+                Pmax = (self.Pmax,"bar"),
+                comment = self.comment,
+            ),
+        ]            
+        self.kinetics = MultiPDepArrhenius(
+            arrhenius = self.arrhenius,
+            Tmin = (self.Tmin,"K"),
+            Tmax = (self.Tmax,"K"),
+            Pmin = (self.Pmin,"bar"),
+            Pmax = (self.Pmax,"bar"),
+            comment = self.comment,
+        )
+    
+    def test_arrhenius(self):
+        """
+        Test that the MultiPDepArrhenius arrhenius property was properly set.
+        """
+        self.assertEqual(self.kinetics.arrhenius, self.arrhenius)
+        
+    def test_Tmin(self):
+        """
+        Test that the MultiPDepArrhenius Tmin property was properly set.
+        """
+        self.assertAlmostEqual(self.kinetics.Tmin.value_si, self.Tmin, 6)
+        
+    def test_Tmax(self):
+        """
+        Test that the MultiPDepArrhenius Tmax property was properly set.
+        """
+        self.assertAlmostEqual(self.kinetics.Tmax.value_si, self.Tmax, 6)
+        
+    def test_Pmin(self):
+        """
+        Test that the MultiPDepArrhenius Pmin property was properly set.
+        """
+        self.assertAlmostEqual(self.kinetics.Pmin.value_si*1e-5, self.Pmin, 6)
+        
+    def test_Pmax(self):
+        """
+        Test that the MultiPDepArrhenius Pmax property was properly set.
+        """
+        self.assertAlmostEqual(self.kinetics.Pmax.value_si*1e-5, self.Pmax, 6)
+        
+    def test_comment(self):
+        """
+        Test that the MultiPDepArrhenius comment property was properly set.
+        """
+        self.assertEqual(self.kinetics.comment, self.comment)
+        
+    def test_isTemperatureValid(self):
+        """
+        Test the MultiPDepArrhenius.isTemperatureValid() method.
+        """
+        Tdata = numpy.array([200,400,600,800,1000,1200,1400,1600,1800,2000])
+        validdata = numpy.array([False,True,True,True,True,True,True,False,False,False], numpy.bool)
+        for T, valid in zip(Tdata, validdata):
+            valid0 = self.kinetics.isTemperatureValid(T)
+            self.assertEqual(valid0, valid)
+                
+    def test_isPressureValid(self):
+        """
+        Test the MultiPDepArrhenius.isPressureValid() method.
+        """
+        Pdata = numpy.array([1e3,1e4,1e5,1e6,1e7])
+        validdata = numpy.array([False,True,True,True,False], numpy.bool)
+        for P, valid in zip(Pdata, validdata):
+            valid0 = self.kinetics.isPressureValid(P)
+            self.assertEqual(valid0, valid)
+                
+    def test_getRateCoefficient(self):
+        """
+        Test the MultiPDepArrhenius.getRateCoefficient() method.
+        """
+        Tlist = numpy.array([200,400,600,800,1000,1200,1400,1600,1800,2000])
+        Plist = numpy.array([1e4,1e5,1e6])
+        kexplist = numpy.array([
+            [2.85400e-08, 4.00384e-03, 2.73563e-01, 8.50699e+00, 1.20181e+02, 7.56312e+02, 2.84724e+03, 7.71702e+03, 1.67743e+04, 3.12290e+04],
+            [2.85400e-07, 4.00384e-02, 2.73563e+00, 8.50699e+01, 1.20181e+03, 7.56312e+03, 2.84724e+04, 7.71702e+04, 1.67743e+05, 3.12290e+05],
+            [2.85400e-06, 4.00384e-01, 2.73563e+01, 8.50699e+02, 1.20181e+04, 7.56312e+04, 2.84724e+05, 7.71702e+05, 1.67743e+06, 3.12290e+06],
+        ]).T
+        for i in range(Tlist.shape[0]):
+            for j in range(Plist.shape[0]):
+                kexp = kexplist[i,j]
+                kact = self.kinetics.getRateCoefficient(Tlist[i], Plist[j])
+                self.assertAlmostEqual(kexp, kact, delta=1e-4*kexp)
+        
+    def test_pickle(self):
+        """
+        Test that a MultiPDepArrhenius object can be pickled and unpickled with
+        no loss of information.
+        """
+        import cPickle
+        kinetics = cPickle.loads(cPickle.dumps(self.kinetics))
+        self.assertEqual(len(self.kinetics.arrhenius), len(kinetics.arrhenius))
+        self.assertAlmostEqual(self.kinetics.Tmin.value, kinetics.Tmin.value, 4)
+        self.assertEqual(self.kinetics.Tmin.units, kinetics.Tmin.units)
+        self.assertAlmostEqual(self.kinetics.Tmax.value, kinetics.Tmax.value, 4)
+        self.assertEqual(self.kinetics.Tmax.units, kinetics.Tmax.units)
+        self.assertEqual(self.kinetics.comment, kinetics.comment)
+    
+    def test_repr(self):
+        """
+        Test that a MultiPDepArrhenius object can be reconstructed from its
+        repr() output with no loss of information.
+        """
+        exec('kinetics = {0!r}'.format(self.kinetics))
+        self.assertEqual(len(self.kinetics.arrhenius), len(kinetics.arrhenius))
+        self.assertAlmostEqual(self.kinetics.Tmin.value, kinetics.Tmin.value, 4)
+        self.assertEqual(self.kinetics.Tmin.units, kinetics.Tmin.units)
+        self.assertAlmostEqual(self.kinetics.Tmax.value, kinetics.Tmax.value, 4)
+        self.assertEqual(self.kinetics.Tmax.units, kinetics.Tmax.units)
+        self.assertEqual(self.kinetics.comment, kinetics.comment)
