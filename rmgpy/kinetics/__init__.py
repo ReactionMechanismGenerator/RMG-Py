@@ -27,3 +27,10 @@
 #   DEALINGS IN THE SOFTWARE.
 #
 ################################################################################
+
+from .arrhenius import *
+from .chebyshev import *
+from .falloff import *
+from .kineticsdata import *
+from .tunneling import *
+from .model import *
