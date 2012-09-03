@@ -36,3 +36,15 @@ cdef class Wigner(TunnelingModel):
     cpdef double calculateTunnelingFactor(self, double T) except -100000000
 
     cpdef numpy.ndarray calculateTunnelingFunction(self, numpy.ndarray Elist)
+
+################################################################################
+
+cdef class Eckart(TunnelingModel):
+
+    cdef public ScalarQuantity _E0_reac
+    cdef public ScalarQuantity _E0_TS
+    cdef public ScalarQuantity _E0_prod
+
+    cpdef double calculateTunnelingFactor(self, double T) except -100000000
+
+    cpdef numpy.ndarray calculateTunnelingFunction(self, numpy.ndarray Elist)

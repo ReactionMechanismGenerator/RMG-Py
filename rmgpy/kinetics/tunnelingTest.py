@@ -88,3 +88,90 @@ class TestWigner(unittest.TestCase):
         exec('tunneling = {0!r}'.format(self.tunneling))
         self.assertAlmostEqual(self.tunneling.frequency.value, tunneling.frequency.value, 2)
         self.assertEqual(self.tunneling.frequency.units, tunneling.frequency.units)
+
+################################################################################
+
+class TestEckart(unittest.TestCase):
+    """
+    Contains unit tests of the :class:`Eckart` class.
+    """
+    
+    def setUp(self):
+        """
+        A function run before each unit test in this class.
+        """
+        self.frequency = -2017.96
+        self.E0_reac = -295.563
+        self.E0_TS = -12.7411
+        self.E0_prod = (-10.2664) + (-253.48)
+        self.tunneling = Eckart(
+            frequency = (self.frequency,"cm^-1"),
+            E0_reac = (self.E0_reac,"kJ/mol"),
+            E0_TS = (self.E0_TS,"kJ/mol"),
+            E0_prod = (self.E0_prod,"kJ/mol"),
+        )
+
+    def test_frequency(self):
+        """
+        Test that the Eckart frequency property was properly set.
+        """
+        self.assertAlmostEqual(self.tunneling.frequency.value_si, self.frequency, 4)
+
+    def test_E0_reac(self):
+        """
+        Test that the Eckart E0_reac property was properly set.
+        """
+        self.assertAlmostEqual(self.tunneling.E0_reac.value_si*0.001, self.E0_reac, 4)
+        
+    def test_E0_TS(self):
+        """
+        Test that the Eckart E0_TS property was properly set.
+        """
+        self.assertAlmostEqual(self.tunneling.E0_TS.value_si*0.001, self.E0_TS, 4)
+        
+    def test_E0_prod(self):
+        """
+        Test that the Eckart E0_prod property was properly set.
+        """
+        self.assertAlmostEqual(self.tunneling.E0_prod.value_si*0.001, self.E0_prod, 4)
+    
+    def test_calculateTunnelingFactor(self):
+        """
+        Test the Eckart.calculateTunnelingFactor() method.
+        """
+        Tlist = numpy.array([300,500,1000,1500,2000])
+        kexplist = numpy.array([1623051., 7.69349, 1.46551, 1.18111, 1.09858])
+        for T, kexp in zip(Tlist, kexplist):
+            kact = self.tunneling.calculateTunnelingFactor(T)
+            self.assertAlmostEqual(kexp, kact, delta=1e-3*kexp)
+
+    def test_pickle(self):
+        """
+        Test that an Eckart object can be successfully pickled and
+        unpickled with no loss of information.
+        """
+        import cPickle
+        tunneling = cPickle.loads(cPickle.dumps(self.tunneling))
+        self.assertAlmostEqual(self.tunneling.frequency.value, tunneling.frequency.value, 2)
+        self.assertEqual(self.tunneling.frequency.units, tunneling.frequency.units)
+        self.assertAlmostEqual(self.tunneling.E0_reac.value, tunneling.E0_reac.value, 3)
+        self.assertEqual(self.tunneling.E0_reac.units, tunneling.E0_reac.units)
+        self.assertAlmostEqual(self.tunneling.E0_TS.value, tunneling.E0_TS.value, 3)
+        self.assertEqual(self.tunneling.E0_TS.units, tunneling.E0_TS.units)
+        self.assertAlmostEqual(self.tunneling.E0_prod.value, tunneling.E0_prod.value, 3)
+        self.assertEqual(self.tunneling.E0_prod.units, tunneling.E0_prod.units)
+        
+    def test_repr(self):
+        """
+        Test that an Eckart object can be successfully reconstructed
+        from its repr() output with no loss of information.
+        """
+        exec('tunneling = {0!r}'.format(self.tunneling))
+        self.assertAlmostEqual(self.tunneling.frequency.value, tunneling.frequency.value, 2)
+        self.assertEqual(self.tunneling.frequency.units, tunneling.frequency.units)
+        self.assertAlmostEqual(self.tunneling.E0_reac.value, tunneling.E0_reac.value, 3)
+        self.assertEqual(self.tunneling.E0_reac.units, tunneling.E0_reac.units)
+        self.assertAlmostEqual(self.tunneling.E0_TS.value, tunneling.E0_TS.value, 3)
+        self.assertEqual(self.tunneling.E0_TS.units, tunneling.E0_TS.units)
+        self.assertAlmostEqual(self.tunneling.E0_prod.value, tunneling.E0_prod.value, 3)
+        self.assertEqual(self.tunneling.E0_prod.units, tunneling.E0_prod.units)
