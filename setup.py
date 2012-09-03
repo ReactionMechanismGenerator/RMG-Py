@@ -60,6 +60,7 @@ def getMainExtensionModules():
         # Kinetics
         Extension('rmgpy.kinetics.arrhenius', ['rmgpy/kinetics/arrhenius.pyx']),
         Extension('rmgpy.kinetics.chebyshev', ['rmgpy/kinetics/chebyshev.pyx']),
+        Extension('rmgpy.kinetics.falloff', ['rmgpy/kinetics/falloff.pyx']),
         Extension('rmgpy.kinetics.model', ['rmgpy/kinetics/model.pyx']),
         # Molecules and molecular representations
         Extension('rmgpy.molecule.atomtype', ['rmgpy/molecule/atomtype.py'], include_dirs=['.']),
