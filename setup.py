@@ -86,13 +86,9 @@ def getMainExtensionModules():
         Extension('rmgpy.thermo.wilhoit', ['rmgpy/thermo/wilhoit.pyx']),
         # Miscellaneous
         Extension('rmgpy.constants', ['rmgpy/constants.py'], include_dirs=['.']),
-        Extension('rmgpy.kinetics', ['rmgpy/kinetics.py'], include_dirs=['.']),
         Extension('rmgpy.quantity', ['rmgpy/quantity.py'], include_dirs=['.']),
         Extension('rmgpy.reaction', ['rmgpy/reaction.py'], include_dirs=['.']),
         Extension('rmgpy.species', ['rmgpy/species.py'], include_dirs=['.']),
-        Extension('rmgpy._statmech', ['rmgpy/_statmech.pyx'], include_dirs=['.']),
-        Extension('rmgpy.statmech', ['rmgpy/statmech.py'], include_dirs=['.']),
-        Extension('rmgpy.thermo', ['rmgpy/thermo.py'], include_dirs=['.']),
     ]
 
 def getMeasureExtensionModules():
@@ -106,7 +102,6 @@ def getMeasureExtensionModules():
         Extension('rmgpy.measure.me', ['rmgpy/measure/me.pyx'], include_dirs=['.']),
         Extension('rmgpy.constants', ['rmgpy/constants.py'], include_dirs=['.']),
         Extension('rmgpy.quantity', ['rmgpy/quantity.py'], include_dirs=['.']),
-        Extension('rmgpy._statmech', ['rmgpy/_statmech.pyx'], include_dirs=['.']),
     ]
     
 def getSolverExtensionModules():
