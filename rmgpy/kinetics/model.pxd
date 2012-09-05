@@ -31,6 +31,12 @@ from rmgpy.quantity cimport ScalarQuantity, ArrayQuantity
 
 ################################################################################
 
+cpdef str getRateCoefficientUnitsFromReactionOrder(order)
+
+cpdef int getReactionOrderFromRateCoefficientUnits(kunits) except -1
+
+################################################################################
+
 cdef class KineticsModel:
     
     cdef public ScalarQuantity _Tmin, _Tmax

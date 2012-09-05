@@ -39,6 +39,56 @@ import rmgpy.quantity as quantity
 
 ################################################################################
 
+cpdef str getRateCoefficientUnitsFromReactionOrder(order):
+    """
+    Given a reaction `order`, return the corresponding SI units of the rate
+    coefficient. These are the units that rate coefficients are stored in
+    internally, as well as the units of the rate coefficient obtained using
+    the ``simplified`` attribute of a :class:`Quantity` object that represents
+    a rate coefficient. Raises a :class:`ValueError` if the units could not be
+    determined.
+    """
+    if order == 0: 
+        kunits = 'mol/(m^3*s)'
+    elif order == 1:
+        kunits = 's^-1'
+    elif order == 2:
+        kunits = 'm^3/(mol*s)'
+    elif order == 3:
+        kunits = 'm^6/(mol^2*s)'
+    elif order == 4:
+        kunits = 'm^9/(mol^3*s)'
+    else:
+        raise ValueError('Invalid reaction order {0}.'.format(order))
+    return kunits
+
+cpdef int getReactionOrderFromRateCoefficientUnits(kunits) except -1:
+    """
+    Given a set of rate coefficient units `kunits`, return the corresponding
+    reaction order. Raises a :class:`ValueError` if the reaction order could 
+    not be determined.
+    """
+    import quantities as pq
+    dimensionality = pq.Quantity(1.0, kunits).simplified.dimensionality
+    order = -1
+    if len(dimensionality) == 3 and pq.mol in dimensionality and pq.m in dimensionality and pq.s in dimensionality:
+        if dimensionality[pq.s] == -1 and dimensionality[pq.m] == -3 and dimensionality[pq.mol] == 1:
+            order = 0
+        elif dimensionality[pq.s] == -1 and dimensionality[pq.m] == 3 and dimensionality[pq.mol] == -1:
+            order = 2
+        elif dimensionality[pq.s] == -1 and dimensionality[pq.m] == 6 and dimensionality[pq.mol] == -2:
+            order = 3
+        elif dimensionality[pq.s] == -1 and dimensionality[pq.m] == 9 and dimensionality[pq.mol] == -3:
+            order = 4
+    elif len(dimensionality) == 1 and pq.s in dimensionality:
+        if dimensionality[pq.s] == -1:
+            order = 1
+    if order == -1:
+        raise ValueError('Invalid rate coefficient units "{0}".'.format(str(dimensionality)))
+    return order
+
+################################################################################
+
 cdef class KineticsModel:
     """
     A base class for chemical kinetics models, containing several attributes
