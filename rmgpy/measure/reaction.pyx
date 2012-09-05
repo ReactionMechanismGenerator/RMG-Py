@@ -304,7 +304,7 @@ def applyInverseLaplaceTransformMethod(kinetics, double E0,
             # Evaluate the inverse Laplace transform of the T**n piece, which only
             # exists for n >= 0
             phi = numpy.zeros(Ngrains, numpy.float64)
-            for i in range(Ngrains):
+            for i in range(1, Ngrains):
                 phi[i] = (Elist[i] - Elist[0])**(n-1) / (R**n * scipy.special.gamma(n))
             # Evaluate the convolution
             phi = convolve(phi, densStates, Elist)
