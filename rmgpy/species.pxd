@@ -24,17 +24,13 @@
 #
 ################################################################################
 
+cimport numpy
+
 cimport rmgpy.constants as constants
-from quantity cimport ScalarQuantity, ArrayQuantity
-from thermo cimport ThermoModel
-from statmech cimport StatesModel
-
-################################################################################
-
-cdef class LennardJones:
-
-    cdef public ScalarQuantity sigma
-    cdef public ScalarQuantity epsilon
+from rmgpy.quantity cimport ScalarQuantity, ArrayQuantity
+from rmgpy.thermo.model cimport HeatCapacityModel
+from rmgpy.statmech.conformer cimport Conformer
+from rmgpy.kinetics.model cimport TunnelingModel
 
 ################################################################################
 
@@ -42,14 +38,13 @@ cdef class Species:
     
     cdef public int index
     cdef public str label
-    cdef public ThermoModel thermo
-    cdef public StatesModel states
-    cdef public LennardJones lennardJones
-    cdef public ScalarQuantity E0
+    cdef public HeatCapacityModel thermo
+    cdef public Conformer conformer
+    cdef public object lennardJones
     cdef public list molecule
-    cdef public ScalarQuantity molecularWeight
+    cdef public ScalarQuantity _molecularWeight
     cdef public bint reactive
-    cdef public object collisionModel
+    cdef public object energyTransferModel
     
     cpdef generateResonanceIsomers(self)
     
@@ -60,12 +55,44 @@ cdef class Species:
     
     cpdef toAdjacencyList(self)
 
+    cpdef double getPartitionFunction(self, double T) except -1
+
+    cpdef double getHeatCapacity(self, double T) except -100000000
+
+    cpdef double getEnthalpy(self, double T) except 100000000
+
+    cpdef double getEntropy(self, double T) except -100000000
+
+    cpdef double getFreeEnergy(self, double T) except 100000000
+
+    cpdef numpy.ndarray getSumOfStates(self, numpy.ndarray Elist)
+
+    cpdef numpy.ndarray getDensityOfStates(self, numpy.ndarray Elist)
+
 ################################################################################
 
 cdef class TransitionState:
     
     cdef public str label
-    cdef public StatesModel states
-    cdef public ScalarQuantity E0
-    cdef public ScalarQuantity frequency
+    cdef public Conformer conformer
+    cdef public ScalarQuantity _frequency
     cdef public int degeneracy
+    cdef public TunnelingModel tunneling
+
+    cpdef double getPartitionFunction(self, double T) except -1
+
+    cpdef double getHeatCapacity(self, double T) except -100000000
+
+    cpdef double getEnthalpy(self, double T) except 100000000
+
+    cpdef double getEntropy(self, double T) except -100000000
+
+    cpdef double getFreeEnergy(self, double T) except 100000000
+
+    cpdef numpy.ndarray getSumOfStates(self, numpy.ndarray Elist)
+
+    cpdef numpy.ndarray getDensityOfStates(self, numpy.ndarray Elist)
+    
+    cpdef double calculateTunnelingFactor(self, double T) except -1
+    
+    cpdef numpy.ndarray calculateTunnelingFunction(self, numpy.ndarray Elist)

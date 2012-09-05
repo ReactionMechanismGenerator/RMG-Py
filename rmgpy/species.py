@@ -42,9 +42,13 @@ contains the :class:`TransitionState` class for representing chemical reaction
 transition states (first-order saddle points on a potential energy surface).
 """
 
+import numpy
+import cython
+
 import rmgpy.constants as constants
-from quantity import Quantity
-from molecule import Molecule
+import rmgpy.quantity as quantity
+from rmgpy.molecule import Molecule
+from rmgpy.pdep.collision import LennardJones
 
 ################################################################################
 
@@ -58,84 +62,37 @@ class SpeciesError(Exception):
 
 ################################################################################
 
-class LennardJones:
-    """
-    A set of Lennard-Jones collision parameters. The Lennard-Jones parameters
-    :math:`\\sigma` and :math:`\\epsilon` correspond to the potential
-
-    .. math:: V(r) = 4 \\epsilon \\left[ \\left( \\frac{\\sigma}{r} \\right)^{12} - \\left( \\frac{\\sigma}{r} \\right)^{6} \\right]
-
-    where the first term represents repulsion of overlapping orbitals and the
-    second represents attraction due to van der Waals forces. The attributes
-    are:
-
-    =============== =================== ========================================
-    Attribute       Type                Description
-    =============== =================== ========================================
-    `sigma`         :class:`Quantity`   Distance at which the inter-particle potential is zero
-    `epsilon`       :class:`Quantity`   Depth of the potential well
-    =============== =================== ========================================
-    
-    """
-
-    def __init__(self, sigma=0.0, epsilon=0.0):
-        self.sigma = Quantity(sigma)
-        self.epsilon = Quantity(epsilon)
-        if self.epsilon.units == 'K':
-            # We also accept K as valid units for epsilon
-            # Let's convert it to proper energy units
-            self.epsilon.value_si *= constants.kB
-            self.epsilon.uncertainty *= constants.kB
-            self.epsilon.units = 'J'
-
-    def __repr__(self):
-        """
-        Return a string representation that can be used to reconstruct the
-        object.
-        """
-        return 'LennardJones(sigma={0!r}, epsilon={1!r})'.format(self.sigma, self.epsilon)
-
-    def __reduce__(self):
-        """
-        A helper function used when pickling an object.
-        """
-        return (LennardJones, (self.sigma, self.epsilon))
-
-################################################################################
-
-class Species:
+class Species(object):
     """
     A chemical species, representing a local minimum on a potential energy
     surface. The attributes are:
 
-    =================== ======================= ================================
-    Attribute           Type                    Description
-    =================== ======================= ================================
-    `index`             :class:`int`            A unique nonnegative integer index
-    `label`             :class:`str`            A descriptive string label
-    `thermo`            :class:`ThermoModel`    The thermodynamics model for the species
-    `states`            :class:`StatesModel`    The molecular degrees of freedom model for the species
-    `molecule`          ``list``                The :class:`Molecule` objects describing the molecular structure
-    `E0`                :class:`Quantity`       The ground-state energy
-    `lennardJones`      :class:`LennardJones`   A set of Lennard-Jones collision parameters
-    `molecularWeight`   :class:`Quantity`       The molecular weight of the species
-    `collisionModel`    ``object``              The collisional energy transfer model to use
-    `reactive`          ``bool``                ``True`` if the species participates in reactions, ``False`` if not
-    =================== ======================= ================================
-
+    ======================= ====================================================
+    Attribute               Description
+    ======================= ====================================================
+    `index`                 A unique nonnegative integer index
+    `label`                 A descriptive string label
+    `thermo`                The heat capacity model for the species
+    `conformer`             The molecular conformer for the species
+    `molecule`              A list of the :class:`Molecule` objects describing the molecular structure
+    `lennardJones`          A set of Lennard-Jones collision parameters
+    `molecularWeight`       The molecular weight of the species
+    `energyTransferModel`   The collisional energy transfer model to use
+    `reactive`              ``True`` if the species participates in reactions, ``False`` if not
+    ======================= ====================================================
+    
     """
 
-    def __init__(self, index=-1, label='', thermo=None, states=None, molecule=None, E0=None, lennardJones=None, molecularWeight=None, collisionModel=None, reactive=True):
+    def __init__(self, index=-1, label='', thermo=None, conformer=None, molecule=None, lennardJones=None, molecularWeight=None, energyTransferModel=None, reactive=True):
         self.index = index
         self.label = label
         self.thermo = thermo
-        self.states = states
+        self.conformer = conformer
         self.molecule = molecule or []
-        self.E0 = Quantity(E0)
         self.lennardJones = lennardJones
         self.reactive = reactive
-        self.molecularWeight = Quantity(molecularWeight)
-        self.collisionModel = collisionModel
+        self.molecularWeight = molecularWeight
+        self.energyTransferModel = energyTransferModel
 
     def __repr__(self):
         """
@@ -146,13 +103,12 @@ class Species:
         if self.index != -1: string += 'index={0:d}, '.format(self.index)
         if self.label != -1: string += 'label="{0}", '.format(self.label)
         if self.thermo is not None: string += 'thermo={0!r}, '.format(self.thermo)
-        if self.states is not None: string += 'states={0!r}, '.format(self.states)
+        if self.states is not None: string += 'conformer={0!r}, '.format(self.conformer)
         if len(self.molecule) > 0: string += 'molecule=[{0!r}], '.format(self.molecule[0])
-        if self.E0 is not None: string += 'E0={0!r}, '.format(self.E0)
         if self.lennardJones is not None: string += 'lennardJones={0!r}, '.format(self.lennardJones)
         if not self.reactive: string += 'reactive={0}, '.format(self.reactive)
         if self.molecularWeight is not None: string += 'molecularWeight={0!r}, '.format(self.molecularWeight)
-        if self.collisionModel is not None: string += 'collisionModel={0!r}, '.format(self.collisionModel)
+        if self.energyTransferModel is not None: string += 'energyTransferModel={0!r}, '.format(self.energyTransferModel)
         string = string[:-2] + ')'
         return string
     
@@ -173,7 +129,13 @@ class Species:
         """
         A helper function used when pickling an object.
         """
-        return (Species, (self.index, self.label, self.thermo, self.states, self.molecule, self.E0, self.lennardJones, self.molecularWeight, self.collisionModel, self.reactive))
+        return (Species, (self.index, self.label, self.thermo, self.conformer, self.molecule, self.lennardJones, self.molecularWeight, self.energyTransferModel, self.reactive))
+
+    def getMolecularWeight(self):
+        return self._molecularWeight
+    def setMolecularWeight(self, value):
+        self._molecularWeight = quantity.Mass(value)
+    molecularWeight = property(getMolecularWeight, setMolecularWeight, """The molecular weight of the species.""")
 
     def generateResonanceIsomers(self):
         """
@@ -239,8 +201,99 @@ class Species:
         """
         output = '\n\n'.join([m.toAdjacencyList(label=self.label, removeH=True) for m in self.molecule])
         return output
-            
+
+    def getPartitionFunction(self, T):
+        """
+        Return the partition function for the species at the specified
+        temperature `T` in K.
+        """
+        cython.declare(Q=cython.double)
+        if self.conformer is not None and len(self.conformer.modes) > 0:
+            Q = self.conformer.getPartitionFunction(T)
+        else:
+            raise Exception('Unable to calculate partition function for species {0!r}: no statmech data available.'.format(self.label))
+        return Q
+        
+    def getHeatCapacity(self, T):
+        """
+        Return the heat capacity in J/mol*K for the species at the specified
+        temperature `T` in K.
+        """
+        cython.declare(Cp=cython.double)
+        Cp = 0.0
+        if self.thermo is not None:
+            Cp = self.thermo.getHeatCapacity(T)
+        elif self.conformer is not None and len(self.conformer.modes) > 0:
+            Cp = self.conformer.getHeatCapacity(T)
+        else:
+            raise Exception('Unable to calculate heat capacity for species {0!r}: no thermo or statmech data available.'.format(self.label))
+        return Cp
     
+    def getEnthalpy(self, T):
+        """
+        Return the enthalpy in J/mol for the species at the specified
+        temperature `T` in K.
+        """
+        cython.declare(H=cython.double)
+        H = 0.0
+        if self.thermo is not None:
+            H = self.thermo.getEnthalpy(T)
+        elif self.conformer is not None and len(self.conformer.modes) > 0:
+            H = self.conformer.getEnthalpy(T)
+        else:
+            raise Exception('Unable to calculate enthalpy for species {0!r}: no thermo or statmech data available.'.format(self.label))
+        return H
+    
+    def getEntropy(self, T):
+        """
+        Return the entropy in J/mol*K for the species at the specified
+        temperature `T` in K.
+        """
+        cython.declare(S=cython.double)
+        S = 0.0
+        if self.thermo is not None:
+            S = self.thermo.getEntropy(T)
+        elif self.conformer is not None and len(self.conformer.modes) > 0:
+            S = self.conformer.getEntropy(T)
+        else:
+            raise Exception('Unable to calculate entropy for species {0!r}: no thermo or statmech data available.'.format(self.label))
+        return S
+
+    def getFreeEnergy(self, T):
+        """
+        Return the Gibbs free energy in J/mol for the species at the specified
+        temperature `T` in K.
+        """
+        cython.declare(G=cython.double)
+        G = 0.0
+        if self.thermo is not None:
+            G = self.thermo.getFreeEnergy(T)
+        elif self.conformer is not None and len(self.conformer.modes) > 0:
+            G = self.conformer.getFreeEnergy(T)
+        else:
+            raise Exception('Unable to calculate free energy for species {0!r}: no thermo or statmech data available.'.format(self.label))
+        return G
+        
+    def getSumOfStates(self, Elist):
+        """
+        Return the sum of states :math:`N(E)` at the specified energies `Elist`
+        in J/mol.
+        """
+        if self.conformer is not None and len(self.conformer.modes) > 0:
+            return self.conformer.getSumOfStates(Elist)
+        else:
+            raise Exception('Unable to calculate sum of states for species {0!r}: no statmech data available.'.format(self.label))
+        
+    def getDensityOfStates(self, Elist):
+        """
+        Return the density of states :math:`\\rho(E) \\ dE` at the specified
+        energies `Elist` in J/mol above the ground state.
+        """
+        if self.conformer is not None and len(self.conformer.modes) > 0:
+            return self.conformer.getDensityOfStates(Elist)
+        else:
+            raise Exception('Unable to calculate density of states for species {0!r}: no statmech data available.'.format(self.label))
+
 ################################################################################
 
 class TransitionState:
@@ -248,23 +301,23 @@ class TransitionState:
     A chemical transition state, representing a first-order saddle point on a
     potential energy surface. The attributes are:
 
-    =============== ======================= ====================================
-    Attribute       Type                    Description
-    =============== ======================= ====================================
-    `label`         :class:`str`            A descriptive string label
-    `states`        :class:`StatesModel`    The molecular degrees of freedom model for the species
-    `E0`            :class:`Quantity`       The ground-state energy in J/mol
-    `frequency`     :class:`Quantity`       The negative frequency of the first-order saddle point in cm^-1
-    `degeneracy`    ``int``                 The reaction path degeneracy
-    =============== ======================= ====================================
+    =============== ============================================================
+    Attribute       TDescription
+    =============== ============================================================
+    `label`         A descriptive string label
+    `conformer`     The molecular degrees of freedom model for the species
+    `frequency`     The negative frequency of the first-order saddle point
+    `tunneling`     The type of tunneling model to use for tunneling through the reaction barrier
+    `degeneracy`    The reaction path degeneracy
+    =============== ============================================================
 
     """
 
-    def __init__(self, label='', states=None, E0=None, frequency=None, degeneracy=1):
+    def __init__(self, label='', conformer=None, E0=None, frequency=None, tunneling=None, degeneracy=1):
         self.label = label
-        self.states = states
-        self.E0 = Quantity(E0)
-        self.frequency = Quantity(frequency)
+        self.conformer = conformer
+        self.frequency = frequency
+        self.tunneling = tunneling
         self.degeneracy = degeneracy
 
     def __repr__(self):
@@ -274,9 +327,10 @@ class TransitionState:
         """
         string = 'TransitionState('
         if self.label != '': string += 'label="{0}", '.format(self.label)
-        if self.states is not None: string += 'states={0!r}, '.format(self.states)
+        if self.conformer is not None: string += 'conformer={0!r}, '.format(self.conformer)
         if self.E0 is not None: string += 'E0={0!r}, '.format(self.E0)
         if self.frequency is not None: string += 'frequency={0!r}, '.format(self.frequency)
+        if self.tunneling is not None: string += 'tunneling={0!r}, '.format(self.tunneling)
         if self.degeneracy != 1: string += 'degeneracy={0}, '.format(self.degeneracy)
         string = string[:-2] + ')'
         return string
@@ -285,4 +339,130 @@ class TransitionState:
         """
         A helper function used when pickling an object.
         """
-        return (TransitionState, (self.label, self.states, self.E0, self.frequency, self.degeneracy))
+        return (TransitionState, (self.label, self.conformer, self.E0, self.frequency, self.tunneling, self.degeneracy))
+
+    def getFrequency(self):
+        return self._frequency
+    def setFrequency(self, value):
+        self._frequency = quantity.Frequency(value)
+    frequency = property(getFrequency, setFrequency, """The negative frequency of the first-order saddle point.""")
+
+    def getPartitionFunction(self, T):
+        """
+        Return the partition function for the transition state at the
+        specified temperature `T` in K.
+        """
+        cython.declare(Q=cython.double)
+        if self.conformer is not None and len(self.conformer.modes) > 0:
+            Q = self.conformer.getPartitionFunction(T)
+        else:
+            raise Exception('Unable to calculate partition function for transition state {0!r}: no statmech data available.'.format(self.label))
+        return Q
+        
+    def getHeatCapacity(self, T):
+        """
+        Return the heat capacity in J/mol*K for the transition state at the
+        specified temperature `T` in K.
+        """
+        cython.declare(Cp=cython.double)
+        Cp = 0.0
+        if self.thermo is not None:
+            Cp = self.thermo.getHeatCapacity(T)
+        elif self.conformer is not None and len(self.conformer.modes) > 0:
+            Cp = self.conformer.getHeatCapacity(T)
+        else:
+            raise Exception('Unable to calculate heat capacity for transition state {0!r}: no thermo or statmech data available.'.format(self.label))
+        return Cp
+    
+    def getEnthalpy(self, T):
+        """
+        Return the enthalpy in J/mol for the transition state at the
+        specified temperature `T` in K.
+        """
+        cython.declare(H=cython.double)
+        H = 0.0
+        if self.thermo is not None:
+            H = self.thermo.getEnthalpy(T)
+        elif self.conformer is not None and len(self.conformer.modes) > 0:
+            H = self.conformer.getEnthalpy(T)
+        else:
+            raise Exception('Unable to calculate enthalpy for transition state {0!r}: no thermo or statmech data available.'.format(self.label))
+        return H
+    
+    def getEntropy(self, T):
+        """
+        Return the entropy in J/mol*K for the transition state at the
+        specified temperature `T` in K.
+        """
+        cython.declare(S=cython.double)
+        S = 0.0
+        if self.thermo is not None:
+            S = self.thermo.getEntropy(T)
+        elif self.conformer is not None and len(self.conformer.modes) > 0:
+            S = self.conformer.getEntropy(T)
+        else:
+            raise Exception('Unable to calculate entropy for transition state {0!r}: no thermo or statmech data available.'.format(self.label))
+        return S
+
+    def getFreeEnergy(self, T):
+        """
+        Return the Gibbs free energy in J/mol for the transition state at the
+        specified temperature `T` in K.
+        """
+        cython.declare(G=cython.double)
+        G = 0.0
+        if self.thermo is not None:
+            G = self.thermo.getFreeEnergy(T)
+        elif self.conformer is not None and len(self.conformer.modes) > 0:
+            G = self.conformer.getFreeEnergy(T)
+        else:
+            raise Exception('Unable to calculate free energy for transition state {0!r}: no thermo or statmech data available.'.format(self.label))
+        return G
+        
+    def getSumOfStates(self, Elist):
+        """
+        Return the sum of states :math:`N(E)` at the specified energies `Elist`
+        in J/mol.
+        """
+        if self.conformer is not None and len(self.conformer.modes) > 0:
+            return self.conformer.getSumOfStates(Elist)
+        else:
+            raise Exception('Unable to calculate sum of states for transition state {0!r}: no statmech data available.'.format(self.label))
+        
+    def getDensityOfStates(self, Elist):
+        """
+        Return the density of states :math:`\\rho(E) \\ dE` at the specified
+        energies `Elist` in J/mol above the ground state.
+        """
+        if self.conformer is not None and len(self.conformer.modes) > 0:
+            return self.conformer.getDensityOfStates(Elist)
+        else:
+            raise Exception('Unable to calculate density of states for transition state {0!r}: no statmech data available.'.format(self.label))
+
+    def calculateTunnelingFactor(self, T):
+        """
+        Calculate and return the value of the canonical tunneling correction 
+        factor for the reaction at the given temperature `T` in K.
+        """
+        if self.tunneling is not None:
+            return self.tunneling.calculateTunnelingFactor(T)
+        else:
+            # Return unity
+            return 1.0
+    
+    def calculateTunnelingFunction(self, Elist):
+        """
+        Calculate and return the value of the microcanonical tunneling 
+        correction for the reaction at the given energies `Elist` in J/mol.
+        """
+        if self.tunneling is not None:
+            return self.tunneling.calculateTunnelingFunction(Elist)
+        else:
+            # Return step function
+            kappa = numpy.ones_like(Elist)
+            E0 = float(self.conformer.E0.value_si)
+            for r in range(Elist.shape[0]):
+                if Elist[r] >= E0:
+                    break
+                kappa[r] = 0.0
+            return kappa
