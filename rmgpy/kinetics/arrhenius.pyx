@@ -172,6 +172,92 @@ cdef class Arrhenius(KineticsModel):
 
 ################################################################################
 
+cdef class ArrheniusEP(KineticsModel):
+    """
+    A kinetics model based on the (modified) Arrhenius equation, using the
+    Evans-Polanyi equation to determine the activation energy. The attributes
+    are:
+
+    =============== =============================================================
+    Attribute       Description
+    =============== =============================================================
+    `A`             The preexponential factor
+    `n`             The temperature exponent
+    `alpha`         The Evans-Polanyi slope
+    `E0`            The activation energy for a thermoneutral reaction
+    `Tmin`          The minimum temperature at which the model is valid, or zero if unknown or undefined
+    `Tmax`          The maximum temperature at which the model is valid, or zero if unknown or undefined
+    `comment`       Information about the model (e.g. its source)
+    =============== =============================================================
+    
+    """
+    
+    def __init__(self, A=None, n=0.0, alpha=0.0, E0=None, Tmin=None, Tmax=None, comment=''):
+        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, comment=comment)
+        self.A = A
+        self.n = n
+        self.alpha = alpha
+        self.E0 = E0
+        
+    def __repr__(self):
+        """
+        Return a string representation that can be used to reconstruct the
+        ArrheniusEP object.
+        """
+        string = 'ArrheniusEP(A={0!r}, n={1:g}, alpha={2:g}, E0={3!r}'.format(self.A, self.n, self.alpha, self.E0)
+        if self.Tmin is not None: string += ', Tmin={0!r}'.format(self.Tmin)
+        if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
+        if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
+        string += ')'
+        return string
+
+    def __reduce__(self):
+        """
+        A helper function used when pickling an ArrheniusEP object.
+        """
+        return (ArrheniusEP, (self.A, self.n, self.alpha, self.E0, self.Tmin, self.Tmax, self.comment))
+
+    property A:
+        """The preexponential factor."""
+        def __get__(self):
+            return self._A
+        def __set__(self, value):
+            self._A = quantity.RateCoefficient(value)
+
+    property E0:
+        """The activation energy for a thermoneutral reaction."""
+        def __get__(self):
+            return self._E0
+        def __set__(self, value):
+            self._E0 = quantity.Energy(value)
+
+    cpdef double getRateCoefficient(self, double T, double dHrxn=0.0) except -1:
+        """
+        Return the rate coefficient in the appropriate combination of m^3, 
+        mol, and s at temperature `T` in K and enthalpy of reaction `dHrxn`
+        in J/mol. 
+        """
+        cdef double A, n, Ea        
+        Ea = self.getActivationEnergy(dHrxn)
+        A = self._A.value_si
+        n = self.n
+        return A * T**n * exp(-Ea / (constants.R * T))
+
+    cpdef double getActivationEnergy(self, double dHrxn):
+        """
+        Return the activation energy in J/mol corresponding to the given
+        enthalpy of reaction `dHrxn` in J/mol.
+        """
+        cdef double Ea
+        Ea = self.alpha * dHrxn + self._E0.value_si
+        if dHrxn < 0.0 and Ea < 0.0:
+            Ea = 0.0
+        elif dHrxn > 0.0 and Ea < 0.0:
+            Ea = dHrxn
+        return Ea
+
+################################################################################
+
 cdef class PDepArrhenius(PDepKineticsModel):
     """
     A kinetic model of a phenomenological rate coefficient :math:`k(T,P)` where

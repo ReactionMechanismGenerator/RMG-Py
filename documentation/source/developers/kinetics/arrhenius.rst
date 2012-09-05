@@ -16,3 +16,7 @@ is the activation energy.
 
 .. autoclass:: rmgpy.kinetics.MultiArrhenius
     :members:
+    
+.. autoclass:: rmgpy.kinetics.ArrheniusEP
+    :members:
+

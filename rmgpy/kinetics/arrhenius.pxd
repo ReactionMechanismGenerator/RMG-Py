@@ -47,6 +47,19 @@ cdef class Arrhenius(KineticsModel):
 
 ################################################################################
 
+cdef class ArrheniusEP(KineticsModel):
+    
+    cdef public ScalarQuantity _A
+    cdef public double n
+    cdef public double alpha
+    cdef public ScalarQuantity _E0
+    
+    cpdef double getRateCoefficient(self, double T, double dHrxn=?) except -1
+
+    cpdef double getActivationEnergy(self, double dHrxn) except -1
+    
+################################################################################
+
 cdef class PDepArrhenius(PDepKineticsModel):
     
     cdef public ArrayQuantity _pressures

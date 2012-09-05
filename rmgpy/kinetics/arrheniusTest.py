@@ -197,6 +197,133 @@ class TestArrhenius(unittest.TestCase):
 
 ################################################################################
 
+class TestArrheniusEP(unittest.TestCase):
+    """
+    Contains unit tests of the :class:`ArrheniusEP` class.
+    """
+    
+    def setUp(self):
+        """
+        A function run before each unit test in this class.
+        """
+        self.A = 1.0e12
+        self.n = 0.5
+        self.alpha = 0.5
+        self.E0 = 41.84
+        self.Tmin = 300.
+        self.Tmax = 3000.
+        self.comment = 'C2H6'
+        self.arrhenius = ArrheniusEP(
+            A = (self.A,"cm^3/(mol*s)"),
+            n = self.n,
+            alpha = self.alpha,
+            E0 = (self.E0,"kJ/mol"),
+            Tmin = (self.Tmin,"K"),
+            Tmax = (self.Tmax,"K"),
+            comment = self.comment,
+        )
+    
+    def test_A(self):
+        """
+        Test that the ArrheniusEP A property was properly set.
+        """
+        self.assertAlmostEqual(self.arrhenius.A.value_si * 1e6, self.A, delta=1e0)
+        
+    def test_n(self):
+        """
+        Test that the ArrheniusEP n property was properly set.
+        """
+        self.assertAlmostEqual(self.arrhenius.n, self.n, 6)
+        
+    def test_alpha(self):
+        """
+        Test that the ArrheniusEP alpha property was properly set.
+        """
+        self.assertAlmostEqual(self.arrhenius.alpha, self.alpha, 6)
+        
+    def test_E0(self):
+        """
+        Test that the ArrheniusEP E0 property was properly set.
+        """
+        self.assertAlmostEqual(self.arrhenius.E0.value_si * 0.001, self.E0, 6)
+        
+    def test_Tmin(self):
+        """
+        Test that the ArrheniusEP Tmin property was properly set.
+        """
+        self.assertAlmostEqual(self.arrhenius.Tmin.value_si, self.Tmin, 6)
+        
+    def test_Tmax(self):
+        """
+        Test that the ArrheniusEP Tmax property was properly set.
+        """
+        self.assertAlmostEqual(self.arrhenius.Tmax.value_si, self.Tmax, 6)
+        
+    def test_comment(self):
+        """
+        Test that the ArrheniusEP comment property was properly set.
+        """
+        self.assertEqual(self.arrhenius.comment, self.comment)
+        
+    def test_isTemperatureValid(self):
+        """
+        Test the ArrheniusEP.isTemperatureValid() method.
+        """
+        Tdata = numpy.array([200,400,600,800,1000,1200,1400,1600,1800,2000])
+        validdata = numpy.array([False,True,True,True,True,True,True,True,True,True], numpy.bool)
+        for T, valid in zip(Tdata, validdata):
+            valid0 = self.arrhenius.isTemperatureValid(T)
+            self.assertEqual(valid0, valid)
+                
+    def test_getRateCoefficient(self):
+        """
+        Test the ArrheniusEP.getRateCoefficient() method.
+        """
+        Tlist = numpy.array([200,400,600,800,1000,1200,1400,1600,1800,2000])
+        kexplist = numpy.array([1.6721e-4, 6.8770e1, 5.5803e3, 5.2448e4, 2.0632e5, 5.2285e5, 1.0281e6, 1.7225e6, 2.5912e6, 3.6123e6])
+        for T, kexp in zip(Tlist, kexplist):
+            kact = self.arrhenius.getRateCoefficient(T, )
+            self.assertAlmostEqual(kexp, kact, delta=1e-4*kexp)
+
+    def test_pickle(self):
+        """
+        Test that an ArrheniusEP object can be pickled and unpickled with no loss
+        of information.
+        """
+        import cPickle
+        arrhenius = cPickle.loads(cPickle.dumps(self.arrhenius))
+        self.assertAlmostEqual(self.arrhenius.A.value, arrhenius.A.value, delta=1e0)
+        self.assertEqual(self.arrhenius.A.units, arrhenius.A.units)
+        self.assertAlmostEqual(self.arrhenius.n, arrhenius.n, 4)
+        self.assertAlmostEqual(self.arrhenius.alpha, arrhenius.alpha, 4)
+        self.assertAlmostEqual(self.arrhenius.E0.value, arrhenius.E0.value, 4)
+        self.assertEqual(self.arrhenius.E0.units, arrhenius.E0.units)
+        self.assertAlmostEqual(self.arrhenius.Tmin.value, arrhenius.Tmin.value, 4)
+        self.assertEqual(self.arrhenius.Tmin.units, arrhenius.Tmin.units)
+        self.assertAlmostEqual(self.arrhenius.Tmax.value, arrhenius.Tmax.value, 4)
+        self.assertEqual(self.arrhenius.Tmax.units, arrhenius.Tmax.units)
+        self.assertEqual(self.arrhenius.comment, arrhenius.comment)
+    
+    def test_repr(self):
+        """
+        Test that an ArrheniusEP object can be reconstructed from its repr()
+        output with no loss of information.
+        """
+        exec('arrhenius = {0!r}'.format(self.arrhenius))
+        self.assertAlmostEqual(self.arrhenius.A.value, arrhenius.A.value, delta=1e0)
+        self.assertEqual(self.arrhenius.A.units, arrhenius.A.units)
+        self.assertAlmostEqual(self.arrhenius.n, arrhenius.n, 4)
+        self.assertAlmostEqual(self.arrhenius.alpha, arrhenius.alpha, 4)
+        self.assertAlmostEqual(self.arrhenius.E0.value, arrhenius.E0.value, 4)
+        self.assertEqual(self.arrhenius.E0.units, arrhenius.E0.units)
+        self.assertAlmostEqual(self.arrhenius.Tmin.value, arrhenius.Tmin.value, 4)
+        self.assertEqual(self.arrhenius.Tmin.units, arrhenius.Tmin.units)
+        self.assertAlmostEqual(self.arrhenius.Tmax.value, arrhenius.Tmax.value, 4)
+        self.assertEqual(self.arrhenius.Tmax.units, arrhenius.Tmax.units)
+        self.assertEqual(self.arrhenius.comment, arrhenius.comment)
+
+################################################################################
+
 class TestPDepArrhenius(unittest.TestCase):
     """
     Contains unit tests of the :class:`PDepArrhenius` class.
