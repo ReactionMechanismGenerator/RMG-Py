@@ -141,7 +141,6 @@ def calculateMicrocanonicalRateCoefficient(reaction,
         if reactantStatesKnown:
             kf = applyInverseLaplaceTransformMethod(reaction.kinetics, reaction.transitionState.E0.value, Elist, reacDensStates, T)
         elif productStatesKnown:
-            Tlist = 1.0/numpy.arange(1.0/2000.0, 1.0/300.0, 18, numpy.float64)
             kinetics = reaction.generateReverseRateCoefficient()
             kr = applyInverseLaplaceTransformMethod(kinetics, reaction.transitionState.E0.value, Elist, prodDensStates, T)
         else:
