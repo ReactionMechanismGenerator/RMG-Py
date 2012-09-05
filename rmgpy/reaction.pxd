@@ -25,10 +25,11 @@
 ################################################################################
 
 cimport rmgpy.constants as constants
-from species cimport Species, TransitionState
+from rmgpy.species cimport Species, TransitionState
 from rmgpy.molecule.molecule cimport Atom, Molecule
 from rmgpy.molecule.element cimport Element
-from kinetics cimport KineticsModel, Arrhenius
+from rmgpy.kinetics.model cimport KineticsModel
+from rmgpy.kinetics.arrhenius cimport Arrhenius
 
 cimport numpy
 
@@ -37,12 +38,12 @@ cimport numpy
 cdef class Reaction:
     
     cdef public int index
+    cdef public str label
     cdef public list reactants
     cdef public list products
     cdef public bint reversible
     cdef public TransitionState transitionState
     cdef public KineticsModel kinetics
-    cdef public bint thirdBody
     cdef public bint duplicate
     cdef public int degeneracy
     cdef public list pairs
@@ -77,7 +78,7 @@ cdef class Reaction:
 
     cpdef int getStoichiometricCoefficient(self, Species spec)
 
-    cpdef double getRateCoefficient(self, double T, double P)
+    cpdef double getRateCoefficient(self, double T, double P=?)
 
     cpdef double getRate(self, double T, double P, dict conc, double totalConc=?)
 
@@ -85,15 +86,13 @@ cdef class Reaction:
 
     cpdef generateReverseRateCoefficient(self)
 
-    cpdef numpy.ndarray calculateTSTRateCoefficients(self, numpy.ndarray Tlist, str tunneling=?)
+    cpdef numpy.ndarray calculateTSTRateCoefficients(self, numpy.ndarray Tlist)
 
-    cpdef double calculateTSTRateCoefficient(self, double T, str tunneling=?) except -2
-    
-    cpdef double calculateWignerTunnelingCorrection(self, double T) except -2
-    
-    cpdef double calculateEckartTunnelingCorrection(self, double T) except -2
+    cpdef double calculateTSTRateCoefficient(self, double T) except -2
 
-    cpdef double __eckartIntegrand(self, double E_kT, double kT, double dV1, double alpha1, double alpha2) except -2
+    cpdef bint canTST(self) except -2
+
+    cpdef calculateMicrocanonicalRateCoefficient(self, numpy.ndarray Elist, numpy.ndarray Jlist, numpy.ndarray reacDensStates, numpy.ndarray prodDensStates=?, double T=?)
 
     cpdef bint isBalanced(self)
     
