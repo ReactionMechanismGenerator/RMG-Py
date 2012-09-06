@@ -64,3 +64,7 @@ cdef class Conformer:
     cpdef getPrincipalMomentsOfInertia(self)
 
     cpdef double getInternalReducedMomentOfInertia(self, pivots, top1) except -1
+
+################################################################################
+
+cpdef double phi(double beta, int k, double E, logQ) except -10000000

@@ -348,3 +348,97 @@ cdef class Conformer:
             I2 += mass[atom-1] * numpy.linalg.norm(r2)**2
         
         return 1.0 / (1.0 / I1 + 1.0 / I2)
+
+################################################################################
+
+cpdef double phi(double beta, int k, double E, logQ) except -10000000:
+    """
+    Evaluate the value of the objective function used in the method of
+    steepest descents to compute the sum and/or density of states from the
+    partition function.
+    
+    :param beta: The value of :math:`\\left( k_\\mathrm{B} T \\right)^{-1}`
+                 in mol/J to evaluate the objective function at
+    :param k:    0 if computing the density of states, 1 if computing the sum 
+                 of states
+    :param E:    The energy at which to compute the sum or density of states in
+                 J/mol
+    :param logQ: A callable object that accepts the current temperature in K as
+                 a parameter and returns the natural logarithm of the partition
+                 function at that temperature
+    :returns:    The value of the objective function to minimize for the
+                 method of steepest descents
+    """
+    cdef double T
+    T = 1.0 / (constants.R * beta)
+    return logQ(T) - k * log(beta) + beta * E
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
+def getDensityOfStatesForst(numpy.ndarray[numpy.float64_t,ndim=1] Elist, logQ, int order=1):
+    """
+    Return the density of states :math:`\\rho(E) \\ dE` and sum of states
+    :math:`N(E)` at the specified total energies `Elist` in J/mol above the
+    ground state. The parameter `logQ` should be a callable object that accepts
+    the current temperature in K as a parameter and returns the natural
+    logarithm of the partition function at that temperature. The optional
+    `order` parameter indicates the order of the steepest descents 
+    approximation to apply (1 or 2); the first-order approximation is smoother,
+    faster to compute, and generally accurate enough for most applications.
+    """
+
+    cdef numpy.ndarray[numpy.float64_t,ndim=1] densStates, sumStates
+    cdef double x, dx, v, E, dE
+    cdef int i, k
+    
+    if order != 1 and order != 2:
+        raise ValueError('Invalid value {0} for order parameter; valid values are 1 or 2.'.format(order))
+    
+    import scipy.optimize
+    dE = Elist[1] - Elist[0]
+    
+    densStates = numpy.zeros_like(Elist)
+    sumStates = numpy.zeros_like(Elist)
+    
+    # Initial guess for first minimization
+    x = 1e-4
+    
+    # Use method of steepest descents to compute sum of states
+    k = 1
+    
+    # Iterate over energies
+    for i in range(1, Elist.shape[0]):
+        E = Elist[i]
+        
+        # Find minimum of phi  func x0  arg     xtol  ftol maxi  maxf fullout  disp retall  callback
+        try:
+            x = scipy.optimize.fmin(phi, x, [k, E, logQ], 1e-8, 1e-8, 100, 1000, False, False, False, None)
+        except ValueError:
+            break
+        x = float(x)
+        dx = 1e-2 * x
+        
+        # Evaluate derivatives needed for steepest descents approximation numerically
+        d2fdx2 = (phi(x+dx, k, E, logQ) - 2 * phi(x, k, E, logQ) + phi(x-dx, k, E, logQ)) / (dx*dx)
+        
+        # Apply first-order steepest descents approximation (accurate to 1-3%, smoother)
+        v = phi(x, k, E, logQ)
+        if k == 1:
+            sumStates[i] = exp(v) / sqrt(2 * constants.pi * d2fdx2)
+        else:
+            densStates[i] = exp(v) / sqrt(2 * constants.pi * d2fdx2)
+        
+        if order == 2:
+            # Apply second-order steepest descents approximation (more accurate, less smooth)
+            d3fdx3 = (phi(x+1.5*dx, k, E, logQ) - 3 * phi(x+0.5*dx, k, E, logQ) + 3 * phi(x-0.5*dx, k, E, logQ) - phi(x-1.5*dx, k, E, logQ)) / (dx**3)
+            d4fdx4 = (phi(x+2*dx, k, E, logQ) - 4 * phi(x+dx, k, E, logQ) + 6 * phi(x, k, E, logQ) - 4 * phi(x-dx, k, E, logQ) + phi(x-2*dx, k, E, logQ)) / (dx**4)
+            if k == 1:
+                sumStates[i] *= 1 + d4fdx4 / 8. / (d2fdx2**2) - 5. * (d3fdx3**2) / 24. / (d2fdx2**3)
+            else:
+                densStates[i] *= 1 + d4fdx4 / 8. / (d2fdx2**2) - 5. * (d3fdx3**2) / 24. / (d2fdx2**3)
+    
+        if k == 1:
+            d3fdx3 = (phi(x+1.5*dx, k, E, logQ) - 3 * phi(x+0.5*dx, k, E, logQ) + 3 * phi(x-0.5*dx, k, E, logQ) - phi(x-1.5*dx, k, E, logQ)) / (dx**3)
+            densStates[i] = sumStates[i] * (x + d3fdx3 / (2. * d2fdx2 * d2fdx2))
+        
+    return densStates * dE, sumStates
