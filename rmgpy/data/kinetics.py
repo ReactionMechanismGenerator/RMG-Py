@@ -2001,7 +2001,7 @@ class KineticsFamily(Database):
                 if 'training' in root: continue
                 for f in files:
                     if not f.endswith('.py'): continue
-                    name = f.strip('.py')
+                    name = f.split('.py')[0]
                     if name not in ['groups', 'rules'] and name not in (depositoryLabels or ['training']):
                         fpath = os.path.join(root, f)
                         label = '{0}/{1}'.format(self.label, name)
