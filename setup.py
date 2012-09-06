@@ -71,6 +71,8 @@ def getMainExtensionModules():
         Extension('rmgpy.molecule.group', ['rmgpy/molecule/group.py'], include_dirs=['.']),
         Extension('rmgpy.molecule.molecule', ['rmgpy/molecule/molecule.py'], include_dirs=['.']),
         Extension('rmgpy.molecule.symmetry', ['rmgpy/molecule/symmetry.py'], include_dirs=['.']),
+        # Pressure dependence
+        Extension('rmgpy.pdep.collision', ['rmgpy/pdep/collision.pyx']),
         # Statistical mechanics
         Extension('rmgpy.statmech.conformer', ['rmgpy/statmech/conformer.pyx']),
         Extension('rmgpy.statmech.mode', ['rmgpy/statmech/mode.pyx']),
