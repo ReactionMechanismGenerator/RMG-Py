@@ -36,3 +36,12 @@ cdef class LennardJones:
     cdef public ScalarQuantity _sigma, _epsilon
     
     cpdef double getCollisionFrequency(self, double T, double M, double mu) except -1
+
+################################################################################
+
+cdef class SingleExponentialDown:
+
+    cdef public ScalarQuantity _alpha0, _T0
+    cdef public double n
+    
+    cpdef double getAlpha(self, double T) except -1000000000
