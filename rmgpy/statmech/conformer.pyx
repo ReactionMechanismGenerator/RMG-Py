@@ -138,8 +138,8 @@ cdef class Conformer:
 
     cpdef double getHeatCapacity(self, double T) except -100000000:
         """
-        Return the dimensionless heat capacity :math:`C_\\mathrm{v}(T)/R` for 
-        the system at the specified temperature `T` in K.
+        Return the heat capacity in J/mol*K for the system at the specified
+        temperature `T` in K.
         """
         cdef double Cp = 0.0
         cdef Mode mode
@@ -149,8 +149,8 @@ cdef class Conformer:
 
     cpdef double getEnthalpy(self, double T) except 100000000:
         """
-        Return the dimensionless enthalpy :math:`H(T)/RT` for the system at the
-        specified temperature `T` in K.
+        Return the enthalpy in J/mol for the system at the specified
+        temperature `T` in K.
         """
         cdef double H = 0.0
         cdef Mode mode
@@ -160,8 +160,8 @@ cdef class Conformer:
     
     cpdef double getEntropy(self, double T) except -100000000:
         """
-        Return the dimensionless entropy :math:`S(T)/R` for the system at the
-        specified temperature `T` in K.
+        Return the entropy in J/mol*K for the system at the specified
+        temperature `T` in K.
         """
         cdef double S = log(self.spinMultiplicity * self.opticalIsomers) * constants.R
         cdef Mode mode
@@ -171,10 +171,10 @@ cdef class Conformer:
 
     cpdef double getFreeEnergy(self, double T) except 100000000:
         """
-        Return the dimensionless Gibbs free energy :math:`G(T)/RT` for the
-        system at the specified temperature `T` in K.
+        Return the Gibbs free energy in J/mol for the system at the specified
+        temperature `T` in K.
         """
-        return self.getEnthalpy(T) - self.getEntropy(T)
+        return self.getEnthalpy(T) - T * self.getEntropy(T)
         
     cpdef numpy.ndarray getSumOfStates(self, numpy.ndarray Elist):
         """

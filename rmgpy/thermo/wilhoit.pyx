@@ -173,7 +173,7 @@ cdef class Wilhoit(HeatCapacityModel):
         Return the Gibbs free energy in J/mol at the specified temperature `T`
         in K.
         """
-        return self.getEnthalpy(T) - self.getEntropy(T)
+        return self.getEnthalpy(T) - T * self.getEntropy(T)
     
     cpdef Wilhoit copy(self):
         """
