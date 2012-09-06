@@ -487,7 +487,7 @@ cdef class HinderedRotor(Torsion):
     cpdef fitFourierPotentialToData(self, numpy.ndarray angle, numpy.ndarray V):
         """
         Fit the given angles in radians and corresponding potential energies in
-        kJ/mol to the Fourier series potential. For best results, the angle
+        J/mol to the Fourier series potential. For best results, the angle
         should begin at zero and end at :math:`2 \pi`, with the minimum energy
         conformation having a potential of zero be placed at zero angle.
         """
@@ -510,7 +510,8 @@ cdef class HinderedRotor(Torsion):
         for m in range(6):
             A[N,m+6] = m
         x, residues, rank, s = numpy.linalg.lstsq(A, b)
-
+        x *= 0.001
+        
         self.fourier = ([x[1:6], x[7:12]], "kJ/mol")
         self.barrier = None
         
@@ -519,7 +520,7 @@ cdef class HinderedRotor(Torsion):
     cpdef fitCosinePotentialToData(self, numpy.ndarray angle, numpy.ndarray V):
         """
         Fit the given angles in radians and corresponding potential energies in
-        kJ/mol to the cosine potential. For best results, the angle should 
+        J/mol to the cosine potential. For best results, the angle should 
         begin at zero and end at :math:`2 \pi`, with the minimum energy
         conformation having a potential of zero be placed at zero angle. The
         fit is attempted at several possible values of the symmetry number in
@@ -540,7 +541,7 @@ cdef class HinderedRotor(Torsion):
                 barrier = barr
 
         self.fourier = None
-        self.barrier = (barrier,"kJ/mol")
+        self.barrier = (barrier*0.001,"kJ/mol")
         self.symmetry = symmetry
         
         return self
