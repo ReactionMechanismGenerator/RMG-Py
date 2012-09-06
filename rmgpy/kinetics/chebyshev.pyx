@@ -190,6 +190,8 @@ cdef class Chebyshev(PDepKineticsModel):
         Tred = [self.getReducedTemperature(T) for T in Tlist]
         Pred = [self.getReducedPressure(P) for P in Plist]
 
+        K = quantity.RateCoefficient(K,kunits).value_si
+
         # Create matrix and vector for coefficient fit (linear least-squares)
         A = numpy.zeros((nT*nP, degreeT*degreeP), numpy.float64)
         b = numpy.zeros((nT*nP), numpy.float64)
@@ -212,5 +214,7 @@ cdef class Chebyshev(PDepKineticsModel):
 
         self.degreeT = degreeT
         self.degreeP = degreeP
+        
+        self.kunits = kunits
         
         return self
