@@ -65,6 +65,10 @@ cdef class Conformer:
 
     cpdef double getInternalReducedMomentOfInertia(self, pivots, top1) except -1
 
+    cpdef getSymmetricTopRotors(self)
+
+    cpdef list getActiveModes(self, bint activeJRotor=?, bint activeKRotor=?)
+
 ################################################################################
 
 cpdef double phi(double beta, int k, double E, logQ) except -10000000

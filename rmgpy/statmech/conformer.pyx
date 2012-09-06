@@ -349,6 +349,65 @@ cdef class Conformer:
         
         return 1.0 / (1.0 / I1 + 1.0 / I2)
 
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
+    cpdef getSymmetricTopRotors(self):
+        """
+        Return objects representing the external J-rotor and K-rotor under the
+        symmetric top approximation. For nonlinear molecules, the J-rotor is
+        a 2D rigid rotor with a rotational constant :math:`B` determined as the
+        geometric mean of the two most similar rotational constants. The
+        K-rotor is a 1D rigid rotor with a rotational constant :math:`A-B`
+        determined by the difference between the remaining molecular rotational
+        constant and the J-rotor rotational constant.
+        """
+        cdef double A, B
+        cdef numpy.ndarray[numpy.float64_t,ndim=1] Blist
+
+        Jrotor = None; Krotor = None
+        for mode in self.modes:
+            if isinstance(mode, LinearRotor):
+                Jrotor = mode
+                Krotor = None
+            elif isinstance(mode, NonlinearRotor):
+                Blist = numpy.array(sorted(mode.rotationalConstant.value_si))
+                assert len(Blist) == 3
+                if Blist[1] / Blist[0] < Blist[2] / Blist[1]:
+                    B = sqrt(Blist[1] * Blist[0])
+                    A = Blist[2]
+                else:
+                    B = sqrt(Blist[1] * Blist[2])
+                    A = Blist[0]
+                Jrotor = LinearRotor(rotationalConstant=(B,"cm^-1"), symmetry=1)
+                Krotor = KRotor(rotationalConstant=(A-B,"cm^-1"), symmetry=mode.symmetry)
+
+        return Jrotor, Krotor
+    
+    cpdef list getActiveModes(self, bint activeJRotor=False, bint activeKRotor=True):
+        """
+        Return a list of the active molecular degrees of freedom of the
+        molecular system.
+        """
+        cdef list modes = []
+        
+        for mode in self.modes:
+            if isinstance(mode, IdealGasTranslation):
+                continue
+            elif isinstance(mode, LinearRotor):
+                if activeJRotor: 
+                    modes.append(mode)
+            elif isinstance(mode, NonlinearRotor):
+                if activeJRotor and activeKRotor: 
+                    modes.append(mode)
+                elif not activeJRotor and activeKRotor:
+                    Jrotor, Krotor = self.getSymmetricTopRotors()
+                    modes.append(Krotor)
+                else:
+                    continue
+            else:
+                modes.append(mode)
+        return modes
+
 ################################################################################
 
 cpdef double phi(double beta, int k, double E, logQ) except -10000000:
