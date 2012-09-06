@@ -77,6 +77,7 @@ def getMainExtensionModules():
         Extension('rmgpy.pdep.me', ['rmgpy/pdep/me.pyx']),
         Extension('rmgpy.pdep.msc', ['rmgpy/pdep/msc.pyx']),
         Extension('rmgpy.pdep.reaction', ['rmgpy/pdep/reaction.pyx']),
+        Extension('rmgpy.pdep.rs', ['rmgpy/pdep/rs.pyx']),
         # Statistical mechanics
         Extension('rmgpy.statmech.conformer', ['rmgpy/statmech/conformer.pyx']),
         Extension('rmgpy.statmech.mode', ['rmgpy/statmech/mode.pyx']),
