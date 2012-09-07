@@ -258,7 +258,7 @@ class MoleculeDrawer:
         cr0 = cairo.Context(surface0)
     
         # Render using Cairo
-        self.__render(cr0)
+        self.render(cr0)
         
         # Create the real surface with the appropriate size
         xoff = self.left
@@ -267,7 +267,12 @@ class MoleculeDrawer:
         height = self.bottom - self.top
         self.surface = createNewSurface(format=format, path=path, width=width, height=height)
         self.cr = cairo.Context(self.surface)
-        self.__render(self.cr, offset=(-xoff,-yoff))
+
+        # Draw white background
+        self.cr.set_source_rgba(1.0, 1.0, 1.0, 1.0)
+        self.cr.paint()        
+
+        self.render(self.cr, offset=(-xoff,-yoff))
 
         if path is not None:
             # Finish Cairo drawing
@@ -859,7 +864,7 @@ class MoleculeDrawer:
         
         return symbols
 
-    def __render(self, cr, offset=None):
+    def render(self, cr, offset=None):
         """
         Uses the Cairo graphics library to create a skeletal formula drawing of a
         molecule containing the list of `atoms` and dict of `bonds` to be drawn.
@@ -883,10 +888,6 @@ class MoleculeDrawer:
         if offset is not None:
             coordinates[:,0] += offset[0]
             coordinates[:,1] += offset[1]
-        
-        # Draw white background
-        cr.set_source_rgba(1.0, 1.0, 1.0, 1.0)
-        cr.paint()
         
         # Draw bonds
         for atom1 in atoms:
