@@ -18,6 +18,7 @@ RMG Developer's Guide
     cantherm/index
     data/index
     measure/index
+    pdep/index
     rmg/index
     solver/index
 

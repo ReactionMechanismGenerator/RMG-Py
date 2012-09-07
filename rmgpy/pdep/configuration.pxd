@@ -27,22 +27,27 @@
 
 cimport numpy
 
-from rmgpy.quantity cimport ScalarQuantity, ArrayQuantity
-
 ################################################################################
 
-cdef class Conformer:
+cdef class Configuration:
 
-    cdef public ScalarQuantity _E0
-    cdef public list modes
-    cdef public int spinMultiplicity
-    cdef public int opticalIsomers
-    cdef public ArrayQuantity _number
-    cdef public ArrayQuantity _mass
-    cdef public ArrayQuantity _coordinates
+    cdef public list species
+    cdef public numpy.ndarray Elist
+    cdef public numpy.ndarray densStates
+    cdef public numpy.ndarray sumStates
+    cdef public bint activeJRotor
+    cdef public bint activeKRotor
 
-    cpdef double getPartitionFunction(self, double T) except -1
-
+    cpdef bint isUnimolecular(self) except -2
+    
+    cpdef bint isBimolecular(self) except -2
+    
+    cpdef bint isTransitionState(self) except -2
+    
+    cpdef bint hasStatMech(self) except -2
+    
+    cpdef bint hasThermo(self) except -2
+    
     cpdef double getHeatCapacity(self, double T) except -100000000
 
     cpdef double getEnthalpy(self, double T) except 100000000
@@ -50,25 +55,9 @@ cdef class Conformer:
     cpdef double getEntropy(self, double T) except -100000000
 
     cpdef double getFreeEnergy(self, double T) except 100000000
-
-    cpdef numpy.ndarray getSumOfStates(self, numpy.ndarray Elist)
-
-    cpdef numpy.ndarray getDensityOfStates(self, numpy.ndarray Elist)
-
-    cpdef double getTotalMass(self, atoms=?) except -1
-
-    cpdef numpy.ndarray getCenterOfMass(self, atoms=?)
-
-    cpdef numpy.ndarray getMomentOfInertiaTensor(self)
-
-    cpdef getPrincipalMomentsOfInertia(self)
-
-    cpdef double getInternalReducedMomentOfInertia(self, pivots, top1) except -1
-
-    cpdef getSymmetricTopRotors(self)
-
-    cpdef list getActiveModes(self, bint activeJRotor=?, bint activeKRotor=?)
-
-################################################################################
-
-cpdef double phi(double beta, int k, double E, logQ) except -10000000
+    
+    cpdef double calculateCollisionFrequency(self, double T, double P, dict bathGas) except -1
+        
+    cpdef numpy.ndarray generateCollisionMatrix(self, double T, numpy.ndarray densStates, numpy.ndarray Elist, numpy.ndarray Jlist=?)
+    
+    cpdef calculateDensityOfStates(self, numpy.ndarray Elist, bint activeJRotor=?, bint activeKRotor=?)

@@ -31,44 +31,17 @@ from rmgpy.quantity cimport ScalarQuantity, ArrayQuantity
 
 ################################################################################
 
-cdef class Conformer:
+cdef class LennardJones:
 
-    cdef public ScalarQuantity _E0
-    cdef public list modes
-    cdef public int spinMultiplicity
-    cdef public int opticalIsomers
-    cdef public ArrayQuantity _number
-    cdef public ArrayQuantity _mass
-    cdef public ArrayQuantity _coordinates
-
-    cpdef double getPartitionFunction(self, double T) except -1
-
-    cpdef double getHeatCapacity(self, double T) except -100000000
-
-    cpdef double getEnthalpy(self, double T) except 100000000
-
-    cpdef double getEntropy(self, double T) except -100000000
-
-    cpdef double getFreeEnergy(self, double T) except 100000000
-
-    cpdef numpy.ndarray getSumOfStates(self, numpy.ndarray Elist)
-
-    cpdef numpy.ndarray getDensityOfStates(self, numpy.ndarray Elist)
-
-    cpdef double getTotalMass(self, atoms=?) except -1
-
-    cpdef numpy.ndarray getCenterOfMass(self, atoms=?)
-
-    cpdef numpy.ndarray getMomentOfInertiaTensor(self)
-
-    cpdef getPrincipalMomentsOfInertia(self)
-
-    cpdef double getInternalReducedMomentOfInertia(self, pivots, top1) except -1
-
-    cpdef getSymmetricTopRotors(self)
-
-    cpdef list getActiveModes(self, bint activeJRotor=?, bint activeKRotor=?)
+    cdef public ScalarQuantity _sigma, _epsilon
+    
+    cpdef double getCollisionFrequency(self, double T, double M, double mu) except -1
 
 ################################################################################
 
-cpdef double phi(double beta, int k, double E, logQ) except -10000000
+cdef class SingleExponentialDown:
+
+    cdef public ScalarQuantity _alpha0, _T0
+    cdef public double n
+    
+    cpdef double getAlpha(self, double T) except -1000000000
