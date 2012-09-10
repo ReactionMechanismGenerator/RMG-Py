@@ -77,7 +77,7 @@ class TestArrhenius(unittest.TestCase):
         """
         Test that the Arrhenius n property was properly set.
         """
-        self.assertAlmostEqual(self.arrhenius.n, self.n, 6)
+        self.assertAlmostEqual(self.arrhenius.n.value_si, self.n, 6)
         
     def test_Ea(self):
         """
@@ -152,7 +152,7 @@ class TestArrhenius(unittest.TestCase):
         for T, k in zip(Tdata, kdata):
             self.assertAlmostEqual(k, arrhenius.getRateCoefficient(T), delta=1e-6*k)
         self.assertAlmostEqual(arrhenius.A.value_si, self.arrhenius.A.value_si, delta=1e0)
-        self.assertAlmostEqual(arrhenius.n, self.arrhenius.n, 1, 4)
+        self.assertAlmostEqual(arrhenius.n.value_si, self.arrhenius.n.value_si, 1, 4)
         self.assertAlmostEqual(arrhenius.Ea.value_si, self.arrhenius.Ea.value_si, 2)
         self.assertAlmostEqual(arrhenius.T0.value_si, self.arrhenius.T0.value_si, 4)
 
@@ -165,7 +165,7 @@ class TestArrhenius(unittest.TestCase):
         arrhenius = cPickle.loads(cPickle.dumps(self.arrhenius))
         self.assertAlmostEqual(self.arrhenius.A.value, arrhenius.A.value, delta=1e0)
         self.assertEqual(self.arrhenius.A.units, arrhenius.A.units)
-        self.assertAlmostEqual(self.arrhenius.n, arrhenius.n, 4)
+        self.assertAlmostEqual(self.arrhenius.n.value, arrhenius.n.value, 4)
         self.assertAlmostEqual(self.arrhenius.Ea.value, arrhenius.Ea.value, 4)
         self.assertEqual(self.arrhenius.Ea.units, arrhenius.Ea.units)
         self.assertAlmostEqual(self.arrhenius.T0.value, arrhenius.T0.value, 4)
@@ -184,7 +184,7 @@ class TestArrhenius(unittest.TestCase):
         exec('arrhenius = {0!r}'.format(self.arrhenius))
         self.assertAlmostEqual(self.arrhenius.A.value, arrhenius.A.value, delta=1e0)
         self.assertEqual(self.arrhenius.A.units, arrhenius.A.units)
-        self.assertAlmostEqual(self.arrhenius.n, arrhenius.n, 4)
+        self.assertAlmostEqual(self.arrhenius.n.value, arrhenius.n.value, 4)
         self.assertAlmostEqual(self.arrhenius.Ea.value, arrhenius.Ea.value, 4)
         self.assertEqual(self.arrhenius.Ea.units, arrhenius.Ea.units)
         self.assertAlmostEqual(self.arrhenius.T0.value, arrhenius.T0.value, 4)
@@ -233,13 +233,13 @@ class TestArrheniusEP(unittest.TestCase):
         """
         Test that the ArrheniusEP n property was properly set.
         """
-        self.assertAlmostEqual(self.arrhenius.n, self.n, 6)
+        self.assertAlmostEqual(self.arrhenius.n.value_si, self.n, 6)
         
     def test_alpha(self):
         """
         Test that the ArrheniusEP alpha property was properly set.
         """
-        self.assertAlmostEqual(self.arrhenius.alpha, self.alpha, 6)
+        self.assertAlmostEqual(self.arrhenius.alpha.value_si, self.alpha, 6)
         
     def test_E0(self):
         """
@@ -294,8 +294,8 @@ class TestArrheniusEP(unittest.TestCase):
         arrhenius = cPickle.loads(cPickle.dumps(self.arrhenius))
         self.assertAlmostEqual(self.arrhenius.A.value, arrhenius.A.value, delta=1e0)
         self.assertEqual(self.arrhenius.A.units, arrhenius.A.units)
-        self.assertAlmostEqual(self.arrhenius.n, arrhenius.n, 4)
-        self.assertAlmostEqual(self.arrhenius.alpha, arrhenius.alpha, 4)
+        self.assertAlmostEqual(self.arrhenius.n.value, arrhenius.n.value, 4)
+        self.assertAlmostEqual(self.arrhenius.alpha.value, arrhenius.alpha.value, 4)
         self.assertAlmostEqual(self.arrhenius.E0.value, arrhenius.E0.value, 4)
         self.assertEqual(self.arrhenius.E0.units, arrhenius.E0.units)
         self.assertAlmostEqual(self.arrhenius.Tmin.value, arrhenius.Tmin.value, 4)
@@ -312,8 +312,8 @@ class TestArrheniusEP(unittest.TestCase):
         exec('arrhenius = {0!r}'.format(self.arrhenius))
         self.assertAlmostEqual(self.arrhenius.A.value, arrhenius.A.value, delta=1e0)
         self.assertEqual(self.arrhenius.A.units, arrhenius.A.units)
-        self.assertAlmostEqual(self.arrhenius.n, arrhenius.n, 4)
-        self.assertAlmostEqual(self.arrhenius.alpha, arrhenius.alpha, 4)
+        self.assertAlmostEqual(self.arrhenius.n.value, arrhenius.n.value, 4)
+        self.assertAlmostEqual(self.arrhenius.alpha.value, arrhenius.alpha.value, 4)
         self.assertAlmostEqual(self.arrhenius.E0.value, arrhenius.E0.value, 4)
         self.assertEqual(self.arrhenius.E0.units, arrhenius.E0.units)
         self.assertAlmostEqual(self.arrhenius.Tmin.value, arrhenius.Tmin.value, 4)
@@ -384,7 +384,7 @@ class TestPDepArrhenius(unittest.TestCase):
         for i in range(2):
             self.assertAlmostEqual(self.kinetics.arrhenius[i].A.value, self.arrhenius[i].A.value, delta=1e0)
             self.assertEqual(self.kinetics.arrhenius[i].A.units, self.arrhenius[i].A.units)
-            self.assertAlmostEqual(self.kinetics.arrhenius[i].n, self.arrhenius[i].n, 4)
+            self.assertAlmostEqual(self.kinetics.arrhenius[i].n.value, self.arrhenius[i].n.value, 4)
             self.assertAlmostEqual(self.kinetics.arrhenius[i].Ea.value, self.arrhenius[i].Ea.value, 4)
             self.assertEqual(self.kinetics.arrhenius[i].Ea.units, self.arrhenius[i].Ea.units)
             self.assertAlmostEqual(self.kinetics.arrhenius[i].T0.value, self.arrhenius[i].T0.value, 4)
@@ -482,7 +482,7 @@ class TestPDepArrhenius(unittest.TestCase):
             self.assertAlmostEqual(self.kinetics.pressures.value[i], kinetics.pressures.value[i], 4)
             self.assertAlmostEqual(self.kinetics.arrhenius[i].A.value, kinetics.arrhenius[i].A.value, delta=1e0)
             self.assertEqual(self.kinetics.arrhenius[i].A.units, kinetics.arrhenius[i].A.units)
-            self.assertAlmostEqual(self.kinetics.arrhenius[i].n, kinetics.arrhenius[i].n)
+            self.assertAlmostEqual(self.kinetics.arrhenius[i].n.value, kinetics.arrhenius[i].n.value)
             self.assertAlmostEqual(self.kinetics.arrhenius[i].T0.value, kinetics.arrhenius[i].T0.value, 4)
             self.assertEqual(self.kinetics.arrhenius[i].T0.units, kinetics.arrhenius[i].T0.units)
             self.assertAlmostEqual(self.kinetics.arrhenius[i].Ea.value, kinetics.arrhenius[i].Ea.value, 4)
@@ -512,7 +512,7 @@ class TestPDepArrhenius(unittest.TestCase):
             self.assertAlmostEqual(self.kinetics.pressures.value[i], kinetics.pressures.value[i], 4)
             self.assertAlmostEqual(self.kinetics.arrhenius[i].A.value, kinetics.arrhenius[i].A.value, delta=1e0)
             self.assertEqual(self.kinetics.arrhenius[i].A.units, kinetics.arrhenius[i].A.units)
-            self.assertAlmostEqual(self.kinetics.arrhenius[i].n, kinetics.arrhenius[i].n)
+            self.assertAlmostEqual(self.kinetics.arrhenius[i].n.value, kinetics.arrhenius[i].n.value)
             self.assertAlmostEqual(self.kinetics.arrhenius[i].T0.value, kinetics.arrhenius[i].T0.value, 4)
             self.assertEqual(self.kinetics.arrhenius[i].T0.units, kinetics.arrhenius[i].T0.units)
             self.assertAlmostEqual(self.kinetics.arrhenius[i].Ea.value, kinetics.arrhenius[i].Ea.value, 4)
@@ -623,7 +623,7 @@ class TestMultiArrhenius(unittest.TestCase):
         for arrh0, arrh in zip(self.kinetics.arrhenius, kinetics.arrhenius):
             self.assertAlmostEqual(arrh0.A.value, arrh.A.value, delta=1e-18)
             self.assertEqual(arrh0.A.units, arrh.A.units)
-            self.assertAlmostEqual(arrh0.n, arrh.n, 4)
+            self.assertAlmostEqual(arrh0.n.value, arrh.n.value, 4)
             self.assertAlmostEqual(arrh0.Ea.value, arrh.Ea.value, 4)
             self.assertEqual(arrh0.Ea.units, arrh.Ea.units)
             self.assertAlmostEqual(arrh0.T0.value, arrh.T0.value, 4)
@@ -644,7 +644,7 @@ class TestMultiArrhenius(unittest.TestCase):
         for arrh0, arrh in zip(self.kinetics.arrhenius, kinetics.arrhenius):
             self.assertAlmostEqual(arrh0.A.value, arrh.A.value, delta=1e-18)
             self.assertEqual(arrh0.A.units, arrh.A.units)
-            self.assertAlmostEqual(arrh0.n, arrh.n, 4)
+            self.assertAlmostEqual(arrh0.n.value, arrh.n.value, 4)
             self.assertAlmostEqual(arrh0.Ea.value, arrh.Ea.value, 4)
             self.assertEqual(arrh0.Ea.units, arrh.Ea.units)
             self.assertAlmostEqual(arrh0.T0.value, arrh.T0.value, 4)

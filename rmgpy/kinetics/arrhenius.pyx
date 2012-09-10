@@ -66,7 +66,7 @@ cdef class Arrhenius(KineticsModel):
         Return a string representation that can be used to reconstruct the
         Arrhenius object.
         """
-        string = 'Arrhenius(A={0!r}, n={1:g}, Ea={2!r}, T0={3!r}'.format(self.A, self.n, self.Ea, self.T0)
+        string = 'Arrhenius(A={0!r}, n={1!r}, Ea={2!r}, T0={3!r}'.format(self.A, self.n, self.Ea, self.T0)
         if self.Tmin is not None: string += ', Tmin={0!r}'.format(self.Tmin)
         if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
         if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
@@ -85,6 +85,13 @@ cdef class Arrhenius(KineticsModel):
             return self._A
         def __set__(self, value):
             self._A = quantity.RateCoefficient(value)
+
+    property n:
+        """The temperature exponent."""
+        def __get__(self):
+            return self._n
+        def __set__(self, value):
+            self._n = quantity.Dimensionless(value)
 
     property Ea:
         """The activation energy."""
@@ -107,7 +114,7 @@ cdef class Arrhenius(KineticsModel):
         """
         cdef double A, n, Ea, T0
         A = self._A.value_si
-        n = self.n
+        n = self._n.value_si
         Ea = self._Ea.value_si
         T0 = self._T0.value_si
         return A * (T / T0)**n * exp(-Ea / (constants.R * T))
@@ -117,7 +124,7 @@ cdef class Arrhenius(KineticsModel):
         Changes the reference temperature used in the exponent to `T0` in K, 
         and adjusts the preexponential factor accordingly.
         """
-        self._A.value_si /= (self._T0.value_si / T0)**self.n
+        self._A.value_si /= (self._T0.value_si / T0)**self._n.value_si
         self._T0.value_si = T0
 
     cpdef fitToData(self, numpy.ndarray Tlist, numpy.ndarray klist, str kunits, double T0=1, numpy.ndarray weights=None, bint threeParams=True):
@@ -204,7 +211,7 @@ cdef class ArrheniusEP(KineticsModel):
         Return a string representation that can be used to reconstruct the
         ArrheniusEP object.
         """
-        string = 'ArrheniusEP(A={0!r}, n={1:g}, alpha={2:g}, E0={3!r}'.format(self.A, self.n, self.alpha, self.E0)
+        string = 'ArrheniusEP(A={0!r}, n={1!r}, alpha={2!r}, E0={3!r}'.format(self.A, self.n, self.alpha, self.E0)
         if self.Tmin is not None: string += ', Tmin={0!r}'.format(self.Tmin)
         if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
         if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
@@ -224,6 +231,20 @@ cdef class ArrheniusEP(KineticsModel):
         def __set__(self, value):
             self._A = quantity.RateCoefficient(value)
 
+    property n:
+        """The temperature exponent."""
+        def __get__(self):
+            return self._n
+        def __set__(self, value):
+            self._n = quantity.Dimensionless(value)
+
+    property alpha:
+        """The Evans-Polanyi slope."""
+        def __get__(self):
+            return self._alpha
+        def __set__(self, value):
+            self._alpha = quantity.Dimensionless(value)
+
     property E0:
         """The activation energy for a thermoneutral reaction."""
         def __get__(self):
@@ -240,7 +261,7 @@ cdef class ArrheniusEP(KineticsModel):
         cdef double A, n, Ea        
         Ea = self.getActivationEnergy(dHrxn)
         A = self._A.value_si
-        n = self.n
+        n = self._n.value_si
         return A * T**n * exp(-Ea / (constants.R * T))
 
     cpdef double getActivationEnergy(self, double dHrxn):
@@ -249,7 +270,7 @@ cdef class ArrheniusEP(KineticsModel):
         enthalpy of reaction `dHrxn` in J/mol.
         """
         cdef double Ea
-        Ea = self.alpha * dHrxn + self._E0.value_si
+        Ea = self._alpha.value_si * dHrxn + self._E0.value_si
         if dHrxn < 0.0 and Ea < 0.0:
             Ea = 0.0
         elif dHrxn > 0.0 and Ea < 0.0:

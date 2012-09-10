@@ -35,7 +35,7 @@ from rmgpy.quantity cimport ScalarQuantity, ArrayQuantity
 cdef class Arrhenius(KineticsModel):
     
     cdef public ScalarQuantity _A
-    cdef public double n
+    cdef public ScalarQuantity _n
     cdef public ScalarQuantity _Ea
     cdef public ScalarQuantity _T0
     
@@ -50,8 +50,8 @@ cdef class Arrhenius(KineticsModel):
 cdef class ArrheniusEP(KineticsModel):
     
     cdef public ScalarQuantity _A
-    cdef public double n
-    cdef public double alpha
+    cdef public ScalarQuantity _n
+    cdef public ScalarQuantity _alpha
     cdef public ScalarQuantity _E0
     
     cpdef double getRateCoefficient(self, double T, double dHrxn=?) except -1
