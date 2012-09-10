@@ -26,3 +26,9 @@
 #   DEALINGS IN THE SOFTWARE.
 #
 ################################################################################
+
+from .main import CanTherm
+from .statmech import StatMechJob
+from .thermo import ThermoJob
+from .kinetics import KineticsJob
+from .pdep import PressureDependenceJob

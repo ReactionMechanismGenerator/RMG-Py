@@ -1,14 +1,15 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
+# encoding: utf-8
 
 ################################################################################
 #
-#   CanTherm - 
-#    
-#   Copyright (c) 2010 by Joshua W. Allen (jwallen@mit.edu)
+#   RMG - Reaction Mechanism Generator
+#
+#   Copyright (c) 2002-2009 Prof. William H. Green (whgreen@mit.edu) and the
+#   RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
-#   copy of this software and associated documentation files (the 'Software'),
+#   copy of this software and associated documentation files (the "Software"),
 #   to deal in the Software without restriction, including without limitation
 #   the rights to use, copy, modify, merge, publish, distribute, sublicense,
 #   and/or sell copies of the Software, and to permit persons to whom the
@@ -17,224 +18,358 @@
 #   The above copyright notice and this permission notice shall be included in
 #   all copies or substantial portions of the Software.
 #
-#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 #   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+#   THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 #   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #   DEALINGS IN THE SOFTWARE.
 #
 ################################################################################
 
+"""
+This module contains functionality for parsing CanTherm input files.
+"""
+
 import os.path
 import logging
-import math
-import numpy
-import matplotlib
-matplotlib.rc('mathtext', default='regular')
-            
-import rmgpy.constants as constants
-from rmgpy.statmech import HinderedRotor, HarmonicOscillator
+
 from rmgpy.species import Species, TransitionState
-from rmgpy.kinetics import Arrhenius
 from rmgpy.reaction import Reaction
+from rmgpy.statmech import *
+from rmgpy.thermo import *
+from rmgpy.kinetics import *
+from rmgpy.pdep import *
+from rmgpy.pdep.collision import *
+from rmgpy.molecule import Molecule
 
-from gaussian import GaussianLog
-from states import projectRotors, applyEnergyCorrections
+from rmgpy.cantherm.gaussian import GaussianLog
+from rmgpy.cantherm.kinetics import KineticsJob
+from rmgpy.cantherm.statmech import StatMechJob
+from rmgpy.cantherm.thermo import ThermoJob
+from rmgpy.cantherm.pdep import PressureDependenceJob
 
 ################################################################################
 
-# The model chemistry used
-# The energies for each species and transition state will be automatically 
-# adjusted using standard reference energies for that method
-modelChemistry = ''
-
-# A dictionary associating species identifiers with species objects
 speciesDict = {}
-# A dictionary associating transition state identifiers with transition state objects
 transitionStateDict = {}
-# A dictionary associating reaction identifiers with reaction objects
 reactionDict = {}
-# A dictionary associated species and transition state identifiers with geometry objects
-geometryDict = {}
-
-# The file to save the output to
-outputFile = ''
+networkDict = {}
+jobList = []
 
 ################################################################################
 
-def setOutputFile(path):
-    global outputFile
-    outputFile = path
-    f = open(path, 'w')
-    f.close()
-    
-def setModelChemistry(method):
-    """
-    Set the model chemistry used in this quantum chemisty calculation to
-    `method`.
-    """
-    global modelChemistry
-    modelChemistry = method
-
-################################################################################
-
-def hinderedRotor(scanLog, pivots, top, symmetry):
-    pivots = [p-1 for p in pivots]
-    top = [t-1 for t in top]
-    return [scanLog, pivots, top, symmetry]
-
-################################################################################
-
-def loadConfiguration(energyLog, geomLog, statesLog, extSymmetry, spinMultiplicity, freqScaleFactor, linear, rotors, atoms, bonds, E0=None, TS=False):
-    
-    logging.debug('    Reading optimized geometry...')
-    log = GaussianLog(geomLog)
-    geom = log.loadGeometry()
-    
-    logging.debug('    Reading energy...')
-    if E0 is None:
-        if energyLog is not None: log = GaussianLog(energyLog)
-        E0 = log.loadEnergy()
-    else:
-        E0 *= 4.35974394e-18 * constants.Na     # Hartree/particle to J/mol
-    E0 = applyEnergyCorrections(E0, modelChemistry, atoms, bonds)
-    logging.debug('         E0 (0 K) = %g kcal/mol' % (E0 / 4184))
-    
-    logging.debug('    Reading molecular degrees of freedom...')
-    log = GaussianLog(statesLog)
-    states = log.loadStates(symmetry=extSymmetry)
-    states.spinMultiplicity = spinMultiplicity
-    
-    F = log.loadForceConstantMatrix()
-    
-    if F is not None and len(geom.mass) > 1 and len(rotors) > 0:
-        
-        logging.debug('    Fitting %i hindered rotors...' % len(rotors))
-        for scanLog, pivots, top, symmetry in rotors:
-            log = GaussianLog(scanLog)
-            
-            Vlist, angle = log.loadScanEnergies()
-            
-            inertia = geom.getInternalReducedMomentOfInertia(pivots, top)
-            
-            barr, symm = log.fitCosinePotential()
-            cosineRotor = HinderedRotor(inertia=(inertia*constants.Na*1e23,"amu*angstrom^2"), symmetry=symm, barrier=(barr/4184.,"kcal/mol"))
-            fourier = log.fitFourierSeriesPotential()
-            fourierRotor = HinderedRotor(inertia=(inertia*constants.Na*1e23,"amu*angstrom^2"), symmetry=symmetry, fourier=(fourier,"J/mol"))
-                
-            Vlist_cosine = cosineRotor.getPotential(angle)
-            Vlist_fourier = fourierRotor.getPotential(angle)
-            
-            rms_cosine = numpy.sqrt(numpy.sum((Vlist_cosine - Vlist) * (Vlist_cosine - Vlist)) / (len(Vlist) - 1)) / 4184.
-            rms_fourier = numpy.sqrt(numpy.sum((Vlist_fourier - Vlist) * (Vlist_fourier - Vlist))/ (len(Vlist) - 1)) / 4184.
-            print rms_cosine, rms_fourier, symm, symmetry
-            
-            # Keep the rotor with the most accurate potential
-            rotor = cosineRotor if rms_cosine < rms_fourier else fourierRotor
-            # However, keep the cosine rotor if it is accurate enough, the
-            # fourier rotor is not significantly more accurate, and the cosine
-            # rotor has the correct symmetry 
-            if rms_cosine < 0.05 and rms_cosine / rms_fourier > 0.25 and rms_cosine / rms_fourier < 4.0 and symmetry == symm:
-                rotor = cosineRotor
-            
-            states.modes.append(rotor)
-            
-            import pylab
-            phi = numpy.arange(0, 6.3, 0.02, numpy.float64)
-            fig = pylab.figure()
-            pylab.plot(angle, Vlist / 4184, 'ok')
-            linespec = '-r' if rotor is cosineRotor else '--r'
-            pylab.plot(phi, cosineRotor.getPotential(phi) / 4184, linespec)
-            linespec = '-b' if rotor is fourierRotor else '--b'
-            pylab.plot(phi, fourierRotor.getPotential(phi) / 4184, linespec)
-            pylab.legend(['scan', 'cosine', 'fourier'], loc=1)
-            pylab.xlim(0, 2*math.pi)
-            
-            axes = fig.get_axes()[0]
-            axes.set_xticks([float(j*math.pi/4) for j in range(0,9)])
-            axes.set_xticks([float(j*math.pi/8) for j in range(0,17)], minor=True)
-            axes.set_xticklabels(['$0$', '$\pi/4$', '$\pi/2$', '$3\pi/4$', '$\pi$', '$5\pi/4$', '$3\pi/2$', '$7\pi/4$', '$2\pi$'])
-
-            
-        pylab.show()
-        
-        logging.debug('    Determining frequencies from reduced force constant matrix...')
-        frequencies = list(projectRotors(geom, F, rotors, linear, TS))
-        
-    elif len(states.modes) > 2:
-        frequencies = states.modes[2].frequencies.value_si
-        rotors = []
-    else:
-        frequencies = []
-        rotors = []
-
-    for mode in states.modes:
-        if isinstance(mode, HarmonicOscillator):
-            mode.frequencies.value_si = numpy.array(frequencies, numpy.float) * freqScaleFactor
-
-    return E0, geom, states
-
-def loadSpecies(label, geomLog, statesLog, extSymmetry, spinMultiplicity, freqScaleFactor, linear, rotors, atoms, bonds, directory=None, E0=None, energyLog=None):
-    global modelChemistry
-    logging.info('Loading species %s...' % label)
-    if directory:
-        geomLog = os.path.join(directory, geomLog)
-        statesLog = os.path.join(directory, statesLog)
-        if energyLog: energyLog = os.path.join(directory, energyLog)
-        for rotor in rotors:
-            rotor[0] = os.path.join(directory, rotor[0])
-    E0, geom, states = loadConfiguration(energyLog, geomLog, statesLog, extSymmetry, spinMultiplicity, freqScaleFactor, linear, rotors, atoms, bonds, E0, TS=False)
-    speciesDict[label] = Species(label=label, thermo=None, states=states, E0=(E0/1000.,"kJ/mol"))
-    geometryDict[label] = geom
-
-def loadTransitionState(label, geomLog, statesLog, extSymmetry, spinMultiplicity, freqScaleFactor, linear, rotors, atoms, bonds, directory=None, E0=None, energyLog=None):
-    global modelChemistry
-    logging.info('Loading transition state %s...' % label)
-    if directory:
-        geomLog = os.path.join(directory, geomLog)
-        statesLog = os.path.join(directory, statesLog)
-        if energyLog: energyLog = os.path.join(directory, energyLog)
-        for rotor in rotors:
-            rotor[0] = os.path.join(directory, rotor[0])
-    E0, geom, states = loadConfiguration(energyLog, geomLog, statesLog, extSymmetry, spinMultiplicity, freqScaleFactor, linear, rotors, atoms, bonds, E0, TS=True)
-    log = GaussianLog(statesLog)
-    frequency = log.loadNegativeFrequency() * freqScaleFactor
-    transitionStateDict[label] = TransitionState(label=label, states=states, frequency=(frequency,"cm^-1"), E0=(E0/1000.,"kJ/mol"))
-    geometryDict[label] = geom
-    
-################################################################################
-
-def loadReaction(label, reactants, products, transitionState, degeneracy=1):
-    global speciesDict, transitionStateDict, reactionDict
-    logging.info('Loading reaction %s...' % label)
-    rxn = Reaction(
-        reactants=[speciesDict[s] for s in reactants],
-        products=[speciesDict[s] for s in products],
-        transitionState=transitionStateDict[transitionState],
-    )
-    rxn.degeneracy = degeneracy
-    reactionDict[label] = rxn
-
-################################################################################
-
-def generateStates(label):
-    global outputFile, speciesDict, transitionStateDict
-    from states import saveStates
+def species(label, *args, **kwargs):
+    global speciesDict, jobList
     if label in speciesDict:
-        saveStates(speciesDict[label], geometryDict[label], label, outputFile)
-    elif label in transitionStateDict:
-        saveStates(transitionStateDict[label], geometryDict[label], label, outputFile)
+        raise ValueError('Multiple occurrences of species with label {0!r}.'.format(label))
+    logging.info('Loading species {0}...'.format(label))
     
-def generateThermo(label, model, plot=False):
-    global outputFile, speciesDict
-    from thermo import generateThermoModel, saveThermo
-    generateThermoModel(speciesDict[label], model, plot)
-    saveThermo(speciesDict[label], label, outputFile)
+    spec = Species(label=label)
+    speciesDict[label] = spec
     
-def generateKinetics(label, tunneling='', plot=False):
-    global outputFile, reactionDict
-    from kinetics import generateKineticsModel, saveKinetics
-    generateKineticsModel(reactionDict[label], tunneling, plot)
-    saveKinetics(reactionDict[label], tunneling, label, outputFile)
+    if len(args) == 1:
+        # The argument is a path to a conformer input file
+        path = args[0]
+        job = StatMechJob(species=spec, path=path)
+        jobList.append(job)
+    
+    if len(kwargs) > 0:
+        # The species parameters are given explicitly
+        structure = None
+        E0 = None
+        modes = []
+        spinMultiplicity = 1
+        opticalIsomers = 1
+        molecularWeight = None
+        collisionModel = None
+        energyTransferModel = None
+        for key, value in kwargs.items():
+            if key == 'structure':
+                structure = value
+            elif key == 'E0':
+                E0 = value
+            elif key == 'modes':
+                modes = value
+            elif key == 'spinMultiplicity':
+                spinMultiplicity = value
+            elif key == 'opticalIsomers':
+                opticalIsomers = value
+            elif key == 'molecularWeight':
+                molecularWeight = value
+            elif key == 'collisionModel':
+                collisionModel = value
+            elif key == 'energyTransferModel':
+                energyTransferModel = value
+            else:
+                raise TypeError('species() got an unexpected keyword argument {0!r}.'.format(key))
+            
+        if structure: spec.molecule = [structure]
+        spec.conformer = Conformer(E0=E0, modes=modes, spinMultiplicity=spinMultiplicity, opticalIsomers=opticalIsomers)  
+        spec.molecularWeight = molecularWeight
+        spec.lennardJones = collisionModel
+        spec.energyTransferModel = energyTransferModel
+        
+    return spec
+
+def transitionState(label, *args, **kwargs):
+    global transitionStateDict
+    if label in transitionStateDict:
+        raise ValueError('Multiple occurrences of transition state with label {0!r}.'.format(label))
+    logging.info('Loading transition state {0}...'.format(label))
+    ts = TransitionState(label=label)
+    transitionStateDict[label] = ts
+    
+    if len(args) == 1 and len(kwargs) == 0:
+        # The argument is a path to a conformer input file
+        path = args[0]
+        job = StatMechJob(species=ts, path=path)
+        jobList.append(job)
+    
+    elif len(args) == 0 and len(kwargs) > 0:
+        # The species parameters are given explicitly
+        E0 = None
+        modes = []
+        spinMultiplicity = 1
+        opticalIsomers = 1
+        frequency = None
+        for key, value in kwargs.items():
+            if key == 'E0':
+                E0 = value
+            elif key == 'modes':
+                modes = value
+            elif key == 'spinMultiplicity':
+                spinMultiplicity = value
+            elif key == 'opticalIsomers':
+                opticalIsomers = value
+            elif key == 'frequency':
+                frequency = value
+            else:
+                raise TypeError('transitionState() got an unexpected keyword argument {0!r}.'.format(key))
+        
+        ts.conformer = Conformer(E0=E0, modes=modes, spinMultiplicity=spinMultiplicity, opticalIsomers=opticalIsomers)  
+        ts.frequency = frequency
+        
+    return ts
+
+def reaction(label, reactants, products, transitionState, kinetics=None, tunneling=''):
+    global reactionDict, speciesDict, transitionStateDict
+    if label in reactionDict:
+        raise ValueError('Multiple occurrences of reaction with label {0!r}.'.format(label))
+    logging.info('Loading reaction {0}...'.format(label))
+    reactants = [speciesDict[spec] for spec in reactants]
+    products = [speciesDict[spec] for spec in products]
+    transitionState = transitionStateDict[transitionState]
+    if tunneling.lower() == 'wigner':
+        transitionState.tunneling = Wigner(frequency=None)
+    elif tunneling.lower() == 'eckart':
+        transitionState.tunneling = Eckart(frequency=None, E0_reac=None, E0_TS=None, E0_prod=None)
+    elif tunneling == '' or tunneling is None:
+        transitionState.tunneling = None
+    elif not isinstance(tunneling, TunnelingModel):
+        raise ValueError('Unknown tunneling model {0!r}.'.format(tunneling))
+    rxn = Reaction(label=label, reactants=reactants, products=products, transitionState=transitionState, kinetics=kinetics)
+    reactionDict[label] = rxn
+    return rxn
+
+def network(label, isomers=None, reactants=None, products=None, pathReactions=None, bathGas=None):
+    global networkDict, speciesDict, reactionDict
+    logging.info('Loading network {0}...'.format(label))
+    isomers0 = isomers or []; isomers = []
+    for isomer in isomers0:
+        if isinstance(isomer, (list,tuple)):
+            raise ValueError('Only one species can be present in a unimolecular isomer.')
+        isomers.append(speciesDict[isomer])
+    
+    reactants0 = reactants or []; reactants = []
+    for reactant in reactants0:
+        if not isinstance(reactant, (list,tuple)):
+            reactant = [reactant]
+        reactants.append(sorted([speciesDict[spec] for spec in reactant]))
+    
+    if pathReactions is None:
+        # If not explicitly given, use all reactions in input file
+        pathReactions = reactionDict.values()
+    else:
+        pathReactions0 = pathReactions; pathReactions = []
+        for rxn in pathReactions0:
+            pathReactions.append(reactionDict[rxn])
+    
+    if products is None:
+        # Figure out which configurations are isomers, reactant channels, and product channels
+        products = []
+        for rxn in pathReactions:
+            # Sort bimolecular configurations so that we always encounter them in the
+            # same order
+            # The actual order doesn't matter, as long as it is consistent
+            rxn.reactants.sort()
+            rxn.products.sort()
+            # All reactant configurations not already defined as reactants or 
+            # isomers are assumed to be product channels
+            if len(rxn.reactants) == 1 and rxn.reactants[0] not in isomers and rxn.reactants not in products:
+                products.append(rxn.reactants)
+            elif len(rxn.reactants) > 1 and rxn.reactants not in reactants and rxn.reactants not in products:
+                products.append(rxn.reactants)
+            # All product configurations not already defined as reactants or 
+            # isomers are assumed to be product channels
+            if len(rxn.products) == 1 and rxn.products[0] not in isomers and rxn.products not in products:
+                products.append(rxn.products)
+            elif len(rxn.products) > 1 and rxn.products not in reactants and rxn.products not in products:
+                products.append(rxn.products)
+    else:
+        products0 = products or []; products = []
+        for product in products0:
+            if not isinstance(product, (list,tuple)):
+                product = [product]
+            products.append(sorted([speciesDict[spec] for spec in product]))
+
+    isomers = [Configuration(species) for species in isomers]
+    reactants = [Configuration(*species) for species in reactants]
+    products = [Configuration(*species) for species in products]
+        
+    bathGas0 = bathGas or {}; bathGas = {}
+    for spec, fraction in bathGas0.items():
+        bathGas[speciesDict[spec]] = fraction
+    
+    network = Network(
+        label = label, 
+        isomers = isomers, 
+        reactants = reactants, 
+        products = products, 
+        pathReactions = pathReactions, 
+        bathGas = bathGas,
+    )
+    networkDict[label] = network
+
+def kinetics(label):
+    global jobList, reactionDict
+    try:
+        rxn = reactionDict[label]
+    except KeyError:
+        raise ValueError('Unknown reaction label {0!r} for kinetics() job.'.format(label))
+    job = KineticsJob(reaction=rxn)
+    jobList.append(job)
+
+def statmech(label):
+    global jobList, speciesDict, transitionStateDict
+    if label in speciesDict or label in transitionStateDict:
+        for job in jobList:
+            if job.species.label == label:
+                break
+        else:
+            raise ValueError('Could not create StatMechJob for {0!r}; no path specified.'.format(label))
+    else:
+        raise ValueError('Unknown species or transition state label {0!r} for statmech() job.'.format(label))
+
+def thermo(label, thermoClass):
+    global jobList, speciesDict
+    try:
+        spec = speciesDict[label]
+    except KeyError:
+        raise ValueError('Unknown species label {0!r} for thermo() job.'.format(label))
+    job = ThermoJob(species=spec, thermoClass=thermoClass)
+    jobList.append(job)
+
+def pressureDependence(label, 
+                       Tmin=None, Tmax=None, Tcount=0, Tlist=None,
+                       Pmin=None, Pmax=None, Pcount=0, Plist=None,
+                       maximumGrainSize=None, minimumGrainCount=0,
+                       method=None, interpolationModel=None,
+                       activeKRotor=True, activeJRotor=True):
+    global jobList, networkDict
+    if isinstance(interpolationModel, str):
+        interpolationModel = (interpolationModel,)
+    job = PressureDependenceJob(network = networkDict[label],
+        Tmin=Tmin, Tmax=Tmax, Tcount=Tcount, Tlist=Tlist,
+        Pmin=Pmin, Pmax=Pmax, Pcount=Pcount, Plist=Plist,
+        maximumGrainSize=maximumGrainSize, minimumGrainCount=minimumGrainCount,
+        method=method, interpolationModel=interpolationModel,
+        activeKRotor=activeKRotor, activeJRotor=activeJRotor,
+    )
+    jobList.append(job)
+
+def SMILES(smiles):
+    return Molecule().fromSMILES(smiles)
+
+def InChI(inchi):
+    return Molecule().fromInChI(inchi)
+
+################################################################################
+
+def loadInputFile(path):
+    """
+    Load the CanTherm input file located at `path` on disk, and return a list of
+    the jobs defined in that file.
+    """
+    global speciesDict, transitionStateDict, reactionDict, networkDict, jobList
+    
+    # Clear module-level variables
+    speciesDict = {}
+    transitionStateDict = {}
+    reactionDict = {}
+    networkDict = {}
+    jobList = []
+    
+    global_context = { '__builtins__': None }
+    local_context = {
+        '__builtins__': None,
+        'True': True,
+        'False': False,
+        'range': range,
+        # Collision
+        'LennardJones': LennardJones,
+        'SingleExponentialDown': SingleExponentialDown,
+        # Kinetics
+        'Arrhenius': Arrhenius,
+        # Statistical mechanics
+        'IdealGasTranslation': IdealGasTranslation,
+        'LinearRotor': LinearRotor,
+        'NonlinearRotor': NonlinearRotor,
+        'KRotor': KRotor,
+        'SphericalTopRotor': SphericalTopRotor,
+        'HarmonicOscillator': HarmonicOscillator,
+        'HinderedRotor': HinderedRotor,
+        # Thermo
+        'ThermoData': ThermoData,
+        'Wilhoit': Wilhoit,
+        'NASA': NASA,
+        'NASAPolynomial': NASAPolynomial,
+        # Functions
+        'reaction': reaction,
+        'species': species,
+        'transitionState': transitionState,
+        'network': network,
+        # Jobs
+        'kinetics': kinetics,
+        'statmech': statmech,
+        'thermo': thermo,
+        'pressureDependence': pressureDependence,
+        # Miscellaneous
+        'SMILES': SMILES,
+        'InChI': InChI,
+    }
+
+    with open(path, 'r') as f:
+        try:
+            exec f in global_context, local_context
+        except (NameError, TypeError, SyntaxError), e:
+            logging.error('The input file {0!r} was invalid:'.format(path))
+            raise
+
+    modelChemistry = local_context.get('modelChemistry', '')
+    frequencyScaleFactor = local_context.get('frequencyScaleFactor', 0.0)
+    useHinderedRotors = local_context.get('useHinderedRotors', True)
+    useBondCorrections = local_context.get('useBondCorrections', False)
+    
+    directory = os.path.dirname(path)
+    
+    for job in jobList:
+        if isinstance(job, StatMechJob):
+            job.path = os.path.join(directory, job.path)
+            job.modelChemistry = modelChemistry
+            job.frequencyScaleFactor = frequencyScaleFactor
+            job.includeHinderedRotors = useHinderedRotors
+            job.applyBondEnergyCorrections = useBondCorrections
+    
+    return jobList
