@@ -149,9 +149,11 @@ cdef class ThermoData(HeatCapacityModel):
         
         # If T is outside the range of Cp data, make sure we have a value of
         # Cp0 or CpInf we need for reasonable extrapolation
-        if T < Tdata[0] and Cp0 == 0.0:
+        # Allow a small window of safe extrapolation past each endpoint
+        # (ostensibly so we can extrapolate from 300 K to 298 K)
+        if T < Tdata[0] - 5 and Cp0 == 0.0:
             raise ValueError('Unable to compute heat capacity at {0:g} K using ThermoData model; please supply a value for Cp0.'.format(T))
-        elif T > Tdata[N-1] and CpInf == 0.0:
+        elif T > Tdata[N-1] + 5 and CpInf == 0.0:
             raise ValueError('Unable to compute heat capacity at {0:g} K using ThermoData model; please supply a value for CpInf.'.format(T))
 
         if T < Tdata[0] and Cp0 != 0.0:
@@ -200,9 +202,11 @@ cdef class ThermoData(HeatCapacityModel):
         
         # If T is outside the range of Cp data, make sure we have a value of
         # Cp0 or CpInf we need for reasonable extrapolation
-        if T < Tdata[0] and Cp0 == 0.0:
+        # Allow a small window of safe extrapolation past each endpoint
+        # (ostensibly so we can extrapolate from 300 K to 298 K)
+        if T < Tdata[0] - 5 and Cp0 == 0.0:
             raise ValueError('Unable to compute enthalpy at {0:g} K using ThermoData model; please supply a value for Cp0.'.format(T))
-        elif T > Tdata[N-1] and CpInf == 0.0:
+        elif T > Tdata[N-1] + 5 and CpInf == 0.0:
             raise ValueError('Unable to compute enthalpy at {0:g} K using ThermoData model; please supply a value for CpInf.'.format(T))
 
         # Correct the enthalpy from 298 K to the temperature of the lowest heat capacity point
@@ -279,9 +283,11 @@ cdef class ThermoData(HeatCapacityModel):
         
         # If T is outside the range of Cp data, make sure we have a value of
         # Cp0 or CpInf we need for reasonable extrapolation
-        if T < Tdata[0] and Cp0 == 0.0:
+        # Allow a small window of safe extrapolation past each endpoint
+        # (ostensibly so we can extrapolate from 300 K to 298 K)
+        if T < Tdata[0] - 5 and Cp0 == 0.0:
             raise ValueError('Unable to compute entropy at {0:g} K using ThermoData model; please supply a value for Cp0.'.format(T))
-        elif T > Tdata[N-1] and CpInf == 0.0:
+        elif T > Tdata[N-1] + 5 and CpInf == 0.0:
             raise ValueError('Unable to compute entropy at {0:g} K using ThermoData model; please supply a value for CpInf.'.format(T))
 
         if T < Tdata[0]:
@@ -324,11 +330,22 @@ cdef class ThermoData(HeatCapacityModel):
         Return the Gibbs free energy in J/mol at the specified temperature
         `T` in K.
         """
+        cdef numpy.ndarray[numpy.float64_t,ndim=1] Tdata
+        cdef double Cp0, CpInf
+        cdef int N
+
+        Tdata = self._Tdata.value_si
+        Cp0 = self._Cp0.value_si if self._Cp0 is not None else 0.0
+        CpInf = self._CpInf.value_si if self._CpInf is not None else 0.0
+        N = Tdata.shape[0]
+
         # If T is outside the range of Cp data, make sure we have a value of
         # Cp0 or CpInf we need for reasonable extrapolation
-        if T < 298 and self._Cp0 is None:
+        # Allow a small window of safe extrapolation past each endpoint
+        # (ostensibly so we can extrapolate from 300 K to 298 K)
+        if T < Tdata[0] - 5 and Cp0 == 0.0:
             raise ValueError('Unable to compute Gibbs free energy at {0:g} K using ThermoData model; please supply a value for Cp0.'.format(T))
-        elif T > 1500 and self._CpInf is None:
+        elif T > Tdata[N-1] + 5 and CpInf == 0.0:
             raise ValueError('Unable to compute Gibbs free energy at {0:g} K using ThermoData model; please supply a value for CpInf.'.format(T))
 
         return self.getEnthalpy(T) - T * self.getEntropy(T)
