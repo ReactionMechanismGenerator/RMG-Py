@@ -294,6 +294,18 @@ class Species(object):
         else:
             raise Exception('Unable to calculate density of states for species {0!r}: no statmech data available.'.format(self.label))
 
+    def calculateCp0(self):
+        """
+        Return the value of the heat capacity at zero temperature in J/mol*K.
+        """
+        return self.molecule[0].calculateCp0()
+
+    def calculateCpInf(self):
+        """
+        Return the value of the heat capacity at infinite temperature in J/mol*K.
+        """
+        return self.molecule[0].calculateCpInf()
+
 ################################################################################
 
 class TransitionState:

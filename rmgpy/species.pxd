@@ -69,6 +69,10 @@ cdef class Species:
 
     cpdef numpy.ndarray getDensityOfStates(self, numpy.ndarray Elist)
 
+    cpdef double calculateCp0(self) except -1
+
+    cpdef double calculateCpInf(self) except -1
+    
 ################################################################################
 
 cdef class TransitionState:

@@ -43,6 +43,7 @@ import openbabel
 from .graph import Vertex, Edge, Graph
 from .group import GroupAtom, GroupBond, Group, ActionError
 from .atomtype import AtomType, atomTypes, getAtomType
+import rmgpy.constants as constants
 
 ################################################################################
 
@@ -1077,6 +1078,24 @@ class Molecule(Graph):
                     if len(atom1.edges) > 1 and len(atom2.edges) > 1:
                         count += 1
         return count
+
+    def calculateCp0(self):
+        """
+        Return the value of the heat capacity at zero temperature in J/mol*K.
+        """
+        return (3.5 if self.isLinear() else 4.0) * constants.R
+
+    def calculateCpInf(self):
+        """
+        Return the value of the heat capacity at infinite temperature in J/mol*K.
+        """
+        cython.declare(Natoms=cython.int, Nvib=cython.int, Nrotors=cython.int)
+        
+        Natoms = len(self.vertices)
+        Nvib = 3 * Natoms - 5 if self.isLinear() else 6
+        Nrotors = self.countInternalRotors()
+        
+        return self.calculateCp0() + (Nvib + 0.5 * Nrotors) * constants.R
 
     def calculateSymmetryNumber(self):
         """
