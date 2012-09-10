@@ -57,8 +57,8 @@ cdef class Chebyshev(PDepKineticsModel):
     
     """
 
-    def __init__(self, coeffs=None, kunits='', Tmin=None, Tmax=None, Pmin=None, Pmax=None, comment=''):
-        PDepKineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, comment=comment)
+    def __init__(self, coeffs=None, kunits='', highPlimit=None, Tmin=None, Tmax=None, Pmin=None, Pmax=None, comment=''):
+        PDepKineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, highPlimit=highPlimit, comment=comment)
         self.coeffs = coeffs
         self.kunits = kunits
         if self.coeffs is not None:
@@ -76,6 +76,7 @@ cdef class Chebyshev(PDepKineticsModel):
         factor = quantity.RateCoefficient(1.0, self.kunits).value_si
         coeffs.value_si[0,0] -= log10(factor)
         string = 'Chebyshev(coeffs={0!r}, kunits={1!r}'.format(coeffs, self.kunits)
+        if self.highPlimit is not None: string += ', highPlimit={0!r}'.format(self.highPlimit)
         if self.Tmin is not None: string += ', Tmin={0!r}'.format(self.Tmin)
         if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
         if self.Pmin is not None: string += ', Pmin={0!r}'.format(self.Pmin)
@@ -91,7 +92,7 @@ cdef class Chebyshev(PDepKineticsModel):
         coeffs = self.coeffs.copy()
         factor = quantity.RateCoefficient(1.0, self.kunits).value_si
         coeffs.value_si[0,0] -= log10(factor)
-        return (Chebyshev, (coeffs, self.kunits, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.comment))
+        return (Chebyshev, (coeffs, self.kunits, self.highPlimit, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.comment))
     
     property coeffs:
         """The Chebyshev coefficients."""

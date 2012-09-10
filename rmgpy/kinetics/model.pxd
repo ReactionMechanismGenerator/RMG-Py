@@ -52,6 +52,7 @@ cdef class PDepKineticsModel(KineticsModel):
     
     cdef public ScalarQuantity _Pmin, _Pmax
     cdef public dict efficiencies
+    cdef public KineticsModel highPlimit
     
     cpdef bint isPressureDependent(self) except -2
     

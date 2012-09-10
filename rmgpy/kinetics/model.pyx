@@ -175,29 +175,31 @@ cdef class PDepKineticsModel(KineticsModel):
     `Pmin`          The minimum pressure at which the model is valid, or zero if unknown or undefined
     `Pmax`          The maximum pressure at which the model is valid, or zero if unknown or undefined
     `efficiencies`  A dict associating chemical species with associated efficiencies
+    `highPlimit`    The high-pressure limit kinetics (optional)
     `comment`       Information about the model (e.g. its source)
     =============== ============================================================
 
     """
     
-    def __init__(self, Tmin=None, Tmax=None, Pmin=None, Pmax=None, efficiencies=None, comment=''):
+    def __init__(self, Tmin=None, Tmax=None, Pmin=None, Pmax=None, efficiencies=None, highPlimit=None, comment=''):
         KineticsModel.__init__(self, Tmin, Tmax, comment)
         self.Pmin = Pmin
         self.Pmax = Pmax
         self.efficiencies = efficiencies or {}
+        self.highPlimit = highPlimit
         
     def __repr__(self):
         """
         Return a string representation that can be used to reconstruct the
         PDepKineticsModel object.
         """
-        return 'PDepKineticsModel(Tmin={0!r}, Tmax={1!r}, Pmin={2!r}, Pmax={3!r}, comment="""{4}""")'.format(self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.comment)
+        return 'PDepKineticsModel(Tmin={0!r}, Tmax={1!r}, Pmin={2!r}, Pmax={3!r}, efficiencies={4!r}, highPlimit={5!r}, comment="""{6}""")'.format(self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.efficiencies, self.highPlimit, self.comment)
 
     def __reduce__(self):
         """
         A helper function used when pickling a PDepKineticsModel object.
         """
-        return (PDepKineticsModel, (self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.comment))
+        return (PDepKineticsModel, (self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.efficiencies, self.highPlimit, self.comment))
 
     property Pmin:
         """The minimum pressure at which the model is valid, or ``None`` if not defined."""

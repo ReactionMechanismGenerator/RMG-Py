@@ -301,8 +301,8 @@ cdef class PDepArrhenius(PDepKineticsModel):
     
     """
 
-    def __init__(self, pressures=None, arrhenius=None, Tmin=None, Tmax=None, Pmin=None, Pmax=None, comment=''):
-        PDepKineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, comment=comment)
+    def __init__(self, pressures=None, arrhenius=None, highPlimit=None, Tmin=None, Tmax=None, Pmin=None, Pmax=None, comment=''):
+        PDepKineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, highPlimit=highPlimit, comment=comment)
         self.pressures = pressures
         self.arrhenius = arrhenius or []
 
@@ -312,6 +312,7 @@ cdef class PDepArrhenius(PDepKineticsModel):
         PDepArrhenius object.
         """
         string = 'PDepArrhenius(pressures={0!r}, arrhenius={1!r}'.format(self.pressures, self.arrhenius)
+        if self.highPlimit is not None: string += ', highPlimit={0!r}'.format(self.highPlimit)
         if self.Tmin is not None: string += ', Tmin={0!r}'.format(self.Tmin)
         if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
         if self.Pmin is not None: string += ', Pmin={0!r}'.format(self.Pmin)
@@ -324,7 +325,7 @@ cdef class PDepArrhenius(PDepKineticsModel):
         """
         A helper function used when pickling a PDepArrhenius object.
         """
-        return (PDepArrhenius, (self.pressures, self.arrhenius, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.comment))
+        return (PDepArrhenius, (self.pressures, self.arrhenius, self.highPlimit, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.comment))
     
     property pressures:
         """The list of pressures."""
