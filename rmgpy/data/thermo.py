@@ -565,6 +565,14 @@ class ThermoDatabase:
         else:
             # Thermo not found in any loaded libraries, so estimate
             thermoData = self.getThermoDataFromGroups(species)
+        # Add Cp0 and CpInf values
+        Cp0 = species.calculateCp0()
+        CpInf = species.calculateCpInf()
+        for data in thermoData:
+            if isinstance(data,ThermoData):
+                data.Cp0 = (Cp0,"J/(mol*K)")
+                data.CpInf = (CpInf,"J/(mol*K)")
+        # Return the resulting thermo parameters
         return thermoData[0]
 
     def getAllThermoData(self, species):
@@ -584,6 +592,14 @@ class ThermoDatabase:
                 thermoData.append(data)
         # Last entry is always the estimate from group additivity
         thermoData.append(self.getThermoDataFromGroups(species))
+        # Add Cp0 and CpInf values
+        Cp0 = species.getCp0()
+        CpInf = species.getCpInf()
+        for data in thermoData:
+            if isinstance(data,ThermoData):
+                data.Cp0 = Cp0
+                data.CpInf = CpInf
+        # Return all of the resulting thermo parameters
         return thermoData
 
     def getThermoDataFromDepository(self, species):

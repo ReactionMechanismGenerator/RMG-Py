@@ -42,7 +42,7 @@ from rmgpy.display import display
 import rmgpy.constants as constants
 from rmgpy.quantity import Quantity
 import rmgpy.species
-from rmgpy.thermo import Wilhoit, MultiNASA
+from rmgpy.thermo import Wilhoit, NASA
 
 from rmgpy.data.thermo import *
 from rmgpy.data.kinetics import *
@@ -66,7 +66,7 @@ class Species(rmgpy.species.Species):
         """
         return (Species, (self.index, self.label, self.thermo, self.states, self.molecule, self.E0, self.lennardJones, self.molecularWeight, self.reactive, self.coreSizeAtCreation),)
 
-    def generateThermoData(self, database, thermoClass=MultiNASA):
+    def generateThermoData(self, database, thermoClass=NASA):
         """
         Generate thermodynamic data for the species using the thermo database.
 
@@ -79,19 +79,17 @@ class Species(rmgpy.species.Species):
         # Always convert to Wilhoit so we can compute E0
         if isinstance(thermo0, Wilhoit):
             wilhoit = thermo0
+        elif isinstance(thermo0, ThermoData):
+            wilhoit = thermo0.toWilhoit()
         else:
-            if len(self.molecule[0].atoms) == 1:
-                linear = False
-                nRotors = 0
-                nFreq = 0
-            else:
-                linear = self.molecule[0].isLinear()
-                nRotors = self.molecule[0].countInternalRotors()
-                nFreq = 3 * len(self.molecule[0].atoms) - (5 if linear else 6) - nRotors
-            wilhoit = convertThermoModel(thermo0, Wilhoit, linear=linear, nFreq=nFreq, nRotors=nRotors)
-        
+            Cp0 = self.calculateCp0()
+            CpInf = self.calculateCpInf()
+            wilhoit = thermo0.toWilhoit(Cp0=Cp0, CpInf=CpInf)
+            
         # Compute E0 by extrapolation to 0 K
-        self.E0 = Quantity(wilhoit.getEnthalpy(1.0)/1000.0,"kJ/mol")
+        if self.conformer is None:
+            self.conformer = Conformer()
+        self.conformer.E0 = (wilhoit.getEnthalpy(1.0)*1e-3,"kJ/mol")
         
         # Convert to desired thermo class
         if isinstance(thermo0, thermoClass):
@@ -99,12 +97,15 @@ class Species(rmgpy.species.Species):
         elif isinstance(wilhoit, thermoClass):
             self.thermo = wilhoit
         else:
-            self.thermo = convertThermoModel(wilhoit, thermoClass, Tmin=100.0, Tmax=5000.0, Tint=1000.0)
+            self.thermo = wilhoit.toNASA(Tmin=100.0, Tmax=5000.0, Tint=1000.0)
         
         if self.thermo.__class__ != thermo0.__class__:
             # Compute RMS error of overall transformation
             Tlist = numpy.array([300.0, 400.0, 500.0, 600.0, 800.0, 1000.0, 1500.0], numpy.float64)
-            err = math.sqrt(numpy.sum((self.thermo.getHeatCapacities(Tlist) - thermo0.getHeatCapacities(Tlist))**2)/len(Tlist))/constants.R
+            err = 0.0
+            for T in Tlist:
+                err += (self.thermo.getHeatCapacity(T) - thermo0.getHeatCapacity(T))**2
+            err = math.sqrt(err/len(Tlist))/constants.R
             logging.log(logging.WARNING if err > 0.1 else 0, 'Average RMS error in heat capacity fit to {0} = {1:g}*R'.format(self, err))
 
         return self.thermo
