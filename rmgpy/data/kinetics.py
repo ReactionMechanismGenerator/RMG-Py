@@ -77,7 +77,6 @@ class DepositoryReaction(Reaction):
                  kinetics=None,
                  reversible=True,
                  transitionState=None,
-                 thirdBody=False,
                  duplicate=False,
                  degeneracy=1,
                  pairs=None,
@@ -92,7 +91,6 @@ class DepositoryReaction(Reaction):
                           kinetics=kinetics,
                           reversible=reversible,
                           transitionState=transitionState,
-                          thirdBody=thirdBody,
                           duplicate=duplicate,
                           degeneracy=degeneracy,
                           pairs=pairs
@@ -111,7 +109,6 @@ class DepositoryReaction(Reaction):
                                      self.kinetics,
                                      self.reversible,
                                      self.transitionState,
-                                     self.thirdBody,
                                      self.duplicate,
                                      self.degeneracy,
                                      self.pairs,
@@ -143,7 +140,6 @@ class LibraryReaction(Reaction):
                  kinetics=None,
                  reversible=True,
                  transitionState=None,
-                 thirdBody=False,
                  duplicate=False,
                  degeneracy=1,
                  pairs=None,
@@ -157,7 +153,6 @@ class LibraryReaction(Reaction):
                           kinetics=kinetics,
                           reversible=reversible,
                           transitionState=transitionState,
-                          thirdBody=thirdBody,
                           duplicate=duplicate,
                           degeneracy=degeneracy,
                           pairs=pairs
@@ -176,7 +171,6 @@ class LibraryReaction(Reaction):
                                   self.kinetics,
                                   self.reversible,
                                   self.transitionState,
-                                  self.thirdBody,
                                   self.duplicate,
                                   self.degeneracy,
                                   self.pairs,
@@ -207,7 +201,6 @@ class TemplateReaction(Reaction):
                 kinetics=None,
                 reversible=True,
                 transitionState=None,
-                thirdBody=False,
                 duplicate=False,
                 degeneracy=1,
                 pairs=None,
@@ -221,7 +214,6 @@ class TemplateReaction(Reaction):
                           kinetics=kinetics,
                           reversible=reversible,
                           transitionState=transitionState,
-                          thirdBody=thirdBody,
                           duplicate=duplicate,
                           degeneracy=degeneracy,
                           pairs=pairs
@@ -239,7 +231,6 @@ class TemplateReaction(Reaction):
                                    self.kinetics,
                                    self.reversible,
                                    self.transitionState,
-                                   self.thirdBody,
                                    self.duplicate,
                                    self.degeneracy,
                                    self.pairs,
@@ -2697,7 +2688,6 @@ class KineticsFamily(Database):
                 reactants = rxn.reactants[:],
                 products = rxn.products[:],
                 degeneracy = rxn.degeneracy,
-                thirdBody = rxn.thirdBody,
                 reversible = rxn.reversible,
                 family = self,
             )
@@ -2715,7 +2705,6 @@ class KineticsFamily(Database):
                     reactants = reaction.reactants[:],
                     products = reaction.products[:],
                     degeneracy = reaction.degeneracy,
-                    thirdBody = reaction.thirdBody,
                     reversible = reaction.reversible,
                     family = self,
                 )
@@ -2729,7 +2718,6 @@ class KineticsFamily(Database):
                 reaction = TemplateReaction(
                     reactants = rxn.products[:],
                     products = rxn.reactants[:],
-                    thirdBody = rxn.thirdBody,
                     reversible = rxn.reversible,
                     family = self,
                 )
