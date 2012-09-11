@@ -148,11 +148,11 @@ class TestChebyshev(unittest.TestCase):
         kdata = numpy.zeros((nT,nP))
         for t in range(nT):
             for p in range(nP):
-                kdata[t,p] = self.chebyshev.getRateCoefficient(Tdata[t], Pdata[p])
+                kdata[t,p] = self.chebyshev.getRateCoefficient(Tdata[t], Pdata[p]) * 1e6
         chebyshev = Chebyshev().fitToData(Tdata, Pdata, kdata, kunits="cm^3/(mol*s)", degreeT=6, degreeP=4, Tmin=300, Tmax=2000, Pmin=0.1, Pmax=10.)
         for t in range(nT):
             for p in range(nP):
-                kfit = chebyshev.getRateCoefficient(Tdata[t], Pdata[p])
+                kfit = chebyshev.getRateCoefficient(Tdata[t], Pdata[p]) * 1e6
                 self.assertAlmostEqual(kfit, kdata[t,p], delta=1e-4*kdata[t,p])
         
     def test_pickle(self):
