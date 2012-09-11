@@ -435,11 +435,11 @@ class StatesDatabase:
         self.libraryOrder = []
         self.local_context = {
             'HarmonicOscillator': HarmonicOscillator,
-            'RigidRotor': RigidRotor,
+            'LinearRotor': LinearRotor,
+            'NonlinearRotor': NonlinearRotor,
             'HinderedRotor': HinderedRotor,
-            'Translation': Translation,
+            'IdealGasTranslation': IdealGasTranslation,
             'GroupFrequencies': GroupFrequencies,
-            'States': StatesModel,
         }
         self.global_context = {}
 

@@ -972,7 +972,12 @@ class KineticsLibrary(Database):
                 Pmax = kinetics.Pmax
                 longDesc += entry.longDesc+'\n'
             
-            entry0.data = MultiKinetics(kineticsList=kineticsList, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax)
+            if all([isinstance(k, Arrhenius) for k in kineticsList]):
+                entry0.data = MultiArrhenius(arrhenius=kineticsList, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax)
+            elif all([isinstance(k, PDepArrhenius) for k in kineticsList]):
+                entry0.data = MultiPDepArrhenius(arrhenius=kineticsList, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax)
+            else:
+                raise Exception('Only Arrhenius and PDepArrhenius kinetics supported for duplicate reactions.')
             entry0.longDesc = longDesc
             entries_to_remove.extend(duplicates[1:])
         for entry in entries_to_remove:
@@ -1410,11 +1415,9 @@ class KineticsLibrary(Database):
         for entry in entries:
             kinetics = entry.data
             rateList = []
-            if isinstance(kinetics, MultiKinetics):
+            if isinstance(kinetics, MultiArrhenius):
                 entry.item.duplicate = True
-                for rate in kinetics.kineticsList:
-                    if not rate.isPressureDependent():
-                        rateList.append(rate)
+                rateList = kinetics.arrhenius[:]
             else:
                 if not kinetics.isPressureDependent():
                     rateList.append(kinetics)
@@ -1443,11 +1446,9 @@ class KineticsLibrary(Database):
             if not kinetics.isPressureDependent():
                 continue
             rateList = []
-            if isinstance(kinetics, MultiKinetics):
+            if isinstance(kinetics, MultiPDepArrhenius):
                 entry.item.duplicate = True
-                for rate in kinetics.kineticsList:
-                    if rate.isPressureDependent():
-                        rateList.append(rate)
+                rateList = kinetics.arrhenius[:]
             else:
                 rateList.append(kinetics)
             for rate in rateList:
@@ -3244,7 +3245,8 @@ class KineticsDatabase:
             'KineticsData': KineticsData,
             'Arrhenius': Arrhenius,
             'ArrheniusEP': ArrheniusEP,
-            'MultiKinetics': MultiKinetics,
+            'MultiArrhenius': MultiArrhenius,
+            'MultiPDepArrhenius': MultiPDepArrhenius,
             'PDepArrhenius': PDepArrhenius,
             'Chebyshev': Chebyshev,
             'ThirdBody': ThirdBody,

@@ -93,8 +93,8 @@ def saveEntry(f, entry):
         if entry.data.Tmin is not None: f.write('        Tmin = {0!r},\n'.format(entry.data.Tmin))
         if entry.data.Tmax is not None: f.write('        Tmax = {0!r},\n'.format(entry.data.Tmax))
         f.write('    ),\n')
-    elif isinstance(entry.data, MultiNASA):
-        f.write('    thermo = MultiNASA(\n')
+    elif isinstance(entry.data, NASA):
+        f.write('    thermo = NASA(\n')
         f.write('        polynomials = [\n')
         for poly in entry.data.polynomials:
             f.write('            {0!r},\n'.format(poly))
@@ -323,8 +323,8 @@ class ThermoDatabase:
         self.local_context = {
             'ThermoData': ThermoData,
             'Wilhoit': Wilhoit,
+            'NASAPolynomial': NASAPolynomial,
             'NASA': NASA,
-            'MultiNASA': MultiNASA,
         }
         self.global_context = {}
 
@@ -788,9 +788,9 @@ class ThermoDatabase:
             raise ThermoError('Cannot add these ThermoData objects due to their having different temperature points.')
         new = ThermoData(
             Tdata = (thermoData1.Tdata.value, thermoData1.Tdata.units),
-            Cpdata = (thermoData1.Cpdata.value + thermoData2.Cpdata.value, thermoData1.Tdata.units),
-            H298 = (thermoData1.H298.value + thermoData2.H298.value, thermoData1.Tdata.units),
-            S298 = (thermoData1.S298.value + thermoData2.S298.value, thermoData1.Tdata.units),
+            Cpdata = (thermoData1.Cpdata.value + thermoData2.Cpdata.value, thermoData1.Cpdata.units),
+            H298 = (thermoData1.H298.value + thermoData2.H298.value, thermoData1.H298.units),
+            S298 = (thermoData1.S298.value + thermoData2.S298.value, thermoData1.S298.units),
         )
         if thermoData1.comment == '': new.comment = thermoData2.comment
         elif thermoData2.comment == '': new.comment = thermoData1.comment
