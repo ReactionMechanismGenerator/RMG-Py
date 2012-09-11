@@ -86,6 +86,9 @@ cdef class LennardJones:
         def __get__(self):
             return self._epsilon
         def __set__(self, value):
+            if value is None:
+                self._epsilon = None
+                return
             try:
                 self._epsilon = quantity.Temperature(value)
                 self._epsilon.value_si *= constants.R
