@@ -276,6 +276,21 @@ cdef class ArrheniusEP(KineticsModel):
         elif dHrxn > 0.0 and Ea < 0.0:
             Ea = dHrxn
         return Ea
+    
+    cpdef Arrhenius toArrhenius(self, double dHrxn):
+        """
+        Return an :class:`Arrhenius` instance of the kinetics model using the
+        given enthalpy of reaction `dHrxn` to determine the activation energy.
+        """
+        return Arrhenius(
+            A = self.A,
+            n = self.n,
+            Ea = (self.getActivationEnergy(dHrxn)*0.001,"kJ/mol"),
+            T0 = (1,"K"),
+            Tmin = self.Tmin,
+            Tmax = self.Tmax,
+            comment = self.comment,
+        )
 
 ################################################################################
 

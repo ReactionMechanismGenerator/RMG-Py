@@ -58,6 +58,8 @@ cdef class ArrheniusEP(KineticsModel):
 
     cpdef double getActivationEnergy(self, double dHrxn) except -1
     
+    cpdef Arrhenius toArrhenius(self, double dHrxn)
+    
 ################################################################################
 
 cdef class PDepArrhenius(PDepKineticsModel):
