@@ -47,6 +47,12 @@ cdef class KineticsModel:
     cpdef bint isTemperatureValid(self, double T) except -2
 
     cpdef double getRateCoefficient(self, double T, double P=?) except -1
+    
+    cpdef toHTML(self)
+
+    cpdef bint isSimilarTo(self, KineticsModel otherKinetics) except -2
+
+    cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2
 
 cdef class PDepKineticsModel(KineticsModel):
     
@@ -61,6 +67,12 @@ cdef class PDepKineticsModel(KineticsModel):
     cpdef double getEffectivePressure(self, double P, list species, numpy.ndarray fractions) except -1
 
     cpdef double getRateCoefficient(self, double T, double P=?) except -1
+
+    cpdef toHTML(self)
+
+    cpdef bint isSimilarTo(self, KineticsModel otherKinetics) except -2
+
+    cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2
 
 ################################################################################
 

@@ -37,6 +37,8 @@ import quantities as pq
 
 import rmgpy.quantity as quantity
 
+from libc.math cimport log10
+
 ################################################################################
 
 cpdef str getRateCoefficientUnitsFromReactionOrder(order):
@@ -160,6 +162,66 @@ cdef class KineticsModel:
         """
         raise NotImplementedError('Unexpected call to KineticsModel.getRateCoefficient(); you should be using a class derived from KineticsModel.')
 
+    cpdef toHTML(self):
+        """
+        Return an HTML rendering.
+        """  
+        cdef double T
+        cdef str string
+        cdef list Tdata
+        
+        Tdata = [500,1000,1500,2000]
+          
+        string = '<table class="KineticsData">\n<tr class="KineticsData_Tdata"><th>T/[K]</th>\n'
+        
+        for T in Tdata:
+            string += '<td>{0:.0f}</td>'.format(T)
+
+        string += '\n</tr><tr class="KineticsData_kdata"><th>log<sub>10</sub>(k/[mole,m,s])\n    '
+        for T in Tdata:
+            string += '<td>{0:+.1f}</td>'.format(log10(self.getRateCoefficient(T)))
+        string += '\n</tr></table>'
+            
+        string += "<span class='KineticsData_repr'>{0!r}</span>".format(self)
+        
+        return string
+
+    cpdef bint isSimilarTo(self, KineticsModel otherKinetics) except -2:
+        """
+        Returns ``True`` if rates of reaction at temperatures 500,1000,1500,2000 K
+        and 1 and 10 bar are within +/ .5 for log(k), in other words, within a factor of 3.
+        """
+        cdef double T
+        
+        if otherKinetics.isPressureDependent():
+            return False
+        
+        for T in [500,1000,1500,2000]:
+            if abs(log10(self.getRateCoefficient(T)) - log10(otherKinetics.getRateCoefficient(T))) > 0.5:
+                return False
+        return True
+
+    cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2:
+        """
+        Returns ``True`` if Tmin, Tmax for both objects match.
+        Otherwise returns ``False``
+        """
+        if self.Tmin is not None and otherKinetics.Tmin is not None and not self.Tmin.equals(otherKinetics.Tmin):
+            return False
+        elif self.Tmin is None and otherKinetics.Tmin is None:
+            pass
+        else:
+            return False
+
+        if self.Tmax is not None and otherKinetics.Tmax is not None and not self.Tmax.equals(otherKinetics.Tmax):
+            return False
+        elif self.Tmax is None and otherKinetics.Tmax is None:
+            pass
+        else:
+            return False
+
+        return True
+    
 ################################################################################
 
 cdef class PDepKineticsModel(KineticsModel):
@@ -282,6 +344,83 @@ cdef class PDepKineticsModel(KineticsModel):
         method must be overloaded in the derived class.
         """
         raise NotImplementedError('Unexpected call to PDepKineticsModel.getRateCoefficient(); you should be using a class derived from PDepKineticsModel.')
+
+    cpdef toHTML(self):
+        """
+        Return an HTML rendering.
+        """  
+        cdef double T, P
+        cdef str string
+        cdef list Tdata, Pdata
+        
+        Tdata = [500,1000,1500,2000]
+        Pdata = [1e5,1e6]
+          
+        string = '<table class="KineticsData">\n<tr class="KineticsData_Tdata"><th>T/[K]</th>\n'
+        
+        for T in Tdata:
+            string += '<td>{0:.0f}</td>'.format(T)
+
+        for P in Pdata:
+            string += '\n</tr><tr class="KineticsData_kdata"><th>log<sub>10</sub>(k({0:g} bar)/[mole,m,s])\n    '.format(P*1e-5)
+            for T in Tdata:
+                string += '<td>{0:+.1f}</td>'.format(log10(self.getRateCoefficient(T,P)))
+        string += '\n</tr></table>'
+            
+        string += "<span class='KineticsData_repr'>{0!r}</span>".format(self)
+        
+        return string
+
+    cpdef bint isSimilarTo(self, KineticsModel otherKinetics) except -2:
+        """
+        Returns ``True`` if rates of reaction at temperatures 500,1000,1500,2000 K
+        and 1 and 10 bar are within +/ .5 for log(k), in other words, within a factor of 3.
+        """
+        cdef double T, P
+        
+        if not otherKinetics.isPressureDependent():
+            return False
+        
+        for T in [500,1000,1500,2000]:
+            for P in [1e5,1e6]:
+                if abs(log10(self.getRateCoefficient(T,P)) - log10(otherKinetics.getRateCoefficient(T,P))) > 0.5:
+                    return False
+        return True
+
+    cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2:
+        """
+        Returns ``True`` if Tmin, Tmax, Pmin, Pmax for both objects match.
+        Otherwise returns ``False``
+        """
+        if self.Tmin is not None and otherKinetics.Tmin is not None and not self.Tmin.equals(otherKinetics.Tmin):
+            return False
+        elif self.Tmin is None and otherKinetics.Tmin is None:
+            pass
+        else:
+            return False
+
+        if self.Tmax is not None and otherKinetics.Tmax is not None and not self.Tmax.equals(otherKinetics.Tmax):
+            return False
+        elif self.Tmax is None and otherKinetics.Tmax is None:
+            pass
+        else:
+            return False
+
+        if self.Pmin is not None and otherKinetics.Pmin is not None and not self.Pmin.equals(otherKinetics.Pmin):
+            return False
+        elif self.Pmin is None and otherKinetics.Pmin is None:
+            pass
+        else:
+            return False
+
+        if self.Pmax is not None and otherKinetics.Pmax is not None and not self.Pmax.equals(otherKinetics.Pmax):
+            return False
+        elif self.Pmax is None and otherKinetics.Pmax is None:
+            pass
+        else:
+            return False
+
+        return True
 
 ################################################################################
 
