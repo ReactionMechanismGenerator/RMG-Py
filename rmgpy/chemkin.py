@@ -34,11 +34,10 @@ This module contains functions for writing of Chemkin input files.
 import re
 import logging
 import os.path
-from thermo import MultiNASA
 from kinetics import *
 from reaction import Reaction
 from species import Species
-from thermo import NASA, MultiNASA
+from thermo import NASAPolynomial, NASA
 import rmgpy.constants as constants
 from quantity import Quantity
 from data.base import Entry
@@ -61,8 +60,8 @@ class ChemkinError(Exception):
 def readThermoEntry(entry):
     """
     Read a thermodynamics `entry` for one species in a Chemkin file. Returns
-    the label of the species and the thermodynamics model as a 
-    :class:`MultiNASA` object.
+    the label of the species and the thermodynamics model as a :class:`NASA`
+    object.
     """
     lines = entry.splitlines()
     species = str(lines[0][0:24].split()[0].strip())
@@ -94,10 +93,10 @@ def readThermoEntry(entry):
         raise ChemkinError('Error while reading thermo entry for species {0}'.format(species))
     
     # Construct and return the thermodynamics model
-    thermo = MultiNASA(
+    thermo = NASA(
         polynomials = [
-            NASA(Tmin=(Tmin,"K"), Tmax=(Tint,"K"), coeffs=[a0_low, a1_low, a2_low, a3_low, a4_low, a5_low, a6_low]),
-            NASA(Tmin=(Tint,"K"), Tmax=(Tmax,"K"), coeffs=[a0_high, a1_high, a2_high, a3_high, a4_high, a5_high, a6_high])
+            NASAPolynomial(Tmin=(Tmin,"K"), Tmax=(Tint,"K"), coeffs=[a0_low, a1_low, a2_low, a3_low, a4_low, a5_low, a6_low]),
+            NASAPolynomial(Tmin=(Tint,"K"), Tmax=(Tmax,"K"), coeffs=[a0_high, a1_high, a2_high, a3_high, a4_high, a5_high, a6_high])
         ],
         Tmin = (Tmin,"K"),
         Tmax = (Tmax,"K"),
@@ -825,9 +824,9 @@ def writeThermoEntry(species):
     """
 
     thermo = species.thermo
-    if not isinstance(thermo, MultiNASA):
+    if not isinstance(thermo, NASA):
         return ''
-        raise ChemkinError('Cannot generate Chemkin string for species "{0}": Thermodynamics data must be a MultiNASA object.'.format(species))
+        raise ChemkinError('Cannot generate Chemkin string for species "{0}": Thermodynamics data must be a NASA object.'.format(species))
 
     assert len(thermo.polynomials) == 2
     assert thermo.polynomials[0].Tmin.value_si < thermo.polynomials[1].Tmin.value_si
@@ -892,14 +891,14 @@ def writeKineticsEntry(reaction, speciesList):
     """
     string = ""
     
-    if isinstance(reaction.kinetics, MultiKinetics):
+    if isinstance(reaction.kinetics, (MultiArrhenius, MultiPDepArrhenius)):
 #        if isinstance(reaction,LibraryReaction):
 #            string += '! Library reaction: {0!s}\n'.format(reaction.library.label)
         if reaction.kinetics.comment:
             string += '! Kinetics comments:\n'
             for line in reaction.kinetics.comment.split("\n"):
                 string += "!   {0}\n".format(line) 
-        for kinetics in reaction.kinetics.kineticsList:
+        for kinetics in reaction.kinetics.arrhenius:
             if isinstance(reaction,LibraryReaction):
                 new_reaction = LibraryReaction( index=reaction.index,
                      reactants=reaction.reactants,
