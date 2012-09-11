@@ -43,6 +43,8 @@ import rmgpy.constants as constants
 from rmgpy.quantity import Quantity
 import rmgpy.species
 from rmgpy.thermo import Wilhoit, NASA
+from rmgpy.pdep import LennardJones
+from rmgpy.statmech import *
 
 from rmgpy.data.thermo import *
 from rmgpy.data.kinetics import *
@@ -56,15 +58,15 @@ from pdep import PDepReaction, PDepNetwork, PressureDependenceError
 
 class Species(rmgpy.species.Species):
 
-    def __init__(self, index=-1, label='', thermo=None, states=None, molecule=None, E0=0.0, lennardJones=None, molecularWeight=0.0, collisionModel=None, reactive=True, coreSizeAtCreation=0):
-        rmgpy.species.Species.__init__(self, index, label, thermo, states, molecule, E0, lennardJones, molecularWeight, collisionModel, reactive)
+    def __init__(self, index=-1, label='', thermo=None, conformer=None, molecule=None, lennardJones=None, molecularWeight=None, energyTransferModel=None, reactive=True, coreSizeAtCreation=0):
+        rmgpy.species.Species.__init__(self, index, label, thermo, conformer, molecule, lennardJones, molecularWeight, energyTransferModel, reactive)
         self.coreSizeAtCreation = coreSizeAtCreation
 
     def __reduce__(self):
         """
         A helper function used when pickling an object.
         """
-        return (Species, (self.index, self.label, self.thermo, self.states, self.molecule, self.E0, self.lennardJones, self.molecularWeight, self.reactive, self.coreSizeAtCreation),)
+        return (Species, (self.index, self.label, self.thermo, self.conformer, self.molecule, self.lennardJones, self.molecularWeight, self.energyTransferModel, self.reactive, self.coreSizeAtCreation),)
 
     def generateThermoData(self, database, thermoClass=NASA):
         """
@@ -126,28 +128,27 @@ class Species(rmgpy.species.Species):
         Generate the Lennard-Jones parameters for the species. This "algorithm"
         is *very* much in need of improvement.
         """
-
         count = sum([1 for atom in self.molecule[0].vertices if atom.isNonHydrogen()])
-        self.lennardJones = rmgpy.species.LennardJones()
+        self.lennardJones = LennardJones()
 
         if count == 1:
-            self.lennardJones.sigma = Quantity(3.758e-10,"m")
-            self.lennardJones.epsilon = Quantity(148.6 * constants.kB,"J")
+            self.lennardJones.sigma = (3.758e-10,"m")
+            self.lennardJones.epsilon = (148.6,"K")
         elif count == 2:
-            self.lennardJones.sigma = Quantity(4.443e-10,"m")
-            self.lennardJones.epsilon = Quantity(110.7 * constants.kB,"J")
+            self.lennardJones.sigma = (4.443e-10,"m")
+            self.lennardJones.epsilon = (110.7,"K")
         elif count == 3:
-            self.lennardJones.sigma = Quantity(5.118e-10,"m")
-            self.lennardJones.epsilon = Quantity(237.1 * constants.kB,"J")
+            self.lennardJones.sigma = (5.118e-10,"m")
+            self.lennardJones.epsilon = (237.1,"K")
         elif count == 4:
-            self.lennardJones.sigma = Quantity(4.687e-10,"m")
-            self.lennardJones.epsilon = Quantity(531.4 * constants.kB,"J")
+            self.lennardJones.sigma = (4.687e-10,"m")
+            self.lennardJones.epsilon = (531.4,"K")
         elif count == 5:
-            self.lennardJones.sigma = Quantity(5.784e-10,"m")
-            self.lennardJones.epsilon = Quantity(341.1 * constants.kB,"J")
+            self.lennardJones.sigma = (5.784e-10,"m")
+            self.lennardJones.epsilon = (341.1,"K")
         else:
-            self.lennardJones.sigma = Quantity(5.949e-10,"m")
-            self.lennardJones.epsilon = Quantity(399.3 * constants.kB,"J")
+            self.lennardJones.sigma = (5.949e-10,"m")
+            self.lennardJones.epsilon = (399.3,"K")
 
 ################################################################################
 
