@@ -95,7 +95,7 @@ class NetworkDrawer:
             if E0 < E0min: E0min = E0
             if E0 > E0max: E0max = E0
         for product in self.network.products:
-            E0 = isomer.E0
+            E0 = product.E0
             if E0 < E0min: E0min = E0
             if E0 > E0max: E0max = E0
         for rxn in self.network.pathReactions:
@@ -302,7 +302,7 @@ class NetworkDrawer:
                 for c in columns[j]:
                     top0 = wellRects[c][1]
                     bottom0 = top + wellRects[c][3]
-                    if top > bottom or top0 > bottom0:
+                    if (top >= top0 and top <= bottom0) or (top <= top0 and top0 <= bottom):
                         # Can't put it in this column
                         break
                 else:
@@ -329,8 +329,8 @@ class NetworkDrawer:
             for j in range(len(columns)):
                 for c in columns[j]:
                     top0 = wellRects[c][1]
-                    bottom0 = top + wellRects[c][3]
-                    if top > bottom or top0 > bottom0:
+                    bottom0 = top0 + wellRects[c][3]
+                    if (top >= top0 and top <= bottom0) or (top <= top0 and top0 <= bottom):
                         # Can't put it in this column
                         break
                 else:
@@ -458,7 +458,12 @@ class NetworkDrawer:
             cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
             cr.show_text(E0)
             # Draw background and text for label
-            self.__drawLabel(well, cr, x0 - 0.5 * labelRects[i][2], y0 + 6, format=format)
+            x = x0 - 0.5 * labelRects[i][2]
+            y = y0 + 6
+            cr.rectangle(x, y, labelRects[i][2], labelRects[i][3])
+            cr.set_source_rgba(1.0, 1.0, 1.0, 0.75)
+            cr.fill()
+            self.__drawLabel(well, cr, x, y, format=format)
         
         # Finish Cairo drawing
         if format == 'png':
