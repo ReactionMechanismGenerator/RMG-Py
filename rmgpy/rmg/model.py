@@ -43,7 +43,7 @@ import rmgpy.constants as constants
 from rmgpy.quantity import Quantity
 import rmgpy.species
 from rmgpy.thermo import Wilhoit, NASA
-from rmgpy.pdep import LennardJones
+from rmgpy.pdep import LennardJones, SingleExponentialDown
 from rmgpy.statmech import *
 
 from rmgpy.data.thermo import *
@@ -112,17 +112,19 @@ class Species(rmgpy.species.Species):
 
         return self.thermo
 
-    def generateStatesData(self, database):
+    def generateStatMech(self, database):
         """
         Generate molecular degree of freedom data for the species. You must
         have already provided a thermodynamics model using e.g.
         :meth:`generateThermoData()`.
         """
-        if not self.thermo:
+        if not self.hasThermo():
             raise Exception("Unable to determine states model for species {0}: No thermodynamics model found.".format(self))
         molecule = self.molecule[0]
-        self.states = database.states.getStatesData(molecule, self.thermo)
-
+        conformer = database.states.getStatesData(molecule, self.thermo)
+        self.conformer.modes = conformer.modes
+        self.conformer.spinMultiplicity = conformer.spinMultiplicity
+            
     def generateLennardJonesParameters(self):
         """
         Generate the Lennard-Jones parameters for the species. This "algorithm"
@@ -149,6 +151,17 @@ class Species(rmgpy.species.Species):
         else:
             self.lennardJones.sigma = (5.949e-10,"m")
             self.lennardJones.epsilon = (399.3,"K")
+    
+    def generateEnergyTransferModel(self):
+        """
+        Generate the collisional energy transfer model parameters for the
+        species. This "algorithm" is *very* much in need of improvement.
+        """
+        self.energyTransferModel = SingleExponentialDown(
+            alpha0 = (300*0.011962,"kJ/mol"),
+            T0 = (300,"K"),
+            n = 0.85,
+        )
 
 ################################################################################
 
@@ -277,6 +290,7 @@ class CoreEdgeReactionModel:
         spec.generateResonanceIsomers()
         spec.molecularWeight = Quantity(spec.molecule[0].getMolecularWeight()*1000.,"g/mol")
         spec.generateLennardJonesParameters()
+        spec.generateEnergyTransferModel()
         formula = molecule.getFormula()
         if formula in self.speciesDict:
             self.speciesDict[formula].append(spec)
