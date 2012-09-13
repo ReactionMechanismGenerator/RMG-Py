@@ -339,7 +339,7 @@ class TransitionState:
 
     """
 
-    def __init__(self, label='', conformer=None, E0=None, frequency=None, tunneling=None, degeneracy=1):
+    def __init__(self, label='', conformer=None, frequency=None, tunneling=None, degeneracy=1):
         self.label = label
         self.conformer = conformer
         self.frequency = frequency
@@ -354,7 +354,6 @@ class TransitionState:
         string = 'TransitionState('
         if self.label != '': string += 'label="{0}", '.format(self.label)
         if self.conformer is not None: string += 'conformer={0!r}, '.format(self.conformer)
-        if self.E0 is not None: string += 'E0={0!r}, '.format(self.E0)
         if self.frequency is not None: string += 'frequency={0!r}, '.format(self.frequency)
         if self.tunneling is not None: string += 'tunneling={0!r}, '.format(self.tunneling)
         if self.degeneracy != 1: string += 'degeneracy={0}, '.format(self.degeneracy)
@@ -365,7 +364,7 @@ class TransitionState:
         """
         A helper function used when pickling an object.
         """
-        return (TransitionState, (self.label, self.conformer, self.E0, self.frequency, self.tunneling, self.degeneracy))
+        return (TransitionState, (self.label, self.conformer, self.frequency, self.tunneling, self.degeneracy))
 
     def getFrequency(self):
         return self._frequency
