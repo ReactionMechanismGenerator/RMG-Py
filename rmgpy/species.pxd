@@ -55,6 +55,10 @@ cdef class Species:
     
     cpdef toAdjacencyList(self)
 
+    cpdef bint hasStatMech(self) except -2
+
+    cpdef bint hasThermo(self) except -2
+
     cpdef double getPartitionFunction(self, double T) except -1
 
     cpdef double getHeatCapacity(self, double T) except -100000000

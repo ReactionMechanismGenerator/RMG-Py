@@ -103,7 +103,7 @@ class Species(object):
         if self.index != -1: string += 'index={0:d}, '.format(self.index)
         if self.label != -1: string += 'label="{0}", '.format(self.label)
         if self.thermo is not None: string += 'thermo={0!r}, '.format(self.thermo)
-        if self.states is not None: string += 'conformer={0!r}, '.format(self.conformer)
+        if self.conformer is not None: string += 'conformer={0!r}, '.format(self.conformer)
         if len(self.molecule) > 0: string += 'molecule=[{0!r}], '.format(self.molecule[0])
         if self.lennardJones is not None: string += 'lennardJones={0!r}, '.format(self.lennardJones)
         if not self.reactive: string += 'reactive={0}, '.format(self.reactive)
@@ -202,13 +202,27 @@ class Species(object):
         output = '\n\n'.join([m.toAdjacencyList(label=self.label, removeH=True) for m in self.molecule])
         return output
 
+    def hasStatMech(self):
+        """
+        Return ``True`` if the species has statistical mechanical parameters,
+        or ``False`` otherwise.
+        """
+        return self.conformer is not None and len(self.conformer.modes) > 0
+
+    def hasThermo(self):
+        """
+        Return ``True`` if the species has thermodynamic parameters, or 
+        ``False`` otherwise.
+        """
+        return self.thermo is not None
+
     def getPartitionFunction(self, T):
         """
         Return the partition function for the species at the specified
         temperature `T` in K.
         """
         cython.declare(Q=cython.double)
-        if self.conformer is not None and len(self.conformer.modes) > 0:
+        if self.hasStatMech():
             Q = self.conformer.getPartitionFunction(T)
         else:
             raise Exception('Unable to calculate partition function for species {0!r}: no statmech data available.'.format(self.label))
@@ -221,9 +235,9 @@ class Species(object):
         """
         cython.declare(Cp=cython.double)
         Cp = 0.0
-        if self.thermo is not None:
+        if self.hasThermo():
             Cp = self.thermo.getHeatCapacity(T)
-        elif self.conformer is not None and len(self.conformer.modes) > 0:
+        elif self.hasStatMech():
             Cp = self.conformer.getHeatCapacity(T)
         else:
             raise Exception('Unable to calculate heat capacity for species {0!r}: no thermo or statmech data available.'.format(self.label))
@@ -236,9 +250,9 @@ class Species(object):
         """
         cython.declare(H=cython.double)
         H = 0.0
-        if self.thermo is not None:
+        if self.hasThermo():
             H = self.thermo.getEnthalpy(T)
-        elif self.conformer is not None and len(self.conformer.modes) > 0:
+        elif self.hasStatMech():
             H = self.conformer.getEnthalpy(T) + self.conformer._E0.value_si
         else:
             raise Exception('Unable to calculate enthalpy for species {0!r}: no thermo or statmech data available.'.format(self.label))
@@ -251,9 +265,9 @@ class Species(object):
         """
         cython.declare(S=cython.double)
         S = 0.0
-        if self.thermo is not None:
+        if self.hasThermo():
             S = self.thermo.getEntropy(T)
-        elif self.conformer is not None and len(self.conformer.modes) > 0:
+        elif self.hasStatMech():
             S = self.conformer.getEntropy(T)
         else:
             raise Exception('Unable to calculate entropy for species {0!r}: no thermo or statmech data available.'.format(self.label))
@@ -266,9 +280,9 @@ class Species(object):
         """
         cython.declare(G=cython.double)
         G = 0.0
-        if self.thermo is not None:
+        if self.hasThermo():
             G = self.thermo.getFreeEnergy(T)
-        elif self.conformer is not None and len(self.conformer.modes) > 0:
+        elif self.hasStatMech():
             G = self.conformer.getFreeEnergy(T) + self.conformer._E0.value_si
         else:
             raise Exception('Unable to calculate free energy for species {0!r}: no thermo or statmech data available.'.format(self.label))
@@ -279,7 +293,7 @@ class Species(object):
         Return the sum of states :math:`N(E)` at the specified energies `Elist`
         in J/mol.
         """
-        if self.conformer is not None and len(self.conformer.modes) > 0:
+        if self.hasStatMech():
             return self.conformer.getSumOfStates(Elist)
         else:
             raise Exception('Unable to calculate sum of states for species {0!r}: no statmech data available.'.format(self.label))
@@ -289,7 +303,7 @@ class Species(object):
         Return the density of states :math:`\\rho(E) \\ dE` at the specified
         energies `Elist` in J/mol above the ground state.
         """
-        if self.conformer is not None and len(self.conformer.modes) > 0:
+        if self.hasStatMech():
             return self.conformer.getDensityOfStates(Elist)
         else:
             raise Exception('Unable to calculate density of states for species {0!r}: no statmech data available.'.format(self.label))
