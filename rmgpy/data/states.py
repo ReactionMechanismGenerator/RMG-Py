@@ -343,10 +343,17 @@ class StatesGroups(Database):
         `molecule`. The provided thermo data in `thermoModel` is used to fit
         some frequencies and all hindered rotors to heat capacity data.
         """
-
+        conformer = Conformer()
+        
+        # Compute spin multiplicity
+        # For closed-shell molecule the spin multiplicity is 1
+        # For monoradicals the spin multiplicity is 2
+        # For higher-order radicals the highest allowed spin multiplicity is assumed
+        conformer.spinMultiplicity = sum([atom.radicalElectrons for atom in molecule.atoms]) + 1
+        
         # No need to determine rotational and vibrational modes for single atoms
         if len(molecule.atoms) < 2:
-            return (None, None, None)
+            return (conformer, None, None)
 
         linear = molecule.isLinear()
         numRotors = molecule.countInternalRotors()
@@ -391,8 +398,9 @@ class StatesGroups(Database):
         # Subtract out contributions to heat capacity from the group frequencies
         Tlist = numpy.arange(300.0, 1501.0, 100.0, numpy.float64)
         Cv = numpy.array([thermoModel.getHeatCapacity(T) / constants.R for T in Tlist], numpy.float64)
-        ho = HarmonicOscillator(frequencies=frequencies)
-        Cv -= ho.getHeatCapacities(Tlist) / constants.R
+        ho = HarmonicOscillator(frequencies=(frequencies,"cm^-1"))
+        for i in range(Tlist.shape[0]):
+            Cv[i] -= ho.getHeatCapacity(Tlist[i]) / constants.R
         # Subtract out translational modes
         Cv -= 1.5
         # Subtract out external rotational modes
@@ -411,15 +419,9 @@ class StatesGroups(Database):
         else:
             modes.insert(0, HarmonicOscillator(frequencies=(frequencies,"cm^-1")))
 
-        # Compute spin multiplicity
-        # For closed-shell molecule the spin multiplicity is 1
-        # For monoradicals the spin multiplicity is 2
-        # For higher-order radicals the highest allowed spin multiplicity is assumed
-        spinMultiplicity = sum([atom.radicalElectrons for atom in molecule.atoms]) + 1
-        
-        statesModel = StatesModel(modes=modes, spinMultiplicity=spinMultiplicity)
+        conformer.modes = modes
 
-        return (statesModel, None, None)
+        return (conformer, None, None)
 
 ################################################################################
 
