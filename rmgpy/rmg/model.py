@@ -570,10 +570,12 @@ class CoreEdgeReactionModel:
                     index = 0
                     while index < len(self.core.species):
                         species = self.core.species[index]
-                        if species in network.isomers and species not in network.explored:
+                        isomers = [isomer.species[0] for isomer in network.isomers]
+                        if species in isomers and species not in network.explored:
                             network.explored.append(species)
                             continue
                         for products in network.products:
+                            products = products.species
                             if len(products) == 1 and products[0] == species:
                                 newReactions = network.exploreIsomer(species, self, database)
                                 self.processNewReactions(newReactions, species, network)
