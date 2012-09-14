@@ -177,6 +177,28 @@ class PressureDependenceJob(object):
     def maximumGrainSize(self, value):
         self._maximumGrainSize = quantity.Energy(value)
 
+    def copy(self):
+        """
+        Return a copy of the pressure dependence job.
+        """
+        return PressureDependenceJob(
+            network = self.network, 
+            Tmin = self.Tmax, 
+            Tmax = self.Tmax, 
+            Tcount = self.Tcount, 
+            Tlist = self.Tlist,
+            Pmin = self.Pmin, 
+            Pmax = self.Pmax, 
+            Pcount = self.Pcount, 
+            Plist = self.Plist,
+            maximumGrainSize = self.maximumGrainSize, 
+            minimumGrainCount = self.minimumGrainCount,
+            method = self.method, 
+            interpolationModel = self.interpolationModel,
+            activeKRotor = self.activeKRotor, 
+            activeJRotor = self.activeJRotor,
+        )
+
     def execute(self, outputFile):
         self.network.printSummary()
         

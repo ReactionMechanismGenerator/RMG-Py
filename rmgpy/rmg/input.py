@@ -135,37 +135,37 @@ def model(toleranceMoveToCore, toleranceKeepInEdge=0.0, toleranceInterruptSimula
 
 def pressureDependence(method, temperatures, pressures, maximumGrainSize=0.0, minimumNumberOfGrains=0, interpolation=None):
 
-    from rmgpy.measure.input import getTemperaturesForModel, getPressuresForModel
-    from rmgpy.measure.main import MEASURE
+    from rmgpy.cantherm.pdep import PressureDependenceJob
     
     # Setting the pressureDependence attribute to non-None enables pressure dependence
-    rmg.pressureDependence = MEASURE()
+    rmg.pressureDependence = PressureDependenceJob(network=None)
     
     # Process method
     rmg.pressureDependence.method = method
     
+    # Process interpolation model
+    rmg.pressureDependence.interpolationModel = interpolation
+
     # Process temperatures
-    Tmin, Tmax, T_units, Tcount = temperatures
-    rmg.pressureDependence.Tmin = Quantity(Tmin, T_units)
-    rmg.pressureDependence.Tmax = Quantity(Tmax, T_units)
+    Tmin, Tmax, Tunits, Tcount = temperatures
+    rmg.pressureDependence.Tmin = Quantity(Tmin, Tunits)
+    rmg.pressureDependence.Tmax = Quantity(Tmax, Tunits)
     rmg.pressureDependence.Tcount = Tcount
-    Tlist = getTemperaturesForModel(interpolation, rmg.pressureDependence.Tmin.value_si, rmg.pressureDependence.Tmax.value_si, rmg.pressureDependence.Tcount)
-    rmg.pressureDependence.Tlist = Quantity(Tlist,"K")
+    rmg.pressureDependence.generateTemperatureList()
     
     # Process pressures
-    Pmin, Pmax, P_units, Pcount = pressures
-    rmg.pressureDependence.Pmin = Quantity(Pmin, P_units)
-    rmg.pressureDependence.Pmax = Quantity(Pmax, P_units)
+    Pmin, Pmax, Punits, Pcount = pressures
+    rmg.pressureDependence.Pmin = Quantity(Pmin, Punits)
+    rmg.pressureDependence.Pmax = Quantity(Pmax, Punits)
     rmg.pressureDependence.Pcount = Pcount
-    Plist = getPressuresForModel(interpolation, rmg.pressureDependence.Pmin.value_si, rmg.pressureDependence.Pmax.value_si, rmg.pressureDependence.Pcount)
-    rmg.pressureDependence.Plist = Quantity(Plist,"Pa")
+    rmg.pressureDependence.generatePressureList()
     
     # Process grain size and count
-    rmg.pressureDependence.grainSize = Quantity(maximumGrainSize)
-    rmg.pressureDependence.grainCount = minimumNumberOfGrains
-
-    # Process interpolation model
-    rmg.pressureDependence.model = interpolation
+    rmg.pressureDependence.maximumGrainSize = Quantity(maximumGrainSize)
+    rmg.pressureDependence.minimumGrainCount = minimumNumberOfGrains
+    
+    rmg.pressureDependence.activeJRotor = True
+    rmg.pressureDependence.activeKRotor = True
 
 def options(units='si', saveRestartPeriod=None, drawMolecules=False, generatePlots=False, saveConcentrationProfiles=False):
     rmg.units = units
