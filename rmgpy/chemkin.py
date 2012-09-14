@@ -1034,7 +1034,7 @@ def writeKineticsEntry(reaction, speciesList):
         string += '    PCHEB/ {0:<9.3f} {1:<9.3f}/\n'.format(kinetics.Pmin.value_si / 101325., kinetics.Pmax.value_si / 101325.)
         string += '    CHEB/ {0:d} {1:d}/\n'.format(kinetics.degreeT, kinetics.degreeP)
         if kinetics.degreeP < 6:
-            coeffs = kinetics.coeffs.copy()
+            coeffs = kinetics.coeffs.value_si.copy()
             coeffs[0,0] += 6 * (numReactants - 1)
             for i in range(kinetics.degreeT):
                 string += '    CHEB/'
@@ -1045,11 +1045,11 @@ def writeKineticsEntry(reaction, speciesList):
             coeffs = []
             for i in range(kinetics.degreeT):
                 for j in range(kinetics.degreeP):
-                    coeffs.append(kinetics.coeffs[i,j])
+                    coeffs.append(kinetics.coeffs.value_si[i,j])
             coeffs[0] += 6 * (numReactants - 1)
             for i in range(len(coeffs)):
                 if i % 5 == 0: string += '    CHEB/'
-                string += ' {0:<12.3e}'.format(kinetics.coeffs[i,j])
+                string += ' {0:<12.3e}'.format(coeffs[i])
                 if i % 5 == 4: string += '/\n'
 
     return string
