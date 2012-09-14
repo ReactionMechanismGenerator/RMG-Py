@@ -299,16 +299,31 @@ class PressureDependenceJob(object):
                 order = len(reaction.reactants)
                 kdata *= 1e6 ** (order-1)
                 kunits = {1: 's^-1', 2: 'cm^3/(mol*s)', 3: 'cm^6/(mol^2*s)'}[order]
-                                
-                if self.interpolationModel[0] == 'chebyshev':
-                    reaction.kinetics = Chebyshev().fitToData(Tdata, Pdata, kdata, kunits,
-                        self.interpolationModel[1], self.interpolationModel[2],
-                        Tmin, Tmax, Pmin, Pmax,
-                    )             
-                elif self.interpolationModel[0] == 'pdeparrhenius':
-                    reaction.kinetics = PDepArrhenius().fitToData(Tdata, Pdata, kdata, kunits)
+                
+                reaction.kinetics = self.fitInterpolationModel(Tdata, Pdata, kdata, kunits)
+                
                 self.network.netReactions.append(reaction)
                 
+    def fitInterpolationModel(self, Tdata, Pdata, kdata, kunits):
+        
+        Tmin = self.Tmin.value_si
+        Tmax = self.Tmax.value_si
+        Pmin = self.Pmin.value_si
+        Pmax = self.Pmax.value_si
+        
+        model = self.interpolationModel[0].lower()
+        
+        if model == 'chebyshev':
+            kinetics = Chebyshev().fitToData(Tdata, Pdata, kdata, kunits,
+                self.interpolationModel[1], self.interpolationModel[2],
+                Tmin, Tmax, Pmin, Pmax,
+            )             
+        elif model == 'pdeparrhenius':
+            kinetics = PDepArrhenius().fitToData(Tdata, Pdata, kdata, kunits)
+        else:
+            raise Exception('Invalid interpolation model {0!r}.'.format(self.interpolationModel[0]))
+        return kinetics
+    
     def save(self, outputFile):
         
         logging.info('Saving pressure dependence results for {0}...'.format(self.network))
