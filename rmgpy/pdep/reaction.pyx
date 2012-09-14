@@ -119,9 +119,8 @@ def calculateMicrocanonicalRateCoefficient(reaction,
             kinetics = reaction.kinetics
             kf = applyInverseLaplaceTransformMethod(reaction.transitionState, kinetics, Elist, Jlist, reacDensStates, T)
         elif productStatesKnown:
-            Tlist = 1.0/numpy.arange(1.0/2000.0, 1.0/300.0, 18, numpy.float64)
             kinetics = reaction.generateReverseRateCoefficient()
-            kr = reaction.applyInverseLaplaceTransformMethod(reaction.transitionState, kinetics, Elist, Jlist, prodDensStates, T)
+            kr = applyInverseLaplaceTransformMethod(reaction.transitionState, kinetics, Elist, Jlist, prodDensStates, T)
         else:
             raise Exception('Unable to compute k(E) values via ILT method for path reaction "{0}".'.format(reaction))
     
@@ -245,10 +244,10 @@ def applyInverseLaplaceTransformMethod(transitionState,
     the inverse transform is undefined).
     """
     cdef numpy.ndarray[numpy.float64_t,ndim=2] k
-    cdef numpy.ndarray[numpy.float64_t,ndim=1] phi
+    cdef numpy.ndarray[numpy.float64_t,ndim=1] phi0, phi
     cdef int Ngrains, NJ
     cdef bint activeJRotor
-    cdef double dE, R, A, n, Ea, m0, rem, E0, num
+    cdef double dE, R, A, n, Ea, m0, rem, E0, num, E, n_crit
     cdef int r, s, m
 
     Ngrains = Elist.shape[0]
@@ -258,7 +257,7 @@ def applyInverseLaplaceTransformMethod(transitionState,
     R = constants.R
     E0 = transitionState.conformer.E0.value_si
     
-    n = kinetics.n
+    n = kinetics._n.value_si
     A = kinetics._A.value_si / (kinetics._T0.value_si**n)
     Ea = kinetics._Ea.value_si
 
@@ -268,14 +267,22 @@ def applyInverseLaplaceTransformMethod(transitionState,
         # In these cases we move the offending portion into the preexponential
         # at the temperature of interest
         # This is an approximation, but it's not worth a more robust procedure
+        
+        # Including the T^n piece explicitly also has numerical difficulties
+        # for small positive n; it turns out that using this approximation is
+        # actually more accurate than trying to handle the T^n piece "properly"
+        # For now the implementation is to use this approximation for all n
+        # below some critical value, which is purposely placed a bit above zero
+        n_crit = 0.2
+        
         if Ea < 0:
             A *= exp(-Ea / R / T)
             Ea = 0.0
-        if n < 0:
+        if n < n_crit:
             A *= T**n
             n = 0.0
 
-        if n < 0.001:
+        if n < n_crit:
             # Determine the microcanonical rate directly
             m0, rem = divmod(Ea, dE)
             m = int(m0)
@@ -287,32 +294,28 @@ def applyInverseLaplaceTransformMethod(transitionState,
             else:
                 for s in range(NJ):
                     for r in range(m+1, Ngrains):
-                        if Elist[r] > E0 and densStates[r,s] != 0 and densStates[r-m,s] != 0:
-                            num = densStates[r-n,s] * (densStates[r-m-1,s] / densStates[r-m,s]) ** (-rem / (Elist[r-m-1] - Elist[r-m]))
+                        if Elist[r] > E0 and densStates[r,s] != 0 and abs(densStates[r-m,s]) > 1e-12 and abs(densStates[r-m-1,s]) > 1e-12:
+                            num = densStates[r-m,s] * (densStates[r-m-1,s] / densStates[r-m,s]) ** (-rem / (Elist[r-m-1] - Elist[r-m]))
                             k[r,s] = A * num / densStates[r,s]
                     
-        elif n >= 0.001:
+        elif n >= n_crit:
             import scipy.special
-            # Evaluate the inverse Laplace transform of the T**n piece, which only
+            # Evaluate the inverse Laplace transform of the T**n exp(-Ea/RT) piece, which only
             # exists for n >= 0
-            phi = numpy.zeros(Ngrains, numpy.float64)
-            for r in range(1,Ngrains):
-                phi[r] = (Elist[r] - Elist[0])**(n-1) / (R**n * scipy.special.gamma(n))
+            phi0 = numpy.zeros(Ngrains, numpy.float64)
+            for r in range(Ngrains):
+                E = Elist[r] - Elist[0] - Ea
+                if E > 0:
+                    phi0[r] = (E/R)**(n-1.0)
+            phi0 = phi0 * (dE / R) / scipy.special.gamma(n)
             # Evaluate the convolution
-            phi = convolve(phi, densStates, Elist)
-            # Apply to determine the microcanonical rate
-            s0, rem = divmod(Ea, dE)
-            s = int(s0)
-            if rem == 0:
-                for r in range(s, Ngrains):
-                    if Elist[r] > E0 and densStates[r] != 0:
-                        k[r] = A * phi[r-s] / densStates[r]
-            else:
-                for r in range(s+1, Ngrains):
-                    if Elist[r] > E0 and densStates[r] != 0 and phi[r-s] != 0:
-                        num = phi[r-s] * (phi[r-s-1] / phi[r-s]) ** (-rem / (Elist[r-s-1] - Elist[r-s]))
-                        k[r] = A * num / densStates[r]
-
+            for s in range(NJ):
+                phi = convolve(phi0, densStates[:,s])
+                # Apply to determine the microcanonical rate
+                for r in range(Ngrains):
+                    if densStates[r] != 0:
+                        k[r,s] = A * phi[r] / densStates[r]
+                            
     else:
         raise Exception('Unable to use inverse Laplace transform method for non-Arrhenius kinetics or for n < 0.')
     
