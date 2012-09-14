@@ -397,6 +397,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         interpolationModel = job.interpolationModel
         activeJRotor = job.activeJRotor
         activeKRotor = job.activeKRotor
+        rmgmode = job.rmgmode
         
         # Figure out which configurations are isomers, reactant channels, and product channels
         self.updateConfigurations(reactionModel)

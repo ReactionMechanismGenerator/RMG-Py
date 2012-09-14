@@ -73,6 +73,7 @@ class Network:
     ----------------------- ----------------------------------------------------
     `activeKRotor`          ``True`` if the K-rotor is treated as active, ``False`` if treated as adiabatic
     `activeJRotor`          ``True`` if the J-rotor is treated as active, ``False`` if treated as adiabatic
+    `rmgmode`               ``True`` if in RMG mode, ``False`` otherwise
     ======================= ====================================================
     
     """
@@ -132,7 +133,7 @@ class Network:
             if spec not in speciesList: speciesList.append(spec)
         return speciesList
 
-    def initialize(self, Tmin, Tmax, Pmin, Pmax, maximumGrainSize=0.0, minimumGrainCount=0, activeJRotor=True, activeKRotor=True):
+    def initialize(self, Tmin, Tmax, Pmin, Pmax, maximumGrainSize=0.0, minimumGrainCount=0, activeJRotor=True, activeKRotor=True, rmgmode=False):
         """
         Initialize a pressure dependence calculation by computing several
         quantities that are independent of the conditions. You must specify
@@ -169,9 +170,11 @@ class Network:
         # Calculate densities of states
         self.activeJRotor = activeJRotor
         self.activeKRotor = activeKRotor
+        self.rmgmode = rmgmode
+        
         self.calculateDensitiesOfStates()
 
-    def calculateRateCoefficients(self, Tlist, Plist, method, grainSize=0.0, grainCount=0, activeJRotor=True, activeKRotor=True, errorCheck=True):
+    def calculateRateCoefficients(self, Tlist, Plist, method, errorCheck=True):
         
         Nisom = len(self.isomers)
         Nreac = len(self.reactants)
@@ -413,23 +416,24 @@ class Network:
         # Densities of states for isomers
         for i in range(Nisom):
             logging.debug('Calculating density of states for isomer "{0}"'.format(self.isomers[i]))
-            self.isomers[i].calculateDensityOfStates(Elist, activeKRotor=self.activeKRotor, activeJRotor=self.activeJRotor)
+            self.isomers[i].calculateDensityOfStates(Elist, activeKRotor=self.activeKRotor, activeJRotor=self.activeJRotor, rmgmode=self.rmgmode)
         
         # Densities of states for reactant channels
         for n in range(Nreac):
             if self.reactants[n].hasStatMech():
                 logging.debug('Calculating density of states for reactant channel "{0}"'.format(self.reactants[n]))
-                self.reactants[n].calculateDensityOfStates(Elist, activeKRotor=self.activeKRotor, activeJRotor=self.activeJRotor)
+                self.reactants[n].calculateDensityOfStates(Elist, activeKRotor=self.activeKRotor, activeJRotor=self.activeJRotor, rmgmode=self.rmgmode)
             else:
                 logging.debug('NOT calculating density of states for reactant channel "{0}"'.format(self.reactants[n]))
             
         # Densities of states for product channels
-        for n in range(Nprod):
-            if self.products[n].hasStatMech():
-                logging.debug('Calculating density of states for product channel "{0}"'.format(self.products[n]))
-                self.products[n].calculateDensityOfStates(Elist, activeKRotor=self.activeKRotor, activeJRotor=self.activeJRotor)
-            else:
-                logging.debug('NOT calculating density of states for product channel "{0}"'.format(self.products[n]))
+        if not self.rmgmode:
+            for n in range(Nprod):
+                if self.products[n].hasStatMech():
+                    logging.debug('Calculating density of states for product channel "{0}"'.format(self.products[n]))
+                    self.products[n].calculateDensityOfStates(Elist, activeKRotor=self.activeKRotor, activeJRotor=self.activeJRotor, rmgmode=self.rmgmode)
+                else:
+                    logging.debug('NOT calculating density of states for product channel "{0}"'.format(self.products[n]))
 
         logging.debug('')
 
@@ -582,8 +586,12 @@ class Network:
                 Keq_ratio = Keq_expected / Keq_actual
                 # Rescale kr so that we get Keq_expected
                 kr /= Keq_ratio
+                # In RMG jobs this never represents an error because we are
+                # missing or using approximate degrees of freedom anyway
+                if self.rmgmode:
+                    pass
                 # Decide if the disagreement warrants a warning or error
-                if 0.8 < Keq_ratio < 1.25:
+                elif 0.8 < Keq_ratio < 1.25:
                     # The difference is probably just due to numerical error
                     pass
                 elif 0.5 < Keq_ratio < 2.0:

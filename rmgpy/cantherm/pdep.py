@@ -70,6 +70,7 @@ class PressureDependenceJob(object):
     `interpolationModel`    The interpolation model to fit to the computed :math:`k(T,P)` values
     `activeKRotor`          A flag indicating whether to treat the K-rotor as active or adiabatic
     `activeJRotor`          A flag indicating whether to treat the J-rotor as active or adiabatic
+    `rmgmode`               A flag that toggles "RMG mode", described below
     ----------------------- ----------------------------------------------------
     `network`               The unimolecular reaction network
     `Tlist`                 An array of temperatures at which to compute :math:`k(T,P)` values
@@ -77,6 +78,22 @@ class PressureDependenceJob(object):
     `Elist`                 An array of energies to use to compute :math:`k(T,P)` values
     ======================= ====================================================
     
+    In RMG mode, several alterations to the k(T,P) algorithm are made both for
+    speed and due to the nature of the approximations used:
+    
+    * Densities of states are not computed for product channels
+    
+    * Arbitrary rigid rotor moments of inertia are included in the active modes;
+      these cancel in the ILT and equilibrium expressions
+    
+    * k(E) for each path reaction is computed in the direction A -> products,
+      where A is always an explored isomer; the high-P kinetics are reversed
+      if necessary for this purpose
+    
+    * Thermodynamic parameters are always used to compute the reverse k(E)
+      from the forward k(E) for each path reaction
+    
+    RMG mode should be turned off by default except in RMG jobs.    
     """
     
     def __init__(self, network, 
@@ -84,7 +101,7 @@ class PressureDependenceJob(object):
         Pmin=None, Pmax=None, Pcount=0, Plist=None,
         maximumGrainSize=None, minimumGrainCount=0,
         method=None, interpolationModel=None,
-        activeKRotor=True, activeJRotor=True):
+        activeKRotor=True, activeJRotor=True, rmgmode=False):
         self.network = network
         
         self.Tmin = Tmin
@@ -120,7 +137,8 @@ class PressureDependenceJob(object):
         
         self.activeKRotor = activeKRotor
         self.activeJRotor = activeJRotor
-
+        self.rmgmode = rmgmode
+        
     @property
     def Tmin(self):
         """The minimum temperature at which the computed k(T,P) values are valid, or ``None`` if not defined."""
@@ -197,6 +215,7 @@ class PressureDependenceJob(object):
             interpolationModel = self.interpolationModel,
             activeKRotor = self.activeKRotor, 
             activeJRotor = self.activeJRotor,
+            rmgmode = self.rmgmode,
         )
 
     def execute(self, outputFile):
@@ -219,12 +238,22 @@ class PressureDependenceJob(object):
 
         maximumGrainSize = self.maximumGrainSize.value_si if self.maximumGrainSize is not None else 0.0
         
-        self.network.initialize(self.Tmin.value_si, self.Tmax.value_si, self.Pmin.value_si, self.Pmax.value_si, maximumGrainSize, self.minimumGrainCount, self.activeJRotor, self.activeKRotor)
+        self.network.initialize(
+            Tmin = self.Tmin.value_si, 
+            Tmax = self.Tmax.value_si, 
+            Pmin = self.Pmin.value_si, 
+            Pmax = self.Pmax.value_si, 
+            maximumGrainSize = maximumGrainSize, 
+            minimumGrainCount = self.minimumGrainCount, 
+            activeJRotor = self.activeJRotor, 
+            activeKRotor = self.activeKRotor, 
+            rmgmode = self.rmgmode,
+        )
 
         self.generateTemperatureList()
         self.generatePressureList()
         
-        self.K = self.network.calculateRateCoefficients(self.Tlist.value_si, self.Plist.value_si, self.method, maximumGrainSize, self.minimumGrainCount, self.activeJRotor, self.activeKRotor)
+        self.K = self.network.calculateRateCoefficients(self.Tlist.value_si, self.Plist.value_si, self.method)
 
         self.fitInterpolationModels()
 
@@ -651,4 +680,6 @@ class PressureDependenceJob(object):
                 f.write('    interpolationModel = {0!r},\n'.format(self.interpolationModel))
             f.write('    activeKRotor = {0!r},\n'.format(self.activeKRotor))
             f.write('    activeJRotor = {0!r},\n'.format(self.activeJRotor))
+            if self.rmgmode:
+                f.write('    rmgmode = {0!r},\n'.format(self.rmgmode))
             f.write(')\n\n')

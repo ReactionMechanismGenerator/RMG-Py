@@ -60,4 +60,4 @@ cdef class Configuration:
         
     cpdef numpy.ndarray generateCollisionMatrix(self, double T, numpy.ndarray densStates, numpy.ndarray Elist, numpy.ndarray Jlist=?)
     
-    cpdef calculateDensityOfStates(self, numpy.ndarray Elist, bint activeJRotor=?, bint activeKRotor=?)
+    cpdef calculateDensityOfStates(self, numpy.ndarray Elist, bint activeJRotor=?, bint activeKRotor=?, bint rmgmode=?)

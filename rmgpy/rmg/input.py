@@ -166,6 +166,7 @@ def pressureDependence(method, temperatures, pressures, maximumGrainSize=0.0, mi
     
     rmg.pressureDependence.activeJRotor = True
     rmg.pressureDependence.activeKRotor = True
+    rmg.pressureDependence.rmgmode = True
 
 def options(units='si', saveRestartPeriod=None, drawMolecules=False, generatePlots=False, saveConcentrationProfiles=False):
     rmg.units = units

@@ -193,7 +193,7 @@ cdef class Configuration:
         assert self.species[0].energyTransferModel is not None
         return self.species[0].energyTransferModel.generateCollisionMatrix(T, densStates, Elist, Jlist)
     
-    cpdef calculateDensityOfStates(self, numpy.ndarray Elist, bint activeJRotor=True, bint activeKRotor=True):
+    cpdef calculateDensityOfStates(self, numpy.ndarray Elist, bint activeJRotor=True, bint activeKRotor=True, bint rmgmode=False):
         """
         Calculate the density (and sum) of states for the configuration at the
         given energies above the ground state `Elist` in J/mol. The 
@@ -213,6 +213,24 @@ cdef class Configuration:
         modes = []
         for i, species in enumerate(self.species):
             modes.extend(species.conformer.getActiveModes(activeKRotor=activeKRotor, activeJRotor=activeJRotor))
+        
+        if rmgmode:
+            # Include an arbitrary active rigid rotor if needed
+            # The moments of inertia cancel in all subsequent calculations
+            for mode in modes:
+                if isinstance(mode, (LinearRotor,NonlinearRotor)):
+                    break
+            else:
+                linear = False
+                for species in self.species:
+                    for molecule in species.molecule:
+                        if molecule.isLinear(): 
+                            linear = True
+                            break
+                if linear:
+                    modes.insert(0, LinearRotor(inertia=(1.0,"amu*angstrom^2"), symmetry=1))
+                else:
+                    modes.insert(0, NonlinearRotor(inertia=([1.0,1.0,1.0],"amu*angstrom^2"), symmetry=1))
         
         if len(modes) == 0:
             self.densStates = None
