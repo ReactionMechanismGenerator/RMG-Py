@@ -54,8 +54,8 @@ class PressureDependenceError(Exception):
 
 class PDepReaction(rmgpy.reaction.Reaction):
 
-    def __init__(self, index=-1, reactants=None, products=None, network=None, kinetics=None, reversible=True, transitionState=None, thirdBody=False, duplicate=False, degeneracy=1, pairs=None):
-        rmgpy.reaction.Reaction.__init__(self, index, reactants, products, kinetics, reversible, transitionState, thirdBody, duplicate, degeneracy, pairs)
+    def __init__(self, index=-1, label='', reactants=None, products=None, network=None, kinetics=None, reversible=True, transitionState=None, duplicate=False, degeneracy=1, pairs=None):
+        rmgpy.reaction.Reaction.__init__(self, index, label, reactants, products, kinetics, reversible, transitionState, duplicate, degeneracy, pairs)
         self.network = network
         
     def getSource(self):
