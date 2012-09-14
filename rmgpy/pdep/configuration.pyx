@@ -98,14 +98,14 @@ cdef class Configuration:
         Return ``True`` if all species in the configuration have statistical
         mechanics parameters, or ``False`` otherwise.
         """
-        return all([len(spec.conformer.modes) > 0 for spec in self.species])
+        return all([spec.hasStatMech() for spec in self.species])
     
     cpdef bint hasThermo(self) except -2:
         """
         Return ``True`` if all species in the configuration have thermodynamics
         parameters, or ``False`` otherwise.
         """
-        return all([spec.thermo is not None for spec in self.species])
+        return all([spec.hasThermo() for spec in self.species])
     
     cpdef double getHeatCapacity(self, double T) except -100000000:
         """
@@ -245,6 +245,9 @@ cdef class Configuration:
                         if isinstance(mode, IdealGasTranslation):
                             mass.append(mode.mass.value_si)
                             break
+                    else:
+                        if species.molecularWeight is not None:
+                            mass.append(species.molecularWeight.value_si)
                 assert len(mass) == 2
                 mu = 1.0/(1.0/mass[0] + 1.0/mass[1])
                 modes.insert(0, IdealGasTranslation(mass=(mu/constants.amu,"amu")))
