@@ -104,6 +104,34 @@ class Network:
         self.grainCount = 0
         self.E0 = None
 
+        self.valid = False
+
+    def invalidate(self):
+        """
+        Mark the network as in need of a new calculation to determine the
+        pressure-dependent rate coefficients
+        """
+        self.valid = False
+
+    def getAllSpecies(self):
+        """
+        Return a list of all unique species in the network, including all
+        isomers, reactant and product channels, and bath gas species.
+        """
+        speciesList = []
+        for isomer in self.isomers:
+            for spec in isomer.species:
+                if spec not in speciesList: speciesList.append(spec)
+        for reactant in self.reactants:
+            for spec in reactant.species:
+                if spec not in speciesList: speciesList.append(spec)
+        for product in self.products:
+            for spec in product.species:
+                if spec not in speciesList: speciesList.append(spec)
+        for spec in self.bathGas:
+            if spec not in speciesList: speciesList.append(spec)
+        return speciesList
+
     def initialize(self, Tmin, Tmax, Pmin, Pmax, maximumGrainSize=0.0, minimumGrainCount=0, activeJRotor=True, activeKRotor=True):
         """
         Initialize a pressure dependence calculation by computing several
