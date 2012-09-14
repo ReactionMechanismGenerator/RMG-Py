@@ -512,3 +512,121 @@ class PressureDependenceJob(object):
         path = os.path.join(outputDirectory, 'network.pdf')
         
         NetworkDrawer().draw(self.network, format='pdf', path=path)
+
+    def saveInputFile(self, path):
+        """
+        Save a CanTherm input file for the pressure dependence job to `path`
+        on disk.
+        """
+        speciesList = self.network.getAllSpecies()
+        
+        # Add labels for species, reactions, transition states that don't have them
+        for i, spec in enumerate(speciesList):
+            if not spec.label:
+                spec.label = 'species{0:d}'.format(i+1)
+        for i, rxn in enumerate(self.network.pathReactions):
+            if not rxn.label:
+                rxn.label = 'reaction{0:d}'.format(i+1)
+            if not rxn.transitionState.label:
+                rxn.transitionState.label = 'TS{0:d}'.format(i+1)
+        if not self.network.label:
+            self.network.label = 'network'
+        
+        with open(path, 'w') as f:
+            # Write species
+            for spec in speciesList:
+                f.write('species(\n')
+                f.write('    label = {0!r},\n'.format(str(spec)))
+                if len(spec.molecule) > 0:
+                    f.write('    structure = SMILES({0!r}),\n'.format(spec.molecule[0].toSMILES()))
+                if spec.conformer is not None:
+                    if spec.conformer.E0 is not None:
+                        f.write('    E0 = {0!r},\n'.format(spec.conformer.E0))
+                    if len(spec.conformer.modes) > 0:
+                        f.write('    modes = [\n')
+                        for mode in spec.conformer.modes:
+                            f.write('        {0!r},\n'.format(mode))
+                        f.write('    ],\n')
+                    f.write('    spinMultiplicity = {0:d},\n'.format(spec.conformer.spinMultiplicity))
+                    f.write('    opticalIsomers = {0:d},\n'.format(spec.conformer.opticalIsomers))
+                if spec.molecularWeight is not None:
+                    f.write('    molecularWeight = {0!r},\n'.format(spec.molecularWeight))
+                if spec.lennardJones is not None:
+                    f.write('    collisionModel = {0!r},\n'.format(spec.lennardJones))
+                if spec.energyTransferModel is not None:
+                    f.write('    energyTransferModel = {0!r},\n'.format(spec.energyTransferModel))                    
+                if spec.thermo is not None:
+                    f.write('    thermo = {0!r},\n'.format(spec.thermo))                    
+                f.write(')\n\n')
+            
+            # Write transition states
+            for rxn in self.network.pathReactions:
+                ts = rxn.transitionState
+                f.write('transitionState(\n')
+                f.write('    label = {0!r},\n'.format(ts.label))
+                if ts.conformer is not None:
+                    if ts.conformer.E0 is not None:
+                        f.write('    E0 = {0!r},\n'.format(ts.conformer.E0))
+                    if len(ts.conformer.modes) > 0:
+                        f.write('    modes = [\n')
+                        for mode in ts.conformer.modes:
+                            f.write('        {0!r},\n'.format(mode))
+                        f.write('    ],\n')
+                    f.write('    spinMultiplicity = {0:d},\n'.format(ts.conformer.spinMultiplicity))
+                    f.write('    opticalIsomers = {0:d},\n'.format(ts.conformer.opticalIsomers))
+                if ts.frequency is not None:
+                    f.write('    frequency = {0!r},\n'.format(ts.frequency))                    
+                f.write(')\n\n')
+                
+            # Write reactions
+            for rxn in self.network.pathReactions:
+                ts = rxn.transitionState
+                f.write('reaction(\n')
+                f.write('    label = {0!r},\n'.format(rxn.label))
+                f.write('    reactants = [{0}],\n'.format(', '.join([repr(str(spec)) for spec in rxn.reactants])))
+                f.write('    products = [{0}],\n'.format(', '.join([repr(str(spec)) for spec in rxn.products])))
+                f.write('    transitionState = {0!r},\n'.format(rxn.transitionState.label))
+                if rxn.kinetics is not None:
+                    f.write('    kinetics = {0!r},\n'.format(rxn.kinetics))
+                if ts.tunneling is not None:
+                    f.write('    tunneling = {0!r},\n'.format(ts.tunneling.__class__.__name__))
+                f.write(')\n\n')
+            
+            # Write network
+            f.write('network(\n')
+            f.write('    label = {0!r},\n'.format(self.network.label))
+            f.write('    isomers = [\n')
+            for isomer in self.network.isomers:
+                f.write('        {0!r},\n'.format(str(isomer.species[0])))
+            f.write('    ],\n')
+            f.write('    reactants = [\n')
+            for reactants in self.network.reactants:
+                f.write('        ({0}),\n'.format(', '.join([repr(str(spec)) for spec in reactants.species])))
+            f.write('    ],\n')
+            f.write('    bathGas = {\n')
+            for spec, frac in self.network.bathGas.items():
+                f.write('        {0!r}: {1:g},\n'.format(str(spec), frac))
+            f.write('    },\n')
+            f.write(')\n\n')
+            
+            # Write pressure dependence
+            f.write('pressureDependence(\n')
+            f.write('    label = {0!r},\n'.format(self.network.label))
+            f.write('    Tmin = {0!r},\n'.format(self.Tmin))
+            f.write('    Tmax = {0!r},\n'.format(self.Tmax))
+            f.write('    Tcount = {0:d},\n'.format(self.Tcount))
+            f.write('    Tlist = {0!r},\n'.format(self.Tlist))
+            f.write('    Pmin = {0!r},\n'.format(self.Pmin))
+            f.write('    Pmax = {0!r},\n'.format(self.Pmax))
+            f.write('    Pcount = {0:d},\n'.format(self.Pcount))
+            f.write('    Plist = {0!r},\n'.format(self.Plist))
+            if self.maximumGrainSize is not None:
+                f.write('    maximumGrainSize = {0!r},\n'.format(self.maximumGrainSize))
+            if self.minimumGrainCount != 0:
+                f.write('    minimumGrainCount = {0:d},\n'.format(self.minimumGrainCount))
+            f.write('    method = {0!r},\n'.format(self.method))
+            if self.interpolationModel is not None:
+                f.write('    interpolationModel = {0!r},\n'.format(self.interpolationModel))
+            f.write('    activeKRotor = {0!r},\n'.format(self.activeKRotor))
+            f.write('    activeJRotor = {0!r},\n'.format(self.activeJRotor))
+            f.write(')\n\n')
