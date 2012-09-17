@@ -561,7 +561,9 @@ class ThermoDatabase:
         # Check the libraries in order first; return the first successful match
         for label in self.libraryOrder:
             thermoData = self.getThermoDataFromLibrary(species, self.libraries[label])
-            if thermoData is not None: break
+            if thermoData is not None: 
+                thermoData[0].comment = label
+                break
         else:
             # Thermo not found in any loaded libraries, so estimate
             thermoData = self.getThermoDataFromGroups(species)
@@ -581,6 +583,7 @@ class ThermoDatabase:
         for label in self.libraryOrder:
             data = self.getThermoDataFromLibrary(species, self.libraries[label])
             if data: 
+                thermoData[0].comment = label
                 thermoData.append(data)
         # Last entry is always the estimate from group additivity
         thermoData.append(self.getThermoDataFromGroups(species))
