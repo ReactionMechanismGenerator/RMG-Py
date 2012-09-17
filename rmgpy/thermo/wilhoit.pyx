@@ -186,6 +186,8 @@ cdef class Wilhoit(HeatCapacityModel):
             Tmin=self.Tmin, Tmax=self.Tmax, comment=self.comment,
         )
     
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
     def __residual(self, B, Tdata, Cpdata, Cp0, CpInf, H298, S298):
         # The residual corresponding to the fitToData() method
         # Parameters are the same as for that method
@@ -198,6 +200,8 @@ cdef class Wilhoit(HeatCapacityModel):
             res += diff * diff
         return res
     
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
     def fitToData(self, 
                   numpy.ndarray[numpy.float64_t, ndim=1] Tdata, 
                   numpy.ndarray[numpy.float64_t, ndim=1] Cpdata, 
@@ -220,6 +224,8 @@ cdef class Wilhoit(HeatCapacityModel):
         scipy.optimize.fminbound(self.__residual, 300.0, 3000.0, args=(Tdata, Cpdata, Cp0, CpInf, H298, S298))
         return self
     
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
     def fitToDataForConstantB(self, 
                               numpy.ndarray[numpy.float64_t, ndim=1] Tdata, 
                               numpy.ndarray[numpy.float64_t, ndim=1] Cpdata, 
@@ -495,6 +501,7 @@ cdef class Wilhoit(HeatCapacityModel):
         :class:`NASAPolynomial` objects.
         """
         cdef Wilhoit wilhoit_scaled
+        cdef NASAPolynomial nasa_low, nasa_high
         cdef double iseUnw, rmsUnw, iseWei, rmsWei, T
         cdef str rmsStr
         
@@ -508,9 +515,9 @@ cdef class Wilhoit(HeatCapacityModel):
         # Make copy of Wilhoit data so we don't modify the original
         wilhoit_scaled = self.copy() 
         # Rescale Wilhoit parameters
-        wilhoit_scaled.Cp0.value_si /= constants.R
-        wilhoit_scaled.CpInf.value_si /= constants.R
-        wilhoit_scaled.B.value_si /= 1000.
+        wilhoit_scaled._Cp0.value_si /= constants.R
+        wilhoit_scaled._CpInf.value_si /= constants.R
+        wilhoit_scaled._B.value_si /= 1000.
         
         # If we are using fixed Tint, do not allow Tint to float
         if fixedTint:
@@ -567,6 +574,7 @@ cdef class Wilhoit(HeatCapacityModel):
 ################################################################################
 
 @cython.boundscheck(False)
+@cython.wraparound(False)
 cpdef Wilhoit_to_NASA(Wilhoit wilhoit, double Tmin, double Tmax, double Tint, bint weighting, int contCons):
     """
     Convert a Wilhoit polynomial to a pair of NASA polynomials.
