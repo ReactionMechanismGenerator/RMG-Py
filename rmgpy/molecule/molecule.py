@@ -1092,8 +1092,9 @@ class Molecule(Graph):
         cython.declare(Natoms=cython.int, Nvib=cython.int, Nrotors=cython.int)
         
         Natoms = len(self.vertices)
-        Nvib = 3 * Natoms - 5 if self.isLinear() else 6
+        Nvib = 3 * Natoms - (5 if self.isLinear() else 6)
         Nrotors = self.countInternalRotors()
+        Nvib -= Nrotors
         
         return self.calculateCp0() + (Nvib + 0.5 * Nrotors) * constants.R
 
