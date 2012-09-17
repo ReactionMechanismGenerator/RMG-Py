@@ -669,7 +669,13 @@ class ThermoDatabase:
         # will probably not visit the right atoms, and so will get the thermo wrong
         molecule.sortVertices()
 
-        thermoData = None
+        # Create the ThermoData object
+        thermoData = ThermoData(
+            Tdata = ([300,400,500,600,800,1000,1500],"K"),
+            Cpdata = ([0.0,0.0,0.0,0.0,0.0,0.0,0.0],"J/(mol*K)"),
+            H298 = (0.0,"kJ/mol"),
+            S298 = (0.0,"J/(mol*K)"),
+        )
 
         if sum([atom.radicalElectrons for atom in molecule.atoms]) > 0: # radical species
 
@@ -718,7 +724,7 @@ class ThermoDatabase:
                 saturatedStruct.updateConnectivityValues()
                 
                 try:
-                    thermoData = self.__addThermoData(thermoData, self.__getGroupThermoData(self.groups['radical'], saturatedStruct, {'*':atom}))
+                    self.__addGroupThermoData(thermoData, self.groups['radical'], saturatedStruct, {'*':atom})
                 except KeyError:
                     logging.error("Couldn't find in radical thermo database:")
                     logging.error(molecule)
@@ -744,10 +750,7 @@ class ThermoDatabase:
                 if atom.isNonHydrogen():
                     # Get initial thermo estimate from main group database
                     try:
-                        if thermoData is None:
-                            thermoData = self.__getGroupThermoData(self.groups['group'], molecule, {'*':atom})
-                        else:
-                            thermoData = self.__addThermoData(thermoData, self.__getGroupThermoData(self.groups['group'], molecule, {'*':atom}))
+                        self.__addGroupThermoData(thermoData, self.groups['group'], molecule, {'*':atom})
                     except KeyError:
                         logging.error("Couldn't find in main thermo database:")
                         logging.error(molecule)
@@ -755,13 +758,13 @@ class ThermoDatabase:
                         raise
                     # Correct for gauche and 1,5- interactions
                     try:
-                        thermoData = self.__addThermoData(thermoData, self.__getGroupThermoData(self.groups['gauche'], molecule, {'*':atom}))
+                        self.__addGroupThermoData(thermoData, self.groups['gauche'], molecule, {'*':atom})
                     except KeyError: pass
                     try:
-                        thermoData = self.__addThermoData(thermoData, self.__getGroupThermoData(self.groups['int15'], molecule, {'*':atom}))
+                        self.__addGroupThermoData(thermoData, self.groups['int15'], molecule, {'*':atom})
                     except KeyError: pass
                     try:
-                        thermoData = self.__addThermoData(thermoData, self.__getGroupThermoData(self.groups['other'], molecule, {'*':atom}))
+                        self.__addGroupThermoData(thermoData, self.groups['other'], molecule, {'*':atom})
                     except KeyError: pass
 
             # Do ring corrections separately because we only want to match
@@ -782,7 +785,7 @@ class ThermoDatabase:
 
                 # Get thermo correction for this ring
                 try:
-                    thermoData = self.__addThermoData(thermoData, self.__getGroupThermoData(self.groups['ring'], ringStructure, {}))
+                    self.__addGroupThermoData(thermoData, self.groups['ring'], ringStructure, {})
                 except KeyError:
                     logging.error("Couldn't find in ring database:")
                     logging.error(ringStructure)
@@ -795,28 +798,11 @@ class ThermoDatabase:
 
         return thermoData
 
-    def __addThermoData(self, thermoData1, thermoData2):
-        """
-        Add two :class:`ThermoData` objects `thermoData1` and `thermoData2`
-        together, returning their sum as a new :class:`ThermoData` object.
-        """
-        if len(thermoData1.Tdata.value_si) != len(thermoData2.Tdata.value_si) or any([T1 != T2 for T1, T2 in zip(thermoData1.Tdata.value_si, thermoData2.Tdata.value_si)]):
-            raise ThermoError('Cannot add these ThermoData objects due to their having different temperature points.')
-        new = ThermoData(
-            Tdata = (thermoData1.Tdata.value, thermoData1.Tdata.units),
-            Cpdata = (thermoData1.Cpdata.value + thermoData2.Cpdata.value, thermoData1.Cpdata.units),
-            H298 = (thermoData1.H298.value + thermoData2.H298.value, thermoData1.H298.units),
-            S298 = (thermoData1.S298.value + thermoData2.S298.value, thermoData1.S298.units),
-        )
-        if thermoData1.comment == '': new.comment = thermoData2.comment
-        elif thermoData2.comment == '': new.comment = thermoData1.comment
-        else: new.comment = thermoData1.comment + ' + ' + thermoData2.comment
-        return new
-    
-    def __getGroupThermoData(self, database, molecule, atom):
+    def __addGroupThermoData(self, thermoData, database, molecule, atom):
         """
         Determine the group additivity thermodynamic data for the atom `atom`
-        in the structure `structure`.
+        in the structure `structure`, and add it to the existing thermo data
+        `thermoData`.
         """
 
         node0 = database.descendTree(molecule, atom, None)
@@ -840,8 +826,7 @@ class ThermoDatabase:
                     data = entry.data
                     comment = entry.label
                     break
-        data = deepcopy(data)
-        data.comment = '{0}({1})'.format(database.label, comment)
+        comment = '{0}({1})'.format(database.label, comment)
 
         # This code prints the hierarchy of the found node; useful for debugging
         #result = ''
@@ -850,4 +835,17 @@ class ThermoDatabase:
         #   node = database.tree.parent[node]
         #print result[4:]
 
-        return data
+        if len(thermoData.Tdata.value_si) != len(data.Tdata.value_si) or any([T1 != T2 for T1, T2 in zip(thermoData.Tdata.value_si, data.Tdata.value_si)]):
+            raise ThermoError('Cannot add these ThermoData objects due to their having different temperature points.')
+        
+        for i in range(7):
+            thermoData.Cpdata.value_si[i] += data.Cpdata.value_si[i]
+        thermoData.H298.value_si += data.H298.value_si
+        thermoData.S298.value_si += data.S298.value_si
+
+        if thermoData.comment:
+            thermoData.comment += ' + {0}'.format(comment)
+        else:
+            thermoData.comment = comment
+        
+        return thermoData
