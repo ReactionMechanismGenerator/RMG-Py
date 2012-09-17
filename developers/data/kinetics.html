@@ -98,10 +98,11 @@ LibraryReaction this should be a KineticsLibrary object.</p>
 
 <dl class="class">
 <dt id="rmgpy.data.kinetics.TemplateReaction">
-<em class="property">class </em><tt class="descclassname">rmgpy.data.kinetics.</tt><tt class="descname">TemplateReaction</tt><big>(</big><em>index=-1</em>, <em>reactants=None</em>, <em>products=None</em>, <em>kinetics=None</em>, <em>reversible=True</em>, <em>transitionState=None</em>, <em>thirdBody=False</em>, <em>duplicate=False</em>, <em>degeneracy=1</em>, <em>pairs=None</em>, <em>family=None</em>, <em>template=None</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.TemplateReaction" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">rmgpy.data.kinetics.</tt><tt class="descname">TemplateReaction</tt><big>(</big><em>index=-1</em>, <em>reactants=None</em>, <em>products=None</em>, <em>kinetics=None</em>, <em>reversible=True</em>, <em>transitionState=None</em>, <em>thirdBody=False</em>, <em>duplicate=False</em>, <em>degeneracy=1</em>, <em>pairs=None</em>, <em>family=None</em>, <em>template=None</em>, <em>estimator=None</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.TemplateReaction" title="Permalink to this definition">¶</a></dt>
 <dd><p>A Reaction object generated from a reaction family template. In addition to
 the usual attributes, this class includes a <cite>family</cite> attribute to store the
-family that it was created from.</p>
+family that it was created from, as well as a <cite>estimator</cite> attribute to indicate
+whether it came from a rate rules or a group additivity estimate.</p>
 <dl class="method">
 <dt id="rmgpy.data.kinetics.TemplateReaction.getSource">
 <tt class="descname">getSource</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.TemplateReaction.getSource" title="Permalink to this definition">¶</a></dt>
@@ -468,7 +469,7 @@ for a chemical reaction are unsuccessful.</p>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="thermo.html"
-                        title="previous chapter">3. <tt class="docutils literal"><span class="pre">rmgpy.data.thermo</span></tt> &#8212; Thermodynamics Database</a></p>
+                        title="previous chapter">3. <tt class="docutils literal docutils literal"><span class="pre">rmgpy.data.thermo</span></tt> &#8212; Thermodynamics Database</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="states.html"
                         title="next chapter">5. <tt class="docutils literal"><span class="pre">rmgpy.data.states</span></tt> &#8212; Frequency Database</a></p>
