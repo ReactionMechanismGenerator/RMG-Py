@@ -3109,12 +3109,12 @@ class KineticsFamily(Database):
             if kinetics:
                 if not returnAllKinetics:
                     return kinetics, None, None, True
-                kineticsList.append([kinetics, 'Rate Rules Estimation', None, True])
+                kineticsList.append([kinetics, 'rate rules', None, True])
             kinetics2 = self.getKineticsForTemplate(template, degeneracy, method='group additivity')
             if kinetics2:
                 if not returnAllKinetics:
                     return kinetics, None, None, True
-                kineticsList.append([kinetics2, 'Group Additivity Estimation', None, True])
+                kineticsList.append([kinetics2, 'group additivity', None, True])
         
         if not returnAllKinetics:
             raise UndeterminableKineticsError(reaction)
