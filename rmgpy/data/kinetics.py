@@ -197,7 +197,8 @@ class TemplateReaction(Reaction):
     """
     A Reaction object generated from a reaction family template. In addition to
     the usual attributes, this class includes a `family` attribute to store the
-    family that it was created from.
+    family that it was created from, as well as a `estimator` attribute to indicate
+    whether it came from a rate rules or a group additivity estimate.
     """
 
     def __init__(self,
@@ -212,7 +213,8 @@ class TemplateReaction(Reaction):
                 degeneracy=1,
                 pairs=None,
                 family=None,
-                template=None
+                template=None,
+                estimator=None,
                 ):
         Reaction.__init__(self,
                           index=index,
@@ -228,6 +230,7 @@ class TemplateReaction(Reaction):
                           )
         self.family = family
         self.template = template
+        self.estimator = estimator
 
     def __reduce__(self):
         """
@@ -244,7 +247,8 @@ class TemplateReaction(Reaction):
                                    self.degeneracy,
                                    self.pairs,
                                    self.family,
-                                   self.template
+                                   self.template,
+                                   self.estimator
                                    ))
 
     def getSource(self):
@@ -3060,10 +3064,11 @@ class KineticsFamily(Database):
                     kinetics.comment += "Matched reaction {0} {1} in {2}".format(entry.index, entry.label, depository.label)
         return kineticsList
     
-    def getKinetics(self, reaction, template, degeneracy=1, estimator='group additivity', returnAllKinetics=True):
+    def getKinetics(self, reaction, template, degeneracy=1, estimator='', returnAllKinetics=True):
         """
         Return the kinetics for the given `reaction` by searching the various
-        depositories as well as generating a group additivity estimate. Unlike
+        depositories as well as generating a result using the user-specified `estimator`
+        of either 'group additivity' or 'rate rules.'  Unlike
         the regular :meth:`getKinetics()` method, this returns a list of
         results, with each result comprising the kinetics, the source, and
         the entry. If it came from a template estimate, the source and entry
@@ -3089,12 +3094,27 @@ class KineticsFamily(Database):
             else:
                 for kinetics, entry, isForward in kineticsList0:
                     kineticsList.append([kinetics, depository, entry, isForward])
-        # Also generate a group additivity estimate
-        kinetics = self.getKineticsForTemplate(template, degeneracy, method=estimator)
-        if kinetics:
-            if not returnAllKinetics:
-                return kinetics, None, None, True
-            kineticsList.append([kinetics, None, None, True])
+                    
+        # If estimator type of rate rules or group additivity is given, retrieve the kinetics. 
+        if estimator:        
+            kinetics = self.getKineticsForTemplate(template, degeneracy, method=estimator)
+            if kinetics:
+                if not returnAllKinetics:
+                    return kinetics, None, None, True
+                kineticsList.append([kinetics, None, None, True])
+        # If no estimation method was given, prioritize rate rule estimation. 
+        # If returning all kinetics, add estimations from both rate rules and group additivity.
+        else:
+            kinetics = self.getKineticsForTemplate(template, degeneracy, method='rate rules')
+            if kinetics:
+                if not returnAllKinetics:
+                    return kinetics, None, None, True
+                kineticsList.append([kinetics, 'Rate Rules Estimation', None, True])
+            kinetics2 = self.getKineticsForTemplate(template, degeneracy, method='group additivity')
+            if kinetics2:
+                if not returnAllKinetics:
+                    return kinetics, None, None, True
+                kineticsList.append([kinetics2, 'Group Additivity Estimation', None, True])
         
         if not returnAllKinetics:
             raise UndeterminableKineticsError(reaction)
