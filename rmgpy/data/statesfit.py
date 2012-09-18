@@ -130,7 +130,7 @@ def fitStatesToHeatCapacity(Tlist, Cvlist, Nvib, Nrot, molecule=None):
         barr = hind[i][1]
         inertia = (barr*constants.c*100.0*constants.h) / (8 * math.pi * math.pi * (freq*constants.c*100.0)**2)
         barrier = barr*constants.c*100.0*constants.h*constants.Na
-        hr = HinderedRotor(inertia=(inertia*constants.Na*1e23,"amu*angstrom^2"), barrier=(barrier/1000.,"kJ/mol"), symmetry=1)
+        hr = HinderedRotor(inertia=(inertia*constants.Na*1e23,"amu*angstrom^2"), barrier=(barrier/1000.,"kJ/mol"), symmetry=1, semiclassical=False, quantum=False)
         modes.append(hr)
 
     # Return the fitted modes

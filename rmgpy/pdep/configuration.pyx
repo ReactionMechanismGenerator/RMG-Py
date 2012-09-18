@@ -259,26 +259,53 @@ cdef class Configuration:
                 assert len(mass) == 2
                 mu = 1.0/(1.0/mass[0] + 1.0/mass[1])
                 modes.insert(0, IdealGasTranslation(mass=(mu/constants.amu,"amu")))
-
-            import scipy.interpolate
-            
-            # Since the evaluation of quantum hindered rotors is slow, it is
-            # actually faster (and probably negligibly less accurate) to use
-            # interpolation in the steepest descents algorithm
-            logTdata = numpy.linspace(log(10.), log(10000.), 250.)
-            Tdata = numpy.exp(logTdata)
-            Qdata = numpy.ones_like(Tdata)
-            for i in range(Tdata.shape[0]):
-                T = Tdata[i]
+                
+            if rmgmode:
+                # Compute the density of states by direct count
+                # This is currently faster than the method of steepest descents,
+                # but requires classical hindered rotors
+                densStates = None
                 for mode in modes:
-                    Qdata[i] = Qdata[i] * mode.getPartitionFunction(T)
-            logQ = scipy.interpolate.InterpolatedUnivariateSpline(Tdata, numpy.log(Qdata))
-            #logQ = LinearInterpolator(Tdata, numpy.log(Qdata))          
-
-            self.densStates, self.sumStates = getDensityOfStatesForst(Elist, logQ)
-            for spec in self.species:
-                self.densStates *= spec.conformer.spinMultiplicity * spec.conformer.opticalIsomers
-                self.sumStates *= spec.conformer.spinMultiplicity * spec.conformer.opticalIsomers
+                    if not isinstance(mode,HarmonicOscillator):
+                        densStates = mode.getDensityOfStates(Elist, densStates)
+                    # Fix a numerical artifact that occurs when two modes have
+                    # density of states expressions that are zero at the
+                    # ground state
+                    # Convoluting these modes gives a zero at the first excited
+                    # energy grain as well, which is unphysical
+                    # Instead, fill in an approximate value by extrapolation
+                    # This should only occur in systems with IdealGasTranslation
+                    # and NonlinearRotor modes
+                    if densStates[1] == 0:
+                        densStates[1] = densStates[2] * densStates[2] / densStates[3]
+                for mode in modes:
+                    if isinstance(mode,HarmonicOscillator):
+                        densStates = mode.getDensityOfStates(Elist, densStates)
+                self.densStates = densStates
+                for spec in self.species:
+                    self.densStates *= spec.conformer.spinMultiplicity * spec.conformer.opticalIsomers
+                
+            else:
+                # Since the evaluation of quantum hindered rotors is slow, it is
+                # actually faster (and probably negligibly less accurate) to use
+                # interpolation in the steepest descents algorithm
+                import scipy.interpolate
+                
+                logTdata = numpy.linspace(log(10.), log(10000.), 250.)
+                Tdata = numpy.exp(logTdata)
+                Qdata = numpy.ones_like(Tdata)
+                for i in range(Tdata.shape[0]):
+                    T = Tdata[i]
+                    for mode in modes:
+                        Qdata[i] = Qdata[i] * mode.getPartitionFunction(T)
+                logQ = scipy.interpolate.InterpolatedUnivariateSpline(Tdata, numpy.log(Qdata))
+                #logQ = LinearInterpolator(Tdata, numpy.log(Qdata))          
+    
+                self.densStates, self.sumStates = getDensityOfStatesForst(Elist, logQ)
+            
+                for spec in self.species:
+                    self.densStates *= spec.conformer.spinMultiplicity * spec.conformer.opticalIsomers
+                    self.sumStates *= spec.conformer.spinMultiplicity * spec.conformer.opticalIsomers
             
     @cython.boundscheck(False)
     @cython.wraparound(False)
