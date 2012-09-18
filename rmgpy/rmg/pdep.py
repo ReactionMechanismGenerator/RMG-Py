@@ -99,6 +99,32 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         """
         return "PDepNetwork {0}".format(self.index)
 
+    def cleanup(self):
+        """
+        Delete intermedate arrays used to compute k(T,P) values.
+        """
+        for isomer in self.isomers:
+            isomer.cleanup()
+        for reactant in self.reactants:
+            reactant.cleanup()
+        for product in self.products:
+            product.cleanup()
+
+        self.Elist = None
+        self.Jlist = None
+        self.densStates = None
+        self.collFreq = None
+        self.Mcoll = None
+        self.Kij = None
+        self.Fim = None
+        self.Gnj = None
+        self.E0 = None
+        self.Ngrains = 0
+        self.NJ = 0
+        
+        self.K = None
+        self.p0 = None
+    
     def getLeakCoefficient(self, T, P):
         """
         Return the pressure-dependent rate coefficient :math:`k(T,P)` describing
@@ -538,6 +564,9 @@ class PDepNetwork(rmgpy.pdep.network.Network):
                             logging.warning('k(T,P) for net reaction {0} exceeds high-P k(T) by {1:g} at {2:g} K, {3:g} bar'.format(netReaction, K[t,p,i,j] / kinf, Tlist[t], Plist[p]/1e5))           
                             logging.info('    k(T,P) = {0:9.2e}    k(T) = {1:9.2e}'.format(K[t,p,i,j], kinf))
                         break
+        
+        # Delete intermediate arrays to conserve memory
+        self.cleanup()
         
         # We're done processing this network, so mark it as valid
         self.valid = True

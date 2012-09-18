@@ -38,6 +38,8 @@ cdef class Configuration:
     cdef public bint activeJRotor
     cdef public bint activeKRotor
 
+    cpdef cleanup(self)
+
     cpdef bint isUnimolecular(self) except -2
     
     cpdef bint isBimolecular(self) except -2

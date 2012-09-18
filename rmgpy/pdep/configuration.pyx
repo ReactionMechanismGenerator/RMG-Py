@@ -72,6 +72,14 @@ cdef class Configuration:
         def __get__(self):
             return sum([float(spec.conformer.E0.value_si) for spec in self.species])
     
+    cpdef cleanup(self):
+        """
+        Delete intermediate arrays used in computing k(T,P) values.
+        """
+        self.Elist = None
+        self.densStates = None
+        self.sumStates = None
+    
     cpdef bint isUnimolecular(self) except -2:
         """
         Return ``True`` if the configuration represents a unimolecular isomer,
