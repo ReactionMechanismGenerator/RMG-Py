@@ -407,7 +407,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         import rmgpy.measure.settings
         
         # Get the parameters for the pressure dependence calculation
-        job = pdepSettings.copy()
+        job = pdepSettings
         job.network = self
         outputDirectory = pdepSettings.outputFile
         
