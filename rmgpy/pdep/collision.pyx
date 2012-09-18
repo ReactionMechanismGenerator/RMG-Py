@@ -32,6 +32,7 @@ This module contains classes and functions for working with collision models.
 """
 
 import numpy
+cimport cython
 
 cimport rmgpy.constants as constants
 import rmgpy.quantity as quantity
@@ -182,6 +183,8 @@ cdef class SingleExponentialDown:
             T0 = self._T0.value_si
             return alpha0 * (T / T0) ** self.n
 
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
     def generateCollisionMatrix(self,
         double T,
         numpy.ndarray[numpy.float64_t,ndim=2] densStates,
@@ -209,9 +212,12 @@ cdef class SingleExponentialDown:
         alpha = 1.0 / self.getAlpha(T)
         beta = 1.0 / (constants.R * T)
         
-        rho = numpy.zeros(Ngrains)
-        for r in range(Ngrains):
-            rho[r] = numpy.sum((2*Jlist+1) * densStates[r,:])
+        if NJ > 1:
+            rho = numpy.zeros(Ngrains)
+            for r in range(Ngrains):
+                rho[r] = numpy.sum((2*Jlist+1) * densStates[r,:])
+        else:
+            rho = densStates[:,0]
         
         for start in range(Ngrains):
             if rho[start] > 0:
