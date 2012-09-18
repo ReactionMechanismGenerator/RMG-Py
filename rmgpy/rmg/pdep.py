@@ -290,7 +290,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         # These should be removed from the list of products!
         productsToRemove = []
         for products in self.products:
-            if len(products) == 1 and products[0] in self.isomers:
+            if len(products.species) == 1 and products.species[0] in self.isomers:
                 productsToRemove.append(products)
         for products in productsToRemove:
             self.products.remove(products)
