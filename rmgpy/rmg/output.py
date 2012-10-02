@@ -258,10 +258,34 @@ def saveOutputHTML(path, reactionModel):
     <tr class="species">
         <td class="index">
         {{ spec.index }}.</td>
+        
+        
+        
         <td class="structure"><a href={{ spec.molecule[0].getURL() }}><img src="species/{{ spec|replace('#','%23') }}.png" alt="{{ spec }}" title="{{ spec }}"></a></td>
         <td class="label">{{ spec.label }}</td>
         <td>{{ "%.2f"|format(spec.molecule[0].getMolecularWeight() * 1000) }}</td>
     </tr>
+    <tr>
+     <td>
+            <table align="center">
+                <tr>
+                    <th>H298</th>
+                    <th>S298</th>
+                    <th>Cp300</th>
+                    <th>Cp500</th>
+                    <th>Cp1000</th>
+                    <th>Cp1500</th>
+                </tr>
+                <tr>
+                    <td>{{ "%.2f"|format(spec.thermo.getEnthalpy(298) / 4184) }}</td>
+                    <td>{{ "%.2f"|format(spec.thermo.getEntropy(298) / 4.184) }}</td>
+                    <td>{{ "%.2f"|format(spec.thermo.getHeatCapacity(300) / 4.184) }}</td>
+                    <td>{{ "%.2f"|format(spec.thermo.getHeatCapacity(500) / 4.184) }}</td>
+                    <td>{{ "%.2f"|format(spec.thermo.getHeatCapacity(1000) / 4.184) }}</td>
+                    <td>{{ "%.2f"|format(spec.thermo.getHeatCapacity(1500) / 4.184) }}</td>
+                </tr>
+            </table>
+        </td></tr>
     {% endfor %}
 </table>
 
