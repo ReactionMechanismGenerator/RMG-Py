@@ -689,6 +689,12 @@ def loadChemkinFile(path, dictionaryPath=None):
                     reactionList.append(reaction)
                     
             line = f.readline()
+            
+    # Index the reactions now to have identical numbering as in Chemkin 
+    index = 0
+    for reaction in reactionList:
+        index += 1
+        reaction.index = index
 
     # Check for marked (and unmarked!) duplicate reactions
     # Combine marked duplicate reactions into a single reaction using MultiKinetics
@@ -734,12 +740,7 @@ def loadChemkinFile(path, dictionaryPath=None):
         reactionList.remove(reaction)
     reactionList.extend(duplicateReactionsToAdd)
 
-
-    index = 0
-    for reaction in reactionList:
-        index += 1
-        reaction.index = index
-    
+    reactionList.sort(key=lambda reaction: reaction.index)
     return speciesList, reactionList
     
 ################################################################################
