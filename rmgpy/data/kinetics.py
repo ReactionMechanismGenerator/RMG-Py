@@ -3155,14 +3155,16 @@ class KineticsFamily(Database):
         averagedKinetics.E0.value /= count
         return averagedKinetics
         
-    def __getTemplateLabel(self, template):
-        return '({0})'.format(','.join([g.label for g in template]))
         
     def estimateKineticsUsingRateRules(self, template, degeneracy=1):
         """
         Determine the appropriate kinetics for a reaction with the given
         `template` using rate rules.
         """
+        def getTemplateLabel(template):
+            # Get string format of the template in the form "(leaf1,leaf2)"
+            return '({0})'.format(','.join([g.label for g in template]))
+    
         templateList = [template]
         while len(templateList) > 0:
             
@@ -3171,20 +3173,32 @@ class KineticsFamily(Database):
                 if self.hasRateRule(t):
                     entry = self.getRateRule(t)
                     kinetics = deepcopy(entry.data)
-                    kinetics.comment += 'Explicit rate rule for {0}'.format(
-                        self.__getTemplateLabel(t),
-                    )
                     kineticsList.append([kinetics, t])
             
-            if len(kineticsList) > 0:
-                # We found one or more results! Let's average them together
-                kinetics = self.__getAverageKinetics([k for k, t in kineticsList])
-                kinetics.comment += '(Average of {0})'.format(
-                    ' + '.join([k.comment for k, t in kineticsList]),
-                )
+            if len(kineticsList) > 0:                 
+                originalLeaves = getTemplateLabel(template)
+                                
+                if len(kineticsList) == 1:
+                    kinetics, t = kineticsList[0]
+                    # Check whether the exact rate rule for the original template (most specific
+                    # leaves) were found or not.
+                    matchedLeaves = getTemplateLabel(t)
+                    if matchedLeaves == originalLeaves:
+                        kinetics.comment += 'Exact match found' 
+                    else:
+                    # Using a more general node to estimate original template
+                        kinetics.comment += 'Estimated using template ' + matchedLeaves
+                else:
+                    # We found one or more results! Let's average them together
+                    kinetics = self.__getAverageKinetics([k for k, t in kineticsList])
+                    kinetics.comment += 'Estimated using average of templates {0}'.format(
+                        ' + '.join([getTemplateLabel(t) for k, t in kineticsList]),
+                    )
+                
+                kinetics.comment +=  ' for rate rule ' + originalLeaves
                 kinetics.A.value *= degeneracy
-                kinetics.comment += ' [{0}]'.format(','.join([g.label for g in template]))
                 return kinetics
+                
             
             else:
                 # No results found
