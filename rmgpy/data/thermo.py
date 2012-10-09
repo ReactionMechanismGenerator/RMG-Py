@@ -583,7 +583,7 @@ class ThermoDatabase:
         for label in self.libraryOrder:
             data = self.getThermoDataFromLibrary(species, self.libraries[label])
             if data: 
-                thermoData[0].comment = label
+                data[0].comment = label
                 thermoData.append(data)
         # Last entry is always the estimate from group additivity
         thermoData.append(self.getThermoDataFromGroups(species))
