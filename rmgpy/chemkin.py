@@ -710,13 +710,11 @@ def loadChemkinFile(path, dictionaryPath=None):
             reaction2 = reactionList[index2]
             if reaction1.reactants == reaction2.reactants and reaction1.products == reaction2.products:
                 if reaction1.duplicate and reaction2.duplicate:
-                    if not isinstance(reaction1, LibraryReaction) or not isinstance(reaction2, LibraryReaction):
-                        # Only make a MultiKinetics for library reactions, not template reactions
-                        continue
+
                     for reaction in duplicateReactionsToAdd:
                         if reaction1.reactants == reaction.reactants and reaction1.products == reaction.products:
                             break
-                    else:
+                    if isinstance(reaction1, LibraryReaction) and isinstance(reaction2, LibraryReaction):
                         assert reaction1.library.label == reaction2.library.label
                         reaction = LibraryReaction(
                             index = reaction1.index,
@@ -729,6 +727,22 @@ def loadChemkinFile(path, dictionaryPath=None):
                         duplicateReactionsToAdd.append(reaction)
                         reaction.kinetics.kineticsList.append(reaction1.kinetics)
                         duplicateReactionsToRemove.append(reaction1)
+                    elif isinstance(reaction1, TemplateReaction) and isinstance(reaction2, TemplateReaction):
+                        assert reaction1.family.label == reaction2.family.label
+                        reaction = TemplateReaction(
+                            index = reaction1.index,
+                            reactants = reaction1.reactants,
+                            products = reaction1.products,
+                            kinetics = MultiKinetics(),
+                            family = reaction1.family,
+                            duplicate = False,
+                        )
+                        duplicateReactionsToAdd.append(reaction)
+                        reaction.kinetics.kineticsList.append(reaction1.kinetics)
+                        duplicateReactionsToRemove.append(reaction1)
+                    else:
+                        # Do not use as duplicate reactions if it's neither a template nor library reaction
+                        continue
                     reaction.kinetics.kineticsList.append(reaction2.kinetics)
                     duplicateReactionsToRemove.append(reaction2)
                 elif reaction1.kinetics.isPressureDependent() == reaction2.kinetics.isPressureDependent():
