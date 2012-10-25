@@ -223,7 +223,7 @@ cdef class ThermoData(HeatCapacityModel):
             slope = (Cphigh - Cplow) / (Thigh - Tlow)
             intercept = (Cplow * Thigh - Cphigh * Tlow) / (Thigh - Tlow)
             T0 = (Cp0 - Tlow) / slope + Tlow
-            if T > T0:
+            if T > T0 or slope <= 0 or T0 > Tlow:
                 H += 0.5 * slope * (T*T - Tlow*Tlow) + intercept * (T - Tlow)
             else:
                 H += 0.5 * slope * (T0*T0 - Tlow*Tlow) + intercept * (T0 - Tlow) + Cp0 * (T0 - T)
@@ -246,7 +246,7 @@ cdef class ThermoData(HeatCapacityModel):
             slope = (Cphigh - Cplow) / (Thigh - Tlow)
             intercept = (Cplow * Thigh - Cphigh * Tlow) / (Thigh - Tlow)
             T0 = (CpInf - Cphigh) / slope + Thigh
-            if T <= T0:
+            if T <= T0 or slope <= 0 or T0 < Thigh:
                 H += 0.5 * slope * (T*T - Thigh*Thigh) + intercept * (T - Thigh)
             else:
                 H += 0.5 * slope * (T0*T0 - Thigh*Thigh) + intercept * (T0 - Thigh) + CpInf * (T - T0)
