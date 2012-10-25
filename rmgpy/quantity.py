@@ -522,9 +522,10 @@ class UnitType:
     type, e.g. time, volume, etc.
     """
 
-    def __init__(self, units, extraDimensionality=None):
+    def __init__(self, units, commonUnits=None, extraDimensionality=None):
         self.units = units
         self.dimensionality = pq.Quantity(1.0, units).simplified.dimensionality
+        self.commonUnits = commonUnits or []
         self.extraDimensionality = {}
         if extraDimensionality:
             for unit, factor in extraDimensionality.items():
@@ -536,15 +537,22 @@ class UnitType:
         if quantity is None:
             return quantity
         
+        units = quantity.units
+        
+        # If the units are in the common units, then we can do the conversion
+        # very quickly and avoid the slow calls to the quantities package
+        if units == self.units or units in self.commonUnits:
+            return quantity
+        
         # Check that the units are consistent with this unit type
-        units = pq.Quantity(1.0, quantity.units)
+        # This uses the quantities package (slow!)
+        units = pq.Quantity(1.0, units)
         dimensionality = units.simplified.dimensionality
         if dimensionality == self.dimensionality:
             pass
         elif dimensionality in self.extraDimensionality:
-            value = quantity.value_si * self.extraDimensionality[dimensionality]
-            units = self.units
-            return self(value, units)
+            quantity.value_si *= self.extraDimensionality[dimensionality]
+            quantity.units = self.units
         else:
             raise QuantityError('Invalid units {0!r}.'.format(quantity.units))
         
@@ -559,13 +567,13 @@ Concentration = UnitType('mol/m^3')
 
 Dimensionless = UnitType('')
 
-Energy = Enthalpy = FreeEnergy = UnitType('J/mol')
+Energy = Enthalpy = FreeEnergy = UnitType('J/mol', commonUnits=['kJ/mol', 'cal/mol', 'kcal/mol'])
 
-Entropy = HeatCapacity = UnitType('J/(mol*K)')
+Entropy = HeatCapacity = UnitType('J/(mol*K)', commonUnits=['kJ/(mol*K)', 'cal/(mol*K)', 'kcal/(mol*K)'])
 
 Flux = UnitType('mol/(m^2*s)')
 
-Frequency = UnitType('cm^-1', {
+Frequency = UnitType('cm^-1', extraDimensionality={
     's^-1': 1.0 / (constants.c * 100.),
     'Hz': 1.0 / (constants.c * 100.),
     'J': 1.0 / (constants.h * constants.c * 100.),
@@ -578,15 +586,15 @@ Inertia = UnitType('kg*m^2')
 
 Length = UnitType('m')
 
-Mass = UnitType('amu', {'kg/mol': 1000.})
+Mass = UnitType('amu', extraDimensionality={'kg/mol': 1000.})
 
 Momentum = UnitType('kg*m/s^2')
 
 Power = UnitType('W')
 
-Pressure = UnitType('Pa')
+Pressure = UnitType('Pa', commonUnits=['bar', 'atm', 'torr', 'psi', 'mbar'])
 
-Temperature = UnitType('K')
+Temperature = UnitType('K', commonUnits=['degC', 'degF', 'degR'])
 
 Time = UnitType('s')
 
