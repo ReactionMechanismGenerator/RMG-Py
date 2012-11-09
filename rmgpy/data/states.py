@@ -62,15 +62,7 @@ def saveEntry(f, entry):
     else:
         f.write('    group = "{0}",\n'.format(entry.item))
 
-    if isinstance(entry.data, StatesModel):
-        f.write('    states = States(\n')
-        f.write('        modes = [\n')
-        for mode in entry.data.modes:
-            f.write('            {0!r},\n'.format(mode))
-        f.write('        ],\n')
-        f.write('        spinMultiplicity = {0!r},\n'.format(entry.data.spinMultiplicity))
-        f.write('    ),\n')
-    elif isinstance(entry.data, GroupFrequencies):
+    if isinstance(entry.data, GroupFrequencies):
         f.write('    states = GroupFrequencies(\n')
         f.write('        frequencies = [\n')
         for lower, upper, degeneracy in entry.data.frequencies:
