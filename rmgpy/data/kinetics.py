@@ -394,6 +394,7 @@ def saveEntry(f, entry):
     Save an `entry` in the kinetics database by writing a string to
     the given file object `f`.
     """
+    from rmgpy.cantherm.output import prettify
 
     def sortEfficiencies(efficiencies0):
         efficiencies = {}
@@ -459,12 +460,9 @@ def saveEntry(f, entry):
     if isinstance(entry.data, str):
         f.write('    kinetics = "{0}",\n'.format(entry.data))
     elif entry.data is not None:
-        kinetics = entry.data.toPrettyRepr()
-        lines = kinetics.splitlines()
-        f.write('    kinetics = {0}\n'.format(lines[0]))
-        for line in lines[1:-1]:
-            f.write('    {0}\n'.format(line))
-        f.write('    ),\n'.format(lines[0]))
+        kinetics = prettify('kinetics = {0!r}'.format(entry.data))
+        kinetics = '    {0},\n'.format(kinetics.replace('\n', '\n    '))
+        f.write(kinetics)
     else:
         f.write('    kinetics = None,\n')
             
