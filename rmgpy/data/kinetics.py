@@ -966,12 +966,22 @@ class KineticsLibrary(Database):
                 kineticsList.append(kinetics)
                 Tmin = kinetics.Tmin
                 Tmax = kinetics.Tmax
-                Pmin = kinetics.Pmin
-                Pmax = kinetics.Pmax
+                if kinetics.isPressureDependent():
+                    Pmin = kinetics.Pmin
+                    Pmax = kinetics.Pmax
+                else:
+                    Pmin = None
+                    Pmax = None
                 longDesc += entry.longDesc+'\n'
             
+            if len(kineticsList) == 2 and isinstance(kineticsList[0],ThirdBody) and not isinstance(kineticsList[1],ThirdBody):
+                continue
+            elif len(kineticsList) == 2 and isinstance(kineticsList[1],ThirdBody) and not isinstance(kineticsList[0],ThirdBody):
+                continue
+                    
+            
             if all([isinstance(k, Arrhenius) for k in kineticsList]):
-                entry0.data = MultiArrhenius(arrhenius=kineticsList, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax)
+                entry0.data = MultiArrhenius(arrhenius=kineticsList, Tmin=Tmin, Tmax=Tmax)
             elif all([isinstance(k, PDepArrhenius) for k in kineticsList]):
                 entry0.data = MultiPDepArrhenius(arrhenius=kineticsList, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax)
             else:
@@ -1222,10 +1232,13 @@ class KineticsLibrary(Database):
                             items = line.split('/')
                             P, A, n, Ea = items[1].split()
                             P = float(P)
-                            A = Quantity(float(A), Aunits[len(reactants)])
-                            n = Quantity(float(n), '')
-                            Ea = Quantity(float(Ea), Eunits)
-                            arrhenius = Arrhenius(A=A, n=n, Ea=Ea, T0=(1.0,"K"))
+                            arrhenius = Arrhenius(
+                                A = (float(A), Aunits[len(reactants)]), 
+                                n = float(n), 
+                                Ea = (float(Ea), Eunits), 
+                                T0 = (1.0,"K"),
+                            )
+                            
                             if not isinstance(kinetics, PDepArrhenius):
                                 old_kinetics = kinetics
                                 comment = old_kinetics.comment
@@ -1257,10 +1270,12 @@ class KineticsLibrary(Database):
 
                             items = line.split('/')
                             A, n, Ea = items[1].split()
-                            A = Quantity(float(A), Aunits[len(reactants)+1])
-                            n = Quantity(float(n), '')
-                            Ea = Quantity(float(Ea), Eunits)
-                            kinetics.arrheniusLow = Arrhenius(A=A, n=n, Ea=Ea, T0=1.0)
+                            kinetics.arrheniusLow = Arrhenius(
+                                A = (float(A), Aunits[len(reactants)+1]), 
+                                n = float(n), 
+                                Ea = (float(Ea), Eunits), 
+                                T0 = (1.0,"K"),
+                            )
 
                         elif 'TROE' in line:
                             # This line contains Troe falloff parameters in Chemkin format
@@ -1289,13 +1304,13 @@ class KineticsLibrary(Database):
                             else:
                                 alpha, T3, T1, T2 = items
 
-                            kinetics.alpha = Quantity(float(alpha))
-                            kinetics.T1 = Quantity(float(T1),"K")
+                            kinetics.alpha = float(alpha)
+                            kinetics.T1 = (float(T1),"K")
                             if T2 is not None:
-                                kinetics.T2 = Quantity(float(T2),"K")
+                                kinetics.T2 = (float(T2),"K")
                             else:
                                 kinetics.T2 = None
-                            kinetics.T3 = Quantity(float(T3),"K")
+                            kinetics.T3 = (float(T3),"K")
 
                         elif 'DUPLICATE' in line or 'DUP' in line:
                             reaction.duplicate = True
