@@ -208,7 +208,11 @@ class Database:
         
         # Process the file
         f = open(path, 'r')
-        exec f in global_context, local_context
+        try:
+            exec f in global_context, local_context
+        except Exception, e:
+            logging.error('Error while reading database {0!r}.'.format(path))
+            raise
         f.close()
 
         # Extract the database metadata
@@ -288,9 +292,24 @@ class Database:
         """
 
         # Load dictionary, library, and (optionally) tree
-        self.loadOldDictionary(dictstr, pattern)
-        if treestr != '': self.loadOldTree(treestr)
-        self.loadOldLibrary(libstr, numParameters, numLabels)
+        try:
+            self.loadOldDictionary(dictstr, pattern)
+        except Exception, e:
+            logging.error('Error while reading database {0!r}.'.format(os.path.dirname(dictstr)))
+            raise
+        
+        try:
+            if treestr != '': self.loadOldTree(treestr)
+        except Exception, e:
+            logging.error('Error while reading database {0!r}.'.format(os.path.dirname(treestr)))
+            raise
+        
+        try:
+            self.loadOldLibrary(libstr, numParameters, numLabels)
+        except Exception, e:
+            logging.error('Error while reading database {0!r}.'.format(os.path.dirname(libstr)))
+            raise
+          
         return self
 
     def loadOldDictionary(self, path, pattern):
@@ -397,10 +416,12 @@ class Database:
                         parent = parents[level-1]
 
                 if parent is not None: parent = self.entries[parent]
-                entry = self.entries[label]
-
+                try:
+                    entry = self.entries[label]
+                except KeyError:
+                    raise DatabaseError('Unable to find entry "{0}" from tree in dictionary.'.format(label))
+                
                 if isinstance(parent, str):
-                    import pdb; pdb.set_trace()
                     raise DatabaseError('Unable to find parent entry "{0}" of entry "{1}" in tree.'.format(parent, label))
 
                 # Update the parent and children of the nodes accordingly
@@ -443,10 +464,7 @@ class Database:
         finally:
             ftree.close()
 
-        try:
-            self.__loadTree(tree)
-        except DatabaseError, e:
-            logging.exception(str(e))
+        self.__loadTree(tree)
 
     def loadOldLibrary(self, path, numParameters, numLabels=1):
         """
@@ -461,7 +479,8 @@ class Database:
         # Load the parsed entries into the database, skipping duplicate entries
         skippedCount = 0
         for index, label, parameters, comment in entries:
-            assert label in self.entries
+            if label not in self.entries:
+                raise DatabaseError('Entry {0!r} in library was not found in dictionary.'.format(label))
             if self.entries[label].index != -1:
                 # The entry is a duplicate, so skip it
                 logging.debug("There was already something labeled {0} in the {1} library. Ignoring '{2}' ({3})".format(label, self.label, index, parameters))

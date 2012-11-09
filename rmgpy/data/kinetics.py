@@ -1805,13 +1805,26 @@ class KineticsFamily(Database):
 
         self.groups = KineticsGroups(label='{0}/groups'.format(self.label))
         self.groups.name = self.groups.label
-        self.groups.loadOldDictionary(os.path.join(path, 'dictionary.txt'), pattern=True)
-        self.groups.loadOldTree(os.path.join(path, 'tree.txt'))
+        try:
+            self.groups.loadOldDictionary(os.path.join(path, 'dictionary.txt'), pattern=True)
+        except Exception:
+            logging.error('Error while reading old kinetics family dictionary from {0!r}.'.format(path))
+            raise
+        try:
+            self.groups.loadOldTree(os.path.join(path, 'tree.txt'))
+        except Exception:
+            logging.error('Error while reading old kinetics family tree from {0!r}.'.format(path))
+            raise
+
         # The old kinetics groups use rate rules (not group additivity values),
         # so we can't load the old rateLibrary.txt
         
         # Load the reaction recipe
-        self.loadOldTemplate(os.path.join(path, 'reactionAdjList.txt'))
+        try:
+            self.loadOldTemplate(os.path.join(path, 'reactionAdjList.txt'))
+        except Exception:
+            logging.error('Error while reading old kinetics family template/recipe from {0!r}.'.format(path))
+            raise
         # Construct the forward and reverse templates
         reactants = [self.groups.entries[label] for label in self.forwardTemplate.reactants]
         if self.ownReverse:
@@ -1825,8 +1838,12 @@ class KineticsFamily(Database):
         self.groups.numReactants = len(self.forwardTemplate.reactants)
 
         # Load forbidden structures if present
-        if os.path.exists(os.path.join(path, 'forbiddenGroups.txt')):
-            self.forbidden = ForbiddenStructures().loadOld(os.path.join(path, 'forbiddenGroups.txt'))
+        try:
+            if os.path.exists(os.path.join(path, 'forbiddenGroups.txt')):
+                self.forbidden = ForbiddenStructures().loadOld(os.path.join(path, 'forbiddenGroups.txt'))
+        except Exception:
+            logging.error('Error while reading old kinetics family forbidden groups from {0!r}.'.format(path))
+            raise
             
         entries = self.groups.top[:]
         for entry in self.groups.top:
@@ -1837,7 +1854,11 @@ class KineticsFamily(Database):
         self.rules = KineticsDepository(label='{0}/rules'.format(self.label),
                                         recommended=True)
         self.rules.name = self.rules.label
-        self.rules.loadOldRateRules(path, self.groups, numLabels=max(len(self.forwardTemplate.reactants), len(self.groups.top)))
+        try:
+            self.rules.loadOldRateRules(path, self.groups, numLabels=max(len(self.forwardTemplate.reactants), len(self.groups.top)))
+        except Exception:
+            logging.error('Error while reading old kinetics family rules from {0!r}.'.format(path))
+            raise
         self.depositories = {}
 
         return self
