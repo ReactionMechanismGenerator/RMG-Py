@@ -82,7 +82,13 @@ class Species(rmgpy.species.Species):
         if isinstance(thermo0, Wilhoit):
             wilhoit = thermo0
         elif isinstance(thermo0, ThermoData):
-            wilhoit = thermo0.toWilhoit()
+            Tdata = thermo0._Tdata.value_si
+            Cpdata = thermo0._Cpdata.value_si
+            H298 = thermo0.getEnthalpy(298)
+            S298 = thermo0.getEntropy(298)
+            Cp0 = thermo0._Cp0.value_si
+            CpInf = thermo0._CpInf.value_si
+            wilhoit = Wilhoit().fitToDataForConstantB(Tdata, Cpdata, Cp0, CpInf, H298, S298, B=1000.0)
         else:
             Cp0 = self.calculateCp0()
             CpInf = self.calculateCpInf()
