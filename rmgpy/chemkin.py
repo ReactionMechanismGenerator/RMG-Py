@@ -151,14 +151,14 @@ def readKineticsEntry(entry, speciesDict, energyUnits, moleculeUnits):
     
     # Convert the reactants and products to Species objects using the speciesDict
     for reactant in reactants.split('+'):
-        reactant = reactant.strip()
+        reactant = reactant.strip().upper()
         stoichiometry = 1
         if reactant[0].isdigit():
             # This allows for reactions to be of the form 2A=B+C instead of A+A=B+C
             # The implementation below assumes an integer between 0 and 9, inclusive
             stoichiometry = int(reactant[0])
             reactant = reactant[1:]               
-        if reactant == 'M' or reactant == 'm':
+        if reactant == 'M':
             thirdBody = True
         elif reactant not in speciesDict:
             raise ChemkinError('Unexpected reactant "{0}" in reaction {1}.'.format(reactant, reaction))
@@ -166,14 +166,14 @@ def readKineticsEntry(entry, speciesDict, energyUnits, moleculeUnits):
             for i in range(stoichiometry):
                 reaction.reactants.append(speciesDict[reactant])
     for product in products.split('+'):
-        product = product.strip()
+        product = product.strip().lower()
         stoichiometry = 1
         if product[0].isdigit():
             # This allows for reactions to be of the form A+B=2C instead of A+B=C+C
             # The implementation below assumes an integer between 0 and 9, inclusive
             stoichiometry = int(product[0])
             product = product[1:]
-        if product.upper() == 'M' or product == 'm':
+        if product.upper() == 'M':
             pass
         elif product not in speciesDict:
             raise ChemkinError('Unexpected product "{0}" in reaction {1}.'.format(product, reaction))
