@@ -523,6 +523,7 @@ class KineticsDepository(Database):
                   group1=None,
                   group2=None,
                   group3=None,
+                  group4=None,
                   kinetics=None,
                   degeneracy=1,
                   label='',
@@ -538,7 +539,7 @@ class KineticsDepository(Database):
         
         if reactant1 is not None and product1 is not None:
             # The reaction involves real reactants and products
-            assert group1 is None and group2 is None and group3 is None
+            assert group1 is None and group2 is None and group3 is None and group4 is None
             
             reactants = [Molecule().fromAdjacencyList(reactant1)]
             if reactant2 is not None: reactants.append(Molecule().fromAdjacencyList(reactant2))
@@ -571,6 +572,11 @@ class KineticsDepository(Database):
                     reactants.append(makeLogicNode(group3))
                 else:
                     reactants.append(Group().fromAdjacencyList(group3))
+            if group4 is not None: 
+                if group4[0:3].upper() == 'OR{' or group4[0:4].upper() == 'AND{' or group4[0:7].upper() == 'NOT OR{' or group4[0:8].upper() == 'NOT AND{':
+                    reactants.append(makeLogicNode(group4))
+                else:
+                    reactants.append(Group().fromAdjacencyList(group4))
             
             reaction = Reaction(reactants=reactants, products=[])
         else:
