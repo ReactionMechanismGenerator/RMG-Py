@@ -143,7 +143,6 @@ def calculateMicrocanonicalRateCoefficient(reaction,
         if reactantStatesKnown:
             kf = applyInverseLaplaceTransformMethod(reaction.kinetics, reaction.transitionState.E0.value_si, Elist, reacDensStates, T)
         elif productStatesKnown:
-            Tlist = 1.0/numpy.arange(1.0/2000.0, 1.0/300.0, 18, numpy.float64)
             kinetics = reaction.generateReverseRateCoefficient()
             kr = applyInverseLaplaceTransformMethod(kinetics, reaction.transitionState.E0.value_si, Elist, prodDensStates, T)
         else:
@@ -306,7 +305,7 @@ def applyInverseLaplaceTransformMethod(kinetics, double E0,
             # Evaluate the inverse Laplace transform of the T**n piece, which only
             # exists for n >= 0
             phi = numpy.zeros(Ngrains, numpy.float64)
-            for i in range(Ngrains):
+            for i in range(1, Ngrains):
                 phi[i] = (Elist[i] - Elist[0])**(n-1) / (R**n * scipy.special.gamma(n))
             # Evaluate the convolution
             phi = convolve(phi, densStates, Elist)

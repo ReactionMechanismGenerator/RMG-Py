@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# encoding: utf-8
+
 ################################################################################
 #
 #   ChemPy - A chemistry toolkit for Python

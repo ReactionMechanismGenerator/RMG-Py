@@ -191,7 +191,8 @@ class TemplateReaction(Reaction):
     """
     A Reaction object generated from a reaction family template. In addition to
     the usual attributes, this class includes a `family` attribute to store the
-    family that it was created from.
+    family that it was created from, as well as a `estimator` attribute to indicate
+    whether it came from a rate rules or a group additivity estimate.
     """
 
     def __init__(self,
@@ -205,7 +206,8 @@ class TemplateReaction(Reaction):
                 degeneracy=1,
                 pairs=None,
                 family=None,
-                template=None
+                template=None,
+                estimator=None,
                 ):
         Reaction.__init__(self,
                           index=index,
@@ -220,6 +222,7 @@ class TemplateReaction(Reaction):
                           )
         self.family = family
         self.template = template
+        self.estimator = estimator
 
     def __reduce__(self):
         """
@@ -235,7 +238,8 @@ class TemplateReaction(Reaction):
                                    self.degeneracy,
                                    self.pairs,
                                    self.family,
-                                   self.template
+                                   self.template,
+                                   self.estimator
                                    ))
 
     def getSource(self):
@@ -2044,7 +2048,7 @@ class KineticsFamily(Database):
                 if 'training' in root: continue
                 for f in files:
                     if not f.endswith('.py'): continue
-                    name = f.strip('.py')
+                    name = f.split('.py')[0]
                     if name not in ['groups', 'rules'] and name not in (depositoryLabels or ['training']):
                         fpath = os.path.join(root, f)
                         label = '{0}/{1}'.format(self.label, name)
@@ -3100,10 +3104,11 @@ class KineticsFamily(Database):
                     kinetics.comment += "Matched reaction {0} {1} in {2}".format(entry.index, entry.label, depository.label)
         return kineticsList
     
-    def getKinetics(self, reaction, template, degeneracy=1, estimator='group additivity', returnAllKinetics=True):
+    def getKinetics(self, reaction, template, degeneracy=1, estimator='', returnAllKinetics=True):
         """
         Return the kinetics for the given `reaction` by searching the various
-        depositories as well as generating a group additivity estimate. Unlike
+        depositories as well as generating a result using the user-specified `estimator`
+        of either 'group additivity' or 'rate rules.'  Unlike
         the regular :meth:`getKinetics()` method, this returns a list of
         results, with each result comprising the kinetics, the source, and
         the entry. If it came from a template estimate, the source and entry
@@ -3129,12 +3134,27 @@ class KineticsFamily(Database):
             else:
                 for kinetics, entry, isForward in kineticsList0:
                     kineticsList.append([kinetics, depository, entry, isForward])
-        # Also generate a group additivity estimate
-        kinetics = self.getKineticsForTemplate(template, degeneracy, method=estimator)
-        if kinetics:
-            if not returnAllKinetics:
-                return kinetics, None, None, True
-            kineticsList.append([kinetics, None, None, True])
+                    
+        # If estimator type of rate rules or group additivity is given, retrieve the kinetics. 
+        if estimator:        
+            kinetics = self.getKineticsForTemplate(template, degeneracy, method=estimator)
+            if kinetics:
+                if not returnAllKinetics:
+                    return kinetics, None, None, True
+                kineticsList.append([kinetics, None, None, True])
+        # If no estimation method was given, prioritize rate rule estimation. 
+        # If returning all kinetics, add estimations from both rate rules and group additivity.
+        else:
+            kinetics = self.getKineticsForTemplate(template, degeneracy, method='rate rules')
+            if kinetics:
+                if not returnAllKinetics:
+                    return kinetics, None, None, True
+                kineticsList.append([kinetics, 'rate rules', None, True])
+            kinetics2 = self.getKineticsForTemplate(template, degeneracy, method='group additivity')
+            if kinetics2:
+                if not returnAllKinetics:
+                    return kinetics, None, None, True
+                kineticsList.append([kinetics2, 'group additivity', None, True])
         
         if not returnAllKinetics:
             raise UndeterminableKineticsError(reaction)
@@ -3177,14 +3197,16 @@ class KineticsFamily(Database):
         )
         return averagedKinetics
         
-    def __getTemplateLabel(self, template):
-        return '({0})'.format(','.join([g.label for g in template]))
         
     def estimateKineticsUsingRateRules(self, template, degeneracy=1):
         """
         Determine the appropriate kinetics for a reaction with the given
         `template` using rate rules.
         """
+        def getTemplateLabel(template):
+            # Get string format of the template in the form "(leaf1,leaf2)"
+            return '({0})'.format(','.join([g.label for g in template]))
+    
         templateList = [template]
         while len(templateList) > 0:
             
@@ -3193,19 +3215,31 @@ class KineticsFamily(Database):
                 if self.hasRateRule(t):
                     entry = self.getRateRule(t)
                     kinetics = deepcopy(entry.data)
-                    kinetics.comment += 'Explicit rate rule for {0}'.format(
-                        self.__getTemplateLabel(t),
-                    )
                     kineticsList.append([kinetics, t])
             
-            if len(kineticsList) > 0:
-                # We found one or more results! Let's average them together
-                kinetics = self.__getAverageKinetics([k for k, t in kineticsList])
-                kinetics.comment += '(Average of {0})'.format(
-                    ' + '.join([k.comment for k, t in kineticsList]),
-                )
+            if len(kineticsList) > 0:                 
+                originalLeaves = getTemplateLabel(template)
+                                
+                if len(kineticsList) == 1:
+                    kinetics, t = kineticsList[0]
+                    # Check whether the exact rate rule for the original template (most specific
+                    # leaves) were found or not.
+                    matchedLeaves = getTemplateLabel(t)
+                    if matchedLeaves == originalLeaves:
+                        kinetics.comment += 'Exact match found' 
+                    else:
+                    # Using a more general node to estimate original template
+                        kinetics.comment += 'Estimated using template ' + matchedLeaves
+                else:
+                    # We found one or more results! Let's average them together
+                    kinetics = self.__getAverageKinetics([k for k, t in kineticsList])
+                    kinetics.comment += 'Estimated using average of templates {0}'.format(
+                        ' + '.join([getTemplateLabel(t) for k, t in kineticsList]),
+                    )
+                
+                kinetics.comment +=  ' for rate rule ' + originalLeaves
                 kinetics.A.value_si *= degeneracy
-                kinetics.comment += ' [{0}]'.format(','.join([g.label for g in template]))
+
                 return kinetics
             
             else:

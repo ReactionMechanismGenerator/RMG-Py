@@ -699,6 +699,12 @@ def loadChemkinFile(path, dictionaryPath=None):
                     reactionList.append(reaction)
                     
             line = f.readline()
+            
+    # Index the reactions now to have identical numbering as in Chemkin 
+    index = 0
+    for reaction in reactionList:
+        index += 1
+        reaction.index = index
 
     # Check for marked (and unmarked!) duplicate reactions
     # Combine marked duplicate reactions into a single reaction using MultiKinetics
@@ -714,13 +720,12 @@ def loadChemkinFile(path, dictionaryPath=None):
             reaction2 = reactionList[index2]
             if reaction1.reactants == reaction2.reactants and reaction1.products == reaction2.products:
                 if reaction1.duplicate and reaction2.duplicate:
-                    if not isinstance(reaction1, LibraryReaction) or not isinstance(reaction2, LibraryReaction):
-                        # Only make a MultiKinetics for library reactions, not template reactions
-                        continue
+
                     for reaction in duplicateReactionsToAdd:
                         if reaction1.reactants == reaction.reactants and reaction1.products == reaction.products:
                             break
-                    else:
+                    
+                    if isinstance(reaction1, LibraryReaction) and isinstance(reaction2, LibraryReaction):
                         assert reaction1.library.label == reaction2.library.label
                         if isinstance(reaction1.kinetics, PDepArrhenius):
                             kinetics = MultiPDepArrhenius()
@@ -739,12 +744,37 @@ def loadChemkinFile(path, dictionaryPath=None):
                         duplicateReactionsToAdd.append(reaction)
                         kinetics.arrhenius = [reaction1.kinetics]
                         duplicateReactionsToRemove.append(reaction1)
+
+                    elif isinstance(reaction1, TemplateReaction) and isinstance(reaction2, TemplateReaction):
+                        assert reaction1.family.label == reaction2.family.label
+                        if isinstance(reaction1.kinetics, PDepArrhenius):
+                            kinetics = MultiPDepArrhenius()
+                        elif isinstance(reaction1.kinetics, Arrhenius):
+                            kinetics = MultiArrhenius()
+                        else:
+                            raise ChemkinError('Unexpected kinetics type {0} for duplicate reaction {1}.'.format(reaction1.kinetics.__class__, reaction1))
+                        reaction = TemplateReaction(
+                            index = reaction1.index,
+                            reactants = reaction1.reactants,
+                            products = reaction1.products,
+                            kinetics = kinetics,
+                            family = reaction1.family,
+                            duplicate = False,
+                        )
+                        duplicateReactionsToAdd.append(reaction)
+                        kinetics.arrhenius = [reaction1.kinetics]
+                        duplicateReactionsToRemove.append(reaction1)
+                    else:
+                        # Do not use as duplicate reactions if it's neither a template nor library reaction
+                        continue
+                    
                     if isinstance(reaction.kinetics, MultiPDepArrhenius) and isinstance(reaction2.kinetics, PDepArrhenius):
                         reaction.kinetics.arrhenius.append(reaction2.kinetics)
                     elif isinstance(reaction.kinetics, MultiArrhenius) and isinstance(reaction2.kinetics, Arrhenius):
                         reaction.kinetics.arrhenius.append(reaction2.kinetics)
                     else:
                         raise ChemkinError('Mixed kinetics for duplicate reaction {0}.'.format(reaction))
+                    
                     duplicateReactionsToRemove.append(reaction2)
                 elif reaction1.kinetics.isPressureDependent() == reaction2.kinetics.isPressureDependent():
                     # If both reactions are pressure-independent or both are pressure-dependent, then they need duplicate tags
@@ -755,12 +785,7 @@ def loadChemkinFile(path, dictionaryPath=None):
         reactionList.remove(reaction)
     reactionList.extend(duplicateReactionsToAdd)
 
-
-    index = 0
-    for reaction in reactionList:
-        index += 1
-        reaction.index = index
-    
+    reactionList.sort(key=lambda reaction: reaction.index)
     return speciesList, reactionList
     
 ################################################################################
