@@ -703,7 +703,7 @@ class KineticsDepository(Database):
         self.entries = {}
         for entry in entries:
             index, label, data, shortDesc = entry
-            if isinstance(data, str):
+            if isinstance(data, (str,unicode)):
                 kinetics = data
                 rank = 0
             elif isinstance(data, tuple) and len(data) == 2:

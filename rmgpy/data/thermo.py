@@ -822,7 +822,7 @@ class ThermoDatabase:
             raise InvalidDatabaseError('Unable to determine thermo parameters for {0}: no library entries for {1} or any of its ancestors.'.format(molecule, node0) )
 
         data = node.data; comment = node.label
-        while isinstance(data, str) and data is not None:
+        while isinstance(data, (str,unicode)) and data is not None:
             for entry in database.entries.values():
                 if entry.label == data:
                     data = entry.data

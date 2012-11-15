@@ -744,12 +744,12 @@ class Database:
         if len(self.library) > 0:
             key = self.hashLabels(key)
             data = self.library[key]
-            while isinstance(data, str):
+            while isinstance(data, (str,unicode)):
                 key = self.hashLabels(data)
                 data = self.library[key]
         else:
             data = self.library[label]
-            while isinstance(data, str):
+            while isinstance(data, (str,unicode)):
                 label = data
                 data = self.library[label]
         return data
