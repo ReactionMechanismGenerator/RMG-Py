@@ -321,7 +321,7 @@ cdef class Configuration:
         cdef list Blist
         
         import scipy.interpolate
-        f = scipy.interpolate.InterpolatedUnivariateSpline(self.Elist, self.densStates)
+        f = scipy.interpolate.InterpolatedUnivariateSpline(self.Elist[1:], numpy.log(self.densStates[1:]))
         
         E0 = self.E0
         Ngrains = Elist.shape[0]
@@ -334,7 +334,7 @@ cdef class Configuration:
                 if Elist[r0] >= E0: break
             for r in range(r0, Ngrains):
                 densStates[r,0] = f(Elist[r] - E0)
-        
+            densStates[r0:,0] = numpy.exp(densStates[r0:,0])
         else:
             assert Jlist is not None
             NJ = Jlist.shape[0]
@@ -355,7 +355,7 @@ cdef class Configuration:
                         J1 = Jlist[s]
                         E = Elist[r] - E0 - B1 * J1 * (J1 + 1)
                         if E < 0: break
-                        densStates[r,s] = f(E)
+                        densStates[r,s] = exp(f(E))
                         
             elif len(Blist) == 2:
                 B1 = Blist[0] * 11.962; B2 = Blist[1] * 11.962      # cm^-1 to J/mol
@@ -366,7 +366,7 @@ cdef class Configuration:
                             J1 = Jlist[t]; J2 = J - J1
                             E = Elist[r] - E0 - B1 * J1 * (J1 + 1) - B2 * J2 * (J2 + 1)
                             if E > 0:
-                                densStates[r,s] = f(E)
+                                densStates[r,s] = exp(f(E))
         
         return densStates * dE / dE0
 
@@ -383,7 +383,7 @@ cdef class Configuration:
         cdef int r0, r, s, Ngrains, NJ, J1, J2
         
         import scipy.interpolate
-        f = scipy.interpolate.InterpolatedUnivariateSpline(self.Elist, self.sumStates)
+        f = scipy.interpolate.InterpolatedUnivariateSpline(self.Elist[1:], numpy.log(self.sumStates[1:]))
         
         E0 = self.E0
         Ngrains = len(Elist)
@@ -394,7 +394,7 @@ cdef class Configuration:
                 if Elist[r0] >= E0: break
             for r in range(r0, Ngrains):
                 sumStates[r,0] = f(Elist[r] - E0)
-            
+            sumStates[r0:,0] = numpy.exp(sumStates[r0:,0])
         else:
             assert Jlist is not None
             NJ = len(Jlist)
@@ -415,7 +415,7 @@ cdef class Configuration:
                         J1 = Jlist[s]
                         E = Elist[r] - E0 - B1 * J1 * (J1 + 1)
                         if E < 0: break
-                        sumStates[r,s] = f(E)
+                        sumStates[r,s] = exp(f(E))
                         
             elif len(Blist) == 2:
                 B1 = Blist[0] * 11.962; B2 = Blist[1] * 11.962      # cm^-1 to J/mol
@@ -426,6 +426,6 @@ cdef class Configuration:
                             J1 = Jlist[t]; J2 = J - J1
                             E = Elist[r] - E0 - B1 * J1 * (J1 + 1) - B2 * J2 * (J2 + 1)
                             if E > 0:
-                                sumStates[r,s] = f(E)
+                                sumStates[r,s] = exp(f(E))
         
         return sumStates
