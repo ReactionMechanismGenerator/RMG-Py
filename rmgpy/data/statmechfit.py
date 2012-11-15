@@ -63,11 +63,11 @@ hrBarrLowerBound = 10.0
 hrBarrUpperBound = 10000.0
 
 # The maximum number of iterations for the optimization solver to use
-maxIter = 1000
+maxIter = 200
 
 ################################################################################
 
-class StatesFitError(Exception):
+class StatmechFitError(Exception):
     """
     An exception used when attempting to fit molecular degrees of freedom to
     heat capacity data. Pass a string describing the circumstances of the
@@ -77,7 +77,7 @@ class StatesFitError(Exception):
 
 ################################################################################
 
-def fitStatesToHeatCapacity(Tlist, Cvlist, Nvib, Nrot, molecule=None):
+def fitStatmechToHeatCapacity(Tlist, Cvlist, Nvib, Nrot, molecule=None):
     """
     For a given set of dimensionless heat capacity data `Cvlist` corresponding
     to temperature list `Tlist` in K, fit `Nvib` harmonic oscillator and `Nrot`
@@ -93,9 +93,9 @@ def fitStatesToHeatCapacity(Tlist, Cvlist, Nvib, Nrot, molecule=None):
     # You must specify at least 7 heat capacity points to use in the fitting;
     # you can specify as many as you like above that minimum
     if len(Tlist) < 7:
-        raise StatesFitError('You must specify at least 7 heat capacity points to fitStatesToHeatCapacity().')
+        raise StatmechFitError('You must specify at least 7 heat capacity points to fitStatmechToHeatCapacity().')
     if len(Tlist) != len(Cvlist):
-        raise StatesFitError('The number of heat capacity points ({0:d}) does not match the number of temperatures provided ({1:d}).'.format(len(Cvlist), len(Tlist)))
+        raise StatmechFitError('The number of heat capacity points ({0:d}) does not match the number of temperatures provided ({1:d}).'.format(len(Cvlist), len(Tlist)))
 
     # The number of optimization variables available is constrained to be less
     # than the number of heat capacity points
@@ -114,11 +114,11 @@ def fitStatesToHeatCapacity(Tlist, Cvlist, Nvib, Nrot, molecule=None):
     if Nvib <= 0 and Nrot <= 0:
         pass
     elif Nvib + 2 * Nrot <= maxVariables:
-        vib, hind = fitStatesDirect(Tlist, Cvlist, Nvib, Nrot, molecule)
+        vib, hind = fitStatmechDirect(Tlist, Cvlist, Nvib, Nrot, molecule)
     elif Nvib + 2 <= maxVariables:
-        vib, hind = fitStatesPseudoRotors(Tlist, Cvlist, Nvib, Nrot, molecule)
+        vib, hind = fitStatmechPseudoRotors(Tlist, Cvlist, Nvib, Nrot, molecule)
     else:
-        vib, hind = fitStatesPseudo(Tlist, Cvlist, Nvib, Nrot, molecule)
+        vib, hind = fitStatmechPseudo(Tlist, Cvlist, Nvib, Nrot, molecule)
 
     modes = []
     if Nvib > 0:
@@ -138,7 +138,7 @@ def fitStatesToHeatCapacity(Tlist, Cvlist, Nvib, Nrot, molecule=None):
 
 ################################################################################
 
-def fitStatesDirect(Tlist, Cvlist, Nvib, Nrot, molecule=None):
+def fitStatmechDirect(Tlist, Cvlist, Nvib, Nrot, molecule=None):
     """
     Fit `Nvib` harmonic oscillator and `Nrot` hindered internal rotor modes to
     the provided dimensionless heat capacities `Cvlist` at temperatures `Tlist`
@@ -180,7 +180,7 @@ def fitStatesDirect(Tlist, Cvlist, Nvib, Nrot, molecule=None):
 
     # Check that the results of the optimization are valid
     if not numpy.isfinite(x).all():
-        raise StatesFitError('Returned solution vector is nonsensical: x = {0}.'.format(x))
+        raise StatmechFitError('Returned solution vector is nonsensical: x = {0}.'.format(x))
     if igo == 8:
         logging.warning('Maximum number of iterations reached when fitting spectral data for {0}.'.format(molecule))
 
@@ -194,7 +194,7 @@ def fitStatesDirect(Tlist, Cvlist, Nvib, Nrot, molecule=None):
 
 ################################################################################
 
-def fitStatesPseudoRotors(Tlist, Cvlist, Nvib, Nrot, molecule=None):
+def fitStatmechPseudoRotors(Tlist, Cvlist, Nvib, Nrot, molecule=None):
     """
     Fit `Nvib` harmonic oscillator and `Nrot` hindered internal rotor modes to
     the provided dimensionless heat capacities `Cvlist` at temperatures `Tlist`
@@ -231,7 +231,7 @@ def fitStatesPseudoRotors(Tlist, Cvlist, Nvib, Nrot, molecule=None):
 
     # Check that the results of the optimization are valid
     if not numpy.isfinite(x).all():
-        raise StatesFitError('Returned solution vector is nonsensical: x = {0}.'.format(x))
+        raise StatmechFitError('Returned solution vector is nonsensical: x = {0}.'.format(x))
     if igo == 8:
         logging.warning('Maximum number of iterations reached when fitting spectral data for {0}.'.format(molecule))
 
@@ -245,7 +245,7 @@ def fitStatesPseudoRotors(Tlist, Cvlist, Nvib, Nrot, molecule=None):
 
 ################################################################################
 
-def fitStatesPseudo(Tlist, Cvlist, Nvib, Nrot, molecule=None):
+def fitStatmechPseudo(Tlist, Cvlist, Nvib, Nrot, molecule=None):
     """
     Fit `Nvib` harmonic oscillator and `Nrot` hindered internal rotor modes to
     the provided dimensionless heat capacities `Cvlist` at temperatures `Tlist`
@@ -287,7 +287,7 @@ def fitStatesPseudo(Tlist, Cvlist, Nvib, Nrot, molecule=None):
 
     # Check that the results of the optimization are valid
     if not numpy.isfinite(x).all():
-        raise StatesFitError('Returned solution vector is nonsensical: x = {0}.'.format(x))
+        raise StatmechFitError('Returned solution vector is nonsensical: x = {0}.'.format(x))
     if igo == 8:
         logging.warning('Maximum number of iterations reached when fitting spectral data for {0}.'.format(molecule))
 
@@ -295,7 +295,7 @@ def fitStatesPseudo(Tlist, Cvlist, Nvib, Nrot, molecule=None):
     Nvib2 = int(round(x[1]))
     Nvib3 = Nvib - Nvib2 - 1
     if Nvib2 < 0 or Nvib2 > Nvib-1 or Nvib3 < 0 or Nvib3 > Nvib-1:
-        raise StatesFitError('Invalid degeneracies {0} and {1} fitted for pseudo-frequencies.'.format(Nvib2, Nvib3))
+        raise StatmechFitError('Invalid degeneracies {0} and {1} fitted for pseudo-frequencies.'.format(Nvib2, Nvib3))
 
     vib = [x[0]]
     for i in range(Nvib2): vib.append(x[2])

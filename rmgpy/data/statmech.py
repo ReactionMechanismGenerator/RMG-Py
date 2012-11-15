@@ -63,7 +63,7 @@ def saveEntry(f, entry):
         f.write('    group = "{0}",\n'.format(entry.item))
 
     if isinstance(entry.data, GroupFrequencies):
-        f.write('    states = GroupFrequencies(\n')
+        f.write('    statmech = GroupFrequencies(\n')
         f.write('        frequencies = [\n')
         for lower, upper, degeneracy in entry.data.frequencies:
             f.write('            ({0:g}, {1:g}, {2:d}),\n'.format(lower, upper, degeneracy))
@@ -71,7 +71,7 @@ def saveEntry(f, entry):
         f.write('        symmetry = {0:d},\n'.format(entry.data.symmetry))
         f.write('    ),\n')
     else:
-        f.write('    states = {0!r},\n'.format(entry.data))
+        f.write('    statmech = {0!r},\n'.format(entry.data))
 
     if entry.reference is not None: f.write('    reference = {0!r},\n'.format(entry.reference))
     if entry.referenceType != "": f.write('    referenceType = "{0}",\n'.format(entry.referenceType))
@@ -117,9 +117,10 @@ def processOldLibraryEntry(data, format):
 
 ################################################################################
 
-class StatesDepository(Database):
+class StatmechDepository(Database):
     """
-    A class for working with the RMG states (frequencies) depository.
+    A class for working with the RMG statistical mechanics (frequencies)
+    depository.
     """
 
     def __init__(self, label='', name='', shortDesc='', longDesc=''):
@@ -129,7 +130,7 @@ class StatesDepository(Database):
                   index,
                   label,
                   molecule,
-                  states,
+                  statmech,
                   reference=None,
                   referenceType='',
                   shortDesc='',
@@ -140,7 +141,7 @@ class StatesDepository(Database):
             index = index,
             label = label,
             item = Molecule().fromAdjacencyList(molecule),
-            data = states,
+            data = statmech,
             reference = reference,
             referenceType = referenceType,
             shortDesc = shortDesc,
@@ -156,9 +157,9 @@ class StatesDepository(Database):
 
 ################################################################################
 
-class StatesLibrary(Database):
+class StatmechLibrary(Database):
     """
-    A class for working with a RMG states (frequencies) library.
+    A class for working with a RMG statistical mechanics (frequencies) library.
     """
 
     def __init__(self, label='', name='', shortDesc='', longDesc=''):
@@ -168,7 +169,7 @@ class StatesLibrary(Database):
                   index,
                   label,
                   molecule,
-                  states,
+                  statmech,
                   reference=None,
                   referenceType='',
                   shortDesc='',
@@ -179,7 +180,7 @@ class StatesLibrary(Database):
             index = index,
             label = label,
             item = Molecule().fromAdjacencyList(molecule),
-            data = states,
+            data = statmech,
             reference = reference,
             referenceType = referenceType,
             shortDesc = shortDesc,
@@ -209,9 +210,10 @@ class StatesLibrary(Database):
 
 ################################################################################
 
-class StatesGroups(Database):
+class StatmechGroups(Database):
     """
-    A class for working with an RMG states (frequencies) group database.
+    A class for working with an RMG statistical mechanics (frequencies) group
+    database.
     """
 
     def __init__(self, label='', name='', shortDesc='', longDesc=''):
@@ -221,7 +223,7 @@ class StatesGroups(Database):
                   index,
                   label,
                   group,
-                  states,
+                  statmech,
                   reference=None,
                   referenceType='',
                   shortDesc='',
@@ -240,7 +242,7 @@ class StatesGroups(Database):
             index = index,
             label = label,
             item = item,
-            data = states,
+            data = statmech,
             reference = reference,
             referenceType = referenceType,
             shortDesc = shortDesc,
@@ -264,7 +266,7 @@ class StatesGroups(Database):
     def processOldLibraryEntry(self, data):
         """
         Process a list of parameters `data` as read from an old-style RMG
-        states database, returning the corresponding thermodynamics object.
+        statmech database, returning the corresponding thermodynamics object.
         """
         return processOldLibraryEntry(data, "groups")
 
@@ -301,9 +303,9 @@ class StatesGroups(Database):
         while node.data is None and node.parent is not None:
             node = node.parent
         if node.data is None:
-            logging.warning('States node {0!r} and all its parents have data=None'.format(node0))
+            logging.warning('Statmech node {0!r} and all its parents have data=None'.format(node0))
             return None
-            raise KeyError('States node {0!r} and all its parents have data=None'.format(node0))
+            raise KeyError('Statmech node {0!r} and all its parents have data=None'.format(node0))
         return node
 
     def getFrequencyGroups(self, molecule):
@@ -330,7 +332,7 @@ class StatesGroups(Database):
 
         return groupCount
 
-    def getStatesData(self, molecule, thermoModel):
+    def getStatmechData(self, molecule, thermoModel):
         """
         Use the previously-loaded frequency database to generate a set of
         characteristic group frequencies corresponding to the speficied
@@ -403,8 +405,8 @@ class StatesGroups(Database):
         Cv -= 1.0
         
         # Fit remaining frequencies and hindered rotors to the heat capacity data
-        from statesfit import fitStatesToHeatCapacity
-        modes = fitStatesToHeatCapacity(Tlist, Cv, numVibrations - len(frequencies), numRotors, molecule)
+        from statmechfit import fitStatmechToHeatCapacity
+        modes = fitStatmechToHeatCapacity(Tlist, Cv, numVibrations - len(frequencies), numRotors, molecule)
         for mode in modes:
             if isinstance(mode, HarmonicOscillator):
                 frequencies.extend(mode.frequencies.value_si)
@@ -419,9 +421,9 @@ class StatesGroups(Database):
 
 ################################################################################
 
-class StatesDatabase:
+class StatmechDatabase:
     """
-    A class for working with the RMG states (frequencies) database.
+    A class for working with the RMG statistical mechanics (frequencies) database.
     """
 
     def __init__(self):
@@ -441,7 +443,7 @@ class StatesDatabase:
 
     def load(self, path, libraries=None, depository=True):
         """
-        Load the states database from the given `path` on disk, where `path`
+        Load the statmech database from the given `path` on disk, where `path`
         points to the top-level folder of the thermo database.
         """
         if depository:
@@ -453,14 +455,14 @@ class StatesDatabase:
 
     def loadDepository(self, path):
         """
-        Load the states database from the given `path` on disk, where `path`
+        Load the statmech database from the given `path` on disk, where `path`
         points to the top-level folder of the thermo database.
         """
-        self.depository = StatesDepository().load(os.path.join(path, 'depository.py'), self.local_context, self.global_context)
+        self.depository = StatmechDepository().load(os.path.join(path, 'depository.py'), self.local_context, self.global_context)
 
     def loadLibraries(self, path, libraries=None):
         """
-        Load the states database from the given `path` on disk, where `path`
+        Load the statmech database from the given `path` on disk, where `path`
         points to the top-level folder of the thermo database.
         """
         self.libraries = {}; self.libraryOrder = []
@@ -469,7 +471,7 @@ class StatesDatabase:
                 name, ext = os.path.splitext(f)
                 if ext.lower() == '.py' and (libraries is None or name in libraries):
                     logging.info('Loading frequencies library from {0} in {1}...'.format(f, root))
-                    library = StatesLibrary()
+                    library = StatmechLibrary()
                     library.load(os.path.join(root, f), self.local_context, self.global_context)
                     library.label = os.path.splitext(f)[0]
                     self.libraries[library.label] = library
@@ -479,16 +481,16 @@ class StatesDatabase:
 
     def loadGroups(self, path):
         """
-        Load the states database from the given `path` on disk, where `path`
+        Load the statmech database from the given `path` on disk, where `path`
         points to the top-level folder of the thermo database.
         """
         logging.info('Loading frequencies group database from {0}...'.format(path))
-        self.groups = StatesGroups().load(os.path.join(path, 'groups.py' ), self.local_context, self.global_context)
+        self.groups = StatmechGroups().load(os.path.join(path, 'groups.py' ), self.local_context, self.global_context)
 
     def save(self, path):
         """
-        Save the states database to the given `path` on disk, where `path`
-        points to the top-level folder of the states database.
+        Save the statmech database to the given `path` on disk, where `path`
+        points to the top-level folder of the statmech database.
         """
         path = os.path.abspath(path)
         if not os.path.exists(path): os.mkdir(path)
@@ -498,16 +500,16 @@ class StatesDatabase:
 
     def saveDepository(self, path):
         """
-        Save the states depository to the given `path` on disk, where `path`
-        points to the top-level folder of the states depository.
+        Save the statmech depository to the given `path` on disk, where `path`
+        points to the top-level folder of the statmech depository.
         """
         if not os.path.exists(path): os.mkdir(path)
         self.depository.save(os.path.join(path, 'depository.py'))
 
     def saveLibraries(self, path):
         """
-        Save the states libraries to the given `path` on disk, where `path`
-        points to the top-level folder of the states libraries.
+        Save the statmech libraries to the given `path` on disk, where `path`
+        points to the top-level folder of the statmech libraries.
         """
         if not os.path.exists(path): os.mkdir(path)
         for library in self.libraries.values():
@@ -515,8 +517,8 @@ class StatesDatabase:
 
     def saveGroups(self, path):
         """
-        Save the states groups to the given `path` on disk, where `path`
-        points to the top-level folder of the states groups.
+        Save the statmech groups to the given `path` on disk, where `path`
+        points to the top-level folder of the statmech groups.
         """
         if not os.path.exists(path): os.mkdir(path)
         self.groups.save(os.path.join(path, 'groups.py'))
@@ -527,11 +529,11 @@ class StatesDatabase:
         `path` points to the top-level folder of the old RMG database.
         """
         # The old database does not have a depository, so create an empty one
-        self.depository = StatesDepository(label='depository', name='States Depository')
+        self.depository = StatmechDepository(label='depository', name='Statmech Depository')
 
         for (root, dirs, files) in os.walk(os.path.join(path, 'frequencies_libraries')):
             if os.path.exists(os.path.join(root, 'Dictionary.txt')) and os.path.exists(os.path.join(root, 'Library.txt')):
-                library = StatesLibrary(label=os.path.basename(root), name=os.path.basename(root))
+                library = StatmechLibrary(label=os.path.basename(root), name=os.path.basename(root))
                 library.loadOld(
                     dictstr = os.path.join(root, 'Dictionary.txt'),
                     treestr = '',
@@ -543,7 +545,7 @@ class StatesDatabase:
                 library.label = os.path.basename(root)
                 self.libraries[library.label] = library
 
-        self.groups = StatesGroups(label='group', name='Functional Group Values').loadOld(
+        self.groups = StatmechGroups(label='group', name='Functional Group Values').loadOld(
             dictstr = os.path.join(path, 'frequencies_groups', 'Dictionary.txt'),
             treestr = os.path.join(path, 'frequencies_groups', 'Tree.txt'),
             libstr = os.path.join(path, 'frequencies_groups', 'Library.txt'),
@@ -579,26 +581,26 @@ class StatesDatabase:
             libstr = os.path.join(groupsPath, 'Library.txt'),
         )
 
-    def getStatesData(self, molecule, thermoModel=None):
+    def getStatmechData(self, molecule, thermoModel=None):
         """
         Return the thermodynamic parameters for a given :class:`Molecule`
         object `molecule`. This function first searches the loaded libraries
         in order, returning the first match found, before falling back to
         estimation via group additivity.
         """
-        statesModel = None
+        statmechModel = None
         # Check the libraries in order first; return the first successful match
         for label in self.libraryOrder:
-            statesModel = self.getStatesDataFromLibrary(molecule, self.libraries[label])
-            if statesModel: break
+            statmechModel = self.getStatmechDataFromLibrary(molecule, self.libraries[label])
+            if statmechModel: break
         else:
             # Thermo not found in any loaded libraries, so estimate
-            statesModel = self.getStatesDataFromGroups(molecule, thermoModel)
-        return statesModel[0]
+            statmechModel = self.getStatmechDataFromGroups(molecule, thermoModel)
+        return statmechModel[0]
 
-    def getStatesDataFromDepository(self, molecule):
+    def getStatmechDataFromDepository(self, molecule):
         """
-        Return states data for the given :class:`Molecule` object `molecule`
+        Return statmech data for the given :class:`Molecule` object `molecule`
         by searching the entries in the depository.
         """
         items = []
@@ -607,10 +609,10 @@ class StatesDatabase:
                 items.append((entry.data, self.depository['stable'], entry))
         return items
 
-    def getStatesDataFromLibrary(self, molecule, library):
+    def getStatmechDataFromLibrary(self, molecule, library):
         """
-        Return states data for the given :class:`Molecule` object `molecule`
-        by searching the entries in the specified :class:`StatesLibrary` object
+        Return statmech data for the given :class:`Molecule` object `molecule`
+        by searching the entries in the specified :class:`StatmechLibrary` object
         `library`. Returns ``None`` if no data was found.
         """
         for label, entry in library.entries.iteritems():
@@ -618,14 +620,14 @@ class StatesDatabase:
                 return (entry.data, library, entry)
         return None
 
-    def getStatesDataFromGroups(self, molecule, thermoModel):
+    def getStatmechDataFromGroups(self, molecule, thermoModel):
         """
-        Return states data for the given :class:`Molecule` object `molecule`
+        Return statmech data for the given :class:`Molecule` object `molecule`
         by estimating using characteristic group frequencies and fitting the
         remaining internal modes to heat capacity data from the given thermo
         model `thermoModel`. This always returns valid degrees of freedom data.
         """
-        return self.groups.getStatesData(molecule, thermoModel)
+        return self.groups.getStatmechData(molecule, thermoModel)
         
 ################################################################################
 

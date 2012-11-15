@@ -48,7 +48,7 @@ from rmgpy.statmech import *
 
 from rmgpy.data.thermo import *
 from rmgpy.data.kinetics import *
-from rmgpy.data.states import *
+from rmgpy.data.statmech import *
 import rmgpy.data.rmg
 
 from pdep import PDepReaction, PDepNetwork, PressureDependenceError
@@ -125,9 +125,9 @@ class Species(rmgpy.species.Species):
         :meth:`generateThermoData()`.
         """
         if not self.hasThermo():
-            raise Exception("Unable to determine states model for species {0}: No thermodynamics model found.".format(self))
+            raise Exception("Unable to determine statmech model for species {0}: No thermodynamics model found.".format(self))
         molecule = self.molecule[0]
-        conformer = database.states.getStatesData(molecule, self.thermo)
+        conformer = database.statmech.getStatmechData(molecule, self.thermo)
         self.conformer.modes = conformer.modes
         self.conformer.spinMultiplicity = conformer.spinMultiplicity
             
