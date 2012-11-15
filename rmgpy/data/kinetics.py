@@ -617,7 +617,11 @@ class KineticsDepository(Database):
                      '1,3_Insertion_CO2',
                      '1,3_Insertion_ROR',
                      'R_Addition_COm',
-                     'Oa_R_Recombination'
+                     'Oa_R_Recombination',
+                     'Substitution_O',
+                     'SubstitutionS',
+                     'R_Addition_CSm',
+                     '1,3_Insertion_RSR',
                      ]:
             Aunits = 'cm^3/(mol*s)'
         elif label in ['intra_H_migration',
@@ -630,11 +634,16 @@ class KineticsDepository(Database):
                       '1,2-Birad_to_alkene',
                       'Intra_Disproportionation',
                       'Korcek_step1',
-                      'Korcek_step2'
+                      'Korcek_step2',
+                      '1,2_shiftS',
+                      'intra_substitutionCS_cyclization',
+                      'intra_substitutionCS_isomerization',
+                      'intra_substitutionS_cyclization',
+                      'intra_substitutionS_isomerization',
                       ]:
             Aunits = 's^-1'
         else:
-            raise ValueError('Unable to determine preexponential units for old reaction family "{0}".'.format(self.label))
+            raise Exception('Unable to determine preexponential units for old reaction family "{0}".'.format(self.label))
 
         try:
             Tmin, Tmax = data[0].split('-')
