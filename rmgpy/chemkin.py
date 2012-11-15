@@ -721,18 +721,29 @@ def loadChemkinFile(path, dictionaryPath=None):
                             break
                     else:
                         assert reaction1.library.label == reaction2.library.label
+                        if isinstance(reaction1.kinetics, PDepArrhenius):
+                            kinetics = MultiPDepArrhenius()
+                        elif isinstance(reaction1.kinetics, Arrhenius):
+                            kinetics = MultiArrhenius()
+                        else:
+                            raise ChemkinError('Unexpected kinetics type {0} for duplicate reaction {1}.'.format(reaction1.kinetics.__class__, reaction1))
                         reaction = LibraryReaction(
                             index = reaction1.index,
                             reactants = reaction1.reactants,
                             products = reaction1.products,
-                            kinetics = MultiKinetics(),
+                            kinetics = kinetics,
                             library = reaction1.library,
                             duplicate = False,
                         )
                         duplicateReactionsToAdd.append(reaction)
-                        reaction.kinetics.kineticsList.append(reaction1.kinetics)
+                        kinetics.arrhenius = [reaction1.kinetics]
                         duplicateReactionsToRemove.append(reaction1)
-                    reaction.kinetics.kineticsList.append(reaction2.kinetics)
+                    if isinstance(reaction.kinetics, MultiPDepArrhenius) and isinstance(reaction2.kinetics, PDepArrhenius):
+                        reaction.kinetics.arrhenius.append(reaction2.kinetics)
+                    elif isinstance(reaction.kinetics, MultiArrhenius) and isinstance(reaction2.kinetics, Arrhenius):
+                        reaction.kinetics.arrhenius.append(reaction2.kinetics)
+                    else:
+                        raise ChemkinError('Mixed kinetics for duplicate reaction {0}.'.format(reaction))
                     duplicateReactionsToRemove.append(reaction2)
                 elif reaction1.kinetics.isPressureDependent() == reaction2.kinetics.isPressureDependent():
                     # If both reactions are pressure-independent or both are pressure-dependent, then they need duplicate tags
