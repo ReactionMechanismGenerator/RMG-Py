@@ -43,6 +43,7 @@ from quantity import Quantity
 from data.base import Entry
 from data.kinetics import TemplateReaction, LibraryReaction
 from rmg.pdep import PDepReaction
+from rmgpy.molecule import Molecule
 
 __chemkin_reaction_count = None
     
@@ -249,7 +250,7 @@ def readKineticsEntry(entry, speciesDict, energyUnits, moleculeUnits):
                     T2 = None
                 
                 troe = Troe(
-                    alpha = (alpha,''),
+                    alpha = alpha,
                     T3 = (T3,"K"),
                     T1 = (T1,"K"),
                     T2 = (T2,"K") if T2 is not None else None,
@@ -309,11 +310,11 @@ def readKineticsEntry(entry, speciesDict, energyUnits, moleculeUnits):
             index = 0
             for t in range(chebyshev.degreeT):
                 for p in range(chebyshev.degreeP):
-                    chebyshev.coeffs[t,p] = chebyshevCoeffs[index]
+                    chebyshev.coeffs.value_si[t,p] = chebyshevCoeffs[index]
                     index += 1
             # Don't forget to convert the Chebyshev coefficients to SI units!
             # This assumes that s^-1, cm^3/mol*s, etc. are compulsory
-            chebyshev.coeffs[0,0] -= (len(reaction.reactants) - 1) * 6.0
+            chebyshev.coeffs.value_si[0,0] -= (len(reaction.reactants) - 1) * 6.0
             reaction.kinetics = chebyshev
         elif pdepArrhenius is not None:
             reaction.kinetics = PDepArrhenius(
