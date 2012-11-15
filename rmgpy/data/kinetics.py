@@ -3155,24 +3155,26 @@ class KineticsFamily(Database):
         return self.groups.estimateKineticsUsingGroupAdditivity(template, kinetics, degeneracy)
     
     def __getAverageKinetics(self, kineticsList):
-        Aunits = kineticsList[0].A.units
-        averagedKinetics = ArrheniusEP(
-            A = (0,Aunits),
-            n = 0,
-            alpha = 0,
-            E0 = (0,"kJ/mol"),
-        )
-        averagedKinetics.A.value_si = 1.0
+        # Although computing via logA is slower, it is necessary because
+        # otherwise you could overflow if you are averaging too many values
+        logA = 0.0; n = 0.0; E0 = 0.0; alpha = 0.0
         count = len(kineticsList)
         for kinetics in kineticsList:
-            averagedKinetics.A.value_si *= kinetics.A.value_si
-            averagedKinetics.n.value_si += kinetics.n.value_si
-            averagedKinetics.alpha.value_si += kinetics.alpha.value_si
-            averagedKinetics.E0.value_si += kinetics.E0.value_si
-        averagedKinetics.A.value_si **= (1.0/count)
-        averagedKinetics.n.value_si /= count
-        averagedKinetics.alpha.value_si /= count
-        averagedKinetics.E0.value_si /= count
+            logA += math.log10(kinetics.A.value_si)
+            n += kinetics.n.value_si
+            alpha += kinetics.alpha.value_si
+            E0 += kinetics.E0.value_si
+        logA /= count
+        n /= count
+        alpha /= count
+        E0 /= count
+        Aunits = kineticsList[0].A.units
+        averagedKinetics = ArrheniusEP(
+            A = (10**logA,Aunits),
+            n = n,
+            alpha = alpha,
+            E0 = (E0*0.001,"kJ/mol"),
+        )
         return averagedKinetics
         
     def __getTemplateLabel(self, template):
