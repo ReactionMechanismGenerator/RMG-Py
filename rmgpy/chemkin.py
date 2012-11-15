@@ -475,6 +475,30 @@ def readReactionComments(reaction, comments):
 
 ################################################################################
 
+def loadSpeciesDictionary(path):
+    
+    speciesDict = {}
+    
+    with open(path, 'r') as f:
+        adjlist = ''
+        for line in f:
+            if line.strip() == '' and adjlist.strip() != '':
+                # Finish this adjacency list
+                species = Species().fromAdjacencyList(adjlist)
+                species.generateResonanceIsomers()
+                label = species.label.upper()
+                speciesDict[label] = species
+                adjlist = ''
+            else:
+                if "InChI" in line:
+                    line = line.split()[0] + '\n'
+                if '//' in line:
+                    index = line.index('//')
+                    line = line[0:index]
+                adjlist += line
+
+    return speciesDict
+
 def loadChemkinFile(path, dictionaryPath=None):
     """
     Load a Chemkin input file to `path` on disk, returning lists of the species
@@ -489,22 +513,7 @@ def loadChemkinFile(path, dictionaryPath=None):
     # as N2, or else the species objects will not store any structures for the final
     # HTML output.
     if dictionaryPath:
-        with open(dictionaryPath, 'r') as f:
-            adjlist = ''
-            for line in f:
-                if line.strip() == '' and adjlist.strip() != '':
-                    # Finish this adjacency list
-                    species = Species().fromAdjacencyList(adjlist)
-                    species.generateResonanceIsomers()
-                    speciesDict[species.label] = species
-                    adjlist = ''
-                else:
-                    if "InChI" in line:
-                        line = line.split()[0] + '\n'
-                    if '//' in line:
-                        index = line.index('//')
-                        line = line[0:index]
-                    adjlist += line
+        speciesDict = loadSpeciesDictionary(dictionaryPath)
     
     def removeCommentFromLine(line):
         if '!' in line:
