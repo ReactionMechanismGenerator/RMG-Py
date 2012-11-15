@@ -480,7 +480,9 @@ def saveEntry(f, entry):
     f.write('    referenceType = "{0}",\n'.format(entry.referenceType))
     if entry.rank is not None:
         f.write('    rank = {0},\n'.format(entry.rank))
-    f.write('    shortDesc = u"""{0}""",\n'.format(entry.shortDesc))
+    f.write('    shortDesc = u"""')
+    f.write(entry.shortDesc)
+    f.write('""",\n')
     f.write('    longDesc = \n')
     f.write('u"""\n')
     f.write(entry.longDesc.strip() + "\n")

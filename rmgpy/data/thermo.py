@@ -107,7 +107,9 @@ def saveEntry(f, entry):
 
     if entry.reference is not None: f.write('    reference = {0!r},\n'.format(entry.reference))
     if entry.referenceType != "": f.write('    referenceType = "{0}",\n'.format(entry.referenceType))
-    f.write('    shortDesc = u"""{0}""",\n'.format(entry.shortDesc))
+    f.write('    shortDesc = u"""')
+    f.write(entry.shortDesc)
+    f.write('""",\n')
     f.write('    longDesc = \n')
     f.write('u"""\n')
     f.write(entry.longDesc.strip() + "\n")
