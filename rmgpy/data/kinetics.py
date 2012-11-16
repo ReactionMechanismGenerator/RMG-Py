@@ -464,9 +464,15 @@ def saveEntry(f, entry):
     if isinstance(entry.data, str):
         f.write('    kinetics = "{0}",\n'.format(entry.data))
     elif entry.data is not None:
-        kinetics = prettify('kinetics = {0!r}'.format(entry.data))
-        kinetics = '    {0},\n'.format(kinetics.replace('\n', '\n    '))
+        efficiencies = None
+        if hasattr(entry.data, 'efficiencies'):
+            efficiencies = entry.data.efficiencies
+            entry.data.efficiencies = dict(sortEfficiencies(entry.data.efficiencies))
+        kinetics = prettify(repr(entry.data))
+        kinetics = '    kinetics = {0},\n'.format(kinetics.replace('\n', '\n    '))
         f.write(kinetics)
+        if hasattr(entry.data, 'efficiencies'):
+            entry.data.efficiencies = efficiencies
     else:
         f.write('    kinetics = None,\n')
             
