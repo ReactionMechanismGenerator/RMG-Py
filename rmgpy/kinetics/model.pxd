@@ -40,6 +40,7 @@ cpdef int getReactionOrderFromRateCoefficientUnits(kunits) except -1
 cdef class KineticsModel:
     
     cdef public ScalarQuantity _Tmin, _Tmax
+    cdef public ScalarQuantity _Pmin, _Pmax
     cdef public str comment
     
     cpdef bint isPressureDependent(self) except -2
@@ -56,7 +57,6 @@ cdef class KineticsModel:
 
 cdef class PDepKineticsModel(KineticsModel):
     
-    cdef public ScalarQuantity _Pmin, _Pmax
     cdef public dict efficiencies
     cdef public KineticsModel highPlimit
     

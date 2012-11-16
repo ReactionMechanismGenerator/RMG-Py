@@ -47,13 +47,15 @@ cdef class KineticsData(KineticsModel):
     `kdata`         An array of rate coefficient values
     `Tmin`          The minimum temperature at which the model is valid, or zero if unknown or undefined
     `Tmax`          The maximum temperature at which the model is valid, or zero if unknown or undefined
+    `Pmin`          The minimum pressure at which the model is valid, or zero if unknown or undefined
+    `Pmax`          The maximum pressure at which the model is valid, or zero if unknown or undefined
     `comment`       Information about the model (e.g. its source)
     =============== =============================================================
     
     """
     
-    def __init__(self, Tdata=None, kdata=None, Tmin=None, Tmax=None, comment=''):
-        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, comment=comment)
+    def __init__(self, Tdata=None, kdata=None, Tmin=None, Tmax=None, Pmin=None, Pmax=None, comment=''):
+        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, comment=comment)
         self.Tdata = Tdata
         self.kdata = kdata
         
@@ -65,6 +67,8 @@ cdef class KineticsData(KineticsModel):
         string = 'KineticsData(Tdata={0!r}, kdata={1!r}'.format(self.Tdata, self.kdata)
         if self.Tmin is not None: string += ', Tmin={0!r}'.format(self.Tmin)
         if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
+        if self.Pmin is not None: string += ', Pmin={0!r}'.format(self.Pmin)
+        if self.Pmax is not None: string += ', Pmax={0!r}'.format(self.Pmax)
         if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
         string += ')'
         return string
@@ -73,7 +77,7 @@ cdef class KineticsData(KineticsModel):
         """
         A helper function used when pickling a KineticsData object.
         """
-        return (KineticsData, (self.Tdata, self.kdata, self.Tmin, self.Tmax, self.comment))
+        return (KineticsData, (self.Tdata, self.kdata, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.comment))
 
     property Tdata:
         """An array of temperatures at which rate coefficient values are known."""

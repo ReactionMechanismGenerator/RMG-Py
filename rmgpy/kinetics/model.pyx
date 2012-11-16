@@ -101,14 +101,18 @@ cdef class KineticsModel:
     =============== ============================================================
     `Tmin`          The minimum temperature at which the model is valid, or zero if unknown or undefined
     `Tmax`          The maximum temperature at which the model is valid, or zero if unknown or undefined
+    `Pmin`          The minimum pressure at which the model is valid, or zero if unknown or undefined
+    `Pmax`          The maximum pressure at which the model is valid, or zero if unknown or undefined
     `comment`       Information about the model (e.g. its source)
     =============== ============================================================
 
     """
     
-    def __init__(self, Tmin=None, Tmax=None, comment=''):
+    def __init__(self, Tmin=None, Tmax=None, Pmin=None, Pmax=None, comment=''):
         self.Tmin = Tmin
         self.Tmax = Tmax
+        self.Pmin = Pmin
+        self.Pmax = Pmax
         self.comment = comment
         
     def __repr__(self):
@@ -116,13 +120,13 @@ cdef class KineticsModel:
         Return a string representation that can be used to reconstruct the
         KineticsModel object.
         """
-        return 'KineticsModel(Tmin={0!r}, Tmax={1!r}, comment="""{2}""")'.format(self.Tmin, self.Tmax, self.comment)
+        return 'KineticsModel(Tmin={0!r}, Tmax={1!r}, Pmin={0!r}, Pmax={1!r}, comment="""{2}""")'.format(self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.comment)
 
     def __reduce__(self):
         """
         A helper function used when pickling a KineticsModel object.
         """
-        return (KineticsModel, (self.Tmin, self.Tmax, self.comment))
+        return (KineticsModel, (self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.comment))
 
     property Tmin:
         """The minimum temperature at which the model is valid, or ``None`` if not defined."""
@@ -137,6 +141,20 @@ cdef class KineticsModel:
             return self._Tmax
         def __set__(self, value):
             self._Tmax = quantity.Temperature(value)
+
+    property Pmin:
+        """The minimum pressure at which the model is valid, or ``None`` if not defined."""
+        def __get__(self):
+            return self._Pmin
+        def __set__(self, value):
+            self._Pmin = quantity.Pressure(value)
+
+    property Pmax:
+        """The maximum pressure at which the model is valid, or ``None`` if not defined."""
+        def __get__(self):
+            return self._Pmax
+        def __set__(self, value):
+            self._Pmax = quantity.Pressure(value)
 
     cpdef bint isPressureDependent(self) except -2:
         """
@@ -244,9 +262,7 @@ cdef class PDepKineticsModel(KineticsModel):
     """
     
     def __init__(self, Tmin=None, Tmax=None, Pmin=None, Pmax=None, efficiencies=None, highPlimit=None, comment=''):
-        KineticsModel.__init__(self, Tmin, Tmax, comment)
-        self.Pmin = Pmin
-        self.Pmax = Pmax
+        KineticsModel.__init__(self, Tmin, Tmax, Pmin, Pmax, comment)
         self.efficiencies = efficiencies or {}
         self.highPlimit = highPlimit
         
@@ -262,20 +278,6 @@ cdef class PDepKineticsModel(KineticsModel):
         A helper function used when pickling a PDepKineticsModel object.
         """
         return (PDepKineticsModel, (self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.efficiencies, self.highPlimit, self.comment))
-
-    property Pmin:
-        """The minimum pressure at which the model is valid, or ``None`` if not defined."""
-        def __get__(self):
-            return self._Pmin
-        def __set__(self, value):
-            self._Pmin = quantity.Pressure(value)
-
-    property Pmax:
-        """The maximum pressure at which the model is valid, or ``None`` if not defined."""
-        def __get__(self):
-            return self._Pmax
-        def __set__(self, value):
-            self._Pmax = quantity.Pressure(value)
 
     cpdef bint isPressureDependent(self) except -2:
         """

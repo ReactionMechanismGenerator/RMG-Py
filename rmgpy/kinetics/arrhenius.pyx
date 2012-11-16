@@ -49,13 +49,15 @@ cdef class Arrhenius(KineticsModel):
     `Ea`            The activation energy
     `Tmin`          The minimum temperature at which the model is valid, or zero if unknown or undefined
     `Tmax`          The maximum temperature at which the model is valid, or zero if unknown or undefined
+    `Pmin`          The minimum pressure at which the model is valid, or zero if unknown or undefined
+    `Pmax`          The maximum pressure at which the model is valid, or zero if unknown or undefined
     `comment`       Information about the model (e.g. its source)
     =============== =============================================================
     
     """
     
-    def __init__(self, A=None, n=0.0, Ea=None, T0=(1.0,"K"), Tmin=None, Tmax=None, comment=''):
-        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, comment=comment)
+    def __init__(self, A=None, n=0.0, Ea=None, T0=(1.0,"K"), Tmin=None, Tmax=None, Pmin=None, Pmax=None, comment=''):
+        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, comment=comment)
         self.A = A
         self.n = n
         self.Ea = Ea
@@ -69,6 +71,8 @@ cdef class Arrhenius(KineticsModel):
         string = 'Arrhenius(A={0!r}, n={1!r}, Ea={2!r}, T0={3!r}'.format(self.A, self.n, self.Ea, self.T0)
         if self.Tmin is not None: string += ', Tmin={0!r}'.format(self.Tmin)
         if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
+        if self.Pmin is not None: string += ', Pmin={0!r}'.format(self.Pmin)
+        if self.Pmax is not None: string += ', Pmax={0!r}'.format(self.Pmax)
         if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
         string += ')'
         return string
@@ -77,7 +81,7 @@ cdef class Arrhenius(KineticsModel):
         """
         A helper function used when pickling an Arrhenius object.
         """
-        return (Arrhenius, (self.A, self.n, self.Ea, self.T0, self.Tmin, self.Tmax, self.comment))
+        return (Arrhenius, (self.A, self.n, self.Ea, self.T0, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.comment))
 
     property A:
         """The preexponential factor."""
@@ -194,13 +198,15 @@ cdef class ArrheniusEP(KineticsModel):
     `E0`            The activation energy for a thermoneutral reaction
     `Tmin`          The minimum temperature at which the model is valid, or zero if unknown or undefined
     `Tmax`          The maximum temperature at which the model is valid, or zero if unknown or undefined
+    `Pmin`          The minimum pressure at which the model is valid, or zero if unknown or undefined
+    `Pmax`          The maximum pressure at which the model is valid, or zero if unknown or undefined
     `comment`       Information about the model (e.g. its source)
     =============== =============================================================
     
     """
     
-    def __init__(self, A=None, n=0.0, alpha=0.0, E0=None, Tmin=None, Tmax=None, comment=''):
-        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, comment=comment)
+    def __init__(self, A=None, n=0.0, alpha=0.0, E0=None, Tmin=None, Tmax=None, Pmin=None, Pmax=None, comment=''):
+        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, comment=comment)
         self.A = A
         self.n = n
         self.alpha = alpha
@@ -214,6 +220,8 @@ cdef class ArrheniusEP(KineticsModel):
         string = 'ArrheniusEP(A={0!r}, n={1!r}, alpha={2!r}, E0={3!r}'.format(self.A, self.n, self.alpha, self.E0)
         if self.Tmin is not None: string += ', Tmin={0!r}'.format(self.Tmin)
         if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
+        if self.Pmin is not None: string += ', Pmin={0!r}'.format(self.Pmin)
+        if self.Pmax is not None: string += ', Pmax={0!r}'.format(self.Pmax)
         if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
         string += ')'
         return string
@@ -222,7 +230,7 @@ cdef class ArrheniusEP(KineticsModel):
         """
         A helper function used when pickling an ArrheniusEP object.
         """
-        return (ArrheniusEP, (self.A, self.n, self.alpha, self.E0, self.Tmin, self.Tmax, self.comment))
+        return (ArrheniusEP, (self.A, self.n, self.alpha, self.E0, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.comment))
 
     property A:
         """The preexponential factor."""
@@ -419,13 +427,15 @@ cdef class MultiArrhenius(KineticsModel):
     `arrhenius`     A list of the :class:`Arrhenius` kinetics
     `Tmin`          The minimum temperature at which the model is valid, or zero if unknown or undefined
     `Tmax`          The maximum temperature at which the model is valid, or zero if unknown or undefined
+    `Pmin`          The minimum pressure at which the model is valid, or zero if unknown or undefined
+    `Pmax`          The maximum pressure at which the model is valid, or zero if unknown or undefined
     `comment`       Information about the model (e.g. its source)
     =============== =============================================================
     
     """
     
-    def __init__(self, arrhenius=None, Tmin=None, Tmax=None, comment=''):
-        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, comment=comment)
+    def __init__(self, arrhenius=None, Tmin=None, Tmax=None, Pmin=None, Pmax=None, comment=''):
+        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, comment=comment)
         self.arrhenius = arrhenius
         
     def __repr__(self):
@@ -436,6 +446,8 @@ cdef class MultiArrhenius(KineticsModel):
         string = 'MultiArrhenius(arrhenius={0!r}'.format(self.arrhenius)
         if self.Tmin is not None: string += ', Tmin={0!r}'.format(self.Tmin)
         if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
+        if self.Pmin is not None: string += ', Pmin={0!r}'.format(self.Pmin)
+        if self.Pmax is not None: string += ', Pmax={0!r}'.format(self.Pmax)
         if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
         string += ')'
         return string
@@ -444,7 +456,7 @@ cdef class MultiArrhenius(KineticsModel):
         """
         A helper function used when pickling an MultiArrhenius object.
         """
-        return (MultiArrhenius, (self.arrhenius, self.Tmin, self.Tmax, self.comment))
+        return (MultiArrhenius, (self.arrhenius, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.comment))
 
     cpdef double getRateCoefficient(self, double T, double P=0.0) except -1:
         """
@@ -472,6 +484,8 @@ cdef class MultiPDepArrhenius(PDepKineticsModel):
     `arrhenius`     A list of the :class:`PDepArrhenius` kinetics at each temperature
     `Tmin`          The minimum temperature at which the model is valid, or zero if unknown or undefined
     `Tmax`          The maximum temperature at which the model is valid, or zero if unknown or undefined
+    `Pmin`          The minimum pressure at which the model is valid, or zero if unknown or undefined
+    `Pmax`          The maximum pressure at which the model is valid, or zero if unknown or undefined
     `comment`       Information about the model (e.g. its source)
     =============== =============================================================
     
