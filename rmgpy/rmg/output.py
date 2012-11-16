@@ -347,7 +347,7 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
     for the comparison of two RMG models.
     """
     from model import PDepReaction
-    from rmgpy.kinetics import Arrhenius, MultiKinetics
+    from rmgpy.kinetics import Arrhenius, MultiArrhenius, MultiPDepArrhenius
 
     from rmgpy.molecule.draw import MoleculeDrawer
     try:
@@ -420,7 +420,7 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
     familyCount1 = {}
     familyCount2 = {}
     for rxn1, rxn2 in commonReactions:
-        if isinstance(rxn2.kinetics, MultiKinetics):
+        if isinstance(rxn2.kinetics, (MultiArrhenius,MultiPDepArrhenius)):
             rxn2.duplicate = True   
         if isinstance(rxn1, PDepReaction):
             family = "PDepNetwork"
