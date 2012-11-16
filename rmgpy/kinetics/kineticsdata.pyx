@@ -122,6 +122,18 @@ cdef class KineticsData(KineticsModel):
                     break
         return k
     
+    cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2:
+        """
+        Returns ``True`` if the kdata and Tdata match. Returns ``False`` otherwise.
+        """
+        if not isinstance(otherKinetics,KineticsData):
+            return False        
+        if not KineticsModel.isIdenticalTo(self,otherKinetics):
+            return False        
+        if not self.Tdata.equals(otherKinetics.Tdata) or not self.kdata.equals(otherKinetics.kdata):
+            return False
+        return True
+
 ################################################################################
 
 cdef class PDepKineticsData(PDepKineticsModel):
@@ -234,3 +246,15 @@ cdef class PDepKineticsData(PDepKineticsModel):
                             break
         
         return k
+
+    cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2:
+        """
+        Returns ``True`` if the kdata and Tdata match. Returns ``False`` otherwise.
+        """
+        if not isinstance(otherKinetics,KineticsData):
+            return False        
+        if not KineticsModel.isIdenticalTo(self,otherKinetics):
+            return False        
+        if not self.Tdata.equals(otherKinetics.Tdata) or not self.Pdata.equals(otherKinetics.Pdata) or not self.kdata.equals(otherKinetics.kdata):
+            return False
+        return True

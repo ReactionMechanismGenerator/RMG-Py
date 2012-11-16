@@ -39,6 +39,8 @@ cdef class KineticsData(KineticsModel):
     
     cpdef double getRateCoefficient(self, double T, double P=?) except -1
 
+    cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2
+
 ################################################################################
 
 cdef class PDepKineticsData(PDepKineticsModel):
@@ -48,3 +50,6 @@ cdef class PDepKineticsData(PDepKineticsModel):
     cdef public ArrayQuantity _kdata
     
     cpdef double getRateCoefficient(self, double T, double P=?) except -1
+
+    cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2
+    

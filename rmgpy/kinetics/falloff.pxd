@@ -27,7 +27,7 @@
 
 cimport numpy
 
-from rmgpy.kinetics.model cimport PDepKineticsModel
+from rmgpy.kinetics.model cimport KineticsModel, PDepKineticsModel
 from rmgpy.kinetics.arrhenius cimport Arrhenius
 from rmgpy.quantity cimport ScalarQuantity, ArrayQuantity
 
@@ -39,6 +39,8 @@ cdef class ThirdBody(PDepKineticsModel):
     
     cpdef double getRateCoefficient(self, double T, double P=?) except -1
 
+    cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2
+
 ################################################################################
 
 cdef class Lindemann(PDepKineticsModel):
@@ -47,6 +49,8 @@ cdef class Lindemann(PDepKineticsModel):
     cdef public Arrhenius arrheniusLow
     
     cpdef double getRateCoefficient(self, double T, double P=?) except -1
+
+    cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2
 
 ################################################################################
 
@@ -58,3 +62,5 @@ cdef class Troe(PDepKineticsModel):
     cdef public ScalarQuantity _T1, _T2, _T3
     
     cpdef double getRateCoefficient(self, double T, double P=?) except -1
+
+    cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2

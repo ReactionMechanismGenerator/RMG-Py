@@ -120,3 +120,47 @@ cdef class HeatCapacityModel:
         in K. This method must be overloaded in the derived class.
         """
         raise NotImplementedError('Unexpected call to HeatCapacityModel.getFreeEnergy(); you should be using a class derived from HeatCapacityModel.')
+
+    cpdef bint isSimilarTo(self, HeatCapacityModel other) except -2:
+        """
+        Returns ``True`` if `self` and `other` report similar thermo values
+        for heat capacity, enthalpy, entropy, and free energy over a wide
+        range of temperatures, or ``False`` otherwise.
+        """
+        cdef double T
+        cdef list Tdata
+        
+        Tdata = [300,400,500,600,800,1000,1500,2000]
+        for T in Tdata:
+            if not (0.8 < self.getHeatCapacity(T) / other.getHeatCapacity(T) < 1.25):
+                return False
+            elif not (0.8 < self.getEnthalpy(T) / other.getEnthalpy(T) < 1.25):
+                return False
+            elif not (0.8 < self.getEntropy(T) / other.getEntropy(T) < 1.25):
+                return False
+            elif not (0.8 < self.getFreeEnergy(T) / other.getFreeEnergy(T) < 1.25):
+                return False
+
+        return True
+
+    cpdef bint isIdenticalTo(self, HeatCapacityModel other) except -2:
+        """
+        Returns ``True`` if `self` and `other` report very similar thermo values
+        for heat capacity, enthalpy, entropy, and free energy over a wide
+        range of temperatures, or ``False`` otherwise.
+        """
+        cdef double T
+        cdef list Tdata
+        
+        Tdata = [300,400,500,600,800,1000,1500,2000]
+        for T in Tdata:
+            if not (0.95 < self.getHeatCapacity(T) / other.getHeatCapacity(T) < 1.05):
+                return False
+            elif not (0.95 < self.getEnthalpy(T) / other.getEnthalpy(T) < 1.05):
+                return False
+            elif not (0.95 < self.getEntropy(T) / other.getEntropy(T) < 1.05):
+                return False
+            elif not (0.95 < self.getFreeEnergy(T) / other.getFreeEnergy(T) < 1.05):
+                return False
+
+        return True

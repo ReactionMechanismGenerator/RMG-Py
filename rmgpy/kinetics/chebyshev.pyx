@@ -219,3 +219,19 @@ cdef class Chebyshev(PDepKineticsModel):
         self.kunits = kunits
         
         return self
+
+    cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2:
+        """
+        Checks to see if kinetics matches that of other kinetics and returns ``True``
+        if coeffs, kunits, Tmin,
+        """
+        if not isinstance(otherKinetics, Chebyshev):
+            return False
+        if not KineticsModel.isIdenticalTo(self,otherKinetics):
+            return False
+        if self.degreeT != otherKinetics.degreeT or self.degreeP != otherKinetics.degreeP:
+            return False
+        if self.kunits != otherKinetics.kunits or (self.coeffs != otherKinetics.coeffs).any():
+            return False
+
+        return True

@@ -99,6 +99,20 @@ cdef class ThirdBody(PDepKineticsModel):
         
         return k0 * C
 
+    cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2:
+        """
+        Checks to see if kinetics matches that of other kinetics and returns ``True``
+        if coeffs, kunits, Tmin,
+        """
+        if not isinstance(otherKinetics, Troe):
+            return False
+        if not KineticsModel.isIdenticalTo(self,otherKinetics):
+            return False
+        if not self.arrheniusLow.isIdenticalTo(otherKinetics.arrheniusLow):
+            return False
+        
+        return True
+
 ################################################################################
 
 cdef class Lindemann(PDepKineticsModel):
@@ -163,6 +177,22 @@ cdef class Lindemann(PDepKineticsModel):
         Pr = k0 * C / kinf
         
         return kinf * (Pr / (1 + Pr))
+
+    cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2:
+        """
+        Checks to see if kinetics matches that of other kinetics and returns ``True``
+        if coeffs, kunits, Tmin,
+        """
+        if not isinstance(otherKinetics, Troe):
+            return False
+        if not KineticsModel.isIdenticalTo(self,otherKinetics):
+            return False
+        if not self.arrheniusLow.isIdenticalTo(otherKinetics.arrheniusLow):
+            return False
+        if not self.arrheniusHigh.isIdenticalTo(otherKinetics.arrheniusHigh):
+            return False
+        
+        return True
 
 ################################################################################
 
@@ -278,3 +308,27 @@ cdef class Troe(PDepKineticsModel):
             F = 10.0**(log10(Fcent)/(1 + ((log10(Pr) + c)/(n - d * (log10(Pr))))**2))
 
         return kinf * (Pr / (1 + Pr)) * F
+
+    cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2:
+        """
+        Checks to see if kinetics matches that of other kinetics and returns ``True``
+        if coeffs, kunits, Tmin,
+        """
+        if not isinstance(otherKinetics, Troe):
+            return False
+        if not KineticsModel.isIdenticalTo(self,otherKinetics):
+            return False
+        if not self.arrheniusLow.isIdenticalTo(otherKinetics.arrheniusLow):
+            return False
+        if not self.arrheniusHigh.isIdenticalTo(otherKinetics.arrheniusHigh):
+            return False
+        if not self.alpha == otherKinetics.alpha:
+            return False
+        if not self.T1.equals(otherKinetics.T1):
+            return False
+        if not self.T3.equals(otherKinetics.T3):
+            return False
+        if self.T2 is not None and not self.T2.equals(otherKinetics.T2):
+            return False
+        
+        return True

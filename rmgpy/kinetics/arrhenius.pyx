@@ -181,6 +181,22 @@ cdef class Arrhenius(KineticsModel):
         
         return self
 
+    cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -1:
+        """
+        Returns ``True`` if kinetics matches that of another kinetics model.  Must match temperature
+        and pressure range of kinetics model, as well as parameters: A, n, Ea, T0. (Shouldn't have pressure
+        range if it's Arrhenius.) Otherwise returns ``False``.
+        """
+        if not isinstance(otherKinetics,Arrhenius):
+            return False
+        if not KineticsModel.isIdenticalTo(self, otherKinetics):
+            return False
+        if (not self.A.equals(otherKinetics.A) or not self.n.equals(otherKinetics.n)
+            or not self.Ea.equals(otherKinetics.Ea) or not self.T0.equals(otherKinetics.T0)):
+            return False
+                
+        return True
+    
 ################################################################################
 
 cdef class ArrheniusEP(KineticsModel):
@@ -301,6 +317,22 @@ cdef class ArrheniusEP(KineticsModel):
             comment = self.comment,
         )
 
+    cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -1:
+        """
+        Returns ``True`` if kinetics matches that of another kinetics model.  Must match temperature
+        and pressure range of kinetics model, as well as parameters: A, n, Ea, T0. (Shouldn't have pressure
+        range if it's Arrhenius.) Otherwise returns ``False``.
+        """
+        if not isinstance(otherKinetics,ArrheniusEP):
+            return False
+        if not KineticsModel.isIdenticalTo(self, otherKinetics):
+            return False
+        if (not self.A.equals(otherKinetics.A) or not self.n.equals(otherKinetics.n)
+            or not self.alpha.equals(otherKinetics.alpha) or not self.E0.equals(otherKinetics.E0)):
+            return False
+                
+        return True
+
 ################################################################################
 
 cdef class PDepArrhenius(PDepKineticsModel):
@@ -415,6 +447,28 @@ cdef class PDepArrhenius(PDepKineticsModel):
             self.arrhenius.append(arrhenius)
         return self
 
+    cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2:
+        """
+        Returns ``True`` if kinetics matches that of another kinetics model.  Each duplicate
+        reaction must be matched and equal to that in the other PDepArrhenius model
+        in the same order.  Otherwise returns ``False``
+        """
+        if not isinstance(otherKinetics, PDepArrhenius):
+            return False
+        if not KineticsModel.isIdenticalTo(self,otherKinetics):
+            return False
+        if len(self.arrhenius) != len(otherKinetics.arrhenius):
+            return False
+        if not self.pressures.equals(otherKinetics.pressures):
+            return False
+        for index in range(len(self.arrhenius)):
+            if not self.arrhenius[index].isIdenticalTo(otherKinetics.arrhenius[index]):
+                return False
+        if self.highPlimit and not self.highPlimit.equals(otherKinetics.highPlimit):
+            return False
+        
+        return True
+
 ################################################################################
 
 cdef class MultiArrhenius(KineticsModel):
@@ -471,6 +525,25 @@ cdef class MultiArrhenius(KineticsModel):
             k += arrh.getRateCoefficient(T)
         return k
 
+    cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2:
+        """
+        Returns ``True`` if kinetics matches that of another kinetics model.  Each duplicate
+        reaction must be matched and equal to that in the other MultiArrhenius model
+        in the same order.  Otherwise returns ``False``
+        """
+        if not isinstance(otherKinetics, MultiArrhenius):
+            return False
+        if not KineticsModel.isIdenticalTo(self,otherKinetics):
+            return False
+        if len(self.arrhenius) != len(otherKinetics.arrhenius):
+            return False
+        
+        for index in range(len(self.arrhenius)):
+            if not self.arrhenius[index].isIdenticalTo(otherKinetics.arrhenius[index]):
+                return False
+        
+        return True
+
 ################################################################################
 
 cdef class MultiPDepArrhenius(PDepKineticsModel):
@@ -521,32 +594,34 @@ cdef class MultiPDepArrhenius(PDepKineticsModel):
         Return the rate coefficient in the appropriate combination of m^3, 
         mol, and s at temperature `T` in K and pressure `P` in Pa.
         """
-        cdef double Plow, Phigh, klow, khigh, Plow0, Phigh0
         cdef double k
         cdef PDepArrhenius arrh
         
         if P == 0:
             raise ValueError('No pressure specified to pressure-dependent MultiPDepArrhenius.getRateCoefficient().')
         
-        Plow0 = 0.0; Phigh0 = 0.0; klow = 0.0; khigh = 0.0
-        
+        k = 0.0
         for arrh in self.arrhenius:
-            Plow, Phigh, alow, ahigh = arrh.getAdjacentExpressions(P)
-            if Plow0 != 0:
-                assert Plow0 == Plow
-            else:
-                Plow0 = Plow
-            if Phigh0 != 0:
-                assert Phigh0 == Phigh
-            else:
-                Phigh0 = Phigh
-                
-            klow += alow.getRateCoefficient(T)
-            khigh += ahigh.getRateCoefficient(T)
+            if arrh.isPressureValid(P):
+                k += arrh.getRateCoefficient(T,P)
         
-        if klow == khigh: 
-            k = khigh
-        else:
-            k = klow * 10**(log10(P/Plow)/log10(Phigh/Plow)*log10(khigh/klow))
-
         return k
+
+    cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2:
+        """
+        Returns ``True`` if kinetics matches that of another kinetics model.  Each duplicate
+        reaction must be matched and equal to that in the other MultiArrhenius model
+        in the same order.  Otherwise returns ``False``
+        """
+        if not isinstance(otherKinetics, MultiPDepArrhenius):
+            return False
+        if not KineticsModel.isIdenticalTo(self,otherKinetics):
+            return False
+        if len(self.arrhenius) != len(otherKinetics.arrhenius):
+            return False
+        
+        for index in range(len(self.arrhenius)):
+            if not self.arrhenius[index].isIdenticalTo(otherKinetics.arrhenius[index]):
+                return False
+        
+        return True

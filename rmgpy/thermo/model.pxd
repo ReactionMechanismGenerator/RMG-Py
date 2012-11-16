@@ -41,3 +41,7 @@ cdef class HeatCapacityModel:
     cpdef double getEntropy(self, double T) except -100000000
 
     cpdef double getFreeEnergy(self, double T) except 100000000
+    
+    cpdef bint isSimilarTo(self, HeatCapacityModel other) except -2
+
+    cpdef bint isIdenticalTo(self, HeatCapacityModel other) except -2
