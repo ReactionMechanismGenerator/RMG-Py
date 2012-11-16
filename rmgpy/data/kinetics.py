@@ -3177,6 +3177,9 @@ class KineticsFamily(Database):
         for entry in self.forwardTemplate.reactants:
             if kinetics is None and entry.data is not None:
                 kinetics = entry.data
+        if kinetics is None:
+            #raise UndeterminableKineticsError('Cannot determine group additivity kinetics estimate for template "{0}".'.format(','.join([e.label for e in template])))
+            return None
         # Now add in more specific corrections if possible
         return self.groups.estimateKineticsUsingGroupAdditivity(template, kinetics, degeneracy)
     
@@ -3536,7 +3539,6 @@ class KineticsDatabase:
                     reactants = entry.item.reactants[:],
                     products = entry.item.products[:],
                     degeneracy = entry.item.degeneracy,
-                    thirdBody = entry.item.thirdBody,
                     reversible = entry.item.reversible,
                     kinetics = deepcopy(entry.data),
                     library = library,
