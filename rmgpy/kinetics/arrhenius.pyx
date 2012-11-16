@@ -279,10 +279,11 @@ cdef class ArrheniusEP(KineticsModel):
         """
         cdef double Ea
         Ea = self._alpha.value_si * dHrxn + self._E0.value_si
-        if dHrxn < 0.0 and Ea < 0.0:
-            Ea = 0.0
-        elif dHrxn > 0.0 and Ea < 0.0:
-            Ea = dHrxn
+        if self._E0.value_si > 0:
+            if dHrxn < 0.0 and Ea < 0.0:
+                Ea = 0.0
+            elif dHrxn > 0.0 and Ea < dHrxn:
+                Ea = dHrxn
         return Ea
     
     cpdef Arrhenius toArrhenius(self, double dHrxn):
