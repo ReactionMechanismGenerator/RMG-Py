@@ -167,7 +167,7 @@ def readKineticsEntry(entry, speciesDict, energyUnits, moleculeUnits):
             for i in range(stoichiometry):
                 reaction.reactants.append(speciesDict[reactant])
     for product in products.split('+'):
-        product = product.strip().lower()
+        product = product.strip().upper()
         stoichiometry = 1
         if product[0].isdigit():
             # This allows for reactions to be of the form A+B=2C instead of A+B=C+C
@@ -298,7 +298,7 @@ def readKineticsEntry(entry, speciesDict, energyUnits, moleculeUnits):
             else:
                 # Assume a list of collider efficiencies
                 for collider, efficiency in zip(tokens[0::2], tokens[1::2]):
-                    efficiencies[speciesDict[collider.strip()].molecule[0]] = float(efficiency.strip())
+                    efficiencies[speciesDict[collider.strip().upper()].molecule[0]] = float(efficiency.strip())
     
         # Decide which kinetics to keep and store them on the reaction object
         # Only one of these should be true at a time!
@@ -584,13 +584,14 @@ def loadChemkinFile(path, dictionaryPath=None):
                     tokens.extend(line.split())
                 
                 for token in tokens:
-                    if token == 'END':
+                    token_upper = token.upper()
+                    if token_upper == 'END':
                         break
-                    if token in speciesDict:
-                        species = speciesDict[token]
+                    if token_upper in speciesDict:
+                        species = speciesDict[token_upper]
                     else:
                         species = Species(label=token)
-                        speciesDict[token] = species
+                        speciesDict[token_upper] = species
                     speciesList.append(species)
                 
                 # Also always add in a few bath gases (since RMG-Java does)
@@ -619,10 +620,11 @@ def loadChemkinFile(path, dictionaryPath=None):
                             thermo += line
                             if line[79] == '4':
                                 label, thermo = readThermoEntry(thermo)
+                                label = label.upper()
                                 try:
                                     speciesDict[label].thermo = thermo
                                 except KeyError:
-                                    if label in ['Ar', 'N2', 'He', 'Ne']:
+                                    if label in ['AR', 'N2', 'HE', 'NE']:
                                         pass
                                     else:
                                         logging.warning('Skipping unexpected species "{0}" while reading thermodynamics entry.'.format(label))
