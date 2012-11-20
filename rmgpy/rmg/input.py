@@ -133,7 +133,7 @@ def model(toleranceMoveToCore, toleranceKeepInEdge=0.0, toleranceInterruptSimula
     rmg.fluxToleranceInterrupt = toleranceInterruptSimulation
     rmg.maximumEdgeSpecies = maximumEdgeSpecies
 
-def pressureDependence(method, temperatures, pressures, maximumGrainSize=0.0, minimumNumberOfGrains=0, interpolation=None):
+def pressureDependence(method, temperatures, pressures, maximumGrainSize=0.0, minimumNumberOfGrains=0, interpolation=None, maximumAtoms=None):
 
     from rmgpy.cantherm.pdep import PressureDependenceJob
     
@@ -163,6 +163,9 @@ def pressureDependence(method, temperatures, pressures, maximumGrainSize=0.0, mi
     # Process grain size and count
     rmg.pressureDependence.maximumGrainSize = Quantity(maximumGrainSize)
     rmg.pressureDependence.minimumGrainCount = minimumNumberOfGrains
+    
+    # Process maximum atoms
+    rmg.pressureDependence.maximumAtoms = maximumAtoms
     
     rmg.pressureDependence.activeJRotor = True
     rmg.pressureDependence.activeKRotor = True

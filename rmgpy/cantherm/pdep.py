@@ -68,6 +68,7 @@ class PressureDependenceJob(object):
     `minimumGrainCount`     The minimum number of energy grains to use to compute :math:`k(T,P)` values
     `method`                The method to use to reduce the master equation to :math:`k(T,P)` values
     `interpolationModel`    The interpolation model to fit to the computed :math:`k(T,P)` values
+    `maximumAtoms`          The maximum number of atoms to apply pressure dependence to (in RMG jobs)
     `activeKRotor`          A flag indicating whether to treat the K-rotor as active or adiabatic
     `activeJRotor`          A flag indicating whether to treat the J-rotor as active or adiabatic
     `rmgmode`               A flag that toggles "RMG mode", described below
@@ -100,7 +101,7 @@ class PressureDependenceJob(object):
         Tmin=None, Tmax=None, Tcount=0, Tlist=None,
         Pmin=None, Pmax=None, Pcount=0, Plist=None,
         maximumGrainSize=None, minimumGrainCount=0,
-        method=None, interpolationModel=None,
+        method=None, interpolationModel=None, maximumAtoms=None,
         activeKRotor=True, activeJRotor=True, rmgmode=False):
         self.network = network
         
@@ -134,6 +135,7 @@ class PressureDependenceJob(object):
         
         self.method = method
         self.interpolationModel = interpolationModel
+        self.maximumAtoms = maximumAtoms
         
         self.activeKRotor = activeKRotor
         self.activeJRotor = activeJRotor

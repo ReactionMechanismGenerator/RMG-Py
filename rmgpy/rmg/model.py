@@ -676,11 +676,26 @@ class CoreEdgeReactionModel:
                         if spec not in self.edge.species:
                             self.addSpeciesToEdge(spec)
             
+            isomerAtoms = sum([len(spec.molecule[0].atoms) for spec in rxn.reactants])
+            
+            # Decide whether or not to handle the reaction as a pressure-dependent reaction
+            pdep = True
+            if not self.pressureDependence:
+                # The pressure dependence option is turned off entirely
+                pdep = False
+            elif self.pressureDependence.maximumAtoms is not None and self.pressureDependence.maximumAtoms < isomerAtoms:
+                # The reaction involves so many atoms that pressure-dependent effects are assumed to be negligible
+                pdep = False
+            elif not (rxn.isIsomerization() or rxn.isDissociation() or rxn.isAssociation()):
+                # The reaction is not unimolecular in either direction, so it cannot be pressure-dependent
+                pdep = False
+            elif rxn.kinetics is not None and rxn.kinetics.isPressureDependent():
+                # The reaction already has pressure-dependent kinetics (e.g. from a reaction library)
+                pdep = False
+                
             # If pressure dependence is on, we only add reactions that are not unimolecular;
             # unimolecular reactions will be added after processing the associated networks
-            if not self.pressureDependence or \
-                not (rxn.isIsomerization() or rxn.isDissociation() or rxn.isAssociation()) or \
-                (rxn.kinetics is not None and rxn.kinetics.isPressureDependent()):
+            if not pdep:
                 if not isNew: 
                     # The reaction is not new, so it should already be in the core or edge
                     continue
