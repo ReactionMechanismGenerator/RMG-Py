@@ -731,6 +731,7 @@ class CoreEdgeReactionModel:
         
         # Get the enthalpy of reaction at 298 K
         H298 = reaction.getEnthalpyOfReaction(298)
+        G298 = reaction.getFreeEnergyOfReaction(298)
         
         if reaction.family.ownReverse and hasattr(reaction,'reverse'):
             
@@ -773,15 +774,15 @@ class CoreEdgeReactionModel:
                 elif rev_entry.rank < entry.rank and rev_entry.rank != 0:
                     keepReverse = True
                     reason = "Both directions matched explicit rate rules, but this direction has a rule with a lower rank."
-                # Otherwise keep the direction that is exothermic at 298 K
+                # Otherwise keep the direction that is exergonic at 298 K
                 else:
-                    keepReverse = H298 > 0 and isForward and rev_isForward
-                    reason = "Both directions matched explicit rate rules, but this direction is exothermic."
+                    keepReverse = G298 > 0 and isForward and rev_isForward
+                    reason = "Both directions matched explicit rate rules, but this direction is exergonic."
             else:
-                # Keep the direction that is exothermic at 298 K
+                # Keep the direction that is exergonic at 298 K
                 # This must be done after the thermo generation step
-                keepReverse = H298 > 0 and isForward and rev_isForward
-                reason = "Both directions are estimates, but this direction is exothermic."
+                keepReverse = G298 > 0 and isForward and rev_isForward
+                reason = "Both directions are estimates, but this direction is exergonic."
             
             if keepReverse:
                 kinetics = rev_kinetics
@@ -789,9 +790,10 @@ class CoreEdgeReactionModel:
                 entry = rev_entry
                 isForward = not rev_isForward
                 H298 = -H298
+                G298 = -G298
                 
             kinetics.comment += "\nKinetics were estimated in this direction instead of the reverse because:\n{0}".format(reason)
-            kinetics.comment += "\ndHrxn(298 K) = {0:.2f} kJ/mol".format(H298 / 1000.)
+            kinetics.comment += "\ndHrxn(298 K) = {0:.2f} kJ/mol, dGrxn(298 K) = {1:.2f} kJ/mol".format(H298 / 1000., G298 / 1000.)
         
         return kinetics, source, entry, isForward
     
