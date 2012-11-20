@@ -25,8 +25,9 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="RMG Py 0.1.0 documentation" href="../index.html" />
-    <link rel="next" title="Introduction" href="introduction.html" />
+    <link rel="next" title="1. Introduction" href="introduction.html" />
     <link rel="prev" title="7. Credits" href="../users/measure/credits.html" /> 
   </head>
   <body>
@@ -49,7 +50,7 @@
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="introduction.html" title="Introduction"
+          <a href="introduction.html" title="1. Introduction"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="../users/measure/credits.html" title="7. Credits"
@@ -63,88 +64,100 @@
 <h1>RMG Developer&#8217;s Guide<a class="headerlink" href="#rmg-developer-s-guide" title="Permalink to this headline">¶</a></h1>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="introduction.html#dependencies">Dependencies</a></li>
-<li class="toctree-l2"><a class="reference internal" href="introduction.html#cython-support">Cython Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">1. Introduction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="introduction.html#dependencies">1.1. Dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="introduction.html#cython-support">1.2. Cython Support</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="chemkin.html"><tt class="docutils literal"><span class="pre">rmgpy.chemkin</span></tt> &#8212; Writing Chemkin Output</a></li>
-<li class="toctree-l1"><a class="reference internal" href="kinetics.html"><tt class="docutils literal"><span class="pre">rmgpy.kinetics</span></tt> &#8212; Kinetics Models</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="kinetics.html#base-class-for-kinetics-models">Base Class for Kinetics Models</a></li>
-<li class="toctree-l2"><a class="reference internal" href="kinetics.html#pressure-independent-kinetics-models">Pressure-Independent Kinetics Models</a></li>
-<li class="toctree-l2"><a class="reference internal" href="kinetics.html#pressure-dependent-kinetics-models">Pressure-Dependent Kinetics Models</a></li>
-<li class="toctree-l2"><a class="reference internal" href="kinetics.html#other-kinetics-models">Other Kinetics Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="chemkin.html">2. <tt class="docutils literal"><span class="pre">rmgpy.chemkin</span></tt> &#8212; Writing Chemkin Output</a></li>
+<li class="toctree-l1"><a class="reference internal" href="kinetics/index.html">3. Kinetics in RMG</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="kinetics/arrhenius.html">3.1. Arrhenius kinetics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kinetics/pdeparrhenius.html">3.2. Pressure-dependent Arrhenius kinetics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kinetics/chebyshev.html">3.3. Chebyshev polynomials</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kinetics/falloff.html">3.4. Falloff kinetics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kinetics/kineticsdata.html">3.5. Kinetics data interpolation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kinetics/tunneling.html">3.6. Tunneling</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="quantity.html"><tt class="docutils literal"><span class="pre">rmgpy.quantity</span></tt> &#8212; Physical Quantities and Constants</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="quantity.html#physical-constants">Physical Constants</a></li>
-<li class="toctree-l2"><a class="reference internal" href="quantity.html#quantity-objects">Quantity Objects</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quantities/index.html">4. Physical quantities in RMG</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="quantities/constants.html">4.1. Physical constants</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quantities/quantity.html">4.2. Quantity objects</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quantities/units.html">4.3. Unit types</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="reaction.html"><tt class="docutils literal"><span class="pre">rmgpy.reaction</span></tt> &#8212; Chemical Reactions</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="reaction.html#reactions">Reactions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="reaction.html#reaction-models">Reaction Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reaction.html">5. <tt class="docutils literal"><span class="pre">rmgpy.reaction</span></tt> &#8212; Chemical Reactions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="reaction.html#reactions">5.1. Reactions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reaction.html#reaction-models">5.2. Reaction Models</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="species.html"><tt class="docutils literal"><span class="pre">rmgpy.species</span></tt> &#8212; Chemical Species</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="species.html#species">Species</a></li>
-<li class="toctree-l2"><a class="reference internal" href="species.html#transition-states">Transition States</a></li>
+<li class="toctree-l1"><a class="reference internal" href="species.html">6. <tt class="docutils literal"><span class="pre">rmgpy.species</span></tt> &#8212; Chemical Species</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="species.html#species">6.1. Species</a></li>
+<li class="toctree-l2"><a class="reference internal" href="species.html#transition-states">6.2. Transition States</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="statmech.html"><tt class="docutils literal"><span class="pre">rmgpy.statmech</span></tt> &#8212; Molecular Degrees of Freedom</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="statmech.html#working-with-molecular-degrees-of-freedom">Working With Molecular Degrees of Freedom</a></li>
-<li class="toctree-l2"><a class="reference internal" href="statmech.html#representing-molecular-degrees-of-freedom">Representing Molecular Degrees of Freedom</a></li>
-<li class="toctree-l2"><a class="reference internal" href="statmech.html#external-degrees-of-freedom">External Degrees of Freedom</a></li>
-<li class="toctree-l2"><a class="reference internal" href="statmech.html#internal-degrees-of-freedom">Internal Degrees of Freedom</a></li>
+<li class="toctree-l1"><a class="reference internal" href="statmech/index.html">7. Statistical mechanics in RMG</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="statmech/translation.html">7.1. Translational degrees of freedom</a></li>
+<li class="toctree-l2"><a class="reference internal" href="statmech/rotation.html">7.2. Rotational degrees of freedom</a></li>
+<li class="toctree-l2"><a class="reference internal" href="statmech/vibration.html">7.3. Vibrational degrees of freedom</a></li>
+<li class="toctree-l2"><a class="reference internal" href="statmech/torsion.html">7.4. Torsional degrees of freedom</a></li>
+<li class="toctree-l2"><a class="reference internal" href="statmech/schrodinger.html">7.5. Solving the Schrodinger equation</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="thermo.html"><tt class="docutils literal"><span class="pre">rmgpy.thermo</span></tt> &#8212; Thermodynamics Models</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="thermo.html#base-class-for-thermodynamics-models">Base Class for Thermodynamics Models</a></li>
-<li class="toctree-l2"><a class="reference internal" href="thermo.html#group-additivity-thermodynamics-model">Group-Additivity Thermodynamics Model</a></li>
-<li class="toctree-l2"><a class="reference internal" href="thermo.html#wilhoit-polynomial-thermodynamics-model">Wilhoit Polynomial Thermodynamics Model</a></li>
-<li class="toctree-l2"><a class="reference internal" href="thermo.html#nasa-polynomial-thermodynamics-model">NASA Polynomial Thermodynamics Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="thermo/index.html">8. Thermodynamics in RMG</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="thermo/wilhoit.html">8.1. Wilhoit polynomial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="thermo/nasa.html">8.2. NASA polynomial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="thermo/thermodata.html">8.3. Thermodynamics data interpolation</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="molecule/index.html">Molecule API Reference</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="molecule/atomtype.html">1. <tt class="docutils literal"><span class="pre">rmgpy.molecule.atomtype</span></tt> &#8212; Atom Types</a></li>
-<li class="toctree-l2"><a class="reference internal" href="molecule/element.html">2. <tt class="docutils literal"><span class="pre">rmgpy.molecule.element</span></tt> &#8212; Chemical Elements</a></li>
-<li class="toctree-l2"><a class="reference internal" href="molecule/graph.html">3. <tt class="docutils literal"><span class="pre">rmgpy.molecule.graph</span></tt> &#8212; Graph Data Type</a></li>
-<li class="toctree-l2"><a class="reference internal" href="molecule/group.html">4. <tt class="docutils literal"><span class="pre">rmgpy.molecule.group</span></tt> &#8212; Functional Groups</a></li>
-<li class="toctree-l2"><a class="reference internal" href="molecule/molecule.html">5. <tt class="docutils literal"><span class="pre">rmgpy.molecule.molecule</span></tt> &#8212; Structure and Properties of Molecules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="molecule/draw.html">6. <tt class="docutils literal"><span class="pre">rmgpy.molecule.draw</span></tt> &#8212; Drawing of Molecules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="molecule/index.html">9. Molecule API Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="molecule/atomtype.html">9.1. <tt class="docutils literal"><span class="pre">rmgpy.molecule.atomtype</span></tt> &#8212; Atom Types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="molecule/element.html">9.2. <tt class="docutils literal"><span class="pre">rmgpy.molecule.element</span></tt> &#8212; Chemical Elements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="molecule/graph.html">9.3. <tt class="docutils literal"><span class="pre">rmgpy.molecule.graph</span></tt> &#8212; Graph Data Type</a></li>
+<li class="toctree-l2"><a class="reference internal" href="molecule/group.html">9.4. <tt class="docutils literal"><span class="pre">rmgpy.molecule.group</span></tt> &#8212; Functional Groups</a></li>
+<li class="toctree-l2"><a class="reference internal" href="molecule/molecule.html">9.5. <tt class="docutils literal"><span class="pre">rmgpy.molecule.molecule</span></tt> &#8212; Structure and Properties of Molecules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="molecule/draw.html">9.6. <tt class="docutils literal"><span class="pre">rmgpy.molecule.draw</span></tt> &#8212; Drawing of Molecules</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="cantherm/index.html">CanTherm API Reference</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="cantherm/geometry.html"><tt class="docutils literal"><span class="pre">rmgpy.cantherm.geometry</span></tt> &#8212; Molecular Geometries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cantherm/index.html">10. CanTherm API Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="cantherm/geometry.html">10.1. <tt class="docutils literal"><span class="pre">rmgpy.cantherm.geometry</span></tt> &#8212; Molecular Geometries</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="data/index.html">Data API Reference</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="data/introduction.html">1. Introduction to RMG Database</a></li>
-<li class="toctree-l2"><a class="reference internal" href="data/base.html">2. <tt class="docutils literal"><span class="pre">rmgpy.data.base</span></tt> &#8212; Common Database Classes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="data/thermo.html">3. <tt class="docutils literal"><span class="pre">rmgpy.data.thermo</span></tt> &#8212; Thermodynamics Database</a></li>
-<li class="toctree-l2"><a class="reference internal" href="data/kinetics.html">4. <tt class="docutils literal"><span class="pre">rmgpy.data.kinetics</span></tt> &#8212; Kinetics Database</a></li>
-<li class="toctree-l2"><a class="reference internal" href="data/states.html">5. <tt class="docutils literal"><span class="pre">rmgpy.data.states</span></tt> &#8212; Frequency Database</a></li>
-<li class="toctree-l2"><a class="reference internal" href="data/statesfit.html">6. <tt class="docutils literal"><span class="pre">rmgpy.data.statesfit</span></tt> &#8212; Fitting Frequencies to Heat Capacity Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="data/index.html">11. Data API Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="data/introduction.html">11.1. Introduction to RMG Database</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data/base.html">11.2. <tt class="docutils literal"><span class="pre">rmgpy.data.base</span></tt> &#8212; Common Database Classes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data/thermo.html">11.3. <tt class="docutils literal"><span class="pre">rmgpy.data.thermo</span></tt> &#8212; Thermodynamics Database</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data/kinetics.html">11.4. <tt class="docutils literal"><span class="pre">rmgpy.data.kinetics</span></tt> &#8212; Kinetics Database</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data/states.html">11.5. <tt class="docutils literal"><span class="pre">rmgpy.data.states</span></tt> &#8212; Frequency Database</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data/statesfit.html">11.6. <tt class="docutils literal"><span class="pre">rmgpy.data.statesfit</span></tt> &#8212; Fitting Frequencies to Heat Capacity Data</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="measure/index.html">MEASURE API Reference</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="measure/introduction.html">1. Introduction</a></li>
-<li class="toctree-l2"><a class="reference internal" href="measure/input.html">2. <tt class="docutils literal"><span class="pre">rmgpy.measure.input</span></tt> - Input file reading</a></li>
-<li class="toctree-l2"><a class="reference internal" href="measure/network.html">3. <tt class="docutils literal"><span class="pre">rmgpy.measure.network</span></tt> - Unimolecular reaction network objects</a></li>
-<li class="toctree-l2"><a class="reference internal" href="measure/collision.html">4. <tt class="docutils literal"><span class="pre">rmgpy.measure.collision</span></tt> - Collision models and parameters</a></li>
-<li class="toctree-l2"><a class="reference internal" href="measure/reaction.html">5. <tt class="docutils literal"><span class="pre">rmgpy.measure.reaction</span></tt> - Working with reaction rate coefficients</a></li>
-<li class="toctree-l2"><a class="reference internal" href="measure/msc.html">6. <tt class="docutils literal"><span class="pre">rmgpy.measure.msc</span></tt> - The modified strong collision method</a></li>
-<li class="toctree-l2"><a class="reference internal" href="measure/rs.html">7. <tt class="docutils literal"><span class="pre">rmgpy.measure.rs</span></tt> - The reservoir state method</a></li>
-<li class="toctree-l2"><a class="reference internal" href="measure/cse.html">8. <tt class="docutils literal"><span class="pre">rmgpy.measure.cse</span></tt> - The chemically-significant eigenvalues method</a></li>
-<li class="toctree-l2"><a class="reference internal" href="measure/output.html">9. <tt class="docutils literal"><span class="pre">rmgpy.measure.output</span></tt> - Output file writing</a></li>
-<li class="toctree-l2"><a class="reference internal" href="measure/simulate.html">10. <tt class="docutils literal"><span class="pre">rmgpy.measure.simulate</span></tt> - Simulating population distributions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="measure/settings.html">11. <tt class="docutils literal"><span class="pre">rmgpy.measure.settings</span></tt> - Execution settings</a></li>
+<li class="toctree-l1"><a class="reference internal" href="measure/index.html">12. MEASURE API Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="measure/introduction.html">12.1. Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="measure/input.html">12.2. <tt class="docutils literal"><span class="pre">rmgpy.measure.input</span></tt> - Input file reading</a></li>
+<li class="toctree-l2"><a class="reference internal" href="measure/network.html">12.3. <tt class="docutils literal"><span class="pre">rmgpy.measure.network</span></tt> - Unimolecular reaction network objects</a></li>
+<li class="toctree-l2"><a class="reference internal" href="measure/collision.html">12.4. <tt class="docutils literal"><span class="pre">rmgpy.measure.collision</span></tt> - Collision models and parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="measure/reaction.html">12.5. <tt class="docutils literal"><span class="pre">rmgpy.measure.reaction</span></tt> - Working with reaction rate coefficients</a></li>
+<li class="toctree-l2"><a class="reference internal" href="measure/msc.html">12.6. <tt class="docutils literal"><span class="pre">rmgpy.measure.msc</span></tt> - The modified strong collision method</a></li>
+<li class="toctree-l2"><a class="reference internal" href="measure/rs.html">12.7. <tt class="docutils literal"><span class="pre">rmgpy.measure.rs</span></tt> - The reservoir state method</a></li>
+<li class="toctree-l2"><a class="reference internal" href="measure/cse.html">12.8. <tt class="docutils literal"><span class="pre">rmgpy.measure.cse</span></tt> - The chemically-significant eigenvalues method</a></li>
+<li class="toctree-l2"><a class="reference internal" href="measure/output.html">12.9. <tt class="docutils literal"><span class="pre">rmgpy.measure.output</span></tt> - Output file writing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="measure/simulate.html">12.10. <tt class="docutils literal"><span class="pre">rmgpy.measure.simulate</span></tt> - Simulating population distributions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="measure/settings.html">12.11. <tt class="docutils literal"><span class="pre">rmgpy.measure.settings</span></tt> - Execution settings</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="rmg/index.html">RMG API Reference</a><ul class="simple">
+<li class="toctree-l1"><a class="reference internal" href="pdep/index.html">13. Pressure dependence in RMG</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pdep/collision.html">13.1. Collision events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pdep/reaction.html">13.2. Reaction events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pdep/configuration.html">13.3. Molecular configurations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pdep/network.html">13.4. Pressure-dependent reaction networks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pdep/mastereqn.html">13.5. The master equation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pdep/methods.html">13.6. Methods for estimating k(T,P) values</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="solver/index.html">Solver API Reference</a><ul class="simple">
+<li class="toctree-l1"><a class="reference internal" href="rmg/index.html">14. RMG API Reference</a><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="solver/index.html">15. Solver API Reference</a><ul class="simple">
 </ul>
 </li>
 </ul>
@@ -165,7 +178,7 @@
                         title="previous chapter">7. Credits</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="introduction.html"
-                        title="next chapter">Introduction</a></p>
+                        title="next chapter">1. Introduction</a></p>
   <h3>This Page </h3>
   <ul class="this-page-menu">
     <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/developers/index.rst"

@@ -1,21 +1,21 @@
-testLoadEthyleneFromGaussianLog (cantherm.gaussianTest.GaussianTest) ... ok
-testLoadOxygenFromGaussianLog (cantherm.gaussianTest.GaussianTest) ... ok
+testLoadEthyleneFromGaussianLog (cantherm.gaussianTest.GaussianTest) ... ERROR
+testLoadOxygenFromGaussianLog (cantherm.gaussianTest.GaussianTest) ... ERROR
 testButanolInternalReducedMomentOfInertia (cantherm.geometryTest.GeometryTest) ... ok
 testEthaneInternalReducedMomentOfInertia (cantherm.geometryTest.GeometryTest) ... ok
-testOutput (cantherm.geometryTest.GeometryTest) ... ok
+testOutput (cantherm.geometryTest.GeometryTest) ... ERROR
 testPickle (cantherm.geometryTest.GeometryTest) ... ok
-testDensityOfStatesILTRotation (statmechTest.StatesModelTest) ... ok
-testDensityOfStatesILTTranslation (statmechTest.StatesModelTest) ... ok
-testDensityOfStatesILTVibration (statmechTest.StatesModelTest) ... ok
-testModesForEthylene (statmechTest.StatesModelTest) ... ok
-testModesForOxygen (statmechTest.StatesModelTest) ... ok
+testDensityOfStatesILTRotation (statmechTest.StatesModelTest) ... ERROR
+testDensityOfStatesILTTranslation (statmechTest.StatesModelTest) ... ERROR
+testDensityOfStatesILTVibration (statmechTest.StatesModelTest) ... ERROR
+testModesForEthylene (statmechTest.StatesModelTest) ... ERROR
+testModesForOxygen (statmechTest.StatesModelTest) ... ERROR
 testChangeT0 (kineticsTest.TestArrhenius) ... ok
 testFitToData (kineticsTest.TestArrhenius) ... ok
 testIsPressureDependent (kineticsTest.TestArrhenius) ... ok
 testOutput (kineticsTest.TestArrhenius) ... ok
 testPickle (kineticsTest.TestArrhenius) ... ok
 testRateCoefficient (kineticsTest.TestArrhenius) ... ok
-testGetActivationEnergy (kineticsTest.TestArrheniusEP) ... ok
+testGetActivationEnergy (kineticsTest.TestArrheniusEP) ... FAIL
 testIsPressureDependent (kineticsTest.TestArrheniusEP) ... ok
 testOutput (kineticsTest.TestArrheniusEP) ... ok
 testPickle (kineticsTest.TestArrheniusEP) ... ok
@@ -62,8 +62,8 @@ testIsTriple (molecule.moleculeTest.TestBond) ... ok
 testPickle (molecule.moleculeTest.TestBond) ... ok
 testFitToData (kineticsTest.TestChebyshev) ... ok
 testIsPressureDependent (kineticsTest.TestChebyshev) ... ok
-testOutput (kineticsTest.TestChebyshev) ... ok
-testPickle (kineticsTest.TestChebyshev) ... ok
+testOutput (kineticsTest.TestChebyshev) ... ERROR
+testPickle (kineticsTest.TestChebyshev) ... ERROR
 testRateCoefficient (kineticsTest.TestChebyshev) ... ok
 testAvogadroConstant (quantityTest.TestConstants) ... ok
 testBoltzmannConstant (quantityTest.TestConstants) ... ok
@@ -71,17 +71,17 @@ testGasLawConstant (quantityTest.TestConstants) ... ok
 testPi (quantityTest.TestConstants) ... ok
 testPlanckConstant (quantityTest.TestConstants) ... ok
 testSpeedOfLight (quantityTest.TestConstants) ... ok
-testMultiNASAToThermoData (thermoTest.TestConversion) ... ok
-testMultiNASAToWilhoit (thermoTest.TestConversion) ... ok
-testThermoDataToMultiNASA (thermoTest.TestConversion) ... ok
-testThermoDataToWilhoit (thermoTest.TestConversion) ... ok
-testWilhoitToMultiNASA (thermoTest.TestConversion) ... ok
-testWilhoitToThermoData (thermoTest.TestConversion) ... ok
-testJPerMol (quantityTest.TestCustomUnits) ... ok
-testKJPerMol (quantityTest.TestCustomUnits) ... ok
-testKcalPerMol (quantityTest.TestCustomUnits) ... ok
-testMolecule (quantityTest.TestCustomUnits) ... ok
-testMolecules (quantityTest.TestCustomUnits) ... ok
+testMultiNASAToThermoData (thermoTest.TestConversion) ... ERROR
+testMultiNASAToWilhoit (thermoTest.TestConversion) ... ERROR
+testThermoDataToMultiNASA (thermoTest.TestConversion) ... ERROR
+testThermoDataToWilhoit (thermoTest.TestConversion) ... ERROR
+testWilhoitToMultiNASA (thermoTest.TestConversion) ... ERROR
+testWilhoitToThermoData (thermoTest.TestConversion) ... ERROR
+testJPerMol (quantityTest.TestCustomUnits) ... FAIL
+testKJPerMol (quantityTest.TestCustomUnits) ... FAIL
+testKcalPerMol (quantityTest.TestCustomUnits) ... FAIL
+testMolecule (quantityTest.TestCustomUnits) ... FAIL
+testMolecules (quantityTest.TestCustomUnits) ... FAIL
 testGetElement (molecule.elementTest.TestElement) ... ok
 testOutput (molecule.elementTest.TestElement) ... ok
 testPickle (molecule.elementTest.TestElement) ... ok
@@ -132,8 +132,8 @@ testApplyActionGainRadical (molecule.groupTest.TestGroupAtom) ... FAIL
 testApplyActionIncrementBond (molecule.groupTest.TestGroupAtom) ... ok
 testApplyActionLoseRadical (molecule.groupTest.TestGroupAtom) ... FAIL
 testCopy (molecule.groupTest.TestGroupAtom) ... ok
-testEquivalent (molecule.groupTest.TestGroupAtom) ... ok
-testIsSpecificCaseOf (molecule.groupTest.TestGroupAtom) ... ok
+testEquivalent (molecule.groupTest.TestGroupAtom) ... FAIL
+testIsSpecificCaseOf (molecule.groupTest.TestGroupAtom) ... FAIL
 testPickle (molecule.groupTest.TestGroupAtom) ... ok
 testApplyActionBreakBond (molecule.groupTest.TestGroupBond) ... ok
 testApplyActionDecrementBond (molecule.groupTest.TestGroupBond) ... ok
@@ -145,34 +145,34 @@ testCopy (molecule.groupTest.TestGroupBond) ... ok
 testEquivalent (molecule.groupTest.TestGroupBond) ... ok
 testIsSpecificCaseOf (molecule.groupTest.TestGroupBond) ... ok
 testPickle (molecule.groupTest.TestGroupBond) ... ok
-testDensityOfStates (statmechTest.TestHarmonicOscillator) ... ok
-testEnthalpy (statmechTest.TestHarmonicOscillator) ... ok
-testEntropy (statmechTest.TestHarmonicOscillator) ... ok
-testHeatCapacity (statmechTest.TestHarmonicOscillator) ... ok
-testOutput (statmechTest.TestHarmonicOscillator) ... ok
-testPartitionFunction (statmechTest.TestHarmonicOscillator) ... ok
-testPickle (statmechTest.TestHarmonicOscillator) ... ok
-testDensityOfStates (statmechTest.TestHinderedRotor) ... ok
-testEnthalpy (statmechTest.TestHinderedRotor) ... ok
-testEntropy (statmechTest.TestHinderedRotor) ... ok
-testFrequency (statmechTest.TestHinderedRotor) ... FAIL
-testHeatCapacity (statmechTest.TestHinderedRotor) ... ok
-testLowBarrierRotor (statmechTest.TestHinderedRotor) ... ok
-testModerateBarrierRotor (statmechTest.TestHinderedRotor) ... ok
-testOutput (statmechTest.TestHinderedRotor) ... ok
-testPartitionFunction (statmechTest.TestHinderedRotor) ... ok
-testPickle (statmechTest.TestHinderedRotor) ... ok
-testIdentity (kineticsTest.TestIdentity) ... ok
+testDensityOfStates (statmechTest.TestHarmonicOscillator) ... ERROR
+testEnthalpy (statmechTest.TestHarmonicOscillator) ... ERROR
+testEntropy (statmechTest.TestHarmonicOscillator) ... ERROR
+testHeatCapacity (statmechTest.TestHarmonicOscillator) ... ERROR
+testOutput (statmechTest.TestHarmonicOscillator) ... ERROR
+testPartitionFunction (statmechTest.TestHarmonicOscillator) ... ERROR
+testPickle (statmechTest.TestHarmonicOscillator) ... ERROR
+testDensityOfStates (statmechTest.TestHinderedRotor) ... ERROR
+testEnthalpy (statmechTest.TestHinderedRotor) ... ERROR
+testEntropy (statmechTest.TestHinderedRotor) ... ERROR
+testFrequency (statmechTest.TestHinderedRotor) ... ERROR
+testHeatCapacity (statmechTest.TestHinderedRotor) ... ERROR
+testLowBarrierRotor (statmechTest.TestHinderedRotor) ... ERROR
+testModerateBarrierRotor (statmechTest.TestHinderedRotor) ... ERROR
+testOutput (statmechTest.TestHinderedRotor) ... ERROR
+testPartitionFunction (statmechTest.TestHinderedRotor) ... ERROR
+testPickle (statmechTest.TestHinderedRotor) ... ERROR
+testIdentity (kineticsTest.TestIdentity) ... ERROR
 testIsPressureDependent (kineticsTest.TestKineticsData) ... ok
 testOutput (kineticsTest.TestKineticsData) ... ok
 testPickle (kineticsTest.TestKineticsData) ... ok
-testRateCoefficient (kineticsTest.TestKineticsData) ... ok
-testPickle (kineticsTest.TestKineticsModel) ... ok
-testPressureRange (kineticsTest.TestKineticsModel) ... ok
+testRateCoefficient (kineticsTest.TestKineticsData) ... FAIL
+testPickle (kineticsTest.TestKineticsModel) ... FAIL
+testPressureRange (kineticsTest.TestKineticsModel) ... ERROR
 testTemperatureRange (kineticsTest.TestKineticsModel) ... ok
 testIsPressureDependent (kineticsTest.TestLindemann) ... ok
-testOutput (kineticsTest.TestLindemann) ... ok
-testPickle (kineticsTest.TestLindemann) ... ok
+testOutput (kineticsTest.TestLindemann) ... ERROR
+testPickle (kineticsTest.TestLindemann) ... ERROR
 testRateCoefficient (kineticsTest.TestLindemann) ... ok
 testAdjacencyList (molecule.moleculeTest.TestMolecule) ... ok
 testAugmentedInChI (molecule.moleculeTest.TestMolecule) ... ok
@@ -214,103 +214,1171 @@ testSubgraphIsomorphism (molecule.moleculeTest.TestMolecule) ... ok
 testSubgraphIsomorphismAgain (molecule.moleculeTest.TestMolecule) ... ok
 testSubgraphIsomorphismManyLabels (molecule.moleculeTest.TestMolecule) ... FAIL
 testToAdjacencyList (molecule.moleculeTest.TestMolecule) ... ok
-testIsPressureDependent (kineticsTest.TestMultiKinetics) ... ok
-testOutput (kineticsTest.TestMultiKinetics) ... ok
-testPickle (kineticsTest.TestMultiKinetics) ... ok
-testRateCoefficient (kineticsTest.TestMultiKinetics) ... ok
-testOutput (thermoTest.TestMultiNASA) ... ok
-testPickle (thermoTest.TestMultiNASA) ... ok
-testEnthalpy (thermoTest.TestNASA) ... ok
-testEntropy (thermoTest.TestNASA) ... ok
-testFreeEnergy (thermoTest.TestNASA) ... ok
-testHeatCapacity (thermoTest.TestNASA) ... ok
-testOutput (thermoTest.TestNASA) ... ok
-testPickle (thermoTest.TestNASA) ... ok
+testIsPressureDependent (kineticsTest.TestMultiKinetics) ... ERROR
+testOutput (kineticsTest.TestMultiKinetics) ... ERROR
+testPickle (kineticsTest.TestMultiKinetics) ... ERROR
+testRateCoefficient (kineticsTest.TestMultiKinetics) ... ERROR
+testOutput (thermoTest.TestMultiNASA) ... ERROR
+testPickle (thermoTest.TestMultiNASA) ... ERROR
+testEnthalpy (thermoTest.TestNASA) ... ERROR
+testEntropy (thermoTest.TestNASA) ... ERROR
+testFreeEnergy (thermoTest.TestNASA) ... ERROR
+testHeatCapacity (thermoTest.TestNASA) ... ERROR
+testOutput (thermoTest.TestNASA) ... ERROR
+testPickle (thermoTest.TestNASA) ... ERROR
 testFitToData (kineticsTest.TestPDepArrhenius) ... ok
 testIsPressureDependent (kineticsTest.TestPDepArrhenius) ... ok
 testOutput (kineticsTest.TestPDepArrhenius) ... ok
 testPickle (kineticsTest.TestPDepArrhenius) ... ok
-testRateCoefficient (kineticsTest.TestPDepArrhenius) ... ok
+testRateCoefficient (kineticsTest.TestPDepArrhenius) ... ERROR
 testEquals (quantityTest.TestQuantity) ... ok
-testFromQuantity (quantityTest.TestQuantity) ... ok
-testFromTuple (quantityTest.TestQuantity) ... ok
+testFromQuantity (quantityTest.TestQuantity) ... ERROR
+testFromTuple (quantityTest.TestQuantity) ... ERROR
 testInvalidUncertaintyType (quantityTest.TestQuantity) ... ok
-testOutput (quantityTest.TestQuantity) ... ok
-testPickle (quantityTest.TestQuantity) ... ok
-testValue (quantityTest.TestQuantity) ... ok
-testValueWithAdditiveUncertainty (quantityTest.TestQuantity) ... ok
-testValueWithMultiplicativeUncertainty (quantityTest.TestQuantity) ... ok
-testValueWithUncertainties (quantityTest.TestQuantity) ... ok
-testValueWithUncertainty (quantityTest.TestQuantity) ... ok
-testValueWithUnits (quantityTest.TestQuantity) ... ok
-testValues (quantityTest.TestQuantity) ... ok
+testOutput (quantityTest.TestQuantity) ... ERROR
+testPickle (quantityTest.TestQuantity) ... ERROR
+testValue (quantityTest.TestQuantity) ... ERROR
+testValueWithAdditiveUncertainty (quantityTest.TestQuantity) ... FAIL
+testValueWithMultiplicativeUncertainty (quantityTest.TestQuantity) ... FAIL
+testValueWithUncertainties (quantityTest.TestQuantity) ... ERROR
+testValueWithUncertainty (quantityTest.TestQuantity) ... FAIL
+testValueWithUnits (quantityTest.TestQuantity) ... FAIL
+testValues (quantityTest.TestQuantity) ... ERROR
 testValuesWithInvalidUncertainties (quantityTest.TestQuantity) ... ok
-testValuesWithUncertainties (quantityTest.TestQuantity) ... ok
-testValuesWithUncertainty (quantityTest.TestQuantity) ... ok
-testValuesWithUnits (quantityTest.TestQuantity) ... ok
-testEnthalpyOfReaction (reactionTest.TestReaction) ... ok
-testEntropyOfReaction (reactionTest.TestReaction) ... ok
-testEquilibriumConstantKa (reactionTest.TestReaction) ... ok
-testEquilibriumConstantKc (reactionTest.TestReaction) ... ok
-testEquilibriumConstantKp (reactionTest.TestReaction) ... ok
-testFreeEnergyOfReaction (reactionTest.TestReaction) ... ok
-testGenerateReverseRateCoefficient (reactionTest.TestReaction) ... ok
-testHasTemplate (reactionTest.TestReaction) ... ok
-testIsAssociation (reactionTest.TestReaction) ... ok
-testIsDissociation (reactionTest.TestReaction) ... ok
-testIsIsomerization (reactionTest.TestReaction) ... ok
-testOutput (reactionTest.TestReaction) ... ok
-testPickle (reactionTest.TestReaction) ... ok
-testRateCoefficient (reactionTest.TestReaction) ... ok
-testStoichiometricCoefficient (reactionTest.TestReaction) ... ok
-testTSTCalculation (reactionTest.TestReaction) ... FAIL
+testValuesWithUncertainties (quantityTest.TestQuantity) ... ERROR
+testValuesWithUncertainty (quantityTest.TestQuantity) ... ERROR
+testValuesWithUnits (quantityTest.TestQuantity) ... ERROR
+testEnthalpyOfReaction (reactionTest.TestReaction) ... ERROR
+testEntropyOfReaction (reactionTest.TestReaction) ... ERROR
+testEquilibriumConstantKa (reactionTest.TestReaction) ... ERROR
+testEquilibriumConstantKc (reactionTest.TestReaction) ... ERROR
+testEquilibriumConstantKp (reactionTest.TestReaction) ... ERROR
+testFreeEnergyOfReaction (reactionTest.TestReaction) ... ERROR
+testGenerateReverseRateCoefficient (reactionTest.TestReaction) ... ERROR
+testHasTemplate (reactionTest.TestReaction) ... ERROR
+testIsAssociation (reactionTest.TestReaction) ... ERROR
+testIsDissociation (reactionTest.TestReaction) ... ERROR
+testIsIsomerization (reactionTest.TestReaction) ... ERROR
+testOutput (reactionTest.TestReaction) ... ERROR
+testPickle (reactionTest.TestReaction) ... ERROR
+testRateCoefficient (reactionTest.TestReaction) ... ERROR
+testStoichiometricCoefficient (reactionTest.TestReaction) ... ERROR
+testTSTCalculation (reactionTest.TestReaction) ... ERROR
 test1to1 (reactionTest.TestReactionIsomorphism) ... ok
 test1to2 (reactionTest.TestReactionIsomorphism) ... ok
 test2to2 (reactionTest.TestReactionIsomorphism) ... ok
 test2to3 (reactionTest.TestReactionIsomorphism) ... ok
-testDensityOfStates (statmechTest.TestRigidRotor) ... ok
-testEnthalpy (statmechTest.TestRigidRotor) ... ok
-testEntropy (statmechTest.TestRigidRotor) ... ok
-testHeatCapacity (statmechTest.TestRigidRotor) ... ok
-testOutput (statmechTest.TestRigidRotor) ... ok
-testPartitionFunction (statmechTest.TestRigidRotor) ... ok
-testPickle (statmechTest.TestRigidRotor) ... ok
-testOutput (speciesTest.TestSpecies) ... ok
-testPickle (speciesTest.TestSpecies) ... ok
-testToAdjacencyList (speciesTest.TestSpecies) ... ok
-testOutput (statmechTest.TestStatmechModel) ... ok
-testPickle (statmechTest.TestStatmechModel) ... ok
-testEnthalpy (thermoTest.TestThermoData) ... ok
-testEntropy (thermoTest.TestThermoData) ... ok
-testFreeEnergy (thermoTest.TestThermoData) ... ok
-testHeatCapacity (thermoTest.TestThermoData) ... ok
+testDensityOfStates (statmechTest.TestRigidRotor) ... ERROR
+testEnthalpy (statmechTest.TestRigidRotor) ... ERROR
+testEntropy (statmechTest.TestRigidRotor) ... ERROR
+testHeatCapacity (statmechTest.TestRigidRotor) ... ERROR
+testOutput (statmechTest.TestRigidRotor) ... ERROR
+testPartitionFunction (statmechTest.TestRigidRotor) ... ERROR
+testPickle (statmechTest.TestRigidRotor) ... ERROR
+testOutput (speciesTest.TestSpecies) ... ERROR
+testPickle (speciesTest.TestSpecies) ... ERROR
+testToAdjacencyList (speciesTest.TestSpecies) ... ERROR
+testOutput (statmechTest.TestStatmechModel) ... ERROR
+testPickle (statmechTest.TestStatmechModel) ... ERROR
+testEnthalpy (thermoTest.TestThermoData) ... FAIL
+testEntropy (thermoTest.TestThermoData) ... ERROR
+testFreeEnergy (thermoTest.TestThermoData) ... ERROR
+testHeatCapacity (thermoTest.TestThermoData) ... ERROR
 testOutput (thermoTest.TestThermoData) ... ok
 testPickle (thermoTest.TestThermoData) ... ok
-testOutput (thermoTest.TestThermoModel) ... ok
-testPickle (thermoTest.TestThermoModel) ... ok
-testTemperatureRange (thermoTest.TestThermoModel) ... ok
-testGetColliderEfficiency (kineticsTest.TestThirdBody) ... ok
+testOutput (thermoTest.TestThermoModel) ... ERROR
+testPickle (thermoTest.TestThermoModel) ... ERROR
+testTemperatureRange (thermoTest.TestThermoModel) ... ERROR
+testGetColliderEfficiency (kineticsTest.TestThirdBody) ... ERROR
 testIsPressureDependent (kineticsTest.TestThirdBody) ... ok
-testOutput (kineticsTest.TestThirdBody) ... ok
-testPickle (kineticsTest.TestThirdBody) ... ok
+testOutput (kineticsTest.TestThirdBody) ... ERROR
+testPickle (kineticsTest.TestThirdBody) ... ERROR
 testRateCoefficient (kineticsTest.TestThirdBody) ... ok
-testDensityOfStates (statmechTest.TestTranslation) ... ok
-testEnthalpy (statmechTest.TestTranslation) ... ok
-testEntropy (statmechTest.TestTranslation) ... ok
-testHeatCapacity (statmechTest.TestTranslation) ... ok
-testOutput (statmechTest.TestTranslation) ... ok
-testPartitionFunction (statmechTest.TestTranslation) ... ok
-testPickle (statmechTest.TestTranslation) ... ok
+testDensityOfStates (statmechTest.TestTranslation) ... ERROR
+testEnthalpy (statmechTest.TestTranslation) ... ERROR
+testEntropy (statmechTest.TestTranslation) ... ERROR
+testHeatCapacity (statmechTest.TestTranslation) ... ERROR
+testOutput (statmechTest.TestTranslation) ... ERROR
+testPartitionFunction (statmechTest.TestTranslation) ... ERROR
+testPickle (statmechTest.TestTranslation) ... ERROR
 testIsPressureDependent (kineticsTest.TestTroe) ... ok
-testOutput (kineticsTest.TestTroe) ... ok
-testPickle (kineticsTest.TestTroe) ... ok
-testRateCoefficient (kineticsTest.TestTroe) ... ok
-testEnthalpy (thermoTest.TestWilhoit) ... ok
-testEntropy (thermoTest.TestWilhoit) ... ok
-testFreeEnergy (thermoTest.TestWilhoit) ... ok
-testHeatCapacity (thermoTest.TestWilhoit) ... ok
-testOutput (thermoTest.TestWilhoit) ... ok
-testPickle (thermoTest.TestWilhoit) ... ok
+testOutput (kineticsTest.TestTroe) ... ERROR
+testPickle (kineticsTest.TestTroe) ... ERROR
+testRateCoefficient (kineticsTest.TestTroe) ... ERROR
+testEnthalpy (thermoTest.TestWilhoit) ... ERROR
+testEntropy (thermoTest.TestWilhoit) ... ERROR
+testFreeEnergy (thermoTest.TestWilhoit) ... ERROR
+testHeatCapacity (thermoTest.TestWilhoit) ... ERROR
+testOutput (thermoTest.TestWilhoit) ... ERROR
+testPickle (thermoTest.TestWilhoit) ... ERROR
+
+======================================================================
+ERROR: testLoadEthyleneFromGaussianLog (cantherm.gaussianTest.GaussianTest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/cantherm/gaussianTest.py", line 26, in testLoadEthyleneFromGaussianLog
+    s = log.loadStates()
+AttributeError: GaussianLog instance has no attribute 'loadStates'
+
+======================================================================
+ERROR: testLoadOxygenFromGaussianLog (cantherm.gaussianTest.GaussianTest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/cantherm/gaussianTest.py", line 52, in testLoadOxygenFromGaussianLog
+    s = log.loadStates()
+AttributeError: GaussianLog instance has no attribute 'loadStates'
+
+======================================================================
+ERROR: testOutput (cantherm.geometryTest.GeometryTest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/cantherm/geometryTest.py", line 155, in testOutput
+    exec('g = %r' % g0)
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/cantherm/geometry.py", line 85, in __repr__
+    number = '[{0}]'.format(','.join(['{0:d}'.format(n) for n in self.number]))
+ValueError: Unknown format code 'd' for object of type 'float'
+
+======================================================================
+ERROR: testDensityOfStatesILTRotation (statmechTest.StatesModelTest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/statmechTest.py", line 530, in testDensityOfStatesILTRotation
+    rot = RigidRotor(linear=False, inertia=[5.6952e-47, 2.7758e-46, 3.3454e-46], symmetry=1)
+NameError: global name 'RigidRotor' is not defined
+
+======================================================================
+ERROR: testDensityOfStatesILTTranslation (statmechTest.StatesModelTest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/statmechTest.py", line 516, in testDensityOfStatesILTTranslation
+    trans = Translation(mass=0.02803)
+  File "translation.pyx", line 62, in rmgpy.statmech.translation.Translation.__init__ (build/pyrex/rmgpy/statmech/translation.c:1513)
+TypeError: __init__() got an unexpected keyword argument 'mass'
+
+======================================================================
+ERROR: testDensityOfStatesILTVibration (statmechTest.StatesModelTest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/statmechTest.py", line 546, in testDensityOfStatesILTVibration
+    rot = RigidRotor(linear=False, inertia=[5.6952e-47, 2.7758e-46, 3.3454e-46], symmetry=1)
+NameError: global name 'RigidRotor' is not defined
+
+======================================================================
+ERROR: testModesForEthylene (statmechTest.StatesModelTest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/statmechTest.py", line 448, in testModesForEthylene
+    trans = Translation(mass=0.02803)
+  File "translation.pyx", line 62, in rmgpy.statmech.translation.Translation.__init__ (build/pyrex/rmgpy/statmech/translation.c:1513)
+TypeError: __init__() got an unexpected keyword argument 'mass'
+
+======================================================================
+ERROR: testModesForOxygen (statmechTest.StatesModelTest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/statmechTest.py", line 483, in testModesForOxygen
+    trans = Translation(mass=0.03199)
+  File "translation.pyx", line 62, in rmgpy.statmech.translation.Translation.__init__ (build/pyrex/rmgpy/statmech/translation.c:1513)
+TypeError: __init__() got an unexpected keyword argument 'mass'
+
+======================================================================
+ERROR: testOutput (kineticsTest.TestChebyshev)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/kineticsTest.py", line 744, in testOutput
+    self.assertEqual(self.kinetics.coeffs.shape[0], degreeT)
+AttributeError: 'rmgpy.quantity.ArrayQuantity' object has no attribute 'shape'
+
+======================================================================
+ERROR: testPickle (kineticsTest.TestChebyshev)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/kineticsTest.py", line 712, in testPickle
+    self.assertEqual(self.kinetics.coeffs.shape[0], degreeT)
+AttributeError: 'rmgpy.quantity.ArrayQuantity' object has no attribute 'shape'
+
+======================================================================
+ERROR: testMultiNASAToThermoData (thermoTest.TestConversion)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/thermoTest.py", line 549, in setUp
+    comment = """This data is completely made up""",
+  File "wilhoit.pyx", line 62, in rmgpy.thermo.wilhoit.Wilhoit.__init__ (build/pyrex/rmgpy/thermo/wilhoit.c:1887)
+TypeError: __init__() got an unexpected keyword argument 'cp0'
+
+======================================================================
+ERROR: testMultiNASAToWilhoit (thermoTest.TestConversion)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/thermoTest.py", line 549, in setUp
+    comment = """This data is completely made up""",
+  File "wilhoit.pyx", line 62, in rmgpy.thermo.wilhoit.Wilhoit.__init__ (build/pyrex/rmgpy/thermo/wilhoit.c:1887)
+TypeError: __init__() got an unexpected keyword argument 'cp0'
+
+======================================================================
+ERROR: testThermoDataToMultiNASA (thermoTest.TestConversion)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/thermoTest.py", line 549, in setUp
+    comment = """This data is completely made up""",
+  File "wilhoit.pyx", line 62, in rmgpy.thermo.wilhoit.Wilhoit.__init__ (build/pyrex/rmgpy/thermo/wilhoit.c:1887)
+TypeError: __init__() got an unexpected keyword argument 'cp0'
+
+======================================================================
+ERROR: testThermoDataToWilhoit (thermoTest.TestConversion)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/thermoTest.py", line 549, in setUp
+    comment = """This data is completely made up""",
+  File "wilhoit.pyx", line 62, in rmgpy.thermo.wilhoit.Wilhoit.__init__ (build/pyrex/rmgpy/thermo/wilhoit.c:1887)
+TypeError: __init__() got an unexpected keyword argument 'cp0'
+
+======================================================================
+ERROR: testWilhoitToMultiNASA (thermoTest.TestConversion)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/thermoTest.py", line 549, in setUp
+    comment = """This data is completely made up""",
+  File "wilhoit.pyx", line 62, in rmgpy.thermo.wilhoit.Wilhoit.__init__ (build/pyrex/rmgpy/thermo/wilhoit.c:1887)
+TypeError: __init__() got an unexpected keyword argument 'cp0'
+
+======================================================================
+ERROR: testWilhoitToThermoData (thermoTest.TestConversion)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/thermoTest.py", line 549, in setUp
+    comment = """This data is completely made up""",
+  File "wilhoit.pyx", line 62, in rmgpy.thermo.wilhoit.Wilhoit.__init__ (build/pyrex/rmgpy/thermo/wilhoit.c:1887)
+TypeError: __init__() got an unexpected keyword argument 'cp0'
+
+======================================================================
+ERROR: testDensityOfStates (statmechTest.TestHarmonicOscillator)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/statmechTest.py", line 169, in setUp
+    self.mode = HarmonicOscillator(frequencies=[834.50, 973.31, 975.37, 1067.1, 1238.5, 1379.5, 1472.3, 1691.3, 3121.6, 3136.7, 3192.5, 3221.0])
+  File "vibration.pyx", line 89, in rmgpy.statmech.vibration.HarmonicOscillator.__init__ (build/pyrex/rmgpy/statmech/vibration.c:1818)
+  File "quantity.py", line 557, in rmgpy.quantity.UnitType.__call__ (build/pyrex/rmgpy/quantity.c:10187)
+QuantityError: Invalid units ''.
+
+======================================================================
+ERROR: testEnthalpy (statmechTest.TestHarmonicOscillator)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/statmechTest.py", line 169, in setUp
+    self.mode = HarmonicOscillator(frequencies=[834.50, 973.31, 975.37, 1067.1, 1238.5, 1379.5, 1472.3, 1691.3, 3121.6, 3136.7, 3192.5, 3221.0])
+  File "vibration.pyx", line 89, in rmgpy.statmech.vibration.HarmonicOscillator.__init__ (build/pyrex/rmgpy/statmech/vibration.c:1818)
+  File "quantity.py", line 557, in rmgpy.quantity.UnitType.__call__ (build/pyrex/rmgpy/quantity.c:10187)
+QuantityError: Invalid units ''.
+
+======================================================================
+ERROR: testEntropy (statmechTest.TestHarmonicOscillator)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/statmechTest.py", line 169, in setUp
+    self.mode = HarmonicOscillator(frequencies=[834.50, 973.31, 975.37, 1067.1, 1238.5, 1379.5, 1472.3, 1691.3, 3121.6, 3136.7, 3192.5, 3221.0])
+  File "vibration.pyx", line 89, in rmgpy.statmech.vibration.HarmonicOscillator.__init__ (build/pyrex/rmgpy/statmech/vibration.c:1818)
+  File "quantity.py", line 557, in rmgpy.quantity.UnitType.__call__ (build/pyrex/rmgpy/quantity.c:10187)
+QuantityError: Invalid units ''.
+
+======================================================================
+ERROR: testHeatCapacity (statmechTest.TestHarmonicOscillator)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/statmechTest.py", line 169, in setUp
+    self.mode = HarmonicOscillator(frequencies=[834.50, 973.31, 975.37, 1067.1, 1238.5, 1379.5, 1472.3, 1691.3, 3121.6, 3136.7, 3192.5, 3221.0])
+  File "vibration.pyx", line 89, in rmgpy.statmech.vibration.HarmonicOscillator.__init__ (build/pyrex/rmgpy/statmech/vibration.c:1818)
+  File "quantity.py", line 557, in rmgpy.quantity.UnitType.__call__ (build/pyrex/rmgpy/quantity.c:10187)
+QuantityError: Invalid units ''.
+
+======================================================================
+ERROR: testOutput (statmechTest.TestHarmonicOscillator)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/statmechTest.py", line 169, in setUp
+    self.mode = HarmonicOscillator(frequencies=[834.50, 973.31, 975.37, 1067.1, 1238.5, 1379.5, 1472.3, 1691.3, 3121.6, 3136.7, 3192.5, 3221.0])
+  File "vibration.pyx", line 89, in rmgpy.statmech.vibration.HarmonicOscillator.__init__ (build/pyrex/rmgpy/statmech/vibration.c:1818)
+  File "quantity.py", line 557, in rmgpy.quantity.UnitType.__call__ (build/pyrex/rmgpy/quantity.c:10187)
+QuantityError: Invalid units ''.
+
+======================================================================
+ERROR: testPartitionFunction (statmechTest.TestHarmonicOscillator)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/statmechTest.py", line 169, in setUp
+    self.mode = HarmonicOscillator(frequencies=[834.50, 973.31, 975.37, 1067.1, 1238.5, 1379.5, 1472.3, 1691.3, 3121.6, 3136.7, 3192.5, 3221.0])
+  File "vibration.pyx", line 89, in rmgpy.statmech.vibration.HarmonicOscillator.__init__ (build/pyrex/rmgpy/statmech/vibration.c:1818)
+  File "quantity.py", line 557, in rmgpy.quantity.UnitType.__call__ (build/pyrex/rmgpy/quantity.c:10187)
+QuantityError: Invalid units ''.
+
+======================================================================
+ERROR: testPickle (statmechTest.TestHarmonicOscillator)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/statmechTest.py", line 169, in setUp
+    self.mode = HarmonicOscillator(frequencies=[834.50, 973.31, 975.37, 1067.1, 1238.5, 1379.5, 1472.3, 1691.3, 3121.6, 3136.7, 3192.5, 3221.0])
+  File "vibration.pyx", line 89, in rmgpy.statmech.vibration.HarmonicOscillator.__init__ (build/pyrex/rmgpy/statmech/vibration.c:1818)
+  File "quantity.py", line 557, in rmgpy.quantity.UnitType.__call__ (build/pyrex/rmgpy/quantity.c:10187)
+QuantityError: Invalid units ''.
+
+======================================================================
+ERROR: testDensityOfStates (statmechTest.TestHinderedRotor)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/statmechTest.py", line 241, in setUp
+    self.mode = HinderedRotor(inertia=(7.38359,"amu*angstrom^2"), barrier=(3.20429,"kcal/mol"), symmetry=1, fourier=fourier)
+  File "torsion.pyx", line 121, in rmgpy.statmech.torsion.HinderedRotor.__init__ (build/pyrex/rmgpy/statmech/torsion.c:2361)
+  File "torsion.pyx", line 171, in rmgpy.statmech.torsion.HinderedRotor.fourier.__set__ (build/pyrex/rmgpy/statmech/torsion.c:3191)
+  File "quantity.py", line 557, in rmgpy.quantity.UnitType.__call__ (build/pyrex/rmgpy/quantity.c:10187)
+QuantityError: Invalid units ''.
+
+======================================================================
+ERROR: testEnthalpy (statmechTest.TestHinderedRotor)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/statmechTest.py", line 241, in setUp
+    self.mode = HinderedRotor(inertia=(7.38359,"amu*angstrom^2"), barrier=(3.20429,"kcal/mol"), symmetry=1, fourier=fourier)
+  File "torsion.pyx", line 121, in rmgpy.statmech.torsion.HinderedRotor.__init__ (build/pyrex/rmgpy/statmech/torsion.c:2361)
+  File "torsion.pyx", line 171, in rmgpy.statmech.torsion.HinderedRotor.fourier.__set__ (build/pyrex/rmgpy/statmech/torsion.c:3191)
+  File "quantity.py", line 557, in rmgpy.quantity.UnitType.__call__ (build/pyrex/rmgpy/quantity.c:10187)
+QuantityError: Invalid units ''.
+
+======================================================================
+ERROR: testEntropy (statmechTest.TestHinderedRotor)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/statmechTest.py", line 241, in setUp
+    self.mode = HinderedRotor(inertia=(7.38359,"amu*angstrom^2"), barrier=(3.20429,"kcal/mol"), symmetry=1, fourier=fourier)
+  File "torsion.pyx", line 121, in rmgpy.statmech.torsion.HinderedRotor.__init__ (build/pyrex/rmgpy/statmech/torsion.c:2361)
+  File "torsion.pyx", line 171, in rmgpy.statmech.torsion.HinderedRotor.fourier.__set__ (build/pyrex/rmgpy/statmech/torsion.c:3191)
+  File "quantity.py", line 557, in rmgpy.quantity.UnitType.__call__ (build/pyrex/rmgpy/quantity.c:10187)
+QuantityError: Invalid units ''.
+
+======================================================================
+ERROR: testFrequency (statmechTest.TestHinderedRotor)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/statmechTest.py", line 241, in setUp
+    self.mode = HinderedRotor(inertia=(7.38359,"amu*angstrom^2"), barrier=(3.20429,"kcal/mol"), symmetry=1, fourier=fourier)
+  File "torsion.pyx", line 121, in rmgpy.statmech.torsion.HinderedRotor.__init__ (build/pyrex/rmgpy/statmech/torsion.c:2361)
+  File "torsion.pyx", line 171, in rmgpy.statmech.torsion.HinderedRotor.fourier.__set__ (build/pyrex/rmgpy/statmech/torsion.c:3191)
+  File "quantity.py", line 557, in rmgpy.quantity.UnitType.__call__ (build/pyrex/rmgpy/quantity.c:10187)
+QuantityError: Invalid units ''.
+
+======================================================================
+ERROR: testHeatCapacity (statmechTest.TestHinderedRotor)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/statmechTest.py", line 241, in setUp
+    self.mode = HinderedRotor(inertia=(7.38359,"amu*angstrom^2"), barrier=(3.20429,"kcal/mol"), symmetry=1, fourier=fourier)
+  File "torsion.pyx", line 121, in rmgpy.statmech.torsion.HinderedRotor.__init__ (build/pyrex/rmgpy/statmech/torsion.c:2361)
+  File "torsion.pyx", line 171, in rmgpy.statmech.torsion.HinderedRotor.fourier.__set__ (build/pyrex/rmgpy/statmech/torsion.c:3191)
+  File "quantity.py", line 557, in rmgpy.quantity.UnitType.__call__ (build/pyrex/rmgpy/quantity.c:10187)
+QuantityError: Invalid units ''.
+
+======================================================================
+ERROR: testLowBarrierRotor (statmechTest.TestHinderedRotor)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/statmechTest.py", line 241, in setUp
+    self.mode = HinderedRotor(inertia=(7.38359,"amu*angstrom^2"), barrier=(3.20429,"kcal/mol"), symmetry=1, fourier=fourier)
+  File "torsion.pyx", line 121, in rmgpy.statmech.torsion.HinderedRotor.__init__ (build/pyrex/rmgpy/statmech/torsion.c:2361)
+  File "torsion.pyx", line 171, in rmgpy.statmech.torsion.HinderedRotor.fourier.__set__ (build/pyrex/rmgpy/statmech/torsion.c:3191)
+  File "quantity.py", line 557, in rmgpy.quantity.UnitType.__call__ (build/pyrex/rmgpy/quantity.c:10187)
+QuantityError: Invalid units ''.
+
+======================================================================
+ERROR: testModerateBarrierRotor (statmechTest.TestHinderedRotor)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/statmechTest.py", line 241, in setUp
+    self.mode = HinderedRotor(inertia=(7.38359,"amu*angstrom^2"), barrier=(3.20429,"kcal/mol"), symmetry=1, fourier=fourier)
+  File "torsion.pyx", line 121, in rmgpy.statmech.torsion.HinderedRotor.__init__ (build/pyrex/rmgpy/statmech/torsion.c:2361)
+  File "torsion.pyx", line 171, in rmgpy.statmech.torsion.HinderedRotor.fourier.__set__ (build/pyrex/rmgpy/statmech/torsion.c:3191)
+  File "quantity.py", line 557, in rmgpy.quantity.UnitType.__call__ (build/pyrex/rmgpy/quantity.c:10187)
+QuantityError: Invalid units ''.
+
+======================================================================
+ERROR: testOutput (statmechTest.TestHinderedRotor)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/statmechTest.py", line 241, in setUp
+    self.mode = HinderedRotor(inertia=(7.38359,"amu*angstrom^2"), barrier=(3.20429,"kcal/mol"), symmetry=1, fourier=fourier)
+  File "torsion.pyx", line 121, in rmgpy.statmech.torsion.HinderedRotor.__init__ (build/pyrex/rmgpy/statmech/torsion.c:2361)
+  File "torsion.pyx", line 171, in rmgpy.statmech.torsion.HinderedRotor.fourier.__set__ (build/pyrex/rmgpy/statmech/torsion.c:3191)
+  File "quantity.py", line 557, in rmgpy.quantity.UnitType.__call__ (build/pyrex/rmgpy/quantity.c:10187)
+QuantityError: Invalid units ''.
+
+======================================================================
+ERROR: testPartitionFunction (statmechTest.TestHinderedRotor)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/statmechTest.py", line 241, in setUp
+    self.mode = HinderedRotor(inertia=(7.38359,"amu*angstrom^2"), barrier=(3.20429,"kcal/mol"), symmetry=1, fourier=fourier)
+  File "torsion.pyx", line 121, in rmgpy.statmech.torsion.HinderedRotor.__init__ (build/pyrex/rmgpy/statmech/torsion.c:2361)
+  File "torsion.pyx", line 171, in rmgpy.statmech.torsion.HinderedRotor.fourier.__set__ (build/pyrex/rmgpy/statmech/torsion.c:3191)
+  File "quantity.py", line 557, in rmgpy.quantity.UnitType.__call__ (build/pyrex/rmgpy/quantity.c:10187)
+QuantityError: Invalid units ''.
+
+======================================================================
+ERROR: testPickle (statmechTest.TestHinderedRotor)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/statmechTest.py", line 241, in setUp
+    self.mode = HinderedRotor(inertia=(7.38359,"amu*angstrom^2"), barrier=(3.20429,"kcal/mol"), symmetry=1, fourier=fourier)
+  File "torsion.pyx", line 121, in rmgpy.statmech.torsion.HinderedRotor.__init__ (build/pyrex/rmgpy/statmech/torsion.c:2361)
+  File "torsion.pyx", line 171, in rmgpy.statmech.torsion.HinderedRotor.fourier.__set__ (build/pyrex/rmgpy/statmech/torsion.c:3191)
+  File "quantity.py", line 557, in rmgpy.quantity.UnitType.__call__ (build/pyrex/rmgpy/quantity.c:10187)
+QuantityError: Invalid units ''.
+
+======================================================================
+ERROR: testIdentity (kineticsTest.TestIdentity)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/kineticsTest.py", line 1181, in testIdentity
+    chebyshev1=Chebyshev(coeffs=[[12.71,0.052197,-0.0026878,5.7448e-06], [-0.43104,0.099138,-0.0048957,-1.404e-05], [-0.281,0.084727,-0.0036625,-7.4128e-05], [-0.19107,0.064542,-0.0021801,-0.0001291]], Tmin=(300,"K"), Tmax=(2500,"K"), Pmin=(4.93462,"atm"), Pmax=(59.2154,"atm"), comment="""NetReaction from PDepNetwork #2 (DMP) High-P Limit: R_Recombination exact:  [ C_rad/H/NonDeC , CO_rad/NonDe ] For the above reaction, deltaHrxn(T=298K) = -87.3 kcal/mol""")
+  File "chebyshev.pyx", line 67, in rmgpy.kinetics.chebyshev.Chebyshev.__init__ (build/pyrex/rmgpy/kinetics/chebyshev.c:1833)
+  File "quantity.py", line 627, in rmgpy.quantity.RateCoefficient (build/pyrex/rmgpy/quantity.c:10460)
+QuantityError: Invalid units ''.
+
+======================================================================
+ERROR: testPressureRange (kineticsTest.TestKineticsModel)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/kineticsTest.py", line 53, in testPressureRange
+    self.assertFalse(self.kinetics.isPressureValid(1e2))
+AttributeError: 'rmgpy.kinetics.model.KineticsModel' object has no attribute 'isPressureValid'
+
+======================================================================
+ERROR: testOutput (kineticsTest.TestLindemann)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/kineticsTest.py", line 1003, in testOutput
+    if collider.toSMILES() == collider0.toSMILES():
+AttributeError: 'str' object has no attribute 'toSMILES'
+
+======================================================================
+ERROR: testPickle (kineticsTest.TestLindemann)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/kineticsTest.py", line 969, in testPickle
+    if collider.toSMILES() == collider0.toSMILES():
+AttributeError: 'str' object has no attribute 'toSMILES'
+
+======================================================================
+ERROR: testIsPressureDependent (kineticsTest.TestMultiKinetics)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/kineticsTest.py", line 419, in setUp
+    self.kinetics = MultiKinetics(
+NameError: global name 'MultiKinetics' is not defined
+
+======================================================================
+ERROR: testOutput (kineticsTest.TestMultiKinetics)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/kineticsTest.py", line 419, in setUp
+    self.kinetics = MultiKinetics(
+NameError: global name 'MultiKinetics' is not defined
+
+======================================================================
+ERROR: testPickle (kineticsTest.TestMultiKinetics)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/kineticsTest.py", line 419, in setUp
+    self.kinetics = MultiKinetics(
+NameError: global name 'MultiKinetics' is not defined
+
+======================================================================
+ERROR: testRateCoefficient (kineticsTest.TestMultiKinetics)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/kineticsTest.py", line 419, in setUp
+    self.kinetics = MultiKinetics(
+NameError: global name 'MultiKinetics' is not defined
+
+======================================================================
+ERROR: testOutput (thermoTest.TestMultiNASA)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/thermoTest.py", line 453, in setUp
+    nasa0 = NASA(coeffs=[11.0,12.0,13.0,14.0,15.0,16.0,17.0], Tmin=(300.0,"K"), Tmax=(1000.0,"K"), comment='This data is completely made up and unphysical')
+  File "nasa.pyx", line 194, in rmgpy.thermo.nasa.NASA.__init__ (build/pyrex/rmgpy/thermo/nasa.c:4392)
+TypeError: __init__() got an unexpected keyword argument 'coeffs'
+
+======================================================================
+ERROR: testPickle (thermoTest.TestMultiNASA)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/thermoTest.py", line 453, in setUp
+    nasa0 = NASA(coeffs=[11.0,12.0,13.0,14.0,15.0,16.0,17.0], Tmin=(300.0,"K"), Tmax=(1000.0,"K"), comment='This data is completely made up and unphysical')
+  File "nasa.pyx", line 194, in rmgpy.thermo.nasa.NASA.__init__ (build/pyrex/rmgpy/thermo/nasa.c:4392)
+TypeError: __init__() got an unexpected keyword argument 'coeffs'
+
+======================================================================
+ERROR: testEnthalpy (thermoTest.TestNASA)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/thermoTest.py", line 344, in setUp
+    comment = """This data is completely made up""",
+  File "nasa.pyx", line 194, in rmgpy.thermo.nasa.NASA.__init__ (build/pyrex/rmgpy/thermo/nasa.c:4392)
+TypeError: __init__() got an unexpected keyword argument 'coeffs'
+
+======================================================================
+ERROR: testEntropy (thermoTest.TestNASA)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/thermoTest.py", line 344, in setUp
+    comment = """This data is completely made up""",
+  File "nasa.pyx", line 194, in rmgpy.thermo.nasa.NASA.__init__ (build/pyrex/rmgpy/thermo/nasa.c:4392)
+TypeError: __init__() got an unexpected keyword argument 'coeffs'
+
+======================================================================
+ERROR: testFreeEnergy (thermoTest.TestNASA)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/thermoTest.py", line 344, in setUp
+    comment = """This data is completely made up""",
+  File "nasa.pyx", line 194, in rmgpy.thermo.nasa.NASA.__init__ (build/pyrex/rmgpy/thermo/nasa.c:4392)
+TypeError: __init__() got an unexpected keyword argument 'coeffs'
+
+======================================================================
+ERROR: testHeatCapacity (thermoTest.TestNASA)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/thermoTest.py", line 344, in setUp
+    comment = """This data is completely made up""",
+  File "nasa.pyx", line 194, in rmgpy.thermo.nasa.NASA.__init__ (build/pyrex/rmgpy/thermo/nasa.c:4392)
+TypeError: __init__() got an unexpected keyword argument 'coeffs'
+
+======================================================================
+ERROR: testOutput (thermoTest.TestNASA)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/thermoTest.py", line 344, in setUp
+    comment = """This data is completely made up""",
+  File "nasa.pyx", line 194, in rmgpy.thermo.nasa.NASA.__init__ (build/pyrex/rmgpy/thermo/nasa.c:4392)
+TypeError: __init__() got an unexpected keyword argument 'coeffs'
+
+======================================================================
+ERROR: testPickle (thermoTest.TestNASA)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/thermoTest.py", line 344, in setUp
+    comment = """This data is completely made up""",
+  File "nasa.pyx", line 194, in rmgpy.thermo.nasa.NASA.__init__ (build/pyrex/rmgpy/thermo/nasa.c:4392)
+TypeError: __init__() got an unexpected keyword argument 'coeffs'
+
+======================================================================
+ERROR: testRateCoefficient (kineticsTest.TestPDepArrhenius)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/kineticsTest.py", line 555, in testRateCoefficient
+    k1 = math.sqrt(self.kinetics.arrhenius[0].getRateCoefficient(T) * self.kinetics.arrhenius[1].getRateCoefficient(T))
+NameError: global name 'math' is not defined
+
+======================================================================
+ERROR: testFromQuantity (quantityTest.TestQuantity)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/quantityTest.py", line 272, in testFromQuantity
+  File "/usr/lib/python2.7/unittest/case.py", line 511, in assertEqual
+    assertion_func(first, second, msg=msg)
+  File "/usr/lib/python2.7/unittest/case.py", line 501, in _baseAssertEqual
+    if not first == second:
+ValueError: The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()
+
+======================================================================
+ERROR: testFromTuple (quantityTest.TestQuantity)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/quantityTest.py", line 244, in testFromTuple
+  File "/usr/lib/python2.7/unittest/case.py", line 511, in assertEqual
+    assertion_func(first, second, msg=msg)
+  File "/usr/lib/python2.7/unittest/case.py", line 501, in _baseAssertEqual
+    if not first == second:
+ValueError: The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()
+
+======================================================================
+ERROR: testOutput (quantityTest.TestQuantity)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/quantityTest.py", line 327, in testOutput
+  File "/usr/lib/python2.7/unittest/case.py", line 511, in assertEqual
+    assertion_func(first, second, msg=msg)
+  File "/usr/lib/python2.7/unittest/case.py", line 501, in _baseAssertEqual
+    if not first == second:
+ValueError: The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()
+
+======================================================================
+ERROR: testPickle (quantityTest.TestQuantity)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/quantityTest.py", line 300, in testPickle
+  File "/usr/lib/python2.7/unittest/case.py", line 511, in assertEqual
+    assertion_func(first, second, msg=msg)
+  File "/usr/lib/python2.7/unittest/case.py", line 501, in _baseAssertEqual
+    if not first == second:
+ValueError: The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()
+
+======================================================================
+ERROR: testValue (quantityTest.TestQuantity)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/quantityTest.py", line 32, in testValue
+AttributeError: 'rmgpy.quantity.ScalarQuantity' object has no attribute 'values'
+
+======================================================================
+ERROR: testValueWithUncertainties (quantityTest.TestQuantity)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/quantityTest.py", line 210, in testValueWithUncertainties
+  File "quantity.py", line 513, in rmgpy.quantity.Quantity (build/pyrex/rmgpy/quantity.c:9441)
+TypeError: float() argument must be a string or a number
+
+======================================================================
+ERROR: testValues (quantityTest.TestQuantity)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/quantityTest.py", line 120, in testValues
+  File "/usr/lib/python2.7/unittest/case.py", line 511, in assertEqual
+    assertion_func(first, second, msg=msg)
+  File "/usr/lib/python2.7/unittest/case.py", line 501, in _baseAssertEqual
+    if not first == second:
+ValueError: The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()
+
+======================================================================
+ERROR: testValuesWithUncertainties (quantityTest.TestQuantity)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/quantityTest.py", line 184, in testValuesWithUncertainties
+  File "/usr/lib/python2.7/unittest/case.py", line 511, in assertEqual
+    assertion_func(first, second, msg=msg)
+  File "/usr/lib/python2.7/unittest/case.py", line 501, in _baseAssertEqual
+    if not first == second:
+ValueError: The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()
+
+======================================================================
+ERROR: testValuesWithUncertainty (quantityTest.TestQuantity)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/quantityTest.py", line 162, in testValuesWithUncertainty
+  File "/usr/lib/python2.7/unittest/case.py", line 511, in assertEqual
+    assertion_func(first, second, msg=msg)
+  File "/usr/lib/python2.7/unittest/case.py", line 501, in _baseAssertEqual
+    if not first == second:
+ValueError: The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()
+
+======================================================================
+ERROR: testValuesWithUnits (quantityTest.TestQuantity)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/quantityTest.py", line 141, in testValuesWithUnits
+  File "/usr/lib/python2.7/unittest/case.py", line 511, in assertEqual
+    assertion_func(first, second, msg=msg)
+  File "/usr/lib/python2.7/unittest/case.py", line 501, in _baseAssertEqual
+    if not first == second:
+ValueError: The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()
+
+======================================================================
+ERROR: testEnthalpyOfReaction (reactionTest.TestReaction)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/reactionTest.py", line 91, in setUp
+    states = StatesModel(
+NameError: global name 'StatesModel' is not defined
+
+======================================================================
+ERROR: testEntropyOfReaction (reactionTest.TestReaction)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/reactionTest.py", line 91, in setUp
+    states = StatesModel(
+NameError: global name 'StatesModel' is not defined
+
+======================================================================
+ERROR: testEquilibriumConstantKa (reactionTest.TestReaction)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/reactionTest.py", line 91, in setUp
+    states = StatesModel(
+NameError: global name 'StatesModel' is not defined
+
+======================================================================
+ERROR: testEquilibriumConstantKc (reactionTest.TestReaction)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/reactionTest.py", line 91, in setUp
+    states = StatesModel(
+NameError: global name 'StatesModel' is not defined
+
+======================================================================
+ERROR: testEquilibriumConstantKp (reactionTest.TestReaction)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/reactionTest.py", line 91, in setUp
+    states = StatesModel(
+NameError: global name 'StatesModel' is not defined
+
+======================================================================
+ERROR: testFreeEnergyOfReaction (reactionTest.TestReaction)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/reactionTest.py", line 91, in setUp
+    states = StatesModel(
+NameError: global name 'StatesModel' is not defined
+
+======================================================================
+ERROR: testGenerateReverseRateCoefficient (reactionTest.TestReaction)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/reactionTest.py", line 91, in setUp
+    states = StatesModel(
+NameError: global name 'StatesModel' is not defined
+
+======================================================================
+ERROR: testHasTemplate (reactionTest.TestReaction)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/reactionTest.py", line 91, in setUp
+    states = StatesModel(
+NameError: global name 'StatesModel' is not defined
+
+======================================================================
+ERROR: testIsAssociation (reactionTest.TestReaction)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/reactionTest.py", line 91, in setUp
+    states = StatesModel(
+NameError: global name 'StatesModel' is not defined
+
+======================================================================
+ERROR: testIsDissociation (reactionTest.TestReaction)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/reactionTest.py", line 91, in setUp
+    states = StatesModel(
+NameError: global name 'StatesModel' is not defined
+
+======================================================================
+ERROR: testIsIsomerization (reactionTest.TestReaction)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/reactionTest.py", line 91, in setUp
+    states = StatesModel(
+NameError: global name 'StatesModel' is not defined
+
+======================================================================
+ERROR: testOutput (reactionTest.TestReaction)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/reactionTest.py", line 91, in setUp
+    states = StatesModel(
+NameError: global name 'StatesModel' is not defined
+
+======================================================================
+ERROR: testPickle (reactionTest.TestReaction)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/reactionTest.py", line 91, in setUp
+    states = StatesModel(
+NameError: global name 'StatesModel' is not defined
+
+======================================================================
+ERROR: testRateCoefficient (reactionTest.TestReaction)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/reactionTest.py", line 91, in setUp
+    states = StatesModel(
+NameError: global name 'StatesModel' is not defined
+
+======================================================================
+ERROR: testStoichiometricCoefficient (reactionTest.TestReaction)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/reactionTest.py", line 91, in setUp
+    states = StatesModel(
+NameError: global name 'StatesModel' is not defined
+
+======================================================================
+ERROR: testTSTCalculation (reactionTest.TestReaction)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/reactionTest.py", line 91, in setUp
+    states = StatesModel(
+NameError: global name 'StatesModel' is not defined
+
+======================================================================
+ERROR: testDensityOfStates (statmechTest.TestRigidRotor)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/statmechTest.py", line 94, in setUp
+    self.mode = RigidRotor(linear=False, inertia=([1.0,10.0,100.0],"amu*angstrom^2"), symmetry=3)
+NameError: global name 'RigidRotor' is not defined
+
+======================================================================
+ERROR: testEnthalpy (statmechTest.TestRigidRotor)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/statmechTest.py", line 94, in setUp
+    self.mode = RigidRotor(linear=False, inertia=([1.0,10.0,100.0],"amu*angstrom^2"), symmetry=3)
+NameError: global name 'RigidRotor' is not defined
+
+======================================================================
+ERROR: testEntropy (statmechTest.TestRigidRotor)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/statmechTest.py", line 94, in setUp
+    self.mode = RigidRotor(linear=False, inertia=([1.0,10.0,100.0],"amu*angstrom^2"), symmetry=3)
+NameError: global name 'RigidRotor' is not defined
+
+======================================================================
+ERROR: testHeatCapacity (statmechTest.TestRigidRotor)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/statmechTest.py", line 94, in setUp
+    self.mode = RigidRotor(linear=False, inertia=([1.0,10.0,100.0],"amu*angstrom^2"), symmetry=3)
+NameError: global name 'RigidRotor' is not defined
+
+======================================================================
+ERROR: testOutput (statmechTest.TestRigidRotor)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/statmechTest.py", line 94, in setUp
+    self.mode = RigidRotor(linear=False, inertia=([1.0,10.0,100.0],"amu*angstrom^2"), symmetry=3)
+NameError: global name 'RigidRotor' is not defined
+
+======================================================================
+ERROR: testPartitionFunction (statmechTest.TestRigidRotor)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/statmechTest.py", line 94, in setUp
+    self.mode = RigidRotor(linear=False, inertia=([1.0,10.0,100.0],"amu*angstrom^2"), symmetry=3)
+NameError: global name 'RigidRotor' is not defined
+
+======================================================================
+ERROR: testPickle (statmechTest.TestRigidRotor)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/statmechTest.py", line 94, in setUp
+    self.mode = RigidRotor(linear=False, inertia=([1.0,10.0,100.0],"amu*angstrom^2"), symmetry=3)
+NameError: global name 'RigidRotor' is not defined
+
+======================================================================
+ERROR: testOutput (speciesTest.TestSpecies)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/speciesTest.py", line 36, in setUp
+    Tmax=2000.0,
+  File "thermodata.pyx", line 61, in rmgpy.thermo.thermodata.ThermoData.__init__ (build/pyrex/rmgpy/thermo/thermodata.c:1749)
+  File "model.pyx", line 55, in rmgpy.thermo.model.HeatCapacityModel.__init__ (build/pyrex/rmgpy/thermo/model.c:1282)
+  File "model.pyx", line 77, in rmgpy.thermo.model.HeatCapacityModel.Tmin.__set__ (build/pyrex/rmgpy/thermo/model.c:1568)
+  File "quantity.py", line 557, in rmgpy.quantity.UnitType.__call__ (build/pyrex/rmgpy/quantity.c:10187)
+QuantityError: Invalid units ''.
+
+======================================================================
+ERROR: testPickle (speciesTest.TestSpecies)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/speciesTest.py", line 36, in setUp
+    Tmax=2000.0,
+  File "thermodata.pyx", line 61, in rmgpy.thermo.thermodata.ThermoData.__init__ (build/pyrex/rmgpy/thermo/thermodata.c:1749)
+  File "model.pyx", line 55, in rmgpy.thermo.model.HeatCapacityModel.__init__ (build/pyrex/rmgpy/thermo/model.c:1282)
+  File "model.pyx", line 77, in rmgpy.thermo.model.HeatCapacityModel.Tmin.__set__ (build/pyrex/rmgpy/thermo/model.c:1568)
+  File "quantity.py", line 557, in rmgpy.quantity.UnitType.__call__ (build/pyrex/rmgpy/quantity.c:10187)
+QuantityError: Invalid units ''.
+
+======================================================================
+ERROR: testToAdjacencyList (speciesTest.TestSpecies)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/speciesTest.py", line 36, in setUp
+    Tmax=2000.0,
+  File "thermodata.pyx", line 61, in rmgpy.thermo.thermodata.ThermoData.__init__ (build/pyrex/rmgpy/thermo/thermodata.c:1749)
+  File "model.pyx", line 55, in rmgpy.thermo.model.HeatCapacityModel.__init__ (build/pyrex/rmgpy/thermo/model.c:1282)
+  File "model.pyx", line 77, in rmgpy.thermo.model.HeatCapacityModel.Tmin.__set__ (build/pyrex/rmgpy/thermo/model.c:1568)
+  File "quantity.py", line 557, in rmgpy.quantity.UnitType.__call__ (build/pyrex/rmgpy/quantity.c:10187)
+QuantityError: Invalid units ''.
+
+======================================================================
+ERROR: testOutput (statmechTest.TestStatmechModel)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/statmechTest.py", line 412, in setUp
+    self.mode = Translation(mass=(28.03,"u"))
+  File "translation.pyx", line 62, in rmgpy.statmech.translation.Translation.__init__ (build/pyrex/rmgpy/statmech/translation.c:1513)
+TypeError: __init__() got an unexpected keyword argument 'mass'
+
+======================================================================
+ERROR: testPickle (statmechTest.TestStatmechModel)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/statmechTest.py", line 412, in setUp
+    self.mode = Translation(mass=(28.03,"u"))
+  File "translation.pyx", line 62, in rmgpy.statmech.translation.Translation.__init__ (build/pyrex/rmgpy/statmech/translation.c:1513)
+TypeError: __init__() got an unexpected keyword argument 'mass'
+
+======================================================================
+ERROR: testEntropy (thermoTest.TestThermoData)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/thermoTest.py", line 140, in testEntropy
+    self.assertAlmostEqual(self.thermo.getEntropy(2000), 66.3352, 3)
+  File "thermodata.pyx", line 258, in rmgpy.thermo.thermodata.ThermoData.getEntropy (build/pyrex/rmgpy/thermo/thermodata.c:5054)
+  File "thermodata.pyx", line 291, in rmgpy.thermo.thermodata.ThermoData.getEntropy (build/pyrex/rmgpy/thermo/thermodata.c:4679)
+ValueError: Unable to compute entropy at 2000 K using ThermoData model; please supply a value for CpInf.
+
+======================================================================
+ERROR: testFreeEnergy (thermoTest.TestThermoData)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/thermoTest.py", line 147, in testFreeEnergy
+    self.assertAlmostEqual(self.thermo.getFreeEnergy(T), self.thermo.getEnthalpy(T) - T * self.thermo.getEntropy(T), 9)
+  File "thermodata.pyx", line 328, in rmgpy.thermo.thermodata.ThermoData.getFreeEnergy (build/pyrex/rmgpy/thermo/thermodata.c:5401)
+  File "thermodata.pyx", line 349, in rmgpy.thermo.thermodata.ThermoData.getFreeEnergy (build/pyrex/rmgpy/thermo/thermodata.c:5323)
+ValueError: Unable to compute Gibbs free energy at 2000 K using ThermoData model; please supply a value for CpInf.
+
+======================================================================
+ERROR: testHeatCapacity (thermoTest.TestThermoData)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/thermoTest.py", line 110, in testHeatCapacity
+    self.assertEqual(self.thermo.getHeatCapacity(1600), 15)
+  File "thermodata.pyx", line 133, in rmgpy.thermo.thermodata.ThermoData.getHeatCapacity (build/pyrex/rmgpy/thermo/thermodata.c:3493)
+  File "thermodata.pyx", line 157, in rmgpy.thermo.thermodata.ThermoData.getHeatCapacity (build/pyrex/rmgpy/thermo/thermodata.c:3205)
+ValueError: Unable to compute heat capacity at 1600 K using ThermoData model; please supply a value for CpInf.
+
+======================================================================
+ERROR: testOutput (thermoTest.TestThermoModel)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/thermoTest.py", line 23, in setUp
+    self.thermo = ThermoModel(Tmin=(300,"K"), Tmax=(2000,"K"))
+NameError: global name 'ThermoModel' is not defined
+
+======================================================================
+ERROR: testPickle (thermoTest.TestThermoModel)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/thermoTest.py", line 23, in setUp
+    self.thermo = ThermoModel(Tmin=(300,"K"), Tmax=(2000,"K"))
+NameError: global name 'ThermoModel' is not defined
+
+======================================================================
+ERROR: testTemperatureRange (thermoTest.TestThermoModel)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/thermoTest.py", line 23, in setUp
+    self.thermo = ThermoModel(Tmin=(300,"K"), Tmax=(2000,"K"))
+NameError: global name 'ThermoModel' is not defined
+
+======================================================================
+ERROR: testGetColliderEfficiency (kineticsTest.TestThirdBody)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/kineticsTest.py", line 821, in testGetColliderEfficiency
+    efficiency = self.kinetics.getColliderEfficiency(collider)
+AttributeError: 'rmgpy.kinetics.falloff.ThirdBody' object has no attribute 'getColliderEfficiency'
+
+======================================================================
+ERROR: testOutput (kineticsTest.TestThirdBody)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/kineticsTest.py", line 873, in testOutput
+    if collider.toSMILES() == collider0.toSMILES():
+AttributeError: 'str' object has no attribute 'toSMILES'
+
+======================================================================
+ERROR: testPickle (kineticsTest.TestThirdBody)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/kineticsTest.py", line 843, in testPickle
+    if collider.toSMILES() == collider0.toSMILES():
+AttributeError: 'str' object has no attribute 'toSMILES'
+
+======================================================================
+ERROR: testDensityOfStates (statmechTest.TestTranslation)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/statmechTest.py", line 26, in setUp
+    self.mode = Translation(mass=(28.03,"u"))
+  File "translation.pyx", line 62, in rmgpy.statmech.translation.Translation.__init__ (build/pyrex/rmgpy/statmech/translation.c:1513)
+TypeError: __init__() got an unexpected keyword argument 'mass'
+
+======================================================================
+ERROR: testEnthalpy (statmechTest.TestTranslation)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/statmechTest.py", line 26, in setUp
+    self.mode = Translation(mass=(28.03,"u"))
+  File "translation.pyx", line 62, in rmgpy.statmech.translation.Translation.__init__ (build/pyrex/rmgpy/statmech/translation.c:1513)
+TypeError: __init__() got an unexpected keyword argument 'mass'
+
+======================================================================
+ERROR: testEntropy (statmechTest.TestTranslation)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/statmechTest.py", line 26, in setUp
+    self.mode = Translation(mass=(28.03,"u"))
+  File "translation.pyx", line 62, in rmgpy.statmech.translation.Translation.__init__ (build/pyrex/rmgpy/statmech/translation.c:1513)
+TypeError: __init__() got an unexpected keyword argument 'mass'
+
+======================================================================
+ERROR: testHeatCapacity (statmechTest.TestTranslation)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/statmechTest.py", line 26, in setUp
+    self.mode = Translation(mass=(28.03,"u"))
+  File "translation.pyx", line 62, in rmgpy.statmech.translation.Translation.__init__ (build/pyrex/rmgpy/statmech/translation.c:1513)
+TypeError: __init__() got an unexpected keyword argument 'mass'
+
+======================================================================
+ERROR: testOutput (statmechTest.TestTranslation)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/statmechTest.py", line 26, in setUp
+    self.mode = Translation(mass=(28.03,"u"))
+  File "translation.pyx", line 62, in rmgpy.statmech.translation.Translation.__init__ (build/pyrex/rmgpy/statmech/translation.c:1513)
+TypeError: __init__() got an unexpected keyword argument 'mass'
+
+======================================================================
+ERROR: testPartitionFunction (statmechTest.TestTranslation)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/statmechTest.py", line 26, in setUp
+    self.mode = Translation(mass=(28.03,"u"))
+  File "translation.pyx", line 62, in rmgpy.statmech.translation.Translation.__init__ (build/pyrex/rmgpy/statmech/translation.c:1513)
+TypeError: __init__() got an unexpected keyword argument 'mass'
+
+======================================================================
+ERROR: testPickle (statmechTest.TestTranslation)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/statmechTest.py", line 26, in setUp
+    self.mode = Translation(mass=(28.03,"u"))
+  File "translation.pyx", line 62, in rmgpy.statmech.translation.Translation.__init__ (build/pyrex/rmgpy/statmech/translation.c:1513)
+TypeError: __init__() got an unexpected keyword argument 'mass'
+
+======================================================================
+ERROR: testOutput (kineticsTest.TestTroe)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/kineticsTest.py", line 1137, in testOutput
+    self.assertEqual(self.kinetics.alpha.value_si, kinetics.alpha.value_si)
+AttributeError: 'float' object has no attribute 'value_si'
+
+======================================================================
+ERROR: testPickle (kineticsTest.TestTroe)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/kineticsTest.py", line 1099, in testPickle
+    self.assertEqual(self.kinetics.alpha.value_si, kinetics.alpha.value_si)
+AttributeError: 'float' object has no attribute 'value_si'
+
+======================================================================
+ERROR: testRateCoefficient (kineticsTest.TestTroe)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/kineticsTest.py", line 1081, in testRateCoefficient
+    Fcent = (1 - self.kinetics.alpha.value_si) * math.exp(-T / self.kinetics.T3.value_si) + self.kinetics.alpha.value_si * math.exp(-T / self.kinetics.T1.value_si)
+AttributeError: 'float' object has no attribute 'value_si'
+
+======================================================================
+ERROR: testEnthalpy (thermoTest.TestWilhoit)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/thermoTest.py", line 221, in setUp
+    comment = """This data is completely made up""",
+  File "wilhoit.pyx", line 62, in rmgpy.thermo.wilhoit.Wilhoit.__init__ (build/pyrex/rmgpy/thermo/wilhoit.c:1887)
+TypeError: __init__() got an unexpected keyword argument 'cp0'
+
+======================================================================
+ERROR: testEntropy (thermoTest.TestWilhoit)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/thermoTest.py", line 221, in setUp
+    comment = """This data is completely made up""",
+  File "wilhoit.pyx", line 62, in rmgpy.thermo.wilhoit.Wilhoit.__init__ (build/pyrex/rmgpy/thermo/wilhoit.c:1887)
+TypeError: __init__() got an unexpected keyword argument 'cp0'
+
+======================================================================
+ERROR: testFreeEnergy (thermoTest.TestWilhoit)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/thermoTest.py", line 221, in setUp
+    comment = """This data is completely made up""",
+  File "wilhoit.pyx", line 62, in rmgpy.thermo.wilhoit.Wilhoit.__init__ (build/pyrex/rmgpy/thermo/wilhoit.c:1887)
+TypeError: __init__() got an unexpected keyword argument 'cp0'
+
+======================================================================
+ERROR: testHeatCapacity (thermoTest.TestWilhoit)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/thermoTest.py", line 221, in setUp
+    comment = """This data is completely made up""",
+  File "wilhoit.pyx", line 62, in rmgpy.thermo.wilhoit.Wilhoit.__init__ (build/pyrex/rmgpy/thermo/wilhoit.c:1887)
+TypeError: __init__() got an unexpected keyword argument 'cp0'
+
+======================================================================
+ERROR: testOutput (thermoTest.TestWilhoit)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/thermoTest.py", line 221, in setUp
+    comment = """This data is completely made up""",
+  File "wilhoit.pyx", line 62, in rmgpy.thermo.wilhoit.Wilhoit.__init__ (build/pyrex/rmgpy/thermo/wilhoit.c:1887)
+TypeError: __init__() got an unexpected keyword argument 'cp0'
+
+======================================================================
+ERROR: testPickle (thermoTest.TestWilhoit)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/thermoTest.py", line 221, in setUp
+    comment = """This data is completely made up""",
+  File "wilhoit.pyx", line 62, in rmgpy.thermo.wilhoit.Wilhoit.__init__ (build/pyrex/rmgpy/thermo/wilhoit.c:1887)
+TypeError: __init__() got an unexpected keyword argument 'cp0'
+
+======================================================================
+FAIL: testGetActivationEnergy (kineticsTest.TestArrheniusEP)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/kineticsTest.py", line 325, in testGetActivationEnergy
+    self.assertAlmostEqual(Ea0 / Ea, 1, 6)
+AssertionError: -0.0 != 1 within 6 places
+
+======================================================================
+FAIL: testJPerMol (quantityTest.TestCustomUnits)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/quantityTest.py", line 398, in testJPerMol
+AssertionError: 1000.0 != 1.0 within 6 places
+
+======================================================================
+FAIL: testKJPerMol (quantityTest.TestCustomUnits)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/quantityTest.py", line 394, in testKJPerMol
+AssertionError: 0.001 != 1.0 within 6 places
+
+======================================================================
+FAIL: testKcalPerMol (quantityTest.TestCustomUnits)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/quantityTest.py", line 390, in testKcalPerMol
+AssertionError: 0.0002390057361376673 != 1.0 within 6 places
+
+======================================================================
+FAIL: testMolecule (quantityTest.TestCustomUnits)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/quantityTest.py", line 386, in testMolecule
+AssertionError: 6.02214179e+23 != 1.0 within 6 places
+
+======================================================================
+FAIL: testMolecules (quantityTest.TestCustomUnits)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/quantityTest.py", line 382, in testMolecules
+AssertionError: 6.02214179e+23 != 1.0 within 6 places
 
 ======================================================================
 FAIL: testApplyActionGainRadical (molecule.groupTest.TestGroupAtom)
@@ -329,12 +1397,36 @@ Traceback (most recent call last):
 AssertionError: False is not true
 
 ======================================================================
-FAIL: testFrequency (statmechTest.TestHinderedRotor)
+FAIL: testEquivalent (molecule.groupTest.TestGroupAtom)
 ----------------------------------------------------------------------
 Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/statmechTest.py", line 301, in testFrequency
-    self.assertAlmostEqual(freq, 50.9164, 3)
-AssertionError: 72.00663702257225 != 50.9164 within 3 places
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/molecule/groupTest.py", line 151, in testEquivalent
+    self.assertTrue(atom1.equivalent(atom2))
+AssertionError: False is not true
+
+======================================================================
+FAIL: testIsSpecificCaseOf (molecule.groupTest.TestGroupAtom)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/molecule/groupTest.py", line 166, in testIsSpecificCaseOf
+    self.assertTrue(atom1.isSpecificCaseOf(atom2))
+AssertionError: False is not true
+
+======================================================================
+FAIL: testRateCoefficient (kineticsTest.TestKineticsData)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/kineticsTest.py", line 126, in testRateCoefficient
+    self.assertAlmostEqual(self.kinetics.getRateCoefficient(T), 10**(1000.0/T),4)
+AssertionError: 825.4041852680186 != 719.6856730011522 within 4 places
+
+======================================================================
+FAIL: testPickle (kineticsTest.TestKineticsModel)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/kineticsTest.py", line 74, in testPickle
+    self.assertEqual(self.kinetics.Pmax.value_si, kinetics.Pmax.value_si)
+AssertionError: 10000000.0 != 10000000.000000004
 
 ======================================================================
 FAIL: testCountInternalRotorsDimethylAcetylene (molecule.moleculeTest.TestMolecule)
@@ -353,14 +1445,42 @@ Traceback (most recent call last):
 AssertionError: False is not true
 
 ======================================================================
-FAIL: testTSTCalculation (reactionTest.TestReaction)
+FAIL: testValueWithAdditiveUncertainty (quantityTest.TestQuantity)
 ----------------------------------------------------------------------
 Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/reactionTest.py", line 315, in testTSTCalculation
-    self.assertAlmostEqual(arrhenius.A.value/1.07506e+07, 1.0, 3)
-AssertionError: 0.00021814730300778404 != 1.0 within 3 places
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/quantityTest.py", line 84, in testValueWithAdditiveUncertainty
+AssertionError: 10.0 != 0.1
+
+======================================================================
+FAIL: testValueWithMultiplicativeUncertainty (quantityTest.TestQuantity)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/quantityTest.py", line 102, in testValueWithMultiplicativeUncertainty
+AssertionError: 10.0 != 0.1
+
+======================================================================
+FAIL: testValueWithUncertainty (quantityTest.TestQuantity)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/quantityTest.py", line 66, in testValueWithUncertainty
+AssertionError: 10.0 != 0.1
+
+======================================================================
+FAIL: testValueWithUnits (quantityTest.TestQuantity)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/quantityTest.py", line 48, in testValueWithUnits
+AssertionError: 10.0 != 0.1
+
+======================================================================
+FAIL: testEnthalpy (thermoTest.TestThermoData)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/thermoTest.py", line 120, in testEnthalpy
+    self.assertEqual(self.thermo.getEnthalpy(300), -1994.0)
+AssertionError: -1994.02 != -1994.0
 
 ----------------------------------------------------------------------
 Ran 313 tests.
 
-FAILED (failures=6)
+FAILED (failures=19, errors=113)

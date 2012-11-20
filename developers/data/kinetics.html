@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>4. rmgpy.data.kinetics — Kinetics Database &mdash; RMG Py 0.1.0 documentation</title>
+    <title>11.4. rmgpy.data.kinetics — Kinetics Database &mdash; RMG Py 0.1.0 documentation</title>
     
     <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -25,10 +25,11 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
-    <link rel="up" title="Data API Reference" href="index.html" />
-    <link rel="next" title="5. rmgpy.data.states — Frequency Database" href="states.html" />
-    <link rel="prev" title="3. rmgpy.data.thermo — Thermodynamics Database" href="thermo.html" /> 
+    <link rel="up" title="11. Data API Reference" href="index.html" />
+    <link rel="next" title="11.5. rmgpy.data.states — Frequency Database" href="states.html" />
+    <link rel="prev" title="11.3. rmgpy.data.thermo — Thermodynamics Database" href="thermo.html" /> 
   </head>
   <body>
 <div class="header">
@@ -50,25 +51,25 @@
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="states.html" title="5. rmgpy.data.states — Frequency Database"
+          <a href="states.html" title="11.5. rmgpy.data.states — Frequency Database"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="thermo.html" title="3. rmgpy.data.thermo — Thermodynamics Database"
+          <a href="thermo.html" title="11.3. rmgpy.data.thermo — Thermodynamics Database"
              accesskey="P">previous</a> |</li>
 <li><a href="../../index.html">Documentation</a> &raquo;</li>
 
           <li><a href="../index.html" >RMG Developer&#8217;s Guide</a> &raquo;</li>
-          <li><a href="index.html" accesskey="U">Data API Reference</a> &raquo;</li> 
+          <li><a href="index.html" accesskey="U">11. Data API Reference</a> &raquo;</li> 
       </ul>
     </div>
             
   <div class="section" id="module-rmgpy.data.kinetics">
-<span id="rmgpy-data-kinetics-kinetics-database"></span><h1>4. <a class="reference internal" href="#module-rmgpy.data.kinetics" title="rmgpy.data.kinetics"><tt class="xref py py-mod docutils literal"><span class="pre">rmgpy.data.kinetics</span></tt></a> &#8212; Kinetics Database<a class="headerlink" href="#module-rmgpy.data.kinetics" title="Permalink to this headline">¶</a></h1>
+<span id="rmgpy-data-kinetics-kinetics-database"></span><h1>11.4. <a class="reference internal" href="#module-rmgpy.data.kinetics" title="rmgpy.data.kinetics"><tt class="xref py py-mod docutils literal"><span class="pre">rmgpy.data.kinetics</span></tt></a> &#8212; Kinetics Database<a class="headerlink" href="#module-rmgpy.data.kinetics" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="reaction-types">
-<h2>4.1. Reaction Types<a class="headerlink" href="#reaction-types" title="Permalink to this headline">¶</a></h2>
+<h2>11.4.1. Reaction Types<a class="headerlink" href="#reaction-types" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="rmgpy.data.kinetics.DepositoryReaction">
-<em class="property">class </em><tt class="descclassname">rmgpy.data.kinetics.</tt><tt class="descname">DepositoryReaction</tt><big>(</big><em>index=-1</em>, <em>reactants=None</em>, <em>products=None</em>, <em>kinetics=None</em>, <em>reversible=True</em>, <em>transitionState=None</em>, <em>thirdBody=False</em>, <em>duplicate=False</em>, <em>degeneracy=1</em>, <em>pairs=None</em>, <em>depository=None</em>, <em>family=None</em>, <em>entry=None</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.DepositoryReaction" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">rmgpy.data.kinetics.</tt><tt class="descname">DepositoryReaction</tt><big>(</big><em>index=-1</em>, <em>reactants=None</em>, <em>products=None</em>, <em>kinetics=None</em>, <em>reversible=True</em>, <em>transitionState=None</em>, <em>duplicate=False</em>, <em>degeneracy=1</em>, <em>pairs=None</em>, <em>depository=None</em>, <em>family=None</em>, <em>entry=None</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.DepositoryReaction" title="Permalink to this definition">¶</a></dt>
 <dd><p>A Reaction object generated from a reaction depository. In addition to the
 usual attributes, this class includes <cite>depository</cite> and <cite>entry</cite> attributes to
 store the library and the entry in that depository that it was created from.</p>
@@ -83,7 +84,7 @@ DepositoryReaction this should be a KineticsDepository object.</p>
 
 <dl class="class">
 <dt id="rmgpy.data.kinetics.LibraryReaction">
-<em class="property">class </em><tt class="descclassname">rmgpy.data.kinetics.</tt><tt class="descname">LibraryReaction</tt><big>(</big><em>index=-1</em>, <em>reactants=None</em>, <em>products=None</em>, <em>kinetics=None</em>, <em>reversible=True</em>, <em>transitionState=None</em>, <em>thirdBody=False</em>, <em>duplicate=False</em>, <em>degeneracy=1</em>, <em>pairs=None</em>, <em>library=None</em>, <em>entry=None</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">rmgpy.data.kinetics.</tt><tt class="descname">LibraryReaction</tt><big>(</big><em>index=-1</em>, <em>reactants=None</em>, <em>products=None</em>, <em>kinetics=None</em>, <em>reversible=True</em>, <em>transitionState=None</em>, <em>duplicate=False</em>, <em>degeneracy=1</em>, <em>pairs=None</em>, <em>library=None</em>, <em>entry=None</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction" title="Permalink to this definition">¶</a></dt>
 <dd><p>A Reaction object generated from a reaction library. In addition to the
 usual attributes, this class includes <cite>library</cite> and <cite>entry</cite> attributes to
 store the library and the entry in that library that it was created from.</p>
@@ -98,7 +99,7 @@ LibraryReaction this should be a KineticsLibrary object.</p>
 
 <dl class="class">
 <dt id="rmgpy.data.kinetics.TemplateReaction">
-<em class="property">class </em><tt class="descclassname">rmgpy.data.kinetics.</tt><tt class="descname">TemplateReaction</tt><big>(</big><em>index=-1</em>, <em>reactants=None</em>, <em>products=None</em>, <em>kinetics=None</em>, <em>reversible=True</em>, <em>transitionState=None</em>, <em>thirdBody=False</em>, <em>duplicate=False</em>, <em>degeneracy=1</em>, <em>pairs=None</em>, <em>family=None</em>, <em>template=None</em>, <em>estimator=None</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.TemplateReaction" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">rmgpy.data.kinetics.</tt><tt class="descname">TemplateReaction</tt><big>(</big><em>index=-1</em>, <em>reactants=None</em>, <em>products=None</em>, <em>kinetics=None</em>, <em>reversible=True</em>, <em>transitionState=None</em>, <em>duplicate=False</em>, <em>degeneracy=1</em>, <em>pairs=None</em>, <em>family=None</em>, <em>template=None</em>, <em>estimator=None</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.TemplateReaction" title="Permalink to this definition">¶</a></dt>
 <dd><p>A Reaction object generated from a reaction family template. In addition to
 the usual attributes, this class includes a <cite>family</cite> attribute to store the
 family that it was created from, as well as a <cite>estimator</cite> attribute to indicate
@@ -114,7 +115,7 @@ TemplateReaction this should be a KineticsGroups object.</p>
 
 </div>
 <div class="section" id="kinetics-database">
-<h2>4.2. Kinetics Database<a class="headerlink" href="#kinetics-database" title="Permalink to this headline">¶</a></h2>
+<h2>11.4.2. Kinetics Database<a class="headerlink" href="#kinetics-database" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="rmgpy.data.kinetics.ReactionRecipe">
 <em class="property">class </em><tt class="descclassname">rmgpy.data.kinetics.</tt><tt class="descname">ReactionRecipe</tt><big>(</big><em>actions=None</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.ReactionRecipe" title="Permalink to this definition">¶</a></dt>
@@ -430,7 +431,7 @@ the given file object <cite>f</cite>.</p>
 
 </div>
 <div class="section" id="exceptions">
-<h2>4.3. Exceptions<a class="headerlink" href="#exceptions" title="Permalink to this headline">¶</a></h2>
+<h2>11.4.3. Exceptions<a class="headerlink" href="#exceptions" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="rmgpy.data.kinetics.InvalidActionError">
 <em class="property">class </em><tt class="descclassname">rmgpy.data.kinetics.</tt><tt class="descname">InvalidActionError</tt><a class="headerlink" href="#rmgpy.data.kinetics.InvalidActionError" title="Permalink to this definition">¶</a></dt>
@@ -459,20 +460,20 @@ for a chemical reaction are unsuccessful.</p>
 </div>
   <h3><a href="../../contents.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">4. <tt class="docutils literal"><span class="pre">rmgpy.data.kinetics</span></tt> &#8212; Kinetics Database</a><ul>
-<li><a class="reference internal" href="#reaction-types">4.1. Reaction Types</a></li>
-<li><a class="reference internal" href="#kinetics-database">4.2. Kinetics Database</a></li>
-<li><a class="reference internal" href="#exceptions">4.3. Exceptions</a></li>
+<li><a class="reference internal" href="#">11.4. <tt class="docutils literal"><span class="pre">rmgpy.data.kinetics</span></tt> &#8212; Kinetics Database</a><ul>
+<li><a class="reference internal" href="#reaction-types">11.4.1. Reaction Types</a></li>
+<li><a class="reference internal" href="#kinetics-database">11.4.2. Kinetics Database</a></li>
+<li><a class="reference internal" href="#exceptions">11.4.3. Exceptions</a></li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="thermo.html"
-                        title="previous chapter">3. <tt class="docutils literal"><span class="pre">rmgpy.data.thermo</span></tt> &#8212; Thermodynamics Database</a></p>
+                        title="previous chapter">11.3. <tt class="docutils literal docutils literal"><span class="pre">rmgpy.data.thermo</span></tt> &#8212; Thermodynamics Database</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="states.html"
-                        title="next chapter">5. <tt class="docutils literal"><span class="pre">rmgpy.data.states</span></tt> &#8212; Frequency Database</a></p>
+                        title="next chapter">11.5. <tt class="docutils literal"><span class="pre">rmgpy.data.states</span></tt> &#8212; Frequency Database</a></p>
   <h3>This Page </h3>
   <ul class="this-page-menu">
     <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/developers/data/kinetics.rst"
