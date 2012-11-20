@@ -3191,6 +3191,14 @@ class KineticsFamily(Database):
         alpha /= count
         E0 /= count
         Aunits = kineticsList[0].A.units
+        if Aunits == 'cm^3/(mol*s)' or 'cm^3/(molecule*s)' or 'm^3/(molecule*s)':
+            Aunits = 'm^3/(mol*s)'
+        elif Aunits == 'cm^6/(mol^2*s)' or 'cm^6/(molecule^2*s)' or 'm^6/(molecule^2*s)':
+            Aunits = 'm^6/(mol^2*s)'
+        elif Aunits == 's^-1' or Aunits == 'm^3/(mol*s)' or Aunits == 'm^6/(mol^2*s)':
+            pass
+        else:
+            raise Exception('Invalid units {0} for averaging kinetics.'.format(Aunits))
         averagedKinetics = ArrheniusEP(
             A = (10**logA,Aunits),
             n = n,
