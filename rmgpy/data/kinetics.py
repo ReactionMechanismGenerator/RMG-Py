@@ -2970,17 +2970,10 @@ class KineticsFamily(Database):
         # For R_Recombination reactions, the degeneracy is twice what it should
         # be, so divide those by two
         # This is hardcoding of reaction families!
-        if self.label.lower().startswith('r_recombination'):
-            for rxn in rxnList:
-                assert(rxn.degeneracy % 2 == 0)
-                rxn.degeneracy /= 2
-
         # For reactions of the form A + A -> products, the degeneracy is twice
         # what it should be, so divide those by two
-        if sameReactants and not self.label.lower().startswith('r_recombination'):
+        if sameReactants or self.label.lower().startswith('r_recombination'):
             for rxn in rxnList:
-                if rxn.degeneracy % 2 != 0:
-                    import pdb; pdb.set_trace()
                 assert(rxn.degeneracy % 2 == 0)
                 rxn.degeneracy /= 2
                 
