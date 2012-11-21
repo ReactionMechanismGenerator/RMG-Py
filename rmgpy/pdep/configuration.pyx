@@ -321,7 +321,10 @@ cdef class Configuration:
         cdef list Blist
         
         import scipy.interpolate
-        f = scipy.interpolate.InterpolatedUnivariateSpline(self.Elist[1:], numpy.log(self.densStates[1:]))
+        for r in range(self.Elist.shape[0]):
+            if self.densStates[r] > 0:
+                break
+        f = scipy.interpolate.InterpolatedUnivariateSpline(self.Elist[r:], numpy.log(self.densStates[r:]))
         
         E0 = self.E0
         Ngrains = Elist.shape[0]
@@ -383,7 +386,10 @@ cdef class Configuration:
         cdef int r0, r, s, Ngrains, NJ, J1, J2
         
         import scipy.interpolate
-        f = scipy.interpolate.InterpolatedUnivariateSpline(self.Elist[1:], numpy.log(self.sumStates[1:]))
+        for r in range(self.Elist.shape[0]):
+            if self.sumStates[r] > 0:
+                break
+        f = scipy.interpolate.InterpolatedUnivariateSpline(self.Elist[r:], numpy.log(self.sumStates[r:]))
         
         E0 = self.E0
         Ngrains = len(Elist)
