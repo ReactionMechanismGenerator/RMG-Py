@@ -1348,6 +1348,8 @@ class CoreEdgeReactionModel:
                 for index2, reaction2 in enumerate(self.core.reactions):
                     if isinstance(reaction2, PDepReaction) and reaction.reactants == reaction2.products and reaction.products == reaction2.reactants:
                         # We've found the PDepReaction for the reverse direction
+                        dHrxn = reaction.getEnthalpyOfReaction(300.)
+                        dGrxn = reaction.getFreeEnergyOfReaction(300.)
                         kf = reaction.getRateCoefficient(1000,1e5)
                         kr = reaction.getRateCoefficient(1000,1e5) / reaction.getEquilibriumConstant(1000)
                         kf2 = reaction2.getRateCoefficient(1000,1e5) / reaction2.getEquilibriumConstant(1000)
@@ -1356,21 +1358,12 @@ class CoreEdgeReactionModel:
                             # Most pairs of reactions should satisfy thermodynamic consistency (or at least be "close")
                             # Warn about the ones that aren't close (but don't abort)
                             logging.warning('Forward and reverse PDepReactions for reaction {0!s} generated from networks {1:d} and {2:d} do not satisfy thermodynamic consistency.'.format(reaction, reaction.network.index, reaction2.network.index))
-                            logging.debug('{0!s}:'.format(reaction))
-                            logging.debug('{0:.2e} {1:.2e}:'.format(kf, kf2))
-                            logging.debug('{0!s}:'.format(reaction2))
-                            logging.debug('{0:.2e} {1:.2e}:'.format(kr, kr2))
-                        # Keep the one from the more explored network (as it's probably more accurate)
-                        keepFirst = True
-                        if len(reaction.network.explored) > len(reaction2.network.explored):
-                            keepFirst = True
-                        elif len(reaction.network.explored) < len(reaction2.network.explored):
-                            keepFirst = False
-                        # If that's not enough, keep the one that's faster (comparing in the same direction)
-                        elif kf > kf2:
-                            keepFirst = True
-                        else:
-                            keepFirst = False
+                            logging.warning('{0!s}:'.format(reaction))
+                            logging.warning('{0:.2e} {1:.2e}:'.format(kf, kf2))
+                            logging.warning('{0!s}:'.format(reaction2))
+                            logging.warning('{0:.2e} {1:.2e}:'.format(kr, kr2))
+                        # Keep the exergonic direction
+                        keepFirst = dGrxn < 0
                         # Delete the PDepReaction that we aren't keeping
                         if keepFirst:
                             self.core.reactions.remove(reaction2)
