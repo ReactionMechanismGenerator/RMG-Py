@@ -271,7 +271,7 @@ def toAdjacencyList(atoms, label=None, group=False, removeH=False):
         atomNumbers[atom] = '{0:d}'.format(index + 1)
         index += 1
     
-    atomLabels = {atom: '{0}'.format(atom.label) for atom in atomNumbers}
+    atomLabels = dict([(atom, '{0}'.format(atom.label)) for atom in atomNumbers])
     
     atomTypes = {}
     atomElectronStates = {}
