@@ -294,7 +294,7 @@ class CoreEdgeReactionModel:
         spec = Species(index=self.speciesCounter+1, label=label, molecule=[molecule], reactive=reactive)
         spec.coreSizeAtCreation = len(self.core.species)
         spec.generateResonanceIsomers()
-        spec.molecularWeight = Quantity(spec.molecule[0].getMolecularWeight()*1000.,"g/mol")
+        spec.molecularWeight = Quantity(spec.molecule[0].getMolecularWeight()*1000.,"amu")
         spec.generateLennardJonesParameters()
         spec.generateEnergyTransferModel()
         formula = molecule.getFormula()
