@@ -537,7 +537,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
                 order = len(netReaction.reactants)
                 kdata *= 1e6 ** (order-1)
                 kunits = {1: 's^-1', 2: 'cm^3/(mol*s)', 3: 'cm^6/(mol^2*s)'}[order]
-                netReaction.kinetics = job.fitInterpolationModel(Tlist, Plist, K[:,:,i,j], kunits)
+                netReaction.kinetics = job.fitInterpolationModel(Tlist, Plist, kdata, kunits)
 
                 # Check: For each net reaction that has a path reaction, make
                 # sure the k(T,P) values for the net reaction do not exceed
