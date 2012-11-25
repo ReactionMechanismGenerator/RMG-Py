@@ -904,10 +904,8 @@ class Database:
             else:
                 return root
         else:
-            #print structure.toAdjacencyList()
-            #raise DatabaseError('For structure {0}, a node {1} with non-mutually-exclusive children {2} was encountered in tree with top level nodes {3}.'.format(structure.getFormula(), root, next, self.tree.top))
-            logging.warning('For {0}, a node {1} with overlapping children {2} was encountered in tree with top level nodes {3}.'.format(structure, root, next, self.top))
-            return root
+            logging.warning('For {0}, a node {1} with overlapping children {2} was encountered in tree with top level nodes {3}. Assuming the first match is the better one.'.format(structure, root, next, self.top))
+            return self.descendTree(structure, atoms, next[0])
 
 ################################################################################
 
