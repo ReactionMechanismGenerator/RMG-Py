@@ -61,6 +61,13 @@ class InvalidActionError(Exception):
     """
     pass
 
+class ReactionPairsError(Exception):
+    """
+    An exception to be raised when an error occurs while working with reaction
+    pairs.
+    """
+    pass
+
 ################################################################################
 
 class DepositoryReaction(Reaction):
@@ -3064,7 +3071,7 @@ class KineticsFamily(Database):
             error = True
             
         if error:
-            raise KineticsError('Unable to determine reaction pairs for {0!s} reaction {1!s}.'.format(self.label, reaction))
+            raise ReactionPairsError('Unable to determine reaction pairs for {0!s} reaction {1!s}.'.format(self.label, reaction))
         else:
             return pairs
         
