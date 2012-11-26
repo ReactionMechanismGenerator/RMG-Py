@@ -1087,6 +1087,14 @@ class KineticsLibrary(Database):
             longDesc = longDesc.strip(),
             history = history or [],
         )
+        
+        # Convert SMILES to Molecule objects in collision efficiencies
+        if isinstance(kinetics, PDepKineticsModel):
+            efficiencies = {}
+            for smiles, eff in kinetics.efficiencies.items():
+                if isinstance(smiles, str):
+                    efficiencies[Molecule().fromSMILES(smiles)] = eff
+            kinetics.efficiencies = efficiencies
 
     def saveEntry(self, f, entry):
         """
