@@ -1150,7 +1150,8 @@ class KineticsLibrary(Database):
             Aunits = []; Eunits = ''
             reaction = None; kinetics = None
             next_reaction_comment = ''
-
+            factorSI = 1.0
+            
             fdict = open(path, 'r')
             for line in fdict:
                 line, comment = splitLineAndComment(line)
@@ -1173,6 +1174,9 @@ class KineticsLibrary(Database):
                                     '{0}^3/({1}*{2})'.format(Aunits0[1], Aunits0[0], Aunits0[2]),      # Second-order
                                     '{0}^6/({1}^2*{2})'.format(Aunits0[1], Aunits0[0], Aunits0[2]),    # Third-order
                                 ]
+                                assert Aunits0[1] in ['cm', 'm']
+                                if Aunits0[1] == 'cm':
+                                    factorSI = 1e6
                             elif 'E:' in line:
                                 Eunits = units
                     elif inReactionSection:
@@ -1294,6 +1298,41 @@ class KineticsLibrary(Database):
                                 kinetics.arrhenius.append(arrhenius)
                             reaction.kinetics = kinetics
                             
+                        elif 'CHEB' in line or 'cheb' in line:
+                            # Chebyshev parameters
+                            if not isinstance(kinetics, Chebyshev):
+                                kinetics = Chebyshev()
+                                kinetics.kunits = Aunits[len(reactants)]
+                                reaction.kinetics = kinetics
+                                chebyshevCoeffs = []
+                            tokens = [t.strip() for t in line.split('/')]
+                            if 'TCHEB' in line:
+                                index = tokens.index('TCHEB')
+                                tokens2 = tokens[index+1].split()
+                                kinetics.Tmin = Quantity(float(tokens2[0].strip()),"K")
+                                kinetics.Tmax = Quantity(float(tokens2[1].strip()),"K")
+                            if 'PCHEB' in line:
+                                index = tokens.index('PCHEB')
+                                tokens2 = tokens[index+1].split()
+                                kinetics.Pmin = Quantity(float(tokens2[0].strip()),"atm")
+                                kinetics.Pmax = Quantity(float(tokens2[1].strip()),"atm")
+                            if 'TCHEB' in line or 'PCHEB' in line:
+                                pass
+                            elif kinetics.degreeT == 0 or kinetics.degreeP == 0:
+                                tokens2 = tokens[1].split()
+                                kinetics.degreeT = int(float(tokens2[0].strip()))
+                                kinetics.degreeP = int(float(tokens2[1].strip()))
+                                kinetics.coeffs = numpy.zeros((kinetics.degreeT,kinetics.degreeP), numpy.float64)
+                            else:
+                                tokens2 = tokens[1].split()
+                                coeffs = [float(t.strip()) for t in tokens2]
+                                for index, C in enumerate(coeffs):
+                                    i, j = divmod(index + len(chebyshevCoeffs), kinetics.degreeP)
+                                    if i == 0 and j == 0:
+                                        C -= math.log10(factorSI) * (len(reactants) - 1)
+                                    kinetics.coeffs.value_si[i,j] = C
+                                chebyshevCoeffs.extend(coeffs)
+
                         elif 'LOW' in line:
                             # This line contains low-pressure-limit Arrhenius parameters in Chemkin format
 
