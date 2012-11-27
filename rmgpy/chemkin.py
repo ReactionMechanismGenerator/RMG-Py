@@ -613,8 +613,10 @@ def loadChemkinFile(path, dictionaryPath=None):
                 # List of thermodynamics (hopefully one per species!)
                 line = f.readline()
                 thermo = ''
+                comments = ''
                 while line != '' and 'END' not in line:
-                    line = removeCommentFromLine(line)[0]
+                    line, comment = removeCommentFromLine(line)
+                    if comment: comments += comment.strip().replace('\t',', ') + '\n'
                     if len(line) >= 80:
                         if line[79] in ['1', '2', '3', '4']:
                             thermo += line
@@ -623,6 +625,8 @@ def loadChemkinFile(path, dictionaryPath=None):
                                 label = label.upper()
                                 try:
                                     speciesDict[label].thermo = thermo
+                                    speciesDict[label].thermo.comment = comments
+                                    comments = ''
                                 except KeyError:
                                     if label in ['AR', 'N2', 'HE', 'NE']:
                                         pass
