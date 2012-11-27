@@ -568,6 +568,20 @@ class Molecule(Graph):
         for atom in self.vertices:
             mass += atom.element.mass
         return mass
+    
+    def getNumAtoms(self, element = None):
+        """
+        Return the number of atoms in molecule.  If element is given, ie. "H" or "C",
+        the number of atoms of that element is returned.
+        """
+        if element == None:
+            return len(self.vertices)
+        else:
+            numAtoms = 0
+            for atom in self.vertices:
+                if atom.element.symbol == element:
+                    numAtoms += 1
+            return numAtoms
 
     def copy(self, deep=False):
         """
