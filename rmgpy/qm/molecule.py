@@ -111,10 +111,20 @@ class Geometry:
             crude = Chem.Mol(rdmol.ToBinary())
             rdmol, minEid = self.optimize(rdmol)
         else:
-            try:
-                Pharm3D.EmbedLib.EmbedMol(rdmol, boundsMatrix, randomSeed=10)
-            except RuntimeError:
-                logging.error('Could not embed from bounds matrix')
+            for i in range(0,20):
+                """
+                The condition above may need to be changed to be dependent on the size of the
+                molecules. It may be the case that larger molecules will require more iterations
+                of the bounds matrix embedding.
+                
+                Also need to consider handling other types of exceptions that may occur.
+                """
+                try:
+                    Pharm3D.EmbedLib.EmbedMol(rdmol, boundsMatrix)
+                except ValueError:
+                    pass
+                else:
+                    break
             crude = Chem.Mol(rdmol.ToBinary())
             rdmol, minEid = self.optimize(rdmol, boundsMatrix)
         
@@ -233,13 +243,13 @@ class QMMolecule:
         """Get the input file name."""
         return self.getFilePath(self.inputFileExtension)
         
-    def createGeometry(self):
+    def createGeometry(self, boundsMatrix=None):
         """
         Creates self.geometry with RDKit geometries
         """
         multiplicity = sum([i.radicalElectrons for i in self.molecule.atoms]) + 1
         self.geometry = Geometry(self.settings, self.uniqueID, self.molecule, multiplicity, uniqueIDlong=self.uniqueIDlong)
-        self.geometry.generateRDKitGeometries()
+        self.geometry.generateRDKitGeometries(boundsMatrix)
         return self.geometry
     
     def generateQMData(self):
