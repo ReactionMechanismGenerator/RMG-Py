@@ -651,11 +651,14 @@ def loadChemkinFile(path, dictionaryPath=None):
                 comments = ''
                 
                 line = f.readline()
-                while line != '' and 'END' not in line:
+                while line != '':
                     
                     lineStartsWithComment = line.startswith('!') 
                     line, comment = removeCommentFromLine(line)
                     line = line.strip(); comment = comment.strip()
+                
+                    if 'end' in line or 'END' in line:
+                        break
                 
                     if 'rev' in line or 'REV' in line:
                         # can no longer name reactants rev...
