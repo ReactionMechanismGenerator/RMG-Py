@@ -1051,7 +1051,7 @@ def writeKineticsEntry(reaction, speciesList):
 
     string += '\n'
 
-    if isinstance(kinetics, ThirdBody):
+    if isinstance(kinetics, (ThirdBody, Lindemann, Troe)):
         # Write collider efficiencies
         for collider, efficiency in sorted(kinetics.efficiencies.items()):
             for species in speciesList:
@@ -1060,7 +1060,7 @@ def writeKineticsEntry(reaction, speciesList):
                     break
         string += '\n'
         
-        if isinstance(kinetics, Lindemann):
+        if isinstance(kinetics, (Lindemann, Troe)):
             # Write low-P kinetics
             arrhenius = kinetics.arrheniusLow
             string += '    LOW/ {0:<9.3e} {1:<9.3f} {2:<9.3f}/\n'.format(
@@ -1071,9 +1071,9 @@ def writeKineticsEntry(reaction, speciesList):
             if isinstance(kinetics, Troe):
                 # Write Troe parameters
                 if kinetics.T2 is None:
-                    string += '    TROE/ {0:<9.3e} {1:<9.3g} {2:<9.3g}/\n'.format(kinetics.alpha.value_si, kinetics.T3.value_si, kinetics.T1.value_si)
+                    string += '    TROE/ {0:<9.3e} {1:<9.3g} {2:<9.3g}/\n'.format(kinetics.alpha, kinetics.T3.value_si, kinetics.T1.value_si)
                 else:
-                    string += '    TROE/ {0:<9.3e} {1:<9.3g} {2:<9.3g} {3:<9.3g}/\n'.format(kinetics.alpha.value_si, kinetics.T3.value_si, kinetics.T1.value_si, kinetics.T2.value_si)
+                    string += '    TROE/ {0:<9.3e} {1:<9.3g} {2:<9.3g} {3:<9.3g}/\n'.format(kinetics.alpha, kinetics.T3.value_si, kinetics.T1.value_si, kinetics.T2.value_si)
     elif isinstance(kinetics, PDepArrhenius):
         for P, arrhenius in zip(kinetics.pressures.value_si, kinetics.arrhenius):
             string += '    PLOG/ {0:<9.3f} {1:<9.3e} {2:<9.3f} {3:<9.3f}/\n'.format(P / 101325.,
