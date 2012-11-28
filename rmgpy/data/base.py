@@ -672,7 +672,7 @@ class Database:
             entries = self.entries.values()
             entries.sort(key=lambda x: x.index)
             
-            f = open(path, 'w')
+            f = codecs.open(path, 'w',  'utf-8')
             records = []
             for entry in entries:
                 if entry.data is not None:
@@ -693,11 +693,11 @@ class Database:
                 f.write('{:<6d} '.format(index))
                 for label in labels:
                     f.write('{:<32s} '.format(label))
-                if isinstance(data, str):
+                if isinstance(data, basestring):
                     f.write('{:s} '.format(data))
                 else:
                     f.write('{:s} '.format(' '.join(['{:<10g}'.format(d) for d in data])))
-                f.write('    {:s}\n'.format(comment))
+                f.write(u'    {:s}\n'.format(comment))
             f.close()
         except IOError, e:
             logging.exception('Unable to save old-style library to "{0}".'.format(os.path.abspath(path)))

@@ -140,8 +140,10 @@ def generateOldLibraryEntry(data):
             data.Cpdata.value_si[6]/4.184,
             data.H298.uncertainty/4184.,
             data.S298.uncertainty/4.184,
-            data.Cpdata.uncertainty/4.184,
+            max(data.Cpdata.uncertainty)/4.184,
         )
+    elif isinstance(data, basestring):
+        return data
     else:
         return '{0:9g} {1:9g} {2:9g} {3:9g} {4:9g} {5:9g} {6:9g} {7:9g} {8:9g} {9:9g} {10:9g} {11:9g}'.format(
             data.getEnthalpy(298)/4184.,
@@ -301,6 +303,7 @@ class ThermoGroups(Database):
         Return a list of values used to save entries to the old-style RMG
         thermo database based on the thermodynamics object `data`.
         """
+        
         return generateOldLibraryEntry(data)
 
     def processOldLibraryEntry(self, data):
@@ -825,7 +828,7 @@ class ThermoDatabase:
             raise InvalidDatabaseError('Unable to determine thermo parameters for {0}: no library entries for {1} or any of its ancestors.'.format(molecule, node0) )
 
         data = node.data; comment = node.label
-        while isinstance(data, (str,unicode)) and data is not None:
+        while isinstance(data, basestring) and data is not None:
             for entry in database.entries.values():
                 if entry.label == data:
                     data = entry.data
