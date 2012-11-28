@@ -652,6 +652,7 @@ class KineticsDepository(Database):
                       'intra_OH_migration',
                       'HO2_Elimination_from_PeroxyRadical',
                       'Cyclic_Ether_Formation',
+                      'Enol_keto_tautomerism',
                       'Intra_R_Add_Exocyclic',
                       'Intra_R_Add_Endocyclic',
                       '1,2-Birad_to_alkene',
@@ -814,21 +815,31 @@ class KineticsDepository(Database):
                      '1,3_Insertion_CO2',
                      '1,3_Insertion_ROR',
                      'R_Addition_COm',
-                     'Oa_R_Recombination'
+                     'Oa_R_Recombination',
+                     'Substitution_O',
+                     'SubstitutionS',
+                     'R_Addition_CSm',
+                     '1,3_Insertion_RSR',
                      ]:
             factor = 1.0e6
         elif label in ['intra_H_migration',
-                       'Birad_recombination',
-                       'intra_OH_migration',
-                       'Cyclic_Ether_Formation',
-                       'HO2_Elimination_from_PeroxyRadical',
-                       'Intra_R_Add_Exocyclic',
-                       'Intra_R_Add_Endocyclic',
-                       '1,2-Birad_to_alkene',
-                       'Intra_Disproportionation',
-                       'Korcek_step1',
-                       'Korcek_step2'
-                       ]:
+                      'Birad_recombination',
+                      'intra_OH_migration',
+                      'HO2_Elimination_from_PeroxyRadical',
+                      'Cyclic_Ether_Formation',
+                      'Enol_keto_tautomerism',
+                      'Intra_R_Add_Exocyclic',
+                      'Intra_R_Add_Endocyclic',
+                      '1,2-Birad_to_alkene',
+                      'Intra_Disproportionation',
+                      'Korcek_step1',
+                      'Korcek_step2',
+                      '1,2_shiftS',
+                      'intra_substitutionCS_cyclization',
+                      'intra_substitutionCS_isomerization',
+                      'intra_substitutionS_cyclization',
+                      'intra_substitutionS_isomerization',
+                      ]:
             factor = 1.0
         else:
             raise ValueError('Unable to determine preexponential units for old reaction family "{0}".'.format(self.label))
@@ -836,7 +847,7 @@ class KineticsDepository(Database):
         entries = self.entries.values()
         entries.sort(key=lambda x: x.index)
         
-        flib = open(os.path.join(path, 'rateLibrary.txt'), 'w')
+        flib = codecs.open(os.path.join(path, 'rateLibrary.txt'), 'w', 'utf-8')
         flib.write('// The format for the data in this rate library\n')
         flib.write('Arrhenius_EP\n\n')
         
@@ -851,7 +862,8 @@ class KineticsDepository(Database):
             for label in entry.label.split(';'):
                 flib.write('{0:<23} '.format(label))
             if entry.data.Tmax is None:
-                Trange = '{0:g}    '.format(entry.data.Tmin.value_si)
+                # Tmin contains string of Trange
+                Trange = '{0}    '.format(entry.data.Tmin)
             else:
                 Trange = '{0:g}-{1:g}    '.format(entry.data.Tmin.value_si, entry.data.Tmax.value_si)
             flib.write('{0:<12}'.format(Trange))
@@ -873,7 +885,7 @@ class KineticsDepository(Database):
 
             if not entry.rank:
                 entry.rank = 0
-            flib.write('    {0:<4d}     {1}\n'.format(entry.rank, entry.shortDesc))
+            flib.write(u'    {0:<4d}     {1}\n'.format(entry.rank, entry.shortDesc))
             
             fcom.write('------\n')
             fcom.write('{0}\n'.format(entry.index))
@@ -1560,7 +1572,7 @@ class KineticsLibrary(Database):
                     equation = '{0}(+M) {1} (+M)'.format(equation[0:index], equation[index:]) 
                 f.write('{0:<59}'.format(equation))
                 # Write kinetics
-                if isinstance(rate, ThirdBody):
+                if isinstance(rate, (ThirdBody, Lindemann, Troe)):
                     if isinstance(rate, Lindemann):
                         # Lindemann (and Troe) fall-off have the High-P as default, and Low-P labeled LOW
                         writeArrhenius(f, rate.arrheniusHigh)
@@ -1587,14 +1599,14 @@ class KineticsLibrary(Database):
                     if isinstance(rate, Troe):
                         if rate.T2 is not None:
                             f.write('     TROE /  {0:10.4f} {1:10.2g} {2:10.2g} {3:10.2g}/\n'.format(
-                                rate.alpha.value_si,
+                                rate.alpha,
                                 rate.T3.value_si,
                                 rate.T1.value_si,
                                 rate.T2.value_si,
                             ))
                         else:
                             f.write('     TROE /  {0:10.4f} {1:10.2g} {2:10.2g}/\n'.format(
-                                rate.alpha.value_si,
+                                rate.alpha,
                                 rate.T3.value_si,
                                 rate.T1.value_si,
                             ))
