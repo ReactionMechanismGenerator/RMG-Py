@@ -611,8 +611,7 @@ class CoreEdgeReactionModel:
             
         # Generate thermodynamics of new species
         logging.info('Generating thermodynamics for new species...')
-        for spec in newSpeciesList:
-            spec.generateThermoData(database)
+        self.generateThermoDataForListOfSpecies(newSpeciesList)
         
         # Generate kinetics of new reactions
         logging.info('Generating kinetics for new reactions...')
@@ -658,6 +657,15 @@ class CoreEdgeReactionModel:
         )
 
         logging.info('')
+    
+    def generateThermoDataForListOfSpecies(self, listOfSpecies):
+        """
+        Generates the thermo data for a list of species.
+        
+        Results are stored in the species objects themselves.
+        """
+        for spec in listOfSpecies:
+            spec.generateThermoData(database)
 
     def processNewReactions(self, newReactions, newSpecies, pdepNetwork=None):
         """
