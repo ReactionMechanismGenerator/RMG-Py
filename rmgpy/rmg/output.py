@@ -802,13 +802,10 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
 <td colspan="2" width=50%>* Reaction was found in reverse 
 
 
-{% if not rxn2.kinetics.isPressureDependent() %}
 {% if not rxn2.duplicate %}
 <P><b>Fitted Reverse Kinetics:</b>
 {{rxn2.generateReverseRateCoefficient().toHTML() }}
 
-
-{% endif %}
 {% endif %}
 
 <P><b>Original Kinetics:</b>
