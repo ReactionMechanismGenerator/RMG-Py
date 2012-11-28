@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>3. rmgpy.measure.network - Unimolecular reaction network objects &mdash; RMG Py 0.1.0 documentation</title>
+    <title>12.3. rmgpy.measure.network - Unimolecular reaction network objects &mdash; RMG Py 0.1.0 documentation</title>
     
     <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -25,10 +25,11 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
-    <link rel="up" title="MEASURE API Reference" href="index.html" />
-    <link rel="next" title="4. rmgpy.measure.collision - Collision models and parameters" href="collision.html" />
-    <link rel="prev" title="2. rmgpy.measure.input - Input file reading" href="input.html" /> 
+    <link rel="up" title="12. MEASURE API Reference" href="index.html" />
+    <link rel="next" title="12.4. rmgpy.measure.collision - Collision models and parameters" href="collision.html" />
+    <link rel="prev" title="12.2. rmgpy.measure.input - Input file reading" href="input.html" /> 
   </head>
   <body>
 <div class="header">
@@ -50,20 +51,20 @@
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="collision.html" title="4. rmgpy.measure.collision - Collision models and parameters"
+          <a href="collision.html" title="12.4. rmgpy.measure.collision - Collision models and parameters"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="input.html" title="2. rmgpy.measure.input - Input file reading"
+          <a href="input.html" title="12.2. rmgpy.measure.input - Input file reading"
              accesskey="P">previous</a> |</li>
 <li><a href="../../index.html">Documentation</a> &raquo;</li>
 
           <li><a href="../index.html" >RMG Developer&#8217;s Guide</a> &raquo;</li>
-          <li><a href="index.html" accesskey="U">MEASURE API Reference</a> &raquo;</li> 
+          <li><a href="index.html" accesskey="U">12. MEASURE API Reference</a> &raquo;</li> 
       </ul>
     </div>
             
   <div class="section" id="module-rmgpy.measure.network">
-<span id="rmgpy-measure-network-unimolecular-reaction-network-objects"></span><h1>3. <a class="reference internal" href="#module-rmgpy.measure.network" title="rmgpy.measure.network"><tt class="xref py py-mod docutils literal"><span class="pre">rmgpy.measure.network</span></tt></a> - Unimolecular reaction network objects<a class="headerlink" href="#module-rmgpy.measure.network" title="Permalink to this headline">¶</a></h1>
+<span id="rmgpy-measure-network-unimolecular-reaction-network-objects"></span><h1>12.3. <a class="reference internal" href="#module-rmgpy.measure.network" title="rmgpy.measure.network"><tt class="xref py py-mod docutils literal"><span class="pre">rmgpy.measure.network</span></tt></a> - Unimolecular reaction network objects<a class="headerlink" href="#module-rmgpy.measure.network" title="Permalink to this headline">¶</a></h1>
 <p>Contains the <a class="reference internal" href="#rmgpy.measure.network.Network" title="rmgpy.measure.network.Network"><tt class="xref py py-class docutils literal"><span class="pre">Network</span></tt></a> class, which defines an internal representation
 of a unimolecular reaction network. This provides a convienent means of
 keeping track of things while we are performing the master equation calculation.</p>
@@ -225,21 +226,21 @@ keeping track of things while we are performing the master equation calculation.
 <dl class="method">
 <dt id="rmgpy.measure.network.Network.applyChemicallySignificantEigenvaluesMethod">
 <tt class="descname">applyChemicallySignificantEigenvaluesMethod</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.measure.network.Network.applyChemicallySignificantEigenvaluesMethod" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute the phenomenological rate coefficients <img class="math" src="../../_images/math/c93ef2271f42445cc7a12cf6322aeca7a868d826.png" alt="k(T,P)"/> at the
+<dd><p>Compute the phenomenological rate coefficients <span class="math">\(k(T,P)\)</span> at the
 current conditions using the chemically-significant eigenvalues method.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.measure.network.Network.applyModifiedStrongCollisionMethod">
 <tt class="descname">applyModifiedStrongCollisionMethod</tt><big>(</big><em>efficiencyModel='default'</em><big>)</big><a class="headerlink" href="#rmgpy.measure.network.Network.applyModifiedStrongCollisionMethod" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute the phenomenological rate coefficients <img class="math" src="../../_images/math/c93ef2271f42445cc7a12cf6322aeca7a868d826.png" alt="k(T,P)"/> at the
+<dd><p>Compute the phenomenological rate coefficients <span class="math">\(k(T,P)\)</span> at the
 current conditions using the modified strong collision method.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.measure.network.Network.applyReservoirStateMethod">
 <tt class="descname">applyReservoirStateMethod</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.measure.network.Network.applyReservoirStateMethod" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute the phenomenological rate coefficients <img class="math" src="../../_images/math/c93ef2271f42445cc7a12cf6322aeca7a868d826.png" alt="k(T,P)"/> at the
+<dd><p>Compute the phenomenological rate coefficients <span class="math">\(k(T,P)\)</span> at the
 current conditions using the reservoir state method.</p>
 </dd></dl>
 
@@ -275,7 +276,7 @@ applied to each temperature in the range of interest by interpolation.</p>
 <dd><p>Return an array containing the fraction of each isomer and reactant
 channel present at equilibrium, as determined from the Gibbs free 
 energy and using the concentration equilibrium constant 
-<img class="math" src="../../_images/math/e317a8b36de7fd317369a6c7d262f387e434a122.png" alt="K_\mathrm{c}"/>. These values are ratios, and the absolute
+<span class="math">\(K_\mathrm{c}\)</span>. These values are ratios, and the absolute
 magnitude is not guaranteed; however, the implementation scales the 
 elements of the array so that they sum to unity.</p>
 </dd></dl>
@@ -297,17 +298,17 @@ reactant channel, and product channel, in that order.</p>
 <dt id="rmgpy.measure.network.Network.calculateMicrocanonicalRates">
 <tt class="descname">calculateMicrocanonicalRates</tt><big>(</big><em>check=True</em><big>)</big><a class="headerlink" href="#rmgpy.measure.network.Network.calculateMicrocanonicalRates" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate and return arrays containing the microcanonical rate
-coefficients <img class="math" src="../../_images/math/241b7375c50c3fd63befa4fa93161d6f0961a8a9.png" alt="k(E)"/> for the isomerization, dissociation, and
+coefficients <span class="math">\(k(E)\)</span> for the isomerization, dissociation, and
 association path reactions in the network. If <cite>check</cite> is <tt class="docutils literal"><span class="pre">True</span></tt>, the
-computed <img class="math" src="../../_images/math/241b7375c50c3fd63befa4fa93161d6f0961a8a9.png" alt="k(E)"/> values are checked that they integrate to give
-the expected <img class="math" src="../../_images/math/82c1490a865ac00fb09f53f3fce4cdcc08c15d2f.png" alt="k(T)"/> values (with some allowance for numerical
+computed <span class="math">\(k(E)\)</span> values are checked that they integrate to give
+the expected <span class="math">\(k(T)\)</span> values (with some allowance for numerical
 error).</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.measure.network.Network.calculateRateCoefficients">
 <tt class="descname">calculateRateCoefficients</tt><big>(</big><em>Tlist</em>, <em>Plist</em>, <em>method</em>, <em>grainSize=None</em>, <em>grainCount=None</em>, <em>errorCheck=True</em><big>)</big><a class="headerlink" href="#rmgpy.measure.network.Network.calculateRateCoefficients" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate the phenomenological rate coefficients <img class="math" src="../../_images/math/c93ef2271f42445cc7a12cf6322aeca7a868d826.png" alt="k(T,P)"/> for the
+<dd><p>Calculate the phenomenological rate coefficients <span class="math">\(k(T,P)\)</span> for the
 network at the given temperatures <cite>Tlist</cite> in K and pressures <cite>Plist</cite> in
 Pa using the energy grains <tt class="docutils literal"><span class="pre">Elist</span></tt> in J/mol. The <cite>method</cite> string is
 used to indicate the method to use, and should be one of <tt class="docutils literal"><span class="pre">&quot;modified</span>
@@ -425,7 +426,7 @@ default.</p>
 <dd><p>Select a suitable list of energies to use for subsequent calculations.
 This is done by finding the minimum and maximum energies on the 
 potential energy surface, then adding a multiple of 
-<img class="math" src="../../_images/math/17be814b69c175789593598a2f8f9d6d1df2380f.png" alt="k_\mathrm{B} T"/> onto the maximum energy.</p>
+<span class="math">\(k_\mathrm{B} T\)</span> onto the maximum energy.</p>
 <p>You must specify either the desired grain spacing <cite>grainSize</cite> in J/mol
 or the desired number of grains <cite>Ngrains</cite>, as well as a temperature
 <cite>T</cite> in K to use for the equilibrium calculation. You can specify both
@@ -460,10 +461,10 @@ is the same.</p>
 </div>
   <h4>Previous topic</h4>
   <p class="topless"><a href="input.html"
-                        title="previous chapter">2. <tt class="docutils literal"><span class="pre">rmgpy.measure.input</span></tt> - Input file reading</a></p>
+                        title="previous chapter">12.2. <tt class="docutils literal docutils literal docutils literal"><span class="pre">rmgpy.measure.input</span></tt> - Input file reading</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="collision.html"
-                        title="next chapter">4. <tt class="docutils literal"><span class="pre">rmgpy.measure.collision</span></tt> - Collision models and parameters</a></p>
+                        title="next chapter">12.4. <tt class="docutils literal docutils literal"><span class="pre">rmgpy.measure.collision</span></tt> - Collision models and parameters</a></p>
   <h3>This Page </h3>
   <ul class="this-page-menu">
     <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/developers/measure/network.rst"

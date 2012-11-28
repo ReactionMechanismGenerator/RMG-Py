@@ -1,0 +1,313 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Molecular conformations &mdash; RMG Py 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" /> 
+  </head>
+  <body>
+<div class="header">
+&nbsp;
+</div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+<li><a href="../../index.html">Documentation</a> &raquo;</li>
+ 
+      </ul>
+    </div>
+            
+  <div class="section" id="molecular-conformations">
+<h1>Molecular conformations<a class="headerlink" href="#molecular-conformations" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="rmgpy.statmech.Conformer">
+<em class="property">class </em><tt class="descclassname">rmgpy.statmech.</tt><tt class="descname">Conformer</tt><a class="headerlink" href="#rmgpy.statmech.Conformer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Conformer(E0=None, modes=None, spinMultiplicity=1, opticalIsomers=1, number=None, mass=None, coordinates=None)</p>
+<p>A representation of an individual molecular conformation. The attributes 
+are:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="21%" />
+<col width="79%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Attribute</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><cite>E0</cite></td>
+<td>The ground-state energy (including zero-point energy) of the conformer</td>
+</tr>
+<tr class="row-odd"><td><cite>modes</cite></td>
+<td>A list of the molecular degrees of freedom</td>
+</tr>
+<tr class="row-even"><td><cite>spinMultiplicity</cite></td>
+<td>The degeneracy of the electronic ground state</td>
+</tr>
+<tr class="row-odd"><td><cite>opticalIsomers</cite></td>
+<td>The number of optical isomers</td>
+</tr>
+<tr class="row-even"><td><cite>number</cite></td>
+<td>An array of atomic numbers of each atom in the conformer</td>
+</tr>
+<tr class="row-odd"><td><cite>mass</cite></td>
+<td>An array of masses of each atom in the conformer</td>
+</tr>
+<tr class="row-even"><td><cite>coordinates</cite></td>
+<td>An array of 3D coordinates of each atom in the conformer</td>
+</tr>
+</tbody>
+</table>
+<p>Note that the <cite>spinMultiplicity</cite> reflects the electronic mode of the
+molecular system.</p>
+<dl class="attribute">
+<dt id="rmgpy.statmech.Conformer.E0">
+<tt class="descname">E0</tt><a class="headerlink" href="#rmgpy.statmech.Conformer.E0" title="Permalink to this definition">¶</a></dt>
+<dd><p>The ground-state energy (including zero-point energy) of the conformer.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.statmech.Conformer.coordinates">
+<tt class="descname">coordinates</tt><a class="headerlink" href="#rmgpy.statmech.Conformer.coordinates" title="Permalink to this definition">¶</a></dt>
+<dd><p>An array of 3D coordinates of each atom in the conformer.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.statmech.Conformer.getActiveModes">
+<tt class="descname">getActiveModes</tt><big>(</big><em>self</em>, <em>int activeJRotor=False</em>, <em>int activeKRotor=True</em><big>)</big> &rarr; list<a class="headerlink" href="#rmgpy.statmech.Conformer.getActiveModes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of the active molecular degrees of freedom of the
+molecular system.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.statmech.Conformer.getCenterOfMass">
+<tt class="descname">getCenterOfMass</tt><big>(</big><em>self</em>, <em>atoms=None</em><big>)</big> &rarr; ndarray<a class="headerlink" href="#rmgpy.statmech.Conformer.getCenterOfMass" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate and return the [three-dimensional] position of the center of
+mass of the conformer in m. If a list <cite>atoms</cite> of atoms is specified, 
+only those atoms will be used to calculate the center of mass. 
+Otherwise, all atoms will be used.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.statmech.Conformer.getDensityOfStates">
+<tt class="descname">getDensityOfStates</tt><big>(</big><em>self</em>, <em>ndarray Elist</em><big>)</big> &rarr; ndarray<a class="headerlink" href="#rmgpy.statmech.Conformer.getDensityOfStates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the density of states <span class="math">\(\rho(E) \ dE\)</span> at the specified
+energies <cite>Elist</cite> above the ground state.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.statmech.Conformer.getEnthalpy">
+<tt class="descname">getEnthalpy</tt><big>(</big><em>self</em>, <em>double T</em><big>)</big> &rarr; double<a class="headerlink" href="#rmgpy.statmech.Conformer.getEnthalpy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the enthalpy in J/mol for the system at the specified
+temperature <cite>T</cite> in K.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.statmech.Conformer.getEntropy">
+<tt class="descname">getEntropy</tt><big>(</big><em>self</em>, <em>double T</em><big>)</big> &rarr; double<a class="headerlink" href="#rmgpy.statmech.Conformer.getEntropy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the entropy in J/mol*K for the system at the specified
+temperature <cite>T</cite> in K.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.statmech.Conformer.getFreeEnergy">
+<tt class="descname">getFreeEnergy</tt><big>(</big><em>self</em>, <em>double T</em><big>)</big> &rarr; double<a class="headerlink" href="#rmgpy.statmech.Conformer.getFreeEnergy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the Gibbs free energy in J/mol for the system at the specified
+temperature <cite>T</cite> in K.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.statmech.Conformer.getHeatCapacity">
+<tt class="descname">getHeatCapacity</tt><big>(</big><em>self</em>, <em>double T</em><big>)</big> &rarr; double<a class="headerlink" href="#rmgpy.statmech.Conformer.getHeatCapacity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the heat capacity in J/mol*K for the system at the specified
+temperature <cite>T</cite> in K.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.statmech.Conformer.getInternalReducedMomentOfInertia">
+<tt class="descname">getInternalReducedMomentOfInertia</tt><big>(</big><em>self</em>, <em>pivots</em>, <em>top1</em><big>)</big> &rarr; double<a class="headerlink" href="#rmgpy.statmech.Conformer.getInternalReducedMomentOfInertia" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate and return the reduced moment of inertia for an internal
+torsional rotation around the axis defined by the two atoms in 
+<cite>pivots</cite>. The list <cite>top1</cite> contains the atoms that should be considered
+as part of the rotating top; this list should contain the pivot atom
+connecting the top to the rest of the molecule.    The procedure used is
+that of Pitzer <a class="footnote-reference" href="#id3" id="id1">[1]</a>, which is described as <span class="math">\(I^{(2,3)}\)</span> by East
+and Radom <a class="footnote-reference" href="#id4" id="id2">[2]</a>. In this procedure, the molecule is divided into two
+tops: those at either end of the hindered rotor bond. The moment of
+inertia of each top is evaluated using an axis passing through the
+center of mass of both tops. Finally, the reduced moment of inertia is
+evaluated from the moment of inertia of each top via the formula</p>
+<div class="math">
+\[\frac{1}{I^{(2,3)}} = \frac{1}{I_1} + \frac{1}{I_2}\]</div>
+<table class="docutils footnote" frame="void" id="id3" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[1]</a></td><td>Pitzer, K. S. <em>J. Chem. Phys.</em> <strong>14</strong>, p. 239-243 (1946).</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id4" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id2">[2]</a></td><td>East, A. L. L. and Radom, L. <em>J. Chem. Phys.</em> <strong>106</strong>, p. 6655-6674 (1997).</td></tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.statmech.Conformer.getMomentOfInertiaTensor">
+<tt class="descname">getMomentOfInertiaTensor</tt><big>(</big><em>self</em><big>)</big> &rarr; ndarray<a class="headerlink" href="#rmgpy.statmech.Conformer.getMomentOfInertiaTensor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate and return the moment of inertia tensor for the conformer 
+in kg*m^2. If the coordinates are not at the center of mass, they are
+temporarily shifted there for the purposes of this calculation.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.statmech.Conformer.getPartitionFunction">
+<tt class="descname">getPartitionFunction</tt><big>(</big><em>self</em>, <em>double T</em><big>)</big> &rarr; double<a class="headerlink" href="#rmgpy.statmech.Conformer.getPartitionFunction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the partition function <span class="math">\(Q(T)\)</span> for the system at the
+specified temperature <cite>T</cite> in K.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.statmech.Conformer.getPrincipalMomentsOfInertia">
+<tt class="descname">getPrincipalMomentsOfInertia</tt><big>(</big><em>self</em><big>)</big><a class="headerlink" href="#rmgpy.statmech.Conformer.getPrincipalMomentsOfInertia" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate and return the principal moments of inertia and corresponding 
+principal axes for the conformer. The moments of inertia are in 
+kg*m^2, while the principal axes have unit length.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.statmech.Conformer.getSumOfStates">
+<tt class="descname">getSumOfStates</tt><big>(</big><em>self</em>, <em>ndarray Elist</em><big>)</big> &rarr; ndarray<a class="headerlink" href="#rmgpy.statmech.Conformer.getSumOfStates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the sum of states <span class="math">\(N(E)\)</span> at the specified energies <cite>Elist</cite>
+in kJ/mol above the ground state.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.statmech.Conformer.getSymmetricTopRotors">
+<tt class="descname">getSymmetricTopRotors</tt><big>(</big><em>self</em><big>)</big><a class="headerlink" href="#rmgpy.statmech.Conformer.getSymmetricTopRotors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return objects representing the external J-rotor and K-rotor under the
+symmetric top approximation. For nonlinear molecules, the J-rotor is
+a 2D rigid rotor with a rotational constant <span class="math">\(B\)</span> determined as the
+geometric mean of the two most similar rotational constants. The
+K-rotor is a 1D rigid rotor with a rotational constant <span class="math">\(A-B\)</span>
+determined by the difference between the remaining molecular rotational
+constant and the J-rotor rotational constant.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.statmech.Conformer.getTotalMass">
+<tt class="descname">getTotalMass</tt><big>(</big><em>self</em>, <em>atoms=None</em><big>)</big> &rarr; double<a class="headerlink" href="#rmgpy.statmech.Conformer.getTotalMass" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate and return the total mass of the atoms in the conformer in 
+kg. If a list <cite>atoms</cite> of atoms is specified, only those atoms will
+be used to calculate the center of mass. Otherwise, all atoms will be
+used.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.statmech.Conformer.mass">
+<tt class="descname">mass</tt><a class="headerlink" href="#rmgpy.statmech.Conformer.mass" title="Permalink to this definition">¶</a></dt>
+<dd><p>An array of masses of each atom in the conformer.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.statmech.Conformer.modes">
+<tt class="descname">modes</tt><a class="headerlink" href="#rmgpy.statmech.Conformer.modes" title="Permalink to this definition">¶</a></dt>
+<dd><p>modes: list</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.statmech.Conformer.number">
+<tt class="descname">number</tt><a class="headerlink" href="#rmgpy.statmech.Conformer.number" title="Permalink to this definition">¶</a></dt>
+<dd><p>An array of atomic numbers of each atom in the conformer.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.statmech.Conformer.opticalIsomers">
+<tt class="descname">opticalIsomers</tt><a class="headerlink" href="#rmgpy.statmech.Conformer.opticalIsomers" title="Permalink to this definition">¶</a></dt>
+<dd><p>opticalIsomers: &#8216;int&#8217;</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.statmech.Conformer.spinMultiplicity">
+<tt class="descname">spinMultiplicity</tt><a class="headerlink" href="#rmgpy.statmech.Conformer.spinMultiplicity" title="Permalink to this definition">¶</a></dt>
+<dd><p>spinMultiplicity: &#8216;int&#8217;</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div class="sidebarlogo">
+<img src="../../_static/rmg-logo-small.png" alt="RMG" />
+</div>
+  <h3>This Page </h3>
+  <ul class="this-page-menu">
+    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/developers/statmech/conformer.rst"
+           rel="nofollow">Edit this page</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

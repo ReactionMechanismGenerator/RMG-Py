@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>4. rmgpy.measure.collision - Collision models and parameters &mdash; RMG Py 0.1.0 documentation</title>
+    <title>12.4. rmgpy.measure.collision - Collision models and parameters &mdash; RMG Py 0.1.0 documentation</title>
     
     <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -25,10 +25,11 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
-    <link rel="up" title="MEASURE API Reference" href="index.html" />
-    <link rel="next" title="5. rmgpy.measure.reaction - Working with reaction rate coefficients" href="reaction.html" />
-    <link rel="prev" title="3. rmgpy.measure.network - Unimolecular reaction network objects" href="network.html" /> 
+    <link rel="up" title="12. MEASURE API Reference" href="index.html" />
+    <link rel="next" title="12.5. rmgpy.measure.reaction - Working with reaction rate coefficients" href="reaction.html" />
+    <link rel="prev" title="12.3. rmgpy.measure.network - Unimolecular reaction network objects" href="network.html" /> 
   </head>
   <body>
 <div class="header">
@@ -50,31 +51,31 @@
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="reaction.html" title="5. rmgpy.measure.reaction - Working with reaction rate coefficients"
+          <a href="reaction.html" title="12.5. rmgpy.measure.reaction - Working with reaction rate coefficients"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="network.html" title="3. rmgpy.measure.network - Unimolecular reaction network objects"
+          <a href="network.html" title="12.3. rmgpy.measure.network - Unimolecular reaction network objects"
              accesskey="P">previous</a> |</li>
 <li><a href="../../index.html">Documentation</a> &raquo;</li>
 
           <li><a href="../index.html" >RMG Developer&#8217;s Guide</a> &raquo;</li>
-          <li><a href="index.html" accesskey="U">MEASURE API Reference</a> &raquo;</li> 
+          <li><a href="index.html" accesskey="U">12. MEASURE API Reference</a> &raquo;</li> 
       </ul>
     </div>
             
   <div class="section" id="module-rmgpy.measure.collision">
-<span id="rmgpy-measure-collision-collision-models-and-parameters"></span><h1>4. <a class="reference internal" href="#module-rmgpy.measure.collision" title="rmgpy.measure.collision"><tt class="xref py py-mod docutils literal"><span class="pre">rmgpy.measure.collision</span></tt></a> - Collision models and parameters<a class="headerlink" href="#module-rmgpy.measure.collision" title="Permalink to this headline">¶</a></h1>
+<span id="rmgpy-measure-collision-collision-models-and-parameters"></span><h1>12.4. <a class="reference internal" href="#module-rmgpy.measure.collision" title="rmgpy.measure.collision"><tt class="xref py py-mod docutils literal"><span class="pre">rmgpy.measure.collision</span></tt></a> - Collision models and parameters<a class="headerlink" href="#module-rmgpy.measure.collision" title="Permalink to this headline">¶</a></h1>
 <p>Contains classes that represent the collision models available in MEASURE,
 and methods for calculating various collision parameters. Each collision model
 provides a method <tt class="xref py py-meth docutils literal"><span class="pre">generateCollisionMatrix()</span></tt> that generates the collision
-matrix <img class="math" src="../../_images/math/57cd597e631080179180b1c2da60f0e4f4497ba8.png" alt="\matrix{M}_\mathrm{coll} / \omega = \matrix{P} - \matrix{I}"/>
+matrix <span class="math">\(\matrix{M}_\mathrm{coll} / \omega = \matrix{P} - \matrix{I}\)</span>
 corresponding to the collisional energy transfer probability function
-<img class="math" src="../../_images/math/f4af75c0ccb3dbbe0bbb7669abc1ba6f2b9a7447.png" alt="P(E, E^\prime)"/> for that model. The available collision models are:</p>
+<span class="math">\(P(E, E^\prime)\)</span> for that model. The available collision models are:</p>
 <ul class="simple">
 <li><tt class="xref py py-class docutils literal"><span class="pre">SingleExponentialDownModel</span></tt></li>
 </ul>
 <div class="section" id="collision-models">
-<h2>4.1. Collision Models<a class="headerlink" href="#collision-models" title="Permalink to this headline">¶</a></h2>
+<h2>12.4.1. Collision Models<a class="headerlink" href="#collision-models" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="rmgpy.measure.collision.CollisionModel">
 <em class="property">class </em><tt class="descclassname">rmgpy.measure.collision.</tt><tt class="descname">CollisionModel</tt><a class="headerlink" href="#rmgpy.measure.collision.CollisionModel" title="Permalink to this definition">¶</a></dt>
@@ -86,13 +87,13 @@ implementing.</p>
 <p class="first admonition-title">Note</p>
 <p class="last">As with all collision models, you can only specify either the
 deactivating direction or the activating direction of the collisional
-transfer probabilities function <img class="math" src="../../_images/math/f4af75c0ccb3dbbe0bbb7669abc1ba6f2b9a7447.png" alt="P(E, E^\prime)"/>, as the other
+transfer probabilities function <span class="math">\(P(E, E^\prime)\)</span>, as the other
 is constrained by detailed balance.</p>
 </div>
 </dd></dl>
 
 <div class="section" id="single-exponential-down-model">
-<h3>4.1.1. Single Exponential Down Model<a class="headerlink" href="#single-exponential-down-model" title="Permalink to this headline">¶</a></h3>
+<h3>12.4.1.1. Single Exponential Down Model<a class="headerlink" href="#single-exponential-down-model" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="rmgpy.measure.collision.SingleExponentialDown">
 <em class="property">class </em><tt class="descclassname">rmgpy.measure.collision.</tt><tt class="descname">SingleExponentialDown</tt><a class="headerlink" href="#rmgpy.measure.collision.SingleExponentialDown" title="Permalink to this definition">¶</a></dt>
@@ -100,17 +101,17 @@ is constrained by detailed balance.</p>
 A single exponential down collision model, based around the collisional 
 energy transfer probability function</p>
 <div class="math">
-<p><img src="../../_images/math/3ae914db4068f3c46c78f5db994710be7740fb11.png" alt="P(E, E^\prime) = C(E^\prime) \exp \left( - \frac{E^\prime - E}{\alpha} \right) \hspace{40pt} E &lt; E^\prime"/></p>
-</div><p>where the parameter <img class="math" src="../../_images/math/47c512f847349e305620b48aa28f9c8615246dc5.png" alt="\alpha = \left&lt; \Delta E_\mathrm{d} \right&gt;"/>
+\[\begin{split}P(E, E^\prime) = C(E^\prime) \exp \left( - \frac{E^\prime - E}{\alpha} \right) \hspace{40pt} E &lt; E^\prime\end{split}\]</div>
+<p>where the parameter <span class="math">\(\alpha = \left&lt; \Delta E_\mathrm{d} \right&gt;\)</span>
 represents the average energy transferred in a deactivating collision. This
 is the most commonly-used collision model, simply because it only has one
-parameter to determine. The parameter <img class="math" src="../../_images/math/10f32377ac67d94f764f12a15ea987e88c85d3e1.png" alt="\alpha"/> is specified using the
+parameter to determine. The parameter <span class="math">\(\alpha\)</span> is specified using the
 equation</p>
 <div class="math">
-<p><img src="../../_images/math/10d5b841fc41eaa8b2e04ec20923785c6c3c5b2e.png" alt="\alpha = \alpha_0 \left( \frac{T}{T_0} \right)^n"/></p>
-</div><p>where <img class="math" src="../../_images/math/2e91bbbe6d9d3befa4e1a622257816568b108b00.png" alt="\alpha_0"/> is the value of <img class="math" src="../../_images/math/10f32377ac67d94f764f12a15ea987e88c85d3e1.png" alt="\alpha"/> at temperature
-<img class="math" src="../../_images/math/6801c07694edb238c4a095956d8bf46ccdb38fcc.png" alt="T_0"/> in K. Set the exponent <img class="math" src="../../_images/math/174fadd07fd54c9afe288e96558c92e0c1da733a.png" alt="n"/> to zero to obtain a
-temperature-independent value for <img class="math" src="../../_images/math/10f32377ac67d94f764f12a15ea987e88c85d3e1.png" alt="\alpha"/>.</p>
+\[\alpha = \alpha_0 \left( \frac{T}{T_0} \right)^n\]</div>
+<p>where <span class="math">\(\alpha_0\)</span> is the value of <span class="math">\(\alpha\)</span> at temperature
+<span class="math">\(T_0\)</span> in K. Set the exponent <span class="math">\(n\)</span> to zero to obtain a
+temperature-independent value for <span class="math">\(\alpha\)</span>.</p>
 <table border="1" class="docutils">
 <colgroup>
 <col width="15%" />
@@ -134,7 +135,7 @@ temperature-independent value for <img class="math" src="../../_images/math/10f3
 <dt id="rmgpy.measure.collision.SingleExponentialDown.generateCollisionMatrix">
 <tt class="descname">generateCollisionMatrix</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.measure.collision.SingleExponentialDown.generateCollisionMatrix" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate and return the collision matrix
-<img class="math" src="../../_images/math/57cd597e631080179180b1c2da60f0e4f4497ba8.png" alt="\matrix{M}_\mathrm{coll} / \omega = \matrix{P} - \matrix{I}"/>
+<span class="math">\(\matrix{M}_\mathrm{coll} / \omega = \matrix{P} - \matrix{I}\)</span>
 corresponding to this collision model for a given set of energies
 <cite>Elist</cite> in J/mol, temperature <cite>T</cite> in K, and isomer density of states
 <cite>densStates</cite>. You must also supply the average energy transferred in
@@ -144,10 +145,10 @@ a deactivating collision <cite>dEdown</cite> in J/mol.</p>
 <dl class="method">
 <dt id="rmgpy.measure.collision.SingleExponentialDown.getAlpha">
 <tt class="descname">getAlpha</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.measure.collision.SingleExponentialDown.getAlpha" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the value of the <img class="math" src="../../_images/math/10f32377ac67d94f764f12a15ea987e88c85d3e1.png" alt="\alpha"/> parameter at temperature <cite>T</cite> in
-K. The <img class="math" src="../../_images/math/10f32377ac67d94f764f12a15ea987e88c85d3e1.png" alt="\alpha"/> parameter represents the average energy
+<dd><p>Return the value of the <span class="math">\(\alpha\)</span> parameter at temperature <cite>T</cite> in
+K. The <span class="math">\(\alpha\)</span> parameter represents the average energy
 transferred in a deactivating collision
-<img class="math" src="../../_images/math/4c3c33481c9cabfe8faf30afa117dcc85eaa24dc.png" alt="\left&lt; \Delta E_\mathrm{d} \right&gt;"/>, and has units of J/mol.</p>
+<span class="math">\(\left&lt; \Delta E_\mathrm{d} \right&gt;\)</span>, and has units of J/mol.</p>
 </dd></dl>
 
 </dd></dl>
@@ -155,7 +156,7 @@ transferred in a deactivating collision
 </div>
 </div>
 <div class="section" id="collision-parameters">
-<h2>4.2. Collision Parameters<a class="headerlink" href="#collision-parameters" title="Permalink to this headline">¶</a></h2>
+<h2>12.4.2. Collision Parameters<a class="headerlink" href="#collision-parameters" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="rmgpy.measure.collision.calculateCollisionFrequency">
 <tt class="descclassname">rmgpy.measure.collision.</tt><tt class="descname">calculateCollisionFrequency</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.measure.collision.calculateCollisionFrequency" title="Permalink to this definition">¶</a></dt>
@@ -164,9 +165,9 @@ a dictionary of bath gases and their mole fractions <cite>bathGas</cite> at a gi
 temperature <cite>T</cite> in K and pressure <cite>P</cite> in Pa. The Lennard-Jones model is
 generally a slight underestimate, but reasonable enough. If the bath gas
 is a mixture, arithmetic means are used to compute its effective
-Lennard-Jones <img class="math" src="../../_images/math/fa35d9fc104207e09a712110ac81612c5b279a6c.png" alt="\sigma"/> parameter and molecular weight, while a
+Lennard-Jones <span class="math">\(\sigma\)</span> parameter and molecular weight, while a
 geometric mean is used to calculate its effective Lennard-Jones
-<img class="math" src="../../_images/math/eaf4418fbe935c15a606516d8f55dc380cd8e822.png" alt="\epsilon"/> parameter.</p>
+<span class="math">\(\epsilon\)</span> parameter.</p>
 </dd></dl>
 
 <dl class="function">
@@ -180,7 +181,7 @@ reactive energy <cite>Ereac</cite> in J/mol. The collisions occur at temperature
 in K and are described by the collision model <cite>collisionModel</cite>, which
 currently must be a <tt class="xref py py-class docutils literal"><span class="pre">SingleExponentialDownModel</span></tt> object. The
 algorithm here is implemented as described by Chang, Bozzelli, and Dean
-<a class="reference internal" href="#chang2000">[Chang2000]</a>.</p>
+<a class="reference internal" href="../pdep/collision.html#chang2000">[Chang2000]</a>.</p>
 <table class="docutils citation" frame="void" id="chang2000" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
@@ -205,22 +206,22 @@ algorithm here is implemented as described by Chang, Bozzelli, and Dean
 </div>
   <h3><a href="../../contents.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">4. <tt class="docutils literal"><span class="pre">rmgpy.measure.collision</span></tt> - Collision models and parameters</a><ul>
-<li><a class="reference internal" href="#collision-models">4.1. Collision Models</a><ul>
-<li><a class="reference internal" href="#single-exponential-down-model">4.1.1. Single Exponential Down Model</a></li>
+<li><a class="reference internal" href="#">12.4. <tt class="docutils literal"><span class="pre">rmgpy.measure.collision</span></tt> - Collision models and parameters</a><ul>
+<li><a class="reference internal" href="#collision-models">12.4.1. Collision Models</a><ul>
+<li><a class="reference internal" href="#single-exponential-down-model">12.4.1.1. Single Exponential Down Model</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#collision-parameters">4.2. Collision Parameters</a></li>
+<li><a class="reference internal" href="#collision-parameters">12.4.2. Collision Parameters</a></li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="network.html"
-                        title="previous chapter">3. <tt class="docutils literal"><span class="pre">rmgpy.measure.network</span></tt> - Unimolecular reaction network objects</a></p>
+                        title="previous chapter">12.3. <tt class="docutils literal"><span class="pre">rmgpy.measure.network</span></tt> - Unimolecular reaction network objects</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="reaction.html"
-                        title="next chapter">5. <tt class="docutils literal"><span class="pre">rmgpy.measure.reaction</span></tt> - Working with reaction rate coefficients</a></p>
+                        title="next chapter">12.5. <tt class="docutils literal"><span class="pre">rmgpy.measure.reaction</span></tt> - Working with reaction rate coefficients</a></p>
   <h3>This Page </h3>
   <ul class="this-page-menu">
     <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/developers/measure/collision.rst"

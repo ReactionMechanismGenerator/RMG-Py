@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>5. rmgpy.measure.reaction - Working with reaction rate coefficients &mdash; RMG Py 0.1.0 documentation</title>
+    <title>12.5. rmgpy.measure.reaction - Working with reaction rate coefficients &mdash; RMG Py 0.1.0 documentation</title>
     
     <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -25,10 +25,11 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
-    <link rel="up" title="MEASURE API Reference" href="index.html" />
-    <link rel="next" title="6. rmgpy.measure.msc - The modified strong collision method" href="msc.html" />
-    <link rel="prev" title="4. rmgpy.measure.collision - Collision models and parameters" href="collision.html" /> 
+    <link rel="up" title="12. MEASURE API Reference" href="index.html" />
+    <link rel="next" title="12.6. rmgpy.measure.msc - The modified strong collision method" href="msc.html" />
+    <link rel="prev" title="12.4. rmgpy.measure.collision - Collision models and parameters" href="collision.html" /> 
   </head>
   <body>
 <div class="header">
@@ -50,32 +51,32 @@
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="msc.html" title="6. rmgpy.measure.msc - The modified strong collision method"
+          <a href="msc.html" title="12.6. rmgpy.measure.msc - The modified strong collision method"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="collision.html" title="4. rmgpy.measure.collision - Collision models and parameters"
+          <a href="collision.html" title="12.4. rmgpy.measure.collision - Collision models and parameters"
              accesskey="P">previous</a> |</li>
 <li><a href="../../index.html">Documentation</a> &raquo;</li>
 
           <li><a href="../index.html" >RMG Developer&#8217;s Guide</a> &raquo;</li>
-          <li><a href="index.html" accesskey="U">MEASURE API Reference</a> &raquo;</li> 
+          <li><a href="index.html" accesskey="U">12. MEASURE API Reference</a> &raquo;</li> 
       </ul>
     </div>
             
   <div class="section" id="module-rmgpy.measure.reaction">
-<span id="rmgpy-measure-reaction-working-with-reaction-rate-coefficients"></span><h1>5. <a class="reference internal" href="#module-rmgpy.measure.reaction" title="rmgpy.measure.reaction"><tt class="xref py py-mod docutils literal"><span class="pre">rmgpy.measure.reaction</span></tt></a> - Working with reaction rate coefficients<a class="headerlink" href="#module-rmgpy.measure.reaction" title="Permalink to this headline">¶</a></h1>
+<span id="rmgpy-measure-reaction-working-with-reaction-rate-coefficients"></span><h1>12.5. <a class="reference internal" href="#module-rmgpy.measure.reaction" title="rmgpy.measure.reaction"><tt class="xref py py-mod docutils literal"><span class="pre">rmgpy.measure.reaction</span></tt></a> - Working with reaction rate coefficients<a class="headerlink" href="#module-rmgpy.measure.reaction" title="Permalink to this headline">¶</a></h1>
 <p>Contains functions for working with reaction rate coefficients. The
 <tt class="xref py py-meth docutils literal"><span class="pre">calculateMicrocanonicalRateCoefficients()</span></tt> function is used to calculate
-the forward and reverse microcanonical rate coefficients <img class="math" src="../../_images/math/241b7375c50c3fd63befa4fa93161d6f0961a8a9.png" alt="k(E)"/> for each
+the forward and reverse microcanonical rate coefficients <span class="math">\(k(E)\)</span> for each
 path reaction. The <a class="reference internal" href="#rmgpy.measure.reaction.fitInterpolationModel" title="rmgpy.measure.reaction.fitInterpolationModel"><tt class="xref py py-meth docutils literal"><span class="pre">fitInterpolationModel()</span></tt></a> function is used to fit an
 interpolation model to a phenomenological rate coefficient <tt class="xref py py-meth docutils literal"><span class="pre">k(T,P)()</span></tt> for
 each net reaction.</p>
 <div class="section" id="microcanonical-rate-coefficients">
-<h2>5.1. Microcanonical Rate Coefficients<a class="headerlink" href="#microcanonical-rate-coefficients" title="Permalink to this headline">¶</a></h2>
+<h2>12.5.1. Microcanonical Rate Coefficients<a class="headerlink" href="#microcanonical-rate-coefficients" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="rmgpy.measure.reaction.calculateMicrocanonicalRateCoefficient">
 <tt class="descclassname">rmgpy.measure.reaction.</tt><tt class="descname">calculateMicrocanonicalRateCoefficient</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.measure.reaction.calculateMicrocanonicalRateCoefficient" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate the microcanonical rate coefficient <img class="math" src="../../_images/math/241b7375c50c3fd63befa4fa93161d6f0961a8a9.png" alt="k(E)"/> for the reaction
+<dd><p>Calculate the microcanonical rate coefficient <span class="math">\(k(E)\)</span> for the reaction
 <cite>reaction</cite> at the energies <cite>Elist</cite> in J/mol. <cite>reacDensStates</cite> and 
 <cite>prodDensStates</cite> are the densities of states of the reactant and product
 configurations for this reaction. If the reaction is irreversible, only the
@@ -86,7 +87,7 @@ can based on the input data available:</p>
 <li>If detailed information has been provided for the transition state (i.e.
 the molecular degrees of freedom), then RRKM theory will be used.</li>
 <li>If the above is not possible but high-pressure limit kinetics
-<img class="math" src="../../_images/math/622ba9fa0a653191fc56b790d091d55d86005309.png" alt="k_\infty(T)"/> have been provided, then the inverse Laplace 
+<span class="math">\(k_\infty(T)\)</span> have been provided, then the inverse Laplace 
 transform method will be used.</li>
 </ul>
 <p>The density of states for the product <cite>prodDensStates</cite> and the temperature
@@ -122,12 +123,12 @@ the inverse transform is undefined).</p>
 
 </div>
 <div class="section" id="interpolation-models-for-phenomenological-rate-coefficients">
-<h2>5.2. Interpolation Models for Phenomenological Rate Coefficients<a class="headerlink" href="#interpolation-models-for-phenomenological-rate-coefficients" title="Permalink to this headline">¶</a></h2>
+<h2>12.5.2. Interpolation Models for Phenomenological Rate Coefficients<a class="headerlink" href="#interpolation-models-for-phenomenological-rate-coefficients" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="rmgpy.measure.reaction.fitInterpolationModel">
 <tt class="descclassname">rmgpy.measure.reaction.</tt><tt class="descname">fitInterpolationModel</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.measure.reaction.fitInterpolationModel" title="Permalink to this definition">¶</a></dt>
 <dd><p>For a set of phenomenological rate coefficients <cite>K</cite> computed at a grid of
-temperatures <cite>Tlist</cite> in K and pressures <cite>Plist</cite> in Pa, fit a <img class="math" src="../../_images/math/c93ef2271f42445cc7a12cf6322aeca7a868d826.png" alt="k(T,P)"/>
+temperatures <cite>Tlist</cite> in K and pressures <cite>Plist</cite> in Pa, fit a <span class="math">\(k(T,P)\)</span>
 interpolation <cite>model</cite>, a tuple where the first item is a string describing
 the type of model - either <tt class="docutils literal"><span class="pre">'chebyshev'</span></tt> or <tt class="docutils literal"><span class="pre">'pdeparrhenius'</span></tt> - and the
 remaining elements contain parameters for that model. For Chebyshev
@@ -155,19 +156,19 @@ it is optional.</p>
 </div>
   <h3><a href="../../contents.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">5. <tt class="docutils literal"><span class="pre">rmgpy.measure.reaction</span></tt> - Working with reaction rate coefficients</a><ul>
-<li><a class="reference internal" href="#microcanonical-rate-coefficients">5.1. Microcanonical Rate Coefficients</a></li>
-<li><a class="reference internal" href="#interpolation-models-for-phenomenological-rate-coefficients">5.2. Interpolation Models for Phenomenological Rate Coefficients</a></li>
+<li><a class="reference internal" href="#">12.5. <tt class="docutils literal"><span class="pre">rmgpy.measure.reaction</span></tt> - Working with reaction rate coefficients</a><ul>
+<li><a class="reference internal" href="#microcanonical-rate-coefficients">12.5.1. Microcanonical Rate Coefficients</a></li>
+<li><a class="reference internal" href="#interpolation-models-for-phenomenological-rate-coefficients">12.5.2. Interpolation Models for Phenomenological Rate Coefficients</a></li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="collision.html"
-                        title="previous chapter">4. <tt class="docutils literal"><span class="pre">rmgpy.measure.collision</span></tt> - Collision models and parameters</a></p>
+                        title="previous chapter">12.4. <tt class="docutils literal docutils literal docutils literal"><span class="pre">rmgpy.measure.collision</span></tt> - Collision models and parameters</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="msc.html"
-                        title="next chapter">6. <tt class="docutils literal"><span class="pre">rmgpy.measure.msc</span></tt> - The modified strong collision method</a></p>
+                        title="next chapter">12.6. <tt class="docutils literal docutils literal"><span class="pre">rmgpy.measure.msc</span></tt> - The modified strong collision method</a></p>
   <h3>This Page </h3>
   <ul class="this-page-menu">
     <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/developers/measure/reaction.rst"

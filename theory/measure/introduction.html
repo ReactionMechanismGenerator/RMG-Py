@@ -25,6 +25,7 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
     <link rel="up" title="MEASURE Theory Guide" href="index.html" />
     <link rel="next" title="2. The Master Equation" href="master_equation.html" />
@@ -69,40 +70,40 @@
 <p>Unimolecular reactions are those that involve a single reactant or product
 molecule, the union of isomerization and dissociation/association reactions:</p>
 <div class="math">
-<p><img src="../../_images/math/7cfccfb013af0eea604d15990cb643380c30a234.png" alt="\ce{A &lt;=&gt; B} &amp; \hspace{40pt} \text{isomerization} \\
-\ce{A &lt;=&gt; B + C} &amp; \hspace{40pt} \text{dissociation/association}"/></p>
-</div><p>Gas-phase chemical reactions occur as the result of bimolecular collisions
+\[\begin{split}\ce{A &lt;=&gt; B} &amp; \hspace{40pt} \text{isomerization} \\
+\ce{A &lt;=&gt; B + C} &amp; \hspace{40pt} \text{dissociation/association}\end{split}\]</div>
+<p>Gas-phase chemical reactions occur as the result of bimolecular collisions
 between two reactant molecules. This presents a problem when there is only one
 participating reactant molecule! The conclusion is that the above reactions
 cannot be elementary as written; another step must be involved.</p>
-<p>For a unimolecular reaction to proceed, the reactant molecule <img class="math" src="../../_images/math/6fc61577fac74061e04862df08b14af9d81e1da0.png" alt="\ce{A}"/>
+<p>For a unimolecular reaction to proceed, the reactant molecule <span class="math">\(\ce{A}\)</span>
 must first be excited to an energy that exceeds the barrier for reaction. A
 molecule that is sufficiently excited to react is called an <em>activated
-species</em> and often labeled with an asterisk <img class="math" src="../../_images/math/0fc0ce91f8f8b4710508585a1556caaaa653427b.png" alt="\ce{A}^\ast"/>. If we
+species</em> and often labeled with an asterisk <span class="math">\(\ce{A}^\ast\)</span>. If we
 replace the stable species with the activated species in the reactions above,
 the reactions become elementary again:</p>
 <div class="math">
-<p><img src="../../_images/math/4237ec6d7b88277a679a95bab8da127812ed9dca.png" alt="\ce{A}^\ast &amp; \ce{&lt;=&gt; B}^\ast \\
-\ce{A}^\ast &amp; \ce{&lt;=&gt; B + C}"/></p>
-</div><p>There are a number of ways that an activated species <img class="math" src="../../_images/math/0fc0ce91f8f8b4710508585a1556caaaa653427b.png" alt="\ce{A}^\ast"/> can
+\[\begin{split}\ce{A}^\ast &amp; \ce{&lt;=&gt; B}^\ast \\
+\ce{A}^\ast &amp; \ce{&lt;=&gt; B + C}\end{split}\]</div>
+<p>There are a number of ways that an activated species <span class="math">\(\ce{A}^\ast\)</span> can
 be produced:</p>
 <ul>
-<li><p class="first"><strong>Chemical activation</strong>. <img class="math" src="../../_images/math/0fc0ce91f8f8b4710508585a1556caaaa653427b.png" alt="\ce{A}^\ast"/> is produced as the adduct of
+<li><p class="first"><strong>Chemical activation</strong>. <span class="math">\(\ce{A}^\ast\)</span> is produced as the adduct of
 an association reaction:</p>
 <div class="math">
-<p><img src="../../_images/math/6f32c5bc218d14495d8817042ff51fbbaa215517.png" alt="\ce{B + C &lt;=&gt; A}^\ast"/></p>
-</div></li>
-<li><p class="first"><strong>Thermal activation</strong>. <img class="math" src="../../_images/math/0fc0ce91f8f8b4710508585a1556caaaa653427b.png" alt="\ce{A}^\ast"/> is produced via transfer of
-energy from an otherwise inert species <img class="math" src="../../_images/math/2c686c4a8b0de7712925b47792007e9a4ce344c8.png" alt="\ce{M}"/> via bimolecular
+\[\begin{split}\ce{B + C &lt;=&gt; A}^\ast\end{split}\]</div>
+</li>
+<li><p class="first"><strong>Thermal activation</strong>. <span class="math">\(\ce{A}^\ast\)</span> is produced via transfer of
+energy from an otherwise inert species <span class="math">\(\ce{M}\)</span> via bimolecular
 collision:</p>
 <div class="math">
-<p><img src="../../_images/math/53826c54e5dfaf408672e0f655e06de1e5f4f0c0.png" alt="\ce{A + M &lt;=&gt; A}^\ast \ce{\mbox{} + M}"/></p>
-</div></li>
-<li><p class="first"><strong>Photoactivation</strong>. <img class="math" src="../../_images/math/0fc0ce91f8f8b4710508585a1556caaaa653427b.png" alt="\ce{A}^\ast"/> is produced as a result of
+\[\begin{split}\ce{A + M &lt;=&gt; A}^\ast \ce{\mbox{} + M}\end{split}\]</div>
+</li>
+<li><p class="first"><strong>Photoactivation</strong>. <span class="math">\(\ce{A}^\ast\)</span> is produced as a result of
 absorption of a photon:</p>
 <div class="math">
-<p><img src="../../_images/math/c47831dea37190307ecc0b18ee20fc3512e0f23f.png" alt="\ce{A} + h \nu \ce{-&gt; A}^\ast"/></p>
-</div></li>
+\[\begin{split}\ce{A} + h \nu \ce{-&gt; A}^\ast\end{split}\]</div>
+</li>
 </ul>
 <p>Once an activated molecule has been produced, multiple isomerization and
 dissociation reactions may become competitive with one another and with
@@ -118,7 +119,7 @@ before collisional stabilization can occur.</p>
 <p>The onset of the pressure-dependent regime varies with both temperature and
 molecular size. The figure below shows the approximate pressure at which
 pressure-dependence becomes important as a function of temperature and
-molecular size. The parameter <img class="math" src="../../_images/math/494fba1236b73aa6f29027591450cd9212e1441a.png" alt="m \equiv N_\mathrm{vib} + \frac{1}{2} N_\mathrm{rot}"/>
+molecular size. The parameter <span class="math">\(m \equiv N_\mathrm{vib} + \frac{1}{2} N_\mathrm{rot}\)</span>
 represents a count of the internal degrees of freedom (vibrations and hindered
 rotors, respectively). The ranges of the x-axis and y-axis suggest that
 pressure dependence is in fact important over a wide regime of conditions of
@@ -128,7 +129,7 @@ pyrolysis and combustion <a class="reference internal" href="#wong2003">[Wong200
 <img alt="../../_images/switchover_pressure.png" src="../../_images/switchover_pressure.png" style="width: 67%;" />
 <p class="caption">Plot of the switchover pressure &#8211; indicating the onset of pressure
 dependence &#8211; as a function of temperature and molecular size. The
-value <img class="math" src="../../_images/math/494fba1236b73aa6f29027591450cd9212e1441a.png" alt="m \equiv N_\mathrm{vib} + \frac{1}{2} N_\mathrm{rot}"/>
+value <span class="math">\(m \equiv N_\mathrm{vib} + \frac{1}{2} N_\mathrm{rot}\)</span>
 represents a count of the internal degrees of freedom. Over a wide
 variety of conditions of practical interest, even very large
 molecules exhibit significant pressure dependence. Figure adapted from

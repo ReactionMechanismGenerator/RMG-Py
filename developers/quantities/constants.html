@@ -1,0 +1,223 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>4.1. Physical constants &mdash; RMG Py 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
+    <link rel="up" title="4. Physical quantities in RMG" href="index.html" />
+    <link rel="next" title="4.2. Quantity objects" href="quantity.html" />
+    <link rel="prev" title="4. Physical quantities in RMG" href="index.html" /> 
+  </head>
+  <body>
+<div class="header">
+&nbsp;
+</div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="quantity.html" title="4.2. Quantity objects"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="4. Physical quantities in RMG"
+             accesskey="P">previous</a> |</li>
+<li><a href="../../index.html">Documentation</a> &raquo;</li>
+
+          <li><a href="../index.html" >RMG Developer&#8217;s Guide</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">4. Physical quantities in RMG</a> &raquo;</li> 
+      </ul>
+    </div>
+            
+  <div class="section" id="module-rmgpy.constants">
+<span id="physical-constants"></span><h1>4.1. Physical constants<a class="headerlink" href="#module-rmgpy.constants" title="Permalink to this headline">¶</a></h1>
+<p>The <a class="reference internal" href="#module-rmgpy.constants" title="rmgpy.constants"><tt class="xref py py-mod docutils literal"><span class="pre">rmgpy.constants</span></tt></a> module contains module-level variables defining
+relevant physical constants relevant in chemistry applications. The recommended
+method of importing this module is</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">rmgpy.constants</span> <span class="kn">as</span> <span class="nn">constants</span>
+</pre></div>
+</div>
+<p>so as to not place the constants in the importing module&#8217;s global namespace.</p>
+<p>The constants defined in this module are listed in the table below:</p>
+<table border="1" class="docutils">
+<caption>Physical constants defined in the <a class="reference internal" href="#module-rmgpy.constants" title="rmgpy.constants"><tt class="xref py py-mod docutils literal"><span class="pre">rmgpy.constants</span></tt></a> module</caption>
+<colgroup>
+<col width="14%" />
+<col width="12%" />
+<col width="37%" />
+<col width="37%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Symbol</th>
+<th class="head">Constant</th>
+<th class="head">Value</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><span class="math">\(E_\mathrm{h}\)</span></td>
+<td><tt class="xref py py-data docutils literal"><span class="pre">E_h</span></tt></td>
+<td><span class="math">\(4.35974434 \times 10^{-18} \ \mathrm{J}\)</span></td>
+<td>Hartree energy</td>
+</tr>
+<tr class="row-odd"><td><span class="math">\(F\)</span></td>
+<td><tt class="xref py py-data docutils literal"><span class="pre">F</span></tt></td>
+<td><span class="math">\(96485.3365 \ \mathrm{C/mol}\)</span></td>
+<td>Faraday constant</td>
+</tr>
+<tr class="row-even"><td><span class="math">\(G\)</span></td>
+<td><tt class="xref py py-data docutils literal"><span class="pre">G</span></tt></td>
+<td><span class="math">\(6.67384 \times 10^{-11} \ \mathrm{m^3/kg \cdot s^2}\)</span></td>
+<td>Newtonian gravitational constant</td>
+</tr>
+<tr class="row-odd"><td><span class="math">\(N_\mathrm{A}\)</span></td>
+<td><tt class="xref py py-data docutils literal"><span class="pre">Na</span></tt></td>
+<td><span class="math">\(6.02214179 \times 10^{23} \ \mathrm{mol^{-1}}\)</span></td>
+<td>Avogadro constant</td>
+</tr>
+<tr class="row-even"><td><span class="math">\(R\)</span></td>
+<td><tt class="xref py py-data docutils literal"><span class="pre">R</span></tt></td>
+<td><span class="math">\(8.314472 \ \mathrm{J/mol \cdot K}\)</span></td>
+<td>gas law constant</td>
+</tr>
+<tr class="row-odd"><td><span class="math">\(a_0\)</span></td>
+<td><tt class="xref py py-data docutils literal"><span class="pre">a0</span></tt></td>
+<td><span class="math">\(5.2917721092 \times 10^{-11} \ \mathrm{m}\)</span></td>
+<td>Bohr radius</td>
+</tr>
+<tr class="row-even"><td><span class="math">\(c\)</span></td>
+<td><tt class="xref py py-data docutils literal"><span class="pre">c</span></tt></td>
+<td><span class="math">\(299792458 \ \mathrm{m/s}\)</span></td>
+<td>speed of light in a vacuum</td>
+</tr>
+<tr class="row-odd"><td><span class="math">\(e\)</span></td>
+<td><tt class="xref py py-data docutils literal"><span class="pre">e</span></tt></td>
+<td><span class="math">\(1.602176565 \times 10^{-19} \ \mathrm{C}\)</span></td>
+<td>elementary charge</td>
+</tr>
+<tr class="row-even"><td><span class="math">\(g\)</span></td>
+<td><tt class="xref py py-data docutils literal"><span class="pre">g</span></tt></td>
+<td><span class="math">\(9.80665 \ \mathrm{m/s^2}\)</span></td>
+<td>standard acceleration due to gravity</td>
+</tr>
+<tr class="row-odd"><td><span class="math">\(h\)</span></td>
+<td><tt class="xref py py-data docutils literal"><span class="pre">h</span></tt></td>
+<td><span class="math">\(6.62606896 \times 10^{-34} \ \mathrm{J \cdot s}\)</span></td>
+<td>Planck constant</td>
+</tr>
+<tr class="row-even"><td><span class="math">\(\hbar\)</span></td>
+<td><tt class="xref py py-data docutils literal"><span class="pre">hbar</span></tt></td>
+<td><span class="math">\(1.054571726 \times 10^{-34} \ \mathrm{J \cdot s}\)</span></td>
+<td>reduced Planck constant</td>
+</tr>
+<tr class="row-odd"><td><span class="math">\(k_\mathrm{B}\)</span></td>
+<td><tt class="xref py py-data docutils literal"><span class="pre">kB</span></tt></td>
+<td><span class="math">\(1.3806504 \times 10^{-23} \ \mathrm{J/K}\)</span></td>
+<td>Boltzmann constant</td>
+</tr>
+<tr class="row-even"><td><span class="math">\(m_\mathrm{e}\)</span></td>
+<td><tt class="xref py py-data docutils literal"><span class="pre">m_e</span></tt></td>
+<td><span class="math">\(9.10938291 \times 10^{-31} \ \mathrm{kg}\)</span></td>
+<td>electron rest mass</td>
+</tr>
+<tr class="row-odd"><td><span class="math">\(m_\mathrm{n}\)</span></td>
+<td><tt class="xref py py-data docutils literal"><span class="pre">m_n</span></tt></td>
+<td><span class="math">\(1.674927351 \times 10^{-27} \ \mathrm{kg}\)</span></td>
+<td>neutron rest mass</td>
+</tr>
+<tr class="row-even"><td><span class="math">\(m_\mathrm{p}\)</span></td>
+<td><tt class="xref py py-data docutils literal"><span class="pre">m_p</span></tt></td>
+<td><span class="math">\(1.672621777 \times 10^{-27} \ \mathrm{kg}\)</span></td>
+<td>proton rest mass</td>
+</tr>
+<tr class="row-odd"><td><span class="math">\(m_\mathrm{u}\)</span></td>
+<td><tt class="xref py py-data docutils literal"><span class="pre">amu</span></tt></td>
+<td><span class="math">\(1.660538921 \times 10^{-27} \ \mathrm{kg}\)</span></td>
+<td>atomic mass unit</td>
+</tr>
+<tr class="row-even"><td><span class="math">\(\pi\)</span></td>
+<td><tt class="xref py py-data docutils literal"><span class="pre">pi</span></tt></td>
+<td><span class="math">\(3.14159 \ldots\)</span></td>
+<td>&nbsp;</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div class="sidebarlogo">
+<img src="../../_static/rmg-logo-small.png" alt="RMG" />
+</div>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">4. Physical quantities in RMG</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="quantity.html"
+                        title="next chapter">4.2. Quantity objects</a></p>
+  <h3>This Page </h3>
+  <ul class="this-page-menu">
+    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/developers/quantities/constants.rst"
+           rel="nofollow">Edit this page</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

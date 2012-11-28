@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>5. rmgpy.molecule.molecule — Structure and Properties of Molecules &mdash; RMG Py 0.1.0 documentation</title>
+    <title>9.5. rmgpy.molecule.molecule — Structure and Properties of Molecules &mdash; RMG Py 0.1.0 documentation</title>
     
     <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -25,10 +25,11 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
-    <link rel="up" title="Molecule API Reference" href="index.html" />
-    <link rel="next" title="6. rmgpy.molecule.draw — Drawing of Molecules" href="draw.html" />
-    <link rel="prev" title="4. rmgpy.molecule.group — Functional Groups" href="group.html" /> 
+    <link rel="up" title="9. Molecule API Reference" href="index.html" />
+    <link rel="next" title="9.6. rmgpy.molecule.draw — Drawing of Molecules" href="draw.html" />
+    <link rel="prev" title="9.4. rmgpy.molecule.group — Functional Groups" href="group.html" /> 
   </head>
   <body>
 <div class="header">
@@ -50,27 +51,27 @@
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="draw.html" title="6. rmgpy.molecule.draw — Drawing of Molecules"
+          <a href="draw.html" title="9.6. rmgpy.molecule.draw — Drawing of Molecules"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="group.html" title="4. rmgpy.molecule.group — Functional Groups"
+          <a href="group.html" title="9.4. rmgpy.molecule.group — Functional Groups"
              accesskey="P">previous</a> |</li>
 <li><a href="../../index.html">Documentation</a> &raquo;</li>
 
           <li><a href="../index.html" >RMG Developer&#8217;s Guide</a> &raquo;</li>
-          <li><a href="index.html" accesskey="U">Molecule API Reference</a> &raquo;</li> 
+          <li><a href="index.html" accesskey="U">9. Molecule API Reference</a> &raquo;</li> 
       </ul>
     </div>
             
   <div class="section" id="module-rmgpy.molecule.molecule">
-<span id="rmgpy-molecule-molecule-structure-and-properties-of-molecules"></span><h1>5. <a class="reference internal" href="#module-rmgpy.molecule.molecule" title="rmgpy.molecule.molecule"><tt class="xref py py-mod docutils literal"><span class="pre">rmgpy.molecule.molecule</span></tt></a> &#8212; Structure and Properties of Molecules<a class="headerlink" href="#module-rmgpy.molecule.molecule" title="Permalink to this headline">¶</a></h1>
+<span id="rmgpy-molecule-molecule-structure-and-properties-of-molecules"></span><h1>9.5. <a class="reference internal" href="#module-rmgpy.molecule.molecule" title="rmgpy.molecule.molecule"><tt class="xref py py-mod docutils literal"><span class="pre">rmgpy.molecule.molecule</span></tt></a> &#8212; Structure and Properties of Molecules<a class="headerlink" href="#module-rmgpy.molecule.molecule" title="Permalink to this headline">¶</a></h1>
 <p>This module provides classes and methods for working with molecules and
 molecular configurations. A molecule is represented internally using a graph
 data type, where atoms correspond to vertices and bonds correspond to edges.
 Both <a class="reference internal" href="#rmgpy.molecule.molecule.Atom" title="rmgpy.molecule.molecule.Atom"><tt class="xref py py-class docutils literal"><span class="pre">Atom</span></tt></a> and <a class="reference internal" href="#rmgpy.molecule.molecule.Bond" title="rmgpy.molecule.molecule.Bond"><tt class="xref py py-class docutils literal"><span class="pre">Bond</span></tt></a> objects store semantic information that
 describe the corresponding atom or bond.</p>
 <div class="section" id="atom-objects">
-<h2>5.1. Atom Objects<a class="headerlink" href="#atom-objects" title="Permalink to this headline">¶</a></h2>
+<h2>9.5.1. Atom Objects<a class="headerlink" href="#atom-objects" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="rmgpy.molecule.molecule.Atom">
 <em class="property">class </em><tt class="descclassname">rmgpy.molecule.molecule.</tt><tt class="descname">Atom</tt><a class="headerlink" href="#rmgpy.molecule.molecule.Atom" title="Permalink to this definition">¶</a></dt>
@@ -199,7 +200,7 @@ specific than any of the combinations in the atom pattern.</p>
 
 </div>
 <div class="section" id="bond-objects">
-<h2>5.2. Bond Objects<a class="headerlink" href="#bond-objects" title="Permalink to this headline">¶</a></h2>
+<h2>9.5.2. Bond Objects<a class="headerlink" href="#bond-objects" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="rmgpy.molecule.molecule.Bond">
 <em class="property">class </em><tt class="descclassname">rmgpy.molecule.molecule.</tt><tt class="descname">Bond</tt><a class="headerlink" href="#rmgpy.molecule.molecule.Bond" title="Permalink to this definition">¶</a></dt>
@@ -301,7 +302,7 @@ not.</p>
 
 </div>
 <div class="section" id="molecule-objects">
-<h2>5.3. Molecule Objects<a class="headerlink" href="#molecule-objects" title="Permalink to this headline">¶</a></h2>
+<h2>9.5.3. Molecule Objects<a class="headerlink" href="#molecule-objects" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="rmgpy.molecule.molecule.Molecule">
 <em class="property">class </em><tt class="descclassname">rmgpy.molecule.molecule.</tt><tt class="descname">Molecule</tt><a class="headerlink" href="#rmgpy.molecule.molecule.Molecule" title="Permalink to this definition">¶</a></dt>
@@ -340,6 +341,18 @@ for the <cite>vertices</cite> and <cite>edges</cite> attributes. Other attribute
 <tt class="descname">addBond</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.molecule.Molecule.addBond" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add a <cite>bond</cite> to the graph as an edge connecting the two atoms <cite>atom1</cite>
 and <cite>atom2</cite>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.molecule.Molecule.calculateCp0">
+<tt class="descname">calculateCp0</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.molecule.Molecule.calculateCp0" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the value of the heat capacity at zero temperature in J/mol*K.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.molecule.Molecule.calculateCpInf">
+<tt class="descname">calculateCpInf</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.molecule.Molecule.calculateCpInf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the value of the heat capacity at infinite temperature in J/mol*K.</p>
 </dd></dl>
 
 <dl class="method">
@@ -514,6 +527,13 @@ same label, the value is converted to a list of these atoms.</p>
 <dt id="rmgpy.molecule.molecule.Molecule.getMolecularWeight">
 <tt class="descname">getMolecularWeight</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.molecule.Molecule.getMolecularWeight" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the molecular weight of the molecule in kg/mol.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.molecule.Molecule.getNumAtoms">
+<tt class="descname">getNumAtoms</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.molecule.Molecule.getNumAtoms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the number of atoms in molecule.  If element is given, ie. &#8220;H&#8221; or &#8220;C&#8221;,
+the number of atoms of that element is returned.</p>
 </dd></dl>
 
 <dl class="method">
@@ -695,20 +715,20 @@ environment) and complete (i.e. are as detailed as possible).</p>
 </div>
   <h3><a href="../../contents.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">5. <tt class="docutils literal"><span class="pre">rmgpy.molecule.molecule</span></tt> &#8212; Structure and Properties of Molecules</a><ul>
-<li><a class="reference internal" href="#atom-objects">5.1. Atom Objects</a></li>
-<li><a class="reference internal" href="#bond-objects">5.2. Bond Objects</a></li>
-<li><a class="reference internal" href="#molecule-objects">5.3. Molecule Objects</a></li>
+<li><a class="reference internal" href="#">9.5. <tt class="docutils literal"><span class="pre">rmgpy.molecule.molecule</span></tt> &#8212; Structure and Properties of Molecules</a><ul>
+<li><a class="reference internal" href="#atom-objects">9.5.1. Atom Objects</a></li>
+<li><a class="reference internal" href="#bond-objects">9.5.2. Bond Objects</a></li>
+<li><a class="reference internal" href="#molecule-objects">9.5.3. Molecule Objects</a></li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="group.html"
-                        title="previous chapter">4. <tt class="docutils literal"><span class="pre">rmgpy.molecule.group</span></tt> &#8212; Functional Groups</a></p>
+                        title="previous chapter">9.4. <tt class="docutils literal docutils literal docutils literal"><span class="pre">rmgpy.molecule.group</span></tt> &#8212; Functional Groups</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="draw.html"
-                        title="next chapter">6. <tt class="docutils literal"><span class="pre">rmgpy.molecule.draw</span></tt> &#8212; Drawing of Molecules</a></p>
+                        title="next chapter">9.6. <tt class="docutils literal docutils literal docutils literal"><span class="pre">rmgpy.molecule.draw</span></tt> &#8212; Drawing of Molecules</a></p>
   <h3>This Page </h3>
   <ul class="this-page-menu">
     <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/developers/molecule/molecule.rst"

@@ -1,0 +1,255 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>3.5. Kinetics data interpolation &mdash; RMG Py 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
+    <link rel="up" title="3. Kinetics in RMG" href="index.html" />
+    <link rel="next" title="3.6. Tunneling" href="tunneling.html" />
+    <link rel="prev" title="3.4. Falloff kinetics" href="falloff.html" /> 
+  </head>
+  <body>
+<div class="header">
+&nbsp;
+</div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="tunneling.html" title="3.6. Tunneling"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="falloff.html" title="3.4. Falloff kinetics"
+             accesskey="P">previous</a> |</li>
+<li><a href="../../index.html">Documentation</a> &raquo;</li>
+
+          <li><a href="../index.html" >RMG Developer&#8217;s Guide</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">3. Kinetics in RMG</a> &raquo;</li> 
+      </ul>
+    </div>
+            
+  <div class="section" id="kinetics-data-interpolation">
+<h1>3.5. Kinetics data interpolation<a class="headerlink" href="#kinetics-data-interpolation" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="rmgpy.kinetics.KineticsData">
+<em class="property">class </em><tt class="descclassname">rmgpy.kinetics.</tt><tt class="descname">KineticsData</tt><a class="headerlink" href="#rmgpy.kinetics.KineticsData" title="Permalink to this definition">¶</a></dt>
+<dd><p>KineticsData(Tdata=None, kdata=None, Tmin=None, Tmax=None, Pmin=None, Pmax=None, comment=&#8217;&#8216;)</p>
+<p>A kinetics model based on an array of rate coefficient data vs. temperature. 
+The attributes are:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="15%" />
+<col width="85%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Attribute</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><cite>Tdata</cite></td>
+<td>An array of temperatures at which rate coefficient values are known</td>
+</tr>
+<tr class="row-odd"><td><cite>kdata</cite></td>
+<td>An array of rate coefficient values</td>
+</tr>
+<tr class="row-even"><td><cite>Tmin</cite></td>
+<td>The minimum temperature at which the model is valid, or zero if unknown or undefined</td>
+</tr>
+<tr class="row-odd"><td><cite>Tmax</cite></td>
+<td>The maximum temperature at which the model is valid, or zero if unknown or undefined</td>
+</tr>
+<tr class="row-even"><td><cite>Pmin</cite></td>
+<td>The minimum pressure at which the model is valid, or zero if unknown or undefined</td>
+</tr>
+<tr class="row-odd"><td><cite>Pmax</cite></td>
+<td>The maximum pressure at which the model is valid, or zero if unknown or undefined</td>
+</tr>
+<tr class="row-even"><td><cite>comment</cite></td>
+<td>Information about the model (e.g. its source)</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="rmgpy.kinetics.KineticsData.Tdata">
+<tt class="descname">Tdata</tt><a class="headerlink" href="#rmgpy.kinetics.KineticsData.Tdata" title="Permalink to this definition">¶</a></dt>
+<dd><p>An array of temperatures at which rate coefficient values are known.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.kinetics.KineticsData.getRateCoefficient">
+<tt class="descname">getRateCoefficient</tt><big>(</big><em>self</em>, <em>double T</em>, <em>double P=0.0</em><big>)</big> &rarr; double<a class="headerlink" href="#rmgpy.kinetics.KineticsData.getRateCoefficient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the rate coefficient in the appropriate combination of m^3, 
+mol, and s at temperature <cite>T</cite> in K.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.kinetics.KineticsData.isIdenticalTo">
+<tt class="descname">isIdenticalTo</tt><big>(</big><em>self</em>, <em>KineticsModel otherKinetics</em><big>)</big> &rarr; int<a class="headerlink" href="#rmgpy.kinetics.KineticsData.isIdenticalTo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns <tt class="docutils literal"><span class="pre">True</span></tt> if the kdata and Tdata match. Returns <tt class="docutils literal"><span class="pre">False</span></tt> otherwise.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.kinetics.KineticsData.kdata">
+<tt class="descname">kdata</tt><a class="headerlink" href="#rmgpy.kinetics.KineticsData.kdata" title="Permalink to this definition">¶</a></dt>
+<dd><p>An array of rate coefficient values.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="rmgpy.kinetics.PDepKineticsData">
+<em class="property">class </em><tt class="descclassname">rmgpy.kinetics.</tt><tt class="descname">PDepKineticsData</tt><a class="headerlink" href="#rmgpy.kinetics.PDepKineticsData" title="Permalink to this definition">¶</a></dt>
+<dd><p>PDepKineticsData(Tdata=None, Pdata=None, kdata=None, Tmin=None, Tmax=None, Pmin=None, Pmax=None, comment=&#8217;&#8216;)</p>
+<p>A kinetics model based on an array of rate coefficient data vs. temperature
+and pressure. The attributes are:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="15%" />
+<col width="85%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Attribute</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><cite>Tdata</cite></td>
+<td>An array of temperatures at which rate coefficient values are known</td>
+</tr>
+<tr class="row-odd"><td><cite>Pdata</cite></td>
+<td>An array of pressures at which rate coefficient values are known</td>
+</tr>
+<tr class="row-even"><td><cite>kdata</cite></td>
+<td>An array of rate coefficient values at each temperature and pressure</td>
+</tr>
+<tr class="row-odd"><td><cite>Tmin</cite></td>
+<td>The minimum temperature at which the model is valid, or zero if unknown or undefined</td>
+</tr>
+<tr class="row-even"><td><cite>Tmax</cite></td>
+<td>The maximum temperature at which the model is valid, or zero if unknown or undefined</td>
+</tr>
+<tr class="row-odd"><td><cite>Pmin</cite></td>
+<td>The minimum pressure at which the model is valid, or zero if unknown or undefined</td>
+</tr>
+<tr class="row-even"><td><cite>Pmax</cite></td>
+<td>The maximum pressure at which the model is valid, or zero if unknown or undefined</td>
+</tr>
+<tr class="row-odd"><td><cite>comment</cite></td>
+<td>Information about the model (e.g. its source)</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="rmgpy.kinetics.PDepKineticsData.Pdata">
+<tt class="descname">Pdata</tt><a class="headerlink" href="#rmgpy.kinetics.PDepKineticsData.Pdata" title="Permalink to this definition">¶</a></dt>
+<dd><p>An array of pressures at which rate coefficient values are known.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.kinetics.PDepKineticsData.Tdata">
+<tt class="descname">Tdata</tt><a class="headerlink" href="#rmgpy.kinetics.PDepKineticsData.Tdata" title="Permalink to this definition">¶</a></dt>
+<dd><p>An array of temperatures at which rate coefficient values are known.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.kinetics.PDepKineticsData.getRateCoefficient">
+<tt class="descname">getRateCoefficient</tt><big>(</big><em>self</em>, <em>double T</em>, <em>double P=0.0</em><big>)</big> &rarr; double<a class="headerlink" href="#rmgpy.kinetics.PDepKineticsData.getRateCoefficient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the rate coefficient in the appropriate combination of m^3, 
+mol, and s at temperature <cite>T</cite> in K and pressure <cite>P</cite> in Pa.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.kinetics.PDepKineticsData.isIdenticalTo">
+<tt class="descname">isIdenticalTo</tt><big>(</big><em>self</em>, <em>KineticsModel otherKinetics</em><big>)</big> &rarr; int<a class="headerlink" href="#rmgpy.kinetics.PDepKineticsData.isIdenticalTo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns <tt class="docutils literal"><span class="pre">True</span></tt> if the kdata and Tdata match. Returns <tt class="docutils literal"><span class="pre">False</span></tt> otherwise.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.kinetics.PDepKineticsData.kdata">
+<tt class="descname">kdata</tt><a class="headerlink" href="#rmgpy.kinetics.PDepKineticsData.kdata" title="Permalink to this definition">¶</a></dt>
+<dd><p>An array of rate coefficient values at each temperature and pressure.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div class="sidebarlogo">
+<img src="../../_static/rmg-logo-small.png" alt="RMG" />
+</div>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="falloff.html"
+                        title="previous chapter">3.4. Falloff kinetics</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="tunneling.html"
+                        title="next chapter">3.6. Tunneling</a></p>
+  <h3>This Page </h3>
+  <ul class="this-page-menu">
+    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/developers/kinetics/kineticsdata.rst"
+           rel="nofollow">Edit this page</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

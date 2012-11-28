@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>rmgpy.species — Chemical Species &mdash; RMG Py 0.1.0 documentation</title>
+    <title>6. rmgpy.species — Chemical Species &mdash; RMG Py 0.1.0 documentation</title>
     
     <link rel="stylesheet" href="../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -25,10 +25,11 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="RMG Py 0.1.0 documentation" href="../index.html" />
     <link rel="up" title="RMG Developer’s Guide" href="index.html" />
-    <link rel="next" title="rmgpy.statmech — Molecular Degrees of Freedom" href="statmech.html" />
-    <link rel="prev" title="rmgpy.reaction — Chemical Reactions" href="reaction.html" /> 
+    <link rel="next" title="7. Statistical mechanics in RMG" href="statmech/index.html" />
+    <link rel="prev" title="5. rmgpy.reaction — Chemical Reactions" href="reaction.html" /> 
   </head>
   <body>
 <div class="header">
@@ -50,10 +51,10 @@
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="statmech.html" title="rmgpy.statmech — Molecular Degrees of Freedom"
+          <a href="statmech/index.html" title="7. Statistical mechanics in RMG"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="reaction.html" title="rmgpy.reaction — Chemical Reactions"
+          <a href="reaction.html" title="5. rmgpy.reaction — Chemical Reactions"
              accesskey="P">previous</a> |</li>
 <li><a href="../index.html">Documentation</a> &raquo;</li>
 
@@ -62,7 +63,7 @@
     </div>
             
   <div class="section" id="module-rmgpy.species">
-<span id="rmgpy-species-chemical-species"></span><h1><a class="reference internal" href="#module-rmgpy.species" title="rmgpy.species"><tt class="xref py py-mod docutils literal"><span class="pre">rmgpy.species</span></tt></a> &#8212; Chemical Species<a class="headerlink" href="#module-rmgpy.species" title="Permalink to this headline">¶</a></h1>
+<span id="rmgpy-species-chemical-species"></span><h1>6. <a class="reference internal" href="#module-rmgpy.species" title="rmgpy.species"><tt class="xref py py-mod docutils literal"><span class="pre">rmgpy.species</span></tt></a> &#8212; Chemical Species<a class="headerlink" href="#module-rmgpy.species" title="Permalink to this headline">¶</a></h1>
 <p>This module contains classes and functions for working with chemical species.</p>
 <p>From the <a class="reference external" href="http://dx.doi.org/10.1351/goldbook">IUPAC Compendium of Chemical Terminology</a>, a chemical species is &#8220;an 
 ensemble of chemically identical molecular entities that can explore the same 
@@ -73,7 +74,7 @@ definition is purposefully vague to allow the user flexibility in application.</
 contains the <a class="reference internal" href="#rmgpy.species.TransitionState" title="rmgpy.species.TransitionState"><tt class="xref py py-class docutils literal"><span class="pre">TransitionState</span></tt></a> class for representing chemical reaction
 transition states (first-order saddle points on a potential energy surface).</p>
 <div class="section" id="species">
-<h2>Species<a class="headerlink" href="#species" title="Permalink to this headline">¶</a></h2>
+<h2>6.1. Species<a class="headerlink" href="#species" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="rmgpy.species.SpeciesError">
 <em class="property">class </em><tt class="descclassname">rmgpy.species.</tt><tt class="descname">SpeciesError</tt><a class="headerlink" href="#rmgpy.species.SpeciesError" title="Permalink to this definition">¶</a></dt>
@@ -89,59 +90,56 @@ exceptional behavior.</p>
 surface. The attributes are:</p>
 <table border="1" class="docutils">
 <colgroup>
-<col width="17%" />
-<col width="21%" />
-<col width="61%" />
+<col width="24%" />
+<col width="76%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Attribute</th>
-<th class="head">Type</th>
 <th class="head">Description</th>
 </tr>
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td><cite>index</cite></td>
-<td><tt class="xref py py-class docutils literal"><span class="pre">int</span></tt></td>
 <td>A unique nonnegative integer index</td>
 </tr>
 <tr class="row-odd"><td><cite>label</cite></td>
-<td><tt class="xref py py-class docutils literal"><span class="pre">str</span></tt></td>
 <td>A descriptive string label</td>
 </tr>
 <tr class="row-even"><td><cite>thermo</cite></td>
-<td><tt class="xref py py-class docutils literal"><span class="pre">ThermoModel</span></tt></td>
-<td>The thermodynamics model for the species</td>
+<td>The heat capacity model for the species</td>
 </tr>
-<tr class="row-odd"><td><cite>states</cite></td>
-<td><tt class="xref py py-class docutils literal"><span class="pre">StatesModel</span></tt></td>
-<td>The molecular degrees of freedom model for the species</td>
+<tr class="row-odd"><td><cite>conformer</cite></td>
+<td>The molecular conformer for the species</td>
 </tr>
 <tr class="row-even"><td><cite>molecule</cite></td>
-<td><tt class="docutils literal"><span class="pre">list</span></tt></td>
-<td>The <tt class="xref py py-class docutils literal"><span class="pre">Molecule</span></tt> objects describing the molecular structure</td>
+<td>A list of the <tt class="xref py py-class docutils literal"><span class="pre">Molecule</span></tt> objects describing the molecular structure</td>
 </tr>
-<tr class="row-odd"><td><cite>E0</cite></td>
-<td><tt class="xref py py-class docutils literal"><span class="pre">Quantity</span></tt></td>
-<td>The ground-state energy</td>
-</tr>
-<tr class="row-even"><td><cite>lennardJones</cite></td>
-<td><tt class="xref py py-class docutils literal"><span class="pre">LennardJones</span></tt></td>
+<tr class="row-odd"><td><cite>lennardJones</cite></td>
 <td>A set of Lennard-Jones collision parameters</td>
 </tr>
-<tr class="row-odd"><td><cite>molecularWeight</cite></td>
-<td><tt class="xref py py-class docutils literal"><span class="pre">Quantity</span></tt></td>
+<tr class="row-even"><td><cite>molecularWeight</cite></td>
 <td>The molecular weight of the species</td>
 </tr>
-<tr class="row-even"><td><cite>collisionModel</cite></td>
-<td><tt class="docutils literal"><span class="pre">object</span></tt></td>
+<tr class="row-odd"><td><cite>energyTransferModel</cite></td>
 <td>The collisional energy transfer model to use</td>
 </tr>
-<tr class="row-odd"><td><cite>reactive</cite></td>
-<td><tt class="docutils literal"><span class="pre">bool</span></tt></td>
+<tr class="row-even"><td><cite>reactive</cite></td>
 <td><tt class="docutils literal"><span class="pre">True</span></tt> if the species participates in reactions, <tt class="docutils literal"><span class="pre">False</span></tt> if not</td>
 </tr>
 </tbody>
 </table>
+<dl class="method">
+<dt id="rmgpy.species.Species.calculateCp0">
+<tt class="descname">calculateCp0</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.species.Species.calculateCp0" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the value of the heat capacity at zero temperature in J/mol*K.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.species.Species.calculateCpInf">
+<tt class="descname">calculateCpInf</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.species.Species.calculateCpInf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the value of the heat capacity at infinite temperature in J/mol*K.</p>
+</dd></dl>
+
 <dl class="method">
 <dt id="rmgpy.species.Species.fromAdjacencyList">
 <tt class="descname">fromAdjacencyList</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.species.Species.fromAdjacencyList" title="Permalink to this definition">¶</a></dt>
@@ -170,6 +168,69 @@ resonance isomers have already been generated.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.species.Species.getDensityOfStates">
+<tt class="descname">getDensityOfStates</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.species.Species.getDensityOfStates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the density of states <span class="math">\(\rho(E) \ dE\)</span> at the specified
+energies <cite>Elist</cite> in J/mol above the ground state.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.species.Species.getEnthalpy">
+<tt class="descname">getEnthalpy</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.species.Species.getEnthalpy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the enthalpy in J/mol for the species at the specified
+temperature <cite>T</cite> in K.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.species.Species.getEntropy">
+<tt class="descname">getEntropy</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.species.Species.getEntropy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the entropy in J/mol*K for the species at the specified
+temperature <cite>T</cite> in K.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.species.Species.getFreeEnergy">
+<tt class="descname">getFreeEnergy</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.species.Species.getFreeEnergy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the Gibbs free energy in J/mol for the species at the specified
+temperature <cite>T</cite> in K.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.species.Species.getHeatCapacity">
+<tt class="descname">getHeatCapacity</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.species.Species.getHeatCapacity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the heat capacity in J/mol*K for the species at the specified
+temperature <cite>T</cite> in K.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.species.Species.getPartitionFunction">
+<tt class="descname">getPartitionFunction</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.species.Species.getPartitionFunction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the partition function for the species at the specified
+temperature <cite>T</cite> in K.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.species.Species.getSumOfStates">
+<tt class="descname">getSumOfStates</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.species.Species.getSumOfStates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the sum of states <span class="math">\(N(E)\)</span> at the specified energies <cite>Elist</cite>
+in J/mol.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.species.Species.hasStatMech">
+<tt class="descname">hasStatMech</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.species.Species.hasStatMech" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if the species has statistical mechanical parameters,
+or <tt class="docutils literal"><span class="pre">False</span></tt> otherwise.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.species.Species.hasThermo">
+<tt class="descname">hasThermo</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.species.Species.hasThermo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if the species has thermodynamic parameters, or 
+<tt class="docutils literal"><span class="pre">False</span></tt> otherwise.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.species.Species.isIsomorphic">
 <tt class="descname">isIsomorphic</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.species.Species.isIsomorphic" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if the species is isomorphic to <cite>other</cite>, which can be
@@ -186,7 +247,7 @@ either a <tt class="xref py py-class docutils literal"><span class="pre">Molecul
 
 </div>
 <div class="section" id="transition-states">
-<h2>Transition States<a class="headerlink" href="#transition-states" title="Permalink to this headline">¶</a></h2>
+<h2>6.2. Transition States<a class="headerlink" href="#transition-states" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="rmgpy.species.TransitionState">
 <em class="property">class </em><tt class="descclassname">rmgpy.species.</tt><tt class="descname">TransitionState</tt><a class="headerlink" href="#rmgpy.species.TransitionState" title="Permalink to this definition">¶</a></dt>
@@ -194,39 +255,95 @@ either a <tt class="xref py py-class docutils literal"><span class="pre">Molecul
 potential energy surface. The attributes are:</p>
 <table border="1" class="docutils">
 <colgroup>
-<col width="15%" />
-<col width="23%" />
-<col width="62%" />
+<col width="16%" />
+<col width="84%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Attribute</th>
-<th class="head">Type</th>
-<th class="head">Description</th>
+<th class="head">TDescription</th>
 </tr>
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td><cite>label</cite></td>
-<td><tt class="xref py py-class docutils literal"><span class="pre">str</span></tt></td>
 <td>A descriptive string label</td>
 </tr>
-<tr class="row-odd"><td><cite>states</cite></td>
-<td><tt class="xref py py-class docutils literal"><span class="pre">StatesModel</span></tt></td>
+<tr class="row-odd"><td><cite>conformer</cite></td>
 <td>The molecular degrees of freedom model for the species</td>
 </tr>
-<tr class="row-even"><td><cite>E0</cite></td>
-<td><tt class="xref py py-class docutils literal"><span class="pre">Quantity</span></tt></td>
-<td>The ground-state energy in J/mol</td>
+<tr class="row-even"><td><cite>frequency</cite></td>
+<td>The negative frequency of the first-order saddle point</td>
 </tr>
-<tr class="row-odd"><td><cite>frequency</cite></td>
-<td><tt class="xref py py-class docutils literal"><span class="pre">Quantity</span></tt></td>
-<td>The negative frequency of the first-order saddle point in cm^-1</td>
+<tr class="row-odd"><td><cite>tunneling</cite></td>
+<td>The type of tunneling model to use for tunneling through the reaction barrier</td>
 </tr>
 <tr class="row-even"><td><cite>degeneracy</cite></td>
-<td><tt class="docutils literal"><span class="pre">int</span></tt></td>
 <td>The reaction path degeneracy</td>
 </tr>
 </tbody>
 </table>
+<dl class="method">
+<dt id="rmgpy.species.TransitionState.calculateTunnelingFactor">
+<tt class="descname">calculateTunnelingFactor</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.species.TransitionState.calculateTunnelingFactor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate and return the value of the canonical tunneling correction 
+factor for the reaction at the given temperature <cite>T</cite> in K.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.species.TransitionState.calculateTunnelingFunction">
+<tt class="descname">calculateTunnelingFunction</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.species.TransitionState.calculateTunnelingFunction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate and return the value of the microcanonical tunneling 
+correction for the reaction at the given energies <cite>Elist</cite> in J/mol.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.species.TransitionState.getDensityOfStates">
+<tt class="descname">getDensityOfStates</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.species.TransitionState.getDensityOfStates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the density of states <span class="math">\(\rho(E) \ dE\)</span> at the specified
+energies <cite>Elist</cite> in J/mol above the ground state.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.species.TransitionState.getEnthalpy">
+<tt class="descname">getEnthalpy</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.species.TransitionState.getEnthalpy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the enthalpy in J/mol for the transition state at the
+specified temperature <cite>T</cite> in K.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.species.TransitionState.getEntropy">
+<tt class="descname">getEntropy</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.species.TransitionState.getEntropy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the entropy in J/mol*K for the transition state at the
+specified temperature <cite>T</cite> in K.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.species.TransitionState.getFreeEnergy">
+<tt class="descname">getFreeEnergy</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.species.TransitionState.getFreeEnergy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the Gibbs free energy in J/mol for the transition state at the
+specified temperature <cite>T</cite> in K.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.species.TransitionState.getHeatCapacity">
+<tt class="descname">getHeatCapacity</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.species.TransitionState.getHeatCapacity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the heat capacity in J/mol*K for the transition state at the
+specified temperature <cite>T</cite> in K.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.species.TransitionState.getPartitionFunction">
+<tt class="descname">getPartitionFunction</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.species.TransitionState.getPartitionFunction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the partition function for the transition state at the
+specified temperature <cite>T</cite> in K.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.species.TransitionState.getSumOfStates">
+<tt class="descname">getSumOfStates</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.species.TransitionState.getSumOfStates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the sum of states <span class="math">\(N(E)\)</span> at the specified energies <cite>Elist</cite>
+in J/mol.</p>
+</dd></dl>
+
 </dd></dl>
 
 </div>
@@ -243,19 +360,19 @@ potential energy surface. The attributes are:</p>
 </div>
   <h3><a href="../contents.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#"><tt class="docutils literal"><span class="pre">rmgpy.species</span></tt> &#8212; Chemical Species</a><ul>
-<li><a class="reference internal" href="#species">Species</a></li>
-<li><a class="reference internal" href="#transition-states">Transition States</a></li>
+<li><a class="reference internal" href="#">6. <tt class="docutils literal"><span class="pre">rmgpy.species</span></tt> &#8212; Chemical Species</a><ul>
+<li><a class="reference internal" href="#species">6.1. Species</a></li>
+<li><a class="reference internal" href="#transition-states">6.2. Transition States</a></li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="reaction.html"
-                        title="previous chapter"><tt class="docutils literal docutils literal docutils literal"><span class="pre">rmgpy.reaction</span></tt> &#8212; Chemical Reactions</a></p>
+                        title="previous chapter">5. <tt class="docutils literal docutils literal docutils literal"><span class="pre">rmgpy.reaction</span></tt> &#8212; Chemical Reactions</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="statmech.html"
-                        title="next chapter"><tt class="docutils literal"><span class="pre">rmgpy.statmech</span></tt> &#8212; Molecular Degrees of Freedom</a></p>
+  <p class="topless"><a href="statmech/index.html"
+                        title="next chapter">7. Statistical mechanics in RMG</a></p>
   <h3>This Page </h3>
   <ul class="this-page-menu">
     <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/developers/species.rst"

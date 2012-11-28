@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>4. rmgpy.molecule.group — Functional Groups &mdash; RMG Py 0.1.0 documentation</title>
+    <title>9.4. rmgpy.molecule.group — Functional Groups &mdash; RMG Py 0.1.0 documentation</title>
     
     <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -25,10 +25,11 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
-    <link rel="up" title="Molecule API Reference" href="index.html" />
-    <link rel="next" title="5. rmgpy.molecule.molecule — Structure and Properties of Molecules" href="molecule.html" />
-    <link rel="prev" title="3. rmgpy.molecule.graph — Graph Data Type" href="graph.html" /> 
+    <link rel="up" title="9. Molecule API Reference" href="index.html" />
+    <link rel="next" title="9.5. rmgpy.molecule.molecule — Structure and Properties of Molecules" href="molecule.html" />
+    <link rel="prev" title="9.3. rmgpy.molecule.graph — Graph Data Type" href="graph.html" /> 
   </head>
   <body>
 <div class="header">
@@ -50,25 +51,25 @@
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="molecule.html" title="5. rmgpy.molecule.molecule — Structure and Properties of Molecules"
+          <a href="molecule.html" title="9.5. rmgpy.molecule.molecule — Structure and Properties of Molecules"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="graph.html" title="3. rmgpy.molecule.graph — Graph Data Type"
+          <a href="graph.html" title="9.3. rmgpy.molecule.graph — Graph Data Type"
              accesskey="P">previous</a> |</li>
 <li><a href="../../index.html">Documentation</a> &raquo;</li>
 
           <li><a href="../index.html" >RMG Developer&#8217;s Guide</a> &raquo;</li>
-          <li><a href="index.html" accesskey="U">Molecule API Reference</a> &raquo;</li> 
+          <li><a href="index.html" accesskey="U">9. Molecule API Reference</a> &raquo;</li> 
       </ul>
     </div>
             
   <div class="section" id="module-rmgpy.molecule.group">
-<span id="rmgpy-molecule-group-functional-groups"></span><h1>4. <a class="reference internal" href="#module-rmgpy.molecule.group" title="rmgpy.molecule.group"><tt class="xref py py-mod docutils literal"><span class="pre">rmgpy.molecule.group</span></tt></a> &#8212; Functional Groups<a class="headerlink" href="#module-rmgpy.molecule.group" title="Permalink to this headline">¶</a></h1>
+<span id="rmgpy-molecule-group-functional-groups"></span><h1>9.4. <a class="reference internal" href="#module-rmgpy.molecule.group" title="rmgpy.molecule.group"><tt class="xref py py-mod docutils literal"><span class="pre">rmgpy.molecule.group</span></tt></a> &#8212; Functional Groups<a class="headerlink" href="#module-rmgpy.molecule.group" title="Permalink to this headline">¶</a></h1>
 <p>This module provides classes and methods for working with molecular substructure
 groups. These enable molecules to be searched for common motifs (e.g.
 reaction sites).</p>
 <div class="section" id="bond-types">
-<h2>4.1. Bond Types<a class="headerlink" href="#bond-types" title="Permalink to this headline">¶</a></h2>
+<h2>9.4.1. Bond Types<a class="headerlink" href="#bond-types" title="Permalink to this headline">¶</a></h2>
 <p id="id1">The bond type simply indicates the order of a chemical bond. We define the
 following bond types:</p>
 <table border="1" class="docutils">
@@ -98,7 +99,7 @@ following bond types:</p>
 </table>
 </div>
 <div class="section" id="reaction-recipe-actions">
-<h2>4.2. Reaction Recipe Actions<a class="headerlink" href="#reaction-recipe-actions" title="Permalink to this headline">¶</a></h2>
+<h2>9.4.2. Reaction Recipe Actions<a class="headerlink" href="#reaction-recipe-actions" title="Permalink to this headline">¶</a></h2>
 <p id="id2">A reaction recipe is a procedure for applying a reaction to a set of chemical
 species. Each reaction recipe is made up of a set of actions that, when applied
 sequentially, a set of chemical reactants to chemical products via that
@@ -150,7 +151,7 @@ exceptional behavior.</p>
 
 </div>
 <div class="section" id="adjacency-lists">
-<h2>4.3. Adjacency Lists<a class="headerlink" href="#adjacency-lists" title="Permalink to this headline">¶</a></h2>
+<h2>9.4.3. Adjacency Lists<a class="headerlink" href="#adjacency-lists" title="Permalink to this headline">¶</a></h2>
 <p>An adjacency list is the most general way of specifying a chemical molecule or
 molecular pattern in RMG. It is based on the adjacency list representation of
 the graph data type &#8211;  the underlying data type for molecules and patterns in
@@ -214,7 +215,7 @@ adjacency list.</p>
 
 </div>
 <div class="section" id="groupatom-objects">
-<h2>4.4. GroupAtom Objects<a class="headerlink" href="#groupatom-objects" title="Permalink to this headline">¶</a></h2>
+<h2>9.4.4. GroupAtom Objects<a class="headerlink" href="#groupatom-objects" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="rmgpy.molecule.group.GroupAtom">
 <em class="property">class </em><tt class="descclassname">rmgpy.molecule.group.</tt><tt class="descname">GroupAtom</tt><a class="headerlink" href="#rmgpy.molecule.group.GroupAtom" title="Permalink to this definition">¶</a></dt>
@@ -298,7 +299,7 @@ included in <cite>other</cite> or they are mutually exclusive.</p>
 
 </div>
 <div class="section" id="groupbond-objects">
-<h2>4.5. GroupBond Objects<a class="headerlink" href="#groupbond-objects" title="Permalink to this headline">¶</a></h2>
+<h2>9.4.5. GroupBond Objects<a class="headerlink" href="#groupbond-objects" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="rmgpy.molecule.group.GroupBond">
 <em class="property">class </em><tt class="descclassname">rmgpy.molecule.group.</tt><tt class="descname">GroupBond</tt><a class="headerlink" href="#rmgpy.molecule.group.GroupBond" title="Permalink to this definition">¶</a></dt>
@@ -362,7 +363,7 @@ included in <cite>other</cite> or they are mutually exclusive.</p>
 
 </div>
 <div class="section" id="group-objects">
-<h2>4.6. Group Objects<a class="headerlink" href="#group-objects" title="Permalink to this headline">¶</a></h2>
+<h2>9.4.6. Group Objects<a class="headerlink" href="#group-objects" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="rmgpy.molecule.group.Group">
 <em class="property">class </em><tt class="descclassname">rmgpy.molecule.group.</tt><tt class="descname">Group</tt><a class="headerlink" href="#rmgpy.molecule.group.Group" title="Permalink to this definition">¶</a></dt>
@@ -560,23 +561,23 @@ unconnected groups into separate class:<cite>Group</cite> objects.</p>
 </div>
   <h3><a href="../../contents.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">4. <tt class="docutils literal"><span class="pre">rmgpy.molecule.group</span></tt> &#8212; Functional Groups</a><ul>
-<li><a class="reference internal" href="#bond-types">4.1. Bond Types</a></li>
-<li><a class="reference internal" href="#reaction-recipe-actions">4.2. Reaction Recipe Actions</a></li>
-<li><a class="reference internal" href="#adjacency-lists">4.3. Adjacency Lists</a></li>
-<li><a class="reference internal" href="#groupatom-objects">4.4. GroupAtom Objects</a></li>
-<li><a class="reference internal" href="#groupbond-objects">4.5. GroupBond Objects</a></li>
-<li><a class="reference internal" href="#group-objects">4.6. Group Objects</a></li>
+<li><a class="reference internal" href="#">9.4. <tt class="docutils literal"><span class="pre">rmgpy.molecule.group</span></tt> &#8212; Functional Groups</a><ul>
+<li><a class="reference internal" href="#bond-types">9.4.1. Bond Types</a></li>
+<li><a class="reference internal" href="#reaction-recipe-actions">9.4.2. Reaction Recipe Actions</a></li>
+<li><a class="reference internal" href="#adjacency-lists">9.4.3. Adjacency Lists</a></li>
+<li><a class="reference internal" href="#groupatom-objects">9.4.4. GroupAtom Objects</a></li>
+<li><a class="reference internal" href="#groupbond-objects">9.4.5. GroupBond Objects</a></li>
+<li><a class="reference internal" href="#group-objects">9.4.6. Group Objects</a></li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="graph.html"
-                        title="previous chapter">3. <tt class="docutils literal"><span class="pre">rmgpy.molecule.graph</span></tt> &#8212; Graph Data Type</a></p>
+                        title="previous chapter">9.3. <tt class="docutils literal docutils literal docutils literal"><span class="pre">rmgpy.molecule.graph</span></tt> &#8212; Graph Data Type</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="molecule.html"
-                        title="next chapter">5. <tt class="docutils literal"><span class="pre">rmgpy.molecule.molecule</span></tt> &#8212; Structure and Properties of Molecules</a></p>
+                        title="next chapter">9.5. <tt class="docutils literal docutils literal"><span class="pre">rmgpy.molecule.molecule</span></tt> &#8212; Structure and Properties of Molecules</a></p>
   <h3>This Page </h3>
   <ul class="this-page-menu">
     <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/developers/molecule/group.rst"

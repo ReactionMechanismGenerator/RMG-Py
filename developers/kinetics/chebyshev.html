@@ -1,0 +1,226 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>3.3. Chebyshev polynomials &mdash; RMG Py 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
+    <link rel="up" title="3. Kinetics in RMG" href="index.html" />
+    <link rel="next" title="3.4. Falloff kinetics" href="falloff.html" />
+    <link rel="prev" title="3.2. Pressure-dependent Arrhenius kinetics" href="pdeparrhenius.html" /> 
+  </head>
+  <body>
+<div class="header">
+&nbsp;
+</div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="falloff.html" title="3.4. Falloff kinetics"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="pdeparrhenius.html" title="3.2. Pressure-dependent Arrhenius kinetics"
+             accesskey="P">previous</a> |</li>
+<li><a href="../../index.html">Documentation</a> &raquo;</li>
+
+          <li><a href="../index.html" >RMG Developer&#8217;s Guide</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">3. Kinetics in RMG</a> &raquo;</li> 
+      </ul>
+    </div>
+            
+  <div class="section" id="chebyshev-polynomials">
+<h1>3.3. Chebyshev polynomials<a class="headerlink" href="#chebyshev-polynomials" title="Permalink to this headline">¶</a></h1>
+<p>The Chebyshev polynomial formulation is a means of fitting a wide range of
+complex <span class="math">\(k(T,P)\)</span> behavior. However, there is no meaningful physical
+interpretation of the polynomial-based fit, and one must take care to minimize
+the magnitude of Runge&#8217;s phenomenon. The formulation is as follows:</p>
+<div class="math">
+\[\log k(T,P) = \sum_{t=1}^{N_T} \sum_{p=1}^{N_P} \alpha_{tp} \phi_t(\tilde{T}) \phi_p(\tilde{P})\]</div>
+<p>Above, <span class="math">\(\alpha_{tp}\)</span> is a constant, <span class="math">\(\phi_n(x)\)</span> is the
+Chebyshev polynomial of degree <span class="math">\(n\)</span> evaluated at <span class="math">\(x\)</span>, and</p>
+<div class="math">
+\[\tilde{T} \equiv \frac{2T^{-1} - T_\mathrm{min}^{-1} - T_\mathrm{max}^{-1}}{T_\mathrm{max}^{-1} - T_\mathrm{min}^{-1}}\]</div>
+<div class="math">
+\[\tilde{P} \equiv \frac{2 \log P - \log P_\mathrm{min} - \log P_\mathrm{max}}{\log P_\mathrm{max} - \log P_\mathrm{min}}\]</div>
+<p>are reduced temperature and reduced pressure designed to map the ranges
+<span class="math">\((T_\mathrm{min}, T_\mathrm{max})\)</span> and
+<span class="math">\((P_\mathrm{min}, P_\mathrm{max})\)</span> to <span class="math">\((-1, 1)\)</span>.</p>
+<dl class="class">
+<dt id="rmgpy.kinetics.Chebyshev">
+<em class="property">class </em><tt class="descclassname">rmgpy.kinetics.</tt><tt class="descname">Chebyshev</tt><a class="headerlink" href="#rmgpy.kinetics.Chebyshev" title="Permalink to this definition">¶</a></dt>
+<dd><p>Chebyshev(coeffs=None, kunits=&#8217;&#8216;, highPlimit=None, Tmin=None, Tmax=None, Pmin=None, Pmax=None, comment=&#8217;&#8216;)</p>
+<p>A model of a phenomenological rate coefficient <span class="math">\(k(T,P)\)</span> using a
+set of Chebyshev polynomials in temperature and pressure. The attributes
+are:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="13%" />
+<col width="87%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Attribute</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><cite>coeffs</cite></td>
+<td>Matrix of Chebyshev coefficients, such that the resulting <span class="math">\(k(T,P)\)</span> has units of cm^3, mol, s</td>
+</tr>
+<tr class="row-odd"><td><cite>kunits</cite></td>
+<td>The units of the rate coefficient</td>
+</tr>
+<tr class="row-even"><td><cite>degreeT</cite></td>
+<td>The number of terms in the inverse temperature direction</td>
+</tr>
+<tr class="row-odd"><td><cite>degreeP</cite></td>
+<td>The number of terms in the log pressure direction</td>
+</tr>
+<tr class="row-even"><td><cite>Tmin</cite></td>
+<td>The minimum temperature at which the model is valid, or zero if unknown or undefined</td>
+</tr>
+<tr class="row-odd"><td><cite>Tmax</cite></td>
+<td>The maximum temperature at which the model is valid, or zero if unknown or undefined</td>
+</tr>
+<tr class="row-even"><td><cite>Pmin</cite></td>
+<td>The minimum pressure at which the model is valid, or zero if unknown or undefined</td>
+</tr>
+<tr class="row-odd"><td><cite>Pmax</cite></td>
+<td>The maximum pressure at which the model is valid, or zero if unknown or undefined</td>
+</tr>
+<tr class="row-even"><td><cite>comment</cite></td>
+<td>Information about the model (e.g. its source)</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="rmgpy.kinetics.Chebyshev.coeffs">
+<tt class="descname">coeffs</tt><a class="headerlink" href="#rmgpy.kinetics.Chebyshev.coeffs" title="Permalink to this definition">¶</a></dt>
+<dd><p>The Chebyshev coefficients.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.kinetics.Chebyshev.degreeP">
+<tt class="descname">degreeP</tt><a class="headerlink" href="#rmgpy.kinetics.Chebyshev.degreeP" title="Permalink to this definition">¶</a></dt>
+<dd><p>degreeP: &#8216;int&#8217;</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.kinetics.Chebyshev.degreeT">
+<tt class="descname">degreeT</tt><a class="headerlink" href="#rmgpy.kinetics.Chebyshev.degreeT" title="Permalink to this definition">¶</a></dt>
+<dd><p>degreeT: &#8216;int&#8217;</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.kinetics.Chebyshev.fitToData">
+<tt class="descname">fitToData</tt><big>(</big><em>self</em>, <em>ndarray Tlist</em>, <em>ndarray Plist</em>, <em>ndarray K</em>, <em>str kunits</em>, <em>int degreeT</em>, <em>int degreeP</em>, <em>double Tmin</em>, <em>double Tmax</em>, <em>double Pmin</em>, <em>double Pmax</em><big>)</big><a class="headerlink" href="#rmgpy.kinetics.Chebyshev.fitToData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fit a Chebyshev kinetic model to a set of rate coefficients <cite>K</cite>, which
+is a matrix corresponding to the temperatures <cite>Tlist</cite> in K and pressures
+<cite>Plist</cite> in Pa. <cite>degreeT</cite> and <cite>degreeP</cite> are the degree of the 
+polynomials in temperature and pressure, while <cite>Tmin</cite>, <cite>Tmax</cite>, <cite>Pmin</cite>,
+and <cite>Pmax</cite> set the edges of the valid temperature and pressure ranges
+in K and bar, respectively.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.kinetics.Chebyshev.getRateCoefficient">
+<tt class="descname">getRateCoefficient</tt><big>(</big><em>self</em>, <em>double T</em>, <em>double P=0</em><big>)</big> &rarr; double<a class="headerlink" href="#rmgpy.kinetics.Chebyshev.getRateCoefficient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the rate coefficient in the appropriate combination of m^3, 
+mol, and s at temperature <cite>T</cite> in K and pressure <cite>P</cite> in Pa by 
+evaluating the Chebyshev expression.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.kinetics.Chebyshev.isIdenticalTo">
+<tt class="descname">isIdenticalTo</tt><big>(</big><em>self</em>, <em>KineticsModel otherKinetics</em><big>)</big> &rarr; int<a class="headerlink" href="#rmgpy.kinetics.Chebyshev.isIdenticalTo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks to see if kinetics matches that of other kinetics and returns <tt class="docutils literal"><span class="pre">True</span></tt>
+if coeffs, kunits, Tmin,</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.kinetics.Chebyshev.kunits">
+<tt class="descname">kunits</tt><a class="headerlink" href="#rmgpy.kinetics.Chebyshev.kunits" title="Permalink to this definition">¶</a></dt>
+<dd><p>kunits: str</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div class="sidebarlogo">
+<img src="../../_static/rmg-logo-small.png" alt="RMG" />
+</div>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="pdeparrhenius.html"
+                        title="previous chapter">3.2. Pressure-dependent Arrhenius kinetics</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="falloff.html"
+                        title="next chapter">3.4. Falloff kinetics</a></p>
+  <h3>This Page </h3>
+  <ul class="this-page-menu">
+    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/developers/kinetics/chebyshev.rst"
+           rel="nofollow">Edit this page</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

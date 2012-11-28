@@ -1,0 +1,254 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>4.2. Quantity objects &mdash; RMG Py 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
+    <link rel="up" title="4. Physical quantities in RMG" href="index.html" />
+    <link rel="next" title="4.3. Unit types" href="units.html" />
+    <link rel="prev" title="4.1. Physical constants" href="constants.html" /> 
+  </head>
+  <body>
+<div class="header">
+&nbsp;
+</div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="units.html" title="4.3. Unit types"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="constants.html" title="4.1. Physical constants"
+             accesskey="P">previous</a> |</li>
+<li><a href="../../index.html">Documentation</a> &raquo;</li>
+
+          <li><a href="../index.html" >RMG Developer&#8217;s Guide</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">4. Physical quantities in RMG</a> &raquo;</li> 
+      </ul>
+    </div>
+            
+  <div class="section" id="quantity-objects">
+<h1>4.2. Quantity objects<a class="headerlink" href="#quantity-objects" title="Permalink to this headline">¶</a></h1>
+<p>A physical quantity is defined by a numerical value and a unit of measurement.</p>
+<p>The <tt class="xref py py-mod docutils literal"><span class="pre">rmgpy.quantity</span></tt> module contains classes and methods for working with
+physical quantities. Physical quantities are represented by either the
+<a class="reference internal" href="#rmgpy.quantity.ScalarQuantity" title="rmgpy.quantity.ScalarQuantity"><tt class="xref py py-class docutils literal"><span class="pre">ScalarQuantity</span></tt></a> or
+<a class="reference internal" href="#rmgpy.quantity.ArrayQuantity" title="rmgpy.quantity.ArrayQuantity"><tt class="xref py py-class docutils literal"><span class="pre">ArrayQuantity</span></tt></a> class depending on
+whether a scalar or vector (or tensor) value is used. The
+<a class="reference internal" href="#rmgpy.quantity.Quantity" title="rmgpy.quantity.Quantity"><tt class="xref py py-func docutils literal"><span class="pre">Quantity</span></tt></a> function automatically chooses the
+appropriate class based on the input value. In both cases, the value of a
+physical quantity is available from the <tt class="docutils literal"><span class="pre">value</span></tt> attribute, and the units from
+the <tt class="docutils literal"><span class="pre">units</span></tt> attribute.</p>
+<p>For efficient computation, the value is stored internally in the SI equivalent
+units. The SI value can be accessed directly using the <tt class="docutils literal"><span class="pre">value_si</span></tt> attribute.
+Usually it is good practice to read the <tt class="docutils literal"><span class="pre">value_si</span></tt> attribute into a local
+variable and then use it for computations, especially if it is referred to
+multiple times in the calculation.</p>
+<p>Physical quantities also allow for storing of uncertainty values for both
+scalars and arrays. The <tt class="docutils literal"><span class="pre">uncertaintyType</span></tt> attribute indicates whether the
+given uncertainties are additive (<tt class="docutils literal"><span class="pre">&quot;+|-&quot;</span></tt>) or multiplicative (<tt class="docutils literal"><span class="pre">&quot;*|/&quot;</span></tt>),
+and the <tt class="docutils literal"><span class="pre">uncertainty</span></tt> attribute contains the stored uncertainties. For
+additive uncertainties these are stored in the given units (not the SI
+equivalent), since they are generally not needed for efficient computations.
+For multiplicative uncertainties, the uncertainty values are by definition
+dimensionless.</p>
+<div class="section" id="generating-quantities">
+<h2>4.2.1. Generating quantities<a class="headerlink" href="#generating-quantities" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="rmgpy.quantity.Quantity">
+<tt class="descclassname">rmgpy.quantity.</tt><tt class="descname">Quantity</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.quantity.Quantity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a <tt class="xref py py-class docutils literal"><span class="pre">ScalarQuantity</span></tt> or <tt class="xref py py-class docutils literal"><span class="pre">ArrayQuantity</span></tt> object for a
+given physical quantity. The physical quantity can be specified in several
+ways:</p>
+<ul class="simple">
+<li>A scalar-like or array-like value (for a dimensionless quantity)</li>
+<li>An array of arguments (including keyword arguments) giving some or all of
+the <cite>value</cite>, <cite>units</cite>, <cite>uncertainty</cite>, and/or <cite>uncertaintyType</cite>.</li>
+<li>A tuple of the form <tt class="docutils literal"><span class="pre">(value,)</span></tt>, <tt class="docutils literal"><span class="pre">(value,units)</span></tt>, 
+<tt class="docutils literal"><span class="pre">(value,units,uncertainty)</span></tt>, or 
+<tt class="docutils literal"><span class="pre">(value,units,uncertaintyType,uncertainty)</span></tt></li>
+<li>An existing <tt class="xref py py-class docutils literal"><span class="pre">ScalarQuantity</span></tt> or <tt class="xref py py-class docutils literal"><span class="pre">ArrayQuantity</span></tt> object, for
+which a copy is made</li>
+</ul>
+</dd></dl>
+
+</div>
+<div class="section" id="scalar-quantities">
+<h2>4.2.2. Scalar quantities<a class="headerlink" href="#scalar-quantities" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="rmgpy.quantity.ScalarQuantity">
+<em class="property">class </em><tt class="descclassname">rmgpy.quantity.</tt><tt class="descname">ScalarQuantity</tt><a class="headerlink" href="#rmgpy.quantity.ScalarQuantity" title="Permalink to this definition">¶</a></dt>
+<dd><p>The <tt class="xref py py-class docutils literal"><span class="pre">ScalarQuantity</span></tt> class provides a representation of a scalar
+physical quantity, with optional units and uncertainty information. The
+attributes are:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="20%" />
+<col width="80%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Attribute</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><cite>value</cite></td>
+<td>The numeric value of the quantity in the given units</td>
+</tr>
+<tr class="row-odd"><td><cite>units</cite></td>
+<td>The units the value was specified in</td>
+</tr>
+<tr class="row-even"><td><cite>uncertainty</cite></td>
+<td>The numeric uncertainty in the value</td>
+</tr>
+<tr class="row-odd"><td><cite>uncertaintyType</cite></td>
+<td>The type of uncertainty: <tt class="docutils literal"><span class="pre">'+|-'</span></tt> for additive, <tt class="docutils literal"><span class="pre">'*|/'</span></tt> for multiplicative</td>
+</tr>
+<tr class="row-even"><td><cite>value_si</cite></td>
+<td>The numeric value of the quantity in the corresponding SI units</td>
+</tr>
+</tbody>
+</table>
+<p>It is often more convenient to perform computations using SI units instead
+of the given units of the quantity. For this reason, the SI equivalent of
+the <cite>value</cite> attribute can be directly accessed using the <cite>value_si</cite>
+attribute. This value is cached on the <tt class="xref py py-class docutils literal"><span class="pre">ScalarQuantity</span></tt> object for
+speed.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="array-quantities">
+<h2>4.2.3. Array quantities<a class="headerlink" href="#array-quantities" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="rmgpy.quantity.ArrayQuantity">
+<em class="property">class </em><tt class="descclassname">rmgpy.quantity.</tt><tt class="descname">ArrayQuantity</tt><a class="headerlink" href="#rmgpy.quantity.ArrayQuantity" title="Permalink to this definition">¶</a></dt>
+<dd><p>The <tt class="xref py py-class docutils literal"><span class="pre">ScalarQuantity</span></tt> class provides a representation of an array of
+physical quantity values, with optional units and uncertainty information. 
+The attributes are:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="20%" />
+<col width="80%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Attribute</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><cite>value</cite></td>
+<td>The numeric value of the quantity in the given units</td>
+</tr>
+<tr class="row-odd"><td><cite>units</cite></td>
+<td>The units the value was specified in</td>
+</tr>
+<tr class="row-even"><td><cite>uncertainty</cite></td>
+<td>The numeric uncertainty in the value</td>
+</tr>
+<tr class="row-odd"><td><cite>uncertaintyType</cite></td>
+<td>The type of uncertainty: <tt class="docutils literal"><span class="pre">'+|-'</span></tt> for additive, <tt class="docutils literal"><span class="pre">'*|/'</span></tt> for multiplicative</td>
+</tr>
+<tr class="row-even"><td><cite>value_si</cite></td>
+<td>The numeric value of the quantity in the corresponding SI units</td>
+</tr>
+</tbody>
+</table>
+<p>It is often more convenient to perform computations using SI units instead
+of the given units of the quantity. For this reason, the SI equivalent of
+the <cite>value</cite> attribute can be directly accessed using the <cite>value_si</cite>
+attribute. This value is cached on the <tt class="xref py py-class docutils literal"><span class="pre">ArrayQuantity</span></tt> object for 
+speed.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div class="sidebarlogo">
+<img src="../../_static/rmg-logo-small.png" alt="RMG" />
+</div>
+  <h3><a href="../../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">4.2. Quantity objects</a><ul>
+<li><a class="reference internal" href="#generating-quantities">4.2.1. Generating quantities</a></li>
+<li><a class="reference internal" href="#scalar-quantities">4.2.2. Scalar quantities</a></li>
+<li><a class="reference internal" href="#array-quantities">4.2.3. Array quantities</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="constants.html"
+                        title="previous chapter">4.1. Physical constants</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="units.html"
+                        title="next chapter">4.3. Unit types</a></p>
+  <h3>This Page </h3>
+  <ul class="this-page-menu">
+    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/developers/quantities/quantity.rst"
+           rel="nofollow">Edit this page</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

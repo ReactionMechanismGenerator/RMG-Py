@@ -25,6 +25,7 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
     <link rel="up" title="MEASURE User’s Guide" href="index.html" />
     <link rel="next" title="4. Running MEASURE" href="running.html" />
@@ -186,7 +187,7 @@ bimolecular reactant channels. When specifying the <tt class="docutils literal">
 </tbody>
 </table>
 <p>The <tt class="docutils literal"><span class="pre">RigidRotor()</span></tt>, <tt class="docutils literal"><span class="pre">HarmonicOscillator()</span></tt>, and <tt class="docutils literal"><span class="pre">HinderedRotor()</span></tt>
-constructors match the corresponding classes in the <a class="reference internal" href="../../developers/statmech.html#module-rmgpy.statmech" title="rmgpy.statmech"><tt class="xref py py-mod docutils literal"><span class="pre">rmgpy.statmech</span></tt></a>
+constructors match the corresponding classes in the <a class="reference internal" href="../../developers/statmech/index.html#module-rmgpy.statmech" title="rmgpy.statmech"><tt class="xref py py-mod docutils literal"><span class="pre">rmgpy.statmech</span></tt></a>
 module. The parameters for each are also summarized below:</p>
 <table border="1" class="docutils">
 <colgroup>
@@ -230,7 +231,7 @@ module. The parameters for each are also summarized below:</p>
 <td>The barrier height of the cosine potential</td>
 </tr>
 <tr class="row-even"><td><cite>fourier</cite></td>
-<td>The <img class="math" src="../../_images/math/7a5d9c79cf2656bd6f5b44e2397a87c78bb9acb6.png" alt="2 \times C"/> array of Fourier coefficients for the Fourier series potential</td>
+<td>The <span class="math">\(2 \times C\)</span> array of Fourier coefficients for the Fourier series potential</td>
 </tr>
 </tbody>
 </table>
@@ -243,7 +244,7 @@ degrees of freedom data. You can use any of the thermodynamics models in the
 <tt class="docutils literal"><span class="pre">rmgpy.thermo</span></tt> module; see that package for more information on the available
 models and their syntax.</p>
 <p>The following is an example of a typical species item, based on the acetylperoxy
-radical <img class="math" src="../../_images/math/a05653fda41a1d3f75eaf1feae2e5396174a78c8.png" alt="\ce{CH3C(=O)OO.}"/>:</p>
+radical <span class="math">\(\ce{CH3C(=O)OO.}\)</span>:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">species</span><span class="p">(</span>
     <span class="n">label</span><span class="o">=</span><span class="s">&#39;acetylperoxy&#39;</span><span class="p">,</span>
     <span class="n">SMILES</span><span class="o">=</span><span class="s">&#39;CC(=O)O[O]&#39;</span><span class="p">,</span>
@@ -338,20 +339,20 @@ microcanonical rate coefficient is computed:</p>
 <li>If detailed information is known about the transition state, pass both the
 ground-state energy <cite>E0</cite> and the molecular degrees of freedom information
 <cite>states</cite> as parameters to the <tt class="docutils literal"><span class="pre">TransitionState()</span></tt> block. MEASURE will then
-use RRKM theory to compute the <img class="math" src="../../_images/math/241b7375c50c3fd63befa4fa93161d6f0961a8a9.png" alt="k(E)"/> values. (The molecular degrees of
+use RRKM theory to compute the <span class="math">\(k(E)\)</span> values. (The molecular degrees of
 freedom information is given in the same way as for species.)</li>
 <li>If only the high pressure-limit kinetics are known, pass only <cite>E0</cite> to the
 <tt class="docutils literal"><span class="pre">TransitionState()</span></tt> block, and provide the <cite>kinetics</cite> to the <tt class="docutils literal"><span class="pre">reaction()</span></tt>
 block using an <tt class="docutils literal"><span class="pre">Arrhenius()</span></tt> block, where you specify the Arrhenius
 parameters <tt class="docutils literal"><span class="pre">A</span></tt>, <tt class="docutils literal"><span class="pre">n</span></tt>, <tt class="docutils literal"><span class="pre">Ea</span></tt>, and optionally <tt class="docutils literal"><span class="pre">T0</span></tt> (set to 1 K if not
 explicity given). MEASURE will then use the inverse Laplace transform (ILT)
-method to compute the <img class="math" src="../../_images/math/241b7375c50c3fd63befa4fa93161d6f0961a8a9.png" alt="k(E)"/> values.</li>
+method to compute the <span class="math">\(k(E)\)</span> values.</li>
 </ul>
 <p>MEASURE will automatically use the best method that it can, so if you provide
 both the molecular degrees of freedom and the high pressure-limit kinetics -
 as in the example below - RRKM theory will be used.</p>
 <p>The following is an example of a typical reaction item, based on the reaction
-<img class="math" src="../../_images/math/d99fd770cc5173b62ee07ea2d9dce3b970f783a7.png" alt="\ce{CH3C(=O)OO. -&gt; CH2C=O + HO2}"/>:</p>
+<span class="math">\(\ce{CH3C(=O)OO. -&gt; CH2C=O + HO2}\)</span>:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">reaction</span><span class="p">(</span>
     <span class="n">reactants</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;acetylperoxy&#39;</span><span class="p">],</span>
     <span class="n">products</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;ketene&#39;</span><span class="p">,</span> <span class="s">&#39;hydroperoxyl&#39;</span><span class="p">],</span>
@@ -393,8 +394,8 @@ their relative mole fractions. The collision models available are:</p>
 <li><p class="first"><tt class="docutils literal"><span class="pre">single</span> <span class="pre">exponential</span> <span class="pre">down</span></tt> - Specify <tt class="docutils literal"><span class="pre">alpha0</span></tt>, <tt class="docutils literal"><span class="pre">T0</span></tt> and <tt class="docutils literal"><span class="pre">n</span></tt> for the
 average energy transferred in a deactiving collision</p>
 <div class="math">
-<p><img src="../../_images/math/73188eb2ad9c12ec5c4e2161a2ec10f9f50126a3.png" alt="\left&lt; \Delta E_\mathrm{down} \right&gt; = \alpha_0 \left( \frac{T}{T_0} \right)^n"/></p>
-</div></li>
+\[\begin{split}\left&lt; \Delta E_\mathrm{down} \right&gt; = \alpha_0 \left( \frac{T}{T_0} \right)^n\end{split}\]</div>
+</li>
 </ul>
 <p>An example of a typical <tt class="docutils literal"><span class="pre">collisionModel()</span></tt> block is given below:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">collisionModel</span><span class="p">(</span>
@@ -413,7 +414,7 @@ average energy transferred in a deactiving collision</p>
 </div>
 <div class="section" id="temperature-and-pressure-ranges">
 <h3>3.5.2. Temperature and Pressure Ranges<a class="headerlink" href="#temperature-and-pressure-ranges" title="Permalink to this headline">¶</a></h3>
-<p>MEASURE will compute the <img class="math" src="../../_images/math/c93ef2271f42445cc7a12cf6322aeca7a868d826.png" alt="k(T,P)"/> values on a grid of temperature and
+<p>MEASURE will compute the <span class="math">\(k(T,P)\)</span> values on a grid of temperature and
 pressure points. The discussion below is for temperatures, but applies
 identically to pressures as well.</p>
 <p>There are two ways to specify the temperature range using a <tt class="docutils literal"><span class="pre">temperatures()</span></tt>
@@ -459,7 +460,7 @@ determine these automatically.</p>
 <div class="section" id="method">
 <h3>3.5.4. Method<a class="headerlink" href="#method" title="Permalink to this headline">¶</a></h3>
 <p>Use a <tt class="docutils literal"><span class="pre">method()</span></tt> block to specify the approximate method to use when computing
-<img class="math" src="../../_images/math/c93ef2271f42445cc7a12cf6322aeca7a868d826.png" alt="k(T,P)"/> values from the full master equation. There are currently three
+<span class="math">\(k(T,P)\)</span> values from the full master equation. There are currently three
 methods available: <tt class="docutils literal"><span class="pre">modified</span> <span class="pre">strong</span> <span class="pre">collision</span></tt> (MSC), <tt class="docutils literal"><span class="pre">reservoir</span> <span class="pre">state</span></tt>
 (RS), and <tt class="docutils literal"><span class="pre">chemically-significant</span> <span class="pre">eigenvalues</span></tt> (CSE). The details of each of
 these methods is provided in the <a class="reference internal" href="../../theory/measure/index.html"><em>MEASURE Theory Guide</em></a>. In short:
@@ -475,7 +476,7 @@ initial explorations, then RS when more accurate numbers are needed.</p>
 <div class="section" id="interpolation-model">
 <h3>3.5.5. Interpolation Model<a class="headerlink" href="#interpolation-model" title="Permalink to this headline">¶</a></h3>
 <p>Finally, use a <tt class="docutils literal"><span class="pre">model()</span></tt> block to specify the interpolation model to fit to
-the computed <img class="math" src="../../_images/math/c93ef2271f42445cc7a12cf6322aeca7a868d826.png" alt="k(T,P)"/> values. Currently there are two such models
+the computed <span class="math">\(k(T,P)\)</span> values. Currently there are two such models
 available:</p>
 <ul>
 <li><p class="first"><strong>Chebyshev polynomials.</strong> You must also provide the number of terms to use in

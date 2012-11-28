@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>rmgpy.reaction — Chemical Reactions &mdash; RMG Py 0.1.0 documentation</title>
+    <title>5. rmgpy.reaction — Chemical Reactions &mdash; RMG Py 0.1.0 documentation</title>
     
     <link rel="stylesheet" href="../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -25,10 +25,11 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="RMG Py 0.1.0 documentation" href="../index.html" />
     <link rel="up" title="RMG Developer’s Guide" href="index.html" />
-    <link rel="next" title="rmgpy.species — Chemical Species" href="species.html" />
-    <link rel="prev" title="rmgpy.quantity — Physical Quantities and Constants" href="quantity.html" /> 
+    <link rel="next" title="6. rmgpy.species — Chemical Species" href="species.html" />
+    <link rel="prev" title="4.3. Unit types" href="quantities/units.html" /> 
   </head>
   <body>
 <div class="header">
@@ -50,10 +51,10 @@
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="species.html" title="rmgpy.species — Chemical Species"
+          <a href="species.html" title="6. rmgpy.species — Chemical Species"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="quantity.html" title="rmgpy.quantity — Physical Quantities and Constants"
+          <a href="quantities/units.html" title="4.3. Unit types"
              accesskey="P">previous</a> |</li>
 <li><a href="../index.html">Documentation</a> &raquo;</li>
 
@@ -62,7 +63,7 @@
     </div>
             
   <div class="section" id="module-rmgpy.reaction">
-<span id="rmgpy-reaction-chemical-reactions"></span><h1><a class="reference internal" href="#module-rmgpy.reaction" title="rmgpy.reaction"><tt class="xref py py-mod docutils literal"><span class="pre">rmgpy.reaction</span></tt></a> &#8212; Chemical Reactions<a class="headerlink" href="#module-rmgpy.reaction" title="Permalink to this headline">¶</a></h1>
+<span id="rmgpy-reaction-chemical-reactions"></span><h1>5. <a class="reference internal" href="#module-rmgpy.reaction" title="rmgpy.reaction"><tt class="xref py py-mod docutils literal"><span class="pre">rmgpy.reaction</span></tt></a> &#8212; Chemical Reactions<a class="headerlink" href="#module-rmgpy.reaction" title="Permalink to this headline">¶</a></h1>
 <p>This module contains classes and functions for working with chemical reactions.</p>
 <p>From the <a class="reference external" href="http://dx.doi.org/10.1351/goldbook">IUPAC Compendium of Chemical Terminology</a>, a chemical reaction is &#8220;a process that 
 results in the interconversion of chemical species&#8221;.</p>
@@ -70,7 +71,7 @@ results in the interconversion of chemical species&#8221;.</p>
 object. This module also provides the <a class="reference internal" href="#rmgpy.reaction.ReactionModel" title="rmgpy.reaction.ReactionModel"><tt class="xref py py-class docutils literal"><span class="pre">ReactionModel</span></tt></a> class for
 representing a set of chemical reactions and the species involved.</p>
 <div class="section" id="reactions">
-<h2>Reactions<a class="headerlink" href="#reactions" title="Permalink to this headline">¶</a></h2>
+<h2>5.1. Reactions<a class="headerlink" href="#reactions" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="rmgpy.reaction.ReactionError">
 <em class="property">class </em><tt class="descclassname">rmgpy.reaction.</tt><tt class="descname">ReactionError</tt><a class="headerlink" href="#rmgpy.reaction.ReactionError" title="Permalink to this definition">¶</a></dt>
@@ -85,9 +86,9 @@ exceptional behavior.</p>
 <dd><p>A chemical reaction. The attributes are:</p>
 <table border="1" class="docutils">
 <colgroup>
-<col width="14%" />
-<col width="20%" />
-<col width="65%" />
+<col width="16%" />
+<col width="22%" />
+<col width="62%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Attribute</th>
@@ -100,29 +101,29 @@ exceptional behavior.</p>
 <td><tt class="xref py py-class docutils literal"><span class="pre">int</span></tt></td>
 <td>A unique nonnegative integer index</td>
 </tr>
-<tr class="row-odd"><td><cite>reactants</cite></td>
+<tr class="row-odd"><td><cite>label</cite></td>
+<td><tt class="docutils literal"><span class="pre">str</span></tt></td>
+<td>A descriptive string label</td>
+</tr>
+<tr class="row-even"><td><cite>reactants</cite></td>
 <td><tt class="xref py py-class docutils literal"><span class="pre">list</span></tt></td>
 <td>The reactant species (as <tt class="xref py py-class docutils literal"><span class="pre">Species</span></tt> objects)</td>
 </tr>
-<tr class="row-even"><td><cite>products</cite></td>
+<tr class="row-odd"><td><cite>products</cite></td>
 <td><tt class="xref py py-class docutils literal"><span class="pre">list</span></tt></td>
 <td>The product species (as <tt class="xref py py-class docutils literal"><span class="pre">Species</span></tt> objects)</td>
 </tr>
-<tr class="row-odd"><td><cite>kinetics</cite></td>
+<tr class="row-even"><td><cite>kinetics</cite></td>
 <td><tt class="xref py py-class docutils literal"><span class="pre">KineticsModel</span></tt></td>
 <td>The kinetics model to use for the reaction</td>
 </tr>
-<tr class="row-even"><td><cite>reversible</cite></td>
+<tr class="row-odd"><td><cite>reversible</cite></td>
 <td><tt class="docutils literal"><span class="pre">bool</span></tt></td>
 <td><tt class="docutils literal"><span class="pre">True</span></tt> if the reaction is reversible, <tt class="docutils literal"><span class="pre">False</span></tt> if not</td>
 </tr>
-<tr class="row-odd"><td><cite>transitionState</cite></td>
+<tr class="row-even"><td><cite>transitionState</cite></td>
 <td><tt class="xref py py-class docutils literal"><span class="pre">TransitionState</span></tt></td>
 <td>The transition state</td>
-</tr>
-<tr class="row-even"><td><cite>thirdBody</cite></td>
-<td><tt class="docutils literal"><span class="pre">bool</span></tt></td>
-<td><tt class="docutils literal"><span class="pre">True</span></tt> if the reaction if the reaction kinetics imply a third body, <tt class="docutils literal"><span class="pre">False</span></tt> if not</td>
 </tr>
 <tr class="row-odd"><td><cite>duplicate</cite></td>
 <td><tt class="docutils literal"><span class="pre">bool</span></tt></td>
@@ -139,40 +140,28 @@ exceptional behavior.</p>
 </tbody>
 </table>
 <dl class="method">
-<dt id="rmgpy.reaction.Reaction.calculateEckartTunnelingCorrection">
-<tt class="descname">calculateEckartTunnelingCorrection</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.reaction.Reaction.calculateEckartTunnelingCorrection" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate and return the value of the Eckart tunneling correction for
-the reaction with corresponding transition state <cite>TS</cite> at the list of
-temperatures <cite>Tlist</cite> in K. The Eckart formula is</p>
-<div class="math">
-<p><img src="../_images/math/dbd4efe71a1c9c974d19f402182966d913a75b6e.png" alt="\kappa(T) = e^{\beta \Delta V_1} \int_0^\infty 
-\left[ 1 - \frac{\cosh (2 \pi a - 2 \pi b) + \cosh (2 \pi d)}{\cosh (2 \pi a + 2 \pi b) + \cosh (2 \pi d)} \right] e^{- \beta E} \ d(\beta E)"/></p>
-</div><p>where</p>
-<div class="math">
-<p><img src="../_images/math/8730ca959624e2597c4a35eca69bd60140448db2.png" alt="2 \pi a = \frac{2 \sqrt{\alpha_1 \xi}}{\alpha_1^{-1/2} + \alpha_2^{-1/2}}"/></p>
-</div><div class="math">
-<p><img src="../_images/math/08ec1a517c83e2e7494bcf431322118f66faf4a8.png" alt="2 \pi b = \frac{2 \sqrt{| (\xi - 1) \alpha_1 + \alpha_2|}}{\alpha_1^{-1/2} + \alpha_2^{-1/2}}"/></p>
-</div><div class="math">
-<p><img src="../_images/math/80d31effcf2778cd55dab9a452f1e5fdcc2ddfab.png" alt="2 \pi d = 2 \sqrt{| \alpha_1 \alpha_2 - 4 \pi^2 / 16|}"/></p>
-</div><div class="math">
-<p><img src="../_images/math/281df3b0cca4f1da022e48e8b3936a3135904938.png" alt="\alpha_1 = 2 \pi \frac{\Delta V_1}{h | \nu_\mathrm{TS} |}"/></p>
-</div><div class="math">
-<p><img src="../_images/math/f67f076b62990442d5b754da489c3d1e2764fae0.png" alt="\alpha_2 = 2 \pi \frac{\Delta V_2}{h | \nu_\mathrm{TS} |}"/></p>
-</div><div class="math">
-<p><img src="../_images/math/99b0cc12a326be99958b21119569b9fb4c295da9.png" alt="\xi = \frac{E}{\Delta V_1}"/></p>
-</div><p><img class="math" src="../_images/math/f7b275a4eb0909e88d31d38bbdcef2f197a2019f.png" alt="\Delta V_1"/> and <img class="math" src="../_images/math/168a369d7606c58221aa74c56274cd7d94d9a45d.png" alt="\Delta V_2"/> are the thermal energy 
-difference between the transition state and the reactants and products,
-respectively; <img class="math" src="../_images/math/9624252ecd3f6b69ee333668cdd97eae822593e3.png" alt="\nu_\mathrm{TS}"/> is the negative frequency, 
-<img class="math" src="../_images/math/8189a5b5a0917b8c93350827be4038af1839139d.png" alt="h"/> is the Planck constant, <img class="math" src="../_images/math/87660cb33b0d7f77743b0d52822cfa1d50d2e469.png" alt="k_\mathrm{B}"/> is the 
-Boltzmann constant, and <img class="math" src="../_images/math/2554b6496c3b678897e9b060ef00aa9f0a7d7ece.png" alt="T"/> is the absolute temperature. If 
-product data is not available, then it is assumed that 
-<img class="math" src="../_images/math/56bbac0404fb82ee5ca42c0fb790bd9704a49f1d.png" alt="\alpha_2 \approx \alpha_1"/>.
-The Eckart correction requires information about the reactants as well
-as the transition state. For best results, information about the 
-products should also be given. (The former is called the symmetric
-Eckart correction, the latter the asymmetric Eckart correction.) This
-extra information allows the Eckart correction to generally give a
-better result than the Wignet correction.</p>
+<dt id="rmgpy.reaction.Reaction.calculateMicrocanonicalRateCoefficient">
+<tt class="descname">calculateMicrocanonicalRateCoefficient</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.reaction.Reaction.calculateMicrocanonicalRateCoefficient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the microcanonical rate coefficient <span class="math">\(k(E)\)</span> for the reaction
+<cite>reaction</cite> at the energies <cite>Elist</cite> in J/mol. <cite>reacDensStates</cite> and 
+<cite>prodDensStates</cite> are the densities of states of the reactant and product
+configurations for this reaction. If the reaction is irreversible, only the
+reactant density of states is required; if the reaction is reversible, then
+both are required. This function will try to use the best method that it
+can based on the input data available:</p>
+<ul class="simple">
+<li>If detailed information has been provided for the transition state (i.e.
+the molecular degrees of freedom), then RRKM theory will be used.</li>
+<li>If the above is not possible but high-pressure limit kinetics
+<span class="math">\(k_\infty(T)\)</span> have been provided, then the inverse Laplace 
+transform method will be used.</li>
+</ul>
+<p>The density of states for the product <cite>prodDensStates</cite> and the temperature
+of interest <cite>T</cite> in K can also be provided. For isomerization and association
+reactions <cite>prodDensStates</cite> is required; for dissociation reactions it is
+optional. The temperature is used if provided in the detailed balance
+expression to determine the reverse kinetics, and in certain cases in the
+inverse Laplace transform method.</p>
 </dd></dl>
 
 <dl class="method">
@@ -182,30 +171,23 @@ better result than the Wignet correction.</p>
 corresponding transition state <cite>TS</cite> at temperature <cite>T</cite> in K using
 (canonical) transition state theory. The TST equation is</p>
 <div class="math">
-<p><img src="../_images/math/8b6c6d90eee2496f772827cd3950749472864ff6.png" alt="k(T) = \kappa(T) \frac{k_\mathrm{B} T}{h} \frac{Q^\ddagger(T)}{Q^\mathrm{A}(T) Q^\mathrm{B}(T)} \exp \left( -\frac{E_0}{k_\mathrm{B} T} \right)"/></p>
-</div><p>where <img class="math" src="../_images/math/11e91c246f5dc5c4160da0e34a484281c68483d6.png" alt="Q^\ddagger"/> is the partition function of the transition state,
-<img class="math" src="../_images/math/90be4e6265c21b8908419683e933612ea21b2876.png" alt="Q^\mathrm{A}"/> and <img class="math" src="../_images/math/c22b693cdceafdf3ac45bd4a114b693b2e398678.png" alt="Q^\mathrm{B}"/> are the partition function
-of the reactants, <img class="math" src="../_images/math/8a52f40afedf1c8727d71b0ad5a7ea0a7119b088.png" alt="E_0"/> is the ground-state energy difference from
-the transition state to the reactants, <img class="math" src="../_images/math/2554b6496c3b678897e9b060ef00aa9f0a7d7ece.png" alt="T"/> is the absolute
-temperature, <img class="math" src="../_images/math/87660cb33b0d7f77743b0d52822cfa1d50d2e469.png" alt="k_\mathrm{B}"/> is the Boltzmann constant, and <img class="math" src="../_images/math/8189a5b5a0917b8c93350827be4038af1839139d.png" alt="h"/>
-is the Planck constant. <img class="math" src="../_images/math/006a6ff79634852e26645ad8ffda2752fe8cd1ce.png" alt="\kappa(T)"/> is an optional tunneling
+\[k(T) = \kappa(T) \frac{k_\mathrm{B} T}{h} \frac{Q^\ddagger(T)}{Q^\mathrm{A}(T) Q^\mathrm{B}(T)} \exp \left( -\frac{E_0}{k_\mathrm{B} T} \right)\]</div>
+<p>where <span class="math">\(Q^\ddagger\)</span> is the partition function of the transition state,
+<span class="math">\(Q^\mathrm{A}\)</span> and <span class="math">\(Q^\mathrm{B}\)</span> are the partition function
+of the reactants, <span class="math">\(E_0\)</span> is the ground-state energy difference from
+the transition state to the reactants, <span class="math">\(T\)</span> is the absolute
+temperature, <span class="math">\(k_\mathrm{B}\)</span> is the Boltzmann constant, and <span class="math">\(h\)</span>
+is the Planck constant. <span class="math">\(\kappa(T)\)</span> is an optional tunneling
 correction.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="rmgpy.reaction.Reaction.calculateWignerTunnelingCorrection">
-<tt class="descname">calculateWignerTunnelingCorrection</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.reaction.Reaction.calculateWignerTunnelingCorrection" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate and return the value of the Wigner tunneling correction for
-the reaction with corresponding transition state <cite>TS</cite> at the list of
-temperatures <cite>Tlist</cite> in K. The Wigner formula is</p>
-<div class="math">
-<p><img src="../_images/math/63a8cd08f583c6f3eca16bcf8347b82152007e3b.png" alt="\kappa(T) = 1 + \frac{1}{24} \left( \frac{h | \nu_\mathrm{TS} |}{ k_\mathrm{B} T} \right)^2"/></p>
-</div><p>where <img class="math" src="../_images/math/8189a5b5a0917b8c93350827be4038af1839139d.png" alt="h"/> is the Planck constant, <img class="math" src="../_images/math/9624252ecd3f6b69ee333668cdd97eae822593e3.png" alt="\nu_\mathrm{TS}"/> is the
-negative frequency, <img class="math" src="../_images/math/87660cb33b0d7f77743b0d52822cfa1d50d2e469.png" alt="k_\mathrm{B}"/> is the Boltzmann constant, and
-<img class="math" src="../_images/math/2554b6496c3b678897e9b060ef00aa9f0a7d7ece.png" alt="T"/> is the absolute temperature. 
-The Wigner correction only requires information about the transition 
-state, not the reactants or products, but is also generally less 
-accurate than the Eckart correction.</p>
+<dt id="rmgpy.reaction.Reaction.canTST">
+<tt class="descname">canTST</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.reaction.Reaction.canTST" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if the necessary parameters are available for using
+transition state theory &#8211; or the microcanonical equivalent, RRKM
+theory &#8211; to compute the rate coefficient for this reaction, or
+<tt class="docutils literal"><span class="pre">False</span></tt> otherwise.</p>
 </dd></dl>
 
 <dl class="method">
@@ -387,7 +369,7 @@ and <cite>products</cite>, which are both lists of <tt class="xref py py-class d
 <dt id="rmgpy.reaction.Reaction.isAssociation">
 <tt class="descname">isAssociation</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.reaction.Reaction.isAssociation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if the reaction represents an association reaction
-<img class="math" src="../_images/math/3f048147d9bf953b0f9597dbee1c09cc8c5d1497.png" alt="\ce{A + B &lt;=&gt; C}"/> or <tt class="docutils literal"><span class="pre">False</span></tt> if not.</p>
+<span class="math">\(\ce{A + B &lt;=&gt; C}\)</span> or <tt class="docutils literal"><span class="pre">False</span></tt> if not.</p>
 </dd></dl>
 
 <dl class="method">
@@ -401,14 +383,14 @@ each side of the reaction equation, or <tt class="docutils literal"><span class=
 <dt id="rmgpy.reaction.Reaction.isDissociation">
 <tt class="descname">isDissociation</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.reaction.Reaction.isDissociation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if the reaction represents a dissociation reaction
-<img class="math" src="../_images/math/a0c71cf074eb06175d0084c8c65eeb71918b7cfa.png" alt="\ce{A &lt;=&gt; B + C}"/> or <tt class="docutils literal"><span class="pre">False</span></tt> if not.</p>
+<span class="math">\(\ce{A &lt;=&gt; B + C}\)</span> or <tt class="docutils literal"><span class="pre">False</span></tt> if not.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.reaction.Reaction.isIsomerization">
 <tt class="descname">isIsomerization</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.reaction.Reaction.isIsomerization" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if the reaction represents an isomerization reaction
-<img class="math" src="../_images/math/33266d906b5e90a5e87dde2a04571922136635d4.png" alt="\ce{A &lt;=&gt; B}"/> or <tt class="docutils literal"><span class="pre">False</span></tt> if not.</p>
+<span class="math">\(\ce{A &lt;=&gt; B}\)</span> or <tt class="docutils literal"><span class="pre">False</span></tt> if not.</p>
 </dd></dl>
 
 <dl class="method">
@@ -438,7 +420,7 @@ The reactants should be <tt class="xref py py-class docutils literal"><span clas
 
 </div>
 <div class="section" id="reaction-models">
-<h2>Reaction Models<a class="headerlink" href="#reaction-models" title="Permalink to this headline">¶</a></h2>
+<h2>5.2. Reaction Models<a class="headerlink" href="#reaction-models" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="rmgpy.reaction.ReactionModel">
 <em class="property">class </em><tt class="descclassname">rmgpy.reaction.</tt><tt class="descname">ReactionModel</tt><a class="headerlink" href="#rmgpy.reaction.ReactionModel" title="Permalink to this definition">¶</a></dt>
@@ -499,19 +481,19 @@ and edge. The id of the reaction is the index into the vector.</p>
 </div>
   <h3><a href="../contents.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#"><tt class="docutils literal"><span class="pre">rmgpy.reaction</span></tt> &#8212; Chemical Reactions</a><ul>
-<li><a class="reference internal" href="#reactions">Reactions</a></li>
-<li><a class="reference internal" href="#reaction-models">Reaction Models</a></li>
+<li><a class="reference internal" href="#">5. <tt class="docutils literal"><span class="pre">rmgpy.reaction</span></tt> &#8212; Chemical Reactions</a><ul>
+<li><a class="reference internal" href="#reactions">5.1. Reactions</a></li>
+<li><a class="reference internal" href="#reaction-models">5.2. Reaction Models</a></li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="quantity.html"
-                        title="previous chapter"><tt class="docutils literal"><span class="pre">rmgpy.quantity</span></tt> &#8212; Physical Quantities and Constants</a></p>
+  <p class="topless"><a href="quantities/units.html"
+                        title="previous chapter">4.3. Unit types</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="species.html"
-                        title="next chapter"><tt class="docutils literal"><span class="pre">rmgpy.species</span></tt> &#8212; Chemical Species</a></p>
+                        title="next chapter">6. <tt class="docutils literal"><span class="pre">rmgpy.species</span></tt> &#8212; Chemical Species</a></p>
   <h3>This Page </h3>
   <ul class="this-page-menu">
     <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/developers/reaction.rst"

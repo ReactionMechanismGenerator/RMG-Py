@@ -1,0 +1,386 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>3.1. Arrhenius kinetics &mdash; RMG Py 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
+    <link rel="up" title="3. Kinetics in RMG" href="index.html" />
+    <link rel="next" title="3.2. Pressure-dependent Arrhenius kinetics" href="pdeparrhenius.html" />
+    <link rel="prev" title="3. Kinetics in RMG" href="index.html" /> 
+  </head>
+  <body>
+<div class="header">
+&nbsp;
+</div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pdeparrhenius.html" title="3.2. Pressure-dependent Arrhenius kinetics"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="3. Kinetics in RMG"
+             accesskey="P">previous</a> |</li>
+<li><a href="../../index.html">Documentation</a> &raquo;</li>
+
+          <li><a href="../index.html" >RMG Developer&#8217;s Guide</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">3. Kinetics in RMG</a> &raquo;</li> 
+      </ul>
+    </div>
+            
+  <div class="section" id="arrhenius-kinetics">
+<h1>3.1. Arrhenius kinetics<a class="headerlink" href="#arrhenius-kinetics" title="Permalink to this headline">¶</a></h1>
+<p>The Arrhenius equation, given below, accurately reproduces the kinetics of many
+reaction families:</p>
+<div class="math">
+\[k(T) = A \left( \frac{T}{T_0} \right)^n \exp \left( -\frac{E_\mathrm{a}}{RT} \right)\]</div>
+<p>Above, <span class="math">\(A\)</span> is the preexponential factor, <span class="math">\(T_0\)</span> is the reference
+temperature, <span class="math">\(n\)</span> is the temperature exponent, and <span class="math">\(E_\mathrm{a}\)</span>
+is the activation energy.</p>
+<dl class="class">
+<dt id="rmgpy.kinetics.Arrhenius">
+<em class="property">class </em><tt class="descclassname">rmgpy.kinetics.</tt><tt class="descname">Arrhenius</tt><a class="headerlink" href="#rmgpy.kinetics.Arrhenius" title="Permalink to this definition">¶</a></dt>
+<dd><p>Arrhenius(A=None, n=0.0, Ea=None, T0=(1.0, &#8216;K&#8217;), Tmin=None, Tmax=None, Pmin=None, Pmax=None, comment=&#8217;&#8216;)</p>
+<p>A kinetics model based on the (modified) Arrhenius equation. The attributes
+are:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="15%" />
+<col width="85%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Attribute</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><cite>A</cite></td>
+<td>The preexponential factor</td>
+</tr>
+<tr class="row-odd"><td><cite>T0</cite></td>
+<td>The reference temperature</td>
+</tr>
+<tr class="row-even"><td><cite>n</cite></td>
+<td>The temperature exponent</td>
+</tr>
+<tr class="row-odd"><td><cite>Ea</cite></td>
+<td>The activation energy</td>
+</tr>
+<tr class="row-even"><td><cite>Tmin</cite></td>
+<td>The minimum temperature at which the model is valid, or zero if unknown or undefined</td>
+</tr>
+<tr class="row-odd"><td><cite>Tmax</cite></td>
+<td>The maximum temperature at which the model is valid, or zero if unknown or undefined</td>
+</tr>
+<tr class="row-even"><td><cite>Pmin</cite></td>
+<td>The minimum pressure at which the model is valid, or zero if unknown or undefined</td>
+</tr>
+<tr class="row-odd"><td><cite>Pmax</cite></td>
+<td>The maximum pressure at which the model is valid, or zero if unknown or undefined</td>
+</tr>
+<tr class="row-even"><td><cite>comment</cite></td>
+<td>Information about the model (e.g. its source)</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="rmgpy.kinetics.Arrhenius.A">
+<tt class="descname">A</tt><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.A" title="Permalink to this definition">¶</a></dt>
+<dd><p>The preexponential factor.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.kinetics.Arrhenius.Ea">
+<tt class="descname">Ea</tt><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.Ea" title="Permalink to this definition">¶</a></dt>
+<dd><p>The activation energy.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.kinetics.Arrhenius.T0">
+<tt class="descname">T0</tt><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.T0" title="Permalink to this definition">¶</a></dt>
+<dd><p>The reference temperature.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.kinetics.Arrhenius.changeT0">
+<tt class="descname">changeT0</tt><big>(</big><em>self</em>, <em>double T0</em><big>)</big><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.changeT0" title="Permalink to this definition">¶</a></dt>
+<dd><p>Changes the reference temperature used in the exponent to <cite>T0</cite> in K, 
+and adjusts the preexponential factor accordingly.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.kinetics.Arrhenius.fitToData">
+<tt class="descname">fitToData</tt><big>(</big><em>self</em>, <em>ndarray Tlist</em>, <em>ndarray klist</em>, <em>str kunits</em>, <em>double T0=1</em>, <em>ndarray weights=None</em>, <em>int threeParams=True</em><big>)</big><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.fitToData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fit the Arrhenius parameters to a set of rate coefficient data <cite>klist</cite>
+in units of <cite>kunits</cite> corresponding to a set of temperatures <cite>Tlist</cite> in 
+K. A linear least-squares fit is used, which guarantees that the 
+resulting parameters provide the best possible approximation to the 
+data.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.kinetics.Arrhenius.getRateCoefficient">
+<tt class="descname">getRateCoefficient</tt><big>(</big><em>self</em>, <em>double T</em>, <em>double P=0.0</em><big>)</big> &rarr; double<a class="headerlink" href="#rmgpy.kinetics.Arrhenius.getRateCoefficient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the rate coefficient in the appropriate combination of m^3, 
+mol, and s at temperature <cite>T</cite> in K.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.kinetics.Arrhenius.isIdenticalTo">
+<tt class="descname">isIdenticalTo</tt><big>(</big><em>self</em>, <em>KineticsModel otherKinetics</em><big>)</big> &rarr; int<a class="headerlink" href="#rmgpy.kinetics.Arrhenius.isIdenticalTo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns <tt class="docutils literal"><span class="pre">True</span></tt> if kinetics matches that of another kinetics model.  Must match temperature
+and pressure range of kinetics model, as well as parameters: A, n, Ea, T0. (Shouldn&#8217;t have pressure
+range if it&#8217;s Arrhenius.) Otherwise returns <tt class="docutils literal"><span class="pre">False</span></tt>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.kinetics.Arrhenius.n">
+<tt class="descname">n</tt><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.n" title="Permalink to this definition">¶</a></dt>
+<dd><p>The temperature exponent.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="rmgpy.kinetics.MultiArrhenius">
+<em class="property">class </em><tt class="descclassname">rmgpy.kinetics.</tt><tt class="descname">MultiArrhenius</tt><a class="headerlink" href="#rmgpy.kinetics.MultiArrhenius" title="Permalink to this definition">¶</a></dt>
+<dd><p>MultiArrhenius(arrhenius=None, Tmin=None, Tmax=None, Pmin=None, Pmax=None, comment=&#8217;&#8216;)</p>
+<p>A kinetics model based on a set of (modified) Arrhenius equations, which
+are summed to obtain the overall rate. The attributes are:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="15%" />
+<col width="85%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Attribute</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><cite>arrhenius</cite></td>
+<td>A list of the <tt class="xref py py-class docutils literal"><span class="pre">Arrhenius</span></tt> kinetics</td>
+</tr>
+<tr class="row-odd"><td><cite>Tmin</cite></td>
+<td>The minimum temperature at which the model is valid, or zero if unknown or undefined</td>
+</tr>
+<tr class="row-even"><td><cite>Tmax</cite></td>
+<td>The maximum temperature at which the model is valid, or zero if unknown or undefined</td>
+</tr>
+<tr class="row-odd"><td><cite>Pmin</cite></td>
+<td>The minimum pressure at which the model is valid, or zero if unknown or undefined</td>
+</tr>
+<tr class="row-even"><td><cite>Pmax</cite></td>
+<td>The maximum pressure at which the model is valid, or zero if unknown or undefined</td>
+</tr>
+<tr class="row-odd"><td><cite>comment</cite></td>
+<td>Information about the model (e.g. its source)</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="rmgpy.kinetics.MultiArrhenius.arrhenius">
+<tt class="descname">arrhenius</tt><a class="headerlink" href="#rmgpy.kinetics.MultiArrhenius.arrhenius" title="Permalink to this definition">¶</a></dt>
+<dd><p>arrhenius: list</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.kinetics.MultiArrhenius.getRateCoefficient">
+<tt class="descname">getRateCoefficient</tt><big>(</big><em>self</em>, <em>double T</em>, <em>double P=0.0</em><big>)</big> &rarr; double<a class="headerlink" href="#rmgpy.kinetics.MultiArrhenius.getRateCoefficient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the rate coefficient in the appropriate combination of m^3, 
+mol, and s at temperature <cite>T</cite> in K.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.kinetics.MultiArrhenius.isIdenticalTo">
+<tt class="descname">isIdenticalTo</tt><big>(</big><em>self</em>, <em>KineticsModel otherKinetics</em><big>)</big> &rarr; int<a class="headerlink" href="#rmgpy.kinetics.MultiArrhenius.isIdenticalTo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns <tt class="docutils literal"><span class="pre">True</span></tt> if kinetics matches that of another kinetics model.  Each duplicate
+reaction must be matched and equal to that in the other MultiArrhenius model
+in the same order.  Otherwise returns <tt class="docutils literal"><span class="pre">False</span></tt></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="rmgpy.kinetics.ArrheniusEP">
+<em class="property">class </em><tt class="descclassname">rmgpy.kinetics.</tt><tt class="descname">ArrheniusEP</tt><a class="headerlink" href="#rmgpy.kinetics.ArrheniusEP" title="Permalink to this definition">¶</a></dt>
+<dd><p>ArrheniusEP(A=None, n=0.0, alpha=0.0, E0=None, Tmin=None, Tmax=None, Pmin=None, Pmax=None, comment=&#8217;&#8216;)</p>
+<p>A kinetics model based on the (modified) Arrhenius equation, using the
+Evans-Polanyi equation to determine the activation energy. The attributes
+are:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="15%" />
+<col width="85%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Attribute</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><cite>A</cite></td>
+<td>The preexponential factor</td>
+</tr>
+<tr class="row-odd"><td><cite>n</cite></td>
+<td>The temperature exponent</td>
+</tr>
+<tr class="row-even"><td><cite>alpha</cite></td>
+<td>The Evans-Polanyi slope</td>
+</tr>
+<tr class="row-odd"><td><cite>E0</cite></td>
+<td>The activation energy for a thermoneutral reaction</td>
+</tr>
+<tr class="row-even"><td><cite>Tmin</cite></td>
+<td>The minimum temperature at which the model is valid, or zero if unknown or undefined</td>
+</tr>
+<tr class="row-odd"><td><cite>Tmax</cite></td>
+<td>The maximum temperature at which the model is valid, or zero if unknown or undefined</td>
+</tr>
+<tr class="row-even"><td><cite>Pmin</cite></td>
+<td>The minimum pressure at which the model is valid, or zero if unknown or undefined</td>
+</tr>
+<tr class="row-odd"><td><cite>Pmax</cite></td>
+<td>The maximum pressure at which the model is valid, or zero if unknown or undefined</td>
+</tr>
+<tr class="row-even"><td><cite>comment</cite></td>
+<td>Information about the model (e.g. its source)</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="rmgpy.kinetics.ArrheniusEP.A">
+<tt class="descname">A</tt><a class="headerlink" href="#rmgpy.kinetics.ArrheniusEP.A" title="Permalink to this definition">¶</a></dt>
+<dd><p>The preexponential factor.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.kinetics.ArrheniusEP.E0">
+<tt class="descname">E0</tt><a class="headerlink" href="#rmgpy.kinetics.ArrheniusEP.E0" title="Permalink to this definition">¶</a></dt>
+<dd><p>The activation energy for a thermoneutral reaction.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.kinetics.ArrheniusEP.alpha">
+<tt class="descname">alpha</tt><a class="headerlink" href="#rmgpy.kinetics.ArrheniusEP.alpha" title="Permalink to this definition">¶</a></dt>
+<dd><p>The Evans-Polanyi slope.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.kinetics.ArrheniusEP.getActivationEnergy">
+<tt class="descname">getActivationEnergy</tt><big>(</big><em>self</em>, <em>double dHrxn</em><big>)</big> &rarr; double<a class="headerlink" href="#rmgpy.kinetics.ArrheniusEP.getActivationEnergy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the activation energy in J/mol corresponding to the given
+enthalpy of reaction <cite>dHrxn</cite> in J/mol.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.kinetics.ArrheniusEP.getRateCoefficient">
+<tt class="descname">getRateCoefficient</tt><big>(</big><em>self</em>, <em>double T</em>, <em>double dHrxn=0.0</em><big>)</big> &rarr; double<a class="headerlink" href="#rmgpy.kinetics.ArrheniusEP.getRateCoefficient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the rate coefficient in the appropriate combination of m^3, 
+mol, and s at temperature <cite>T</cite> in K and enthalpy of reaction <cite>dHrxn</cite>
+in J/mol.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.kinetics.ArrheniusEP.isIdenticalTo">
+<tt class="descname">isIdenticalTo</tt><big>(</big><em>self</em>, <em>KineticsModel otherKinetics</em><big>)</big> &rarr; int<a class="headerlink" href="#rmgpy.kinetics.ArrheniusEP.isIdenticalTo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns <tt class="docutils literal"><span class="pre">True</span></tt> if kinetics matches that of another kinetics model.  Must match temperature
+and pressure range of kinetics model, as well as parameters: A, n, Ea, T0. (Shouldn&#8217;t have pressure
+range if it&#8217;s Arrhenius.) Otherwise returns <tt class="docutils literal"><span class="pre">False</span></tt>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.kinetics.ArrheniusEP.n">
+<tt class="descname">n</tt><a class="headerlink" href="#rmgpy.kinetics.ArrheniusEP.n" title="Permalink to this definition">¶</a></dt>
+<dd><p>The temperature exponent.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.kinetics.ArrheniusEP.toArrhenius">
+<tt class="descname">toArrhenius</tt><big>(</big><em>self</em>, <em>double dHrxn</em><big>)</big> &rarr; Arrhenius<a class="headerlink" href="#rmgpy.kinetics.ArrheniusEP.toArrhenius" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return an <tt class="xref py py-class docutils literal"><span class="pre">Arrhenius</span></tt> instance of the kinetics model using the
+given enthalpy of reaction <cite>dHrxn</cite> to determine the activation energy.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div class="sidebarlogo">
+<img src="../../_static/rmg-logo-small.png" alt="RMG" />
+</div>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">3. Kinetics in RMG</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pdeparrhenius.html"
+                        title="next chapter">3.2. Pressure-dependent Arrhenius kinetics</a></p>
+  <h3>This Page </h3>
+  <ul class="this-page-menu">
+    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/developers/kinetics/arrhenius.rst"
+           rel="nofollow">Edit this page</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,352 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>8.1. Wilhoit polynomial &mdash; RMG Py 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
+    <link rel="up" title="8. Thermodynamics in RMG" href="index.html" />
+    <link rel="next" title="8.2. NASA polynomial" href="nasa.html" />
+    <link rel="prev" title="8. Thermodynamics in RMG" href="index.html" /> 
+  </head>
+  <body>
+<div class="header">
+&nbsp;
+</div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nasa.html" title="8.2. NASA polynomial"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="8. Thermodynamics in RMG"
+             accesskey="P">previous</a> |</li>
+<li><a href="../../index.html">Documentation</a> &raquo;</li>
+
+          <li><a href="../index.html" >RMG Developer&#8217;s Guide</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">8. Thermodynamics in RMG</a> &raquo;</li> 
+      </ul>
+    </div>
+            
+  <div class="section" id="wilhoit-polynomial">
+<h1>8.1. Wilhoit polynomial<a class="headerlink" href="#wilhoit-polynomial" title="Permalink to this headline">¶</a></h1>
+<p>The Wilhoit polynomial is an expression for heat capacity that is guaranteed to
+give the correct limits at zero and infinite temperature, and gives a very
+reasonable shape to the heat capacity profile in between:</p>
+<div class="math">
+\[C_\mathrm{p}(T) = C_\mathrm{p}(0) + \left[ C_\mathrm{p}(\infty) -
+C_\mathrm{p}(0) \right] y^2 \left[ 1 + (y - 1) \sum_{i=0}^3 a_i y^i \right]\]</div>
+<p>Above, <span class="math">\(y \equiv T/(T + B)\)</span> is a scaled temperature that ranges
+from zero to one based on the value of the coefficient <span class="math">\(B\)</span>, and
+<span class="math">\(a_0\)</span>, <span class="math">\(a_1\)</span>, <span class="math">\(a_2\)</span>, and <span class="math">\(a_3\)</span> are the Wilhoit
+polynomial coefficients.</p>
+<p>The enthalpy is given by</p>
+<div class="math">
+\[\begin{split}H(T) &amp; = H_0 +
+C_\mathrm{p}(0) T + \left[ C_\mathrm{p}(\infty) - C_\mathrm{p}(0) \right] T \\
+&amp; \left\{ \left[ 2 + \sum_{i=0}^3 a_i \right]
+\left[ \frac{1}{2}y - 1 + \left( \frac{1}{y} - 1 \right) \ln \frac{T}{y} \right]
++ y^2 \sum_{i=0}^3 \frac{y^i}{(i+2)(i+3)} \sum_{j=0}^3 f_{ij} a_j
+\right\}\end{split}\]</div>
+<p>where <span class="math">\(f_{ij} = 3 + j\)</span> if <span class="math">\(i = j\)</span>, <span class="math">\(f_{ij} = 1\)</span> if
+<span class="math">\(i &gt; j\)</span>, and <span class="math">\(f_{ij} = 0\)</span> if <span class="math">\(i &lt; j\)</span>.</p>
+<p>The entropy is given by</p>
+<div class="math">
+\[S(T) = S_0 +
+C_\mathrm{p}(\infty) \ln T - \left[ C_\mathrm{p}(\infty) - C_\mathrm{p}(0) \right]
+\left[ \ln y + \left( 1 + y \sum_{i=0}^3 \frac{a_i y^i}{2+i} \right) y
+\right]\]</div>
+<p>The low-temperature limit <span class="math">\(C_\mathrm{p}(0)\)</span> is <span class="math">\(3.5R\)</span> for linear
+molecules and <span class="math">\(4R\)</span> for nonlinear molecules. The high-temperature limit
+<span class="math">\(C_\mathrm{p}(\infty)\)</span> is taken to be
+<span class="math">\(\left[ 3 N_\mathrm{atoms} - 1.5 \right] R\)</span> for linear molecules and
+<span class="math">\(\left[ 3 N_\mathrm{atoms} - (2 + 0.5 N_\mathrm{rotors}) \right] R\)</span>
+for nonlinear molecules, for a molecule composed of <span class="math">\(N_\mathrm{atoms}\)</span>
+atoms and <span class="math">\(N_\mathrm{rotors}\)</span> internal rotors.</p>
+<dl class="class">
+<dt id="rmgpy.thermo.Wilhoit">
+<em class="property">class </em><tt class="descclassname">rmgpy.thermo.</tt><tt class="descname">Wilhoit</tt><a class="headerlink" href="#rmgpy.thermo.Wilhoit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wilhoit(Cp0=None, CpInf=None, a0=0.0, a1=0.0, a2=0.0, a3=0.0, H0=None, S0=None, B=None, Tmin=None, Tmax=None, comment=&#8217;&#8216;)</p>
+<p>A heat capacity model based on the Wilhoit equation. The attributes are:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="14%" />
+<col width="86%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Attribute</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><cite>Cp0</cite></td>
+<td>The heat capacity at zero temperature</td>
+</tr>
+<tr class="row-odd"><td><cite>CpInf</cite></td>
+<td>The heat capacity at infinite temperature</td>
+</tr>
+<tr class="row-even"><td><cite>a0</cite></td>
+<td>The zeroth-order Wilhoit polynomial coefficient</td>
+</tr>
+<tr class="row-odd"><td><cite>a1</cite></td>
+<td>The first-order Wilhoit polynomial coefficient</td>
+</tr>
+<tr class="row-even"><td><cite>a2</cite></td>
+<td>The second-order Wilhoit polynomial coefficient</td>
+</tr>
+<tr class="row-odd"><td><cite>a3</cite></td>
+<td>The third-order Wilhoit polynomial coefficient</td>
+</tr>
+<tr class="row-even"><td><cite>H0</cite></td>
+<td>The integration constant for enthalpy</td>
+</tr>
+<tr class="row-odd"><td><cite>S0</cite></td>
+<td>The integration constant for entropy</td>
+</tr>
+<tr class="row-even"><td><cite>B</cite></td>
+<td>The Wilhoit scaled temperature coefficient in K</td>
+</tr>
+<tr class="row-odd"><td><cite>Tmin</cite></td>
+<td>The minimum temperature in K at which the model is valid, or zero if unknown or undefined</td>
+</tr>
+<tr class="row-even"><td><cite>Tmax</cite></td>
+<td>The maximum temperature in K at which the model is valid, or zero if unknown or undefined</td>
+</tr>
+<tr class="row-odd"><td><cite>comment</cite></td>
+<td>Information about the model (e.g. its source)</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="rmgpy.thermo.Wilhoit.B">
+<tt class="descname">B</tt><a class="headerlink" href="#rmgpy.thermo.Wilhoit.B" title="Permalink to this definition">¶</a></dt>
+<dd><p>The Wilhoit scaled temperature coefficient.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.thermo.Wilhoit.Cp0">
+<tt class="descname">Cp0</tt><a class="headerlink" href="#rmgpy.thermo.Wilhoit.Cp0" title="Permalink to this definition">¶</a></dt>
+<dd><p>The heat capacity at zero temperature.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.thermo.Wilhoit.CpInf">
+<tt class="descname">CpInf</tt><a class="headerlink" href="#rmgpy.thermo.Wilhoit.CpInf" title="Permalink to this definition">¶</a></dt>
+<dd><p>The heat capacity at infinite temperature.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.thermo.Wilhoit.H0">
+<tt class="descname">H0</tt><a class="headerlink" href="#rmgpy.thermo.Wilhoit.H0" title="Permalink to this definition">¶</a></dt>
+<dd><p>The integration constant for enthalpy.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.thermo.Wilhoit.S0">
+<tt class="descname">S0</tt><a class="headerlink" href="#rmgpy.thermo.Wilhoit.S0" title="Permalink to this definition">¶</a></dt>
+<dd><p>The integration constant for entropy.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.thermo.Wilhoit.a0">
+<tt class="descname">a0</tt><a class="headerlink" href="#rmgpy.thermo.Wilhoit.a0" title="Permalink to this definition">¶</a></dt>
+<dd><p>a0: &#8216;double&#8217;</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.thermo.Wilhoit.a1">
+<tt class="descname">a1</tt><a class="headerlink" href="#rmgpy.thermo.Wilhoit.a1" title="Permalink to this definition">¶</a></dt>
+<dd><p>a1: &#8216;double&#8217;</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.thermo.Wilhoit.a2">
+<tt class="descname">a2</tt><a class="headerlink" href="#rmgpy.thermo.Wilhoit.a2" title="Permalink to this definition">¶</a></dt>
+<dd><p>a2: &#8216;double&#8217;</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.thermo.Wilhoit.a3">
+<tt class="descname">a3</tt><a class="headerlink" href="#rmgpy.thermo.Wilhoit.a3" title="Permalink to this definition">¶</a></dt>
+<dd><p>a3: &#8216;double&#8217;</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.thermo.Wilhoit.copy">
+<tt class="descname">copy</tt><big>(</big><em>self</em><big>)</big> &rarr; Wilhoit<a class="headerlink" href="#rmgpy.thermo.Wilhoit.copy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a copy of the Wilhoit object.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.thermo.Wilhoit.fitToData">
+<tt class="descname">fitToData</tt><big>(</big><em>self</em>, <em>ndarray Tdata</em>, <em>ndarray Cpdata</em>, <em>double Cp0</em>, <em>double CpInf</em>, <em>double H298</em>, <em>double S298</em>, <em>double B0=500.0</em><big>)</big><a class="headerlink" href="#rmgpy.thermo.Wilhoit.fitToData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fit a Wilhoit model to the data points provided, allowing the 
+characteristic temperature <cite>B</cite> to vary so as to improve the fit. This
+procedure requires an optimization, using the <tt class="docutils literal"><span class="pre">fminbound</span></tt> function
+in the <tt class="docutils literal"><span class="pre">scipy.optimize</span></tt> module. The data consists of a set
+of heat capacity points <cite>Cpdata</cite> in J/mol*K at a given set of 
+temperatures <cite>Tdata</cite> in K, along with the enthalpy <cite>H298</cite> in kJ/mol and
+entropy <cite>S298</cite> in J/mol*K at 298 K. The linearity of the molecule, 
+number of vibrational frequencies, and number of internal rotors 
+(<cite>linear</cite>, <cite>Nfreq</cite>, and <cite>Nrotors</cite>, respectively) is used to set the 
+limits at zero and infinite temperature.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.thermo.Wilhoit.fitToDataForConstantB">
+<tt class="descname">fitToDataForConstantB</tt><big>(</big><em>self</em>, <em>ndarray Tdata</em>, <em>ndarray Cpdata</em>, <em>double Cp0</em>, <em>double CpInf</em>, <em>double H298</em>, <em>double S298</em>, <em>double B</em><big>)</big><a class="headerlink" href="#rmgpy.thermo.Wilhoit.fitToDataForConstantB" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fit a Wilhoit model to the data points provided using a specified value
+of the characteristic temperature <cite>B</cite>. The data consists of a set
+of dimensionless heat capacity points <cite>Cpdata</cite> at a given set of 
+temperatures <cite>Tdata</cite> in K, along with the dimensionless heat capacity
+at zero and infinite temperature, the dimensionless enthalpy <cite>H298</cite> at 
+298 K, and the dimensionless entropy <cite>S298</cite> at 298 K.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.thermo.Wilhoit.getEnthalpy">
+<tt class="descname">getEnthalpy</tt><big>(</big><em>self</em>, <em>double T</em><big>)</big> &rarr; double<a class="headerlink" href="#rmgpy.thermo.Wilhoit.getEnthalpy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the enthalpy in J/mol at the specified temperature <cite>T</cite> in K.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.thermo.Wilhoit.getEntropy">
+<tt class="descname">getEntropy</tt><big>(</big><em>self</em>, <em>double T</em><big>)</big> &rarr; double<a class="headerlink" href="#rmgpy.thermo.Wilhoit.getEntropy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the entropy in J/mol*K at the specified temperature <cite>T</cite> in K.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.thermo.Wilhoit.getFreeEnergy">
+<tt class="descname">getFreeEnergy</tt><big>(</big><em>self</em>, <em>double T</em><big>)</big> &rarr; double<a class="headerlink" href="#rmgpy.thermo.Wilhoit.getFreeEnergy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the Gibbs free energy in J/mol at the specified temperature <cite>T</cite>
+in K.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.thermo.Wilhoit.getHeatCapacity">
+<tt class="descname">getHeatCapacity</tt><big>(</big><em>self</em>, <em>double T</em><big>)</big> &rarr; double<a class="headerlink" href="#rmgpy.thermo.Wilhoit.getHeatCapacity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the constant-pressure heat capacity in J/mol*K at the specified
+temperature <cite>T</cite> in K.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.thermo.Wilhoit.toNASA">
+<tt class="descname">toNASA</tt><big>(</big><em>self</em>, <em>double Tmin</em>, <em>double Tmax</em>, <em>double Tint</em>, <em>int fixedTint=False</em>, <em>int weighting=True</em>, <em>int continuity=3</em><big>)</big> &rarr; NASA<a class="headerlink" href="#rmgpy.thermo.Wilhoit.toNASA" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert the Wilhoit object to a <tt class="xref py py-class docutils literal"><span class="pre">NASA</span></tt> object. You must specify
+the minimum and maximum temperatures of the fit <cite>Tmin</cite> and <cite>Tmax</cite> in K,
+as well as the intermediate temperature <cite>Tint</cite> in K to use as the bridge
+between the two fitted polynomials. The remaining parameters can be
+used to modify the fitting algorithm used:</p>
+<ul>
+<li><p class="first"><cite>fixedTint</cite> - <tt class="docutils literal"><span class="pre">False</span></tt> to allow <cite>Tint</cite> to vary in order to improve the fit, or <tt class="docutils literal"><span class="pre">True</span></tt> to keep it fixed</p>
+</li>
+<li><p class="first"><cite>weighting</cite> - <tt class="docutils literal"><span class="pre">True</span></tt> to weight the fit by <span class="math">\(T^{-1}\)</span> to emphasize good fit at lower temperatures, or <tt class="docutils literal"><span class="pre">False</span></tt> to not use weighting</p>
+</li>
+<li><p class="first"><cite>continuity</cite> - The number of continuity constraints to enforce at <cite>Tint</cite>:</p>
+<blockquote>
+<div><ul class="simple">
+<li>0: no constraints on continuity of <span class="math">\(C_\mathrm{p}(T)\)</span> at <cite>Tint</cite></li>
+<li>1: constrain <span class="math">\(C_\mathrm{p}(T)\)</span> to be continous at <cite>Tint</cite></li>
+<li>2: constrain <span class="math">\(C_\mathrm{p}(T)\)</span> and <span class="math">\(\frac{d C_\mathrm{p}}{dT}\)</span> to be continuous at <cite>Tint</cite></li>
+<li>3: constrain <span class="math">\(C_\mathrm{p}(T)\)</span>, <span class="math">\(\frac{d C_\mathrm{p}}{dT}\)</span>, and <span class="math">\(\frac{d^2 C_\mathrm{p}}{dT^2}\)</span> to be continuous at <cite>Tint</cite></li>
+<li>4: constrain <span class="math">\(C_\mathrm{p}(T)\)</span>, <span class="math">\(\frac{d C_\mathrm{p}}{dT}\)</span>, <span class="math">\(\frac{d^2 C_\mathrm{p}}{dT^2}\)</span>, and <span class="math">\(\frac{d^3 C_\mathrm{p}}{dT^3}\)</span> to be continuous at <cite>Tint</cite></li>
+<li>5: constrain <span class="math">\(C_\mathrm{p}(T)\)</span>, <span class="math">\(\frac{d C_\mathrm{p}}{dT}\)</span>, <span class="math">\(\frac{d^2 C_\mathrm{p}}{dT^2}\)</span>, <span class="math">\(\frac{d^3 C_\mathrm{p}}{dT^3}\)</span>, and <span class="math">\(\frac{d^4 C_\mathrm{p}}{dT^4}\)</span> to be continuous at <cite>Tint</cite></li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+<p>Note that values of <cite>continuity</cite> of 5 or higher effectively constrain all
+the coefficients to be equal and should be equivalent to fitting only one
+polynomial (rather than two).</p>
+<p>Returns the fitted <tt class="xref py py-class docutils literal"><span class="pre">NASA</span></tt> object containing the two fitted
+<tt class="xref py py-class docutils literal"><span class="pre">NASAPolynomial</span></tt> objects.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.thermo.Wilhoit.toThermoData">
+<tt class="descname">toThermoData</tt><big>(</big><em>self</em><big>)</big> &rarr; ThermoData<a class="headerlink" href="#rmgpy.thermo.Wilhoit.toThermoData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert the Wilhoit model to a <tt class="xref py py-class docutils literal"><span class="pre">ThermoData</span></tt> object.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div class="sidebarlogo">
+<img src="../../_static/rmg-logo-small.png" alt="RMG" />
+</div>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">8. Thermodynamics in RMG</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="nasa.html"
+                        title="next chapter">8.2. NASA polynomial</a></p>
+  <h3>This Page </h3>
+  <ul class="this-page-menu">
+    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/developers/thermo/wilhoit.rst"
+           rel="nofollow">Edit this page</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

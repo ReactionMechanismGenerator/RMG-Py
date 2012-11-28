@@ -1,0 +1,409 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>3.4. Falloff kinetics &mdash; RMG Py 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
+    <link rel="up" title="3. Kinetics in RMG" href="index.html" />
+    <link rel="next" title="3.5. Kinetics data interpolation" href="kineticsdata.html" />
+    <link rel="prev" title="3.3. Chebyshev polynomials" href="chebyshev.html" /> 
+  </head>
+  <body>
+<div class="header">
+&nbsp;
+</div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="kineticsdata.html" title="3.5. Kinetics data interpolation"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="chebyshev.html" title="3.3. Chebyshev polynomials"
+             accesskey="P">previous</a> |</li>
+<li><a href="../../index.html">Documentation</a> &raquo;</li>
+
+          <li><a href="../index.html" >RMG Developer&#8217;s Guide</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">3. Kinetics in RMG</a> &raquo;</li> 
+      </ul>
+    </div>
+            
+  <div class="section" id="falloff-kinetics">
+<h1>3.4. Falloff kinetics<a class="headerlink" href="#falloff-kinetics" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="third-body-kinetics">
+<h2>3.4.1. Third-body kinetics<a class="headerlink" href="#third-body-kinetics" title="Permalink to this headline">¶</a></h2>
+<p>Third-body kinetics simply introduce an inert third body to the rate expression:</p>
+<div class="math">
+\[k(T,P) = k_0(T) [\mathrm{M}]\]</div>
+<p>Above, <span class="math">\([\mathrm{M}] \approx P/RT\)</span> is the concentration of the bath gas.
+This formulation is equivalent to stating that the kinetics are always in the
+low-pressure limit.</p>
+<dl class="class">
+<dt id="rmgpy.kinetics.ThirdBody">
+<em class="property">class </em><tt class="descclassname">rmgpy.kinetics.</tt><tt class="descname">ThirdBody</tt><a class="headerlink" href="#rmgpy.kinetics.ThirdBody" title="Permalink to this definition">¶</a></dt>
+<dd><p>ThirdBody(arrheniusLow=None, Tmin=None, Tmax=None, Pmin=None, Pmax=None, efficiencies=None, comment=&#8217;&#8216;)</p>
+<p>A kinetic model of a phenomenological rate coefficient <span class="math">\(k(T, P)\)</span>
+using third-body kinetics. The attributes are:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="18%" />
+<col width="82%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Attribute</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><cite>arrheniusLow</cite></td>
+<td>The Arrhenius kinetics at the low-pressure limit</td>
+</tr>
+<tr class="row-odd"><td><cite>Tmin</cite></td>
+<td>The minimum temperature at which the model is valid, or zero if unknown or undefined</td>
+</tr>
+<tr class="row-even"><td><cite>Tmax</cite></td>
+<td>The maximum temperature at which the model is valid, or zero if unknown or undefined</td>
+</tr>
+<tr class="row-odd"><td><cite>Pmin</cite></td>
+<td>The minimum pressure at which the model is valid, or zero if unknown or undefined</td>
+</tr>
+<tr class="row-even"><td><cite>Pmax</cite></td>
+<td>The maximum pressure at which the model is valid, or zero if unknown or undefined</td>
+</tr>
+<tr class="row-odd"><td><cite>efficiencies</cite></td>
+<td>A dict associating chemical species with associated efficiencies</td>
+</tr>
+<tr class="row-even"><td><cite>comment</cite></td>
+<td>Information about the model (e.g. its source)</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="rmgpy.kinetics.ThirdBody.arrheniusLow">
+<tt class="descname">arrheniusLow</tt><a class="headerlink" href="#rmgpy.kinetics.ThirdBody.arrheniusLow" title="Permalink to this definition">¶</a></dt>
+<dd><p>arrheniusLow: rmgpy.kinetics.arrhenius.Arrhenius</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.kinetics.ThirdBody.getRateCoefficient">
+<tt class="descname">getRateCoefficient</tt><big>(</big><em>self</em>, <em>double T</em>, <em>double P=0.0</em><big>)</big> &rarr; double<a class="headerlink" href="#rmgpy.kinetics.ThirdBody.getRateCoefficient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the value of the rate coefficient <span class="math">\(k(T)\)</span> in units of m^3,
+mol, and s at the specified temperature <cite>T</cite> in K and pressure <cite>P</cite> in
+Pa. If you wish to consider collision efficiencies, then you should
+first use <tt class="xref py py-meth docutils literal"><span class="pre">getEffectivePressure()</span></tt> to compute the effective
+pressure, and pass that value as the pressure to this method.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.kinetics.ThirdBody.isIdenticalTo">
+<tt class="descname">isIdenticalTo</tt><big>(</big><em>self</em>, <em>KineticsModel otherKinetics</em><big>)</big> &rarr; int<a class="headerlink" href="#rmgpy.kinetics.ThirdBody.isIdenticalTo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks to see if kinetics matches that of other kinetics and returns <tt class="docutils literal"><span class="pre">True</span></tt>
+if coeffs, kunits, Tmin,</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="lindemann-model">
+<h2>3.4.2. Lindemann model<a class="headerlink" href="#lindemann-model" title="Permalink to this headline">¶</a></h2>
+<p>The Lindemann model qualitatively predicts the falloff of some simple
+pressure-dependent reaction kinetics. The formulation is as follows:</p>
+<div class="math">
+\[k(T,P) = k_\infty(T) \left[ \frac{P_\mathrm{r}}{1 + P_\mathrm{r}} \right]\]</div>
+<p>where</p>
+<div class="math">
+\[\begin{split}P_\mathrm{r} &amp;= \frac{k_0(T)}{k_\infty(T)} [\mathrm{M}]\end{split}\]\[\begin{split}k_0(T) &amp;= A_0 T^{n_0} \exp \left( - \frac{E_0}{RT} \right)\end{split}\]\[\begin{split}k_\infty(T) &amp;= A_\infty T^{n_\infty} \exp \left( - \frac{E_\infty}{RT} \right)\end{split}\]</div>
+<p>and <span class="math">\([\mathrm{M}] \approx P/RT\)</span> is the concentration of the bath gas. The
+Arrhenius expressions <span class="math">\(k_0(T)\)</span> and <span class="math">\(k_\infty(T)\)</span> represent the
+low-pressure and high-pressure limit kinetics, respectively.</p>
+<dl class="class">
+<dt id="rmgpy.kinetics.Lindemann">
+<em class="property">class </em><tt class="descclassname">rmgpy.kinetics.</tt><tt class="descname">Lindemann</tt><a class="headerlink" href="#rmgpy.kinetics.Lindemann" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lindemann(arrheniusHigh=None, arrheniusLow=None, Tmin=None, Tmax=None, Pmin=None, Pmax=None, efficiencies=None, comment=&#8217;&#8216;)</p>
+<p>A kinetic model of a phenomenological rate coefficient <span class="math">\(k(T, P)\)</span>
+using the Lindemann formulation. The attributes are:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="18%" />
+<col width="82%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Attribute</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><cite>arrheniusHigh</cite></td>
+<td>The Arrhenius kinetics at the high-pressure limit</td>
+</tr>
+<tr class="row-odd"><td><cite>arrheniusLow</cite></td>
+<td>The Arrhenius kinetics at the low-pressure limit</td>
+</tr>
+<tr class="row-even"><td><cite>Tmin</cite></td>
+<td>The minimum temperature at which the model is valid, or zero if unknown or undefined</td>
+</tr>
+<tr class="row-odd"><td><cite>Tmax</cite></td>
+<td>The maximum temperature at which the model is valid, or zero if unknown or undefined</td>
+</tr>
+<tr class="row-even"><td><cite>Pmin</cite></td>
+<td>The minimum pressure at which the model is valid, or zero if unknown or undefined</td>
+</tr>
+<tr class="row-odd"><td><cite>Pmax</cite></td>
+<td>The maximum pressure at which the model is valid, or zero if unknown or undefined</td>
+</tr>
+<tr class="row-even"><td><cite>efficiencies</cite></td>
+<td>A dict associating chemical species with associated efficiencies</td>
+</tr>
+<tr class="row-odd"><td><cite>comment</cite></td>
+<td>Information about the model (e.g. its source)</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="rmgpy.kinetics.Lindemann.arrheniusHigh">
+<tt class="descname">arrheniusHigh</tt><a class="headerlink" href="#rmgpy.kinetics.Lindemann.arrheniusHigh" title="Permalink to this definition">¶</a></dt>
+<dd><p>arrheniusHigh: rmgpy.kinetics.arrhenius.Arrhenius</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.kinetics.Lindemann.arrheniusLow">
+<tt class="descname">arrheniusLow</tt><a class="headerlink" href="#rmgpy.kinetics.Lindemann.arrheniusLow" title="Permalink to this definition">¶</a></dt>
+<dd><p>arrheniusLow: rmgpy.kinetics.arrhenius.Arrhenius</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.kinetics.Lindemann.getRateCoefficient">
+<tt class="descname">getRateCoefficient</tt><big>(</big><em>self</em>, <em>double T</em>, <em>double P=0.0</em><big>)</big> &rarr; double<a class="headerlink" href="#rmgpy.kinetics.Lindemann.getRateCoefficient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the value of the rate coefficient <span class="math">\(k(T)\)</span> in units of m^3,
+mol, and s at the specified temperature <cite>T</cite> in K and pressure <cite>P</cite> in
+Pa. If you wish to consider collision efficiencies, then you should
+first use <tt class="xref py py-meth docutils literal"><span class="pre">getEffectivePressure()</span></tt> to compute the effective
+pressure, and pass that value as the pressure to this method.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.kinetics.Lindemann.isIdenticalTo">
+<tt class="descname">isIdenticalTo</tt><big>(</big><em>self</em>, <em>KineticsModel otherKinetics</em><big>)</big> &rarr; int<a class="headerlink" href="#rmgpy.kinetics.Lindemann.isIdenticalTo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks to see if kinetics matches that of other kinetics and returns <tt class="docutils literal"><span class="pre">True</span></tt>
+if coeffs, kunits, Tmin,</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="troe-model">
+<h2>3.4.3. Troe model<a class="headerlink" href="#troe-model" title="Permalink to this headline">¶</a></h2>
+<p>The Troe model attempts to make the Lindemann model quantitative by introducing
+a broadening factor <span class="math">\(F\)</span>. The formulation is as follows:</p>
+<div class="math">
+\[k(T,P) = k_\infty(T) \left[ \frac{P_\mathrm{r}}{1 + P_\mathrm{r}} \right] F\]</div>
+<p>where</p>
+<div class="math">
+\[\begin{split}P_\mathrm{r} &amp;= \frac{k_0(T)}{k_\infty(T)} [\mathrm{M}]\end{split}\]\[\begin{split}k_0(T) &amp;= A_0 T^{n_0} \exp \left( - \frac{E_0}{RT} \right)\end{split}\]\[\begin{split}k_\infty(T) &amp;= A_\infty T^{n_\infty} \exp \left( - \frac{E_\infty}{RT} \right)\end{split}\]</div>
+<p>and <span class="math">\([\mathrm{M}] \approx P/RT\)</span> is the concentration of the bath gas. The
+Arrhenius expressions <span class="math">\(k_0(T)\)</span> and <span class="math">\(k_\infty(T)\)</span> represent the
+low-pressure and high-pressure limit kinetics, respectively. The broadening
+factor <span class="math">\(F\)</span> is computed via</p>
+<div class="math">
+\[\begin{split}\log F &amp;= \left\{1 + \left[ \frac{\log P_\mathrm{r} + c}{n - d (\log P_\mathrm{r} + c)} \right]^2 \right\}^{-1} \log F_\mathrm{cent}\end{split}\]\[\begin{split}c &amp;= -0.4 - 0.67 \log F_\mathrm{cent}\end{split}\]\[\begin{split}n &amp;= 0.75 - 1.27 \log F_\mathrm{cent}\end{split}\]\[\begin{split}d &amp;= 0.14\end{split}\]\[\begin{split}F_\mathrm{cent} &amp;= (1 - \alpha) \exp \left( -T/T_3 \right) + \alpha \exp \left( -T/T_1 \right) + \exp \left( -T_2/T \right)\end{split}\]</div>
+<dl class="class">
+<dt id="rmgpy.kinetics.Troe">
+<em class="property">class </em><tt class="descclassname">rmgpy.kinetics.</tt><tt class="descname">Troe</tt><a class="headerlink" href="#rmgpy.kinetics.Troe" title="Permalink to this definition">¶</a></dt>
+<dd><p>Troe(arrheniusHigh=None, arrheniusLow=None, alpha=0.0, T3=None, T1=None, T2=None, Tmin=None, Tmax=None, Pmin=None, Pmax=None, efficiencies=None, comment=&#8217;&#8216;)</p>
+<p>A kinetic model of a phenomenological rate coefficient <span class="math">\(k(T, P)\)</span>
+using the Troe formulation. The attributes are:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="18%" />
+<col width="82%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Attribute</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><cite>arrheniusHigh</cite></td>
+<td>The Arrhenius kinetics at the high-pressure limit</td>
+</tr>
+<tr class="row-odd"><td><cite>arrheniusLow</cite></td>
+<td>The Arrhenius kinetics at the low-pressure limit</td>
+</tr>
+<tr class="row-even"><td><cite>alpha</cite></td>
+<td>The <span class="math">\(\alpha\)</span> parameter</td>
+</tr>
+<tr class="row-odd"><td><cite>T1</cite></td>
+<td>The <span class="math">\(T_1\)</span> parameter</td>
+</tr>
+<tr class="row-even"><td><cite>T2</cite></td>
+<td>The <span class="math">\(T_2\)</span> parameter</td>
+</tr>
+<tr class="row-odd"><td><cite>T3</cite></td>
+<td>The <span class="math">\(T_3\)</span> parameter</td>
+</tr>
+<tr class="row-even"><td><cite>Tmin</cite></td>
+<td>The minimum temperature at which the model is valid, or zero if unknown or undefined</td>
+</tr>
+<tr class="row-odd"><td><cite>Tmax</cite></td>
+<td>The maximum temperature at which the model is valid, or zero if unknown or undefined</td>
+</tr>
+<tr class="row-even"><td><cite>Pmin</cite></td>
+<td>The minimum pressure at which the model is valid, or zero if unknown or undefined</td>
+</tr>
+<tr class="row-odd"><td><cite>Pmax</cite></td>
+<td>The maximum pressure at which the model is valid, or zero if unknown or undefined</td>
+</tr>
+<tr class="row-even"><td><cite>efficiencies</cite></td>
+<td>A dict associating chemical species with associated efficiencies</td>
+</tr>
+<tr class="row-odd"><td><cite>comment</cite></td>
+<td>Information about the model (e.g. its source)</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="rmgpy.kinetics.Troe.T1">
+<tt class="descname">T1</tt><a class="headerlink" href="#rmgpy.kinetics.Troe.T1" title="Permalink to this definition">¶</a></dt>
+<dd><p>The Troe <span class="math">\(T_1\)</span> parameter.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.kinetics.Troe.T2">
+<tt class="descname">T2</tt><a class="headerlink" href="#rmgpy.kinetics.Troe.T2" title="Permalink to this definition">¶</a></dt>
+<dd><p>The Troe <span class="math">\(T_2\)</span> parameter.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.kinetics.Troe.T3">
+<tt class="descname">T3</tt><a class="headerlink" href="#rmgpy.kinetics.Troe.T3" title="Permalink to this definition">¶</a></dt>
+<dd><p>The Troe <span class="math">\(T_3\)</span> parameter.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.kinetics.Troe.alpha">
+<tt class="descname">alpha</tt><a class="headerlink" href="#rmgpy.kinetics.Troe.alpha" title="Permalink to this definition">¶</a></dt>
+<dd><p>alpha: &#8216;double&#8217;</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.kinetics.Troe.arrheniusHigh">
+<tt class="descname">arrheniusHigh</tt><a class="headerlink" href="#rmgpy.kinetics.Troe.arrheniusHigh" title="Permalink to this definition">¶</a></dt>
+<dd><p>arrheniusHigh: rmgpy.kinetics.arrhenius.Arrhenius</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.kinetics.Troe.arrheniusLow">
+<tt class="descname">arrheniusLow</tt><a class="headerlink" href="#rmgpy.kinetics.Troe.arrheniusLow" title="Permalink to this definition">¶</a></dt>
+<dd><p>arrheniusLow: rmgpy.kinetics.arrhenius.Arrhenius</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.kinetics.Troe.getRateCoefficient">
+<tt class="descname">getRateCoefficient</tt><big>(</big><em>self</em>, <em>double T</em>, <em>double P=0.0</em><big>)</big> &rarr; double<a class="headerlink" href="#rmgpy.kinetics.Troe.getRateCoefficient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the value of the rate coefficient <span class="math">\(k(T)\)</span> in units of m^3,
+mol, and s at the specified temperature <cite>T</cite> in K and pressure <cite>P</cite> in
+Pa. If you wish to consider collision efficiencies, then you should
+first use <tt class="xref py py-meth docutils literal"><span class="pre">getEffectivePressure()</span></tt> to compute the effective
+pressure, and pass that value as the pressure to this method.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.kinetics.Troe.isIdenticalTo">
+<tt class="descname">isIdenticalTo</tt><big>(</big><em>self</em>, <em>KineticsModel otherKinetics</em><big>)</big> &rarr; int<a class="headerlink" href="#rmgpy.kinetics.Troe.isIdenticalTo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks to see if kinetics matches that of other kinetics and returns <tt class="docutils literal"><span class="pre">True</span></tt>
+if coeffs, kunits, Tmin,</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div class="sidebarlogo">
+<img src="../../_static/rmg-logo-small.png" alt="RMG" />
+</div>
+  <h3><a href="../../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">3.4. Falloff kinetics</a><ul>
+<li><a class="reference internal" href="#third-body-kinetics">3.4.1. Third-body kinetics</a></li>
+<li><a class="reference internal" href="#lindemann-model">3.4.2. Lindemann model</a></li>
+<li><a class="reference internal" href="#troe-model">3.4.3. Troe model</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="chebyshev.html"
+                        title="previous chapter">3.3. Chebyshev polynomials</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="kineticsdata.html"
+                        title="next chapter">3.5. Kinetics data interpolation</a></p>
+  <h3>This Page </h3>
+  <ul class="this-page-menu">
+    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/developers/kinetics/falloff.rst"
+           rel="nofollow">Edit this page</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

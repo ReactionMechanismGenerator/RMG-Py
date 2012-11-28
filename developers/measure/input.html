@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>2. rmgpy.measure.input - Input file reading &mdash; RMG Py 0.1.0 documentation</title>
+    <title>12.2. rmgpy.measure.input - Input file reading &mdash; RMG Py 0.1.0 documentation</title>
     
     <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -25,10 +25,11 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
-    <link rel="up" title="MEASURE API Reference" href="index.html" />
-    <link rel="next" title="3. rmgpy.measure.network - Unimolecular reaction network objects" href="network.html" />
-    <link rel="prev" title="1. Introduction" href="introduction.html" /> 
+    <link rel="up" title="12. MEASURE API Reference" href="index.html" />
+    <link rel="next" title="12.3. rmgpy.measure.network - Unimolecular reaction network objects" href="network.html" />
+    <link rel="prev" title="12.1. Introduction" href="introduction.html" /> 
   </head>
   <body>
 <div class="header">
@@ -50,20 +51,20 @@
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="network.html" title="3. rmgpy.measure.network - Unimolecular reaction network objects"
+          <a href="network.html" title="12.3. rmgpy.measure.network - Unimolecular reaction network objects"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="introduction.html" title="1. Introduction"
+          <a href="introduction.html" title="12.1. Introduction"
              accesskey="P">previous</a> |</li>
 <li><a href="../../index.html">Documentation</a> &raquo;</li>
 
           <li><a href="../index.html" >RMG Developer&#8217;s Guide</a> &raquo;</li>
-          <li><a href="index.html" accesskey="U">MEASURE API Reference</a> &raquo;</li> 
+          <li><a href="index.html" accesskey="U">12. MEASURE API Reference</a> &raquo;</li> 
       </ul>
     </div>
             
   <div class="section" id="module-rmgpy.measure.input">
-<span id="rmgpy-measure-input-input-file-reading"></span><h1>2. <a class="reference internal" href="#module-rmgpy.measure.input" title="rmgpy.measure.input"><tt class="xref py py-mod docutils literal"><span class="pre">rmgpy.measure.input</span></tt></a> - Input file reading<a class="headerlink" href="#module-rmgpy.measure.input" title="Permalink to this headline">¶</a></h1>
+<span id="rmgpy-measure-input-input-file-reading"></span><h1>12.2. <a class="reference internal" href="#module-rmgpy.measure.input" title="rmgpy.measure.input"><tt class="xref py py-mod docutils literal"><span class="pre">rmgpy.measure.input</span></tt></a> - Input file reading<a class="headerlink" href="#module-rmgpy.measure.input" title="Permalink to this headline">¶</a></h1>
 <p>Contains the <tt class="xref py py-meth docutils literal"><span class="pre">readInput()</span></tt> function, used to read MEASURE input files.
 The MEASURE input file format is based on Python syntax, and is in fact a
 valid Python file. This allows us to easily load the file by defining functions
@@ -93,8 +94,8 @@ calculation</li>
 minimum number of energy grains to use in the master equation calculation;
 whichever of these results in more energy grains</li>
 <li>The approximate method to use to estimate the phenomenological rate
-coefficients <img class="math" src="../../_images/math/c93ef2271f42445cc7a12cf6322aeca7a868d826.png" alt="k(T,P)"/></li>
-<li>The interpolation model to fit the estimated <img class="math" src="../../_images/math/c93ef2271f42445cc7a12cf6322aeca7a868d826.png" alt="k(T,P)"/> values to</li>
+coefficients <span class="math">\(k(T,P)\)</span></li>
+<li>The interpolation model to fit the estimated <span class="math">\(k(T,P)\)</span> values to</li>
 <li>The minimum temperature in K at which the fitted interpolation model is
 valid; this is <em>not</em> necessarily equal to <tt class="docutils literal"><span class="pre">min(Tlist)</span></tt></li>
 <li>The maximum temperature in K at which the fitted interpolation model is
@@ -152,10 +153,10 @@ valid up to these values.</p>
 </div>
   <h4>Previous topic</h4>
   <p class="topless"><a href="introduction.html"
-                        title="previous chapter">1. Introduction</a></p>
+                        title="previous chapter">12.1. Introduction</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="network.html"
-                        title="next chapter">3. <tt class="docutils literal docutils literal"><span class="pre">rmgpy.measure.network</span></tt> - Unimolecular reaction network objects</a></p>
+                        title="next chapter">12.3. <tt class="docutils literal docutils literal"><span class="pre">rmgpy.measure.network</span></tt> - Unimolecular reaction network objects</a></p>
   <h3>This Page </h3>
   <ul class="this-page-menu">
     <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/developers/measure/input.rst"

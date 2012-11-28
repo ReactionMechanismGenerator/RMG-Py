@@ -1,0 +1,164 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>13. Pressure dependence in RMG &mdash; RMG Py 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
+    <link rel="up" title="RMG Developer’s Guide" href="../index.html" />
+    <link rel="next" title="13.1. Collision events" href="collision.html" />
+    <link rel="prev" title="12.11. rmgpy.measure.settings - Execution settings" href="../measure/settings.html" /> 
+  </head>
+  <body>
+<div class="header">
+&nbsp;
+</div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="collision.html" title="13.1. Collision events"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../measure/settings.html" title="12.11. rmgpy.measure.settings - Execution settings"
+             accesskey="P">previous</a> |</li>
+<li><a href="../../index.html">Documentation</a> &raquo;</li>
+
+          <li><a href="../index.html" accesskey="U">RMG Developer&#8217;s Guide</a> &raquo;</li> 
+      </ul>
+    </div>
+            
+  <div class="section" id="module-rmgpy.pdep">
+<span id="pressure-dependence-in-rmg"></span><h1>13. Pressure dependence in RMG<a class="headerlink" href="#module-rmgpy.pdep" title="Permalink to this headline">¶</a></h1>
+<p>The <a class="reference internal" href="#module-rmgpy.pdep" title="rmgpy.pdep"><tt class="xref py py-mod docutils literal"><span class="pre">rmgpy.pdep</span></tt></a> subpackage provides functionality for calcuating the
+pressure-dependent rate coefficients <span class="math">\(k(T,P)\)</span> for unimolecular reaction
+networks.</p>
+<p>A unimolecular reaction network is defined by a set of chemically reactive
+molecular configurations - local minima on a potential energy surface - divided
+into unimolecular isomers and bimolecular reactants or products. In our
+vernacular, reactants can associate to form an isomer, while such association
+is neglected for products. These configurations are connected by chemical
+reactions to form a network; these are referred to as <em>path</em> reactions. The
+system also consists of an excess of inert gas M, representing a thermal bath;
+this allows for neglecting all collisions other than those between an isomer
+and the bath gas.</p>
+<p>An isomer molecule at sufficiently high internal energy can be transformed by a
+number of possible events:</p>
+<ul class="simple">
+<li>The isomer molecule can collide with any other molecule, resulting in an
+increase or decrease in energy</li>
+<li>The isomer molecule can isomerize to an adjacent isomer at the same energy</li>
+<li>The isomer molecule can dissociate into any directly connected bimolecular
+reactant or product channel</li>
+</ul>
+<p>It is this competition between collision and reaction events that gives rise
+to pressure-dependent kinetics.</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="collision.html">13.1. Collision events</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="collision.html#collision-frequency-models">13.1.1. Collision frequency models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="collision.html#collisional-energy-transfer-models">13.1.2. Collisional energy transfer models</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="reaction.html">13.2. Reaction events</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="reaction.html#microcanonical-rate-coefficients">13.2.1. Microcanonical rate coefficients</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reaction.html#rrkm-theory">13.2.2. RRKM theory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reaction.html#inverse-laplace-transform-method">13.2.3. Inverse Laplace transform method</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">13.3. Molecular configurations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="network.html">13.4. Pressure-dependent reaction networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mastereqn.html">13.5. The master equation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="mastereqn.html#isomers-reactants-and-products">13.5.1. Isomers, reactants, and products</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mastereqn.html#id1">13.5.2. The master equation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mastereqn.html#the-energy-grained-master-equation">13.5.3. The energy-grained master equation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mastereqn.html#generating-the-master-equation-matrix">13.5.4. Generating the master equation matrix</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="methods.html">13.6. Methods for estimating k(T,P) values</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="methods.html#the-modified-strong-collision-method">13.6.1. The modified strong collision method</a></li>
+<li class="toctree-l2"><a class="reference internal" href="methods.html#the-reservoir-state-method">13.6.2. The reservoir state method</a></li>
+<li class="toctree-l2"><a class="reference internal" href="methods.html#the-chemically-significant-eigenvalues-method">13.6.3. The chemically-significant eigenvalues method</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div class="sidebarlogo">
+<img src="../../_static/rmg-logo-small.png" alt="RMG" />
+</div>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../measure/settings.html"
+                        title="previous chapter">12.11. <tt class="docutils literal docutils literal docutils literal"><span class="pre">rmgpy.measure.settings</span></tt> - Execution settings</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="collision.html"
+                        title="next chapter">13.1. Collision events</a></p>
+  <h3>This Page </h3>
+  <ul class="this-page-menu">
+    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/developers/pdep/index.rst"
+           rel="nofollow">Edit this page</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

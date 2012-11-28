@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>8. rmgpy.measure.cse - The chemically-significant eigenvalues method &mdash; RMG Py 0.1.0 documentation</title>
+    <title>12.8. rmgpy.measure.cse - The chemically-significant eigenvalues method &mdash; RMG Py 0.1.0 documentation</title>
     
     <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -25,10 +25,11 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
-    <link rel="up" title="MEASURE API Reference" href="index.html" />
-    <link rel="next" title="9. rmgpy.measure.output - Output file writing" href="output.html" />
-    <link rel="prev" title="7. rmgpy.measure.rs - The reservoir state method" href="rs.html" /> 
+    <link rel="up" title="12. MEASURE API Reference" href="index.html" />
+    <link rel="next" title="12.9. rmgpy.measure.output - Output file writing" href="output.html" />
+    <link rel="prev" title="12.7. rmgpy.measure.rs - The reservoir state method" href="rs.html" /> 
   </head>
   <body>
 <div class="header">
@@ -50,23 +51,23 @@
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="output.html" title="9. rmgpy.measure.output - Output file writing"
+          <a href="output.html" title="12.9. rmgpy.measure.output - Output file writing"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="rs.html" title="7. rmgpy.measure.rs - The reservoir state method"
+          <a href="rs.html" title="12.7. rmgpy.measure.rs - The reservoir state method"
              accesskey="P">previous</a> |</li>
 <li><a href="../../index.html">Documentation</a> &raquo;</li>
 
           <li><a href="../index.html" >RMG Developer&#8217;s Guide</a> &raquo;</li>
-          <li><a href="index.html" accesskey="U">MEASURE API Reference</a> &raquo;</li> 
+          <li><a href="index.html" accesskey="U">12. MEASURE API Reference</a> &raquo;</li> 
       </ul>
     </div>
             
   <div class="section" id="module-rmgpy.measure.cse">
-<span id="rmgpy-measure-cse-the-chemically-significant-eigenvalues-method"></span><h1>8. <a class="reference internal" href="#module-rmgpy.measure.cse" title="rmgpy.measure.cse"><tt class="xref py py-mod docutils literal"><span class="pre">rmgpy.measure.cse</span></tt></a> - The chemically-significant eigenvalues method<a class="headerlink" href="#module-rmgpy.measure.cse" title="Permalink to this headline">¶</a></h1>
+<span id="rmgpy-measure-cse-the-chemically-significant-eigenvalues-method"></span><h1>12.8. <a class="reference internal" href="#module-rmgpy.measure.cse" title="rmgpy.measure.cse"><tt class="xref py py-mod docutils literal"><span class="pre">rmgpy.measure.cse</span></tt></a> - The chemically-significant eigenvalues method<a class="headerlink" href="#module-rmgpy.measure.cse" title="Permalink to this headline">¶</a></h1>
 <p>This module provides an implementation of the chemically-significant eigenvalues
 method for reducing a master equation model of unimolecular reaction networks to
-a set of phenomenological rate coefficients <img class="math" src="../../_images/math/c93ef2271f42445cc7a12cf6322aeca7a868d826.png" alt="k(T,P)"/>.</p>
+a set of phenomenological rate coefficients <span class="math">\(k(T,P)\)</span>.</p>
 <dl class="class">
 <dt id="rmgpy.measure.cse.ChemicallySignificantEigenvaluesError">
 <em class="property">class </em><tt class="descclassname">rmgpy.measure.cse.</tt><tt class="descname">ChemicallySignificantEigenvaluesError</tt><a class="headerlink" href="#rmgpy.measure.cse.ChemicallySignificantEigenvaluesError" title="Permalink to this definition">¶</a></dt>
@@ -78,9 +79,9 @@ any reason. Pass a string describing the cause of the exceptional behavior.</p>
 <dt id="rmgpy.measure.cse.applyChemicallySignificantEigenvaluesMethod">
 <tt class="descclassname">rmgpy.measure.cse.</tt><tt class="descname">applyChemicallySignificantEigenvaluesMethod</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.measure.cse.applyChemicallySignificantEigenvaluesMethod" title="Permalink to this definition">¶</a></dt>
 <dd><p>Use the chemically-significant eigenvalues method to reduce the master
-equation model to a set of phenomenological rate coefficients <img class="math" src="../../_images/math/c93ef2271f42445cc7a12cf6322aeca7a868d826.png" alt="k(T,P)"/>
-and a set of time-independent population vectors <img class="math" src="../../_images/math/7f365cb2d8349221aea3f882438ffcee7bd96caa.png" alt="\vector{u}_{ij}"/>
-and <img class="math" src="../../_images/math/083e6f41da9ade24626abe2ed355a66831e39a3a.png" alt="\vector{v}_{im}"/>. Inputs are the temperature <cite>T</cite> in K; pressure
+equation model to a set of phenomenological rate coefficients <span class="math">\(k(T,P)\)</span>
+and a set of time-independent population vectors <span class="math">\(\vector{u}_{ij}\)</span>
+and <span class="math">\(\vector{v}_{im}\)</span>. Inputs are the temperature <cite>T</cite> in K; pressure
 <cite>P</cite> in Pa; list of energy grains <cite>Elist</cite> in J/mol; dimensionless densities
 of states for each isomer and reactant channel <cite>densStates</cite>; collision
 matrix <cite>Mcoll</cite> for each isomer; isomerization, association, and dissociation
@@ -103,10 +104,10 @@ and the numbers of isomers, reactant channels, and product channels <cite>Nisom<
 </div>
   <h4>Previous topic</h4>
   <p class="topless"><a href="rs.html"
-                        title="previous chapter">7. <tt class="docutils literal"><span class="pre">rmgpy.measure.rs</span></tt> - The reservoir state method</a></p>
+                        title="previous chapter">12.7. <tt class="docutils literal"><span class="pre">rmgpy.measure.rs</span></tt> - The reservoir state method</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="output.html"
-                        title="next chapter">9. <tt class="docutils literal"><span class="pre">rmgpy.measure.output</span></tt> - Output file writing</a></p>
+                        title="next chapter">12.9. <tt class="docutils literal"><span class="pre">rmgpy.measure.output</span></tt> - Output file writing</a></p>
   <h3>This Page </h3>
   <ul class="this-page-menu">
     <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/developers/measure/cse.rst"

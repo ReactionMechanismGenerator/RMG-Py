@@ -1,0 +1,263 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>8.3. Thermodynamics data interpolation &mdash; RMG Py 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
+    <link rel="up" title="8. Thermodynamics in RMG" href="index.html" />
+    <link rel="next" title="9. Molecule API Reference" href="../molecule/index.html" />
+    <link rel="prev" title="8.2. NASA polynomial" href="nasa.html" /> 
+  </head>
+  <body>
+<div class="header">
+&nbsp;
+</div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../molecule/index.html" title="9. Molecule API Reference"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="nasa.html" title="8.2. NASA polynomial"
+             accesskey="P">previous</a> |</li>
+<li><a href="../../index.html">Documentation</a> &raquo;</li>
+
+          <li><a href="../index.html" >RMG Developer&#8217;s Guide</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">8. Thermodynamics in RMG</a> &raquo;</li> 
+      </ul>
+    </div>
+            
+  <div class="section" id="thermodynamics-data-interpolation">
+<h1>8.3. Thermodynamics data interpolation<a class="headerlink" href="#thermodynamics-data-interpolation" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="rmgpy.thermo.ThermoData">
+<em class="property">class </em><tt class="descclassname">rmgpy.thermo.</tt><tt class="descname">ThermoData</tt><a class="headerlink" href="#rmgpy.thermo.ThermoData" title="Permalink to this definition">¶</a></dt>
+<dd><p>ThermoData(Tdata=None, Cpdata=None, H298=None, S298=None, Cp0=None, CpInf=None, Tmin=None, Tmax=None, comment=&#8217;&#8216;)</p>
+<p>A heat capacity model based on a set of discrete heat capacity data points.
+The attributes are:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="15%" />
+<col width="85%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Attribute</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><cite>Tdata</cite></td>
+<td>An array of temperatures at which the heat capacity is known</td>
+</tr>
+<tr class="row-odd"><td><cite>Cpdata</cite></td>
+<td>An array of heat capacities at the given temperatures</td>
+</tr>
+<tr class="row-even"><td><cite>H298</cite></td>
+<td>The standard enthalpy of formation at 298 K</td>
+</tr>
+<tr class="row-odd"><td><cite>S298</cite></td>
+<td>The standard entropy at 298 K</td>
+</tr>
+<tr class="row-even"><td><cite>Cp0</cite></td>
+<td>The heat capacity at zero temperature</td>
+</tr>
+<tr class="row-odd"><td><cite>CpInf</cite></td>
+<td>The heat capacity at infinite temperature</td>
+</tr>
+<tr class="row-even"><td><cite>Tmin</cite></td>
+<td>The minimum temperature at which the model is valid, or zero if unknown or undefined</td>
+</tr>
+<tr class="row-odd"><td><cite>Tmax</cite></td>
+<td>The maximum temperature at which the model is valid, or zero if unknown or undefined</td>
+</tr>
+<tr class="row-even"><td><cite>comment</cite></td>
+<td>Information about the model (e.g. its source)</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="rmgpy.thermo.ThermoData.Cp0">
+<tt class="descname">Cp0</tt><a class="headerlink" href="#rmgpy.thermo.ThermoData.Cp0" title="Permalink to this definition">¶</a></dt>
+<dd><p>The heat capacity at zero temperature.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.thermo.ThermoData.CpInf">
+<tt class="descname">CpInf</tt><a class="headerlink" href="#rmgpy.thermo.ThermoData.CpInf" title="Permalink to this definition">¶</a></dt>
+<dd><p>The heat capacity at infinite temperature.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.thermo.ThermoData.Cpdata">
+<tt class="descname">Cpdata</tt><a class="headerlink" href="#rmgpy.thermo.ThermoData.Cpdata" title="Permalink to this definition">¶</a></dt>
+<dd><p>An array of heat capacities at the given temperatures.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.thermo.ThermoData.H298">
+<tt class="descname">H298</tt><a class="headerlink" href="#rmgpy.thermo.ThermoData.H298" title="Permalink to this definition">¶</a></dt>
+<dd><p>The standard enthalpy of formation at 298 K.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.thermo.ThermoData.S298">
+<tt class="descname">S298</tt><a class="headerlink" href="#rmgpy.thermo.ThermoData.S298" title="Permalink to this definition">¶</a></dt>
+<dd><p>The standard entropy of formation at 298 K.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.thermo.ThermoData.Tdata">
+<tt class="descname">Tdata</tt><a class="headerlink" href="#rmgpy.thermo.ThermoData.Tdata" title="Permalink to this definition">¶</a></dt>
+<dd><p>An array of temperatures at which the heat capacity is known.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.thermo.ThermoData.getEnthalpy">
+<tt class="descname">getEnthalpy</tt><big>(</big><em>self</em>, <em>double T</em><big>)</big> &rarr; double<a class="headerlink" href="#rmgpy.thermo.ThermoData.getEnthalpy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the enthalpy in J/mol at the specified temperature <cite>T</cite> in K.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.thermo.ThermoData.getEntropy">
+<tt class="descname">getEntropy</tt><big>(</big><em>self</em>, <em>double T</em><big>)</big> &rarr; double<a class="headerlink" href="#rmgpy.thermo.ThermoData.getEntropy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the entropy in J/mol*K at the specified temperature <cite>T</cite> in K.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.thermo.ThermoData.getFreeEnergy">
+<tt class="descname">getFreeEnergy</tt><big>(</big><em>self</em>, <em>double T</em><big>)</big> &rarr; double<a class="headerlink" href="#rmgpy.thermo.ThermoData.getFreeEnergy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the Gibbs free energy in J/mol at the specified temperature
+<cite>T</cite> in K.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.thermo.ThermoData.getHeatCapacity">
+<tt class="descname">getHeatCapacity</tt><big>(</big><em>self</em>, <em>double T</em><big>)</big> &rarr; double<a class="headerlink" href="#rmgpy.thermo.ThermoData.getHeatCapacity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the constant-pressure heat capacity in J/mol*K at the specified
+temperature <cite>T</cite> in K.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.thermo.ThermoData.toNASA">
+<tt class="descname">toNASA</tt><big>(</big><em>self</em>, <em>double Tmin</em>, <em>double Tmax</em>, <em>double Tint</em>, <em>int fixedTint=False</em>, <em>int weighting=True</em>, <em>int continuity=3</em><big>)</big> &rarr; NASA<a class="headerlink" href="#rmgpy.thermo.ThermoData.toNASA" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert the object to a <tt class="xref py py-class docutils literal"><span class="pre">NASA</span></tt> object. You must specify the
+minimum and maximum temperatures of the fit <cite>Tmin</cite> and <cite>Tmax</cite> in K, as
+well as the intermediate temperature <cite>Tint</cite> in K to use as the bridge
+between the two fitted polynomials. The remaining parameters can be
+used to modify the fitting algorithm used:</p>
+<ul>
+<li><p class="first"><cite>fixedTint</cite> - <tt class="docutils literal"><span class="pre">False</span></tt> to allow <cite>Tint</cite> to vary in order to improve the fit, or <tt class="docutils literal"><span class="pre">True</span></tt> to keep it fixed</p>
+</li>
+<li><p class="first"><cite>weighting</cite> - <tt class="docutils literal"><span class="pre">True</span></tt> to weight the fit by <span class="math">\(T^{-1}\)</span> to emphasize good fit at lower temperatures, or <tt class="docutils literal"><span class="pre">False</span></tt> to not use weighting</p>
+</li>
+<li><p class="first"><cite>continuity</cite> - The number of continuity constraints to enforce at <cite>Tint</cite>:</p>
+<blockquote>
+<div><ul class="simple">
+<li>0: no constraints on continuity of <span class="math">\(C_\mathrm{p}(T)\)</span> at <cite>Tint</cite></li>
+<li>1: constrain <span class="math">\(C_\mathrm{p}(T)\)</span> to be continous at <cite>Tint</cite></li>
+<li>2: constrain <span class="math">\(C_\mathrm{p}(T)\)</span> and <span class="math">\(\frac{d C_\mathrm{p}}{dT}\)</span> to be continuous at <cite>Tint</cite></li>
+<li>3: constrain <span class="math">\(C_\mathrm{p}(T)\)</span>, <span class="math">\(\frac{d C_\mathrm{p}}{dT}\)</span>, and <span class="math">\(\frac{d^2 C_\mathrm{p}}{dT^2}\)</span> to be continuous at <cite>Tint</cite></li>
+<li>4: constrain <span class="math">\(C_\mathrm{p}(T)\)</span>, <span class="math">\(\frac{d C_\mathrm{p}}{dT}\)</span>, <span class="math">\(\frac{d^2 C_\mathrm{p}}{dT^2}\)</span>, and <span class="math">\(\frac{d^3 C_\mathrm{p}}{dT^3}\)</span> to be continuous at <cite>Tint</cite></li>
+<li>5: constrain <span class="math">\(C_\mathrm{p}(T)\)</span>, <span class="math">\(\frac{d C_\mathrm{p}}{dT}\)</span>, <span class="math">\(\frac{d^2 C_\mathrm{p}}{dT^2}\)</span>, <span class="math">\(\frac{d^3 C_\mathrm{p}}{dT^3}\)</span>, and <span class="math">\(\frac{d^4 C_\mathrm{p}}{dT^4}\)</span> to be continuous at <cite>Tint</cite></li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+<p>Note that values of <cite>continuity</cite> of 5 or higher effectively constrain all
+the coefficients to be equal and should be equivalent to fitting only one
+polynomial (rather than two).</p>
+<p>Returns the fitted <tt class="xref py py-class docutils literal"><span class="pre">NASA</span></tt> object containing the two fitted
+<tt class="xref py py-class docutils literal"><span class="pre">NASAPolynomial</span></tt> objects.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.thermo.ThermoData.toWilhoit">
+<tt class="descname">toWilhoit</tt><big>(</big><em>self</em><big>)</big> &rarr; Wilhoit<a class="headerlink" href="#rmgpy.thermo.ThermoData.toWilhoit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert the Benson model to a Wilhoit model. For the conversion to
+succeed, you must have set the <cite>Cp0</cite> and <cite>CpInf</cite> attributes of the
+Benson model.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div class="sidebarlogo">
+<img src="../../_static/rmg-logo-small.png" alt="RMG" />
+</div>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="nasa.html"
+                        title="previous chapter">8.2. NASA polynomial</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../molecule/index.html"
+                        title="next chapter">9. Molecule API Reference</a></p>
+  <h3>This Page </h3>
+  <ul class="this-page-menu">
+    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/developers/thermo/thermodata.rst"
+           rel="nofollow">Edit this page</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,302 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>3.6. Tunneling &mdash; RMG Py 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
+    <link rel="up" title="3. Kinetics in RMG" href="index.html" />
+    <link rel="next" title="4. Physical quantities in RMG" href="../quantities/index.html" />
+    <link rel="prev" title="3.5. Kinetics data interpolation" href="kineticsdata.html" /> 
+  </head>
+  <body>
+<div class="header">
+&nbsp;
+</div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../quantities/index.html" title="4. Physical quantities in RMG"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="kineticsdata.html" title="3.5. Kinetics data interpolation"
+             accesskey="P">previous</a> |</li>
+<li><a href="../../index.html">Documentation</a> &raquo;</li>
+
+          <li><a href="../index.html" >RMG Developer&#8217;s Guide</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">3. Kinetics in RMG</a> &raquo;</li> 
+      </ul>
+    </div>
+            
+  <div class="section" id="tunneling">
+<h1>3.6. Tunneling<a class="headerlink" href="#tunneling" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="wigner-tunneling">
+<h2>3.6.1. Wigner tunneling<a class="headerlink" href="#wigner-tunneling" title="Permalink to this headline">¶</a></h2>
+<p>An early formulation for incorporating the effect of tunneling is that of
+Wigner <a class="reference internal" href="#wigner">[1932Wigner]</a>:</p>
+<div class="math">
+\[\kappa(T) = 1 + \frac{1}{24} \left( \frac{h \left| \nu_\mathrm{TS} \right|}{ k_\mathrm{B} T} \right)^2\]</div>
+<p>where <span class="math">\(h\)</span> is the Planck constant, <span class="math">\(\nu_\mathrm{TS}\)</span> is the
+negative frequency, <span class="math">\(k_\mathrm{B}\)</span> is the Boltzmann constant, and
+<span class="math">\(T\)</span> is the absolute temperature.</p>
+<p>The Wigner formula represents the first correction term in a perturbative
+expansion for a parabolic barrier <a class="reference internal" href="#bell">[1959Bell]</a>, and is therefore only accurate
+in the limit of a small tunneling correction. There are many cases for which
+the tunneling correction is very large; for these cases the Wigner model is
+inappropriate.</p>
+<dl class="class">
+<dt id="rmgpy.kinetics.Wigner">
+<em class="property">class </em><tt class="descclassname">rmgpy.kinetics.</tt><tt class="descname">Wigner</tt><a class="headerlink" href="#rmgpy.kinetics.Wigner" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wigner(frequency)</p>
+<p>A tunneling model based on the Wigner formula. The attributes are:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="20%" />
+<col width="80%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Attribute</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><cite>frequency</cite></td>
+<td>The imaginary frequency of the transition state</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="rmgpy.kinetics.Wigner.calculateTunnelingFactor">
+<tt class="descname">calculateTunnelingFactor</tt><big>(</big><em>self</em>, <em>double T</em><big>)</big> &rarr; double<a class="headerlink" href="#rmgpy.kinetics.Wigner.calculateTunnelingFactor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate and return the value of the Wigner tunneling correction for
+the reaction at the temperature <cite>T</cite> in K.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.kinetics.Wigner.calculateTunnelingFunction">
+<tt class="descname">calculateTunnelingFunction</tt><big>(</big><em>self</em>, <em>ndarray Elist</em><big>)</big> &rarr; ndarray<a class="headerlink" href="#rmgpy.kinetics.Wigner.calculateTunnelingFunction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raises <tt class="xref py py-class docutils literal"><span class="pre">NotImplementedError</span></tt>, as the Wigner tunneling model
+does not have a well-defined energy-dependent tunneling function.</p>
+</dd></dl>
+
+</dd></dl>
+
+<table class="docutils citation" frame="void" id="wigner" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[1932Wigner]</a></td><td>E.Wigner. <em>Phys. Rev.</em> <strong>40</strong>, p. 749-759 (1932). <a class="reference external" href="http://dx.doi.org/10.1103/PhysRev.40.749">doi:10.1103/PhysRev.40.749</a></td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="bell" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id2">[1959Bell]</a></td><td>R. P. Bell. <em>Trans. Faraday Soc.</em> <strong>55</strong>, p. 1-4 (1959). <a class="reference external" href="http://dx.doi.org/10.1039/TF9595500001">doi:10.1039/TF9595500001</a></td></tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="eckart-tunneling">
+<h2>3.6.2. Eckart tunneling<a class="headerlink" href="#eckart-tunneling" title="Permalink to this headline">¶</a></h2>
+<p>The Eckart tunneling model is based around a potential of the form</p>
+<div class="math">
+\[V(x) = \frac{\hbar^2}{2m} \left[ \frac{A e^x}{1 + e^x} + \frac{B e^x}{\left( 1 + e^x \right)^2} \right]\]</div>
+<p>where <span class="math">\(x\)</span> represents the reaction coordinate and <span class="math">\(A\)</span> and <span class="math">\(B\)</span>
+are parameters. The potential is symmetric if <span class="math">\(A = 0\)</span> and asymmetric if
+<span class="math">\(A \ne 0\)</span>. If we add the constraint
+<span class="math">\(\left| B \right| &gt; \left| A \right|\)</span> then the potential has a maximum
+at</p>
+<div class="math">
+\[x_\mathrm{max} = \ln \left( \frac{B + A}{B - A} \right)\]</div>
+<div class="math">
+\[V(x_\mathrm{max}) = \frac{\hbar^2}{2m} \frac{(A + B)^2}{4B}\]</div>
+<p>The one-dimensional Schrodinger equation with the Eckart potential is
+analytically solvable. The resulting microcanonical tunneling factor
+<span class="math">\(\kappa(E)\)</span> is a function of the total energy of the molecular system:</p>
+<div class="math">
+\[\kappa(E) = 1 - \frac{\cosh (2 \pi a - 2 \pi b) + \cosh (2 \pi d)}{\cosh (2 \pi a + 2 \pi b) + \cosh (2 \pi d)}\]</div>
+<p>where</p>
+<div class="math">
+\[2 \pi a = \frac{2 \sqrt{\alpha_1 \xi}}{\alpha_1^{-1/2} + \alpha_2^{-1/2}}\]</div>
+<div class="math">
+\[2 \pi b = \frac{2 \sqrt{\left| (\xi - 1) \alpha_1 + \alpha_2 \right|}}{\alpha_1^{-1/2} + \alpha_2^{-1/2}}\]</div>
+<div class="math">
+\[2 \pi d = 2 \sqrt{\left| \alpha_1 \alpha_2 - 4 \pi^2 / 16 \right|}\]</div>
+<div class="math">
+\[\alpha_1 = 2 \pi \frac{\Delta V_1}{h \left| \nu_\mathrm{TS} \right|}\]</div>
+<div class="math">
+\[\alpha_2 = 2 \pi \frac{\Delta V_2}{h \left| \nu_\mathrm{TS} \right|}\]</div>
+<div class="math">
+\[\xi = \frac{E}{\Delta V_1}\]</div>
+<p><span class="math">\(\Delta V_1\)</span> and <span class="math">\(\Delta V_2\)</span> are the thermal energy
+difference between the transition state and the reactants and products,
+respectively; <span class="math">\(\nu_\mathrm{TS}\)</span> is the negative frequency,
+<span class="math">\(h\)</span> is the Planck constant.</p>
+<p>Applying a Laplace transform gives the canonical tunneling factor as a function
+of temperature <span class="math">\(T\)</span> (expressed as <span class="math">\(\beta \equiv 1 / k_\mathrm{B} T\)</span>):</p>
+<div class="math">
+\[\kappa(T) = e^{\beta \Delta V_1} \int_0^\infty \kappa(E) e^{- \beta E} \ dE\]</div>
+<p>If product data is not available, then it is assumed that
+<span class="math">\(\alpha_2 \approx \alpha_1\)</span>.</p>
+<p>The Eckart correction requires information about the reactants as well
+as the transition state. For best results, information about the
+products should also be given. (The former is called the symmetric
+Eckart correction, the latter the asymmetric Eckart correction.) This
+extra information allows the Eckart correction to generally give a
+better result than the Wigner correction.</p>
+<dl class="class">
+<dt id="rmgpy.kinetics.Eckart">
+<em class="property">class </em><tt class="descclassname">rmgpy.kinetics.</tt><tt class="descname">Eckart</tt><a class="headerlink" href="#rmgpy.kinetics.Eckart" title="Permalink to this definition">¶</a></dt>
+<dd><p>Eckart(frequency, E0_reac, E0_TS, E0_prod=None)</p>
+<p>A tunneling model based on the Eckart model. The attributes are:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="20%" />
+<col width="80%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Attribute</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><cite>frequency</cite></td>
+<td>The imaginary frequency of the transition state</td>
+</tr>
+<tr class="row-odd"><td><cite>E0_reac</cite></td>
+<td>The ground-state energy of the reactants</td>
+</tr>
+<tr class="row-even"><td><cite>E0_TS</cite></td>
+<td>The ground-state energy of the transition state</td>
+</tr>
+<tr class="row-odd"><td><cite>E0_prod</cite></td>
+<td>The ground-state energy of the products</td>
+</tr>
+</tbody>
+</table>
+<p>If <cite>E0_prod</cite> is not given, it is assumed to be the same as the reactants;
+this results in the so-called &#8220;symmetric&#8221; Eckart model. Providing 
+<cite>E0_prod</cite>, and thereby using the &#8220;asymmetric&#8221; Eckart model, is the
+recommended approach.</p>
+<dl class="attribute">
+<dt id="rmgpy.kinetics.Eckart.E0_TS">
+<tt class="descname">E0_TS</tt><a class="headerlink" href="#rmgpy.kinetics.Eckart.E0_TS" title="Permalink to this definition">¶</a></dt>
+<dd><p>The ground-state energy of the transition state.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.kinetics.Eckart.E0_prod">
+<tt class="descname">E0_prod</tt><a class="headerlink" href="#rmgpy.kinetics.Eckart.E0_prod" title="Permalink to this definition">¶</a></dt>
+<dd><p>The ground-state energy of the products.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.kinetics.Eckart.E0_reac">
+<tt class="descname">E0_reac</tt><a class="headerlink" href="#rmgpy.kinetics.Eckart.E0_reac" title="Permalink to this definition">¶</a></dt>
+<dd><p>The ground-state energy of the reactants.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.kinetics.Eckart.calculateTunnelingFactor">
+<tt class="descname">calculateTunnelingFactor</tt><big>(</big><em>self</em>, <em>double T</em><big>)</big> &rarr; double<a class="headerlink" href="#rmgpy.kinetics.Eckart.calculateTunnelingFactor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate and return the value of the Eckart tunneling correction for
+the reaction at the temperature <cite>T</cite> in K.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.kinetics.Eckart.calculateTunnelingFunction">
+<tt class="descname">calculateTunnelingFunction</tt><big>(</big><em>self</em>, <em>ndarray Elist</em><big>)</big> &rarr; ndarray<a class="headerlink" href="#rmgpy.kinetics.Eckart.calculateTunnelingFunction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate and return the value of the Eckart tunneling function for
+the reaction at the energies <cite>Elist</cite> in J/mol.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div class="sidebarlogo">
+<img src="../../_static/rmg-logo-small.png" alt="RMG" />
+</div>
+  <h3><a href="../../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">3.6. Tunneling</a><ul>
+<li><a class="reference internal" href="#wigner-tunneling">3.6.1. Wigner tunneling</a></li>
+<li><a class="reference internal" href="#eckart-tunneling">3.6.2. Eckart tunneling</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="kineticsdata.html"
+                        title="previous chapter">3.5. Kinetics data interpolation</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../quantities/index.html"
+                        title="next chapter">4. Physical quantities in RMG</a></p>
+  <h3>This Page </h3>
+  <ul class="this-page-menu">
+    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/developers/kinetics/tunneling.rst"
+           rel="nofollow">Edit this page</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

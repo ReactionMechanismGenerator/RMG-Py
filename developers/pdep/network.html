@@ -1,0 +1,330 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>13.4. Pressure-dependent reaction networks &mdash; RMG Py 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
+    <link rel="up" title="13. Pressure dependence in RMG" href="index.html" />
+    <link rel="next" title="13.5. The master equation" href="mastereqn.html" />
+    <link rel="prev" title="13.3. Molecular configurations" href="configuration.html" /> 
+  </head>
+  <body>
+<div class="header">
+&nbsp;
+</div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="mastereqn.html" title="13.5. The master equation"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="configuration.html" title="13.3. Molecular configurations"
+             accesskey="P">previous</a> |</li>
+<li><a href="../../index.html">Documentation</a> &raquo;</li>
+
+          <li><a href="../index.html" >RMG Developer&#8217;s Guide</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">13. Pressure dependence in RMG</a> &raquo;</li> 
+      </ul>
+    </div>
+            
+  <div class="section" id="module-rmgpy.pdep.network">
+<span id="pressure-dependent-reaction-networks"></span><h1>13.4. Pressure-dependent reaction networks<a class="headerlink" href="#module-rmgpy.pdep.network" title="Permalink to this headline">¶</a></h1>
+<p>This module contains the <tt class="xref py py-class docutils literal"><span class="pre">Network</span></tt> class, a representation of a 
+pressure-dependent unimolecular reaction network</p>
+<dl class="class">
+<dt id="rmgpy.pdep.Network">
+<em class="property">class </em><tt class="descclassname">rmgpy.pdep.</tt><tt class="descname">Network</tt><big>(</big><em>label=''</em>, <em>isomers=None</em>, <em>reactants=None</em>, <em>products=None</em>, <em>pathReactions=None</em>, <em>bathGas=None</em><big>)</big><a class="headerlink" href="#rmgpy.pdep.Network" title="Permalink to this definition">¶</a></dt>
+<dd><p>A representation of a unimolecular reaction network. The attributes are:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="21%" />
+<col width="79%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Attribute</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><cite>isomers</cite></td>
+<td>A list of the unimolecular isomers in the network</td>
+</tr>
+<tr class="row-odd"><td><cite>reactants</cite></td>
+<td>A list of the bimolecular reactant channels in the network</td>
+</tr>
+<tr class="row-even"><td><cite>products</cite></td>
+<td>A list of the bimolecular product channels in the network</td>
+</tr>
+<tr class="row-odd"><td><cite>pathReactions</cite></td>
+<td>A list of &#8220;path&#8221; reaction objects that connect adjacent isomers (the high-pressure-limit)</td>
+</tr>
+<tr class="row-even"><td><cite>bathGas</cite></td>
+<td>A dictionary of the bath gas species (keys) and their mole fractions (values)</td>
+</tr>
+<tr class="row-odd"><td><cite>netReactions</cite></td>
+<td>A list of &#8220;net&#8221; reaction objects that connect any pair of isomers</td>
+</tr>
+<tr class="row-even"><td><cite>T</cite></td>
+<td>The current temperature in K</td>
+</tr>
+<tr class="row-odd"><td><cite>P</cite></td>
+<td>The current pressure in bar</td>
+</tr>
+<tr class="row-even"><td><cite>Elist</cite></td>
+<td>The current array of energy grains in kJ/mol</td>
+</tr>
+<tr class="row-odd"><td><cite>Jlist</cite></td>
+<td>The current array of total angular momentum quantum numbers</td>
+</tr>
+<tr class="row-even"><td><cite>Nisom</cite></td>
+<td>The number of unimolecular isomers in the network</td>
+</tr>
+<tr class="row-odd"><td><cite>Nreac</cite></td>
+<td>The number of bimolecular reactant channels in the network</td>
+</tr>
+<tr class="row-even"><td><cite>Nprod</cite></td>
+<td>The number of bimolecular product channels in the network</td>
+</tr>
+<tr class="row-odd"><td><cite>Ngrains</cite></td>
+<td>The number of energy grains</td>
+</tr>
+<tr class="row-even"><td><cite>NJ</cite></td>
+<td>The number of angular momentum grains</td>
+</tr>
+<tr class="row-odd"><td><cite>activeKRotor</cite></td>
+<td><tt class="docutils literal"><span class="pre">True</span></tt> if the K-rotor is treated as active, <tt class="docutils literal"><span class="pre">False</span></tt> if treated as adiabatic</td>
+</tr>
+<tr class="row-even"><td><cite>activeJRotor</cite></td>
+<td><tt class="docutils literal"><span class="pre">True</span></tt> if the J-rotor is treated as active, <tt class="docutils literal"><span class="pre">False</span></tt> if treated as adiabatic</td>
+</tr>
+<tr class="row-odd"><td><cite>rmgmode</cite></td>
+<td><tt class="docutils literal"><span class="pre">True</span></tt> if in RMG mode, <tt class="docutils literal"><span class="pre">False</span></tt> otherwise</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="rmgpy.pdep.Network.applyChemicallySignificantEigenvaluesMethod">
+<tt class="descname">applyChemicallySignificantEigenvaluesMethod</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.pdep.Network.applyChemicallySignificantEigenvaluesMethod" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the phenomenological rate coefficients <span class="math">\(k(T,P)\)</span> at the
+current conditions using the chemically-significant eigenvalues method.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.pdep.Network.applyModifiedStrongCollisionMethod">
+<tt class="descname">applyModifiedStrongCollisionMethod</tt><big>(</big><em>efficiencyModel='default'</em><big>)</big><a class="headerlink" href="#rmgpy.pdep.Network.applyModifiedStrongCollisionMethod" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the phenomenological rate coefficients <span class="math">\(k(T,P)\)</span> at the
+current conditions using the modified strong collision method.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.pdep.Network.applyReservoirStateMethod">
+<tt class="descname">applyReservoirStateMethod</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.pdep.Network.applyReservoirStateMethod" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the phenomenological rate coefficients <span class="math">\(k(T,P)\)</span> at the
+current conditions using the reservoir state method.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.pdep.Network.calculateCollisionModel">
+<tt class="descname">calculateCollisionModel</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.pdep.Network.calculateCollisionModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the matrix of first-order rate coefficients for collisional
+population transfer between grains for each isomer, including the
+corresponding collision frequencies.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.pdep.Network.calculateDensitiesOfStates">
+<tt class="descname">calculateDensitiesOfStates</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.pdep.Network.calculateDensitiesOfStates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the densities of states of each configuration that has states
+data. The densities of states are computed such that they can be
+applied to each temperature in the range of interest by interpolation.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.pdep.Network.calculateEquilibriumRatios">
+<tt class="descname">calculateEquilibriumRatios</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.pdep.Network.calculateEquilibriumRatios" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return an array containing the fraction of each isomer and reactant
+channel present at equilibrium, as determined from the Gibbs free 
+energy and using the concentration equilibrium constant 
+<span class="math">\(K_\mathrm{c}\)</span>. These values are ratios, and the absolute
+magnitude is not guaranteed; however, the implementation scales the 
+elements of the array so that they sum to unity.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.pdep.Network.calculateMicrocanonicalRates">
+<tt class="descname">calculateMicrocanonicalRates</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.pdep.Network.calculateMicrocanonicalRates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate and return arrays containing the microcanonical rate
+coefficients <span class="math">\(k(E)\)</span> for the isomerization, dissociation, and
+association path reactions in the network.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.pdep.Network.getAllSpecies">
+<tt class="descname">getAllSpecies</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.pdep.Network.getAllSpecies" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of all unique species in the network, including all
+isomers, reactant and product channels, and bath gas species.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.pdep.Network.initialize">
+<tt class="descname">initialize</tt><big>(</big><em>Tmin</em>, <em>Tmax</em>, <em>Pmin</em>, <em>Pmax</em>, <em>maximumGrainSize=0.0</em>, <em>minimumGrainCount=0</em>, <em>activeJRotor=True</em>, <em>activeKRotor=True</em>, <em>rmgmode=False</em><big>)</big><a class="headerlink" href="#rmgpy.pdep.Network.initialize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize a pressure dependence calculation by computing several
+quantities that are independent of the conditions. You must specify
+the temperature and pressure ranges of interesting using <cite>Tmin</cite> and
+<cite>Tmax</cite> in K and <cite>Pmin</cite> and <cite>Pmax</cite> in Pa. You must also specify the
+maximum energy grain size <cite>grainSize</cite> in J/mol and/or the minimum
+number of grains <cite>grainCount</cite>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.pdep.Network.invalidate">
+<tt class="descname">invalidate</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.pdep.Network.invalidate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Mark the network as in need of a new calculation to determine the
+pressure-dependent rate coefficients</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.pdep.Network.mapDensitiesOfStates">
+<tt class="descname">mapDensitiesOfStates</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.pdep.Network.mapDensitiesOfStates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Map the overall densities of states to the current energy grains.
+Semi-logarithmic interpolation will be used if the grain sizes of 
+<cite>Elist0</cite> and <cite>Elist</cite> do not match; this should not be a significant
+source of error as long as the grain sizes are sufficiently small.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.pdep.Network.printSummary">
+<tt class="descname">printSummary</tt><big>(</big><em>level=20</em><big>)</big><a class="headerlink" href="#rmgpy.pdep.Network.printSummary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print a formatted list of information about the current network. Each
+molecular configuration - unimolecular isomers, bimolecular reactant
+channels, and bimolecular product channels - is given along with its
+energy on the potential energy surface. The path reactions connecting
+adjacent molecular configurations are also given, along with their
+energies on the potential energy surface. The <cite>level</cite> parameter controls
+the level of logging to which the summary is written, and is DEBUG by
+default.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.pdep.Network.selectEnergyGrains">
+<tt class="descname">selectEnergyGrains</tt><big>(</big><em>T</em>, <em>grainSize=0.0</em>, <em>grainCount=0</em><big>)</big><a class="headerlink" href="#rmgpy.pdep.Network.selectEnergyGrains" title="Permalink to this definition">¶</a></dt>
+<dd><p>Select a suitable list of energies to use for subsequent calculations.
+This is done by finding the minimum and maximum energies on the 
+potential energy surface, then adding a multiple of 
+<span class="math">\(k_\mathrm{B} T\)</span> onto the maximum energy.</p>
+<p>You must specify either the desired grain spacing <cite>grainSize</cite> in J/mol
+or the desired number of grains <cite>Ngrains</cite>, as well as a temperature
+<cite>T</cite> in K to use for the equilibrium calculation. You can specify both
+<cite>grainSize</cite> and <cite>grainCount</cite>, in which case the one that gives the more
+accurate result will be used (i.e. they represent a maximum grain size
+and a minimum number of grains). An array containing the energy grains
+in J/mol is returned.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.pdep.Network.setConditions">
+<tt class="descname">setConditions</tt><big>(</big><em>T</em>, <em>P</em><big>)</big><a class="headerlink" href="#rmgpy.pdep.Network.setConditions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the current network conditions to the temperature <cite>T</cite> in K and
+pressure <cite>P</cite> in Pa. All of the internal variables are updated 
+accordingly if they are out of date. For example, those variables that
+depend only on temperature will not be recomputed if the temperature
+is the same.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.pdep.Network.solveFullME">
+<tt class="descname">solveFullME</tt><big>(</big><em>tlist</em>, <em>x0</em><big>)</big><a class="headerlink" href="#rmgpy.pdep.Network.solveFullME" title="Permalink to this definition">¶</a></dt>
+<dd><p>Directly solve the full master equation using a stiff ODE solver. Pass the
+reaction <cite>network</cite> to solve, the temperature <cite>T</cite> in K and pressure <cite>P</cite> in
+Pa to solve at, the energies <cite>Elist</cite> in J/mol to use, the output time
+points <cite>tlist</cite> in s, the initial total populations <cite>x0</cite>, the full master
+equation matrix <cite>M</cite>, the accounting matrix <cite>indices</cite> relating isomer and
+energy grain indices to indices of the master equation matrix, and the
+densities of states <cite>densStates</cite> in mol/J of each isomer.
+Returns the times in s, population distributions for each isomer, and total
+population profiles for each configuration.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div class="sidebarlogo">
+<img src="../../_static/rmg-logo-small.png" alt="RMG" />
+</div>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="configuration.html"
+                        title="previous chapter">13.3. Molecular configurations</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="mastereqn.html"
+                        title="next chapter">13.5. The master equation</a></p>
+  <h3>This Page </h3>
+  <ul class="this-page-menu">
+    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/developers/pdep/network.rst"
+           rel="nofollow">Edit this page</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

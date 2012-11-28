@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>6. rmgpy.molecule.draw — Drawing of Molecules &mdash; RMG Py 0.1.0 documentation</title>
+    <title>9.6. rmgpy.molecule.draw — Drawing of Molecules &mdash; RMG Py 0.1.0 documentation</title>
     
     <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -25,10 +25,11 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
-    <link rel="up" title="Molecule API Reference" href="index.html" />
-    <link rel="next" title="CanTherm API Reference" href="../cantherm/index.html" />
-    <link rel="prev" title="5. rmgpy.molecule.molecule — Structure and Properties of Molecules" href="molecule.html" /> 
+    <link rel="up" title="9. Molecule API Reference" href="index.html" />
+    <link rel="next" title="10. CanTherm API Reference" href="../cantherm/index.html" />
+    <link rel="prev" title="9.5. rmgpy.molecule.molecule — Structure and Properties of Molecules" href="molecule.html" /> 
   </head>
   <body>
 <div class="header">
@@ -50,20 +51,20 @@
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="../cantherm/index.html" title="CanTherm API Reference"
+          <a href="../cantherm/index.html" title="10. CanTherm API Reference"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="molecule.html" title="5. rmgpy.molecule.molecule — Structure and Properties of Molecules"
+          <a href="molecule.html" title="9.5. rmgpy.molecule.molecule — Structure and Properties of Molecules"
              accesskey="P">previous</a> |</li>
 <li><a href="../../index.html">Documentation</a> &raquo;</li>
 
           <li><a href="../index.html" >RMG Developer&#8217;s Guide</a> &raquo;</li>
-          <li><a href="index.html" accesskey="U">Molecule API Reference</a> &raquo;</li> 
+          <li><a href="index.html" accesskey="U">9. Molecule API Reference</a> &raquo;</li> 
       </ul>
     </div>
             
   <div class="section" id="module-rmgpy.molecule.draw">
-<span id="rmgpy-molecule-draw-drawing-of-molecules"></span><h1>6. <a class="reference internal" href="#module-rmgpy.molecule.draw" title="rmgpy.molecule.draw"><tt class="xref py py-mod docutils literal"><span class="pre">rmgpy.molecule.draw</span></tt></a> &#8212; Drawing of Molecules<a class="headerlink" href="#module-rmgpy.molecule.draw" title="Permalink to this headline">¶</a></h1>
+<span id="rmgpy-molecule-draw-drawing-of-molecules"></span><h1>9.6. <a class="reference internal" href="#module-rmgpy.molecule.draw" title="rmgpy.molecule.draw"><tt class="xref py py-mod docutils literal"><span class="pre">rmgpy.molecule.draw</span></tt></a> &#8212; Drawing of Molecules<a class="headerlink" href="#module-rmgpy.molecule.draw" title="Permalink to this headline">¶</a></h1>
 <p>This module provides functionality for automatic two-dimensional drawing of the
 <a class="reference external" href="http://en.wikipedia.org/wiki/Skeletal_formula">skeletal formulae</a> of a wide
 variety of organic and inorganic molecules. The general method for creating
@@ -112,7 +113,7 @@ have not yet been implemented by this drawing algorithm include:</p>
 <li>bridging atoms in fused rings</li>
 </ul>
 <div class="section" id="molecule-drawing">
-<h2>6.1. Molecule Drawing<a class="headerlink" href="#molecule-drawing" title="Permalink to this headline">¶</a></h2>
+<h2>9.6.1. Molecule Drawing<a class="headerlink" href="#molecule-drawing" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="rmgpy.molecule.draw.MoleculeDrawer">
 <em class="property">class </em><tt class="descclassname">rmgpy.molecule.draw.</tt><tt class="descname">MoleculeDrawer</tt><big>(</big><em>options=None</em><big>)</big><a class="headerlink" href="#rmgpy.molecule.draw.MoleculeDrawer" title="Permalink to this definition">¶</a></dt>
@@ -137,11 +138,21 @@ drawing, as well as a bounding box for the molecule being drawn as the
 tuple (<cite>left</cite>, <cite>top</cite>, <cite>width</cite>, <cite>height</cite>).</p>
 </dd></dl>
 
+<dl class="method">
+<dt id="rmgpy.molecule.draw.MoleculeDrawer.render">
+<tt class="descname">render</tt><big>(</big><em>cr</em>, <em>offset=None</em><big>)</big><a class="headerlink" href="#rmgpy.molecule.draw.MoleculeDrawer.render" title="Permalink to this definition">¶</a></dt>
+<dd><p>Uses the Cairo graphics library to create a skeletal formula drawing of a
+molecule containing the list of <cite>atoms</cite> and dict of <cite>bonds</cite> to be drawn.
+The 2D position of each atom in <cite>atoms</cite> is given in the <cite>coordinates</cite> array.
+The symbols to use at each atomic position are given by the list <cite>symbols</cite>.
+You must specify the Cairo context <cite>cr</cite> to render to.</p>
+</dd></dl>
+
 </dd></dl>
 
 </div>
 <div class="section" id="reaction-drawing">
-<h2>6.2. Reaction Drawing<a class="headerlink" href="#reaction-drawing" title="Permalink to this headline">¶</a></h2>
+<h2>9.6.2. Reaction Drawing<a class="headerlink" href="#reaction-drawing" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="rmgpy.molecule.draw.ReactionDrawer">
 <em class="property">class </em><tt class="descclassname">rmgpy.molecule.draw.</tt><tt class="descname">ReactionDrawer</tt><big>(</big><em>options=None</em><big>)</big><a class="headerlink" href="#rmgpy.molecule.draw.ReactionDrawer" title="Permalink to this definition">¶</a></dt>
@@ -181,19 +192,19 @@ tuple (<cite>left</cite>, <cite>top</cite>, <cite>width</cite>, <cite>height</ci
 </div>
   <h3><a href="../../contents.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">6. <tt class="docutils literal"><span class="pre">rmgpy.molecule.draw</span></tt> &#8212; Drawing of Molecules</a><ul>
-<li><a class="reference internal" href="#molecule-drawing">6.1. Molecule Drawing</a></li>
-<li><a class="reference internal" href="#reaction-drawing">6.2. Reaction Drawing</a></li>
+<li><a class="reference internal" href="#">9.6. <tt class="docutils literal"><span class="pre">rmgpy.molecule.draw</span></tt> &#8212; Drawing of Molecules</a><ul>
+<li><a class="reference internal" href="#molecule-drawing">9.6.1. Molecule Drawing</a></li>
+<li><a class="reference internal" href="#reaction-drawing">9.6.2. Reaction Drawing</a></li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="molecule.html"
-                        title="previous chapter">5. <tt class="docutils literal"><span class="pre">rmgpy.molecule.molecule</span></tt> &#8212; Structure and Properties of Molecules</a></p>
+                        title="previous chapter">9.5. <tt class="docutils literal"><span class="pre">rmgpy.molecule.molecule</span></tt> &#8212; Structure and Properties of Molecules</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="../cantherm/index.html"
-                        title="next chapter">CanTherm API Reference</a></p>
+                        title="next chapter">10. CanTherm API Reference</a></p>
   <h3>This Page </h3>
   <ul class="this-page-menu">
     <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/developers/molecule/draw.rst"

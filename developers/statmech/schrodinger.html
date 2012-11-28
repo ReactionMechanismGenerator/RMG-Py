@@ -1,0 +1,189 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>7.5. Solving the Schrodinger equation &mdash; RMG Py 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
+    <link rel="up" title="7. Statistical mechanics in RMG" href="index.html" />
+    <link rel="next" title="8. Thermodynamics in RMG" href="../thermo/index.html" />
+    <link rel="prev" title="7.4. Torsional degrees of freedom" href="torsion.html" /> 
+  </head>
+  <body>
+<div class="header">
+&nbsp;
+</div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../thermo/index.html" title="8. Thermodynamics in RMG"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="torsion.html" title="7.4. Torsional degrees of freedom"
+             accesskey="P">previous</a> |</li>
+<li><a href="../../index.html">Documentation</a> &raquo;</li>
+
+          <li><a href="../index.html" >RMG Developer&#8217;s Guide</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">7. Statistical mechanics in RMG</a> &raquo;</li> 
+      </ul>
+    </div>
+            
+  <div class="section" id="module-rmgpy.statmech.schrodinger">
+<span id="solving-the-schrodinger-equation"></span><h1>7.5. Solving the Schrodinger equation<a class="headerlink" href="#module-rmgpy.statmech.schrodinger" title="Permalink to this headline">¶</a></h1>
+<p>The <a class="reference internal" href="#module-rmgpy.statmech.schrodinger" title="rmgpy.statmech.schrodinger"><tt class="xref py py-mod docutils literal"><span class="pre">rmgpy.statmech.schrodinger</span></tt></a> module contains functionality for
+working with the Schrodinger equation and its solution. In particular, it
+contains functions for using the energy levels and corresponding degeneracies
+obtained from solving the Schrodinger equation to compute various thermodynamic
+and statistical mechanical properties, such as heat capacity, enthalpy,
+entropy, partition function, and the sum and density of states.</p>
+<dl class="function">
+<dt id="rmgpy.statmech.schrodinger.getPartitionFunction">
+<tt class="descclassname">rmgpy.statmech.schrodinger.</tt><tt class="descname">getPartitionFunction</tt><big>(</big><em>double T</em>, <em>energy</em>, <em>degeneracy=unitDegeneracy</em>, <em>int n0=0</em>, <em>int nmax=10000</em>, <em>double tol=1e-12</em><big>)</big> &rarr; double<a class="headerlink" href="#rmgpy.statmech.schrodinger.getPartitionFunction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the value of the partition function <span class="math">\(Q(T)\)</span> at a given
+temperature <cite>T</cite> in K. The solution to the Schrodinger equation is given
+using functions <cite>energy</cite> and <cite>degeneracy</cite> that accept as argument a quantum
+number and return the corresponding energy in J/mol and degeneracy of that
+level. The quantum number always begins at <cite>n0</cite> and increases by ones. You
+can also change the relative tolerance <cite>tol</cite> and the maximum allowed value
+of the quantum number <cite>nmax</cite>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="rmgpy.statmech.schrodinger.getHeatCapacity">
+<tt class="descclassname">rmgpy.statmech.schrodinger.</tt><tt class="descname">getHeatCapacity</tt><big>(</big><em>double T</em>, <em>energy</em>, <em>degeneracy=unitDegeneracy</em>, <em>int n0=0</em>, <em>int nmax=10000</em>, <em>double tol=1e-12</em><big>)</big> &rarr; double<a class="headerlink" href="#rmgpy.statmech.schrodinger.getHeatCapacity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the value of the dimensionless heat capacity <span class="math">\(C_\mathrm{v}(T)/R\)</span>
+at a given temperature <cite>T</cite> in K. The solution to the Schrodinger equation
+is given using functions <cite>energy</cite> and <cite>degeneracy</cite> that accept as argument
+a quantum number and  return the corresponding energy in J/mol and
+degeneracy of that level. The quantum number always begins at <cite>n0</cite> and
+increases by ones. You can also change the relative tolerance <cite>tol</cite> and the
+maximum allowed value of the quantum number <cite>nmax</cite>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="rmgpy.statmech.schrodinger.getEnthalpy">
+<tt class="descclassname">rmgpy.statmech.schrodinger.</tt><tt class="descname">getEnthalpy</tt><big>(</big><em>double T</em>, <em>energy</em>, <em>degeneracy=unitDegeneracy</em>, <em>int n0=0</em>, <em>int nmax=10000</em>, <em>double tol=1e-12</em><big>)</big> &rarr; double<a class="headerlink" href="#rmgpy.statmech.schrodinger.getEnthalpy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the value of the dimensionless enthalpy <span class="math">\(H(T)/RT\)</span> at a given
+temperature <cite>T</cite> in K. The solution to the Schrodinger equation is given
+using functions <cite>energy</cite> and <cite>degeneracy</cite> that accept as argument a quantum
+number and return the corresponding energy in J/mol and degeneracy of that
+level. The quantum number always begins at <cite>n0</cite> and increases by ones. You
+can also change the relative tolerance <cite>tol</cite> and the maximum allowed value
+of the quantum number <cite>nmax</cite>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="rmgpy.statmech.schrodinger.getEntropy">
+<tt class="descclassname">rmgpy.statmech.schrodinger.</tt><tt class="descname">getEntropy</tt><big>(</big><em>double T</em>, <em>energy</em>, <em>degeneracy=unitDegeneracy</em>, <em>int n0=0</em>, <em>int nmax=10000</em>, <em>double tol=1e-12</em><big>)</big> &rarr; double<a class="headerlink" href="#rmgpy.statmech.schrodinger.getEntropy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the value of the dimensionless entropy <span class="math">\(S(T)/R\)</span> at a given
+temperature <cite>T</cite> in K. The solution to the Schrodinger equation is given
+using functions <cite>energy</cite> and <cite>degeneracy</cite> that accept as argument a quantum
+number and return the corresponding energy in J/mol and degeneracy of that
+level. The quantum number always begins at <cite>n0</cite> and increases by ones. You
+can also change the relative tolerance <cite>tol</cite> and the maximum allowed value
+of the quantum number <cite>nmax</cite>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="rmgpy.statmech.schrodinger.getSumOfStates">
+<tt class="descclassname">rmgpy.statmech.schrodinger.</tt><tt class="descname">getSumOfStates</tt><big>(</big><em>ndarray Elist</em>, <em>energy</em>, <em>degeneracy=unitDegeneracy</em>, <em>int n0=0</em>, <em>ndarray sumStates0=None</em><big>)</big> &rarr; ndarray<a class="headerlink" href="#rmgpy.statmech.schrodinger.getSumOfStates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the values of the sum of states <span class="math">\(N(E)\)</span> for a given set of
+energies <cite>Elist</cite> in J/mol above the ground state using an initial sum of
+states <cite>sumStates0</cite>. The solution to the Schrodinger equation is given
+using functions <cite>energy</cite> and <cite>degeneracy</cite> that accept as argument a quantum
+number and return the corresponding energy in J/mol and degeneracy of that
+level. The quantum number always begins at <cite>n0</cite> and increases by ones.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="rmgpy.statmech.schrodinger.getDensityOfStates">
+<tt class="descclassname">rmgpy.statmech.schrodinger.</tt><tt class="descname">getDensityOfStates</tt><big>(</big><em>ndarray Elist</em>, <em>energy</em>, <em>degeneracy=unitDegeneracy</em>, <em>int n0=0</em>, <em>ndarray densStates0=None</em><big>)</big> &rarr; ndarray<a class="headerlink" href="#rmgpy.statmech.schrodinger.getDensityOfStates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the values of the dimensionless density of states
+<span class="math">\(\rho(E) \ dE\)</span> for a given set of energies <cite>Elist</cite> in J/mol above
+the ground state using an initial density of states <cite>densStates0</cite>. The
+solution to the Schrodinger equation is given using functions <cite>energy</cite> and
+<cite>degeneracy</cite> that accept as argument a quantum number and return the
+corresponding energy in J/mol and degeneracy of that level. The quantum 
+number always begins at <cite>n0</cite> and increases by ones.</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div class="sidebarlogo">
+<img src="../../_static/rmg-logo-small.png" alt="RMG" />
+</div>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="torsion.html"
+                        title="previous chapter">7.4. Torsional degrees of freedom</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../thermo/index.html"
+                        title="next chapter">8. Thermodynamics in RMG</a></p>
+  <h3>This Page </h3>
+  <ul class="this-page-menu">
+    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/developers/statmech/schrodinger.rst"
+           rel="nofollow">Edit this page</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

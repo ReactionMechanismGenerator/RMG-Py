@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>3. rmgpy.molecule.graph — Graph Data Type &mdash; RMG Py 0.1.0 documentation</title>
+    <title>9.3. rmgpy.molecule.graph — Graph Data Type &mdash; RMG Py 0.1.0 documentation</title>
     
     <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -25,10 +25,11 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
-    <link rel="up" title="Molecule API Reference" href="index.html" />
-    <link rel="next" title="4. rmgpy.molecule.group — Functional Groups" href="group.html" />
-    <link rel="prev" title="2. rmgpy.molecule.element — Chemical Elements" href="element.html" /> 
+    <link rel="up" title="9. Molecule API Reference" href="index.html" />
+    <link rel="next" title="9.4. rmgpy.molecule.group — Functional Groups" href="group.html" />
+    <link rel="prev" title="9.2. rmgpy.molecule.element — Chemical Elements" href="element.html" /> 
   </head>
   <body>
 <div class="header">
@@ -50,27 +51,27 @@
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="group.html" title="4. rmgpy.molecule.group — Functional Groups"
+          <a href="group.html" title="9.4. rmgpy.molecule.group — Functional Groups"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="element.html" title="2. rmgpy.molecule.element — Chemical Elements"
+          <a href="element.html" title="9.2. rmgpy.molecule.element — Chemical Elements"
              accesskey="P">previous</a> |</li>
 <li><a href="../../index.html">Documentation</a> &raquo;</li>
 
           <li><a href="../index.html" >RMG Developer&#8217;s Guide</a> &raquo;</li>
-          <li><a href="index.html" accesskey="U">Molecule API Reference</a> &raquo;</li> 
+          <li><a href="index.html" accesskey="U">9. Molecule API Reference</a> &raquo;</li> 
       </ul>
     </div>
             
   <div class="section" id="module-rmgpy.molecule.graph">
-<span id="rmgpy-molecule-graph-graph-data-type"></span><h1>3. <a class="reference internal" href="#module-rmgpy.molecule.graph" title="rmgpy.molecule.graph"><tt class="xref py py-mod docutils literal"><span class="pre">rmgpy.molecule.graph</span></tt></a> &#8212; Graph Data Type<a class="headerlink" href="#module-rmgpy.molecule.graph" title="Permalink to this headline">¶</a></h1>
+<span id="rmgpy-molecule-graph-graph-data-type"></span><h1>9.3. <a class="reference internal" href="#module-rmgpy.molecule.graph" title="rmgpy.molecule.graph"><tt class="xref py py-mod docutils literal"><span class="pre">rmgpy.molecule.graph</span></tt></a> &#8212; Graph Data Type<a class="headerlink" href="#module-rmgpy.molecule.graph" title="Permalink to this headline">¶</a></h1>
 <p>This module contains an implementation of a graph data structure (the 
 <a class="reference internal" href="#rmgpy.molecule.graph.Graph" title="rmgpy.molecule.graph.Graph"><tt class="xref py py-class docutils literal"><span class="pre">Graph</span></tt></a> class) and functions for manipulating that graph, including 
 efficient isomorphism functions. This module also contains base classes for
 the vertices and edges (<a class="reference internal" href="#rmgpy.molecule.graph.Vertex" title="rmgpy.molecule.graph.Vertex"><tt class="xref py py-class docutils literal"><span class="pre">Vertex</span></tt></a> and <a class="reference internal" href="#rmgpy.molecule.graph.Edge" title="rmgpy.molecule.graph.Edge"><tt class="xref py py-class docutils literal"><span class="pre">Edge</span></tt></a>, respectively) that
 are the components of a graph.</p>
 <div class="section" id="vertices-and-edges">
-<h2>3.1. Vertices and Edges<a class="headerlink" href="#vertices-and-edges" title="Permalink to this headline">¶</a></h2>
+<h2>9.3.1. Vertices and Edges<a class="headerlink" href="#vertices-and-edges" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="rmgpy.molecule.graph.Vertex">
 <em class="property">class </em><tt class="descclassname">rmgpy.molecule.graph.</tt><tt class="descname">Vertex</tt><a class="headerlink" href="#rmgpy.molecule.graph.Vertex" title="Permalink to this definition">¶</a></dt>
@@ -183,7 +184,7 @@ class if your edges have semantic information.</p>
 
 </div>
 <div class="section" id="graph-objects">
-<h2>3.2. Graph Objects<a class="headerlink" href="#graph-objects" title="Permalink to this headline">¶</a></h2>
+<h2>9.3.2. Graph Objects<a class="headerlink" href="#graph-objects" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="rmgpy.molecule.graph.Graph">
 <em class="property">class </em><tt class="descclassname">rmgpy.molecule.graph.</tt><tt class="descname">Graph</tt><a class="headerlink" href="#rmgpy.molecule.graph.Graph" title="Permalink to this definition">¶</a></dt>
@@ -374,7 +375,7 @@ used to accelerate the isomorphism checking.</p>
 
 </div>
 <div class="section" id="isomorphism-functions">
-<h2>3.3. Isomorphism Functions<a class="headerlink" href="#isomorphism-functions" title="Permalink to this headline">¶</a></h2>
+<h2>9.3.3. Isomorphism Functions<a class="headerlink" href="#isomorphism-functions" title="Permalink to this headline">¶</a></h2>
 <dl class="method">
 <dt id="rmgpy.molecule.graph.VF2_isomorphism">
 <tt class="descclassname">graph.</tt><tt class="descname">VF2_isomorphism</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.graph.VF2_isomorphism" title="Permalink to this definition">¶</a></dt>
@@ -410,20 +411,20 @@ validation of this initial mapping is performed in this function.</li>
 </div>
   <h3><a href="../../contents.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">3. <tt class="docutils literal"><span class="pre">rmgpy.molecule.graph</span></tt> &#8212; Graph Data Type</a><ul>
-<li><a class="reference internal" href="#vertices-and-edges">3.1. Vertices and Edges</a></li>
-<li><a class="reference internal" href="#graph-objects">3.2. Graph Objects</a></li>
-<li><a class="reference internal" href="#isomorphism-functions">3.3. Isomorphism Functions</a></li>
+<li><a class="reference internal" href="#">9.3. <tt class="docutils literal"><span class="pre">rmgpy.molecule.graph</span></tt> &#8212; Graph Data Type</a><ul>
+<li><a class="reference internal" href="#vertices-and-edges">9.3.1. Vertices and Edges</a></li>
+<li><a class="reference internal" href="#graph-objects">9.3.2. Graph Objects</a></li>
+<li><a class="reference internal" href="#isomorphism-functions">9.3.3. Isomorphism Functions</a></li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="element.html"
-                        title="previous chapter">2. <tt class="docutils literal"><span class="pre">rmgpy.molecule.element</span></tt> &#8212; Chemical Elements</a></p>
+                        title="previous chapter">9.2. <tt class="docutils literal docutils literal docutils literal"><span class="pre">rmgpy.molecule.element</span></tt> &#8212; Chemical Elements</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="group.html"
-                        title="next chapter">4. <tt class="docutils literal"><span class="pre">rmgpy.molecule.group</span></tt> &#8212; Functional Groups</a></p>
+                        title="next chapter">9.4. <tt class="docutils literal"><span class="pre">rmgpy.molecule.group</span></tt> &#8212; Functional Groups</a></p>
   <h3>This Page </h3>
   <ul class="this-page-menu">
     <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/developers/molecule/graph.rst"
