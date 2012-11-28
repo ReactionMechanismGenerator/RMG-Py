@@ -1027,7 +1027,7 @@ def writeKineticsEntry(reaction, speciesList):
             kinetics.n.value_si,
             kinetics.Ea.value_si / 4184.
         )
-    elif isinstance(kinetics, Lindemann):
+    elif isinstance(kinetics, (Lindemann,Troe)):
         arrhenius = kinetics.arrheniusHigh
         string += '{0:<9.3e} {1:<9.3f} {2:<9.3f}'.format(
             arrhenius.A.value_si / (arrhenius.T0.value_si ** arrhenius.n.value_si) * 1.0e6 ** (numReactants - 1),
