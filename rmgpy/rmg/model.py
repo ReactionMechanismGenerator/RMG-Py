@@ -84,8 +84,8 @@ class Species(rmgpy.species.Species):
         elif isinstance(thermo0, ThermoData):
             Tdata = thermo0._Tdata.value_si
             Cpdata = thermo0._Cpdata.value_si
-            H298 = thermo0.getEnthalpy(298)
-            S298 = thermo0.getEntropy(298)
+            H298 = thermo0._H298.value_si
+            S298 = thermo0._S298.value_si
             Cp0 = thermo0._Cp0.value_si
             CpInf = thermo0._CpInf.value_si
             wilhoit = Wilhoit().fitToDataForConstantB(Tdata, Cpdata, Cp0, CpInf, H298, S298, B=1000.0)
