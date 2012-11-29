@@ -37,6 +37,8 @@ import math
 import numpy
 import os.path
 
+from scoop import futures
+
 from rmgpy.display import display
 
 import rmgpy.constants as constants
@@ -54,6 +56,9 @@ import rmgpy.data.rmg
 from pdep import PDepReaction, PDepNetwork, PressureDependenceError
 
 
+def makeThermoForSpecies(spec, database=None):
+    spec.generateThermoData(database)
+    return spec.thermo
 ################################################################################
 
 class Species(rmgpy.species.Species):
@@ -664,8 +669,13 @@ class CoreEdgeReactionModel:
         
         Results are stored in the species objects themselves.
         """
-        for spec in listOfSpecies:
-            spec.generateThermoData(database)
+        # this works without scoop:
+        #outputs = map((lambda spec: makeThermoForSpecies(spec, database=rmgpy.data.rmg.database)), listOfSpecies)
+        # this tried so do it via scoop's map:
+        outputs = futures.map(makeThermoForSpecies, listOfSpecies, database=rmgpy.data.rmg.database)
+        for spec, thermo in zip(listOfSpecies, outputs):
+            spec.thermo = thermo
+
 
     def processNewReactions(self, newReactions, newSpecies, pdepNetwork=None):
         """
