@@ -3417,7 +3417,7 @@ def filterReactions(reactants, products, reactionList):
     return reactions
         
 ###########
-class KineticsDatabase:
+class KineticsDatabase(object):
     """
     A class for working with the RMG kinetics database.
     """
@@ -3440,6 +3440,25 @@ class KineticsDatabase:
             'R': constants.R,
         }
         self.global_context = {}
+
+    def __reduce__(self):
+        """
+        A helper function used when pickling a KineticsDatabase object.
+        """
+        d = {
+            'families': self.families,
+            'libraries': self.libraries,
+            'libraryOrder': self.libraryOrder,
+        }
+        return (KineticsDatabase, (), d)
+
+    def __setstate__(self, d):
+        """
+        A helper function used when unpickling a KineticsDatabase object.
+        """
+        self.families = d['families']
+        self.libraries = d['libraries']
+        self.libraryOrder = d['libraryOrder']
 
     def load(self, path, families=None, libraries=None, depositories=None):
         """

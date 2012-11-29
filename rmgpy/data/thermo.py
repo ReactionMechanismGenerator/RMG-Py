@@ -315,7 +315,7 @@ class ThermoGroups(Database):
 
 ################################################################################
 
-class ThermoDatabase:
+class ThermoDatabase(object):
     """
     A class for working with the RMG thermodynamics database.
     """
@@ -332,6 +332,27 @@ class ThermoDatabase:
             'NASA': NASA,
         }
         self.global_context = {}
+
+    def __reduce__(self):
+        """
+        A helper function used when pickling a ThermoDatabase object.
+        """
+        d = {
+            'depository': self.depository,
+            'libraries': self.libraries,
+            'groups': self.groups,
+            'libraryOrder': self.libraryOrder,
+        }
+        return (ThermoDatabase, (), d)
+
+    def __setstate__(self, d):
+        """
+        A helper function used when unpickling a ThermoDatabase object.
+        """
+        self.depository = d['depository']
+        self.libraries = d['libraries']
+        self.groups = d['groups']
+        self.libraryOrder = d['libraryOrder']
 
     def load(self, path, libraries=None, depository=True):
         """
