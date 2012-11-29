@@ -1124,8 +1124,8 @@ ERROR: testEntropy (thermoTest.TestThermoData)
 Traceback (most recent call last):
   File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/thermoTest.py", line 140, in testEntropy
     self.assertAlmostEqual(self.thermo.getEntropy(2000), 66.3352, 3)
-  File "thermodata.pyx", line 258, in rmgpy.thermo.thermodata.ThermoData.getEntropy (build/pyrex/rmgpy/thermo/thermodata.c:5054)
-  File "thermodata.pyx", line 291, in rmgpy.thermo.thermodata.ThermoData.getEntropy (build/pyrex/rmgpy/thermo/thermodata.c:4679)
+  File "thermodata.pyx", line 258, in rmgpy.thermo.thermodata.ThermoData.getEntropy (build/pyrex/rmgpy/thermo/thermodata.c:5067)
+  File "thermodata.pyx", line 291, in rmgpy.thermo.thermodata.ThermoData.getEntropy (build/pyrex/rmgpy/thermo/thermodata.c:4680)
 ValueError: Unable to compute entropy at 2000 K using ThermoData model; please supply a value for CpInf.
 
 ======================================================================
@@ -1134,8 +1134,8 @@ ERROR: testFreeEnergy (thermoTest.TestThermoData)
 Traceback (most recent call last):
   File "/export/thishost/comocheng/build/greengroup-rmg-py/unittest/thermoTest.py", line 147, in testFreeEnergy
     self.assertAlmostEqual(self.thermo.getFreeEnergy(T), self.thermo.getEnthalpy(T) - T * self.thermo.getEntropy(T), 9)
-  File "thermodata.pyx", line 328, in rmgpy.thermo.thermodata.ThermoData.getFreeEnergy (build/pyrex/rmgpy/thermo/thermodata.c:5401)
-  File "thermodata.pyx", line 349, in rmgpy.thermo.thermodata.ThermoData.getFreeEnergy (build/pyrex/rmgpy/thermo/thermodata.c:5323)
+  File "thermodata.pyx", line 328, in rmgpy.thermo.thermodata.ThermoData.getFreeEnergy (build/pyrex/rmgpy/thermo/thermodata.c:5414)
+  File "thermodata.pyx", line 349, in rmgpy.thermo.thermodata.ThermoData.getFreeEnergy (build/pyrex/rmgpy/thermo/thermodata.c:5336)
 ValueError: Unable to compute Gibbs free energy at 2000 K using ThermoData model; please supply a value for CpInf.
 
 ======================================================================
