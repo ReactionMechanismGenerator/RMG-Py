@@ -39,7 +39,7 @@ object. This module also provides the :class:`ReactionModel` class for
 representing a set of chemical reactions and the species involved.
 """
 
-import cython
+import cython, cython.int, cython.double
 import math
 import numpy
 import logging
@@ -47,12 +47,12 @@ import re
 import os.path
 
 import rmgpy.constants as constants
-from rmgpy.molecule.molecule import Molecule
+from rmgpy.molecule.molecule import Molecule, Atom
+from rmgpy.molecule.element import Element
 from rmgpy.species import Species
-from rmgpy.kinetics.arrhenius import Arrhenius
-from rmgpy.kinetics import KineticsData, ArrheniusEP, ThirdBody, \
-    Lindemann, Troe, Chebyshev, PDepArrhenius, MultiArrhenius, MultiPDepArrhenius
-from rmgpy.pdep.reaction import *
+from rmgpy.kinetics.arrhenius import Arrhenius #PyDev: @UnresolvedImport
+from rmgpy.kinetics import KineticsData, ArrheniusEP, ThirdBody, Lindemann, Troe, Chebyshev, PDepArrhenius, MultiArrhenius, MultiPDepArrhenius #PyDev: @UnresolvedImport
+from rmgpy.pdep.reaction import calculateMicrocanonicalRateCoefficient
 
 ################################################################################
 
@@ -742,7 +742,7 @@ class Reaction:
         Return ``True`` if the reaction has the same number of each atom on
         each side of the reaction equation, or ``False`` if not.
         """
-        from rmgpy.element import elementList
+        from rmgpy.molecule.element import elementList
         
         cython.declare(reactantElements=dict, productElements=dict, molecule=Molecule, atom=Atom, element=Element)
         

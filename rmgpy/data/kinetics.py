@@ -39,7 +39,9 @@ from base import *
 
 from rmgpy.quantity import Quantity
 from rmgpy.reaction import Reaction, ReactionError
-from rmgpy.kinetics import *
+from rmgpy.kinetics import Arrhenius, ArrheniusEP, ThirdBody, Lindemann, Troe, \
+                           PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, \
+                           Chebyshev, KineticsData, PDepKineticsModel
 from rmgpy.molecule import Bond, GroupBond, Group
 from rmgpy.species import Species
 
