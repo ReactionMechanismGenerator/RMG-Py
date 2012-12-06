@@ -585,39 +585,40 @@ class ThermoDatabase(object):
         object `species`. This function first searches the loaded libraries
         in order, returning the first match found, before falling back to
         estimation via group additivity.
+        
+        Returns: ThermoData
         """
         # Check the libraries in order first; return the first successful match
         thermoData = self.getThermoDataFromLibraries(species)
-        if thermoData is not None:
-            return ThermoData
-        else:
+        if thermoData is None:
             # Thermo not found in any loaded libraries, so estimate
             thermoData = self.getThermoDataFromGroups(species)
 
-        # @todo: if this adding Cp0 and CpInf is done only and always for thermo data from groups, it should be in getThermoDataFromGroups()
-        # Add Cp0 and CpInf values
-        Cp0 = species.calculateCp0()
-        CpInf = species.calculateCpInf()
-        data, library, entry = thermoData
-        if isinstance(data,ThermoData):
-            data.Cp0 = (Cp0,"J/(mol*K)")
-            data.CpInf = (CpInf,"J/(mol*K)")
+        # Add Cp0 and CpInf values, if it's a ThermoData type (as opposed to eg. NASA), whether from Library or Groups
+        if isinstance(thermoData, ThermoData):
+            Cp0 = species.calculateCp0()
+            CpInf = species.calculateCpInf()
+            thermoData.Cp0 = (Cp0,"J/(mol*K)")
+            thermoData.CpInf = (CpInf,"J/(mol*K)")
         # Return the resulting thermo parameters
-        return data
+        return thermoData
     
         
     def getThermoDataFromLibraries(self, species):
         """
         Return the thermodynamic parameters for a given :class:`Species`
         object `species`. This function first searches the loaded libraries
-        in order, returning the first match found, before failing and returning None."""
+        in order, returning the first match found, before failing and returning None.
+        
+        Returns: ThermoData or None
+        """
         thermoData = None
         # Check the libraries in order first; return the first successful match
         for label in self.libraryOrder:
             thermoData = self.getThermoDataFromLibrary(species, self.libraries[label])
             if thermoData is not None:
-                thermoData[0].comment = label
-                return thermoData[0]
+                thermoData.comment = label
+                return thermoData
         return None
 
 
@@ -627,27 +628,29 @@ class ThermoDatabase(object):
         :class:`Species` object `species`. The hits from the depository come
         first, then the libraries (in order), and then the group additivity
         estimate. This method is useful for a generic search job.
+        
+        Returns: a list of ThermoData
         """
-        thermoData = []
+        thermoDataList = []
         # Data from depository comes first
-        thermoData.extend(self.getThermoDataFromDepository(species))
+        thermoDataList.extend(self.getThermoDataFromDepository(species))
         # Data from libraries comes second
         for label in self.libraryOrder:
             data = self.getThermoDataFromLibrary(species, self.libraries[label])
             if data: 
-                data[0].comment = label
-                thermoData.append(data)
+                data.comment = label
+                thermoDataList.append(data)
         # Last entry is always the estimate from group additivity
-        thermoData.append(self.getThermoDataFromGroups(species))
+        thermoDataList.append(self.getThermoDataFromGroups(species))
         # Add Cp0 and CpInf values
         Cp0 = species.calculateCp0()
         CpInf = species.calculateCpInf()
-        for data, library, entry in thermoData:
+        for data in thermoDataList:
             if isinstance(data,ThermoData):
                 data.Cp0 = (Cp0,"J/(mol*K)")
                 data.CpInf = (CpInf,"J/(mol*K)")
         # Return all of the resulting thermo parameters
-        return thermoData
+        return thermoDataList
 
     def getThermoDataFromDepository(self, species):
         """
@@ -677,12 +680,12 @@ class ThermoDatabase(object):
         ``None`` is returned. If no corresponding library is found, a
         :class:`DatabaseError` is raised.
         
-        Returns a tuple: (ThermoData, library, entry)
+        Returns: ThermoData
         """
         for label, entry in library.entries.iteritems():
             for molecule in species.molecule:
                 if molecule.isIsomorphic(entry.item) and entry.data is not None:
-                    return (deepcopy(entry.data), library, entry)
+                    return deepcopy(entry.data)
         return None
 
     def getThermoDataFromGroups(self, species):
@@ -692,7 +695,7 @@ class ThermoDatabase(object):
         additivity values. If no group additivity values are loaded, a
         :class:`DatabaseError` is raised.
         
-        Returns a tuple: (ThermoData, None, None)
+        Returns: ThermoData
         """       
         thermo = []
         for molecule in species.molecule:
@@ -706,7 +709,7 @@ class ThermoDatabase(object):
         
         species.molecule = [species.molecule[ind] for ind in indices]
         
-        return (thermo[indices[0]], None, None)
+        return thermo[indices[0]]
         
     def estimateRadicalThermoViaHBI(self, molecule, stableThermoEstimator ):
         """
