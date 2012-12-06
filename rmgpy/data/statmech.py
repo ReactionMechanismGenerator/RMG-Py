@@ -36,7 +36,7 @@ import rmgpy.constants as constants
 from rmgpy.statmech import Conformer, HarmonicOscillator, LinearRotor, NonlinearRotor, HinderedRotor, IdealGasTranslation
 from rmgpy.molecule import Molecule, Group, InvalidAdjacencyListError
 
-from base import Database, Entry, LogicNode, LogicOr, LogicAnd
+from base import Database, Entry, LogicNode, LogicOr, LogicAnd, makeLogicNode
 
 ################################################################################
 
