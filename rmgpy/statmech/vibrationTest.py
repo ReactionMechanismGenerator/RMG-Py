@@ -36,7 +36,7 @@ import unittest
 import math
 import numpy
 
-from rmgpy.statmech.vibration import *
+from rmgpy.statmech.vibration import HarmonicOscillator
 import rmgpy.constants as constants
 
 ################################################################################
@@ -215,6 +215,7 @@ class TestHarmonicOscillator(unittest.TestCase):
         Test that a HarmonicOscillator object can be reconstructed from its
         repr() output with no loss of information.
         """
+        mode = None
         exec('mode = {0!r}'.format(self.mode))
         self.assertEqual(self.mode.frequencies.value.shape, mode.frequencies.value.shape)
         for freq0, freq in zip(self.mode.frequencies.value, mode.frequencies.value):

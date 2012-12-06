@@ -37,7 +37,7 @@ import unittest
 import math
 import numpy
 
-from rmgpy.thermo import *
+from rmgpy.thermo import Wilhoit, NASA, NASAPolynomial, ThermoData
 import rmgpy.constants as constants
 
 ################################################################################

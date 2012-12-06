@@ -33,7 +33,6 @@ This script contains unit tests of the :mod:`rmgpy.kinetics.tunneling` module.
 """
 
 import unittest
-import math
 import numpy
 
 from rmgpy.kinetics.tunneling import Wigner, Eckart
@@ -85,6 +84,7 @@ class TestWigner(unittest.TestCase):
         Test that a Wigner object can be successfully reconstructed from its
         repr() output with no loss of information.
         """
+        tunneling = None
         exec('tunneling = {0!r}'.format(self.tunneling))
         self.assertAlmostEqual(self.tunneling.frequency.value, tunneling.frequency.value, 2)
         self.assertEqual(self.tunneling.frequency.units, tunneling.frequency.units)
@@ -166,6 +166,7 @@ class TestEckart(unittest.TestCase):
         Test that an Eckart object can be successfully reconstructed
         from its repr() output with no loss of information.
         """
+        tunneling = None
         exec('tunneling = {0!r}'.format(self.tunneling))
         self.assertAlmostEqual(self.tunneling.frequency.value, tunneling.frequency.value, 2)
         self.assertEqual(self.tunneling.frequency.units, tunneling.frequency.units)

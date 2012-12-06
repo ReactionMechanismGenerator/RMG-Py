@@ -35,7 +35,8 @@ module.
 
 import unittest
 
-from rmgpy.statmech.schrodinger import *
+import numpy
+from rmgpy.statmech.schrodinger import getPartitionFunction, getHeatCapacity, getEnthalpy, getEntropy, getDensityOfStates
 import rmgpy.constants as constants
 
 ################################################################################

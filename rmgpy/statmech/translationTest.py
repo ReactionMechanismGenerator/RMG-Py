@@ -36,7 +36,7 @@ import unittest
 import math
 import numpy
 
-from rmgpy.statmech.translation import *
+from rmgpy.statmech.translation import IdealGasTranslation,
 import rmgpy.constants as constants
 
 ################################################################################
@@ -129,6 +129,7 @@ class TestIdealGasTranslation(unittest.TestCase):
         Test that an IdealGasTranslation object can be reconstructed from its
         repr() output with no loss of information.
         """
+        mode = None
         exec('mode = {0!r}'.format(self.mode))
         self.assertAlmostEqual(self.mode.mass.value, mode.mass.value, 6)
         self.assertEqual(self.mode.mass.units, mode.mass.units)

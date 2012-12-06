@@ -33,10 +33,9 @@ This script contains unit tests of the :mod:`rmgpy.kinetics.model` module.
 """
 
 import unittest
-import math
-import numpy
 
-from rmgpy.kinetics.model import *
+from rmgpy.kinetics.model import getReactionOrderFromRateCoefficientUnits, \
+                                 getRateCoefficientUnitsFromReactionOrder
 import rmgpy.constants as constants
 
 ################################################################################

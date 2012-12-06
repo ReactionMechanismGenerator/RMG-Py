@@ -213,6 +213,7 @@ class TestThermoData(unittest.TestCase):
         Test that a ThermoData object can be successfully reconstructed from its
         repr() output with no loss of information.
         """
+        thermodata = None
         exec('thermodata = {0!r}'.format(self.thermodata))
         self.assertEqual(self.thermodata.Tdata.value.shape, thermodata.Tdata.value.shape)
         for T, T0 in zip(self.thermodata.Tdata.value, thermodata.Tdata.value):

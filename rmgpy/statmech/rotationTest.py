@@ -36,7 +36,7 @@ import unittest
 import math
 import numpy
 
-from rmgpy.statmech.rotation import *
+from rmgpy.statmech.rotation import LinearRotor, NonlinearRotor, KRotor, SphericalTopRotor
 import rmgpy.constants as constants
 
 ################################################################################
@@ -245,6 +245,7 @@ class TestLinearRotor(unittest.TestCase):
         Test that a LinearRotor object can be reconstructed from its repr()
         output with no loss of information.
         """
+        mode = None
         exec('mode = {0!r}'.format(self.mode))
         self.assertAlmostEqual(self.mode.inertia.value, mode.inertia.value, 6)
         self.assertEqual(self.mode.inertia.units, mode.inertia.units)
@@ -379,6 +380,7 @@ class TestNonlinearRotor(unittest.TestCase):
         Test that a NonlinearRotor object can be reconstructed from its
         repr() output with no loss of information.
         """
+        mode = None
         exec('mode = {0!r}'.format(self.mode))
         self.assertEqual(self.mode.inertia.value.shape, mode.inertia.value.shape)
         for I0, I in zip(self.mode.inertia.value, mode.inertia.value):
@@ -605,6 +607,7 @@ class TestKRotor(unittest.TestCase):
         Test that a KRotor object can be reconstructed from its repr() output
         with no loss of information.
         """
+        mode = None
         exec('mode = {0!r}'.format(self.mode))
         self.assertAlmostEqual(self.mode.inertia.value, mode.inertia.value, 6)
         self.assertEqual(self.mode.inertia.units, mode.inertia.units)
@@ -829,6 +832,7 @@ class TestSphericalTopRotor(unittest.TestCase):
         Test that a SphericalTopRotor object can be reconstructed from its
         repr() output with no loss of information.
         """
+        mode = None
         exec('mode = {0!r}'.format(self.mode))
         self.assertAlmostEqual(self.mode.inertia.value, mode.inertia.value, 6)
         self.assertEqual(self.mode.inertia.units, mode.inertia.units)

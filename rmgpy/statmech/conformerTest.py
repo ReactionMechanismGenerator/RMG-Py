@@ -37,7 +37,8 @@ import math
 import numpy
 import scipy.interpolate
 
-from rmgpy.statmech import *
+from rmgpy.statmech import Conformer, IdealGasTranslation, NonlinearRotor, HarmonicOscillator, \
+                           LinearRotor, HinderedRotor
 import rmgpy.constants as constants
 
 ################################################################################

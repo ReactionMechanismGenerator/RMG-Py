@@ -36,7 +36,7 @@ import unittest
 import math
 import numpy
 
-from rmgpy.statmech.torsion import *
+from rmgpy.statmech.torsion import HinderedRotor
 import rmgpy.constants as constants
 
 ################################################################################
@@ -411,6 +411,7 @@ class TestHinderedRotor(unittest.TestCase):
         Test that a HinderedRotor object can be reconstructed from its repr()
         output with no loss of information.
         """
+        mode = None
         exec('mode = {0!r}'.format(self.mode))
         self.assertAlmostEqual(self.mode.inertia.value, mode.inertia.value, 6)
         self.assertEqual(self.mode.inertia.units, mode.inertia.units, 6)

@@ -33,7 +33,6 @@ This script contains unit tests of the :mod:`rmgpy.kinetics.chebyshev` module.
 """
 
 import unittest
-import math
 import numpy
 
 from rmgpy.kinetics.chebyshev import Chebyshev
@@ -184,6 +183,7 @@ class TestChebyshev(unittest.TestCase):
         Test that a Chebyshev object can be reconstructed from its repr()
         output with no loss of information.
         """
+        chebyshev = None
         exec('chebyshev = {0!r}'.format(self.chebyshev))
         self.assertEqual(self.chebyshev.coeffs.value.shape[0], chebyshev.coeffs.value.shape[0])
         self.assertEqual(self.chebyshev.coeffs.value.shape[1], chebyshev.coeffs.value.shape[1])

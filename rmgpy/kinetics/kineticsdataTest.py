@@ -33,10 +33,9 @@ This script contains unit tests of the :mod:`rmgpy.kinetics.arrhenius` module.
 """
 
 import unittest
-import math
 import numpy
 
-from rmgpy.kinetics.kineticsdata import *
+from rmgpy.kinetics.kineticsdata import KineticsData, PDepKineticsData
 import rmgpy.constants as constants
 
 ################################################################################
@@ -144,6 +143,7 @@ class TestKineticsData(unittest.TestCase):
         Test that a KineticsData object can be reconstructed from its repr()
         output with no loss of information.
         """
+        kinetics = None
         exec('kinetics = {0!r}'.format(self.kinetics))
         self.assertEqual(self.kinetics.Tdata.value.shape, kinetics.Tdata.value.shape)
         for T, T0 in zip(self.kinetics.Tdata.value, kinetics.Tdata.value):
@@ -320,6 +320,7 @@ class TestPDepKineticsData(unittest.TestCase):
         Test that a PDepKineticsData object can be reconstructed from its repr()
         output with no loss of information.
         """
+        kinetics = None
         exec('kinetics = {0!r}'.format(self.kinetics))
         self.assertEqual(self.kinetics.Tdata.value.shape, kinetics.Tdata.value.shape)
         for T, T0 in zip(self.kinetics.Tdata.value, kinetics.Tdata.value):

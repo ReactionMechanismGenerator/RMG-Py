@@ -33,10 +33,9 @@ This script contains unit tests of the :mod:`rmgpy.kinetics.falloff` module.
 """
 
 import unittest
-import math
 import numpy
 
-from rmgpy.kinetics.falloff import *
+from rmgpy.kinetics.falloff import ThirdBody, Lindemann, Troe
 from rmgpy.kinetics.arrhenius import Arrhenius
 
 ################################################################################
@@ -182,6 +181,7 @@ class TestThirdBody(unittest.TestCase):
         Test that a ThirdBody object can be successfully reconstructed
         from its repr() output with no loss of information.
         """
+        thirdBody = None
         exec('thirdBody = {0!r}'.format(self.thirdBody))
         self.assertAlmostEqual(self.thirdBody.arrheniusLow.A.value, thirdBody.arrheniusLow.A.value, delta=1e0)
         self.assertEqual(self.thirdBody.arrheniusLow.A.units, thirdBody.arrheniusLow.A.units)
@@ -343,6 +343,7 @@ class TestLindemann(unittest.TestCase):
         Test that a Lindemann object can be reconstructed from its repr()
         output with no loss of information.
         """
+        lindemann = None
         exec('lindemann = {0!r}'.format(self.lindemann))
         self.assertAlmostEqual(self.lindemann.arrheniusHigh.A.value, lindemann.arrheniusHigh.A.value, delta=1e0)
         self.assertEqual(self.lindemann.arrheniusHigh.A.units, lindemann.arrheniusHigh.A.units)
@@ -550,6 +551,7 @@ class TestTroe(unittest.TestCase):
         Test that a Troe object can be reconstructed from its repr() output
         with no loss of information.
         """
+        troe = None
         exec('troe = {0!r}'.format(self.troe))
         self.assertAlmostEqual(self.troe.arrheniusHigh.A.value, troe.arrheniusHigh.A.value, delta=1e0)
         self.assertEqual(self.troe.arrheniusHigh.A.units, troe.arrheniusHigh.A.units)
