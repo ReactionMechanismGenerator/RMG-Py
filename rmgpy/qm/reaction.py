@@ -36,10 +36,10 @@ class QMReaction:
             sortLbl += 1
         return molecule
     
-    def getGeometry(self, molecule):
+    def getGeometry(self, molecule, settings):
         
         multiplicity = sum([i.radicalElectrons for i in molecule.atoms]) + 1
-        geom = Geometry(molecule.toAugmentedInChIKey(), molecule, multiplicity)
+        geom = Geometry(settings, molecule.toAugmentedInChIKey(), molecule, multiplicity)
         
         return geom, multiplicity
         
@@ -63,11 +63,11 @@ class QMReaction:
         
         return copyMol
         
-    def generateBoundsMatrix(self, molecule):
+    def generateBoundsMatrix(self, molecule, settings):
         """
         Uses rdkit to generate the bounds matrix of a rdkit molecule.
         """
-        self.geometry, multiplicity = self.getGeometry(molecule)
+        self.geometry, multiplicity = self.getGeometry(molecule, settings)
         rdKitMol = self.getRDKitMol(self.geometry)
         boundsMatrix = rdkit.Chem.rdDistGeom.GetMoleculeBoundsMatrix(rdKitMol)
         

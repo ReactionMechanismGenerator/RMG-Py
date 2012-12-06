@@ -2116,7 +2116,7 @@ class KineticsFamily(Database):
         elif isinstance(struct, Molecule):
             return reactant.findSubgraphIsomorphisms(struct)
     
-    def applyRecipe(self, reactantStructures, forward=True, unique=True):
+    def applyRecipe(self, reactantStructures, forward=True, unique=True, getTS=False):
         """
         Apply the recipe for this reaction family to the list of
         :class:`Molecule` objects `reactantStructures`. The atoms
@@ -2124,11 +2124,11 @@ class KineticsFamily(Database):
         labels. Returns a list of structures corresponding to the products
         after checking that the correct number of products was produced.
         """
-
+    
         # There is some hardcoding of reaction families in this function, so
         # we need the label of the reaction family for this
         label = self.label.lower()
-
+    
         # Merge reactant structures into single structure
         # Also copy structures so we don't modify the originals
         # Since the tagging has already occurred, both the reactants and the
@@ -2139,7 +2139,7 @@ class KineticsFamily(Database):
             reactantStructure = Molecule()
         for s in reactantStructures:
             reactantStructure = reactantStructure.merge(s.copy(deep=True))
-
+    
         # Hardcoding of reaction family for radical recombination (colligation)
         # because the two reactants are identical, they have the same tags
         # In this case, we must change the labels from '*' and '*' to '*1' and
@@ -2152,14 +2152,16 @@ class KineticsFamily(Database):
                     atom.label = '*' + str(identicalCenterCounter)
             if identicalCenterCounter != 2:
                 raise Exception('Unable to change labels from "*" to "*1" and "*2" for reaction family {0}.'.format(label))
-
+        transitionStateStructure = list()
+        transitionStateStructure.append(reactantStructure.copy(deep=True)) # before resorting, merged reactants
         # Generate the product structure by applying the recipe
         if forward:
             self.forwardRecipe.applyForward(reactantStructure, unique)
         else:
             self.reverseRecipe.applyForward(reactantStructure, unique)
         productStructure = reactantStructure
-
+        transitionStateStructure.append(productStructure.copy(deep=True)) # before resorting, merged products
+    
         # Hardcoding of reaction family for reverse of radical recombination
         # (Unimolecular homolysis)
         # Because the two products are identical, they should the same tags
@@ -2168,7 +2170,7 @@ class KineticsFamily(Database):
         if label == 'r_recombination' and not forward:
             for atom in productStructure.atoms:
                 if atom.label == '*1' or atom.label == '*2': atom.label = '*'
-
+    
         # If reaction family is its own reverse, relabel atoms
         if not self.reverseTemplate:
             # Get atom labels for products
@@ -2176,7 +2178,7 @@ class KineticsFamily(Database):
             for atom in productStructure.atoms:
                 if atom.label != '':
                     atomLabels[atom.label] = atom
-
+    
             # This is hardcoding of reaction families (bad!)
             label = self.label.lower()
             if label == 'h_abstraction':
@@ -2184,7 +2186,7 @@ class KineticsFamily(Database):
                 # it moves from '*1' to '*3'
                 atomLabels['*1'].label = '*3'
                 atomLabels['*3'].label = '*1'
-
+    
             elif label == 'intra_h_migration':
                 # '*3' is the H that migrates
                 # swap the two ends between which the H moves
@@ -2196,41 +2198,160 @@ class KineticsFamily(Database):
                 if highest>4:
                     for i in range(4,highest+1):
                         atomLabels['*{0:d}'.format(i)].label = '*{0:d}'.format(4+highest-i)
-
+    
         if not forward: template = self.reverseTemplate
         else:           template = self.forwardTemplate
-
+    
         # Split product structure into multiple species if necessary
         productStructures = productStructure.split()
         for product in productStructures:
             product.updateConnectivityValues()
-
+    
         # Make sure we've made the expected number of products
-        if len(template.products) != len(productStructures):
-            # We have a different number of products than expected by the template.
-            # By definition this means that the template is not a match, so
-            # we return None to indicate that we could not generate the product
-            # structures
-            # We need to think this way in order to distinguish between
-            # intermolecular and intramolecular versions of reaction families,
-            # which will have very different kinetics
-            # Unfortunately this may also squash actual errors with malformed
-            # reaction templates
-            return None
-
+        # if len(template.products) != len(productStructures):
+        #     # We have a different number of products than expected by the template.
+        #     # By definition this means that the template is not a match, so
+        #     # we return None to indicate that we could not generate the product
+        #     # structures
+        #     # We need to think this way in order to distinguish between
+        #     # intermolecular and intramolecular versions of reaction families,
+        #     # which will have very different kinetics
+        #     # Unfortunately this may also squash actual errors with malformed
+        #     # reaction templates
+        #     return None
+    
         # If there are two product structures, place the one containing '*1' first
         if len(productStructures) == 2:
             if not productStructures[0].containsLabeledAtom('*1') and \
                 productStructures[1].containsLabeledAtom('*1'):
                 productStructures.reverse()
-
+    
         # If product structures are Molecule objects, update their atom types
         for struct in productStructures:
             if isinstance(struct, Molecule):
                 struct.updateAtomTypes()
                 
         # Return the product structures
-        return productStructures
+        if getTS:
+            return productStructures, transitionStateStructure
+        else:
+            return productStructures
+            
+    # def applyRecipe(self, reactantStructures, forward=True, unique=True):
+    #     """
+    #     Apply the recipe for this reaction family to the list of
+    #     :class:`Molecule` objects `reactantStructures`. The atoms
+    #     of the reactant structures must already be tagged with the appropriate
+    #     labels. Returns a list of structures corresponding to the products
+    #     after checking that the correct number of products was produced.
+    #     """
+    # 
+    #     # There is some hardcoding of reaction families in this function, so
+    #     # we need the label of the reaction family for this
+    #     label = self.label.lower()
+    # 
+    #     # Merge reactant structures into single structure
+    #     # Also copy structures so we don't modify the originals
+    #     # Since the tagging has already occurred, both the reactants and the
+    #     # products will have tags
+    #     if isinstance(reactantStructures[0], Group):
+    #         reactantStructure = Group()
+    #     else:
+    #         reactantStructure = Molecule()
+    #     for s in reactantStructures:
+    #         reactantStructure = reactantStructure.merge(s.copy(deep=True))
+    # 
+    #     # Hardcoding of reaction family for radical recombination (colligation)
+    #     # because the two reactants are identical, they have the same tags
+    #     # In this case, we must change the labels from '*' and '*' to '*1' and
+    #     # '*2'
+    #     if label == 'r_recombination' and forward:
+    #         identicalCenterCounter = 0
+    #         for atom in reactantStructure.atoms:
+    #             if atom.label == '*':
+    #                 identicalCenterCounter += 1
+    #                 atom.label = '*' + str(identicalCenterCounter)
+    #         if identicalCenterCounter != 2:
+    #             raise Exception('Unable to change labels from "*" to "*1" and "*2" for reaction family {0}.'.format(label))
+    # 
+    #     # Generate the product structure by applying the recipe
+    #     if forward:
+    #         self.forwardRecipe.applyForward(reactantStructure, unique)
+    #     else:
+    #         self.reverseRecipe.applyForward(reactantStructure, unique)
+    #     productStructure = reactantStructure
+    # 
+    #     # Hardcoding of reaction family for reverse of radical recombination
+    #     # (Unimolecular homolysis)
+    #     # Because the two products are identical, they should the same tags
+    #     # In this case, we must change the labels from '*1' and '*2' to '*' and
+    #     # '*'
+    #     if label == 'r_recombination' and not forward:
+    #         for atom in productStructure.atoms:
+    #             if atom.label == '*1' or atom.label == '*2': atom.label = '*'
+    # 
+    #     # If reaction family is its own reverse, relabel atoms
+    #     if not self.reverseTemplate:
+    #         # Get atom labels for products
+    #         atomLabels = {}
+    #         for atom in productStructure.atoms:
+    #             if atom.label != '':
+    #                 atomLabels[atom.label] = atom
+    # 
+    #         # This is hardcoding of reaction families (bad!)
+    #         label = self.label.lower()
+    #         if label == 'h_abstraction':
+    #             # '*2' is the H that migrates
+    #             # it moves from '*1' to '*3'
+    #             atomLabels['*1'].label = '*3'
+    #             atomLabels['*3'].label = '*1'
+    # 
+    #         elif label == 'intra_h_migration':
+    #             # '*3' is the H that migrates
+    #             # swap the two ends between which the H moves
+    #             atomLabels['*1'].label = '*2'
+    #             atomLabels['*2'].label = '*1'
+    #             # reverse all the atoms in the chain between *1 and *2
+    #             # i.e. swap *4 with the highest, *5 with the second-highest
+    #             highest = len(atomLabels)
+    #             if highest>4:
+    #                 for i in range(4,highest+1):
+    #                     atomLabels['*{0:d}'.format(i)].label = '*{0:d}'.format(4+highest-i)
+    # 
+    #     if not forward: template = self.reverseTemplate
+    #     else:           template = self.forwardTemplate
+    # 
+    #     # Split product structure into multiple species if necessary
+    #     productStructures = productStructure.split()
+    #     for product in productStructures:
+    #         product.updateConnectivityValues()
+    # 
+    #     # Make sure we've made the expected number of products
+    #     if len(template.products) != len(productStructures):
+    #         # We have a different number of products than expected by the template.
+    #         # By definition this means that the template is not a match, so
+    #         # we return None to indicate that we could not generate the product
+    #         # structures
+    #         # We need to think this way in order to distinguish between
+    #         # intermolecular and intramolecular versions of reaction families,
+    #         # which will have very different kinetics
+    #         # Unfortunately this may also squash actual errors with malformed
+    #         # reaction templates
+    #         return None
+    # 
+    #     # If there are two product structures, place the one containing '*1' first
+    #     if len(productStructures) == 2:
+    #         if not productStructures[0].containsLabeledAtom('*1') and \
+    #             productStructures[1].containsLabeledAtom('*1'):
+    #             productStructures.reverse()
+    # 
+    #     # If product structures are Molecule objects, update their atom types
+    #     for struct in productStructures:
+    #         if isinstance(struct, Molecule):
+    #             struct.updateAtomTypes()
+    #             
+    #     # Return the product structures
+    #     return productStructures
 
     def __generateProductStructures(self, reactantStructures, maps, forward):
         """
