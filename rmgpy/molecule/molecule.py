@@ -35,7 +35,7 @@ Both :class:`Atom` and :class:`Bond` objects store semantic information that
 describe the corresponding atom or bond.
 """
 
-import cython, cython.short, cython.int, cython.double
+import cython
 import logging
 import os
 import re

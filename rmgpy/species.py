@@ -43,7 +43,7 @@ transition states (first-order saddle points on a potential energy surface).
 """
 
 import numpy
-import cython, cython.double
+import cython
 
 import rmgpy.constants as constants
 import rmgpy.quantity as quantity

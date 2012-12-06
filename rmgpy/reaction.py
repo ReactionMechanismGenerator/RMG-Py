@@ -39,7 +39,7 @@ object. This module also provides the :class:`ReactionModel` class for
 representing a set of chemical reactions and the species involved.
 """
 
-import cython, cython.int, cython.double
+import cython
 import math
 import numpy
 import logging
