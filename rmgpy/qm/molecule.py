@@ -345,13 +345,24 @@ class QMMolecule:
         h_over_8_pi_squared = 8.39201316e-36 # kg m^2 / s
         inertias = ([h_over_8_pi_squared / frequency for frequency in self.qmData.rotationalConstants], "kg*m^2")
         
-        trans = rmgpy.statmech.Translation( mass=(self.qmData.molecularMass,"g/mol") )
-        rot = rmgpy.statmech.RigidRotor( linear = self.pointGroup.linear,
+        trans = rmgpy.statmech.IdealGasTranslation( mass=(self.qmData.molecularMass,"g/mol") )
+        if self.pointGroup.linear:
+            rot = rmgpy.statmech.LinearRotor(
                                          inertia = inertias,
                                          symmetry = self.pointGroup.symmetryNumber,
                                         )
-        vib = rmgpy.statmech.HarmonicOscillator( frequencies=self.qmData.frequencies )
-        self.statesmodel = rmgpy.statmech.StatesModel( modes=[trans, rot, vib],
+        else:
+            rot = rmgpy.statmech.NonlinearRotor(
+                                         inertia = inertias,
+                                         symmetry = self.pointGroup.symmetryNumber,
+                                        )
+        # @todo: should we worry about spherical top rotors?
+        vib = rmgpy.statmech.HarmonicOscillator( frequencies=(self.qmData.frequencies, "cm^-1") )
+
+        # @todo: We need to extract or calculate E0 somehow from the qmdata
+        E0 = (0, "kJ/mol")
+        self.statesmodel = rmgpy.statmech.Conformer(E0=E0,
+                                                    modes=[trans, rot, vib],
                                 spinMultiplicity = self.qmData.groundStateDegeneracy )
         
         #we will use number of atoms from above (alternatively, we could use the chemGraph); this is needed to test whether the species is monoatomic

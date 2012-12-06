@@ -82,7 +82,7 @@ class CCLibData(QMData):
             atomicNumbers = cclib_data.atomnos,
             rotationalConstants = [i * 1e9 for i in cclib_data.rotcons[-1]], # Hz. #print the final rotational constants (note that ideally we would use next to last value ([-2]) as this has more significant digits and is for the same geometry, but there is a complication for linear molecules (labeled as "Rotational constant" rather than "...constants"...there might be some ways around this like looking for "Rotational constant" string instead, but it is probably not a big deal to just use rounded values
             atomCoords = cclib_data.atomcoords[-1],
-            frequencies = cclib_data.vibfreqs
+            frequencies = cclib_data.vibfreqs # 1/cm
             )
         if hasattr(cclib_data, 'stericenergy'):
             # steric energy (in Hartree)
