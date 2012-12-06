@@ -556,8 +556,8 @@ class Database:
 
         except DatabaseError, e:
             logging.exception(str(e))
-            for s in (dictstr, treestr, libstr):
-                logging.exception(s)
+            logging.exception("path = '{0}'".format(path))
+            logging.exception("line = '{0}'".format(line))
             raise
         except IOError, e:
             logging.exception('Database library file "' + e.filename + '" not found.')
@@ -624,7 +624,7 @@ class Database:
                     assert isinstance(entry.item, LogicNode)
                     f.write('{0}\n\n'.format(entry.item))
                 else:
-                    raise DatabaseError('Unexpected item with label {0} encountered in dictionary while attempting to save.'.format(label))
+                    raise DatabaseError('Unexpected item with label {0} encountered in dictionary while attempting to save.'.format(entry.label))
             f.close()
         except IOError, e:
             logging.exception('Unable to save old-style tree to "{0}".'.format(os.path.abspath(path)))

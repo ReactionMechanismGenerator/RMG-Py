@@ -54,6 +54,12 @@ class UndeterminableKineticsError(ReactionError):
         new_message = 'Kinetics could not be determined. '+message
         ReactionError.__init__(self,reaction,new_message)
 
+class KineticsError(Exception):
+    """
+    An exception for problems with kinetics. Pass a string describing the problem.
+    """
+    pass
+
 class InvalidActionError(Exception):
     """
     An exception to be raised when an invalid action is encountered in a
@@ -1083,7 +1089,7 @@ class KineticsLibrary(Database):
         
         comment = "Reaction and kinetics from {0}.".format(self.label)
         if shortDesc.strip(): 
-            comment += "{0!s}\n".format(shortdesc.strip())
+            comment += "{0!s}\n".format(shortDesc.strip())
         if longDesc.strip():
             comment += str(re.sub('\s*\n\s*','\n',longDesc))
         kinetics.comment = comment.strip()
@@ -3145,7 +3151,7 @@ class KineticsFamily(Database):
     def getKineticsForTemplate(self, template, degeneracy=1, method='rate rules'):
         """
         Return an estimate of the kinetics for a reaction with the given
-        `template` and reaction-path `degeneracy`. There are two possible modes
+        `template` and reaction-path `degeneracy`. There are two possible methods
         to use: 'group additivity' (new RMG-Py behavior) and 'rate rules' (old
         RMG-Java behavior).
         """
@@ -3154,7 +3160,7 @@ class KineticsFamily(Database):
         elif method.lower() == 'rate rules':
             return self.estimateKineticsUsingRateRules(template, degeneracy)
         else:
-            raise ValueError('Invalid value "{0}" for mode parameter; should be "group additivity" or "rate rules".'.format(mode))
+            raise ValueError('Invalid value "{0}" for method parameter; should be "group additivity" or "rate rules".'.format(method))
         
     def getKineticsFromDepository(self, depository, reaction, template, degeneracy):
         """
