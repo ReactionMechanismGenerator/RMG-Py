@@ -620,8 +620,22 @@ class ThermoDatabase(object):
                 thermoData.comment = label
                 return thermoData
         return None
-
-
+    
+    def findCp0andCpInf(self, species, thermoData):
+        """
+        Calculate the Cp0 and CpInf values, and add them to the thermoData object.
+        
+        Modifies thermoData in place and doesn't return anything
+        """
+        if not isinstance(thermoData,ThermoData):
+            return # Just skip it
+            raise Exception("Trying to add Cp0 to something that's not a ThermoData: {0!r}".format(thermoData))
+        Cp0 = species.calculateCp0()
+        CpInf = species.calculateCpInf()  
+        thermoData.Cp0 = (Cp0,"J/(mol*K)")
+        thermoData.CpInf = (CpInf,"J/(mol*K)")
+                
+                
     def getAllThermoData(self, species):
         """
         Return all possible sets of thermodynamic parameters for a given
@@ -642,13 +656,7 @@ class ThermoDatabase(object):
                 thermoDataList.append(data)
         # Last entry is always the estimate from group additivity
         thermoDataList.append(self.getThermoDataFromGroups(species))
-        # Add Cp0 and CpInf values
-        Cp0 = species.calculateCp0()
-        CpInf = species.calculateCpInf()
-        for data in thermoDataList:
-            if isinstance(data,ThermoData):
-                data.Cp0 = (Cp0,"J/(mol*K)")
-                data.CpInf = (CpInf,"J/(mol*K)")
+
         # Return all of the resulting thermo parameters
         return thermoDataList
 
@@ -657,6 +665,8 @@ class ThermoDatabase(object):
         Return all possible sets of thermodynamic parameters for a given
         :class:`Species` object `species` from the depository. If no
         depository is loaded, a :class:`DatabaseError` is raised.
+        
+        Returns: a list of tuples (thermoData, depository, entry) without any Cp0 or CpInf data.
         """
         items = []
         for label, entry in self.depository['stable'].entries.iteritems():
@@ -685,7 +695,9 @@ class ThermoDatabase(object):
         for label, entry in library.entries.iteritems():
             for molecule in species.molecule:
                 if molecule.isIsomorphic(entry.item) and entry.data is not None:
-                    return deepcopy(entry.data)
+                    thermoData = deepcopy(entry.data)
+                    self.findCp0andCpInf(species, thermoData)
+                    return thermoData
         return None
 
     def getThermoDataFromGroups(self, species):
@@ -709,7 +721,9 @@ class ThermoDatabase(object):
         
         species.molecule = [species.molecule[ind] for ind in indices]
         
-        return thermo[indices[0]]
+        thermoData = thermo[indices[0]]
+        self.findCp0andCpInf(species, thermoData)
+        return thermoData
         
     def estimateRadicalThermoViaHBI(self, molecule, stableThermoEstimator ):
         """
