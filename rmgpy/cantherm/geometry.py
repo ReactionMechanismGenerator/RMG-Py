@@ -36,7 +36,8 @@ information, e.g. moments of inertia.
 import numpy
 import cython
 
-from rmgpy.quantity import Quantity, constants
+import rmgpy.constants as constants
+from rmgpy.quantity import Quantity
 
 ################################################################################
 
@@ -67,9 +68,9 @@ class Geometry:
     """
     
     def __init__(self, coordinates, number, mass):
-        self.coordinates = Quantity(coordinates).values
-        self.number = Quantity(number).values
-        self.mass = Quantity(mass).values
+        self.coordinates = Quantity(coordinates).value_si
+        self.number = Quantity(number).value_si
+        self.mass = Quantity(mass).value_si
     
     def __repr__(self):
         """

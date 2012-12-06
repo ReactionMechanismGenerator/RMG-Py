@@ -39,17 +39,20 @@ object. This module also provides the :class:`ReactionModel` class for
 representing a set of chemical reactions and the species involved.
 """
 
-import cython
+import cython, cython.int, cython.double
 import math
 import numpy
 import logging
 import re
 import os.path
 
-from quantity import constants
-from rmgpy.molecule.molecule import Molecule
-from species import Species
-from kinetics import Arrhenius, KineticsData, ArrheniusEP, ThirdBody
+import rmgpy.constants as constants
+from rmgpy.molecule.molecule import Molecule, Atom
+from rmgpy.molecule.element import Element
+from rmgpy.species import Species
+from rmgpy.kinetics.arrhenius import Arrhenius #PyDev: @UnresolvedImport
+from rmgpy.kinetics import KineticsData, ArrheniusEP, ThirdBody, Lindemann, Troe, Chebyshev, PDepArrhenius, MultiArrhenius, MultiPDepArrhenius #PyDev: @UnresolvedImport
+from rmgpy.pdep.reaction import calculateMicrocanonicalRateCoefficient
 
 ################################################################################
 
@@ -71,12 +74,12 @@ class Reaction:
     Attribute           Type                        Description
     =================== =========================== ============================
     `index`             :class:`int`                A unique nonnegative integer index
+    `label`             ``str``                     A descriptive string label
     `reactants`         :class:`list`               The reactant species (as :class:`Species` objects)
     `products`          :class:`list`               The product species (as :class:`Species` objects)
     `kinetics`          :class:`KineticsModel`      The kinetics model to use for the reaction
     `reversible`        ``bool``                    ``True`` if the reaction is reversible, ``False`` if not
     `transitionState`   :class:`TransitionState`    The transition state
-    `thirdBody`         ``bool``                    ``True`` if the reaction if the reaction kinetics imply a third body, ``False`` if not
     `duplicate`         ``bool``                    ``True`` if the reaction is known to be a duplicate, ``False`` if not
     `degeneracy`        :class:`double`             The reaction path degeneracy for the reaction
     `pairs`             ``list``                    Reactant-product pairings to use in converting reaction flux to species flux
@@ -84,14 +87,14 @@ class Reaction:
     
     """
     
-    def __init__(self, index=-1, reactants=None, products=None, kinetics=None, reversible=True, transitionState=None, thirdBody=False, duplicate=False, degeneracy=1, pairs=None):
+    def __init__(self, index=-1, label='', reactants=None, products=None, kinetics=None, reversible=True, transitionState=None, duplicate=False, degeneracy=1, pairs=None):
         self.index = index
+        self.label = label
         self.reactants = reactants
         self.products = products
         self.kinetics = kinetics
         self.reversible = reversible
         self.transitionState = transitionState
-        self.thirdBody = thirdBody
         self.duplicate = duplicate
         self.degeneracy = degeneracy
         self.pairs = pairs
@@ -103,12 +106,12 @@ class Reaction:
         """
         string = 'Reaction('
         if self.index != -1: string += 'index={0:d}, '.format(self.index)
+        if self.label != '': string += 'label={0!r}, '.format(self.label)
         if self.reactants is not None: string += 'reactants={0!r}, '.format(self.reactants)
         if self.products is not None: string += 'products={0!r}, '.format(self.products)
         if self.kinetics is not None: string += 'kinetics={0!r}, '.format(self.kinetics)
         if not self.reversible: string += 'reversible={0}, '.format(self.reversible)
         if self.transitionState is not None: string += 'transitionState={0!r}, '.format(self.transitionState)
-        if self.thirdBody: string += 'thirdBody={0}, '.format(self.thirdBody)
         if self.duplicate: string += 'duplicate={0}, '.format(self.duplicate)
         if self.degeneracy != 1: string += 'degeneracy={0:d}, '.format(self.degeneracy)
         if self.pairs is not None: string += 'pairs={0}, '.format(self.pairs)
@@ -120,14 +123,14 @@ class Reaction:
         Return a string representation of the reaction, in the form 'A + B <=> C + D'.
         """
         arrow = ' <=> '
-        if not self.reversible: arrow = ' -> '
+        if not self.reversible: arrow = ' => '
         return arrow.join([' + '.join([str(s) for s in self.reactants]), ' + '.join([str(s) for s in self.products])])
 
     def __reduce__(self):
         """
         A helper function used when pickling an object.
         """
-        return (Reaction, (self.index, self.reactants, self.products, self.kinetics, self.reversible, self.transitionState, self.thirdBody, self.duplicate, self.degeneracy, self.pairs))
+        return (Reaction, (self.index, self.label, self.reactants, self.products, self.kinetics, self.reversible, self.transitionState, self.duplicate, self.degeneracy, self.pairs))
 
     def toChemkin(self, speciesList):
         """
@@ -391,9 +394,9 @@ class Reaction:
         cython.declare(dHrxn=cython.double, reactant=Species, product=Species)
         dHrxn = 0.0
         for reactant in self.reactants:
-            dHrxn -= reactant.thermo.getEnthalpy(T)
+            dHrxn -= reactant.getEnthalpy(T)
         for product in self.products:
-            dHrxn += product.thermo.getEnthalpy(T)
+            dHrxn += product.getEnthalpy(T)
         return dHrxn
 
     def getEntropyOfReaction(self, T):
@@ -404,9 +407,9 @@ class Reaction:
         cython.declare(dSrxn=cython.double, reactant=Species, product=Species)
         dSrxn = 0.0
         for reactant in self.reactants:
-            dSrxn -= reactant.thermo.getEntropy(T)
+            dSrxn -= reactant.getEntropy(T)
         for product in self.products:
-            dSrxn += product.thermo.getEntropy(T)
+            dSrxn += product.getEntropy(T)
         return dSrxn
 
     def getFreeEnergyOfReaction(self, T):
@@ -417,9 +420,9 @@ class Reaction:
         cython.declare(dGrxn=cython.double, reactant=Species, product=Species)
         dGrxn = 0.0
         for reactant in self.reactants:
-            dGrxn -= reactant.thermo.getFreeEnergy(T)
+            dGrxn -= reactant.getFreeEnergy(T)
         for product in self.products:
-            dGrxn += product.thermo.getFreeEnergy(T)
+            dGrxn += product.getFreeEnergy(T)
         return dGrxn
 
     def getEquilibriumConstant(self, T, type='Kc'):
@@ -493,7 +496,7 @@ class Reaction:
             if product is spec: stoich += 1
         return stoich
 
-    def getRateCoefficient(self, T, P):
+    def getRateCoefficient(self, T, P=0):
         """
         Return the overall rate coefficient for the forward reaction at
         temperature `T` in K and pressure `P` in Pa, including any reaction
@@ -519,14 +522,9 @@ class Reaction:
             totalConc=sum( conc.values() )
 
         # Evaluate rate constant
+        if isinstance(self.kinetics, (ThirdBody, Lindemann, Troe)):
+            P = self.kinetics.getEffectivePressure(P, conc)
         rateConstant = self.getRateCoefficient(T, P)
-        
-        #if self.thirdBody: rateConstant *= totalConc
-        if isinstance(self.kinetics, ThirdBody):
-            assert self.thirdBody
-            rateConstant = self.kinetics.getRateCoefficient(T,P,conc)
-        else:
-            assert not self.thirdBody
 
         # Evaluate equilibrium constant
         equilibriumConstant = self.getEquilibriumConstant(T)
@@ -563,19 +561,19 @@ class Reaction:
         """
         cython.declare(H0=cython.double, H298=cython.double, Ea=cython.double)
         H298 = self.getEnthalpyOfReaction(298)
-        H0 = sum([spec.E0.value for spec in self.products]) - sum([spec.E0.value for spec in self.reactants])
+        H0 = sum([spec.conformer.E0.value_si for spec in self.products]) - sum([spec.conformer.E0.value_si for spec in self.reactants])
         if isinstance(self.kinetics, ArrheniusEP):
-            Ea = self.kinetics.E0.value # temporarily using Ea to store the intrinsic barrier height E0
+            Ea = self.kinetics.E0.value_si # temporarily using Ea to store the intrinsic barrier height E0
             self.kinetics = self.kinetics.toArrhenius(H298)
-            if Ea > 0 and self.kinetics.Ea.value < 0:
-                self.kinetics.comment += "Ea raised from {0:.1f} to 0 kJ/mol.".format(self.kinetics.Ea.value/1000)
-                logging.info("For reaction {1!s} Ea raised from {0:.1f} to 0 kJ/mol.".format(self.kinetics.Ea.value/1000, self))
-                self.kinetics.Ea.value = 0
+            if Ea > 0 and self.kinetics.Ea.value_si < 0:
+                self.kinetics.comment += "\nEa raised from {0:.1f} to 0 kJ/mol.".format(self.kinetics.Ea.value_si/1000)
+                logging.info("For reaction {1!s} Ea raised from {0:.1f} to 0 kJ/mol.".format(self.kinetics.Ea.value_si/1000, self))
+                self.kinetics.Ea.value_si = 0
         if isinstance(self.kinetics, Arrhenius):
-            Ea = self.kinetics.Ea.value
+            Ea = self.kinetics.Ea.value_si
             if H0 > 0 and Ea < H0:
-                self.kinetics.Ea.value = H0
-                self.kinetics.comment += "Ea raised from {0:.1f} to {1:.1f} kJ/mol to match endothermicity of reaction.".format(Ea/1000,H0/1000)
+                self.kinetics.Ea.value_si = H0
+                self.kinetics.comment += "\nEa raised from {0:.1f} to {1:.1f} kJ/mol to match endothermicity of reaction.".format(Ea/1000,H0/1000)
                 logging.info("For reaction {2!s}, Ea raised from {0:.1f} to {1:.1f} kJ/mol to match endothermicity of reaction.".format(Ea/1000, H0/1000, self))
 
     def generateReverseRateCoefficient(self):
@@ -600,7 +598,7 @@ class Reaction:
         kf = self.kinetics
         if isinstance(kf, KineticsData):
             
-            Tlist = kf.Tdata.values
+            Tlist = kf.Tdata.value_si
             klist = numpy.zeros_like(Tlist)
             print Tlist
             for i in range(len(Tlist)):
@@ -613,9 +611,9 @@ class Reaction:
         elif isinstance(kf, Arrhenius):
             
             if kf.Tmin is not None and kf.Tmax is not None:
-                Tlist = 1.0/numpy.linspace(1.0/kf.Tmax.value, 1.0/kf.Tmin.value, 50)
+                Tlist = 1.0/numpy.linspace(1.0/kf.Tmax.value_si, 1.0/kf.Tmin.value_si, 50)
             else:
-                Tlist = 1.0/numpy.arange(0.0005, 0.0035, 0.0001)
+                Tlist = 1.0/numpy.arange(0.0005, 0.0034, 0.0001)
                 
             # Determine the values of the reverse rate coefficient k_r(T) at each temperature
             klist = numpy.zeros_like(Tlist)
@@ -623,16 +621,57 @@ class Reaction:
                 klist[i] = kf.getRateCoefficient(Tlist[i]) / self.getEquilibriumConstant(Tlist[i])
     
             kr = Arrhenius()
-            kr.fitToData(Tlist, klist, kunits, kf.T0.value)
+            kr.fitToData(Tlist, klist, kunits, kf.T0.value_si)
+            return kr
+                    
+        elif isinstance (kf, Chebyshev):
+            Tlist = 1.0/numpy.linspace(1.0/kf.Tmax.value, 1.0/kf.Tmin.value, 50)
+            Plist = numpy.linspace(kf.Pmin.value, kf.Pmax.value, 20)
+            K = numpy.zeros((len(Tlist), len(Plist)), numpy.float64)
+            for Tindex, T in enumerate(Tlist):
+                for Pindex, P in enumerate(Plist):
+                    K[Tindex, Pindex] = kf.getRateCoefficient(T, P) / self.getEquilibriumConstant(T)
+            kr = Chebyshev()
+            kr.fitToData(Tlist, Plist, K, kunits, kf.degreeT, kf.degreeP, kf.Tmin.value, kf.Tmax.value, kf.Pmin.value, kf.Pmax.value)
+            return kr
+        
+        elif isinstance(kf, PDepArrhenius):  
+            if kf.Tmin is not None and kf.Tmax is not None:
+                Tlist = 1.0/numpy.linspace(1.0/kf.Tmax.value, 1.0/kf.Tmin.value, 50)
+            else:
+                Tlist = 1.0/numpy.arange(0.0005, 0.0035, 0.0001)
+            Plist = kf.pressures.values
+            K = numpy.zeros((len(Tlist), len(Plist)), numpy.float64)
+            for Tindex, T in enumerate(Tlist):
+                for Pindex, P in enumerate(Plist):
+                    K[Tindex, Pindex] = kf.getRateCoefficient(T, P) / self.getEquilibriumConstant(T)
+            kr = PDepArrhenius()
+            kr.fitToData(Tlist, Plist, K, kunits, kf.arrhenius[0].T0.value)
+            return kr       
+        
+        elif isinstance(kf, MultiArrhenius):
+            kr = MultiArrhenius()            
+            rxn = Reaction(reactants = self.reactants, products = self.products)            
+            for kinetics in kf.kineticsList:
+                rxn.kinetics = kinetics
+                kr.arrhenius.append(rxn.generateReverseRateCoefficient())
+            return kr
+        
+        elif isinstance(kf, MultiPDepArrhenius):
+            kr = MultiPDepArrhenius()            
+            rxn = Reaction(reactants = self.reactants, products = self.products)            
+            for kinetics in kf.kineticsList:
+                rxn.kinetics = kinetics
+                kr.arrhenius.append(rxn.generateReverseRateCoefficient())
             return kr
         
         else:
-            raise ReactionError("Unexpected kinetics type {0}; should be Arrhenius or KineticsData.".format(self.kinetics.__class__))
+            raise ReactionError("Unexpected kinetics type {0}; should be Arrhenius, Chebyshev, PDepArrhenius, or KineticsData.".format(self.kinetics.__class__))
 
-    def calculateTSTRateCoefficients(self, Tlist, tunneling=''):
-        return numpy.array([self.calculateTSTRateCoefficient(T, tunneling) for T in Tlist], numpy.float64)
+    def calculateTSTRateCoefficients(self, Tlist):
+        return numpy.array([self.calculateTSTRateCoefficient(T) for T in Tlist], numpy.float64)
 
-    def calculateTSTRateCoefficient(self, T, tunneling=''):
+    def calculateTSTRateCoefficient(self, T):
         """
         Evaluate the forward rate coefficient for the reaction with
         corresponding transition state `TS` at temperature `T` in K using
@@ -647,172 +686,63 @@ class Reaction:
         temperature, :math:`k_\\mathrm{B}` is the Boltzmann constant, and :math:`h`
         is the Planck constant. :math:`\\kappa(T)` is an optional tunneling
         correction.
-        """
-        cython.declare(E0=cython.double)
-        # Determine barrier height
-        E0 = self.transitionState.E0.value - sum([spec.E0.value for spec in self.reactants])
+        """       
         # Determine TST rate constant at each temperature
         Qreac = 1.0
-        for spec in self.reactants: Qreac *= spec.states.getPartitionFunction(T) / (constants.R * T / 101325.)
-        Qts = self.transitionState.states.getPartitionFunction(T) / (constants.R * T / 101325.)
-        k = (constants.kB * T / constants.h * Qts / Qreac *	numpy.exp(-E0 / constants.R / T))
+        E0 = 0.0
+        for spec in self.reactants:
+            Qreac *= spec.getPartitionFunction(T) / (constants.R * T / 101325.)
+            E0 -= spec.conformer._E0.value_si
+        Qts = self.transitionState.getPartitionFunction(T) / (constants.R * T / 101325.)
+        E0 += self.transitionState.conformer._E0.value_si
+        k = (constants.kB * T / constants.h * Qts / Qreac) * math.exp(-E0 / constants.R / T)
+        
         # Apply tunneling correction
-        if tunneling.lower() == 'wigner':
-            k *= self.calculateWignerTunnelingCorrection(T)
-        elif tunneling.lower() == 'eckart':
-            k *= self.calculateEckartTunnelingCorrection(T)
-        # Add in reaction path degeneracy
-        k *= self.degeneracy
+        k *= self.transitionState.calculateTunnelingFactor(T)
+        
         return k
-    
-    def calculateWignerTunnelingCorrection(self, T):
+        
+    def canTST(self):
         """
-        Calculate and return the value of the Wigner tunneling correction for
-        the reaction with corresponding transition state `TS` at the list of
-        temperatures `Tlist` in K. The Wigner formula is
-        
-        .. math:: \\kappa(T) = 1 + \\frac{1}{24} \\left( \\frac{h | \\nu_\\mathrm{TS} |}{ k_\\mathrm{B} T} \\right)^2
-        
-        where :math:`h` is the Planck constant, :math:`\\nu_\\mathrm{TS}` is the
-        negative frequency, :math:`k_\\mathrm{B}` is the Boltzmann constant, and
-        :math:`T` is the absolute temperature. 
-        The Wigner correction only requires information about the transition 
-        state, not the reactants or products, but is also generally less 
-        accurate than the Eckart correction.
+        Return ``True`` if the necessary parameters are available for using
+        transition state theory -- or the microcanonical equivalent, RRKM
+        theory -- to compute the rate coefficient for this reaction, or
+        ``False`` otherwise.
         """
-        frequency = abs(self.transitionState.frequency.value)
-        return 1.0 + (constants.h * constants.c * 100.0 * frequency / constants.kB / T)**2 / 24.0
-    
-    def calculateEckartTunnelingCorrection(self, T):
-        """
-        Calculate and return the value of the Eckart tunneling correction for
-        the reaction with corresponding transition state `TS` at the list of
-        temperatures `Tlist` in K. The Eckart formula is
-        
-        .. math:: \\kappa(T) = e^{\\beta \\Delta V_1} \\int_0^\\infty 
-            \\left[ 1 - \\frac{\\cosh (2 \\pi a - 2 \\pi b) + \\cosh (2 \\pi d)}{\\cosh (2 \\pi a + 2 \\pi b) + \\cosh (2 \\pi d)} \\right] e^{- \\beta E} \\ d(\\beta E)
-        
-        where
-        
-        .. math:: 2 \\pi a = \\frac{2 \\sqrt{\\alpha_1 \\xi}}{\\alpha_1^{-1/2} + \\alpha_2^{-1/2}}
-        
-        .. math:: 2 \\pi b = \\frac{2 \\sqrt{| (\\xi - 1) \\alpha_1 + \\alpha_2|}}{\\alpha_1^{-1/2} + \\alpha_2^{-1/2}}
-        
-        .. math:: 2 \\pi d = 2 \\sqrt{| \\alpha_1 \\alpha_2 - 4 \\pi^2 / 16|}
-        
-        .. math:: \\alpha_1 = 2 \\pi \\frac{\\Delta V_1}{h | \\nu_\\mathrm{TS} |}
-        
-        .. math:: \\alpha_2 = 2 \\pi \\frac{\\Delta V_2}{h | \\nu_\\mathrm{TS} |}
-        
-        .. math:: \\xi = \\frac{E}{\\Delta V_1}
-        
-        :math:`\\Delta V_1` and :math:`\\Delta V_2` are the thermal energy 
-        difference between the transition state and the reactants and products,
-        respectively; :math:`\\nu_\\mathrm{TS}` is the negative frequency, 
-        :math:`h` is the Planck constant, :math:`k_\\mathrm{B}` is the 
-        Boltzmann constant, and :math:`T` is the absolute temperature. If 
-        product data is not available, then it is assumed that 
-        :math:`\\alpha_2 \\approx \\alpha_1`.
-        The Eckart correction requires information about the reactants as well
-        as the transition state. For best results, information about the 
-        products should also be given. (The former is called the symmetric
-        Eckart correction, the latter the asymmetric Eckart correction.) This
-        extra information allows the Eckart correction to generally give a
-        better result than the Wignet correction.
-        """
-        
-        cython.declare(frequency=cython.double, alpha1=cython.double, alpha2=cython.double, dV1=cython.double, dV2=cython.double)
-        cython.declare(kappa=cython.double, E_kT=numpy.ndarray, f=numpy.ndarray, integral=cython.double)
-        cython.declare(i=cython.int, tol=cython.double, fcrit=cython.double, E_kTmin=cython.double, E_kTmax=cython.double)
-        
-        frequency = abs(self.transitionState.frequency.value)
-        
-        # Calculate intermediate constants
-        dV1 = self.transitionState.E0.value - sum([spec.E0.value for spec in self.reactants]) # [=] J/mol
-        #if all([spec.states is not None for spec in self.products]):
-            # Product data available, so use asymmetric Eckart correction
-        dV2 = self.transitionState.E0.value - sum([spec.E0.value for spec in self.products]) # [=] J/mol
-        #else:
-            ## Product data not available, so use asymmetric Eckart correction
-            #dV2 = dV1
-        # Tunneling must be done in the exothermic direction, so swap if this 
-        # isn't the case
-        if dV2 < dV1: dV1, dV2 = dV2, dV1
-        alpha1 = 2 * math.pi * dV1 / constants.Na / (constants.h * constants.c * 100.0 * frequency)
-        alpha2 = 2 * math.pi * dV2 / constants.Na / (constants.h * constants.c * 100.0 * frequency)
-        
-        if dV1 < 0 or dV2 < 0:
-            raise ValueError('One or both of the barrier heights of {0:g} and {1:g} kJ/mol encountered in Eckart method are invalid.'.format(dV1 / 1000., dV2 / 1000.)) 
-        
-        # Integrate to get Eckart correction
-        kappa = 0.0
-        
-        # First we need to determine the lower and upper bounds at which to
-        # truncate the integral
-        tol = 1e-3
-        E_kT = numpy.arange(0.0, 1000.01, 0.1)
-        f = numpy.zeros_like(E_kT)
-        for j in range(len(E_kT)):
-            f[j] = self.__eckartIntegrand(E_kT[j], constants.R * T, dV1, alpha1, alpha2)
-        # Find the cutoff values of the integrand
-        fcrit = tol * f.max()
-        x = (f > fcrit).nonzero()
-        E_kTmin = E_kT[x[0][0]]
-        E_kTmax = E_kT[x[0][-1]]
+        return len(self.transitionState.conformer.modes) > 0
 
-        # Now that we know the bounds we can formally integrate
-        import scipy.integrate
-        integral = scipy.integrate.quad(self.__eckartIntegrand, E_kTmin, E_kTmax,
-            args=(constants.R * T,dV1,alpha1,alpha2,))[0]
-        kappa = integral * math.exp(dV1 / constants.R / T)
-
-        # Return the calculated Eckart correction
-        return kappa
+    def calculateMicrocanonicalRateCoefficient(self, Elist, Jlist, reacDensStates, prodDensStates=None, T=0.0):
+        """
+        Calculate the microcanonical rate coefficient :math:`k(E)` for the reaction
+        `reaction` at the energies `Elist` in J/mol. `reacDensStates` and 
+        `prodDensStates` are the densities of states of the reactant and product
+        configurations for this reaction. If the reaction is irreversible, only the
+        reactant density of states is required; if the reaction is reversible, then
+        both are required. This function will try to use the best method that it
+        can based on the input data available:
+        
+        * If detailed information has been provided for the transition state (i.e.
+          the molecular degrees of freedom), then RRKM theory will be used.
+        
+        * If the above is not possible but high-pressure limit kinetics
+          :math:`k_\\infty(T)` have been provided, then the inverse Laplace 
+          transform method will be used.
     
-    def __eckartIntegrand(self, E_kT, kT, dV1, alpha1, alpha2):
-        # Evaluate the integrand of the Eckart tunneling correction integral
-        # for the given values
-        #    E_kT = energy scaled by kB * T (dimensionless)
-        #    kT = Boltzmann constant * T [=] J/mol
-        #    dV1 = energy difference between TS and reactants [=] J/mol
-        #    alpha1, alpha2 dimensionless
-        
-        cython.declare(xi=cython.double, twopia=cython.double, twopib=cython.double, twopid=cython.double, kappaE=cython.double)
-        from math import sqrt, exp, cosh, pi
-        
-        xi = E_kT * kT / dV1
-        # 2 * pi * a
-        twopia = 2*sqrt(alpha1*xi)/(1/sqrt(alpha1)+1/sqrt(alpha2))
-        # 2 * pi * b
-        twopib = 2*sqrt(abs((xi-1)*alpha1+alpha2))/(1/sqrt(alpha1)+1/sqrt(alpha2))
-        # 2 * pi * d
-        twopid = 2*sqrt(abs(alpha1*alpha2-4*pi*pi/16))
-        
-        # We use different approximate versions of the integrand to avoid
-        # domain errors when evaluating cosh(x) for large x
-        # If all of 2*pi*a, 2*pi*b, and 2*pi*d are sufficiently small,
-        # compute as normal
-        if twopia < 200 and twopib < 200 and twopid < 200:
-            kappaE = 1 - (cosh(twopia-twopib)+cosh(twopid)) / (cosh(twopia+twopib)+cosh(twopid))
-        # If one of the following is true, then we can eliminate most of the
-        # exponential terms after writing out the definition of cosh and
-        # dividing all terms by exp(2*pi*d)
-        elif twopia-twopib-twopid > 10 or twopib-twopia-twopid > 10 or twopia+twopib-twopid > 10:
-            kappaE = 1 - exp(-2*twopia) - exp(-2*twopib) - exp(-twopia-twopib+twopid) - exp(-twopia-twopib-twopid)
-        # Otherwise expand each cosh(x) in terms of its exponentials and divide
-        # all terms by exp(2*pi*d) before evaluating
-        else:
-            kappaE = 1 - (exp(twopia-twopib-twopid) + exp(-twopia+twopib-twopid) + 1 + exp(-2*twopid)) / (exp(twopia+twopib-twopid) + exp(-twopia-twopib-twopid) + 1 + exp(-2*twopid))
-
-        # Complete and return integrand
-        return exp(-E_kT) * kappaE
+        The density of states for the product `prodDensStates` and the temperature
+        of interest `T` in K can also be provided. For isomerization and association
+        reactions `prodDensStates` is required; for dissociation reactions it is
+        optional. The temperature is used if provided in the detailed balance
+        expression to determine the reverse kinetics, and in certain cases in the
+        inverse Laplace transform method.
+        """
+        return calculateMicrocanonicalRateCoefficient(self, Elist, Jlist, reacDensStates, prodDensStates, T)
     
     def isBalanced(self):
         """
         Return ``True`` if the reaction has the same number of each atom on
         each side of the reaction equation, or ``False`` if not.
         """
-        from rmgpy.element import elementList
+        from rmgpy.molecule.element import elementList
         
         cython.declare(reactantElements=dict, productElements=dict, molecule=Molecule, atom=Atom, element=Element)
         
@@ -899,122 +829,15 @@ class Reaction:
     def draw(self, path):
         """
         Generate a pictorial representation of the chemical reaction using the
-        :mod:`molecule_draw` module. Use `path` to specify the file to save
+        :mod:`draw` module. Use `path` to specify the file to save
         the generated image to; the image type is automatically determined by
         extension. Valid extensions are ``.png``, ``.svg``, ``.pdf``, and
         ``.ps``; of these, the first is a raster format and the remainder are
         vector formats.
         """
-        import cairo
-        from molecule_draw import drawMolecule, createNewSurface, fontFamily, fontSizeNormal
-        
+        from rmgpy.molecule.draw import ReactionDrawer
         format = os.path.splitext(path)[1].lower()[1:]
-        
-        # First draw each of the reactants and products
-        reactants = []; products = []
-        for reactant in self.reactants:
-            if isinstance(reactant, Species):
-                molecule = reactant.molecule[0]
-            elif isinstance(reactant, Molecule):
-                molecule = reactant
-            reactants.append(drawMolecule(molecule, surface=format))
-        for product in self.products:
-            if isinstance(product, Species):
-                molecule = product.molecule[0]
-            elif isinstance(product, Molecule):
-                molecule = product
-            products.append(drawMolecule(molecule, surface=format))
-            
-        # Next determine size required for surface
-        rxn_width = 0; rxn_height = 0
-        for surface, cr, rect in reactants:
-            left, top, width, height = rect
-            rxn_width += width
-            if height > rxn_height: rxn_height = height
-        for surface, cr, rect in products:
-            left, top, width, height = rect
-            rxn_width += width
-            if height > rxn_height: rxn_height = height
-        
-        # Also include '+' and reaction arrow in width
-        cr.set_font_size(fontSizeNormal)
-        plus_extents = cr.text_extents(' + ')
-        arrow_width = 36
-        rxn_width += (len(reactants)-1) * plus_extents[4] + arrow_width + (len(products)-1) * plus_extents[4]
-        
-        # Now make the surface for the reaction and render each molecule on it
-        rxn_surface = createNewSurface(type=format, path=path, width=rxn_width, height=rxn_height)
-        rxn_cr = cairo.Context(rxn_surface)
-        
-        # Draw white background
-        rxn_cr.set_source_rgba(1.0, 1.0, 1.0, 1.0)
-        rxn_cr.paint()
-    
-        # Draw reactants
-        rxn_x = 0.0; rxn_y = 0.0
-        for index, reactant in enumerate(reactants):
-            surface, cr, rect = reactant
-            left, top, width, height = rect
-            if index > 0:
-                # Draw the "+" between the reactants
-                rxn_cr.save()
-                rxn_cr.set_font_size(fontSizeNormal)
-                rxn_y = (rxn_height - plus_extents[3]) / 2.0
-                rxn_cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
-                rxn_cr.move_to(rxn_x, rxn_y - plus_extents[1])
-                rxn_cr.show_text(' + ')
-                rxn_cr.restore()
-                rxn_x += plus_extents[4]
-            # Draw the reactant
-            rxn_y = (rxn_height - height) / 2.0
-            rxn_cr.save()
-            rxn_cr.set_source_surface(surface, rxn_x, rxn_y)
-            rxn_cr.paint()
-            rxn_cr.restore()
-            rxn_x += width            
-        
-        # Draw reaction arrow
-        # Unfortunately Cairo does not have arrow drawing built-in, so we must
-        # draw the arrow head ourselves
-        rxn_cr.save()
-        rxn_cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
-        rxn_cr.set_line_width(1.0)
-        rxn_cr.move_to(rxn_x + 8, rxn_height / 2.0)
-        rxn_cr.line_to(rxn_x + arrow_width - 8, rxn_height / 2.0)
-        rxn_cr.move_to(rxn_x + arrow_width - 14, rxn_height / 2.0 - 3.0)
-        rxn_cr.line_to(rxn_x + arrow_width - 8, rxn_height / 2.0)
-        rxn_cr.line_to(rxn_x + arrow_width - 14, rxn_height / 2.0 + 3.0)
-        rxn_cr.stroke()
-        rxn_cr.restore()
-        rxn_x += arrow_width
-        
-        # Draw products
-        for index, product in enumerate(products):
-            surface, cr, rect = product
-            left, top, width, height = rect
-            if index > 0:
-                # Draw the "+" between the products
-                rxn_cr.save()
-                rxn_cr.set_font_size(fontSizeNormal)
-                rxn_y = (rxn_height - plus_extents[3]) / 2.0
-                rxn_cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
-                rxn_cr.move_to(rxn_x, rxn_y - plus_extents[1])
-                rxn_cr.show_text(' + ')
-                rxn_cr.restore()
-                rxn_x += plus_extents[4]
-            # Draw the product
-            rxn_y = (rxn_height - height) / 2.0
-            rxn_cr.save()
-            rxn_cr.set_source_surface(surface, rxn_x, rxn_y)
-            rxn_cr.paint()
-            rxn_cr.restore()
-            rxn_x += width            
-        
-        # Finish Cairo drawing
-        if format == 'png':
-            surface.write_to_png(path)
-        else:
-            surface.finish()
+        ReactionDrawer().draw(self, format, path)
             
     # Build the transition state geometry
     def generate3dTS(self, reactants, products):
@@ -1083,6 +906,7 @@ class Reaction:
                         zCoord[k] = dirVec[k].z*lenVec[k]
             reactionAxis = [sum(xCoord), sum(yCoord), sum(zCoord)]
             products[i].reactionAxis = reactionAxis
+
                 
 ################################################################################
 

@@ -28,6 +28,7 @@ from .graph cimport Vertex, Edge, Graph
 from .atomtype cimport AtomType
 from .group cimport GroupAtom, GroupBond, Group
 from .element cimport Element
+cimport rmgpy.constants as constants
 
 ################################################################################
 
@@ -164,6 +165,10 @@ cdef class Molecule(Graph):
 
     cpdef int countInternalRotors(self) except -2
 
+    cpdef double calculateCp0(self) except -1
+
+    cpdef double calculateCpInf(self) except -1
+    
     cpdef getAdjacentResonanceIsomers(self)
 
     cpdef findAllDelocalizationPaths(self, Atom atom1)

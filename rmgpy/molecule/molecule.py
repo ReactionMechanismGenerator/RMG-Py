@@ -35,7 +35,7 @@ Both :class:`Atom` and :class:`Bond` objects store semantic information that
 describe the corresponding atom or bond.
 """
 
-import cython
+import cython, cython.short, cython.int, cython.double
 import logging
 import os
 import re
@@ -44,6 +44,7 @@ import openbabel
 from .graph import Vertex, Edge, Graph
 from .group import GroupAtom, GroupBond, Group, ActionError
 from .atomtype import AtomType, atomTypes, getAtomType
+import rmgpy.constants as constants
 
 ################################################################################
 
@@ -582,6 +583,20 @@ class Molecule(Graph):
             radicals += atom.radicalElectrons
         return radicals
 
+    def getNumAtoms(self, element = None):
+        """
+        Return the number of atoms in molecule.  If element is given, ie. "H" or "C",
+        the number of atoms of that element is returned.
+        """
+        if element == None:
+            return len(self.vertices)
+        else:
+            numAtoms = 0
+            for atom in self.vertices:
+                if atom.element.symbol == element:
+                    numAtoms += 1
+            return numAtoms
+
     def copy(self, deep=False):
         """
         Create a copy of the current graph. If `deep` is ``True``, a deep copy
@@ -772,22 +787,23 @@ class Molecule(Graph):
     def draw(self, path):
         """
         Generate a pictorial representation of the chemical graph using the
-        :mod:`ext.molecule_draw` module. Use `path` to specify the file to save
+        :mod:`draw` module. Use `path` to specify the file to save
         the generated image to; the image type is automatically determined by
         extension. Valid extensions are ``.png``, ``.svg``, ``.pdf``, and
         ``.ps``; of these, the first is a raster format and the remainder are
         vector formats.
         """
-        from molecule_draw import drawMolecule
-        drawMolecule(self, path=path)
+        from .draw import MoleculeDrawer
+        format = os.path.splitext(path)[-1][1:].lower()
+        MoleculeDrawer().draw(self, format, path=path)
     
     def _repr_png_(self):
         """
         Return a png picture of the molecule, useful for ipython-qtconsole.
         """
-        from molecule_draw import drawMolecule
+        from .draw import MoleculeDrawer
         tempFileName = 'temp_molecule.png'
-        drawMolecule(self, path=tempFileName)
+        MoleculeDrawer().draw(self, 'png', tempFileName)
         png = open(tempFileName,'rb').read()
         os.unlink(tempFileName)
         return png
@@ -822,9 +838,11 @@ class Molecule(Graph):
         Convert a SMILES string `smilesstr` to a molecular structure. Uses
         `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
         """
-        if smilesstr == '[H]':
+        if smilesstr == '[H]' or smilesstr == 'H':
             # cope with a bug in OpenBabel < 2.3
             return self.fromAdjacencyList('1 H 1')
+        elif smilesstr == 'H2':
+            return self.fromSMILES('[H][H]')
         import pybel
         mol = pybel.readstring('smiles', smilesstr)
         self.fromOBMol(mol.OBMol)
@@ -983,6 +1001,10 @@ class Molecule(Graph):
         `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
         """
         mol = self.toOBMol()
+        if self.getFormula() == 'H2':
+            return '[H][H]'
+        elif self.getFormula() == 'H':
+            return '[H]'
         return SMILEwriter.WriteString(mol).strip()
 
     def toOBMol(self):
@@ -1083,6 +1105,25 @@ class Molecule(Graph):
                     if len(atom1.edges) > 1 and len(atom2.edges) > 1:
                         count += 1
         return count
+
+    def calculateCp0(self):
+        """
+        Return the value of the heat capacity at zero temperature in J/mol*K.
+        """
+        return (3.5 if self.isLinear() else 4.0) * constants.R
+
+    def calculateCpInf(self):
+        """
+        Return the value of the heat capacity at infinite temperature in J/mol*K.
+        """
+        cython.declare(Natoms=cython.int, Nvib=cython.int, Nrotors=cython.int)
+        
+        Natoms = len(self.vertices)
+        Nvib = 3 * Natoms - (5 if self.isLinear() else 6)
+        Nrotors = self.countInternalRotors()
+        Nvib -= Nrotors
+        
+        return self.calculateCp0() + (Nvib + 0.5 * Nrotors) * constants.R
 
     def calculateSymmetryNumber(self):
         """
@@ -1189,3 +1230,4 @@ class Molecule(Graph):
         adjlist = self.toAdjacencyList(removeH=True)
         url += "{0}".format(re.sub('\s+', '%20', adjlist.replace('\n', ';')))
         return url.strip('_')
+

@@ -30,17 +30,19 @@
 
 import logging
 import quantities
+import os
 
 from rmgpy import settings
 
 from rmgpy.molecule import Molecule
-
+from rmgpy.quantity import Quantity
 from rmgpy.data.rmg import RMGDatabase
 
 from rmgpy.solver.base import TerminationTime, TerminationConversion
 from rmgpy.solver.simple import SimpleReactor
 
-from model import *
+from model import CoreEdgeReactionModel
+
 
 ################################################################################
 
@@ -170,39 +172,44 @@ def pressureDependence(
                        maximumGrainSize = 0.0,
                        minimumNumberOfGrains = 0,
                        interpolation = None,
+                       maximumAtoms=None,
                        ):
 
-    from rmgpy.measure.input import getTemperaturesForModel, getPressuresForModel
-    from rmgpy.measure.main import MEASURE
+    from rmgpy.cantherm.pdep import PressureDependenceJob
     
     # Setting the pressureDependence attribute to non-None enables pressure dependence
-    rmg.pressureDependence = MEASURE()
+    rmg.pressureDependence = PressureDependenceJob(network=None)
     
     # Process method
     rmg.pressureDependence.method = method
     
+    # Process interpolation model
+    rmg.pressureDependence.interpolationModel = interpolation
+
     # Process temperatures
-    Tmin, Tmax, T_units, Tcount = temperatures
-    rmg.pressureDependence.Tmin = Quantity(Tmin, T_units)
-    rmg.pressureDependence.Tmax = Quantity(Tmax, T_units)
+    Tmin, Tmax, Tunits, Tcount = temperatures
+    rmg.pressureDependence.Tmin = Quantity(Tmin, Tunits)
+    rmg.pressureDependence.Tmax = Quantity(Tmax, Tunits)
     rmg.pressureDependence.Tcount = Tcount
-    Tlist = getTemperaturesForModel(interpolation, rmg.pressureDependence.Tmin.value, rmg.pressureDependence.Tmax.value, rmg.pressureDependence.Tcount)
-    rmg.pressureDependence.Tlist = Quantity(Tlist,"K")
+    rmg.pressureDependence.generateTemperatureList()
     
     # Process pressures
-    Pmin, Pmax, P_units, Pcount = pressures
-    rmg.pressureDependence.Pmin = Quantity(Pmin, P_units)
-    rmg.pressureDependence.Pmax = Quantity(Pmax, P_units)
+    Pmin, Pmax, Punits, Pcount = pressures
+    rmg.pressureDependence.Pmin = Quantity(Pmin, Punits)
+    rmg.pressureDependence.Pmax = Quantity(Pmax, Punits)
     rmg.pressureDependence.Pcount = Pcount
-    Plist = getPressuresForModel(interpolation, rmg.pressureDependence.Pmin.value, rmg.pressureDependence.Pmax.value, rmg.pressureDependence.Pcount)
-    rmg.pressureDependence.Plist = Quantity(Plist,"Pa")
+    rmg.pressureDependence.generatePressureList()
     
     # Process grain size and count
-    rmg.pressureDependence.grainSize = Quantity(maximumGrainSize)
-    rmg.pressureDependence.grainCount = minimumNumberOfGrains
-
-    # Process interpolation model
-    rmg.pressureDependence.model = interpolation
+    rmg.pressureDependence.maximumGrainSize = Quantity(maximumGrainSize)
+    rmg.pressureDependence.minimumGrainCount = minimumNumberOfGrains
+    
+    # Process maximum atoms
+    rmg.pressureDependence.maximumAtoms = maximumAtoms
+    
+    rmg.pressureDependence.activeJRotor = True
+    rmg.pressureDependence.activeKRotor = True
+    rmg.pressureDependence.rmgmode = True
 
 def options(
             units='si',
@@ -296,6 +303,8 @@ def saveInputFile(path, rmg):
     f.write('    reactionLibraries = {0!r},\n'.format(rmg.reactionLibraries))
     f.write('    seedMechanisms = {0!r},\n'.format(rmg.seedMechanisms))
     f.write('    kineticsDepositories = {0!r},\n'.format(rmg.kineticsDepositories))
+    f.write('    kineticsFamilies = {0!r},\n'.format(rmg.kineticsFamilies))
+    f.write('    kineticsEstimator = {0!r},\n'.format(rmg.kineticsEstimator))
     f.write(')\n\n')
 
     # Species
@@ -319,20 +328,24 @@ def saveInputFile(path, rmg):
         f.write('    initialMoleFractions={\n')
         for species, molfrac in system.initialMoleFractions.iteritems():
             f.write('        "{0!s}": {1:g},\n'.format(species.label, molfrac))
-        f.write('    },\n')
+        f.write('    },\n')               
+        
+        # Termination criteria
+        conversions = ''
+        for term in system.termination:
+            if isinstance(term, TerminationTime):
+                f.write('    terminationTime = ({0:g},"{1!s}"),\n'.format(term.time.getValueInGivenUnits(),term.time.units))
+                
+            else:
+                conversions += '        "{0:s}": {1:g},\n'.format(term.species.label, term.conversion)
+        if conversions:        
+            f.write('    terminationConversion = {\n')
+            f.write(conversions)
+            f.write('    },\n')
+        
         f.write(')\n\n')
-
-    # Termination
-    f.write('termination(\n')
-    for term in rmg.termination:
-        if isinstance(term,TerminationTime):
-            f.write('    time = ({0:g},"{1!s}"),\n'.format(term.time.getValueInGivenUnits(),term.time.units))
-        if isinstance(term,TerminationConversion):
-            f.write('    conversion = {\n')
-            f.write('        "{0:s}": {1:g},\n'.format(term.species.label, term.conversion))
-            f.write('    }\n')
-    f.write(')\n\n')
-
+        
+        
     # Simulator tolerances
     f.write('simulator(\n')
     f.write('    atol = {0:g},\n'.format(rmg.absoluteTolerance))

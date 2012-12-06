@@ -28,26 +28,38 @@ cimport numpy
 
 ################################################################################
 
-cdef class Quantity:
+cdef class Units(object):
 
-    cdef public double value, uncertainty
-    cdef public numpy.ndarray values, uncertainties
-    cdef public str units, uncertaintyType
+    cdef public str units
 
-    cpdef double getConversionFactorToSI(self)
+    cpdef double getConversionFactorToSI(self) except -1
 
-    cpdef double getConversionFactorFromSI(self)
+    cpdef double getConversionFactorFromSI(self) except -1
+    
+################################################################################
 
-    cpdef bint isArray(self)
+cdef class ScalarQuantity(Units):
 
-    cpdef bint isUncertaintyAdditive(self)
+    cdef public double value_si
+    cdef public str uncertaintyType
+    cdef public double uncertainty
+    
+    cpdef bint isUncertaintyAdditive(self) except -2
 
-    cpdef bint isUncertaintyMultiplicative(self)
+    cpdef bint isUncertaintyMultiplicative(self) except -2
+    
+    cpdef ScalarQuantity copy(self)
 
 ################################################################################
 
-cdef class Constants:
+cdef class ArrayQuantity(Units):
 
-    cdef public double Na, kB, R, h, c, pi
+    cdef public numpy.ndarray value_si
+    cdef public str uncertaintyType
+    cdef public numpy.ndarray uncertainty
 
-cdef Constants constants
+    cpdef bint isUncertaintyAdditive(self) except -2
+
+    cpdef bint isUncertaintyMultiplicative(self) except -2
+    
+    cpdef ArrayQuantity copy(self)

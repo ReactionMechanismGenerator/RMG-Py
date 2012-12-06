@@ -57,6 +57,13 @@ Cython.Compiler.Options.annotate = True
 
 def getMainExtensionModules():
     return [
+        # Kinetics
+        Extension('rmgpy.kinetics.arrhenius', ['rmgpy/kinetics/arrhenius.pyx']),
+        Extension('rmgpy.kinetics.chebyshev', ['rmgpy/kinetics/chebyshev.pyx']),
+        Extension('rmgpy.kinetics.kineticsdata', ['rmgpy/kinetics/kineticsdata.pyx']),
+        Extension('rmgpy.kinetics.falloff', ['rmgpy/kinetics/falloff.pyx']),
+        Extension('rmgpy.kinetics.model', ['rmgpy/kinetics/model.pyx']),
+        Extension('rmgpy.kinetics.tunneling', ['rmgpy/kinetics/tunneling.pyx']),
         # Molecules and molecular representations
         Extension('rmgpy.molecule.atomtype', ['rmgpy/molecule/atomtype.py'], include_dirs=['.']),
         Extension('rmgpy.molecule.element', ['rmgpy/molecule/element.py'], include_dirs=['.']),
@@ -64,14 +71,32 @@ def getMainExtensionModules():
         Extension('rmgpy.molecule.group', ['rmgpy/molecule/group.py'], include_dirs=['.']),
         Extension('rmgpy.molecule.molecule', ['rmgpy/molecule/molecule.py'], include_dirs=['.']),
         Extension('rmgpy.molecule.symmetry', ['rmgpy/molecule/symmetry.py'], include_dirs=['.']),
+        # Pressure dependence
+        Extension('rmgpy.pdep.collision', ['rmgpy/pdep/collision.pyx']),
+        Extension('rmgpy.pdep.configuration', ['rmgpy/pdep/configuration.pyx']),
+        Extension('rmgpy.pdep.me', ['rmgpy/pdep/me.pyx']),
+        Extension('rmgpy.pdep.msc', ['rmgpy/pdep/msc.pyx']),
+        Extension('rmgpy.pdep.reaction', ['rmgpy/pdep/reaction.pyx']),
+        Extension('rmgpy.pdep.rs', ['rmgpy/pdep/rs.pyx']),
+        Extension('rmgpy.pdep.cse', ['rmgpy/pdep/cse.pyx']),
+        # Statistical mechanics
+        Extension('rmgpy.statmech.conformer', ['rmgpy/statmech/conformer.pyx']),
+        Extension('rmgpy.statmech.mode', ['rmgpy/statmech/mode.pyx']),
+        Extension('rmgpy.statmech.rotation', ['rmgpy/statmech/rotation.pyx']),
+        Extension('rmgpy.statmech.schrodinger', ['rmgpy/statmech/schrodinger.pyx']),
+        Extension('rmgpy.statmech.torsion', ['rmgpy/statmech/torsion.pyx']),
+        Extension('rmgpy.statmech.translation', ['rmgpy/statmech/translation.pyx']),
+        Extension('rmgpy.statmech.vibration', ['rmgpy/statmech/vibration.pyx']),
+        # Thermodynamics
+        Extension('rmgpy.thermo.thermodata', ['rmgpy/thermo/thermodata.pyx']),
+        Extension('rmgpy.thermo.model', ['rmgpy/thermo/model.pyx']),
+        Extension('rmgpy.thermo.nasa', ['rmgpy/thermo/nasa.pyx']),
+        Extension('rmgpy.thermo.wilhoit', ['rmgpy/thermo/wilhoit.pyx']),
         # Miscellaneous
-        Extension('rmgpy.kinetics', ['rmgpy/kinetics.py'], include_dirs=['.']),
+        Extension('rmgpy.constants', ['rmgpy/constants.py'], include_dirs=['.']),
         Extension('rmgpy.quantity', ['rmgpy/quantity.py'], include_dirs=['.']),
         Extension('rmgpy.reaction', ['rmgpy/reaction.py'], include_dirs=['.']),
         Extension('rmgpy.species', ['rmgpy/species.py'], include_dirs=['.']),
-        Extension('rmgpy._statmech', ['rmgpy/_statmech.pyx'], include_dirs=['.']),
-        Extension('rmgpy.statmech', ['rmgpy/statmech.py'], include_dirs=['.']),
-        Extension('rmgpy.thermo', ['rmgpy/thermo.py'], include_dirs=['.']),
     ]
 
 def getMeasureExtensionModules():
@@ -83,8 +108,8 @@ def getMeasureExtensionModules():
         Extension('rmgpy.measure.rs', ['rmgpy/measure/rs.pyx'], include_dirs=['.']),
         Extension('rmgpy.measure.cse', ['rmgpy/measure/cse.pyx'], include_dirs=['.']),
         Extension('rmgpy.measure.me', ['rmgpy/measure/me.pyx'], include_dirs=['.']),
+        Extension('rmgpy.constants', ['rmgpy/constants.py'], include_dirs=['.']),
         Extension('rmgpy.quantity', ['rmgpy/quantity.py'], include_dirs=['.']),
-        Extension('rmgpy._statmech', ['rmgpy/_statmech.pyx'], include_dirs=['.']),
     ]
     
 def getSolverExtensionModules():
@@ -127,5 +152,5 @@ setup(name='RMG Py',
     scripts=scripts,
     cmdclass = {'build_ext': build_ext},
     ext_modules = ext_modules,
-    include_dirs=[numpy.get_include()],
+    include_dirs=['.', numpy.get_include()],
 )

@@ -84,9 +84,20 @@ class Entry:
 
     """
 
-    def __init__(self, index=-1, label='', item=None, parent=None,
-        children=None, data=None, reference=None, referenceType='',
-        shortDesc='', longDesc='', rank=None, history=None):
+    def __init__(self,
+                 index=-1,
+                 label='',
+                 item=None,
+                 parent=None,
+                 children=None,
+                 data=None,
+                 reference=None,
+                 referenceType='',
+                 shortDesc='',
+                 longDesc='',
+                 rank=None,
+                 history=None
+                 ):
         self.index = index
         self.label = label
         self.item = item
@@ -139,7 +150,15 @@ class Database:
     local_context['Book'] = Book
     local_context['Thesis'] = Thesis
 
-    def __init__(self, entries=None, top=None, label='', name='', shortDesc='', longDesc='', recommended=False):
+    def __init__(self,
+                 entries=None,
+                 top=None,
+                 label='',
+                 name='',
+                 shortDesc='',
+                 longDesc='',
+                 recommended=False
+                 ):
         self.entries = entries or {}
         self.top = top or []
         self.label = label
@@ -189,7 +208,11 @@ class Database:
         
         # Process the file
         f = open(path, 'r')
-        exec f in global_context, local_context
+        try:
+            exec f in global_context, local_context
+        except Exception, e:
+            logging.error('Error while reading database {0!r}.'.format(path))
+            raise
         f.close()
 
         # Extract the database metadata
@@ -269,9 +292,24 @@ class Database:
         """
 
         # Load dictionary, library, and (optionally) tree
-        self.loadOldDictionary(dictstr, pattern)
-        if treestr != '': self.loadOldTree(treestr)
-        self.loadOldLibrary(libstr, numParameters, numLabels)
+        try:
+            self.loadOldDictionary(dictstr, pattern)
+        except Exception, e:
+            logging.error('Error while reading database {0!r}.'.format(os.path.dirname(dictstr)))
+            raise
+        
+        try:
+            if treestr != '': self.loadOldTree(treestr)
+        except Exception, e:
+            logging.error('Error while reading database {0!r}.'.format(os.path.dirname(treestr)))
+            raise
+        
+        try:
+            self.loadOldLibrary(libstr, numParameters, numLabels)
+        except Exception, e:
+            logging.error('Error while reading database {0!r}.'.format(os.path.dirname(libstr)))
+            raise
+          
         return self
 
     def loadOldDictionary(self, path, pattern):
@@ -378,10 +416,12 @@ class Database:
                         parent = parents[level-1]
 
                 if parent is not None: parent = self.entries[parent]
-                entry = self.entries[label]
-
+                try:
+                    entry = self.entries[label]
+                except KeyError:
+                    raise DatabaseError('Unable to find entry "{0}" from tree in dictionary.'.format(label))
+                
                 if isinstance(parent, str):
-                    import pdb; pdb.set_trace()
                     raise DatabaseError('Unable to find parent entry "{0}" of entry "{1}" in tree.'.format(parent, label))
 
                 # Update the parent and children of the nodes accordingly
@@ -424,10 +464,7 @@ class Database:
         finally:
             ftree.close()
 
-        try:
-            self.__loadTree(tree)
-        except DatabaseError, e:
-            logging.exception(str(e))
+        self.__loadTree(tree)
 
     def loadOldLibrary(self, path, numParameters, numLabels=1):
         """
@@ -442,7 +479,8 @@ class Database:
         # Load the parsed entries into the database, skipping duplicate entries
         skippedCount = 0
         for index, label, parameters, comment in entries:
-            assert label in self.entries
+            if label not in self.entries:
+                raise DatabaseError('Entry {0!r} in library was not found in dictionary.'.format(label))
             if self.entries[label].index != -1:
                 # The entry is a duplicate, so skip it
                 logging.debug("There was already something labeled {0} in the {1} library. Ignoring '{2}' ({3})".format(label, self.label, index, parameters))
@@ -476,7 +514,7 @@ class Database:
         
         flib = None
         try:
-            flib = open(path, 'r')
+            flib = codecs.open(path, 'r', 'utf-8')
             for line in flib:
                 line = removeCommentFromLine(line).strip()
                 if len(line) > 0:
@@ -518,8 +556,8 @@ class Database:
 
         except DatabaseError, e:
             logging.exception(str(e))
-            for s in (dictstr, treestr, libstr):
-                logging.exception(s)
+            logging.exception("path = '{0}'".format(path))
+            logging.exception("line = '{0}'".format(line))
             raise
         except IOError, e:
             logging.exception('Database library file "' + e.filename + '" not found.')
@@ -535,8 +573,14 @@ class Database:
         syntax.
         """
         self.saveOldDictionary(dictstr)
-        if treestr != '': self.saveOldTree(treestr)
-        self.saveOldLibrary(libstr)
+        if treestr != '':
+            self.saveOldTree(treestr)
+
+        # RMG-Java does not require a frequencies_groups/Library.txt file to
+        # operate, but errors are raised upon importing to Py if this file is
+        # not found. This check prevents the placeholder from being discarded.
+        if 'StatesGroups' not in self.__class__.__name__:
+            self.saveOldLibrary(libstr)
 
     def saveOldDictionary(self, path):
         """
@@ -577,9 +621,10 @@ class Database:
                 elif isinstance(entry.item, LogicOr):
                     f.write('{0}\n\n'.format(entry.item).replace('OR{', 'Union {'))
                 elif entry.label[0:7] == 'Others-':
-                    pass
+                    assert isinstance(entry.item, LogicNode)
+                    f.write('{0}\n\n'.format(entry.item))
                 else:
-                    raise DatabaseError('Unexpected item with label {0} encountered in dictionary while attempting to save.'.format(label))
+                    raise DatabaseError('Unexpected item with label {0} encountered in dictionary while attempting to save.'.format(entry.label))
             f.close()
         except IOError, e:
             logging.exception('Unable to save old-style tree to "{0}".'.format(os.path.abspath(path)))
@@ -627,7 +672,7 @@ class Database:
             entries = self.entries.values()
             entries.sort(key=lambda x: x.index)
             
-            f = open(path, 'w')
+            f = codecs.open(path, 'w',  'utf-8')
             records = []
             for entry in entries:
                 if entry.data is not None:
@@ -648,11 +693,11 @@ class Database:
                 f.write('{:<6d} '.format(index))
                 for label in labels:
                     f.write('{:<32s} '.format(label))
-                if isinstance(data, str):
+                if isinstance(data, basestring):
                     f.write('{:s} '.format(data))
                 else:
                     f.write('{:s} '.format(' '.join(['{:<10g}'.format(d) for d in data])))
-                f.write('    {:s}\n'.format(comment))
+                f.write(u'    {:s}\n'.format(comment))
             f.close()
         except IOError, e:
             logging.exception('Unable to save old-style library to "{0}".'.format(os.path.abspath(path)))
@@ -690,24 +735,6 @@ class Database:
             descendants.append(child)
             descendants.extend(self.descendants(child))
         return descendants
-
-    def getData(self, label):
-        """
-        Return the data in the library associated with the label or list of
-        labels denoted by `key`.
-        """
-        if len(self.library) > 0:
-            key = self.hashLabels(key)
-            data = self.library[key]
-            while isinstance(data, str):
-                key = self.hashLabels(data)
-                data = self.library[key]
-        else:
-            data = self.library[label]
-            while isinstance(data, str):
-                label = data
-                data = self.library[label]
-        return data
 
     def isWellFormed(self):
         """
@@ -859,10 +886,8 @@ class Database:
             else:
                 return root
         else:
-            #print structure.toAdjacencyList()
-            #raise DatabaseError('For structure {0}, a node {1} with non-mutually-exclusive children {2} was encountered in tree with top level nodes {3}.'.format(structure.getFormula(), root, next, self.tree.top))
-            logging.warning('For {0}, a node {1} with overlapping children {2} was encountered in tree with top level nodes {3}.'.format(structure, root, next, self.top))
-            return root
+            logging.warning('For {0}, a node {1} with overlapping children {2} was encountered in tree with top level nodes {3}. Assuming the first match is the better one.'.format(structure, root, next, self.top))
+            return self.descendTree(structure, atoms, next[0])
 
 ################################################################################
 
@@ -1098,7 +1123,11 @@ class ForbiddenStructures(Database):
         if molecule is not None:
             item = Molecule.fromAdjacencyList(molecule)
         elif group is not None:
-            if group[0:3].upper() == 'OR{' or group[0:4].upper() == 'AND{' or group[0:7].upper() == 'NOT OR{' or group[0:8].upper() == 'NOT AND{':
+            if ( group[0:3].upper() == 'OR{' or
+                 group[0:4].upper() == 'AND{' or
+                 group[0:7].upper() == 'NOT OR{' or
+                 group[0:8].upper() == 'NOT AND{'
+                ):
                 item = makeLogicNode(group)
             else:
                 item = Group().fromAdjacencyList(group)

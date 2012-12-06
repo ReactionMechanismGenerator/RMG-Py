@@ -37,7 +37,7 @@ import sys
 import argparse
 import logging
 
-from rmgpy.rmg.main import *
+from rmgpy.rmg.main import RMG, initializeLog, processProfileStats, makeProfileGraph
 
 ################################################################################
 
@@ -89,6 +89,7 @@ def parseCommandLineArguments():
 
 if __name__ == '__main__':
 
+    """ GUPPY PROFILING DISABLED FOR NOW
     # Initialize the memory profiler
     # It works best if we do this as the very first thing
     # If the memory profiler package is not installed then carry on
@@ -98,6 +99,7 @@ if __name__ == '__main__':
         hp.heap()
     except ImportError:
         pass
+    """
 
     # Parse the command-line arguments (requires the argparse module)
     args = parseCommandLineArguments()

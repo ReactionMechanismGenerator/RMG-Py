@@ -43,7 +43,9 @@ import numpy
 cimport numpy
 import logging
 
-from rmgpy.quantity cimport constants, Quantity
+cimport rmgpy.constants as constants
+from rmgpy.quantity import Quantity
+from rmgpy.quantity cimport ScalarQuantity, ArrayQuantity
 import rmgpy.reaction
 from rmgpy.kinetics import Arrhenius, PDepArrhenius, Chebyshev
 
@@ -139,11 +141,10 @@ def calculateMicrocanonicalRateCoefficient(reaction,
         # We've been provided with high-pressure-limit rate coefficient data,
         # so let's use the less accurate inverse Laplace transform method
         if reactantStatesKnown:
-            kf = applyInverseLaplaceTransformMethod(reaction.kinetics, reaction.transitionState.E0.value, Elist, reacDensStates, T)
+            kf = applyInverseLaplaceTransformMethod(reaction.kinetics, reaction.transitionState.E0.value_si, Elist, reacDensStates, T)
         elif productStatesKnown:
-            Tlist = 1.0/numpy.arange(1.0/2000.0, 1.0/300.0, 18, numpy.float64)
             kinetics = reaction.generateReverseRateCoefficient()
-            kr = applyInverseLaplaceTransformMethod(kinetics, reaction.transitionState.E0.value, Elist, prodDensStates, T)
+            kr = applyInverseLaplaceTransformMethod(kinetics, reaction.transitionState.E0.value_si, Elist, prodDensStates, T)
         else:
             raise ReactionError('Unable to compute k(E) values via ILT method for path reaction "{0}".'.format(reaction))
     
@@ -234,7 +235,7 @@ def applyRRKMTheory(transitionState,
     # Calculate sum of states of transition state
     sumStates0 = transitionState.states.getSumOfStates(Elist - Elist[0])
     # Shift to common zero of energy
-    r0 = int(round((transitionState.E0.value - Elist[0]) / dE))
+    r0 = int(round((transitionState.E0.value_si - Elist[0]) / dE))
     sumStates = numpy.zeros_like(Elist)
     sumStates[r0:] = sumStates0[:-r0+len(sumStates0)]
     
@@ -269,9 +270,9 @@ def applyInverseLaplaceTransformMethod(kinetics, double E0,
     k = numpy.zeros_like((Elist))
     
     if isinstance(kinetics, Arrhenius) and (T != 0.0 or (kinetics.Ea >= 0 and kinetics.n >= 0)):
-        A = kinetics.A.value / (kinetics.T0.value**kinetics.n.value)
-        n = kinetics.n.value
-        Ea = kinetics.Ea.value
+        A = kinetics.A.value_si / (kinetics.T0.value_si**kinetics.n.value_si)
+        n = kinetics.n.value_si
+        Ea = kinetics.Ea.value_si
         dE = Elist[1] - Elist[0]
 
         # The inverse Laplace transform is not defined for Ea < 0 or n < 0
@@ -281,7 +282,7 @@ def applyInverseLaplaceTransformMethod(kinetics, double E0,
         if Ea < 0:
             A *= exp(-Ea / R / T)
             Ea = 0.0
-        if n != 0:
+        if n < 0:
             A *= T**n
             n = 0.0
 
@@ -304,7 +305,7 @@ def applyInverseLaplaceTransformMethod(kinetics, double E0,
             # Evaluate the inverse Laplace transform of the T**n piece, which only
             # exists for n >= 0
             phi = numpy.zeros(Ngrains, numpy.float64)
-            for i in range(Ngrains):
+            for i in range(1, Ngrains):
                 phi[i] = (Elist[i] - Elist[0])**(n-1) / (R**n * scipy.special.gamma(n))
             # Evaluate the convolution
             phi = convolve(phi, densStates, Elist)

@@ -3,12 +3,13 @@
 
 ################################################################################
 #
-#   CanTherm
-#    
-#   Copyright (c) 2010 by Joshua W. Allen (jwallen@mit.edu)
+#   RMG - Reaction Mechanism Generator
+#
+#   Copyright (c) 2002-2009 Prof. William H. Green (whgreen@mit.edu) and the
+#   RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
-#   copy of this software and associated documentation files (the 'Software'),
+#   copy of this software and associated documentation files (the "Software"),
 #   to deal in the Software without restriction, including without limitation
 #   the rights to use, copy, modify, merge, publish, distribute, sublicense,
 #   and/or sell copies of the Software, and to permit persons to whom the
@@ -17,10 +18,10 @@
 #   The above copyright notice and this permission notice shall be included in
 #   all copies or substantial portions of the Software.
 #
-#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 #   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+#   THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 #   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #   DEALINGS IN THE SOFTWARE.
@@ -30,9 +31,8 @@
 import math
 import numpy
 
-from geometry import Geometry
-from rmgpy.statmech import Translation, RigidRotor, HinderedRotor, HarmonicOscillator, StatesModel
-from rmgpy.quantity import constants
+import rmgpy.constants as constants
+from rmgpy.statmech import *
 
 ################################################################################
 
@@ -40,7 +40,8 @@ class GaussianLog:
     """
     Represent a log file from Gaussian. The attribute `path` refers to the
     location on disk of the Gaussian log file of interest. Methods are provided
-    to extract a variety of information into ChemPy classes and/or NumPy arrays.
+    to extract a variety of information into CanTherm classes and/or NumPy
+    arrays.
     """
 
     def __init__(self, path):
@@ -147,11 +148,11 @@ class GaussianLog:
             elif number[i] == 8:
                 mass[i] = 15.99491461956
             else:
-                print 'Atomic number %i not yet supported in loadGeometry().' % number[i]
+                print 'Atomic number {0:d} not yet supported in loadGeometry().'.format(number[i])
         
-        return Geometry(coordinates=coord * 1e-10, number=number, mass=mass / 1000)
+        return coord, number, mass
 
-    def loadStates(self, symmetry=None):
+    def loadConformer(self, symmetry=None, spinMultiplicity=None, opticalIsomers=1):
         """
         Load the molecular degree of freedom data from a log file created as
         the result of a Gaussian "Freq" quantum chemistry calculation. As
@@ -164,7 +165,6 @@ class GaussianLog:
 
         modes = []
         E0 = 0.0
-        spinMultiplicity = 1
 
         f = open(self.path, 'r')
         line = f.readline()
@@ -184,7 +184,7 @@ class GaussianLog:
                     # Read molecular mass for external translational modes
                     elif 'Molecular mass:' in line:
                         mass = float(line.split()[2])
-                        translation = Translation(mass=(mass,"g/mol"))
+                        translation = IdealGasTranslation(mass=(mass,"amu"))
                         modes.append(translation)
 
                     # Read Gaussian's estimate of the external symmetry number
@@ -196,12 +196,12 @@ class GaussianLog:
                         inertia = [float(d) for d in line.split()[-3:]]
                         for i in range(3):
                             inertia[i] = constants.h / (8 * constants.pi * constants.pi * inertia[i] * 1e9) *constants.Na*1e23
-                        rotation = RigidRotor(linear=False, inertia=(inertia,"amu*angstrom^2"), symmetry=symmetry)
+                        rotation = NonlinearRotor(inertia=(inertia,"amu*angstrom^2"), symmetry=symmetry)
                         modes.append(rotation)
                     elif 'Rotational constant (GHZ):' in line:
                         inertia = [float(line.split()[3])]
                         inertia[0] = constants.h / (8 * constants.pi * constants.pi * inertia[0] * 1e9) *constants.Na*1e23
-                        rotation = RigidRotor(linear=True, inertia=(inertia[0],"amu*angstrom^2"), symmetry=symmetry)
+                        rotation = LinearRotor(inertia=(inertia[0],"amu*angstrom^2"), symmetry=symmetry)
                         modes.append(rotation)
 
                     # Read vibrational modes
@@ -215,16 +215,17 @@ class GaussianLog:
                             frequencies.extend([float(d) for d in line.split()])
                             line = f.readline()
                         # Convert from K to cm^-1
-                        frequencies = [freq * 0.695039 for freq in frequencies]  # kB = 0.695039 cm^-1/K
-                        vibration = HarmonicOscillator(frequencies=(frequencies,"cm^-1"))
-                        modes.append(vibration)
+                        if len(frequencies) > 0:
+                            frequencies = [freq * 0.695039 for freq in frequencies]  # kB = 0.695039 cm^-1/K
+                            vibration = HarmonicOscillator(frequencies=(frequencies,"cm^-1"))
+                            modes.append(vibration)
 
                     # Read ground-state energy
                     elif 'Sum of electronic and zero-point Energies=' in line:
                         E0 = float(line.split()[6]) * 4.35974394e-18 * constants.Na
 
-                    # Read spin multiplicity
-                    elif 'Electronic' in line and inPartitionFunctions:
+                    # Read spin multiplicity if not explicitly given
+                    elif 'Electronic' in line and inPartitionFunctions and spinMultiplicity is None:
                         spinMultiplicity = int(float(line.split()[1].replace('D', 'E')))
 
                     elif 'Log10(Q)' in line:
@@ -239,9 +240,9 @@ class GaussianLog:
         # Close file when finished
         f.close()
 
-        return StatesModel(modes=modes, spinMultiplicity=spinMultiplicity)
+        return Conformer(E0=(E0*0.001,"kJ/mol"), modes=modes, spinMultiplicity=spinMultiplicity, opticalIsomers=opticalIsomers)
 
-    def loadEnergy(self):
+    def loadEnergy(self, frequencyScaleFactor=1.0):
         """
         Load the energy in J/mol from a Gaussian log file. The file is checked 
         for a complete basis set extrapolation; if found, that value is 
@@ -257,15 +258,15 @@ class GaussianLog:
         while line != '':
 
             if 'SCF Done:' in line:
-                E0 = float(line.split()[4]) * 4.35974394e-18 * constants.Na
+                E0 = float(line.split()[4]) * constants.E_h * constants.Na
             elif 'CBS-QB3 (0 K)' in line or 'G3 (O K)' in line:
-                E0_cbs = float(line.split()[3]) * 4.35974394e-18 * constants.Na
+                E0_cbs = float(line.split()[3]) * constants.E_h * constants.Na
             elif 'Zero-point correction=' in line:
-                ZPE = float(line.split()[2]) * 4.35974394e-18 * constants.Na
+                ZPE = float(line.split()[2]) * constants.E_h * constants.Na
             elif '\\ZeroPoint=' in line:
                 start = line.find('\\ZeroPoint=') + 11
                 end = line.find('\\', start)
-                ZPE = float(line[start:end]) * 4.35974394e-18 * constants.Na
+                ZPE = float(line[start:end]) * constants.E_h * constants.Na
             # Read the next line in the file
             line = f.readline()
 
@@ -276,13 +277,13 @@ class GaussianLog:
         elif E0 is not None: 
             if ZPE is None:
                 raise ChemPyError('Unable to find zero-point energy in Gaussian log file.')
-            return E0 + ZPE
+            return E0 + ZPE * frequencyScaleFactor
         else: raise ChemPyError('Unable to find energy in Gaussian log file.')
     
     def loadScanEnergies(self):
         """
-        Extract the optimized energies in J/mol from a log file, e.g. the result
-        of a Gaussian "Scan" quantum chemistry calculation.
+        Extract the optimized energies in J/mol from a log file, e.g. the 
+        result of a Gaussian "Scan" quantum chemistry calculation.
         """
 
         optfreq = False
@@ -312,10 +313,10 @@ class GaussianLog:
         f.close()
         
         # Adjust energies to be relative to minimum energy conformer
-        # Also convert units from Hartree/particle to J/mol
+        # Also convert units from Hartree/particle to kJ/mol
         Vlist = numpy.array(Vlist, numpy.float64)
         Vlist -= numpy.min(Vlist)
-        Vlist *= 4.35974394e-18 * 6.02214179e23
+        Vlist *= constants.E_h * constants.Na
 
         if optfreq: Vlist = Vlist[:-1]
 
@@ -349,72 +350,3 @@ class GaussianLog:
         frequency = [freq for freq in frequencies if freq < 0][0]
         
         return frequency
-
-    def fitCosinePotential(self):
-        """
-        For a given log file, extract the energies and fit them to a potential
-        of the form
-
-        .. math:: V(\\phi) = \\frac{1}{2} V_0 \\left( 1 - \\cos \\sigma \\phi \\right)
-
-        This function returns the fitted barrier height :math:`V_0` in J/mol  
-        and symmetry number (degeneracy) :math:`\\sigma`.
-        For best results, the Scan should only be performed on one rotor at a
-        time. It should begin from the minimum energy conformation, cover one
-        complete rotation, and return to the minimum energy conformation as the
-        last step in the scan.
-        """
-        
-        # Load the energies from the file
-        Vlist, angle = self.loadScanEnergies()
-        
-        # Fit the simple cosine potential to get the barrier height V0
-        # and the symmetry number
-        # We fit at integral symmetry numbers in the range [1, 9]
-        # The best fit will have the maximum barrier height
-        symmetry = 0; barrier = 0.0
-        for symm in range(1, 10):
-            num = numpy.sum(Vlist * (1 - numpy.cos(symm * angle)))
-            den = numpy.sum((1 - numpy.cos(symm * angle))**2)
-            V = 2 * num / den
-            if V > barrier:
-                symmetry = symm
-                barrier = V
-
-        return barrier, symmetry
-
-    def fitFourierSeriesPotential(self):
-        """
-        For a given log file, extract the energies and fit them to a potential
-        of the form
-
-        .. math:: V(\\phi) = \\sum_{m=1}^5 A_m \\cos m \\phi + \\sum_{m=1}^5 B_m \\sin m \\phi
-        
-        This function returns the fitted Fourier coefficients :math:`A_m` and
-        :math:`B_m` in J/mol.
-        For best results, the Scan should only be performed on one rotor at a
-        time. It should begin from the minimum energy conformation, cover one
-        complete rotation, and return to the minimum energy conformation as the
-        last step in the scan.
-        """
-
-        # Load the energies from the file
-        Vlist, angle = self.loadScanEnergies()
-
-        # Fit Fourier series potential
-        A = numpy.zeros((len(Vlist)+1,12), numpy.float64)
-        b = numpy.zeros(len(Vlist)+1, numpy.float64)
-        for i in range(len(Vlist)):
-            for m in range(6):
-                A[i,m] = math.cos(m * angle[i])
-                A[i,6+m] = math.sin(m * angle[i])
-                b[i] = Vlist[i]
-        # This row forces dV/dangle = 0 at angle = 0
-        for m in range(6):
-            A[len(Vlist),m+6] = m
-        x, residues, rank, s = numpy.linalg.lstsq(A, b)
-
-        # Return the set of Fourier coefficients
-        return numpy.array([x[1:6], x[7:12]], numpy.float64)
-
-################################################################################

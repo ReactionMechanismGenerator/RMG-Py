@@ -33,4 +33,3 @@ from .atomtype import *
 from .element import *
 from .molecule import *
 from .group import *
-from .molecule_draw import drawMolecule

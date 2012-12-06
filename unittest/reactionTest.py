@@ -13,7 +13,7 @@ from rmgpy.reaction import *
 from rmgpy.statmech import *
 from rmgpy.kinetics import Arrhenius
 from rmgpy.thermo import Wilhoit
-from rmgpy.quantity import constants
+import rmgpy.constants as constants
 
 ################################################################################
 
@@ -312,9 +312,9 @@ class TestReaction(unittest.TestCase):
         klist2 = arrhenius.getRateCoefficients(Tlist)
         
         # Check that the correct Arrhenius parameters are returned
-        self.assertAlmostEqual(arrhenius.A.value/1.07506e+07, 1.0, 3)
-        self.assertAlmostEqual(arrhenius.n.value/1.47803, 1.0, 3)
-        self.assertAlmostEqual(arrhenius.Ea.value/10194., 1.0, 3)
+        self.assertAlmostEqual(arrhenius.A.value_si/1.07506e+07, 1.0, 3)
+        self.assertAlmostEqual(arrhenius.n.value_si/1.47803, 1.0, 3)
+        self.assertAlmostEqual(arrhenius.Ea.value_si/10194., 1.0, 3)
         # Check that the fit is satisfactory
         for i in range(len(Tlist)):
             self.assertTrue(abs(1 - klist2[i] / klist[i]) < 0.01)
@@ -330,20 +330,20 @@ class TestReaction(unittest.TestCase):
         self.assertEqual(len(self.reaction.reactants), len(reaction.reactants))
         self.assertEqual(len(self.reaction.products), len(reaction.products))
         for reactant0, reactant in zip(self.reaction.reactants, reaction.reactants):
-            self.assertAlmostEqual(reactant0.E0.value / 1e6, reactant.E0.value / 1e6, 2)
+            self.assertAlmostEqual(reactant0.E0.value_si / 1e6, reactant.E0.value_si / 1e6, 2)
             self.assertEqual(reactant0.E0.units, reactant.E0.units)
         for product0, product in zip(self.reaction.products, reaction.products):
-            self.assertAlmostEqual(product0.E0.value / 1e6, product.E0.value / 1e6, 2)
+            self.assertAlmostEqual(product0.E0.value_si / 1e6, product.E0.value_si / 1e6, 2)
             self.assertEqual(product0.E0.units, product.E0.units)
-        self.assertAlmostEqual(self.reaction.transitionState.E0.value / 1e6, reaction.transitionState.E0.value / 1e6, 2)
+        self.assertAlmostEqual(self.reaction.transitionState.E0.value_si / 1e6, reaction.transitionState.E0.value_si / 1e6, 2)
         self.assertEqual(self.reaction.transitionState.E0.units, reaction.transitionState.E0.units)
-        self.assertAlmostEqual(self.reaction.transitionState.frequency.value, reaction.transitionState.frequency.value, 2)
+        self.assertAlmostEqual(self.reaction.transitionState.frequency.value_si, reaction.transitionState.frequency.value_si, 2)
         self.assertEqual(self.reaction.transitionState.frequency.units, reaction.transitionState.frequency.units)
         
-        self.assertEqual(self.reaction.kinetics.A.value, reaction.kinetics.A.value)
-        self.assertEqual(self.reaction.kinetics.n.value, reaction.kinetics.n.value)
-        self.assertEqual(self.reaction.kinetics.T0.value, reaction.kinetics.T0.value)
-        self.assertEqual(self.reaction.kinetics.Ea.value, reaction.kinetics.Ea.value)
+        self.assertEqual(self.reaction.kinetics.A.value_si, reaction.kinetics.A.value_si)
+        self.assertEqual(self.reaction.kinetics.n.value_si, reaction.kinetics.n.value_si)
+        self.assertEqual(self.reaction.kinetics.T0.value_si, reaction.kinetics.T0.value_si)
+        self.assertEqual(self.reaction.kinetics.Ea.value_si, reaction.kinetics.Ea.value_si)
         self.assertEqual(self.reaction.kinetics.comment, reaction.kinetics.comment)
 
         self.assertEqual(self.reaction.thirdBody, reaction.thirdBody)
@@ -360,20 +360,20 @@ class TestReaction(unittest.TestCase):
         self.assertEqual(len(self.reaction.reactants), len(reaction.reactants))
         self.assertEqual(len(self.reaction.products), len(reaction.products))
         for reactant0, reactant in zip(self.reaction.reactants, reaction.reactants):
-            self.assertAlmostEqual(reactant0.E0.value / 1e6, reactant.E0.value / 1e6, 2)
+            self.assertAlmostEqual(reactant0.E0.value_si / 1e6, reactant.E0.value_si / 1e6, 2)
             self.assertEqual(reactant0.E0.units, reactant.E0.units)
         for product0, product in zip(self.reaction.products, reaction.products):
-            self.assertAlmostEqual(product0.E0.value / 1e6, product.E0.value / 1e6, 2)
+            self.assertAlmostEqual(product0.E0.value_si / 1e6, product.E0.value_si / 1e6, 2)
             self.assertEqual(product0.E0.units, product.E0.units)
-        self.assertAlmostEqual(self.reaction.transitionState.E0.value / 1e6, reaction.transitionState.E0.value / 1e6, 2)
+        self.assertAlmostEqual(self.reaction.transitionState.E0.value_si / 1e6, reaction.transitionState.E0.value_si / 1e6, 2)
         self.assertEqual(self.reaction.transitionState.E0.units, reaction.transitionState.E0.units)
-        self.assertAlmostEqual(self.reaction.transitionState.frequency.value, reaction.transitionState.frequency.value, 2)
+        self.assertAlmostEqual(self.reaction.transitionState.frequency.value_si, reaction.transitionState.frequency.value_si, 2)
         self.assertEqual(self.reaction.transitionState.frequency.units, reaction.transitionState.frequency.units)
         
-        self.assertEqual(self.reaction.kinetics.A.value, reaction.kinetics.A.value)
-        self.assertEqual(self.reaction.kinetics.n.value, reaction.kinetics.n.value)
-        self.assertEqual(self.reaction.kinetics.T0.value, reaction.kinetics.T0.value)
-        self.assertEqual(self.reaction.kinetics.Ea.value, reaction.kinetics.Ea.value)
+        self.assertEqual(self.reaction.kinetics.A.value_si, reaction.kinetics.A.value_si)
+        self.assertEqual(self.reaction.kinetics.n.value_si, reaction.kinetics.n.value_si)
+        self.assertEqual(self.reaction.kinetics.T0.value_si, reaction.kinetics.T0.value_si)
+        self.assertEqual(self.reaction.kinetics.Ea.value_si, reaction.kinetics.Ea.value_si)
         self.assertEqual(self.reaction.kinetics.comment, reaction.kinetics.comment)
         
         self.assertEqual(self.reaction.thirdBody, reaction.thirdBody)

@@ -4,24 +4,21 @@ RMG Developer's Guide
 
 .. toctree::
     :maxdepth: 2
-
+    :numbered:
+    
     introduction
-    atomtype
     chemkin
-    element
-    graph
-    group
-    kinetics
-    molecule
-    molecule_draw
-    quantity
+    kinetics/index
+    quantities/index
     reaction
     species
-    statmech
-    thermo
+    statmech/index
+    thermo/index
+    molecule/index
     cantherm/index
     data/index
     measure/index
+    pdep/index
     rmg/index
     solver/index
 

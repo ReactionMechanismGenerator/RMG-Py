@@ -88,28 +88,15 @@ def compareModelSpecies(model1, model2):
     as a dictionary, as well as a list of unique reactions for each model.
     """
 
-    speciesList1 = model1.species[:]
-    speciesList2 = model2.species[:]
+    commonSpecies = []
+    uniqueSpecies1 = model1.species[:]
+    uniqueSpecies2 = []
     
-    commonSpecies = []; uniqueSpecies1 = []; uniqueSpecies2 = []
-    for spec1 in speciesList1:
-        for spec2 in speciesList2:
+    for spec2 in model2.species:
+        for spec1 in uniqueSpecies1:
             if spec1.isIsomorphic(spec2):
                 commonSpecies.append([spec1, spec2])
-                # Remove species 2 from being chosen a second time.
-                # Let each species only appear only once in the diff comparison.
-                # Otherwise this miscounts number of species in model 2.
-                speciesList2.remove(spec2)
-                break
-    for spec1 in speciesList1:
-        for s1, s2 in commonSpecies:
-            if spec1 is s1:
-                break
-        else:
-            uniqueSpecies1.append(spec1)
-    for spec2 in speciesList2:
-        for s1, s2 in commonSpecies:
-            if spec2 is s2:
+                uniqueSpecies1.remove(spec1)
                 break
         else:
             uniqueSpecies2.append(spec2)
@@ -159,23 +146,10 @@ def saveCompareHTML(outputDir,chemkinPath1,speciesDictPath1,chemkinPath2,species
     model2 = ReactionModel()
     model2.species, model2.reactions = loadChemkinFile(chemkinPath2, speciesDictPath2)
     commonReactions, uniqueReactions1, uniqueReactions2 = compareModelReactions(model1, model2)
-
-    outputPath = outputDir + 'diff.html'
-    speciesList1 = []
-    speciesList1 = model1.species
-    commonSpeciesList = []
-    speciesList2 = []
-    for spec2 in model2.species:
-        for spec1 in speciesList1:
-            if spec2.isIsomorphic(spec1):
-                spec2.label = spec1.label
-                speciesList1.remove(spec1)
-                commonSpeciesList.append(spec2)
-                break
-        else:
-            speciesList2.append(spec2)
-            
-    saveDiffHTML(outputPath, commonSpeciesList,speciesList1,speciesList2,commonReactions,uniqueReactions1,uniqueReactions2)
+    commonSpecies, uniqueSpecies1, uniqueSpecies2 = compareModelSpecies(model1, model2)
+    
+    outputPath = outputDir + 'diff.html'            
+    saveDiffHTML(outputPath, commonSpecies, uniqueSpecies1, uniqueSpecies2, commonReactions, uniqueReactions1, uniqueReactions2)
     
 ################################################################################
 

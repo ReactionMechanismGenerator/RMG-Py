@@ -39,7 +39,7 @@ import os.path
 from base import ForbiddenStructures
 from thermo import ThermoDatabase
 from kinetics import KineticsDatabase
-from states import StatesDatabase
+from statmech import StatmechDatabase
 
 # Module-level variable to store the (only) instance of RMGDatabase in use.
 database = None
@@ -55,14 +55,23 @@ class RMGDatabase:
         self.thermo = None
         self.forbiddenStructures = None
         self.kinetics = None
-        self.states = None
+        self.statmech = None
         
         # Store the newly created database in the module.
         global database
         assert database is None, "Should only make one instance of RMGDatabase because it's stored as a module-level variable."
         database = self
 
-    def load(self, path, thermoLibraries=None, reactionLibraries=None, seedMechanisms=None, kineticsFamilies=None, kineticsDepositories=None, statesLibraries=None, depository=True):
+    def load(self,
+             path,
+             thermoLibraries=None,
+             reactionLibraries=None,
+             seedMechanisms=None,
+             kineticsFamilies=None,
+             kineticsDepositories=None,
+             statmechLibraries=None,
+             depository=True
+             ):
         """
         Load the RMG database from the given `path` on disk, where `path`
         points to the top-level folder of the RMG database. If none of the
@@ -72,8 +81,13 @@ class RMGDatabase:
         """
         self.loadThermo(os.path.join(path, 'thermo'), thermoLibraries, depository)
         self.loadForbiddenStructures(os.path.join(path, 'forbiddenStructures.py'))
-        self.loadKinetics(os.path.join(path, 'kinetics'), reactionLibraries, seedMechanisms, kineticsFamilies, kineticsDepositories)
-        self.loadStates(os.path.join(path, 'states'), statesLibraries, depository)
+        self.loadKinetics(os.path.join(path, 'kinetics'),
+                          reactionLibraries,
+                          seedMechanisms,
+                          kineticsFamilies,
+                          kineticsDepositories
+                          )
+        self.loadStatmech(os.path.join(path, 'statmech'), statmechLibraries, depository)
 
     def loadThermo(self, path, thermoLibraries=None, depository=True):
         """
@@ -91,7 +105,13 @@ class RMGDatabase:
         self.forbiddenStructures = ForbiddenStructures()
         self.forbiddenStructures.load(path)
 
-    def loadKinetics(self, path, reactionLibraries=None, seedMechanisms=None, kineticsFamilies=None, kineticsDepositories=None):
+    def loadKinetics(self,
+                     path,
+                     reactionLibraries=None,
+                     seedMechanisms=None,
+                     kineticsFamilies=None,
+                     kineticsDepositories=None
+                     ):
         """
         Load the RMG kinetics database from the given `path` on disk, where
         `path` points to the top-level folder of the RMG kinetics database.
@@ -108,15 +128,19 @@ class RMGDatabase:
             kineticsLibraries = None
             
         self.kinetics = KineticsDatabase()
-        self.kinetics.load(path, families=kineticsFamilies, libraries=kineticsLibraries, depositories=kineticsDepositories)
+        self.kinetics.load(path,
+                           families=kineticsFamilies,
+                           libraries=kineticsLibraries,
+                           depositories=kineticsDepositories
+                           )
 
-    def loadStates(self, path, statesLibraries=None, depository=True):
+    def loadStatmech(self, path, statmechLibraries=None, depository=True):
         """
-        Load the RMG states database from the given `path` on disk, where
-        `path` points to the top-level folder of the RMG states database.
+        Load the RMG statmech database from the given `path` on disk, where
+        `path` points to the top-level folder of the RMG statmech database.
         """
-        self.states = StatesDatabase()
-        self.states.load(path, statesLibraries, depository)
+        self.statmech = StatmechDatabase()
+        self.statmech.load(path, statmechLibraries, depository)
 
     def loadOld(self, path):
         """
@@ -129,25 +153,25 @@ class RMGDatabase:
         self.forbiddenStructures.loadOld(os.path.join(path, 'ForbiddenStructures.txt'))
         self.kinetics = KineticsDatabase()
         self.kinetics.loadOld(path)
-        self.states = StatesDatabase()
-        self.states.loadOld(path)
+        self.statmech = StatmechDatabase()
+        self.statmech.loadOld(path)
 
     def save(self, path):
         """
         Save the RMG database to the given `path` on disk.
         """
-        if not os.path.exists(path): os.mkdir(path)
+        if not os.path.exists(path): os.makedirs(path)
         self.forbiddenStructures.save(os.path.join(path, 'forbiddenStructures.py'))
         self.thermo.save(os.path.join(path, 'thermo'))
         self.kinetics.save(os.path.join(path, 'kinetics'))
-        self.states.save(os.path.join(path, 'states'))
+        self.statmech.save(os.path.join(path, 'statmech'))
 
     def saveOld(self, path):
         """
         Save the old RMG database to the given `path` on disk.
         """
-        if not os.path.exists(path): os.mkdir(path)
+        if not os.path.exists(path): os.makedirs(path)
         self.thermo.saveOld(path)
         self.forbiddenStructures.saveOld(os.path.join(path, 'ForbiddenStructures.txt'))
         self.kinetics.saveOld(path)
-        self.states.saveOld(path)
+        self.statmech.saveOld(path)

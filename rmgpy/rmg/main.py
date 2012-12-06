@@ -178,10 +178,10 @@ class RMG:
         """
         if self.pressureDependence:
             for index, reactionSystem in enumerate(self.reactionSystems):
-                assert (reactionSystem.T.value < self.pressureDependence.Tmax.value), "Reaction system T is above pressureDependence range."
-                assert (reactionSystem.T.value > self.pressureDependence.Tmin.value), "Reaction system T is below pressureDependence range."
-                assert (reactionSystem.P.value < self.pressureDependence.Pmax.value), "Reaction system P is above pressureDependence range."
-                assert (reactionSystem.P.value > self.pressureDependence.Pmin.value), "Reaction system P is below pressureDependence range."
+                assert (reactionSystem.T.value_si < self.pressureDependence.Tmax.value_si), "Reaction system T is above pressureDependence range."
+                assert (reactionSystem.T.value_si > self.pressureDependence.Tmin.value_si), "Reaction system T is below pressureDependence range."
+                assert (reactionSystem.P.value_si < self.pressureDependence.Pmax.value_si), "Reaction system P is above pressureDependence range."
+                assert (reactionSystem.P.value_si > self.pressureDependence.Pmin.value_si), "Reaction system P is below pressureDependence range."
             assert any([not s.reactive for s in reactionSystem.initialMoleFractions.keys()]), \
                 "Pressure Dependence calculations require at least one inert (nonreacting) species for the bath gas."
 
@@ -354,6 +354,9 @@ class RMG:
                     worksheet = None
                 
                 # Conduct simulation
+                pdepNetworks = []
+                for source, networks in self.reactionModel.networkDict.items():
+                    pdepNetworks.extend(networks)
                 logging.info('Conducting simulation of reaction system %s...' % (index+1))
                 terminated, obj = reactionSystem.simulate(
                     coreSpecies = self.reactionModel.core.species,
@@ -363,7 +366,7 @@ class RMG:
                     toleranceKeepInEdge = self.fluxToleranceKeepInEdge,
                     toleranceMoveToCore = self.fluxToleranceMoveToCore,
                     toleranceInterruptSimulation = self.fluxToleranceInterrupt,
-                    pdepNetworks = self.reactionModel.unirxnNetworks,
+                    pdepNetworks = pdepNetworks,
                     worksheet = worksheet,
                     absoluteTolerance = self.absoluteTolerance,
                     relativeTolerance = self.relativeTolerance,
@@ -378,7 +381,7 @@ class RMG:
                         # Determine which species in that network has the highest leak rate
                         # We do this here because we need a temperature and pressure
                         # Store the maximum leak species along with the associated network
-                        obj = (obj, obj.getMaximumLeakSpecies(reactionSystem.T.value, reactionSystem.P.value))
+                        obj = (obj, obj.getMaximumLeakSpecies(reactionSystem.T.value_si, reactionSystem.P.value_si))
                     objectsToEnlarge.append(obj)
                     self.done = False
     
@@ -408,7 +411,13 @@ class RMG:
             edgeSpeciesCount.append(edgeSpec)
             edgeReactionCount.append(edgeReac)
             execTime.append(time.time() - self.initializationTime)
-            logging.info('    Execution time (HH:MM:SS): %s' % (time.strftime("%H:%M:%S", time.gmtime(execTime[-1]))))
+            elapsed = execTime[-1]
+            seconds = elapsed % 60
+            minutes = (elapsed - seconds) % 3600 / 60
+            hours = (elapsed - seconds - minutes * 60) % (3600 * 24) / 3600
+            days = (elapsed - seconds - minutes * 60 - hours * 3600) / (3600 * 24)
+            logging.info('    Execution time (DD:HH:MM:SS): '
+                '{0:02}:{1:02}:{2:02}:{3:02}'.format(int(days), int(hours), int(minutes), int(seconds)))
             try:
                 import psutil
                 process = psutil.Process(os.getpid())
@@ -477,7 +486,7 @@ class RMG:
         if self.saveRestartPeriod or self.done:
             self.saveRestartFile( os.path.join(self.outputDirectory,'restart.pkl'),
                                   self.reactionModel,
-                                  delay=0 if self.done else self.saveRestartPeriod.value
+                                  delay=0 if self.done else self.saveRestartPeriod.value_si
                                 )
             
             
@@ -490,15 +499,13 @@ class RMG:
         logging.info('RMG execution terminated at ' + time.asctime())
     
     def getGitCommit(self):
+        import subprocess
+        from rmgpy import getPath
         try:
-            f = os.popen('git log --format="%H %n %cd" -1')
-            lines = []
-            for line in f: lines.append(line)
-            f.close()
-            head = lines[0].strip()
-            date = lines[1].strip()
-            return head, date
-        except IndexError:
+            return subprocess.check_output(['git', 'log',
+                                            '--format=%H%n%cd', '-1'],
+                                            cwd=getPath()).splitlines()
+        except:
             return '', ''
     
     def logHeader(self, level=logging.INFO):
@@ -967,13 +974,20 @@ def initializeLog(verbose, log_file_name):
 
     # create file handler
     if os.path.exists(log_file_name):
-        backup_name = '_backup'.join(os.path.splitext(log_file_name))
-        if os.path.exists(backup_name):
-            print "Removing old file %s" % backup_name
-            os.remove(backup_name)
-        print "Renaming %s to %s"%(log_file_name, backup_name)
-        print
-        os.rename(log_file_name, backup_name)
+        backups = []
+        backup = os.path.join(log_file_name[:-7], 'RMG_backup')
+        backups.append('{0}.log'.format(backup))
+        i = 1
+        while os.path.exists(backups[-1]):
+            backups.append('{0}_{1}.log'.format(backup, i + 1))
+            i += 1
+        backups.reverse()
+        print '\n'
+        for j in range(1, len(backups)):
+            print 'Renaming {0} to {1}'.format(backups[j], backups[j - 1])
+            os.rename(backups[j], backups[j - 1])
+        print 'Renaming {0} to {1}\n'.format(log_file_name, backups[-1])
+        os.rename(log_file_name, backups[-1])
     fh = logging.FileHandler(filename=log_file_name) #, backupCount=3)
     fh.setLevel(min(logging.DEBUG,verbose)) # always at least VERBOSE in the file
     fh.setFormatter(formatter)

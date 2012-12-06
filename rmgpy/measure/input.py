@@ -83,7 +83,7 @@ def species(label='', E0=None, states=None, thermo=None, lennardJones=None, mole
     logging.debug('Found species "{0}"'.format(spec))
     # If the molecular weight was not specified but the structure was, then
     # get the molecular weight from the structure
-    if spec.molecularWeight.value == 0.0 and spec.molecule is not None and len(spec.molecule) > 0:
+    if spec.molecularWeight.value_si == 0.0 and spec.molecule is not None and len(spec.molecule) > 0:
         spec.molecularWeight = Quantity(spec.molecule[0].getMolecularWeight(),"kg/mol")
     
 def States(translation=None, rotations=None, vibrations=None, torsions=None, frequencyScaleFactor=1.0, spinMultiplicity=1):
@@ -110,7 +110,7 @@ def States(translation=None, rotations=None, vibrations=None, torsions=None, fre
             modes.append(torsions)
     for mode in modes:
         if isinstance(mode, HarmonicOscillator):
-            mode.frequencies.values *= frequencyScaleFactor
+            mode.frequencies.value_si *= frequencyScaleFactor
     return StatesModel(modes, spinMultiplicity)
 
 def addIsomer(species):
@@ -155,8 +155,8 @@ def temperatures(Tlist=None, Tmin=None, Tmax=None, count=None):
     if Tlist is not None:
         # We've been provided a list of specific temperatures to use
         measure.Tlist = Quantity(Tlist)
-        measure.Tmin = Quantity(numpy.min(measure.Tlist.values),"K")
-        measure.Tmax = Quantity(numpy.max(measure.Tlist.values),"K")
+        measure.Tmin = Quantity(numpy.min(measure.Tlist.value_si),"K")
+        measure.Tmax = Quantity(numpy.max(measure.Tlist.value_si),"K")
     elif Tmin is not None and Tmax is not None and count is not None:
         # We've been provided a temperature range and number of temperatures to use
         # We defer choosing the actual temperatures because they depend on the
@@ -172,8 +172,8 @@ def pressures(Plist=None, Pmin=None, Pmax=None, count=None):
     if Plist is not None:
         # We've been provided a list of specific pressures to use
         measure.Plist = Quantity(Plist)
-        measure.Pmin = Quantity(numpy.min(measure.Plist.values),"Pa")
-        measure.Pmax = Quantity(numpy.max(measure.Plist.values),"Pa")
+        measure.Pmin = Quantity(numpy.min(measure.Plist.value_si),"Pa")
+        measure.Pmax = Quantity(numpy.max(measure.Plist.value_si),"Pa")
     elif Pmin is not None and Pmax is not None and count is not None:
         # We've been provided a pressures range and number of pressures to use
         # We defer choosing the actual pressures because they depend on the
@@ -228,7 +228,7 @@ def generateThermoFromStates(species, Tlist):
     # anything about the structure of the species
     Tdata = numpy.linspace(numpy.min(Tlist), numpy.max(Tlist), 20.0)
     Cpdata = species.states.getHeatCapacities(Tdata)
-    H298 = species.E0.value + species.states.getEnthalpy(298)
+    H298 = species.E0.value_si + species.states.getEnthalpy(298)
     S298 = species.states.getEntropy(298)
 
     # Add in heat capacities for translational modes if missing
@@ -399,7 +399,7 @@ def readFile(path, measure0):
         
         # Determine temperature grid if not yet known
         if measure.Tlist is None and measure.Tmin is not None and measure.Tmax is not None and measure.Tcount is not None:
-            measure.Tlist = Quantity(getTemperaturesForModel(measure.model, measure.Tmin.value, measure.Tmax.value, measure.Tcount),"K")
+            measure.Tlist = Quantity(getTemperaturesForModel(measure.model, measure.Tmin.value_si, measure.Tmax.value_si, measure.Tcount),"K")
         elif measure.Tmin is not None and measure.Tmax is not None and measure.Tcount is not None:
             pass
         else:
@@ -407,7 +407,7 @@ def readFile(path, measure0):
         
         # Determine pressure grid if not yet known
         if measure.Plist is None and measure.Pmin is not None and measure.Pmax is not None and measure.Pcount is not None:
-            measure.Plist = Quantity(getPressuresForModel(measure.model, measure.Pmin.value, measure.Pmax.value, measure.Pcount),"Pa")
+            measure.Plist = Quantity(getPressuresForModel(measure.model, measure.Pmin.value_si, measure.Pmax.value_si, measure.Pcount),"Pa")
         elif measure.Pmin is not None and measure.Pmax is not None and measure.Pcount is not None:
             pass
         else:
@@ -470,15 +470,15 @@ def readFile(path, measure0):
         # calculate the thermo data
         for isomer in network.isomers:
             if isomer.thermo is None and isomer.states is not None:
-                generateThermoFromStates(isomer, measure.Tlist.values)
+                generateThermoFromStates(isomer, measure.Tlist.value_si)
         for reactants in network.reactants:
             for spec in reactants:
                 if spec.thermo is None and spec.states is not None:
-                    generateThermoFromStates(spec, measure.Tlist.values)
+                    generateThermoFromStates(spec, measure.Tlist.value_si)
         for products in network.products:
             for spec in products:
                 if spec.thermo is None and spec.states is not None:
-                    generateThermoFromStates(spec, measure.Tlist.values)
+                    generateThermoFromStates(spec, measure.Tlist.value_si)
 
         # Check that we have the right data for each configuration
         # Use a string to store the errors so that the user can see all of

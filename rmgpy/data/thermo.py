@@ -39,10 +39,12 @@ import logging
 import numpy
 from copy import copy, deepcopy
 
-from base import Database, Entry, makeLogicNode
+from base import Database, Entry, makeLogicNode, DatabaseError
 
-from rmgpy.quantity import constants, Quantity
-from rmgpy.thermo import *
+
+import rmgpy.constants as constants
+
+from rmgpy.thermo import ThermoData, Wilhoit, NASA, NASAPolynomial
 from rmgpy.molecule import Molecule, Atom, Bond, Group
 
 ################################################################################
@@ -93,8 +95,8 @@ def saveEntry(f, entry):
         if entry.data.Tmin is not None: f.write('        Tmin = {0!r},\n'.format(entry.data.Tmin))
         if entry.data.Tmax is not None: f.write('        Tmax = {0!r},\n'.format(entry.data.Tmax))
         f.write('    ),\n')
-    elif isinstance(entry.data, MultiNASA):
-        f.write('    thermo = MultiNASA(\n')
+    elif isinstance(entry.data, NASA):
+        f.write('    thermo = NASA(\n')
         f.write('        polynomials = [\n')
         for poly in entry.data.polynomials:
             f.write('            {0!r},\n'.format(poly))
@@ -107,7 +109,9 @@ def saveEntry(f, entry):
 
     if entry.reference is not None: f.write('    reference = {0!r},\n'.format(entry.reference))
     if entry.referenceType != "": f.write('    referenceType = "{0}",\n'.format(entry.referenceType))
-    f.write('    shortDesc = u"""{0}""",\n'.format(entry.shortDesc))
+    f.write('    shortDesc = u"""')
+    f.write(entry.shortDesc)
+    f.write('""",\n')
     f.write('    longDesc = \n')
     f.write('u"""\n')
     f.write(entry.longDesc.strip() + "\n")
@@ -127,19 +131,21 @@ def generateOldLibraryEntry(data):
     """
     if isinstance(data, ThermoData):
         return '{0:9g} {1:9g} {2:9g} {3:9g} {4:9g} {5:9g} {6:9g} {7:9g} {8:9g} {9:9g} {10:9g} {11:9g}'.format(
-            data.H298.value/4184.,
-            data.S298.value/4.184,
-            data.Cpdata.values[0]/4.184,
-            data.Cpdata.values[1]/4.184,
-            data.Cpdata.values[2]/4.184,
-            data.Cpdata.values[3]/4.184,
-            data.Cpdata.values[4]/4.184,
-            data.Cpdata.values[5]/4.184,
-            data.Cpdata.values[6]/4.184,
+            data.H298.value_si/4184.,
+            data.S298.value_si/4.184,
+            data.Cpdata.value_si[0]/4.184,
+            data.Cpdata.value_si[1]/4.184,
+            data.Cpdata.value_si[2]/4.184,
+            data.Cpdata.value_si[3]/4.184,
+            data.Cpdata.value_si[4]/4.184,
+            data.Cpdata.value_si[5]/4.184,
+            data.Cpdata.value_si[6]/4.184,
             data.H298.uncertainty/4184.,
             data.S298.uncertainty/4.184,
-            data.Cpdata.uncertainty/4.184,
+            max(data.Cpdata.uncertainty)/4.184,
         )
+    elif isinstance(data, basestring):
+        return data
     else:
         return '{0:9g} {1:9g} {2:9g} {3:9g} {4:9g} {5:9g} {6:9g} {7:9g} {8:9g} {9:9g} {10:9g} {11:9g}'.format(
             data.getEnthalpy(298)/4184.,
@@ -208,7 +214,17 @@ class ThermoLibrary(Database):
     def __init__(self, label='', name='', shortDesc='', longDesc=''):
         Database.__init__(self, label=label, name=name, shortDesc=shortDesc, longDesc=longDesc)
 
-    def loadEntry(self, index, label, molecule, thermo, reference=None, referenceType='', shortDesc='', longDesc='', history=None):
+    def loadEntry(self,
+                  index,
+                  label,
+                  molecule,
+                  thermo,
+                  reference=None,
+                  referenceType='',
+                  shortDesc='',
+                  longDesc='',
+                  history=None
+                  ):
         self.entries[label] = Entry(
             index = index,
             label = label,
@@ -251,7 +267,17 @@ class ThermoGroups(Database):
     def __init__(self, label='', name='', shortDesc='', longDesc=''):
         Database.__init__(self, label=label, name=name, shortDesc=shortDesc, longDesc=longDesc)
 
-    def loadEntry(self, index, label, group, thermo, reference=None, referenceType='', shortDesc='', longDesc='', history=None):
+    def loadEntry(self,
+                  index,
+                  label,
+                  group,
+                  thermo,
+                  reference=None,
+                  referenceType='',
+                  shortDesc='',
+                  longDesc='',
+                  history=None
+                  ):
         if group[0:3].upper() == 'OR{' or group[0:4].upper() == 'AND{' or group[0:7].upper() == 'NOT OR{' or group[0:8].upper() == 'NOT AND{':
             item = makeLogicNode(group)
         else:
@@ -279,6 +305,7 @@ class ThermoGroups(Database):
         Return a list of values used to save entries to the old-style RMG
         thermo database based on the thermodynamics object `data`.
         """
+        
         return generateOldLibraryEntry(data)
 
     def processOldLibraryEntry(self, data):
@@ -290,7 +317,7 @@ class ThermoGroups(Database):
 
 ################################################################################
 
-class ThermoDatabase:
+class ThermoDatabase(object):
     """
     A class for working with the RMG thermodynamics database.
     """
@@ -303,10 +330,31 @@ class ThermoDatabase:
         self.local_context = {
             'ThermoData': ThermoData,
             'Wilhoit': Wilhoit,
+            'NASAPolynomial': NASAPolynomial,
             'NASA': NASA,
-            'MultiNASA': MultiNASA,
         }
         self.global_context = {}
+
+    def __reduce__(self):
+        """
+        A helper function used when pickling a ThermoDatabase object.
+        """
+        d = {
+            'depository': self.depository,
+            'libraries': self.libraries,
+            'groups': self.groups,
+            'libraryOrder': self.libraryOrder,
+        }
+        return (ThermoDatabase, (), d)
+
+    def __setstate__(self, d):
+        """
+        A helper function used when unpickling a ThermoDatabase object.
+        """
+        self.depository = d['depository']
+        self.libraries = d['libraries']
+        self.groups = d['groups']
+        self.libraryOrder = d['libraryOrder']
 
     def load(self, path, libraries=None, depository=True):
         """
@@ -545,7 +593,18 @@ class ThermoDatabase:
         else:
             # Thermo not found in any loaded libraries, so estimate
             thermoData = self.getThermoDataFromGroups(species)
-        return thermoData[0]
+
+        # @todo: if this adding Cp0 and CpInf is done only and always for thermo data from groups, it should be in getThermoDataFromGroups()
+        # Add Cp0 and CpInf values
+        Cp0 = species.calculateCp0()
+        CpInf = species.calculateCpInf()
+        data, library, entry = thermoData
+        if isinstance(data,ThermoData):
+            data.Cp0 = (Cp0,"J/(mol*K)")
+            data.CpInf = (CpInf,"J/(mol*K)")
+        # Return the resulting thermo parameters
+        return data
+    
         
     def getThermoDataFromLibraries(self, species):
         """
@@ -557,8 +616,10 @@ class ThermoDatabase:
         for label in self.libraryOrder:
             thermoData = self.getThermoDataFromLibrary(species, self.libraries[label])
             if thermoData is not None:
+                thermoData[0].comment = label
                 return thermoData[0]
         return None
+
 
     def getAllThermoData(self, species):
         """
@@ -574,9 +635,18 @@ class ThermoDatabase:
         for label in self.libraryOrder:
             data = self.getThermoDataFromLibrary(species, self.libraries[label])
             if data: 
+                data[0].comment = label
                 thermoData.append(data)
         # Last entry is always the estimate from group additivity
         thermoData.append(self.getThermoDataFromGroups(species))
+        # Add Cp0 and CpInf values
+        Cp0 = species.calculateCp0()
+        CpInf = species.calculateCpInf()
+        for data, library, entry in thermoData:
+            if isinstance(data,ThermoData):
+                data.Cp0 = (Cp0,"J/(mol*K)")
+                data.CpInf = (CpInf,"J/(mol*K)")
+        # Return all of the resulting thermo parameters
         return thermoData
 
     def getThermoDataFromDepository(self, species):
@@ -606,6 +676,8 @@ class ThermoDatabase:
         for a library with that name. If no match is found in that library,
         ``None`` is returned. If no corresponding library is found, a
         :class:`DatabaseError` is raised.
+        
+        Returns a tuple: (ThermoData, library, entry)
         """
         for label, entry in library.entries.iteritems():
             for molecule in species.molecule:
@@ -619,6 +691,8 @@ class ThermoDatabase:
         :class:`Species` object `species` by estimation using the group
         additivity values. If no group additivity values are loaded, a
         :class:`DatabaseError` is raised.
+        
+        Returns a tuple: (ThermoData, None, None)
         """       
         thermo = []
         for molecule in species.molecule:
@@ -677,10 +751,10 @@ class ThermoDatabase:
         
         # Undo symmetry number correction for saturated structure
         saturatedStruct.calculateSymmetryNumber()
-        thermoData.S298.value += constants.R * math.log(saturatedStruct.symmetryNumber)
+        thermoData.S298.value_si += constants.R * math.log(saturatedStruct.symmetryNumber)
         # Correct entropy for symmetry number of radical structure
         molecule.calculateSymmetryNumber()
-        thermoData.S298.value -= constants.R * math.log(molecule.symmetryNumber)
+        thermoData.S298.value_si -= constants.R * math.log(molecule.symmetryNumber)
         
         # For each radical site, get radical correction
         # Only one radical site should be considered at a time; all others
@@ -693,7 +767,7 @@ class ThermoDatabase:
                 atom.incrementRadical()
             saturatedStruct.updateConnectivityValues()
             try:
-                thermoData = self.__addThermoData(thermoData, self.__getGroupThermoData(self.groups['radical'], saturatedStruct, {'*':atom}))
+                self.__addGroupThermoData(thermoData, self.groups['radical'], saturatedStruct, {'*':atom})
             except KeyError:
                 logging.error("Couldn't find in radical thermo database:")
                 logging.error(molecule)
@@ -706,7 +780,7 @@ class ThermoDatabase:
                 atom.decrementRadical()
             # Subtract the enthalpy of the added hydrogens
             for H, bond in added[atom]:
-                thermoData.H298.value -= 52.103 * 4184
+                thermoData.H298.value_si -= 52.103 * 4184
 
         return thermoData
         
@@ -723,7 +797,13 @@ class ThermoDatabase:
         # will probably not visit the right atoms, and so will get the thermo wrong
         molecule.sortVertices()
 
-        thermoData = None
+        # Create the ThermoData object
+        thermoData = ThermoData(
+            Tdata = ([300,400,500,600,800,1000,1500],"K"),
+            Cpdata = ([0.0,0.0,0.0,0.0,0.0,0.0,0.0],"J/(mol*K)"),
+            H298 = (0.0,"kJ/mol"),
+            S298 = (0.0,"J/(mol*K)"),
+        )
 
         if molecule.getRadicalCount() > 0: # radical species
             return self.estimateRadicalThermoViaHBI(molecule, self.estimateThermoViaGroupAdditivity )
@@ -735,10 +815,7 @@ class ThermoDatabase:
                 if atom.isNonHydrogen():
                     # Get initial thermo estimate from main group database
                     try:
-                        if thermoData is None:
-                            thermoData = self.__getGroupThermoData(self.groups['group'], molecule, {'*':atom})
-                        else:
-                            thermoData = self.__addThermoData(thermoData, self.__getGroupThermoData(self.groups['group'], molecule, {'*':atom}))
+                        self.__addGroupThermoData(thermoData, self.groups['group'], molecule, {'*':atom})
                     except KeyError:
                         logging.error("Couldn't find in main thermo database:")
                         logging.error(molecule)
@@ -746,13 +823,13 @@ class ThermoDatabase:
                         raise
                     # Correct for gauche and 1,5- interactions
                     try:
-                        thermoData = self.__addThermoData(thermoData, self.__getGroupThermoData(self.groups['gauche'], molecule, {'*':atom}))
+                        self.__addGroupThermoData(thermoData, self.groups['gauche'], molecule, {'*':atom})
                     except KeyError: pass
                     try:
-                        thermoData = self.__addThermoData(thermoData, self.__getGroupThermoData(self.groups['int15'], molecule, {'*':atom}))
+                        self.__addGroupThermoData(thermoData, self.groups['int15'], molecule, {'*':atom})
                     except KeyError: pass
                     try:
-                        thermoData = self.__addThermoData(thermoData, self.__getGroupThermoData(self.groups['other'], molecule, {'*':atom}))
+                        self.__addGroupThermoData(thermoData, self.groups['other'], molecule, {'*':atom})
                     except KeyError: pass
 
             # Do ring corrections separately because we only want to match
@@ -772,7 +849,7 @@ class ThermoDatabase:
                             ringStructure.addBond(Bond(newAtoms[atom1], newAtoms[atom2], atom1.bonds[atom2].order ))
                 # Get thermo correction for this ring
                 try:
-                    thermoData = self.__addThermoData(thermoData, self.__getGroupThermoData(self.groups['ring'], ringStructure, {}))
+                    self.__addGroupThermoData(thermoData, self.groups['ring'], ringStructure, {})
                 except KeyError:
                     logging.error("Couldn't find in ring database:")
                     logging.error(ringStructure)
@@ -781,38 +858,15 @@ class ThermoDatabase:
                 
         # Correct entropy for symmetry number
         molecule.calculateSymmetryNumber()
-        thermoData.S298.value -= constants.R * math.log(molecule.symmetryNumber)
-        
+        thermoData.S298.value_si -= constants.R * math.log(molecule.symmetryNumber)
+
         return thermoData
 
-    def __addThermoData(self, thermoData1, thermoData2):
-        """
-        Add two :class:`ThermoData` objects `thermoData1` and `thermoData2`
-        together, returning their sum as a new :class:`ThermoData` object.
-        """
-        if len(thermoData1.Tdata.values) != len(thermoData2.Tdata.values) or any([T1 != T2 for T1, T2 in zip(thermoData1.Tdata.values, thermoData2.Tdata.values)]):
-            raise ThermoError('Cannot add these ThermoData objects due to their having different temperature points.')
-        H298 = Quantity(thermoData1.H298.value + thermoData2.H298.value) # create with bare value
-        H298.units = thermoData1.H298.units # set preferred units
-        S298 = Quantity(thermoData1.S298.value + thermoData2.S298.value)
-        S298.units = thermoData1.S298.units
-        Cpdata = Quantity(thermoData1.Cpdata.values + thermoData2.Cpdata.values)
-        Cpdata.units = thermoData1.Cpdata.units
-        new = ThermoData(
-            Tdata = (thermoData1.Tdata.values, thermoData1.Tdata.units),
-            Cpdata = Cpdata,
-            H298 = H298,
-            S298 = S298,
-        )
-        if thermoData1.comment == '': new.comment = thermoData2.comment
-        elif thermoData2.comment == '': new.comment = thermoData1.comment
-        else: new.comment = thermoData1.comment + ' + ' + thermoData2.comment
-        return new
-    
-    def __getGroupThermoData(self, database, molecule, atom):
+    def __addGroupThermoData(self, thermoData, database, molecule, atom):
         """
         Determine the group additivity thermodynamic data for the atom `atom`
-        in the structure `structure`.
+        in the structure `structure`, and add it to the existing thermo data
+        `thermoData`.
         """
 
         node0 = database.descendTree(molecule, atom, None)
@@ -827,17 +881,16 @@ class ThermoDatabase:
         while node.data is None and node is not None:
             node = node.parent
         if node is None:
-            raise InvalidDatabaseError('Unable to determine thermo parameters for {0}: no library entries for {1} or any of its ancestors.'.format(molecule, node0) )
+            raise DatabaseError('Unable to determine thermo parameters for {0}: no library entries for {1} or any of its ancestors.'.format(molecule, node0) )
 
         data = node.data; comment = node.label
-        while isinstance(data, str) and data is not None:
+        while isinstance(data, basestring) and data is not None:
             for entry in database.entries.values():
                 if entry.label == data:
                     data = entry.data
                     comment = entry.label
                     break
-        data = deepcopy(data)
-        data.comment = '{0}({1})'.format(database.label, comment)
+        comment = '{0}({1})'.format(database.label, comment)
 
         # This code prints the hierarchy of the found node; useful for debugging
         #result = ''
@@ -846,4 +899,17 @@ class ThermoDatabase:
         #   node = database.tree.parent[node]
         #print result[4:]
 
-        return data
+        if len(thermoData.Tdata.value_si) != len(data.Tdata.value_si) or any([T1 != T2 for T1, T2 in zip(thermoData.Tdata.value_si, data.Tdata.value_si)]):
+            raise DatabaseError('Cannot add these ThermoData objects due to their having different temperature points.')
+        
+        for i in range(7):
+            thermoData.Cpdata.value_si[i] += data.Cpdata.value_si[i]
+        thermoData.H298.value_si += data.H298.value_si
+        thermoData.S298.value_si += data.S298.value_si
+
+        if thermoData.comment:
+            thermoData.comment += ' + {0}'.format(comment)
+        else:
+            thermoData.comment = comment
+        
+        return thermoData
