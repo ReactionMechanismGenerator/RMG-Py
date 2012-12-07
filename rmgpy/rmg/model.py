@@ -42,9 +42,9 @@ from rmgpy.display import display
 import rmgpy.constants as constants
 from rmgpy.quantity import Quantity
 import rmgpy.species
-from rmgpy.thermo import Wilhoit, NASA
+from rmgpy.thermo import Wilhoit, NASA, ThermoData
 from rmgpy.pdep import LennardJones, SingleExponentialDown
-from rmgpy.statmech import *
+from rmgpy.statmech import  Conformer
 
 from rmgpy.data.thermo import *
 from rmgpy.data.kinetics import *
