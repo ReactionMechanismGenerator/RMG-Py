@@ -32,7 +32,7 @@ import math
 import numpy
 
 import rmgpy.constants as constants
-from rmgpy.statmech import *
+from rmgpy.statmech import IdealGasTranslation, NonlinearRotor, LinearRotor, HarmonicOscillator, Conformer
 
 ################################################################################
 
@@ -276,9 +276,9 @@ class GaussianLog:
         if E0_cbs is not None: return E0_cbs
         elif E0 is not None: 
             if ZPE is None:
-                raise ChemPyError('Unable to find zero-point energy in Gaussian log file.')
+                raise Exception('Unable to find zero-point energy in Gaussian log file.')
             return E0 + ZPE * frequencyScaleFactor
-        else: raise ChemPyError('Unable to find energy in Gaussian log file.')
+        else: raise Exception('Unable to find energy in Gaussian log file.')
     
     def loadScanEnergies(self):
         """
