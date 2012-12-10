@@ -36,7 +36,7 @@ import unittest
 import math
 import numpy
 
-from rmgpy.statmech.translation import IdealGasTranslation,
+from rmgpy.statmech.translation import IdealGasTranslation
 import rmgpy.constants as constants
 
 ################################################################################
