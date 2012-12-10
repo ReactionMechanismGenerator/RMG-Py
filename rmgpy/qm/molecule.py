@@ -231,16 +231,19 @@ class QMMolecule:
         """
         raise NotImplementedError("This should be defined in a subclass that inherits from QMMolecule")
         return qmdata.QMData() or None
-
+    
     def generateThermoData(self):
         """
         Generate Thermo Data via a QM calc. 
         
         Returns None if it fails.
         """
-        
         # First, see if we already have it.
         if self.loadThermoData():
+            # We should only have to do these calculations once when generating the thermo,
+            # but have to make changes to the saveThermoData and loadThermoData methods first.
+            self.thermo.Cp0 = self.molecule.calculateCp0()
+            self.thermo.CpInf = self.molecule.calculateCpInf()
             return self.thermo
         
         # If not, generate the QM data
@@ -252,6 +255,8 @@ class QMMolecule:
             
         self.determinePointGroup()
         self.calculateThermoData()
+        self.thermo.Cp0 = self.molecule.calculateCp0()
+        self.thermo.CpInf = self.molecule.calculateCpInf()
         self.saveThermoData()
         return self.thermo
         
