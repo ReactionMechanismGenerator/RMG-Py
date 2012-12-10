@@ -209,11 +209,12 @@ class SymmetryJob:
         Write the input file for the SYMMETRY program.
         """
         geom = str(self.qmData.numberOfAtoms) + "\n"
+        coords_in_angstrom = self.qmData.atomCoords.value_si * 1e10
         for i in range(self.qmData.numberOfAtoms):
             geom = geom + " ".join((str(self.qmData.atomicNumbers[i]),
-                                    str(self.qmData.atomCoords[i][0]),
-                                    str(self.qmData.atomCoords[i][1]),
-                                    str(self.qmData.atomCoords[i][2])
+                                    str(coords_in_angstrom[i][0]),
+                                    str(coords_in_angstrom[i][1]),
+                                    str(coords_in_angstrom[i][2])
                                    )) + "\n"
         with open(self.inputFilePath, 'w') as input_file:
             input_file.write(geom)

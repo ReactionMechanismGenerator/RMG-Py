@@ -1,5 +1,6 @@
 
 import re
+import rmgpy.quantity as quantity
 
 class QMData:
     """
@@ -20,19 +21,17 @@ class QMData:
         #: Electronic ground state degeneracy in RMG taken as number of radicals +1
         self.groundStateDegeneracy = groundStateDegeneracy
         self.numberOfAtoms = numberOfAtoms #: Number of atoms.
-        self.stericEnergy = stericEnergy
+        self.stericEnergy = quantity.Energy(stericEnergy)
         """
-        Steric energy, in Hartrees
-        
-        Not sure why these units
+        Steric energy.
         """
-        self.molecularMass = molecularMass
-        self.energy = energy
+        self.molecularMass = quantity.Mass(molecularMass)
+        self.energy = quantity.Energy(energy)
         self.atomicNumbers = atomicNumbers
         #: Rotational constants, in Hz.
-        self.rotationalConstants = rotationalConstants
-        self.atomCoords = atomCoords
-        self.frequencies = frequencies
+        self.rotationalConstants = quantity.Frequency(rotationalConstants)
+        self.atomCoords = quantity.Length(atomCoords)
+        self.frequencies = quantity.Frequency(frequencies)
         self.source = source
         
         self.testValid()
@@ -77,13 +76,13 @@ class CCLibData(QMData):
         QMData.__init__( self,
             groundStateDegeneracy = groundStateDegeneracy,
             numberOfAtoms = cclib_data.natom,
-            molecularMass = cclib_data.molmass,
-            energy = cclib_data.scfenergies[-1]/27.2113845, # final optimized PM3 energy (cclib gives this in eV, but I have converted here to Hartree); conversion value taken from cclib code; compare CODATA 2006 value 27.21138386(68) eV/Hartree
+            molecularMass = (cclib_data.molmass,'amu'),
+            energy = (cclib_data.scfenergies[-1],'eV/molecule'), # final optimized PM3 energy (cclib gives this in eV)
             atomicNumbers = cclib_data.atomnos,
-            rotationalConstants = [i * 1e9 for i in cclib_data.rotcons[-1]], # Hz. #print the final rotational constants (note that ideally we would use next to last value ([-2]) as this has more significant digits and is for the same geometry, but there is a complication for linear molecules (labeled as "Rotational constant" rather than "...constants"...there might be some ways around this like looking for "Rotational constant" string instead, but it is probably not a big deal to just use rounded values
-            atomCoords = cclib_data.atomcoords[-1],
-            frequencies = cclib_data.vibfreqs # 1/cm
+            rotationalConstants = ([i * 1e9 for i in cclib_data.rotcons[-1]],'hertz'), # Hz. #print the final rotational constants (note that ideally we would use next to last value ([-2]) as this has more significant digits and is for the same geometry, but there is a complication for linear molecules (labeled as "Rotational constant" rather than "...constants"...there might be some ways around this like looking for "Rotational constant" string instead, but it is probably not a big deal to just use rounded values
+            atomCoords = (cclib_data.atomcoords[-1],"angstrom"), # I assume Angstrom (not Bohr?)
+            frequencies = (cclib_data.vibfreqs, "cm^-1") # 1/cm
             )
         if hasattr(cclib_data, 'stericenergy'):
-            # steric energy (in Hartree)
-            self.stericEnergy = cclib_data.stericenergy/27.2113845
+            # steric energy
+            self.stericEnergy = (cclib_data.stericenergy, 'eV/molecule') # this is eV.  /27.2113845 for Hartrees
