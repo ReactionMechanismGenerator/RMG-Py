@@ -1105,12 +1105,16 @@ class Molecule(Graph):
         """
         cython.declare(Natoms=cython.int, Nvib=cython.int, Nrotors=cython.int)
         
-        Natoms = len(self.vertices)
-        Nvib = 3 * Natoms - (5 if self.isLinear() else 6)
-        Nrotors = self.countInternalRotors()
-        Nvib -= Nrotors
-        
-        return self.calculateCp0() + (Nvib + 0.5 * Nrotors) * constants.R
+        if len(self.vertices) == 1:
+            return self.calculateCp0()
+        else:
+            
+            Natoms = len(self.vertices)
+            Nvib = 3 * Natoms - (5 if self.isLinear() else 6)
+            Nrotors = self.countInternalRotors()
+            Nvib -= Nrotors
+            
+            return self.calculateCp0() + (Nvib + 0.5 * Nrotors) * constants.R
 
     def calculateSymmetryNumber(self):
         """
