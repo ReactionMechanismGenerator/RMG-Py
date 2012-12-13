@@ -4,7 +4,8 @@
 import numpy
 import unittest
 
-from rmgpy.cantherm.geometry import *
+from rmgpy.cantherm.geometry import Geometry
+import rmgpy.constants as constants
 
 ################################################################################
 
@@ -40,7 +41,7 @@ class GeometryTest(unittest.TestCase):
         top = [0, 1, 2, 3]
         
         # Returned moment of inertia is in kg*m^2; convert to amu*A^2
-        I = geometry.getInternalReducedMomentOfInertia(pivots, top) * 1e23 * 6.022e23
+        I = geometry.getInternalReducedMomentOfInertia(pivots, top) * 1e23 * constants.Na
         self.assertAlmostEqual(I / 1.5595197928, 1.0, 2)
         
     def testButanolInternalReducedMomentOfInertia(self):
@@ -78,22 +79,22 @@ class GeometryTest(unittest.TestCase):
         
         pivots = [0, 4]
         top = [0, 1, 2, 3]
-        I = geometry.getInternalReducedMomentOfInertia(pivots, top) * 1e23 * 6.022e23
+        I = geometry.getInternalReducedMomentOfInertia(pivots, top) * 1e23 * constants.Na
         self.assertAlmostEqual(I / 2.73090431938, 1.0, 3)
         
         pivots = [4, 7]
         top = [4, 5, 6, 0, 1, 2, 3]
-        I = geometry.getInternalReducedMomentOfInertia(pivots, top) * 1e23 * 6.022e23
+        I = geometry.getInternalReducedMomentOfInertia(pivots, top) * 1e23 * constants.Na
         self.assertAlmostEqual(I / 12.1318136515, 1.0, 3)
         
         pivots = [13, 7]
         top = [13, 14]
-        I = geometry.getInternalReducedMomentOfInertia(pivots, top) * 1e23 * 6.022e23
+        I = geometry.getInternalReducedMomentOfInertia(pivots, top) * 1e23 * constants.Na
         self.assertAlmostEqual(I / 0.853678578741, 1.0, 3)
         
         pivots = [9, 7]
         top = [9, 10, 11, 12]
-        I = geometry.getInternalReducedMomentOfInertia(pivots, top) * 1e23 * 6.022e23
+        I = geometry.getInternalReducedMomentOfInertia(pivots, top) * 1e23 * constants.Na
         self.assertAlmostEqual(I / 2.97944840397, 1.0, 3)
 
     def testPickle(self):
