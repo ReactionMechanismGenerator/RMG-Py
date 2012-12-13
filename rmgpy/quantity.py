@@ -586,7 +586,7 @@ Inertia = UnitType('kg*m^2')
 
 Length = UnitType('m')
 
-Mass = UnitType('amu', extraDimensionality={'kg/mol': 1000.})
+Mass = UnitType('amu', extraDimensionality={'kg/mol': 1000.*constants.amu})
 
 Momentum = UnitType('kg*m/s^2')
 
