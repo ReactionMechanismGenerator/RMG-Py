@@ -12,6 +12,8 @@ import rmgpy.statmech
 import symmetry
 import qmdata
 
+import rmgpy.constants as constants
+
 class Geometry:
     """
     A geometry, used for quantum calculations.
@@ -346,23 +348,19 @@ class QMMolecule:
         assert self.qmData, "Need QM Data first in order to calculate thermo."
         assert self.pointGroup, "Need Point Group first in order to calculate thermo."
         
-        # self.qmData.rotationalConstants is in Hz.
-        h_over_8_pi_squared = 8.39201316e-36 # kg m^2 / s
-        inertias = ([h_over_8_pi_squared / frequency for frequency in self.qmData.rotationalConstants], "kg*m^2")
-        
-        trans = rmgpy.statmech.IdealGasTranslation( mass=(self.qmData.molecularMass,"g/mol") )
+        trans = rmgpy.statmech.IdealGasTranslation( mass=self.qmData.molecularMass )
         if self.pointGroup.linear:
             rot = rmgpy.statmech.LinearRotor(
-                                         inertia = inertias,
+                                         rotationalConstant = self.qmData.rotationalConstants,
                                          symmetry = self.pointGroup.symmetryNumber,
                                         )
         else:
             rot = rmgpy.statmech.NonlinearRotor(
-                                         inertia = inertias,
+                                         rotationalConstant = self.qmData.rotationalConstants,
                                          symmetry = self.pointGroup.symmetryNumber,
                                         )
         # @todo: should we worry about spherical top rotors?
-        vib = rmgpy.statmech.HarmonicOscillator( frequencies=(self.qmData.frequencies, "cm^-1") )
+        vib = rmgpy.statmech.HarmonicOscillator( frequencies=self.qmData.frequencies )
 
         # @todo: We need to extract or calculate E0 somehow from the qmdata
         E0 = (0, "kJ/mol")
