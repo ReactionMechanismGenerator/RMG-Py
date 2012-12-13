@@ -150,19 +150,19 @@ class AtomType:
 atomTypes = {}
 atomTypes['R']    = AtomType(label='R', generic=[], specific=[
     'R!H',
-    'C','Cs','Cd','Cdd','Ct','CO','Cb','Cbf',
+    'C','Cs','Cd','Cdd','Ct','CO','Cb','Cbf', 'CS',
     'H',
     'O','Os','Od','Oa',
     'Si','Sis','Sid','Sidd','Sit','SiO','Sib','Sibf',
     'S','Ss','Sd','Sa']
 )
 atomTypes['R!H']  = AtomType(label='R!H', generic=['R'], specific=[
-    'C','Cs','Cd','Cdd','Ct','CO','Cb','Cbf',
+    'C','Cs','Cd','Cdd','Ct','CO','Cb','Cbf', 'CS',
     'O','Os','Od','Oa',
     'Si','Sis','Sid','Sidd','Sit','SiO','Sib','Sibf',
     'S','Ss','Sd','Sa']
 )
-atomTypes['C']    = AtomType('C', generic=['R','R!H'], specific=['Cs','Cd','Cdd','Ct','CO','Cb','Cbf'])
+atomTypes['C']    = AtomType('C', generic=['R','R!H'], specific=['Cs','Cd','Cdd','Ct','CO','Cb','Cbf','CS'])
 atomTypes['Cs']   = AtomType('Cs', generic=['R','R!H', 'C'], specific=[])
 atomTypes['Cd']   = AtomType('Cd', generic=['R','R!H', 'C'], specific=[])
 atomTypes['Cdd']  = AtomType('Cdd', generic=['R','R!H', 'C'], specific=[])

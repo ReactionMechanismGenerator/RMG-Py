@@ -148,11 +148,11 @@ class TestGroupAtom(unittest.TestCase):
                 atom1 = GroupAtom(atomType=[atomType1], radicalElectrons=[1], spinMultiplicity=[2], charge=[0], label='*1')
                 atom2 = GroupAtom(atomType=[atomType2], radicalElectrons=[1], spinMultiplicity=[2], charge=[0], label='*1')
                 if label1 == label2 or atomType2 in atomType1.generic or atomType1 in atomType2.generic:
-                    self.assertTrue(atom1.equivalent(atom2))
-                    self.assertTrue(atom2.equivalent(atom1))
+                    self.assertTrue(atom1.equivalent(atom2), '{0!s} is not equivalent to {1!s}'.format(atom1, atom2))
+                    self.assertTrue(atom2.equivalent(atom1), '{0!s} is not equivalent to {1!s}'.format(atom2, atom1))
                 else:
-                    self.assertFalse(atom1.equivalent(atom2))
-                    self.assertFalse(atom2.equivalent(atom1))
+                    self.assertFalse(atom1.equivalent(atom2), '{0!s} is equivalent to {1!s}'.format(atom1, atom2))
+                    self.assertFalse(atom2.equivalent(atom1), '{0!s} is equivalent to {1!s}'.format(atom2, atom1))
     
     def testIsSpecificCaseOf(self):
         """
@@ -163,9 +163,9 @@ class TestGroupAtom(unittest.TestCase):
                 atom1 = GroupAtom(atomType=[atomType1], radicalElectrons=[1], spinMultiplicity=[2], charge=[0], label='*1')
                 atom2 = GroupAtom(atomType=[atomType2], radicalElectrons=[1], spinMultiplicity=[2], charge=[0], label='*1')
                 if label1 == label2 or atomType2 in atomType1.generic:
-                    self.assertTrue(atom1.isSpecificCaseOf(atom2))
+                    self.assertTrue(atom1.isSpecificCaseOf(atom2), '{0!s} is not a specific case of {1!s}'.format(atom1, atom2))
                 else:
-                    self.assertFalse(atom1.isSpecificCaseOf(atom2))
+                    self.assertFalse(atom1.isSpecificCaseOf(atom2), '{0!s} is not a specific case of {1!s}'.format(atom1, atom2))
     
     def testCopy(self):
         """
