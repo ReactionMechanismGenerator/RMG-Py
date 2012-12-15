@@ -12,8 +12,6 @@ import rmgpy.statmech
 import symmetry
 import qmdata
 
-import rmgpy.constants as constants
-
 class Geometry:
     """
     A geometry, used for quantum calculations.
@@ -244,6 +242,7 @@ class QMMolecule:
         if self.loadThermoData():
             # We should only have to do these calculations once when generating the thermo,
             # but have to make changes to the saveThermoData and loadThermoData methods first.
+            import ipdb; ipdb.set_trace()
             self.thermo.Cp0 = self.molecule.calculateCp0()
             self.thermo.CpInf = self.molecule.calculateCpInf()
             return self.thermo
@@ -361,7 +360,7 @@ class QMMolecule:
                                         )
         # @todo: should we worry about spherical top rotors?
         vib = rmgpy.statmech.HarmonicOscillator( frequencies=self.qmData.frequencies )
-
+        
         # @todo: We need to extract or calculate E0 somehow from the qmdata
         E0 = (0, "kJ/mol")
         self.statesmodel = rmgpy.statmech.Conformer(E0=E0,
@@ -369,16 +368,15 @@ class QMMolecule:
                                 spinMultiplicity = self.qmData.groundStateDegeneracy )
         
         #we will use number of atoms from above (alternatively, we could use the chemGraph); this is needed to test whether the species is monoatomic
-        # Hartree_to_kcal = 627.5095 # from Gaussian thermo white paper
-        Hartree_to_kJmol = 2625.49962 # from Wikipedia, which cites CODATA2010
-        Hf298 = self.qmData.energy * Hartree_to_kJmol
+        # SI units are J/mol, but converted to kJ/mol for generating the thermo.
+        Hf298 = self.qmData.energy.value_si / 1000
         
         S298 = self.statesmodel.getEntropy(298.0)
         Tdata = [300.0, 400.0, 500.0, 600.0, 800.0, 1000.0, 1500.0]
         Cp = [self.statesmodel.getHeatCapacity(T) for T in Tdata]
         S298 = S298 + self.calculateChiralityCorrection()
         comment = self.qmData.source or "QM calculation of some sort."
-
+        
         thermo = ThermoData( 
                            Tdata = (Tdata,"K"),
                            Cpdata = (Cp,"J/(mol*K)"),
