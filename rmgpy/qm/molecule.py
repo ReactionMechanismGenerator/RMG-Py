@@ -242,9 +242,10 @@ class QMMolecule:
         if self.loadThermoData():
             # We should only have to do these calculations once when generating the thermo,
             # but have to make changes to the saveThermoData and loadThermoData methods first.
-            import ipdb; ipdb.set_trace()
-            self.thermo.Cp0 = self.molecule.calculateCp0()
-            self.thermo.CpInf = self.molecule.calculateCpInf()
+            Cp0 = self.molecule.calculateCp0()
+            CpInf = self.molecule.calculateCpInf()
+            self.thermo.Cp0 = (Cp0,"J/(mol*K)")
+            self.thermo.CpInf = (CpInf,"J/(mol*K)")
             return self.thermo
         
         # If not, generate the QM data
@@ -256,8 +257,10 @@ class QMMolecule:
             
         self.determinePointGroup()
         self.calculateThermoData()
-        self.thermo.Cp0 = self.molecule.calculateCp0()
-        self.thermo.CpInf = self.molecule.calculateCpInf()
+        Cp0 = self.molecule.calculateCp0()
+        CpInf = self.molecule.calculateCpInf()
+        self.thermo.Cp0 = (Cp0,"J/(mol*K)")
+        self.thermo.CpInf = (CpInf,"J/(mol*K)")
         self.saveThermoData()
         return self.thermo
         
