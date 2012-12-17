@@ -592,22 +592,7 @@ def loadChemkinFile(path, dictionaryPath=None):
                     else:
                         species = Species(label=token)
                         speciesDict[token_upper] = species
-                    speciesList.append(species)
-                
-                # Also always add in a few bath gases (since RMG-Java does)
-                for label, smiles in [('Ar','[Ar]'), ('He','[He]'), ('Ne','[Ne]'), ('N2','N#N')]:
-                    molecule = Molecule().fromSMILES(smiles)
-                    for species in speciesList:
-                        if species.label == label:
-                            if len(species.molecule) == 0:
-                                species.molecule = [molecule]
-                            break
-                        if species.isIsomorphic(molecule):
-                            break
-                    else:
-                        species = Species(label=label, molecule=[molecule])
-                        speciesList.append(species)
-                        speciesDict[label] = species                            
+                    speciesList.append(species)                        
                 
             elif 'THERM' in line:
                 # List of thermodynamics (hopefully one per species!)
@@ -628,10 +613,7 @@ def loadChemkinFile(path, dictionaryPath=None):
                                     speciesDict[label].thermo.comment = comments
                                     comments = ''
                                 except KeyError:
-                                    if label in ['AR', 'N2', 'HE', 'NE']:
-                                        pass
-                                    else:
-                                        logging.warning('Skipping unexpected species "{0}" while reading thermodynamics entry.'.format(label))
+                                    logging.warning('Skipping unexpected species "{0}" while reading thermodynamics entry.'.format(label))
                                 thermo = ''
                     line = f.readline()
                 
