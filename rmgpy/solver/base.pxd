@@ -55,4 +55,4 @@ cdef class ReactionSystem(DASSL):
 
     cpdef logRates(self, double charRate, object species, double speciesRate, object network, double networkRate)
 
-    cpdef logConversions(self, speciesIndex, y0)
+    cpdef logConversions(self, speciesIndex, y0, realConcentration)
