@@ -195,7 +195,7 @@ class TestWilhoit(unittest.TestCase):
         """
         Tlist = numpy.array([200,400,600,800,1000,1200,1400,1600,1800,2000])
         for T in Tlist:
-            Gexp = self.wilhoit.getEnthalpy(T) - self.wilhoit.getEntropy(T)
+            Gexp = self.wilhoit.getEnthalpy(T) - T * self.wilhoit.getEntropy(T)
             Gact = self.wilhoit.getFreeEnergy(T)
             self.assertAlmostEqual(Gexp / Gact, 1.0, 4, '{0} != {1}'.format(Gexp, Gact))
     

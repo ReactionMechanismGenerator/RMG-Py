@@ -88,53 +88,152 @@ class TestReaction(unittest.TestCase):
         """
         A method that is called prior to each unit test in this class.
         """
-        states = StatesModel(
-            modes = [Translation(mass=0.0280313), RigidRotor(linear=False, inertia=[5.69516e-47, 2.77584e-46, 3.34536e-46], symmetry=4), HarmonicOscillator(frequencies=[834.499, 973.312, 975.369, 1067.13, 1238.46, 1379.46, 1472.29, 1691.34, 3121.57, 3136.7, 3192.46, 3220.98])],
-            spinMultiplicity=1,
+        ethylene = Species(
+            label = 'C2H4',
+            conformer = Conformer(
+                E0 = (44.7127, 'kJ/mol'),
+                modes = [
+                    IdealGasTranslation(
+                        mass = (28.0313, 'amu'),
+                    ),
+                    NonlinearRotor(
+                        inertia = (
+                            [3.41526, 16.6498, 20.065],
+                            'amu*angstrom^2',
+                        ),
+                        symmetry = 4,
+                    ),
+                    HarmonicOscillator(
+                        frequencies = (
+                            [828.397, 970.652, 977.223, 1052.93, 1233.55, 1367.56, 1465.09, 1672.25, 3098.46, 3111.7, 3165.79, 3193.54],
+                            'cm^-1',
+                        ),
+                    ),
+                ],
+                spinMultiplicity = 1,
+                opticalIsomers = 1,
+            ),
         )
-        ethylene = Species(states=states, E0=-205882860.949)
         
-        states = StatesModel(
-            modes = [Translation(mass=0.00100783), HarmonicOscillator(frequencies=[])],
-            spinMultiplicity=2,
+        hydrogen = Species(          
+            label = 'H',
+            conformer = Conformer(
+                E0 = (211.794, 'kJ/mol'),
+                modes = [
+                    IdealGasTranslation(
+                        mass = (1.00783, 'amu'),
+                    ),
+                ],
+                spinMultiplicity = 2,
+                opticalIsomers = 1,
+            ),
         )
-        hydrogen = Species(states=states, E0=-1318675.56138)
         
-        states = StatesModel(
-            modes = [Translation(mass=0.0290391), RigidRotor(linear=False, inertia=[8.07491e-47, 3.69475e-46, 3.9885e-46], symmetry=1), HarmonicOscillator(frequencies=[466.816, 815.399, 974.674, 1061.98, 1190.71, 1402.03, 1467, 1472.46, 1490.98, 2972.34, 2994.88, 3089.96, 3141.01, 3241.96])],
-            spinMultiplicity=2,
+        ethyl = Species(
+            label = 'C2H5',
+            conformer = Conformer(
+                E0 = (111.603, 'kJ/mol'),
+                modes = [
+                    IdealGasTranslation(
+                        mass = (29.0391, 'amu'),
+                    ),
+                    NonlinearRotor(
+                        inertia = (
+                            [4.8709, 22.2353, 23.9925],
+                            'amu*angstrom^2',
+                        ),
+                        symmetry = 1,
+                    ),
+                    HarmonicOscillator(
+                        frequencies = (
+                            [482.224, 791.876, 974.355, 1051.48, 1183.21, 1361.36, 1448.65, 1455.07, 1465.48, 2688.22, 2954.51, 3033.39, 3101.54, 3204.73],
+                            'cm^-1',
+                        ),
+                    ),
+                    HinderedRotor(
+                        inertia = (1.11481, 'amu*angstrom^2'),
+                        symmetry = 6,
+                        barrier = (0.244029, 'kJ/mol'),
+                        semiclassical = None,
+                    ),
+                ],
+                spinMultiplicity = 2,
+                opticalIsomers = 1,
+            ),
         )
-        ethyl = Species(states=states, E0=-207340036.867)
         
-        states = StatesModel(
-            modes = [Translation(mass=0.0290391), RigidRotor(linear=False, inertia=[1.2553e-46, 3.68827e-46, 3.80416e-46], symmetry=2), HarmonicOscillator(frequencies=[241.47, 272.706, 833.984, 961.614, 974.994, 1052.32, 1238.23, 1364.42, 1471.38, 1655.51, 3128.29, 3140.3, 3201.94, 3229.51])],
-            spinMultiplicity=2,
+        TS = TransitionState(
+            label = 'TS',
+            conformer = Conformer(
+                E0 = (266.694, 'kJ/mol'),
+                modes = [
+                    IdealGasTranslation(
+                        mass = (29.0391, 'amu'),
+                    ),
+                    NonlinearRotor(
+                        inertia = (
+                            [6.78512, 22.1437, 22.2114],
+                            'amu*angstrom^2',
+                        ),
+                        symmetry = 1,
+                    ),
+                    HarmonicOscillator(
+                        frequencies = (
+                            [412.75, 415.206, 821.495, 924.44, 982.714, 1024.16, 1224.21, 1326.36, 1455.06, 1600.35, 3101.46, 3110.55, 3175.34, 3201.88],
+                            'cm^-1',
+                        ),
+                    ),
+                ],
+                spinMultiplicity = 2,
+                opticalIsomers = 1,
+            ),
+            frequency = (-750.232, 'cm^-1'),
         )
-        TS = TransitionState(states=states, E0=-207188826.467, frequency=-309.3437)
         
-        kinetics = Arrhenius(A=1.0e6, n=1.0, Ea=10000.0, T0=298.15, comment='These parameters are completely made up')
-
-        self.reaction = Reaction(reactants=[hydrogen, ethylene], products=[ethyl], kinetics=kinetics, transitionState=TS)
+        self.reaction = Reaction(
+            reactants = [hydrogen, ethylene],
+            products = [ethyl], 
+            kinetics = Arrhenius(
+                A = (501366000.0, 'cm^3/(mol*s)'),
+                n = 1.637,
+                Ea = (4.32508, 'kJ/mol'),
+                T0 = (1, 'K'),
+                Tmin = (300, 'K'),
+                Tmax = (2500, 'K'),
+            ),
+            transitionState = TS,
+        )
     
         # CC(=O)O[O]
         acetylperoxy = Species(
             label='acetylperoxy',
-            thermo=Wilhoit(cp0=4.0*constants.R, cpInf=21.0*constants.R, a0=-3.95, a1=9.26, a2=-15.6, a3=8.55, B=500.0, H0=-6.151e+04, S0=-790.2),
+            thermo=Wilhoit(Cp0=(4.0*constants.R,"J/(mol*K)"), CpInf=(21.0*constants.R,"J/(mol*K)"), a0=-3.95, a1=9.26, a2=-15.6, a3=8.55, B=(500.0,"K"), H0=(-6.151e+04,"J/mol"), S0=(-790.2,"J/(mol*K)")),
         )
 
         # C[C]=O
         acetyl = Species(
             label='acetyl',
-            thermo=Wilhoit(cp0=4.0*constants.R, cpInf=15.5*constants.R, a0=0.2541, a1=-0.4712, a2=-4.434, a3=2.25, B=500.0, H0=-1.439e+05, S0=-524.6),
+            thermo=Wilhoit(Cp0=(4.0*constants.R,"J/(mol*K)"), CpInf=(15.5*constants.R,"J/(mol*K)"), a0=0.2541, a1=-0.4712, a2=-4.434, a3=2.25, B=(500.0,"K"), H0=(-1.439e+05,"J/mol"), S0=(-524.6,"J/(mol*K)")),
         )
 
         # [O][O]
         oxygen = Species(
             label='oxygen',
-            thermo=Wilhoit(cp0=3.5*constants.R, cpInf=4.5*constants.R, a0=-0.9324, a1=26.18, a2=-70.47, a3=44.12, B=500.0, H0=1.453e+04, S0=-12.19),
+            thermo=Wilhoit(Cp0=(3.5*constants.R,"J/(mol*K)"), CpInf=(4.5*constants.R,"J/(mol*K)"), a0=-0.9324, a1=26.18, a2=-70.47, a3=44.12, B=(500.0,"K"), H0=(1.453e+04,"J/mol"), S0=(-12.19,"J/(mol*K)")),
         )
         
-        self.reaction2 = Reaction(reactants=[acetyl, oxygen], products=[acetylperoxy], kinetics=Arrhenius(A=2.65e6, n=0.0, Ea=0.0*4184))
+        self.reaction2 = Reaction(
+            reactants=[acetyl, oxygen], 
+            products=[acetylperoxy], 
+            kinetics = Arrhenius(
+                A = (2.65e12, 'cm^3/(mol*s)'),
+                n = 0.0,
+                Ea = (0.0, 'kJ/mol'),
+                T0 = (1, 'K'),
+                Tmin = (300, 'K'),
+                Tmax = (2000, 'K'),
+            ),
+        )
         
     def testIsIsomerization(self):
         """
@@ -306,18 +405,18 @@ class TestReaction(unittest.TestCase):
         A test of the transition state theory k(T) calculation function,
         using the reaction H + C2H4 -> C2H5.
         """
-        Tlist = 1000.0/numpy.arange(0.4, 3.35, 0.05)
-        klist = self.reaction.calculateTSTRateCoefficients(Tlist, tunneling='')
-        arrhenius = Arrhenius().fitToData(Tlist, klist, kunits='')
-        klist2 = arrhenius.getRateCoefficients(Tlist)
+        Tlist = 1000.0/numpy.arange(0.4, 3.35, 0.01)
+        klist = numpy.array([self.reaction.calculateTSTRateCoefficient(T) for T in Tlist])
+        arrhenius = Arrhenius().fitToData(Tlist, klist, kunits='m^3/(mol*s)')
+        klist2 = numpy.array([arrhenius.getRateCoefficient(T) for T in Tlist])
         
         # Check that the correct Arrhenius parameters are returned
-        self.assertAlmostEqual(arrhenius.A.value_si/1.07506e+07, 1.0, 3)
-        self.assertAlmostEqual(arrhenius.n.value_si/1.47803, 1.0, 3)
-        self.assertAlmostEqual(arrhenius.Ea.value_si/10194., 1.0, 3)
-        # Check that the fit is satisfactory
+        self.assertAlmostEqual(arrhenius.A.value_si, 2265.2488, delta=1e-2)
+        self.assertAlmostEqual(arrhenius.n.value_si, 1.45419, delta=1e-4)
+        self.assertAlmostEqual(arrhenius.Ea.value_si, 6645.24, delta=1e-2)
+        # Check that the fit is satisfactory (defined here as always within 5%)
         for i in range(len(Tlist)):
-            self.assertTrue(abs(1 - klist2[i] / klist[i]) < 0.01)
+            self.assertAlmostEqual(klist[i], klist2[i], delta=5e-2 * klist[i])
         
     def testPickle(self):
         """
@@ -330,23 +429,22 @@ class TestReaction(unittest.TestCase):
         self.assertEqual(len(self.reaction.reactants), len(reaction.reactants))
         self.assertEqual(len(self.reaction.products), len(reaction.products))
         for reactant0, reactant in zip(self.reaction.reactants, reaction.reactants):
-            self.assertAlmostEqual(reactant0.E0.value_si / 1e6, reactant.E0.value_si / 1e6, 2)
-            self.assertEqual(reactant0.E0.units, reactant.E0.units)
+            self.assertAlmostEqual(reactant0.conformer.E0.value_si / 1e6, reactant.conformer.E0.value_si / 1e6, 2)
+            self.assertEqual(reactant0.conformer.E0.units, reactant.conformer.E0.units)
         for product0, product in zip(self.reaction.products, reaction.products):
-            self.assertAlmostEqual(product0.E0.value_si / 1e6, product.E0.value_si / 1e6, 2)
-            self.assertEqual(product0.E0.units, product.E0.units)
-        self.assertAlmostEqual(self.reaction.transitionState.E0.value_si / 1e6, reaction.transitionState.E0.value_si / 1e6, 2)
-        self.assertEqual(self.reaction.transitionState.E0.units, reaction.transitionState.E0.units)
+            self.assertAlmostEqual(product0.conformer.E0.value_si / 1e6, product.conformer.E0.value_si / 1e6, 2)
+            self.assertEqual(product0.conformer.E0.units, product.conformer.E0.units)
+        self.assertAlmostEqual(self.reaction.transitionState.conformer.E0.value_si / 1e6, reaction.transitionState.conformer.E0.value_si / 1e6, 2)
+        self.assertEqual(self.reaction.transitionState.conformer.E0.units, reaction.transitionState.conformer.E0.units)
         self.assertAlmostEqual(self.reaction.transitionState.frequency.value_si, reaction.transitionState.frequency.value_si, 2)
         self.assertEqual(self.reaction.transitionState.frequency.units, reaction.transitionState.frequency.units)
         
-        self.assertEqual(self.reaction.kinetics.A.value_si, reaction.kinetics.A.value_si)
-        self.assertEqual(self.reaction.kinetics.n.value_si, reaction.kinetics.n.value_si)
-        self.assertEqual(self.reaction.kinetics.T0.value_si, reaction.kinetics.T0.value_si)
-        self.assertEqual(self.reaction.kinetics.Ea.value_si, reaction.kinetics.Ea.value_si)
+        self.assertAlmostEqual(self.reaction.kinetics.A.value_si, reaction.kinetics.A.value_si, delta=1e-6)
+        self.assertAlmostEqual(self.reaction.kinetics.n.value_si, reaction.kinetics.n.value_si, delta=1e-6)
+        self.assertAlmostEqual(self.reaction.kinetics.T0.value_si, reaction.kinetics.T0.value_si, delta=1e-6)
+        self.assertAlmostEqual(self.reaction.kinetics.Ea.value_si, reaction.kinetics.Ea.value_si, delta=1e-6)
         self.assertEqual(self.reaction.kinetics.comment, reaction.kinetics.comment)
 
-        self.assertEqual(self.reaction.thirdBody, reaction.thirdBody)
         self.assertEqual(self.reaction.duplicate, reaction.duplicate)
         self.assertEqual(self.reaction.degeneracy, reaction.degeneracy)        
 
@@ -360,23 +458,22 @@ class TestReaction(unittest.TestCase):
         self.assertEqual(len(self.reaction.reactants), len(reaction.reactants))
         self.assertEqual(len(self.reaction.products), len(reaction.products))
         for reactant0, reactant in zip(self.reaction.reactants, reaction.reactants):
-            self.assertAlmostEqual(reactant0.E0.value_si / 1e6, reactant.E0.value_si / 1e6, 2)
-            self.assertEqual(reactant0.E0.units, reactant.E0.units)
+            self.assertAlmostEqual(reactant0.conformer.E0.value_si / 1e6, reactant.conformer.E0.value_si / 1e6, 2)
+            self.assertEqual(reactant0.conformer.E0.units, reactant.conformer.E0.units)
         for product0, product in zip(self.reaction.products, reaction.products):
-            self.assertAlmostEqual(product0.E0.value_si / 1e6, product.E0.value_si / 1e6, 2)
-            self.assertEqual(product0.E0.units, product.E0.units)
-        self.assertAlmostEqual(self.reaction.transitionState.E0.value_si / 1e6, reaction.transitionState.E0.value_si / 1e6, 2)
-        self.assertEqual(self.reaction.transitionState.E0.units, reaction.transitionState.E0.units)
+            self.assertAlmostEqual(product0.conformer.E0.value_si / 1e6, product.conformer.E0.value_si / 1e6, 2)
+            self.assertEqual(product0.conformer.E0.units, product.conformer.E0.units)
+        self.assertAlmostEqual(self.reaction.transitionState.conformer.E0.value_si / 1e6, reaction.transitionState.conformer.E0.value_si / 1e6, 2)
+        self.assertEqual(self.reaction.transitionState.conformer.E0.units, reaction.transitionState.conformer.E0.units)
         self.assertAlmostEqual(self.reaction.transitionState.frequency.value_si, reaction.transitionState.frequency.value_si, 2)
         self.assertEqual(self.reaction.transitionState.frequency.units, reaction.transitionState.frequency.units)
         
-        self.assertEqual(self.reaction.kinetics.A.value_si, reaction.kinetics.A.value_si)
-        self.assertEqual(self.reaction.kinetics.n.value_si, reaction.kinetics.n.value_si)
-        self.assertEqual(self.reaction.kinetics.T0.value_si, reaction.kinetics.T0.value_si)
-        self.assertEqual(self.reaction.kinetics.Ea.value_si, reaction.kinetics.Ea.value_si)
+        self.assertAlmostEqual(self.reaction.kinetics.A.value_si, reaction.kinetics.A.value_si, delta=1e-6)
+        self.assertAlmostEqual(self.reaction.kinetics.n.value_si, reaction.kinetics.n.value_si, delta=1e-6)
+        self.assertAlmostEqual(self.reaction.kinetics.T0.value_si, reaction.kinetics.T0.value_si, delta=1e-6)
+        self.assertAlmostEqual(self.reaction.kinetics.Ea.value_si, reaction.kinetics.Ea.value_si, delta=1e-6)
         self.assertEqual(self.reaction.kinetics.comment, reaction.kinetics.comment)
         
-        self.assertEqual(self.reaction.thirdBody, reaction.thirdBody)
         self.assertEqual(self.reaction.duplicate, reaction.duplicate)
         self.assertEqual(self.reaction.degeneracy, reaction.degeneracy)   
 

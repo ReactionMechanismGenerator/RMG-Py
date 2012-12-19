@@ -549,7 +549,7 @@ class TestMass(unittest.TestCase):
         kg/mol is automatically coerced to amu.
         """
         q = quantity.Mass(1.0,"kg/mol")
-        self.assertAlmostEqual(q.value, 1000.0, 6)
+        self.assertAlmostEqual(q.value, 1000.0, 3)
         self.assertAlmostEqual(q.value_si, 1000.*constants.amu, delta=1e-29)
         self.assertEqual(q.units, "amu")
 

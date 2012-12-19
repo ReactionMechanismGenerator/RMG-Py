@@ -83,7 +83,7 @@ cdef class Conformer:
         Return a string representation that can be used to reconstruct the
         Conformer object.
         """
-        result = 'Conformer(E0={0!r}, modes={0!r}'.format(self.E0, self.modes)
+        result = 'Conformer(E0={0!r}, modes={1!r}'.format(self.E0, self.modes)
         if self.spinMultiplicity != 1:
             result += ', spinMultiplicity={0:d}'.format(self.spinMultiplicity)
         if self.opticalIsomers != 1:
