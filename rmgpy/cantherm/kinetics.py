@@ -96,6 +96,9 @@ class KineticsJob:
         
         logging.info('Saving kinetics for {0}...'.format(reaction))
         
+        order = len(self.reaction.reactants)
+        factor = 1e6 ** (order-1)
+        
         f = open(outputFile, 'a')
     
         f.write('#   ======= =========== =========== =========== ===============\n')
@@ -104,9 +107,9 @@ class KineticsJob:
         for T in [300,400,500,600,800,1000,1500,2000]:  
             tunneling = reaction.transitionState.tunneling
             reaction.transitionState.tunneling = None
-            k0 = reaction.calculateTSTRateCoefficient(T)
+            k0 = reaction.calculateTSTRateCoefficient(T) * factor
             reaction.transitionState.tunneling = tunneling
-            k = reaction.calculateTSTRateCoefficient(T)
+            k = reaction.calculateTSTRateCoefficient(T) * factor
             tunneling = reaction.transitionState.tunneling
             kappa = k / k0
             f.write('#    {0:4g} K {1:11.3e} {2:11g} {3:11.3e} {4}\n'.format(T, k0, kappa, k, self.kunits))
