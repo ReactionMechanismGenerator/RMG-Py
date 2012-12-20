@@ -83,16 +83,17 @@ reaction equations fit in the maximum limit of 52 characters.</p>
 
 <dl class="function">
 <dt id="rmgpy.chemkin.saveChemkinFile">
-<tt class="descclassname">rmgpy.chemkin.</tt><tt class="descname">saveChemkinFile</tt><big>(</big><em>path</em>, <em>species</em>, <em>reactions</em><big>)</big><a class="headerlink" href="#rmgpy.chemkin.saveChemkinFile" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">rmgpy.chemkin.</tt><tt class="descname">saveChemkinFile</tt><big>(</big><em>path</em>, <em>species</em>, <em>reactions</em>, <em>verbose=True</em><big>)</big><a class="headerlink" href="#rmgpy.chemkin.saveChemkinFile" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save a Chemkin input file to <cite>path</cite> on disk containing the provided lists
 of <cite>species</cite> and <cite>reactions</cite>.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="rmgpy.chemkin.writeKineticsEntry">
-<tt class="descclassname">rmgpy.chemkin.</tt><tt class="descname">writeKineticsEntry</tt><big>(</big><em>reaction</em>, <em>speciesList</em><big>)</big><a class="headerlink" href="#rmgpy.chemkin.writeKineticsEntry" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">rmgpy.chemkin.</tt><tt class="descname">writeKineticsEntry</tt><big>(</big><em>reaction</em>, <em>speciesList</em>, <em>verbose=True</em>, <em>javaLibrary=False</em><big>)</big><a class="headerlink" href="#rmgpy.chemkin.writeKineticsEntry" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a string representation of the reaction as used in a Chemkin
-file.</p>
+file. Use verbose = True to turn on comments.  Use javaLibrary = True in order to 
+generate a kinetics entry suitable for an RMG-Java kinetics library.</p>
 </dd></dl>
 
 <dl class="function">
