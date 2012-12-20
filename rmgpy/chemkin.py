@@ -921,10 +921,11 @@ def writeThermoEntry(species):
 
 ################################################################################
 
-def writeKineticsEntry(reaction, speciesList, verbose = True):
+def writeKineticsEntry(reaction, speciesList, verbose = True, javaLibrary = False):
     """
     Return a string representation of the reaction as used in a Chemkin
-    file.
+    file. Use verbose = True to turn on comments.  Use javaLibrary = True in order to 
+    generate a kinetics entry suitable for an RMG-Java kinetics library.  
     """
     string = ""
     
@@ -951,7 +952,7 @@ def writeKineticsEntry(reaction, speciesList, verbose = True):
                          products=reaction.products,
                          reversible=reaction.reversible,
                          kinetics=kinetics)
-            string += writeKineticsEntry(new_reaction, speciesList, verbose)
+            string += writeKineticsEntry(new_reaction, speciesList, verbose, javaLibrary)
             string += "DUPLICATE\n"
         return string + "\n"
     
@@ -988,20 +989,38 @@ def writeKineticsEntry(reaction, speciesList, verbose = True):
     kinetics = reaction.kinetics
     numReactants = len(reaction.reactants)
     
-    thirdBody = ''
-    if kinetics.isPressureDependent():
-        if isinstance(kinetics, ThirdBody) and not isinstance(kinetics, Lindemann) and not isinstance(kinetics, Troe):
-            thirdBody = '+M'
-        elif isinstance(kinetics, PDepArrhenius):
-            thirdBody = ''
-        else:
-            thirdBody = '(+M)'
+    if javaLibrary:
+        thirdBody = ''
+        if kinetics.isPressureDependent():
+            if isinstance(kinetics, ThirdBody) and not isinstance(kinetics, Lindemann) and not isinstance(kinetics, Troe):
+                thirdBody = ' + M'
+            elif isinstance(kinetics, PDepArrhenius):
+                thirdBody = ''
+            else:
+                thirdBody = ' (+M)'
+        
+        reaction_string = ' + '.join([getSpeciesIdentifier(reactant) for reactant in reaction.reactants])
+        reaction_string += thirdBody
+        reaction_string += ' => ' if not reaction.reversible else ' = '
+        reaction_string += ' + '.join([getSpeciesIdentifier(product) for product in reaction.products])
+        reaction_string += thirdBody
     
-    reaction_string = '+'.join([getSpeciesIdentifier(reactant) for reactant in reaction.reactants])
-    reaction_string += thirdBody
-    reaction_string += '=>' if not reaction.reversible else '='
-    reaction_string += '+'.join([getSpeciesIdentifier(product) for product in reaction.products])
-    reaction_string += thirdBody
+    else:
+        thirdBody = ''
+        if kinetics.isPressureDependent():
+            if isinstance(kinetics, ThirdBody) and not isinstance(kinetics, Lindemann) and not isinstance(kinetics, Troe):
+                thirdBody = '+M'
+            elif isinstance(kinetics, PDepArrhenius):
+                thirdBody = ''
+            else:
+                thirdBody = '(+M)'
+        
+        reaction_string = '+'.join([getSpeciesIdentifier(reactant) for reactant in reaction.reactants])
+        reaction_string += thirdBody
+        reaction_string += '=>' if not reaction.reversible else '='
+        reaction_string += '+'.join([getSpeciesIdentifier(product) for product in reaction.products])
+        reaction_string += thirdBody
+    
     
     string += '{0!s:<52}'.format(reaction_string)
 
@@ -1035,6 +1054,10 @@ def writeKineticsEntry(reaction, speciesList, verbose = True):
     else:
         # Print dummy values that Chemkin parses but ignores
         string += '{0:<9.3e} {1:<9.3f} {2:<9.3f}'.format(1, 0, 0)
+        
+    if javaLibrary:
+        # Assume uncertainties are zero (when parsing from chemkin), may need to adapt later
+        string += '{0:<9.1f} {1:<9.1f} {2:<9.1f}'.format(0, 0, 0)
 
     string += '\n'
 
@@ -1173,3 +1196,40 @@ def saveChemkinFile(path, species, reactions, verbose = True):
     f.close()
     logging.info("Chemkin file contains {0} reactions.".format(__chemkin_reaction_count))
     __chemkin_reaction_count = None
+
+def saveJavaKineticsLibrary(path, species, reactions):
+    """
+    Save the reaction files for a RMG-Java kinetics library: pdepreactions.txt
+    and reactions.txt given a list of reactions.
+    """
+    # Check for duplicate
+    markDuplicateReactions(reactions)
+    
+    f = open(os.path.join(os.path.dirname(path), 'reactions.txt'), 'w')
+    f2 = open(os.path.join(os.path.dirname(path), 'pdepreactions.txt'), 'w')
+
+    # Headers
+    f.write('Unit:\n')
+    f.write('A: mol/cm3/s\n')
+    f.write('E: cal/mol\n')
+    f.write('\n')
+    f.write('Reactions:\n')
+    f.write('\n')
+    
+    f2.write('Unit:\n')
+    f2.write('A: mol/cm3/s\n')
+    f2.write('E: cal/mol\n')
+    f2.write('\n')
+    f2.write('Reactions:\n')
+    f2.write('\n')
+    
+
+    for rxn in reactions:
+        if rxn.kinetics.isPressureDependent():
+            f2.write(writeKineticsEntry(rxn, speciesList=species, verbose = False, javaLibrary = True))
+            f2.write('\n')
+        else:  
+            f.write(writeKineticsEntry(rxn, speciesList=species, verbose = False, javaLibrary = True))
+            f.write('\n')
+    f.close()
+    f2.close()
