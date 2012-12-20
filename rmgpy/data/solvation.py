@@ -89,7 +89,51 @@ class SoluteLibrary(Database):
     """
     A class for working with a RMG solute library.
     """
-    pass
+    def __init__(self, label='', name='', shortDesc='', longDesc=''):
+        Database.__init__(self, label=label, name=name, shortDesc=shortDesc, longDesc=longDesc)
+
+    def loadEntry(self,
+                  index,
+                  label,
+                  molecule,
+                  solute,
+                  reference=None,
+                  referenceType='',
+                  shortDesc='',
+                  longDesc='',
+                  history=None
+                  ):
+        self.entries[label] = Entry(
+            index = index,
+            label = label,
+            item = Molecule().fromAdjacencyList(molecule),
+            data = solute,
+            reference = reference,
+            referenceType = referenceType,
+            shortDesc = shortDesc,
+            longDesc = longDesc.strip(),
+            history = history or [],
+        )
+
+    def saveEntry(self, f, entry):
+        """
+        Write the given `entry` in the solute database to the file object `f`.
+        """
+        return saveEntry(f, entry)
+
+    def generateOldLibraryEntry(self, data):
+        """
+        Return a list of values used to save entries to the old-style RMG
+        thermo database based on the thermodynamics object `data`.
+        """
+        return generateOldLibraryEntry(data)
+
+    def processOldLibraryEntry(self, data):
+        """
+        Process a list of parameters `data` as read from an old-style RMG
+        thermo database, returning the corresponding thermodynamics object.
+        """
+        return processOldLibraryEntry(data)
 
 ################################################################################
 
@@ -157,39 +201,43 @@ class SoluteDatabase(object):
     """
 
     def __init__(self):
-        self.depository = {}
+        #self.depository = {}
         self.libraries = {}
         self.groups = {}
         self.libraryOrder = []
-        self.local_context = {
-            'ThermoData': ThermoData,
-            'Wilhoit': Wilhoit,
-            'NASAPolynomial': NASAPolynomial,
-            'NASA': NASA,
-        }
+        self.local_context = {}
         self.global_context = {}
 
     def __reduce__(self):
         """
-        A helper function used when pickling a ThermoDatabase object.
+        A helper function used when pickling a SoluteDatabase object.
         """
-        raise NotImplementedError()
+       d = {
+            #'depository': self.depository,
+            'libraries': self.libraries,
+            'groups': self.groups,
+            'libraryOrder': self.libraryOrder,
+        }
+        return (SoluteDatabase, (), d)
 
     def __setstate__(self, d):
         """
-        A helper function used when unpickling a ThermoDatabase object.
+        A helper function used when unpickling a SoluteDatabase object.
         """
-        raise NotImplementedError()
+        #self.depository = d['depository']
+        self.libraries = d['libraries']
+        self.groups = d['groups']
+        self.libraryOrder = d['libraryOrder']
 
     def load(self, path, libraries=None, depository=True):
         """
-        Load the thermo database from the given `path` on disk, where `path`
-        points to the top-level folder of the thermo database.
+        Load the solute database from the given `path` on disk, where `path`
+        points to the top-level folder of the solute database.
         """
-        if depository:
-            self.loadDepository(os.path.join(path, 'depository'))
-        else:
-            self.depository = {}
+        # if depository:
+            # self.loadDepository(os.path.join(path, 'depository'))
+        # else:
+            # self.depository = {}
         self.loadLibraries(os.path.join(path, 'libraries'), libraries)
         self.loadGroups(os.path.join(path, 'groups'))
         
@@ -198,22 +246,20 @@ class SoluteDatabase(object):
         Load the thermo database from the given `path` on disk, where `path`
         points to the top-level folder of the thermo database.
         """
-        self.depository = {}
-        self.depository['stable']  = ThermoDepository().load(os.path.join(path, 'stable.py'), self.local_context, self.global_context)
-        self.depository['radical'] = ThermoDepository().load(os.path.join(path, 'radical.py'), self.local_context, self.global_context)
+        raise NotImplementedError()
 
     def loadLibraries(self, path, libraries=None):
         """
-        Load the thermo database from the given `path` on disk, where `path`
-        points to the top-level folder of the thermo database.
+        Load the solute database from the given `path` on disk, where `path`
+        points to the top-level folder of the aolute database.
         """
         self.libraries = {}; self.libraryOrder = []
         for (root, dirs, files) in os.walk(os.path.join(path)):
             for f in files:
                 name, ext = os.path.splitext(f)
                 if ext.lower() == '.py' and (libraries is None or name in libraries):
-                    logging.info('Loading thermodynamics library from {0} in {1}...'.format(f, root))
-                    library = ThermoLibrary()
+                    logging.info('Loading solute library from {0} in {1}...'.format(f, root))
+                    library = 	SoluteLibrary()
                     library.load(os.path.join(root, f), self.local_context, self.global_context)
                     library.label = os.path.splitext(f)[0]
                     self.libraries[library.label] = library
@@ -223,26 +269,26 @@ class SoluteDatabase(object):
 
     def loadGroups(self, path):
         """
-        Load the thermo database from the given `path` on disk, where `path`
-        points to the top-level folder of the thermo database.
+        Load the solute database from the given `path` on disk, where `path`
+        points to the top-level folder of the solute database.
         """
-        logging.info('Loading thermodynamics group database from {0}...'.format(path))
+        logging.info('Loading Platts additivity group database from {0}...'.format(path))
         self.groups = {}
-        self.groups['group']   =   ThermoGroups(label='group').load(os.path.join(path, 'group.py'  ), self.local_context, self.global_context)
-        self.groups['gauche']  =  ThermoGroups(label='gauche').load(os.path.join(path, 'gauche.py' ), self.local_context, self.global_context)
-        self.groups['int15']   =   ThermoGroups(label='int15').load(os.path.join(path, 'int15.py'  ), self.local_context, self.global_context)
-        self.groups['ring']    =    ThermoGroups(label='ring').load(os.path.join(path, 'ring.py'   ), self.local_context, self.global_context)
-        self.groups['radical'] = ThermoGroups(label='radical').load(os.path.join(path, 'radical.py'), self.local_context, self.global_context)
-        self.groups['other']   =   ThermoGroups(label='other').load(os.path.join(path, 'other.py'  ), self.local_context, self.global_context)
+        self.groups['abraham']   =   SoluteGroups(label='abraham').load(os.path.join(path, 'abraham.py'  ), self.local_context, self.global_context)
+        # self.groups['gauche']  =  ThermoGroups(label='gauche').load(os.path.join(path, 'gauche.py' ), self.local_context, self.global_context)
+        # self.groups['int15']   =   ThermoGroups(label='int15').load(os.path.join(path, 'int15.py'  ), self.local_context, self.global_context)
+        # self.groups['ring']    =    ThermoGroups(label='ring').load(os.path.join(path, 'ring.py'   ), self.local_context, self.global_context)
+        # self.groups['radical'] = ThermoGroups(label='radical').load(os.path.join(path, 'radical.py'), self.local_context, self.global_context)
+        # self.groups['other']   =   ThermoGroups(label='other').load(os.path.join(path, 'other.py'  ), self.local_context, self.global_context)
 
     def save(self, path):
         """
-        Save the thermo database to the given `path` on disk, where `path`
-        points to the top-level folder of the thermo database.
+        Save the solvation database to the given `path` on disk, where `path`
+        points to the top-level folder of the solvation database.
         """
         path = os.path.abspath(path)
         if not os.path.exists(path): os.mkdir(path)
-        self.saveDepository(os.path.join(path, 'depository'))
+        #self.saveDepository(os.path.join(path, 'depository'))
         self.saveLibraries(os.path.join(path, 'libraries'))
         self.saveGroups(os.path.join(path, 'groups'))
 
@@ -251,14 +297,12 @@ class SoluteDatabase(object):
         Save the thermo depository to the given `path` on disk, where `path`
         points to the top-level folder of the thermo depository.
         """
-        if not os.path.exists(path): os.mkdir(path)
-        self.depository['stable'].save(os.path.join(path, 'stable.py'))
-        self.depository['radical'].save(os.path.join(path, 'radical.py'))
+        raise NotImplementedError()
 
     def saveLibraries(self, path):
         """
-        Save the thermo libraries to the given `path` on disk, where `path`
-        points to the top-level folder of the thermo libraries.
+        Save the solute libraries to the given `path` on disk, where `path`
+        points to the top-level folder of the solute libraries.
         """
         if not os.path.exists(path): os.mkdir(path)
         for library in self.libraries.values():
@@ -266,35 +310,35 @@ class SoluteDatabase(object):
 
     def saveGroups(self, path):
         """
-        Save the thermo groups to the given `path` on disk, where `path`
-        points to the top-level folder of the thermo groups.
+        Save the solute groups to the given `path` on disk, where `path`
+        points to the top-level folder of the solute groups.
         """
         if not os.path.exists(path): os.mkdir(path)
-        self.groups['group'].save(os.path.join(path, 'group.py'))
-        self.groups['gauche'].save(os.path.join(path, 'gauche.py'))
-        self.groups['int15'].save(os.path.join(path, 'int15.py'))
-        self.groups['ring'].save(os.path.join(path, 'ring.py'))
-        self.groups['radical'].save(os.path.join(path, 'radical.py'))
-        self.groups['other'].save(os.path.join(path, 'other.py'))
+        self.groups['abraham'].save(os.path.join(path, 'abraham.py'))
+        # self.groups['gauche'].save(os.path.join(path, 'gauche.py'))
+        # self.groups['int15'].save(os.path.join(path, 'int15.py'))
+        # self.groups['ring'].save(os.path.join(path, 'ring.py'))
+        # self.groups['radical'].save(os.path.join(path, 'radical.py'))
+        # self.groups['other'].save(os.path.join(path, 'other.py'))
 
     def loadOld(self, path):
         """
-        Load the old RMG thermo database from the given `path` on disk, where
+        Load the old RMG solute database from the given `path` on disk, where
         `path` points to the top-level folder of the old RMG database.
         """
         # The old database does not have a depository, so create an empty one
-        self.depository = {}
-        self.depository['stable']  = ThermoDepository(label='stable', name='Stable Molecules')
-        self.depository['radical'] = ThermoDepository(label='radical', name='Radical Molecules')
+        # self.depository = {}
+        # self.depository['stable']  = ThermoDepository(label='stable', name='Stable Molecules')
+        # self.depository['radical'] = ThermoDepository(label='radical', name='Radical Molecules')
         
         for (root, dirs, files) in os.walk(os.path.join(path, 'thermo_libraries')):
             if os.path.exists(os.path.join(root, 'Dictionary.txt')) and os.path.exists(os.path.join(root, 'Library.txt')):
-                library = ThermoLibrary(label=os.path.basename(root), name=os.path.basename(root))
+                library = SoluteLibrary(label=os.path.basename(root), name=os.path.basename(root))
                 library.loadOld(
                     dictstr = os.path.join(root, 'Dictionary.txt'),
                     treestr = '',
                     libstr = os.path.join(root, 'Library.txt'),
-                    numParameters = 12,
+                    numParameters = 5,
                     numLabels = 1,
                     pattern = False,
                 )
@@ -302,68 +346,112 @@ class SoluteDatabase(object):
                 self.libraries[library.label] = library
 
         self.groups = {}
-        self.groups['group'] = ThermoGroups(label='group', name='Functional Group Additivity Values').loadOld(
-            dictstr = os.path.join(path, 'thermo_groups', 'Group_Dictionary.txt'),
-            treestr = os.path.join(path, 'thermo_groups', 'Group_Tree.txt'),
-            libstr = os.path.join(path, 'thermo_groups', 'Group_Library.txt'),
-            numParameters = 12,
+        self.groups['abraham'] = SoluteGroups(label='abraham', name='Platts Group Additivity Values for Abraham Solute Descriptors').loadOld(
+            dictstr = os.path.join(path, 'thermo_groups', 'Abraham_Dictionary.txt'),
+            treestr = os.path.join(path, 'thermo_groups', 'Abraham_Tree.txt'),
+            libstr = os.path.join(path, 'thermo_groups', 'Abraham_Library.txt'),
+            numParameters = 5,
             numLabels = 1,
             pattern = True,
         )
-        self.groups['gauche'] = ThermoGroups(label='gauche', name='Gauche Interaction Corrections').loadOld(
-            dictstr = os.path.join(path, 'thermo_groups', 'Gauche_Dictionary.txt'),
-            treestr = os.path.join(path, 'thermo_groups', 'Gauche_Tree.txt'),
-            libstr = os.path.join(path, 'thermo_groups', 'Gauche_Library.txt'),
-            numParameters = 12,
-            numLabels = 1,
-            pattern = True,
-        )
-        self.groups['int15'] = ThermoGroups(label='int15', name='1,5-Interaction Corrections').loadOld(
-            dictstr = os.path.join(path, 'thermo_groups', '15_Dictionary.txt'),
-            treestr = os.path.join(path, 'thermo_groups', '15_Tree.txt'),
-            libstr = os.path.join(path, 'thermo_groups', '15_Library.txt'),
-            numParameters = 12,
-            numLabels = 1,
-            pattern = True,
-        )
-        self.groups['radical'] = ThermoGroups(label='radical', name='Radical Corrections').loadOld(
-            dictstr = os.path.join(path, 'thermo_groups', 'Radical_Dictionary.txt'),
-            treestr = os.path.join(path, 'thermo_groups', 'Radical_Tree.txt'),
-            libstr = os.path.join(path, 'thermo_groups', 'Radical_Library.txt'),
-            numParameters = 12,
-            numLabels = 1,
-            pattern = True,
-        )
-        self.groups['ring'] = ThermoGroups(label='ring', name='Ring Corrections').loadOld(
-            dictstr = os.path.join(path, 'thermo_groups', 'Ring_Dictionary.txt'),
-            treestr = os.path.join(path, 'thermo_groups', 'Ring_Tree.txt'),
-            libstr = os.path.join(path, 'thermo_groups', 'Ring_Library.txt'),
-            numParameters = 12,
-            numLabels = 1,
-            pattern = True,
-        )
-        self.groups['other'] = ThermoGroups(label='other', name='Other Corrections').loadOld(
-            dictstr = os.path.join(path, 'thermo_groups', 'Other_Dictionary.txt'),
-            treestr = os.path.join(path, 'thermo_groups', 'Other_Tree.txt'),
-            libstr = os.path.join(path, 'thermo_groups', 'Other_Library.txt'),
-            numParameters = 12,
-            numLabels = 1,
-            pattern = True,
-        )
+        # self.groups['gauche'] = ThermoGroups(label='gauche', name='Gauche Interaction Corrections').loadOld(
+            # dictstr = os.path.join(path, 'thermo_groups', 'Gauche_Dictionary.txt'),
+            # treestr = os.path.join(path, 'thermo_groups', 'Gauche_Tree.txt'),
+            # libstr = os.path.join(path, 'thermo_groups', 'Gauche_Library.txt'),
+            # numParameters = 12,
+            # numLabels = 1,
+            # pattern = True,
+        # )
+        # self.groups['int15'] = ThermoGroups(label='int15', name='1,5-Interaction Corrections').loadOld(
+            # dictstr = os.path.join(path, 'thermo_groups', '15_Dictionary.txt'),
+            # treestr = os.path.join(path, 'thermo_groups', '15_Tree.txt'),
+            # libstr = os.path.join(path, 'thermo_groups', '15_Library.txt'),
+            # numParameters = 12,
+            # numLabels = 1,
+            # pattern = True,
+        # )
+        # self.groups['radical'] = ThermoGroups(label='radical', name='Radical Corrections').loadOld(
+            # dictstr = os.path.join(path, 'thermo_groups', 'Radical_Dictionary.txt'),
+            # treestr = os.path.join(path, 'thermo_groups', 'Radical_Tree.txt'),
+            # libstr = os.path.join(path, 'thermo_groups', 'Radical_Library.txt'),
+            # numParameters = 12,
+            # numLabels = 1,
+            # pattern = True,
+        # )
+        # self.groups['ring'] = ThermoGroups(label='ring', name='Ring Corrections').loadOld(
+            # dictstr = os.path.join(path, 'thermo_groups', 'Ring_Dictionary.txt'),
+            # treestr = os.path.join(path, 'thermo_groups', 'Ring_Tree.txt'),
+            # libstr = os.path.join(path, 'thermo_groups', 'Ring_Library.txt'),
+            # numParameters = 12,
+            # numLabels = 1,
+            # pattern = True,
+        # )
+        # self.groups['other'] = ThermoGroups(label='other', name='Other Corrections').loadOld(
+            # dictstr = os.path.join(path, 'thermo_groups', 'Other_Dictionary.txt'),
+            # treestr = os.path.join(path, 'thermo_groups', 'Other_Tree.txt'),
+            # libstr = os.path.join(path, 'thermo_groups', 'Other_Library.txt'),
+            # numParameters = 12,
+            # numLabels = 1,
+            # pattern = True,
+        # )
 
     def saveOld(self, path):
         """
-        Save the old RMG thermo database to the given `path` on disk, where
+        Save the old RMG Abraham database to the given `path` on disk, where
         `path` points to the top-level folder of the old RMG database.
         """
-        raise NotImplementedError()
+        # Depository not used in old database, so it is not saved
+
+        librariesPath = os.path.join(path, 'thermo_libraries')
+        if not os.path.exists(librariesPath): os.mkdir(librariesPath)
+        for library in self.libraries.values():
+            libraryPath = os.path.join(librariesPath, library.label)
+            if not os.path.exists(libraryPath): os.mkdir(libraryPath)
+            library.saveOld(
+                dictstr = os.path.join(libraryPath, 'Dictionary.txt'),
+                treestr = '',
+                libstr = os.path.join(libraryPath, 'Library.txt'),
+            )
+
+        groupsPath = os.path.join(path, 'thermo_groups')
+        if not os.path.exists(groupsPath): os.mkdir(groupsPath)
+        self.groups['abraham'].saveOld(
+            dictstr = os.path.join(groupsPath, 'Abraham_Dictionary.txt'),
+            treestr = os.path.join(groupsPath, 'Abraham_Tree.txt'),
+            libstr = os.path.join(groupsPath, 'Abraham_Library.txt'),
+        )
+        # self.groups['gauche'].saveOld(
+            # dictstr = os.path.join(groupsPath, 'Gauche_Dictionary.txt'),
+            # treestr = os.path.join(groupsPath, 'Gauche_Tree.txt'),
+            # libstr = os.path.join(groupsPath, 'Gauche_Library.txt'),
+        # )
+        # self.groups['int15'].saveOld(
+            # dictstr = os.path.join(groupsPath, '15_Dictionary.txt'),
+            # treestr = os.path.join(groupsPath, '15_Tree.txt'),
+            # libstr = os.path.join(groupsPath, '15_Library.txt'),
+        # )
+        # self.groups['radical'].saveOld(
+            # dictstr = os.path.join(groupsPath, 'Radical_Dictionary.txt'),
+            # treestr = os.path.join(groupsPath, 'Radical_Tree.txt'),
+            # libstr = os.path.join(groupsPath, 'Radical_Library.txt'),
+        # )
+        # self.groups['ring'].saveOld(
+            # dictstr = os.path.join(groupsPath, 'Ring_Dictionary.txt'),
+            # treestr = os.path.join(groupsPath, 'Ring_Tree.txt'),
+            # libstr = os.path.join(groupsPath, 'Ring_Library.txt'),
+        # )
+        # self.groups['other'].saveOld(
+            # dictstr = os.path.join(groupsPath, 'Other_Dictionary.txt'),
+            # treestr = os.path.join(groupsPath, 'Other_Tree.txt'),
+            # libstr = os.path.join(groupsPath, 'Other_Library.txt'),
+        # )
 
     def getSoluteData(self, species):
         """
-        Return the thermodynamic parameters for a given :class:`Species`
+        Return the solute descriptors for a given :class:`Species`
         object `species`. This function first searches the loaded libraries
         in order, returning the first match found, before falling back to
-        estimation via group additivity.
+        estimation via Platts group additivity.
         """
         soluteData = None
         # Check the libraries in order first; return the first successful match
@@ -376,23 +464,44 @@ class SoluteDatabase(object):
             # Solute not found in any loaded libraries, so estimate
             soluteData = self.getSoluteDataFromGroups(species)
         # Add Cp0 and CpInf values
-         Cp0 = species.calculateCp0()
-         CpInf = species.calculateCpInf()
+         # Cp0 = species.calculateCp0()
+         # CpInf = species.calculateCpInf()
          data, library, entry = soluteData
-         if isinstance(data,SoluteData):
-            data.Cp0 = (Cp0,"J/(mol*K)")
-            data.CpInf = (CpInf,"J/(mol*K)")
+         # if isinstance(data,SoluteData):
+            # data.Cp0 = (Cp0,"J/(mol*K)")
+            # data.CpInf = (CpInf,"J/(mol*K)")
         # Return the resulting solute parameters
         return data
 
-    def getAllThermoData(self, species):
+    def getAllSoluteData(self, species):
         """
-        Return all possible sets of thermodynamic parameters for a given
-        :class:`Species` object `species`. The hits from the depository come
-        first, then the libraries (in order), and then the group additivity
-        estimate. This method is useful for a generic search job.
+        Return all possible sets of Abraham solute descriptors for a given
+        :class:`Species` object `species`. The hits from the library come
+        first, then the group additivity  estimate. This method is useful 
+		 for a generic search job.
         """
-        raise NotImplementedError()
+        thermoData = []
+        # Data from depository comes first
+        # thermoData.extend(self.getThermoDataFromDepository(species))
+        # Data from libraries comes second
+        for label in self.libraryOrder:
+            data = self.getSoluteDataFromLibrary(species, self.libraries[label])
+            if data: 
+                data[0].comment = label
+                soluteData.append(data)
+        # Last entry is always the estimate from group additivity
+        soluteData.append(self.getSoluteDataFromGroups(species))
+		
+        # Add Cp0 and CpInf values
+        # Cp0 = species.calculateCp0()
+        # CpInf = species.calculateCpInf()
+        # for data, library, entry in thermoData:
+            # if isinstance(data,ThermoData):
+                # data.Cp0 = (Cp0,"J/(mol*K)")
+                # data.CpInf = (CpInf,"J/(mol*K)")
+				
+        # Return all of the resulting thermo parameters
+        return thermoData
 
     def getThermoDataFromDepository(self, species):
         """
@@ -411,9 +520,13 @@ class SoluteDatabase(object):
         ``None`` is returned. If no corresponding library is found, a
         :class:`DatabaseError` is raised.
         """
-        raise NotImplementedError()
+        for label, entry in library.entries.iteritems():
+            for molecule in species.molecule:
+                if molecule.isIsomorphic(entry.item) and entry.data is not None:
+                    return (deepcopy(entry.data), library, entry)
+        return None
 
-    def getThermoDataFromGroups(self, species):
+    def getSoluteDataFromGroups(self, species):
         """
         Return the set of Abraham solute parameters corresponding to a given
         :class:`Species` object `species` by estimation using the Platts group
@@ -447,7 +560,7 @@ class SoluteDatabase(object):
         molecule.sortVertices()
 
         # Create the SoluteData object
-        thermoData = ThermoData(
+        soluteData = SoluteData(
             S = 0.0,
             B = 0.0,
             E = 0.0,
@@ -518,7 +631,7 @@ class SoluteDatabase(object):
                 if atom.isNonHydrogen():
                     # Get initial solute data from main group database
                     try:
-                        self.__addGroupSoluteoData(soluteData, self.groups['abraham'], molecule, {'*':atom})
+                        self.__addGroupSoluteData(soluteData, self.groups['abraham'], molecule, {'*':atom})
                     except KeyError:
                         logging.error("Couldn't find in main abraham database:")
                         logging.error(molecule)
@@ -580,14 +693,14 @@ class SoluteDatabase(object):
         #if len(thermoData.Tdata.value_si) != len(data.Tdata.value_si) or any([T1 != T2 for T1, T2 in zip(thermoData.Tdata.value_si, data.Tdata.value_si)]):
             #raise ThermoError('Cannot add these ThermoData objects due to their having different temperature points.')
         
-        for i in range(7):
+        #for i in range(7):
             #thermoData.Cpdata.value_si[i] += data.Cpdata.value_si[i]
-        soluteData.S.value_si += data.S.value_si
-        soluteData.B.value_si += data.B.value_si
-        soluteData.E.value_si += data.E.value_si
-        soluteData.L.value_si += data.L.value_si
-        soluteData.A.value_si += data.A.value_si
-        
+		 soluteData.S += data.S
+		 soluteData.B += data.B
+		 soluteData.E += data.E
+		 soluteData.L += data.L
+		 soluteData.A += data.A
+
 
         if soluteData.comment:
             solute.comment += ' + {0}'.format(comment)
