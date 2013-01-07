@@ -506,7 +506,7 @@ def loadChemkinFile(path, dictionaryPath=None):
     and reactions in the Chemkin file.
     """
     
-    speciesList = []; speciesDict = {}
+    speciesList = []; speciesDict = {}; speciesAliases = {}
     reactionList = []
 
     # If the dictionary path is given, the read it and generate Molecule objects
@@ -579,6 +579,16 @@ def loadChemkinFile(path, dictionaryPath=None):
                 tokens = tokens[index+1:]
                 while 'END' not in tokens:
                     line = f.readline()
+                    # If the line contains only one species, and also contains
+                    # a comment with only one token, assume that token is 
+                    # intended to be the true identifier for the species, but
+                    # was not used e.g. due to a length limitation
+                    if '!' in line and len(line.split('!')) == 2:
+                        label, alias = line.split('!')
+                        label = label.strip()
+                        alias = alias.strip()
+                        if len(label.split()) == 1 and len(alias.split()) == 1:
+                            speciesAliases[label] = alias
                     line = removeCommentFromLine(line)[0]
                     line = line.strip()
                     tokens.extend(line.split())
@@ -775,6 +785,21 @@ def loadChemkinFile(path, dictionaryPath=None):
     for reaction in duplicateReactionsToRemove:
         reactionList.remove(reaction)
     reactionList.extend(duplicateReactionsToAdd)
+
+    # Apply species aliases if known
+    for spec in speciesList:
+        try:
+            spec.label = speciesAliases[spec.label]
+        except KeyError:
+            pass
+    
+    # Attempt to extract index from species label
+    indexPattern = re.compile(r'\(\d+\)$')
+    for spec in speciesList:
+        if indexPattern.search(spec.label):
+            label, sep, index = spec.label[:-1].rpartition('(')
+            spec.label = label
+            spec.index = int(index)
 
     reactionList.sort(key=lambda reaction: reaction.index)
     return speciesList, reactionList
