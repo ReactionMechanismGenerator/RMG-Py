@@ -650,17 +650,19 @@ class Reaction:
             return kr       
         
         elif isinstance(kf, MultiArrhenius):
-            kr = MultiArrhenius()            
+            kr = MultiArrhenius()
+            kr.arrhenius = []            
             rxn = Reaction(reactants = self.reactants, products = self.products)            
-            for kinetics in kf.kineticsList:
+            for kinetics in kf.arrhenius:
                 rxn.kinetics = kinetics
                 kr.arrhenius.append(rxn.generateReverseRateCoefficient())
             return kr
         
         elif isinstance(kf, MultiPDepArrhenius):
-            kr = MultiPDepArrhenius()            
+            kr = MultiPDepArrhenius()              
+            kr.arrhenius = []                
             rxn = Reaction(reactants = self.reactants, products = self.products)            
-            for kinetics in kf.kineticsList:
+            for kinetics in kf.arrhenius:
                 rxn.kinetics = kinetics
                 kr.arrhenius.append(rxn.generateReverseRateCoefficient())
             return kr
