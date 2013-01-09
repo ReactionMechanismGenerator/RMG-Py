@@ -86,6 +86,9 @@ Python
 	dlltool -D python27.dll -d python27.def -l libpython27.a
 	mv libpython27.a /c/MinGW/lib/libpython27.a
 	rm python27.def
+
+  If the ``pexports`` step doesn't work then you can download the :file:`python27.def` file from the link on the `Cython wiki <http://wiki.cython.org/InstallingOnWindows>`_ and continue from the ``dlltool`` step.
+
 	
 .. _prepackageddependencies:
 
