@@ -619,7 +619,7 @@ class KineticsDepository(Database):
             rank = rank,
             history = history or [],
         )
-        self.entries[index] = entry
+        self.entries['{0:d}:{1}'.format(index,label)] = entry
         return entry
 
     def saveEntry(self, f, entry):
@@ -738,7 +738,7 @@ class KineticsDepository(Database):
                 raise DatabaseError('Unexpected data {0!r} for entry {1!s}.'.format(data, entry))
             reactants = [groups.entries[l].item for l in label.split(';')]
             item = Reaction(reactants=reactants, products=[])
-            self.entries[index] = Entry(
+            self.entries['{0:d}:{1}'.format(index,label)] = Entry(
                 index = index,
                 label = label,
                 item = item,
@@ -1096,7 +1096,7 @@ class KineticsLibrary(Database):
             comment += str(re.sub('\s*\n\s*','\n',longDesc))
         kinetics.comment = comment.strip()
         
-        self.entries[index] = Entry(
+        self.entries['{0:d}:{1}'.format(index,label)] = Entry(
             index = index,
             label = label,
             item = Reaction(reactants=reactants, products=products, degeneracy=degeneracy, duplicate=duplicate, reversible=reversible),
