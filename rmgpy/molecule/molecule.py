@@ -1097,7 +1097,10 @@ class Molecule(Graph):
         """
         Return the value of the heat capacity at zero temperature in J/mol*K.
         """
-        return (3.5 if self.isLinear() else 4.0) * constants.R
+        if len(self.atoms) == 1:
+            return 2.5 * constants.R
+        else:
+            return (3.5 if self.isLinear() else 4.0) * constants.R
 
     def calculateCpInf(self):
         """
