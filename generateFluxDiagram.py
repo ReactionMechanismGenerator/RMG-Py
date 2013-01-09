@@ -147,7 +147,7 @@ def generateFluxDiagram(reactionModel, times, concentrations, reactionRates, out
         node.set_penwidth(maximumNodePenWidth)
         graph.add_node(node)
         # Try to use an image instead of the label
-        speciesIndex = re.search('\(\d+\)$', species.label).group(0) + '.png'
+        speciesIndex = str(species) + '.png'
         imagePath = ''
         if not speciesDirectory or not os.path.exists(speciesDirectory): 
             continue
@@ -179,7 +179,7 @@ def generateFluxDiagram(reactionModel, times, concentrations, reactionRates, out
         slope = -maximumNodePenWidth / math.log10(concentrationTolerance)
         for index in nodes:
             species = speciesList[index]
-            node = graph.get_node('"{0}"'.format(species.label))[0]
+            node = graph.get_node('{0}'.format(species.label))[0]
             concentration = concentrations[t,index] / maxConcentration
             if concentration < concentrationTolerance:
                 penwidth = 0.0
@@ -193,7 +193,7 @@ def generateFluxDiagram(reactionModel, times, concentrations, reactionRates, out
             if reactantIndex in nodes and productIndex in nodes:
                 reactant = speciesList[reactantIndex]
                 product = speciesList[productIndex]
-                edge = graph.get_edge('"{0}"'.format(reactant.label), '"{0}"'.format(product.label))[0]
+                edge = graph.get_edge('{0}'.format(reactant.label), '{0}'.format(product.label))[0]
                 # Determine direction of arrow based on sign of rate
                 speciesRate = speciesRates[t,reactantIndex,productIndex] / maxSpeciesRate
                 if speciesRate < 0:
