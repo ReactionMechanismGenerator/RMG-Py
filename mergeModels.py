@@ -37,13 +37,16 @@ if __name__ == '__main__':
     # Load the models to merge
     models = []
     for chemkin, speciesDict in zip(args.files[0::2], args.files[1::2]):
-        print 'Loading model #{0:d} from {1}...'.format(len(models)+1, chemkin)
+        print 'Loading model #{0:d}...'.format(len(models)+1)
         model = ReactionModel()
         model.species, model.reactions = loadChemkinFile(chemkin, speciesDict)
         models.append(model)
+    
+
 
     finalModel = ReactionModel()
-    for i, model in enumerate(models):
+    for i, model in enumerate(models):        
+        print 'Ignoring common species and reactions from model #{0:d}...'.format(i+1)
         Nspec0 = len(finalModel.species)
         Nrxn0 = len(finalModel.reactions)
         finalModel = finalModel.merge(model)
