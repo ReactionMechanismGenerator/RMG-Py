@@ -81,7 +81,10 @@ cdef class Molecule(Graph):
 
     cdef public bint implicitHydrogens
     cdef public int symmetryNumber
-
+    cdef str _fingerprint
+    
+    cpdef str getFingerprint(self)
+    
     cpdef addAtom(self, Atom atom)
 
     cpdef addBond(self, Bond bond)

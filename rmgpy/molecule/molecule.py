@@ -464,6 +464,7 @@ class Molecule(Graph):
     def __init__(self, atoms=None, symmetry=1, SMILES='', InChI=''):
         Graph.__init__(self, atoms)
         self.symmetryNumber = symmetry
+        self._fingerprint = None
         if SMILES != '': self.fromSMILES(SMILES)
         elif InChI != '': self.fromInChI(InChI)
     
@@ -493,6 +494,7 @@ class Molecule(Graph):
         """
         Add an `atom` to the graph. The atom is initialized with no bonds.
         """
+        self._fingerprint = None
         return self.addVertex(atom)
     
     def addBond(self, bond):
@@ -500,6 +502,7 @@ class Molecule(Graph):
         Add a `bond` to the graph as an edge connecting the two atoms `atom1`
         and `atom2`.
         """
+        self._fingerprint = None
         return self.addEdge(bond)
 
     def getBonds(self, atom):
@@ -534,6 +537,7 @@ class Molecule(Graph):
         not remove atoms that no longer have any bonds as a result of this
         removal.
         """
+        self._fingerprint = None
         return self.removeVertex(atom)
 
     def removeBond(self, bond):
@@ -542,6 +546,7 @@ class Molecule(Graph):
         Does not remove atoms that no longer have any bonds as a result of
         this removal.
         """
+        self._fingerprint = None
         return self.removeEdge(bond)
 
     def sortAtoms(self):
@@ -688,6 +693,18 @@ class Molecule(Graph):
                     labeled[atom.label] = atom
         return labeled
 
+    def getFingerprint(self):
+        """
+        Return a string containing the "fingerprint" used to accelerate graph
+        isomorphism comparisons with other molecules. The fingerprint is a
+        short string containing a summary of selected information about the 
+        molecule. Two fingerprint strings matching is a necessary (but not
+        sufficient) condition for the associated molecules to be isomorphic.
+        """
+        if self._fingerprint is None:
+            self._fingerprint = self.getFormula()
+        return self._fingerprint
+    
     def isIsomorphic(self, other, initialMap=None):
         """
         Returns :data:`True` if two graphs are isomorphic and :data:`False`
@@ -700,7 +717,12 @@ class Molecule(Graph):
         # isomorphism, so raise an exception if this is not what was requested
         if not isinstance(other, Molecule):
             raise TypeError('Got a {0} object for parameter "other", when a Molecule object is required.'.format(other.__class__))
-        # Do the isomorphism comparison
+        # Do the quick isomorphism comparison using the fingerprint
+        # Two fingerprint strings matching is a necessary (but not
+        # sufficient!) condition for the associated molecules to be isomorphic
+        if self.getFingerprint() != other.getFingerprint():
+            return False
+        # Do the full isomorphism comparison
         result = Graph.isIsomorphic(self, other, initialMap)
         return result
 
