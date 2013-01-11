@@ -319,10 +319,32 @@ class StatmechGroups(Database):
         frequencies = []
         groupCount = {}
 
+        # This is an additional hardcoded functional group for C-H with C in a ring
+        # It is hardcoded because the adjacency list format isn't well-equipped
+        # to handle this sort of functional group
+        ringCH = Entry(
+            label = 'ringCH',
+            item = None,
+            data = GroupFrequencies([(2750., 3150., 1), (900., 1100., 1)]),
+        )
+        
         # Generate estimate of thermodynamics
         for atom in molecule.atoms:
             # Iterate over heavy (non-hydrogen) atoms
-            if atom.isNonHydrogen():
+            if atom.isHydrogen(): continue
+            if molecule.isAtomInCycle(atom):
+                # Atom is in cycle
+                # Add each C-H bond to the ringCH group
+                # This is hardcoding of functional groups!
+                if atom.isCarbon():
+                    for atom2 in atom.edges:
+                        if atom2.isHydrogen():
+                            try:
+                                groupCount[ringCH] += 1
+                            except KeyError:
+                                groupCount[ringCH] = 1
+            else:
+                # Atom is not in cycle, so find a group for it
                 node = self.__getNode(molecule, {'*':atom})
                 if node is not None:
                     try:
