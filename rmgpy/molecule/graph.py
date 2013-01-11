@@ -512,6 +512,36 @@ class Graph:
                     chain.remove(vertex2)
         # If we reach this point then we did not find any cycles involving this chain
         return False
+    
+    def getAllCyclicVertices(self):
+        """ 
+        Returns all vertices belonging to one or more cycles.        
+        """
+        cython.declare(cyclicVertices=list)
+        # Loop through all vertices and check whether they are cyclic
+        cyclicVertices = []
+        for vertex in self.vertices:
+            if self.isVertexInCycle(vertex):
+                cyclicVertices.append(vertex)                
+        return cyclicVertices
+    
+    def getAllPolycyclicVertices(self):
+        """
+        Return all vertices belonging to two or more cycles, fused or spirocyclic.
+        """
+        cython.declare(SSSR=list, vertices=list, polycyclicVertices=list)
+        SSSR = self.getSmallestSetOfSmallestRings()
+        polycyclicVertices = []
+        if SSSR:            
+            vertices = []
+            for cycle in SSSR:
+                for vertex in cycle:
+                    if vertex not in vertices:
+                        vertices.append(vertex)
+                    else:
+                        if vertex not in polycyclicVertices:
+                            polycyclicVertices.append(vertex)     
+        return polycyclicVertices                                    
 
     def getAllCycles(self, startingVertex):
         """
