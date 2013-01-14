@@ -406,7 +406,7 @@ class ThermoDatabase(object):
         self.groups['int15']   =   ThermoGroups(label='int15').load(os.path.join(path, 'int15.py'  ), self.local_context, self.global_context)
         self.groups['ring']    =    ThermoGroups(label='ring').load(os.path.join(path, 'ring.py'   ), self.local_context, self.global_context)
         self.groups['radical'] = ThermoGroups(label='radical').load(os.path.join(path, 'radical.py'), self.local_context, self.global_context)
-#        self.groups['polycyclic'] = ThermoGroups(label='polycyclic').load(os.path.join(path, 'polycyclic.py'), self.local_context, self.global_context)
+        self.groups['polycyclic'] = ThermoGroups(label='polycyclic').load(os.path.join(path, 'polycyclic.py'), self.local_context, self.global_context)
         self.groups['other']   =   ThermoGroups(label='other').load(os.path.join(path, 'other.py'  ), self.local_context, self.global_context)
 
     def save(self, path):
@@ -449,7 +449,7 @@ class ThermoDatabase(object):
         self.groups['int15'].save(os.path.join(path, 'int15.py'))
         self.groups['ring'].save(os.path.join(path, 'ring.py'))
         self.groups['radical'].save(os.path.join(path, 'radical.py'))
-#        self.groups['polycyclic'].save(os.path.join(path, 'polycyclic.py'))        
+        self.groups['polycyclic'].save(os.path.join(path, 'polycyclic.py'))        
         self.groups['other'].save(os.path.join(path, 'other.py'))
 
     def loadOld(self, path):
@@ -517,14 +517,14 @@ class ThermoDatabase(object):
             numLabels = 1,
             pattern = True,
         )
-#        self.groups['polycyclic'] = ThermoGroups(label='other', name='Polycyclic Ring Corrections').loadOld(
-#            dictstr = os.path.join(path, 'thermo_groups', 'Polycyclic_Dictionary.txt'),
-#            treestr = os.path.join(path, 'thermo_groups', 'Polycyclic_Tree.txt'),
-#            libstr = os.path.join(path, 'thermo_groups', 'Polycyclic_Library.txt'),
-#            numParameters = 12,
-#            numLabels = 1,
-#            pattern = True,
-#        )
+        self.groups['polycyclic'] = ThermoGroups(label='other', name='Polycyclic Ring Corrections').loadOld(
+            dictstr = os.path.join(path, 'thermo_groups', 'Polycyclic_Dictionary.txt'),
+            treestr = os.path.join(path, 'thermo_groups', 'Polycyclic_Tree.txt'),
+            libstr = os.path.join(path, 'thermo_groups', 'Polycyclic_Library.txt'),
+            numParameters = 12,
+            numLabels = 1,
+            pattern = True,
+        )
         self.groups['other'] = ThermoGroups(label='other', name='Other Corrections').loadOld(
             dictstr = os.path.join(path, 'thermo_groups', 'Other_Dictionary.txt'),
             treestr = os.path.join(path, 'thermo_groups', 'Other_Tree.txt'),
@@ -580,11 +580,11 @@ class ThermoDatabase(object):
             treestr = os.path.join(groupsPath, 'Ring_Tree.txt'),
             libstr = os.path.join(groupsPath, 'Ring_Library.txt'),
         )
-#        self.groups['polycyclic'].saveOld(
-#            dictstr = os.path.join(groupsPath, 'Polycyclic_Dictionary.txt'),
-#            treestr = os.path.join(groupsPath, 'Polycyclic_Tree.txt'),
-#            libstr = os.path.join(groupsPath, 'Polycyclic_Library.txt'),
-#        )
+        self.groups['polycyclic'].saveOld(
+            dictstr = os.path.join(groupsPath, 'Polycyclic_Dictionary.txt'),
+            treestr = os.path.join(groupsPath, 'Polycyclic_Tree.txt'),
+            libstr = os.path.join(groupsPath, 'Polycyclic_Library.txt'),
+        )
         self.groups['other'].saveOld(
             dictstr = os.path.join(groupsPath, 'Other_Dictionary.txt'),
             treestr = os.path.join(groupsPath, 'Other_Tree.txt'),
