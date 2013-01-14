@@ -2945,11 +2945,6 @@ class KineticsFamily(Database):
         reactants = [reactant if isinstance(reactant, list) else [reactant] for reactant in reactants]
 
         sameReactants = len(reactants) == 2 and reactants[0] == reactants[1]
-        
-        # Also make a deep copy of each reactant molecule
-        for i in range(len(reactants)):
-            for j in range(len(reactants[i])):
-                reactants[i][j] = reactants[i][j].copy(deep=True)
                 
         if forward:
             template = self.forwardTemplate
