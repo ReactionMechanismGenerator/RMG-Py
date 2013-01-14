@@ -579,6 +579,7 @@ class Molecule(Graph):
         Return the number of atoms in molecule.  If element is given, ie. "H" or "C",
         the number of atoms of that element is returned.
         """
+        cython.declare(numAtoms=cython.int, atom=Atom)
         if element == None:
             return len(self.vertices)
         else:
