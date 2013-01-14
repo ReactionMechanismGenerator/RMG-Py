@@ -107,6 +107,8 @@ cdef class Molecule(Graph):
 
     cpdef double getMolecularWeight(self)
 
+    cpdef int getNumberOfRadicalElectrons(self)
+
     cpdef Graph copy(self, bint deep=?)
 
     cpdef deleteHydrogens(self)
