@@ -178,6 +178,23 @@ def options(units='si', saveRestartPeriod=None, drawMolecules=False, generatePlo
     rmg.generatePlots = generatePlots
     rmg.saveConcentrationProfiles = saveConcentrationProfiles
 
+def generatedSpeciesConstraints(**kwargs):
+    validConstraints = [
+        'maximumCarbonAtoms',
+        'maximumHydrogenAtoms',
+        'maximumOxygenAtoms',
+        'maximumNitrogenAtoms',
+        'maximumSiliconAtoms',
+        'maximumSulfurAtoms',
+        'maximumHeavyAtoms',
+        'maximumRadicalElectrons',
+    ]
+    constraints = {}
+    for key, value in kwargs.items():
+        if key not in validConstraints:
+            raise InputError('Invalid generated species constraint {0!r}.'.format(key))
+        rmg.reactionGenerationOptions[key] = value
+
 ################################################################################
 
 def readInputFile(path, rmg0):
@@ -220,6 +237,7 @@ def readInputFile(path, rmg0):
         'model': model,
         'pressureDependence': pressureDependence,
         'options': options,
+        'generatedSpeciesConstraints': generatedSpeciesConstraints,
     }
 
     try:
