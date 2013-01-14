@@ -2694,17 +2694,6 @@ class KineticsFamily(Database):
         # Clear any previous atom labeling from all reactant structures
         for struct in reactantStructures: struct.clearLabeledAtoms()
 
-        # If there are two structures and they are the same, then make a copy
-        # of the second one and adjust the second map to point to its atoms
-        # This is for the case where A + A --> products
-        if len(reactantStructures) == 2 and reactantStructures[0] == reactantStructures[1]:
-            reactantStructures[1] = reactantStructures[1].copy(deep=True)
-            newMap = {}
-            for reactantAtom, templateAtom in maps[1].iteritems():
-                index = reactantStructures[0].atoms.index(reactantAtom)
-                newMap[reactantStructures[1].atoms[index]] = templateAtom
-            maps[1] = newMap
-
         # Tag atoms with labels
         for m in maps:
             for reactantAtom, templateAtom in m.iteritems():
@@ -3702,6 +3691,12 @@ class KineticsDatabase(object):
         If `only_families` is a list of strings, only families with those labels
         are used.
         """
+        # If there are two structures and they are the same, then make a copy
+        # of the second one so we can independently manipulate both of them 
+        # This is for the case where A + A --> products
+        if len(reactants) == 2 and reactants[0] == reactants[1]:
+            reactants[1] = reactants[1].copy(deep=True)
+        
         reactionList = []
         for label, family in self.families.iteritems():
             if only_families is None or label in only_families:
