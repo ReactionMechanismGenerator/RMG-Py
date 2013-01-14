@@ -2677,7 +2677,7 @@ class KineticsFamily(Database):
         # Return the product structures
         return productStructures
 
-    def __generateProductStructures(self, reactantStructures, maps, forward):
+    def __generateProductStructures(self, reactantStructures, maps, forward, **options):
         """
         For a given set of `reactantStructures` and a given set of `maps`,
         generate and return the corresponding product structures. The
@@ -2727,6 +2727,35 @@ class KineticsFamily(Database):
             if not productStructures[0].containsLabeledAtom('*1') and \
                 productStructures[1].containsLabeledAtom('*1'):
                 productStructures.reverse()
+
+        # Apply the generated species constraints (if given)
+        if options:
+            maxCarbonAtoms = options.get('maximumCarbonAtoms', 1000000)
+            maxHydrogenAtoms = options.get('maximumHydrogenAtoms', 1000000)
+            maxOxygenAtoms = options.get('maximumOxygenAtoms', 1000000)
+            maxNitrogenAtoms = options.get('maximumNitrogenAtoms', 1000000)
+            maxSiliconAtoms = options.get('maximumSiliconAtoms', 1000000)
+            maxSulfurAtoms = options.get('maximumSulfurAtoms', 1000000)
+            maxHeavyAtoms = options.get('maximumHeavyAtoms', 1000000)
+            maxRadicals = options.get('maximumRadicalElectrons', 1000000)
+            for struct in productStructures:
+                H = struct.getNumAtoms('H')
+                if struct.getNumAtoms('C') > maxCarbonAtoms:
+                    raise ForbiddenStructureException()
+                if H > maxHydrogenAtoms:
+                    raise ForbiddenStructureException()
+                if struct.getNumAtoms('O') > maxOxygenAtoms:
+                    raise ForbiddenStructureException()
+                if struct.getNumAtoms('N') > maxNitrogenAtoms:
+                    raise ForbiddenStructureException()
+                if struct.getNumAtoms('Si') > maxSiliconAtoms:
+                    raise ForbiddenStructureException()
+                if struct.getNumAtoms('S') > maxSulfurAtoms:
+                    raise ForbiddenStructureException()
+                if len(struct.atoms) - H > maxHeavyAtoms:
+                    raise ForbiddenStructureException()
+                if struct.getNumberOfRadicalElectrons() > maxRadicals:
+                    raise ForbiddenStructureException()
 
         # Check that reactant and product structures are allowed in this family
         # If not, then stop
@@ -2805,7 +2834,7 @@ class KineticsFamily(Database):
         elif isinstance(struct, Group):
             return reactant.findSubgraphIsomorphisms(struct)
 
-    def generateReactions(self, reactants):
+    def generateReactions(self, reactants, **options):
         """
         Generate all reactions between the provided list of one or two
         `reactants`, which should be either single :class:`Molecule` objects
@@ -2818,7 +2847,7 @@ class KineticsFamily(Database):
         reactionList = []
         
         # Forward direction (the direction in which kinetics is defined)
-        reactions = self.__generateReactions(reactants, forward=True)
+        reactions = self.__generateReactions(reactants, forward=True, **options)
         for rxn in reactions:
             reaction = TemplateReaction(
                 reactants = rxn.reactants[:],
@@ -2833,7 +2862,7 @@ class KineticsFamily(Database):
         if self.ownReverse:
             # for each reaction, make its reverse reaction and store in a 'reverse' attribute
             for rxn in reactionList:
-                reactions = self.__generateReactions(rxn.products, forward=True)
+                reactions = self.__generateReactions(rxn.products, forward=True, **options)
                 reactions = filterReactions(rxn.products, rxn.reactants, reactions)
                 assert len(reactions) == 1, "Expecting one matching reverse reaction, not {0}. Forward reaction {1!s} : {1!r}".format(len(reactions), rxn)
                 reaction = reactions[0]
@@ -2849,7 +2878,7 @@ class KineticsFamily(Database):
             
         else: # family is not ownReverse
             # Reverse direction (the direction in which kinetics is not defined)
-            reactions = self.__generateReactions(reactants, forward=False)
+            reactions = self.__generateReactions(reactants, forward=False, **options)
             for rxn in reactions:
                 reaction = TemplateReaction(
                     reactants = rxn.products[:],
@@ -2908,7 +2937,7 @@ class KineticsFamily(Database):
                     return rxn.degeneracy
         raise Exception('Unable to calculate degeneracy for reaction {0} in reaction family {1}.'.format(reaction, self.label))
     
-    def __generateReactions(self, reactants, forward=True):
+    def __generateReactions(self, reactants, forward=True, **options):
         """
         Generate a list of all of the possible reactions of this family between
         the list of `reactants`. The number of reactants provided must match
@@ -2950,7 +2979,7 @@ class KineticsFamily(Database):
                 for map in mappings:
                     reactantStructures = [molecule]
                     try:
-                        productStructures = self.__generateProductStructures(reactantStructures, [map], forward)
+                        productStructures = self.__generateProductStructures(reactantStructures, [map], forward, **options)
                     except ForbiddenStructureException:
                         pass
                     else:
@@ -2977,7 +3006,7 @@ class KineticsFamily(Database):
                         for mapB in mappingsB:
                             reactantStructures = [moleculeA, moleculeB]
                             try:
-                                productStructures = self.__generateProductStructures(reactantStructures, [mapA, mapB], forward)
+                                productStructures = self.__generateProductStructures(reactantStructures, [mapA, mapB], forward, **options)
                             except ForbiddenStructureException:
                                 pass
                             else:
@@ -2997,7 +3026,7 @@ class KineticsFamily(Database):
                             for mapB in mappingsB:
                                 reactantStructures = [moleculeA, moleculeB]
                                 try:
-                                    productStructures = self.__generateProductStructures(reactantStructures, [mapA, mapB], forward)
+                                    productStructures = self.__generateProductStructures(reactantStructures, [mapA, mapB], forward, **options)
                                 except ForbiddenStructureException:
                                     pass
                                 else:
@@ -3620,18 +3649,18 @@ class KineticsDatabase(object):
             groupPath = os.path.join(groupsPath, label)
             family.saveOld(groupPath)
     
-    def generateReactions(self, reactants, products=None):
+    def generateReactions(self, reactants, products=None, **options):
         """
         Generate all reactions between the provided list of one or two
         `reactants`, which should be :class:`Molecule` objects. This method
         searches the depository, libraries, and groups, in that order.
         """
         reactionList = []
-        reactionList.extend(self.generateReactionsFromLibraries(reactants, products))
-        reactionList.extend(self.generateReactionsFromFamilies(reactants, products))
+        reactionList.extend(self.generateReactionsFromLibraries(reactants, products, **options))
+        reactionList.extend(self.generateReactionsFromFamilies(reactants, products, **options))
         return reactionList
 
-    def generateReactionsFromLibraries(self, reactants, products):
+    def generateReactionsFromLibraries(self, reactants, products, **options):
         """
         Generate all reactions between the provided list of one or two
         `reactants`, which should be :class:`Molecule` objects. This method
@@ -3639,10 +3668,10 @@ class KineticsDatabase(object):
         """
         reactionList = []
         for label in self.libraryOrder:
-            reactionList.extend(self.generateReactionsFromLibrary(reactants, products, self.libraries[label]))
+            reactionList.extend(self.generateReactionsFromLibrary(reactants, products, self.libraries[label], **options))
         return reactionList
 
-    def generateReactionsFromLibrary(self, reactants, products, library):
+    def generateReactionsFromLibrary(self, reactants, products, library, **options):
         """
         Generate all reactions between the provided list of one or two
         `reactants`, which should be :class:`Molecule` objects. This method
@@ -3665,7 +3694,7 @@ class KineticsDatabase(object):
             reactionList = filterReactions(reactants, products, reactionList)
         return reactionList
 
-    def generateReactionsFromFamilies(self, reactants, products, only_families=None):
+    def generateReactionsFromFamilies(self, reactants, products, only_families=None, **options):
         """
         Generate all reactions between the provided list of one or two
         `reactants`, which should be :class:`Molecule` objects. This method
@@ -3676,7 +3705,7 @@ class KineticsDatabase(object):
         reactionList = []
         for label, family in self.families.iteritems():
             if only_families is None or label in only_families:
-                reactionList.extend(family.generateReactions(reactants))
+                reactionList.extend(family.generateReactions(reactants, **options))
         if products:
             reactionList = filterReactions(reactants, products, reactionList)
         return reactionList
