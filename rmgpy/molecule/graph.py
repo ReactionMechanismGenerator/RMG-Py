@@ -296,26 +296,28 @@ class Graph:
         cython.declare(other=Graph)
         cython.declare(vertex=Vertex, vertex1=Vertex, vertex2=Vertex)
         cython.declare(edge=Edge)
-        cython.declare(edges=dict)
+        cython.declare(edges=dict, vertices=list, mapping=dict)
         cython.declare(index1=cython.int, index2=cython.int)
         
         other = Graph()
-        for vertex in self.vertices:
+        vertices = self.vertices
+        mapping = {}
+        for vertex in vertices:
             if deep:
-                other.addVertex(vertex.copy())
+                vertex2 = other.addVertex(vertex.copy())
+                mapping[vertex] = vertex2
             else:
                 edges = vertex.edges
                 other.addVertex(vertex)
                 vertex.edges = edges
         if deep:
-            for vertex1 in self.vertices:
+            for vertex1 in vertices:
                 for vertex2 in vertex1.edges:
-                    index1 = self.vertices.index(vertex1)
-                    index2 = self.vertices.index(vertex2)
-                    edge = vertex1.edges[vertex2].copy()
-                    edge.vertex1 = other.vertices[index1]
-                    edge.vertex2 = other.vertices[index2]
-                    other.addEdge(edge)            
+                    edge = vertex1.edges[vertex2]
+                    edge = edge.copy()
+                    edge.vertex1 = mapping[vertex1]
+                    edge.vertex2 = mapping[vertex2]
+                    other.addEdge(edge)
         return other
 
     def merge(self, other):
