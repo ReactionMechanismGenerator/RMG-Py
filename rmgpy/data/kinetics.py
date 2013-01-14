@@ -2794,7 +2794,7 @@ class KineticsFamily(Database):
         # we can generate the kinetics
         # We make copies so the structures aren't trampled on by later actions
         reactants = [reactant.copy(deep=True) for reactant in reactants]
-        products = [product.copy(deep=True) for product in products]
+        #products = [product.copy(deep=True) for product in products]
         for reactant in reactants:
             reactant.updateAtomTypes()
             reactant.updateConnectivityValues()
