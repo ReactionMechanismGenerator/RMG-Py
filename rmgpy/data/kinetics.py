@@ -2699,6 +2699,11 @@ class KineticsFamily(Database):
             for reactantAtom, templateAtom in m.iteritems():
                 reactantAtom.label = templateAtom.label
 
+        # Check that reactant structures are allowed in this family
+        # If not, then stop
+        for struct in reactantStructures:
+            if self.isMoleculeForbidden(struct): raise ForbiddenStructureException()
+
         # Generate the product structures by applying the forward reaction recipe
         try:
             productStructures = self.applyRecipe(reactantStructures, forward=forward)
@@ -2746,10 +2751,8 @@ class KineticsFamily(Database):
                 if struct.getNumberOfRadicalElectrons() > maxRadicals:
                     raise ForbiddenStructureException()
 
-        # Check that reactant and product structures are allowed in this family
+        # Check that product structures are allowed in this family
         # If not, then stop
-        for struct in reactantStructures:
-            if self.isMoleculeForbidden(struct): raise ForbiddenStructureException()
         for struct in productStructures:
             if self.isMoleculeForbidden(struct): raise ForbiddenStructureException()
 
@@ -2783,10 +2786,6 @@ class KineticsFamily(Database):
                 return None
             elif reactants[0].isIsomorphic(products[1]) and reactants[1].isIsomorphic(products[0]):
                 return None
-
-        # Make sure the products are not forbidden
-        for product in products:
-            if self.isMoleculeForbidden(product): return None
 
         # We need to save the reactant and product structures with atom labels so
         # we can generate the kinetics
