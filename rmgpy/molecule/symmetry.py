@@ -334,40 +334,50 @@ def calculateCyclicSymmetryNumber(molecule):
 
     # Get symmetry number for each ring in structure
     rings = molecule.getSmallestSetOfSmallestRings()
-    for ring in rings:
+    for ring0 in rings:
 
         # Make copy of structure
-        structure = molecule.copy()
+        structure = molecule.copy(True)
+        ring = [structure.atoms[molecule.atoms.index(atom)] for atom in ring0]
 
         # Remove bonds of ring from structure
         for i, atom1 in enumerate(ring):
             for atom2 in ring[i+1:]:
                 if structure.hasBond(atom1, atom2):
-                    structure.removeBond(atom1, atom2)
+                    structure.removeBond(atom1.edges[atom2])
 
         structures = structure.split()
         groups = []
         for struct in structures:
             for atom in ring:
-                if atom in struct.atoms(): struct.removeAtom(atom)
+                if struct.hasAtom(atom): struct.removeAtom(atom)
             groups.append(struct.split())
-
         # Find equivalent functional groups on ring
-        equivalentGroups = []
+        equivalentGroups = []; equivalentGroupCount = []
         for group in groups:
             found = False
-            for eqGroup in equivalentGroups:
-                if not found:
-                    if group.isIsomorphic(eqGroup[0]):
-                        eqGroup.append(group)
+            for i, eqGroup in enumerate(equivalentGroups):
+                if not found and len(group) == len(eqGroup):
+                    for g, eg in zip(group, eqGroup):
+                        if not g.isIsomorphic(eg):
+                            # The groups do not match
+                            break
+                    else:
+                        # The groups match
                         found = True
-            if not found:
-                equivalentGroups.append([group])
+                if found:
+                    # We've found a matching group, so increment its count
+                    equivalentGroupCount[i] += 1        
+                    break
+            else:
+                # No matching group found, so add it as a new group
+                equivalentGroups.append(group)
+                equivalentGroupCount.append(1)
 
         # Find equivalent bonds on ring
         equivalentBonds = []
-        for i, atom1 in enumerate(ring):
-            for atom2 in ring[i+1:]:
+        for i, atom1 in enumerate(ring0):
+            for atom2 in ring0[i+1:]:
                 if molecule.hasBond(atom1, atom2):
                     bond = molecule.getBond(atom1, atom2)
                     found = False
@@ -380,21 +390,23 @@ def calculateCyclicSymmetryNumber(molecule):
                         equivalentBonds.append([bond])
 
         # Find maximum number of equivalent groups and bonds
-        maxEquivalentGroups = 0
-        for groups in equivalentGroups:
-            if len(groups) > maxEquivalentGroups:
-                maxEquivalentGroups = len(groups)
+        minEquivalentGroups = min(equivalentGroupCount)
+        maxEquivalentGroups = max(equivalentGroupCount)
+        minEquivalentBonds = None
         maxEquivalentBonds = 0
         for bonds in equivalentBonds:
-            if len(bonds) > maxEquivalentBonds:
-                maxEquivalentBonds = len(bonds)
+            N = len(bonds)
+            if minEquivalentBonds is None or N < minEquivalentBonds:
+                minEquivalentBonds = N
+            if N > maxEquivalentBonds:
+                maxEquivalentBonds = N
 
         if maxEquivalentGroups == maxEquivalentBonds == len(ring):
-            symmetryNumber *= len(ring)
+            symmetryNumber *= len(ring) * 2
         else:
-            symmetryNumber *= max(maxEquivalentGroups, maxEquivalentBonds)
+            symmetryNumber *= min(minEquivalentGroups, minEquivalentBonds)
 
-        print len(ring), maxEquivalentGroups, maxEquivalentBonds, symmetryNumber
+        #print len(ring), minEquivalentGroups, maxEquivalentGroups, minEquivalentBonds, maxEquivalentBonds, symmetryNumber
 
 
     return symmetryNumber
@@ -419,7 +431,7 @@ def calculateSymmetryNumber(molecule):
 
     symmetryNumber *= calculateAxisSymmetryNumber(molecule)
 
-    #if molecule.isCyclic():
-    #   symmetryNumber *= calculateCyclicSymmetryNumber(molecule)
+    if molecule.isCyclic():
+       symmetryNumber *= calculateCyclicSymmetryNumber(molecule)
 
     return symmetryNumber

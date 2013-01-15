@@ -234,13 +234,37 @@ class TestMoleculeSymmetry(unittest.TestCase):
         molecule = Molecule().fromSMILES('O=O')
         self.assertEqual(calculateAxisSymmetryNumber(molecule), 1)
     
-#   def testCyclicSymmetryNumber(self):
-#
-#		# cyclohexane
-#       molecule = Molecule().fromInChI('InChI=1/C6H12/c1-2-4-6-5-3-1/h1-6H2')
-#       molecule.makeHydrogensExplicit()
-#       symmetryNumber = molecule.calculateCyclicSymmetryNumber()
-#       self.assertEqual(symmetryNumber, 12)
+    def testCyclicSymmetryNumberCyclohexane(self):
+        """
+        Test the Molecule.calculateCyclicSymmetryNumber() method.
+        """
+        molecule = Molecule().fromSMILES('C1CCCCC1')
+        symmetryNumber = calculateCyclicSymmetryNumber(molecule)
+        self.assertEqual(symmetryNumber, 12)
+
+    def testCyclicSymmetryNumberBenzene(self):
+        """
+        Test the Molecule.calculateCyclicSymmetryNumber() method.
+        """
+        molecule = Molecule().fromSMILES('c1ccccc1')
+        symmetryNumber = calculateCyclicSymmetryNumber(molecule)
+        self.assertEqual(symmetryNumber, 12)
+
+    def testCyclicSymmetryNumberToluene(self):
+        """
+        Test the Molecule.calculateCyclicSymmetryNumber() method.
+        """
+        molecule = Molecule().fromSMILES('c1ccccc1C')
+        symmetryNumber = calculateCyclicSymmetryNumber(molecule)
+        self.assertEqual(symmetryNumber, 1)
+
+    def testCyclicSymmetryNumberDimethylbenzene(self):
+        """
+        Test the Molecule.calculateCyclicSymmetryNumber() method.
+        """
+        molecule = Molecule().fromSMILES('Cc1ccccc1C')
+        symmetryNumber = calculateCyclicSymmetryNumber(molecule)
+        self.assertEqual(symmetryNumber, 2)
 
     def testTotalSymmetryNumberEthane(self):
         """
