@@ -463,6 +463,30 @@ class TestGraph(unittest.TestCase):
                 else:
                     self.assertFalse(self.graph.isEdgeInCycle(edge))
                     
+    def test_getAllCyclicVertices(self):
+        self.assertListEqual(self.graph.getAllCyclicVertices(), [])
+        edge = Edge(self.graph.vertices[0], self.graph.vertices[3])
+        self.graph.addEdge(edge) # To create a cycle
+        self.assertEqual(len(self.graph.getAllCyclicVertices()), 4)
+        
+    def test_getAllPolycylicVertices(self):        
+        edge = Edge(self.graph.vertices[0], self.graph.vertices[3])
+        self.graph.addEdge(edge) # To create a cycle        
+        self.assertListEqual(self.graph.getAllPolycyclicVertices(), []) 
+        edge2 = Edge(self.graph.vertices[0], self.graph.vertices[5])
+        self.graph.addEdge(edge2) # Create another cycle to generate two fused cycles 
+        self.assertEqual(len(self.graph.getAllPolycyclicVertices()), 2)
+        # Add new vertices and edges to generate a spirocyclic cycle      
+        vertices = [Vertex() for i in range(2)]        
+        for vertex in vertices: self.graph.addVertex(vertex)
+        edges = [
+                 Edge(self.graph.vertices[5], self.graph.vertices[6]),
+                 Edge(self.graph.vertices[6], self.graph.vertices[7]),
+                 Edge(self.graph.vertices[5], self.graph.vertices[7]),
+                 ]
+        for edge in edges: self.graph.addEdge(edge)        
+        self.assertEqual(len(self.graph.getAllPolycyclicVertices()), 3)
+                      
     def test_getAllCycles(self):
         """
         Test the Graph.getAllCycles() method.

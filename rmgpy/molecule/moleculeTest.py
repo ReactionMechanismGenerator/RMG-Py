@@ -866,7 +866,25 @@ class TestMolecule(unittest.TestCase):
         Test the Molecule.isLinear() method.
         """
         self.assertTrue(Molecule().fromSMILES('C#CC#CC#C').isLinear())
-    
+        
+    def testAromaticBenzene(self):
+        """
+        Test the Molecule.isAromatic() method.
+        """
+        self.assertTrue(Molecule().fromSMILES('C1=CC=CC=C1').isAromatic())
+        
+    def testAromaticNaphthalene(self):
+        """
+        Test the Molecule.isAromatic() method.
+        """
+        self.assertTrue(Molecule().fromSMILES('C12C(C=CC=C1)=CC=CC=2').isAromatic())
+                        
+    def testAromaticCyclohexane(self):
+        """
+        Test the Molecule.isAromatic() method.
+        """
+        self.assertFalse(Molecule().fromSMILES('C1CCCCC1').isAromatic())
+         
     def testCountInternalRotorsEthane(self):
         """
         Test the Molecule.countInternalRotors() method.

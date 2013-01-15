@@ -406,6 +406,7 @@ class ThermoDatabase(object):
         self.groups['int15']   =   ThermoGroups(label='int15').load(os.path.join(path, 'int15.py'  ), self.local_context, self.global_context)
         self.groups['ring']    =    ThermoGroups(label='ring').load(os.path.join(path, 'ring.py'   ), self.local_context, self.global_context)
         self.groups['radical'] = ThermoGroups(label='radical').load(os.path.join(path, 'radical.py'), self.local_context, self.global_context)
+        self.groups['polycyclic'] = ThermoGroups(label='polycyclic').load(os.path.join(path, 'polycyclic.py'), self.local_context, self.global_context)
         self.groups['other']   =   ThermoGroups(label='other').load(os.path.join(path, 'other.py'  ), self.local_context, self.global_context)
 
     def save(self, path):
@@ -448,6 +449,7 @@ class ThermoDatabase(object):
         self.groups['int15'].save(os.path.join(path, 'int15.py'))
         self.groups['ring'].save(os.path.join(path, 'ring.py'))
         self.groups['radical'].save(os.path.join(path, 'radical.py'))
+        self.groups['polycyclic'].save(os.path.join(path, 'polycyclic.py'))        
         self.groups['other'].save(os.path.join(path, 'other.py'))
 
     def loadOld(self, path):
@@ -515,6 +517,14 @@ class ThermoDatabase(object):
             numLabels = 1,
             pattern = True,
         )
+        self.groups['polycyclic'] = ThermoGroups(label='other', name='Polycyclic Ring Corrections').loadOld(
+            dictstr = os.path.join(path, 'thermo_groups', 'Polycyclic_Dictionary.txt'),
+            treestr = os.path.join(path, 'thermo_groups', 'Polycyclic_Tree.txt'),
+            libstr = os.path.join(path, 'thermo_groups', 'Polycyclic_Library.txt'),
+            numParameters = 12,
+            numLabels = 1,
+            pattern = True,
+        )
         self.groups['other'] = ThermoGroups(label='other', name='Other Corrections').loadOld(
             dictstr = os.path.join(path, 'thermo_groups', 'Other_Dictionary.txt'),
             treestr = os.path.join(path, 'thermo_groups', 'Other_Tree.txt'),
@@ -569,6 +579,11 @@ class ThermoDatabase(object):
             dictstr = os.path.join(groupsPath, 'Ring_Dictionary.txt'),
             treestr = os.path.join(groupsPath, 'Ring_Tree.txt'),
             libstr = os.path.join(groupsPath, 'Ring_Library.txt'),
+        )
+        self.groups['polycyclic'].saveOld(
+            dictstr = os.path.join(groupsPath, 'Polycyclic_Dictionary.txt'),
+            treestr = os.path.join(groupsPath, 'Polycyclic_Tree.txt'),
+            libstr = os.path.join(groupsPath, 'Polycyclic_Library.txt'),
         )
         self.groups['other'].saveOld(
             dictstr = os.path.join(groupsPath, 'Other_Dictionary.txt'),
@@ -797,29 +812,44 @@ class ThermoDatabase(object):
                     except KeyError: pass
 
             # Do ring corrections separately because we only want to match
-            # each ring one time; this doesn't work yet
+            # each ring one time
             rings = molecule.getSmallestSetOfSmallestRings()
-            for ring in rings:
-                # Make a temporary structure containing only the atoms in the ring
-                # NB. if any of the ring corrections depend on ligands not in the ring, they will not be found!
-                ringStructure = Molecule()
-                newAtoms = dict()
-                for atom in ring:
-                    newAtoms[atom] = atom.copy()
-                    ringStructure.addAtom(newAtoms[atom]) # (addAtom deletes the atom's bonds)
-                for atom1 in ring:
-                    for atom2 in ring:
-                        if molecule.hasBond(atom1, atom2):
-                            ringStructure.addBond(Bond(newAtoms[atom1], newAtoms[atom2], atom1.bonds[atom2].order ))
-
-                # Get thermo correction for this ring
-                try:
-                    self.__addGroupThermoData(thermoData, self.groups['ring'], ringStructure, {})
-                except KeyError:
-                    logging.error("Couldn't find in ring database:")
-                    logging.error(ringStructure)
-                    logging.error(ringStructure.toAdjacencyList())
-                    raise
+            if rings:                
+                if molecule.getAllPolycyclicVertices():
+                    # If the molecule has fused ring atoms, this implies that we are dealing
+                    # with a polycyclic ring system, for which separate ring strain corrections may not
+                    # be adequate.  Therefore, we search the polycyclic thermo group corrections
+                    # instead of adding single ring strain corrections within the molecule.
+                    # For now, assume only one  polycyclic RSC can be found per molecule
+                    try:
+                        self.__addGroupThermoData(thermoData, self.groups['polycyclic'], molecule, {})
+                    except:
+                        logging.error("Couldn't find in polycyclic ring database:")
+                        logging.error(molecule)
+                        logging.error(molecule.toAdjacencyList())
+                        raise
+                else:
+                    for ring in rings:
+                        # Make a temporary structure containing only the atoms in the ring
+                        # NB. if any of the ring corrections depend on ligands not in the ring, they will not be found!
+                        ringStructure = Molecule()
+                        newAtoms = dict()
+                        for atom in ring:
+                            newAtoms[atom] = atom.copy()
+                            ringStructure.addAtom(newAtoms[atom]) # (addAtom deletes the atom's bonds)
+                        for atom1 in ring:
+                            for atom2 in ring:
+                                if molecule.hasBond(atom1, atom2):
+                                    ringStructure.addBond(Bond(newAtoms[atom1], newAtoms[atom2], atom1.bonds[atom2].order ))
+        
+                        # Get thermo correction for this ring
+                        try:
+                            self.__addGroupThermoData(thermoData, self.groups['ring'], ringStructure, {})
+                        except KeyError:
+                            logging.error("Couldn't find in ring database:")
+                            logging.error(ringStructure)
+                            logging.error(ringStructure.toAdjacencyList())
+                            raise
                 
         # Correct entropy for symmetry number
         molecule.calculateSymmetryNumber()
@@ -835,7 +865,6 @@ class ThermoDatabase(object):
         """
 
         node0 = database.descendTree(molecule, atom, None)
-
         if node0 is None:
             raise KeyError('Node not found in database.')
 
