@@ -2748,20 +2748,24 @@ class KineticsFamily(Database):
 
         # Check that reactant and product structures are allowed in this family
         # If not, then stop
-        if self.forbidden is not None:
-            for struct in reactantStructures:
-                if self.forbidden.isMoleculeForbidden(struct): raise ForbiddenStructureException()
-            for struct in productStructures:
-                if self.forbidden.isMoleculeForbidden(struct): raise ForbiddenStructureException()
-
-        # Also check the global forbiddenStructures
-        from rmgpy.data.rmg import database
         for struct in reactantStructures:
-            if database.forbiddenStructures.isMoleculeForbidden(struct): raise ForbiddenStructureException()
+            if self.isMoleculeForbidden(struct): raise ForbiddenStructureException()
         for struct in productStructures:
-            if database.forbiddenStructures.isMoleculeForbidden(struct): raise ForbiddenStructureException()
+            if self.isMoleculeForbidden(struct): raise ForbiddenStructureException()
 
         return productStructures
+
+    def isMoleculeForbidden(self, molecule):
+        """
+        Return ``True`` if the molecule is forbidden in this family, or
+        ``False`` otherwise. 
+        """
+        from rmgpy.data.rmg import database
+        if self.forbidden is not None and self.forbidden.isMoleculeForbidden(molecule):
+            return True
+        if database.forbiddenStructures.isMoleculeForbidden(molecule):
+            return True
+        return False
 
     def __createReaction(self, reactants, products, isForward):
         """
@@ -2780,15 +2784,9 @@ class KineticsFamily(Database):
             elif reactants[0].isIsomorphic(products[1]) and reactants[1].isIsomorphic(products[0]):
                 return None
 
-        # If forbidden structures are defined, make sure the products are not forbidden
-        if self.forbidden:
-            for product in products:
-                if self.forbidden.isMoleculeForbidden(product):
-                    return None
-        # Also check the global forbiddenStructures
-        from rmgpy.data.rmg import database
+        # Make sure the products are not forbidden
         for product in products:
-            if database.forbiddenStructures.isMoleculeForbidden(product): return None
+            if self.isMoleculeForbidden(product): return None
 
         # We need to save the reactant and product structures with atom labels so
         # we can generate the kinetics
