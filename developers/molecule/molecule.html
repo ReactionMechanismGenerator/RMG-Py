@@ -504,6 +504,16 @@ Skips the first line (assuming it&#8217;s a label) unless <cite>withLabel</cite>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.molecule.molecule.Molecule.getFingerprint">
+<tt class="descname">getFingerprint</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.molecule.Molecule.getFingerprint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a string containing the &#8220;fingerprint&#8221; used to accelerate graph
+isomorphism comparisons with other molecules. The fingerprint is a
+short string containing a summary of selected information about the 
+molecule. Two fingerprint strings matching is a necessary (but not
+sufficient) condition for the associated molecules to be isomorphic.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.molecule.molecule.Molecule.getFormula">
 <tt class="descname">getFormula</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.molecule.Molecule.getFormula" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the molecular formula for the molecule.</p>
@@ -554,6 +564,17 @@ not.</p>
 <tt class="descname">hasBond</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.molecule.Molecule.hasBond" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <tt class="docutils literal"><span class="pre">True</span></tt> if atoms <cite>atom1</cite> and <cite>atom2</cite> are connected
 by an bond, or <tt class="docutils literal"><span class="pre">False</span></tt> if not.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.molecule.Molecule.isAromatic">
+<tt class="descname">isAromatic</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.molecule.Molecule.isAromatic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns <tt class="docutils literal"><span class="pre">True</span></tt> if the molecule is aromatic, or <tt class="docutils literal"><span class="pre">False</span></tt> if not.  
+Iterates over the SSSR&#8217;s and searches for rings that consist solely of Cb 
+atoms.  Assumes that aromatic rings always consist of 6 atoms. 
+In cases of naphthalene, where a 6 + 4 aromatic system exists,
+there will be at least one 6 membered aromatic ring so this algorithm
+will not fail for fused aromatic rings.</p>
 </dd></dl>
 
 <dl class="method">
