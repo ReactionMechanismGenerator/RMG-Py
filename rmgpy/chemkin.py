@@ -31,6 +31,7 @@
 This module contains functions for writing of Chemkin input files.
 """
 
+import math
 import re
 import logging
 import os.path
@@ -107,24 +108,19 @@ def readThermoEntry(entry):
 
 ################################################################################
 
-def readKineticsEntry(entry, speciesDict, energyUnits, moleculeUnits):
+def readKineticsEntry(entry, speciesDict, Aunits, Eunits):
     """
     Read a kinetics `entry` for a single reaction as loaded from a Chemkin
     file. The associated mapping of labels to species `speciesDict` should also
     be provided. Returns a :class:`Reaction` object with the reaction and its
     associated kinetics.
     """
-    
-    if energyUnits.lower() in ['kcal/mole', 'kcal/mol']:
-        energyFactor = 1.0 
-    elif energyUnits.lower() in ['cal/mole', 'cal/mol']:
-        energyFactor = 0.001 
-    else:
-        raise ChemkinError('Unexpected energy units "{0}" in reaction block.'.format(energyUnits))
-    if moleculeUnits.lower() in ['moles']:
-        moleculeFactor = 1.0 
-    else:
-        raise ChemkinError('Unexpected molecule units "{0}" in reaction block.'.format(energyUnits))
+    Afactor = {
+        'cm^3/(mol*s)': 1.0e6,
+        'cm^3/(molecule*s)': 1.0e6,
+        'm^3/(mol*s)': 1.0,
+        'm^3/(molecule*s)': 1.0,
+    }[Aunits[2]]
     
     lines = entry.strip().splitlines()
     
@@ -184,25 +180,20 @@ def readKineticsEntry(entry, speciesDict, energyUnits, moleculeUnits):
     
     # Determine the appropriate units for k(T) and k(T,P) based on the number of reactants
     # This assumes elementary kinetics for all reactions
-    if len(reaction.reactants) + (1 if thirdBody else 0) == 3:
-        kunits = "cm^6/(mol^2*s)"
-        klow_units = "cm^9/(mol^3*s)"
-    elif len(reaction.reactants) + (1 if thirdBody else 0) == 2:
-        kunits = "cm^3/(mol*s)" 
-        klow_units = "cm^6/(mol^2*s)"
-    elif len(reaction.reactants) + (1 if thirdBody else 0) == 1:
-        kunits = "s^-1" 
-        klow_units = "cm^3/(mol*s)"
-    else:
+    try:
+        Nreac = len(reaction.reactants) + (1 if thirdBody else 0)
+        kunits = Aunits[Nreac]
+        klow_units = Aunits[Nreac+1]
+    except IndexError:
         raise ChemkinError('Invalid number of reactant species for reaction {0}.'.format(reaction))
     
     # The rest of the first line contains the high-P limit Arrhenius parameters (if available)
     #tokens = lines[0][52:].split()
     tokens = lines[0].split()[1:]
     arrheniusHigh = Arrhenius(
-        A = (A,kunits),
-        n = n,
-        Ea = (Ea * energyFactor,"kcal/mol"),
+        A = (A,kunits,AuncertaintyType,dA),
+        n = (n,'','+|-',dn),
+        Ea = (Ea,Eunits,'+|-',dEa),
         T0 = (1,"K"),
     )
     
@@ -234,7 +225,7 @@ def readKineticsEntry(entry, speciesDict, energyUnits, moleculeUnits):
                 arrheniusLow = Arrhenius(
                     A = (float(tokens[0].strip()),klow_units),
                     n = float(tokens[1].strip()),
-                    Ea = (float(tokens[2].strip()) * energyFactor,"kcal/mol"),
+                    Ea = (float(tokens[2].strip()),Eunits),
                     T0 = (1,"K"),
                 )
             
@@ -291,7 +282,7 @@ def readKineticsEntry(entry, speciesDict, energyUnits, moleculeUnits):
                 pdepArrhenius.append([float(tokens[0].strip()), Arrhenius(
                     A = (float(tokens[1].strip()),kunits),
                     n = float(tokens[2].strip()),
-                    Ea = (float(tokens[3].strip()) * energyFactor,"kcal/mol"),
+                    Ea = (float(tokens[3].strip()),Eunits),
                     T0 = (1,"K"),
                 )])
 
@@ -314,7 +305,7 @@ def readKineticsEntry(entry, speciesDict, energyUnits, moleculeUnits):
                     index += 1
             # Don't forget to convert the Chebyshev coefficients to SI units!
             # This assumes that s^-1, cm^3/mol*s, etc. are compulsory
-            chebyshev.coeffs.value_si[0,0] -= (len(reaction.reactants) - 1) * 6.0
+            chebyshev.coeffs.value_si[0,0] -= (len(reaction.reactants) - 1) * math.log10(Afactor)
             reaction.kinetics = chebyshev
         elif pdepArrhenius is not None:
             reaction.kinetics = PDepArrhenius(
