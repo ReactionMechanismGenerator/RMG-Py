@@ -367,6 +367,7 @@ def readReactionComments(reaction, comments):
                 reactants = reaction.reactants, 
                 products = reaction.products, 
                 kinetics = reaction.kinetics,
+                reversible = reaction.reversible,
                 duplicate = reaction.duplicate,
                 family = KineticsFamily(label=label),
                 template = [Entry(label=g) for g in template],
@@ -379,6 +380,7 @@ def readReactionComments(reaction, comments):
                 reactants = reaction.reactants, 
                 products = reaction.products, 
                 kinetics = reaction.kinetics,
+                reversible = reaction.reversible,
                 duplicate = reaction.duplicate,
                 library = KineticsLibrary(label=label),
             )   
@@ -390,6 +392,7 @@ def readReactionComments(reaction, comments):
                 reactants = reaction.reactants, 
                 products = reaction.products, 
                 kinetics = reaction.kinetics, 
+                reversible = reaction.reversible,
                 duplicate = reaction.duplicate,
                 network = PDepNetwork(index=networkIndex), 
             )
@@ -429,6 +432,7 @@ def readReactionComments(reaction, comments):
                 reactants = reaction.reactants, 
                 products = reaction.products,
                 kinetics = reaction.kinetics,
+                reversible = reaction.reversible,
                 duplicate = reaction.duplicate,
                 network = PDepNetwork(index=networkIndex)
                 )
@@ -441,6 +445,7 @@ def readReactionComments(reaction, comments):
                 reactants = reaction.reactants, 
                 products = reaction.products, 
                 kinetics = reaction.kinetics,
+                reversible = reaction.reversible,
                 duplicate = reaction.duplicate,
                 library = KineticsLibrary(label=label),
             )
@@ -456,6 +461,7 @@ def readReactionComments(reaction, comments):
                 reactants = reaction.reactants, 
                 products = reaction.products, 
                 kinetics = reaction.kinetics,
+                reversible = reaction.reversible,
                 duplicate = reaction.duplicate,
                 family = KineticsFamily(label=label),
                 template = [Entry(label=g) for g in template],
@@ -468,6 +474,7 @@ def readReactionComments(reaction, comments):
             reactants = reaction.reactants, 
             products = reaction.products, 
             kinetics = reaction.kinetics,
+            reversible = reaction.reversible,
             duplicate = reaction.duplicate,
             library = KineticsLibrary(label='Unclassified'),
         )  
