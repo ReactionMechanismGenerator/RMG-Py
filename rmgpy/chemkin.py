@@ -574,9 +574,9 @@ def loadChemkinFile(path, dictionaryPath=None):
 
     with open(path, 'r') as f:
     
-        line = f.readline()
-        while line != '':        
-            line = removeCommentFromLine(line)[0]
+        line0 = f.readline()
+        while line0 != '':        
+            line = removeCommentFromLine(line0)[0]
             line = line.strip()
             tokens = line.split()
             
@@ -654,77 +654,11 @@ def loadChemkinFile(path, dictionaryPath=None):
                 
             elif 'REACTIONS' in line:
                 # Reactions section
-                energyUnits = 'CAL/MOL'
-                moleculeUnits = 'MOLES'
-                try:
-                    energyUnits = tokens[1]
-                    moleculeUnits = tokens[2]
-                except IndexError:
-                    pass
-                
-                kineticsList = []
-                commentsList = []
-                kinetics = ''
-                comments = ''
-                
-                line = f.readline()
-                while line != '':
+                # Unread the line (we'll re-read it in readReactionBlock())
+                f.seek(-len(line0), 1)
+                reactionList = readReactionsBlock(f, speciesDict)
                     
-                    lineStartsWithComment = line.startswith('!') 
-                    line, comment = removeCommentFromLine(line)
-                    line = line.strip(); comment = comment.strip()
-                
-                    if 'end' in line or 'END' in line:
-                        break
-                
-                    if 'rev' in line or 'REV' in line:
-                        # can no longer name reactants rev...
-                        line = f.readline()
-
-                    if '=' in line and not lineStartsWithComment:
-                        # Finish previous record
-                        kineticsList.append(kinetics)
-                        commentsList.append(comments)
-                        kinetics = ''
-                        comments = ''
-                        
-                    if line: kinetics += line + '\n'
-                    if comment: comments += comment + '\n'
-                    
-                    line = f.readline()
-                    
-                # Don't forget the last reaction!
-                if kinetics.strip() != '':
-                    kineticsList.append(kinetics)
-                    commentsList.append(comments)
-                
-                if kineticsList[0] == '' and commentsList[-1] == '':
-                    # True for Chemkin files generated from RMG-Py
-                    kineticsList.pop(0)
-                    commentsList.pop(-1)
-                elif kineticsList[0] == '' and commentsList[0] == '':
-                    # True for Chemkin files generated from RMG-Java
-                    kineticsList.pop(0)
-                    commentsList.pop(0)
-                else:
-                    # In reality, comments can occur anywhere in the Chemkin
-                    # file (e.g. either or both of before and after the
-                    # reaction equation)
-                    # If we can't tell what semantics we are using, then just
-                    # throw the comments away
-                    # (This is better than failing to load the Chemkin file at
-                    # all, which would likely occur otherwise)
-                    if kineticsList[0] == '':
-                        kineticsList.pop(0)
-                    if len(kineticsList) != len(commentsList):
-                        commentsList = ['' for kinetics in kineticsList]
-                    
-                for kinetics, comments in zip(kineticsList, commentsList):
-                    reaction = readKineticsEntry(kinetics, speciesDict, energyUnits, moleculeUnits)
-                    reaction = readReactionComments(reaction, comments)
-                    reactionList.append(reaction)
-                    
-            line = f.readline()
+            line0 = f.readline()
             
     # Index the reactions now to have identical numbering as in Chemkin 
     index = 0
@@ -828,7 +762,156 @@ def loadChemkinFile(path, dictionaryPath=None):
 
     reactionList.sort(key=lambda reaction: reaction.index)
     return speciesList, reactionList
+
+def readReactionsBlock(f, speciesDict):
+    """
+    Read a reactions block from a Chemkin file stream.
     
+    This function can also read the ``reactions.txt`` and ``pdepreactions.txt``
+    files from RMG-Java kinetics libraries, which have a similar syntax.
+    """    
+    energyUnits = 'cal/mol'
+    moleculeUnits = 'moles'
+    volumeUnits = 'cm3'
+    timeUnits = 's'
+    
+    line = f.readline()
+    found = False
+    while line != '' and not found:
+    
+        line = removeCommentFromLine(line)[0]
+        line = line.strip()
+        tokens = line.split()
+        
+        if len(tokens) > 0 and tokens[0].upper() == 'REACTIONS':
+            # Regular Chemkin file
+            found = True
+            try:
+                energyUnits = tokens[1].lower()
+                moleculeUnits = tokens[2].lower()
+            except IndexError:
+                pass
+
+        elif len(tokens) > 0 and tokens[0].lower() == 'unit:':
+            # RMG-Java kinetics library file
+            found = True
+            while 'reactions:' not in line.lower():
+                line = f.readline()
+                line = removeCommentFromLine(line)[0]
+                line = line.strip()
+                
+                if 'A:' in line or 'E:' in line:
+                    units = line.split()[1]
+                    if 'A:' in line:
+                        moleculeUnits, volumeUnits, timeUnits = units.lower().split('/') # Assume this is a 3-tuple: moles or molecules, volume, time
+                    elif 'E:' in line:
+                        energyUnits = units.lower()
+        else:
+            line = f.readline()
+            
+    if not found:
+        raise ChemkinError('Invalid reaction block.')
+    
+    # Check that the units are valid
+    assert moleculeUnits in ['molecules', 'moles', 'mole', 'mol', 'molecule']
+    assert volumeUnits in ['cm3', 'm3']
+    assert timeUnits in ['s']
+    assert energyUnits in ['kcal/mole', 'kcal/mol', 'cal/mole', 'cal/mol', 'kj/mole', 'kj/mol', 'j/mole', 'j/mol']
+    
+    # Homogenize units
+    if moleculeUnits == 'molecules':
+        moleculeUnits = 'molecule'
+    elif moleculeUnits == 'moles' or moleculeUnits == 'mole':
+        moleculeUnits = 'mol'
+    volumeUnits = {'cm3': 'cm', 'm3': 'm'}[volumeUnits]
+    if energyUnits == 'kcal/mole':
+        energyUnits = 'kcal/mol'
+    elif energyUnits == 'cal/mole':
+        energyUnits = 'cal/mol'
+    elif energyUnits == 'kj/mole':
+        energyUnits = 'kj/mol'
+    elif energyUnits == 'j/mole':
+        energyUnits = 'j/mol'
+    energyUnits = energyUnits.replace('j/mol', 'J/mol')
+    
+    # Set up kinetics units
+    Aunits = [
+        '',                                                                 # Zeroth-order
+        's^-1'.format(timeUnits),                                           # First-order
+        '{0}^3/({1}*{2})'.format(volumeUnits, moleculeUnits, timeUnits),    # Second-order
+        '{0}^6/({1}^2*{2})'.format(volumeUnits, moleculeUnits, timeUnits),  # Third-order
+        '{0}^9/({1}^3*{2})'.format(volumeUnits, moleculeUnits, timeUnits),  # Fourth-order
+    ]
+    Eunits = energyUnits
+    
+    kineticsList = []
+    commentsList = []
+    kinetics = ''
+    comments = ''
+    
+    line = f.readline()
+    while line != '':
+        
+        lineStartsWithComment = line.startswith('!') or line.startswith('//') 
+        line, comment = removeCommentFromLine(line)
+        line = line.strip(); comment = comment.strip()
+    
+        if 'end' in line or 'END' in line:
+            break
+    
+        if 'rev' in line or 'REV' in line:
+            # can no longer name reactants rev...
+            line = f.readline()
+
+        if '=' in line and not lineStartsWithComment:
+            # Finish previous record
+            kineticsList.append(kinetics)
+            commentsList.append(comments)
+            kinetics = ''
+            comments = ''
+            
+        if line: kinetics += line + '\n'
+        if comment: comments += comment + '\n'
+        
+        line = f.readline()
+        
+    # Don't forget the last reaction!
+    if kinetics.strip() != '':
+        kineticsList.append(kinetics)
+        commentsList.append(comments)
+    
+    if len(kineticsList) == 0 and len(commentsList) == 0:
+        # No reactions found
+        pass
+    elif kineticsList[0] == '' and commentsList[-1] == '':
+        # True for Chemkin files generated from RMG-Py
+        kineticsList.pop(0)
+        commentsList.pop(-1)
+    elif kineticsList[0] == '' and commentsList[0] == '':
+        # True for Chemkin files generated from RMG-Java
+        kineticsList.pop(0)
+        commentsList.pop(0)
+    else:
+        # In reality, comments can occur anywhere in the Chemkin
+        # file (e.g. either or both of before and after the
+        # reaction equation)
+        # If we can't tell what semantics we are using, then just
+        # throw the comments away
+        # (This is better than failing to load the Chemkin file at
+        # all, which would likely occur otherwise)
+        if kineticsList[0] == '':
+            kineticsList.pop(0)
+        if len(kineticsList) != len(commentsList):
+            commentsList = ['' for kinetics in kineticsList]
+        
+    reactionList = []
+    for kinetics, comments in zip(kineticsList, commentsList):
+        reaction = readKineticsEntry(kinetics, speciesDict, Aunits, Eunits)
+        reaction = readReactionComments(reaction, comments)
+        reactionList.append(reaction)
+        
+    return reactionList
+
 ################################################################################
 
 def saveHTMLFile(path):
