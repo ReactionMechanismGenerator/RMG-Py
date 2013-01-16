@@ -126,16 +126,42 @@ def readKineticsEntry(entry, speciesDict, Aunits, Eunits):
     
     # The first line contains the reaction equation and a set of modified Arrhenius parameters
     tokens = lines[0].split()
-    A = float(tokens[-3])
-    n = float(tokens[-2])
-    Ea = float(tokens[-1])
-    reaction = ''.join(tokens[:-3])
+    
+    rmg = True
+    try:
+        float(tokens[-6])
+    except (ValueError, IndexError):
+        rmg = False
+    if rmg:
+        A = float(tokens[-6])
+        n = float(tokens[-5])
+        Ea = float(tokens[-4])
+        AuncertaintyType = '+|-'
+        try:
+            dA = float(tokens[-3])
+        except ValueError:
+            AuncertaintyType = '*|/'
+            dA = float(tokens[-3][1:])
+        dn = float(tokens[-2])
+        dEa = float(tokens[-1])
+        reaction = ''.join(tokens[:-6])
+    else:
+        A = float(tokens[-3])
+        n = float(tokens[-2])
+        Ea = float(tokens[-1])
+        dA = 0.0
+        dn = 0.0
+        dEa = 0.0
+        reaction = ''.join(tokens[:-3])
     thirdBody = False
     
     # Split the reaction equation into reactants and products
     reversible = True
     reactants, products = reaction.split('=')
-    if '=>' in reaction:
+    if '<=>' in reaction:
+        reactants = reactants[:-1]
+        products = products[1:]
+    elif '=>' in reaction:
         products = products[1:]
         reversible = False
     if '(+M)' in reactants: reactants = reactants.replace('(+M)','')
@@ -197,7 +223,7 @@ def readKineticsEntry(entry, speciesDict, Aunits, Eunits):
         T0 = (1,"K"),
     )
     
-    if len(lines) == 1:
+    if len(lines) == 1 and not thirdBody:
         # If there's only one line then we know to use the high-P limit kinetics as-is
         reaction.kinetics = arrheniusHigh
     else:
@@ -498,6 +524,21 @@ def loadSpeciesDictionary(path):
 
     return speciesDict
 
+def removeCommentFromLine(line):
+    try:
+        index1 = line.index('!')
+    except ValueError:
+        index1 = len(line)
+    try:
+        index2 = line.index('//')
+    except ValueError:
+        index2 = len(line)
+    
+    index = min(index1, index2)
+    comment = line[index+1:-1]
+    line = line[0:index] + '\n'
+    return line, comment
+
 def loadChemkinFile(path, dictionaryPath=None):
     """
     Load a Chemkin input file to `path` on disk, returning lists of the species
@@ -514,16 +555,6 @@ def loadChemkinFile(path, dictionaryPath=None):
     if dictionaryPath:
         speciesDict = loadSpeciesDictionary(dictionaryPath)
     
-    def removeCommentFromLine(line):
-        if '!' in line:
-            index = line.index('!')
-            comment = line[index+1:-1]
-            line = line[0:index] + '\n'
-            return line, comment
-        else:
-            comment = ''
-            return line, comment
-
     def checkDuplicateKinetics(reaction, kinetics,comments,dupReactionList,reactionList):
         if 'DUP' in kinetics:
             kinetics = kinetics.replace('\nDUP','')
@@ -1237,6 +1268,9 @@ def writeKineticsEntry(reaction, speciesList, verbose = True, javaLibrary = Fals
                 if i % 5 == 0: string += '    CHEB/'
                 string += ' {0:<12.3e}'.format(coeffs[i])
                 if i % 5 == 4: string += '/\n'
+
+    if reaction.duplicate:
+        string += 'DUPLICATE\n'
 
     return string
 

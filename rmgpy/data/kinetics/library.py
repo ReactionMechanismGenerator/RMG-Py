@@ -240,7 +240,8 @@ class KineticsLibrary(Database):
             elif all([isinstance(k, PDepArrhenius) for k in kineticsList]):
                 entry0.data = MultiPDepArrhenius(arrhenius=kineticsList, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax)
             else:
-                raise Exception('Only Arrhenius and PDepArrhenius kinetics supported for duplicate reactions.')
+                logging.warning('Only Arrhenius and PDepArrhenius kinetics supported for duplicate reactions.')
+                continue
             entry0.longDesc = longDesc
             entries_to_remove.extend(duplicates[1:])
         for entry in entries_to_remove:
@@ -330,8 +331,15 @@ class KineticsLibrary(Database):
         path = os.path.abspath(path)
 
         self.loadOldDictionary(os.path.join(path,'species.txt'), pattern=False)
-        species = dict([(label, Species(label=label, molecule=[entry.item])) for label, entry in self.entries.iteritems()])
+        species = dict([(label.upper(), Species(label=label, molecule=[entry.item])) for label, entry in self.entries.iteritems()])
         
+        # Add common bath gases (Ar, Ne, He, N2) if not already present
+        for label, smiles in [('AR','[Ar]'), ('HE','[He]'), ('NE','[Ne]'), ('N2','N#N')]:
+            if label not in species:
+                molecule = Molecule().fromSMILES(smiles)
+                spec = Species(label=label, molecule=[molecule])
+                species[label] = spec                         
+
         reactions = []
         reactions.extend(self.__loadOldReactions(os.path.join(path,'reactions.txt'), species))
         if os.path.exists(os.path.join(path,'pdepreactions.txt')):
