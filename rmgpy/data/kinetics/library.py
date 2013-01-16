@@ -131,26 +131,19 @@ class KineticsLibrary(Database):
         """
         speciesDict = {}
         
-        def speciesMatch(speciesA, speciesB):
-            for moleculeA in speciesA.molecule:
-                for moleculeB in speciesB.molecule:
-                    if moleculeA.isIsomorphic(moleculeB):
-                        return True
-            return False
-        
         entries = self.entries.values()
         for entry in entries:
             for reactant in entry.item.reactants:
                 if reactant.label not in speciesDict:
                     speciesDict[reactant.label] = reactant
-                elif not speciesMatch(reactant, speciesDict[reactant.label]):
+                elif not reactant.isIsomorphic(speciesDict[reactant.label]):
                     print reactant.molecule[0].toAdjacencyList()
                     print speciesDict[reactant.label].molecule[0].toAdjacencyList()
                     raise DatabaseError('Species label "{0}" used for multiple species in kinetics library {1}.'.format(reactant.label, self.label))
             for product in entry.item.products:
                 if product.label not in speciesDict:
                     speciesDict[product.label] = product
-                elif not speciesMatch(product, speciesDict[product.label]):
+                elif not product.isIsomorphic(speciesDict[product.label]):
                     import pdb; pdb.set_trace()
                     print product.molecule[0].toAdjacencyList()
                     print speciesDict[product.label].molecule[0].toAdjacencyList()
