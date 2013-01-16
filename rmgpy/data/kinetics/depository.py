@@ -52,6 +52,49 @@ from .common import KineticsError, saveEntry
 
 ################################################################################
 
+BIMOLECULAR_KINETICS_FAMILIES = [
+    'H_Abstraction',
+    'R_Addition_MultipleBond',
+    'R_Recombination',
+    'Disproportionation',
+    '1+2_Cycloaddition',
+    '2+2_cycloaddition_Cd',
+    '2+2_cycloaddition_CO',
+    '2+2_cycloaddition_CCO',
+    'Diels_alder_addition',
+    '1,2_Insertion',
+    '1,3_Insertion_CO2',
+    '1,3_Insertion_ROR',
+    'R_Addition_COm',
+    'Oa_R_Recombination',
+    'Substitution_O',
+    'SubstitutionS',
+    'R_Addition_CSm',
+    '1,3_Insertion_RSR',
+]
+
+UNIMOLECULAR_KINETICS_FAMILIES = [
+    'intra_H_migration',
+    'Birad_recombination',
+    'intra_OH_migration',
+    'HO2_Elimination_from_PeroxyRadical',
+    'Cyclic_Ether_Formation',
+    'Enol_keto_tautomerism',
+    'Intra_R_Add_Exocyclic',
+    'Intra_R_Add_Endocyclic',
+    '1,2-Birad_to_alkene',
+    'Intra_Disproportionation',
+    'Korcek_step1',
+    'Korcek_step2',
+    '1,2_shiftS',
+    'intra_substitutionCS_cyclization',
+    'intra_substitutionCS_isomerization',
+    'intra_substitutionS_cyclization',
+    'intra_substitutionS_isomerization',
+]
+
+################################################################################
+
 class DepositoryReaction(Reaction):
     """
     A Reaction object generated from a reaction depository. In addition to the
@@ -229,44 +272,9 @@ class KineticsDepository(Database):
         """
         # This is hardcoding of reaction families!
         label = os.path.split(self.label)[-2]
-        if label in ['H_Abstraction',
-                     'R_Addition_MultipleBond',
-                     'R_Recombination',
-                     'Disproportionation',
-                     '1+2_Cycloaddition',
-                     '2+2_cycloaddition_Cd',
-                     '2+2_cycloaddition_CO',
-                     '2+2_cycloaddition_CCO',
-                     'Diels_alder_addition',
-                     '1,2_Insertion',
-                     '1,3_Insertion_CO2',
-                     '1,3_Insertion_ROR',
-                     'R_Addition_COm',
-                     'Oa_R_Recombination',
-                     'Substitution_O',
-                     'SubstitutionS',
-                     'R_Addition_CSm',
-                     '1,3_Insertion_RSR',
-                     ]:
+        if label in BIMOLECULAR_KINETICS_FAMILIES:
             Aunits = 'cm^3/(mol*s)'
-        elif label in ['intra_H_migration',
-                      'Birad_recombination',
-                      'intra_OH_migration',
-                      'HO2_Elimination_from_PeroxyRadical',
-                      'Cyclic_Ether_Formation',
-                      'Enol_keto_tautomerism',
-                      'Intra_R_Add_Exocyclic',
-                      'Intra_R_Add_Endocyclic',
-                      '1,2-Birad_to_alkene',
-                      'Intra_Disproportionation',
-                      'Korcek_step1',
-                      'Korcek_step2',
-                      '1,2_shiftS',
-                      'intra_substitutionCS_cyclization',
-                      'intra_substitutionCS_isomerization',
-                      'intra_substitutionS_cyclization',
-                      'intra_substitutionS_isomerization',
-                      ]:
+        elif label in UNIMOLECULAR_KINETICS_FAMILIES:
             Aunits = 's^-1'
         else:
             raise Exception('Unable to determine preexponential units for old reaction family "{0}".'.format(self.label))
@@ -404,44 +412,9 @@ class KineticsDepository(Database):
         
         # This is hardcoding of reaction families!
         label = os.path.split(self.label)[-2]
-        if label in ['H_Abstraction',
-                     'R_Addition_MultipleBond',
-                     'R_Recombination',
-                     'Disproportionation',
-                     '1+2_Cycloaddition',
-                     '2+2_cycloaddition_Cd',
-                     '2+2_cycloaddition_CO',
-                     '2+2_cycloaddition_CCO',
-                     'Diels_alder_addition',
-                     '1,2_Insertion',
-                     '1,3_Insertion_CO2',
-                     '1,3_Insertion_ROR',
-                     'R_Addition_COm',
-                     'Oa_R_Recombination',
-                     'Substitution_O',
-                     'SubstitutionS',
-                     'R_Addition_CSm',
-                     '1,3_Insertion_RSR',
-                     ]:
+        if label in BIMOLECULAR_KINETICS_FAMILIES:
             factor = 1.0e6
-        elif label in ['intra_H_migration',
-                      'Birad_recombination',
-                      'intra_OH_migration',
-                      'HO2_Elimination_from_PeroxyRadical',
-                      'Cyclic_Ether_Formation',
-                      'Enol_keto_tautomerism',
-                      'Intra_R_Add_Exocyclic',
-                      'Intra_R_Add_Endocyclic',
-                      '1,2-Birad_to_alkene',
-                      'Intra_Disproportionation',
-                      'Korcek_step1',
-                      'Korcek_step2',
-                      '1,2_shiftS',
-                      'intra_substitutionCS_cyclization',
-                      'intra_substitutionCS_isomerization',
-                      'intra_substitutionS_cyclization',
-                      'intra_substitutionS_isomerization',
-                      ]:
+        elif label in UNIMOLECULAR_KINETICS_FAMILIES:
             factor = 1.0
         else:
             raise ValueError('Unable to determine preexponential units for old reaction family "{0}".'.format(self.label))
