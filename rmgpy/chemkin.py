@@ -536,7 +536,8 @@ def removeCommentFromLine(line):
     
     index = min(index1, index2)
     comment = line[index+1:-1]
-    line = line[0:index] + '\n'
+    if index < len(line):
+        line = line[0:index] + '\n'
     return line, comment
 
 def loadChemkinFile(path, dictionaryPath=None):
