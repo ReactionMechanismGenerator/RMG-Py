@@ -1447,8 +1447,14 @@ class KineticsFamily(Database):
             product.updateAtomTypes()
             product.updateConnectivityValues()
 
-        # Create and return reaction object
-        return Reaction(reactants=reactants, products=products)
+        # Create and return template reaction object
+        return TemplateReaction(
+            reactants = reactants if isForward else products,
+            products = products if isForward else reactants,
+            degeneracy = 1,
+            reversible = True,
+            family = self,
+        )
 
     def __matchReactantToTemplate(self, reactant, templateReactant):
         """
@@ -1481,16 +1487,7 @@ class KineticsFamily(Database):
         reactionList = []
         
         # Forward direction (the direction in which kinetics is defined)
-        reactions = self.__generateReactions(reactants, forward=True, **options)
-        for rxn in reactions:
-            reaction = TemplateReaction(
-                reactants = rxn.reactants[:],
-                products = rxn.products[:],
-                degeneracy = rxn.degeneracy,
-                reversible = rxn.reversible,
-                family = self,
-            )
-            reactionList.append(reaction)
+        reactionList.extend(self.__generateReactions(reactants, forward=True, **options))
         
         reverseReactions = []
         if self.ownReverse:
@@ -1499,27 +1496,13 @@ class KineticsFamily(Database):
                 reactions = self.__generateReactions(rxn.products, forward=True, **options)
                 reactions = filterReactions(rxn.products, rxn.reactants, reactions)
                 assert len(reactions) == 1, "Expecting one matching reverse reaction, not {0}. Forward reaction {1!s} : {1!r}".format(len(reactions), rxn)
-                reaction = reactions[0]
-                reaction = TemplateReaction(
-                    reactants = reaction.reactants[:],
-                    products = reaction.products[:],
-                    degeneracy = reaction.degeneracy,
-                    reversible = reaction.reversible,
-                    family = self,
-                )
-                rxn.reverse = reaction
-                reverseReactions.append(reaction)
+                rxn.reverse = reactions[0]
+                reverseReactions.append(reactions[0])
             
         else: # family is not ownReverse
             # Reverse direction (the direction in which kinetics is not defined)
             reactions = self.__generateReactions(reactants, forward=False, **options)
-            for rxn in reactions:
-                reaction = TemplateReaction(
-                    reactants = rxn.products[:],
-                    products = rxn.reactants[:],
-                    reversible = rxn.reversible,
-                    family = self,
-                )
+            for reaction in reactions:
                 reaction.degeneracy = self.calculateDegeneracy(reaction)
                 reactionList.append(reaction)
 
