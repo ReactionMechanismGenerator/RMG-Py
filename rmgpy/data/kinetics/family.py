@@ -1628,53 +1628,21 @@ class KineticsFamily(Database):
                                     if productStructures is not None:
                                         rxn = self.__createReaction(reactantStructures, productStructures, forward)
                                         if rxn: rxnList.append(rxn)
-
-        # Remove duplicates from the reaction list
-        index0 = 0
-        while index0 < len(rxnList):
-
-            # Generate resonance isomers for products of the current reaction
-            products0 = [product.generateResonanceIsomers() for product in rxnList[index0].products]
-
-            index = index0 + 1
-            while index < len(rxnList):
-                # We know the reactants are the same, so we only need to compare the products
-                match = False
-                if len(rxnList[index].products) == len(products0) == 1:
-                    for product in products0[0]:
-                        if rxnList[index].products[0].isIsomorphic(product):
-                            match = True
-                            break
-                elif len(rxnList[index].products) == len(products0) == 2:
-                    for productA in products0[0]:
-                        for productB in products0[1]:
-                            if rxnList[index].products[0].isIsomorphic(productA) and rxnList[index].products[1].isIsomorphic(productB):
-                                match = True
-                                break
-                            elif rxnList[index].products[0].isIsomorphic(productB) and rxnList[index].products[1].isIsomorphic(productA):
-                                match = True
-                                break
-
-                # If we found a match, remove it from the list
-                # Also increment the reaction path degeneracy of the remaining reaction
-                if match:
-                    rxnList.remove(rxnList[index])
-                    rxnList[index0].degeneracy += 1
-                else:
-                    index += 1
-
-            index0 += 1
-
-        if products is not None:
+  
+        # The reaction list may contain duplicates of the same reaction
+        # These duplicates should be combined (by increasing the degeneracy of
+        # one of the copies and removing the others)
+        # The reaction list may also contain reactions that produce products
+        # other than the ones specified (if given); these should be removed
+        rxnList0 = rxnList[:]
+        rxnList = []
+        for index0, reaction0 in enumerate(rxnList0):
             
-            rxnList0 = rxnList[:]
-            rxnList = []
-            for index0, reaction0 in enumerate(rxnList0):
-                
-                # Generate resonance isomers for products of the current reaction
-                products0 = [product.generateResonanceIsomers() for product in reaction0.products]
-    
-                # If products is given, skip reactions that don't match the given products
+            # Generate resonance isomers for products of the current reaction
+            products0 = [product.generateResonanceIsomers() for product in reaction0.products]
+
+            # If products is given, skip reactions that don't match the given products
+            if products is not None:
                 match = False
                 if len(products) == len(products0) == 1:
                     for product in products0[0]:
@@ -1690,8 +1658,40 @@ class KineticsFamily(Database):
                             elif products[0].isIsomorphic(productB) and products[1].isIsomorphic(productA):
                                 match = True
                                 break
+            else:
+                match = True
+            if not match: continue
+                
+            rxnList.append(reaction0) 
+
+            # Remove duplicates from the reaction list
+            index = index0 + 1
+            while index < len(rxnList0):
+                reaction = rxnList0[index]
+                # We know the reactants are the same, so we only need to compare the products
+                match = False
+                if len(reaction.products) == len(products0) == 1:
+                    for product in products0[0]:
+                        if rxnList0[index].products[0].isIsomorphic(product):
+                            match = True
+                            break
+                elif len(reaction.products) == len(products0) == 2:
+                    for productA in products0[0]:
+                        for productB in products0[1]:
+                            if reaction.products[0].isIsomorphic(productA) and reaction.products[1].isIsomorphic(productB):
+                                match = True
+                                break
+                            elif reaction.products[0].isIsomorphic(productB) and reaction.products[1].isIsomorphic(productA):
+                                match = True
+                                break
+
+                # If we found a match, remove it from the list
+                # Also increment the reaction path degeneracy of the remaining reaction
                 if match:
-                    rxnList.append(reaction0) 
+                    rxnList0.remove(reaction)
+                    reaction0.degeneracy += 1
+                else:
+                    index += 1
             
         # For R_Recombination reactions, the degeneracy is twice what it should
         # be, so divide those by two
