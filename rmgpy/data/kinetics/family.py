@@ -1489,30 +1489,16 @@ class KineticsFamily(Database):
         # Forward direction (the direction in which kinetics is defined)
         reactionList.extend(self.__generateReactions(reactants, forward=True, **options))
         
-        reverseReactions = []
         if self.ownReverse:
             # for each reaction, make its reverse reaction and store in a 'reverse' attribute
             for rxn in reactionList:
                 reactions = self.__generateReactions(rxn.products, products=rxn.reactants, forward=True, **options)
                 assert len(reactions) == 1, "Expecting one matching reverse reaction, not {0}. Forward reaction {1!s} : {1!r}".format(len(reactions), rxn)
                 rxn.reverse = reactions[0]
-                reverseReactions.append(reactions[0])
             
         else: # family is not ownReverse
             # Reverse direction (the direction in which kinetics is not defined)
-            reactions = self.__generateReactions(reactants, forward=False, **options)
-            for reaction in reactions:
-                reaction.degeneracy = self.calculateDegeneracy(reaction)
-                reactionList.append(reaction)
-
-        # Determine the reactant-product pairs to use for flux analysis
-        # Also store the reaction template (useful so we can easily get the kinetics later)
-        for reaction in reactionList:
-            reaction.pairs = self.getReactionPairs(reaction)
-            reaction.template = self.getReactionTemplate(reaction)
-            if hasattr(reaction,'reverse'):
-                reaction.reverse.pairs = self.getReactionPairs(reaction.reverse)
-                reaction.reverse.template = self.getReactionTemplate(reaction.reverse)
+            reactionList.extend(self.__generateReactions(reactants, forward=False, **options))
             
         # Return the reactions as containing Species objects, not Molecule objects
         for reaction in reactionList:
@@ -1703,6 +1689,14 @@ class KineticsFamily(Database):
                 assert(rxn.degeneracy % 2 == 0)
                 rxn.degeneracy /= 2
                 
+        # Determine the reactant-product pairs to use for flux analysis
+        # Also store the reaction template (useful so we can easily get the kinetics later)
+        for reaction in rxnList:
+            reaction.pairs = self.getReactionPairs(reaction)
+            reaction.template = self.getReactionTemplate(reaction)
+            if not forward:
+                reaction.degeneracy = self.calculateDegeneracy(reaction)
+
         # This reaction list has only checked for duplicates within itself, not
         # with the global list of reactions
         return rxnList
