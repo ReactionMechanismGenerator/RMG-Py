@@ -63,6 +63,7 @@ cdef class ReactionSystem(DASSL):
         self.maxCoreSpeciesRates = None
         self.maxEdgeSpeciesRates = None
         self.maxNetworkLeakRates = None
+        self.sensitivityCoefficients = None
         self.termination = termination or []
     
     cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions, list pdepNetworks=None, atol=1e-16, rtol=1e-8):
@@ -91,6 +92,8 @@ cdef class ReactionSystem(DASSL):
         self.maxCoreSpeciesRates = numpy.zeros((numCoreSpecies), numpy.float64)
         self.maxEdgeSpeciesRates = numpy.zeros((numEdgeSpecies), numpy.float64)
         self.maxNetworkLeakRates = numpy.zeros((numPdepNetworks), numpy.float64)
+        self.sensitivityCoefficients = numpy.zeros((numCoreSpecies, numCoreReactions), numpy.float64)
+        
 
     
     cpdef writeWorksheetHeader(self, worksheet):
@@ -105,7 +108,7 @@ cdef class ReactionSystem(DASSL):
     @cython.boundscheck(False)
     cpdef simulate(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions,
         double toleranceKeepInEdge, double toleranceMoveToCore, double toleranceInterruptSimulation,
-        list pdepNetworks=None, worksheet=None, absoluteTolerance=1e-16, relativeTolerance=1e-8):
+        list pdepNetworks=None, worksheet=None, absoluteTolerance=1e-16, relativeTolerance=1e-8, sensitivity=False):
         """
         Simulate the reaction system with the provided reaction model,
         consisting of lists of core species, core reactions, edge species, and
@@ -120,13 +123,14 @@ cdef class ReactionSystem(DASSL):
         cdef dict speciesIndex
         cdef int index, maxSpeciesIndex, maxNetworkIndex
         cdef int numCoreSpecies, numEdgeSpecies, numPdepNetworks
-        cdef double stepTime, charRate, maxSpeciesRate, maxNetworkRate, realConcentration
+        cdef double stepTime, charRate, maxSpeciesRate, maxNetworkRate, realConcentration, prevTime
         cdef numpy.ndarray[numpy.float64_t, ndim=1] y0
         cdef numpy.ndarray[numpy.float64_t, ndim=1] coreSpeciesRates, edgeSpeciesRates, networkLeakRates
         cdef numpy.ndarray[numpy.float64_t, ndim=1] maxCoreSpeciesRates, maxEdgeSpeciesRates, maxNetworkLeakRates
         cdef bint terminated
         cdef object maxSpecies, maxNetwork
         cdef int iteration, i
+        cdef numpy.ndarray[numpy.float64_t, ndim=2] A, sens, b
         
         pdepNetworks = pdepNetworks or []
 
@@ -156,8 +160,9 @@ cdef class ReactionSystem(DASSL):
         
         # Copy the initial conditions to use in evaluating conversions
         y0 = self.y.copy()
+        
         realConcentration = self.P.value_si / constants.R / self.T.value_si 
-
+        
         if worksheet:
             import xlwt
             self.writeWorksheetHeader(worksheet)
@@ -167,14 +172,22 @@ cdef class ReactionSystem(DASSL):
             worksheet.write(3, 1, 'Concentrations (mol/m^3)', style0)
             for i in range(numCoreSpecies):
                 worksheet.write(4, i+1, str(coreSpecies[i]), style0)
-            
+                
+        # initializations for sensitivity analysis
+        sens = self.sensitivityCoefficients
+        
         stepTime = 1e-12
+        prevTime = self.t
         while not terminated:
             # Integrate forward in time by one time step
             self.step(stepTime)
-
             iteration += 1
-
+            if sensitivity:
+                A = self.jacobianMatrix - 1 / (self.t - prevTime) * numpy.identity(numCoreSpecies, numpy.float64)
+                b = - 1 / (self.t - prevTime) * sens - self.computeRateDerivative() 
+                sens = numpy.dot(numpy.linalg.inv(A), b)                
+                prevTime = self.t
+                
             if worksheet:
                 worksheet.write(iteration+4, 0, self.t, style1)
                 for i in range(numCoreSpecies):
@@ -261,6 +274,7 @@ cdef class ReactionSystem(DASSL):
         self.maxCoreSpeciesRates = maxCoreSpeciesRates
         self.maxEdgeSpeciesRates = maxEdgeSpeciesRates
         self.maxNetworkLeakRates = maxNetworkLeakRates
+        self.sensitivityCoefficients = sens
 
         # Return the invalid object (if the simulation was invalid) or None
         # (if the simulation was valid)
