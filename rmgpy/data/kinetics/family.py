@@ -1402,6 +1402,7 @@ class KineticsFamily(Database):
         # Check that product structures are allowed in this family
         # If not, then stop
         for struct in productStructures:
+            struct.updateAtomTypes()
             if self.isMoleculeForbidden(struct): raise ForbiddenStructureException()
 
         return productStructures
@@ -1435,26 +1436,24 @@ class KineticsFamily(Database):
             elif reactants[0].isIsomorphic(products[1]) and reactants[1].isIsomorphic(products[0]):
                 return None
 
-        # We need to save the reactant and product structures with atom labels so
-        # we can generate the kinetics
-        # We make copies so the structures aren't trampled on by later actions
-        reactants = [reactant.copy(deep=True) for reactant in reactants]
-        #products = [product.copy(deep=True) for product in products]
-        for reactant in reactants:
-            reactant.updateAtomTypes()
-            reactant.updateConnectivityValues()
-        for product in products:
-            product.updateAtomTypes()
-            product.updateConnectivityValues()
-
         # Create and return template reaction object
-        return TemplateReaction(
+        reaction = TemplateReaction(
             reactants = reactants if isForward else products,
             products = products if isForward else reactants,
             degeneracy = 1,
             reversible = True,
             family = self,
         )
+        
+        # Store the labeled atoms so we can recover them later
+        # (e.g. for generating reaction pairs and templates)
+        labeledAtoms = []
+        for reactant in reaction.reactants:
+            for label, atom in reactant.getLabeledAtoms().items():
+                labeledAtoms.append((label, atom))
+        reaction.labeledAtoms = labeledAtoms
+        
+        return reaction
 
     def __matchReactantToTemplate(self, reactant, templateReactant):
         """
@@ -1692,11 +1691,26 @@ class KineticsFamily(Database):
         # Determine the reactant-product pairs to use for flux analysis
         # Also store the reaction template (useful so we can easily get the kinetics later)
         for reaction in rxnList:
+            
+            # Restore the labeled atoms long enough to generate some metadata
+            for reactant in reaction.reactants:
+                reactant.clearLabeledAtoms()
+            for label, atom in reaction.labeledAtoms:
+                atom.label = label
+            
+            # Generate metadata about the reaction that we will need later
             reaction.pairs = self.getReactionPairs(reaction)
             reaction.template = self.getReactionTemplate(reaction)
             if not forward:
                 reaction.degeneracy = self.calculateDegeneracy(reaction)
 
+            # Unlabel the atoms
+            for label, atom in reaction.labeledAtoms:
+                atom.label = ''
+            
+            # We're done with the labeled atoms, so delete the attribute
+            del reaction.labeledAtoms
+            
         # This reaction list has only checked for duplicates within itself, not
         # with the global list of reactions
         return rxnList
