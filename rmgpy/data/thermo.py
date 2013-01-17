@@ -832,30 +832,47 @@ class ThermoDatabase(object):
                     for ring in rings:
                         # Make a temporary structure containing only the atoms in the ring
                         # NB. if any of the ring corrections depend on ligands not in the ring, they will not be found!
-                        ringStructure = Molecule()
-                        newAtoms = dict()
+                        ringCorrection = None
                         for atom in ring:
-                            newAtoms[atom] = atom.copy()
-                            ringStructure.addAtom(newAtoms[atom]) # (addAtom deletes the atom's bonds)
-                        for atom1 in ring:
-                            for atom2 in ring:
-                                if molecule.hasBond(atom1, atom2):
-                                    ringStructure.addBond(Bond(newAtoms[atom1], newAtoms[atom2], atom1.bonds[atom2].order ))
-        
-                        # Get thermo correction for this ring
-                        try:
-                            self.__addGroupThermoData(thermoData, self.groups['ring'], ringStructure, {})
-                        except KeyError:
-                            logging.error("Couldn't find in ring database:")
-                            logging.error(ringStructure)
-                            logging.error(ringStructure.toAdjacencyList())
-                            raise
+                            
+                            try:
+                                correction = self.__addGroupThermoData(None, self.groups['ring'], molecule, {'*':atom})
+                            except KeyError:
+                                logging.error("Couldn't find in ring database:")
+                                logging.error(ringStructure)
+                                logging.error(ringStructure.toAdjacencyList())
+                                raise
+                        
+                            if ringCorrection is None or ringCorrection.H298.value_si < correction.H298.value_si:
+                                ringCorrection = correction
+                        
+                        self.__addThermoData(thermoData, ringCorrection)
                 
         # Correct entropy for symmetry number
         molecule.calculateSymmetryNumber()
         thermoData.S298.value_si -= constants.R * math.log(molecule.symmetryNumber)
 
         return thermoData
+
+    def __addThermoData(self, thermoData1, thermoData2):
+        """
+        Add the thermodynamic data `thermoData2` to the data `thermoData1`,
+        and return `thermoData1`.
+        """
+        if len(thermoData1.Tdata.value_si) != len(thermoData2.Tdata.value_si) or any([T1 != T2 for T1, T2 in zip(thermoData1.Tdata.value_si, thermoData2.Tdata.value_si)]):
+            raise ThermoError('Cannot add these ThermoData objects due to their having different temperature points.')
+        
+        for i in range(thermoData1.Tdata.value_si.shape[0]):
+            thermoData1.Cpdata.value_si[i] += thermoData2.Cpdata.value_si[i]
+        thermoData1.H298.value_si += thermoData2.H298.value_si
+        thermoData1.S298.value_si += thermoData2.S298.value_si
+
+        if thermoData1.comment:
+            thermoData1.comment += ' + {0}'.format(thermoData2.comment)
+        else:
+            thermoData1.comment = thermoData2.comment
+        
+        return thermoData1
 
     def __addGroupThermoData(self, thermoData, database, molecule, atom):
         """
@@ -893,17 +910,7 @@ class ThermoDatabase(object):
         #   node = database.tree.parent[node]
         #print result[4:]
 
-        if len(thermoData.Tdata.value_si) != len(data.Tdata.value_si) or any([T1 != T2 for T1, T2 in zip(thermoData.Tdata.value_si, data.Tdata.value_si)]):
-            raise ThermoError('Cannot add these ThermoData objects due to their having different temperature points.')
-        
-        for i in range(7):
-            thermoData.Cpdata.value_si[i] += data.Cpdata.value_si[i]
-        thermoData.H298.value_si += data.H298.value_si
-        thermoData.S298.value_si += data.S298.value_si
-
-        if thermoData.comment:
-            thermoData.comment += ' + {0}'.format(comment)
+        if thermoData is None:
+            return data
         else:
-            thermoData.comment = comment
-        
-        return thermoData
+            return self.__addThermoData(thermoData, data)
