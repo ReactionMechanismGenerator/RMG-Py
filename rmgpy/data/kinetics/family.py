@@ -1493,8 +1493,7 @@ class KineticsFamily(Database):
         if self.ownReverse:
             # for each reaction, make its reverse reaction and store in a 'reverse' attribute
             for rxn in reactionList:
-                reactions = self.__generateReactions(rxn.products, forward=True, **options)
-                reactions = filterReactions(rxn.products, rxn.reactants, reactions)
+                reactions = self.__generateReactions(rxn.products, products=rxn.reactants, forward=True, **options)
                 assert len(reactions) == 1, "Expecting one matching reverse reaction, not {0}. Forward reaction {1!s} : {1!r}".format(len(reactions), rxn)
                 rxn.reverse = reactions[0]
                 reverseReactions.append(reactions[0])
@@ -1533,28 +1532,12 @@ class KineticsFamily(Database):
         For a `reaction` given in the direction in which the kinetics are
         defined, compute the reaction-path degeneracy.
         """
-        reactions = self.__generateReactions(reaction.reactants, forward=True)
-        products = []
-        for product in reaction.products:
-            if isinstance(product, Molecule):
-                species = Species(molecule=[product])
-                species.generateResonanceIsomers()
-                products.append(species)
-            elif isinstance(product, Species):
-               products.append(product.molecule)
-        for rxn in reactions:
-            # We already know the reactants match, so we only need to evaluate the products
-            if len(rxn.products) == len(products) == 1:
-                if products[0].isIsomorphic(rxn.products[0]):
-                    return rxn.degeneracy
-            elif len(rxn.products) == len(products) == 2:
-                if products[0].isIsomorphic(rxn.products[0]) and products[1].isIsomorphic(rxn.products[1]):
-                    return rxn.degeneracy
-                elif products[0].isIsomorphic(rxn.products[1]) and products[1].isIsomorphic(rxn.products[0]):
-                    return rxn.degeneracy
-        raise Exception('Unable to calculate degeneracy for reaction {0} in reaction family {1}.'.format(reaction, self.label))
-    
-    def __generateReactions(self, reactants, forward=True, **options):
+        reactions = self.__generateReactions(reaction.reactants, products=reaction.products, forward=True)
+        if len(reactions) != 1:
+            raise Exception('Unable to calculate degeneracy for reaction {0} in reaction family {1}.'.format(reaction, self.label))
+        return reactions[0].degeneracy
+        
+    def __generateReactions(self, reactants, products=None, forward=True, **options):
         """
         Generate a list of all of the possible reactions of this family between
         the list of `reactants`. The number of reactants provided must match
@@ -1651,20 +1634,20 @@ class KineticsFamily(Database):
         while index0 < len(rxnList):
 
             # Generate resonance isomers for products of the current reaction
-            products = [product.generateResonanceIsomers() for product in rxnList[index0].products]
+            products0 = [product.generateResonanceIsomers() for product in rxnList[index0].products]
 
             index = index0 + 1
             while index < len(rxnList):
                 # We know the reactants are the same, so we only need to compare the products
                 match = False
-                if len(rxnList[index].products) == len(products) == 1:
-                    for product in products[0]:
+                if len(rxnList[index].products) == len(products0) == 1:
+                    for product in products0[0]:
                         if rxnList[index].products[0].isIsomorphic(product):
                             match = True
                             break
-                elif len(rxnList[index].products) == len(products) == 2:
-                    for productA in products[0]:
-                        for productB in products[1]:
+                elif len(rxnList[index].products) == len(products0) == 2:
+                    for productA in products0[0]:
+                        for productB in products0[1]:
                             if rxnList[index].products[0].isIsomorphic(productA) and rxnList[index].products[1].isIsomorphic(productB):
                                 match = True
                                 break
@@ -1682,6 +1665,34 @@ class KineticsFamily(Database):
 
             index0 += 1
 
+        if products is not None:
+            
+            rxnList0 = rxnList[:]
+            rxnList = []
+            for index0, reaction0 in enumerate(rxnList0):
+                
+                # Generate resonance isomers for products of the current reaction
+                products0 = [product.generateResonanceIsomers() for product in reaction0.products]
+    
+                # If products is given, skip reactions that don't match the given products
+                match = False
+                if len(products) == len(products0) == 1:
+                    for product in products0[0]:
+                        if products[0].isIsomorphic(product):
+                            match = True
+                            break
+                elif len(products) == len(products0) == 2:
+                    for productA in products0[0]:
+                        for productB in products0[1]:
+                            if products[0].isIsomorphic(productA) and products[1].isIsomorphic(productB):
+                                match = True
+                                break
+                            elif products[0].isIsomorphic(productB) and products[1].isIsomorphic(productA):
+                                match = True
+                                break
+                if match:
+                    rxnList.append(reaction0) 
+            
         # For R_Recombination reactions, the degeneracy is twice what it should
         # be, so divide those by two
         # This is hardcoding of reaction families!
