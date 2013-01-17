@@ -302,8 +302,7 @@ cdef class SimpleReactor(ReactionSystem):
         cdef numpy.ndarray[numpy.int_t, ndim=2] ir, ip
         cdef numpy.ndarray[numpy.float64_t, ndim=1] kf, kr
         cdef numpy.ndarray[numpy.float64_t, ndim=2] pd
-        cdef int numCoreReactions
-        cdef int j
+        cdef int numCoreReactions, j 
         cdef double k, deriv
         
         pd = -cj * numpy.identity(y.shape[0], numpy.float64)
@@ -605,14 +604,16 @@ cdef class SimpleReactor(ReactionSystem):
         return pd
     
     @cython.boundscheck(False)
-    def computeRateDerivative(self, int j):
+    def computeRateDerivative(self):
         """
         Returns derivative vector df/dk_j where dc/dt = f(c, t, k) and
         k_j is the rate parameter for the jth core reaction.
         """
         cdef numpy.ndarray[numpy.int_t, ndim=2] ir, ip
-        cdef numpy.ndarray[numpy.float64_t, ndim=1] y, rateDeriv, kf, kr
+        cdef numpy.ndarray[numpy.float64_t, ndim=1] y, kf, kr
+        cdef numpy.ndarray[numpy.float64_t, ndim=2] rateDeriv
         cdef double fderiv, rderiv, flux
+        cdef int j, numCoreReactions
         
         ir = self.reactantIndices
         ip = self.productIndices
@@ -620,42 +621,47 @@ cdef class SimpleReactor(ReactionSystem):
         kf = self.forwardRateCoefficients
         kr = self.reverseRateCoefficients
         y = self.coreSpeciesConcentrations        
-        rateDeriv = numpy.zeros(y.shape[0], numpy.float64)
         
-        if ir[j,1] == -1: # only one reactant
-            fderiv = y[ir[j,0]]
-        elif ir[j,2] == -1: # only two reactants
-            fderiv = y[ir[j,0]] * y[ir[j,1]]                             
-        else: # three reactants!! (really?)
-            fderiv = y[ir[j,0]] * y[ir[j,1]] * y[ir[j,2]]          
-            
-        if ip[j,1] == -1: # only one reactant
-            rderiv = kr[j] / kf [j] * y[ip[j,0]]
-        elif ip[j,2] == -1: # only two reactants
-            rderiv = kr[j] / kf [j] * y[ip[j,0]] * y[ip[j,1]]
-        else: # three reactants!! (really?)
-            rderiv = kr[j] / kf [j] * y[ip[j,0]] * y[ip[j,1]] * y[ip[j,2]]
-
         
-        flux = fderiv - rderiv
-        if ir[j,1] == -1:
-            rateDeriv[ir[j,0]] -= flux
-        elif ir[j,2] == -1:
-            rateDeriv[ir[j,0]] -= flux
-            rateDeriv[ir[j,1]] -= flux
-        else:
-            rateDeriv[ir[j,0]] -= flux
-            rateDeriv[ir[j,1]] -= flux   
-            rateDeriv[ir[j,2]] -= flux
+        numCoreReactions = len(self.coreReactionRates)
+        
+        rateDeriv = numpy.zeros((y.shape[0],numCoreReactions), numpy.float64)
+        
+        for j in range(numCoreReactions):
+            if ir[j,1] == -1: # only one reactant
+                fderiv = y[ir[j,0]]
+            elif ir[j,2] == -1: # only two reactants
+                fderiv = y[ir[j,0]] * y[ir[j,1]]                             
+            else: # three reactants!! (really?)
+                fderiv = y[ir[j,0]] * y[ir[j,1]] * y[ir[j,2]]          
+                
+            if ip[j,1] == -1: # only one reactant
+                rderiv = kr[j] / kf [j] * y[ip[j,0]]
+            elif ip[j,2] == -1: # only two reactants
+                rderiv = kr[j] / kf [j] * y[ip[j,0]] * y[ip[j,1]]
+            else: # three reactants!! (really?)
+                rderiv = kr[j] / kf [j] * y[ip[j,0]] * y[ip[j,1]] * y[ip[j,2]]
+    
             
-        if ip[j,1] == -1:
-            rateDeriv[ip[j,0]] += flux
-        elif ip[j,2] == -1:
-            rateDeriv[ip[j,0]] += flux
-            rateDeriv[ip[j,1]] += flux
-        else:
-            rateDeriv[ip[j,0]] += flux
-            rateDeriv[ip[j,1]] += flux  
-            rateDeriv[ip[j,2]] += flux          
+            flux = fderiv - rderiv
+            if ir[j,1] == -1:
+                rateDeriv[ir[j,0], j] -= flux
+            elif ir[j,2] == -1:
+                rateDeriv[ir[j,0], j] -= flux
+                rateDeriv[ir[j,1], j] -= flux
+            else:
+                rateDeriv[ir[j,0], j] -= flux
+                rateDeriv[ir[j,1], j] -= flux   
+                rateDeriv[ir[j,2], j] -= flux
+                
+            if ip[j,1] == -1:
+                rateDeriv[ip[j,0], j] += flux
+            elif ip[j,2] == -1:
+                rateDeriv[ip[j,0], j] += flux
+                rateDeriv[ip[j,1], j] += flux
+            else:
+                rateDeriv[ip[j,0], j] += flux
+                rateDeriv[ip[j,1], j] += flux  
+                rateDeriv[ip[j,2], j] += flux          
                 
         return rateDeriv
