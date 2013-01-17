@@ -424,3 +424,62 @@ class KineticsDatabase(object):
         assert reaction is not None
         assert template is not None
         return reaction, template
+
+################################################################################
+
+def filterReactions(reactants, products, reactionList):
+    """
+    Remove any reactions from the given `reactionList` whose reactants do
+    not involve all the given `reactants` or whose products do not involve 
+    all the given `products`. This method checks both forward and reverse
+    directions, and only filters out reactions that don't match either.
+    """
+    
+    # Convert from molecules to species and generate resonance isomers.
+    reactant_species = []
+    for mol in reactants:
+        s = Species(molecule=[mol])
+        s.generateResonanceIsomers()
+        reactant_species.append(s)
+    reactants = reactant_species
+    product_species = []
+    for mol in products:
+        s = Species(molecule=[mol])
+        s.generateResonanceIsomers()
+        product_species.append(s)
+    products = product_species
+    
+    reactions = reactionList[:]
+    
+    for reaction in reactionList:
+        # Forward direction
+        reactants0 = [r for r in reaction.reactants]
+        for reactant in reactants:
+            for reactant0 in reactants0:
+                if reactant.isIsomorphic(reactant0):
+                    reactants0.remove(reactant0)
+                    break
+        products0 = [p for p in reaction.products]
+        for product in products:
+            for product0 in products0:
+                if product.isIsomorphic(product0):
+                    products0.remove(product0)
+                    break
+        forward = not (len(reactants0) != 0 or len(products0) != 0)
+        # Reverse direction
+        reactants0 = [r for r in reaction.products]
+        for reactant in reactants:
+            for reactant0 in reactants0:
+                if reactant.isIsomorphic(reactant0):
+                    reactants0.remove(reactant0)
+                    break
+        products0 = [p for p in reaction.reactants]
+        for product in products:
+            for product0 in products0:
+                if product.isIsomorphic(product0):
+                    products0.remove(product0)
+                    break
+        reverse = not (len(reactants0) != 0 or len(products0) != 0)
+        if not forward and not reverse:
+            reactions.remove(reaction)
+    return reactions
