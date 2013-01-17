@@ -132,11 +132,11 @@ def readKineticsEntry(entry, speciesDict, Aunits, Eunits):
         float(tokens[-6])
     except (ValueError, IndexError):
         rmg = False
+    AuncertaintyType = '+|-'
     if rmg:
         A = float(tokens[-6])
         n = float(tokens[-5])
         Ea = float(tokens[-4])
-        AuncertaintyType = '+|-'
         try:
             dA = float(tokens[-3])
         except ValueError:
