@@ -901,7 +901,7 @@ class ThermoDatabase(object):
                     data = entry.data
                     comment = entry.label
                     break
-        comment = '{0}({1})'.format(database.label, comment)
+        data.comment = '{0}({1})'.format(database.label, comment)
 
         # This code prints the hierarchy of the found node; useful for debugging
         #result = ''
