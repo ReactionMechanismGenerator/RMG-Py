@@ -813,8 +813,8 @@ class ThermoDatabase(object):
 
             # Do ring corrections separately because we only want to match
             # each ring one time
-            rings = molecule.getSmallestSetOfSmallestRings()
-            if rings:                
+            
+            if molecule.isCyclic():                
                 if molecule.getAllPolycyclicVertices():
                     # If the molecule has fused ring atoms, this implies that we are dealing
                     # with a polycyclic ring system, for which separate ring strain corrections may not
@@ -829,6 +829,7 @@ class ThermoDatabase(object):
                         logging.error(molecule.toAdjacencyList())
                         raise
                 else:
+                    rings = molecule.getSmallestSetOfSmallestRings()
                     for ring in rings:
                         # Make a temporary structure containing only the atoms in the ring
                         # NB. if any of the ring corrections depend on ligands not in the ring, they will not be found!
