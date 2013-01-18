@@ -594,16 +594,26 @@ cdef class MultiPDepArrhenius(PDepKineticsModel):
         Return the rate coefficient in the appropriate combination of m^3, 
         mol, and s at temperature `T` in K and pressure `P` in Pa.
         """
-        cdef double k
+        cdef double k, klow, khigh, Plow, Phigh
         cdef PDepArrhenius arrh
+        cdef Arrhenius arrh_low, arrh_high
         
         if P == 0:
             raise ValueError('No pressure specified to pressure-dependent MultiPDepArrhenius.getRateCoefficient().')
         
-        k = 0.0
+        klow = 0.0; khigh = 0.0
         for arrh in self.arrhenius:
-            if arrh.isPressureValid(P):
-                k += arrh.getRateCoefficient(T,P)
+            assert arrh.pressures == self.arrhenius[0].pressures
+            Plow, Phigh, arrh_low, arrh_high = arrh.getAdjacentExpressions(P)
+            klow += arrh_low.getRateCoefficient(T)
+            khigh += arrh_high.getRateCoefficient(T)
+            
+        if klow == khigh == 0.0: 
+            return 0.0
+        elif Plow == Phigh:
+            k = klow
+        else:
+            k = klow * 10**(log10(P/Plow)/log10(Phigh/Plow)*log10(khigh/klow))
         
         return k
 
