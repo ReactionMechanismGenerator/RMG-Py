@@ -37,8 +37,9 @@ import rmgpy.constants as constants
 from rmgpy.kinetics import Arrhenius, ArrheniusEP, ThirdBody, Lindemann, Troe, \
                            PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, \
                            Chebyshev, KineticsData, PDepKineticsModel
+from rmgpy.species import Species
 
-from .common import KineticsError
+from .common import KineticsError, saveEntry
 from .depository import DepositoryReaction, KineticsDepository
 from .family import TemplateReaction, KineticsFamily, KineticsGroups, \
     ReactionRecipe, InvalidActionError, ReactionPairsError, \
