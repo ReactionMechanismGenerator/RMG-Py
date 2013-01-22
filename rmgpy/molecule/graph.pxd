@@ -123,15 +123,3 @@ cdef class Graph:
     cpdef list getSmallestSetOfSmallestRings(self)
     
     cpdef bint isMappingValid(self, Graph other, dict mapping) except -2
-
-################################################################################
-
-cpdef VF2_isomorphism(Graph graph1, Graph graph2, bint subgraph=?, bint findAll=?, dict initialMapping=?)
-
-cdef bint VF2_feasible(Graph graph1, Graph graph2, Vertex vertex1, Vertex vertex2, bint subgraph) except -2
-
-cdef bint VF2_match(Graph graph1, Graph graph2, bint subgraph, bint findAll, list mappingList, int callDepth) except -2
-
-cdef void VF2_addToMapping(Vertex vertex1, Vertex vertex2)
-
-cdef void VF2_removeFromMapping(Vertex vertex1, Vertex vertex2)
