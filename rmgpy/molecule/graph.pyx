@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# encoding: utf-8
-
 ################################################################################
 #
 #   RMG - Reaction Mechanism Generator
@@ -35,12 +32,11 @@ the vertices and edges (:class:`Vertex` and :class:`Edge`, respectively) that
 are the components of a graph.
 """
 
-import cython
 import logging
 
 ################################################################################
 
-class Vertex(object):
+cdef class Vertex(object):
     """
     A base class for vertices in a graph. Contains several connectivity values
     useful for accelerating isomorphism searches, as proposed by
@@ -85,7 +81,7 @@ class Vertex(object):
         self.terminal = d['terminal']
         self.mapping = d['mapping']
 
-    def copy(self):
+    cpdef Vertex copy(self):
         """
         Return a copy of the vertex. The default implementation assumes that no
         semantic information is associated with each vertex, and therefore
@@ -94,7 +90,7 @@ class Vertex(object):
         new = Vertex()
         return new
 
-    def equivalent(self, other):
+    cpdef bint equivalent(self, Vertex other) except -2:
         """
         Return :data:`True` if two vertices `self` and `other` are semantically
         equivalent, or :data:`False` if not. You should reimplement this
@@ -102,7 +98,7 @@ class Vertex(object):
         """
         return True
 
-    def isSpecificCaseOf(self, other):
+    cpdef bint isSpecificCaseOf(self, Vertex other) except -2:
         """
         Return ``True`` if `self` is semantically more specific than `other`,
         or ``False`` if not. You should reimplement this function in a derived
@@ -110,7 +106,7 @@ class Vertex(object):
         """
         return True
 
-    def resetConnectivityValues(self):
+    cpdef resetConnectivityValues(self):
         """
         Reset the cached structure information for this vertex.
         """
@@ -121,7 +117,7 @@ class Vertex(object):
         self.terminal = False
         self.mapping = None
 
-def getVertexConnectivityValue(vertex):
+cpdef short getVertexConnectivityValue(Vertex vertex) except 1:
     """
     Return a value used to sort vertices prior to poposing candidate pairs in
     :meth:`__VF2_pairs`. The value returned is based on the vertex's
@@ -129,7 +125,7 @@ def getVertexConnectivityValue(vertex):
     """
     return ( -256*vertex.connectivity1 - 16*vertex.connectivity2 - vertex.connectivity3 )
 
-def getVertexSortingLabel(vertex):
+cpdef short getVertexSortingLabel(Vertex vertex) except -1:
     """
     Return a value used to sort vertices prior to poposing candidate pairs in
     :meth:`__VF2_pairs`. The value returned is based on the vertex's
@@ -139,7 +135,7 @@ def getVertexSortingLabel(vertex):
 
 ################################################################################
 
-class Edge(object):
+cdef class Edge(object):
     """
     A base class for edges in a graph. This class does *not* store the vertex
     pair that comprises the edge; that functionality would need to be included
@@ -156,7 +152,7 @@ class Edge(object):
         """
         return (Edge, (self.vertex1, self.vertex2))
 
-    def copy(self):
+    cpdef Edge copy(self):
         """
         Return a copy of the edge. The default implementation assumes that no
         semantic information is associated with each edge, and therefore
@@ -166,7 +162,7 @@ class Edge(object):
         new = Edge(self.vertex1, self.vertex2)
         return new
 
-    def equivalent(self, other):
+    cpdef bint equivalent(self, Edge other) except -2:
         """
         Return ``True`` if two edges `self` and `other` are semantically
         equivalent, or ``False`` if not. You should reimplement this
@@ -174,7 +170,7 @@ class Edge(object):
         """
         return True
 
-    def isSpecificCaseOf(self, other):
+    cpdef bint isSpecificCaseOf(self, Edge other) except -2:
         """
         Return ``True`` if `self` is semantically more specific than `other`,
         or ``False`` if not. You should reimplement this function in a derived
@@ -182,7 +178,7 @@ class Edge(object):
         """
         return True
 
-    def getOtherVertex(self, vertex):
+    cpdef Vertex getOtherVertex(self, Vertex vertex):
         """
         Given a vertex that makes up part of the edge, return the other vertex.
         Raise a :class:`ValueError` if the given vertex is not part of the
@@ -197,7 +193,7 @@ class Edge(object):
 
 ################################################################################
 
-class Graph:
+cdef class Graph:
     """
     A graph data type. The vertices of the graph are stored in a list
     `vertices`; this provides a consistent traversal order. The edges of the
@@ -217,7 +213,7 @@ class Graph:
         """
         return (Graph, (self.vertices,))
 
-    def addVertex(self, vertex):
+    cpdef Vertex addVertex(self, Vertex vertex):
         """
         Add a `vertex` to the graph. The vertex is initialized with no edges.
         """
@@ -225,7 +221,7 @@ class Graph:
         vertex.edges = dict()
         return vertex
 
-    def addEdge(self, edge):
+    cpdef Edge addEdge(self, Edge edge):
         """
         Add an `edge` to the graph. The two vertices in the edge must already
         exist in the graph, or a :class:`ValueError` is raised.
@@ -236,13 +232,13 @@ class Graph:
         edge.vertex2.edges[edge.vertex1] = edge
         return edge
 
-    def getEdges(self, vertex):
+    cpdef dict getEdges(self, Vertex vertex):
         """
         Return a list of the edges involving the specified `vertex`.
         """
         return vertex.edges
 
-    def getEdge(self, vertex1, vertex2):
+    cpdef Edge getEdge(self, Vertex vertex1, Vertex vertex2):
         """
         Returns the edge connecting vertices `vertex1` and `vertex2`.
         """
@@ -251,33 +247,33 @@ class Graph:
         except KeyError:
             raise ValueError('The specified vertices are not connected by an edge in this graph.')
 
-    def hasVertex(self, vertex):
+    cpdef bint hasVertex(self, Vertex vertex) except -2:
         """
         Returns ``True`` if `vertex` is a vertex in the graph, or ``False`` if
         not.
         """
         return vertex in self.vertices
 
-    def hasEdge(self, vertex1, vertex2):
+    cpdef bint hasEdge(self, Vertex vertex1, Vertex vertex2) except -2:
         """
         Returns ``True`` if vertices `vertex1` and `vertex2` are connected
         by an edge, or ``False`` if not.
         """
         return vertex1 in self.vertices and vertex2 in vertex1.edges
 
-    def removeVertex(self, vertex):
+    cpdef removeVertex(self, Vertex vertex):
         """
         Remove `vertex` and all edges associated with it from the graph. Does
         not remove vertices that no longer have any edges as a result of this
         removal.
         """
-        cython.declare(vertex2=Vertex)
+        cdef Vertex vertex2
         for vertex2 in vertex.edges:
             del vertex2.edges[vertex]
         vertex.edges = dict()
         self.vertices.remove(vertex)
 
-    def removeEdge(self, edge):
+    cpdef removeEdge(self, Edge edge):
         """
         Remove the specified `edge` from the graph.
         Does not remove vertices that no longer have any edges as a result of
@@ -286,18 +282,19 @@ class Graph:
         del edge.vertex1.edges[edge.vertex2]
         del edge.vertex2.edges[edge.vertex1]
 
-    def copy(self, deep=False):
+    cpdef Graph copy(self, bint deep=False):
         """
         Create a copy of the current graph. If `deep` is ``True``, a deep copy
         is made: copies of the vertices and edges are used in the new graph.
         If `deep` is ``False`` or not specified, a shallow copy is made: the
         original vertices and edges are used in the new graph.
         """
-        cython.declare(other=Graph)
-        cython.declare(vertex=Vertex, vertex1=Vertex, vertex2=Vertex)
-        cython.declare(edge=Edge)
-        cython.declare(edges=dict, vertices=list, mapping=dict)
-        cython.declare(index1=cython.int, index2=cython.int)
+        cdef Graph other
+        cdef Vertex vertex, vertex1, vertex2
+        cdef Edge edge
+        cdef dict edges, mapping
+        cdef list vertices
+        cdef int index1, index2
         
         other = Graph()
         vertices = self.vertices
@@ -320,12 +317,12 @@ class Graph:
                     other.addEdge(edge)
         return other
 
-    def merge(self, other):
+    cpdef Graph merge(self, Graph other):
         """
         Merge two graphs so as to store them in a single Graph object.
         """
-        cython.declare(new=Graph)
-        cython.declare(vertex=Vertex, vertex1=Vertex, vertex2=Vertex)
+        cdef Graph new
+        cdef Vertex vertex, vertex1, vertex2
         
         # Create output graph
         new = Graph()
@@ -342,15 +339,15 @@ class Graph:
 
         return new
 
-    def split(self):
+    cpdef list split(self):
         """
         Convert a single Graph object containing two or more unconnected graphs
         into separate graphs.
         """
-        cython.declare(new1=Graph, new2=Graph)
-        cython.declare(vertex=Vertex, vertex1=Vertex, vertex2=Vertex)
-        cython.declare(verticesToMove=list)
-        cython.declare(index=cython.int)
+        cdef Graph new1, new2
+        cdef Vertex vertex, vertex1, vertex2
+        cdef list verticesToMove
+        cdef int index
         
         # Create potential output graphs
         new1 = self.copy()
@@ -383,21 +380,21 @@ class Graph:
         new.extend(new1.split())
         return new
 
-    def resetConnectivityValues(self):
+    cpdef resetConnectivityValues(self):
         """
         Reset any cached connectivity information. Call this method when you
         have modified the graph.
         """
-        vertex = cython.declare(Vertex)
+        cdef Vertex vertex
         for vertex in self.vertices: vertex.resetConnectivityValues()
         
-    def updateConnectivityValues(self):
+    cpdef updateConnectivityValues(self):
         """
         Update the connectivity values for each vertex in the graph. These are
         used to accelerate the isomorphism checking.
         """
-        cython.declare(vertex1=Vertex, vertex2=Vertex)
-        cython.declare(count=cython.short)
+        cdef Vertex vertex1, vertex2
+        cdef short count
         
         for vertex1 in self.vertices:
             count = len(vertex1.edges)
@@ -411,12 +408,13 @@ class Graph:
             for vertex2 in vertex1.edges: count += vertex2.connectivity2
             vertex1.connectivity3 = count
         
-    def sortVertices(self):
+    cpdef sortVertices(self):
         """
         Sort the vertices in the graph. This can make certain operations, e.g.
         the isomorphism functions, much more efficient.
         """
-        cython.declare(index=cython.int, vertex=Vertex)
+        cdef Vertex vertex
+        cdef int index
         # Only need to conduct sort if there is an invalid sorting label on any vertex
         for vertex in self.vertices:
             if vertex.sortingLabel < 0: break
@@ -429,14 +427,14 @@ class Graph:
         for index, vertex in enumerate(self.vertices):
             vertex.sortingLabel = index
 
-    def isIsomorphic(self, other, initialMap=None):
+    cpdef bint isIsomorphic(self, Graph other, dict initialMap=None) except -2:
         """
         Returns :data:`True` if two graphs are isomorphic and :data:`False`
         otherwise. Uses the VF2 algorithm of Vento and Foggia.
         """
         return VF2_isomorphism(self, other, False, False, initialMap)
 
-    def findIsomorphism(self, other, initialMap=None):
+    cpdef list findIsomorphism(self, Graph other, dict initialMap=None):
         """
         Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
         otherwise, and the matching mapping.
@@ -444,14 +442,14 @@ class Graph:
         """
         return VF2_isomorphism(self, other, False, True, initialMap)
 
-    def isSubgraphIsomorphic(self, other, initialMap=None):
+    cpdef bint isSubgraphIsomorphic(self, Graph other, dict initialMap=None) except -2:
         """
         Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
         otherwise. Uses the VF2 algorithm of Vento and Foggia.
         """
         return VF2_isomorphism(self, other, True, False, initialMap)
 
-    def findSubgraphIsomorphisms(self, other, initialMap=None):
+    cpdef list findSubgraphIsomorphisms(self, Graph other, dict initialMap=None):
         """
         Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
         otherwise. Also returns the lists all of valid mappings.
@@ -460,44 +458,44 @@ class Graph:
         """
         return VF2_isomorphism(self, other, True, True, initialMap)
 
-    def isCyclic(self):
+    cpdef bint isCyclic(self) except -2:
         """
         Return ``True`` if one or more cycles are present in the graph or
         ``False`` otherwise.
         """
-        cython.declare(vertex=Vertex)
+        cdef Vertex vertex
         for vertex in self.vertices:
             if self.isVertexInCycle(vertex):
                 return True
         return False
 
-    def isVertexInCycle(self, vertex):
+    cpdef bint isVertexInCycle(self, Vertex vertex) except -2:
         """
         Return ``True`` if the given `vertex` is contained in one or more
         cycles in the graph, or ``False`` if not.
         """
         return self.__isChainInCycle([vertex])
 
-    def isEdgeInCycle(self, edge):
+    cpdef bint isEdgeInCycle(self, Edge edge) except -2:
         """
         Return :data:`True` if the edge between vertices `vertex1` and `vertex2`
         is in one or more cycles in the graph, or :data:`False` if not.
         """
-        cython.declare(cycles=list)
+        cdef list cycles
         cycles = self.getAllCycles(edge.vertex1)
         for cycle in cycles:
             if edge.vertex2 in cycle:
                 return True
         return False
 
-    def __isChainInCycle(self, chain):
+    cpdef bint __isChainInCycle(self, list chain) except -2:
         """
         Return ``True`` if the given `chain` of vertices is contained in one
         or more cycles or ``False`` otherwise. This function recursively calls
         itself.
         """
-        cython.declare(vertex1=Vertex, vertex2=Vertex)
-        cython.declare(edge=Edge)
+        cdef Vertex vertex1, vertex2
+        cdef Edge edge
 
         vertex1 = chain[-1]
         for vertex2 in vertex1.edges:
@@ -515,11 +513,11 @@ class Graph:
         # If we reach this point then we did not find any cycles involving this chain
         return False
     
-    def getAllCyclicVertices(self):
+    cpdef list getAllCyclicVertices(self):
         """ 
         Returns all vertices belonging to one or more cycles.        
         """
-        cython.declare(cyclicVertices=list)
+        cdef list cyclicVertices
         # Loop through all vertices and check whether they are cyclic
         cyclicVertices = []
         for vertex in self.vertices:
@@ -527,11 +525,11 @@ class Graph:
                 cyclicVertices.append(vertex)                
         return cyclicVertices
     
-    def getAllPolycyclicVertices(self):
+    cpdef list getAllPolycyclicVertices(self):
         """
         Return all vertices belonging to two or more cycles, fused or spirocyclic.
         """
-        cython.declare(SSSR=list, vertices=list, polycyclicVertices=list)
+        cdef list SSSR, vertices, polycyclicVertices
         SSSR = self.getSmallestSetOfSmallestRings()
         polycyclicVertices = []
         if SSSR:            
@@ -545,22 +543,22 @@ class Graph:
                             polycyclicVertices.append(vertex)     
         return polycyclicVertices                                    
 
-    def getAllCycles(self, startingVertex):
+    cpdef list getAllCycles(self, Vertex startingVertex):
         """
         Given a starting vertex, returns a list of all the cycles containing
         that vertex.
         """
         return self.__exploreCyclesRecursively([startingVertex], [])
 
-    def __exploreCyclesRecursively(self, chain, cycles):
+    cpdef list __exploreCyclesRecursively(self, list chain, list cycles):
         """
         Search the graph for cycles by recursive spidering. Given a `chain`
         (list) of connected atoms and a list of `cycles` found so far, find any
         cycles involving the chain of atoms and append them to the list of
         cycles. This function recursively calls itself.
         """
-        cython.declare(vertex1=Vertex, vertex2=Vertex)
-
+        cdef Vertex vertex1, vertex2
+        
         vertex1 = chain[-1]
         # Loop over each of the atoms neighboring the last atom in the chain
         for vertex2 in vertex1.edges:
@@ -576,7 +574,7 @@ class Graph:
         # At this point we should have discovered all of the cycles involving the current chain
         return cycles
 
-    def getSmallestSetOfSmallestRings(self):
+    cpdef list getSmallestSetOfSmallestRings(self):
         """
         Return a list of the smallest set of smallest rings in the graph. The
         algorithm implements was adapted from a description by Fan, Panaye,
@@ -587,11 +585,10 @@ class Graph:
         from a Connection Table." *J. Chem. Inf. Comput. Sci.* **33**,
         p. 657-662 (1993).
         """
-        cython.declare(graph=Graph)
-        cython.declare(done=cython.bint, found=cython.bint)
-        cython.declare(cycleList=list, cycles=list, cycle=list, graphs=list, neighbors=list)
-        cython.declare(verticesToRemove=list, vertices=list)
-        cython.declare(vertex=Vertex, rootVertex=Vertex)
+        cdef Graph graph
+        cdef bint done, found
+        cdef list cycleList, cycles, cycle, graphs, neighbors, verticesToRemove, vertices
+        cdef Vertex vertex, rootVertex
 
         # Make a copy of the graph so we don't modify the original
         graph = self.copy(deep=True)
@@ -669,16 +666,16 @@ class Graph:
 
         return cycleList
 
-    def isMappingValid(self, other, mapping):
+    cpdef bint isMappingValid(self, Graph other, dict mapping) except -2:
         """
         Check that a proposed `mapping` of vertices from `self` to `other`
         is valid by checking that the vertices and edges involved in the
         mapping are mutually equivalent.
         """
-        cython.declare(vertex1=Vertex, vertex2=Vertex)
-        cython.declare(vertices1=list, vertices2=list)
-        cython.declare(selfHasEdge=cython.bint, otherHasEdge=cython.bint)
-        cython.declare(i=cython.int, j=cython.int)
+        cdef Vertex vertex1, vertex2
+        cdef list vertices1, vert
+        cdef bint selfHasEdge, otherHasEdge
+        cdef int i, j
         
         # Check that the mapped pairs of vertices are equivalent
         for vertex1, vertex2 in mapping.items():
@@ -715,7 +712,7 @@ class VF2Error(Exception):
     """
     pass
 
-def VF2_isomorphism(graph1, graph2, subgraph=False, findAll=False, initialMapping=None):
+cpdef VF2_isomorphism(Graph graph1, Graph graph2, bint subgraph=False, bint findAll=False, dict initialMapping=None):
     """
     Use the VF2 algorithm of Vento and Foggia to evaluate the isomorphism of
     the graphs `graph1` and `graph2`. A number of options affect how the
@@ -735,9 +732,9 @@ def VF2_isomorphism(graph1, graph2, subgraph=False, findAll=False, initialMappin
       check; this mapping will appear in every returned mapping. Note that no
       validation of this initial mapping is performed in this function.
     """
-    cython.declare(vertex1=Vertex, vertex2=Vertex)
-    cython.declare(mappingList=list)
-    cython.declare(callDepth=cython.int)
+    cdef Vertex vertex1, vertex2
+    cdef list mappingList
+    cdef int callDepth
     
     # Some quick isomorphism checks based on graph sizes
     if not subgraph and len(graph2.vertices) != len(graph1.vertices):
@@ -781,7 +778,7 @@ def VF2_isomorphism(graph1, graph2, subgraph=False, findAll=False, initialMappin
 
     return mappingList if findAll else isMatch
 
-def VF2_feasible(graph1, graph2, vertex1, vertex2, subgraph):
+cdef bint VF2_feasible(Graph graph1, Graph graph2, Vertex vertex1, Vertex vertex2, bint subgraph) except -2:
     """
     Return ``True`` if two vertices `vertex1` and `vertex2` from graphs
     `graph1` and `graph2`, respectively, are feasible matches. The `subgraph` 
@@ -794,9 +791,9 @@ def VF2_feasible(graph1, graph2, vertex1, vertex2, subgraph):
     although the level 1 and level 2 checks preemptively eliminate a number of
     false positives.)
     """
-    cython.declare(vert1=Vertex, vert2=Vertex)
-    cython.declare(edge1=Edge, edge2=Edge)
-    cython.declare(term1Count=cython.int, term2Count=cython.int, neither1Count=cython.int, neither2Count=cython.int)
+    cdef Vertex vert1, vert2
+    cdef Edge edge1, edge2
+    cdef int term1Count, term2Count, neither1Count, neither2Count
 
     if not subgraph:
         # To be feasible the connectivity values must be an exact match
@@ -872,7 +869,7 @@ def VF2_feasible(graph1, graph2, vertex1, vertex2, subgraph):
     # All of our tests have been passed, so the two vertices are a feasible pair
     return True
 
-def VF2_match(graph1, graph2, subgraph, findAll, mappingList, callDepth):
+cdef bint VF2_match(Graph graph1, Graph graph2, bint subgraph, bint findAll, list mappingList, int callDepth) except -2:
     """
     Recursively explore two graphs `graph1` and `graph2` in search of one or
     more isomorphism relationships by attempting to map vertices to one
@@ -884,8 +881,8 @@ def VF2_match(graph1, graph2, subgraph, findAll, mappingList, callDepth):
     know when an isomorphism is found. Returns ``True`` if at least one
     isomorphism was found or ``False`` if none were found.
     """
-    cython.declare(vertex1=Vertex, vertex2=Vertex)
-    cython.declare(mapping=dict)
+    cdef Vertex vertex1, vertex2
+    cdef dict mapping
     
     # The call depth should never be negative!
     if callDepth < 0:
@@ -932,12 +929,12 @@ def VF2_match(graph1, graph2, subgraph, findAll, mappingList, callDepth):
     # None of the proposed matches led to a complete isomorphism, so return False
     return False
 
-def VF2_addToMapping(vertex1, vertex2):
+cdef void VF2_addToMapping(Vertex vertex1, Vertex vertex2):
     """
     Add a pair of vertices `vertex1` and `vertex2` to the current mapping,
     and update the terminals information for the neighbors of each vertex.
     """
-    cython.declare(v=Vertex)
+    cdef Vertex v
     
     # Map the vertices to one another
     vertex1.mapping = vertex2
@@ -953,12 +950,12 @@ def VF2_addToMapping(vertex1, vertex2):
     for v in vertex2.edges:
         v.terminal = v.mapping is None
 
-def VF2_removeFromMapping(vertex1, vertex2):
+cdef void VF2_removeFromMapping(Vertex vertex1, Vertex vertex2):
     """
     Remove a pair of vertices `vertex1` and `vertex2` from the current mapping,
     and update the terminals information for the neighbors of each vertex.
     """
-    cython.declare(v=Vertex, v2=Vertex)
+    cdef Vertex v, v2
     
     # Unmap the vertices from one another
     vertex1.mapping = None

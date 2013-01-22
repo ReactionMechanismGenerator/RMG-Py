@@ -67,7 +67,7 @@ def getMainExtensionModules():
         # Molecules and molecular representations
         Extension('rmgpy.molecule.atomtype', ['rmgpy/molecule/atomtype.py'], include_dirs=['.']),
         Extension('rmgpy.molecule.element', ['rmgpy/molecule/element.py'], include_dirs=['.']),
-        Extension('rmgpy.molecule.graph', ['rmgpy/molecule/graph.py'], include_dirs=['.']),
+        Extension('rmgpy.molecule.graph', ['rmgpy/molecule/graph.pyx'], include_dirs=['.']),
         Extension('rmgpy.molecule.group', ['rmgpy/molecule/group.py'], include_dirs=['.']),
         Extension('rmgpy.molecule.molecule', ['rmgpy/molecule/molecule.py'], include_dirs=['.']),
         Extension('rmgpy.molecule.symmetry', ['rmgpy/molecule/symmetry.py'], include_dirs=['.']),

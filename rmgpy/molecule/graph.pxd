@@ -86,7 +86,7 @@ cdef class Graph:
 
     cpdef Graph copy(self, bint deep=?)
 
-    cpdef Graph merge(self, other)
+    cpdef Graph merge(self, Graph other)
 
     cpdef list split(self)
 
@@ -112,11 +112,15 @@ cdef class Graph:
 
     cpdef bint __isChainInCycle(self, list chain) except -2
 
-    cpdef getAllCycles(self, Vertex startingVertex)
+    cpdef list getAllCyclicVertices(self)
+    
+    cpdef list getAllPolycyclicVertices(self)
 
-    cpdef __exploreCyclesRecursively(self, list chain, list cycleList)
+    cpdef list getAllCycles(self, Vertex startingVertex)
 
-    cpdef getSmallestSetOfSmallestRings(self)
+    cpdef list __exploreCyclesRecursively(self, list chain, list cycles)
+
+    cpdef list getSmallestSetOfSmallestRings(self)
     
     cpdef bint isMappingValid(self, Graph other, dict mapping) except -2
 
@@ -124,10 +128,10 @@ cdef class Graph:
 
 cpdef VF2_isomorphism(Graph graph1, Graph graph2, bint subgraph=?, bint findAll=?, dict initialMapping=?)
 
-cpdef bint VF2_feasible(Graph graph1, Graph graph2, Vertex vertex1, Vertex vertex2, bint subgraph) except -2
+cdef bint VF2_feasible(Graph graph1, Graph graph2, Vertex vertex1, Vertex vertex2, bint subgraph) except -2
 
-cpdef bint VF2_match(Graph graph1, Graph graph2, bint subgraph, bint findAll, list mappingList, int callDepth) except -2
+cdef bint VF2_match(Graph graph1, Graph graph2, bint subgraph, bint findAll, list mappingList, int callDepth) except -2
 
-cpdef VF2_addToMapping(Vertex vertex1, Vertex vertex2)
+cdef void VF2_addToMapping(Vertex vertex1, Vertex vertex2)
 
-cpdef VF2_removeFromMapping(Vertex vertex1, Vertex vertex2)
+cdef void VF2_removeFromMapping(Vertex vertex1, Vertex vertex2)
