@@ -575,9 +575,35 @@ class Molecule(Graph):
         """
         Return the molecular formula for the molecule.
         """
-        import pybel
-        mol = pybel.Molecule(self.toOBMol())
-        return mol.formula
+        cython.declare(atom=Atom, symbol=str, elements=dict, keys=list, formula=str)
+        cython.declare(hasCarbon=cython.bint, hasHydrogen=cython.bint)
+        
+        # Count the number of each element in the molecule
+        hasCarbon = False; hasHydrogen = False
+        elements = {}
+        for atom in self.vertices:
+            symbol = atom.element.symbol
+            elements[symbol] = elements.get(symbol, 0) + 1
+        
+        # Use the Hill system to generate the formula
+        formula = ''
+        
+        # Carbon and hydrogen always come first if carbon is present
+        if hasCarbon:
+            formula += 'C{0:d}'.format(elements['C'])
+            del elements['C']
+            if hasHydrogen:
+                formula += 'H{0:d}'.format(elements['H'])
+                del elements['H']
+
+        # Other atoms are in alphabetical order
+        # (This includes hydrogen if carbon is not present)
+        keys = elements.keys()
+        keys.sort()
+        for key in keys:
+            formula += '{0}{1:d}'.format(key, elements[key])
+        
+        return formula
 
     def getMolecularWeight(self):
         """
