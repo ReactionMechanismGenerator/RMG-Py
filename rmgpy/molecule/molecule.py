@@ -196,7 +196,16 @@ class Atom(Vertex):
         Generate a deep copy of the current atom. Modifying the
         attributes of the copy will not affect the original.
         """
-        a = Atom(self.element, self.radicalElectrons, self.spinMultiplicity, self.charge, self.label)
+        cython.declare(a=Atom)
+        #a = Atom(self.element, self.radicalElectrons, self.spinMultiplicity, self.charge, self.label)
+        a = Atom.__new__(Atom)
+        a.edges = {}
+        a.resetConnectivityValues()
+        a.element = self.element
+        a.radicalElectrons = self.radicalElectrons
+        a.spinMultiplicity = self.spinMultiplicity
+        a.charge = self.charge
+        a.label = self.label
         a.atomType = self.atomType
         return a
 
@@ -354,7 +363,13 @@ class Bond(Edge):
         Generate a deep copy of the current bond. Modifying the
         attributes of the copy will not affect the original.
         """
-        return Bond(self.vertex1, self.vertex2, self.order)
+        #return Bond(self.vertex1, self.vertex2, self.order)
+        cython.declare(b=Bond)
+        b = Bond.__new__(Bond)
+        b.vertex1 = self.vertex1
+        b.vertex2 = self.vertex2
+        b.order = self.order
+        return b
 
     def isSingle(self):
         """
