@@ -556,45 +556,6 @@ def loadChemkinFile(path, dictionaryPath=None):
     if dictionaryPath:
         speciesDict = loadSpeciesDictionary(dictionaryPath)
     
-    def checkDuplicateKinetics(reaction, kinetics,comments,dupReactionList,reactionList):
-        if 'DUP' in kinetics:
-            kinetics = kinetics.replace('\nDUP','')
-            reaction = readKineticsEntry(kinetics,speciesDict,energyUnits,moleculeUnits)
-            reaction.kinetics.comment = comments
-            if dupReactionList:
-                if not reaction.hasTemplate(dupReactionList[-1].reactants,dupReactionList[-1].products):
-                    # It's not the same kind of duplicate reaction
-                    oldReactionKinetics = MultiKinetics()
-                    for item in dupReactionList:
-                        oldReactionKinetics.kineticsList.append(item.kinetics)
-                    oldReaction = dupReactionList[0]
-                    oldReaction.kinetics = oldReactionKinetics
-                    reactionList.append(oldReaction)
-                    dupReactionList = []
-            dupReactionList.append(reaction)
-            kinetics = ''
-            comments = ''
-            return reaction, kinetics, comments, dupReactionList, reactionList
-
-        else:
-            # No more duplicate reactions
-            if dupReactionList:
-                # add previous reaction if they were duplicate reactions
-                oldReactionKinetics = MultiKinetics()
-                for item in dupReactionList:
-                    oldReactionKinetics.kineticsList.append(item.kinetics)
-                oldReaction = dupReactionList[0]
-                oldReaction.kinetics = oldReactionKinetics
-                reactionList.append(oldReaction)
-                dupReactionList = []
-            # add this new, nonduplicate reaction
-            reaction = readKineticsEntry(kinetics,speciesDict,energyUnits,moleculeUnits)
-            reaction.kinetics.comment = comments
-            reactionList.append(reaction)
-            kinetics = ''
-            comments = ''
-            return reaction, kinetics, comments, dupReactionList, reactionList
-
     with open(path, 'r') as f:
     
         line0 = f.readline()
