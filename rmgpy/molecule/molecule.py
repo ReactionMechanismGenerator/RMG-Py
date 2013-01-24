@@ -196,7 +196,16 @@ class Atom(Vertex):
         Generate a deep copy of the current atom. Modifying the
         attributes of the copy will not affect the original.
         """
-        a = Atom(self.element, self.radicalElectrons, self.spinMultiplicity, self.charge, self.label)
+        cython.declare(a=Atom)
+        #a = Atom(self.element, self.radicalElectrons, self.spinMultiplicity, self.charge, self.label)
+        a = Atom.__new__(Atom)
+        a.edges = {}
+        a.resetConnectivityValues()
+        a.element = self.element
+        a.radicalElectrons = self.radicalElectrons
+        a.spinMultiplicity = self.spinMultiplicity
+        a.charge = self.charge
+        a.label = self.label
         a.atomType = self.atomType
         return a
 
@@ -354,7 +363,13 @@ class Bond(Edge):
         Generate a deep copy of the current bond. Modifying the
         attributes of the copy will not affect the original.
         """
-        return Bond(self.vertex1, self.vertex2, self.order)
+        #return Bond(self.vertex1, self.vertex2, self.order)
+        cython.declare(b=Bond)
+        b = Bond.__new__(Bond)
+        b.vertex1 = self.vertex1
+        b.vertex2 = self.vertex2
+        b.order = self.order
+        return b
 
     def isSingle(self):
         """
@@ -560,9 +575,35 @@ class Molecule(Graph):
         """
         Return the molecular formula for the molecule.
         """
-        import pybel
-        mol = pybel.Molecule(self.toOBMol())
-        return mol.formula
+        cython.declare(atom=Atom, symbol=str, elements=dict, keys=list, formula=str)
+        cython.declare(hasCarbon=cython.bint, hasHydrogen=cython.bint)
+        
+        # Count the number of each element in the molecule
+        hasCarbon = False; hasHydrogen = False
+        elements = {}
+        for atom in self.vertices:
+            symbol = atom.element.symbol
+            elements[symbol] = elements.get(symbol, 0) + 1
+        
+        # Use the Hill system to generate the formula
+        formula = ''
+        
+        # Carbon and hydrogen always come first if carbon is present
+        if hasCarbon:
+            formula += 'C{0:d}'.format(elements['C'])
+            del elements['C']
+            if hasHydrogen:
+                formula += 'H{0:d}'.format(elements['H'])
+                del elements['H']
+
+        # Other atoms are in alphabetical order
+        # (This includes hydrogen if carbon is not present)
+        keys = elements.keys()
+        keys.sort()
+        for key in keys:
+            formula += '{0}{1:d}'.format(key, elements[key])
+        
+        return formula
 
     def getMolecularWeight(self):
         """
