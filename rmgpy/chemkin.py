@@ -181,7 +181,7 @@ def readKineticsEntry(entry, speciesDict, Aunits, Eunits):
             # The implementation below assumes an integer between 0 and 9, inclusive
             stoichiometry = int(reactant[0])
             reactant = reactant[1:]               
-        if reactant == 'M':
+        if reactant.upper() == 'M':
             thirdBody = True
         elif reactant not in speciesDict:
             raise ChemkinError('Unexpected reactant "{0}" in reaction {1}.'.format(reactant, reaction))
@@ -239,13 +239,13 @@ def readKineticsEntry(entry, speciesDict, Aunits, Eunits):
     
         # Note that the subsequent lines could be in any order
         for line in lines[1:]:
-            
+            line = line.upper()
             tokens = line.split('/')
-            if 'DUP' in line or 'dup' in line:            
+            if 'DUP' in line:            
                 # Duplicate reaction
                 reaction.duplicate = True
             
-            elif 'LOW' in line or 'low' in line:
+            elif 'LOW' in line:
                 # Low-pressure-limit Arrhenius parameters
                 tokens = tokens[1].split()
                 arrheniusLow = Arrhenius(
@@ -255,7 +255,7 @@ def readKineticsEntry(entry, speciesDict, Aunits, Eunits):
                     T0 = (1,"K"),
                 )
             
-            elif 'TROE' in line or 'troe' in line:
+            elif 'TROE' in line:
                 # Troe falloff parameters
                 tokens = tokens[1].split()
                 alpha = float(tokens[0].strip())
@@ -273,7 +273,7 @@ def readKineticsEntry(entry, speciesDict, Aunits, Eunits):
                     T2 = (T2,"K") if T2 is not None else None,
                 )
             
-            elif 'CHEB' in line or 'cheb' in line:
+            elif 'CHEB' in line:
                 # Chebyshev parameters
                 if chebyshev is None:
                     chebyshev = Chebyshev()
@@ -300,7 +300,7 @@ def readKineticsEntry(entry, speciesDict, Aunits, Eunits):
                     tokens2 = tokens[1].split()
                     chebyshevCoeffs.extend([float(t.strip()) for t in tokens2])
                     
-            elif 'PLOG' in line or 'plog' in line:
+            elif 'PLOG' in line:
                 # Pressure-dependent Arrhenius parameters
                 if pdepArrhenius is None:
                     pdepArrhenius = []
@@ -314,9 +314,14 @@ def readKineticsEntry(entry, speciesDict, Aunits, Eunits):
 
             else:
                 # Assume a list of collider efficiencies
-                for collider, efficiency in zip(tokens[0::2], tokens[1::2]):
-                    efficiencies[speciesDict[collider.strip().upper()].molecule[0]] = float(efficiency.strip())
-    
+                try:
+                    for collider, efficiency in zip(tokens[0::2], tokens[1::2]):
+                        efficiencies[speciesDict[collider.strip().upper()].molecule[0]] = float(efficiency.strip())
+                except IndexError:
+                    error_msg = 'Could not read collider efficiencies for reaction: {0}.\n'.format(reaction)
+                    error_msg += 'The following line was parsed incorrectly:\n{0}'.format(line)
+                    raise ChemkinError(error_msg)
+
         # Decide which kinetics to keep and store them on the reaction object
         # Only one of these should be true at a time!
         if chebyshev is not None:
@@ -563,12 +568,13 @@ def loadChemkinFile(path, dictionaryPath=None):
             line = removeCommentFromLine(line0)[0]
             line = line.strip()
             tokens = line.split()
+            tokens_upper = line.upper().split()
             
-            if 'SPECIES' in line:
+            if 'SPECIES' in line.upper():
                 # List of species identifiers
-                index = tokens.index('SPECIES')
+                index = tokens_upper.index('SPECIES')
                 tokens = tokens[index+1:]
-                while 'END' not in tokens:
+                while 'END' not in tokens_upper:
                     line = f.readline()
                     # If the line contains only one species, and also contains
                     # a comment with only one token, assume that token is 
@@ -583,6 +589,7 @@ def loadChemkinFile(path, dictionaryPath=None):
                     line = removeCommentFromLine(line)[0]
                     line = line.strip()
                     tokens.extend(line.split())
+                    tokens_upper.extend(line.upper().split())
                 
                 for token in tokens:
                     token_upper = token.upper()
@@ -608,14 +615,14 @@ def loadChemkinFile(path, dictionaryPath=None):
                     else:
                         species = Species(label=label, molecule=[molecule])
                         speciesList.append(species)
-                        speciesDict[label] = species                            
+                        speciesDict[label.upper()] = species                            
                 
-            elif 'THERM' in line:
+            elif 'THERM' in line.upper():
                 # List of thermodynamics (hopefully one per species!)
                 line = f.readline()
                 thermo = ''
                 comments = ''
-                while line != '' and 'END' not in line:
+                while line != '' and 'END' not in line.upper():
                     line, comment = removeCommentFromLine(line)
                     if comment: comments += comment.strip().replace('\t',', ') + '\n'
                     if len(line) >= 80:
@@ -636,7 +643,7 @@ def loadChemkinFile(path, dictionaryPath=None):
                                 thermo = ''
                     line = f.readline()
                 
-            elif 'REACTIONS' in line:
+            elif 'REACTIONS' in line.upper():
                 # Reactions section
                 # Unread the line (we'll re-read it in readReactionBlock())
                 f.seek(-len(line0), 1)
