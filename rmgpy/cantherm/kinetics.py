@@ -142,8 +142,8 @@ class KineticsJob:
             klist2[i] = self.reaction.kinetics.getRateCoefficient(Tlist[i])
 
         order = len(self.reaction.reactants)
-        klist *= 1e6 * (order-1)
-        klist2 *= 1e6 * (order-1)
+        klist *= 1e6 ** (order-1)
+        klist2 *= 1e6 ** (order-1)
 
         pylab.semilogy(1000.0 / Tlist, klist, 'ok')
         pylab.semilogy(1000.0 / Tlist, klist2, '-k')
