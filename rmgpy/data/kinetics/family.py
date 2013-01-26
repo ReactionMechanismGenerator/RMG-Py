@@ -759,42 +759,14 @@ class KineticsFamily(Database):
         Return ``True`` if a rate rule with the given `template` currently 
         exists, or ``False`` otherwise.
         """
-        try:
-            return self.getRateRule(template) is not None
-        except ValueError:
-            return False
+        return self.rules.hasRule(template)
 
     def getRateRule(self, template):
         """
         Return the rate rule with the given `template`. Raises a 
         :class:`ValueError` if no corresponding entry exists.
         """
-        entries = []
-        templateLabels = ';'.join([group.label for group in template])
-        for entry in self.rules.entries.values():
-            if templateLabels == entry.label:
-                entries.append(entry)
-        
-        if self.label.lower() == 'r_recombination' and template[0] != template[1]:
-            template.reverse()
-            templateLabels = ';'.join([group.label for group in template])
-            for entry in self.rules.entries.values():
-                if templateLabels == entry.label:
-                    entries.append(entry)
-            template.reverse()
-            
-        if len(entries) == 1:
-            return entries[0]
-        elif len(entries) > 1:
-            if any([entry.rank > 0 for entry in entries]):
-                entries = [entry for entry in entries if entry.rank > 0]
-                entries.sort(key=lambda x: (x.rank, x.index))
-                return entries[0]
-            else:
-                entries.sort(key=lambda x: x.index)
-                return entries[0]
-        else:
-            raise ValueError('No entry for template {0}.'.format(template))
+        return self.rules.getRule(template)
 
     def addKineticsRulesFromTrainingSet(self, thermoDatabase=None):
         """
@@ -907,67 +879,7 @@ class KineticsFamily(Database):
         if rootTemplate is None:
             rootTemplate = self.getRootTemplate()
             alreadyDone = {}
-        
-        rootLabel = ';'.join([g.label for g in rootTemplate])
-        
-        if rootLabel in alreadyDone:
-            return alreadyDone[rootLabel]
-        
-        if self.hasRateRule(rootTemplate):
-            # We already have a rate rule for this exact template
-            entry = self.getRateRule(rootTemplate)
-            if entry.rank > 0:
-                # If the entry has rank of zero, then we have so little faith
-                # in it that we'd rather use an averaged value if possible
-                # Since this entry does not have a rank of zero, we keep its
-                # value
-                alreadyDone[rootLabel] = entry.data
-                return entry.data
-        
-        # Recursively descend to the child nodes
-        childrenList = [[group] for group in rootTemplate]
-        for group in childrenList:
-            parent = group.pop(0)
-            if len(parent.children) > 0:
-                group.extend(parent.children)
-            else:
-                group.append(parent)
-                
-        childrenList = getAllCombinations(childrenList)
-        kineticsList = []
-        for template in childrenList:
-            label = ';'.join([g.label for g in template])
-            if template == rootTemplate: 
-                continue
-            
-            if label in alreadyDone:
-                kinetics = alreadyDone[label]
-            else:
-                kinetics = self.fillKineticsRulesByAveragingUp(template, alreadyDone)
-            
-            if kinetics is not None:
-                kineticsList.append([kinetics, template])
-        
-        if len(kineticsList) > 0:
-            
-            # We found one or more results! Let's average them together
-            kinetics = self.__getAverageKinetics([k for k, t in kineticsList])
-            kinetics.comment += '(Average of {0})'.format(
-                ' + '.join([k.comment if k.comment != '' else ';'.join([g.label for g in t]) for k, t in kineticsList]),
-            )
-            entry = Entry(
-                index = 0,
-                label = rootLabel,
-                item = rootTemplate,
-                data = kinetics,
-                rank = 10, # Indicates this is an averaged estimate
-            )
-            self.rules.entries[entry.label] = entry
-            alreadyDone[rootLabel] = entry.data
-            return entry.data
-            
-        alreadyDone[rootLabel] = None
-        return None
+        self.rules.fillRulesByAveragingUp(rootTemplate, alreadyDone)
             
     def reactantMatch(self, reactant, templateReactant):
         """
@@ -1760,97 +1672,11 @@ class KineticsFamily(Database):
             #raise UndeterminableKineticsError('Cannot determine group additivity kinetics estimate for template "{0}".'.format(','.join([e.label for e in template])))
             return None
         # Now add in more specific corrections if possible
-        return self.groups.estimateKineticsUsingGroupAdditivity(template, kinetics, degeneracy)
-    
-    def __getAverageKinetics(self, kineticsList):
-        # Although computing via logA is slower, it is necessary because
-        # otherwise you could overflow if you are averaging too many values
-        logA = 0.0; n = 0.0; E0 = 0.0; alpha = 0.0
-        count = len(kineticsList)
-        for kinetics in kineticsList:
-            logA += math.log10(kinetics.A.value_si)
-            n += kinetics.n.value_si
-            alpha += kinetics.alpha.value_si
-            E0 += kinetics.E0.value_si
-        logA /= count
-        n /= count
-        alpha /= count
-        E0 /= count
-        Aunits = kineticsList[0].A.units
-        if Aunits == 'cm^3/(mol*s)' or 'cm^3/(molecule*s)' or 'm^3/(molecule*s)':
-            Aunits = 'm^3/(mol*s)'
-        elif Aunits == 'cm^6/(mol^2*s)' or 'cm^6/(molecule^2*s)' or 'm^6/(molecule^2*s)':
-            Aunits = 'm^6/(mol^2*s)'
-        elif Aunits == 's^-1' or Aunits == 'm^3/(mol*s)' or Aunits == 'm^6/(mol^2*s)':
-            pass
-        else:
-            raise Exception('Invalid units {0} for averaging kinetics.'.format(Aunits))
-        averagedKinetics = ArrheniusEP(
-            A = (10**logA,Aunits),
-            n = n,
-            alpha = alpha,
-            E0 = (E0*0.001,"kJ/mol"),
-        )
-        return averagedKinetics
-        
+        return self.groups.estimateKineticsUsingGroupAdditivity(template, kinetics, degeneracy)        
         
     def estimateKineticsUsingRateRules(self, template, degeneracy=1):
         """
         Determine the appropriate kinetics for a reaction with the given
         `template` using rate rules.
         """
-        def getTemplateLabel(template):
-            # Get string format of the template in the form "(leaf1,leaf2)"
-            return '({0})'.format(','.join([g.label for g in template]))
-    
-        templateList = [template]
-        while len(templateList) > 0:
-            
-            kineticsList = []
-            for t in templateList:
-                if self.hasRateRule(t):
-                    entry = self.getRateRule(t)
-                    kinetics = deepcopy(entry.data)
-                    kineticsList.append([kinetics, t])
-            
-            if len(kineticsList) > 0:                 
-                originalLeaves = getTemplateLabel(template)
-                                
-                if len(kineticsList) == 1:
-                    kinetics, t = kineticsList[0]
-                    # Check whether the exact rate rule for the original template (most specific
-                    # leaves) were found or not.
-                    matchedLeaves = getTemplateLabel(t)
-                    if matchedLeaves == originalLeaves:
-                        kinetics.comment += 'Exact match found' 
-                    else:
-                    # Using a more general node to estimate original template
-                        kinetics.comment += 'Estimated using template ' + matchedLeaves
-                else:
-                    # We found one or more results! Let's average them together
-                    kinetics = self.__getAverageKinetics([k for k, t in kineticsList])
-                    kinetics.comment += 'Estimated using average of templates {0}'.format(
-                        ' + '.join([getTemplateLabel(t) for k, t in kineticsList]),
-                    )
-                
-                kinetics.comment +=  ' for rate rule ' + originalLeaves
-                kinetics.A.value_si *= degeneracy
-
-                return kinetics
-            
-            else:
-                # No results found
-                templateList0 = templateList
-                templateList = []
-                for template0 in templateList0:
-                    for index in range(len(template0)):
-                        if not template0[index].parent:
-                            # We're at the top-level node in this subtreee
-                            continue
-                        t = template0[:]
-                        t[index] = t[index].parent
-                        if t not in templateList:
-                            templateList.append(t)
-                
-        # If we're here then we couldn't estimate any kinetics, which is an exception
-        raise Exception('Unable to determine kinetics for reaction with template {0}.'.format(template))
+        return self.rules.estimateKinetics(template, degeneracy)
