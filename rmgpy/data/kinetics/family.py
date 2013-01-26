@@ -1584,32 +1584,50 @@ class KineticsFamily(Database):
         direction.
         """
         kineticsList = []
-        if depository.label.endswith('rules'):
-            # The depository contains groups
-            entries = depository.entries.values()
-            for entry in entries:
-                entryLabels = entry.label.split(';')
-                templateLabels = [group.label for group in template]
-                if all([group in entryLabels for group in templateLabels]) and all([group in templateLabels for group in entryLabels]):
-                    kineticsList.append([deepcopy(entry.data), entry, True])
-            for kinetics, entry, isForward in kineticsList:
-                if kinetics is not None:
-                    # The rules are defined on a per-site basis, so we need to include the degeneracy manually
-                    assert isinstance(kinetics, ArrheniusEP)
-                    kinetics.A.value_si *= degeneracy
-                    kinetics.comment += "Matched rule {0} {1} in {2}\n".format(entry.index, entry.label, depository.label)
-                    kinetics.comment += "Multiplied by reaction path degeneracy {0}".format(degeneracy)
-        else:
-            # The depository contains real reactions
-            entries = depository.entries.values()
-            for entry in entries:
-                if reaction.isIsomorphic(entry.item):
-                    kineticsList.append([deepcopy(entry.data), entry, reaction.isIsomorphic(entry.item, eitherDirection=False)])
-            for kinetics, entry, isForward in kineticsList:
-                if kinetics is not None:
-                    kinetics.comment += "Matched reaction {0} {1} in {2}".format(entry.index, entry.label, depository.label)
+        entries = depository.entries.values()
+        for entry in entries:
+            if reaction.isIsomorphic(entry.item):
+                kineticsList.append([deepcopy(entry.data), entry, reaction.isIsomorphic(entry.item, eitherDirection=False)])
+        for kinetics, entry, isForward in kineticsList:
+            if kinetics is not None:
+                kinetics.comment += "Matched reaction {0} {1} in {2}".format(entry.index, entry.label, depository.label)
         return kineticsList
     
+    def getKineticsFromRules(self, template, degeneracy):
+        """
+        Search the given `depository` in this kinetics family for kinetics
+        for the given `reaction`. Returns a list of all of the matching 
+        kinetics, the corresponding entries, and ``True`` if the kinetics
+        match the forward direction or ``False`` if they match the reverse
+        direction.
+        """
+        kineticsList = []
+        
+        entries = self.rules.getAllRules(template)
+        for entry in entries:
+            kineticsList.append([deepcopy(entry.data), entry, True])
+        
+        for kinetics, entry, isForward in kineticsList:
+            if kinetics is not None:
+                # The rules are defined on a per-site basis, so we need to include the degeneracy manually
+                assert isinstance(kinetics, ArrheniusEP)
+                kinetics.A.value_si *= degeneracy
+                kinetics.comment += "Matched rule {0} {1} in {2}\n".format(entry.index, entry.label, self.rules.label)
+                kinetics.comment += "Multiplied by reaction path degeneracy {0}".format(degeneracy)
+        
+        return kineticsList
+    
+    def __selectBestKinetics(self, kineticsList):
+        """
+        For a given set of kinetics `kineticsList`, return the kinetics deemed
+        to be the "best". This is determined to be the one with the lowest
+        non-zero rank that occurs first.
+        """
+        if any([x[1].rank == 0 for x in kineticsList]) and not all([x[1].rank == 0 for x in kineticsList]):
+            kineticsList = [x for x in kineticsList if x[1].rank != 0]
+        kineticsList.sort(key=lambda x: (x[1].rank, x[1].index))
+        return kineticsList[0]
+        
     def getKinetics(self, reaction, template, degeneracy=1, estimator='', returnAllKinetics=True):
         """
         Return the kinetics for the given `reaction` by searching the various
@@ -1624,23 +1642,26 @@ class KineticsFamily(Database):
         kineticsList = []
         
         depositories = self.depositories[:]
-        depositories.append(self.rules)
         
         # Check the various depositories for kinetics
         for depository in depositories:
             kineticsList0 = self.getKineticsFromDepository(depository, reaction, template, degeneracy)
             if len(kineticsList0) > 0 and not returnAllKinetics:
-                # If we have multiple matching rules but only want one result,
-                # choose the one with the lowest rank that occurs first
-                if any([x[1].rank == 0 for x in kineticsList0]) and not all([x[1].rank == 0 for x in kineticsList0]):
-                    kineticsList0 = [x for x in kineticsList0 if x[1].rank != 0]
-                kineticsList0.sort(key=lambda x: (x[1].rank, x[1].index))
-                kinetics, entry, isForward = kineticsList0[0]
-                return kinetics, depository, entry, isForward
+                kinetics, entry, isForward = self.__selectBestKinetics(kineticsList0)
+                kinetics, depository, entry, isForward
             else:
                 for kinetics, entry, isForward in kineticsList0:
                     kineticsList.append([kinetics, depository, entry, isForward])
-                    
+        
+        # Check the rate rules for kinetics
+        kineticsList0 = self.getKineticsFromRules(template, degeneracy)
+        if len(kineticsList0) > 0 and not returnAllKinetics:
+            kinetics, entry, isForward = self.__selectBestKinetics(kineticsList0)
+            return kinetics, self.rules, entry, isForward
+        else:
+            for kinetics, entry, isForward in kineticsList0:
+                kineticsList.append([kinetics, self.rules, entry, isForward])
+        
         # If estimator type of rate rules or group additivity is given, retrieve the kinetics. 
         if estimator:        
             kinetics = self.getKineticsForTemplate(template, degeneracy, method=estimator)
