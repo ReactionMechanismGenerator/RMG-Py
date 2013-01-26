@@ -51,7 +51,7 @@ from rmgpy.kinetics import Arrhenius, ArrheniusEP, ThirdBody, Lindemann, Troe, \
 from rmgpy.molecule import Bond, GroupBond, Group
 from rmgpy.species import Species
 
-from .common import KineticsError, saveEntry
+from .common import KineticsError, UndeterminableKineticsError, saveEntry
 
 ################################################################################
 

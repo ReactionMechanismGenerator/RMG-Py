@@ -34,7 +34,7 @@ in this subpackage.
 """
 
 from rmgpy.data.base import DatabaseError, LogicNode
-from rmgpy.reaction import Reaction
+from rmgpy.reaction import Reaction, ReactionError
 from rmgpy.molecule import Molecule, Group
 from rmgpy.species import Species
 
@@ -90,6 +90,15 @@ class KineticsError(Exception):
     An exception for problems with kinetics. Pass a string describing the problem.
     """
     pass
+
+class UndeterminableKineticsError(ReactionError):
+    """
+    An exception raised when attempts to estimate appropriate kinetic parameters
+    for a chemical reaction are unsuccessful.
+    """
+    def __init__(self, reaction, message=''):
+        new_message = 'Kinetics could not be determined. '+message
+        ReactionError.__init__(self,reaction,new_message)
 
 ################################################################################
 

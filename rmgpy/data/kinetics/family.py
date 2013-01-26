@@ -49,20 +49,11 @@ from rmgpy.kinetics import Arrhenius, ArrheniusEP, ThirdBody, Lindemann, Troe, \
 from rmgpy.molecule import Bond, GroupBond, Group
 from rmgpy.species import Species
 
-from .common import KineticsError, saveEntry
+from .common import KineticsError, UndeterminableKineticsError, saveEntry
 from .depository import KineticsDepository
 from .groups import KineticsGroups
 
 ################################################################################
-
-class UndeterminableKineticsError(ReactionError):
-    """
-    An exception raised when attempts to estimate appropriate kinetic parameters
-    for a chemical reaction are unsuccessful.
-    """
-    def __init__(self, reaction, message=''):
-        new_message = 'Kinetics could not be determined. '+message
-        ReactionError.__init__(self,reaction,new_message)
 
 class InvalidActionError(Exception):
     """
