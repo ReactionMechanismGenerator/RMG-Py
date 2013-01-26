@@ -52,6 +52,7 @@ from rmgpy.species import Species
 from .common import KineticsError, UndeterminableKineticsError, saveEntry
 from .depository import KineticsDepository
 from .groups import KineticsGroups
+from .rules import KineticsRules
 
 ################################################################################
 
@@ -296,7 +297,7 @@ class KineticsFamily(Database):
     `ownReverse`        `Boolean`                       It's its own reverse?
     ------------------- ------------------------------- ------------------------
     `groups`            :class:`KineticsGroups`         The set of kinetics group additivity values
-    `rules`             :class:`KineticsDepository`     The depository of kinetics rate rules from RMG-Java
+    `rules`             :class:`KineticsRules`          The set of kinetics rate rules from RMG-Java
     `depositories`      ``dict``                        A set of additional depositories used to store kinetics data from various sources
     =================== =============================== ========================
 
@@ -391,11 +392,11 @@ class KineticsFamily(Database):
         for index, entry in enumerate(entries):
             entry.index = index + 1
             
-        self.rules = KineticsDepository(label='{0}/rules'.format(self.label),
+        self.rules = KineticsRules(label='{0}/rules'.format(self.label),
                                         recommended=True)
         self.rules.name = self.rules.label
         try:
-            self.rules.loadOldRateRules(path, self.groups, numLabels=max(len(self.forwardTemplate.reactants), len(self.groups.top)))
+            self.rules.loadOld(path, self.groups, numLabels=max(len(self.forwardTemplate.reactants), len(self.groups.top)))
         except Exception:
             logging.error('Error while reading old kinetics family rules from {0!r}.'.format(path))
             raise
@@ -460,7 +461,7 @@ class KineticsFamily(Database):
         if self.forbidden is not None:
             self.forbidden.saveOld(os.path.join(path, 'forbiddenGroups.txt'))
             
-        self.rules.saveOldRateRules(path, self)
+        self.rules.saveOld(path, self)
             
     def saveOldTemplate(self, path):
         """
@@ -529,7 +530,7 @@ class KineticsFamily(Database):
         
         self.groups.numReactants = len(self.forwardTemplate.reactants)
             
-        self.rules = KineticsDepository(label='{0}/rules'.format(self.label))
+        self.rules = KineticsRules(label='{0}/rules'.format(self.label))
         logging.debug("Loading kinetics family rules from {0}".format(os.path.join(path, 'rules.py')))
         self.rules.load(os.path.join(path, 'rules.py'), local_context, global_context)
         
