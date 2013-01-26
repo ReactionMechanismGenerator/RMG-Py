@@ -121,7 +121,10 @@ class KineticsRules(Database):
             rank = rank,
             history = history or [],
         )
-        self.entries['{0:d}:{1}'.format(index,label)] = entry
+        try:
+            self.entries[label].append(entry)
+        except KeyError:
+            self.entries[label] = [entry]
         return entry
 
     def saveEntry(self, f, entry):
@@ -205,7 +208,7 @@ class KineticsRules(Database):
                 raise DatabaseError('Unexpected data {0!r} for entry {1!s}.'.format(data, entry))
             reactants = [groups.entries[l].item for l in label.split(';')]
             item = Reaction(reactants=reactants, products=[])
-            self.entries['{0:d}:{1}'.format(index,label)] = Entry(
+            entry = Entry(
                 index = index,
                 label = label,
                 item = item,
@@ -213,6 +216,10 @@ class KineticsRules(Database):
                 rank = rank,
                 shortDesc = shortDesc
             )
+            try:
+                self.entries[label].append(entry)
+            except KeyError:
+                self.entries[label] = [entry]
         self.__loadOldComments(path)
     
     def __loadOldComments(self, path):
@@ -246,6 +253,7 @@ class KineticsRules(Database):
         f.close()
         
         # Transfer the comments to the longDesc attribute of the associated entry
+        entries = self.getEntries()
         unused = []
         for index, longDesc in comments.iteritems():
             try:
@@ -254,7 +262,7 @@ class KineticsRules(Database):
                 unused.append(index)
                 
             if isinstance(index, int):
-                for entry in self.entries.values():
+                for entry in entries:
                     if entry.index == index:
                         entry.longDesc = longDesc
                         break
@@ -284,8 +292,7 @@ class KineticsRules(Database):
         else:
             raise ValueError('Unable to determine preexponential units for old reaction family "{0}".'.format(self.label))
 
-        entries = self.entries.values()
-        entries.sort(key=lambda x: x.index)
+        entries = self.getEntries()
         
         flib = codecs.open(os.path.join(path, 'rateLibrary.txt'), 'w', 'utf-8')
         flib.write('// The format for the data in this rate library\n')
@@ -335,6 +342,23 @@ class KineticsRules(Database):
         flib.close()
         fcom.close()
 
+    def getEntries(self):
+        """
+        Return a list of all of the entries in the rate rules database,
+        sorted by index.
+        """
+        entries = []
+        for e in self.entries.values(): entries.extend(e)
+        entries.sort(key=lambda x: x.index)
+        return entries
+
+    def getEntriesToSave(self):
+        """
+        Return a sorted list of all of the entries in the rate rules database
+        to save.
+        """
+        return self.getEntries()
+
     def hasRule(self, template):
         """
         Return ``True`` if a rate rule with the given `template` currently 
@@ -350,19 +374,7 @@ class KineticsRules(Database):
         Return the rate rule with the given `template`. Raises a 
         :class:`ValueError` if no corresponding entry exists.
         """
-        entries = []
-        templateLabels = ';'.join([group.label for group in template])
-        for entry in self.entries.values():
-            if templateLabels == entry.label:
-                entries.append(entry)
-        
-        if self.label.lower() == 'r_recombination' and template[0] != template[1]:
-            template.reverse()
-            templateLabels = ';'.join([group.label for group in template])
-            for entry in self.entries.values():
-                if templateLabels == entry.label:
-                    entries.append(entry)
-            template.reverse()
+        entries = self.getAllRules(template)
             
         if len(entries) == 1:
             return entries[0]
@@ -376,6 +388,29 @@ class KineticsRules(Database):
                 return entries[0]
         else:
             raise ValueError('No entry for template {0}.'.format(template))
+
+    def getAllRules(self, template):
+        """
+        Return all of the exact rate rules with the given `template`. Raises a 
+        :class:`ValueError` if no corresponding entry exists.
+        """
+        entries = []
+        templateLabels = ';'.join([group.label for group in template])
+        try:
+            entries.extend(self.entries[templateLabels])
+        except KeyError:
+            pass
+        
+        if self.label.lower() == 'r_recombination' and template[0] != template[1]:
+            template.reverse()
+            templateLabels = ';'.join([group.label for group in template])
+            try:
+                entries.extend(self.entries[templateLabels])
+            except KeyError:
+                pass
+            template.reverse()
+        
+        return entries
 
     def fillRulesByAveragingUp(self, rootTemplate, alreadyDone):
         """
@@ -439,7 +474,7 @@ class KineticsRules(Database):
                 data = kinetics,
                 rank = 10, # Indicates this is an averaged estimate
             )
-            self.entries[entry.label] = entry
+            self.entries[entry.label] = [entry]
             alreadyDone[rootLabel] = entry.data
             return entry.data
             
@@ -461,9 +496,9 @@ class KineticsRules(Database):
         alpha /= count
         E0 /= count
         Aunits = kineticsList[0].A.units
-        if Aunits == 'cm^3/(mol*s)' or 'cm^3/(molecule*s)' or 'm^3/(molecule*s)':
+        if Aunits == 'cm^3/(mol*s)' or Aunits == 'cm^3/(molecule*s)' or Aunits == 'm^3/(molecule*s)':
             Aunits = 'm^3/(mol*s)'
-        elif Aunits == 'cm^6/(mol^2*s)' or 'cm^6/(molecule^2*s)' or 'm^6/(molecule^2*s)':
+        elif Aunits == 'cm^6/(mol^2*s)' or Aunits == 'cm^6/(molecule^2*s)' or Aunits == 'm^6/(molecule^2*s)':
             Aunits = 'm^6/(mol^2*s)'
         elif Aunits == 's^-1' or Aunits == 'm^3/(mol*s)' or Aunits == 'm^6/(mol^2*s)':
             pass

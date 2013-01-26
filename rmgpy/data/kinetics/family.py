@@ -779,7 +779,7 @@ class KineticsFamily(Database):
         else:
             raise Exception('Could not find training depository in family {0}.'.format(self.label))
         
-        index = max([e.index for e in self.rules.entries.values()] or [0]) + 1
+        index = max([e.index for e in self.rules.getEntries()] or [0]) + 1
         
         entries = depository.entries.values()
         entries.sort(key=lambda x: x.index)
@@ -812,7 +812,10 @@ class KineticsFamily(Database):
                 rank = 3,
             )
             new_entry.data.A.value_si /= entry.item.degeneracy
-            self.rules.entries[index] = new_entry
+            try:
+                self.entries[new_entry.label].append(new_entry)
+            except KeyError:
+                self.entries[new_entry.label] = [new_entry]
             index += 1
         
         # Process the entries that are stored in the reverse direction of the
@@ -856,7 +859,10 @@ class KineticsFamily(Database):
                 rank = 3,
             )
             new_entry.data.A.value_si /= item.degeneracy
-            self.rules.entries[index] = new_entry
+            try:
+                self.entries[new_entry.label].append(new_entry)
+            except KeyError:
+                self.entries[new_entry.label] = [new_entry]
             index += 1
     
     def getRootTemplate(self):
