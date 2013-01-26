@@ -364,15 +364,12 @@ class KineticsRules(Database):
         Return ``True`` if a rate rule with the given `template` currently 
         exists, or ``False`` otherwise.
         """
-        try:
-            return self.getRule(template) is not None
-        except ValueError:
-            return False
+        return self.getRule(template) is not None
 
     def getRule(self, template):
         """
-        Return the rate rule with the given `template`. Raises a 
-        :class:`ValueError` if no corresponding entry exists.
+        Return the exact rate rule with the given `template`, or ``None`` if no
+        corresponding entry exists.
         """
         entries = self.getAllRules(template)
             
@@ -387,7 +384,7 @@ class KineticsRules(Database):
                 entries.sort(key=lambda x: x.index)
                 return entries[0]
         else:
-            raise ValueError('No entry for template {0}.'.format(template))
+            return None
 
     def getAllRules(self, template):
         """
@@ -422,11 +419,7 @@ class KineticsRules(Database):
             return alreadyDone[rootLabel]
         
         # See if we already have a rate rule for this exact template 
-        entry = None
-        try:
-            entry = self.getRule(rootTemplate)
-        except ValueError:
-            pass
+        entry = self.getRule(rootTemplate)
         if entry is not None and entry.rank > 0:
             # We already have a rate rule for this exact template
             # If the entry has rank of zero, then we have so little faith
@@ -526,10 +519,8 @@ class KineticsRules(Database):
             
             kineticsList = []
             for t in templateList:
-                try:
-                    entry = self.getRule(t)
-                except ValueError:
-                    continue
+                entry = self.getRule(t)
+                if entry is None: continue
                 kinetics = deepcopy(entry.data)
                 kineticsList.append([kinetics, t])
             

@@ -766,7 +766,10 @@ class KineticsFamily(Database):
         Return the rate rule with the given `template`. Raises a 
         :class:`ValueError` if no corresponding entry exists.
         """
-        return self.rules.getRule(template)
+        entry = self.rules.getRule(template)
+        if entry is None:
+            raise ValueError('No entry for template {0}.'.format(template))
+        return entry
 
     def addKineticsRulesFromTrainingSet(self, thermoDatabase=None):
         """
