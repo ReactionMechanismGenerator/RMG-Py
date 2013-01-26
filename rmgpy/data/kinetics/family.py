@@ -49,19 +49,12 @@ from rmgpy.kinetics import Arrhenius, ArrheniusEP, ThirdBody, Lindemann, Troe, \
 from rmgpy.molecule import Bond, GroupBond, Group
 from rmgpy.species import Species
 
-from .common import KineticsError, saveEntry
+from .common import KineticsError, UndeterminableKineticsError, saveEntry
 from .depository import KineticsDepository
+from .groups import KineticsGroups
+from .rules import KineticsRules
 
 ################################################################################
-
-class UndeterminableKineticsError(ReactionError):
-    """
-    An exception raised when attempts to estimate appropriate kinetic parameters
-    for a chemical reaction are unsuccessful.
-    """
-    def __init__(self, reaction, message=''):
-        new_message = 'Kinetics could not be determined. '+message
-        ReactionError.__init__(self,reaction,new_message)
 
 class InvalidActionError(Exception):
     """
@@ -286,220 +279,6 @@ class ReactionRecipe:
 
 ################################################################################
 
-class KineticsGroups(Database):
-    """
-    A class for working with an RMG kinetics family group additivity values. 
-    """
-
-    def __init__(self,
-                 entries=None,
-                 top=None,
-                 label='',
-                 name='',
-                 shortDesc='',
-                 longDesc='',
-                 forwardTemplate=None,
-                 forwardRecipe=None,
-                 reverseTemplate=None,
-                 reverseRecipe=None,
-                 forbidden=None
-                 ):
-        Database.__init__(self, entries, top, label, name, shortDesc, longDesc)
-        self.numReactants = 0
-        
-    def __repr__(self):
-        return '<KineticsGroups "{0}">'.format(self.label)
-
-    def loadEntry(self, index, label, group, kinetics, reference=None, referenceType='', shortDesc='', longDesc='', history=None):
-        if group[0:3].upper() == 'OR{' or group[0:4].upper() == 'AND{' or group[0:7].upper() == 'NOT OR{' or group[0:8].upper() == 'NOT AND{':
-            item = makeLogicNode(group)
-        else:
-            item = Group().fromAdjacencyList(group)
-        self.entries[label] = Entry(
-            index = index,
-            label = label,
-            item = item,
-            data = kinetics,
-            reference = reference,
-            referenceType = referenceType,
-            shortDesc = shortDesc,
-            longDesc = longDesc.strip(),
-            history = history or [],
-        )
-
-    def getReactionTemplate(self, reaction):
-        """
-        For a given `reaction` with properly-labeled :class:`Molecule` objects
-        as the reactants, determine the most specific nodes in the tree that
-        describe the reaction.
-        """
-
-        # Get forward reaction template and remove any duplicates
-        forwardTemplate = self.top[:]
-
-        temporary = []
-        symmetricTree = False
-        for entry in forwardTemplate:
-            if entry not in temporary:
-                temporary.append(entry)
-            else:
-                # duplicate node found at top of tree
-                # eg. R_recombination: ['Y_rad', 'Y_rad']
-                assert len(forwardTemplate)==2 , 'Can currently only do symmetric trees with nothing else in them'
-                symmetricTree = True
-        forwardTemplate = temporary
-
-        # Descend reactant trees as far as possible
-        template = []
-        for entry in forwardTemplate:
-            # entry is a top-level node that should be matched
-            group = entry.item
-
-            # To sort out "union" groups, descend to the first child that's not a logical node
-            # ...but this child may not match the structure.
-            # eg. an R3 ring node will not match an R4 ring structure.
-            # (but at least the first such child will contain fewest labels - we hope)
-            if isinstance(entry.item, LogicNode):
-                group = entry.item.getPossibleStructures(self.entries)[0]
-
-            atomList = group.getLabeledAtoms() # list of atom labels in highest non-union node
-
-            for reactant in reaction.reactants:
-                if isinstance(reactant, Species):
-                    reactant = reactant.molecule[0]
-                # Match labeled atoms
-                # Check this reactant has each of the atom labels in this group
-                if not all([reactant.containsLabeledAtom(label) for label in atomList]):
-                    continue # don't try to match this structure - the atoms aren't there!
-                # Match structures
-                atoms = reactant.getLabeledAtoms()
-                matched_node = self.descendTree(reactant, atoms, root=entry)
-                if matched_node is not None:
-                    template.append(matched_node)
-                #else:
-                #    logging.warning("Couldn't find match for {0} in {1}".format(entry,atomList))
-                #    logging.warning(reactant.toAdjacencyList())
-
-        # Get fresh templates (with duplicate nodes back in)
-        forwardTemplate = self.top[:]
-        if self.label.lower().startswith('r_recombination'):
-            forwardTemplate.append(forwardTemplate[0])
-
-        # Check that we were able to match the template.
-        # template is a list of the actual matched nodes
-        # forwardTemplate is a list of the top level nodes that should be matched
-        if len(template) != len(forwardTemplate):
-            #logging.warning('Unable to find matching template for reaction {0} in reaction family {1}'.format(str(reaction), str(self)) )
-            #logging.warning(" Trying to match " + str(forwardTemplate))
-            #logging.warning(" Matched "+str(template))
-            #print str(self), template, forwardTemplate
-            #for reactant in reaction.reactants:
-            #    print reactant.toAdjacencyList() + '\n'
-            #for product in reaction.products:
-            #    print product.toAdjacencyList() + '\n'
-            raise UndeterminableKineticsError(reaction)
-
-        return template
-
-    def estimateKineticsUsingGroupAdditivity(self, template, referenceKinetics, degeneracy=1):
-        """
-        Determine the appropriate kinetics for a reaction with the given
-        `template` using group additivity.
-        """
-
-        # Start with the generic kinetics of the top-level nodes
-        # Make a copy so we don't modify the original
-        kinetics = deepcopy(referenceKinetics)
-        
-        # Now add in more specific corrections if possible
-        for node in template:
-            entry = node
-            comment_line = "Matched node "
-            while entry.data is None and entry not in self.top:
-                # Keep climbing tree until you find a (non-top) node with data.
-                comment_line += "{0} >> ".format(entry.label)
-                entry = entry.parent
-            if entry.data is not None and entry not in self.top:
-                kinetics = self.__multiplyKineticsData(kinetics, entry.data)
-                comment_line += "{0} ({1})".format(entry.label, entry.longDesc.split('\n')[0])
-            elif entry in self.top:
-                comment_line += "{0} (Top node)".format(entry.label)
-            kinetics.comment += comment_line + '\n'
-
-        # Also include reaction-path degeneracy
-        if isinstance(kinetics, KineticsData):
-            kinetics.kdata.value_si *= degeneracy
-        elif isinstance(kinetics, Arrhenius):
-            kinetics.A.value_si *= degeneracy
-        elif kinetics is not None:
-            raise KineticsError('Unexpected kinetics type "{0}" encountered while generating kinetics from group values.'.format(kinetics.__class__))
-        kinetics.comment += "Multiplied by reaction path degeneracy {0}".format(degeneracy)
-        
-        return kinetics
-
-    def __multiplyKineticsData(self, kinetics1, kinetics2):
-        """
-        Multiply two kinetics objects `kinetics1` and `kinetics2` of the same
-        class together, returning their product as a new kinetics object of 
-        that class. Currently this only works for :class:`KineticsData` or
-        :class:`Arrhenius` objects.
-        """
-        if isinstance(kinetics1, KineticsData) and isinstance(kinetics2, KineticsData):
-            if len(kinetics1.Tdata.value_si) != len(kinetics2.Tdata.value_si) or any([T1 != T2 for T1, T2 in zip(kinetics1.Tdata.value_si, kinetics2.Tdata.value_si)]):
-                raise KineticsError('Cannot add these KineticsData objects due to their having different temperature points.')
-            kinetics = KineticsData(
-                Tdata = (kinetics1.Tdata.value, kinetics2.Tdata.units),
-                kdata = (kinetics1.kdata.value * kinetics2.kdata.value, kinetics1.kdata.units),
-            )
-        elif isinstance(kinetics1, Arrhenius) and isinstance(kinetics2, Arrhenius):
-            assert kinetics1.A.units == kinetics2.A.units
-            assert kinetics1.Ea.units == kinetics2.Ea.units
-            assert kinetics1.T0.units == kinetics2.T0.units
-            assert kinetics1.T0.value == kinetics2.T0.value
-            kinetics = Arrhenius(
-                A = (kinetics1.A.value * kinetics2.A.value, kinetics1.A.units),
-                n = (kinetics1.n.value + kinetics2.n.value, kinetics1.n.units),
-                Ea = (kinetics1.Ea.value + kinetics2.Ea.value, kinetics1.Ea.units),
-                T0 = (kinetics1.T0.value, kinetics1.T0.units),
-            )
-        else:
-            raise KineticsError('Unable to multiply kinetics types "{0}" and "{1}".'.format(kinetics1.__class__, kinetics2.__class__))
-        
-        if kinetics1.Tmin is not None and kinetics2.Tmin is not None:
-            kinetics.Tmin = kinetics1.Tmin if kinetics1.Tmin.value_si > kinetics2.Tmin.value_si else kinetics2.Tmin
-        elif kinetics1.Tmin is not None and kinetics2.Tmin is None:
-            kinetics.Tmin = kinetics1.Tmin
-        elif kinetics1.Tmin is None and kinetics2.Tmin is not None:
-            kinetics.Tmin = kinetics2.Tmin
-        
-        if kinetics1.Tmax is not None and kinetics2.Tmax is not None:
-            kinetics.Tmax = kinetics1.Tmax if kinetics1.Tmax.value_si < kinetics2.Tmax.value_si else kinetics2.Tmax
-        elif kinetics1.Tmax is not None and kinetics2.Tmax is None:
-            kinetics.Tmax = kinetics1.Tmax
-        elif kinetics1.Tmax is None and kinetics2.Tmax is not None:
-            kinetics.Tmax = kinetics2.Tmax
-        
-        if kinetics1.Pmin is not None and kinetics2.Pmin is not None:
-            kinetics.Pmin = kinetics1.Pmin if kinetics1.Pmin.value_si > kinetics2.Pmin.value_si else kinetics2.Pmin
-        elif kinetics1.Pmin is not None and kinetics2.Pmin is None:
-            kinetics.Pmin = kinetics1.Pmin
-        elif kinetics1.Pmin is None and kinetics2.Pmin is not None:
-            kinetics.Pmin = kinetics2.Pmin
-        
-        if kinetics1.Pmax is not None and kinetics2.Pmax is not None:
-            kinetics.Pmax = kinetics1.Pmax if kinetics1.Pmax.value_si < kinetics2.Pmax.value_si else kinetics2.Pmax
-        elif kinetics1.Pmax is not None and kinetics2.Pmax is None:
-            kinetics.Pmax = kinetics1.Pmax
-        elif kinetics1.Pmax is None and kinetics2.Pmax is not None:
-            kinetics.Pmax = kinetics2.Pmax
-        
-        if kinetics1.comment == '': kinetics.comment = kinetics2.comment
-        elif kinetics2.comment == '': kinetics.comment = kinetics1.comment
-        else: kinetics.comment = kinetics1.comment + ' + ' + kinetics2.comment
-        return kinetics
-
-################################################################################
-
 class KineticsFamily(Database):
     """
     A class for working with an RMG kinetics family: a set of reactions with 
@@ -518,7 +297,7 @@ class KineticsFamily(Database):
     `ownReverse`        `Boolean`                       It's its own reverse?
     ------------------- ------------------------------- ------------------------
     `groups`            :class:`KineticsGroups`         The set of kinetics group additivity values
-    `rules`             :class:`KineticsDepository`     The depository of kinetics rate rules from RMG-Java
+    `rules`             :class:`KineticsRules`          The set of kinetics rate rules from RMG-Java
     `depositories`      ``dict``                        A set of additional depositories used to store kinetics data from various sources
     =================== =============================== ========================
 
@@ -613,11 +392,11 @@ class KineticsFamily(Database):
         for index, entry in enumerate(entries):
             entry.index = index + 1
             
-        self.rules = KineticsDepository(label='{0}/rules'.format(self.label),
+        self.rules = KineticsRules(label='{0}/rules'.format(self.label),
                                         recommended=True)
         self.rules.name = self.rules.label
         try:
-            self.rules.loadOldRateRules(path, self.groups, numLabels=max(len(self.forwardTemplate.reactants), len(self.groups.top)))
+            self.rules.loadOld(path, self.groups, numLabels=max(len(self.forwardTemplate.reactants), len(self.groups.top)))
         except Exception:
             logging.error('Error while reading old kinetics family rules from {0!r}.'.format(path))
             raise
@@ -682,7 +461,7 @@ class KineticsFamily(Database):
         if self.forbidden is not None:
             self.forbidden.saveOld(os.path.join(path, 'forbiddenGroups.txt'))
             
-        self.rules.saveOldRateRules(path, self)
+        self.rules.saveOld(path, self)
             
     def saveOldTemplate(self, path):
         """
@@ -751,7 +530,7 @@ class KineticsFamily(Database):
         
         self.groups.numReactants = len(self.forwardTemplate.reactants)
             
-        self.rules = KineticsDepository(label='{0}/rules'.format(self.label))
+        self.rules = KineticsRules(label='{0}/rules'.format(self.label))
         logging.debug("Loading kinetics family rules from {0}".format(os.path.join(path, 'rules.py')))
         self.rules.load(os.path.join(path, 'rules.py'), local_context, global_context)
         
@@ -980,42 +759,17 @@ class KineticsFamily(Database):
         Return ``True`` if a rate rule with the given `template` currently 
         exists, or ``False`` otherwise.
         """
-        try:
-            return self.getRateRule(template) is not None
-        except ValueError:
-            return False
+        return self.rules.hasRule(template)
 
     def getRateRule(self, template):
         """
         Return the rate rule with the given `template`. Raises a 
         :class:`ValueError` if no corresponding entry exists.
         """
-        entries = []
-        templateLabels = ';'.join([group.label for group in template])
-        for entry in self.rules.entries.values():
-            if templateLabels == entry.label:
-                entries.append(entry)
-        
-        if self.label.lower() == 'r_recombination' and template[0] != template[1]:
-            template.reverse()
-            templateLabels = ';'.join([group.label for group in template])
-            for entry in self.rules.entries.values():
-                if templateLabels == entry.label:
-                    entries.append(entry)
-            template.reverse()
-            
-        if len(entries) == 1:
-            return entries[0]
-        elif len(entries) > 1:
-            if any([entry.rank > 0 for entry in entries]):
-                entries = [entry for entry in entries if entry.rank > 0]
-                entries.sort(key=lambda x: (x.rank, x.index))
-                return entries[0]
-            else:
-                entries.sort(key=lambda x: x.index)
-                return entries[0]
-        else:
+        entry = self.rules.getRule(template)
+        if entry is None:
             raise ValueError('No entry for template {0}.'.format(template))
+        return entry
 
     def addKineticsRulesFromTrainingSet(self, thermoDatabase=None):
         """
@@ -1028,7 +782,7 @@ class KineticsFamily(Database):
         else:
             raise Exception('Could not find training depository in family {0}.'.format(self.label))
         
-        index = max([e.index for e in self.rules.entries.values()] or [0]) + 1
+        index = max([e.index for e in self.rules.getEntries()] or [0]) + 1
         
         entries = depository.entries.values()
         entries.sort(key=lambda x: x.index)
@@ -1061,7 +815,10 @@ class KineticsFamily(Database):
                 rank = 3,
             )
             new_entry.data.A.value_si /= entry.item.degeneracy
-            self.rules.entries[index] = new_entry
+            try:
+                self.entries[new_entry.label].append(new_entry)
+            except KeyError:
+                self.entries[new_entry.label] = [new_entry]
             index += 1
         
         # Process the entries that are stored in the reverse direction of the
@@ -1105,7 +862,10 @@ class KineticsFamily(Database):
                 rank = 3,
             )
             new_entry.data.A.value_si /= item.degeneracy
-            self.rules.entries[index] = new_entry
+            try:
+                self.entries[new_entry.label].append(new_entry)
+            except KeyError:
+                self.entries[new_entry.label] = [new_entry]
             index += 1
     
     def getRootTemplate(self):
@@ -1128,67 +888,7 @@ class KineticsFamily(Database):
         if rootTemplate is None:
             rootTemplate = self.getRootTemplate()
             alreadyDone = {}
-        
-        rootLabel = ';'.join([g.label for g in rootTemplate])
-        
-        if rootLabel in alreadyDone:
-            return alreadyDone[rootLabel]
-        
-        if self.hasRateRule(rootTemplate):
-            # We already have a rate rule for this exact template
-            entry = self.getRateRule(rootTemplate)
-            if entry.rank > 0:
-                # If the entry has rank of zero, then we have so little faith
-                # in it that we'd rather use an averaged value if possible
-                # Since this entry does not have a rank of zero, we keep its
-                # value
-                alreadyDone[rootLabel] = entry.data
-                return entry.data
-        
-        # Recursively descend to the child nodes
-        childrenList = [[group] for group in rootTemplate]
-        for group in childrenList:
-            parent = group.pop(0)
-            if len(parent.children) > 0:
-                group.extend(parent.children)
-            else:
-                group.append(parent)
-                
-        childrenList = getAllCombinations(childrenList)
-        kineticsList = []
-        for template in childrenList:
-            label = ';'.join([g.label for g in template])
-            if template == rootTemplate: 
-                continue
-            
-            if label in alreadyDone:
-                kinetics = alreadyDone[label]
-            else:
-                kinetics = self.fillKineticsRulesByAveragingUp(template, alreadyDone)
-            
-            if kinetics is not None:
-                kineticsList.append([kinetics, template])
-        
-        if len(kineticsList) > 0:
-            
-            # We found one or more results! Let's average them together
-            kinetics = self.__getAverageKinetics([k for k, t in kineticsList])
-            kinetics.comment += '(Average of {0})'.format(
-                ' + '.join([k.comment if k.comment != '' else ';'.join([g.label for g in t]) for k, t in kineticsList]),
-            )
-            entry = Entry(
-                index = 0,
-                label = rootLabel,
-                item = rootTemplate,
-                data = kinetics,
-                rank = 10, # Indicates this is an averaged estimate
-            )
-            self.rules.entries[entry.label] = entry
-            alreadyDone[rootLabel] = entry.data
-            return entry.data
-            
-        alreadyDone[rootLabel] = None
-        return None
+        self.rules.fillRulesByAveragingUp(rootTemplate, alreadyDone)
             
     def reactantMatch(self, reactant, templateReactant):
         """
@@ -1884,32 +1584,50 @@ class KineticsFamily(Database):
         direction.
         """
         kineticsList = []
-        if depository.label.endswith('rules'):
-            # The depository contains groups
-            entries = depository.entries.values()
-            for entry in entries:
-                entryLabels = entry.label.split(';')
-                templateLabels = [group.label for group in template]
-                if all([group in entryLabels for group in templateLabels]) and all([group in templateLabels for group in entryLabels]):
-                    kineticsList.append([deepcopy(entry.data), entry, True])
-            for kinetics, entry, isForward in kineticsList:
-                if kinetics is not None:
-                    # The rules are defined on a per-site basis, so we need to include the degeneracy manually
-                    assert isinstance(kinetics, ArrheniusEP)
-                    kinetics.A.value_si *= degeneracy
-                    kinetics.comment += "Matched rule {0} {1} in {2}\n".format(entry.index, entry.label, depository.label)
-                    kinetics.comment += "Multiplied by reaction path degeneracy {0}".format(degeneracy)
-        else:
-            # The depository contains real reactions
-            entries = depository.entries.values()
-            for entry in entries:
-                if reaction.isIsomorphic(entry.item):
-                    kineticsList.append([deepcopy(entry.data), entry, reaction.isIsomorphic(entry.item, eitherDirection=False)])
-            for kinetics, entry, isForward in kineticsList:
-                if kinetics is not None:
-                    kinetics.comment += "Matched reaction {0} {1} in {2}".format(entry.index, entry.label, depository.label)
+        entries = depository.entries.values()
+        for entry in entries:
+            if reaction.isIsomorphic(entry.item):
+                kineticsList.append([deepcopy(entry.data), entry, reaction.isIsomorphic(entry.item, eitherDirection=False)])
+        for kinetics, entry, isForward in kineticsList:
+            if kinetics is not None:
+                kinetics.comment += "Matched reaction {0} {1} in {2}".format(entry.index, entry.label, depository.label)
         return kineticsList
     
+    def getKineticsFromRules(self, template, degeneracy):
+        """
+        Search the given `depository` in this kinetics family for kinetics
+        for the given `reaction`. Returns a list of all of the matching 
+        kinetics, the corresponding entries, and ``True`` if the kinetics
+        match the forward direction or ``False`` if they match the reverse
+        direction.
+        """
+        kineticsList = []
+        
+        entries = self.rules.getAllRules(template)
+        for entry in entries:
+            kineticsList.append([deepcopy(entry.data), entry, True])
+        
+        for kinetics, entry, isForward in kineticsList:
+            if kinetics is not None:
+                # The rules are defined on a per-site basis, so we need to include the degeneracy manually
+                assert isinstance(kinetics, ArrheniusEP)
+                kinetics.A.value_si *= degeneracy
+                kinetics.comment += "Matched rule {0} {1} in {2}\n".format(entry.index, entry.label, self.rules.label)
+                kinetics.comment += "Multiplied by reaction path degeneracy {0}".format(degeneracy)
+        
+        return kineticsList
+    
+    def __selectBestKinetics(self, kineticsList):
+        """
+        For a given set of kinetics `kineticsList`, return the kinetics deemed
+        to be the "best". This is determined to be the one with the lowest
+        non-zero rank that occurs first.
+        """
+        if any([x[1].rank == 0 for x in kineticsList]) and not all([x[1].rank == 0 for x in kineticsList]):
+            kineticsList = [x for x in kineticsList if x[1].rank != 0]
+        kineticsList.sort(key=lambda x: (x[1].rank, x[1].index))
+        return kineticsList[0]
+        
     def getKinetics(self, reaction, template, degeneracy=1, estimator='', returnAllKinetics=True):
         """
         Return the kinetics for the given `reaction` by searching the various
@@ -1924,23 +1642,26 @@ class KineticsFamily(Database):
         kineticsList = []
         
         depositories = self.depositories[:]
-        depositories.append(self.rules)
         
         # Check the various depositories for kinetics
         for depository in depositories:
             kineticsList0 = self.getKineticsFromDepository(depository, reaction, template, degeneracy)
             if len(kineticsList0) > 0 and not returnAllKinetics:
-                # If we have multiple matching rules but only want one result,
-                # choose the one with the lowest rank that occurs first
-                if any([x[1].rank == 0 for x in kineticsList0]) and not all([x[1].rank == 0 for x in kineticsList0]):
-                    kineticsList0 = [x for x in kineticsList0 if x[1].rank != 0]
-                kineticsList0.sort(key=lambda x: (x[1].rank, x[1].index))
-                kinetics, entry, isForward = kineticsList0[0]
-                return kinetics, depository, entry, isForward
+                kinetics, entry, isForward = self.__selectBestKinetics(kineticsList0)
+                kinetics, depository, entry, isForward
             else:
                 for kinetics, entry, isForward in kineticsList0:
                     kineticsList.append([kinetics, depository, entry, isForward])
-                    
+        
+        # Check the rate rules for kinetics
+        kineticsList0 = self.getKineticsFromRules(template, degeneracy)
+        if len(kineticsList0) > 0 and not returnAllKinetics:
+            kinetics, entry, isForward = self.__selectBestKinetics(kineticsList0)
+            return kinetics, self.rules, entry, isForward
+        else:
+            for kinetics, entry, isForward in kineticsList0:
+                kineticsList.append([kinetics, self.rules, entry, isForward])
+        
         # If estimator type of rate rules or group additivity is given, retrieve the kinetics. 
         if estimator:        
             kinetics = self.getKineticsForTemplate(template, degeneracy, method=estimator)
@@ -1981,97 +1702,11 @@ class KineticsFamily(Database):
             #raise UndeterminableKineticsError('Cannot determine group additivity kinetics estimate for template "{0}".'.format(','.join([e.label for e in template])))
             return None
         # Now add in more specific corrections if possible
-        return self.groups.estimateKineticsUsingGroupAdditivity(template, kinetics, degeneracy)
-    
-    def __getAverageKinetics(self, kineticsList):
-        # Although computing via logA is slower, it is necessary because
-        # otherwise you could overflow if you are averaging too many values
-        logA = 0.0; n = 0.0; E0 = 0.0; alpha = 0.0
-        count = len(kineticsList)
-        for kinetics in kineticsList:
-            logA += math.log10(kinetics.A.value_si)
-            n += kinetics.n.value_si
-            alpha += kinetics.alpha.value_si
-            E0 += kinetics.E0.value_si
-        logA /= count
-        n /= count
-        alpha /= count
-        E0 /= count
-        Aunits = kineticsList[0].A.units
-        if Aunits == 'cm^3/(mol*s)' or 'cm^3/(molecule*s)' or 'm^3/(molecule*s)':
-            Aunits = 'm^3/(mol*s)'
-        elif Aunits == 'cm^6/(mol^2*s)' or 'cm^6/(molecule^2*s)' or 'm^6/(molecule^2*s)':
-            Aunits = 'm^6/(mol^2*s)'
-        elif Aunits == 's^-1' or Aunits == 'm^3/(mol*s)' or Aunits == 'm^6/(mol^2*s)':
-            pass
-        else:
-            raise Exception('Invalid units {0} for averaging kinetics.'.format(Aunits))
-        averagedKinetics = ArrheniusEP(
-            A = (10**logA,Aunits),
-            n = n,
-            alpha = alpha,
-            E0 = (E0*0.001,"kJ/mol"),
-        )
-        return averagedKinetics
-        
+        return self.groups.estimateKineticsUsingGroupAdditivity(template, kinetics, degeneracy)        
         
     def estimateKineticsUsingRateRules(self, template, degeneracy=1):
         """
         Determine the appropriate kinetics for a reaction with the given
         `template` using rate rules.
         """
-        def getTemplateLabel(template):
-            # Get string format of the template in the form "(leaf1,leaf2)"
-            return '({0})'.format(','.join([g.label for g in template]))
-    
-        templateList = [template]
-        while len(templateList) > 0:
-            
-            kineticsList = []
-            for t in templateList:
-                if self.hasRateRule(t):
-                    entry = self.getRateRule(t)
-                    kinetics = deepcopy(entry.data)
-                    kineticsList.append([kinetics, t])
-            
-            if len(kineticsList) > 0:                 
-                originalLeaves = getTemplateLabel(template)
-                                
-                if len(kineticsList) == 1:
-                    kinetics, t = kineticsList[0]
-                    # Check whether the exact rate rule for the original template (most specific
-                    # leaves) were found or not.
-                    matchedLeaves = getTemplateLabel(t)
-                    if matchedLeaves == originalLeaves:
-                        kinetics.comment += 'Exact match found' 
-                    else:
-                    # Using a more general node to estimate original template
-                        kinetics.comment += 'Estimated using template ' + matchedLeaves
-                else:
-                    # We found one or more results! Let's average them together
-                    kinetics = self.__getAverageKinetics([k for k, t in kineticsList])
-                    kinetics.comment += 'Estimated using average of templates {0}'.format(
-                        ' + '.join([getTemplateLabel(t) for k, t in kineticsList]),
-                    )
-                
-                kinetics.comment +=  ' for rate rule ' + originalLeaves
-                kinetics.A.value_si *= degeneracy
-
-                return kinetics
-            
-            else:
-                # No results found
-                templateList0 = templateList
-                templateList = []
-                for template0 in templateList0:
-                    for index in range(len(template0)):
-                        if not template0[index].parent:
-                            # We're at the top-level node in this subtreee
-                            continue
-                        t = template0[:]
-                        t[index] = t[index].parent
-                        if t not in templateList:
-                            templateList.append(t)
-                
-        # If we're here then we couldn't estimate any kinetics, which is an exception
-        raise Exception('Unable to determine kinetics for reaction with template {0}.'.format(template))
+        return self.rules.estimateKinetics(template, degeneracy)
