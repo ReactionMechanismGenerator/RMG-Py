@@ -674,7 +674,7 @@ cdef class Graph:
         mapping are mutually equivalent.
         """
         cdef Vertex vertex1, vertex2
-        cdef list vertices1, vert
+        cdef list vertices1, vertices2
         cdef bint selfHasEdge, otherHasEdge
         cdef int i, j
         

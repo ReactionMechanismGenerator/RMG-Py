@@ -175,13 +175,15 @@ class Atom(Vertex):
         if isinstance(other, Atom):
             return self.equivalent(other)
         elif isinstance(other, GroupAtom):
-            cython.declare(atom=GroupAtom, a=AtomType, radical=cython.short, spin=cython.short, charge=cython.short)
+            cython.declare(atom=GroupAtom, a=AtomType, radical=cython.short, spin=cython.short, charge=cython.short, index=cython.int)
             atom = other
             for a in atom.atomType: 
                 if self.atomType.isSpecificCaseOf(a): break
             else:
                 return False
-            for radical, spin in zip(atom.radicalElectrons, atom.spinMultiplicity):
+            for index in range(len(atom.radicalElectrons)):
+                radical = atom.radicalElectrons[index]
+                spin = atom.spinMultiplicity[index]
                 if self.radicalElectrons == radical and self.spinMultiplicity == spin: break
             else:
                 return False
