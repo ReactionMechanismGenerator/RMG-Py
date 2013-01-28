@@ -42,7 +42,7 @@ from copy import copy, deepcopy
 from base import Database, Entry, makeLogicNode
 
 import rmgpy.constants as constants
-from rmgpy.thermo import *
+#from rmgpy.data.thermo import *
 from rmgpy.molecule import Molecule, Atom, Bond, Group
 
 ################################################################################
@@ -205,19 +205,20 @@ class SoluteDatabase(object):
         self.libraries = {}
         self.groups = {}
         self.libraryOrder = []
-        self.local_context = {}
+        self.local_context = {
+            'SoluteData': SoluteData,
+        }
         self.global_context = {}
 
     def __reduce__(self):
         """
         A helper function used when pickling a SoluteDatabase object.
         """
-       d = {
-            #'depository': self.depository,
+        d = {
             'libraries': self.libraries,
             'groups': self.groups,
             'libraryOrder': self.libraryOrder,
-        }
+            }
         return (SoluteDatabase, (), d)
 
     def __setstate__(self, d):
@@ -238,7 +239,8 @@ class SoluteDatabase(object):
             # self.loadDepository(os.path.join(path, 'depository'))
         # else:
             # self.depository = {}
-        self.loadLibraries(os.path.join(path, 'libraries'), libraries)
+        #no solute library right now...
+        #self.loadLibraries(os.path.join(path, 'libraries'), libraries)
         self.loadGroups(os.path.join(path, 'groups'))
         
     def loadDepository(self, path):
@@ -466,7 +468,7 @@ class SoluteDatabase(object):
         # Add Cp0 and CpInf values
          # Cp0 = species.calculateCp0()
          # CpInf = species.calculateCpInf()
-         data, library, entry = soluteData
+        data, library, entry = soluteData
          # if isinstance(data,SoluteData):
             # data.Cp0 = (Cp0,"J/(mol*K)")
             # data.CpInf = (CpInf,"J/(mol*K)")
@@ -695,11 +697,11 @@ class SoluteDatabase(object):
         
         #for i in range(7):
             #thermoData.Cpdata.value_si[i] += data.Cpdata.value_si[i]
-		 soluteData.S += data.S
-		 soluteData.B += data.B
-		 soluteData.E += data.E
-		 soluteData.L += data.L
-		 soluteData.A += data.A
+        soluteData.S += data.S
+        soluteData.B += data.B
+        soluteData.E += data.E
+        soluteData.L += data.L
+        soluteData.A += data.A
 
 
         if soluteData.comment:
