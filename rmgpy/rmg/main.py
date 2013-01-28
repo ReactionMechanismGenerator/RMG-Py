@@ -97,6 +97,7 @@ class RMG:
     `drawMolecules`             ``True`` to draw pictures of the species in the core, ``False`` otherwise
     `generatePlots`             ``True`` to generate plots of the job execution statistics after each iteration, ``False`` otherwise
     `pressureDependence`        Whether to process unimolecular (pressure-dependent) reaction networks
+    `quantumMechanics`          Whether to apply quantum mechanical calculations instead of group additivity to certain molecular types.
     `wallTime`                  The maximum amount of CPU time in seconds to expend on this job; used to stop gracefully so we can still get profiling information
     --------------------------- ------------------------------------------------
     `initializationTime`        The time at which the job was initiated, in seconds since the epoch (i.e. from time.time())
@@ -146,6 +147,7 @@ class RMG:
         self.generatePlots = None
         self.saveConcentrationProfiles = None
         self.pressureDependence = None
+        self.quantumMechanics = None
         self.wallTime = 0
         self.initializationTime = 0
     
