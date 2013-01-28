@@ -73,13 +73,16 @@ class SoluteData():
     """
     Stores Abraham parameters to characterize a solute
     """
-    def __init__(self, S=None, B=None, E=None, L=None, A=None):
+    def __init__(self, S=None, B=None, E=None, L=None, A=None, comment=""):
         #: :math:`\pi_2^H`
         self.S = S
         self.B = B
         self.E = E
         self.L = L
         self.A = A
+        self.comment = comment
+    def __repr__(self):
+        return "SoluteData(S={0},B={1},E={2},L={3},A={4},comment={5!r})".format(self.S, self.B, self.E, self.L, self.A, self.comment)
         
 
 ################################################################################
@@ -540,6 +543,7 @@ class SoluteDatabase(object):
 
         soluteData = SoluteData(0.0,0.0,0.0,0.0,0.0)
         count = 0
+        comments = []
         for molecule in species.molecule:
             molecule.clearLabeledAtoms()
             molecule.updateAtomTypes()
@@ -551,12 +555,14 @@ class SoluteDatabase(object):
             soluteData.L += sdata.L
             soluteData.A += sdata.A
             count += 1
+            comments.append(sdata.comment)
         
         soluteData.S /= count
         soluteData.B /= count
         soluteData.E /= count
         soluteData.L /= count
         soluteData.A /= count
+        soluteData.comment = "Average of {0}".format(" and ".join(comments))
 
         return soluteData, None, None
         
@@ -574,11 +580,11 @@ class SoluteDatabase(object):
 
         # Create the SoluteData object
         soluteData = SoluteData(
-            S = 0.0,
-            B = 0.0,
-            E = 0.0,
-            L = 0.0,
-            A = 0.0
+            S = 0.277,
+            B = 0.071,
+            E = 0.248,
+            L = 0.13,
+            A = 0.003
         )
 
         if sum([atom.radicalElectrons for atom in molecule.atoms]) > 0: # radical species
@@ -687,7 +693,8 @@ class SoluteDatabase(object):
         if node is None:
             raise InvalidDatabaseError('Unable to determine solute parameters for {0}: no library entries for {1} or any of its ancestors.'.format(molecule, node0) )
 
-        data = node.data; comment = node.label
+        data = node.data
+        comment = node.label
         while isinstance(data, basestring) and data is not None:
             for entry in database.entries.values():
                 if entry.label == data:
@@ -713,5 +720,6 @@ class SoluteDatabase(object):
         soluteData.E += data.E
         soluteData.L += data.L
         soluteData.A += data.A
+        soluteData.comment += comment + "+"
         
         return soluteData
