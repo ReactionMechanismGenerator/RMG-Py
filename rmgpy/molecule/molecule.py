@@ -808,10 +808,34 @@ class Molecule(Graph):
         while the atoms of `other` are the values). The `other` parameter must
         be a :class:`Group` object, or a :class:`TypeError` is raised.
         """
+        cython.declare(group=Group, atom=Atom)
+        cython.declare(carbonCount=cython.short, oxygenCount=cython.short, sulfurCount=cython.short, radicalCount=cython.short)
+        
         # It only makes sense to compare a Molecule to a Group for subgraph
         # isomorphism, so raise an exception if this is not what was requested
         if not isinstance(other, Group):
             raise TypeError('Got a {0} object for parameter "other", when a Molecule object is required.'.format(other.__class__))
+        group = other
+        
+        # Count the number of carbons, oxygens, and radicals in the molecule
+        carbonCount = 0; oxygenCount = 0; sulfurCount = 0; radicalCount = 0
+        for atom in self.vertices:
+            if atom.element.symbol == 'C':
+                carbonCount += 1
+            elif atom.element.symbol == 'O':
+                oxygenCount += 1
+            elif atom.element.symbol == 'S':
+                sulfurCount += 1
+            radicalCount += atom.radicalElectrons
+        # If the molecule has fewer of any of these things than the functional
+        # group does, then we know the subgraph isomorphism fails without
+        # needing to perform the full isomorphism check
+        if (radicalCount < group.radicalCount or
+            carbonCount < group.carbonCount or
+            oxygenCount < group.oxygenCount or
+            sulfurCount < group.sulfurCount):
+            return False
+
         # Do the isomorphism comparison
         result = Graph.isSubgraphIsomorphic(self, other, initialMap)
         return result

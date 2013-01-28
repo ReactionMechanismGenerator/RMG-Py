@@ -25,6 +25,7 @@
 ################################################################################
 
 from .graph cimport Vertex, Edge, Graph
+from .atomtype cimport AtomType
 
 ################################################################################
 
@@ -74,6 +75,13 @@ cdef class GroupBond(Edge):
 
 cdef class Group(Graph):
 
+    # These read-only attribues act as a "fingerprint" for accelerating
+    # subgraph isomorphism checks
+    cdef readonly short carbonCount
+    cdef readonly short oxygenCount
+    cdef readonly short sulfurCount
+    cdef readonly short radicalCount
+
     cpdef addAtom(self, GroupAtom atom)
 
     cpdef addBond(self, GroupBond bond)
@@ -105,6 +113,8 @@ cdef class Group(Graph):
     cpdef fromAdjacencyList(self, str adjlist)
 
     cpdef toAdjacencyList(self, str label=?)
+    
+    cpdef updateFingerprint(self)
 
     cpdef bint isIsomorphic(self, Graph other, dict initialMap=?) except -2
 

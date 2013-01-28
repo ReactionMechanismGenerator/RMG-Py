@@ -456,6 +456,7 @@ class Group(Graph):
     def __init__(self, atoms=None):
         Graph.__init__(self, atoms)
         self.updateConnectivityValues()
+        self.updateFingerprint()
     
     def __reduce__(self):
         """
@@ -613,6 +614,7 @@ class Group(Graph):
         from .adjlist import fromAdjacencyList
         self.vertices = fromAdjacencyList(adjlist, group=True)
         self.updateConnectivityValues()
+        self.updateFingerprint()
         return self
 
     def toAdjacencyList(self, label=''):
@@ -621,6 +623,39 @@ class Group(Graph):
         """
         from .adjlist import toAdjacencyList
         return toAdjacencyList(self.vertices, label='', group=True)
+
+    def updateFingerprint(self):
+        """
+        Update the molecular fingerprint used to accelerate the subgraph
+        isomorphism checks.
+        """
+        cython.declare(atom=GroupAtom, atomType=AtomType)
+        cython.declare(carbon=AtomType, oxygen=AtomType, sulfur=AtomType)
+        cython.declare(isCarbon=cython.bint, isOxygen=cython.bint, isSulfur=cython.bint, radical=cython.int)
+        
+        carbon = atomTypes['C']
+        oxygen = atomTypes['O']
+        sulfur = atomTypes['S']
+        
+        self.carbonCount = 0
+        self.oxygenCount = 0
+        self.sulfurCount = 0
+        self.radicalCount = 0
+        for atom in self.vertices:
+            if len(atom.atomType) == 1:
+                atomType = atom.atomType[0]
+                isCarbon = atomType.equivalent(carbon)
+                isOxygen = atomType.equivalent(oxygen)
+                isSulfur = atomType.equivalent(sulfur)
+                if isCarbon and not isOxygen and not isSulfur:
+                    self.carbonCount += 1
+                elif isOxygen and not isCarbon and not isSulfur:
+                    self.oxygenCount += 1
+                elif isSulfur and not isCarbon and not isOxygen:
+                    self.sulfurCount += 1
+            if len(atom.radicalElectrons) == 1:
+                radical = atom.radicalElectrons[0]
+                self.radicalCount += radical
 
     def isIsomorphic(self, other, initialMap=None):
         """
