@@ -81,7 +81,6 @@ class SoluteData():
         self.L = L
         self.A = A
         
-        
 
 ################################################################################
 
@@ -534,20 +533,32 @@ class SoluteDatabase(object):
         :class:`Species` object `species` by estimation using the Platts group
         additivity method. If no group additivity values are loaded, a
         :class:`DatabaseError` is raised.
+        
+        It averages (linearly) over the desciptors for each Molecule (resonance isomer)
+        in the Species.
         """       
-        solute = []
+
+        soluteData = SoluteData(0.0,0.0,0.0,0.0,0.0)
+        count = 0
         for molecule in species.molecule:
             molecule.clearLabeledAtoms()
             molecule.updateAtomTypes()
-            tdata = self.estimateSoluteViaGroupAdditivity(molecule)
-            solute.append(sdata)
+            sdata = self.estimateSoluteViaGroupAdditivity(molecule)
 
-        #H298 = numpy.array([t.getEnthalpy(298.) for t in thermo])
-        #indices = H298.argsort()
+            soluteData.S += sdata.S
+            soluteData.B += sdata.B
+            soluteData.E += sdata.E
+            soluteData.L += sdata.L
+            soluteData.A += sdata.A
+            count += 1
         
-        species.molecule = [species.molecule[ind] for ind in indices]
-        
-        return (solute[indices[0]], None, None)
+        soluteData.S /= count
+        soluteData.B /= count
+        soluteData.E /= count
+        soluteData.L /= count
+        soluteData.A /= count
+
+        return soluteData, None, None
         
     def estimateSoluteViaGroupAdditivity(self, molecule):
         """
@@ -702,11 +713,5 @@ class SoluteDatabase(object):
         soluteData.E += data.E
         soluteData.L += data.L
         soluteData.A += data.A
-
-
-        if soluteData.comment:
-            solute.comment += ' + {0}'.format(comment)
-        else:
-            solute.comment = comment
         
         return soluteData
