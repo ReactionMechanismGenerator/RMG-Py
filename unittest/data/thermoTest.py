@@ -64,7 +64,10 @@ class TestThermoDatabase(unittest.TestCase):
             Cplist = [Cp300, Cp400, Cp500, Cp600, Cp800, Cp1000, Cp1500]
             species = Species(molecule=[Molecule(SMILES=smiles)])
             species.generateResonanceIsomers()
+            species.molecule[0]
             thermoData = self.database.getThermoData(Species(molecule=[species.molecule[0]]))
+            print smiles
+            print thermoData
             molecule = species.molecule[0]
             for mol in species.molecule[1:]:
                 thermoData0 = self.database.getAllThermoData(Species(molecule=[mol]))[0][0]

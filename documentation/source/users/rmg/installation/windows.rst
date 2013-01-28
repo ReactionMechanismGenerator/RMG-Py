@@ -31,7 +31,10 @@ Git
 
 	C:\Windows\System32\cmd.exe /c "sh --login -i"
 
-* Generate and view your SSH Key: ::
+if this target does not work try using this one
+	C:\Windows\System32\cmd.exe /c  ""C:\Program Files\Git\bin\sh.exe" --login -i"
+
+* Generate and view your SSH Key by typing this into the Git Bash command line: ::
 
 	cd ~
 	ssh-keygen		# press enter to save to the default directory
@@ -86,6 +89,9 @@ Python
 	dlltool -D python27.dll -d python27.def -l libpython27.a
 	mv libpython27.a /c/MinGW/lib/libpython27.a
 	rm python27.def
+
+  If the ``pexports`` step doesn't work then you can download the :file:`python27.def` file from the link on the `Cython wiki <http://wiki.cython.org/InstallingOnWindows>`_ and continue from the ``dlltool`` step.
+
 	
 .. _prepackageddependencies:
 
@@ -98,16 +104,16 @@ Download and run the installers listed below. These builds have been verified as
 * `SciPy 0.10.1 <http://softlayer.dl.sourceforge.net/project/scipy/scipy/0.10.1/scipy-0.10.1-win32-superpack-python2.7.exe>`_
 * `matplotlib  1.1.0 <http://softlayer.dl.sourceforge.net/project/matplotlib/matplotlib/matplotlib-1.1.0/matplotlib-1.1.0.win32-py2.7.exe>`_
 * `guppy 0.1.10 <http://www.sistemasagiles.com.ar/soft/guppy-0.1.10.win32-py2.7.exe>`_
+	If you have Norton Antivirus on your computer it may try to remove this after you install it
 * `OpenBabel 2.3.1 <http://voxel.dl.sourceforge.net/project/openbabel/openbabel/2.3.1/OpenBabel2.3.1_Windows_Installer.exe>`_
 
   * The OpenBabel installer includes some libraries (.dll files) that you also need for other purposes, so copy them out of the OpenBabel program directory and into your system directory so they are generally accessible: ::
 	
 		cd /c/PROGRA~1/OpenBabel-2.3.1
-		cp libcairo-2.dll libpng14-14.dll zlib1.dll $SYSTEMROOT/system32
+		cp libcairo-2.dll libpng14-14.dll zlib1.dll $SYSTEMROOT/System32
 
 * `openbabel-python 1.7 <http://softlayer.dl.sourceforge.net/project/openbabel/openbabel-python/1.7/openbabel-python-1.7.py27.exe>`_
 * `py2cairo 1.10.0 <http://wxpython.org/cairo/py2cairo-1.10.0.win32-py2.7.exe>`_
-* `Cython 0.16 <http://www.lfd.uci.edu/~gohlke/pythonlibs/sngyd84i/Cython-0.16.win32-py2.7.exe>`_
 * `Graphviz 2.28.0 <http://www.graphviz.org/pub/graphviz/stable/windows/graphviz-2.28.0.msi>`_
 
 .. _remainingdependencies:
@@ -117,10 +123,9 @@ Remaining Dependencies
 
 Install the remaining six python dependencies using 'pip': ::
 
-	curl http://python-distribute.org/distribute_setup.py | python
-	rm distribute*.tar.gz
+	curl https://raw.github.com/pypa/pip/master/contrib/get-pip.py | python
 	easy_install pip
-	pip install nose quantities sphinx pydot psutil xlwt
+	pip install nose quantities sphinx pydot psutil xlwt cython==0.16
 
 .. _rmgsources:
 

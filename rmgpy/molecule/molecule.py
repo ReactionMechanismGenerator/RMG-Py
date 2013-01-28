@@ -196,7 +196,16 @@ class Atom(Vertex):
         Generate a deep copy of the current atom. Modifying the
         attributes of the copy will not affect the original.
         """
-        a = Atom(self.element, self.radicalElectrons, self.spinMultiplicity, self.charge, self.label)
+        cython.declare(a=Atom)
+        #a = Atom(self.element, self.radicalElectrons, self.spinMultiplicity, self.charge, self.label)
+        a = Atom.__new__(Atom)
+        a.edges = {}
+        a.resetConnectivityValues()
+        a.element = self.element
+        a.radicalElectrons = self.radicalElectrons
+        a.spinMultiplicity = self.spinMultiplicity
+        a.charge = self.charge
+        a.label = self.label
         a.atomType = self.atomType
         return a
 
@@ -354,7 +363,13 @@ class Bond(Edge):
         Generate a deep copy of the current bond. Modifying the
         attributes of the copy will not affect the original.
         """
-        return Bond(self.vertex1, self.vertex2, self.order)
+        #return Bond(self.vertex1, self.vertex2, self.order)
+        cython.declare(b=Bond)
+        b = Bond.__new__(Bond)
+        b.vertex1 = self.vertex1
+        b.vertex2 = self.vertex2
+        b.order = self.order
+        return b
 
     def isSingle(self):
         """
@@ -464,6 +479,7 @@ class Molecule(Graph):
     def __init__(self, atoms=None, symmetry=1, SMILES='', InChI=''):
         Graph.__init__(self, atoms)
         self.symmetryNumber = symmetry
+        self._fingerprint = None
         if SMILES != '': self.fromSMILES(SMILES)
         elif InChI != '': self.fromInChI(InChI)
     
@@ -493,6 +509,7 @@ class Molecule(Graph):
         """
         Add an `atom` to the graph. The atom is initialized with no bonds.
         """
+        self._fingerprint = None
         return self.addVertex(atom)
     
     def addBond(self, bond):
@@ -500,6 +517,7 @@ class Molecule(Graph):
         Add a `bond` to the graph as an edge connecting the two atoms `atom1`
         and `atom2`.
         """
+        self._fingerprint = None
         return self.addEdge(bond)
 
     def getBonds(self, atom):
@@ -534,6 +552,7 @@ class Molecule(Graph):
         not remove atoms that no longer have any bonds as a result of this
         removal.
         """
+        self._fingerprint = None
         return self.removeVertex(atom)
 
     def removeBond(self, bond):
@@ -542,6 +561,7 @@ class Molecule(Graph):
         Does not remove atoms that no longer have any bonds as a result of
         this removal.
         """
+        self._fingerprint = None
         return self.removeEdge(bond)
 
     def sortAtoms(self):
@@ -555,9 +575,35 @@ class Molecule(Graph):
         """
         Return the molecular formula for the molecule.
         """
-        import pybel
-        mol = pybel.Molecule(self.toOBMol())
-        return mol.formula
+        cython.declare(atom=Atom, symbol=str, elements=dict, keys=list, formula=str)
+        cython.declare(hasCarbon=cython.bint, hasHydrogen=cython.bint)
+        
+        # Count the number of each element in the molecule
+        hasCarbon = False; hasHydrogen = False
+        elements = {}
+        for atom in self.vertices:
+            symbol = atom.element.symbol
+            elements[symbol] = elements.get(symbol, 0) + 1
+        
+        # Use the Hill system to generate the formula
+        formula = ''
+        
+        # Carbon and hydrogen always come first if carbon is present
+        if hasCarbon:
+            formula += 'C{0:d}'.format(elements['C'])
+            del elements['C']
+            if hasHydrogen:
+                formula += 'H{0:d}'.format(elements['H'])
+                del elements['H']
+
+        # Other atoms are in alphabetical order
+        # (This includes hydrogen if carbon is not present)
+        keys = elements.keys()
+        keys.sort()
+        for key in keys:
+            formula += '{0}{1:d}'.format(key, elements[key])
+        
+        return formula
 
     def getMolecularWeight(self):
         """
@@ -574,6 +620,7 @@ class Molecule(Graph):
         Return the number of atoms in molecule.  If element is given, ie. "H" or "C",
         the number of atoms of that element is returned.
         """
+        cython.declare(numAtoms=cython.int, atom=Atom)
         if element == None:
             return len(self.vertices)
         else:
@@ -582,6 +629,18 @@ class Molecule(Graph):
                 if atom.element.symbol == element:
                     numAtoms += 1
             return numAtoms
+
+    def getNumberOfRadicalElectrons(self):
+        """
+        Return the total number of radical electrons on all atoms in the
+        molecule. In this function, monoradical atoms count as one, biradicals
+        count as two, etc. 
+        """
+        cython.declare(numRadicals=cython.int, atom=Atom)
+        numRadicals = 0
+        for atom in self.vertices:
+            numRadicals += atom.radicalElectrons
+        return numRadicals
 
     def copy(self, deep=False):
         """
@@ -688,6 +747,18 @@ class Molecule(Graph):
                     labeled[atom.label] = atom
         return labeled
 
+    def getFingerprint(self):
+        """
+        Return a string containing the "fingerprint" used to accelerate graph
+        isomorphism comparisons with other molecules. The fingerprint is a
+        short string containing a summary of selected information about the 
+        molecule. Two fingerprint strings matching is a necessary (but not
+        sufficient) condition for the associated molecules to be isomorphic.
+        """
+        if self._fingerprint is None:
+            self._fingerprint = self.getFormula()
+        return self._fingerprint
+    
     def isIsomorphic(self, other, initialMap=None):
         """
         Returns :data:`True` if two graphs are isomorphic and :data:`False`
@@ -700,7 +771,12 @@ class Molecule(Graph):
         # isomorphism, so raise an exception if this is not what was requested
         if not isinstance(other, Molecule):
             raise TypeError('Got a {0} object for parameter "other", when a Molecule object is required.'.format(other.__class__))
-        # Do the isomorphism comparison
+        # Do the quick isomorphism comparison using the fingerprint
+        # Two fingerprint strings matching is a necessary (but not
+        # sufficient!) condition for the associated molecules to be isomorphic
+        if self.getFingerprint() != other.getFingerprint():
+            return False
+        # Do the full isomorphism comparison
         result = Graph.isIsomorphic(self, other, initialMap)
         return result
 
@@ -1078,6 +1154,31 @@ class Molecule(Graph):
         
         # not returned yet? must be nonlinear
         return False
+    
+    def isAromatic(self):
+        """ 
+        Returns ``True`` if the molecule is aromatic, or ``False`` if not.  
+        Iterates over the SSSR's and searches for rings that consist solely of Cb 
+        atoms.  Assumes that aromatic rings always consist of 6 atoms. 
+        In cases of naphthalene, where a 6 + 4 aromatic system exists,
+        there will be at least one 6 membered aromatic ring so this algorithm
+        will not fail for fused aromatic rings.
+        """
+        cython.declare(SSSR=list, vertices=list, polycyclicVertices=list)
+        SSSR = self.getSmallestSetOfSmallestRings()
+        if SSSR:
+            for cycle in SSSR:
+                if len(cycle) == 6:
+                    for atom in cycle:
+                        print atom.atomType.label
+                        if atom.atomType.label == 'Cb' or atom.atomType.label == 'Cbf':
+                            continue                        
+                        # Go onto next cycle if a non Cb atomtype was discovered in this cycle
+                        break 
+                    else:
+                        # Molecule is aromatic when all 6 atoms are type 'Cb'
+                        return True    
+        return False
 
     def countInternalRotors(self):
         """
@@ -1097,7 +1198,10 @@ class Molecule(Graph):
         """
         Return the value of the heat capacity at zero temperature in J/mol*K.
         """
-        return (3.5 if self.isLinear() else 4.0) * constants.R
+        if len(self.atoms) == 1:
+            return 2.5 * constants.R
+        else:
+            return (3.5 if self.isLinear() else 4.0) * constants.R
 
     def calculateCpInf(self):
         """
@@ -1105,12 +1209,16 @@ class Molecule(Graph):
         """
         cython.declare(Natoms=cython.int, Nvib=cython.int, Nrotors=cython.int)
         
-        Natoms = len(self.vertices)
-        Nvib = 3 * Natoms - (5 if self.isLinear() else 6)
-        Nrotors = self.countInternalRotors()
-        Nvib -= Nrotors
-        
-        return self.calculateCp0() + (Nvib + 0.5 * Nrotors) * constants.R
+        if len(self.vertices) == 1:
+            return self.calculateCp0()
+        else:
+            
+            Natoms = len(self.vertices)
+            Nvib = 3 * Natoms - (5 if self.isLinear() else 6)
+            Nrotors = self.countInternalRotors()
+            Nvib -= Nrotors
+            
+            return self.calculateCp0() + (Nvib + 0.5 * Nrotors) * constants.R
 
     def calculateSymmetryNumber(self):
         """

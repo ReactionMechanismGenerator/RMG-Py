@@ -2,8 +2,7 @@
 #
 #   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2002-2010 Prof. William H. Green (whgreen@mit.edu) and the
-#   RMG Team (rmg_dev@mit.edu)
+#   Copyright (c) 2009-2011 by the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
 #   copy of this software and associated documentation files (the 'Software'),
@@ -25,34 +24,16 @@
 #
 ################################################################################
 
-cimport numpy
-from pydas cimport DASSL
+from .graph cimport Vertex, Edge, Graph
 
 ################################################################################
 
-cdef class ReactionSystem(DASSL):
+cpdef VF2_isomorphism(Graph graph1, Graph graph2, bint subgraph=?, bint findAll=?, dict initialMapping=?)
 
-    cdef public numpy.ndarray coreSpeciesConcentrations
-    cdef public numpy.ndarray coreSpeciesRates
-    cdef public numpy.ndarray coreReactionRates
-    cdef public numpy.ndarray edgeSpeciesRates
-    cdef public numpy.ndarray edgeReactionRates
-    cdef public numpy.ndarray networkLeakRates
+cdef bint VF2_feasible(Graph graph1, Graph graph2, Vertex vertex1, Vertex vertex2, bint subgraph) except -2
 
-    cdef public numpy.ndarray maxCoreSpeciesRates
-    cdef public numpy.ndarray maxEdgeSpeciesRates
-    cdef public numpy.ndarray maxNetworkLeakRates
-    
-    cdef public list termination
+cdef bint VF2_match(Graph graph1, Graph graph2, bint subgraph, bint findAll, list mappingList, int callDepth) except -2
 
-    cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions, list pdepNetworks=?, atol=?, rtol=?)
+cdef void VF2_addToMapping(Vertex vertex1, Vertex vertex2)
 
-    cpdef writeWorksheetHeader(self, worksheet)
-    
-    cpdef simulate(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions,
-        double toleranceKeepInEdge, double toleranceMoveToCore, double toleranceInterruptSimulation,
-        list pdepNetworks=?, worksheet=?, absoluteTolerance=?, relativeTolerance=?)
-
-    cpdef logRates(self, double charRate, object species, double speciesRate, object network, double networkRate)
-
-    cpdef logConversions(self, speciesIndex, y0, realConcentration)
+cdef void VF2_removeFromMapping(Vertex vertex1, Vertex vertex2)

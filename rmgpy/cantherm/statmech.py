@@ -339,7 +339,7 @@ class StatMechJob:
         axes.set_xticks([float(j*constants.pi/8) for j in range(0,17)], minor=True)
         axes.set_xticklabels(['$0$', '$\pi/4$', '$\pi/2$', '$3\pi/4$', '$\pi$', '$5\pi/4$', '$3\pi/2$', '$7\pi/4$', '$2\pi$'])
         
-        pylab.savefig(os.path.join(directory, 'hindered_rotor_{0:d}.pdf'.format(rotorIndex+1)))
+        pylab.savefig(os.path.join(directory, '{0}_rotor_{1:d}.pdf'.format(self.species.label, rotorIndex+1)))
         pylab.close()
 
 ################################################################################

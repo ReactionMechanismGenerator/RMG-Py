@@ -265,6 +265,8 @@ def saveOutputHTML(path, reactionModel):
         <td class="label">{{ spec.label }}</td>
         <td>{{ "%.2f"|format(spec.molecule[0].getMolecularWeight() * 1000) }}</td>
     </tr>
+    {% if spec.thermo %}
+    
     <tr>
      <td>
             <table align="center">
@@ -286,6 +288,8 @@ def saveOutputHTML(path, reactionModel):
                 </tr>
             </table>
         </td></tr>
+        
+        {% endif %}
     {% endfor %}
 </table>
 

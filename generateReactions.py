@@ -115,7 +115,7 @@ if __name__ == '__main__':
     if args.debug: level = 0
     elif args.verbose: level = logging.DEBUG
     elif args.quiet: level = logging.WARNING
-    initializeLog(level, os.path.join(args.output_directory,'generateReactions.log'))
+    initializeLog(level, os.path.join(args.output_directory,'RMG.log'))
 
     rmg = RMG()
     rmg.initialize(args)

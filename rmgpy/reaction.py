@@ -650,17 +650,19 @@ class Reaction:
             return kr       
         
         elif isinstance(kf, MultiArrhenius):
-            kr = MultiArrhenius()            
+            kr = MultiArrhenius()
+            kr.arrhenius = []            
             rxn = Reaction(reactants = self.reactants, products = self.products)            
-            for kinetics in kf.kineticsList:
+            for kinetics in kf.arrhenius:
                 rxn.kinetics = kinetics
                 kr.arrhenius.append(rxn.generateReverseRateCoefficient())
             return kr
         
         elif isinstance(kf, MultiPDepArrhenius):
-            kr = MultiPDepArrhenius()            
+            kr = MultiPDepArrhenius()              
+            kr.arrhenius = []                
             rxn = Reaction(reactants = self.reactants, products = self.products)            
-            for kinetics in kf.kineticsList:
+            for kinetics in kf.arrhenius:
                 rxn.kinetics = kinetics
                 kr.arrhenius.append(rxn.generateReverseRateCoefficient())
             return kr
@@ -906,3 +908,73 @@ class ReactionModel:
             j = rxn.index - 1
             rxnRates[j] = rxn.getRate(T, P, Ci)
         return rxnRates
+
+    def merge(self, other):
+        """
+        Return a new :class:`ReactionModel` object that is the union of this
+        model and `other`.
+        """
+        if not isinstance(other, ReactionModel):
+            raise ValueError('Expected type ReactionModel for other parameter, got {0}'.format(other.__class__))
+
+        # Initialize the merged model
+        finalModel = ReactionModel()
+        
+        # Put the current model into the merged model as-is
+        finalModel.species.extend(self.species)
+        finalModel.reactions.extend(self.reactions)
+        
+        # Determine which species in other are already in self
+        commonSpecies = {}; uniqueSpecies = []
+        for spec in other.species:
+            for spec0 in finalModel.species:
+                if spec.isIsomorphic(spec0):
+                    commonSpecies[spec] = spec0
+                    if spec0.label not in ['Ar','N2','Ne','He']:
+                        if not spec0.thermo.isIdenticalTo(spec.thermo):
+                            print 'Species {0} thermo from model 1 did not match that of model 2.'.format(spec.label)
+                        
+                    break
+            else:
+                uniqueSpecies.append(spec)
+        
+        # Determine which reactions in other are already in self
+        commonReactions = {}; uniqueReactions = []
+        for rxn in other.reactions:
+            for rxn0 in finalModel.reactions:
+                if rxn.isIsomorphic(rxn0, eitherDirection=True):
+                    commonReactions[rxn] = rxn0                    
+                    if not rxn0.kinetics.isIdenticalTo(rxn.kinetics):
+                        print 'Reaction {0} kinetics from model 1 did not match that of model 2.'.format(str(rxn0))
+                    break
+            else:
+                uniqueReactions.append(rxn)
+        
+        # Add the unique species from other to the final model
+        finalModel.species.extend(uniqueSpecies)
+    
+        # Renumber the unique species (to avoid name conflicts on save)
+        speciesIndex = 0
+        for spec in finalModel.species:
+            if spec.label not in ['Ar','N2','Ne','He']:
+                spec.index = speciesIndex + 1
+                speciesIndex += 1
+        
+        # Make sure unique reactions only refer to species in the final model
+        for rxn in uniqueReactions:
+            for i, reactant in enumerate(rxn.reactants):
+                try:
+                    rxn.reactants[i] = commonSpecies[reactant]
+                except KeyError:
+                    pass
+            for i, product in enumerate(rxn.products):
+                try:
+                    rxn.products[i] = commonSpecies[product]
+                except KeyError:
+                    pass
+        
+        # Add the unique reactions from other to the final model
+        finalModel.reactions.extend(uniqueReactions)
+    
+        # Return the merged model
+        return finalModel

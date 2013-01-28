@@ -227,6 +227,7 @@ class CoreEdgeReactionModel:
         self.outputReactionList = []
         self.pressureDependence = None
         self.kineticsEstimator = 'group additivity'
+        self.reactionGenerationOptions = {}
 
     def checkForExistingSpecies(self, molecule):
         """
@@ -490,14 +491,15 @@ class CoreEdgeReactionModel:
         Generates reactions involving :class:`rmgpy.species.Species` speciesA and speciesB.
         """
         reactionList = []
+        options = self.reactionGenerationOptions
         if speciesB is None:
             for moleculeA in speciesA.molecule:
-                reactionList.extend(database.kinetics.generateReactions([moleculeA]))
+                reactionList.extend(database.kinetics.generateReactions([moleculeA], **options))
                 moleculeA.clearLabeledAtoms()
         else:
             for moleculeA in speciesA.molecule:
                 for moleculeB in speciesB.molecule:
-                    reactionList.extend(database.kinetics.generateReactions([moleculeA, moleculeB]))
+                    reactionList.extend(database.kinetics.generateReactions([moleculeA, moleculeB], **options))
                     moleculeA.clearLabeledAtoms()
                     moleculeB.clearLabeledAtoms()
         return reactionList

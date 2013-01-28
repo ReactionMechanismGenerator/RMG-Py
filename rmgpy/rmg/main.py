@@ -146,6 +146,7 @@ class RMG:
         self.generatePlots = None
         self.saveConcentrationProfiles = None
         self.pressureDependence = None
+        self.reactionGenerationOptions = {}
         self.wallTime = 0
         self.initializationTime = 0
     
@@ -165,6 +166,7 @@ class RMG:
                 self.outputDirectory = os.path.dirname(path)
             self.pressureDependence.outputFile = self.outputDirectory
             self.reactionModel.pressureDependence = self.pressureDependence
+        self.reactionModel.reactionGenerationOptions = self.reactionGenerationOptions
         
     def checkInput(self):
         """
