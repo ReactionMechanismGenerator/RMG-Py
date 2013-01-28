@@ -1314,115 +1314,77 @@ class KineticsFamily(Database):
                                         rxn = self.__createReaction(reactantStructures, productStructures, forward)
                                         if rxn: rxnList.append(rxn)
   
+        # If products is given, remove reactions from the reaction list that
+        # don't generate the given products
+        if products is not None:
+            
+            products = [product.generateResonanceIsomers() for product in products]
+            
+            rxnList0 = rxnList[:]
+            rxnList = []
+            index = 0
+            for reaction in rxnList0:
+            
+                products0 = reaction.products if forward else reaction.reactants
+                    
+                # Skip reactions that don't match the given products
+                match = False
+                if len(products) == len(products0) == 1:
+                    for product in products[0]:
+                        if products0[0].isIsomorphic(product):
+                            match = True
+                            break
+                elif len(products) == len(products0) == 2:
+                    for productA in products[0]:
+                        for productB in products[1]:
+                            if products0[0].isIsomorphic(productA) and products0[1].isIsomorphic(productB):
+                                match = True
+                                break
+                            elif products0[0].isIsomorphic(productB) and products0[1].isIsomorphic(productA):
+                                match = True
+                                break
+                    
+                if match: 
+                    rxnList.append(reaction) 
+            
         # The reaction list may contain duplicates of the same reaction
         # These duplicates should be combined (by increasing the degeneracy of
         # one of the copies and removing the others)
-        # The reaction list may also contain reactions that produce products
-        # other than the ones specified (if given); these should be removed
-        rxnList0 = rxnList[:]
-        rxnList = []
         index0 = 0
-        while index0 < len(rxnList0):
-            reaction0 = rxnList0[index0]
+        while index0 < len(rxnList):
+            reaction0 = rxnList[index0]
             
-            # Generate resonance isomers for products of the current reaction
-            if forward:
-                reactants0 = None
-                products0 = [product.generateResonanceIsomers() for product in reaction0.products]
+            products0 = reaction0.products if forward else reaction0.reactants
+            products0 = [product.generateResonanceIsomers() for product in products0]
             
-                # If products is given, skip reactions that don't match the given products
-                if products is not None:
-                    match = False
-                    if len(products) == len(products0) == 1:
-                        for product in products0[0]:
-                            if products[0].isIsomorphic(product):
-                                match = True
-                                break
-                    elif len(products) == len(products0) == 2:
-                        for productA in products0[0]:
-                            for productB in products0[1]:
-                                if products[0].isIsomorphic(productA) and products[1].isIsomorphic(productB):
-                                    match = True
-                                    break
-                                elif products[0].isIsomorphic(productB) and products[1].isIsomorphic(productA):
-                                    match = True
-                                    break
-                else:
-                    match = True
-            
-            else:
-                reactants0 = [reactant.generateResonanceIsomers() for reactant in reaction0.reactants]
-                products0 = None
-
-                # If products is given, skip reactions that don't match the given products
-                if products is not None:
-                    match = False
-                    if len(products) == len(reactants0) == 1:
-                        for reactant in reactants0[0]:
-                            if products[0].isIsomorphic(reactant):
-                                match = True
-                                break
-                    elif len(products) == len(reactants0) == 2:
-                        for reactantA in reactants0[0]:
-                            for reactantB in reactants0[1]:
-                                if products[0].isIsomorphic(reactantA) and reactants[1].isIsomorphic(reactantB):
-                                    match = True
-                                    break
-                                elif products[0].isIsomorphic(reactantB) and reactants[1].isIsomorphic(reactantA):
-                                    match = True
-                                    break
-                else:
-                    match = True
-            
-            if not match: 
-                index0 += 1
-                continue
-                
-            rxnList.append(reaction0) 
-
             # Remove duplicates from the reaction list
             index = index0 + 1
-            while index < len(rxnList0):
-                reaction = rxnList0[index]
+            while index < len(rxnList):
+                reaction = rxnList[index]
             
+                products = reaction.products if forward else reaction.reactants
+                
+                # We know the reactants are the same, so we only need to compare the products
                 match = False
-                if forward:
-                    # We know the reactants are the same, so we only need to compare the products
-                    if len(reaction.products) == len(products0) == 1:
-                        for product in products0[0]:
-                            if reaction.products[0].isIsomorphic(product):
+                if len(products) == len(products0) == 1:
+                    for product in products0[0]:
+                        if products[0].isIsomorphic(product):
+                            match = True
+                            break
+                elif len(products) == len(products0) == 2:
+                    for productA in products0[0]:
+                        for productB in products0[1]:
+                            if products[0].isIsomorphic(productA) and products[1].isIsomorphic(productB):
                                 match = True
                                 break
-                    elif len(reaction.products) == len(products0) == 2:
-                        for productA in products0[0]:
-                            for productB in products0[1]:
-                                if reaction.products[0].isIsomorphic(productA) and reaction.products[1].isIsomorphic(productB):
-                                    match = True
-                                    break
-                                elif reaction.products[0].isIsomorphic(productB) and reaction.products[1].isIsomorphic(productA):
-                                    match = True
-                                    break
-                else:
-                    # We know the products are the same, so we only need to compare the reactants
-                    if len(reaction.reactants) == len(reactants0) == 1:
-                        for reactant in reactants0[0]:
-                            if reaction.reactants[0].isIsomorphic(reactant):
+                            elif products[0].isIsomorphic(productB) and products[1].isIsomorphic(productA):
                                 match = True
                                 break
-                    elif len(reaction.reactants) == len(reactants0) == 2:
-                        for reactantA in reactants0[0]:
-                            for reactantB in reactants0[1]:
-                                if reaction.reactants[0].isIsomorphic(reactantA) and reaction.reactants[1].isIsomorphic(reactantB):
-                                    match = True
-                                    break
-                                elif reaction.reactants[0].isIsomorphic(reactantB) and reaction.reactants[1].isIsomorphic(reactantA):
-                                    match = True
-                                    break
                     
                 # If we found a match, remove it from the list
                 # Also increment the reaction path degeneracy of the remaining reaction
                 if match:
-                    rxnList0.remove(reaction)
+                    rxnList.remove(reaction)
                     reaction0.degeneracy += 1
                 else:
                     index += 1
