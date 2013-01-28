@@ -240,12 +240,6 @@ class QMMolecule:
         """
         # First, see if we already have it.
         if self.loadThermoData():
-            # We should only have to do these calculations once when generating the thermo,
-            # but have to make changes to the saveThermoData and loadThermoData methods first.
-            Cp0 = self.molecule.calculateCp0()
-            CpInf = self.molecule.calculateCpInf()
-            self.thermo.Cp0 = (Cp0,"J/(mol*K)")
-            self.thermo.CpInf = (CpInf,"J/(mol*K)")
             return self.thermo
         
         # If not, generate the QM data
