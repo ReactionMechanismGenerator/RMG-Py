@@ -1229,16 +1229,28 @@ class Molecule(Graph):
         self.symmetryNumber = calculateSymmetryNumber(self)
         return self.symmetryNumber
     
+    def isRadical(self):
+        """
+        Return ``True`` if the molecule contains at least one radical electron,
+        or ``False`` otherwise.
+        """
+        cython.declare(atom=Atom)
+        for atom in self.vertices:
+            if atom.radicalElectrons > 0:
+                return True
+        return False
+    
     def generateResonanceIsomers(self):
         """
         Generate and return all of the resonance isomers of this molecule.
         """
+        cython.declare(isomers=list, newIsomers=list, index=cython.int, atom=Atom)
+        cython.declare(isomer=Molecule, newIsomer=Molecule, isom=Molecule)
         
         isomers = [self]
 
-        # Radicals
-        if sum([atom.radicalElectrons for atom in isomers[0].atoms]) > 0:
-            # Iterate over resonance isomers
+        # Iterate over resonance isomers
+        if self.isRadical():
             index = 0
             while index < len(isomers):
                 isomer = isomers[index]
@@ -1260,16 +1272,18 @@ class Molecule(Graph):
         """
         Generate all of the resonance isomers formed by one allyl radical shift.
         """
-
+        cython.declare(isomers=list, paths=list, index=cython.int, isomer=Molecule)
+        cython.declare(atom=Atom, atom1=Atom, atom2=Atom, atom3=Atom, bond12=Bond, bond23=Bond)
+        cython.declare(v1=Vertex, v2=Vertex)
+        
         isomers = []
 
         # Radicals
-        if sum([atom.radicalElectrons for atom in self.vertices]) > 0:
+        if self.isRadical():
             # Iterate over radicals in structure
             for atom in self.vertices:
                 paths = self.findAllDelocalizationPaths(atom)
-                for path in paths:
-                    atom1, atom2, atom3, bond12, bond23 = path
+                for atom1, atom2, atom3, bond12, bond23 in paths:
                     # Adjust to (potentially) new resonance isomer
                     atom1.decrementRadical()
                     atom3.incrementRadical()
@@ -1279,7 +1293,9 @@ class Molecule(Graph):
                     isomer = self.copy(deep=True)
                     # Also copy the connectivity values, since they are the same
                     # for all resonance forms
-                    for v1, v2 in zip(self.vertices, isomer.vertices):
+                    for index in range(len(self.vertices)):
+                        v1 = self.vertices[index]
+                        v2 = isomer.vertices[index]
                         v2.connectivity1 = v1.connectivity1
                         v2.connectivity2 = v1.connectivity2
                         v2.connectivity3 = v1.connectivity3
@@ -1299,7 +1315,9 @@ class Molecule(Graph):
         Find all the delocalization paths allyl to the radical center indicated
         by `atom1`. Used to generate resonance isomers.
         """
-
+        cython.declare(paths=list)
+        cython.declare(atom2=Atom, atom3=Atom, bond12=Bond, bond23=Bond)
+        
         # No paths if atom1 is not a radical
         if atom1.radicalElectrons <= 0:
             return []
@@ -1308,10 +1326,10 @@ class Molecule(Graph):
         paths = []
         for atom2, bond12 in atom1.edges.items():
             # Vinyl bond must be capable of gaining an order
-            if bond12.order in ['S', 'D']:
+            if bond12.isSingle() or bond12.isDouble():
                 for atom3, bond23 in atom2.edges.items():
                     # Allyl bond must be capable of losing an order without breaking
-                    if atom1 is not atom3 and (bond23.order == 'D' or bond23.order == 'T'):
+                    if atom1 is not atom3 and (bond23.isDouble() or bond23.isTriple()):
                         paths.append([atom1, atom2, atom3, bond12, bond23])
         return paths
 
