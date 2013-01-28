@@ -5,7 +5,7 @@ import os
 from unittest import TestCase
 
 from rmgpy import settings
-from species import Species
+from rmgpy.species import Species
 from rmgpy.data.solvation import *
 from rmgpy.molecule.molecule import Molecule
 
