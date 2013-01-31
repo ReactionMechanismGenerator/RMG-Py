@@ -977,7 +977,7 @@ def getSpeciesIdentifier(species):
 
 ################################################################################
 
-def writeThermoEntry(species):
+def writeThermoEntry(species, verbose = True):
     """
     Return a string representation of the NASA model readable by Chemkin.
     To use this method you must have exactly two NASA polynomials in your
@@ -1013,9 +1013,17 @@ def writeThermoEntry(species):
             del elementCounts[index]
         else:
             index += 1
+    
+    string = ''
+    # Write thermo comments
+    if verbose:
+        if thermo.comment:
+            string += '! Thermo comments:\n'
+            for line in thermo.comment.split("\n"):
+                string += "!   {0}\n".format(line) 
 
     # Line 1
-    string = '{0:<16}        '.format(getSpeciesIdentifier(species))
+    string += '{0:<16}        '.format(getSpeciesIdentifier(species))
     if len(elements) <= 4:
         # Use the original Chemkin syntax for the element counts
         for symbol, count in zip(elements, elementCounts):
@@ -1056,7 +1064,7 @@ def writeKineticsEntry(reaction, speciesList, verbose = True, javaLibrary = Fals
     if isinstance(reaction.kinetics, (MultiArrhenius, MultiPDepArrhenius)):
 #        if isinstance(reaction,LibraryReaction):
 #            string += '! Library reaction: {0!s}\n'.format(reaction.library.label)
-        if verbose == True:
+        if verbose:
             if reaction.kinetics.comment:
                 string += '! Kinetics comments:\n'
                 for line in reaction.kinetics.comment.split("\n"):
@@ -1080,7 +1088,7 @@ def writeKineticsEntry(reaction, speciesList, verbose = True, javaLibrary = Fals
             string += "DUPLICATE\n"
         return string + "\n"
     
-    if verbose == True:
+    if verbose:
         # First line of comment contains reaction equation
         string += '! {0!s}\n'.format(reaction)
         
@@ -1296,14 +1304,17 @@ def saveChemkinFile(path, species, reactions, verbose = True):
     f.write('SPECIES\n')
     for spec in sorted_species:
         label = getSpeciesIdentifier(spec)
-        f.write('    {0!s:<16}    ! {1}\n'.format(label, str(spec)))
+        if verbose:
+            f.write('    {0!s:<16}    ! {1}\n'.format(label, str(spec)))
+        else:
+            f.write('    {0!s:<16}\n'.format(label))
     f.write('END\n\n\n\n')
 
     # Thermodynamics section
     f.write('THERM ALL\n')
     f.write('    300.000  1000.000  5000.000\n\n')
     for spec in sorted_species:
-        f.write(writeThermoEntry(spec))
+        f.write(writeThermoEntry(spec, verbose=verbose))
         f.write('\n')
     f.write('END\n\n\n\n')
 

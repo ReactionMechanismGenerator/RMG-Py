@@ -871,7 +871,7 @@ class ThermoDatabase(object):
         if thermoData1.comment:
             thermoData1.comment += ' + {0}'.format(thermoData2.comment)
         else:
-            thermoData1.comment = thermoData2.comment
+            thermoData1.comment = 'Thermo group additivity estimation: ' + thermoData2.comment
         
         return thermoData1
 
