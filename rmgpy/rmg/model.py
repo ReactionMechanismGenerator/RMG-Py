@@ -94,6 +94,8 @@ class Species(rmgpy.species.Species):
             CpInf = self.calculateCpInf()
             wilhoit = thermo0.toWilhoit(Cp0=Cp0, CpInf=CpInf)
             
+        wilhoit.comment = thermo0.comment
+            
         # Compute E0 by extrapolation to 0 K
         if self.conformer is None:
             self.conformer = Conformer()
@@ -1474,7 +1476,7 @@ class CoreEdgeReactionModel:
         for rxn in seedReactionList:
             self.addReactionToCore(rxn)
 
-    def saveChemkinFile(self, path, dictionaryPath=None):
+    def saveChemkinFile(self, path, verbose_path, dictionaryPath=None):
         """
         Save a Chemkin file for the current model core as well as any desired output
         species and reactions to `path`.
@@ -1482,6 +1484,7 @@ class CoreEdgeReactionModel:
         from rmgpy.chemkin import saveChemkinFile, saveSpeciesDictionary
         speciesList = self.core.species + self.outputSpeciesList
         rxnList = self.core.reactions + self.outputReactionList
-        saveChemkinFile(path, speciesList, rxnList)
+        saveChemkinFile(path, speciesList, rxnList, verbose = False)
+        saveChemkinFile(verbose_path, speciesList, rxnList, verbose = True)
         if dictionaryPath:
             saveSpeciesDictionary(dictionaryPath, speciesList)

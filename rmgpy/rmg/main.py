@@ -621,8 +621,9 @@ class RMG:
         logging.info('Saving current model to Chemkin file...')
         this_chemkin_path = os.path.join(self.outputDirectory, 'chemkin', 'chem%04i.inp' % len(self.reactionModel.core.species))
         latest_chemkin_path = os.path.join(self.outputDirectory, 'chemkin','chem.inp')
+        latest_chemkin_verbose_path = os.path.join(self.outputDirectory, 'chemkin', 'chem_annotated.inp')
         latest_dictionary_path = os.path.join(self.outputDirectory, 'chemkin','species_dictionary.txt')
-        self.reactionModel.saveChemkinFile(this_chemkin_path, latest_dictionary_path)
+        self.reactionModel.saveChemkinFile(this_chemkin_path, latest_chemkin_verbose_path, latest_dictionary_path)
         if os.path.exists(latest_chemkin_path):
             os.unlink(latest_chemkin_path)
         shutil.copy2(this_chemkin_path,latest_chemkin_path)
