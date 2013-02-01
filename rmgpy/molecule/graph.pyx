@@ -33,7 +33,7 @@ are the components of a graph.
 """
 
 import logging
-from .vf2 cimport VF2_isomorphism
+from .vf2 cimport VF2
 
 ################################################################################
 
@@ -193,6 +193,8 @@ cdef class Edge(object):
             raise ValueError('The given vertex is not one of the vertices of this edge.')
 
 ################################################################################
+
+cdef VF2 vf2 = VF2()
 
 cdef class Graph:
     """
@@ -433,7 +435,7 @@ cdef class Graph:
         Returns :data:`True` if two graphs are isomorphic and :data:`False`
         otherwise. Uses the VF2 algorithm of Vento and Foggia.
         """
-        return VF2_isomorphism(self, other, False, False, initialMap)
+        return vf2.isIsomorphic(self, other, initialMap)
 
     cpdef list findIsomorphism(self, Graph other, dict initialMap=None):
         """
@@ -441,14 +443,14 @@ cdef class Graph:
         otherwise, and the matching mapping.
         Uses the VF2 algorithm of Vento and Foggia.
         """
-        return VF2_isomorphism(self, other, False, True, initialMap)
+        return vf2.findIsomorphism(self, other, initialMap)
 
     cpdef bint isSubgraphIsomorphic(self, Graph other, dict initialMap=None) except -2:
         """
         Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
         otherwise. Uses the VF2 algorithm of Vento and Foggia.
         """
-        return VF2_isomorphism(self, other, True, False, initialMap)
+        return vf2.isSubgraphIsomorphic(self, other, initialMap)
 
     cpdef list findSubgraphIsomorphisms(self, Graph other, dict initialMap=None):
         """
@@ -457,7 +459,7 @@ cdef class Graph:
 
         Uses the VF2 algorithm of Vento and Foggia.
         """
-        return VF2_isomorphism(self, other, True, True, initialMap)
+        return vf2.findSubgraphIsomorphisms(self, other, initialMap)
 
     cpdef bint isCyclic(self) except -2:
         """
