@@ -226,34 +226,7 @@ class PressureDependenceJob(object):
         if outputFile is not None:
             self.draw(os.path.dirname(outputFile))
         
-        for reaction in self.network.pathReactions:
-            tunneling = reaction.transitionState.tunneling
-            if isinstance(tunneling, Wigner) and tunneling.frequency is None:
-                tunneling.frequency = (reaction.transitionState.frequency.value_si,"cm^-1")
-            elif isinstance(tunneling, Eckart) and tunneling.frequency is None:
-                tunneling.frequency = (reaction.transitionState.frequency.value_si,"cm^-1")
-                tunneling.E0_reac = (sum([reactant.conformer.E0.value_si for reactant in reaction.reactants])*0.001,"kJ/mol")
-                tunneling.E0_TS = (reaction.transitionState.conformer.E0.value_si*0.001,"kJ/mol")
-                tunneling.E0_prod = (sum([product.conformer.E0.value_si for product in reaction.products])*0.001,"kJ/mol")
-            elif tunneling is not None:
-                raise ValueError('Unknown tunneling model {0!r} for path reaction {1}.'.format(tunneling, reaction))
-
-        maximumGrainSize = self.maximumGrainSize.value_si if self.maximumGrainSize is not None else 0.0
-        
-        self.network.initialize(
-            Tmin = self.Tmin.value_si, 
-            Tmax = self.Tmax.value_si, 
-            Pmin = self.Pmin.value_si, 
-            Pmax = self.Pmax.value_si, 
-            maximumGrainSize = maximumGrainSize, 
-            minimumGrainCount = self.minimumGrainCount, 
-            activeJRotor = self.activeJRotor, 
-            activeKRotor = self.activeKRotor, 
-            rmgmode = self.rmgmode,
-        )
-
-        self.generateTemperatureList()
-        self.generatePressureList()
+        self.initialize()
         
         self.K = self.network.calculateRateCoefficients(self.Tlist.value_si, self.Plist.value_si, self.method)
 
@@ -291,6 +264,36 @@ class PressureDependenceJob(object):
             Tlist = 1.0/numpy.linspace(1.0/Tmax, 1.0/Tmin, Tcount)
             self.Tlist = (Tlist,"K")
         return self.Tlist.value_si
+    
+    def initialize(self):
+        for reaction in self.network.pathReactions:
+            tunneling = reaction.transitionState.tunneling
+            if isinstance(tunneling, Wigner) and tunneling.frequency is None:
+                tunneling.frequency = (reaction.transitionState.frequency.value_si,"cm^-1")
+            elif isinstance(tunneling, Eckart) and tunneling.frequency is None:
+                tunneling.frequency = (reaction.transitionState.frequency.value_si,"cm^-1")
+                tunneling.E0_reac = (sum([reactant.conformer.E0.value_si for reactant in reaction.reactants])*0.001,"kJ/mol")
+                tunneling.E0_TS = (reaction.transitionState.conformer.E0.value_si*0.001,"kJ/mol")
+                tunneling.E0_prod = (sum([product.conformer.E0.value_si for product in reaction.products])*0.001,"kJ/mol")
+            elif tunneling is not None:
+                raise ValueError('Unknown tunneling model {0!r} for path reaction {1}.'.format(tunneling, reaction))
+
+        maximumGrainSize = self.maximumGrainSize.value_si if self.maximumGrainSize is not None else 0.0
+        
+        self.network.initialize(
+            Tmin = self.Tmin.value_si, 
+            Tmax = self.Tmax.value_si, 
+            Pmin = self.Pmin.value_si, 
+            Pmax = self.Pmax.value_si, 
+            maximumGrainSize = maximumGrainSize, 
+            minimumGrainCount = self.minimumGrainCount, 
+            activeJRotor = self.activeJRotor, 
+            activeKRotor = self.activeKRotor, 
+            rmgmode = self.rmgmode,
+        )
+
+        self.generateTemperatureList()
+        self.generatePressureList()
     
     def generatePressureList(self):
         """
