@@ -202,6 +202,7 @@ def applyChemicallySignificantEigenvaluesMethod(network):
                         if index > -1:
                             pa[i,src,r,s] = X[index,src]
     
+    pa[:,Nisom:,:,:] /= ymB
     K[:,Nisom:] /= ymB
 
     # Return the matrix of k(T,P) values and the pseudo-steady population distributions
