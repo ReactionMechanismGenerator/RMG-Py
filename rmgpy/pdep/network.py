@@ -805,11 +805,63 @@ class Network:
             for n in range(Nisom, Nisom+Nreac+Nprod):
                 x[m,n] = ode.y[-(Nisom+Nreac+Nprod)+n]
     
-        import pylab
-        pylab.loglog(t,x)
-        pylab.ylim(1e-12, 1e0)
-        pylab.show()
+        return t, p, x
+
+    def solveReducedME(self, tlist, x0):
+        """
+        Directly solve the reduced master equation using a stiff ODE solver. 
+        Pass the output time points `tlist` in s and the initial total
+        populations `x0`. Be sure to run one of the methods for generating
+        :math:`k(T,P)` values before calling this method.
+        Returns the times in s, population distributions for each isomer, and total
+        population profiles for each configuration.
+        """
+        import scipy.integrate
     
+        Elist = self.Elist
+        Jlist = self.Jlist
+        
+        Nisom = self.Nisom
+        Nreac = self.Nreac
+        Nprod = self.Nprod
+        Ngrains = len(Elist)
+        NJ = len(Jlist)
+        Ntime = len(tlist)
+        
+        def residual(t, y, K):
+            return numpy.dot(K, y)
+        
+        def jacobian(t, y, K):
+            return K
+    
+        ymB = self.P * 1e5 / constants.R / self.T * 1e-6
+        K = self.K[:,:]
+        K[:,Nisom:] *= ymB
+        
+        # Set up ODEs
+        ode = scipy.integrate.ode(residual, jacobian).set_integrator('vode', method='bdf', with_jacobian=True, atol=1e-16, rtol=1e-8)
+        ode.set_initial_value(x0, 0.0).set_f_params(K).set_jac_params(K)
+    
+        # Generate solution
+        t = numpy.zeros([Ntime], float)
+        p = numpy.zeros([Ntime, Nisom, Ngrains, NJ], float)
+        x = numpy.zeros([Ntime, Nisom+Nreac+Nprod], float)
+        for m in range(Ntime):
+            ode.integrate(tlist[m])
+            t[m] = ode.t
+            for i in range(Nisom):
+                x[m,i] = ode.y[i]
+                for j in range(Nisom):
+                    for r in range(Ngrains):
+                        for s in range(NJ):
+                            p[m,i,r,s] += ode.y[j] * self.p0[i,j,r,s]
+                for j in range(Nisom, Nisom+Nreac):
+                    for r in range(Ngrains):
+                        for s in range(NJ):
+                            p[m,i,r,s] += ode.y[j] * self.p0[i,j,r,s] * ymB
+            for n in range(Nreac+Nprod):
+                x[m,n+Nisom] = ode.y[n+Nisom]
+                
         return t, p, x
 
     def printSummary(self, level=logging.INFO):
