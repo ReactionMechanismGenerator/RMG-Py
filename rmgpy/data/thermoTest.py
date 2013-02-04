@@ -33,8 +33,8 @@ class TestThermoDatabase(unittest.TestCase):
             # SMILES            symm  H298     S298     Cp300  Cp400  Cp500  Cp600  Cp800  Cp1000 Cp1500
             
             # 1,3-hexadiene decomposition products
-            ['C=CC=CCC',        3,    13.5090, 86.5641, 29.49, 37.67, 44.54, 50.12, 58.66, 64.95, 74.71],
-            ['[CH]=CC=CCC',     3,    72.6056, 87.9528, 29.30, 36.92, 43.18, 48.20, 55.84, 61.46, 70.18],
+            ['C=CC=CCC',        3,    13.45, 86.37, 29.49, 37.67, 44.54, 50.12, 58.66, 64.95, 74.71],
+            ['[CH]=CC=CCC',     3,    72.55, 87.76, 29.30, 36.92, 43.18, 48.20, 55.84, 61.46, 70.18],
             ['C=[C]C=CCC',      3,    61.2064, 87.2754, 29.68, 36.91, 43.03, 48.11, 55.96, 61.78, 71.54],
             ['C=C[C]=CCC',      3,    61.2064, 87.2754, 29.68, 36.91, 43.03, 48.11, 55.96, 61.78, 71.54],
             ['C=CC=[C]CC',      3,    70.4053, 88.3718, 29.15, 36.46, 42.60, 47.60, 55.32, 61.04, 69.95],
@@ -48,11 +48,11 @@ class TestThermoDatabase(unittest.TestCase):
             ['[CH]=CCC',        3,    59.0278, 75.1332, 20.38, 25.34, 29.68, 33.36, 39.14, 43.48, 50.22],
             
             # Cyclic structures
-            ['c1ccccc1',        1,    19.8389, 69.3100, 19.44, 26.64, 32.76, 37.80, 45.24, 50.46, 58.38],
-            ['C1CCCCC1',        1,   -29.4456, 74.8296, 27.20, 37.60, 46.60, 54.80, 67.50, 76.20, 88.50],
-            ['c1ccc2ccccc2c1',  1,    36.0639, 82.4536, 31.94, 42.88, 52.08, 59.62, 70.72, 78.68, 90.24],
-            ['C1CCC1',          1,     6.5148, 67.5963, 17.39, 23.91, 29.86, 34.76, 42.40, 47.98, 56.33],
-            ['C1C=CC=C1',       1,    32.5363, 67.0035, 18.16, 24.71, 30.25, 34.70, 41.25, 45.83, 52.61],
+            ['c1ccccc1',        12,    19.80, 64.24, 19.44, 26.64, 32.76, 37.80, 45.24, 50.46, 58.38],
+            ['C1CCCCC1',        12,   -29.45, 69.71, 27.20, 37.60, 46.60, 54.80, 67.50, 76.20, 88.50],
+            ['c1ccc2ccccc2c1',  1,    36.06, 79.49, 31.94, 42.88, 52.08, 59.62, 70.72, 78.68, 90.24],
+            ['C1CCC1',          8,     6.51, 63.35, 17.39, 23.91, 29.86, 34.76, 42.40, 47.98, 56.33],
+            ['C1C=CC=C1',       1,    32.53, 65.50, 18.16, 24.71, 30.25, 34.70, 41.25, 45.83, 52.61],
         ]
 
     def testNewThermoGeneration(self):
@@ -65,9 +65,7 @@ class TestThermoDatabase(unittest.TestCase):
             species = Species(molecule=[Molecule(SMILES=smiles)])
             species.generateResonanceIsomers()
             species.molecule[0]
-            thermoData = self.database.getThermoData(Species(molecule=[species.molecule[0]]))
-            print smiles
-            print thermoData
+            thermoData = self.database.getThermoDataFromGroups(Species(molecule=[species.molecule[0]]))[0]
             molecule = species.molecule[0]
             for mol in species.molecule[1:]:
                 thermoData0 = self.database.getAllThermoData(Species(molecule=[mol]))[0][0]
