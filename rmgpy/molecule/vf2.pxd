@@ -24,16 +24,33 @@
 #
 ################################################################################
 
-from .graph cimport Vertex, Edge, Graph
+from graph cimport Vertex, Edge, Graph
 
-################################################################################
+cdef class VF2:
 
-cpdef VF2_isomorphism(Graph graph1, Graph graph2, bint subgraph=?, bint findAll=?, dict initialMapping=?)
+    cdef Graph graph1, graph2
+    
+    cdef dict initialMapping
+    cdef bint subgraph
+    cdef bint findAll
+    
+    cdef bint isMatch
+    cdef list mappingList
+    
+    cpdef bint isIsomorphic(self, Graph graph1, Graph graph2, dict initialMapping) except -2
+        
+    cpdef list findIsomorphism(self, Graph graph1, Graph graph2, dict initialMapping)
 
-cdef bint VF2_feasible(Graph graph1, Graph graph2, Vertex vertex1, Vertex vertex2, bint subgraph) except -2
+    cpdef bint isSubgraphIsomorphic(self, Graph graph1, Graph graph2, dict initialMapping) except -2
 
-cdef bint VF2_match(Graph graph1, Graph graph2, bint subgraph, bint findAll, list mappingList, int callDepth) except -2
+    cpdef list findSubgraphIsomorphisms(self, Graph graph1, Graph graph2, dict initialMapping)
+    
+    cdef isomorphism(self, Graph graph1, Graph graph2, dict initialMapping, bint subgraph, bint findAll)
 
-cdef void VF2_addToMapping(Vertex vertex1, Vertex vertex2)
-
-cdef void VF2_removeFromMapping(Vertex vertex1, Vertex vertex2)
+    cdef bint match(self, int callDepth) except -2
+        
+    cdef bint feasible(self, Vertex vertex1, Vertex vertex2) except -2
+    
+    cdef addToMapping(self, Vertex vertex1, Vertex vertex2)
+        
+    cdef removeFromMapping(self, Vertex vertex1, Vertex vertex2)

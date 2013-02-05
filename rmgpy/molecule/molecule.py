@@ -592,10 +592,12 @@ class Molecule(Graph):
         
         # Carbon and hydrogen always come first if carbon is present
         if hasCarbon:
-            formula += 'C{0:d}'.format(elements['C'])
+            count = elements['C']
+            formula += 'C{0:d}'.format(count) if count > 1 else 'C'
             del elements['C']
             if hasHydrogen:
-                formula += 'H{0:d}'.format(elements['H'])
+                count = elements['H']
+                formula += 'H{0:d}'.format(count) if count > 1 else 'H'
                 del elements['H']
 
         # Other atoms are in alphabetical order
@@ -603,7 +605,8 @@ class Molecule(Graph):
         keys = elements.keys()
         keys.sort()
         for key in keys:
-            formula += '{0}{1:d}'.format(key, elements[key])
+            count = elements[key]
+            formula += '{0}{1:d}'.format(key, count) if count > 1 else key
         
         return formula
 
