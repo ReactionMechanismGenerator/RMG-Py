@@ -53,7 +53,7 @@ class ChemicallySignificantEigenvaluesError(Exception):
 
 ################################################################################
 
-def applyChemicallySignificantEigenvaluesMethod(network):
+def applyChemicallySignificantEigenvaluesMethod(network, list lumpingOrder=None):
 
     cdef numpy.ndarray[numpy.int_t,ndim=1] Jlist
     cdef numpy.ndarray[numpy.int_t,ndim=3] indices
@@ -61,6 +61,7 @@ def applyChemicallySignificantEigenvaluesMethod(network):
     cdef numpy.ndarray[numpy.float64_t,ndim=2] M, K, V0, V, Z, Zinv, Y, X
     cdef numpy.ndarray[numpy.float64_t,ndim=3] densStates
     cdef numpy.ndarray[numpy.float64_t,ndim=4] Kij, Gnj, Fim, pa
+    cdef list lumping, unlumping
     cdef double T, P, ymB
     cdef int Nisom, Nreac, Nprod, Ngrains, NJ, Nchem, Ncse, Nrows
     cdef int i, n, r, s, index
@@ -153,54 +154,76 @@ def applyChemicallySignificantEigenvaluesMethod(network):
     if Ncse != Nchem:
         logging.error('Could only identify {0:d} distinct eigenvalues, when {1:d} are required.'.format(Ncse, Nchem))
         logging.info('Last IERE = {0:g}    First CSE = {1:g}    Ratio = {2:g}'.format(W0[ind[-Nchem-1]], W0[ind[-Nchem]], W0[ind[-Nchem-1]] / W0[ind[-Nchem]]))
+        if lumpingOrder is None or len(lumpingOrder) < Nchem - Ncse:
+            # If we don't have a lumping order, then don't try to recover from
+            # this situation
+            return K, pa
+        lumping = lumpingOrder[0:Nchem-Ncse]
+        unlumping = [i for i in range(Nchem) if i not in lumping]
+    
     #elif Nprod == 0 and abs(W0[ind[-1]]) > 1e-3:
     #    logging.error('Could not identify zero eigenvalue.')
     #    logging.info('Zero CSE = {0:g}    Last CSE = {1:g}    Ratio = {2:g}'.format(W0[ind[-1]], W0[ind[-2]], W0[ind[-1]] / W0[ind[-2]]))
     else:
+        lumping = []
+        unlumping = range(Nchem)
 
-        # Extract the chemically-significant eigenvalues and eigenvectors
-        W = W0.take(ind[-Ncse:])
-        V = V0.take(ind[-Ncse:], axis=1)
+    # Extract the chemically-significant eigenvalues and eigenvectors
+    W = W0.take(ind[-Ncse:])
+    V = V0.take(ind[-Ncse:], axis=1)
+    
+    # Unsymmetrize the eigenvectors
+    for j in range(Ncse):
+        V[:,j] *= S
+
+    # Use the "long-time" method to extract the k(T,P) values
+    # This method is more numerically robust
+    # It also doesn't require finagling with various initial conditions
+    # Source: Robertson, Pilling, Jitariu, and Hillier, Phys. Chem. Chem. Phys 9, p. 4085-4097 (2007).
+    Z = numpy.zeros((Ncse,Ncse), numpy.float64)
+    Zinv = numpy.zeros((Ncse,Ncse), numpy.float64)
+    Y = numpy.zeros((Nprod,Ncse), numpy.float64)
+    for j in range(Ncse):
+        for i in range(Nisom):
+            if i in lumping: continue
+            i1 = unlumping.index(i)
+            for r in range(Ngrains):
+                for s in range(NJ):
+                    index = indices[i,r,s]
+                    if index > -1: 
+                        Z[i1,j] += V[index,j]
+    for j in range(Ncse):
+        for i in range(Nisom):
+            for r in range(Ngrains):
+                for s in range(NJ):
+                    index = indices[i,r,s]
+                    if index > -1: 
+                        for n in range(Nprod):
+                            Y[n,j] += Gnj[Nreac+n,i,r,s] * V[index,j]
+    for j in range(Ncse):
+        for n in range(Nreac):
+            index = Nrows - Nreac + n
+            Z[Nisom+n-len(lumping),j] += V[index,j]
+    
+    Zinv = numpy.linalg.inv(Z)
+    
+    for i, m in enumerate(unlumping):
+        for j, n in enumerate(unlumping):
+            K[m,n] = numpy.sum(Z[i,:] * W * Zinv[:,j])
+    for n in range(Nprod):
+        for j, m in enumerate(unlumping):
+            K[Nisom+Nreac+n,m] = numpy.sum(Y[n,:] * Zinv[:,j])
         
-        # Unsymmetrize the eigenvectors
-        for j in range(Ncse):
-            V[:,j] *= S
-        
-        # Use the "long-time" method to extract the k(T,P) values
-        # This method is more numerically robust
-        # It also doesn't require finagling with various initial conditions
-        # Source: Robertson, Pilling, Jitariu, and Hillier, Phys. Chem. Chem. Phys 9, p. 4085-4097 (2007).
-        Z = numpy.zeros((Ncse,Ncse), numpy.float64)
-        Y = numpy.zeros((Nprod,Ncse), numpy.float64)
-        for j in range(Ncse):
-            for i in range(Nisom):
-                for r in range(Ngrains):
-                    for s in range(NJ):
-                        index = indices[i,r,s]
-                        if index > -1: 
-                            Z[i,j] += V[index,j]
-                            for n in range(Nprod):
-                                Y[n,j] += Gnj[Nreac+n,i,r,s] * V[index,j]
-            for n in range(Nreac):
-                index = Nrows - Nreac + n
-                Z[Nisom+n,j] += V[index,j]
-        Zinv = numpy.linalg.inv(Z)
-        for i in range(Ncse):
-            for j in range(Ncse):
-                K[i,j] = numpy.sum(Z[i,:] * W * Zinv[:,j])
-        for n in range(Nprod):
-            for j in range(Ncse):
-                K[Nisom+Nreac+n,j] = numpy.sum(Y[n,:] * Zinv[:,j])
-        
-        # Compute pa
-        X = numpy.dot(V, Zinv)
-        for src in range(Nisom+Nreac):
-            for i in range(Nisom):
-                for r in range(Ngrains):
-                    for s in range(NJ):
-                        index = indices[i,r,s]
-                        if index > -1:
-                            pa[i,src,r,s] = X[index,src]
+    # Compute pa
+    X = numpy.dot(V, Zinv)
+    for src, src1 in enumerate(unlumping):
+        for i in range(Nisom):
+            if i in lumping: continue
+            for r in range(Ngrains):
+                for s in range(NJ):
+                    index = indices[i,r,s]
+                    if index > -1:
+                        pa[i,src1,r,s] = X[index,src]
     
     pa[:,Nisom:,:,:] /= ymB
     K[:,Nisom:] /= ymB

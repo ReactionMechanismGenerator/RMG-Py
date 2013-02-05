@@ -716,14 +716,17 @@ class Network:
         self.K, self.p0 = rs.applyReservoirStateMethod(self)
         return self.K, self.p0
     
-    def applyChemicallySignificantEigenvaluesMethod(self):
+    def applyChemicallySignificantEigenvaluesMethod(self, lumpingOrder=None):
         """
         Compute the phenomenological rate coefficients :math:`k(T,P)` at the
         current conditions using the chemically-significant eigenvalues method.
+        If a `lumpingOrder` is provided, the algorithm will attempt to lump the
+        configurations (given by index) in the order provided, and return a
+        reduced set of :math:`k(T,P)` values. 
         """
         import rmgpy.pdep.cse as cse
         logging.debug('Applying chemically-significant eigenvalues method at {0:g} K, {1:g} bar...'.format(self.T, self.P))
-        self.K, self.p0 = cse.applyChemicallySignificantEigenvaluesMethod(self)
+        self.K, self.p0 = cse.applyChemicallySignificantEigenvaluesMethod(self, lumpingOrder)
         return self.K, self.p0
     
     def generateFullMEMatrix(self, products=True):
