@@ -345,8 +345,8 @@ cdef class Configuration:
             
             Blist = []
             for spec in self.species:
-                Jrotor, Krotor = spec.statmech.getSymmetricTopRotors()
-                Blist.append(float(Jrotor.rotationalConstant))
+                Jrotor, Krotor = spec.conformer.getSymmetricTopRotors()
+                Blist.append(float(Jrotor.rotationalConstant.value_si))
         
             for r0 in range(Ngrains):
                 if Elist[r0] >= E0: break
@@ -365,11 +365,11 @@ cdef class Configuration:
                 for r in range(r0, Ngrains):
                     for s in range(NJ):
                         J = Jlist[s]
-                        for t in range(s):
+                        for t in range(s+1):
                             J1 = Jlist[t]; J2 = J - J1
                             E = Elist[r] - E0 - B1 * J1 * (J1 + 1) - B2 * J2 * (J2 + 1)
                             if E > 0:
-                                densStates[r,s] = exp(f(E))
+                                densStates[r,s] += exp(f(E))
         
         return densStates * dE / dE0
 
@@ -408,8 +408,8 @@ cdef class Configuration:
             
             Blist = []
             for spec in self.species:
-                Jrotor, Krotor = spec.statmech.getSymmetricTopRotors()
-                Blist.append(float(Jrotor.rotationalConstant))
+                Jrotor, Krotor = spec.conformer.getSymmetricTopRotors()
+                Blist.append(float(Jrotor.rotationalConstant.value_si))
         
             for r0 in range(Ngrains):
                 if Elist[r0] >= E0: break
@@ -428,10 +428,10 @@ cdef class Configuration:
                 for r in range(r0, Ngrains):
                     for s in range(NJ):
                         J = Jlist[s]
-                        for t in range(s):
+                        for t in range(s+1):
                             J1 = Jlist[t]; J2 = J - J1
                             E = Elist[r] - E0 - B1 * J1 * (J1 + 1) - B2 * J2 * (J2 + 1)
                             if E > 0:
-                                sumStates[r,s] = exp(f(E))
+                                sumStates[r,s] += exp(f(E))
         
         return sumStates
