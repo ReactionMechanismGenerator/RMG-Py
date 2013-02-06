@@ -552,14 +552,17 @@ class Network:
             Keq_expected = self.eqRatios[prod] / self.eqRatios[reac] 
 
             # Determine the actual values of k(T) and Keq
-            kf0 = 0.0; kr0 = 0.0; Qf = 0.0; Qr = 0.0
+            C0 = 1e5 / (constants.R * T)
+            kf0 = 0.0; kr0 = 0.0; Qreac = 0.0; Qprod = 0.0
             for s in range(NJ):
                 kf0 += numpy.sum(kf[:,s] * reacDensStates[:,s] * (2*Jlist[s]+1) * numpy.exp(-Elist / constants.R / T)) 
                 kr0 += numpy.sum(kr[:,s] * prodDensStates[:,s] * (2*Jlist[s]+1) * numpy.exp(-Elist / constants.R / T)) 
-                Qf += numpy.sum(reacDensStates[:,s] * (2*Jlist[s]+1) * numpy.exp(-Elist / constants.R / T)) 
-                Qr += numpy.sum(prodDensStates[:,s] * (2*Jlist[s]+1) * numpy.exp(-Elist / constants.R / T)) 
-            kf_actual = kf0 / Qf if Qf > 0 else 0
-            kr_actual = kr0 / Qr if Qr > 0 else 0
+                Qreac += numpy.sum(reacDensStates[:,s] * (2*Jlist[s]+1) * numpy.exp(-Elist / constants.R / T)) 
+                Qprod += numpy.sum(prodDensStates[:,s] * (2*Jlist[s]+1) * numpy.exp(-Elist / constants.R / T)) 
+            kr0 *= C0 ** (len(rxn.products) - len(rxn.reactants))
+            Qprod *= C0 ** (len(rxn.products) - len(rxn.reactants))
+            kf_actual = kf0 / Qreac if Qreac > 0 else 0
+            kr_actual = kr0 / Qprod if Qprod > 0 else 0
             Keq_actual = kf_actual / kr_actual if kr_actual > 0 else 0
                 
             error = False; warning = False
