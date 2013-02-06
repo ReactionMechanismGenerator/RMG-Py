@@ -552,14 +552,17 @@ class Network:
             Keq_expected = self.eqRatios[prod] / self.eqRatios[reac] 
 
             # Determine the actual values of k(T) and Keq
-            kf0 = 0.0; kr0 = 0.0; Qf = 0.0; Qr = 0.0
+            C0 = 1e5 / (constants.R * T)
+            kf0 = 0.0; kr0 = 0.0; Qreac = 0.0; Qprod = 0.0
             for s in range(NJ):
                 kf0 += numpy.sum(kf[:,s] * reacDensStates[:,s] * (2*Jlist[s]+1) * numpy.exp(-Elist / constants.R / T)) 
                 kr0 += numpy.sum(kr[:,s] * prodDensStates[:,s] * (2*Jlist[s]+1) * numpy.exp(-Elist / constants.R / T)) 
-                Qf += numpy.sum(reacDensStates[:,s] * (2*Jlist[s]+1) * numpy.exp(-Elist / constants.R / T)) 
-                Qr += numpy.sum(prodDensStates[:,s] * (2*Jlist[s]+1) * numpy.exp(-Elist / constants.R / T)) 
-            kf_actual = kf0 / Qf if Qf > 0 else 0
-            kr_actual = kr0 / Qr if Qr > 0 else 0
+                Qreac += numpy.sum(reacDensStates[:,s] * (2*Jlist[s]+1) * numpy.exp(-Elist / constants.R / T)) 
+                Qprod += numpy.sum(prodDensStates[:,s] * (2*Jlist[s]+1) * numpy.exp(-Elist / constants.R / T)) 
+            kr0 *= C0 ** (len(rxn.products) - len(rxn.reactants))
+            Qprod *= C0 ** (len(rxn.products) - len(rxn.reactants))
+            kf_actual = kf0 / Qreac if Qreac > 0 else 0
+            kr_actual = kr0 / Qprod if Qprod > 0 else 0
             Keq_actual = kf_actual / kr_actual if kr_actual > 0 else 0
                 
             error = False; warning = False
@@ -689,7 +692,7 @@ class Network:
         
         for i, isomer in enumerate(self.isomers):
             collFreq[i] = isomer.calculateCollisionFrequency(self.T, self.P, self.bathGas)
-            Mcoll[i,:,:] = collFreq[i] * isomer.generateCollisionMatrix(self.T, self.densStates[i,:,:], self.Elist, self.Jlist)
+            Mcoll[i,:,:,:,:] = collFreq[i] * isomer.generateCollisionMatrix(self.T, self.densStates[i,:,:], self.Elist, self.Jlist)
                         
         self.collFreq = collFreq
         self.Mcoll = Mcoll
@@ -716,14 +719,17 @@ class Network:
         self.K, self.p0 = rs.applyReservoirStateMethod(self)
         return self.K, self.p0
     
-    def applyChemicallySignificantEigenvaluesMethod(self):
+    def applyChemicallySignificantEigenvaluesMethod(self, lumpingOrder=None):
         """
         Compute the phenomenological rate coefficients :math:`k(T,P)` at the
         current conditions using the chemically-significant eigenvalues method.
+        If a `lumpingOrder` is provided, the algorithm will attempt to lump the
+        configurations (given by index) in the order provided, and return a
+        reduced set of :math:`k(T,P)` values. 
         """
         import rmgpy.pdep.cse as cse
         logging.debug('Applying chemically-significant eigenvalues method at {0:g} K, {1:g} bar...'.format(self.T, self.P))
-        self.K, self.p0 = cse.applyChemicallySignificantEigenvaluesMethod(self)
+        self.K, self.p0 = cse.applyChemicallySignificantEigenvaluesMethod(self, lumpingOrder)
         return self.K, self.p0
     
     def generateFullMEMatrix(self, products=True):

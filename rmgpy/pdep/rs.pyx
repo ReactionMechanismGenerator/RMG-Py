@@ -61,7 +61,7 @@ cpdef applyReservoirStateMethod(network):
     cdef numpy.ndarray[numpy.float64_t,ndim=5] Mcoll
     cdef list ind
     cdef double T, P, E, tol, y, dfactor, beta
-    cdef int Nisom, Nreac, Nprod, Ngrains, NJ, bandwidth, halfbandwidth
+    cdef int Nisom, Nreac, Nprod, Ngrains, NJ, bandwidth, halfbandwidth, halfbandwidth0
     cdef int i, j, n, r, s, u, v, row, iter
 
     T = network.T
@@ -117,12 +117,19 @@ cpdef applyReservoirStateMethod(network):
                     indices[i,r,s] = row
                     row += 1
     
-    # Choose the half-bandwidth
-    r = int(Ngrains / 2)
+    # Choose the half-bandwidth using the deepest isomer well
+    halfbandwidth = 0
     tol = 1e-12
-    ratio = numpy.abs(Mcoll[0,:,0,r,0] / Mcoll[0,r,0,r,0])
-    ind = [i for i,y in enumerate(ratio) if y > tol]
-    halfbandwidth = max(r - min(ind), max(ind) - r) * Nisom
+    for i in range(Nisom):
+        r = Nres[i]
+        ratio = numpy.abs(Mcoll[i,:,0,r,0] / Mcoll[i,r,0,r,0])
+        ind = [i for i,y in enumerate(ratio) if y > tol]
+        if len(ind) > 0:
+            halfbandwidth0 = max(r - min(ind), max(ind) - r) * Nisom
+            if halfbandwidth0 > halfbandwidth:
+                halfbandwidth = halfbandwidth0
+    if halfbandwidth == 0:
+        raise ReservoirStateError('Unable to determine half-bandwidth for active-state matrix; the wells may be too shallow to use the RS method.')
     bandwidth = 2 * halfbandwidth + 1
     
     # Populate active-state matrix and source vectors

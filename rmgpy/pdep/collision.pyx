@@ -200,14 +200,15 @@ cdef class SingleExponentialDown:
 
         cdef double alpha, beta
         cdef double C, left, right
-        cdef int Ngrains, start, i, r, s
+        cdef int Ngrains, start, i, r, s, u, v
         cdef numpy.ndarray[numpy.float64_t,ndim=1] rho
-        cdef numpy.ndarray[numpy.float64_t,ndim=2] phi
+        cdef numpy.ndarray[numpy.float64_t,ndim=2] phi, P0
         cdef numpy.ndarray[numpy.float64_t,ndim=4] P
 
         Ngrains = Elist.shape[0]
         NJ = Jlist.shape[0] if Jlist is not None else 1
         P = numpy.zeros((Ngrains,NJ,Ngrains,NJ), numpy.float64)
+        P0 = numpy.zeros((Ngrains,Ngrains), numpy.float64)
 
         alpha = 1.0 / self.getAlpha(T)
         beta = 1.0 / (constants.R * T)
@@ -226,9 +227,9 @@ cdef class SingleExponentialDown:
         # Determine unnormalized entries in collisional transfer probability matrix
         for r in range(start, Ngrains):
             for s in range(start,r+1):
-                P[s,0,r,0] = exp(-(Elist[r] - Elist[s]) * alpha)
+                P0[s,r] = exp(-(Elist[r] - Elist[s]) * alpha)
             for s in range(r+1,Ngrains):
-                P[s,0,r,0] = exp(-(Elist[s] - Elist[r]) * alpha) * rho[s] / rho[r] * exp(-(Elist[s] - Elist[r]) * beta)
+                P0[s,r] = exp(-(Elist[s] - Elist[r]) * alpha) * rho[s] / rho[r] * exp(-(Elist[s] - Elist[r]) * beta)
         
         # Normalize using detailed balance
         # This method is much more robust, and corresponds to:
@@ -238,15 +239,15 @@ cdef class SingleExponentialDown:
         #    [ 1 2 3 4 ...]
         for r in range(start, Ngrains):
             left = 0.0; right = 0.0
-            for s in range(start, r): left += P[s,0,r,0]
-            for s in range(r, Ngrains): right += P[s,0,r,0]
+            for s in range(start, r): left += P0[s,r]
+            for s in range(r, Ngrains): right += P0[s,r]
             C = (1 - left) / right
             # Check for normalization consistency (i.e. all numbers are positive)
             if C < 0: raise CollisionError('Encountered negative normalization coefficient while normalizing collisional transfer probabilities matrix.')
             for s in range(r+1,Ngrains):
-                P[r,0,s,0] *= C
-                P[s,0,r,0] *= C
-            P[r,0,r,0] = P[r,0,r,0] * C - 1
+                P0[r,s] *= C
+                P0[s,r] *= C
+            P0[r,r] = P0[r,r] * C - 1
         # This method is described by Pilling and Holbrook, and corresponds to:
         #    [ ... 4 3 2 1 ]
         #    [ ... 3 3 2 1 ]
@@ -254,15 +255,15 @@ cdef class SingleExponentialDown:
         #    [ ... 1 1 1 1 ]
         #for r in range(Ngrains, start, -1):
             #left = 0.0; right = 0.0
-            #for s in range(start, r): left += P[s,r]
-            #for s in range(r, Ngrains): right += P[s,r]
+            #for s in range(start, r): left += P0[s,r]
+            #for s in range(r, Ngrains): right += P0[s,r]
             #C = (1 - right) / left
             ## Check for normalization consistency (i.e. all numbers are positive)
             #if C < 0: raise CollisionError('Encountered negative normalization coefficient while normalizing collisional transfer probabilities matrix.')
             #for s in range(r-1):
-                #P[r,s] *= C
-                #P[s,r] *= C
-            #P[r,r] = P[r,r] * C - 1
+                #P0[r,s] *= C
+                #P0[s,r] *= C
+            #P0[r,r] = P0[r,r] * C - 1
 
         # If solving the 2D master equation, compute P(E,J,E',J') from P(E,E')
         # by assuming that the J distribution after the collision is independent
@@ -273,9 +274,13 @@ cdef class SingleExponentialDown:
                 phi[:,s] = (2*Jlist[s]+1) * densStates[:,s]
             for r in range(start, Ngrains):
                 phi[r,:] /= rho[r]
-            for r in range(Ngrains):
+            for r in range(start, Ngrains):
                 for s in range(NJ):
-                    P[r,s,:,:] *= phi[r,s]
+                    for u in range(start, Ngrains):
+                        for v in range(NJ):
+                            P[r,s,u,v] = P0[r,u] * phi[r,s]
+        else:
+            P[:,0,:,0] = P0
             
         return P
 
