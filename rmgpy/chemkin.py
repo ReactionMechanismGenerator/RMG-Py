@@ -697,7 +697,7 @@ def loadChemkinFile(path, dictionaryPath=None):
                         duplicateReactionsToRemove.append(reaction1)
 
                     elif isinstance(reaction1, TemplateReaction) and isinstance(reaction2, TemplateReaction):
-                        assert reaction1.family.label == reaction2.family.label
+                        # assert reaction1.family.label == reaction2.family.label
                         if isinstance(reaction1.kinetics, PDepArrhenius):
                             kinetics = MultiPDepArrhenius()
                         elif isinstance(reaction1.kinetics, Arrhenius):
