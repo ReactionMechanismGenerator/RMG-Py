@@ -316,7 +316,7 @@ cdef class Configuration:
         total angular momentum quantum numbers `Jlist`.
         """
         cdef numpy.ndarray[numpy.float64_t,ndim=2] densStates
-        cdef double E0, B1, B2, E
+        cdef double E0, B1, B2, E, dJ
         cdef int r0, r, s, t, Ngrains, NJ, J, J1, J2
         cdef list Blist
         
@@ -341,6 +341,7 @@ cdef class Configuration:
         else:
             assert Jlist is not None
             NJ = Jlist.shape[0]
+            dJ = Jlist[1] - Jlist[0]
             densStates = numpy.zeros((Ngrains, NJ))
             
             Blist = []
@@ -358,7 +359,7 @@ cdef class Configuration:
                         J1 = Jlist[s]
                         E = Elist[r] - E0 - B1 * J1 * (J1 + 1)
                         if E < 0: break
-                        densStates[r,s] = exp(f(E))
+                        densStates[r,s] = (2 * J1 + 1) * exp(f(E)) * dJ
                         
             elif len(Blist) == 2:
                 B1 = Blist[0] * 11.962; B2 = Blist[1] * 11.962      # cm^-1 to J/mol
@@ -369,7 +370,7 @@ cdef class Configuration:
                             J1 = Jlist[t]; J2 = J - J1
                             E = Elist[r] - E0 - B1 * J1 * (J1 + 1) - B2 * J2 * (J2 + 1)
                             if E > 0:
-                                densStates[r,s] += exp(f(E))
+                                densStates[r,s] += (2 * J1 + 1) * (2 * J2 + 2) * exp(f(E)) * dJ * dJ
         
         return densStates * dE / dE0
 
@@ -382,7 +383,7 @@ cdef class Configuration:
         total angular momentum quantum numbers `Jlist`.
         """
         cdef numpy.ndarray[numpy.float64_t,ndim=2] sumStates
-        cdef double E0, B1, B2
+        cdef double E0, B1, B2, dJ
         cdef int r0, r, s, Ngrains, NJ, J1, J2
         
         import scipy.interpolate
@@ -404,6 +405,7 @@ cdef class Configuration:
         else:
             assert Jlist is not None
             NJ = len(Jlist)
+            dJ = Jlist[1] - Jlist[0]
             sumStates = numpy.zeros((Ngrains, NJ))
             
             Blist = []
@@ -421,7 +423,7 @@ cdef class Configuration:
                         J1 = Jlist[s]
                         E = Elist[r] - E0 - B1 * J1 * (J1 + 1)
                         if E < 0: break
-                        sumStates[r,s] = exp(f(E))
+                        sumStates[r,s] = (2 * J1 + 1) * exp(f(E)) * dJ
                         
             elif len(Blist) == 2:
                 B1 = Blist[0] * 11.962; B2 = Blist[1] * 11.962      # cm^-1 to J/mol
@@ -432,6 +434,6 @@ cdef class Configuration:
                             J1 = Jlist[t]; J2 = J - J1
                             E = Elist[r] - E0 - B1 * J1 * (J1 + 1) - B2 * J2 * (J2 + 1)
                             if E > 0:
-                                sumStates[r,s] += exp(f(E))
+                                sumStates[r,s] += (2 * J1 + 1) * (2 * J2 + 1) * exp(f(E)) * dJ * dJ
         
         return sumStates
