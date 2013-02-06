@@ -692,7 +692,7 @@ class Network:
         
         for i, isomer in enumerate(self.isomers):
             collFreq[i] = isomer.calculateCollisionFrequency(self.T, self.P, self.bathGas)
-            Mcoll[i,:,:] = collFreq[i] * isomer.generateCollisionMatrix(self.T, self.densStates[i,:,:], self.Elist, self.Jlist)
+            Mcoll[i,:,:,:,:] = collFreq[i] * isomer.generateCollisionMatrix(self.T, self.densStates[i,:,:], self.Elist, self.Jlist)
                         
         self.collFreq = collFreq
         self.Mcoll = Mcoll
