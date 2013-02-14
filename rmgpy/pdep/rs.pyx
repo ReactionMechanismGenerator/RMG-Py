@@ -61,7 +61,7 @@ cpdef applyReservoirStateMethod(network):
     cdef numpy.ndarray[numpy.float64_t,ndim=5] Mcoll
     cdef list ind
     cdef double T, P, E, tol, y, dfactor, beta
-    cdef int Nisom, Nreac, Nprod, Ngrains, NJ, bandwidth, halfbandwidth, halfbandwidth0
+    cdef int Nisom, Nreac, Nprod, Ngrains, NJ, bandwidth, halfbandwidth, width, width0
     cdef int i, j, n, r, s, u, v, row, iter
 
     T = network.T
@@ -118,18 +118,21 @@ cpdef applyReservoirStateMethod(network):
                     row += 1
     
     # Choose the half-bandwidth using the deepest isomer well
-    halfbandwidth = 0
+    width = 0
     tol = 1e-12
     for i in range(Nisom):
-        r = Nres[i]
-        ratio = numpy.abs(Mcoll[i,:,0,r,0] / Mcoll[i,r,0,r,0])
-        ind = [i for i,y in enumerate(ratio) if y > tol]
-        if len(ind) > 0:
-            halfbandwidth0 = max(r - min(ind), max(ind) - r) * Nisom
-            if halfbandwidth0 > halfbandwidth:
-                halfbandwidth = halfbandwidth0
-    if halfbandwidth == 0:
+        for s in range(NJ):
+            r = Nres[i,s]
+            if Mcoll[i,r,s,r,s] == 0: continue
+            ratio = numpy.abs(Mcoll[i,:,s,r,s] / Mcoll[i,r,s,r,s])
+            ind = [j for j,y in enumerate(ratio) if y > tol]
+            if len(ind) > 0:
+                width0 = max(r - min(ind), max(ind) - r)
+                if width0 > width:
+                    width = width0
+    if width == 0:
         raise ReservoirStateError('Unable to determine half-bandwidth for active-state matrix; the wells may be too shallow to use the RS method.')
+    halfbandwidth = (width + 1) * Nisom * NJ - Nisom
     bandwidth = 2 * halfbandwidth + 1
     
     # Populate active-state matrix and source vectors
@@ -140,9 +143,10 @@ cpdef applyReservoirStateMethod(network):
         for u in range(NJ):
             for v in range(NJ):
                 for r in range(Nres[i,u], Ngrains):
-                    for s in range(max(Nres[i], r-halfbandwidth/Nisom), min(Ngrains, r+halfbandwidth/Nisom)):
+                    for s in range(max(Nres[i,v], r-width), min(Ngrains, r+width+1)):
                         L[halfbandwidth + indices[i,r,u] - indices[i,s,v], indices[i,s,v]] = Mcoll[i,r,u,s,v]
                     Z[indices[i,r,u],i] = numpy.sum(Mcoll[i,r,u,0:Nres[i,u],v] * eqDist[i,0:Nres[i,u],v])
+
     # Isomerization terms
     for i in range(Nisom):
         for j in range(i):
@@ -156,18 +160,18 @@ cpdef applyReservoirStateMethod(network):
     for i in range(Nisom):
         for n in range(Nreac+Nprod):
             for u in range(NJ):
-                for r in range(Nres[i], Ngrains):
+                for r in range(Nres[i,u], Ngrains):
                     L[halfbandwidth, indices[i,r,u]] -= Gnj[n,i,r,u]
         for n in range(Nreac):
             for u in range(NJ):
-                for r in range(Nres[i], Ngrains):
+                for r in range(Nres[i,u], Ngrains):
                     Z[indices[i,r,u], n+Nisom] = Fim[i,n,r,u] * eqDist[n+Nisom,r,u]
-        
+    
     # Solve for pseudo-steady state populations of active state
     X = scipy.linalg.solve_banded((halfbandwidth,halfbandwidth), L, -Z, overwrite_ab=True, overwrite_b=True)
     for i in range(Nisom):
-        for r in range(Nres[i], Ngrains):
-            for u in range(NJ):
+        for u in range(NJ):
+            for r in range(Nres[i,u], Ngrains):
                 for n in range(Nisom+Nreac):
                     pa[i,n,r,u] = X[indices[i,r,u], n]
     
@@ -177,8 +181,8 @@ cpdef applyReservoirStateMethod(network):
 
     # Put the reservoir populations into pa as well
     for i in range(Nisom):
-        for r in range(Nres[i]):
-            for u in range(NJ):
+        for u in range(NJ):
+            for r in range(Nres[i,u]):
                 pa[i,i,r,u] = eqDist[i,r,u]
 
     # Determine the phenomenological rate coefficients using the general procedure
@@ -195,13 +199,13 @@ cpdef applyReservoirStateMethod(network):
         for u in range(NJ):
             for v in range(NJ):
                 # Collisional rearrangement within the reservoir of isomer i
-                K[i,i] = K[i,i] + numpy.sum(numpy.dot(Mcoll[i,0:Nres[i],u,0:Nres[i],v], eqDist[i,0:Nres[i],v]))
+                K[i,i] = K[i,i] + numpy.sum(numpy.dot(Mcoll[i,0:Nres[i,u],u,0:Nres[i,v],v], eqDist[i,0:Nres[i,v],v]))
                 # Isomerization from isomer j to isomer i
                 for j in range(Nisom):
-                    K[i,j] = K[i,j] + numpy.sum(numpy.dot(Mcoll[i,0:Nres[i],u,Nres[i]:Ngrains,v], pa[i,j,Nres[i]:Ngrains,v]))
+                    K[i,j] = K[i,j] + numpy.sum(numpy.dot(Mcoll[i,0:Nres[i,u],u,Nres[i,v]:Ngrains,v], pa[i,j,Nres[i,v]:Ngrains,v]))
                 # Association from reactant n to isomer i
                 for n in range(Nisom, Nisom+Nreac):
-                    K[i,n] = K[i,n] + numpy.sum(numpy.dot(Mcoll[i,0:Nres[i],u,Nres[i]:Ngrains,v], pa[i,n,Nres[i]:Ngrains,v]))
+                    K[i,n] = K[i,n] + numpy.sum(numpy.dot(Mcoll[i,0:Nres[i,u],u,Nres[i,v]:Ngrains,v], pa[i,n,Nres[i,v]:Ngrains,v]))
     # Rows relating to reactants
     for n in range(Nreac):
         # Association loss
@@ -211,14 +215,14 @@ cpdef applyReservoirStateMethod(network):
         for j in range(Nisom+Nreac):
             for i in range(Nisom):
                 for u in range(NJ):
-                    K[Nisom+n,j] = K[Nisom+n,j] + numpy.sum(Gnj[n,i,Nres[i]:Ngrains,u] * pa[i,j,Nres[i]:Ngrains,u])
+                    K[Nisom+n,j] = K[Nisom+n,j] + numpy.sum(Gnj[n,i,Nres[i,u]:Ngrains,u] * pa[i,j,Nres[i,u]:Ngrains,u])
     # Rows relating to products
     for n in range(Nreac, Nreac+Nprod):
         # Reaction from isomer or reactant j to product n
         for j in range(Nisom+Nreac):
             for i in range(Nisom):
                 for u in range(NJ):
-                    K[Nisom+n,j] = K[Nisom+n,j] + numpy.sum(Gnj[n,i,Nres[i]:Ngrains,u] * pa[i,j,Nres[i]:Ngrains,u])
+                    K[Nisom+n,j] = K[Nisom+n,j] + numpy.sum(Gnj[n,i,Nres[i,u]:Ngrains,u] * pa[i,j,Nres[i,u]:Ngrains,u])
 
     # Ensure matrix is conservative
     for n in range(Nisom+Nreac):
