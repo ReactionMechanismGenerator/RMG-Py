@@ -449,8 +449,8 @@ class PressureDependenceJob(object):
                 if isinstance(kinetics, PDepArrhenius):
                     for P, arrhenius in zip(kinetics.pressures.value_si, kinetics.arrhenius):
                         string += 'PLOG/ {0:<9.3f} {1:<11.3e} {2:<8.2f} {3:<8.2f}/\n'.format(P / 101325.,
-                            arrhenius.A.value_si / (arrhenius.T0.value_si ** arrhenius.n) * 1e6 ** (len(reaction.reactants) - 1),
-                            arrhenius.n,
+                            arrhenius.A.value_si / (arrhenius.T0.value_si ** arrhenius.n.value_si) * 1e6 ** (len(reaction.reactants) - 1),
+                            arrhenius.n.value_si,
                             arrhenius.Ea.value_si / 4184.
                         )
                         
