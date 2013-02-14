@@ -162,8 +162,8 @@ def reaction(label, reactants, products, transitionState, kinetics=None, tunneli
     if label in reactionDict:
         raise ValueError('Multiple occurrences of reaction with label {0!r}.'.format(label))
     logging.info('Loading reaction {0}...'.format(label))
-    reactants = [speciesDict[spec] for spec in reactants]
-    products = [speciesDict[spec] for spec in products]
+    reactants = sorted([speciesDict[spec] for spec in reactants])
+    products = sorted([speciesDict[spec] for spec in products])
     transitionState = transitionStateDict[transitionState]
     if tunneling.lower() == 'wigner':
         transitionState.tunneling = Wigner(frequency=None)
