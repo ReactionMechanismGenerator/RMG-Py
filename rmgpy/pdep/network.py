@@ -38,6 +38,7 @@ import numpy
 import logging
 
 import rmgpy.constants as constants
+from rmgpy.reaction import Reaction
 
 ################################################################################
 
