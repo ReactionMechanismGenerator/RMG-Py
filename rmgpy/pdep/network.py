@@ -228,8 +228,8 @@ class Network:
                                 products = self.products[j-Nisom-Nreac]
                             reaction = Reaction(reactants=reactants.species[:], products=products.species[:])
                             logging.error('For net reaction {0!s}:'.format(reaction))
-                            logging.error('Expected Keq({1:g} K, {2:g} bar) = {0:11.3e}'.format(Keq, T, P))
-                            logging.error('  Actual Keq({1:g} K, {2:g} bar) = {0:11.3e}'.format(Keq0, T, P))
+                            logging.error('Expected Keq({1:g} K, {2:g} bar) = {0:11.3e}'.format(Keq, T, P*1e-5))
+                            logging.error('  Actual Keq({1:g} K, {2:g} bar) = {0:11.3e}'.format(Keq0, T, P*1e-5))
                             raise NetworkError('Computed k(T,P) values for reaction {0!s} do not satisfy macroscopic equilibrium.'.format(reaction))
                             
                 # Reject if any rate coefficients are negative
