@@ -1090,13 +1090,12 @@ class ForbiddenStructures(Database):
         for entry in self.entries.values():
             entryLabeledAtoms = entry.item.getLabeledAtoms()
             moleculeLabeledAtoms = molecule.getLabeledAtoms()
-            try:
-                initialMap = dict([(moleculeLabeledAtoms[label], entryLabeledAtoms[label]) for label in entryLabeledAtoms])
-            except KeyError:
-                continue
-            else:
-                if molecule.isMappingValid(entry.item, initialMap) and molecule.isSubgraphIsomorphic(entry.item, initialMap):
-                    return True
+            initialMap = {}
+            for label in entryLabeledAtoms:
+                if label not in moleculeLabeledAtoms: continue
+                initialMap[moleculeLabeledAtoms[label]] = entryLabeledAtoms[label]
+            if molecule.isMappingValid(entry.item, initialMap) and molecule.isSubgraphIsomorphic(entry.item, initialMap):
+                return True
         return False
     
     def loadOld(self, path):
