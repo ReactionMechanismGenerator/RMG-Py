@@ -523,8 +523,6 @@ class KineticsGroups(Database):
         # Add a note to the history of each changed item indicating that we've generated new group values
         import time
         changed = False
-        user = ''
-        event = [time.asctime(),user,'action','Generated new group additivity values for this entry.']
         for label, entry in self.entries.items():
             if entry.data is not None and old_entries.has_key(label):
                 if (isinstance(entry.data, KineticsData) and 
@@ -543,8 +541,9 @@ class KineticsGroups(Database):
                     pass
                 else:
                     changed = True
-                    entry.history.append(event)
+                    break
             else:
                 changed = True
+                break
         
         return changed
