@@ -37,7 +37,10 @@ import rmgpy.constants as constants
 from rmgpy.kinetics import Arrhenius, ArrheniusEP, ThirdBody, Lindemann, Troe, \
                            PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, \
                            Chebyshev, KineticsData, PDepKineticsModel
+from rmgpy.molecule import Molecule, Group
 from rmgpy.species import Species
+from rmgpy.reaction import Reaction
+from rmgpy.data.base import LogicNode
 
 from .common import KineticsError, saveEntry
 from .depository import DepositoryReaction, KineticsDepository
@@ -398,7 +401,7 @@ class KineticsDatabase(object):
             if len(forward) == 1 and len(reverse) == 0:
                 # The reaction is in the forward direction, so use as-is
                 reaction = forward[0]
-                template = groups.getReactionTemplate(reaction)
+                template = reaction.template
                 # Don't forget to overwrite the estimated kinetics from the database with the kinetics for this entry
                 reaction.kinetics = entry.data
             elif len(reverse) == 1 and len(forward) == 0:
@@ -414,13 +417,13 @@ class KineticsDatabase(object):
                 # Now flip the direction
                 reaction = reverse[0]
                 reaction.kinetics = kinetics
-                template = groups.getReactionTemplate(reaction)
+                template = reaction.template
             elif len(reverse) > 0 and len(forward) > 0:
-                print 'FAIL: Multiple reactions found for "%s".' % (entry.label)
+                print 'FAIL: Multiple reactions found for {0!r}.'.format(entry.label)
             elif len(reverse) == 0 and len(forward) == 0:
                 print 'FAIL: No reactions found for "%s".' % (entry.label)
             else:
-                print 'FAIL: Unable to estimate kinetics for "%s".' % (entry.label)
+                print 'FAIL: Unable to estimate kinetics for {0!r}.'.format(entry.label)
 
         assert reaction is not None
         assert template is not None
