@@ -274,7 +274,7 @@ cdef class ThermoData(HeatCapacityModel):
         S = self._S298.value_si
          
         # Correct the entropy from 298 K to the temperature of the lowest heat capacity point
-        assert Tdata[0] >= 298
+        assert Tdata[0] > 298
         Tlow = Tdata[0]; Thigh = Tdata[1]
         Cplow = Cpdata[0]; Cphigh = Cpdata[1]
         slope = (Cphigh - Cplow) / (Thigh - Tlow)
@@ -296,7 +296,7 @@ cdef class ThermoData(HeatCapacityModel):
             slope = (Cphigh - Cplow) / (Thigh - Tlow)
             intercept = (Cplow * Thigh - Cphigh * Tlow) / (Thigh - Tlow)
             T0 = (Cp0 - Tlow) / slope + Tlow
-            if T > T0 or slope <= 0 or T0 > Tlow:
+            if T > T0 or slope <= 0 or T0 >= Tlow:
                 S += slope * (T - Tlow) + intercept * log(T / Tlow)
             else:
                 S += slope * (T0 - Tlow) + intercept * log(T0 / Tlow) + Cp0 * log(T0 / T)
@@ -317,11 +317,12 @@ cdef class ThermoData(HeatCapacityModel):
             Cplow = Cpdata[N-2]; Cphigh = Cpdata[N-1]
             slope = (Cphigh - Cplow) / (Thigh - Tlow)
             intercept = (Cplow * Thigh - Cphigh * Tlow) / (Thigh - Tlow)
-            T0 = (CpInf - Cphigh) / slope + Thigh
-            if T <= T0:
-                S += slope * (T - Thigh) + intercept * log(T / Thigh)
-            else:
-                S += slope * (T0 - Thigh) + intercept * log(T0 / Thigh) + CpInf * log(T / T0)
+            if slope > 0:
+                T0 = (CpInf - Cphigh) / slope + Thigh
+                if T <= T0:
+                    S += slope * (T - Thigh) + intercept * log(T / Thigh)
+                else:
+                    S += slope * (T0 - Thigh) + intercept * log(T0 / Thigh) + CpInf * log(T / T0)
 
         return S
     
