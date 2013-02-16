@@ -414,6 +414,10 @@ class KineticsDatabase(object):
                     kdata[i] = entry.data.getRateCoefficient(Tdata[i]) / reaction.getEquilibriumConstant(Tdata[i])
                 kunits = 'm^3/(mol*s)' if len(reverse[0].reactants) == 2 else 's^-1'
                 kinetics = Arrhenius().fitToData(Tdata, kdata, kunits, T0=1.0)
+                kinetics.Tmin = entry.data.Tmin
+                kinetics.Tmax = entry.data.Tmax
+                kinetics.Pmin = entry.data.Pmin
+                kinetics.Pmax = entry.data.Pmax
                 # Now flip the direction
                 reaction = reverse[0]
                 reaction.kinetics = kinetics
