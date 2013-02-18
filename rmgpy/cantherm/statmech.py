@@ -174,6 +174,9 @@ class StatMechJob:
             raise InputError('Required attribute "frequencies" not found in species file {0!r}.'.format(path))
         statmechLog.path = os.path.join(directory, statmechLog.path)
         
+        if 'frequencyScaleFactor' in local_context:
+            logging.warning('Ignoring frequency scale factor in species file {0!r}.'.format(path))
+        
         try:
             rotors = local_context['rotors']
         except KeyError:
