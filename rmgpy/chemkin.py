@@ -1156,7 +1156,7 @@ def writeKineticsEntry(reaction, speciesList, verbose = True, javaLibrary = Fals
         reaction_string += thirdBody
     
     
-    string += '{0!s:<52}'.format(reaction_string)
+    string += '{0!s:<51} '.format(reaction_string)
 
     if isinstance(kinetics, Arrhenius):
         string += '{0:<9.3e} {1:<9.3f} {2:<9.3f}'.format(
