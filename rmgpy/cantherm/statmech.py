@@ -56,6 +56,95 @@ class InputError(Exception):
 
 ################################################################################
 
+class ScanLog:
+    """
+    Represent a text file containing a table of angles and corresponding
+    scan energies.
+    """
+
+    angleFactors = {
+        'radians': 1.0,
+        'rad': 1.0,
+        'degrees': 180.0 / math.pi,
+        'deg': 180.0 / math.pi,
+    }
+    energyFactors = {
+        'J/mol': 1.0,
+        'kJ/mol': 1.0/1000.,
+        'cal/mol': 1.0/4.184,
+        'kcal/mol': 1.0/4184.,
+        'cm^-1': 1.0/(constants.h * constants.c * 100. * constants.Na),
+        'hartree': 1.0/(constants.E_h * constants.Na),
+    }
+        
+    def __init__(self, path):
+        self.path = path
+
+    def load(self):
+        """
+        Load the scan energies from the file. Returns arrays containing the
+        angles (in radians) and energies (in J/mol).
+        """
+        angles = []; energies = []
+        angleUnits = None; energyUnits = None
+        angleFactor = None; energyFactor = None
+        
+        with open(self.path, 'r') as stream:
+            for line in stream:
+                line = line.strip()
+                if line == '': continue
+                
+                tokens = line.split()
+                if angleUnits is None or energyUnits is None:
+                    angleUnits = tokens[1][1:-1]
+                    energyUnits = tokens[3][1:-1]
+                    
+                    try:
+                        angleFactor = ScanLog.angleFactors[angleUnits]
+                    except KeyError:
+                        raise ValueError('Invalid angle units {0!r}.'.format(angleUnits))
+                    try:
+                        energyFactor = ScanLog.energyFactors[energyUnits]
+                    except KeyError:
+                        raise ValueError('Invalid energy units {0!r}.'.format(energyUnits))
+            
+                else:
+                    angles.append(float(tokens[0]) / angleFactor)
+                    energies.append(float(tokens[1]) / energyFactor)
+        
+        angles = numpy.array(angles)
+        energies = numpy.array(energies)
+        energies -= energies[0]
+        
+        return angles, energies
+        
+    def save(self, angles, energies, angleUnits='radians', energyUnits='kJ/mol'):
+        """
+        Save the scan energies to the file using the given `angles` in radians
+        and corresponding energies `energies` in J/mol. The file is created to
+        use the given `angleUnits` for angles and `energyUnits` for energies.
+        """
+        assert len(angles) == len(energies)
+        
+        try:
+            angleFactor = ScanLog.angleFactors[angleUnits]
+        except KeyError:
+            raise ValueError('Invalid angle units {0!r}.'.format(angleUnits))
+        try:
+            energyFactor = ScanLog.energyFactors[energyUnits]
+        except KeyError:
+            raise ValueError('Invalid energy units {0!r}.'.format(energyUnits))
+        
+        with open(self.path, 'w') as stream:
+            stream.write('{0:>24} {1:>24}\n'.format(
+                'Angle ({0})'.format(angleUnits),
+                'Energy ({0})'.format(energyUnits),
+            ))
+            for angle, energy in zip(angles, energies):
+                stream.write('{0:23.10f} {1:23.10f}\n'.format(angle * angleFactor, energy * energyFactor))
+
+################################################################################
+
 def hinderedRotor(scanLog, pivots, top, symmetry):
     return [scanLog, pivots, top, symmetry]
 
@@ -106,6 +195,7 @@ class StatMechJob:
             'HinderedRotor': hinderedRotor,
             # File formats
             'GaussianLog': GaussianLog,
+            'ScanLog': ScanLog,
         }
     
         directory = os.path.abspath(os.path.dirname(path))
@@ -218,10 +308,19 @@ class StatMechJob:
             logging.debug('    Fitting {0} hindered rotors...'.format(len(rotors)))
             rotorCount = 0
             for scanLog, pivots, top, symmetry in rotors:
-                scanLog.path = os.path.join(directory, scanLog.path)
                 
-                Vlist, angle = scanLog.loadScanEnergies()
-                
+                # Load the hindered rotor scan energies
+                if isinstance(scanLog, GaussianLog):
+                    scanLog.path = os.path.join(directory, scanLog.path)
+                    Vlist, angle = scanLog.loadScanEnergies()
+                    scanLogOutput = ScanLog(os.path.join(directory, '{0}_rotor_{1}.txt'.format(self.species.label, rotorCount+1)))
+                    scanLogOutput.save(angle, Vlist)
+                elif isinstance(scanLog, ScanLog):
+                    scanLog.path = os.path.join(directory, scanLog.path)
+                    angle, Vlist = scanLog.load()
+                else:
+                    raise Exception('Invalid log file type {0} for scan log.'.format(scanLog.__class__))
+                    
                 inertia = conformer.getInternalReducedMomentOfInertia(pivots, top) * constants.Na * 1e23
                 
                 cosineRotor = HinderedRotor(inertia=(inertia,"amu*angstrom^2"), symmetry=symmetry)
