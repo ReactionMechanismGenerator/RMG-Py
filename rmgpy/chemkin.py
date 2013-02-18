@@ -1272,10 +1272,12 @@ def markDuplicateReactions(reactions):
                 if reaction1.duplicate and reaction2.duplicate:
                     continue
                 else:
-                    if not reaction1.duplicate:
+                    if reaction1.kinetics.isPressureDependent() == reaction2.kinetics.isPressureDependent():
+                        # Only mark as duplicate if both reactions are pressure dependent or both are
+                        # not pressure dependent.  Do not mark as duplicates otherwise.
                         logging.warning('Marked reaction {0} as duplicate for saving to Chemkin file.'.format(reaction1))
-                    reaction1.duplicate = True
-                    reaction2.duplicate = True
+                        reaction1.duplicate = True
+                        reaction2.duplicate = True     
 
 def saveSpeciesDictionary(path, species):
     """
