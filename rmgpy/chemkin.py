@@ -1128,6 +1128,8 @@ def writeKineticsEntry(reaction, speciesList, verbose = True, javaLibrary = Fals
                 thirdBody = ' + M'
             elif isinstance(kinetics, PDepArrhenius):
                 thirdBody = ''
+            elif isinstance(kinetics, Chebyshev):
+                thirdBody = ''
             else:
                 thirdBody = ' (+M)'
         
