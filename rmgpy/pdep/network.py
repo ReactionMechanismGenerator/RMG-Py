@@ -246,7 +246,7 @@ class Network:
 
         return K
 
-    def setConditions(self, T, P):
+    def setConditions(self, T, P, ymB=None):
         """
         Set the current network conditions to the temperature `T` in K and
         pressure `P` in Pa. All of the internal variables are updated 
@@ -259,6 +259,7 @@ class Network:
         pressureChanged = (self.P != P)
         self.T = T
         self.P = P
+        self.ymB = ymB
         
         Nisom = self.Nisom
         Nreac = self.Nreac
@@ -773,6 +774,14 @@ class Network:
         Nrows = M.shape[0]
         M[:,Nrows-Nreac-Nprod:] *= ymB
         
+        if self.ymB is not None:
+            if isinstance(self.ymB, float):
+                assert Nreac <= 1
+                M[:,Nrows-Nreac-Nprod:] *= self.ymB
+            else:
+                for n in range(Nreac+Nprod):
+                    M[:,Nrows-Nreac-Nprod+n] *= self.ymB[n]
+        
         # Get equilibrium distributions
         eqDist = numpy.zeros_like(densStates)
         for i in range(Nisom):
@@ -844,6 +853,14 @@ class Network:
         ymB = self.P * 1e5 / constants.R / self.T * 1e-6
         K = self.K[:,:]
         K[:,Nisom:] *= ymB
+        
+        if self.ymB is not None:
+            if isinstance(self.ymB, float):
+                assert Nreac <= 1
+                K[:,Nisom:] *= self.ymB
+            else:
+                for n in range(Nreac+Nprod):
+                    K[:,Nisom+n] *= self.ymB[n]
         
         # Set up ODEs
         ode = scipy.integrate.ode(residual, jacobian).set_integrator('vode', method='bdf', with_jacobian=True, atol=1e-16, rtol=1e-8)
