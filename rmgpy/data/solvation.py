@@ -42,7 +42,6 @@ from copy import copy, deepcopy
 from base import Database, Entry, makeLogicNode
 
 import rmgpy.constants as constants
-#from rmgpy.data.thermo import *
 from rmgpy.molecule import Molecule, Atom, Bond, Group
 
 ################################################################################
@@ -279,7 +278,7 @@ class SoluteDatabase(object):
         logging.info('Loading Platts additivity group database from {0}...'.format(path))
         self.groups = {}
         self.groups['abraham']   =   SoluteGroups(label='abraham').load(os.path.join(path, 'abraham.py'  ), self.local_context, self.global_context)
-        # self.groups['gauche']  =  ThermoGroups(label='gauche').load(os.path.join(path, 'gauche.py' ), self.local_context, self.global_context)
+        self.groups['nonacentered']  =  SoluteGroups(label='nonacentered').load(os.path.join(path, 'nonacentered.py' ), self.local_context, self.global_context)
         # self.groups['int15']   =   ThermoGroups(label='int15').load(os.path.join(path, 'int15.py'  ), self.local_context, self.global_context)
         # self.groups['ring']    =    ThermoGroups(label='ring').load(os.path.join(path, 'ring.py'   ), self.local_context, self.global_context)
         # self.groups['radical'] = ThermoGroups(label='radical').load(os.path.join(path, 'radical.py'), self.local_context, self.global_context)
@@ -319,7 +318,7 @@ class SoluteDatabase(object):
         """
         if not os.path.exists(path): os.mkdir(path)
         self.groups['abraham'].save(os.path.join(path, 'abraham.py'))
-        # self.groups['gauche'].save(os.path.join(path, 'gauche.py'))
+        self.groups['nonacentered'].save(os.path.join(path, 'nonacentered.py'))
         # self.groups['int15'].save(os.path.join(path, 'int15.py'))
         # self.groups['ring'].save(os.path.join(path, 'ring.py'))
         # self.groups['radical'].save(os.path.join(path, 'radical.py'))
@@ -556,6 +555,7 @@ class SoluteDatabase(object):
             soluteData.A += sdata.A
             count += 1
             comments.append(sdata.comment)
+            # print count #debugging purposes
         
         soluteData.S /= count
         soluteData.B /= count
@@ -656,18 +656,10 @@ class SoluteDatabase(object):
                         logging.error(molecule)
                         logging.error(molecule.toAdjacencyList())
                         raise
-                        
-                    # Correct for gauche and 1,5- interactions
-                    
-
-            # Do ring corrections separately because we only want to match
-            # each ring one time; this doesn't work yet
-            
-
-                # Get thermo correction for this ring
-                
-                
-        # Correct entropy for symmetry number
+                    # Get solute data for non-atom centered groups    
+                    try:
+                        self.__addGroupSoluteData(soluteData, self.groups['nonacentered'], molecule, {'*':atom})
+                    except KeyError: pass
         
 
         return soluteData
@@ -688,20 +680,21 @@ class SoluteDatabase(object):
         # library, in which case we need to fall up the tree until we find an
         # ancestor that has an entry in the library
         node = node0
-        while node.data is None and node is not None:
+        data = node.data
+        while data is None and node is not None:
             node = node.parent
         if node is None:
-            raise InvalidDatabaseError('Unable to determine solute parameters for {0}: no library entries for {1} or any of its ancestors.'.format(molecule, node0) )
+            raise KeyError('Node has no parent with data in database.')
 
-        data = node.data
-        comment = node.label
-        while isinstance(data, basestring) and data is not None:
-            for entry in database.entries.values():
-                if entry.label == data:
-                    data = entry.data
-                    comment = entry.label
-                    break
-        comment = '{0}({1})'.format(database.label, comment)
+        if node is not None:
+            comment = node.label
+            while isinstance(data, basestring) and data is not None:
+                for entry in database.entries.values():
+                    if entry.label == data:
+                        data = entry.data
+                        comment = entry.label
+                        break
+            comment = '{0}({1})'.format(database.label, comment)
 
         # This code prints the hierarchy of the found node; useful for debugging
         #result = ''
@@ -715,11 +708,11 @@ class SoluteDatabase(object):
         
         #for i in range(7):
             #thermoData.Cpdata.value_si[i] += data.Cpdata.value_si[i]
-        soluteData.S += data.S
-        soluteData.B += data.B
-        soluteData.E += data.E
-        soluteData.L += data.L
-        soluteData.A += data.A
-        soluteData.comment += comment + "+"
+            soluteData.S += data.S
+            soluteData.B += data.B
+            soluteData.E += data.E
+            soluteData.L += data.L
+            soluteData.A += data.A
+            soluteData.comment += comment + "+"
         
         return soluteData
