@@ -62,48 +62,8 @@
       </ul>
     </div>
             
-  <div class="section" id="module-rmgpy.chemkin">
-<span id="rmgpy-chemkin-writing-chemkin-output"></span><h1>2. <a class="reference internal" href="#module-rmgpy.chemkin" title="rmgpy.chemkin"><tt class="xref py py-mod docutils literal"><span class="pre">rmgpy.chemkin</span></tt></a> &#8212; Writing Chemkin Output<a class="headerlink" href="#module-rmgpy.chemkin" title="Permalink to this headline">¶</a></h1>
-<p>This module contains functions for writing of Chemkin input files.</p>
-<dl class="class">
-<dt id="rmgpy.chemkin.ChemkinError">
-<em class="property">class </em><tt class="descclassname">rmgpy.chemkin.</tt><tt class="descname">ChemkinError</tt><a class="headerlink" href="#rmgpy.chemkin.ChemkinError" title="Permalink to this definition">¶</a></dt>
-<dd><p>An exception class for exceptional behavior involving Chemkin files. Pass a
-string describing the circumstances that caused the exceptional behavior.</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="rmgpy.chemkin.getSpeciesIdentifier">
-<tt class="descclassname">rmgpy.chemkin.</tt><tt class="descname">getSpeciesIdentifier</tt><big>(</big><em>species</em><big>)</big><a class="headerlink" href="#rmgpy.chemkin.getSpeciesIdentifier" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a string identifier for the provided <cite>species</cite> that can be used in a
-Chemkin file. Although the Chemkin format allows up to 16 characters for a
-species identifier, this function uses a maximum of 10 to ensure that all
-reaction equations fit in the maximum limit of 52 characters.</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="rmgpy.chemkin.saveChemkinFile">
-<tt class="descclassname">rmgpy.chemkin.</tt><tt class="descname">saveChemkinFile</tt><big>(</big><em>path</em>, <em>species</em>, <em>reactions</em>, <em>verbose=True</em><big>)</big><a class="headerlink" href="#rmgpy.chemkin.saveChemkinFile" title="Permalink to this definition">¶</a></dt>
-<dd><p>Save a Chemkin input file to <cite>path</cite> on disk containing the provided lists
-of <cite>species</cite> and <cite>reactions</cite>.</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="rmgpy.chemkin.writeKineticsEntry">
-<tt class="descclassname">rmgpy.chemkin.</tt><tt class="descname">writeKineticsEntry</tt><big>(</big><em>reaction</em>, <em>speciesList</em>, <em>verbose=True</em>, <em>javaLibrary=False</em><big>)</big><a class="headerlink" href="#rmgpy.chemkin.writeKineticsEntry" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a string representation of the reaction as used in a Chemkin
-file. Use verbose = True to turn on comments.  Use javaLibrary = True in order to 
-generate a kinetics entry suitable for an RMG-Java kinetics library.</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="rmgpy.chemkin.writeThermoEntry">
-<tt class="descclassname">rmgpy.chemkin.</tt><tt class="descname">writeThermoEntry</tt><big>(</big><em>species</em><big>)</big><a class="headerlink" href="#rmgpy.chemkin.writeThermoEntry" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a string representation of the NASA model readable by Chemkin.
-To use this method you must have exactly two NASA polynomials in your
-model, and you must use the seven-coefficient forms for each.</p>
-</dd></dl>
-
+  <div class="section" id="rmgpy-chemkin-writing-chemkin-output">
+<h1>2. <tt class="xref py py-mod docutils literal"><span class="pre">rmgpy.chemkin</span></tt> &#8212; Writing Chemkin Output<a class="headerlink" href="#rmgpy-chemkin-writing-chemkin-output" title="Permalink to this headline">¶</a></h1>
 </div>
 
 

@@ -388,27 +388,6 @@ used to accelerate the isomorphism checking.</p>
 </div>
 <div class="section" id="isomorphism-functions">
 <h2>9.3.3. Isomorphism Functions<a class="headerlink" href="#isomorphism-functions" title="Permalink to this headline">¶</a></h2>
-<dl class="method">
-<dt id="rmgpy.molecule.graph.VF2_isomorphism">
-<tt class="descclassname">graph.</tt><tt class="descname">VF2_isomorphism</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.graph.VF2_isomorphism" title="Permalink to this definition">¶</a></dt>
-<dd><p>Use the VF2 algorithm of Vento and Foggia to evaluate the isomorphism of
-the graphs <cite>graph1</cite> and <cite>graph2</cite>. A number of options affect how the
-isomorphism check is performed:</p>
-<ul class="simple">
-<li>If <cite>subgraph</cite> is <tt class="docutils literal"><span class="pre">True</span></tt>, the function will determine if <cite>graph2</cite> is a
-subgraph of <cite>graph1</cite> instead of a full graph.</li>
-<li>If <cite>findAll</cite> is <tt class="docutils literal"><span class="pre">True</span></tt>, this function returns a list of valid mappings
-from <cite>graph1</cite> to <cite>graph2</cite>; each mapping is a <tt class="docutils literal"><span class="pre">dict</span></tt> with vertices from
-<cite>graph1</cite> as the keys and vertices from <cite>graph2</cite> as the values. If
-<cite>findAll</cite> is <tt class="docutils literal"><span class="pre">False</span></tt>, this function simply returns <tt class="docutils literal"><span class="pre">True</span></tt> if a
-valid mapping was found, or <tt class="docutils literal"><span class="pre">False</span></tt> if not.</li>
-<li>The <cite>initialMapping</cite> parameter is used to specify a mapping of vertices
-from <cite>graph1</cite> to those in <cite>subgraph</cite> that are fixed in the isomorphism
-check; this mapping will appear in every returned mapping. Note that no
-validation of this initial mapping is performed in this function.</li>
-</ul>
-</dd></dl>
-
 </div>
 </div>
 

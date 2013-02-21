@@ -140,9 +140,12 @@ pressure-dependent unimolecular reaction network</p>
 </table>
 <dl class="method">
 <dt id="rmgpy.pdep.Network.applyChemicallySignificantEigenvaluesMethod">
-<tt class="descname">applyChemicallySignificantEigenvaluesMethod</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.pdep.Network.applyChemicallySignificantEigenvaluesMethod" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">applyChemicallySignificantEigenvaluesMethod</tt><big>(</big><em>lumpingOrder=None</em><big>)</big><a class="headerlink" href="#rmgpy.pdep.Network.applyChemicallySignificantEigenvaluesMethod" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute the phenomenological rate coefficients <span class="math">\(k(T,P)\)</span> at the
-current conditions using the chemically-significant eigenvalues method.</p>
+current conditions using the chemically-significant eigenvalues method.
+If a <cite>lumpingOrder</cite> is provided, the algorithm will attempt to lump the
+configurations (given by index) in the order provided, and return a
+reduced set of <span class="math">\(k(T,P)\)</span> values.</p>
 </dd></dl>
 
 <dl class="method">
@@ -259,7 +262,7 @@ in J/mol is returned.</p>
 
 <dl class="method">
 <dt id="rmgpy.pdep.Network.setConditions">
-<tt class="descname">setConditions</tt><big>(</big><em>T</em>, <em>P</em><big>)</big><a class="headerlink" href="#rmgpy.pdep.Network.setConditions" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">setConditions</tt><big>(</big><em>T</em>, <em>P</em>, <em>ymB=None</em><big>)</big><a class="headerlink" href="#rmgpy.pdep.Network.setConditions" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set the current network conditions to the temperature <cite>T</cite> in K and
 pressure <cite>P</cite> in Pa. All of the internal variables are updated 
 accordingly if they are out of date. For example, those variables that
@@ -277,6 +280,17 @@ points <cite>tlist</cite> in s, the initial total populations <cite>x0</cite>, t
 equation matrix <cite>M</cite>, the accounting matrix <cite>indices</cite> relating isomer and
 energy grain indices to indices of the master equation matrix, and the
 densities of states <cite>densStates</cite> in mol/J of each isomer.
+Returns the times in s, population distributions for each isomer, and total
+population profiles for each configuration.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.pdep.Network.solveReducedME">
+<tt class="descname">solveReducedME</tt><big>(</big><em>tlist</em>, <em>x0</em><big>)</big><a class="headerlink" href="#rmgpy.pdep.Network.solveReducedME" title="Permalink to this definition">¶</a></dt>
+<dd><p>Directly solve the reduced master equation using a stiff ODE solver. 
+Pass the output time points <cite>tlist</cite> in s and the initial total
+populations <cite>x0</cite>. Be sure to run one of the methods for generating
+<span class="math">\(k(T,P)\)</span> values before calling this method.
 Returns the times in s, population distributions for each isomer, and total
 population profiles for each configuration.</p>
 </dd></dl>

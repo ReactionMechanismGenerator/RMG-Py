@@ -89,7 +89,13 @@
 <div class="highlight-python"><pre>C:\Windows\System32\cmd.exe /c "sh --login -i"</pre>
 </div>
 </li>
-<li><p class="first">Generate and view your SSH Key:</p>
+</ul>
+<dl class="docutils">
+<dt>if this target does not work try using this one</dt>
+<dd>C:WindowsSystem32cmd.exe /c  &#8220;&#8221;C:Program FilesGitbinsh.exe&#8221; &#8211;login -i&#8221;</dd>
+</dl>
+<ul>
+<li><p class="first">Generate and view your SSH Key by typing this into the Git Bash command line:</p>
 <div class="highlight-python"><pre>cd ~
 ssh-keygen              # press enter to save to the default directory
                         # create a password if desired
@@ -154,13 +160,17 @@ rm python27.def</pre>
 </li>
 <li><p class="first"><a class="reference external" href="http://softlayer.dl.sourceforge.net/project/matplotlib/matplotlib/matplotlib-1.1.0/matplotlib-1.1.0.win32-py2.7.exe">matplotlib  1.1.0</a></p>
 </li>
-<li><p class="first"><a class="reference external" href="http://www.sistemasagiles.com.ar/soft/guppy-0.1.10.win32-py2.7.exe">guppy 0.1.10</a></p>
+<li><dl class="first docutils">
+<dt><a class="reference external" href="http://www.sistemasagiles.com.ar/soft/guppy-0.1.10.win32-py2.7.exe">guppy 0.1.10</a></dt>
+<dd><p class="first last">If you have Norton Antivirus on your computer it may try to remove this after you install it</p>
+</dd>
+</dl>
 </li>
 <li><p class="first"><a class="reference external" href="http://voxel.dl.sourceforge.net/project/openbabel/openbabel/2.3.1/OpenBabel2.3.1_Windows_Installer.exe">OpenBabel 2.3.1</a></p>
 <ul>
 <li><p class="first">The OpenBabel installer includes some libraries (.dll files) that you also need for other purposes, so copy them out of the OpenBabel program directory and into your system directory so they are generally accessible:</p>
 <div class="highlight-python"><pre>cd /c/PROGRA~1/OpenBabel-2.3.1
-cp libcairo-2.dll libpng14-14.dll zlib1.dll $SYSTEMROOT/system32</pre>
+cp libcairo-2.dll libpng14-14.dll zlib1.dll $SYSTEMROOT/System32</pre>
 </div>
 </li>
 </ul>
@@ -169,8 +179,6 @@ cp libcairo-2.dll libpng14-14.dll zlib1.dll $SYSTEMROOT/system32</pre>
 </li>
 <li><p class="first"><a class="reference external" href="http://wxpython.org/cairo/py2cairo-1.10.0.win32-py2.7.exe">py2cairo 1.10.0</a></p>
 </li>
-<li><p class="first"><a class="reference external" href="http://www.lfd.uci.edu/~gohlke/pythonlibs/sngyd84i/Cython-0.16.win32-py2.7.exe">Cython 0.16</a></p>
-</li>
 <li><p class="first"><a class="reference external" href="http://www.graphviz.org/pub/graphviz/stable/windows/graphviz-2.28.0.msi">Graphviz 2.28.0</a></p>
 </li>
 </ul>
@@ -178,10 +186,9 @@ cp libcairo-2.dll libpng14-14.dll zlib1.dll $SYSTEMROOT/system32</pre>
 <div class="section" id="remaining-dependencies">
 <span id="remainingdependencies"></span><h2>2.1.6. Remaining Dependencies<a class="headerlink" href="#remaining-dependencies" title="Permalink to this headline">¶</a></h2>
 <p>Install the remaining six python dependencies using &#8216;pip&#8217;:</p>
-<div class="highlight-python"><pre>curl http://python-distribute.org/distribute_setup.py | python
-rm distribute*.tar.gz
+<div class="highlight-python"><pre>curl https://raw.github.com/pypa/pip/master/contrib/get-pip.py | python
 easy_install pip
-pip install nose quantities sphinx pydot psutil xlwt</pre>
+pip install nose quantities sphinx pydot psutil xlwt cython==0.16</pre>
 </div>
 </div>
 <div class="section" id="rmg">
