@@ -1353,14 +1353,14 @@ def saveJavaKineticsLibrary(path, species, reactions):
     # Headers
     f.write('Unit:\n')
     f.write('A: mol/cm3/s\n')
-    f.write('E: cal/mol\n')
+    f.write('E: kcal/mol\n')
     f.write('\n')
     f.write('Reactions:\n')
     f.write('\n')
     
     f2.write('Unit:\n')
     f2.write('A: mol/cm3/s\n')
-    f2.write('E: cal/mol\n')
+    f2.write('E: kcal/mol\n')
     f2.write('\n')
     f2.write('Reactions:\n')
     f2.write('\n')
