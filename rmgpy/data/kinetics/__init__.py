@@ -408,7 +408,7 @@ class KineticsDatabase(object):
             elif len(reverse) == 1 and len(forward) == 0:
                 # The reaction is in the reverse direction
                 # First fit Arrhenius kinetics in that direction
-                Tdata = 1000.0 / numpy.arange(0.5, 3.5, 0.1, numpy.float64)
+                Tdata = 1000.0 / numpy.arange(0.5, 3.301, 0.1, numpy.float64)
                 kdata = numpy.zeros_like(Tdata)
                 for i in range(Tdata.shape[0]):
                     kdata[i] = entry.data.getRateCoefficient(Tdata[i]) / reaction.getEquilibriumConstant(Tdata[i])
