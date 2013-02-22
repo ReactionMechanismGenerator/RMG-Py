@@ -39,7 +39,7 @@ import logging
 import numpy
 from copy import copy, deepcopy
 
-from base import Database, Entry, makeLogicNode
+from base import Database, Entry, makeLogicNode, DatabaseError
 
 import rmgpy.constants as constants
 from rmgpy.thermo import *
@@ -861,7 +861,7 @@ class ThermoDatabase(object):
         and return `thermoData1`.
         """
         if len(thermoData1.Tdata.value_si) != len(thermoData2.Tdata.value_si) or any([T1 != T2 for T1, T2 in zip(thermoData1.Tdata.value_si, thermoData2.Tdata.value_si)]):
-            raise ThermoError('Cannot add these ThermoData objects due to their having different temperature points.')
+            raise Exception('Cannot add these ThermoData objects due to their having different temperature points.')
         
         for i in range(thermoData1.Tdata.value_si.shape[0]):
             thermoData1.Cpdata.value_si[i] += thermoData2.Cpdata.value_si[i]
@@ -893,7 +893,7 @@ class ThermoDatabase(object):
         while node.data is None and node is not None:
             node = node.parent
         if node is None:
-            raise InvalidDatabaseError('Unable to determine thermo parameters for {0}: no library entries for {1} or any of its ancestors.'.format(molecule, node0) )
+            raise DatabaseError('Unable to determine thermo parameters for {0}: no library entries for {1} or any of its ancestors.'.format(molecule, node0) )
 
         data = node.data; comment = node.label
         while isinstance(data, basestring) and data is not None:
