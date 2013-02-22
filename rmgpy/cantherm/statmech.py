@@ -287,12 +287,15 @@ class StatMechJob:
         
         logging.debug('    Reading energy...')
         if E0 is None:
-            E0 = energyLog.loadEnergy(frequencyScaleFactor=self.frequencyScaleFactor)
+            E0 = energyLog.loadEnergy()
         else:
             E0 = E0 * constants.E_h * constants.Na         # Hartree/particle to J/mol
         E0 = applyEnergyCorrections(E0, self.modelChemistry, atoms, bonds if self.applyBondEnergyCorrections else {})
+        ZPE = statmechLog.loadZeroPointEnergy() * self.frequencyScaleFactor
+        E0 += ZPE
+        logging.debug('         ZPE (0 K) = {0:g} kcal/mol'.format(ZPE / 4184.))
         logging.debug('         E0 (0 K) = {0:g} kcal/mol'.format(E0 / 4184.))
-        
+       
         conformer.E0 = (E0*0.001,"kJ/mol")
         
         # If loading a transition state, also read the imaginary frequency
@@ -476,6 +479,9 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds):
     elif modelChemistry == 'Klip_2_cc':
         #Klip CCSD(T)(tz,qz)
         atomEnergies = {'H':-0.50003976 + SOC['H'], 'O':-75.00681155 + SOC['O'], 'C':-37.79029443 + SOC['C']}
+    elif modelChemistry == 'CCSD(T)-F12/cc-pVTZ-F12':
+        # NOTE: THESE ARE NOT CORRECT!!!!!!
+        atomEnergies = {'H':-0.499818 , 'N':-54.520543, 'O':-74.987624, 'C':-37.785385, 'P':-340.817186}
     else:
         logging.warning('Unknown model chemistry "{0}"; not applying energy corrections.'.format(modelChemistry))
         return E0
