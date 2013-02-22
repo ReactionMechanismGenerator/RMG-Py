@@ -255,6 +255,18 @@ def readKineticsEntry(entry, speciesDict, Aunits, Eunits):
                     T0 = (1,"K"),
                 )
             
+            elif 'HIGH' in line:
+                # High-pressure-limit Arrhenius parameters
+                tokens = tokens[1].split()
+                arrheniusLow = arrheniusHigh
+                arrheniusLow.A = (arrheniusLow.A.value,klow_units)
+                arrheniusHigh = Arrhenius(
+                    A = (float(tokens[0].strip()),kunits),
+                    n = float(tokens[1].strip()),
+                    Ea = (float(tokens[2].strip()),Eunits),
+                    T0 = (1,"K"),
+                )
+
             elif 'TROE' in line:
                 # Troe falloff parameters
                 tokens = tokens[1].split()
