@@ -696,27 +696,9 @@ def loadChemkinFile(path, dictionaryPath=None):
                         kinetics.arrhenius = [reaction1.kinetics]
                         duplicateReactionsToRemove.append(reaction1)
 
-                    elif isinstance(reaction1, TemplateReaction) and isinstance(reaction2, TemplateReaction):
-                        # assert reaction1.family.label == reaction2.family.label
-                        if isinstance(reaction1.kinetics, PDepArrhenius):
-                            kinetics = MultiPDepArrhenius()
-                        elif isinstance(reaction1.kinetics, Arrhenius):
-                            kinetics = MultiArrhenius()
-                        else:
-                            raise ChemkinError('Unexpected kinetics type {0} for duplicate reaction {1}.'.format(reaction1.kinetics.__class__, reaction1))
-                        reaction = TemplateReaction(
-                            index = reaction1.index,
-                            reactants = reaction1.reactants,
-                            products = reaction1.products,
-                            kinetics = kinetics,
-                            family = reaction1.family,
-                            duplicate = False,
-                        )
-                        duplicateReactionsToAdd.append(reaction)
-                        kinetics.arrhenius = [reaction1.kinetics]
-                        duplicateReactionsToRemove.append(reaction1)
                     else:
-                        # Do not use as duplicate reactions if it's neither a template nor library reaction
+                        # Do not use as duplicate reactions if it's not a library reaction
+                        # Template reactions should be kept separate
                         continue
                     
                     if isinstance(reaction.kinetics, MultiPDepArrhenius) and isinstance(reaction2.kinetics, PDepArrhenius):
