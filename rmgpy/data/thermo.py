@@ -42,7 +42,7 @@ from copy import copy, deepcopy
 from base import Database, Entry, makeLogicNode, DatabaseError
 
 import rmgpy.constants as constants
-from rmgpy.thermo import *
+from rmgpy.thermo import NASAPolynomial, NASA, ThermoData, Wilhoit
 from rmgpy.molecule import Molecule, Atom, Bond, Group
 
 ################################################################################

@@ -28,6 +28,6 @@
 #
 ################################################################################
 
-from .thermodata import *
-from .nasa import *
-from .wilhoit import *
+from .thermodata import ThermoData
+from .nasa import NASAPolynomial, NASA
+from .wilhoit import Wilhoit
