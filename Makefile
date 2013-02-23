@@ -29,3 +29,6 @@ decython:
 	# de-cythonize all but the 'minimal'. Helpful for debugging in "pure python" mode.
 	find . -name *.so ! \( -name _statmech.so -o -name quantity.so -o -regex '.*rmgpy/measure/.*' -o -regex '.*rmgpy/solver/.*' \) -exec rm -f '{}' \;
 	find . -name *.pyc -exec rm -f '{}' \;
+
+test:
+	nosetests --all-modules --verbose --with-coverage --cover-inclusive --cover-package=rmgpy --cover-erase --cover-html --cover-html-dir=testing/coverage rmgpy
