@@ -840,8 +840,8 @@ class ThermoDatabase(object):
                                 correction = self.__addGroupThermoData(None, self.groups['ring'], molecule, {'*':atom})
                             except KeyError:
                                 logging.error("Couldn't find in ring database:")
-                                logging.error(ringStructure)
-                                logging.error(ringStructure.toAdjacencyList())
+                                logging.error(ring)
+                                logging.error(ring.toAdjacencyList())
                                 raise
                         
                             if ringCorrection is None or ringCorrection.H298.value_si < correction.H298.value_si:
