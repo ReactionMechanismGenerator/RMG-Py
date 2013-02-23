@@ -32,3 +32,14 @@ decython:
 
 test:
 	nosetests --all-modules --verbose --with-coverage --cover-inclusive --cover-package=rmgpy --cover-erase --cover-html --cover-html-dir=testing/coverage rmgpy
+
+eg1: all
+	mkdir -p testing/minimal
+	rm -rf testing/minimal/*
+	cp examples/rmg/minimal/input.py testing/minimal/input.py
+	coverage erase
+	echo "Running with coverage tracking AND profiling"
+	coverage run rmg.py -p testing/minimal/input.py
+	coverage report
+	coverage html
+	
