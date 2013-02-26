@@ -45,6 +45,10 @@ from rmgpy.reaction import Reaction
 class NetworkError(Exception): 
     pass
 
+class InvalidMicrocanonicalRateError(NetworkError):
+    """Used when the k(E) calculation does not give the correct kf(T) or Kc(T)"""
+    pass
+
 ################################################################################
 
 class Network:
@@ -269,45 +273,57 @@ class Network:
         grainSize = self.grainSize
         grainCount = self.grainCount
         
-        # Update parameters that depend on temperature only if necessary
-        if temperatureChanged:
-            
-            # Choose the energy grains to use to compute k(T,P) values at this temperature
-            Elist = self.Elist = self.selectEnergyGrains(T, grainSize, grainCount)
-            Ngrains = self.Ngrains = len(Elist)
-            logging.info('Using {0:d} grains from {1:.2f} to {2:.2f} kJ/mol in steps of {3:.2f} kJ/mol to compute the k(T,P) values at {4:g} K'.format(
-                Ngrains, numpy.min(Elist) * 0.001, numpy.max(Elist) * 0.001, (Elist[1] - Elist[0]) * 0.001, T))
-            
-            # Choose the angular momenta to use to compute k(T,P) values at this temperature
-            # (This only applies if the J-rotor is adiabatic
-            if not self.activeJRotor:
-                Jlist = self.Jlist = numpy.arange(0, 20, 1, numpy.int)
-                NJ = self.NJ = len(Jlist)
-            else:
-                Jlist = self.Jlist = numpy.array([0], numpy.int)
-                NJ = self.NJ = 1
-            
-            # Map the densities of states onto this set of energies
-            # Also shift each density of states to a common zero of energy
-            self.mapDensitiesOfStates()
-            
-            # Use free energy to determine equilibrium ratios of each isomer and product channel
-            self.calculateEquilibriumRatios()
-            
-            # Calculate microcanonical rate coefficients for each path reaction
-            self.calculateMicrocanonicalRates()
-            
-            # Rescale densities of states such that, when they are integrated
-            # using the Boltzmann factor as a weighting factor, the result is unity
-            for i in range(Nisom+Nreac):
-                Q = 0.0
-                for s in range(NJ):
-                    Q += numpy.sum(self.densStates[i,:,s] * (2*Jlist[s]+1) * numpy.exp(-Elist / constants.R / T))
-                self.densStates[i,:,:] /= Q
-            
-        # Update parameters that depend on temperature and pressure if necessary
-        if temperatureChanged or pressureChanged:
-            self.calculateCollisionModel()
+        success = False
+        while not success:
+            success = True # (set it to false again later if necessary)
+            # Update parameters that depend on temperature only if necessary
+            if temperatureChanged:
+                
+                # Choose the energy grains to use to compute k(T,P) values at this temperature
+                Elist = self.Elist = self.selectEnergyGrains(T, grainSize, grainCount)
+                Ngrains = self.Ngrains = len(Elist)
+                logging.info('Using {0:d} grains from {1:.2f} to {2:.2f} kJ/mol in steps of {3:.2f} kJ/mol to compute the k(T,P) values at {4:g} K'.format(
+                    Ngrains, numpy.min(Elist) * 0.001, numpy.max(Elist) * 0.001, (Elist[1] - Elist[0]) * 0.001, T))
+                
+                # Choose the angular momenta to use to compute k(T,P) values at this temperature
+                # (This only applies if the J-rotor is adiabatic
+                if not self.activeJRotor:
+                    Jlist = self.Jlist = numpy.arange(0, 20, 1, numpy.int)
+                    NJ = self.NJ = len(Jlist)
+                else:
+                    Jlist = self.Jlist = numpy.array([0], numpy.int)
+                    NJ = self.NJ = 1
+                
+                # Map the densities of states onto this set of energies
+                # Also shift each density of states to a common zero of energy
+                self.mapDensitiesOfStates()
+                
+                # Use free energy to determine equilibrium ratios of each isomer and product channel
+                self.calculateEquilibriumRatios()
+                
+                # Calculate microcanonical rate coefficients for each path reaction
+                try:
+                    self.calculateMicrocanonicalRates()
+                except InvalidMicrocanonicalRateError:
+                    success = False
+                    grainSize *= 0.5
+                    grainCount *= 2
+                    logging.warning("Increasing number of grains, decreasing grain size and trying again.")
+                    continue
+                else:
+                    success = True
+                
+                # Rescale densities of states such that, when they are integrated
+                # using the Boltzmann factor as a weighting factor, the result is unity
+                for i in range(Nisom+Nreac):
+                    Q = 0.0
+                    for s in range(NJ):
+                        Q += numpy.sum(self.densStates[i,:,s] * (2*Jlist[s]+1) * numpy.exp(-Elist / constants.R / T))
+                    self.densStates[i,:,:] /= Q
+                
+            # Update parameters that depend on temperature and pressure if necessary
+            if temperatureChanged or pressureChanged:
+                self.calculateCollisionModel()
 
     def __getEnergyGrains(self, Emin, Emax, grainSize=0.0, grainCount=0):
         """
@@ -636,7 +652,7 @@ class Network:
                 logging.error('    Expected Keq({0:g} K) = {1:g}'.format(T, Keq_expected))
                 logging.error('      Actual Keq({0:g} K) = {1:g}'.format(T, Keq_actual))
                 if error:
-                    raise NetworkError('Invalid k(E) values computed for path reaction "{0}".'.format(rxn))
+                    raise InvalidMicrocanonicalRateError('Invalid k(E) values computed for path reaction "{0}".'.format(rxn))
                 else:
                     logging.warning('Significant corrections to k(E) to be consistent with high-pressure limit for path reaction "{0}".'.format(rxn))
 
