@@ -209,6 +209,31 @@ class TestEnergy(unittest.TestCase):
 
 ################################################################################
 
+class TestDipoleMoment(unittest.TestCase):
+    """
+    Contains unit tests of the DipoleMoment unit type object.
+    """
+            
+    def test_Ctimesm(self):
+        """
+        Test the creation of a dipole moment quantity with units of C*m.
+        """
+        q = quantity.DipoleMoment(1.0,"C*m")
+        self.assertAlmostEqual(q.value, 1.0, 6)
+        self.assertAlmostEqual(q.value_si, 1.0, 6)
+        self.assertEqual(q.units, "C*m")
+
+    def test_D(self):
+        """
+        Test the creation of a dipole moment quantity with units of J/mol.
+        """
+        q = quantity.DipoleMoment(1.0,"De")
+        self.assertAlmostEqual(q.value, 1.0, 6)
+        self.assertAlmostEqual(q.value_si*constants.c*1.0e21, 1.0, 6)
+        self.assertEqual(q.units, "De")
+
+################################################################################
+
 class TestFlux(unittest.TestCase):
     """
     Contains unit tests of the Flux unit type object.
