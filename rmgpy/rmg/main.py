@@ -95,6 +95,7 @@ class RMG:
     `units`                     The unit system to use to save output files (currently must be 'si')
     `drawMolecules`             ``True`` to draw pictures of the species in the core, ``False`` otherwise
     `generatePlots`             ``True`` to generate plots of the job execution statistics after each iteration, ``False`` otherwise
+    `verboseComments`           ``True`` to keep the verbose comments for database estimates, ``False`` otherwise
     `pressureDependence`        Whether to process unimolecular (pressure-dependent) reaction networks
     `wallTime`                  The maximum amount of CPU time in seconds to expend on this job; used to stop gracefully so we can still get profiling information
     --------------------------- ------------------------------------------------
@@ -144,6 +145,7 @@ class RMG:
         self.drawMolecules = None
         self.generatePlots = None
         self.saveConcentrationProfiles = None
+        self.verboseComments = None
         self.pressureDependence = None
         self.reactionGenerationOptions = {}
         self.wallTime = 0
@@ -166,6 +168,7 @@ class RMG:
             self.pressureDependence.outputFile = self.outputDirectory
             self.reactionModel.pressureDependence = self.pressureDependence
         self.reactionModel.reactionGenerationOptions = self.reactionGenerationOptions
+        self.reactionModel.verboseComments = self.verboseComments
         
     def checkInput(self):
         """
