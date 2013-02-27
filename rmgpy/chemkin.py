@@ -44,6 +44,7 @@ from quantity import Quantity
 from data.base import Entry
 from data.kinetics import TemplateReaction, LibraryReaction
 from rmg.pdep import PDepReaction
+from rmgpy.pdep import LennardJones
 from rmgpy.molecule import Molecule
 
 __chemkin_reaction_count = None
@@ -574,7 +575,29 @@ def removeCommentFromLine(line):
         line = line[0:index] + '\n'
     return line, comment
 
-def loadChemkinFile(path, dictionaryPath=None, readComments = True):
+def loadTransportFile(path, speciesDict):
+    """
+    Load a Chemkin transport properties file located at `path` and store the
+    properties on the species in `speciesDict`.
+    """
+    with open(path, 'r') as f:
+        for line0 in f:
+            line = removeCommentFromLine(line0)[0]
+            line = line.strip()
+            if line != '':
+                # This line contains an entry, so parse it
+                label = line[0:16].upper().strip()
+                data = line[16:].split()
+                species = speciesDict[label]
+                species.lennardJones = LennardJones(
+                    sigma = (float(data[2]),'angstrom'),
+                    epsilon = (float(data[1]),'K'),
+                )
+                species.dipoleMoment = (float(data[3]),'De')
+                species.polarizability = (float(data[4]),'angstrom^3')
+                species.Zrot = (float(data[5]),'')
+
+def loadChemkinFile(path, dictionaryPath=None, transportPath=None, readComments = True):
     """
     Load a Chemkin input file to `path` on disk, returning lists of the species
     and reactions in the Chemkin file.
@@ -747,6 +770,11 @@ def loadChemkinFile(path, dictionaryPath=None, readComments = True):
         reactionList.remove(reaction)
     reactionList.extend(duplicateReactionsToAdd)
 
+    # If the transport path is given, then read it to obtain the transport
+    # properties
+    if transportPath:
+        loadTransportFile(transportPath, speciesDict)
+    
     # Apply species aliases if known
     for spec in speciesList:
         try:
@@ -1299,6 +1327,39 @@ def saveSpeciesDictionary(path, species):
         for spec in species:
             f.write(spec.molecule[0].toAdjacencyList(label=getSpeciesIdentifier(spec), removeH=True))
             f.write('\n')
+
+def saveTransportFile(path, species):
+    """
+    Save a Chemkin transport properties file to `path` on disk containing the
+    transport properties of the given list of `species`.
+    """
+    with open(path, 'w') as f:
+        for spec in species:
+            print spec.lennardJones
+            if (not spec.lennardJones or not spec.dipoleMoment or
+                not spec.polarizability or not spec.Zrot or 
+                len(spec.molecule) == 0):
+                continue
+            
+            label = getSpeciesIdentifier(spec)
+            
+            molecule = spec.molecule[0]
+            if len(molecule.atoms) == 1:
+                shapeIndex = 0
+            elif molecule.isLinear():
+                shapeIndex = 1
+            else:
+                shapeIndex = 2
+            
+            f.write('{0:19} {1:d} {2:9.3f} {3:9.3f} {4:9.3f} {5:9.3f} {6:9.3f}\n'.format(
+                label,
+                shapeIndex,
+                spec.lennardJones.epsilon.value_si / constants.R,
+                spec.lennardJones.sigma.value_si * 1e10,
+                spec.dipoleMoment.value_si * constants.c * 1e21,
+                spec.polarizability.value_si * 1e30,
+                spec.Zrot.value_si,
+            ))
 
 def saveChemkinFile(path, species, reactions, verbose = True):
     """

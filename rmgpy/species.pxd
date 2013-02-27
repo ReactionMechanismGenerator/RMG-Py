@@ -43,6 +43,9 @@ cdef class Species:
     cdef public object lennardJones
     cdef public list molecule
     cdef public ScalarQuantity _molecularWeight
+    cdef public ScalarQuantity _dipoleMoment
+    cdef public ScalarQuantity _polarizability
+    cdef public ScalarQuantity _Zrot
     cdef public bint reactive
     cdef public object energyTransferModel
     
