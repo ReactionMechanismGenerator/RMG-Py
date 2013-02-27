@@ -504,15 +504,15 @@ class RMG:
         Output a header containing identifying information about RMG to the log.
         """
     
-        logging.log(level, '#################################################')
-        logging.log(level, '# RMG - Reaction Mechanism Generator            #')
-        logging.log(level, '# Version: 0.1.0 (14 May 2009)                  #')
-        logging.log(level, '# Authors: RMG Developers (rmg_dev@mit.edu)     #')
-        logging.log(level, '# P.I.:    William H. Green (whgreen@mit.edu)   #')
-        logging.log(level, '# Website: http://rmg.sourceforge.net/          #')
-        logging.log(level, '#################################################\n')
-    
         import os
+        logging.log(level, '###################################################')
+        logging.log(level, '# RMG-Py - Reaction Mechanism Generator in Python #')
+        logging.log(level, '# Version: Early 2013                             #')
+        logging.log(level, '# Authors: RMG Developers (rmg_dev@mit.edu)       #')
+        logging.log(level, '# P.I.s:   William H. Green (whgreen@mit.edu)     #')
+        logging.log(level, '#          Richard H. West (r.west@neu.edu)       #')
+        logging.log(level, '# Website: http://greengroup.github.com/RMG-Py/   #')
+        logging.log(level, '###################################################\n')
     
         head, date = self.getGitCommit()
         if head != '' and date != '':
