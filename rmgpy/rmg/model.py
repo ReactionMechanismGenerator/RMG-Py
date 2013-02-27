@@ -58,8 +58,11 @@ from pdep import PDepReaction, PDepNetwork, PressureDependenceError
 
 class Species(rmgpy.species.Species):
 
-    def __init__(self, index=-1, label='', thermo=None, conformer=None, molecule=None, lennardJones=None, molecularWeight=None, energyTransferModel=None, reactive=True, coreSizeAtCreation=0):
-        rmgpy.species.Species.__init__(self, index, label, thermo, conformer, molecule, lennardJones, molecularWeight, energyTransferModel, reactive)
+    def __init__(self, index=-1, label='', thermo=None, conformer=None, 
+                 molecule=None, lennardJones=None, molecularWeight=None, 
+                 dipoleMoment=None, polarizability=None, Zrot=None, 
+                 energyTransferModel=None, reactive=True, coreSizeAtCreation=0):
+        rmgpy.species.Species.__init__(self, index, label, thermo, conformer, molecule, lennardJones, molecularWeight, dipoleMoment, polarizability, Zrot, energyTransferModel, reactive)
         self.coreSizeAtCreation = coreSizeAtCreation
 
     def __reduce__(self):
