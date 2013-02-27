@@ -663,7 +663,7 @@ class RMG:
         # Attempt to import the xlwt package; return if not installed
         try:
             xlwt
-        except NamerError:
+        except NameError:
             logging.warning('Package xlwt not loaded. Unable to save execution statistics.')
             return
     
@@ -983,7 +983,7 @@ def initializeLog(verbose, log_file_name):
     while logger.handlers:
         logger.removeHandler(logger.handlers[0])
 
-    # Add ch to logger
+    # Add console and file handlers to logger
     logger.addHandler(ch)
     logger.addHandler(fh)
 
