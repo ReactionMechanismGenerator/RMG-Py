@@ -42,4 +42,12 @@ eg1: all
 	coverage run rmg.py -p testing/minimal/input.py
 	coverage report
 	coverage html
-	
+eg2: all
+	mkdir -p testing/hexadiene
+	rm -rf testing/hexadiene/*
+	cp examples/rmg/1,3-hexadiene/input.py testing/hexadiene/input.py
+	coverage erase
+	echo "Running with coverage tracking AND profiling"
+	coverage run rmg.py -p testing/hexadiene/input.py
+	coverage report
+	coverage html
