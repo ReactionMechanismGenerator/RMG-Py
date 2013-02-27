@@ -32,7 +32,6 @@ This module contains classes and methods for working with physical quantities,
 particularly the :class:`Quantity` class for representing physical quantities.
 """
 
-import math
 import numpy
 import quantities as pq
 

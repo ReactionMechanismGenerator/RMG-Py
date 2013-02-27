@@ -32,7 +32,8 @@
 This module contains functionality for working with kinetics depositories.
 """
 
-from rmgpy.data.base import *
+from rmgpy.data.base import Database, Entry
+from rmgpy.molecule import Molecule
 
 from rmgpy.reaction import Reaction, ReactionError
 from .common import saveEntry

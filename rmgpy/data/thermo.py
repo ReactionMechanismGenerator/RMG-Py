@@ -32,7 +32,6 @@
 
 """
 
-import os
 import os.path
 import math
 import logging

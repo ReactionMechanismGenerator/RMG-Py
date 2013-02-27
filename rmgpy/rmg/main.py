@@ -44,7 +44,6 @@ try:
 except ImportError:
     logging.warning('Optional package dependency "xlwt" not loaded; Some output features will not work.')
 
-from rmgpy.species import Species
 from rmgpy.molecule import Molecule
 from rmgpy.solver.base import TerminationTime, TerminationConversion
 from rmgpy.solver.simple import SimpleReactor
@@ -504,7 +503,6 @@ class RMG:
         Output a header containing identifying information about RMG to the log.
         """
     
-        import os
         logging.log(level, '###################################################')
         logging.log(level, '# RMG-Py - Reaction Mechanism Generator in Python #')
         logging.log(level, '# Version: Early 2013                             #')

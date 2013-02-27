@@ -28,8 +28,8 @@
 #
 ################################################################################
 
-from .translation import *
-from .rotation import *
-from .vibration import *
-from .torsion import *
-from .conformer import *
+from .translation import Translation, IdealGasTranslation
+from .rotation import Rotation, LinearRotor, NonlinearRotor, KRotor, SphericalTopRotor
+from .vibration import Vibration, HarmonicOscillator
+from .torsion import Torsion, HinderedRotor
+from .conformer import Conformer
