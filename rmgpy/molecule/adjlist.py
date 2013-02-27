@@ -78,7 +78,7 @@ def fromAdjacencyList(adjlist, group=False):
             # parse-by-whitespace. Examples include '{Cd, Ct}'.
             if mistake1.search(line):
                 raise InvalidAdjacencyListError(
-                    "Shouldn't have spaces inside braces: {0}".format(mistake.search(line).group())
+                    "Shouldn't have spaces inside braces: {0}".format(mistake1.search(line).group())
                     )
 
             # Sometimes commas are used to delimit bonds in the bond list,
