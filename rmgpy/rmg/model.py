@@ -47,6 +47,7 @@ from rmgpy.pdep import LennardJones, SingleExponentialDown
 from rmgpy.statmech import  Conformer
 
 from rmgpy.data.thermo import *
+from rmgpy.data.solvation import *
 from rmgpy.data.kinetics import *
 from rmgpy.data.statmech import *
 import rmgpy.data.rmg
@@ -57,6 +58,8 @@ from pdep import PDepReaction, PDepNetwork, PressureDependenceError
 ################################################################################
 
 class Species(rmgpy.species.Species):
+    solventName = None
+    solventData = None
 
     def __init__(self, index=-1, label='', thermo=None, conformer=None, molecule=None, lennardJones=None, molecularWeight=None, energyTransferModel=None, reactive=True, coreSizeAtCreation=0):
         rmgpy.species.Species.__init__(self, index, label, thermo, conformer, molecule, lennardJones, molecularWeight, energyTransferModel, reactive)
@@ -93,6 +96,16 @@ class Species(rmgpy.species.Species):
             Cp0 = self.calculateCp0()
             CpInf = self.calculateCpInf()
             wilhoit = thermo0.toWilhoit(Cp0=Cp0, CpInf=CpInf)
+            
+            
+        # Add on solvation correction
+        if Species.solventData:
+        	logging.info("Making solvent correction for {0} with {1!r}".format(Species.solventName,Species.solventData))
+#         soluteData = database.solvation.getSoluteData(Species)
+#         solventData = database.solvation.getSolventData(label)
+#     	  solvation_correction =  database.solvation.getSolvationCorrection(self)
+#         wilhoit.H0 = wilhoit.H0 + solvation_correction.enthalpy
+#         wilhoit.S0 = wilhoit.S0 + solvation_correction.entropy
             
         # Compute E0 by extrapolation to 0 K
         if self.conformer is None:

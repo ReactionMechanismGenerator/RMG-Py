@@ -126,6 +126,10 @@ def simpleReactor(temperature, pressure, initialMoleFractions, terminationConver
 def simulator(atol, rtol):
     rmg.absoluteTolerance = atol
     rmg.relativeTolerance = rtol
+    
+def solvation(solvent):
+	assert isinstance(solvent,str), "solvent should be a string like 'water'"
+	rmg.solvent = solvent
 
 def model(toleranceMoveToCore, toleranceKeepInEdge=0.0, toleranceInterruptSimulation=1.0, maximumEdgeSpecies=None):
     rmg.fluxToleranceKeepInEdge = toleranceKeepInEdge
@@ -234,6 +238,7 @@ def readInputFile(path, rmg0):
         'adjacencyList': adjacencyList,
         'simpleReactor': simpleReactor,
         'simulator': simulator,
+        'solvation': solvation,
         'model': model,
         'pressureDependence': pressureDependence,
         'options': options,
@@ -315,7 +320,9 @@ def saveInputFile(path, rmg):
             f.write('    },\n')
         
         f.write(')\n\n')
-        
+    
+    if rmg.solvent:
+    	f.write("solvation(\n    solvent = '{0!s}'\n)\n\n".format(solvent))
         
     # Simulator tolerances
     f.write('simulator(\n')
