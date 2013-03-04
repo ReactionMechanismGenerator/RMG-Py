@@ -68,6 +68,25 @@ def processOldLibraryEntry(data):
     raise NotImplementedError()
 
 
+class SolventData():
+	"""
+	Stores Abraham/Mintz parameters for characterizing a solvent.
+	"""
+	def __init__(self, s_h=None, b_h=None, e_h=None, l_h=None, a_h=None,
+	c_h=None, s_g=None, b_g=None, e_g=None, l_g=None, a_g=None, c_g=None):
+		self.s_h = s_h
+		self.b_h = b_h
+		self.e_h = e_h
+		self.l_h = l_h
+		self.a_h = a_h
+		self.c_h = c_h
+		self.s_g = s_g
+		self.b_g = b_g
+		self.e_g = e_g
+		self.l_g = l_g
+		self.a_g = a_g
+		self.c_g = c_g
+		
 class SoluteData():
     """
     Stores Abraham parameters to characterize a solute
@@ -716,3 +735,39 @@ class SoluteDatabase(object):
             soluteData.comment += comment + "+"
         
         return soluteData
+
+#    def addSolventData(self, solventData, database, solvent):
+# 		node = 
+#    	
+#    		if node is None:
+#    			raise KeyError('Node not found in database.')
+#    		else
+#    			data = node.data
+#    			solventData.s_h = data.s_h
+#    			solventData.b_h = data.b_h
+#    			solventData.e_h = data.e_h
+#    			solventData.l_h = data.l_h
+#    			solventData.a_h = data.a_h
+#    			solventData.c_h = data.c_h
+#    			solventData.s_g = data.s_g
+#    			solventData.b_g = data.b_g
+#    			solventData.e_g = data.e_g
+#    			solventData.l_g = data.l_g
+#    			solventData.a_g = data.a_g
+#    			solventData.c_g = data.c_g
+#    	
+#    		return solventData
+    
+    def calcH(self, soluteData, solventData):
+        delH = (soluteData.S*solventData.s_h)+(soluteData.B*solventData.b_h)+(soluteData.E*solventData.e_h)+(soluteData.L*solventData.l_h)+(soluteData.A*solventData.a_h)+solventData.c_h  
+        return delH
+    
+    def calcG(self, soluteData, solventData):
+        logk = (soluteData.S*solventData.s_g)+(soluteData.B*solventData.b_g)+(soluteData.E*solventData.e_g)+(soluteData.L*solventData.l_g)+(soluteData.A*solventData.a_g)+solventData.c_g
+        delG = -8.314*298*0.4343*k
+        return delG
+        
+    
+    def calcS(self, delG, delH):
+        delS = (delH-delG)/298
+        return delS
