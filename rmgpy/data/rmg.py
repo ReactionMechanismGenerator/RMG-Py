@@ -40,6 +40,7 @@ from thermo import ThermoDatabase
 from transport import TransportDatabase
 from kinetics import KineticsDatabase
 from statmech import StatmechDatabase
+from solvation import SolvationDatabase
 
 # Module-level variable to store the (only) instance of RMGDatabase in use.
 database = None
@@ -57,6 +58,7 @@ class RMGDatabase:
         self.forbiddenStructures = None
         self.kinetics = None
         self.statmech = None
+        self.solvation = None
         
         # Store the newly created database in the module.
         global database
@@ -72,7 +74,8 @@ class RMGDatabase:
              kineticsFamilies=None,
              kineticsDepositories=None,
              statmechLibraries=None,
-             depository=True
+             depository=True,
+             solvation=True,
              ):
         """
         Load the RMG database from the given `path` on disk, where `path`
@@ -91,6 +94,9 @@ class RMGDatabase:
                           kineticsDepositories
                           )
         self.loadStatmech(os.path.join(path, 'statmech'), statmechLibraries, depository)
+        
+        if solvation:
+            self.loadSolvation(os.path.join(path, 'solvation'))
 
     def loadThermo(self, path, thermoLibraries=None, depository=True):
         """
@@ -145,6 +151,14 @@ class RMGDatabase:
                            depositories=kineticsDepositories
                            )
 
+    def loadSolvation(self, path):
+        """
+        Load the RMG solvation database from the given `path` on disk, where
+        `path` points to the top-level folder of the RMG solvation database.
+        """
+        self.solvation = SolvationDatabase()
+        self.solvation.load(path)
+        
     def loadStatmech(self, path, statmechLibraries=None, depository=True):
         """
         Load the RMG statmech database from the given `path` on disk, where

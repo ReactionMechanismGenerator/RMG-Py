@@ -28,6 +28,10 @@ simpleReactor(
     terminationTime=(1e6,'s'),
 )
 
+solvation(
+	solvent='water'
+)
+
 simulator(
     atol=1e-16,
     rtol=1e-8,
