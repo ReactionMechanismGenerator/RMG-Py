@@ -351,7 +351,6 @@ class SolvationDatabase(object):
         """
         path = os.path.abspath(path)
         if not os.path.exists(path): os.mkdir(path)
-        #self.saveDepository(os.path.join(path, 'depository'))
         self.saveLibraries(os.path.join(path, 'libraries'))
         self.saveGroups(os.path.join(path, 'groups'))
 
@@ -379,10 +378,6 @@ class SolvationDatabase(object):
         if not os.path.exists(path): os.mkdir(path)
         self.groups['abraham'].save(os.path.join(path, 'abraham.py'))
         self.groups['nonacentered'].save(os.path.join(path, 'nonacentered.py'))
-        # self.groups['int15'].save(os.path.join(path, 'int15.py'))
-        # self.groups['ring'].save(os.path.join(path, 'ring.py'))
-        # self.groups['radical'].save(os.path.join(path, 'radical.py'))
-        # self.groups['other'].save(os.path.join(path, 'other.py'))
 
     def loadOld(self, path):
         """
@@ -443,31 +438,6 @@ class SolvationDatabase(object):
             treestr = os.path.join(groupsPath, 'Abraham_Tree.txt'),
             libstr = os.path.join(groupsPath, 'Abraham_Library.txt'),
         )
-        # self.groups['gauche'].saveOld(
-            # dictstr = os.path.join(groupsPath, 'Gauche_Dictionary.txt'),
-            # treestr = os.path.join(groupsPath, 'Gauche_Tree.txt'),
-            # libstr = os.path.join(groupsPath, 'Gauche_Library.txt'),
-        # )
-        # self.groups['int15'].saveOld(
-            # dictstr = os.path.join(groupsPath, '15_Dictionary.txt'),
-            # treestr = os.path.join(groupsPath, '15_Tree.txt'),
-            # libstr = os.path.join(groupsPath, '15_Library.txt'),
-        # )
-        # self.groups['radical'].saveOld(
-            # dictstr = os.path.join(groupsPath, 'Radical_Dictionary.txt'),
-            # treestr = os.path.join(groupsPath, 'Radical_Tree.txt'),
-            # libstr = os.path.join(groupsPath, 'Radical_Library.txt'),
-        # )
-        # self.groups['ring'].saveOld(
-            # dictstr = os.path.join(groupsPath, 'Ring_Dictionary.txt'),
-            # treestr = os.path.join(groupsPath, 'Ring_Tree.txt'),
-            # libstr = os.path.join(groupsPath, 'Ring_Library.txt'),
-        # )
-        # self.groups['other'].saveOld(
-            # dictstr = os.path.join(groupsPath, 'Other_Dictionary.txt'),
-            # treestr = os.path.join(groupsPath, 'Other_Tree.txt'),
-            # libstr = os.path.join(groupsPath, 'Other_Library.txt'),
-        # )
 
     def getSoluteData(self, species):
         """
@@ -477,24 +447,17 @@ class SolvationDatabase(object):
         estimation via Platts group additivity.
         """
         soluteData = None
-        # Check the libraries in order first; return the first successful match
-        for label in self.libraryOrder:
-            soluteData = self.getSoluteDataFromLibrary(species, self.libraries[label])
-            if soluteData is not None: 
-                soluteData[0].comment = label
-                break
+        
+        # Check the library first
+        soluteData = self.getSoluteDataFromLibrary(species, self.soluteLibrary)
+        if soluteData is not None: 
+           soluteData[0].comment = 'solute'
         else:
             # Solute not found in any loaded libraries, so estimate
             soluteData = self.getSoluteDataFromGroups(species)
-        # Add Cp0 and CpInf values
-         # Cp0 = species.calculateCp0()
-         # CpInf = species.calculateCpInf()
-        data, library, entry = soluteData
-         # if isinstance(data,SoluteData):
-            # data.Cp0 = (Cp0,"J/(mol*K)")
-            # data.CpInf = (CpInf,"J/(mol*K)")
         # Return the resulting solute parameters
-        return data
+        return soluteData
+        
 
     def getAllSoluteData(self, species):
         """
@@ -503,29 +466,8 @@ class SolvationDatabase(object):
         first, then the group additivity  estimate. This method is useful 
          for a generic search job.
         """
-        thermoData = []
-        # Data from depository comes first
-        # thermoData.extend(self.getThermoDataFromDepository(species))
-        # Data from libraries comes second
-        for label in self.libraryOrder:
-            data = self.getSoluteDataFromLibrary(species, self.libraries[label])
-            if data: 
-                data[0].comment = label
-                soluteData.append(data)
-        # Last entry is always the estimate from group additivity
-        soluteData.append(self.getSoluteDataFromGroups(species))
+        raise NotImplementedError()
         
-        # Add Cp0 and CpInf values
-        # Cp0 = species.calculateCp0()
-        # CpInf = species.calculateCpInf()
-        # for data, library, entry in thermoData:
-            # if isinstance(data,ThermoData):
-                # data.Cp0 = (Cp0,"J/(mol*K)")
-                # data.CpInf = (CpInf,"J/(mol*K)")
-                
-        # Return all of the resulting thermo parameters
-        return thermoData
-
     def getThermoDataFromDepository(self, species):
         """
         Return all possible sets of thermodynamic parameters for a given
@@ -582,7 +524,7 @@ class SolvationDatabase(object):
         soluteData.A /= count
         soluteData.comment = "Average of {0}".format(" and ".join(comments))
 
-        return soluteData, None, None
+        return soluteData
         
     def estimateSoluteViaGroupAdditivity(self, molecule):
         """
@@ -698,20 +640,20 @@ class SolvationDatabase(object):
         # library, in which case we need to fall up the tree until we find an
         # ancestor that has an entry in the library
         node = node0
-        data = node.data
-        while data is None and node is not None:
+        
+        while node is not None and node.data is None:
             node = node.parent
         if node is None:
             raise KeyError('Node has no parent with data in database.')
-        if node is not None:
-            comment = node.label
-            while isinstance(data, basestring) and data is not None:
-                for entry in database.entries.values():
-                    if entry.label == data:
-                        data = entry.data
-                        comment = entry.label
-                        break
-            comment = '{0}({1})'.format(database.label, comment)
+        data = node.data
+        comment = node.label
+        while isinstance(data, basestring) and data is not None:
+            for entry in database.entries.values():
+                if entry.label == data:
+                    data = entry.data
+                    comment = entry.label
+                    break
+        comment = '{0}({1})'.format(database.label, comment)
 
         # This code prints the hierarchy of the found node; useful for debugging
         #result = ''
@@ -724,24 +666,24 @@ class SolvationDatabase(object):
             #raise ThermoError('Cannot add these ThermoData objects due to their having different temperature points.')
         
         #for i in range(7):
-            #thermoData.Cpdata.value_si[i] += data.Cpdata.value_si[i]
-            soluteData.S += data.S
-            soluteData.B += data.B
-            soluteData.E += data.E
-            soluteData.L += data.L
-            soluteData.A += data.A
-            soluteData.comment += comment + "+"
+        #thermoData.Cpdata.value_si[i] += data.Cpdata.value_si[i]
+        soluteData.S += data.S
+        soluteData.B += data.B
+        soluteData.E += data.E
+        soluteData.L += data.L
+        soluteData.A += data.A
+        soluteData.comment += comment + "+"
         
         return soluteData
 
     
     def calcH(self, soluteData, solventData):
-        delH = (soluteData.S*solventData.s_h)+(soluteData.B*solventData.b_h)+(soluteData.E*solventData.e_h)+(soluteData.L*solventData.l_h)+(soluteData.A*solventData.a_h)+solventData.c_h  
+        delH = 1000*((soluteData.S*solventData.s_h)+(soluteData.B*solventData.b_h)+(soluteData.E*solventData.e_h)+(soluteData.L*solventData.l_h)+(soluteData.A*solventData.a_h)+solventData.c_h)  
         return delH
     
     def calcG(self, soluteData, solventData):
-        logk = (soluteData.S*solventData.s_g)+(soluteData.B*solventData.b_g)+(soluteData.E*solventData.e_g)+(soluteData.L*solventData.l_g)+(soluteData.A*solventData.a_g)+solventData.c_g
-        delG = -8.314*298*0.4343*k
+        logK = (soluteData.S*solventData.s_g)+(soluteData.B*solventData.b_g)+(soluteData.E*solventData.e_g)+(soluteData.L*solventData.l_g)+(soluteData.A*solventData.a_g)+solventData.c_g
+        delG = -8.314*298*0.4343*logK
         return delG
         
     
@@ -751,7 +693,7 @@ class SolvationDatabase(object):
     
     def getSolvationCorrection(self, soluteData, solventData):
         correction = SolvationCorrection(0.0, 0.0, 0.0)
-        correction.enthalpy = calcH(self, soluteData, solventData)
-        correction.gibbs = calcG(self, soluteData, solventData)  
-        correction.entropy = calcS(self, correction.gibbs, correction.enthalpy) 
+        correction.enthalpy = self.calcH(soluteData, solventData)
+        correction.gibbs = self.calcG(soluteData, solventData)  
+        correction.entropy = self.calcS(correction.gibbs, correction.enthalpy) 
         return correction

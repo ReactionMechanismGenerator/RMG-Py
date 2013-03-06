@@ -101,11 +101,11 @@ class Species(rmgpy.species.Species):
         # Add on solvation correction
         if Species.solventData:
         	logging.info("Making solvent correction for {0} with {1!r}".format(Species.solventName,Species.solventData))
-#         soluteData = database.solvation.getSoluteData(Species)
-#         solventData = database.solvation.getSolventData(label)
-#     	  solvation_correction =  database.solvation.getSolvationCorrection(self)
-#         wilhoit.H0 = wilhoit.H0 + solvation_correction.enthalpy
-#         wilhoit.S0 = wilhoit.S0 + solvation_correction.entropy
+        	soluteData = database.solvation.getSoluteData(self)
+        	solvation_correction =  database.solvation.getSolvationCorrection(soluteData, Species.solventData)
+        	#import ipdb; ipdb.set_trace()
+        	wilhoit.S0.setValue(wilhoit.S0.value_si + solvation_correction.entropy)
+        	wilhoit.H0.setValue(wilhoit.H0.value_si + solvation_correction.enthalpy)
             
         # Compute E0 by extrapolation to 0 K
         if self.conformer is None:
