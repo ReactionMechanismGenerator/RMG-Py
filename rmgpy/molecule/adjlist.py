@@ -194,11 +194,10 @@ def fromAdjacencyList(adjlist, group=False):
                     atom1.edges[atom2] = bond
                     atom2.edges[atom1] = bond
         
-        # Add explicit hydrogen atoms to complete structure if desired
+        # Calculate the number of lone pair electrons requiring molecule with all hydrogen atoms present
         if not group:
             valences = {'H': 1, 'C': 4, 'O': 2, 'N': 3, 'S': 2, 'Si': 4, 'He': 0, 'Ne': 0, 'Ar': 0}
             orders = {'S': 1, 'D': 2, 'T': 3, 'B': 1.5}
-            newAtoms = []
             for atom in atoms:
                 try:
                     valence = valences[atom.symbol]
@@ -208,15 +207,11 @@ def fromAdjacencyList(adjlist, group=False):
                 order = 0
                 for atom2, bond in atom.bonds.items():
                     order += orders[bond.order]
-                count = valence - radical - int(order)
-                for i in range(count):
-                    a = Atom('H', 0, 1, 0, '')
-                    b = Bond(atom, a, 'S')
-                    newAtoms.append(a)
-                    atom.bonds[a] = b
-                    a.bonds[atom] = b
-            atoms.extend(newAtoms)
-    
+                lonePairs = 4 - order - radical
+                charge = 8 - valence - order - radical - 2*lonePairs
+                atom.setLonePairs(lonePairs)
+                atom.updateCharge()
+  
     except InvalidAdjacencyListError:
         print adjlist
         raise
