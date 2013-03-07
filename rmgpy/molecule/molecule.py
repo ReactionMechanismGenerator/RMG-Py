@@ -60,6 +60,7 @@ class Atom(Vertex):
     `spinMultiplicity`  ``short``           The spin multiplicity of the atom
     `charge`            ``short``           The formal charge of the atom
     `label`             ``str``             A string label that can be used to tag individual atoms
+    `lonePairs`         ``short``           The number of lone electron pairs
     =================== =================== ====================================
 
     Additionally, the ``mass``, ``number``, and ``symbol`` attributes of the
@@ -67,7 +68,7 @@ class Atom(Vertex):
     e.g. ``atom.symbol`` instead of ``atom.element.symbol``.
     """
 
-    def __init__(self, element=None, radicalElectrons=0, spinMultiplicity=1, charge=0, label=''):
+    def __init__(self, element=None, radicalElectrons=0, spinMultiplicity=1, charge=0, label='', lonePairs=0):
         Vertex.__init__(self)
         if isinstance(element, str):
             self.element = elements.__dict__[element]
@@ -78,6 +79,7 @@ class Atom(Vertex):
         self.charge = charge
         self.label = label
         self.atomType = None
+        self.lonePairs = lonePairs
 
     def __str__(self):
         """
@@ -187,10 +189,11 @@ class Atom(Vertex):
                 if self.radicalElectrons == radical and self.spinMultiplicity == spin: break
             else:
                 return False
-            for charge in atom.charge:
-                if self.charge == charge: break
-            else:
-                return False
+# until we have charges and lone pairs in the group values we neglect them here
+#            for charge in atom.charge:
+#                if self.charge == charge: break
+#            else:
+#                return False
             return True
 
     def copy(self):
@@ -209,6 +212,7 @@ class Atom(Vertex):
         a.charge = self.charge
         a.label = self.label
         a.atomType = self.atomType
+        a.lonePairs = self.lonePairs
         return a
 
     def isHydrogen(self):
@@ -273,6 +277,42 @@ class Atom(Vertex):
         else:
             self.spinMultiplicity = self.radicalElectrons + 1
 
+    def setLonePairs(self,lonePairs):
+        """
+        Set the number of lone electron pairs.
+        """
+        # Set the number of electron pairs
+        self.lonePairs = lonePairs
+        if self.lonePairs < 0:
+            raise ActionError('Unable to update Atom due to setLonePairs : Invalid lone electron pairs set "{0}".'.format(self.setLonePairs))
+
+    def incrementLonePairs(self):
+        """
+        Update the lone electron pairs pattern as a result of applying a GAIN_PAIR action.
+        """
+        # Set the new lone electron pairs count
+        self.lonePairs += 1
+        if self.lonePairs <= 0:
+            raise ActionError('Unable to update Atom due to GAIN_PAIR action: Invalid lone electron pairs set "{0}".'.format(self.lonePairs))
+
+    def decrementLonePairs(self):
+        """
+        Update the lone electron pairs pattern as a result of applying a LOSE_PAIR action.
+        """
+        # Set the new lone electron pairs count
+        self.lonePairs -= 1
+        if self.lonePairs  < 0:
+            raise ActionError('Unable to update Atom due to LOSE_PAIR action: Invalid lone electron pairs set "{0}".'.format(self.lonePairs))
+        
+    def updateCharge(self):
+        valences = {'H': 1, 'C': 4, 'O': 2, 'N': 3, 'S': 2, 'Si': 4, 'He': 0, 'Ne': 0, 'Ar': 0}
+        orders = {'S': 1, 'D': 2, 'T': 3, 'B': 1.5}
+        valence = valences[self.symbol]
+        order = 0
+        for atom2, bond in self.bonds.items():
+            order += orders[bond.order]
+        self.charge = 8 - valence - order - self.radicalElectrons - 2*self.lonePairs
+        
     def applyAction(self, action):
         """
         Update the atom pattern as a result of applying `action`, a tuple
@@ -290,6 +330,10 @@ class Atom(Vertex):
             for i in range(action[2]): self.incrementRadical()
         elif action[0].upper() == 'LOSE_RADICAL':
             for i in range(abs(action[2])): self.decrementRadical()
+        elif action[0].upper() == 'GAIN_PAIR':
+            for i in range(action[2]): self.incrementLonePairs()
+        elif action[0].upper() == 'LOSE_PAIR':
+            for i in range(abs(action[2])): self.decrementLonePairs()
         else:
             raise ActionError('Unable to update Atom: Invalid action {0}".'.format(action))
 

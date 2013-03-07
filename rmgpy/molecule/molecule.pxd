@@ -40,6 +40,7 @@ cdef class Atom(Vertex):
     cdef public short charge
     cdef public str label
     cdef public AtomType atomType
+    cdef public short lonePairs
 
     cpdef bint equivalent(self, Vertex other) except -2
 
@@ -58,6 +59,14 @@ cdef class Atom(Vertex):
     cpdef incrementRadical(self)
 
     cpdef decrementRadical(self)
+    
+    cpdef setLonePairs(self, int lonePairs)
+    
+    cpdef incrementLonePairs(self)
+    
+    cpdef decrementLonePairs(self)
+    
+    cpdef updateCharge(self)
     
 ################################################################################
 
