@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-.PHONY : all minimal main measure solver clean decython
+.PHONY : all minimal main measure solver cantherm clean decython
 
 all: main measure solver
 
@@ -18,6 +18,9 @@ measure:
 
 solver:
 	python setup.py build_ext solver --build-lib . --build-temp build --pyrex-c-in-temp
+
+cantherm:
+	python setup.py build_ext cantherm --build-lib . --build-temp build --pyrex-c-in-temp
 
 clean:
 	python setup.py clean --build-temp build
