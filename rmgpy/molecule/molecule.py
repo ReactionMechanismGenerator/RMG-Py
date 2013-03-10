@@ -311,7 +311,10 @@ class Atom(Vertex):
         order = 0
         for atom2, bond in self.bonds.items():
             order += orders[bond.order]
-        self.charge = 8 - valence - order - self.radicalElectrons - 2*self.lonePairs
+        if self.isHydrogen():
+            self.charge = 2 - valence - order - self.radicalElectrons - 2*self.lonePairs
+        else:
+            self.charge = 8 - valence - order - self.radicalElectrons - 2*self.lonePairs
         
     def applyAction(self, action):
         """
@@ -1328,6 +1331,7 @@ class Molecule(Graph):
             while index < len(isomers):
                 isomer = isomers[index]
                 newIsomers = isomer.getAdjacentResonanceIsomers()
+                newIsomers += isomer.getLonePairResonanceIsomers()
                 for newIsomer in newIsomers:
                     newIsomer.updateAtomTypes()
                     # Append to isomer list if unique
@@ -1382,6 +1386,52 @@ class Molecule(Graph):
                     isomers.append(isomer)
 
         return isomers
+    
+    def getLonePairResonanceIsomers(self):
+        """
+        Generate all of the resonance isomers formed by one lone electron pair radical shift.
+        """
+        cython.declare(isomers=list, paths=list, index=cython.int, isomer=Molecule)
+        cython.declare(atom=Atom, atom1=Atom, atom2=Atom)
+        cython.declare(v1=Vertex, v2=Vertex)
+        
+        isomers = []
+
+        # Radicals
+        if self.isRadical():
+            # Iterate over radicals in structure
+            for atom in self.vertices:
+                paths = self.findAllDelocalizationPathsLonePairs(atom)
+                for atom1, atom2 in paths:
+                    # Adjust to (potentially) new resonance isomer
+                    atom1.decrementRadical()
+                    atom1.incrementLonePairs()
+                    atom1.updateCharge()
+                    atom2.incrementRadical()
+                    atom2.decrementLonePairs()
+                    atom2.updateCharge()
+                    # Make a copy of isomer
+                    isomer = self.copy(deep=True)
+                    # Also copy the connectivity values, since they are the same
+                    # for all resonance forms
+                    for index in range(len(self.vertices)):
+                        v1 = self.vertices[index]
+                        v2 = isomer.vertices[index]
+                        v2.connectivity1 = v1.connectivity1
+                        v2.connectivity2 = v1.connectivity2
+                        v2.connectivity3 = v1.connectivity3
+                        v2.sortingLabel = v1.sortingLabel
+                    # Restore current isomer
+                    atom1.incrementRadical()
+                    atom1.decrementLonePairs()
+                    atom1.updateCharge()
+                    atom2.decrementRadical()
+                    atom2.incrementLonePairs()
+                    atom2.updateCharge()
+                    # Append to isomer list if unique
+                    isomers.append(isomer)
+
+        return isomers
 
     def findAllDelocalizationPaths(self, atom1):
         """
@@ -1404,6 +1454,28 @@ class Molecule(Graph):
                     # Allyl bond must be capable of losing an order without breaking
                     if atom1 is not atom3 and (bond23.isDouble() or bond23.isTriple()):
                         paths.append([atom1, atom2, atom3, bond12, bond23])
+        return paths
+    
+    def findAllDelocalizationPathsLonePairs(self, atom1):
+        """
+        Find all the delocalization paths lone electron pairs next to the radical center indicated
+        by `atom1`. Used to generate resonance isomers.
+        """
+        cython.declare(paths=list)
+        cython.declare(atom2=Atom, bond12=Bond)
+        
+        # No paths if atom1 is not a radical
+        if atom1.radicalElectrons <= 0:
+            return []
+
+        # Find all delocalization paths
+        paths = []
+        for atom2, bond12 in atom1.edges.items():
+            # Only single bonds are considered
+            if bond12.isSingle():
+                # Neighboring atom must posses an lone electron pair to loose it
+                if atom1 is not atom2 and (atom2.lonePairs >= 1):
+                        paths.append([atom1, atom2])
         return paths
 
     def getURL(self):

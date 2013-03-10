@@ -199,19 +199,30 @@ def fromAdjacencyList(adjlist, group=False):
             valences = {'H': 1, 'C': 4, 'O': 2, 'N': 3, 'S': 2, 'Si': 4, 'He': 0, 'Ne': 0, 'Ar': 0}
             orders = {'S': 1, 'D': 2, 'T': 3, 'B': 1.5}
             for atom in atoms:
-                try:
+                if not atom.isHydrogen():
+                    try:
+                        valence = valences[atom.symbol]
+                    except KeyError:
+                        raise InvalidAdjacencyListError('Cannot add hydrogens to adjacency list: Unknown valence for atom "{0}".'.format(atom.symbol))
+                    radical = atom.radicalElectrons
+                    order = 0
+                    for atom2, bond in atom.bonds.items():
+                        order += orders[bond.order]
+                    lonePairs = 4 - order - radical
+                    charge = 8 - valence - order - radical - 2*lonePairs
+                    atom.setLonePairs(lonePairs)
+                    atom.updateCharge()
+                else:
                     valence = valences[atom.symbol]
-                except KeyError:
-                    raise InvalidAdjacencyListError('Cannot add hydrogens to adjacency list: Unknown valence for atom "{0}".'.format(atom.symbol))
-                radical = atom.radicalElectrons
-                order = 0
-                for atom2, bond in atom.bonds.items():
-                    order += orders[bond.order]
-                lonePairs = 4 - order - radical
-                charge = 8 - valence - order - radical - 2*lonePairs
-                atom.setLonePairs(lonePairs)
-                atom.updateCharge()
-  
+                    radical = atom.radicalElectrons
+                    order = 0
+                    for atom2, bond in atom.bonds.items():
+                        order += orders[bond.order]
+                    lonePairs = 1 - order - radical
+                    charge = 2 - valence - order - radical - 2*lonePairs
+                    atom.setLonePairs(lonePairs)
+                    atom.updateCharge()
+                    
     except InvalidAdjacencyListError:
         print adjlist
         raise
