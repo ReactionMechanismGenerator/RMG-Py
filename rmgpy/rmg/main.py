@@ -296,6 +296,7 @@ class RMG:
         
         if self.solvent:
         	Species.solventData = self.database.solvation.getSolventData(self.solvent)
+        	Species.solventName = self.solvent
         	logging.info("Setting solvent data for {0}".format(self.solvent))
     
         # Set wall time

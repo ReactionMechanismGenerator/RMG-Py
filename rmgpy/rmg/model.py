@@ -189,8 +189,8 @@ class Species(rmgpy.species.Species):
             soluteData = database.solvation.getSoluteData(self)
             solvation_correction = database.solvation.getSolvationCorrection(soluteData, Species.solventData)
             #import ipdb; ipdb.set_trace()
-            wilhoit.S0.setValue(wilhoit.S0.value_si + solvation_correction.entropy)
-            wilhoit.H0.setValue(wilhoit.H0.value_si + solvation_correction.enthalpy)
+            wilhoit.S0.value_si = (wilhoit.S0.value_si + solvation_correction.entropy)
+            wilhoit.H0.value_si = (wilhoit.H0.value_si + solvation_correction.enthalpy)
             
         # Compute E0 by extrapolation to 0 K
         if self.conformer is None:
