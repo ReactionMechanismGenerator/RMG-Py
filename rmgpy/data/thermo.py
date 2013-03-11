@@ -60,7 +60,7 @@ def saveEntry(f, entry):
     if isinstance(entry.item, Molecule):
         f.write('    molecule = \n')
         f.write('"""\n')
-        f.write(entry.item.toAdjacencyList(removeH=True))
+        f.write(entry.item.toAdjacencyList(removeH=False))
         f.write('""",\n')
     elif isinstance(entry.item, Group):
         f.write('    group = \n')
@@ -881,7 +881,6 @@ class ThermoDatabase(object):
         in the structure `structure`, and add it to the existing thermo data
         `thermoData`.
         """
-
         node0 = database.descendTree(molecule, atom, None)
         if node0 is None:
             raise KeyError('Node not found in database.')

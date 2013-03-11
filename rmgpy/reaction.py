@@ -149,10 +149,10 @@ class Reaction:
 
         url = "http://rmg.mit.edu/database/kinetics/reaction/"
         for i,species in enumerate(self.reactants):
-            adjlist = species.molecule[0].toAdjacencyList(removeH=True)
+            adjlist = species.molecule[0].toAdjacencyList(removeH=False)
             url += "reactant{0}={1}__".format(i+1, re.sub('\s+', '%20', adjlist.replace('\n', ';')))
         for i,species in enumerate(self.products):
-            adjlist = species.molecule[0].toAdjacencyList(removeH=True)
+            adjlist = species.molecule[0].toAdjacencyList(removeH=False)
             url += "product{0}={1}__".format(i+1, re.sub('\s+', '%20', adjlist.replace('\n', ';')))
         return url.strip('_')
         

@@ -819,7 +819,8 @@ class Database:
                 # Make sure labels actually point to atoms.
                 if center is None or atom is None:
                     return False
-                if isinstance(center, list): center = center[0]
+                if isinstance(center, list):
+                    center = center[0]
                 # Semantic check #1: atoms with same label are equivalent
                 elif not atom.isSpecificCaseOf(center):
                     return False
@@ -872,7 +873,7 @@ class Database:
                 return None
         elif not self.matchNodeToStructure(root, structure, atoms):
             return None
-
+        
         next = []
         for child in root.children:
             if self.matchNodeToStructure(child, structure, atoms):
@@ -1151,7 +1152,7 @@ class ForbiddenStructures(Database):
         if isinstance(entry.item, Molecule):
             f.write('    molecule = \n')
             f.write('"""\n')
-            f.write(entry.item.toAdjacencyList(removeH=True))
+            f.write(entry.item.toAdjacencyList(removeH=False))
             f.write('""",\n')
         elif isinstance(entry.item, Group):
             f.write('    group = \n')

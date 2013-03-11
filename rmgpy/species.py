@@ -199,7 +199,7 @@ class Species(object):
         """
         Return a string containing each of the molecules' adjacency lists.
         """
-        output = '\n\n'.join([m.toAdjacencyList(label=self.label, removeH=True) for m in self.molecule])
+        output = '\n\n'.join([m.toAdjacencyList(label=self.label, removeH=False) for m in self.molecule])
         return output
 
     def hasStatMech(self):

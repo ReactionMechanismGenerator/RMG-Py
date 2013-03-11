@@ -1286,7 +1286,7 @@ def saveSpeciesDictionary(path, species):
     """
     with open(path, 'w') as f:
         for spec in species:
-            f.write(spec.molecule[0].toAdjacencyList(label=getSpeciesIdentifier(spec), removeH=True))
+            f.write(spec.molecule[0].toAdjacencyList(label=getSpeciesIdentifier(spec), removeH=False))
             f.write('\n')
 
 def saveChemkinFile(path, species, reactions, verbose = True):

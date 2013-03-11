@@ -428,7 +428,7 @@ class KineticsLibrary(Database):
         speciesList.sort(key=lambda x: x.label)
         f = open(os.path.join(path, 'species.txt'), 'w')
         for species in speciesList:
-            f.write(species.molecule[0].toAdjacencyList(label=species.label, removeH=True) + "\n")
+            f.write(species.molecule[0].toAdjacencyList(label=species.label, removeH=False) + "\n")
         f.close()
         
         # Save the high-pressure limit reactions
