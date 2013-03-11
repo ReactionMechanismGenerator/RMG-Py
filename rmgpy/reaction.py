@@ -448,6 +448,8 @@ class Reaction:
             K *= P0 ** (len(self.products) - len(self.reactants))
         elif type != 'Ka' and type != '':
             raise ReactionError('Invalid type "%s" passed to Reaction.getEquilibriumConstant(); should be "Ka", "Kc", or "Kp".')
+        if K == 0:
+            raise ReactionError('Got equilibrium constant of 0')
         return K
 
     def getEnthalpiesOfReaction(self, Tlist):
