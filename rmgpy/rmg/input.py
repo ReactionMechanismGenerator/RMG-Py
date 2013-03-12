@@ -29,18 +29,18 @@
 ################################################################################
 
 import logging
-import quantities
+import os
 
 from rmgpy import settings
 
 from rmgpy.molecule import Molecule
 
 from rmgpy.data.rmg import RMGDatabase
-
+from rmgpy.quantity import Quantity
 from rmgpy.solver.base import TerminationTime, TerminationConversion
 from rmgpy.solver.simple import SimpleReactor
 
-from model import *
+from model import CoreEdgeReactionModel
 
 ################################################################################
 
