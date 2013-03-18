@@ -41,16 +41,16 @@ cimport rmgpy.constants as constants
 from rmgpy.quantity import Quantity
 from rmgpy.quantity cimport ScalarQuantity, ArrayQuantity
 
-cdef class SimpleReactor(ReactionSystem):
+cdef class LiquidReactor(ReactionSystem):
     """
-    A reaction system consisting of a homogeneous, isothermal, isobaric batch
+    A reaction system consisting of a homogeneous, isothermal, constant volume batch
     reactor. These assumptions allow for a number of optimizations that enable
     this solver to complete very rapidly, even for large kinetic models.
     """
 
     cdef public ScalarQuantity T
-    cdef public ScalarQuantity P
-    cdef public dict initialMoleFractions
+    cdef public ScalarQuantity V
+    cdef public dict initialConcentrations
 
     cdef public numpy.ndarray reactantIndices
     cdef public numpy.ndarray productIndices
@@ -60,11 +60,11 @@ cdef class SimpleReactor(ReactionSystem):
     cdef public numpy.ndarray networkLeakCoefficients
     cdef public numpy.ndarray jacobianMatrix
 
-    def __init__(self, T, P, initialMoleFractions, termination):
+    def __init__(self, T, initialConcentrations, termination):
         ReactionSystem.__init__(self, termination)
         self.T = Quantity(T)
-        self.P = Quantity(P)
-        self.initialMoleFractions = initialMoleFractions
+        self.initialConcentrations = initialConcentrations # should be passed in SI
+        self.V = None # will be set from initialConcentrations in initializeModel
         
         # These are helper variables used within the solver
         self.reactantIndices = None
@@ -76,13 +76,13 @@ cdef class SimpleReactor(ReactionSystem):
         
     def convertInitalKeysToSpeciesObjects(self, speciesDict):
         """
-        Convert the initialMoleFractions dictionary from species names into species objects,
+        Convert the initialConcentrations dictionary from species names into species objects,
         using the given dictionary of species.
         """
-        initialMoleFractions = {}
-        for label, moleFrac in self.initialMoleFractions.iteritems():
-            initialMoleFractions[speciesDict[label]] = moleFrac
-        self.initialMoleFractions = initialMoleFractions
+        initialConcentrations = {}
+        for label, moleFrac in self.initialConcentrations.iteritems():
+            initialConcentrations[speciesDict[label]] = moleFrac
+        self.initialConcentrations = initialConcentrations
 
     cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions, list pdepNetworks=None, atol=1e-16, rtol=1e-8):
         """
@@ -158,12 +158,13 @@ cdef class SimpleReactor(ReactionSystem):
         # Set initial conditions
         t0 = 0.0
         y0 = numpy.zeros((numCoreSpecies), numpy.float64)
-        for spec, moleFrac in self.initialMoleFractions.iteritems():
-            y0[speciesIndex[spec]] = moleFrac
-        # Use ideal gas law to compute volume
-        V = constants.R * self.T.value_si * numpy.sum(y0) / self.P.value_si
+
+        for spec, conc in self.initialConcentrations.iteritems():
+            self.coreSpeciesConcentrations[speciesIndex[spec]] = conc
+        V = 1.0 / numpy.sum(self.coreSpeciesConcentrations)
+        self.V = Quantity(V,'m^3') #: volume (m3) required to contain one mole total of core species at start
         for j in range(y0.shape[0]):
-            self.coreSpeciesConcentrations[j] = y0[j] / V
+            y0[j] = self.coreSpeciesConcentrations[j] * V
         
         # Initialize the model
         dydt0 = - self.residual(t0, y0, numpy.zeros((numCoreSpecies), numpy.float64))[0]
@@ -176,8 +177,8 @@ cdef class SimpleReactor(ReactionSystem):
         """
         import xlwt
         style0 = xlwt.easyxf('font: bold on')
-        worksheet.write(0, 0, 'Simple Reactor', style0)
-        worksheet.write(1, 0, 'T = {0:g} K, P = {1:g} bar'.format(self.T.value_si, self.P.value_si/1e5))
+        worksheet.write(0, 0, 'Liquid Reactor', style0)
+        worksheet.write(1, 0, 'T = {0:g} K'.format(self.T.value_si))
 
     @cython.boundscheck(False)
     def residual(self, double t, numpy.ndarray[numpy.float64_t, ndim=1] y, numpy.ndarray[numpy.float64_t, ndim=1] dydt):
@@ -217,9 +218,7 @@ cdef class SimpleReactor(ReactionSystem):
         networkLeakRates = numpy.zeros_like(self.networkLeakRates)
 
         C = numpy.zeros_like(self.coreSpeciesConcentrations)
-        
-        # Use ideal gas law to compute volume
-        V = constants.R * self.T.value_si * numpy.sum(y) / self.P.value_si
+        V =  self.V.value_si # constant volume reactor
 
         for j in range(y.shape[0]):
             C[j] = y[j] / V
@@ -333,8 +332,7 @@ cdef class SimpleReactor(ReactionSystem):
         kr = self.reverseRateCoefficients
         numCoreReactions = len(self.coreReactionRates)
         
-        # Use ideal gas law to compute volume
-        V = constants.R * self.T.value_si * numpy.sum(y) / self.P.value_si
+        V =  self.V.value_si # constant volume reactor
 
         C = numpy.zeros_like(self.coreSpeciesConcentrations)
         for j in range(y.shape[0]):
