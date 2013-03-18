@@ -39,6 +39,7 @@ from rmgpy.data.rmg import RMGDatabase
 
 from rmgpy.solver.base import TerminationTime, TerminationConversion
 from rmgpy.solver.simple import SimpleReactor
+from rmgpy.solver.liquid import LiquidReactor
 
 from model import *
 
@@ -123,6 +124,27 @@ def simpleReactor(temperature, pressure, initialMoleFractions, terminationConver
     system = SimpleReactor(T, P, initialMoleFractions, termination)
     rmg.reactionSystems.append(system)
 
+
+# Reaction systems
+def liquidReactor(temperature, initialConcentrations, terminationConversion=None, terminationTime=None):
+    logging.debug('Found LiquidReactor reaction system')
+    T = Quantity(temperature)
+    for spec,conc in initialConcentrations.iteritems():
+        concentration = Quantity(conc)
+        # check the dimensions are ok
+        # convert to mol/m^3 (or something numerically nice? or must it be SI)
+        initialConcentrations[spec] = concentration.value_si
+    termination = []
+    if terminationConversion is not None:
+        for spec, conv in terminationConversion.iteritems():
+            termination.append(TerminationConversion(speciesDict[spec], conv))
+    if terminationTime is not None:
+        termination.append(TerminationTime(Quantity(terminationTime)))
+    if len(termination) == 0:
+        raise InputError('No termination conditions specified for reaction system #{0}.'.format(len(rmg.reactionSystems)+2))
+    system = LiquidReactor(T, initialConcentrations, termination)
+    rmg.reactionSystems.append(system)
+    
 def simulator(atol, rtol):
     rmg.absoluteTolerance = atol
     rmg.relativeTolerance = rtol
@@ -237,6 +259,7 @@ def readInputFile(path, rmg0):
         'InChI': InChI,
         'adjacencyList': adjacencyList,
         'simpleReactor': simpleReactor,
+        'liquidReactor': liquidReactor,
         'simulator': simulator,
         'solvation': solvation,
         'model': model,
