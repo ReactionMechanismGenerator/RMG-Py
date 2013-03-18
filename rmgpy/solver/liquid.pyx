@@ -41,16 +41,15 @@ cimport rmgpy.constants as constants
 from rmgpy.quantity import Quantity
 from rmgpy.quantity cimport ScalarQuantity, ArrayQuantity
 
-cdef class SimpleReactor(ReactionSystem):
+cdef class LiquidReactor(ReactionSystem):
     """
-    A reaction system consisting of a homogeneous, isothermal, isobaric batch
+    A reaction system consisting of a homogeneous, isothermal, constant volume batch
     reactor. These assumptions allow for a number of optimizations that enable
     this solver to complete very rapidly, even for large kinetic models.
     """
 
     cdef public ScalarQuantity T
-    cdef public ScalarQuantity P
-    cdef public dict initialMoleFractions
+    cdef public dict initialConcentrations
 
     cdef numpy.ndarray reactantIndices
     cdef numpy.ndarray productIndices
@@ -59,11 +58,10 @@ cdef class SimpleReactor(ReactionSystem):
     cdef numpy.ndarray reverseRateCoefficients
     cdef numpy.ndarray networkLeakCoefficients
 
-    def __init__(self, T, P, initialMoleFractions, termination):
+    def __init__(self, T, initialConcentrations, termination):
         ReactionSystem.__init__(self, termination)
         self.T = Quantity(T)
-        self.P = Quantity(P)
-        self.initialMoleFractions = initialMoleFractions
+        self.initialConcentrations = initialConcentrations # should be passed in SI
         
         # These are helper variables used within the solver
         self.reactantIndices = None
@@ -145,8 +143,8 @@ cdef class SimpleReactor(ReactionSystem):
         # Set initial conditions
         t0 = 0.0
         y0 = numpy.zeros((numCoreSpecies), numpy.float64)
-        for spec, moleFrac in self.initialMoleFractions.iteritems():
-            y0[speciesIndex[spec]] = moleFrac * (self.P.value_si / constants.R / self.T.value_si)
+        for spec, conc in self.initialConcentrations.iteritems():
+            y0[speciesIndex[spec]] = conc
             self.coreSpeciesConcentrations[speciesIndex[spec]] = y0[speciesIndex[spec]]
         
         # Initialize the model
@@ -160,8 +158,8 @@ cdef class SimpleReactor(ReactionSystem):
         """
         import xlwt
         style0 = xlwt.easyxf('font: bold on')
-        worksheet.write(0, 0, 'Simple Reactor', style0)
-        worksheet.write(1, 0, 'T = {0:g} K, P = {1:g} bar'.format(self.T.value_si, self.P.value_si/1e5))
+        worksheet.write(0, 0, 'Liquid Reactor', style0)
+        worksheet.write(1, 0, 'T = {0:g} K'.format(self.T.value_si))
 
     @cython.boundscheck(False)
     def residual(self, double t, numpy.ndarray[numpy.float64_t, ndim=1] y, numpy.ndarray[numpy.float64_t, ndim=1] dydt):
