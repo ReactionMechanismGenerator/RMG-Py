@@ -231,17 +231,76 @@ class TransportDatabase(object):
         for label in self.libraryOrder:
             transport = self.getTransportPropertiesFromLibrary(species, self.libraries[label])
             if transport is not None:
-                
+                transport[0].comment = label
+                break
+        else:
+            #Transport not found in any loaded libraries, so estimate
+            transport = self.getTransportPropertiesViaGroupEstimates(species)
+        data, library, entry = Transport
+        
+        return data
+    
+    def getAllTransportProperties(self, species):
+        """
+        Return all possible sets of transport parameters for a given
+        :class:`Species` object `species`. The hits from the libraries (in order) come first, and then the group additivity
+        estimate. This method is useful for a generic search job.
+        """
+        transport = []
+        
+        # Data from libraries comes first
+        for label in self.libraryOrder:
+            data = self.getTransportPropertiesFromLibrary(species, self.libraries[label])
+            if data: 
+                data[0].comment = label
+                transport.append(data)
+        # Last entry is always the estimate from group additivity
+        transport.append(self.getTransportPropertiesViaGroupEstimates(species))
+            
+        # Return all of the resulting thermo parameters
+        return transport
         
     def getTransportPropertiesFromLibrary(self, species, library):
-        ""
+        """
+        Return the set of transport properties corresponding to a given
+        :class:`Species` object `species` from the specified transport
+        `library`. If `library` is a string, the list of libraries is searched
+        for a library with that name. If no match is found in that library,
+        ``None`` is returned. If no corresponding library is found, a
+        :class:`DatabaseError` is raised.
+        """
+        for label, entry in library.entries.iteritems():
+            for molecule in species.molecule:
+                if molecule.isIsomorphic(entry.item) and entry.data is not None:
+                    return (deepcopy(entry.data), library, entry)
+        return None
+    
     def getTransportPropertiesViaGroupEstimates(self,molecule):
-        "estimate the critical properties via groups"
-        "calculate transport properties from the critical properties"
-        self.estimateTransportViaGroupAdditivity(molecule)
+        """
+        Return the set of thermodynamic parameters corresponding to a given
+        :class:`Species` object `species` by estimation using the group
+        additivity values. If no group additivity values are loaded, a
+        :class:`DatabaseError` is raised.
+        """
+        transport = []
+        for molecule in species.molecule:
+            molecule.clearLabeledAtoms()
+            molecule.updateAtomTypes()
+            transportdata = self.estimateTransportViaGroupAdditivity(molecule)
+            transport.append(transportdata)
+            
+        species.molecule = [species.molecule[ind] for ind in indices]
+        
+        return (transport[indices[0]], None, None)
         
     def estimateTransportViaGroupAdditivity(self, molecule):
-        ""
+        """
+        Return the set of transport parameters corresponding to a given
+        :class:`Molecule` object `molecule` by estimation using the group
+        additivity values. If no group additivity values are loaded, a
+        :class:`DatabaseError` is raised.
+        """
+        
         
 class CriticalPointGroupContribution:
     """Joback group contribution to estimate critical properties"""
@@ -261,37 +320,37 @@ class CriticalPointGroupContribution:
         string += ')'
         return string
     
-    property Tc:
-        """."""
-        def __get__(self):
-            return self._Tc
-        def _set_(self,value):
-            self.Tc = value
+    def __getTc__(self):
+        """Returns the value of the critical temperature of the transport group."""
+        return self._Tc
+    def _setTc_(self,value):
+        """Sets the value of the critical temperature of the transport group."""
+        self.Tc = value 
         
-    property Pc:
-        """."""
-        def __get__(self):
-            return self._Pc
-        def _set_(self,value):
-            self.Pc = value 
+    def __getPc__(self):
+        """Returns the value of the critical pressure of the transport group."""
+        return self._Pc
+    def _setPc_(self,value):
+        """Sets the value of the critical pressure of the transport group"""
+        self.Pc = value 
             
-    property Vc:
-        """."""
-        def __get__(self):
-            return self._Vc
-        def _set_(self,value):
-            self.Vc = value
+    def __getVc__(self):
+        """Returns the value of the critical volume of the transport group."""
+        return self._Vc
+    def _setVc_(self,value):
+        """Sets the value of the critical volume of the transport group."""
+        self.Vc = value
              
-    property Tb:
-        """."""
-        def __get__(self):
-            return self._Tb
-        def _set_(self,value):
-            self.Tb = value
+    def __getTb__(self):
+        """Returns the value of the boiling point of the transport group."""
+        return self._Tb
+    def _setTb_(self,value):
+        """Sets the value of the boiling point of the transport group."""
+        self.Tb = value
              
-    property structureIndex:
-        """."""
-        def __get__(self):
-            return self._structureIndex
-        def _set_(self,value):
-            self.structureIndex = value
+    def __getstructureIndex__(self):
+        """Returns the value of the structure index of the transport group."""
+        return self._structureIndex
+    def _setstructureIndex_(self,value):
+        """Sets the value of the structure index of the transport group."""
+        self.structureIndex = value

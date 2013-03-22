@@ -21,13 +21,14 @@ class TransportData:
     
     """
 
-    def __init__(self, shapeIndex=None, epsilon=None, sigma=None, dipoleMoment=None, polarizability=None, rotrelaxcollnum=None):
+    def __init__(self, shapeIndex=None, epsilon=None, sigma=None, dipoleMoment=None, polarizability=None, rotrelaxcollnum=None, comment = ''):
         self.shapeIndex = shapeIndex
         self.epsilon = epsilon
         self.sigma = sigma
         self.dipoleMoment = dipoleMoment
         self.polarizability = polarizability
         self.rotrelaxcollnum = rotrelaxcollnum
+        self.comment = comment
     
     def __repr__(self):
         """
@@ -35,53 +36,61 @@ class TransportData:
         TransportData object.
         """
         string = 'TransportData(shapeIndex={0!r}, epsilon={1!r}, sigma={2!r}, dipoleMoment={3!r}, polarizability={4!r}, rotrelaxcollnum={5!r}'.format(self.shapeIndex, self.epsilon, self.sigma, self.dipoleMoment, self.polarizability, self.rotrelaxcollnum)
+        if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
         string += ')'
         return string
 
     def __reduce__(self):
         """
-        A helper function used when pickling a TransportData object.
+        A helper function used when picking a TransportData object.
         """
-        return (TransportData, (self.shapeIndex, self.epsilon, self.sigma, self.dipoleMoment, self.polarizability, self.rotrelaxcollnum))
+        return (TransportData, (self.shapeIndex, self.epsilon, self.sigma, self.dipoleMoment, self.polarizability, self.rotrelaxcollnum, self.comment))
 
-    property shapeIndex:
-        """."""
-        def __get__(self):
-            return self._shapeIndex
-        def _set_(self,value):
-            self.shapeIndex = value
+    def __getshapeIndex__(self):
+        """Returns the value of the shapeIndex of the transport object."""
+        return self._shapeIndex
+    def _setshapeIndex_(self,value):
+        """Sets the value of the shapeIndex of the transport object."""
+        self.shapeIndex = value 
         
-    property epsilon:
-        """."""
-        def __get__(self):
-            return self._epsilon
-        def _set_(self,value):
-            self.epsilon = value 
+    def __getepsilon__(self):
+        """Returns the value of the epsilon of the transport object."""
+        return self._epsilon
+    def _setepsilon_(self,value):
+        """Sets the value of the epsilon of the transport object"""
+        self.epsilon = value 
             
-    property sigma:
-        """."""
-        def __get__(self):
-            return self._sigma
-        def _set_(self,value):
-            self.sigma = value
+    def __getsigma__(self):
+        """Returns the value of the sigma of the transport object."""
+        return self._sigma
+    def _setsigma_(self,value):
+        """Sets the value of the sigma of the transport object."""
+        self.sigma = value
              
-    property dipoleMoment:
-        """."""
-        def __get__(self):
-            return self._dipoleMoment
-        def _set_(self,value):
-            self.dipoleMoment = value
+    def __getdipoleMoment__(self):
+        """Returns the value of the dipole moment of the transport object."""
+        return self._dipoleMoment
+    def _setdipoleMoment_(self,value):
+        """Sets the value of the dipole moment of the transport object."""
+        self.dipoleMoment = value
              
-    property polarizability:
-        """."""
-        def __get__(self):
-            return self._polarizability
-        def _set_(self,value):
-            self.polarizability = value
-             
-    property rotrelaxcollnum:
-        """."""
-        def __get__(self):
-            return self._rotrelaxcollnum
-        def _set_(self,value):
-            self.rotrelaxcollnum = value
+    def __getpolarizability__(self):
+        """Returns the value of the polarizability of the transport object."""
+        return self._polarizability
+    def _setpolarizability_(self,value):
+        """Sets the value of the polarizability of the transport object."""
+        self.polarizability = value
+        
+    def __getrotrelaxcollnum__(self):
+        """Returns the value of the rotrelaxcollnum of the transport object."""
+        return self._rotrelaxcollnum
+    def _setrotrelaxcollnum_(self,value):
+        """Sets the value of the rotrelaxcollnum of the transport object."""
+        self.rotrelaxcollnum = value
+        
+    def __getcomment__(self):
+        """Returns the value of the comment of the transport object."""
+        return self._comment
+    def _setcomment_(self,value):
+        """Sets the value of the comment of the transport object."""
+        self.comment = value
