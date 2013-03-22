@@ -231,17 +231,76 @@ class TransportDatabase(object):
         for label in self.libraryOrder:
             transport = self.getTransportPropertiesFromLibrary(species, self.libraries[label])
             if transport is not None:
-                
+                transport[0].comment = label
+                break
+        else:
+            #Transport not found in any loaded libraries, so estimate
+            transport = self.getTransportPropertiesViaGroupEstimates(species)
+        data, library, entry = Transport
+        
+        return data
+    
+    def getAllTransportProperties(self, species):
+        """
+        Return all possible sets of transport parameters for a given
+        :class:`Species` object `species`. The hits from the libraries (in order) come first, and then the group additivity
+        estimate. This method is useful for a generic search job.
+        """
+        transport = []
+        
+        # Data from libraries comes first
+        for label in self.libraryOrder:
+            data = self.getTransportPropertiesFromLibrary(species, self.libraries[label])
+            if data: 
+                data[0].comment = label
+                transport.append(data)
+        # Last entry is always the estimate from group additivity
+        transport.append(self.getTransportPropertiesViaGroupEstimates(species))
+            
+        # Return all of the resulting thermo parameters
+        return transport
         
     def getTransportPropertiesFromLibrary(self, species, library):
-        ""
+        """
+        Return the set of transport properties corresponding to a given
+        :class:`Species` object `species` from the specified transport
+        `library`. If `library` is a string, the list of libraries is searched
+        for a library with that name. If no match is found in that library,
+        ``None`` is returned. If no corresponding library is found, a
+        :class:`DatabaseError` is raised.
+        """
+        for label, entry in library.entries.iteritems():
+            for molecule in species.molecule:
+                if molecule.isIsomorphic(entry.item) and entry.data is not None:
+                    return (deepcopy(entry.data), library, entry)
+        return None
+    
     def getTransportPropertiesViaGroupEstimates(self,molecule):
-        "estimate the critical properties via groups"
-        "calculate transport properties from the critical properties"
-        self.estimateTransportViaGroupAdditivity(molecule)
+        """
+        Return the set of thermodynamic parameters corresponding to a given
+        :class:`Species` object `species` by estimation using the group
+        additivity values. If no group additivity values are loaded, a
+        :class:`DatabaseError` is raised.
+        """
+        transport = []
+        for molecule in species.molecule:
+            molecule.clearLabeledAtoms()
+            molecule.updateAtomTypes()
+            transportdata = self.estimateTransportViaGroupAdditivity(molecule)
+            transport.append(transportdata)
+            
+        species.molecule = [species.molecule[ind] for ind in indices]
+        
+        return (transport[indices[0]], None, None)
         
     def estimateTransportViaGroupAdditivity(self, molecule):
-        ""
+        """
+        Return the set of transport parameters corresponding to a given
+        :class:`Molecule` object `molecule` by estimation using the group
+        additivity values. If no group additivity values are loaded, a
+        :class:`DatabaseError` is raised.
+        """
+        
         
 class CriticalPointGroupContribution:
     """Joback group contribution to estimate critical properties"""
