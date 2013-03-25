@@ -1238,8 +1238,14 @@ class KineticsFamily(Database):
         # original
         reactants = [reactant if isinstance(reactant, list) else [reactant] for reactant in reactants]
 
-        sameReactants = len(reactants) == 2 and reactants[0] == reactants[1]
-                
+        sameReactants = False
+        if len(reactants) == 2 and len(reactants[0]) == len(reactants[1]):
+            reactantA = reactants[0][0]
+            for reactantB in reactants[1]:
+                if reactantA.isIsomorphic(reactantB):
+                    sameReactants = True
+                    break
+                    
         if forward:
             template = self.forwardTemplate
         elif self.reverseTemplate is None:
