@@ -277,11 +277,9 @@ def readInputFile(path, rmg0):
     finally:
         f.close()
 
+    # convert keys from species names into species objects.
     for reactionSystem in rmg.reactionSystems:
-        initialMoleFractions = {}
-        for label, moleFrac in reactionSystem.initialMoleFractions.iteritems():
-            initialMoleFractions[speciesDict[label]] = moleFrac
-        reactionSystem.initialMoleFractions = initialMoleFractions
+        reactionSystem.convertInitalKeysToSpeciesObjects(speciesDict)
 
     logging.info('')
 

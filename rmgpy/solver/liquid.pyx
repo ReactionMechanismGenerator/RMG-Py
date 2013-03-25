@@ -69,6 +69,16 @@ cdef class LiquidReactor(ReactionSystem):
         self.networkIndices = None
         self.forwardRateCoefficients = None
         self.reverseRateCoefficients = None
+        
+    def convertInitalKeysToSpeciesObjects(self, speciesDict):
+        """
+        Convert the initialConcentrations dictionary from species names into species objects,
+        using the given dictionary of species.
+        """
+        initialConcentrations = {}
+        for label, moleFrac in self.initialConcentrations.iteritems():
+            initialConcentrations[speciesDict[label]] = moleFrac
+        self.initialConcentrations = initialConcentrations
 
     cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions, list pdepNetworks=None, atol=1e-16, rtol=1e-8):
         """
