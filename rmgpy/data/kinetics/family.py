@@ -1675,7 +1675,15 @@ class KineticsFamily(Database):
         Determine the appropriate kinetics for a reaction with the given
         `template` using rate rules.
         """
-        return self.rules.estimateKinetics(template, degeneracy)
+        kinetics = self.rules.estimateKinetics(template, degeneracy)
+        if self.label.lower() == 'r_recombination':
+            # The kinetics could be stored exactly with the template labels swapped
+            # If this gives an exact match and the other gives an estimate, then keep the exact match
+            # Not sure how to decide which to keep if both are exact or both are estimates
+            kinetics0 = self.rules.estimateKinetics(template[::-1], degeneracy)
+            if 'exact' in kinetics0.comment.lower() and 'exact' not in kinetics.comment.lower():
+                kinetics = kinetics0
+        return kinetics
 
     def getRateCoefficientUnits(self):
         """
