@@ -236,7 +236,7 @@ class TransportDatabase(object):
         else:
             #Transport not found in any loaded libraries, so estimate
             transport = self.getTransportPropertiesViaGroupEstimates(species)
-        data, library, entry = Transport
+        data, library, entry = transport
         
         return data
     
@@ -282,16 +282,36 @@ class TransportDatabase(object):
         additivity values. If no group additivity values are loaded, a
         :class:`DatabaseError` is raised.
         """
-        transport = []
+        #Kb boltzmans constant
+        Kb = 1.3806503*10^(-23)
+        groupData = []
+        counter = 0
         for molecule in species.molecule:
             molecule.clearLabeledAtoms()
             molecule.updateAtomTypes()
-            transportdata = self.estimateTransportViaGroupAdditivity(molecule)
-            transport.append(transportdata)
+            criticalPointContribution = self.estimateTransportViaGroupAdditivity(molecule)
+            groupData.Tc += criticalPointContribution.Tc
+            groupData.Pc += criticalPointContribution.Pc
+            groupData.Vc += criticalPointContribution.Vc
+            groupData.Tb += criticalPointContribution.Tb
+            groupData.structureIndex += criticalPointContribution.structureIndex
+            counter += 1
             
-        species.molecule = [species.molecule[ind] for ind in indices]
-        
-        return (transport[indices[0]], None, None)
+        groupData.Tb = 198.18 + groupData.Tb
+        groupData.Vc = 17.5 + groupData.Vc
+        groupData.Tc = groupData.Tb/(.584 + .965(groupData.Tc) - (groupData.Tc)^2)
+        groupData.Pc = 1/(.113 + .0032*counter + groupData.Pc)^2
+    
+        transport = transport(
+                     shapeIndex = 0,
+                     epsilon = .77*groupData.Tc*Kb,
+                     sigma = 2.44*(groupData.Tc/groupData.Pc)^(1/3),
+                     dipoleMoment = 0,
+                     polarizability = 0,
+                     rotrelaxcollnum = 0,
+                     comment = 'group estimate',
+                     )
+        return transport
         
     def estimateTransportViaGroupAdditivity(self, molecule):
         """
@@ -300,8 +320,121 @@ class TransportDatabase(object):
         additivity values. If no group additivity values are loaded, a
         :class:`DatabaseError` is raised.
         """
+        # For transport estimation we need the atoms to already be sorted because we
+        # iterate over them; if the order changes during the iteration then we
+        # will probably not visit the right atoms, and so will get the transport wrong
+        molecule.sortVertices()
         
+        criticalPointContribution = CriticalPointGroupContribution(
+            Tc = 0,
+            Pc = 0,
+            Vc = 0,
+            Tb = 0,
+            structureIndex = 0,
+            )
         
+        if sum([atom.radicalElectrons for atom in molecule.atoms]) > 0: # radical species
+
+            # Make a copy of the structure so we don't change the original
+            saturatedStruct = molecule.copy(deep=True)
+
+            # Saturate structure by replacing all radicals with bonds to
+            # hydrogen atoms
+            added = {}
+            for atom in saturatedStruct.atoms:
+                for i in range(atom.radicalElectrons):
+                    H = Atom('H')
+                    bond = Bond(atom, H, 'S')
+                    saturatedStruct.addAtom(H)
+                    saturatedStruct.addBond(bond)
+                    if atom not in added:
+                        added[atom] = []
+                    added[atom].append([H, bond])
+                    atom.decrementRadical()
+
+            # Update the atom types of the saturated structure (not sure why
+            # this is necessary, because saturating with H shouldn't be
+            # changing atom types, but it doesn't hurt anything and is not
+            # very expensive, so will do it anyway)
+            saturatedStruct.updateConnectivityValues()
+            saturatedStruct.sortVertices()
+            saturatedStruct.updateAtomTypes()
+
+            # Get critical point contribution estimates for saturated form of structure
+            criticalPointContribution = self.estimateSoluteViaGroupAdditivity(saturatedStruct)
+            assert soluteData is not None, "Solute data of saturated {0} of molecule {1} is None!".format(saturatedStruct, molecule)
+            
+            # For each radical site, get radical correction
+            # Only one radical site should be considered at a time; all others
+            # should be saturated with hydrogen atoms
+            for atom in added:
+
+                # Remove the added hydrogen atoms and bond and restore the radical
+                for H, bond in added[atom]:
+                    saturatedStruct.removeBond(bond)
+                    saturatedStruct.removeAtom(H)
+                    atom.incrementRadical()
+
+                saturatedStruct.updateConnectivityValues()
+                
+        else: # non-radical species
+            # Generate estimate of critical point contribution data
+            for atom in molecule.atoms:
+                # Iterate over heavy (non-hydrogen) atoms
+                if atom.isNonHydrogen():
+                    # Get initial critical point contribution from main group database
+                    try:
+                        self.__addCriticalPointContribution(criticalPointContribution, self.groups['nonring'], molecule, {'*':atom})
+                    
+                    except KeyError:
+                        logging.error("Couldn't find in nonring database:")
+                        logging.error(molecule)
+                        logging.error(molecule.toAdjacencyList())
+                        raise
+                    # Get critical point contribution for non ring groups
+                    try:
+                        self.__addCriticalPointContribution(criticalPointContribution, self.groups['ring'], molecule, {'*':atom})
+                    except KeyError: pass
+                    
+    def __addCriticalPointContribution(self, criticalPointContribution, database, molecule, atom):
+        """
+        Determine the critical point contribution values for the atom `atom`
+        in the structure `structure`, and add it to the existing criticalPointContribution
+        `criticalPointContribution`.
+        """
+        
+        node0 = database.descendTree(molecule, atom, None)
+
+        if node0 is None:
+            raise KeyError('Node not found in database.')
+
+        # It's possible (and allowed) that items in the tree may not be in the
+        # library, in which case we need to fall up the tree until we find an
+        # ancestor that has an entry in the library
+        node = node0
+        
+        while node is not None and node.data is None:
+            node = node.parent
+        if node is None:
+            raise KeyError('Node has no parent with data in database.')
+        data = node.data
+        comment = node.label
+        while isinstance(data, basestring) and data is not None:
+            for entry in database.entries.values():
+                if entry.label == data:
+                    data = entry.data
+                    comment = entry.label
+                    break
+        comment = '{0}({1})'.format(database.label, comment)
+        
+        criticalPointContribution.Tc = data.Tc
+        criticalPointContribution.Pc = data.Pc
+        criticalPointContribution.Vc = data.Vc
+        criticalPointContribution.Tb = data.Tb
+        criticalPOintContribution.structureIndex = data.structureIndex
+        
+        return criticalPointContribution
+    
 class CriticalPointGroupContribution:
     """Joback group contribution to estimate critical properties"""
     def __init__(self, Tc=None, Pc=None, Vc=None, Tb=None, structureIndex=None):
