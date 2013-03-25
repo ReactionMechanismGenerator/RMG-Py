@@ -50,6 +50,8 @@ cdef class LiquidReactor(ReactionSystem):
 
     cdef public ScalarQuantity T
     cdef public ScalarQuantity V
+    cdef public ScalarQuantity P
+    
     cdef public dict initialConcentrations
 
     cdef public numpy.ndarray reactantIndices
@@ -63,6 +65,7 @@ cdef class LiquidReactor(ReactionSystem):
     def __init__(self, T, initialConcentrations, termination):
         ReactionSystem.__init__(self, termination)
         self.T = Quantity(T)
+        self.P = Quantity(100000.,'kPa') # Arbitrary high pressure (1000 Bar) to get reactions in the high-pressure limit!
         self.initialConcentrations = initialConcentrations # should be passed in SI
         self.V = None # will be set from initialConcentrations in initializeModel
         
