@@ -86,6 +86,7 @@ cdef class SimpleReactor(ReactionSystem):
 
         cdef int numCoreSpecies, numCoreReactions, numEdgeSpecies, numEdgeReactions, numPdepNetworks
         cdef int i, j, l, index
+        cdef double V
         cdef dict speciesIndex, reactionIndex
         cdef numpy.ndarray[numpy.int_t, ndim=2] reactantIndices, productIndices, networkIndices
         cdef numpy.ndarray[numpy.float64_t, ndim=1] forwardRateCoefficients, reverseRateCoefficients, networkLeakCoefficients
@@ -149,7 +150,10 @@ cdef class SimpleReactor(ReactionSystem):
         y0 = numpy.zeros((numCoreSpecies), numpy.float64)
         for spec, moleFrac in self.initialMoleFractions.iteritems():
             y0[speciesIndex[spec]] = moleFrac
-            self.coreSpeciesConcentrations[speciesIndex[spec]] = y0[speciesIndex[spec]]
+        # Use ideal gas law to compute volume
+        V = constants.R * self.T.value_si * numpy.sum(y0) / self.P.value_si
+        for j in range(y0.shape[0]):
+            self.coreSpeciesConcentrations[j] = y0[j] / V
         
         # Initialize the model
         dydt0 = - self.residual(t0, y0, numpy.zeros((numCoreSpecies), numpy.float64))[0]
