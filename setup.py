@@ -29,6 +29,7 @@
 ################################################################################
 
 import sys
+import os
 
 try:
     from distutils.core import setup
@@ -173,11 +174,23 @@ elif 'measure' in sys.argv:
 elif 'solver' in sys.argv:
     # This is for `python setup.py build_ext solver`
     sys.argv.remove('solver')
-    ext_modules.extend(getSolverExtensionModules())   
+    ext_modules.extend(getSolverExtensionModules())
 elif 'cantherm' in sys.argv:
     # This is for `python setup.py build_ext cantherm`
     sys.argv.remove('cantherm')
-    ext_modules.extend(getCanthermExtensionModules())   
+    ext_modules.extend(getCanthermExtensionModules())
+elif 'minimal' in sys.argv:
+    # This starts with the full install list, but removes anything that has a pure python mode
+    # i.e. in only includes things whose source is .pyx
+    sys.argv.remove('minimal')
+    temporary_list = []
+    temporary_list.extend(getMainExtensionModules())
+    temporary_list.extend(getMeasureExtensionModules())
+    temporary_list.extend(getSolverExtensionModules())
+    for module in temporary_list:
+        for source in module.sources:
+            if os.path.splitext(source)[1] == '.pyx':
+                ext_modules.append(module)
     
 scripts=['cantherm.py', 'measure.py', 'rmg.py']
 

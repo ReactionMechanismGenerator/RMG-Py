@@ -8,7 +8,8 @@
 
 all: main measure solver
 
-minimal: measure solver
+minimal:
+	python setup.py build_ext minimal --build-lib . --build-temp build --pyrex-c-in-temp
 
 main:
 	python setup.py build_ext main --build-lib . --build-temp build --pyrex-c-in-temp
