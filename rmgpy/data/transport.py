@@ -143,7 +143,7 @@ class TransportGroups(Database):
                   index,
                   label,
                   group,
-                  thermo,
+                  transportGroup,
                   reference=None,
                   referenceType='',
                   shortDesc='',
@@ -158,7 +158,7 @@ class TransportGroups(Database):
             index = index,
             label = label,
             item = item,
-            data = transport,
+            data = transportGroup,
             reference = reference,
             referenceType = referenceType,
             shortDesc = shortDesc,
@@ -193,7 +193,6 @@ class TransportDatabase(object):
     """
     
     def __init__(self):
-        self.depository = {}
         self.libraries = {}
         self.groups = {}
         self.libraryOrder = []
@@ -203,18 +202,16 @@ class TransportDatabase(object):
         A helper function used when pickling a TransportDatabase object.
         """
         d = {
-            'depository': self.depository,
             'libraries': self.libraries,
             'groups': self.groups,
             'libraryOrder': self.libraryOrder,
         }
-        return (ThermoDatabase, (), d)
+        return (TransportDatabase, (), d)
 
     def __setstate__(self, d):
         """
         A helper function used when unpickling a TransportDatabase object.
         """
-        self.depository = d['depository']
         self.libraries = d['libraries']
         self.groups = d['groups']
         self.libraryOrder = d['libraryOrder']
@@ -257,7 +254,7 @@ class TransportDatabase(object):
         # Last entry is always the estimate from group additivity
         transport.append(self.getTransportPropertiesViaGroupEstimates(species))
             
-        # Return all of the resulting thermo parameters
+        # Return all of the resulting transport parameters
         return transport
         
     def getTransportPropertiesFromLibrary(self, species, library):
@@ -275,27 +272,35 @@ class TransportDatabase(object):
                     return (deepcopy(entry.data), library, entry)
         return None
     
-    def getTransportPropertiesViaGroupEstimates(self,molecule):
+    def getTransportPropertiesViaGroupEstimates(self,species):
         """
-        Return the set of thermodynamic parameters corresponding to a given
+        Return the set of transport parameters corresponding to a given
         :class:`Species` object `species` by estimation using the group
         additivity values. If no group additivity values are loaded, a
         :class:`DatabaseError` is raised.
         """
         #Kb boltzmans constant
-        Kb = 1.3806503*10^(-23)
+        Kb = 1.3806503e-23
         groupData = []
         counter = 0
+        
+        #iterates through resonance structures, then average values
         for molecule in species.molecule:
             molecule.clearLabeledAtoms()
             molecule.updateAtomTypes()
-            criticalPointContribution = self.estimateTransportViaGroupAdditivity(molecule)
-            groupData.Tc += criticalPointContribution.Tc
-            groupData.Pc += criticalPointContribution.Pc
-            groupData.Vc += criticalPointContribution.Vc
-            groupData.Tb += criticalPointContribution.Tb
-            groupData.structureIndex += criticalPointContribution.structureIndex
+            criticalPoint = self.estimateCriticalPropertiesViaGroupAdditivity(molecule)
+            groupData.Tc += criticalPoint.Tc
+            groupData.Pc += criticalPoint.Pc
+            groupData.Vc += criticalPoint.Vc
+            groupData.Tb += criticalPoint.Tb
+            groupData.structureIndex += criticalPoint.structureIndex
             counter += 1
+        
+        groupData.Tc = groupData.Tc / counter
+        groupData.Pc = groupData.Pc / counter
+        groupData.Vc = groupData.Vc / counter
+        groupData.Tb = groupData.Tb / counter
+        groupData.structureIndex = groupData.structureIndex / counter
             
         groupData.Tb = 198.18 + groupData.Tb
         groupData.Vc = 17.5 + groupData.Vc
@@ -313,7 +318,7 @@ class TransportDatabase(object):
                      )
         return transport
         
-    def estimateTransportViaGroupAdditivity(self, molecule):
+    def estimateCriticalPropertiesViaGroupAdditivity(self, molecule):
         """
         Return the set of transport parameters corresponding to a given
         :class:`Molecule` object `molecule` by estimation using the group
@@ -324,15 +329,7 @@ class TransportDatabase(object):
         # iterate over them; if the order changes during the iteration then we
         # will probably not visit the right atoms, and so will get the transport wrong
         molecule.sortVertices()
-        
-        criticalPointContribution = CriticalPointGroupContribution(
-            Tc = 0,
-            Pc = 0,
-            Vc = 0,
-            Tb = 0,
-            structureIndex = 0,
-            )
-        
+
         if sum([atom.radicalElectrons for atom in molecule.atoms]) > 0: # radical species
 
             # Make a copy of the structure so we don't change the original
@@ -361,8 +358,8 @@ class TransportDatabase(object):
             saturatedStruct.updateAtomTypes()
 
             # Get critical point contribution estimates for saturated form of structure
-            criticalPointContribution = self.estimateSoluteViaGroupAdditivity(saturatedStruct)
-            assert soluteData is not None, "Solute data of saturated {0} of molecule {1} is None!".format(saturatedStruct, molecule)
+            criticalPoint = self.estimateCriticalPropertiesViaGroupAdditivity(saturatedStruct)
+            assert criticalPoint is not None, "critical point contribution of saturated {0} of molecule {1} is None!".format(saturatedStruct, molecule)
             
             # For each radical site, get radical correction
             # Only one radical site should be considered at a time; all others
@@ -378,25 +375,32 @@ class TransportDatabase(object):
                 saturatedStruct.updateConnectivityValues()
                 
         else: # non-radical species
+            
+            criticalPoint = CriticalPointGroupContribution(
+            Tc = 0,
+            Pc = 0,
+            Vc = 0,
+            Tb = 0,
+            structureIndex = 0,
+            )
+            
             # Generate estimate of critical point contribution data
             for atom in molecule.atoms:
                 # Iterate over heavy (non-hydrogen) atoms
                 if atom.isNonHydrogen():
-                    # Get initial critical point contribution from main group database
                     try:
-                        self.__addCriticalPointContribution(criticalPointContribution, self.groups['nonring'], molecule, {'*':atom})
-                    
+                        if molecule.isVertexInCycle(atom):
+                            self.__addCriticalPointContribution(criticalPoint, self.groups['ring'], molecule, {'*':atom})
+                        else:
+                            self.__addCriticalPointContribution(criticalPoint, self.groups['nonring'], molecule, {'*':atom})                      
                     except KeyError:
-                        logging.error("Couldn't find in nonring database:")
+                        logging.error("Couldn't find in any transport database:")
                         logging.error(molecule)
                         logging.error(molecule.toAdjacencyList())
                         raise
-                    # Get critical point contribution for non ring groups
-                    try:
-                        self.__addCriticalPointContribution(criticalPointContribution, self.groups['ring'], molecule, {'*':atom})
-                    except KeyError: pass
+        return criticalPoint
                     
-    def __addCriticalPointContribution(self, criticalPointContribution, database, molecule, atom):
+    def __addCriticalPointContribution(self, criticalPoint, database, molecule, atom):
         """
         Determine the critical point contribution values for the atom `atom`
         in the structure `structure`, and add it to the existing criticalPointContribution
@@ -427,13 +431,13 @@ class TransportDatabase(object):
                     break
         comment = '{0}({1})'.format(database.label, comment)
         
-        criticalPointContribution.Tc = data.Tc
-        criticalPointContribution.Pc = data.Pc
-        criticalPointContribution.Vc = data.Vc
-        criticalPointContribution.Tb = data.Tb
-        criticalPOintContribution.structureIndex = data.structureIndex
+        criticalPoint.Tc += data.Tc
+        criticalPoint.Pc += data.Pc
+        criticalPoint.Vc += data.Vc
+        criticalPoint.Tb += data.Tb
+        criticalPoint.structureIndex += data.structureIndex
         
-        return criticalPointContribution
+        return criticalPoint
     
 class CriticalPointGroupContribution:
     """Joback group contribution to estimate critical properties"""
@@ -444,7 +448,7 @@ class CriticalPointGroupContribution:
         self.Tb = Tb
         self.structureIndex = structureIndex
         
-    def _repr_(self):
+    def __repr__(self):
         """
         Return a string representation that can be used to reconstruct the
         CriticalPointGroupContribution object
@@ -452,38 +456,4 @@ class CriticalPointGroupContribution:
         string = 'CriticalPointGroupContribution(Tc={0!r}, Pc={1!r}, Vc={2!r}, Tb={3!r}, structureIndex={4!r}'.format(self.Tc, self.Pc, self.Vc, self.Tb, self.structureIndex)
         string += ')'
         return string
-    
-    def __getTc__(self):
-        """Returns the value of the critical temperature of the transport group."""
-        return self._Tc
-    def _setTc_(self,value):
-        """Sets the value of the critical temperature of the transport group."""
-        self.Tc = value 
-        
-    def __getPc__(self):
-        """Returns the value of the critical pressure of the transport group."""
-        return self._Pc
-    def _setPc_(self,value):
-        """Sets the value of the critical pressure of the transport group"""
-        self.Pc = value 
-            
-    def __getVc__(self):
-        """Returns the value of the critical volume of the transport group."""
-        return self._Vc
-    def _setVc_(self,value):
-        """Sets the value of the critical volume of the transport group."""
-        self.Vc = value
-             
-    def __getTb__(self):
-        """Returns the value of the boiling point of the transport group."""
-        return self._Tb
-    def _setTb_(self,value):
-        """Sets the value of the boiling point of the transport group."""
-        self.Tb = value
-             
-    def __getstructureIndex__(self):
-        """Returns the value of the structure index of the transport group."""
-        return self._structureIndex
-    def _setstructureIndex_(self,value):
-        """Sets the value of the structure index of the transport group."""
-        self.structureIndex = value
+ 
