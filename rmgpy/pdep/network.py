@@ -38,10 +38,15 @@ import numpy
 import logging
 
 import rmgpy.constants as constants
+from rmgpy.reaction import Reaction
 
 ################################################################################
 
 class NetworkError(Exception): 
+    pass
+
+class InvalidMicrocanonicalRateError(NetworkError):
+    """Used when the k(E) calculation does not give the correct kf(T) or Kc(T)"""
     pass
 
 ################################################################################
@@ -227,8 +232,8 @@ class Network:
                                 products = self.products[j-Nisom-Nreac]
                             reaction = Reaction(reactants=reactants.species[:], products=products.species[:])
                             logging.error('For net reaction {0!s}:'.format(reaction))
-                            logging.error('Expected Keq({1:g} K, {2:g} bar) = {0:11.3e}'.format(Keq, T, P))
-                            logging.error('  Actual Keq({1:g} K, {2:g} bar) = {0:11.3e}'.format(Keq0, T, P))
+                            logging.error('Expected Keq({1:g} K, {2:g} bar) = {0:11.3e}'.format(Keq, T, P*1e-5))
+                            logging.error('  Actual Keq({1:g} K, {2:g} bar) = {0:11.3e}'.format(Keq0, T, P*1e-5))
                             raise NetworkError('Computed k(T,P) values for reaction {0!s} do not satisfy macroscopic equilibrium.'.format(reaction))
                             
                 # Reject if any rate coefficients are negative
@@ -245,7 +250,7 @@ class Network:
 
         return K
 
-    def setConditions(self, T, P):
+    def setConditions(self, T, P, ymB=None):
         """
         Set the current network conditions to the temperature `T` in K and
         pressure `P` in Pa. All of the internal variables are updated 
@@ -258,6 +263,7 @@ class Network:
         pressureChanged = (self.P != P)
         self.T = T
         self.P = P
+        self.ymB = ymB
         
         Nisom = self.Nisom
         Nreac = self.Nreac
@@ -267,45 +273,57 @@ class Network:
         grainSize = self.grainSize
         grainCount = self.grainCount
         
-        # Update parameters that depend on temperature only if necessary
-        if temperatureChanged:
-            
-            # Choose the energy grains to use to compute k(T,P) values at this temperature
-            Elist = self.Elist = self.selectEnergyGrains(T, grainSize, grainCount)
-            Ngrains = self.Ngrains = len(Elist)
-            logging.info('Using {0:d} grains from {1:.2f} to {2:.2f} kJ/mol in steps of {3:.2f} kJ/mol to compute the k(T,P) values at {4:g} K'.format(
-                Ngrains, numpy.min(Elist) * 0.001, numpy.max(Elist) * 0.001, (Elist[1] - Elist[0]) * 0.001, T))
-            
-            # Choose the angular momenta to use to compute k(T,P) values at this temperature
-            # (This only applies if the J-rotor is adiabatic
-            if not self.activeJRotor:
-                Jlist = self.Jlist = numpy.arange(0, 20, 1, numpy.int)
-                NJ = self.NJ = len(Jlist)
-            else:
-                Jlist = self.Jlist = numpy.array([0], numpy.int)
-                NJ = self.NJ = 1
-            
-            # Map the densities of states onto this set of energies
-            # Also shift each density of states to a common zero of energy
-            self.mapDensitiesOfStates()
-            
-            # Use free energy to determine equilibrium ratios of each isomer and product channel
-            self.calculateEquilibriumRatios()
-            
-            # Calculate microcanonical rate coefficients for each path reaction
-            self.calculateMicrocanonicalRates()
-            
-            # Rescale densities of states such that, when they are integrated
-            # using the Boltzmann factor as a weighting factor, the result is unity
-            for i in range(Nisom+Nreac):
-                Q = 0.0
-                for s in range(NJ):
-                    Q += numpy.sum(self.densStates[i,:,s] * (2*Jlist[s]+1) * numpy.exp(-Elist / constants.R / T))
-                self.densStates[i,:,:] /= Q
-            
-        # Update parameters that depend on temperature and pressure if necessary
-        if temperatureChanged or pressureChanged:
-            self.calculateCollisionModel()
+        success = False
+        while not success:
+            success = True # (set it to false again later if necessary)
+            # Update parameters that depend on temperature only if necessary
+            if temperatureChanged:
+                
+                # Choose the energy grains to use to compute k(T,P) values at this temperature
+                Elist = self.Elist = self.selectEnergyGrains(T, grainSize, grainCount)
+                Ngrains = self.Ngrains = len(Elist)
+                logging.info('Using {0:d} grains from {1:.2f} to {2:.2f} kJ/mol in steps of {3:.2f} kJ/mol to compute the k(T,P) values at {4:g} K'.format(
+                    Ngrains, numpy.min(Elist) * 0.001, numpy.max(Elist) * 0.001, (Elist[1] - Elist[0]) * 0.001, T))
+                
+                # Choose the angular momenta to use to compute k(T,P) values at this temperature
+                # (This only applies if the J-rotor is adiabatic
+                if not self.activeJRotor:
+                    Jlist = self.Jlist = numpy.arange(0, 20, 1, numpy.int)
+                    NJ = self.NJ = len(Jlist)
+                else:
+                    Jlist = self.Jlist = numpy.array([0], numpy.int)
+                    NJ = self.NJ = 1
+                
+                # Map the densities of states onto this set of energies
+                # Also shift each density of states to a common zero of energy
+                self.mapDensitiesOfStates()
+                
+                # Use free energy to determine equilibrium ratios of each isomer and product channel
+                self.calculateEquilibriumRatios()
+                
+                # Calculate microcanonical rate coefficients for each path reaction
+                try:
+                    self.calculateMicrocanonicalRates()
+                except InvalidMicrocanonicalRateError:
+                    success = False
+                    grainSize *= 0.5
+                    grainCount *= 2
+                    logging.warning("Increasing number of grains, decreasing grain size and trying again.")
+                    continue
+                else:
+                    success = True
+                
+                # Rescale densities of states such that, when they are integrated
+                # using the Boltzmann factor as a weighting factor, the result is unity
+                for i in range(Nisom+Nreac):
+                    Q = 0.0
+                    for s in range(NJ):
+                        Q += numpy.sum(self.densStates[i,:,s] * (2*Jlist[s]+1) * numpy.exp(-Elist / constants.R / T))
+                    self.densStates[i,:,:] /= Q
+                
+            # Update parameters that depend on temperature and pressure if necessary
+            if temperatureChanged or pressureChanged:
+                self.calculateCollisionModel()
 
     def __getEnergyGrains(self, Emin, Emax, grainSize=0.0, grainCount=0):
         """
@@ -552,14 +570,17 @@ class Network:
             Keq_expected = self.eqRatios[prod] / self.eqRatios[reac] 
 
             # Determine the actual values of k(T) and Keq
-            kf0 = 0.0; kr0 = 0.0; Qf = 0.0; Qr = 0.0
+            C0 = 1e5 / (constants.R * T)
+            kf0 = 0.0; kr0 = 0.0; Qreac = 0.0; Qprod = 0.0
             for s in range(NJ):
                 kf0 += numpy.sum(kf[:,s] * reacDensStates[:,s] * (2*Jlist[s]+1) * numpy.exp(-Elist / constants.R / T)) 
                 kr0 += numpy.sum(kr[:,s] * prodDensStates[:,s] * (2*Jlist[s]+1) * numpy.exp(-Elist / constants.R / T)) 
-                Qf += numpy.sum(reacDensStates[:,s] * (2*Jlist[s]+1) * numpy.exp(-Elist / constants.R / T)) 
-                Qr += numpy.sum(prodDensStates[:,s] * (2*Jlist[s]+1) * numpy.exp(-Elist / constants.R / T)) 
-            kf_actual = kf0 / Qf if Qf > 0 else 0
-            kr_actual = kr0 / Qr if Qr > 0 else 0
+                Qreac += numpy.sum(reacDensStates[:,s] * (2*Jlist[s]+1) * numpy.exp(-Elist / constants.R / T)) 
+                Qprod += numpy.sum(prodDensStates[:,s] * (2*Jlist[s]+1) * numpy.exp(-Elist / constants.R / T)) 
+            kr0 *= C0 ** (len(rxn.products) - len(rxn.reactants))
+            Qprod *= C0 ** (len(rxn.products) - len(rxn.reactants))
+            kf_actual = kf0 / Qreac if Qreac > 0 else 0
+            kr_actual = kr0 / Qprod if Qprod > 0 else 0
             Keq_actual = kf_actual / kr_actual if kr_actual > 0 else 0
                 
             error = False; warning = False
@@ -631,7 +652,7 @@ class Network:
                 logging.error('    Expected Keq({0:g} K) = {1:g}'.format(T, Keq_expected))
                 logging.error('      Actual Keq({0:g} K) = {1:g}'.format(T, Keq_actual))
                 if error:
-                    raise NetworkError('Invalid k(E) values computed for path reaction "{0}".'.format(rxn))
+                    raise InvalidMicrocanonicalRateError('Invalid k(E) values computed for path reaction "{0}".'.format(rxn))
                 else:
                     logging.warning('Significant corrections to k(E) to be consistent with high-pressure limit for path reaction "{0}".'.format(rxn))
 
@@ -689,7 +710,7 @@ class Network:
         
         for i, isomer in enumerate(self.isomers):
             collFreq[i] = isomer.calculateCollisionFrequency(self.T, self.P, self.bathGas)
-            Mcoll[i,:,:] = collFreq[i] * isomer.generateCollisionMatrix(self.T, self.densStates[i,:,:], self.Elist, self.Jlist)
+            Mcoll[i,:,:,:,:] = collFreq[i] * isomer.generateCollisionMatrix(self.T, self.densStates[i,:,:], self.Elist, self.Jlist)
                         
         self.collFreq = collFreq
         self.Mcoll = Mcoll
@@ -716,14 +737,17 @@ class Network:
         self.K, self.p0 = rs.applyReservoirStateMethod(self)
         return self.K, self.p0
     
-    def applyChemicallySignificantEigenvaluesMethod(self):
+    def applyChemicallySignificantEigenvaluesMethod(self, lumpingOrder=None):
         """
         Compute the phenomenological rate coefficients :math:`k(T,P)` at the
         current conditions using the chemically-significant eigenvalues method.
+        If a `lumpingOrder` is provided, the algorithm will attempt to lump the
+        configurations (given by index) in the order provided, and return a
+        reduced set of :math:`k(T,P)` values. 
         """
         import rmgpy.pdep.cse as cse
         logging.debug('Applying chemically-significant eigenvalues method at {0:g} K, {1:g} bar...'.format(self.T, self.P))
-        self.K, self.p0 = cse.applyChemicallySignificantEigenvaluesMethod(self)
+        self.K, self.p0 = cse.applyChemicallySignificantEigenvaluesMethod(self, lumpingOrder)
         return self.K, self.p0
     
     def generateFullMEMatrix(self, products=True):
@@ -766,6 +790,14 @@ class Network:
         Nrows = M.shape[0]
         M[:,Nrows-Nreac-Nprod:] *= ymB
         
+        if self.ymB is not None:
+            if isinstance(self.ymB, float):
+                assert Nreac <= 1
+                M[:,Nrows-Nreac-Nprod:] *= self.ymB
+            else:
+                for n in range(Nreac+Nprod):
+                    M[:,Nrows-Nreac-Nprod+n] *= self.ymB[n]
+        
         # Get equilibrium distributions
         eqDist = numpy.zeros_like(densStates)
         for i in range(Nisom):
@@ -805,11 +837,71 @@ class Network:
             for n in range(Nisom, Nisom+Nreac+Nprod):
                 x[m,n] = ode.y[-(Nisom+Nreac+Nprod)+n]
     
-        import pylab
-        pylab.loglog(t,x)
-        pylab.ylim(1e-12, 1e0)
-        pylab.show()
+        return t, p, x
+
+    def solveReducedME(self, tlist, x0):
+        """
+        Directly solve the reduced master equation using a stiff ODE solver. 
+        Pass the output time points `tlist` in s and the initial total
+        populations `x0`. Be sure to run one of the methods for generating
+        :math:`k(T,P)` values before calling this method.
+        Returns the times in s, population distributions for each isomer, and total
+        population profiles for each configuration.
+        """
+        import scipy.integrate
     
+        Elist = self.Elist
+        Jlist = self.Jlist
+        
+        Nisom = self.Nisom
+        Nreac = self.Nreac
+        Nprod = self.Nprod
+        Ngrains = len(Elist)
+        NJ = len(Jlist)
+        Ntime = len(tlist)
+        
+        def residual(t, y, K):
+            return numpy.dot(K, y)
+        
+        def jacobian(t, y, K):
+            return K
+    
+        ymB = self.P * 1e5 / constants.R / self.T * 1e-6
+        K = self.K[:,:]
+        K[:,Nisom:] *= ymB
+        
+        if self.ymB is not None:
+            if isinstance(self.ymB, float):
+                assert Nreac <= 1
+                K[:,Nisom:] *= self.ymB
+            else:
+                for n in range(Nreac+Nprod):
+                    K[:,Nisom+n] *= self.ymB[n]
+        
+        # Set up ODEs
+        ode = scipy.integrate.ode(residual, jacobian).set_integrator('vode', method='bdf', with_jacobian=True, atol=1e-16, rtol=1e-8)
+        ode.set_initial_value(x0, 0.0).set_f_params(K).set_jac_params(K)
+    
+        # Generate solution
+        t = numpy.zeros([Ntime], float)
+        p = numpy.zeros([Ntime, Nisom, Ngrains, NJ], float)
+        x = numpy.zeros([Ntime, Nisom+Nreac+Nprod], float)
+        for m in range(Ntime):
+            ode.integrate(tlist[m])
+            t[m] = ode.t
+            for i in range(Nisom):
+                x[m,i] = ode.y[i]
+                for j in range(Nisom):
+                    for r in range(Ngrains):
+                        for s in range(NJ):
+                            p[m,i,r,s] += ode.y[j] * self.p0[i,j,r,s]
+                for j in range(Nisom, Nisom+Nreac):
+                    for r in range(Ngrains):
+                        for s in range(NJ):
+                            p[m,i,r,s] += ode.y[j] * self.p0[i,j,r,s] * ymB
+            for n in range(Nreac+Nprod):
+                x[m,n+Nisom] = ode.y[n+Nisom]
+                
         return t, p, x
 
     def printSummary(self, level=logging.INFO):

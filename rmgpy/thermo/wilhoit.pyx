@@ -526,11 +526,11 @@ cdef class Wilhoit(HeatCapacityModel):
             nasa_low, nasa_high, Tint = Wilhoit_to_NASA_TintOpt(wilhoit_scaled, Tmin, Tmax, weighting, continuity)
         iseUnw = Wilhoit_to_NASA_TintOpt_objFun(Tint, wilhoit_scaled, Tmin, Tmax, 0, continuity) #the scaled, unweighted ISE (integral of squared error)
         rmsUnw = sqrt(iseUnw/(Tmax-Tmin))
-        rmsStr = '(Unweighted) RMS error = %.3f*R;'%(rmsUnw)
+        rmsStr = 'Unweighted RMS error = %.3f*R; '%(rmsUnw)
         if (weighting == 1):
             iseWei = Wilhoit_to_NASA_TintOpt_objFun(Tint, wilhoit_scaled, Tmin, Tmax, weighting, continuity) #the scaled, weighted ISE
             rmsWei = sqrt(iseWei/log(Tmax/Tmin))
-            rmsStr = 'Weighted RMS error = %.3f*R;'%(rmsWei)+rmsStr
+            rmsStr = 'Weighted RMS error = %.3f*R; '%(rmsWei)+rmsStr
     
         # Print a warning if the RMS fit is worse that 0.25*R
         if (rmsUnw > 0.25 or rmsWei > 0.25):
@@ -550,7 +550,7 @@ cdef class Wilhoit(HeatCapacityModel):
         nasa_high.c4 *= 1.0e-12
         
         # output comment
-        comment = 'NASA function fitted to Wilhoit function with B = {0:g} K. {1} {2}'.format(self.B.value_si, rmsStr, self.comment)
+        comment = 'NASA function fitted to Wilhoit function with B = {0:g} K. {1}\n{2}'.format(self.B.value_si, rmsStr, self.comment)
         nasa_low.comment = 'Low temperature range polynomial'
         nasa_high.comment = 'High temperature range polynomial'
     

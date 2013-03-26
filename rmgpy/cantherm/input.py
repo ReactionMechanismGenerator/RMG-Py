@@ -162,8 +162,8 @@ def reaction(label, reactants, products, transitionState, kinetics=None, tunneli
     if label in reactionDict:
         raise ValueError('Multiple occurrences of reaction with label {0!r}.'.format(label))
     logging.info('Loading reaction {0}...'.format(label))
-    reactants = [speciesDict[spec] for spec in reactants]
-    products = [speciesDict[spec] for spec in products]
+    reactants = sorted([speciesDict[spec] for spec in reactants])
+    products = sorted([speciesDict[spec] for spec in products])
     transitionState = transitionStateDict[transitionState]
     if tunneling.lower() == 'wigner':
         transitionState.tunneling = Wigner(frequency=None)
@@ -363,7 +363,9 @@ def loadInputFile(path):
             raise
 
     modelChemistry = local_context.get('modelChemistry', '')
-    frequencyScaleFactor = local_context.get('frequencyScaleFactor', 0.0)
+    if 'frequencyScaleFactor' not in local_context:
+        logging.warning('No frequency scale factor specified in input file; assuming a value of unity.')
+    frequencyScaleFactor = local_context.get('frequencyScaleFactor', 1.0)
     useHinderedRotors = local_context.get('useHinderedRotors', True)
     useBondCorrections = local_context.get('useBondCorrections', False)
     

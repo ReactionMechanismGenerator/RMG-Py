@@ -77,13 +77,19 @@ class Species(object):
     `molecule`              A list of the :class:`Molecule` objects describing the molecular structure
     `lennardJones`          A set of Lennard-Jones collision parameters
     `molecularWeight`       The molecular weight of the species
+    `dipoleMoment`          The molecular dipole moment
+    `polarizability`        The polarizability alpha
+    `Zrot`                  The rotational relaxation collision number
     `energyTransferModel`   The collisional energy transfer model to use
     `reactive`              ``True`` if the species participates in reactions, ``False`` if not
     ======================= ====================================================
     
     """
 
-    def __init__(self, index=-1, label='', thermo=None, conformer=None, molecule=None, lennardJones=None, molecularWeight=None, energyTransferModel=None, reactive=True):
+    def __init__(self, index=-1, label='', thermo=None, conformer=None, 
+                 molecule=None, lennardJones=None, molecularWeight=None, 
+                 dipoleMoment=None, polarizability=None, Zrot=None, 
+                 energyTransferModel=None, reactive=True):
         self.index = index
         self.label = label
         self.thermo = thermo
@@ -92,6 +98,9 @@ class Species(object):
         self.lennardJones = lennardJones
         self.reactive = reactive
         self.molecularWeight = molecularWeight
+        self.dipoleMoment = dipoleMoment
+        self.polarizability = polarizability
+        self.Zrot = Zrot
         self.energyTransferModel = energyTransferModel
 
     def __repr__(self):
@@ -108,6 +117,9 @@ class Species(object):
         if self.lennardJones is not None: string += 'lennardJones={0!r}, '.format(self.lennardJones)
         if not self.reactive: string += 'reactive={0}, '.format(self.reactive)
         if self.molecularWeight is not None: string += 'molecularWeight={0!r}, '.format(self.molecularWeight)
+        if self.dipoleMoment is not None: string += 'dipoleMoment={0!r}, '.format(self.dipoleMoment)
+        if self.polarizability is not None: string += 'polarizability={0!r}, '.format(self.polarizability)
+        if self.Zrot is not None: string += 'Zrot={0!r}, '.format(self.Zrot)
         if self.energyTransferModel is not None: string += 'energyTransferModel={0!r}, '.format(self.energyTransferModel)
         string = string[:-2] + ')'
         return string
@@ -129,13 +141,31 @@ class Species(object):
         """
         A helper function used when pickling an object.
         """
-        return (Species, (self.index, self.label, self.thermo, self.conformer, self.molecule, self.lennardJones, self.molecularWeight, self.energyTransferModel, self.reactive))
+        return (Species, (self.index, self.label, self.thermo, self.conformer, self.molecule, self.lennardJones, self.dipoleMoment, self.polarizability, self.Zrot, self.molecularWeight, self.energyTransferModel, self.reactive))
 
     def getMolecularWeight(self):
         return self._molecularWeight
     def setMolecularWeight(self, value):
         self._molecularWeight = quantity.Mass(value)
     molecularWeight = property(getMolecularWeight, setMolecularWeight, """The molecular weight of the species.""")
+
+    def getDipoleMoment(self):
+        return self._dipoleMoment
+    def setDipoleMoment(self, value):
+        self._dipoleMoment = quantity.DipoleMoment(value)
+    dipoleMoment = property(getDipoleMoment, setDipoleMoment, """The molecular dipole moment.""")
+
+    def getPolarizability(self):
+        return self._polarizability
+    def setPolarizability(self, value):
+        self._polarizability = quantity.Volume(value)
+    polarizability = property(getPolarizability, setPolarizability, """The polarizability alpha.""")
+
+    def getZrot(self):
+        return self._Zrot
+    def setZrot(self, value):
+        self._Zrot = quantity.Dimensionless(value)
+    Zrot = property(getZrot, setZrot, """The rotational relaxation collision number.""")
 
     def generateResonanceIsomers(self):
         """

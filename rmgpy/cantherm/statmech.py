@@ -56,6 +56,95 @@ class InputError(Exception):
 
 ################################################################################
 
+class ScanLog:
+    """
+    Represent a text file containing a table of angles and corresponding
+    scan energies.
+    """
+
+    angleFactors = {
+        'radians': 1.0,
+        'rad': 1.0,
+        'degrees': 180.0 / math.pi,
+        'deg': 180.0 / math.pi,
+    }
+    energyFactors = {
+        'J/mol': 1.0,
+        'kJ/mol': 1.0/1000.,
+        'cal/mol': 1.0/4.184,
+        'kcal/mol': 1.0/4184.,
+        'cm^-1': 1.0/(constants.h * constants.c * 100. * constants.Na),
+        'hartree': 1.0/(constants.E_h * constants.Na),
+    }
+        
+    def __init__(self, path):
+        self.path = path
+
+    def load(self):
+        """
+        Load the scan energies from the file. Returns arrays containing the
+        angles (in radians) and energies (in J/mol).
+        """
+        angles = []; energies = []
+        angleUnits = None; energyUnits = None
+        angleFactor = None; energyFactor = None
+        
+        with open(self.path, 'r') as stream:
+            for line in stream:
+                line = line.strip()
+                if line == '': continue
+                
+                tokens = line.split()
+                if angleUnits is None or energyUnits is None:
+                    angleUnits = tokens[1][1:-1]
+                    energyUnits = tokens[3][1:-1]
+                    
+                    try:
+                        angleFactor = ScanLog.angleFactors[angleUnits]
+                    except KeyError:
+                        raise ValueError('Invalid angle units {0!r}.'.format(angleUnits))
+                    try:
+                        energyFactor = ScanLog.energyFactors[energyUnits]
+                    except KeyError:
+                        raise ValueError('Invalid energy units {0!r}.'.format(energyUnits))
+            
+                else:
+                    angles.append(float(tokens[0]) / angleFactor)
+                    energies.append(float(tokens[1]) / energyFactor)
+        
+        angles = numpy.array(angles)
+        energies = numpy.array(energies)
+        energies -= energies[0]
+        
+        return angles, energies
+        
+    def save(self, angles, energies, angleUnits='radians', energyUnits='kJ/mol'):
+        """
+        Save the scan energies to the file using the given `angles` in radians
+        and corresponding energies `energies` in J/mol. The file is created to
+        use the given `angleUnits` for angles and `energyUnits` for energies.
+        """
+        assert len(angles) == len(energies)
+        
+        try:
+            angleFactor = ScanLog.angleFactors[angleUnits]
+        except KeyError:
+            raise ValueError('Invalid angle units {0!r}.'.format(angleUnits))
+        try:
+            energyFactor = ScanLog.energyFactors[energyUnits]
+        except KeyError:
+            raise ValueError('Invalid energy units {0!r}.'.format(energyUnits))
+        
+        with open(self.path, 'w') as stream:
+            stream.write('{0:>24} {1:>24}\n'.format(
+                'Angle ({0})'.format(angleUnits),
+                'Energy ({0})'.format(energyUnits),
+            ))
+            for angle, energy in zip(angles, energies):
+                stream.write('{0:23.10f} {1:23.10f}\n'.format(angle * angleFactor, energy * energyFactor))
+
+################################################################################
+
 def hinderedRotor(scanLog, pivots, top, symmetry):
     return [scanLog, pivots, top, symmetry]
 
@@ -106,6 +195,7 @@ class StatMechJob:
             'HinderedRotor': hinderedRotor,
             # File formats
             'GaussianLog': GaussianLog,
+            'ScanLog': ScanLog,
         }
     
         directory = os.path.abspath(os.path.dirname(path))
@@ -174,6 +264,9 @@ class StatMechJob:
             raise InputError('Required attribute "frequencies" not found in species file {0!r}.'.format(path))
         statmechLog.path = os.path.join(directory, statmechLog.path)
         
+        if 'frequencyScaleFactor' in local_context:
+            logging.warning('Ignoring frequency scale factor in species file {0!r}.'.format(path))
+        
         try:
             rotors = local_context['rotors']
         except KeyError:
@@ -194,12 +287,15 @@ class StatMechJob:
         
         logging.debug('    Reading energy...')
         if E0 is None:
-            E0 = energyLog.loadEnergy(frequencyScaleFactor=self.frequencyScaleFactor)
+            E0 = energyLog.loadEnergy()
         else:
             E0 = E0 * constants.E_h * constants.Na         # Hartree/particle to J/mol
         E0 = applyEnergyCorrections(E0, self.modelChemistry, atoms, bonds if self.applyBondEnergyCorrections else {})
+        ZPE = statmechLog.loadZeroPointEnergy() * self.frequencyScaleFactor
+        E0 += ZPE
+        logging.debug('         ZPE (0 K) = {0:g} kcal/mol'.format(ZPE / 4184.))
         logging.debug('         E0 (0 K) = {0:g} kcal/mol'.format(E0 / 4184.))
-        
+       
         conformer.E0 = (E0*0.001,"kJ/mol")
         
         # If loading a transition state, also read the imaginary frequency
@@ -215,10 +311,19 @@ class StatMechJob:
             logging.debug('    Fitting {0} hindered rotors...'.format(len(rotors)))
             rotorCount = 0
             for scanLog, pivots, top, symmetry in rotors:
-                scanLog.path = os.path.join(directory, scanLog.path)
                 
-                Vlist, angle = scanLog.loadScanEnergies()
-                
+                # Load the hindered rotor scan energies
+                if isinstance(scanLog, GaussianLog):
+                    scanLog.path = os.path.join(directory, scanLog.path)
+                    Vlist, angle = scanLog.loadScanEnergies()
+                    scanLogOutput = ScanLog(os.path.join(directory, '{0}_rotor_{1}.txt'.format(self.species.label, rotorCount+1)))
+                    scanLogOutput.save(angle, Vlist)
+                elif isinstance(scanLog, ScanLog):
+                    scanLog.path = os.path.join(directory, scanLog.path)
+                    angle, Vlist = scanLog.load()
+                else:
+                    raise Exception('Invalid log file type {0} for scan log.'.format(scanLog.__class__))
+                    
                 inertia = conformer.getInternalReducedMomentOfInertia(pivots, top) * constants.Na * 1e23
                 
                 cosineRotor = HinderedRotor(inertia=(inertia,"amu*angstrom^2"), symmetry=symmetry)
@@ -357,15 +462,15 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds):
     # Spin orbit correction (SOC) in Hartrees
     # Values taken from note 22 of http://jcp.aip.org/resource/1/jcpsa6/v109/i24/p10570_s1 and converted to hartrees
     # Values in millihartree are also available (with fewer significant figures) from http://jcp.aip.org/resource/1/jcpsa6/v106/i3/p1063_s1
-    SOC = {'H':0.0, 'N':0.0, 'O': -0.000355, 'C': -0.000135, 'P': 0.0} 
+    SOC = {'H':0.0, 'N':0.0, 'O': -0.000355, 'C': -0.000135, 'S':  -0.000893, 'P': 0.0} 
     
     # Step 1: Reference all energies to a model chemistry-independent basis
     # by subtracting out that model chemistry's atomic energies
     # Note: If your model chemistry does not include spin orbit coupling, you should add the corrections to the energies here
     if modelChemistry == 'CBS-QB3':
-        atomEnergies = {'H':-0.499818 , 'N':-54.520543, 'O':-74.987624, 'C':-37.785385, 'P':-340.817186}
+        atomEnergies = {'H':-0.499818 , 'N':-54.520543, 'O':-74.987624, 'C':-37.785385, 'P':-340.817186, 'S': -397.657360}
     elif modelChemistry == 'G3':
-        atomEnergies = {'H':-0.5010030, 'N':-54.564343, 'O':-75.030991, 'C':-37.827717, 'P':-341.116432}
+        atomEnergies = {'H':-0.5010030, 'N':-54.564343, 'O':-75.030991, 'C':-37.827717, 'P':-341.116432, 'S': -397.961110}
     elif modelChemistry == 'Klip_1':
         atomEnergies = {'H':-0.50003976 + SOC['H'], 'O':-75.00915718 + SOC['O'], 'C':-37.79249556 + SOC['C']}
     elif modelChemistry == 'Klip_2':
@@ -374,6 +479,9 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds):
     elif modelChemistry == 'Klip_2_cc':
         #Klip CCSD(T)(tz,qz)
         atomEnergies = {'H':-0.50003976 + SOC['H'], 'O':-75.00681155 + SOC['O'], 'C':-37.79029443 + SOC['C']}
+    elif modelChemistry == 'CCSD(T)-F12/cc-pVTZ-F12':
+        # NOTE: THESE ARE NOT CORRECT!!!!!!
+        atomEnergies = {'H':-0.499818 , 'N':-54.520543, 'O':-74.987624, 'C':-37.785385, 'P':-340.817186}
     else:
         logging.warning('Unknown model chemistry "{0}"; not applying energy corrections.'.format(modelChemistry))
         return E0
@@ -387,10 +495,10 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds):
     # See Gaussian thermo whitepaper at http://www.gaussian.com/g_whitepap/thermo.htm)
     # Note: these values are relatively old and some improvement may be possible by using newer values, particularly for carbon
     # However, care should be taken to ensure that they are compatible with the BAC values (if BACs are used)
-    atomHf = {'H': 51.63 , 'N': 112.53 ,'O': 58.99 ,'C': 169.98 }
+    atomHf = {'H': 51.63 , 'N': 112.53 ,'O': 58.99 ,'C': 169.98, 'S': 65.55 }
     # Thermal contribution to enthalpy Hss(298 K) - Hss(0 K) reported by Gaussian thermo whitepaper
     # This will be subtracted from the corresponding value in atomHf to produce an enthalpy used in calculating the enthalpy of formation at 298 K
-    atomThermal = {'H': 1.01 , 'N': 1.04, 'O': 1.04 ,'C': 0.25 }
+    atomThermal = {'H': 1.01 , 'N': 1.04, 'O': 1.04 ,'C': 0.25, 'S': 1.05 }
     # Total energy correction used to reach gas-phase reference state
     # Note: Spin orbit coupling no longer included in these energies, since some model chemistries include it automatically
     atomEnergies = {}

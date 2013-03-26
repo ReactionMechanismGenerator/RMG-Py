@@ -54,7 +54,11 @@ cdef class Atom(Vertex):
     cpdef bint isCarbon(self)
 
     cpdef bint isOxygen(self)
+    
+    cpdef incrementRadical(self)
 
+    cpdef decrementRadical(self)
+    
 ################################################################################
 
 cpdef object SMILEwriter
@@ -74,6 +78,10 @@ cdef class Bond(Edge):
     cpdef bint isDouble(self) except -2
 
     cpdef bint isTriple(self) except -2
+
+    cpdef incrementOrder(self)
+
+    cpdef decrementOrder(self)
 
 ################################################################################
 
@@ -171,7 +179,13 @@ cdef class Molecule(Graph):
 
     cpdef double calculateCpInf(self) except -1
     
-    cpdef getAdjacentResonanceIsomers(self)
+    cpdef updateAtomTypes(self)
+    
+    cpdef bint isRadical(self) except -2
+    
+    cpdef list generateResonanceIsomers(self)
+    
+    cpdef list getAdjacentResonanceIsomers(self)
 
     cpdef findAllDelocalizationPaths(self, Atom atom1)
 
