@@ -126,6 +126,7 @@ cpdef generateFullMEMatrix(network, bint products=True):
                             M[u,u] -= Gnj[n,i,r,s]
                             if n < Nreac or products:
                                 M[v,u] = Gnj[n,i,r,s]
+                            if n < Nreac:
                                 val = Fim[i,n,r,s] * densStates[n+Nisom,r,s] * (2*Jlist[s]+1) * exp(-Elist[r] * beta)
                                 M[u,v] = val
                                 M[v,v] -= val

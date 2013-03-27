@@ -36,14 +36,12 @@ components of the RMG database.
 
 import os
 import logging
-import quantities as pq
 import re
 import codecs
 
-from rmgpy.quantity import *
 from rmgpy.molecule import Molecule, Group, InvalidAdjacencyListError
 
-from reference import *
+from reference import Reference, Article, Book, Thesis
 
 ################################################################################
 
@@ -390,7 +388,6 @@ class Database:
         if len(self.entries) == 0:
             raise DatabaseError("Load the dictionary before you load the tree.")
 
-        import re
         # should match '  L3 : foo_bar '  and 'L3:foo_bar'
         parser = re.compile('^\s*L(?P<level>\d+)\s*:\s*(?P<label>\S+)')
 
@@ -1090,13 +1087,12 @@ class ForbiddenStructures(Database):
         for entry in self.entries.values():
             entryLabeledAtoms = entry.item.getLabeledAtoms()
             moleculeLabeledAtoms = molecule.getLabeledAtoms()
-            try:
-                initialMap = dict([(moleculeLabeledAtoms[label], entryLabeledAtoms[label]) for label in entryLabeledAtoms])
-            except KeyError:
-                continue
-            else:
-                if molecule.isMappingValid(entry.item, initialMap) and molecule.isSubgraphIsomorphic(entry.item, initialMap):
-                    return True
+            initialMap = {}
+            for label in entryLabeledAtoms:
+                if label not in moleculeLabeledAtoms: continue
+                initialMap[moleculeLabeledAtoms[label]] = entryLabeledAtoms[label]
+            if molecule.isMappingValid(entry.item, initialMap) and molecule.isSubgraphIsomorphic(entry.item, initialMap):
+                return True
         return False
     
     def loadOld(self, path):

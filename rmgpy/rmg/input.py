@@ -29,19 +29,19 @@
 ################################################################################
 
 import logging
-import quantities
+import os
 
 from rmgpy import settings
 
 from rmgpy.molecule import Molecule
 
 from rmgpy.data.rmg import RMGDatabase
-
+from rmgpy.quantity import Quantity
 from rmgpy.solver.base import TerminationTime, TerminationConversion
 from rmgpy.solver.simple import SimpleReactor
 from rmgpy.solver.liquid import LiquidReactor
 
-from model import *
+from model import CoreEdgeReactionModel
 
 ################################################################################
 
@@ -197,12 +197,13 @@ def pressureDependence(method, temperatures, pressures, maximumGrainSize=0.0, mi
     rmg.pressureDependence.activeKRotor = True
     rmg.pressureDependence.rmgmode = True
 
-def options(units='si', saveRestartPeriod=None, drawMolecules=False, generatePlots=False, saveConcentrationProfiles=False):
+def options(units='si', saveRestartPeriod=None, drawMolecules=False, generatePlots=False, saveConcentrationProfiles=False, verboseComments=False):
     rmg.units = units
     rmg.saveRestartPeriod = Quantity(saveRestartPeriod) if saveRestartPeriod else None
     rmg.drawMolecules = drawMolecules
     rmg.generatePlots = generatePlots
     rmg.saveConcentrationProfiles = saveConcentrationProfiles
+    rmg.verboseComments = verboseComments
 
 def generatedSpeciesConstraints(**kwargs):
     validConstraints = [
@@ -390,6 +391,7 @@ def saveInputFile(path, rmg):
     f.write('    drawMolecules = {0},\n'.format(rmg.drawMolecules))
     f.write('    generatePlots = {0},\n'.format(rmg.generatePlots))
     f.write('    saveConcentrationProfiles = {0},\n'.format(rmg.saveConcentrationProfiles))
+    f.write('    verboseComments = {0},\n'.format(rmg.verboseComments))
     f.write(')\n\n')
         
     f.close()

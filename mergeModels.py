@@ -16,7 +16,7 @@ The resulting merged files are placed in ``chem.inp`` and
 import os.path
 import argparse
 
-from rmgpy.chemkin import loadChemkinFile, saveChemkinFile, saveSpeciesDictionary
+from rmgpy.chemkin import loadChemkinFile, saveChemkinFile, saveSpeciesDictionary, saveTransportFile
 from rmgpy.reaction import ReactionModel
 
 ################################################################################
@@ -24,25 +24,42 @@ from rmgpy.reaction import ReactionModel
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('files', metavar='FILE', type=str, nargs='+',
-        help='the Chemkin files and species dictionaries of each model to merge')
+    parser.add_argument('--model1', metavar='FILE', type=str, nargs='+',
+        help='the Chemkin files and species dictionaries of the first model to merge')
+    parser.add_argument('--model2', metavar='FILE', type=str, nargs='+',
+        help='the Chemkin files and species dictionaries of the second model to merge')
+    parser.add_argument('--model3', metavar='FILE', type=str, nargs='+',
+        help='the Chemkin files and species dictionaries of the third model to merge')
+    parser.add_argument('--model4', metavar='FILE', type=str, nargs='+',
+        help='the Chemkin files and species dictionaries of the fourth model to merge')
+    parser.add_argument('--model5', metavar='FILE', type=str, nargs='+',
+        help='the Chemkin files and species dictionaries of the fifth model to merge')
     
     args = parser.parse_args()
     
+    transport = False
+    inputModelFiles = []
+    for model in [args.model1, args.model2, args.model3, args.model4, args.model5]:
+        if model is None: continue
+        if len(model) == 2:
+            inputModelFiles.append((model[0], model[1], None))
+        elif len(model) == 3:
+            transport = True
+            inputModelFiles.append((model[0], model[1], model[2]))
+        else:
+            raise Exception
+    
     outputChemkinFile = 'chem.inp'
     outputSpeciesDictionary = 'species_dictionary.txt'
-    
-    assert len(args.files) % 2 == 0
+    outputTransportFile = 'tran.dat' if transport else None
     
     # Load the models to merge
     models = []
-    for chemkin, speciesDict in zip(args.files[0::2], args.files[1::2]):
+    for chemkin, speciesPath, transportPath in inputModelFiles:
         print 'Loading model #{0:d}...'.format(len(models)+1)
         model = ReactionModel()
-        model.species, model.reactions = loadChemkinFile(chemkin, speciesDict)
+        model.species, model.reactions = loadChemkinFile(chemkin, speciesPath, transportPath=transportPath)
         models.append(model)
-    
-
 
     finalModel = ReactionModel()
     for i, model in enumerate(models):        
@@ -60,6 +77,11 @@ if __name__ == '__main__':
     # Save the merged model to disk
     saveChemkinFile(outputChemkinFile, finalModel.species, finalModel.reactions)
     saveSpeciesDictionary(outputSpeciesDictionary, finalModel.species)
-
+    if transport:
+        saveTransportFile(outputTransportFile, finalModel.species)
+        
     print 'Merged Chemkin file saved to {0}'.format(outputChemkinFile)
     print 'Merged species dictionary saved to {0}'.format(outputSpeciesDictionary)
+    if transport:
+        print 'Merged transport file saved to {0}'.format(outputTransportFile)
+    

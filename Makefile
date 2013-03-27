@@ -4,11 +4,12 @@
 #
 ################################################################################
 
-.PHONY : all minimal main measure solver clean decython
+.PHONY : all minimal main measure solver cantherm clean decython
 
 all: main measure solver
 
-minimal: measure solver
+minimal:
+	python setup.py build_ext minimal --build-lib . --build-temp build --pyrex-c-in-temp
 
 main:
 	python setup.py build_ext main --build-lib . --build-temp build --pyrex-c-in-temp
@@ -18,6 +19,9 @@ measure:
 
 solver:
 	python setup.py build_ext solver --build-lib . --build-temp build --pyrex-c-in-temp
+
+cantherm:
+	python setup.py build_ext cantherm --build-lib . --build-temp build --pyrex-c-in-temp
 
 clean:
 	python setup.py clean --build-temp build
@@ -29,3 +33,25 @@ decython:
 	# de-cythonize all but the 'minimal'. Helpful for debugging in "pure python" mode.
 	find . -name *.so ! \( -name _statmech.so -o -name quantity.so -o -regex '.*rmgpy/measure/.*' -o -regex '.*rmgpy/solver/.*' \) -exec rm -f '{}' \;
 	find . -name *.pyc -exec rm -f '{}' \;
+
+test:
+	nosetests --all-modules --verbose --with-coverage --cover-inclusive --cover-package=rmgpy --cover-erase --cover-html --cover-html-dir=testing/coverage rmgpy
+
+eg1: all
+	mkdir -p testing/minimal
+	rm -rf testing/minimal/*
+	cp examples/rmg/minimal/input.py testing/minimal/input.py
+	coverage erase
+	echo "Running with coverage tracking AND profiling"
+	coverage run rmg.py -p testing/minimal/input.py
+	coverage report
+	coverage html
+eg2: all
+	mkdir -p testing/hexadiene
+	rm -rf testing/hexadiene/*
+	cp examples/rmg/1,3-hexadiene/input.py testing/hexadiene/input.py
+	coverage erase
+	echo "Running with coverage tracking AND profiling"
+	coverage run rmg.py -p testing/hexadiene/input.py
+	coverage report
+	coverage html

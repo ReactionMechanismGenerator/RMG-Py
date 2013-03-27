@@ -28,9 +28,10 @@
 #
 ################################################################################
 
-from .arrhenius import *
-from .chebyshev import *
-from .falloff import *
-from .kineticsdata import *
-from .tunneling import *
-from .model import *
+from .model import KineticsModel, PDepKineticsModel, TunnelingModel, \
+                   getRateCoefficientUnitsFromReactionOrder, getReactionOrderFromRateCoefficientUnits
+from .arrhenius import Arrhenius, ArrheniusEP, PDepArrhenius, MultiArrhenius, MultiPDepArrhenius
+from .chebyshev import Chebyshev
+from .falloff import ThirdBody, Lindemann, Troe
+from .kineticsdata import KineticsData, PDepKineticsData
+from .tunneling import Wigner, Eckart

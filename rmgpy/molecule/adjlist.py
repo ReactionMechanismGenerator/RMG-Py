@@ -32,6 +32,7 @@ This module contains functionality for reading from and writing to the
 adjacency list format used by Reaction Mechanism Generator (RMG).
 """
 
+import re
 from .molecule import Atom, Bond
 from .group import GroupAtom, GroupBond
 #import chempy.molecule.atomtype as atomtypes
@@ -69,8 +70,16 @@ def fromAdjacencyList(adjlist, group=False):
             if len(lines) == 0:
                 raise InvalidAdjacencyListError('No atoms specified in adjacency list.')
         
+        mistake1 = re.compile('\{[^}]*\s+[^}]*\}')
         # Iterate over the remaining lines, generating Atom or GroupAtom objects
         for line in lines:
+
+            # Sometimes people put spaces after commas, which messes up the
+            # parse-by-whitespace. Examples include '{Cd, Ct}'.
+            if mistake1.search(line):
+                raise InvalidAdjacencyListError(
+                    "Shouldn't have spaces inside braces: {0}".format(mistake1.search(line).group())
+                    )
 
             # Sometimes commas are used to delimit bonds in the bond list,
             # so replace them just in case

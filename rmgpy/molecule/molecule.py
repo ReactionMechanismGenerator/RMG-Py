@@ -175,13 +175,15 @@ class Atom(Vertex):
         if isinstance(other, Atom):
             return self.equivalent(other)
         elif isinstance(other, GroupAtom):
-            cython.declare(atom=GroupAtom, a=AtomType, radical=cython.short, spin=cython.short, charge=cython.short)
+            cython.declare(atom=GroupAtom, a=AtomType, radical=cython.short, spin=cython.short, charge=cython.short, index=cython.int)
             atom = other
             for a in atom.atomType: 
                 if self.atomType.isSpecificCaseOf(a): break
             else:
                 return False
-            for radical, spin in zip(atom.radicalElectrons, atom.spinMultiplicity):
+            for index in range(len(atom.radicalElectrons)):
+                radical = atom.radicalElectrons[index]
+                spin = atom.spinMultiplicity[index]
                 if self.radicalElectrons == radical and self.spinMultiplicity == spin: break
             else:
                 return False
@@ -590,10 +592,12 @@ class Molecule(Graph):
         
         # Carbon and hydrogen always come first if carbon is present
         if hasCarbon:
-            formula += 'C{0:d}'.format(elements['C'])
+            count = elements['C']
+            formula += 'C{0:d}'.format(count) if count > 1 else 'C'
             del elements['C']
             if hasHydrogen:
-                formula += 'H{0:d}'.format(elements['H'])
+                count = elements['H']
+                formula += 'H{0:d}'.format(count) if count > 1 else 'H'
                 del elements['H']
 
         # Other atoms are in alphabetical order
@@ -601,7 +605,8 @@ class Molecule(Graph):
         keys = elements.keys()
         keys.sort()
         for key in keys:
-            formula += '{0}{1:d}'.format(key, elements[key])
+            count = elements[key]
+            formula += '{0}{1:d}'.format(key, count) if count > 1 else key
         
         return formula
 
@@ -806,10 +811,34 @@ class Molecule(Graph):
         while the atoms of `other` are the values). The `other` parameter must
         be a :class:`Group` object, or a :class:`TypeError` is raised.
         """
+        cython.declare(group=Group, atom=Atom)
+        cython.declare(carbonCount=cython.short, oxygenCount=cython.short, sulfurCount=cython.short, radicalCount=cython.short)
+        
         # It only makes sense to compare a Molecule to a Group for subgraph
         # isomorphism, so raise an exception if this is not what was requested
         if not isinstance(other, Group):
             raise TypeError('Got a {0} object for parameter "other", when a Molecule object is required.'.format(other.__class__))
+        group = other
+        
+        # Count the number of carbons, oxygens, and radicals in the molecule
+        carbonCount = 0; oxygenCount = 0; sulfurCount = 0; radicalCount = 0
+        for atom in self.vertices:
+            if atom.element.symbol == 'C':
+                carbonCount += 1
+            elif atom.element.symbol == 'O':
+                oxygenCount += 1
+            elif atom.element.symbol == 'S':
+                sulfurCount += 1
+            radicalCount += atom.radicalElectrons
+        # If the molecule has fewer of any of these things than the functional
+        # group does, then we know the subgraph isomorphism fails without
+        # needing to perform the full isomorphism check
+        if (radicalCount < group.radicalCount or
+            carbonCount < group.carbonCount or
+            oxygenCount < group.oxygenCount or
+            sulfurCount < group.sulfurCount):
+            return False
+
         # Do the isomorphism comparison
         result = Graph.isSubgraphIsomorphic(self, other, initialMap)
         return result
@@ -1229,16 +1258,28 @@ class Molecule(Graph):
         self.symmetryNumber = calculateSymmetryNumber(self)
         return self.symmetryNumber
     
+    def isRadical(self):
+        """
+        Return ``True`` if the molecule contains at least one radical electron,
+        or ``False`` otherwise.
+        """
+        cython.declare(atom=Atom)
+        for atom in self.vertices:
+            if atom.radicalElectrons > 0:
+                return True
+        return False
+    
     def generateResonanceIsomers(self):
         """
         Generate and return all of the resonance isomers of this molecule.
         """
+        cython.declare(isomers=list, newIsomers=list, index=cython.int, atom=Atom)
+        cython.declare(isomer=Molecule, newIsomer=Molecule, isom=Molecule)
         
         isomers = [self]
 
-        # Radicals
-        if sum([atom.radicalElectrons for atom in isomers[0].atoms]) > 0:
-            # Iterate over resonance isomers
+        # Iterate over resonance isomers
+        if self.isRadical():
             index = 0
             while index < len(isomers):
                 isomer = isomers[index]
@@ -1260,16 +1301,18 @@ class Molecule(Graph):
         """
         Generate all of the resonance isomers formed by one allyl radical shift.
         """
-
+        cython.declare(isomers=list, paths=list, index=cython.int, isomer=Molecule)
+        cython.declare(atom=Atom, atom1=Atom, atom2=Atom, atom3=Atom, bond12=Bond, bond23=Bond)
+        cython.declare(v1=Vertex, v2=Vertex)
+        
         isomers = []
 
         # Radicals
-        if sum([atom.radicalElectrons for atom in self.vertices]) > 0:
+        if self.isRadical():
             # Iterate over radicals in structure
             for atom in self.vertices:
                 paths = self.findAllDelocalizationPaths(atom)
-                for path in paths:
-                    atom1, atom2, atom3, bond12, bond23 = path
+                for atom1, atom2, atom3, bond12, bond23 in paths:
                     # Adjust to (potentially) new resonance isomer
                     atom1.decrementRadical()
                     atom3.incrementRadical()
@@ -1279,7 +1322,9 @@ class Molecule(Graph):
                     isomer = self.copy(deep=True)
                     # Also copy the connectivity values, since they are the same
                     # for all resonance forms
-                    for v1, v2 in zip(self.vertices, isomer.vertices):
+                    for index in range(len(self.vertices)):
+                        v1 = self.vertices[index]
+                        v2 = isomer.vertices[index]
                         v2.connectivity1 = v1.connectivity1
                         v2.connectivity2 = v1.connectivity2
                         v2.connectivity3 = v1.connectivity3
@@ -1299,7 +1344,9 @@ class Molecule(Graph):
         Find all the delocalization paths allyl to the radical center indicated
         by `atom1`. Used to generate resonance isomers.
         """
-
+        cython.declare(paths=list)
+        cython.declare(atom2=Atom, atom3=Atom, bond12=Bond, bond23=Bond)
+        
         # No paths if atom1 is not a radical
         if atom1.radicalElectrons <= 0:
             return []
@@ -1308,10 +1355,10 @@ class Molecule(Graph):
         paths = []
         for atom2, bond12 in atom1.edges.items():
             # Vinyl bond must be capable of gaining an order
-            if bond12.order in ['S', 'D']:
+            if bond12.isSingle() or bond12.isDouble():
                 for atom3, bond23 in atom2.edges.items():
                     # Allyl bond must be capable of losing an order without breaking
-                    if atom1 is not atom3 and (bond23.order == 'D' or bond23.order == 'T'):
+                    if atom1 is not atom3 and (bond23.isDouble() or bond23.isTriple()):
                         paths.append([atom1, atom2, atom3, bond12, bond23])
         return paths
 

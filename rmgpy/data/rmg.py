@@ -33,7 +33,6 @@ This module contains the :class:`RMGDatabase` class, which is the primary class
 for working with the RMG database.
 """
 
-import os
 import os.path
 
 from base import ForbiddenStructures

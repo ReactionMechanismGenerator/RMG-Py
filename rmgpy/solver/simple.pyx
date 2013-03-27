@@ -52,12 +52,13 @@ cdef class SimpleReactor(ReactionSystem):
     cdef public ScalarQuantity P
     cdef public dict initialMoleFractions
 
-    cdef numpy.ndarray reactantIndices
-    cdef numpy.ndarray productIndices
-    cdef numpy.ndarray networkIndices
-    cdef numpy.ndarray forwardRateCoefficients
-    cdef numpy.ndarray reverseRateCoefficients
-    cdef numpy.ndarray networkLeakCoefficients
+    cdef public numpy.ndarray reactantIndices
+    cdef public numpy.ndarray productIndices
+    cdef public numpy.ndarray networkIndices
+    cdef public numpy.ndarray forwardRateCoefficients
+    cdef public numpy.ndarray reverseRateCoefficients
+    cdef public numpy.ndarray networkLeakCoefficients
+    cdef public numpy.ndarray jacobianMatrix
 
     def __init__(self, T, P, initialMoleFractions, termination):
         ReactionSystem.__init__(self, termination)
@@ -71,6 +72,7 @@ cdef class SimpleReactor(ReactionSystem):
         self.networkIndices = None
         self.forwardRateCoefficients = None
         self.reverseRateCoefficients = None
+        self.jacobianMatrix = None
         
     def convertInitalKeysToSpeciesObjects(self, speciesDict):
         """
@@ -94,6 +96,7 @@ cdef class SimpleReactor(ReactionSystem):
 
         cdef int numCoreSpecies, numCoreReactions, numEdgeSpecies, numEdgeReactions, numPdepNetworks
         cdef int i, j, l, index
+        cdef double V
         cdef dict speciesIndex, reactionIndex
         cdef numpy.ndarray[numpy.int_t, ndim=2] reactantIndices, productIndices, networkIndices
         cdef numpy.ndarray[numpy.float64_t, ndim=1] forwardRateCoefficients, reverseRateCoefficients, networkLeakCoefficients
@@ -156,8 +159,11 @@ cdef class SimpleReactor(ReactionSystem):
         t0 = 0.0
         y0 = numpy.zeros((numCoreSpecies), numpy.float64)
         for spec, moleFrac in self.initialMoleFractions.iteritems():
-            y0[speciesIndex[spec]] = moleFrac * (self.P.value_si / constants.R / self.T.value_si)
-            self.coreSpeciesConcentrations[speciesIndex[spec]] = y0[speciesIndex[spec]]
+            y0[speciesIndex[spec]] = moleFrac
+        # Use ideal gas law to compute volume
+        V = constants.R * self.T.value_si * numpy.sum(y0) / self.P.value_si
+        for j in range(y0.shape[0]):
+            self.coreSpeciesConcentrations[j] = y0[j] / V
         
         # Initialize the model
         dydt0 = - self.residual(t0, y0, numpy.zeros((numCoreSpecies), numpy.float64))[0]
@@ -184,8 +190,9 @@ cdef class SimpleReactor(ReactionSystem):
         cdef numpy.ndarray[numpy.float64_t, ndim=1] res, kf, kr, knet
         cdef int numCoreSpecies, numCoreReactions, numEdgeSpecies, numEdgeReactions, numPdepNetworks
         cdef int j, first, second, third
-        cdef double k, reactionRate
+        cdef double k, V, reactionRate
         cdef numpy.ndarray[numpy.float64_t, ndim=1] coreSpeciesConcentrations, coreSpeciesRates, coreReactionRates, edgeSpeciesRates, edgeReactionRates, networkLeakRates
+        cdef numpy.ndarray[numpy.float64_t, ndim=1] C
 
         res = numpy.zeros(y.shape[0], numpy.float64)
 
@@ -209,28 +216,34 @@ cdef class SimpleReactor(ReactionSystem):
         edgeReactionRates = numpy.zeros_like(self.edgeReactionRates)
         networkLeakRates = numpy.zeros_like(self.networkLeakRates)
 
+        C = numpy.zeros_like(self.coreSpeciesConcentrations)
+        
+        # Use ideal gas law to compute volume
+        V = constants.R * self.T.value_si * numpy.sum(y) / self.P.value_si
+
         for j in range(y.shape[0]):
-            coreSpeciesConcentrations[j] = y[j]
+            C[j] = y[j] / V
+            coreSpeciesConcentrations[j] = C[j]
         
         for j in range(ir.shape[0]):
             k = kf[j]
             if ir[j,0] >= numCoreSpecies or ir[j,1] >= numCoreSpecies or ir[j,2] >= numCoreSpecies:
                 reactionRate = 0.0
             elif ir[j,1] == -1: # only one reactant
-                reactionRate = k * y[ir[j,0]]
+                reactionRate = k * C[ir[j,0]]
             elif ir[j,2] == -1: # only two reactants
-                reactionRate = k * y[ir[j,0]] * y[ir[j,1]]
+                reactionRate = k * C[ir[j,0]] * C[ir[j,1]]
             else: # three reactants!! (really?)
-                reactionRate = k * y[ir[j,0]] * y[ir[j,1]] * y[ir[j,2]]
+                reactionRate = k * C[ir[j,0]] * C[ir[j,1]] * C[ir[j,2]]
             k = kr[j]
             if ip[j,0] >= numCoreSpecies or ip[j,1] >= numCoreSpecies or ip[j,2] >= numCoreSpecies:
                 pass
             elif ip[j,1] == -1: # only one reactant
-                reactionRate -= k * y[ip[j,0]]
+                reactionRate -= k * C[ip[j,0]]
             elif ip[j,2] == -1: # only two reactants
-                reactionRate -= k * y[ip[j,0]] * y[ip[j,1]]
+                reactionRate -= k * C[ip[j,0]] * C[ip[j,1]]
             else: # three reactants!! (really?)
-                reactionRate -= k * y[ip[j,0]] * y[ip[j,1]] * y[ip[j,2]]
+                reactionRate -= k * C[ip[j,0]] * C[ip[j,1]] * C[ip[j,2]]
 
             # Set the reaction and species rates
             if j < numCoreReactions:
@@ -285,11 +298,11 @@ cdef class SimpleReactor(ReactionSystem):
         for j in range(inet.shape[0]):
             k = knet[j]
             if inet[j,1] == -1: # only one reactant
-                reactionRate = k * y[inet[j,0]]
+                reactionRate = k * C[inet[j,0]]
             elif inet[j,2] == -1: # only two reactants
-                reactionRate = k * y[inet[j,0]] * y[inet[j,1]]
+                reactionRate = k * C[inet[j,0]] * C[inet[j,1]]
             else: # three reactants!! (really?)
-                reactionRate = k * y[inet[j,0]] * y[inet[j,1]] * y[inet[j,2]]
+                reactionRate = k * C[inet[j,0]] * C[inet[j,1]] * C[inet[j,2]]
             networkLeakRates[j] = reactionRate
 
         self.coreSpeciesConcentrations = coreSpeciesConcentrations
@@ -299,5 +312,384 @@ cdef class SimpleReactor(ReactionSystem):
         self.edgeReactionRates = edgeReactionRates
         self.networkLeakRates = networkLeakRates
 
-        res = coreSpeciesRates - dydt
+        res = coreSpeciesRates * V - dydt
         return res, 0
+    
+    @cython.boundscheck(False)
+    def jacobian(self, double t, numpy.ndarray[numpy.float64_t, ndim=1] y, numpy.ndarray[numpy.float64_t, ndim=1] dydt, double cj):
+        """
+        Return the analytical Jacobian for the reaction system.
+        """
+        cdef numpy.ndarray[numpy.int_t, ndim=2] ir, ip
+        cdef numpy.ndarray[numpy.float64_t, ndim=1] kf, kr, C
+        cdef numpy.ndarray[numpy.float64_t, ndim=2] pd
+        cdef int numCoreReactions, j 
+        cdef double k, deriv
+        
+        pd = -cj * numpy.identity(y.shape[0], numpy.float64)
+        ir = self.reactantIndices
+        ip = self.productIndices
+        kf = self.forwardRateCoefficients
+        kr = self.reverseRateCoefficients
+        numCoreReactions = len(self.coreReactionRates)
+        
+        # Use ideal gas law to compute volume
+        V = constants.R * self.T.value_si * numpy.sum(y) / self.P.value_si
+
+        C = numpy.zeros_like(self.coreSpeciesConcentrations)
+        for j in range(y.shape[0]):
+            C[j] = y[j] / V
+
+        for j in range(numCoreReactions):
+           
+            k = kf[j]
+            if ir[j,1] == -1: # only one reactant
+                deriv = k
+                pd[ir[j,0], ir[j,0]] -= deriv
+                
+                pd[ip[j,0], ir[j,0]] += deriv                
+                if ip[j,1] != -1:
+                    pd[ip[j,1], ir[j,0]] += deriv
+                    if ip[j,2] != -1:
+                        pd[ip[j,2], ir[j,0]] += deriv
+                
+                                
+            elif ir[j,2] == -1: # only two reactants
+                if ir[j,0] == ir[j,1]:
+                    deriv = 2 * k * C[ir[j,0]]
+                    pd[ir[j,0], ir[j,0]] -= 2 * deriv
+                    
+                    pd[ip[j,0], ir[j,0]] += deriv       
+                    if ip[j,1] != -1:
+                        pd[ip[j,1], ir[j,0]] += deriv
+                        if ip[j,2] != -1:
+                            pd[ip[j,2], ir[j,0]] += deriv
+                    
+                else:
+                    # Derivative with respect to reactant 1
+                    deriv = k * C[ir[j, 1]]
+                    pd[ir[j,0], ir[j,0]] -= deriv                    
+                    pd[ir[j,1], ir[j,0]] -= deriv
+                    
+                    pd[ip[j,0], ir[j,0]] += deriv       
+                    if ip[j,1] != -1:
+                        pd[ip[j,1], ir[j,0]] += deriv
+                        if ip[j,2] != -1:
+                            pd[ip[j,2], ir[j,0]] += deriv
+                    
+                    # Derivative with respect to reactant 2
+                    deriv = k * C[ir[j, 0]]
+                    pd[ir[j,0], ir[j,1]] -= deriv                    
+                    pd[ir[j,1], ir[j,1]] -= deriv   
+                      
+                    pd[ip[j,0], ir[j,1]] += deriv       
+                    if ip[j,1] != -1:
+                        pd[ip[j,1], ir[j,1]] += deriv
+                        if ip[j,2] != -1:
+                            pd[ip[j,2], ir[j,1]] += deriv              
+                    
+                    
+            else: # three reactants!! (really?)
+                if (ir[j,0] == ir[j,1] & ir[j,0] == ir[j,2]):
+                    deriv = 3 * k * C[ir[j,0]] * C[ir[j,0]]
+                    pd[ir[j,0], ir[j,0]] -= 3 * deriv
+                    
+                    pd[ip[j,0], ir[j,0]] += deriv                
+                    if ip[j,1] != -1:
+                        pd[ip[j,1], ir[j,0]] += deriv
+                        if ip[j,2] != -1:
+                            pd[ip[j,2], ir[j,0]] += deriv
+                    
+                elif ir[j,0] == ir[j,1]:
+                    # derivative with respect to reactant 1
+                    deriv = 2 * k * C[ir[j,0]] * C[ir[j,2]]
+                    pd[ir[j,0], ir[j,0]] -= 2 * deriv                    
+                    pd[ir[j,2], ir[j,0]] -= deriv
+                    
+                    pd[ip[j,0], ir[j,0]] += deriv       
+                    if ip[j,1] != -1:
+                        pd[ip[j,1], ir[j,0]] += deriv
+                        if ip[j,2] != -1:
+                            pd[ip[j,2], ir[j,0]] += deriv
+                    
+                    # derivative with respect to reactant 3
+                    deriv = k * C[ir[j,0]] * C[ir[j,0]]
+                    pd[ir[j,0], ir[j,2]] -= 2 * deriv                    
+                    pd[ir[j,2], ir[j,2]] -= deriv
+                    
+                    pd[ip[j,0], ir[j,2]] += deriv       
+                    if ip[j,1] != -1:
+                        pd[ip[j,1], ir[j,2]] += deriv
+                        if ip[j,2] != -1:
+                            pd[ip[j,2], ir[j,2]] += deriv
+                    
+                    
+                elif ir[j,1] == ir[j,2]:                    
+                    # derivative with respect to reactant 1
+                    deriv = k * C[ir[j,1]] * C[ir[j,1]]
+                    pd[ir[j,0], ir[j,0]] -= deriv                    
+                    pd[ir[j,1], ir[j,0]] -= 2 * deriv
+                    
+                    pd[ip[j,0], ir[j,0]] += deriv       
+                    if ip[j,1] != -1:
+                        pd[ip[j,1], ir[j,0]] += deriv
+                        if ip[j,2] != -1:
+                            pd[ip[j,2], ir[j,0]] += deriv                 
+                    
+                    # derivative with respect to reactant 2
+                    deriv = 2 * k * C[ir[j,0]] * C[ir[j,1]]
+                    pd[ir[j,0], ir[j,1]] -= deriv                    
+                    pd[ir[j,1], ir[j,1]] -= 2 * deriv   
+                      
+                    pd[ip[j,0], ir[j,1]] += deriv       
+                    if ip[j,1] != -1:
+                        pd[ip[j,1], ir[j,1]] += deriv
+                        if ip[j,2] != -1:
+                            pd[ip[j,2], ir[j,1]] += deriv  
+                                
+                else:
+                    # derivative with respect to reactant 1
+                    deriv = k * C[ir[j,1]] * C[ir[j,2]]
+                    pd[ir[j,0], ir[j,0]] -= deriv                    
+                    pd[ir[j,1], ir[j,0]] -= deriv
+                    pd[ir[j,2], ir[j,0]] -= deriv
+                    
+                    pd[ip[j,0], ir[j,0]] += deriv       
+                    if ip[j,1] != -1:
+                        pd[ip[j,1], ir[j,0]] += deriv
+                        if ip[j,2] != -1:
+                            pd[ip[j,2], ir[j,0]] += deriv     
+                                    
+                    # derivative with respect to reactant 2
+                    deriv = k * C[ir[j,0]] * C[ir[j,2]]
+                    pd[ir[j,0], ir[j,1]] -= deriv                    
+                    pd[ir[j,1], ir[j,1]] -= deriv   
+                    pd[ir[j,2], ir[j,1]] -= deriv
+                    
+                    pd[ip[j,0], ir[j,1]] += deriv       
+                    if ip[j,1] != -1:
+                        pd[ip[j,1], ir[j,1]] += deriv
+                        if ip[j,2] != -1:
+                            pd[ip[j,2], ir[j,1]] += deriv 
+                                 
+                    # derivative with respect to reactant 3
+                    deriv = k * C[ir[j,0]] * C[ir[j,1]]                    
+                    pd[ir[j,0], ir[j,2]] -= deriv                    
+                    pd[ir[j,1], ir[j,2]] -= deriv   
+                    pd[ir[j,2], ir[j,2]] -= deriv
+                    
+                    pd[ip[j,0], ir[j,2]] += deriv       
+                    if ip[j,1] != -1:
+                        pd[ip[j,1], ir[j,2]] += deriv
+                        if ip[j,2] != -1:
+                            pd[ip[j,2], ir[j,2]] += deriv
+                    
+            
+            
+            k = kr[j]         
+            if ip[j,1] == -1: # only one reactant
+                deriv = k
+                pd[ip[j,0], ip[j,0]] -= deriv
+                
+                pd[ir[j,0], ip[j,0]] += deriv                
+                if ir[j,1] != -1:
+                    pd[ir[j,1], ip[j,0]] += deriv
+                    if ir[j,2] != -1:
+                        pd[ir[j,2], ip[j,0]] += deriv
+                
+                                
+            elif ip[j,2] == -1: # only two reactants
+                if ip[j,0] == ip[j,1]:
+                    deriv = 2 * k * C[ip[j,0]]
+                    pd[ip[j,0], ip[j,0]] -= 2 * deriv
+                    
+                    pd[ir[j,0], ip[j,0]] += deriv       
+                    if ir[j,1] != -1:
+                        pd[ir[j,1], ip[j,0]] += deriv
+                        if ir[j,2] != -1:
+                            pd[ir[j,2], ip[j,0]] += deriv
+                    
+                else:
+                    # Derivative with respect to reactant 1
+                    deriv = k * C[ip[j, 1]]
+                    pd[ip[j,0], ip[j,0]] -= deriv                    
+                    pd[ip[j,1], ip[j,0]] -= deriv
+                    
+                    pd[ir[j,0], ip[j,0]] += deriv       
+                    if ir[j,1] != -1:
+                        pd[ir[j,1], ip[j,0]] += deriv
+                        if ir[j,2] != -1:
+                            pd[ir[j,2], ip[j,0]] += deriv
+                    
+                    # Derivative with respect to reactant 2
+                    deriv = k * C[ip[j, 0]]
+                    pd[ip[j,0], ip[j,1]] -= deriv                    
+                    pd[ip[j,1], ip[j,1]] -= deriv   
+                      
+                    pd[ir[j,0], ip[j,1]] += deriv       
+                    if ir[j,1] != -1:
+                        pd[ir[j,1], ip[j,1]] += deriv
+                        if ir[j,2] != -1:
+                            pd[ir[j,2], ip[j,1]] += deriv              
+                    
+                    
+            else: # three reactants!! (really?)
+                if (ip[j,0] == ip[j,1] & ip[j,0] == ip[j,2]):
+                    deriv = 3 * k * C[ip[j,0]] * C[ip[j,0]]
+                    pd[ip[j,0], ip[j,0]] -= 3 * deriv
+                    
+                    pd[ir[j,0], ip[j,0]] += deriv                
+                    if ir[j,1] != -1:
+                        pd[ir[j,1], ip[j,0]] += deriv
+                        if ir[j,2] != -1:
+                            pd[ir[j,2], ip[j,0]] += deriv
+                    
+                elif ip[j,0] == ip[j,1]:
+                    # derivative with respect to reactant 1
+                    deriv = 2 * k * C[ip[j,0]] * C[ip[j,2]]
+                    pd[ip[j,0], ip[j,0]] -= 2 * deriv                    
+                    pd[ip[j,2], ip[j,0]] -= deriv
+                    
+                    pd[ir[j,0], ip[j,0]] += deriv       
+                    if ir[j,1] != -1:
+                        pd[ir[j,1], ip[j,0]] += deriv
+                        if ir[j,2] != -1:
+                            pd[ir[j,2], ip[j,0]] += deriv
+                    
+                    # derivative with respect to reactant 3
+                    deriv = k * C[ip[j,0]] * C[ip[j,0]]
+                    pd[ip[j,0], ip[j,2]] -= 2 * deriv                    
+                    pd[ip[j,2], ip[j,2]] -= deriv
+                    
+                    pd[ir[j,0], ip[j,2]] += deriv       
+                    if ir[j,1] != -1:
+                        pd[ir[j,1], ip[j,2]] += deriv
+                        if ir[j,2] != -1:
+                            pd[ir[j,2], ip[j,2]] += deriv
+                    
+                    
+                elif ip[j,1] == ip[j,2]:                    
+                    # derivative with respect to reactant 1
+                    deriv = k * C[ip[j,1]] * C[ip[j,1]]
+                    pd[ip[j,0], ip[j,0]] -= deriv                    
+                    pd[ip[j,1], ip[j,0]] -= 2 * deriv
+                    
+                    pd[ir[j,0], ip[j,0]] += deriv       
+                    if ir[j,1] != -1:
+                        pd[ir[j,1], ip[j,0]] += deriv
+                        if ir[j,2] != -1:
+                            pd[ir[j,2], ip[j,0]] += deriv                 
+                    
+                    # derivative with respect to reactant 2
+                    deriv = 2 * k * C[ip[j,0]] * C[ip[j,1]]
+                    pd[ip[j,0], ip[j,1]] -= deriv                    
+                    pd[ip[j,1], ip[j,1]] -= 2 * deriv   
+                      
+                    pd[ir[j,0], ip[j,1]] += deriv       
+                    if ir[j,1] != -1:
+                        pd[ir[j,1], ip[j,1]] += deriv
+                        if ir[j,2] != -1:
+                            pd[ir[j,2], ip[j,1]] += deriv  
+                                
+                else:
+                    # derivative with respect to reactant 1
+                    deriv = k * C[ip[j,1]] * C[ip[j,2]]
+                    pd[ip[j,0], ip[j,0]] -= deriv                    
+                    pd[ip[j,1], ip[j,0]] -= deriv
+                    pd[ip[j,2], ip[j,0]] -= deriv
+                    
+                    pd[ir[j,0], ip[j,0]] += deriv       
+                    if ir[j,1] != -1:
+                        pd[ir[j,1], ip[j,0]] += deriv
+                        if ir[j,2] != -1:
+                            pd[ir[j,2], ip[j,0]] += deriv     
+                                    
+                    # derivative with respect to reactant 2
+                    deriv = k * C[ip[j,0]] * C[ip[j,2]]
+                    pd[ip[j,0], ip[j,1]] -= deriv                    
+                    pd[ip[j,1], ip[j,1]] -= deriv   
+                    pd[ip[j,2], ip[j,1]] -= deriv
+                    
+                    pd[ir[j,0], ip[j,1]] += deriv       
+                    if ir[j,1] != -1:
+                        pd[ir[j,1], ip[j,1]] += deriv
+                        if ir[j,2] != -1:
+                            pd[ir[j,2], ip[j,1]] += deriv 
+                                 
+                    # derivative with respect to reactant 3
+                    deriv = k * C[ip[j,0]] * C[ip[j,1]]                    
+                    pd[ip[j,0], ip[j,2]] -= deriv                    
+                    pd[ip[j,1], ip[j,2]] -= deriv   
+                    pd[ip[j,2], ip[j,2]] -= deriv
+                    
+                    pd[ir[j,0], ip[j,2]] += deriv       
+                    if ir[j,1] != -1:
+                        pd[ir[j,1], ip[j,2]] += deriv
+                        if ir[j,2] != -1:
+                            pd[ir[j,2], ip[j,2]] += deriv
+
+        self.jacobianMatrix = pd + cj * numpy.identity(y.shape[0], numpy.float64)
+        return pd
+    
+    @cython.boundscheck(False)
+    def computeRateDerivative(self):
+        """
+        Returns derivative vector df/dk_j where dc/dt = f(c, t, k) and
+        k_j is the rate parameter for the jth core reaction.
+        """
+        cdef numpy.ndarray[numpy.int_t, ndim=2] ir, ip
+        cdef numpy.ndarray[numpy.float64_t, ndim=1] y, kf, kr
+        cdef numpy.ndarray[numpy.float64_t, ndim=2] rateDeriv
+        cdef double fderiv, rderiv, flux
+        cdef int j, numCoreReactions
+        
+        ir = self.reactantIndices
+        ip = self.productIndices
+        
+        kf = self.forwardRateCoefficients
+        kr = self.reverseRateCoefficients
+        y = self.coreSpeciesConcentrations        
+        
+        
+        numCoreReactions = len(self.coreReactionRates)
+        
+        rateDeriv = numpy.zeros((y.shape[0],numCoreReactions), numpy.float64)
+        
+        for j in range(numCoreReactions):
+            if ir[j,1] == -1: # only one reactant
+                fderiv = y[ir[j,0]]
+            elif ir[j,2] == -1: # only two reactants
+                fderiv = y[ir[j,0]] * y[ir[j,1]]                             
+            else: # three reactants!! (really?)
+                fderiv = y[ir[j,0]] * y[ir[j,1]] * y[ir[j,2]]          
+                
+            if ip[j,1] == -1: # only one reactant
+                rderiv = kr[j] / kf [j] * y[ip[j,0]]
+            elif ip[j,2] == -1: # only two reactants
+                rderiv = kr[j] / kf [j] * y[ip[j,0]] * y[ip[j,1]]
+            else: # three reactants!! (really?)
+                rderiv = kr[j] / kf [j] * y[ip[j,0]] * y[ip[j,1]] * y[ip[j,2]]
+    
+            
+            flux = fderiv - rderiv
+            if ir[j,1] == -1:
+                rateDeriv[ir[j,0], j] -= flux
+            elif ir[j,2] == -1:
+                rateDeriv[ir[j,0], j] -= flux
+                rateDeriv[ir[j,1], j] -= flux
+            else:
+                rateDeriv[ir[j,0], j] -= flux
+                rateDeriv[ir[j,1], j] -= flux   
+                rateDeriv[ir[j,2], j] -= flux
+                
+            if ip[j,1] == -1:
+                rateDeriv[ip[j,0], j] += flux
+            elif ip[j,2] == -1:
+                rateDeriv[ip[j,0], j] += flux
+                rateDeriv[ip[j,1], j] += flux
+            else:
+                rateDeriv[ip[j,0], j] += flux
+                rateDeriv[ip[j,1], j] += flux  
+                rateDeriv[ip[j,2], j] += flux          
+                
+        return rateDeriv
