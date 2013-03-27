@@ -91,7 +91,7 @@ class SolvationCorrection():
     """
     Stores corrections for enthalpy, entropy, and Gibbs free energy when a species is solvated.
     """
-    def __init__(self, enthalpy=None, entropy=None, gibbs=None):
+    def __init__(self, enthalpy=None, gibbs=None, entropy=None):
         self.enthalpy = enthalpy
         self.entropy = entropy
         self.gibbs = gibbs
@@ -683,7 +683,7 @@ class SolvationDatabase(object):
     
     def calcG(self, soluteData, solventData):
         logK = (soluteData.S*solventData.s_g)+(soluteData.B*solventData.b_g)+(soluteData.E*solventData.e_g)+(soluteData.L*solventData.l_g)+(soluteData.A*solventData.a_g)+solventData.c_g
-        delG = -8.314*298*0.4343*logK
+        delG = -8.314*298*2.303*logK
         return delG
         
     
