@@ -59,24 +59,24 @@ class TestSoluteDatabase(TestCase):
         self.database.load(os.path.join(settings['database.directory'], 'solvation'))
         self.testCases = [
         # solventName, soluteName, soluteSMILES, Hsolv, Gsolv, Ssolv
-        ['water', 'methane', 'C', -12000, None, None],
-        ['water', 'octane', 'CCCCCCCC', -36000, None, None],
-        ['water', '1,2-ethanediol', 'C(CO)O', -77300, None, None],
-        ['water', 'acetic acid', 'C(C)(=O)O', -56500, None, None],
-        ['water', 'naphthalene', 'C1=CC=CC2=CC=CC=C12', -42800, None, None],
-        ['water', 'm-hydroxybenzaldehyde', 'OC1=CC=CC(=C1)C=O', -70700, None, None],
-        ['water', 'ethylbenzene', 'C(C)C1=CC=CC=C1', -39400, None, None],
-        ['water', 'toluene', 'C1(=CC=CC=C1)C', -32400, None, None],
-        ['water', 'ethane', 'CC', -17900, None, None],
-        ['water', 'propane', 'CCC', -20400, None, None],
-        ['water', 'ethene', 'C=C', -13700, None, None],
-        ['water', 'propene', 'CC=C', -21600, None, None],
-        ['water', 'dimethyl ether', 'COC', -34000, None, None],
-        ['water', 'diethyl ether', 'C(C)OCC', -45300, None, None],
-        ['water', 'tetrahydrofuran', 'C1CCOC1', -47300, None, None],
-        ['water', '1,4-dioxane', 'C1COCCO1', -48400, None, None],
-        ['water', 'methanol', 'CO', -52000, None, None],
-        ['water', 'ethanol', 'C(C)O', -50600, None, None],
+        ['water', 'methane', 'C', -12000, 2000*4.184, None],
+        ['water', 'octane', 'CCCCCCCC', -36000, 2890*4.184, None],
+        ['water', '1,2-ethanediol', 'C(CO)O', -77300, -9300*4.184, None],
+        ['water', 'acetic acid', 'C(C)(=O)O', -56500, -6700*4.184, None],
+        ['water', 'naphthalene', 'C1=CC=CC2=CC=CC=C12', -42800, -2390*4.184, None],
+        ['water', 'm-hydroxybenzaldehyde', 'OC1=CC=CC(=C1)C=O', -70700, -9510*4.184, None],
+        ['water', 'ethylbenzene', 'C(C)C1=CC=CC=C1', -39400, -800*4.184, None],
+        ['water', 'toluene', 'C1(=CC=CC=C1)C', -32400, -890*4.184, None],
+        ['water', 'ethane', 'CC', -17900, 1830*4.184, None],
+        ['water', 'propane', 'CCC', -20400, 1960*4.184, None],
+        ['water', 'ethene', 'C=C', -13700, 1270*4.184, None],
+        ['water', 'propene', 'CC=C', -21600, 1270*4.184, None],
+        ['water', 'dimethyl ether', 'COC', -34000, -1920*4.184, None],
+        ['water', 'diethyl ether', 'C(C)OCC', -45300, -1760*4.184, None],
+        ['water', 'tetrahydrofuran', 'C1CCOC1', -47300, -3470*4.184, None],
+        ['water', '1,4-dioxane', 'C1COCCO1', -48400, -5050*4.184, None],
+        ['water', 'methanol', 'CO', -52000, -5110*4.184, None],
+        ['water', 'ethanol', 'C(C)O', -50600, -5010*4.184, None],
         ['water', '1,2 propanediol', 'C(CO)CO', -81100, None, None],
         ]
         
@@ -86,7 +86,8 @@ class TestSoluteDatabase(TestCase):
             solventData = self.database.getSolventData(solventName)
             solvationCorrection = self.database.getSolvationCorrection(soluteData, solventData)
             #print("Enthalpy of solvation for {0} in {1} is {2} J/mol".format(soluteName, solventName, solvationCorrection.enthalpy))
-            print("{0} {1} {2}".format(soluteName, H, solvationCorrection.enthalpy))
+            #print("Enthalpy: {0} {1} {2}".format(soluteName, H, solvationCorrection.enthalpy))
+            print("Gibbs: {0} {1} {2}".format(soluteName, G, solvationCorrection.gibbs))
             #self.assertAlmostEqual(solvationCorrection.enthalpy/10000., H/10000.,0) #0 decimal place, in 10kJ.
 
 #####################################################
