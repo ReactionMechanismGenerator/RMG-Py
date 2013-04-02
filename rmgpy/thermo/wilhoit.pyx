@@ -51,6 +51,7 @@ cdef class Wilhoit(HeatCapacityModel):
     `a3`            The third-order Wilhoit polynomial coefficient
     `H0`            The integration constant for enthalpy
     `S0`            The integration constant for entropy
+    `E0`            The energy at zero Kelvin (including zero point energy) (same as H0)
     `B`             The Wilhoit scaled temperature coefficient in K
     `Tmin`          The minimum temperature in K at which the model is valid, or zero if unknown or undefined
     `Tmax`          The maximum temperature in K at which the model is valid, or zero if unknown or undefined
@@ -117,6 +118,15 @@ cdef class Wilhoit(HeatCapacityModel):
             return self._H0
         def __set__(self, value):
             self._H0 = quantity.Enthalpy(value)
+
+    property E0:
+        """The ground state energy (J/mol) at zero Kelvin, including zero point energy.
+        
+        For the Wilhoit class, this is the integration constant for enthalpy, H0"""
+        def __get__(self):
+            return self._H0
+        def __set__(self, value):
+            assert value is None, "You should not be setting E0 on a Wilhoit object - use H0 instead, if you really mean it."
 
     property S0:
         """The integration constant for entropy."""
@@ -465,6 +475,7 @@ cdef class Wilhoit(HeatCapacityModel):
             S298 = (self.getEntropy(298),"J/(mol*K)"),
             Cp0 = self.Cp0,
             CpInf = self.CpInf,
+            E0 = self.H0,
         )
     
     cpdef NASA toNASA(self, double Tmin, double Tmax, double Tint, bint fixedTint=False, bint weighting=True, int continuity=3):
@@ -566,6 +577,7 @@ cdef class Wilhoit(HeatCapacityModel):
             polynomials = [nasa_low, nasa_high],
             Tmin = nasa_low.Tmin,
             Tmax = nasa_high.Tmax,
+            E0 = self.H0,
             comment = comment,
         )
     

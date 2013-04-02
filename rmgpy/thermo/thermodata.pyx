@@ -52,13 +52,14 @@ cdef class ThermoData(HeatCapacityModel):
     `CpInf`         The heat capacity at infinite temperature
     `Tmin`          The minimum temperature at which the model is valid, or zero if unknown or undefined
     `Tmax`          The maximum temperature at which the model is valid, or zero if unknown or undefined
+    `E0`            The energy at zero Kelvin (including zero point energy)
     `comment`       Information about the model (e.g. its source)
     =============== ============================================================
     
     """
 
-    def __init__(self, Tdata=None, Cpdata=None, H298=None, S298=None, Cp0=None, CpInf=None, Tmin=None, Tmax=None, comment=''):
-        HeatCapacityModel.__init__(self, Tmin=Tmin, Tmax=Tmax, comment=comment)
+    def __init__(self, Tdata=None, Cpdata=None, H298=None, S298=None, Cp0=None, CpInf=None, Tmin=None, Tmax=None, E0=None, comment=''):
+        HeatCapacityModel.__init__(self, Tmin=Tmin, Tmax=Tmax, E0=E0, comment=comment)
         self.H298 = H298
         self.S298 = S298
         self.Tdata = Tdata
@@ -76,6 +77,7 @@ cdef class ThermoData(HeatCapacityModel):
         if self.CpInf is not None: string += ', CpInf={0!r}'.format(self.CpInf)
         if self.Tmin is not None: string += ', Tmin={0!r}'.format(self.Tmin)
         if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
+        if self.E0 is not None: string += ', E0={0!r}'.format(self.E0)
         if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
         string += ')'
         return string
@@ -84,7 +86,7 @@ cdef class ThermoData(HeatCapacityModel):
         """
         A helper function used when pickling a ThermoData object.
         """
-        return (ThermoData, (self.Tdata, self.Cpdata, self.H298, self.S298, self.Cp0, self.CpInf, self.Tmin, self.Tmax, self.comment))
+        return (ThermoData, (self.Tdata, self.Cpdata, self.H298, self.S298, self.Cp0, self.CpInf, self.Tmin, self.Tmax, self.E0, self.comment))
 
     property Tdata:
         """An array of temperatures at which the heat capacity is known."""
