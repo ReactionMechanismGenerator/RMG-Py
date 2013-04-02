@@ -102,19 +102,22 @@ def loadFAMEInput(path, moleculeDict=None):
     # Read interpolation model
     model = readMeaningfulLine(f).split()
     if model[0].lower() == 'chebyshev':
-        job.model = ['chebyshev', int(model[1]), int(model[2])]
+        job.interpolationModel = ('chebyshev', int(model[1]), int(model[2]))
     elif model[0].lower() == 'pdeparrhenius':
-        job.model = ['pdeparrhenius']
+        job.interpolationModel = ('pdeparrhenius',)
     
     # Read grain size or number of grains
-    job.grainCount = 0
-    job.grainSize = Quantity(0.0, "J/mol")
+    job.minimumGrainCount = 0
+    job.maximumGrainSize = None
     for i in range(2):
         data = readMeaningfulLine(f).split()
         if data[0].lower() == 'numgrains':
-            job.grainCount = int(data[1])
+            job.minimumGrainCount = int(data[1])
         elif data[0].lower() == 'grainsize':
-            job.grainSize = Quantity(float(data[2]), data[1])
+            job.maximumGrainSize = (float(data[2]), data[1])
+
+    # A FAME file is almost certainly created during an RMG job, so use RMG mode
+    job.rmgmode = True
 
     # Create the Network
     job.network = Network()
@@ -152,6 +155,7 @@ def loadFAMEInput(path, moleculeDict=None):
     for i in range(Nspec):
         species = Species()
         species.conformer = Conformer()
+        species.energyTransferModel = energyTransferModel
         
         # Read species label
         species.label = readMeaningfulLine(f)
@@ -178,6 +182,8 @@ def loadFAMEInput(path, moleculeDict=None):
             S298 = Quantity(float(S298), S298units),
             Tdata = Quantity([300,400,500,600,800,1000,1500], "K"),
             Cpdata = Quantity(Cpdata, Cpunits),
+            Cp0 = (Cpdata[0], Cpunits),
+            CpInf = (Cpdata[-1], Cpunits),
         )
         
         # Read species collision parameters
@@ -229,6 +235,7 @@ def loadFAMEInput(path, moleculeDict=None):
                 inertia = Quantity(I,"kg*m^2"), 
                 barrier = Quantity(V0,barrUnits), 
                 symmetry = 1,
+                semiclassical = False,
             ))
             
         # Read overall symmetry number
