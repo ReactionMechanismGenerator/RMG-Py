@@ -323,7 +323,11 @@ cdef class HinderedRotor(Torsion):
         else:
             # No Fourier data, so use the cosine potential data
             z = 0.5 * self._barrier.value_si / (constants.R * T)
-            Q = sqrt(constants.pi * constants.R * T / self.getRotationalConstantEnergy()) / self.symmetry * exp(-z) * i0(z)
+            if z > 100:
+                Q = sqrt(0.5 / z / constants.pi)
+            else:
+                Q = exp(-z) * i0(z)
+            Q *= sqrt(constants.pi * constants.R * T / self.getRotationalConstantEnergy()) / self.symmetry
         
         # Semiclassical correction
         if self.semiclassical:
