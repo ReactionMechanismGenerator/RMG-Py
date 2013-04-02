@@ -120,7 +120,7 @@ class Species(rmgpy.species.Species):
             for T in Tlist:
                 err += (self.thermo.getHeatCapacity(T) - thermo0.getHeatCapacity(T))**2
             err = math.sqrt(err/len(Tlist))/constants.R
-            logging.log(logging.WARNING if err > 0.1 else 0, 'Average RMS error in heat capacity fit to {0} = {1:g}*R'.format(self, err))
+            logging.log(logging.WARNING if err > 0.2 else 0, 'Average RMS error in heat capacity fit to {0} = {1:g}*R'.format(self, err))
 
         return self.thermo
 
