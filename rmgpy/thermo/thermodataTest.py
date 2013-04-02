@@ -58,6 +58,7 @@ class TestThermoData(unittest.TestCase):
         self.CpInf = 21.5 
         self.Tmin = 100.
         self.Tmax = 3000.
+        self.E0 = -782292.
         self.comment = 'C2H6'
         self.thermodata = ThermoData(
             Tdata = (self.Tdata,"K"),
@@ -68,6 +69,7 @@ class TestThermoData(unittest.TestCase):
             CpInf = (self.CpInf*constants.R,"J/(mol*K)"),
             Tmin = (self.Tmin,"K"),
             Tmax = (self.Tmax,"K"),
+            E0 = (self.E0,'J/mol'),
             comment = self.comment,
         )
     
@@ -122,6 +124,12 @@ class TestThermoData(unittest.TestCase):
         Test that the ThermoData Tmax property was properly set.
         """
         self.assertAlmostEqual(self.thermodata.Tmax.value_si, self.Tmax, 6)
+
+    def test_E0(self):
+        """
+        Test that the ThermoData E0 property was properly set.
+        """
+        self.assertAlmostEqual(self.thermodata.E0.value_si, self.E0, 6)
     
     def test_Comment(self):
         """
@@ -206,6 +214,8 @@ class TestThermoData(unittest.TestCase):
         self.assertEqual(self.thermodata.Tmin.units, thermodata.Tmin.units)
         self.assertAlmostEqual(self.thermodata.Tmax.value, thermodata.Tmax.value, 4)
         self.assertEqual(self.thermodata.Tmax.units, thermodata.Tmax.units)
+        self.assertAlmostEqual(self.thermodata.E0.value, thermodata.E0.value, 4)
+        self.assertEqual(self.thermodata.E0.units, thermodata.E0.units)
         self.assertEqual(self.thermodata.comment, thermodata.comment)
     
     def test_repr(self):
@@ -235,4 +245,6 @@ class TestThermoData(unittest.TestCase):
         self.assertEqual(self.thermodata.Tmin.units, thermodata.Tmin.units)
         self.assertAlmostEqual(self.thermodata.Tmax.value, thermodata.Tmax.value, 4)
         self.assertEqual(self.thermodata.Tmax.units, thermodata.Tmax.units)
+        self.assertAlmostEqual(self.thermodata.E0.value, thermodata.E0.value, 4)
+        self.assertEqual(self.thermodata.E0.units, thermodata.E0.units)
         self.assertEqual(self.thermodata.comment, thermodata.comment)

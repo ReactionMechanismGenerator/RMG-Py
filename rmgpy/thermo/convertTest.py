@@ -72,6 +72,7 @@ class TestConverter(unittest.TestCase):
             ],
             Tmin = (10,"K"),
             Tmax = (3000,"K"),
+            E0 = (-782.292,"kJ/mol"),
             comment = 'C2H6',
         )
         self.thermodata = ThermoData(
@@ -83,6 +84,7 @@ class TestConverter(unittest.TestCase):
             CpInf = (21.5*constants.R,"J/(mol*K)"),
             Tmin = (10,"K"),
             Tmax = (3000,"K"),
+            E0 = (-782.292,"kJ/mol"),
             comment = 'C2H6',
         )
     
@@ -103,6 +105,7 @@ class TestConverter(unittest.TestCase):
             S_wilhoit = wilhoit.getEntropy(T)
             S_nasa = nasa.getEntropy(T)
             self.assertAlmostEqual(S_nasa, S_wilhoit, delta=1e0)
+            self.assertAlmostEqual(wilhoit.E0.value_si, nasa.E0.value_si, 2)
 
     def test_convert_Wilhoit_to_ThermoData(self):
         """
@@ -122,6 +125,7 @@ class TestConverter(unittest.TestCase):
         S_wilhoit = wilhoit.getEntropy(T)
         S_thermodata = thermodata.getEntropy(T)
         self.assertAlmostEqual(S_thermodata, S_wilhoit, 4)
+        self.assertAlmostEqual(wilhoit.E0.value_si, thermodata.E0.value_si, 2)
 
     def test_convert_NASA_to_Wilhoit(self):
         """
@@ -140,6 +144,7 @@ class TestConverter(unittest.TestCase):
             S_wilhoit = wilhoit.getEntropy(T)
             S_nasa = nasa.getEntropy(T)
             self.assertAlmostEqual(S_nasa, S_wilhoit, delta=1e0)
+            self.assertAlmostEqual(wilhoit.E0.value_si, nasa.E0.value_si, 1)
         
     def test_convert_NASA_to_ThermoData(self):
         """
@@ -159,6 +164,7 @@ class TestConverter(unittest.TestCase):
         S_thermodata = thermodata.getEntropy(T)
         S_nasa = nasa.getEntropy(T)
         self.assertAlmostEqual(S_nasa, S_thermodata, 4)
+        self.assertAlmostEqual(thermodata.E0.value_si, nasa.E0.value_si, 2)
         
     def test_convert_ThermoData_to_Wilhoit(self):
         """
@@ -178,6 +184,7 @@ class TestConverter(unittest.TestCase):
         S_wilhoit = wilhoit.getEntropy(T)
         S_thermodata = thermodata.getEntropy(T)
         self.assertAlmostEqual(S_thermodata, S_wilhoit, 3)
+        self.assertAlmostEqual(wilhoit.E0.value_si, thermodata.E0.value_si, 1)
 
     def test_convert_ThermoData_to_NASA(self):
         """
@@ -197,6 +204,7 @@ class TestConverter(unittest.TestCase):
         S_thermodata = thermodata.getEntropy(T)
         S_nasa = nasa.getEntropy(T)
         self.assertAlmostEqual(S_nasa, S_thermodata, delta=1e0)
+        self.assertAlmostEqual(thermodata.E0.value_si, nasa.E0.value_si, 2)
 
 ################################################################################
 
