@@ -55,10 +55,24 @@ import rmgpy.data.rmg
 
 from pdep import PDepReaction, PDepNetwork, PressureDependenceError
 
+__database = None
 
-def makeThermoForSpecies(spec, database=None):
-    spec.generateThermoData(database)
+def makeThermoForSpecies(spec):
+    """
+    Make thermo for a species.
+    """
+    global __database
+    if __database == None:
+        """Load the database from some pickle file"""
+        import cPickle, logging
+        filename = os.environ['RMG_DB_FILE']
+        logging.info('Loading database pickle file from {0!r}'.format(filename))
+        f = open(filename, 'rb')
+        __database = cPickle.load(f)
+        f.close()
+    spec.generateThermoData(__database)
     return spec.thermo
+
 ################################################################################
 
 class Species(rmgpy.species.Species):
@@ -670,12 +684,11 @@ class CoreEdgeReactionModel:
         Results are stored in the species objects themselves.
         """
         # this works without scoop:
-        #outputs = map((lambda spec: makeThermoForSpecies(spec, database=rmgpy.data.rmg.database)), listOfSpecies)
+        #outputs = map(makeThermoForSpecies, listOfSpecies)
         # this tried so do it via scoop's map:
-        outputs = futures.map(makeThermoForSpecies, listOfSpecies, database=rmgpy.data.rmg.database)
+        outputs = futures.map(makeThermoForSpecies, listOfSpecies)
         for spec, thermo in zip(listOfSpecies, outputs):
             spec.thermo = thermo
-
 
     def processNewReactions(self, newReactions, newSpecies, pdepNetwork=None):
         """
