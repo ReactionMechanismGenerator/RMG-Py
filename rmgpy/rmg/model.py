@@ -98,15 +98,13 @@ class Species(rmgpy.species.Species):
             wilhoit = thermo0.toWilhoit(Cp0=Cp0, CpInf=CpInf)
             
         wilhoit.comment = thermo0.comment
-            
-        # Compute E0 by extrapolation to 0 K
-        if self.conformer is None:
-            self.conformer = Conformer()
-        self.conformer.E0 = (wilhoit.getEnthalpy(1.0)*1e-3,"kJ/mol")
         
         # Convert to desired thermo class
         if isinstance(thermo0, thermoClass):
             self.thermo = thermo0
+            # If we don't have an E0, copy it across from the Wilhoit that was fitted
+            if self.thermo.E0 is None:
+                self.thermo.E0 = wilhoit.E0
         elif isinstance(wilhoit, thermoClass):
             self.thermo = wilhoit
         else:
@@ -119,7 +117,7 @@ class Species(rmgpy.species.Species):
             for T in Tlist:
                 err += (self.thermo.getHeatCapacity(T) - thermo0.getHeatCapacity(T))**2
             err = math.sqrt(err/len(Tlist))/constants.R
-            logging.log(logging.WARNING if err > 0.1 else 0, 'Average RMS error in heat capacity fit to {0} = {1:g}*R'.format(self, err))
+            logging.log(logging.WARNING if err > 0.2 else 0, 'Average RMS error in heat capacity fit to {0} = {1:g}*R'.format(self, err))
 
         return self.thermo
 
@@ -133,6 +131,9 @@ class Species(rmgpy.species.Species):
             raise Exception("Unable to determine statmech model for species {0}: No thermodynamics model found.".format(self))
         molecule = self.molecule[0]
         conformer = database.statmech.getStatmechData(molecule, self.thermo)
+        if self.conformer is None:
+            self.conformer = Conformer()
+        self.conformer.E0 = self.thermo.E0
         self.conformer.modes = conformer.modes
         self.conformer.spinMultiplicity = conformer.spinMultiplicity
             

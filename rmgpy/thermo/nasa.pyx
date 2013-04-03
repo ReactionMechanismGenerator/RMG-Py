@@ -48,13 +48,14 @@ cdef class NASAPolynomial(HeatCapacityModel):
     `coeffs`        The seven or nine NASA polynomial coefficients
     `Tmin`          The minimum temperature in K at which the model is valid, or zero if unknown or undefined
     `Tmax`          The maximum temperature in K at which the model is valid, or zero if unknown or undefined
+    `E0`            The energy at zero Kelvin (including zero point energy)
     `comment`       Information about the model (e.g. its source)
     =============== ============================================================
 
     """
     
-    def __init__(self, coeffs=None, Tmin=None, Tmax=None, comment=''):
-        HeatCapacityModel.__init__(self, Tmin=Tmin, Tmax=Tmax, comment=comment)
+    def __init__(self, coeffs=None, Tmin=None, Tmax=None, E0=None, comment=''):
+        HeatCapacityModel.__init__(self, Tmin=Tmin, Tmax=Tmax, E0=E0, comment=comment)
         self.coeffs = coeffs
         
     def __repr__(self):
@@ -69,6 +70,7 @@ cdef class NASAPolynomial(HeatCapacityModel):
             string += 'coeffs=[{0:g},{1:g},{2:g},{3:g},{4:g},{5:g},{6:g},{7:g},{8:g}]'.format(self.cm2, self.cm1, self.c0, self.c1, self.c2, self.c3, self.c4, self.c5, self.c6)
         if self.Tmin is not None: string += ', Tmin={0!r}'.format(self.Tmin)
         if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
+        if self.E0 is not None: string += ', E0={0!r}'.format(self.E0)
         if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
         string += ')'
         return string
@@ -77,7 +79,7 @@ cdef class NASAPolynomial(HeatCapacityModel):
         """
         A helper function used when pickling an object.
         """
-        return (NASAPolynomial, ([self.cm2, self.cm1, self.c0, self.c1, self.c2, self.c3, self.c4, self.c5, self.c6], self.Tmin, self.Tmax, self.comment))
+        return (NASAPolynomial, ([self.cm2, self.cm1, self.c0, self.c1, self.c2, self.c3, self.c4, self.c5, self.c6], self.Tmin, self.Tmax, self.E0, self.comment))
 
     property coeffs:
         """The set of seven or nine NASA polynomial coefficients."""
@@ -186,13 +188,14 @@ cdef class NASA(HeatCapacityModel):
     `polynomials`   The list of NASA polynomials to use in this model
     `Tmin`          The minimum temperature in K at which the model is valid, or zero if unknown or undefined
     `Tmax`          The maximum temperature in K at which the model is valid, or zero if unknown or undefined
+    `E0`            The energy at zero Kelvin (including zero point energy)
     `comment`       Information about the model (e.g. its source)
     =============== ============================================================
 
     """
     
-    def __init__(self, polynomials=None, Tmin=None, Tmax=None, comment=''):
-        HeatCapacityModel.__init__(self, Tmin=Tmin, Tmax=Tmax, comment=comment)
+    def __init__(self, polynomials=None, Tmin=None, Tmax=None, E0=None, comment=''):
+        HeatCapacityModel.__init__(self, Tmin=Tmin, Tmax=Tmax, E0=E0, comment=comment)
         self.polynomials = polynomials
     
     def __repr__(self):
@@ -204,6 +207,7 @@ cdef class NASA(HeatCapacityModel):
         string = 'NASA(polynomials={0!r}'.format(polys if polys else None)
         if self.Tmin is not None: string += ', Tmin={0!r}'.format(self.Tmin)
         if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
+        if self.E0 is not None: string += ', E0={0!r}'.format(self.E0)
         if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
         string += ')'
         return string
@@ -212,7 +216,7 @@ cdef class NASA(HeatCapacityModel):
         """
         A helper function used when pickling an object.
         """
-        return (NASA, (self.polynomials, self.Tmin, self.Tmax, self.comment))
+        return (NASA, (self.polynomials, self.Tmin, self.Tmax, self.E0, self.comment))
 
     property polynomials:
         """The set of one, two, or three NASA polynomials."""
@@ -293,6 +297,7 @@ cdef class NASA(HeatCapacityModel):
             S298 = (self.getEntropy(298),"J/(mol*K)"),
             Cp0 = (Cp0,"J/(mol*K)"),
             CpInf = (CpInf,"J/(mol*K)"),
+            E0 = self.E0,
         )
 
     @cython.boundscheck(False)

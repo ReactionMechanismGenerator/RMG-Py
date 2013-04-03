@@ -142,6 +142,12 @@ class TestWilhoit(unittest.TestCase):
         Test that the Wilhoit Tmax property was properly set.
         """
         self.assertAlmostEqual(self.wilhoit.Tmax.value_si, self.Tmax, 6)
+        
+    def test_E0(self):
+        """
+        Test that the Wilhoit E0 property is properly calculated from Enthalpy at 0.001 K
+        """
+        self.assertAlmostEqual(self.wilhoit.E0.value_si, self.wilhoit.getEnthalpy(0.001), 1)
     
     def test_comment(self):
         """
@@ -224,6 +230,8 @@ class TestWilhoit(unittest.TestCase):
         self.assertEqual(self.wilhoit.Tmin.units, wilhoit.Tmin.units)
         self.assertAlmostEqual(self.wilhoit.Tmax.value, wilhoit.Tmax.value, 4)
         self.assertEqual(self.wilhoit.Tmax.units, wilhoit.Tmax.units)
+        self.assertAlmostEqual(self.wilhoit.E0.value, wilhoit.E0.value, 4)
+        self.assertEqual(self.wilhoit.E0.units, wilhoit.E0.units)
         self.assertEqual(self.wilhoit.comment, wilhoit.comment)
     
     def test_repr(self):
@@ -251,6 +259,8 @@ class TestWilhoit(unittest.TestCase):
         self.assertEqual(self.wilhoit.Tmin.units, wilhoit.Tmin.units)
         self.assertAlmostEqual(self.wilhoit.Tmax.value, wilhoit.Tmax.value, 4)
         self.assertEqual(self.wilhoit.Tmax.units, wilhoit.Tmax.units)
+        self.assertAlmostEqual(self.wilhoit.E0.value, wilhoit.E0.value, 1)
+        self.assertEqual(self.wilhoit.E0.units, wilhoit.E0.units)
         self.assertEqual(self.wilhoit.comment, wilhoit.comment)
 
     def test_fitToData(self):

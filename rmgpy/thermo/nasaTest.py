@@ -55,6 +55,7 @@ class TestNASA(unittest.TestCase):
         self.Tmin = 300.
         self.Tmax = 3000.
         self.Tint = 650.73
+        self.E0 = -782292. # J/mol.
         self.comment = "C2H6"
         self.nasa = NASA(
             polynomials = [
@@ -63,6 +64,7 @@ class TestNASA(unittest.TestCase):
             ],
             Tmin = (self.Tmin,"K"),
             Tmax = (self.Tmax,"K"),
+            E0 = (self.E0, "J/mol"),
             comment = self.comment,
         )
     
@@ -97,7 +99,13 @@ class TestNASA(unittest.TestCase):
         Test that the NASA Tmax property was properly set.
         """
         self.assertAlmostEqual(self.nasa.Tmax.value_si / self.Tmax, 1.0, 6, '{0} != {1} within 6 places'.format(self.nasa.Tmax, self.Tmax))
-    
+
+    def test_E0(self):
+        """
+        Test that the NASA E0 property was properly set.
+        """
+        self.assertAlmostEqual(self.nasa.E0.value_si / self.E0, 1.0, 6, '{0} != {1} within 6 places'.format(self.nasa.Tmax, self.Tmax))
+        
     def test_Comment(self):
         """
         Test that the NASA comment property was properly set.
@@ -181,6 +189,8 @@ class TestNASA(unittest.TestCase):
         self.assertEqual(self.nasa.Tmin.units, nasa.Tmin.units)
         self.assertEqual(self.nasa.Tmax.value, nasa.Tmax.value)
         self.assertEqual(self.nasa.Tmax.units, nasa.Tmax.units)
+        self.assertEqual(self.nasa.E0.value, nasa.E0.value)
+        self.assertEqual(self.nasa.E0.units, nasa.E0.units)
         self.assertEqual(self.nasa.comment, nasa.comment)
 
     def test_repr(self):
@@ -210,4 +220,6 @@ class TestNASA(unittest.TestCase):
         self.assertEqual(self.nasa.Tmin.units, nasa.Tmin.units)
         self.assertEqual(self.nasa.Tmax.value, nasa.Tmax.value)
         self.assertEqual(self.nasa.Tmax.units, nasa.Tmax.units)
+        self.assertEqual(self.nasa.E0.value, nasa.E0.value)
+        self.assertEqual(self.nasa.E0.units, nasa.E0.units)
         self.assertEqual(self.nasa.comment, nasa.comment)
