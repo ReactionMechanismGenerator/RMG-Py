@@ -7,6 +7,7 @@ RMG API Reference
     
     constants
     kinetics/index
+    molecule/index
     quantity/index
     statmech/index
     thermo/index
