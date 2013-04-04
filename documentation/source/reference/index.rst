@@ -9,5 +9,7 @@ RMG API Reference
     kinetics/index
     molecule/index
     quantity/index
+    reaction/index
+    species/index
     statmech/index
     thermo/index
