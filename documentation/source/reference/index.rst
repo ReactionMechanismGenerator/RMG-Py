@@ -12,6 +12,7 @@ RMG API Reference
     pdep/index
     quantity/index
     reaction/index
+    solver/index
     species/index
     statmech/index
     thermo/index
