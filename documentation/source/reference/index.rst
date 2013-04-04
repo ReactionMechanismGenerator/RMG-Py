@@ -6,6 +6,7 @@ RMG API Reference
     :maxdepth: 2
     
     constants
+    data/index
     kinetics/index
     molecule/index
     pdep/index
