@@ -4,6 +4,5 @@ RMG API Reference
 
 .. toctree::
     :maxdepth: 2
-    :numbered:
     
-
+    thermo/index
