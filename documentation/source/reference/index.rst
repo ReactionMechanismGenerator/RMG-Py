@@ -8,6 +8,7 @@ RMG API Reference
     constants
     kinetics/index
     molecule/index
+    pdep/index
     quantity/index
     reaction/index
     species/index
