@@ -6,4 +6,5 @@ RMG API Reference
     :maxdepth: 2
     
     kinetics/index
+    statmech/index
     thermo/index
