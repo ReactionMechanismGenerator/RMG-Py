@@ -211,7 +211,7 @@ class RMG:
         these are checked for validity and used as a cache. Once loaded (and averages filled 
         in if necessary) then a cache (pickle and hash) is saved.
         """
-        import inspect, hashlib, cPickle, rmgpy.utilities
+        import inspect, hashlib, cPickle, rmgpy.utilities, scoop.shared
         
         # Make a hash of everything that could alter the contents of the database once it is fully loaded.
         # Then we can compare this hash to the cached file to see if the cache is valid.
@@ -231,6 +231,7 @@ class RMG:
         database_hash = hashlib.sha1(cPickle.dumps(database_metadata)).hexdigest()
         cache_hash_file = os.path.join(self.outputDirectory,'database.hash')
         cache_pickle_file = os.path.join(self.outputDirectory,'database.pkl')
+        scoop.shared.setConst(databaseFile=cache_pickle_file, databaseHash=database_hash)
         if not os.path.exists(cache_pickle_file):
             logging.info("Couldn't find a database cache file {0!r} so will reload from source.".format(cache_pickle_file))
         elif not os.path.exists(cache_hash_file):

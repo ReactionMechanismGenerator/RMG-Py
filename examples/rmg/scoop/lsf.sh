@@ -56,5 +56,4 @@ done
 echo "Your lamboot hostfile looks like:"
 cat $LAMHOST_FILE
 
-export RMG_DB_FILE=$PWD/database.pkl
 python -m scoop -vv --hostfile $LAMHOST_FILE $RMGpy/rmg.py input.py > RMG.stdout.log

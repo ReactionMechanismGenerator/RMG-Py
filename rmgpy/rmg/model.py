@@ -37,6 +37,7 @@ import math
 import numpy
 import os.path
 
+import scoop
 from scoop import futures
 
 from rmgpy.display import display
@@ -65,11 +66,13 @@ def makeThermoForSpecies(spec):
     if __database == None:
         """Load the database from some pickle file"""
         import cPickle, logging
-        filename = os.environ['RMG_DB_FILE']
-        logging.info('Loading database pickle file from {0!r}'.format(filename))
+        filename = scoop.shared.getConst('databaseFile')
+        database_hash = scoop.shared.getConst('databaseHash')
+        logging.info('Loading database pickle file from {0!r} on worker {1}'.format(filename, scoop.WORKER_NAME.decode() ))
         f = open(filename, 'rb')
         __database = cPickle.load(f)
         f.close()
+        assert __database.hash == database_hash, "Database loaded from {0!r} doesn't match expected hash!".format(filename)
     spec.generateThermoData(__database)
     return spec.thermo
 
