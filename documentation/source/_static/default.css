@@ -109,6 +109,7 @@ div.sphinxsidebar p {
 
 div.sphinxsidebar p.topless {
     margin: 5px 10px 10px 10px;
+    word-wrap: break-word;
 }
 
 div.sphinxsidebar ul {
