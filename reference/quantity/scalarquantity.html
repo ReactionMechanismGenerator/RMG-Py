@@ -1,0 +1,199 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>rmgpy.quantity.ScalarQuantity &mdash; RMG Py 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
+    <link rel="up" title="Physical quantities (rmgpy.quantity)" href="index.html" />
+    <link rel="next" title="rmgpy.quantity.ArrayQuantity" href="arrayquantity.html" />
+    <link rel="prev" title="Physical quantities (rmgpy.quantity)" href="index.html" /> 
+  </head>
+  <body>
+<div class="header">
+&nbsp;
+</div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="arrayquantity.html" title="rmgpy.quantity.ArrayQuantity"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Physical quantities (rmgpy.quantity)"
+             accesskey="P">previous</a> |</li>
+<li><a href="../../index.html">Documentation</a> &raquo;</li>
+
+          <li><a href="../index.html" >RMG API Reference</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Physical quantities (<tt class="docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">rmgpy.quantity</span></tt>)</a> &raquo;</li> 
+      </ul>
+    </div>
+            
+  <div class="section" id="rmgpy-quantity-scalarquantity">
+<h1>rmgpy.quantity.ScalarQuantity<a class="headerlink" href="#rmgpy-quantity-scalarquantity" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="rmgpy.quantity.ScalarQuantity">
+<em class="property">class </em><tt class="descclassname">rmgpy.quantity.</tt><tt class="descname">ScalarQuantity</tt><a class="headerlink" href="#rmgpy.quantity.ScalarQuantity" title="Permalink to this definition">¶</a></dt>
+<dd><p>The <a class="reference internal" href="#rmgpy.quantity.ScalarQuantity" title="rmgpy.quantity.ScalarQuantity"><tt class="xref py py-class docutils literal"><span class="pre">ScalarQuantity</span></tt></a> class provides a representation of a scalar
+physical quantity, with optional units and uncertainty information. The
+attributes are:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="20%" />
+<col width="80%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Attribute</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><cite>value</cite></td>
+<td>The numeric value of the quantity in the given units</td>
+</tr>
+<tr class="row-odd"><td><cite>units</cite></td>
+<td>The units the value was specified in</td>
+</tr>
+<tr class="row-even"><td><cite>uncertainty</cite></td>
+<td>The numeric uncertainty in the value</td>
+</tr>
+<tr class="row-odd"><td><cite>uncertaintyType</cite></td>
+<td>The type of uncertainty: <tt class="docutils literal"><span class="pre">'+|-'</span></tt> for additive, <tt class="docutils literal"><span class="pre">'*|/'</span></tt> for multiplicative</td>
+</tr>
+<tr class="row-even"><td><cite>value_si</cite></td>
+<td>The numeric value of the quantity in the corresponding SI units</td>
+</tr>
+</tbody>
+</table>
+<p>It is often more convenient to perform computations using SI units instead
+of the given units of the quantity. For this reason, the SI equivalent of
+the <cite>value</cite> attribute can be directly accessed using the <cite>value_si</cite>
+attribute. This value is cached on the <a class="reference internal" href="#rmgpy.quantity.ScalarQuantity" title="rmgpy.quantity.ScalarQuantity"><tt class="xref py py-class docutils literal"><span class="pre">ScalarQuantity</span></tt></a> object for
+speed.</p>
+<dl class="method">
+<dt id="rmgpy.quantity.ScalarQuantity.copy">
+<tt class="descname">copy</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.quantity.ScalarQuantity.copy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a copy of the quantity.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.quantity.ScalarQuantity.equals">
+<tt class="descname">equals</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.quantity.ScalarQuantity.equals" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if the everything in a quantity object matches
+the parameters in this object.  If there are lists of values or uncertainties,
+each item in the list must be matching and in the same order.
+Otherwise, return <tt class="docutils literal"><span class="pre">False</span></tt>
+(Originally intended to return warning if units capitalization was
+different, however, Quantity object only parses units matching in case, so
+this will not be a problem.)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.quantity.ScalarQuantity.getConversionFactorFromSI">
+<tt class="descname">getConversionFactorFromSI</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.quantity.ScalarQuantity.getConversionFactorFromSI" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the conversion factor for converting a quantity to a given set
+of <cite>units</cite> from the SI equivalent units.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.quantity.ScalarQuantity.getConversionFactorToSI">
+<tt class="descname">getConversionFactorToSI</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.quantity.ScalarQuantity.getConversionFactorToSI" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the conversion factor for converting a quantity in a given set
+of`units` to the SI equivalent units.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.quantity.ScalarQuantity.isUncertaintyAdditive">
+<tt class="descname">isUncertaintyAdditive</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.quantity.ScalarQuantity.isUncertaintyAdditive" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if the uncertainty is specified in additive format
+and <tt class="docutils literal"><span class="pre">False</span></tt> otherwise.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.quantity.ScalarQuantity.isUncertaintyMultiplicative">
+<tt class="descname">isUncertaintyMultiplicative</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.quantity.ScalarQuantity.isUncertaintyMultiplicative" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if the uncertainty is specified in multiplicative 
+format and <tt class="docutils literal"><span class="pre">False</span></tt> otherwise.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div class="sidebarlogo">
+<img src="../../_static/rmg-logo-small.png" alt="RMG" />
+</div>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Physical quantities (<tt class="docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">rmgpy.quantity</span></tt>)</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="arrayquantity.html"
+                        title="next chapter">rmgpy.quantity.ArrayQuantity</a></p>
+  <h3>This Page </h3>
+  <ul class="this-page-menu">
+    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/reference/quantity/scalarquantity.rst"
+           rel="nofollow">Edit this page</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

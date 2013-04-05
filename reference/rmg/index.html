@@ -1,0 +1,262 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Reaction mechanism generation (rmgpy.rmg) &mdash; RMG Py 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
+    <link rel="up" title="RMG API Reference" href="../index.html" />
+    <link rel="next" title="rmgpy.rmg.model.CoreEdgeReactionModel" href="coreedgereactionmodel.html" />
+    <link rel="prev" title="rmgpy.reaction.ReactionModel" href="../reaction/reactionmodel.html" /> 
+  </head>
+  <body>
+<div class="header">
+&nbsp;
+</div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="coreedgereactionmodel.html" title="rmgpy.rmg.model.CoreEdgeReactionModel"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../reaction/reactionmodel.html" title="rmgpy.reaction.ReactionModel"
+             accesskey="P">previous</a> |</li>
+<li><a href="../../index.html">Documentation</a> &raquo;</li>
+
+          <li><a href="../index.html" accesskey="U">RMG API Reference</a> &raquo;</li> 
+      </ul>
+    </div>
+            
+  <div class="section" id="module-rmgpy.rmg">
+<span id="reaction-mechanism-generation-rmgpy-rmg"></span><h1>Reaction mechanism generation (<a class="reference internal" href="#module-rmgpy.rmg" title="rmgpy.rmg"><tt class="xref py py-mod docutils literal"><span class="pre">rmgpy.rmg</span></tt></a>)<a class="headerlink" href="#module-rmgpy.rmg" title="Permalink to this headline">¶</a></h1>
+<p>The <a class="reference internal" href="#module-rmgpy.rmg" title="rmgpy.rmg"><tt class="xref py py-mod docutils literal"><span class="pre">rmgpy.rmg</span></tt></a> subpackage contains the main functionality for using
+RMG-Py to automatically generate detailed reaction mechanisms.</p>
+<div class="section" id="reaction-models">
+<h2>Reaction models<a class="headerlink" href="#reaction-models" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="32%" />
+<col width="68%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Class</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><a class="reference internal" href="species.html#rmgpy.rmg.model.Species" title="rmgpy.rmg.model.Species"><tt class="xref py py-class docutils literal"><span class="pre">Species</span></tt></a></td>
+<td>A chemical species, with RMG-specific functionality</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="coreedgereactionmodel.html#rmgpy.rmg.model.CoreEdgeReactionModel" title="rmgpy.rmg.model.CoreEdgeReactionModel"><tt class="xref py py-class docutils literal"><span class="pre">CoreEdgeReactionModel</span></tt></a></td>
+<td>A reaction model comprised of core and edge species and reactions</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="input">
+<h2>Input<a class="headerlink" href="#input" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="39%" />
+<col width="61%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Function</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><a class="reference internal" href="input.html#rmgpy.rmg.input.readInputFile" title="rmgpy.rmg.input.readInputFile"><tt class="xref py py-func docutils literal"><span class="pre">readInputFile()</span></tt></a></td>
+<td>Load an RMG job input file</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="input.html#rmgpy.rmg.input.saveInputFile" title="rmgpy.rmg.input.saveInputFile"><tt class="xref py py-func docutils literal"><span class="pre">saveInputFile()</span></tt></a></td>
+<td>Save an RMG job input file</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="output">
+<h2>Output<a class="headerlink" href="#output" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="34%" />
+<col width="66%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Function</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><a class="reference internal" href="output.html#rmgpy.rmg.output.saveOutputHTML" title="rmgpy.rmg.output.saveOutputHTML"><tt class="xref py py-func docutils literal"><span class="pre">saveOutputHTML()</span></tt></a></td>
+<td>Save the results of an RMG job to an HTML file</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="output.html#rmgpy.rmg.output.saveDiffHTML" title="rmgpy.rmg.output.saveDiffHTML"><tt class="xref py py-func docutils literal"><span class="pre">saveDiffHTML()</span></tt></a></td>
+<td>Save a comparison of two reaction mechanisms to an HTML file</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="job-classes">
+<h2>Job classes<a class="headerlink" href="#job-classes" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="39%" />
+<col width="61%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Class</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><a class="reference internal" href="main.html#rmgpy.rmg.main.RMG" title="rmgpy.rmg.main.RMG"><tt class="xref py py-class docutils literal"><span class="pre">RMG</span></tt></a></td>
+<td>Main class for RMG jobs</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="pressure-dependence">
+<h2>Pressure dependence<a class="headerlink" href="#pressure-dependence" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="27%" />
+<col width="73%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Class</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><a class="reference internal" href="pdepreaction.html#rmgpy.rmg.pdep.PDepReaction" title="rmgpy.rmg.pdep.PDepReaction"><tt class="xref py py-class docutils literal"><span class="pre">PDepReaction</span></tt></a></td>
+<td>A pressure-dependent &#8220;net&#8221; reaction</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pdepnetwork.html#rmgpy.rmg.pdep.PDepNetwork" title="rmgpy.rmg.pdep.PDepNetwork"><tt class="xref py py-class docutils literal"><span class="pre">PDepNetwork</span></tt></a></td>
+<td>A pressure-dependent unimolecular reaction network, with RMG-specific functionality</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="exceptions">
+<h2>Exceptions<a class="headerlink" href="#exceptions" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="28%" />
+<col width="72%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Exception</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><tt class="xref py py-exc docutils literal"><span class="pre">InputError</span></tt></td>
+<td>Raised when an error occurs while working with an RMG input file</td>
+</tr>
+<tr class="row-odd"><td><tt class="xref py py-exc docutils literal"><span class="pre">OutputError</span></tt></td>
+<td>Raised when an error occurs while saving an RMG output file</td>
+</tr>
+<tr class="row-even"><td><tt class="xref py py-exc docutils literal"><span class="pre">PressureDependenceError</span></tt></td>
+<td>Raised when an error occurs while computing pressure-dependent rate coefficients</td>
+</tr>
+</tbody>
+</table>
+<div class="toctree-wrapper compound">
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div class="sidebarlogo">
+<img src="../../_static/rmg-logo-small.png" alt="RMG" />
+</div>
+  <h3><a href="../../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Reaction mechanism generation (<tt class="docutils literal"><span class="pre">rmgpy.rmg</span></tt>)</a><ul>
+<li><a class="reference internal" href="#reaction-models">Reaction models</a></li>
+<li><a class="reference internal" href="#input">Input</a></li>
+<li><a class="reference internal" href="#output">Output</a></li>
+<li><a class="reference internal" href="#job-classes">Job classes</a></li>
+<li><a class="reference internal" href="#pressure-dependence">Pressure dependence</a></li>
+<li><a class="reference internal" href="#exceptions">Exceptions</a><ul>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../reaction/reactionmodel.html"
+                        title="previous chapter">rmgpy.reaction.ReactionModel</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="coreedgereactionmodel.html"
+                        title="next chapter">rmgpy.rmg.model.CoreEdgeReactionModel</a></p>
+  <h3>This Page </h3>
+  <ul class="this-page-menu">
+    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/reference/rmg/index.rst"
+           rel="nofollow">Edit this page</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

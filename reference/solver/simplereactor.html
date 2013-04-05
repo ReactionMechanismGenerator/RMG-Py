@@ -1,0 +1,212 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>rmgpy.solver.SimpleReactor &mdash; RMG Py 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
+    <link rel="up" title="Reaction system simulation (rmgpy.solver)" href="index.html" />
+    <link rel="next" title="Termination criteria" href="termination.html" />
+    <link rel="prev" title="rmgpy.solver.ReactionSystem" href="reactionsystem.html" /> 
+  </head>
+  <body>
+<div class="header">
+&nbsp;
+</div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="termination.html" title="Termination criteria"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="reactionsystem.html" title="rmgpy.solver.ReactionSystem"
+             accesskey="P">previous</a> |</li>
+<li><a href="../../index.html">Documentation</a> &raquo;</li>
+
+          <li><a href="../index.html" >RMG API Reference</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Reaction system simulation (<tt class="docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">rmgpy.solver</span></tt>)</a> &raquo;</li> 
+      </ul>
+    </div>
+            
+  <div class="section" id="rmgpy-solver-simplereactor">
+<h1>rmgpy.solver.SimpleReactor<a class="headerlink" href="#rmgpy-solver-simplereactor" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="rmgpy.solver.SimpleReactor">
+<em class="property">class </em><tt class="descclassname">rmgpy.solver.</tt><tt class="descname">SimpleReactor</tt><a class="headerlink" href="#rmgpy.solver.SimpleReactor" title="Permalink to this definition">¶</a></dt>
+<dd><p>A reaction system consisting of a homogeneous, isothermal, isobaric batch
+reactor. These assumptions allow for a number of optimizations that enable
+this solver to complete very rapidly, even for large kinetic models.</p>
+<dl class="method">
+<dt id="rmgpy.solver.SimpleReactor.advance">
+<tt class="descname">advance</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.solver.SimpleReactor.advance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Simulate from the current value of the independent variable to a 
+specified value <cite>tout</cite>, taking as many steps as necessary. The resulting
+values of <span class="math">\(t\)</span>, <span class="math">\(\mathbf{y}\)</span>, and 
+<span class="math">\(\frac{d \mathbf{y}}{dt}\)</span> can then be accessed via the <cite>t</cite>, <cite>y</cite>,
+and <cite>dydt</cite> attributes.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.solver.SimpleReactor.computeRateDerivative">
+<tt class="descname">computeRateDerivative</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.solver.SimpleReactor.computeRateDerivative" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns derivative vector df/dk_j where dc/dt = f(c, t, k) and
+k_j is the rate parameter for the jth core reaction.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.solver.SimpleReactor.initialize">
+<tt class="descname">initialize</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.solver.SimpleReactor.initialize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize the DASSL solver by setting the initial values of the
+independent variable <cite>t0</cite>, dependent variables <cite>y0</cite>, and first
+derivatives <cite>dydt0</cite>. If provided, the derivatives must be consistent
+with the other initial conditions; if not provided, DASSL will attempt
+to estimate a consistent set of initial values for the derivatives.
+You can also set the absolute and relative tolerances <cite>atol</cite> and <cite>rtol</cite>,
+respectively, either as single values for all dependent variables or 
+individual values for each dependent variable.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.solver.SimpleReactor.initializeModel">
+<tt class="descname">initializeModel</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.solver.SimpleReactor.initializeModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize a simulation of the simple reactor using the provided kinetic
+model.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.solver.SimpleReactor.jacobian">
+<tt class="descname">jacobian</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.solver.SimpleReactor.jacobian" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the analytical Jacobian for the reaction system.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.solver.SimpleReactor.logConversions">
+<tt class="descname">logConversions</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.solver.SimpleReactor.logConversions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Log information about the current conversion values.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.solver.SimpleReactor.logRates">
+<tt class="descname">logRates</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.solver.SimpleReactor.logRates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Log information about the current maximum species and network rates.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.solver.SimpleReactor.residual">
+<tt class="descname">residual</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.solver.SimpleReactor.residual" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the residual function for the governing DAE system for the
+simple reaction system.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.solver.SimpleReactor.simulate">
+<tt class="descname">simulate</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.solver.SimpleReactor.simulate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Simulate the reaction system with the provided reaction model,
+consisting of lists of core species, core reactions, edge species, and
+edge reactions. As the simulation proceeds the system is monitored for
+validity. If the model becomes invalid (e.g. due to an excessively
+large edge flux), the simulation is interrupted and the object causing
+the model to be invalid is returned. If the simulation completes to
+the desired termination criteria and the model remains valid throughout,
+<tt class="docutils literal"><span class="pre">None</span></tt> is returned.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.solver.SimpleReactor.step">
+<tt class="descname">step</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.solver.SimpleReactor.step" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform one simulation step from the current value of the independent 
+variable toward (but not past) a specified value <cite>tout</cite>. The resulting
+values of <span class="math">\(t\)</span>, <span class="math">\(\mathbf{y}\)</span>, and 
+<span class="math">\(\frac{d \mathbf{y}}{dt}\)</span> can then be accessed via the <cite>t</cite>, <cite>y</cite>,
+and <cite>dydt</cite> attributes.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.solver.SimpleReactor.writeWorksheetHeader">
+<tt class="descname">writeWorksheetHeader</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.solver.SimpleReactor.writeWorksheetHeader" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write some descriptive information about the reaction system to the
+first two rows of the given <cite>worksheet</cite>.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div class="sidebarlogo">
+<img src="../../_static/rmg-logo-small.png" alt="RMG" />
+</div>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="reactionsystem.html"
+                        title="previous chapter">rmgpy.solver.ReactionSystem</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="termination.html"
+                        title="next chapter">Termination criteria</a></p>
+  <h3>This Page </h3>
+  <ul class="this-page-menu">
+    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/reference/solver/simplereactor.rst"
+           rel="nofollow">Edit this page</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

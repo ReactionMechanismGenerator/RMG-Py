@@ -1,0 +1,544 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>rmgpy.data.kinetics.KineticsFamily &mdash; RMG Py 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
+    <link rel="up" title="Database (rmgpy.data)" href="index.html" />
+    <link rel="next" title="rmgpy.data.kinetics.KineticsGroups" href="kineticsgroups.html" />
+    <link rel="prev" title="rmgpy.data.kinetics.KineticsDepository" href="kineticsdepository.html" /> 
+  </head>
+  <body>
+<div class="header">
+&nbsp;
+</div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="kineticsgroups.html" title="rmgpy.data.kinetics.KineticsGroups"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="kineticsdepository.html" title="rmgpy.data.kinetics.KineticsDepository"
+             accesskey="P">previous</a> |</li>
+<li><a href="../../index.html">Documentation</a> &raquo;</li>
+
+          <li><a href="../index.html" >RMG API Reference</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Database (<tt class="docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">rmgpy.data</span></tt>)</a> &raquo;</li> 
+      </ul>
+    </div>
+            
+  <div class="section" id="rmgpy-data-kinetics-kineticsfamily">
+<h1>rmgpy.data.kinetics.KineticsFamily<a class="headerlink" href="#rmgpy-data-kinetics-kineticsfamily" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="rmgpy.data.kinetics.KineticsFamily">
+<em class="property">class </em><tt class="descclassname">rmgpy.data.kinetics.</tt><tt class="descname">KineticsFamily</tt><big>(</big><em>entries=None</em>, <em>top=None</em>, <em>label=''</em>, <em>name=''</em>, <em>reverse=''</em>, <em>shortDesc=''</em>, <em>longDesc=''</em>, <em>forwardTemplate=None</em>, <em>forwardRecipe=None</em>, <em>reverseTemplate=None</em>, <em>reverseRecipe=None</em>, <em>forbidden=None</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily" title="Permalink to this definition">¶</a></dt>
+<dd><p>A class for working with an RMG kinetics family: a set of reactions with 
+similar chemistry, and therefore similar reaction rates. The attributes 
+are:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="15%" />
+<col width="24%" />
+<col width="62%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Attribute</th>
+<th class="head">Type</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><cite>reverse</cite></td>
+<td><tt class="docutils literal"><span class="pre">string</span></tt></td>
+<td>The name of the reverse reaction family</td>
+</tr>
+<tr class="row-odd"><td><cite>forwardTemplate</cite></td>
+<td><tt class="xref py py-class docutils literal"><span class="pre">Reaction</span></tt></td>
+<td>The forward reaction template</td>
+</tr>
+<tr class="row-even"><td><cite>forwardRecipe</cite></td>
+<td><tt class="xref py py-class docutils literal"><span class="pre">ReactionRecipe</span></tt></td>
+<td>The steps to take when applying the forward reaction to a set of reactants</td>
+</tr>
+<tr class="row-odd"><td><cite>reverseTemplate</cite></td>
+<td><tt class="xref py py-class docutils literal"><span class="pre">Reaction</span></tt></td>
+<td>The reverse reaction template</td>
+</tr>
+<tr class="row-even"><td><cite>reverseRecipe</cite></td>
+<td><tt class="xref py py-class docutils literal"><span class="pre">ReactionRecipe</span></tt></td>
+<td>The steps to take when applying the reverse reaction to a set of reactants</td>
+</tr>
+<tr class="row-odd"><td><cite>forbidden</cite></td>
+<td><tt class="xref py py-class docutils literal"><span class="pre">ForbiddenStructures</span></tt></td>
+<td>(Optional) Forbidden product structures in either direction</td>
+</tr>
+<tr class="row-even"><td><cite>ownReverse</cite></td>
+<td><cite>Boolean</cite></td>
+<td>It&#8217;s its own reverse?</td>
+</tr>
+<tr class="row-odd"><td><cite>groups</cite></td>
+<td><tt class="xref py py-class docutils literal"><span class="pre">KineticsGroups</span></tt></td>
+<td>The set of kinetics group additivity values</td>
+</tr>
+<tr class="row-even"><td><cite>rules</cite></td>
+<td><tt class="xref py py-class docutils literal"><span class="pre">KineticsRules</span></tt></td>
+<td>The set of kinetics rate rules from RMG-Java</td>
+</tr>
+<tr class="row-odd"><td><cite>depositories</cite></td>
+<td><tt class="docutils literal"><span class="pre">dict</span></tt></td>
+<td>A set of additional depositories used to store kinetics data from various sources</td>
+</tr>
+</tbody>
+</table>
+<p>There are a few reaction families that are their own reverse (hydrogen
+abstraction and intramolecular hydrogen migration); for these
+<cite>reverseTemplate</cite> and <cite>reverseRecipe</cite> will both be <tt class="docutils literal"><span class="pre">None</span></tt>.</p>
+<dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsFamily.addKineticsRulesFromTrainingSet">
+<tt class="descname">addKineticsRulesFromTrainingSet</tt><big>(</big><em>thermoDatabase=None</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.addKineticsRulesFromTrainingSet" title="Permalink to this definition">¶</a></dt>
+<dd><p>For each reaction involving real reactants and products in the training
+set, add a rate rule for that reaction.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsFamily.ancestors">
+<tt class="descname">ancestors</tt><big>(</big><em>node</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.ancestors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns all the ancestors of a node, climbing up the tree to the top.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsFamily.applyRecipe">
+<tt class="descname">applyRecipe</tt><big>(</big><em>reactantStructures</em>, <em>forward=True</em>, <em>unique=True</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.applyRecipe" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply the recipe for this reaction family to the list of
+<tt class="xref py py-class docutils literal"><span class="pre">Molecule</span></tt> objects <cite>reactantStructures</cite>. The atoms
+of the reactant structures must already be tagged with the appropriate
+labels. Returns a list of structures corresponding to the products
+after checking that the correct number of products was produced.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsFamily.calculateDegeneracy">
+<tt class="descname">calculateDegeneracy</tt><big>(</big><em>reaction</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.calculateDegeneracy" title="Permalink to this definition">¶</a></dt>
+<dd><p>For a <cite>reaction</cite> given in the direction in which the kinetics are
+defined, compute the reaction-path degeneracy.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsFamily.descendTree">
+<tt class="descname">descendTree</tt><big>(</big><em>structure</em>, <em>atoms</em>, <em>root=None</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.descendTree" title="Permalink to this definition">¶</a></dt>
+<dd><p>Descend the tree in search of the functional group node that best
+matches the local structure around <cite>atoms</cite> in <cite>structure</cite>.</p>
+<p>If root=None then uses the first matching top node.</p>
+<p>Returns None if there is no matching root.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsFamily.descendants">
+<tt class="descname">descendants</tt><big>(</big><em>node</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.descendants" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns all the descendants of a node, climbing down the tree to the bottom.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsFamily.estimateKineticsUsingGroupAdditivity">
+<tt class="descname">estimateKineticsUsingGroupAdditivity</tt><big>(</big><em>template</em>, <em>degeneracy=1</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.estimateKineticsUsingGroupAdditivity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine the appropriate kinetics for a reaction with the given
+<cite>template</cite> using group additivity.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsFamily.estimateKineticsUsingRateRules">
+<tt class="descname">estimateKineticsUsingRateRules</tt><big>(</big><em>template</em>, <em>degeneracy=1</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.estimateKineticsUsingRateRules" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine the appropriate kinetics for a reaction with the given
+<cite>template</cite> using rate rules.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsFamily.fillKineticsRulesByAveragingUp">
+<tt class="descname">fillKineticsRulesByAveragingUp</tt><big>(</big><em>rootTemplate=None</em>, <em>alreadyDone=None</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.fillKineticsRulesByAveragingUp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fill in gaps in the kinetics rate rules by averaging child nodes.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsFamily.generateOldTree">
+<tt class="descname">generateOldTree</tt><big>(</big><em>entries</em>, <em>level</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.generateOldTree" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a multi-line string representation of the current tree using
+the old-style syntax.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsFamily.generateProductTemplate">
+<tt class="descname">generateProductTemplate</tt><big>(</big><em>reactants0</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.generateProductTemplate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate the product structures by applying the reaction template to
+the top-level nodes. For reactants defined by multiple structures, only
+the first is used here; it is assumed to be the most generic.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsFamily.generateReactions">
+<tt class="descname">generateReactions</tt><big>(</big><em>reactants</em>, <em>**options</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.generateReactions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate all reactions between the provided list of one or two
+<cite>reactants</cite>, which should be either single <tt class="xref py py-class docutils literal"><span class="pre">Molecule</span></tt> objects
+or lists of same. Does not estimate the kinetics of these reactions
+at this time. Returns a list of <tt class="xref py py-class docutils literal"><span class="pre">TemplateReaction</span></tt> objects
+using <tt class="xref py py-class docutils literal"><span class="pre">Species</span></tt> objects for both reactants and products. The
+reactions are constructed such that the forward direction is consistent
+with the template of this reaction family.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsFamily.getEntriesToSave">
+<tt class="descname">getEntriesToSave</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.getEntriesToSave" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a sorted list of the entries in this database that should be
+saved to the output file.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsFamily.getKinetics">
+<tt class="descname">getKinetics</tt><big>(</big><em>reaction</em>, <em>template</em>, <em>degeneracy=1</em>, <em>estimator=''</em>, <em>returnAllKinetics=True</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.getKinetics" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the kinetics for the given <cite>reaction</cite> by searching the various
+depositories as well as generating a result using the user-specified <cite>estimator</cite>
+of either &#8216;group additivity&#8217; or &#8216;rate rules.&#8217;  Unlike
+the regular <tt class="xref py py-meth docutils literal"><span class="pre">getKinetics()</span></tt> method, this returns a list of
+results, with each result comprising the kinetics, the source, and
+the entry. If it came from a template estimate, the source and entry
+will both be <cite>None</cite>.
+If returnAllKinetics==False, only the first (best?) matching kinetics is returned.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsFamily.getKineticsForTemplate">
+<tt class="descname">getKineticsForTemplate</tt><big>(</big><em>template</em>, <em>degeneracy=1</em>, <em>method='rate rules'</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.getKineticsForTemplate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return an estimate of the kinetics for a reaction with the given
+<cite>template</cite> and reaction-path <cite>degeneracy</cite>. There are two possible methods
+to use: &#8216;group additivity&#8217; (new RMG-Py behavior) and &#8216;rate rules&#8217; (old
+RMG-Java behavior).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsFamily.getKineticsFromDepository">
+<tt class="descname">getKineticsFromDepository</tt><big>(</big><em>depository</em>, <em>reaction</em>, <em>template</em>, <em>degeneracy</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.getKineticsFromDepository" title="Permalink to this definition">¶</a></dt>
+<dd><p>Search the given <cite>depository</cite> in this kinetics family for kinetics
+for the given <cite>reaction</cite>. Returns a list of all of the matching 
+kinetics, the corresponding entries, and <tt class="docutils literal"><span class="pre">True</span></tt> if the kinetics
+match the forward direction or <tt class="docutils literal"><span class="pre">False</span></tt> if they match the reverse
+direction.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsFamily.getKineticsFromRules">
+<tt class="descname">getKineticsFromRules</tt><big>(</big><em>template</em>, <em>degeneracy</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.getKineticsFromRules" title="Permalink to this definition">¶</a></dt>
+<dd><p>Search the given <cite>depository</cite> in this kinetics family for kinetics
+for the given <cite>reaction</cite>. Returns a list of all of the matching 
+kinetics, the corresponding entries, and <tt class="docutils literal"><span class="pre">True</span></tt> if the kinetics
+match the forward direction or <tt class="docutils literal"><span class="pre">False</span></tt> if they match the reverse
+direction.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsFamily.getRateCoefficientUnits">
+<tt class="descname">getRateCoefficientUnits</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.getRateCoefficientUnits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the units of the forward kinetics generated for the family.
+Raises a ValueError if this could not be determined (e.g. if the family
+has not yet been added to the appropriate list).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsFamily.getRateRule">
+<tt class="descname">getRateRule</tt><big>(</big><em>template</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.getRateRule" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the rate rule with the given <cite>template</cite>. Raises a 
+<tt class="xref py py-class docutils literal"><span class="pre">ValueError</span></tt> if no corresponding entry exists.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsFamily.getReactionPairs">
+<tt class="descname">getReactionPairs</tt><big>(</big><em>reaction</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.getReactionPairs" title="Permalink to this definition">¶</a></dt>
+<dd><p>For a given <cite>reaction</cite> with properly-labeled <tt class="xref py py-class docutils literal"><span class="pre">Molecule</span></tt> objects
+as the reactants, return the reactant-product pairs to use when
+performing flux analysis.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsFamily.getReactionTemplate">
+<tt class="descname">getReactionTemplate</tt><big>(</big><em>reaction</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.getReactionTemplate" title="Permalink to this definition">¶</a></dt>
+<dd><p>For a given <cite>reaction</cite> with properly-labeled <tt class="xref py py-class docutils literal"><span class="pre">Molecule</span></tt> objects
+as the reactants, determine the most specific nodes in the tree that
+describe the reaction.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsFamily.getRootTemplate">
+<tt class="descname">getRootTemplate</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.getRootTemplate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the root template for the reaction family. Most of the time this
+is the top-level nodes of the tree (as stored in the 
+<tt class="xref py py-class docutils literal"><span class="pre">KineticsGroups</span></tt> object), but there are a few exceptions (e.g.
+R_Recombination).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsFamily.hasRateRule">
+<tt class="descname">hasRateRule</tt><big>(</big><em>template</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.hasRateRule" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if a rate rule with the given <cite>template</cite> currently 
+exists, or <tt class="docutils literal"><span class="pre">False</span></tt> otherwise.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsFamily.isMoleculeForbidden">
+<tt class="descname">isMoleculeForbidden</tt><big>(</big><em>molecule</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.isMoleculeForbidden" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if the molecule is forbidden in this family, or
+<tt class="docutils literal"><span class="pre">False</span></tt> otherwise.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsFamily.isWellFormed">
+<tt class="descname">isWellFormed</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.isWellFormed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <tt class="xref py py-data docutils literal"><span class="pre">True</span></tt> if the database is well-formed. A well-formed
+database has an entry in the dictionary for every entry in the tree, and
+an entry in the tree for every entry in the library. If no tree is
+present (e.g. the primary libraries), then every entry in the library
+must have an entry in the dictionary. Finally, each entry in the
+library must have the same number of nodes as the number of top-level
+nodes in the tree, if the tree is present; this is for databases with
+multiple trees, e.g. the kinetics databases.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsFamily.load">
+<tt class="descname">load</tt><big>(</big><em>path</em>, <em>local_context=None</em>, <em>global_context=None</em>, <em>depositoryLabels=None</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load a kinetics database from a file located at <cite>path</cite> on disk.</p>
+<p>If <cite>depositoryLabels</cite> is a list, eg. [&#8216;training&#8217;,&#8217;PrIMe&#8217;], then only those
+depositories are loaded, and they are searched in that order when
+generating kinetics.</p>
+<p>If depositoryLabels is None then load &#8216;training&#8217; first then everything else.
+If depositoryLabels is not None then load in the order specified in depositoryLabels.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsFamily.loadForbidden">
+<tt class="descname">loadForbidden</tt><big>(</big><em>label</em>, <em>group</em>, <em>shortDesc=''</em>, <em>longDesc=''</em>, <em>history=None</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.loadForbidden" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load information about a forbidden structure.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsFamily.loadOld">
+<tt class="descname">loadOld</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.loadOld" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load an old-style RMG kinetics group additivity database from the
+location <cite>path</cite>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsFamily.loadOldDictionary">
+<tt class="descname">loadOldDictionary</tt><big>(</big><em>path</em>, <em>pattern</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.loadOldDictionary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse an old-style RMG database dictionary located at <cite>path</cite>. An RMG
+dictionary is a list of key-value pairs of a one-line string key and a
+multi-line string value. Each record is separated by at least one empty
+line. Returns a <tt class="docutils literal"><span class="pre">dict</span></tt> object with the values converted to
+<tt class="xref py py-class docutils literal"><span class="pre">Molecule</span></tt> or <tt class="xref py py-class docutils literal"><span class="pre">Group</span></tt> objects depending on the
+value of <cite>pattern</cite>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsFamily.loadOldLibrary">
+<tt class="descname">loadOldLibrary</tt><big>(</big><em>path</em>, <em>numParameters</em>, <em>numLabels=1</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.loadOldLibrary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse an RMG database library located at <cite>path</cite>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsFamily.loadOldTemplate">
+<tt class="descname">loadOldTemplate</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.loadOldTemplate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load an old-style RMG reaction family template from the location <cite>path</cite>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsFamily.loadOldTree">
+<tt class="descname">loadOldTree</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.loadOldTree" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse an old-style RMG database tree located at <cite>path</cite>. An RMG
+tree is an n-ary tree representing the hierarchy of items in the
+dictionary.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsFamily.loadRecipe">
+<tt class="descname">loadRecipe</tt><big>(</big><em>actions</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.loadRecipe" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load information about the reaction recipe.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsFamily.loadTemplate">
+<tt class="descname">loadTemplate</tt><big>(</big><em>reactants</em>, <em>products</em>, <em>ownReverse=False</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.loadTemplate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load information about the reaction template.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsFamily.matchNodeToStructure">
+<tt class="descname">matchNodeToStructure</tt><big>(</big><em>node</em>, <em>structure</em>, <em>atoms</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.matchNodeToStructure" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <tt class="xref py py-data docutils literal"><span class="pre">True</span></tt> if the <cite>structure</cite> centered at <cite>atom</cite> matches the
+structure at <cite>node</cite> in the dictionary. The structure at <cite>node</cite> should
+have atoms with the appropriate labels because they are set on loading
+and never change. However, the atoms in <cite>structure</cite> may not have the
+correct labels, hence the <cite>atoms</cite> parameter. The <cite>atoms</cite> parameter may
+include extra labels, and so we only require that every labeled atom in
+the functional group represented by <cite>node</cite> has an equivalent labeled
+atom in <cite>structure</cite>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsFamily.parseOldLibrary">
+<tt class="descname">parseOldLibrary</tt><big>(</big><em>path</em>, <em>numParameters</em>, <em>numLabels=1</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.parseOldLibrary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse an RMG database library located at <cite>path</cite>, returning the loaded
+entries (rather than storing them in the database). This method does
+not discard duplicate entries.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsFamily.reactantMatch">
+<tt class="descname">reactantMatch</tt><big>(</big><em>reactant</em>, <em>templateReactant</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.reactantMatch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if the provided reactant matches the provided
+template reactant and <tt class="docutils literal"><span class="pre">False</span></tt> if not, along with a complete list of
+the identified mappings.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsFamily.save">
+<tt class="descname">save</tt><big>(</big><em>path</em>, <em>entryName='entry'</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the current database to the file at location <cite>path</cite> on disk. The
+optional <cite>entryName</cite> parameter specifies the identifier used for each
+data entry.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsFamily.saveDepository">
+<tt class="descname">saveDepository</tt><big>(</big><em>depository</em>, <em>path</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.saveDepository" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the given kinetics family <cite>depository</cite> to the location <cite>path</cite> on
+disk.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsFamily.saveEntry">
+<tt class="descname">saveEntry</tt><big>(</big><em>f</em>, <em>entry</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.saveEntry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write the given <cite>entry</cite> in the thermo database to the file object <cite>f</cite>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsFamily.saveGroups">
+<tt class="descname">saveGroups</tt><big>(</big><em>path</em>, <em>entryName='entry'</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.saveGroups" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the current database to the file at location <cite>path</cite> on disk. The
+optional <cite>entryName</cite> parameter specifies the identifier used for each
+data entry.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsFamily.saveOld">
+<tt class="descname">saveOld</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.saveOld" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the old RMG kinetics groups to the given <cite>path</cite> on disk.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsFamily.saveOldDictionary">
+<tt class="descname">saveOldDictionary</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.saveOldDictionary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the current database dictionary to a text file using the old-style
+syntax.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsFamily.saveOldLibrary">
+<tt class="descname">saveOldLibrary</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.saveOldLibrary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the current database library to a text file using the old-style
+syntax.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsFamily.saveOldTemplate">
+<tt class="descname">saveOldTemplate</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.saveOldTemplate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save an old-style RMG reaction family template from the location <cite>path</cite>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsFamily.saveOldTree">
+<tt class="descname">saveOldTree</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.saveOldTree" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the current database tree to a text file using the old-style
+syntax.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div class="sidebarlogo">
+<img src="../../_static/rmg-logo-small.png" alt="RMG" />
+</div>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="kineticsdepository.html"
+                        title="previous chapter">rmgpy.data.kinetics.KineticsDepository</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="kineticsgroups.html"
+                        title="next chapter">rmgpy.data.kinetics.KineticsGroups</a></p>
+  <h3>This Page </h3>
+  <ul class="this-page-menu">
+    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/reference/data/kineticsfamily.rst"
+           rel="nofollow">Edit this page</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

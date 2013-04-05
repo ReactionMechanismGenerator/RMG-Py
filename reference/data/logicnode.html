@@ -1,0 +1,163 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>rmgpy.data.base.LogicNode &mdash; RMG Py 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
+    <link rel="up" title="Database (rmgpy.data)" href="index.html" />
+    <link rel="next" title="rmgpy.data.kinetics.ReactionRecipe" href="reactionrecipe.html" />
+    <link rel="prev" title="rmgpy.data.kinetics.LibraryReaction" href="libraryreaction.html" /> 
+  </head>
+  <body>
+<div class="header">
+&nbsp;
+</div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="reactionrecipe.html" title="rmgpy.data.kinetics.ReactionRecipe"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="libraryreaction.html" title="rmgpy.data.kinetics.LibraryReaction"
+             accesskey="P">previous</a> |</li>
+<li><a href="../../index.html">Documentation</a> &raquo;</li>
+
+          <li><a href="../index.html" >RMG API Reference</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Database (<tt class="docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">rmgpy.data</span></tt>)</a> &raquo;</li> 
+      </ul>
+    </div>
+            
+  <div class="section" id="rmgpy-data-base-logicnode">
+<h1>rmgpy.data.base.LogicNode<a class="headerlink" href="#rmgpy-data-base-logicnode" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="rmgpy.data.base.LogicNode">
+<em class="property">class </em><tt class="descclassname">rmgpy.data.base.</tt><tt class="descname">LogicNode</tt><big>(</big><em>items</em>, <em>invert</em><big>)</big><a class="headerlink" href="#rmgpy.data.base.LogicNode" title="Permalink to this definition">¶</a></dt>
+<dd><p>A base class for AND and OR logic nodes.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="rmgpy.data.base.LogicAnd">
+<em class="property">class </em><tt class="descclassname">rmgpy.data.base.</tt><tt class="descname">LogicAnd</tt><big>(</big><em>items</em>, <em>invert</em><big>)</big><a class="headerlink" href="#rmgpy.data.base.LogicAnd" title="Permalink to this definition">¶</a></dt>
+<dd><p>A logical AND node. Structure must match all components.</p>
+<dl class="method">
+<dt id="rmgpy.data.base.LogicAnd.matchToStructure">
+<tt class="descname">matchToStructure</tt><big>(</big><em>database</em>, <em>structure</em>, <em>atoms</em><big>)</big><a class="headerlink" href="#rmgpy.data.base.LogicAnd.matchToStructure" title="Permalink to this definition">¶</a></dt>
+<dd><p>Does this node in the given database match the given structure with the labeled atoms?</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="rmgpy.data.base.LogicOr">
+<em class="property">class </em><tt class="descclassname">rmgpy.data.base.</tt><tt class="descname">LogicOr</tt><big>(</big><em>items</em>, <em>invert</em><big>)</big><a class="headerlink" href="#rmgpy.data.base.LogicOr" title="Permalink to this definition">¶</a></dt>
+<dd><p>A logical OR node. Structure can match any component.</p>
+<p>Initialize with a list of component items and a boolean instruction to invert the answer.</p>
+<dl class="method">
+<dt id="rmgpy.data.base.LogicOr.getPossibleStructures">
+<tt class="descname">getPossibleStructures</tt><big>(</big><em>entries</em><big>)</big><a class="headerlink" href="#rmgpy.data.base.LogicOr.getPossibleStructures" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of the possible structures below this node.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.base.LogicOr.matchToStructure">
+<tt class="descname">matchToStructure</tt><big>(</big><em>database</em>, <em>structure</em>, <em>atoms</em><big>)</big><a class="headerlink" href="#rmgpy.data.base.LogicOr.matchToStructure" title="Permalink to this definition">¶</a></dt>
+<dd><p>Does this node in the given database match the given structure with the labeled atoms?</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="rmgpy.data.base.makeLogicNode">
+<tt class="descclassname">rmgpy.data.base.</tt><tt class="descname">makeLogicNode</tt><big>(</big><em>string</em><big>)</big><a class="headerlink" href="#rmgpy.data.base.makeLogicNode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates and returns a node in the tree which is a logic node.</p>
+<p>String should be of the form:</p>
+<ul class="simple">
+<li>OR{}</li>
+<li>AND{}</li>
+<li>NOT OR{}</li>
+<li>NOT AND{}</li>
+</ul>
+<p>And the returned object will be of class LogicOr or LogicAnd</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div class="sidebarlogo">
+<img src="../../_static/rmg-logo-small.png" alt="RMG" />
+</div>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="libraryreaction.html"
+                        title="previous chapter">rmgpy.data.kinetics.LibraryReaction</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="reactionrecipe.html"
+                        title="next chapter">rmgpy.data.kinetics.ReactionRecipe</a></p>
+  <h3>This Page </h3>
+  <ul class="this-page-menu">
+    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/reference/data/logicnode.rst"
+           rel="nofollow">Edit this page</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

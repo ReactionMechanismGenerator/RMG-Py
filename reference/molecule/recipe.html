@@ -1,0 +1,155 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Reaction recipes &mdash; RMG Py 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
+    <link rel="up" title="Molecular representations (rmgpy.molecule)" href="index.html" />
+    <link rel="next" title="rmgpy.molecule.Atom" href="atom.html" />
+    <link rel="prev" title="rmgpy.molecule.AtomType" href="atomtype.html" /> 
+  </head>
+  <body>
+<div class="header">
+&nbsp;
+</div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="atom.html" title="rmgpy.molecule.Atom"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="atomtype.html" title="rmgpy.molecule.AtomType"
+             accesskey="P">previous</a> |</li>
+<li><a href="../../index.html">Documentation</a> &raquo;</li>
+
+          <li><a href="../index.html" >RMG API Reference</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Molecular representations (<tt class="docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">rmgpy.molecule</span></tt>)</a> &raquo;</li> 
+      </ul>
+    </div>
+            
+  <div class="section" id="reaction-recipes">
+<h1>Reaction recipes<a class="headerlink" href="#reaction-recipes" title="Permalink to this headline">¶</a></h1>
+<p id="reaction-recipe-actions">A reaction recipe is a procedure for applying a reaction to a set of chemical
+species. Each reaction recipe is made up of a set of actions that, when applied
+sequentially, a set of chemical reactants to chemical products via that
+reaction&#8217;s characteristic chemical process. Each action requires a small set of
+parameters in order to be fully defined.</p>
+<p>We define the following reaction recipe actions:</p>
+<blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="9%" />
+<col width="20%" />
+<col width="71%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Action name</th>
+<th class="head">Arguments</th>
+<th class="head">Action</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>CHANGE_BOND</td>
+<td><cite>center1</cite>, <cite>order</cite>, <cite>center2</cite></td>
+<td>change the bond order of the bond between <cite>center1</cite> and <cite>center2</cite> by <cite>order</cite>; do not break or form bonds</td>
+</tr>
+<tr class="row-odd"><td>FORM_BOND</td>
+<td><cite>center1</cite>, <cite>order</cite>, <cite>center2</cite></td>
+<td>form a new bond between <cite>center1</cite> and <cite>center2</cite> of type <cite>order</cite></td>
+</tr>
+<tr class="row-even"><td>BREAK_BOND</td>
+<td><cite>center1</cite>, <cite>order</cite>, <cite>center2</cite></td>
+<td>break the bond between <cite>center1</cite> and <cite>center2</cite>, which should be of type <cite>order</cite></td>
+</tr>
+<tr class="row-odd"><td>GAIN_RADICAL</td>
+<td><cite>center</cite>, <cite>radical</cite></td>
+<td>increase the number of free electrons on <cite>center</cite> by <cite>radical</cite></td>
+</tr>
+<tr class="row-even"><td>LOSE_RADICAL</td>
+<td><cite>center</cite>, <cite>radical</cite></td>
+<td>decrease the number of free electrons on <cite>center</cite> by <cite>radical</cite></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div class="sidebarlogo">
+<img src="../../_static/rmg-logo-small.png" alt="RMG" />
+</div>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="atomtype.html"
+                        title="previous chapter">rmgpy.molecule.AtomType</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="atom.html"
+                        title="next chapter">rmgpy.molecule.Atom</a></p>
+  <h3>This Page </h3>
+  <ul class="this-page-menu">
+    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/reference/molecule/recipe.rst"
+           rel="nofollow">Edit this page</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,358 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Molecular representations (rmgpy.molecule) &mdash; RMG Py 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
+    <link rel="up" title="RMG API Reference" href="../index.html" />
+    <link rel="next" title="rmgpy.molecule.graph.Vertex" href="vertex.html" />
+    <link rel="prev" title="rmgpy.kinetics.Eckart" href="../kinetics/eckart.html" /> 
+  </head>
+  <body>
+<div class="header">
+&nbsp;
+</div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="vertex.html" title="rmgpy.molecule.graph.Vertex"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../kinetics/eckart.html" title="rmgpy.kinetics.Eckart"
+             accesskey="P">previous</a> |</li>
+<li><a href="../../index.html">Documentation</a> &raquo;</li>
+
+          <li><a href="../index.html" accesskey="U">RMG API Reference</a> &raquo;</li> 
+      </ul>
+    </div>
+            
+  <div class="section" id="module-rmgpy.molecule">
+<span id="molecular-representations-rmgpy-molecule"></span><h1>Molecular representations (<a class="reference internal" href="#module-rmgpy.molecule" title="rmgpy.molecule"><tt class="xref py py-mod docutils literal"><span class="pre">rmgpy.molecule</span></tt></a>)<a class="headerlink" href="#module-rmgpy.molecule" title="Permalink to this headline">¶</a></h1>
+<p>The <a class="reference internal" href="#module-rmgpy.molecule" title="rmgpy.molecule"><tt class="xref py py-mod docutils literal"><span class="pre">rmgpy.molecule</span></tt></a> subpackage contains classes and functions for working
+with molecular representations, particularly using chemical graph theory.</p>
+<div class="section" id="graphs">
+<h2>Graphs<a class="headerlink" href="#graphs" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="29%" />
+<col width="71%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Class</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><a class="reference internal" href="vertex.html#rmgpy.molecule.graph.Vertex" title="rmgpy.molecule.graph.Vertex"><tt class="xref py py-class docutils literal"><span class="pre">Vertex</span></tt></a></td>
+<td>A generic vertex (node) in a graph</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="edge.html#rmgpy.molecule.graph.Edge" title="rmgpy.molecule.graph.Edge"><tt class="xref py py-class docutils literal"><span class="pre">Edge</span></tt></a></td>
+<td>A generic edge (arc) in a graph</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="graph.html#rmgpy.molecule.graph.Graph" title="rmgpy.molecule.graph.Graph"><tt class="xref py py-class docutils literal"><span class="pre">Graph</span></tt></a></td>
+<td>A generic graph data type</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="graph-isomorphism">
+<h2>Graph isomorphism<a class="headerlink" href="#graph-isomorphism" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="29%" />
+<col width="71%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Class</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><a class="reference internal" href="vf2.html#rmgpy.molecule.vf2.VF2" title="rmgpy.molecule.vf2.VF2"><tt class="xref py py-class docutils literal"><span class="pre">VF2</span></tt></a></td>
+<td>Graph isomorphism using the VF2 algorithm</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="elements-and-atom-types">
+<h2>Elements and atom types<a class="headerlink" href="#elements-and-atom-types" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="25%" />
+<col width="75%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Class/Function</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><a class="reference internal" href="element.html#rmgpy.molecule.Element" title="rmgpy.molecule.Element"><tt class="xref py py-class docutils literal"><span class="pre">Element</span></tt></a></td>
+<td>A model of a chemical element</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="element.html#rmgpy.molecule.getElement" title="rmgpy.molecule.getElement"><tt class="xref py py-func docutils literal"><span class="pre">getElement()</span></tt></a></td>
+<td>Return the <a class="reference internal" href="element.html#rmgpy.molecule.Element" title="rmgpy.molecule.Element"><tt class="xref py py-class docutils literal"><span class="pre">Element</span></tt></a> object for a given atomic number or symbol</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="atomtype.html#rmgpy.molecule.AtomType" title="rmgpy.molecule.AtomType"><tt class="xref py py-class docutils literal"><span class="pre">AtomType</span></tt></a></td>
+<td>A model of an atom type: an element and local bond structure</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="atomtype.html#rmgpy.molecule.getAtomType" title="rmgpy.molecule.getAtomType"><tt class="xref py py-func docutils literal"><span class="pre">getAtomType()</span></tt></a></td>
+<td>Return the <a class="reference internal" href="atomtype.html#rmgpy.molecule.AtomType" title="rmgpy.molecule.AtomType"><tt class="xref py py-class docutils literal"><span class="pre">AtomType</span></tt></a> object for a given atom in a molecule</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="molecules">
+<h2>Molecules<a class="headerlink" href="#molecules" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="29%" />
+<col width="71%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Class</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><a class="reference internal" href="atom.html#rmgpy.molecule.Atom" title="rmgpy.molecule.Atom"><tt class="xref py py-class docutils literal"><span class="pre">Atom</span></tt></a></td>
+<td>An atom in a molecule</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="bond.html#rmgpy.molecule.Bond" title="rmgpy.molecule.Bond"><tt class="xref py py-class docutils literal"><span class="pre">Bond</span></tt></a></td>
+<td>A bond in a molecule</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="molecule.html#rmgpy.molecule.Molecule" title="rmgpy.molecule.Molecule"><tt class="xref py py-class docutils literal"><span class="pre">Molecule</span></tt></a></td>
+<td>A molecular structure represented using a chemical graph</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="functional-groups">
+<h2>Functional groups<a class="headerlink" href="#functional-groups" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="27%" />
+<col width="73%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Class</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><a class="reference internal" href="groupatom.html#rmgpy.molecule.GroupAtom" title="rmgpy.molecule.GroupAtom"><tt class="xref py py-class docutils literal"><span class="pre">GroupAtom</span></tt></a></td>
+<td>An atom in a functional group</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="groupbond.html#rmgpy.molecule.GroupBond" title="rmgpy.molecule.GroupBond"><tt class="xref py py-class docutils literal"><span class="pre">GroupBond</span></tt></a></td>
+<td>A bond in a functional group</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="group.html#rmgpy.molecule.Group" title="rmgpy.molecule.Group"><tt class="xref py py-class docutils literal"><span class="pre">Group</span></tt></a></td>
+<td>A functional group structure represented using a chemical graph</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="adjacency-lists">
+<h2>Adjacency lists<a class="headerlink" href="#adjacency-lists" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="34%" />
+<col width="66%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Function</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><a class="reference internal" href="adjlist.html#rmgpy.molecule.adjlist.fromAdjacencyList" title="rmgpy.molecule.adjlist.fromAdjacencyList"><tt class="xref py py-func docutils literal"><span class="pre">fromAdjacencyList()</span></tt></a></td>
+<td>Convert an adjacency list to a set of atoms and bonds</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="adjlist.html#rmgpy.molecule.adjlist.toAdjacencyList" title="rmgpy.molecule.adjlist.toAdjacencyList"><tt class="xref py py-func docutils literal"><span class="pre">toAdjacencyList()</span></tt></a></td>
+<td>Convert a set of atoms and bonds to an adjacency list</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="symmetry-numbers">
+<h2>Symmetry numbers<a class="headerlink" href="#symmetry-numbers" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="33%" />
+<col width="67%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Class</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><tt class="xref py py-func docutils literal"><span class="pre">calculateAtomSymmetryNumber()</span></tt></td>
+<td>Calculate the atom-centered symmetry number for an atom in a molecule</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="symmetry.html#rmgpy.molecule.symmetry.calculateBondSymmetryNumber" title="rmgpy.molecule.symmetry.calculateBondSymmetryNumber"><tt class="xref py py-func docutils literal"><span class="pre">calculateBondSymmetryNumber()</span></tt></a></td>
+<td>Calculate the bond-centered symmetry number for a bond in a molecule</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="symmetry.html#rmgpy.molecule.symmetry.calculateAxisSymmetryNumber" title="rmgpy.molecule.symmetry.calculateAxisSymmetryNumber"><tt class="xref py py-func docutils literal"><span class="pre">calculateAxisSymmetryNumber()</span></tt></a></td>
+<td>Calculate the axis-centered symmetry number for a double bond axis in a molecule</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="symmetry.html#rmgpy.molecule.symmetry.calculateCyclicSymmetryNumber" title="rmgpy.molecule.symmetry.calculateCyclicSymmetryNumber"><tt class="xref py py-func docutils literal"><span class="pre">calculateCyclicSymmetryNumber()</span></tt></a></td>
+<td>Calculate the ring-centered symmetry number for a ring in a molecule</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="symmetry.html#rmgpy.molecule.symmetry.calculateSymmetryNumber" title="rmgpy.molecule.symmetry.calculateSymmetryNumber"><tt class="xref py py-func docutils literal"><span class="pre">calculateSymmetryNumber()</span></tt></a></td>
+<td>Calculate the total internal + external symmetry number for a molecule</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="molecule-and-reaction-drawing">
+<h2>Molecule and reaction drawing<a class="headerlink" href="#molecule-and-reaction-drawing" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="30%" />
+<col width="70%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Class</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><a class="reference internal" href="moleculedrawer.html#rmgpy.molecule.draw.MoleculeDrawer" title="rmgpy.molecule.draw.MoleculeDrawer"><tt class="xref py py-class docutils literal"><span class="pre">MoleculeDrawer</span></tt></a></td>
+<td>Draw the skeletal formula of a molecule</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="reactiondrawer.html#rmgpy.molecule.draw.ReactionDrawer" title="rmgpy.molecule.draw.ReactionDrawer"><tt class="xref py py-class docutils literal"><span class="pre">ReactionDrawer</span></tt></a></td>
+<td>Draw a chemical reaction</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="exceptions">
+<h2>Exceptions<a class="headerlink" href="#exceptions" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="33%" />
+<col width="67%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Exception</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><tt class="xref py py-exc docutils literal"><span class="pre">ElementError</span></tt></td>
+<td>Raised when an error occurs while working with chemical elements</td>
+</tr>
+<tr class="row-odd"><td><tt class="xref py py-exc docutils literal"><span class="pre">AtomTypeError</span></tt></td>
+<td>Raised when an error occurs while working with atom types</td>
+</tr>
+<tr class="row-even"><td><tt class="xref py py-exc docutils literal"><span class="pre">InvalidAdjacencyListError</span></tt></td>
+<td>Raised when an invalid adjacency list is encountered</td>
+</tr>
+<tr class="row-odd"><td><tt class="xref py py-exc docutils literal"><span class="pre">ActionError</span></tt></td>
+<td>Raised when an error occurs while working with a reaction recipe action</td>
+</tr>
+</tbody>
+</table>
+<div class="toctree-wrapper compound">
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div class="sidebarlogo">
+<img src="../../_static/rmg-logo-small.png" alt="RMG" />
+</div>
+  <h3><a href="../../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Molecular representations (<tt class="docutils literal"><span class="pre">rmgpy.molecule</span></tt>)</a><ul>
+<li><a class="reference internal" href="#graphs">Graphs</a></li>
+<li><a class="reference internal" href="#graph-isomorphism">Graph isomorphism</a></li>
+<li><a class="reference internal" href="#elements-and-atom-types">Elements and atom types</a></li>
+<li><a class="reference internal" href="#molecules">Molecules</a></li>
+<li><a class="reference internal" href="#functional-groups">Functional groups</a></li>
+<li><a class="reference internal" href="#adjacency-lists">Adjacency lists</a></li>
+<li><a class="reference internal" href="#symmetry-numbers">Symmetry numbers</a></li>
+<li><a class="reference internal" href="#molecule-and-reaction-drawing">Molecule and reaction drawing</a></li>
+<li><a class="reference internal" href="#exceptions">Exceptions</a><ul>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../kinetics/eckart.html"
+                        title="previous chapter">rmgpy.kinetics.Eckart</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="vertex.html"
+                        title="next chapter">rmgpy.molecule.graph.Vertex</a></p>
+  <h3>This Page </h3>
+  <ul class="this-page-menu">
+    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/reference/molecule/index.rst"
+           rel="nofollow">Edit this page</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

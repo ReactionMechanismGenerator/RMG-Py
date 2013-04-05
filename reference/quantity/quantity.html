@@ -1,0 +1,130 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>rmgpy.quantity.Quantity &mdash; RMG Py 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
+    <link rel="up" title="Physical quantities (rmgpy.quantity)" href="index.html" />
+    <link rel="next" title="Reactions (rmgpy.reaction)" href="../reaction/index.html" />
+    <link rel="prev" title="rmgpy.quantity.ArrayQuantity" href="arrayquantity.html" /> 
+  </head>
+  <body>
+<div class="header">
+&nbsp;
+</div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../reaction/index.html" title="Reactions (rmgpy.reaction)"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="arrayquantity.html" title="rmgpy.quantity.ArrayQuantity"
+             accesskey="P">previous</a> |</li>
+<li><a href="../../index.html">Documentation</a> &raquo;</li>
+
+          <li><a href="../index.html" >RMG API Reference</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Physical quantities (<tt class="docutils literal docutils literal docutils literal docutils literal"><span class="pre">rmgpy.quantity</span></tt>)</a> &raquo;</li> 
+      </ul>
+    </div>
+            
+  <div class="section" id="rmgpy-quantity-quantity">
+<h1>rmgpy.quantity.Quantity<a class="headerlink" href="#rmgpy-quantity-quantity" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="rmgpy.quantity.Quantity">
+<tt class="descclassname">rmgpy.quantity.</tt><tt class="descname">Quantity</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.quantity.Quantity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a <a class="reference internal" href="scalarquantity.html#rmgpy.quantity.ScalarQuantity" title="rmgpy.quantity.ScalarQuantity"><tt class="xref py py-class docutils literal"><span class="pre">ScalarQuantity</span></tt></a> or <a class="reference internal" href="arrayquantity.html#rmgpy.quantity.ArrayQuantity" title="rmgpy.quantity.ArrayQuantity"><tt class="xref py py-class docutils literal"><span class="pre">ArrayQuantity</span></tt></a> object for a
+given physical quantity. The physical quantity can be specified in several
+ways:</p>
+<ul class="simple">
+<li>A scalar-like or array-like value (for a dimensionless quantity)</li>
+<li>An array of arguments (including keyword arguments) giving some or all of
+the <cite>value</cite>, <cite>units</cite>, <cite>uncertainty</cite>, and/or <cite>uncertaintyType</cite>.</li>
+<li>A tuple of the form <tt class="docutils literal"><span class="pre">(value,)</span></tt>, <tt class="docutils literal"><span class="pre">(value,units)</span></tt>, 
+<tt class="docutils literal"><span class="pre">(value,units,uncertainty)</span></tt>, or 
+<tt class="docutils literal"><span class="pre">(value,units,uncertaintyType,uncertainty)</span></tt></li>
+<li>An existing <a class="reference internal" href="scalarquantity.html#rmgpy.quantity.ScalarQuantity" title="rmgpy.quantity.ScalarQuantity"><tt class="xref py py-class docutils literal"><span class="pre">ScalarQuantity</span></tt></a> or <a class="reference internal" href="arrayquantity.html#rmgpy.quantity.ArrayQuantity" title="rmgpy.quantity.ArrayQuantity"><tt class="xref py py-class docutils literal"><span class="pre">ArrayQuantity</span></tt></a> object, for
+which a copy is made</li>
+</ul>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div class="sidebarlogo">
+<img src="../../_static/rmg-logo-small.png" alt="RMG" />
+</div>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="arrayquantity.html"
+                        title="previous chapter">rmgpy.quantity.ArrayQuantity</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../reaction/index.html"
+                        title="next chapter">Reactions (<tt class="docutils literal"><span class="pre">rmgpy.reaction</span></tt>)</a></p>
+  <h3>This Page </h3>
+  <ul class="this-page-menu">
+    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/reference/quantity/quantity.rst"
+           rel="nofollow">Edit this page</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

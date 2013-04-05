@@ -1,0 +1,404 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>rmgpy.data.kinetics.DepositoryReaction &mdash; RMG Py 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
+    <link rel="up" title="Database (rmgpy.data)" href="index.html" />
+    <link rel="next" title="rmgpy.data.base.Entry" href="entry.html" />
+    <link rel="prev" title="rmgpy.data.base.Database" href="database.html" /> 
+  </head>
+  <body>
+<div class="header">
+&nbsp;
+</div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="entry.html" title="rmgpy.data.base.Entry"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="database.html" title="rmgpy.data.base.Database"
+             accesskey="P">previous</a> |</li>
+<li><a href="../../index.html">Documentation</a> &raquo;</li>
+
+          <li><a href="../index.html" >RMG API Reference</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Database (<tt class="docutils literal docutils literal docutils literal docutils literal"><span class="pre">rmgpy.data</span></tt>)</a> &raquo;</li> 
+      </ul>
+    </div>
+            
+  <div class="section" id="rmgpy-data-kinetics-depositoryreaction">
+<h1>rmgpy.data.kinetics.DepositoryReaction<a class="headerlink" href="#rmgpy-data-kinetics-depositoryreaction" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="rmgpy.data.kinetics.DepositoryReaction">
+<em class="property">class </em><tt class="descclassname">rmgpy.data.kinetics.</tt><tt class="descname">DepositoryReaction</tt><big>(</big><em>index=-1</em>, <em>reactants=None</em>, <em>products=None</em>, <em>kinetics=None</em>, <em>reversible=True</em>, <em>transitionState=None</em>, <em>duplicate=False</em>, <em>degeneracy=1</em>, <em>pairs=None</em>, <em>depository=None</em>, <em>family=None</em>, <em>entry=None</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.DepositoryReaction" title="Permalink to this definition">¶</a></dt>
+<dd><p>A Reaction object generated from a reaction depository. In addition to the
+usual attributes, this class includes <cite>depository</cite> and <cite>entry</cite> attributes to
+store the library and the entry in that depository that it was created from.</p>
+<dl class="method">
+<dt id="rmgpy.data.kinetics.DepositoryReaction.calculateMicrocanonicalRateCoefficient">
+<tt class="descname">calculateMicrocanonicalRateCoefficient</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.DepositoryReaction.calculateMicrocanonicalRateCoefficient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the microcanonical rate coefficient <span class="math">\(k(E)\)</span> for the reaction
+<cite>reaction</cite> at the energies <cite>Elist</cite> in J/mol. <cite>reacDensStates</cite> and 
+<cite>prodDensStates</cite> are the densities of states of the reactant and product
+configurations for this reaction. If the reaction is irreversible, only the
+reactant density of states is required; if the reaction is reversible, then
+both are required. This function will try to use the best method that it
+can based on the input data available:</p>
+<ul class="simple">
+<li>If detailed information has been provided for the transition state (i.e.
+the molecular degrees of freedom), then RRKM theory will be used.</li>
+<li>If the above is not possible but high-pressure limit kinetics
+<span class="math">\(k_\infty(T)\)</span> have been provided, then the inverse Laplace 
+transform method will be used.</li>
+</ul>
+<p>The density of states for the product <cite>prodDensStates</cite> and the temperature
+of interest <cite>T</cite> in K can also be provided. For isomerization and association
+reactions <cite>prodDensStates</cite> is required; for dissociation reactions it is
+optional. The temperature is used if provided in the detailed balance
+expression to determine the reverse kinetics, and in certain cases in the
+inverse Laplace transform method.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.DepositoryReaction.calculateTSTRateCoefficient">
+<tt class="descname">calculateTSTRateCoefficient</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.DepositoryReaction.calculateTSTRateCoefficient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate the forward rate coefficient for the reaction with
+corresponding transition state <cite>TS</cite> at temperature <cite>T</cite> in K using
+(canonical) transition state theory. The TST equation is</p>
+<div class="math">
+\[k(T) = \kappa(T) \frac{k_\mathrm{B} T}{h} \frac{Q^\ddagger(T)}{Q^\mathrm{A}(T) Q^\mathrm{B}(T)} \exp \left( -\frac{E_0}{k_\mathrm{B} T} \right)\]</div>
+<p>where <span class="math">\(Q^\ddagger\)</span> is the partition function of the transition state,
+<span class="math">\(Q^\mathrm{A}\)</span> and <span class="math">\(Q^\mathrm{B}\)</span> are the partition function
+of the reactants, <span class="math">\(E_0\)</span> is the ground-state energy difference from
+the transition state to the reactants, <span class="math">\(T\)</span> is the absolute
+temperature, <span class="math">\(k_\mathrm{B}\)</span> is the Boltzmann constant, and <span class="math">\(h\)</span>
+is the Planck constant. <span class="math">\(\kappa(T)\)</span> is an optional tunneling
+correction.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.DepositoryReaction.canTST">
+<tt class="descname">canTST</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.DepositoryReaction.canTST" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if the necessary parameters are available for using
+transition state theory &#8211; or the microcanonical equivalent, RRKM
+theory &#8211; to compute the rate coefficient for this reaction, or
+<tt class="docutils literal"><span class="pre">False</span></tt> otherwise.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.DepositoryReaction.draw">
+<tt class="descname">draw</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.DepositoryReaction.draw" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a pictorial representation of the chemical reaction using the
+<tt class="xref py py-mod docutils literal"><span class="pre">draw</span></tt> module. Use <cite>path</cite> to specify the file to save
+the generated image to; the image type is automatically determined by
+extension. Valid extensions are <tt class="docutils literal"><span class="pre">.png</span></tt>, <tt class="docutils literal"><span class="pre">.svg</span></tt>, <tt class="docutils literal"><span class="pre">.pdf</span></tt>, and
+<tt class="docutils literal"><span class="pre">.ps</span></tt>; of these, the first is a raster format and the remainder are
+vector formats.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.DepositoryReaction.fixBarrierHeight">
+<tt class="descname">fixBarrierHeight</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.DepositoryReaction.fixBarrierHeight" title="Permalink to this definition">¶</a></dt>
+<dd><p>Turns the kinetics into Arrhenius (if they were ArrheniusEP)
+and ensures the activation energy is at least the endothermicity
+for endothermic reactions, and is not negative only as a result 
+of using Evans Polanyi with an exothermic reaction.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.DepositoryReaction.generatePairs">
+<tt class="descname">generatePairs</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.DepositoryReaction.generatePairs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate the reactant-product pairs to use for this reaction when
+performing flux analysis. The exact procedure for doing so depends on
+the reaction type:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="26%" />
+<col width="20%" />
+<col width="54%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Reaction type</th>
+<th class="head">Template</th>
+<th class="head">Resulting pairs</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>Isomerization</td>
+<td>A     -&gt; C</td>
+<td>(A,C)</td>
+</tr>
+<tr class="row-odd"><td>Dissociation</td>
+<td>A     -&gt; C + D</td>
+<td>(A,C), (A,D)</td>
+</tr>
+<tr class="row-even"><td>Association</td>
+<td>A + B -&gt; C</td>
+<td>(A,C), (B,C)</td>
+</tr>
+<tr class="row-odd"><td>Bimolecular</td>
+<td>A + B -&gt; C + D</td>
+<td>(A,C), (B,D) <em>or</em> (A,D), (B,C)</td>
+</tr>
+</tbody>
+</table>
+<p>There are a number of ways of determining the correct pairing for 
+bimolecular reactions. Here we try a simple similarity analysis by comparing
+the number of heavy atoms (carbons and oxygens at the moment). This should
+work most of the time, but a more rigorous algorithm may be needed for
+some cases.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.DepositoryReaction.generateReverseRateCoefficient">
+<tt class="descname">generateReverseRateCoefficient</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.DepositoryReaction.generateReverseRateCoefficient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate and return a rate coefficient model for the reverse reaction. 
+Currently this only works if the <cite>kinetics</cite> attribute is an 
+<tt class="xref py py-class docutils literal"><span class="pre">Arrhenius</span></tt> or <tt class="xref py py-class docutils literal"><span class="pre">KineticsData</span></tt> object.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.DepositoryReaction.getEnthalpiesOfReaction">
+<tt class="descname">getEnthalpiesOfReaction</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.DepositoryReaction.getEnthalpiesOfReaction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the enthalpies of reaction in J/mol evaluated at temperatures
+<cite>Tlist</cite> in K.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.DepositoryReaction.getEnthalpyOfReaction">
+<tt class="descname">getEnthalpyOfReaction</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.DepositoryReaction.getEnthalpyOfReaction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the enthalpy of reaction in J/mol evaluated at temperature
+<cite>T</cite> in K.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.DepositoryReaction.getEntropiesOfReaction">
+<tt class="descname">getEntropiesOfReaction</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.DepositoryReaction.getEntropiesOfReaction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the entropies of reaction in J/mol*K evaluated at temperatures
+<cite>Tlist</cite> in K.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.DepositoryReaction.getEntropyOfReaction">
+<tt class="descname">getEntropyOfReaction</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.DepositoryReaction.getEntropyOfReaction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the entropy of reaction in J/mol*K evaluated at temperature <cite>T</cite>
+in K.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.DepositoryReaction.getEquilibriumConstant">
+<tt class="descname">getEquilibriumConstant</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.DepositoryReaction.getEquilibriumConstant" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the equilibrium constant for the reaction at the specified
+temperature <cite>T</cite> in K. The <cite>type</cite> parameter lets you specify the
+quantities used in the equilibrium constant: <tt class="docutils literal"><span class="pre">Ka</span></tt> for activities,
+<tt class="docutils literal"><span class="pre">Kc</span></tt> for concentrations (default), or <tt class="docutils literal"><span class="pre">Kp</span></tt> for pressures. Note that
+this function currently assumes an ideal gas mixture.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.DepositoryReaction.getEquilibriumConstants">
+<tt class="descname">getEquilibriumConstants</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.DepositoryReaction.getEquilibriumConstants" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the equilibrium constants for the reaction at the specified
+temperatures <cite>Tlist</cite> in K. The <cite>type</cite> parameter lets you specify the
+quantities used in the equilibrium constant: <tt class="docutils literal"><span class="pre">Ka</span></tt> for activities,
+<tt class="docutils literal"><span class="pre">Kc</span></tt> for concentrations (default), or <tt class="docutils literal"><span class="pre">Kp</span></tt> for pressures. Note that
+this function currently assumes an ideal gas mixture.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.DepositoryReaction.getFreeEnergiesOfReaction">
+<tt class="descname">getFreeEnergiesOfReaction</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.DepositoryReaction.getFreeEnergiesOfReaction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the Gibbs free energies of reaction in J/mol evaluated at
+temperatures <cite>Tlist</cite> in K.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.DepositoryReaction.getFreeEnergyOfReaction">
+<tt class="descname">getFreeEnergyOfReaction</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.DepositoryReaction.getFreeEnergyOfReaction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the Gibbs free energy of reaction in J/mol evaluated at
+temperature <cite>T</cite> in K.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.DepositoryReaction.getRate">
+<tt class="descname">getRate</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.DepositoryReaction.getRate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the net rate of reaction at temperature <cite>T</cite> and pressure <cite>P</cite>. The
+parameter <cite>conc</cite> is a map with species as keys and concentrations as
+values. A reactant not found in the <cite>conc</cite> map is treated as having zero
+concentration.</p>
+<p>If passed a <cite>totalConc</cite>, it won&#8217;t bother recalculating it.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.DepositoryReaction.getRateCoefficient">
+<tt class="descname">getRateCoefficient</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.DepositoryReaction.getRateCoefficient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the overall rate coefficient for the forward reaction at
+temperature <cite>T</cite> in K and pressure <cite>P</cite> in Pa, including any reaction
+path degeneracies.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.DepositoryReaction.getSource">
+<tt class="descname">getSource</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.DepositoryReaction.getSource" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the database that was the source of this reaction. For a
+DepositoryReaction this should be a KineticsDepository object.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.DepositoryReaction.getStoichiometricCoefficient">
+<tt class="descname">getStoichiometricCoefficient</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.DepositoryReaction.getStoichiometricCoefficient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the stoichiometric coefficient of species <cite>spec</cite> in the reaction.
+The stoichiometric coefficient is increased by one for each time <cite>spec</cite>
+appears as a product and decreased by one for each time <cite>spec</cite> appears
+as a reactant.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.DepositoryReaction.getURL">
+<tt class="descname">getURL</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.DepositoryReaction.getURL" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a URL to search for this reaction in the rmg website.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.DepositoryReaction.hasTemplate">
+<tt class="descname">hasTemplate</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.DepositoryReaction.hasTemplate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if the reaction matches the template of <cite>reactants</cite>
+and <cite>products</cite>, which are both lists of <tt class="xref py py-class docutils literal"><span class="pre">Species</span></tt> objects, or
+<tt class="docutils literal"><span class="pre">False</span></tt> if not.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.DepositoryReaction.isAssociation">
+<tt class="descname">isAssociation</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.DepositoryReaction.isAssociation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if the reaction represents an association reaction
+<span class="math">\(\ce{A + B &lt;=&gt; C}\)</span> or <tt class="docutils literal"><span class="pre">False</span></tt> if not.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.DepositoryReaction.isBalanced">
+<tt class="descname">isBalanced</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.DepositoryReaction.isBalanced" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if the reaction has the same number of each atom on
+each side of the reaction equation, or <tt class="docutils literal"><span class="pre">False</span></tt> if not.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.DepositoryReaction.isDissociation">
+<tt class="descname">isDissociation</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.DepositoryReaction.isDissociation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if the reaction represents a dissociation reaction
+<span class="math">\(\ce{A &lt;=&gt; B + C}\)</span> or <tt class="docutils literal"><span class="pre">False</span></tt> if not.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.DepositoryReaction.isIsomerization">
+<tt class="descname">isIsomerization</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.DepositoryReaction.isIsomerization" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if the reaction represents an isomerization reaction
+<span class="math">\(\ce{A &lt;=&gt; B}\)</span> or <tt class="docutils literal"><span class="pre">False</span></tt> if not.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.DepositoryReaction.isIsomorphic">
+<tt class="descname">isIsomorphic</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.DepositoryReaction.isIsomorphic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if this reaction is the same as the <cite>other</cite> reaction,
+or <tt class="docutils literal"><span class="pre">False</span></tt> if they are different. 
+If <cite>eitherDirection=False</cite> then the directions must match.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.DepositoryReaction.matchesMolecules">
+<tt class="descname">matchesMolecules</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.DepositoryReaction.matchesMolecules" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if the given <tt class="docutils literal"><span class="pre">reactants</span></tt> represent the total set of
+reactants or products for the current <tt class="docutils literal"><span class="pre">reaction</span></tt>, or <tt class="docutils literal"><span class="pre">False</span></tt> if not.
+The reactants should be <tt class="xref py py-class docutils literal"><span class="pre">Molecule</span></tt> objects.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.DepositoryReaction.toChemkin">
+<tt class="descname">toChemkin</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.DepositoryReaction.toChemkin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the chemkin-formatted string for this reaction.</p>
+<p>Requires the <cite>speciesList</cite> to figure out third body colliders.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div class="sidebarlogo">
+<img src="../../_static/rmg-logo-small.png" alt="RMG" />
+</div>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="database.html"
+                        title="previous chapter">rmgpy.data.base.Database</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="entry.html"
+                        title="next chapter">rmgpy.data.base.Entry</a></p>
+  <h3>This Page </h3>
+  <ul class="this-page-menu">
+    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/reference/data/depositoryreaction.rst"
+           rel="nofollow">Edit this page</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

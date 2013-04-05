@@ -1,0 +1,221 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>rmgpy.data.statmech.StatmechDatabase &mdash; RMG Py 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
+    <link rel="up" title="Database (rmgpy.data)" href="index.html" />
+    <link rel="next" title="rmgpy.data.statmech.StatmechDepository" href="statmechdepository.html" />
+    <link rel="prev" title="rmgpy.data.kinetics.ReactionRecipe" href="reactionrecipe.html" /> 
+  </head>
+  <body>
+<div class="header">
+&nbsp;
+</div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="statmechdepository.html" title="rmgpy.data.statmech.StatmechDepository"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="reactionrecipe.html" title="rmgpy.data.kinetics.ReactionRecipe"
+             accesskey="P">previous</a> |</li>
+<li><a href="../../index.html">Documentation</a> &raquo;</li>
+
+          <li><a href="../index.html" >RMG API Reference</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Database (<tt class="docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">rmgpy.data</span></tt>)</a> &raquo;</li> 
+      </ul>
+    </div>
+            
+  <div class="section" id="rmgpy-data-statmech-statmechdatabase">
+<h1>rmgpy.data.statmech.StatmechDatabase<a class="headerlink" href="#rmgpy-data-statmech-statmechdatabase" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="rmgpy.data.statmech.StatmechDatabase">
+<em class="property">class </em><tt class="descclassname">rmgpy.data.statmech.</tt><tt class="descname">StatmechDatabase</tt><a class="headerlink" href="#rmgpy.data.statmech.StatmechDatabase" title="Permalink to this definition">¶</a></dt>
+<dd><p>A class for working with the RMG statistical mechanics (frequencies) database.</p>
+<dl class="method">
+<dt id="rmgpy.data.statmech.StatmechDatabase.getStatmechData">
+<tt class="descname">getStatmechData</tt><big>(</big><em>molecule</em>, <em>thermoModel=None</em><big>)</big><a class="headerlink" href="#rmgpy.data.statmech.StatmechDatabase.getStatmechData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the thermodynamic parameters for a given <tt class="xref py py-class docutils literal"><span class="pre">Molecule</span></tt>
+object <cite>molecule</cite>. This function first searches the loaded libraries
+in order, returning the first match found, before falling back to
+estimation via group additivity.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.statmech.StatmechDatabase.getStatmechDataFromDepository">
+<tt class="descname">getStatmechDataFromDepository</tt><big>(</big><em>molecule</em><big>)</big><a class="headerlink" href="#rmgpy.data.statmech.StatmechDatabase.getStatmechDataFromDepository" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return statmech data for the given <tt class="xref py py-class docutils literal"><span class="pre">Molecule</span></tt> object <cite>molecule</cite>
+by searching the entries in the depository.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.statmech.StatmechDatabase.getStatmechDataFromGroups">
+<tt class="descname">getStatmechDataFromGroups</tt><big>(</big><em>molecule</em>, <em>thermoModel</em><big>)</big><a class="headerlink" href="#rmgpy.data.statmech.StatmechDatabase.getStatmechDataFromGroups" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return statmech data for the given <tt class="xref py py-class docutils literal"><span class="pre">Molecule</span></tt> object <cite>molecule</cite>
+by estimating using characteristic group frequencies and fitting the
+remaining internal modes to heat capacity data from the given thermo
+model <cite>thermoModel</cite>. This always returns valid degrees of freedom data.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.statmech.StatmechDatabase.getStatmechDataFromLibrary">
+<tt class="descname">getStatmechDataFromLibrary</tt><big>(</big><em>molecule</em>, <em>library</em><big>)</big><a class="headerlink" href="#rmgpy.data.statmech.StatmechDatabase.getStatmechDataFromLibrary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return statmech data for the given <tt class="xref py py-class docutils literal"><span class="pre">Molecule</span></tt> object <cite>molecule</cite>
+by searching the entries in the specified <tt class="xref py py-class docutils literal"><span class="pre">StatmechLibrary</span></tt> object
+<cite>library</cite>. Returns <tt class="docutils literal"><span class="pre">None</span></tt> if no data was found.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.statmech.StatmechDatabase.load">
+<tt class="descname">load</tt><big>(</big><em>path</em>, <em>libraries=None</em>, <em>depository=True</em><big>)</big><a class="headerlink" href="#rmgpy.data.statmech.StatmechDatabase.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the statmech database from the given <cite>path</cite> on disk, where <cite>path</cite>
+points to the top-level folder of the thermo database.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.statmech.StatmechDatabase.loadDepository">
+<tt class="descname">loadDepository</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#rmgpy.data.statmech.StatmechDatabase.loadDepository" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the statmech database from the given <cite>path</cite> on disk, where <cite>path</cite>
+points to the top-level folder of the thermo database.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.statmech.StatmechDatabase.loadGroups">
+<tt class="descname">loadGroups</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#rmgpy.data.statmech.StatmechDatabase.loadGroups" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the statmech database from the given <cite>path</cite> on disk, where <cite>path</cite>
+points to the top-level folder of the thermo database.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.statmech.StatmechDatabase.loadLibraries">
+<tt class="descname">loadLibraries</tt><big>(</big><em>path</em>, <em>libraries=None</em><big>)</big><a class="headerlink" href="#rmgpy.data.statmech.StatmechDatabase.loadLibraries" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the statmech database from the given <cite>path</cite> on disk, where <cite>path</cite>
+points to the top-level folder of the thermo database.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.statmech.StatmechDatabase.loadOld">
+<tt class="descname">loadOld</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#rmgpy.data.statmech.StatmechDatabase.loadOld" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the old RMG thermo database from the given <cite>path</cite> on disk, where
+<cite>path</cite> points to the top-level folder of the old RMG database.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.statmech.StatmechDatabase.save">
+<tt class="descname">save</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#rmgpy.data.statmech.StatmechDatabase.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the statmech database to the given <cite>path</cite> on disk, where <cite>path</cite>
+points to the top-level folder of the statmech database.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.statmech.StatmechDatabase.saveDepository">
+<tt class="descname">saveDepository</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#rmgpy.data.statmech.StatmechDatabase.saveDepository" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the statmech depository to the given <cite>path</cite> on disk, where <cite>path</cite>
+points to the top-level folder of the statmech depository.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.statmech.StatmechDatabase.saveGroups">
+<tt class="descname">saveGroups</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#rmgpy.data.statmech.StatmechDatabase.saveGroups" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the statmech groups to the given <cite>path</cite> on disk, where <cite>path</cite>
+points to the top-level folder of the statmech groups.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.statmech.StatmechDatabase.saveLibraries">
+<tt class="descname">saveLibraries</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#rmgpy.data.statmech.StatmechDatabase.saveLibraries" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the statmech libraries to the given <cite>path</cite> on disk, where <cite>path</cite>
+points to the top-level folder of the statmech libraries.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.statmech.StatmechDatabase.saveOld">
+<tt class="descname">saveOld</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#rmgpy.data.statmech.StatmechDatabase.saveOld" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the old RMG thermo database to the given <cite>path</cite> on disk, where
+<cite>path</cite> points to the top-level folder of the old RMG database.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div class="sidebarlogo">
+<img src="../../_static/rmg-logo-small.png" alt="RMG" />
+</div>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="reactionrecipe.html"
+                        title="previous chapter">rmgpy.data.kinetics.ReactionRecipe</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="statmechdepository.html"
+                        title="next chapter">rmgpy.data.statmech.StatmechDepository</a></p>
+  <h3>This Page </h3>
+  <ul class="this-page-menu">
+    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/reference/data/statmechdatabase.rst"
+           rel="nofollow">Edit this page</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

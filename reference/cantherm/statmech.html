@@ -1,0 +1,151 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>rmgpy.cantherm.StatMechJob &mdash; RMG Py 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
+    <link rel="up" title="CanTherm (rmgpy.cantherm)" href="index.html" />
+    <link rel="next" title="rmgpy.cantherm.ThermoJob" href="thermo.html" />
+    <link rel="prev" title="rmgpy.cantherm.PressureDependenceJob" href="pdep.html" /> 
+  </head>
+  <body>
+<div class="header">
+&nbsp;
+</div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="thermo.html" title="rmgpy.cantherm.ThermoJob"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="pdep.html" title="rmgpy.cantherm.PressureDependenceJob"
+             accesskey="P">previous</a> |</li>
+<li><a href="../../index.html">Documentation</a> &raquo;</li>
+
+          <li><a href="../index.html" >RMG API Reference</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">CanTherm (<tt class="docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">rmgpy.cantherm</span></tt>)</a> &raquo;</li> 
+      </ul>
+    </div>
+            
+  <div class="section" id="rmgpy-cantherm-statmechjob">
+<h1>rmgpy.cantherm.StatMechJob<a class="headerlink" href="#rmgpy-cantherm-statmechjob" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="rmgpy.cantherm.StatMechJob">
+<em class="property">class </em><tt class="descclassname">rmgpy.cantherm.</tt><tt class="descname">StatMechJob</tt><big>(</big><em>species</em>, <em>path</em><big>)</big><a class="headerlink" href="#rmgpy.cantherm.StatMechJob" title="Permalink to this definition">¶</a></dt>
+<dd><p>A representation of a CanTherm statistical mechanics job. This job is used
+to compute and save the statistical mechanics information for a single
+species or transition state.</p>
+<dl class="method">
+<dt id="rmgpy.cantherm.StatMechJob.execute">
+<tt class="descname">execute</tt><big>(</big><em>outputFile=None</em>, <em>plot=False</em><big>)</big><a class="headerlink" href="#rmgpy.cantherm.StatMechJob.execute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Execute the statistical mechanics job, saving the results to the
+given <cite>outputFile</cite> on disk.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.cantherm.StatMechJob.load">
+<tt class="descname">load</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.cantherm.StatMechJob.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the statistical mechanics parameters for each conformer from
+the associated files on disk. Creates <tt class="xref py py-class docutils literal"><span class="pre">Conformer</span></tt> objects for
+each conformer and appends them to the list of confomers on the
+species object.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.cantherm.StatMechJob.plotHinderedRotor">
+<tt class="descname">plotHinderedRotor</tt><big>(</big><em>angle</em>, <em>Vlist</em>, <em>cosineRotor</em>, <em>fourierRotor</em>, <em>rotor</em>, <em>rotorIndex</em>, <em>directory</em><big>)</big><a class="headerlink" href="#rmgpy.cantherm.StatMechJob.plotHinderedRotor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot the potential for the rotor, along with its cosine and Fourier
+series potential fits. The plot is saved to a set of files of the form
+<tt class="docutils literal"><span class="pre">hindered_rotor_1.pdf</span></tt>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.cantherm.StatMechJob.save">
+<tt class="descname">save</tt><big>(</big><em>outputFile</em><big>)</big><a class="headerlink" href="#rmgpy.cantherm.StatMechJob.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the results of the statistical mechanics job to the file located
+at <cite>path</cite> on disk.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div class="sidebarlogo">
+<img src="../../_static/rmg-logo-small.png" alt="RMG" />
+</div>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="pdep.html"
+                        title="previous chapter">rmgpy.cantherm.PressureDependenceJob</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="thermo.html"
+                        title="next chapter">rmgpy.cantherm.ThermoJob</a></p>
+  <h3>This Page </h3>
+  <ul class="this-page-menu">
+    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/reference/cantherm/statmech.rst"
+           rel="nofollow">Edit this page</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

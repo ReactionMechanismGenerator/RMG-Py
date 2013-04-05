@@ -1,0 +1,532 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>rmgpy.data.statmechfit &mdash; RMG Py 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
+    <link rel="up" title="Database (rmgpy.data)" href="index.html" />
+    <link rel="next" title="rmgpy.data.statmech.StatmechGroups" href="statmechgroups.html" />
+    <link rel="prev" title="rmgpy.data.statmech.StatmechDepository" href="statmechdepository.html" /> 
+  </head>
+  <body>
+<div class="header">
+&nbsp;
+</div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="statmechgroups.html" title="rmgpy.data.statmech.StatmechGroups"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="statmechdepository.html" title="rmgpy.data.statmech.StatmechDepository"
+             accesskey="P">previous</a> |</li>
+<li><a href="../../index.html">Documentation</a> &raquo;</li>
+
+          <li><a href="../index.html" >RMG API Reference</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Database (<tt class="docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">rmgpy.data</span></tt>)</a> &raquo;</li> 
+      </ul>
+    </div>
+            
+  <div class="section" id="rmgpy-data-statmechfit">
+<h1>rmgpy.data.statmechfit<a class="headerlink" href="#rmgpy-data-statmechfit" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="fitting-functions">
+<h2>Fitting functions<a class="headerlink" href="#fitting-functions" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="rmgpy.data.statmechfit.fitStatmechToHeatCapacity">
+<tt class="descclassname">rmgpy.data.statmechfit.</tt><tt class="descname">fitStatmechToHeatCapacity</tt><big>(</big><em>Tlist</em>, <em>Cvlist</em>, <em>Nvib</em>, <em>Nrot</em>, <em>molecule=None</em><big>)</big><a class="headerlink" href="#rmgpy.data.statmechfit.fitStatmechToHeatCapacity" title="Permalink to this definition">¶</a></dt>
+<dd><p>For a given set of dimensionless heat capacity data <cite>Cvlist</cite> corresponding
+to temperature list <cite>Tlist</cite> in K, fit <cite>Nvib</cite> harmonic oscillator and <cite>Nrot</cite>
+hindered internal rotor modes. External and other previously-known modes
+should have already been removed from <cite>Cvlist</cite> prior to calling this
+function. You must provide at least 7 values for <cite>Cvlist</cite>.</p>
+<p>This function returns a list containing the fitted vibrational frequencies
+in a <tt class="xref py py-class docutils literal"><span class="pre">HarmonicOscillator</span></tt> object and the fitted 1D hindered rotors
+in <tt class="xref py py-class docutils literal"><span class="pre">HinderedRotor</span></tt> objects.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="rmgpy.data.statmechfit.fitStatmechDirect">
+<tt class="descclassname">rmgpy.data.statmechfit.</tt><tt class="descname">fitStatmechDirect</tt><big>(</big><em>Tlist</em>, <em>Cvlist</em>, <em>Nvib</em>, <em>Nrot</em>, <em>molecule=None</em><big>)</big><a class="headerlink" href="#rmgpy.data.statmechfit.fitStatmechDirect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fit <cite>Nvib</cite> harmonic oscillator and <cite>Nrot</cite> hindered internal rotor modes to
+the provided dimensionless heat capacities <cite>Cvlist</cite> at temperatures <cite>Tlist</cite>
+in K. This method assumes that there are enough heat capacity points
+provided that the vibrational frequencies and hindered rotation frequency-
+barrier pairs can be fit directly.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="rmgpy.data.statmechfit.fitStatmechPseudoRotors">
+<tt class="descclassname">rmgpy.data.statmechfit.</tt><tt class="descname">fitStatmechPseudoRotors</tt><big>(</big><em>Tlist</em>, <em>Cvlist</em>, <em>Nvib</em>, <em>Nrot</em>, <em>molecule=None</em><big>)</big><a class="headerlink" href="#rmgpy.data.statmechfit.fitStatmechPseudoRotors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fit <cite>Nvib</cite> harmonic oscillator and <cite>Nrot</cite> hindered internal rotor modes to
+the provided dimensionless heat capacities <cite>Cvlist</cite> at temperatures <cite>Tlist</cite>
+in K. This method assumes that there are enough heat capacity points
+provided that the vibrational frequencies can be fit directly, but the
+hindered rotors must be combined into a single &#8220;pseudo-rotor&#8221;.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="rmgpy.data.statmechfit.fitStatmechPseudo">
+<tt class="descclassname">rmgpy.data.statmechfit.</tt><tt class="descname">fitStatmechPseudo</tt><big>(</big><em>Tlist</em>, <em>Cvlist</em>, <em>Nvib</em>, <em>Nrot</em>, <em>molecule=None</em><big>)</big><a class="headerlink" href="#rmgpy.data.statmechfit.fitStatmechPseudo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fit <cite>Nvib</cite> harmonic oscillator and <cite>Nrot</cite> hindered internal rotor modes to
+the provided dimensionless heat capacities <cite>Cvlist</cite> at temperatures <cite>Tlist</cite>
+in K. This method assumes that there are relatively few heat capacity points
+provided, so the vibrations must be combined into one real vibration and
+two &#8220;pseudo-vibrations&#8221; and the hindered rotors must be combined into a
+single &#8220;pseudo-rotor&#8221;.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="helper-functions">
+<h2>Helper functions<a class="headerlink" href="#helper-functions" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="rmgpy.data.statmechfit.harmonicOscillator_heatCapacity">
+<tt class="descclassname">rmgpy.data.statmechfit.</tt><tt class="descname">harmonicOscillator_heatCapacity</tt><big>(</big><em>T</em>, <em>freq</em><big>)</big><a class="headerlink" href="#rmgpy.data.statmechfit.harmonicOscillator_heatCapacity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the heat capacity in J/mol*K at the given set of temperatures <cite>Tlist</cite>
+in K for the harmonic oscillator with a frequency <cite>freq</cite> in cm^-1.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="rmgpy.data.statmechfit.harmonicOscillator_d_heatCapacity_d_freq">
+<tt class="descclassname">rmgpy.data.statmechfit.</tt><tt class="descname">harmonicOscillator_d_heatCapacity_d_freq</tt><big>(</big><em>T</em>, <em>freq</em><big>)</big><a class="headerlink" href="#rmgpy.data.statmechfit.harmonicOscillator_d_heatCapacity_d_freq" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the first derivative of the heat capacity with respect to the
+harmonic oscillator frequency in J/mol*K/cm^-1 at the given set of
+temperatures <cite>Tlist</cite> in K, evaluated at the frequency <cite>freq</cite> in cm^-1.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="rmgpy.data.statmechfit.hinderedRotor_heatCapacity">
+<tt class="descclassname">rmgpy.data.statmechfit.</tt><tt class="descname">hinderedRotor_heatCapacity</tt><big>(</big><em>T</em>, <em>freq</em>, <em>barr</em><big>)</big><a class="headerlink" href="#rmgpy.data.statmechfit.hinderedRotor_heatCapacity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the heat capacity in J/mol*K at the given set of temperatures <cite>Tlist</cite>
+in K for the 1D hindered rotor with a frequency <cite>freq</cite> in cm^-1 and a
+barrier height <cite>barr</cite> in cm^-1.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="rmgpy.data.statmechfit.hinderedRotor_d_heatCapacity_d_freq">
+<tt class="descclassname">rmgpy.data.statmechfit.</tt><tt class="descname">hinderedRotor_d_heatCapacity_d_freq</tt><big>(</big><em>T</em>, <em>freq</em>, <em>barr</em><big>)</big><a class="headerlink" href="#rmgpy.data.statmechfit.hinderedRotor_d_heatCapacity_d_freq" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the first derivative of the heat capacity with respect to the
+hindered rotor frequency in J/mol*K/cm^-1 at the given set of temperatures
+<cite>Tlist</cite> in K, evaluated at the frequency <cite>freq</cite> in cm^-1 and a barrier
+height <cite>barr</cite> in cm^-1.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="rmgpy.data.statmechfit.hinderedRotor_d_heatCapacity_d_barr">
+<tt class="descclassname">rmgpy.data.statmechfit.</tt><tt class="descname">hinderedRotor_d_heatCapacity_d_barr</tt><big>(</big><em>T</em>, <em>freq</em>, <em>barr</em><big>)</big><a class="headerlink" href="#rmgpy.data.statmechfit.hinderedRotor_d_heatCapacity_d_barr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the first derivative of the heat capacity with respect to the
+hindered rotor frequency in J/mol*K/cm^-1 at the given set of temperatures
+<cite>Tlist</cite> in K, evaluated at the frequency <cite>freq</cite> in cm^-1 and a barrier
+height <cite>barr</cite> in cm^-1.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="helper-classes">
+<h2>Helper classes<a class="headerlink" href="#helper-classes" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="rmgpy.data.statmechfit.DirectFit">
+<em class="property">class </em><tt class="descclassname">rmgpy.data.statmechfit.</tt><tt class="descname">DirectFit</tt><big>(</big><em>Tdata</em>, <em>Cvdata</em>, <em>Nvib</em>, <em>Nrot</em><big>)</big><a class="headerlink" href="#rmgpy.data.statmechfit.DirectFit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class for fitting vibrational frequencies and hindered rotor
+frequency-barrier pairs for the case when there are few enough oscillators
+and rotors that their values can be fit directly.</p>
+<dl class="method">
+<dt id="rmgpy.data.statmechfit.DirectFit.initialize">
+<tt class="descname">initialize</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.data.statmechfit.DirectFit.initialize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize the DQED solver. The required parameters are:</p>
+<blockquote>
+<div><ul class="simple">
+<li><cite>Neq</cite> - The number of algebraic equations.</li>
+<li><cite>Nvars</cite> - The number of unknown variables.</li>
+<li><cite>Ncons</cite> - The number of constraint equations.</li>
+</ul>
+<p>The optional parameters are:</p>
+<ul class="simple">
+<li><cite>bounds</cite> - A list of 2-tuples giving the lower and upper bound for
+each unknown variable. Use <tt class="docutils literal"><span class="pre">None</span></tt> if there is no bound in one or
+either direction. If provided, you must give bounds for every unknown
+variable.</li>
+<li><cite>tolf</cite> - The tolerance used for stopping when the norm of the 
+residual has absolute length less than <cite>tolf</cite>, i.e.
+:math:<a href="#id1"><span class="problematic" id="id2">`</span></a>|</li>
+</ul>
+</div></blockquote>
+<p>ector{f} | le epsilon_f.</p>
+<blockquote>
+<div><ul class="simple">
+<li><cite>told</cite> - The tolerance used for stopping when changes to the unknown
+variables has absolute length less than <cite>told</cite>, i.e.
+:math:<a href="#id3"><span class="problematic" id="id4">`</span></a>| Delta</li>
+</ul>
+</div></blockquote>
+<p>ector{x} | le epsilon_d.</p>
+<blockquote>
+<div><ul class="simple">
+<li><cite>tolx</cite> - The tolerance used for stopping when changes to the unknown
+variables has relative length less than <cite>tolx</cite>, i.e.
+:math:<a href="#id5"><span class="problematic" id="id6">`</span></a>| Delta</li>
+</ul>
+</div></blockquote>
+<p>ector{x} | le epsilon_x cdot | 
+ector{x} |`.</p>
+<blockquote>
+<div><ul class="simple">
+<li><cite>maxIter</cite> - The maximum number of iterations to use</li>
+<li><cite>verbose</cite> - <tt class="docutils literal"><span class="pre">True</span></tt> to have DQED print extra information about the
+solve, <tt class="docutils literal"><span class="pre">False</span></tt> to only see printed output when the solver has an
+error.</li>
+</ul>
+</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.statmechfit.DirectFit.solve">
+<tt class="descname">solve</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.data.statmechfit.DirectFit.solve" title="Permalink to this definition">¶</a></dt>
+<dd><p>Using the initial guess <cite>x0</cite>, return the least-squares solution to the
+set of nonlinear algebraic equations defined by the <tt class="xref py py-meth docutils literal"><span class="pre">evaluate()</span></tt> 
+method of the derived class. This is the method that actually conducts
+the call to DQED. Returns the solution vector and a flag indicating
+the status of the solve. The possible output values of the flag are:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="6%" />
+<col width="94%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Value</th>
+<th class="head">Meaning</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>2</td>
+<td>The norm of the residual is zero; the solution vector is a root of the system</td>
+</tr>
+<tr class="row-odd"><td>3</td>
+<td>The bounds on the trust region are being encountered on each step; the solution vector may or may not be a local minimum</td>
+</tr>
+<tr class="row-even"><td>4</td>
+<td>The solution vector is a local minimum</td>
+</tr>
+<tr class="row-odd"><td>5</td>
+<td>A significant amount of noise or uncertainty has been observed in the residual; the solution may or may not be a local minimum</td>
+</tr>
+<tr class="row-even"><td>6</td>
+<td>The solution vector is only changing by small absolute amounts; the solution may or may not be a local minimum</td>
+</tr>
+<tr class="row-odd"><td>7</td>
+<td>The solution vector is only changing by small relative amounts; the solution may or may not be a local minimum</td>
+</tr>
+<tr class="row-even"><td>8</td>
+<td>The maximum number of iterations has been reached; the solution is the best found, but may or may not be a local minimum</td>
+</tr>
+<tr class="row-odd"><td>9-18</td>
+<td>An error occurred during the solve operation; the solution is not a local minimum</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="rmgpy.data.statmechfit.PseudoRotorFit">
+<em class="property">class </em><tt class="descclassname">rmgpy.data.statmechfit.</tt><tt class="descname">PseudoRotorFit</tt><big>(</big><em>Tdata</em>, <em>Cvdata</em>, <em>Nvib</em>, <em>Nrot</em><big>)</big><a class="headerlink" href="#rmgpy.data.statmechfit.PseudoRotorFit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class for fitting vibrational frequencies and hindered rotor
+frequency-barrier pairs for the case when there are too many oscillators
+and rotors for their values can be fit directly, and where collapsing the
+rotors into a single pseudo-rotor allows for fitting the vibrational
+frequencies directly.</p>
+<dl class="method">
+<dt id="rmgpy.data.statmechfit.PseudoRotorFit.initialize">
+<tt class="descname">initialize</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.data.statmechfit.PseudoRotorFit.initialize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize the DQED solver. The required parameters are:</p>
+<blockquote>
+<div><ul class="simple">
+<li><cite>Neq</cite> - The number of algebraic equations.</li>
+<li><cite>Nvars</cite> - The number of unknown variables.</li>
+<li><cite>Ncons</cite> - The number of constraint equations.</li>
+</ul>
+<p>The optional parameters are:</p>
+<ul class="simple">
+<li><cite>bounds</cite> - A list of 2-tuples giving the lower and upper bound for
+each unknown variable. Use <tt class="docutils literal"><span class="pre">None</span></tt> if there is no bound in one or
+either direction. If provided, you must give bounds for every unknown
+variable.</li>
+<li><cite>tolf</cite> - The tolerance used for stopping when the norm of the 
+residual has absolute length less than <cite>tolf</cite>, i.e.
+:math:<a href="#id7"><span class="problematic" id="id8">`</span></a>|</li>
+</ul>
+</div></blockquote>
+<p>ector{f} | le epsilon_f.</p>
+<blockquote>
+<div><ul class="simple">
+<li><cite>told</cite> - The tolerance used for stopping when changes to the unknown
+variables has absolute length less than <cite>told</cite>, i.e.
+:math:<a href="#id9"><span class="problematic" id="id10">`</span></a>| Delta</li>
+</ul>
+</div></blockquote>
+<p>ector{x} | le epsilon_d.</p>
+<blockquote>
+<div><ul class="simple">
+<li><cite>tolx</cite> - The tolerance used for stopping when changes to the unknown
+variables has relative length less than <cite>tolx</cite>, i.e.
+:math:<a href="#id11"><span class="problematic" id="id12">`</span></a>| Delta</li>
+</ul>
+</div></blockquote>
+<p>ector{x} | le epsilon_x cdot | 
+ector{x} |`.</p>
+<blockquote>
+<div><ul class="simple">
+<li><cite>maxIter</cite> - The maximum number of iterations to use</li>
+<li><cite>verbose</cite> - <tt class="docutils literal"><span class="pre">True</span></tt> to have DQED print extra information about the
+solve, <tt class="docutils literal"><span class="pre">False</span></tt> to only see printed output when the solver has an
+error.</li>
+</ul>
+</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.statmechfit.PseudoRotorFit.solve">
+<tt class="descname">solve</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.data.statmechfit.PseudoRotorFit.solve" title="Permalink to this definition">¶</a></dt>
+<dd><p>Using the initial guess <cite>x0</cite>, return the least-squares solution to the
+set of nonlinear algebraic equations defined by the <tt class="xref py py-meth docutils literal"><span class="pre">evaluate()</span></tt> 
+method of the derived class. This is the method that actually conducts
+the call to DQED. Returns the solution vector and a flag indicating
+the status of the solve. The possible output values of the flag are:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="6%" />
+<col width="94%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Value</th>
+<th class="head">Meaning</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>2</td>
+<td>The norm of the residual is zero; the solution vector is a root of the system</td>
+</tr>
+<tr class="row-odd"><td>3</td>
+<td>The bounds on the trust region are being encountered on each step; the solution vector may or may not be a local minimum</td>
+</tr>
+<tr class="row-even"><td>4</td>
+<td>The solution vector is a local minimum</td>
+</tr>
+<tr class="row-odd"><td>5</td>
+<td>A significant amount of noise or uncertainty has been observed in the residual; the solution may or may not be a local minimum</td>
+</tr>
+<tr class="row-even"><td>6</td>
+<td>The solution vector is only changing by small absolute amounts; the solution may or may not be a local minimum</td>
+</tr>
+<tr class="row-odd"><td>7</td>
+<td>The solution vector is only changing by small relative amounts; the solution may or may not be a local minimum</td>
+</tr>
+<tr class="row-even"><td>8</td>
+<td>The maximum number of iterations has been reached; the solution is the best found, but may or may not be a local minimum</td>
+</tr>
+<tr class="row-odd"><td>9-18</td>
+<td>An error occurred during the solve operation; the solution is not a local minimum</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="rmgpy.data.statmechfit.PseudoFit">
+<em class="property">class </em><tt class="descclassname">rmgpy.data.statmechfit.</tt><tt class="descname">PseudoFit</tt><big>(</big><em>Tdata</em>, <em>Cvdata</em>, <em>Nvib</em>, <em>Nrot</em><big>)</big><a class="headerlink" href="#rmgpy.data.statmechfit.PseudoFit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class for fitting vibrational frequencies and hindered rotor
+frequency-barrier pairs for the case when there are too many oscillators
+and rotors for their values can be fit directly, and where we must collapse
+both the vibrations and hindered rotations into &#8220;pseudo-oscillators&#8221; and
+&#8220;pseudo-rotors&#8221;.</p>
+<dl class="method">
+<dt id="rmgpy.data.statmechfit.PseudoFit.initialize">
+<tt class="descname">initialize</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.data.statmechfit.PseudoFit.initialize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize the DQED solver. The required parameters are:</p>
+<blockquote>
+<div><ul class="simple">
+<li><cite>Neq</cite> - The number of algebraic equations.</li>
+<li><cite>Nvars</cite> - The number of unknown variables.</li>
+<li><cite>Ncons</cite> - The number of constraint equations.</li>
+</ul>
+<p>The optional parameters are:</p>
+<ul class="simple">
+<li><cite>bounds</cite> - A list of 2-tuples giving the lower and upper bound for
+each unknown variable. Use <tt class="docutils literal"><span class="pre">None</span></tt> if there is no bound in one or
+either direction. If provided, you must give bounds for every unknown
+variable.</li>
+<li><cite>tolf</cite> - The tolerance used for stopping when the norm of the 
+residual has absolute length less than <cite>tolf</cite>, i.e.
+:math:<a href="#id13"><span class="problematic" id="id14">`</span></a>|</li>
+</ul>
+</div></blockquote>
+<p>ector{f} | le epsilon_f.</p>
+<blockquote>
+<div><ul class="simple">
+<li><cite>told</cite> - The tolerance used for stopping when changes to the unknown
+variables has absolute length less than <cite>told</cite>, i.e.
+:math:<a href="#id15"><span class="problematic" id="id16">`</span></a>| Delta</li>
+</ul>
+</div></blockquote>
+<p>ector{x} | le epsilon_d.</p>
+<blockquote>
+<div><ul class="simple">
+<li><cite>tolx</cite> - The tolerance used for stopping when changes to the unknown
+variables has relative length less than <cite>tolx</cite>, i.e.
+:math:<a href="#id17"><span class="problematic" id="id18">`</span></a>| Delta</li>
+</ul>
+</div></blockquote>
+<p>ector{x} | le epsilon_x cdot | 
+ector{x} |`.</p>
+<blockquote>
+<div><ul class="simple">
+<li><cite>maxIter</cite> - The maximum number of iterations to use</li>
+<li><cite>verbose</cite> - <tt class="docutils literal"><span class="pre">True</span></tt> to have DQED print extra information about the
+solve, <tt class="docutils literal"><span class="pre">False</span></tt> to only see printed output when the solver has an
+error.</li>
+</ul>
+</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.statmechfit.PseudoFit.solve">
+<tt class="descname">solve</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.data.statmechfit.PseudoFit.solve" title="Permalink to this definition">¶</a></dt>
+<dd><p>Using the initial guess <cite>x0</cite>, return the least-squares solution to the
+set of nonlinear algebraic equations defined by the <tt class="xref py py-meth docutils literal"><span class="pre">evaluate()</span></tt> 
+method of the derived class. This is the method that actually conducts
+the call to DQED. Returns the solution vector and a flag indicating
+the status of the solve. The possible output values of the flag are:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="6%" />
+<col width="94%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Value</th>
+<th class="head">Meaning</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>2</td>
+<td>The norm of the residual is zero; the solution vector is a root of the system</td>
+</tr>
+<tr class="row-odd"><td>3</td>
+<td>The bounds on the trust region are being encountered on each step; the solution vector may or may not be a local minimum</td>
+</tr>
+<tr class="row-even"><td>4</td>
+<td>The solution vector is a local minimum</td>
+</tr>
+<tr class="row-odd"><td>5</td>
+<td>A significant amount of noise or uncertainty has been observed in the residual; the solution may or may not be a local minimum</td>
+</tr>
+<tr class="row-even"><td>6</td>
+<td>The solution vector is only changing by small absolute amounts; the solution may or may not be a local minimum</td>
+</tr>
+<tr class="row-odd"><td>7</td>
+<td>The solution vector is only changing by small relative amounts; the solution may or may not be a local minimum</td>
+</tr>
+<tr class="row-even"><td>8</td>
+<td>The maximum number of iterations has been reached; the solution is the best found, but may or may not be a local minimum</td>
+</tr>
+<tr class="row-odd"><td>9-18</td>
+<td>An error occurred during the solve operation; the solution is not a local minimum</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div class="sidebarlogo">
+<img src="../../_static/rmg-logo-small.png" alt="RMG" />
+</div>
+  <h3><a href="../../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">rmgpy.data.statmechfit</a><ul>
+<li><a class="reference internal" href="#fitting-functions">Fitting functions</a></li>
+<li><a class="reference internal" href="#helper-functions">Helper functions</a></li>
+<li><a class="reference internal" href="#helper-classes">Helper classes</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="statmechdepository.html"
+                        title="previous chapter">rmgpy.data.statmech.StatmechDepository</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="statmechgroups.html"
+                        title="next chapter">rmgpy.data.statmech.StatmechGroups</a></p>
+  <h3>This Page </h3>
+  <ul class="this-page-menu">
+    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/reference/data/statmechfit.rst"
+           rel="nofollow">Edit this page</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

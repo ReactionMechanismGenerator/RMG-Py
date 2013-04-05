@@ -1,0 +1,153 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>rmgpy.molecule.graph.Edge &mdash; RMG Py 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
+    <link rel="up" title="Molecular representations (rmgpy.molecule)" href="index.html" />
+    <link rel="next" title="rmgpy.molecule.graph.Graph" href="graph.html" />
+    <link rel="prev" title="rmgpy.molecule.graph.Vertex" href="vertex.html" /> 
+  </head>
+  <body>
+<div class="header">
+&nbsp;
+</div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="graph.html" title="rmgpy.molecule.graph.Graph"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="vertex.html" title="rmgpy.molecule.graph.Vertex"
+             accesskey="P">previous</a> |</li>
+<li><a href="../../index.html">Documentation</a> &raquo;</li>
+
+          <li><a href="../index.html" >RMG API Reference</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Molecular representations (<tt class="docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">rmgpy.molecule</span></tt>)</a> &raquo;</li> 
+      </ul>
+    </div>
+            
+  <div class="section" id="rmgpy-molecule-graph-edge">
+<h1>rmgpy.molecule.graph.Edge<a class="headerlink" href="#rmgpy-molecule-graph-edge" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="rmgpy.molecule.graph.Edge">
+<em class="property">class </em><tt class="descclassname">rmgpy.molecule.graph.</tt><tt class="descname">Edge</tt><a class="headerlink" href="#rmgpy.molecule.graph.Edge" title="Permalink to this definition">¶</a></dt>
+<dd><p>A base class for edges in a graph. This class does <em>not</em> store the vertex
+pair that comprises the edge; that functionality would need to be included
+in the derived class.</p>
+<dl class="method">
+<dt id="rmgpy.molecule.graph.Edge.copy">
+<tt class="descname">copy</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.graph.Edge.copy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a copy of the edge. The default implementation assumes that no
+semantic information is associated with each edge, and therefore
+simply returns a new <tt class="xref py py-class docutils literal"><span class="pre">Edge</span></tt> object. Note that the vertices are
+not copied in this implementation.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.graph.Edge.equivalent">
+<tt class="descname">equivalent</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.graph.Edge.equivalent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if two edges <cite>self</cite> and <cite>other</cite> are semantically
+equivalent, or <tt class="docutils literal"><span class="pre">False</span></tt> if not. You should reimplement this
+function in a derived class if your edges have semantic information.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.graph.Edge.getOtherVertex">
+<tt class="descname">getOtherVertex</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.graph.Edge.getOtherVertex" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a vertex that makes up part of the edge, return the other vertex.
+Raise a <tt class="xref py py-class docutils literal"><span class="pre">ValueError</span></tt> if the given vertex is not part of the
+edge.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.graph.Edge.isSpecificCaseOf">
+<tt class="descname">isSpecificCaseOf</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.graph.Edge.isSpecificCaseOf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if <cite>self</cite> is semantically more specific than <cite>other</cite>,
+or <tt class="docutils literal"><span class="pre">False</span></tt> if not. You should reimplement this function in a derived
+class if your edges have semantic information.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div class="sidebarlogo">
+<img src="../../_static/rmg-logo-small.png" alt="RMG" />
+</div>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="vertex.html"
+                        title="previous chapter">rmgpy.molecule.graph.Vertex</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="graph.html"
+                        title="next chapter">rmgpy.molecule.graph.Graph</a></p>
+  <h3>This Page </h3>
+  <ul class="this-page-menu">
+    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/reference/molecule/edge.rst"
+           rel="nofollow">Edit this page</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,137 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>rmgpy.molecule.draw.ReactionDrawer &mdash; RMG Py 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
+    <link rel="up" title="Molecular representations (rmgpy.molecule)" href="index.html" />
+    <link rel="next" title="Pressure dependence (rmgpy.pdep)" href="../pdep/index.html" />
+    <link rel="prev" title="rmgpy.molecule.draw.MoleculeDrawer" href="moleculedrawer.html" /> 
+  </head>
+  <body>
+<div class="header">
+&nbsp;
+</div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../pdep/index.html" title="Pressure dependence (rmgpy.pdep)"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="moleculedrawer.html" title="rmgpy.molecule.draw.MoleculeDrawer"
+             accesskey="P">previous</a> |</li>
+<li><a href="../../index.html">Documentation</a> &raquo;</li>
+
+          <li><a href="../index.html" >RMG API Reference</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Molecular representations (<tt class="docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">rmgpy.molecule</span></tt>)</a> &raquo;</li> 
+      </ul>
+    </div>
+            
+  <div class="section" id="rmgpy-molecule-draw-reactiondrawer">
+<h1>rmgpy.molecule.draw.ReactionDrawer<a class="headerlink" href="#rmgpy-molecule-draw-reactiondrawer" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="rmgpy.molecule.draw.ReactionDrawer">
+<em class="property">class </em><tt class="descclassname">rmgpy.molecule.draw.</tt><tt class="descname">ReactionDrawer</tt><big>(</big><em>options=None</em><big>)</big><a class="headerlink" href="#rmgpy.molecule.draw.ReactionDrawer" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class provides functionality for drawing chemical reactions using the
+skeletal formula of each reactant and product molecule via the Cairo 2D
+graphics engine. The most common use case is simply:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">ReactionDrawer</span><span class="p">()</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">reaction</span><span class="p">,</span> <span class="n">format</span><span class="o">=</span><span class="s">&#39;png&#39;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s">&#39;reaction.png&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>where <tt class="docutils literal"><span class="pre">reaction</span></tt> is the <tt class="xref py py-class docutils literal"><span class="pre">Reaction</span></tt> object to draw. You can also
+pass a dict of options to the constructor to affect how the molecules are
+drawn.</p>
+<dl class="method">
+<dt id="rmgpy.molecule.draw.ReactionDrawer.draw">
+<tt class="descname">draw</tt><big>(</big><em>reaction</em>, <em>format</em>, <em>path=None</em><big>)</big><a class="headerlink" href="#rmgpy.molecule.draw.ReactionDrawer.draw" title="Permalink to this definition">¶</a></dt>
+<dd><p>Draw the given <cite>reaction</cite> using the given image <cite>format</cite> - pdf, svg, 
+ps, or png. If <cite>path</cite> is given, the drawing is saved to that location
+on disk.</p>
+<p>This function returns the Cairo surface and context used to create the
+drawing, as well as a bounding box for the molecule being drawn as the
+tuple (<cite>left</cite>, <cite>top</cite>, <cite>width</cite>, <cite>height</cite>).</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div class="sidebarlogo">
+<img src="../../_static/rmg-logo-small.png" alt="RMG" />
+</div>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="moleculedrawer.html"
+                        title="previous chapter">rmgpy.molecule.draw.MoleculeDrawer</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../pdep/index.html"
+                        title="next chapter">Pressure dependence (<tt class="docutils literal"><span class="pre">rmgpy.pdep</span></tt>)</a></p>
+  <h3>This Page </h3>
+  <ul class="this-page-menu">
+    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/reference/molecule/reactiondrawer.rst"
+           rel="nofollow">Edit this page</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

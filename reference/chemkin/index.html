@@ -1,0 +1,229 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Chemkin files (rmgpy.chemkin) &mdash; RMG Py 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
+    <link rel="up" title="RMG API Reference" href="../index.html" />
+    <link rel="next" title="Reading Chemkin files" href="reader.html" />
+    <link rel="prev" title="rmgpy.cantherm.ThermoJob" href="../cantherm/thermo.html" /> 
+  </head>
+  <body>
+<div class="header">
+&nbsp;
+</div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="reader.html" title="Reading Chemkin files"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../cantherm/thermo.html" title="rmgpy.cantherm.ThermoJob"
+             accesskey="P">previous</a> |</li>
+<li><a href="../../index.html">Documentation</a> &raquo;</li>
+
+          <li><a href="../index.html" accesskey="U">RMG API Reference</a> &raquo;</li> 
+      </ul>
+    </div>
+            
+  <div class="section" id="module-rmgpy.chemkin">
+<span id="chemkin-files-rmgpy-chemkin"></span><h1>Chemkin files (<a class="reference internal" href="#module-rmgpy.chemkin" title="rmgpy.chemkin"><tt class="xref py py-mod docutils literal"><span class="pre">rmgpy.chemkin</span></tt></a>)<a class="headerlink" href="#module-rmgpy.chemkin" title="Permalink to this headline">¶</a></h1>
+<p>The <a class="reference internal" href="#module-rmgpy.chemkin" title="rmgpy.chemkin"><tt class="xref py py-mod docutils literal"><span class="pre">rmgpy.chemkin</span></tt></a> module contains functions for reading and writing of
+Chemkin and Chemkin-like files.</p>
+<div class="section" id="reading-chemkin-files">
+<h2>Reading Chemkin files<a class="headerlink" href="#reading-chemkin-files" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="30%" />
+<col width="70%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Function</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><a class="reference internal" href="reader.html#rmgpy.chemkin.loadChemkinFile" title="rmgpy.chemkin.loadChemkinFile"><tt class="xref py py-func docutils literal"><span class="pre">loadChemkinFile()</span></tt></a></td>
+<td>Load a reaction mechanism from a Chemkin file</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="reader.html#rmgpy.chemkin.loadSpeciesDictionary" title="rmgpy.chemkin.loadSpeciesDictionary"><tt class="xref py py-func docutils literal"><span class="pre">loadSpeciesDictionary()</span></tt></a></td>
+<td>Load a species dictionary from a file</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="reader.html#rmgpy.chemkin.loadTransportFile" title="rmgpy.chemkin.loadTransportFile"><tt class="xref py py-func docutils literal"><span class="pre">loadTransportFile()</span></tt></a></td>
+<td>Load a Chemkin transport properties file</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="reader.html#rmgpy.chemkin.readKineticsEntry" title="rmgpy.chemkin.readKineticsEntry"><tt class="xref py py-func docutils literal"><span class="pre">readKineticsEntry()</span></tt></a></td>
+<td>Read a single reaction entry from a Chemkin file</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="reader.html#rmgpy.chemkin.readReactionComments" title="rmgpy.chemkin.readReactionComments"><tt class="xref py py-func docutils literal"><span class="pre">readReactionComments()</span></tt></a></td>
+<td>Read the comments associated with a reaction entry</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="reader.html#rmgpy.chemkin.readReactionsBlock" title="rmgpy.chemkin.readReactionsBlock"><tt class="xref py py-func docutils literal"><span class="pre">readReactionsBlock()</span></tt></a></td>
+<td>Read the reactions block of a Chemkin file</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="reader.html#rmgpy.chemkin.readThermoEntry" title="rmgpy.chemkin.readThermoEntry"><tt class="xref py py-func docutils literal"><span class="pre">readThermoEntry()</span></tt></a></td>
+<td>Read a single thermodynamics entry from a Chemkin file</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="reader.html#rmgpy.chemkin.removeCommentFromLine" title="rmgpy.chemkin.removeCommentFromLine"><tt class="xref py py-func docutils literal"><span class="pre">removeCommentFromLine()</span></tt></a></td>
+<td>Remove comment text from a line of a Chemkin file or species dictionary</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="writing-chemkin-files">
+<h2>Writing Chemkin files<a class="headerlink" href="#writing-chemkin-files" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="32%" />
+<col width="68%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Function</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><a class="reference internal" href="writer.html#rmgpy.chemkin.saveChemkinFile" title="rmgpy.chemkin.saveChemkinFile"><tt class="xref py py-func docutils literal"><span class="pre">saveChemkinFile()</span></tt></a></td>
+<td>Save a reaction mechanism to a Chemkin file</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="writer.html#rmgpy.chemkin.saveSpeciesDictionary" title="rmgpy.chemkin.saveSpeciesDictionary"><tt class="xref py py-func docutils literal"><span class="pre">saveSpeciesDictionary()</span></tt></a></td>
+<td>Save a species dictionary to a file</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="writer.html#rmgpy.chemkin.saveTransportFile" title="rmgpy.chemkin.saveTransportFile"><tt class="xref py py-func docutils literal"><span class="pre">saveTransportFile()</span></tt></a></td>
+<td>Save a Chemkin transport properties file</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="writer.html#rmgpy.chemkin.saveHTMLFile" title="rmgpy.chemkin.saveHTMLFile"><tt class="xref py py-func docutils literal"><span class="pre">saveHTMLFile()</span></tt></a></td>
+<td>Save an HTML file representing a Chemkin mechanism</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="writer.html#rmgpy.chemkin.saveJavaKineticsLibrary" title="rmgpy.chemkin.saveJavaKineticsLibrary"><tt class="xref py py-func docutils literal"><span class="pre">saveJavaKineticsLibrary()</span></tt></a></td>
+<td>Save a mechanism to a (Chemkin-like) kinetics library for RMG-Java</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="writer.html#rmgpy.chemkin.getSpeciesIdentifier" title="rmgpy.chemkin.getSpeciesIdentifier"><tt class="xref py py-func docutils literal"><span class="pre">getSpeciesIdentifier()</span></tt></a></td>
+<td>Return the Chemkin-valid identifier for a given species</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="writer.html#rmgpy.chemkin.markDuplicateReactions" title="rmgpy.chemkin.markDuplicateReactions"><tt class="xref py py-func docutils literal"><span class="pre">markDuplicateReactions()</span></tt></a></td>
+<td>Find and mark all duplicate reactions in a mechanism</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="writer.html#rmgpy.chemkin.writeKineticsEntry" title="rmgpy.chemkin.writeKineticsEntry"><tt class="xref py py-func docutils literal"><span class="pre">writeKineticsEntry()</span></tt></a></td>
+<td>Write a single reaction entry to a Chemkin file</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="writer.html#rmgpy.chemkin.writeThermoEntry" title="rmgpy.chemkin.writeThermoEntry"><tt class="xref py py-func docutils literal"><span class="pre">writeThermoEntry()</span></tt></a></td>
+<td>Write a single thermodynamics entry to a Chemkin file</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="exceptions">
+<h2>Exceptions<a class="headerlink" href="#exceptions" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="36%" />
+<col width="64%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Exception</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><tt class="xref py py-exc docutils literal"><span class="pre">ChemkinError</span></tt></td>
+<td>Raised when an error occurs while working with a Chemkin file</td>
+</tr>
+</tbody>
+</table>
+<div class="toctree-wrapper compound">
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div class="sidebarlogo">
+<img src="../../_static/rmg-logo-small.png" alt="RMG" />
+</div>
+  <h3><a href="../../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Chemkin files (<tt class="docutils literal"><span class="pre">rmgpy.chemkin</span></tt>)</a><ul>
+<li><a class="reference internal" href="#reading-chemkin-files">Reading Chemkin files</a></li>
+<li><a class="reference internal" href="#writing-chemkin-files">Writing Chemkin files</a></li>
+<li><a class="reference internal" href="#exceptions">Exceptions</a><ul>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../cantherm/thermo.html"
+                        title="previous chapter">rmgpy.cantherm.ThermoJob</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="reader.html"
+                        title="next chapter">Reading Chemkin files</a></p>
+  <h3>This Page </h3>
+  <ul class="this-page-menu">
+    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/reference/chemkin/index.rst"
+           rel="nofollow">Edit this page</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

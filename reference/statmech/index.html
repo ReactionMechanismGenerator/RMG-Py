@@ -1,0 +1,311 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Statistical mechanics (rmgpy.statmech) &mdash; RMG Py 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
+    <link rel="up" title="RMG API Reference" href="../index.html" />
+    <link rel="next" title="Translational degrees of freedom" href="idealgastranslation.html" />
+    <link rel="prev" title="rmgpy.species.TransitionState" href="../species/transitionstate.html" /> 
+  </head>
+  <body>
+<div class="header">
+&nbsp;
+</div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="idealgastranslation.html" title="Translational degrees of freedom"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../species/transitionstate.html" title="rmgpy.species.TransitionState"
+             accesskey="P">previous</a> |</li>
+<li><a href="../../index.html">Documentation</a> &raquo;</li>
+
+          <li><a href="../index.html" accesskey="U">RMG API Reference</a> &raquo;</li> 
+      </ul>
+    </div>
+            
+  <div class="section" id="module-rmgpy.statmech">
+<span id="statistical-mechanics-rmgpy-statmech"></span><h1>Statistical mechanics (<a class="reference internal" href="#module-rmgpy.statmech" title="rmgpy.statmech"><tt class="xref py py-mod docutils literal"><span class="pre">rmgpy.statmech</span></tt></a>)<a class="headerlink" href="#module-rmgpy.statmech" title="Permalink to this headline">¶</a></h1>
+<p>The <a class="reference internal" href="#module-rmgpy.statmech" title="rmgpy.statmech"><tt class="xref py py-mod docutils literal"><span class="pre">rmgpy.statmech</span></tt></a> subpackage contains classes that represent various
+statistical mechanical models of molecular degrees of freedom. These models
+enable the computation of macroscopic parameters (e.g. thermodynamics, kinetics,
+etc.) from microscopic parameters.</p>
+<p>A molecular system consisting of <span class="math">\(N\)</span> atoms is described by <span class="math">\(3N\)</span>
+molecular degrees of freedom. Three of these modes involve translation of the
+system as a whole. Another three of these modes involve rotation of the system
+as a whole, unless the system is linear (e.g. diatomics), for which there are
+only two rotational modes. The remaining <span class="math">\(3N-6\)</span> (or <span class="math">\(3N-5\)</span> if
+linear) modes involve internal motion of the atoms within the system. Many of
+these modes are well-described as harmonic oscillations, while others are
+better modeled as torsional rotations around a bond within the system.</p>
+<p>Molecular degrees of freedom are mathematically represented using the
+Schrodinger equation <span class="math">\(\hat{H} \Psi = E \Psi\)</span>. By solving the
+Schrodinger equation, we can determine the available energy states of the
+molecular system, which enables computation of macroscopic parameters.
+Depending on the temperature of interest, some modes (e.g. vibrations) require
+a quantum mechanical treatment, while others (e.g. translation, rotation) can
+be described using a classical solution.</p>
+<div class="section" id="translational-degrees-of-freedom">
+<h2>Translational degrees of freedom<a class="headerlink" href="#translational-degrees-of-freedom" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="36%" />
+<col width="64%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Class</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><a class="reference internal" href="idealgastranslation.html#rmgpy.statmech.IdealGasTranslation" title="rmgpy.statmech.IdealGasTranslation"><tt class="xref py py-class docutils literal"><span class="pre">IdealGasTranslation</span></tt></a></td>
+<td>A model of three-dimensional translation of an ideal gas</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="rotational-degrees-of-freedom">
+<h2>Rotational degrees of freedom<a class="headerlink" href="#rotational-degrees-of-freedom" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="28%" />
+<col width="72%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Class</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><a class="reference internal" href="linearrotor.html#rmgpy.statmech.LinearRotor" title="rmgpy.statmech.LinearRotor"><tt class="xref py py-class docutils literal"><span class="pre">LinearRotor</span></tt></a></td>
+<td>A model of two-dimensional rigid rotation of a linear molecule</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="nonlinearrotor.html#rmgpy.statmech.NonlinearRotor" title="rmgpy.statmech.NonlinearRotor"><tt class="xref py py-class docutils literal"><span class="pre">NonlinearRotor</span></tt></a></td>
+<td>A model of three-dimensional rigid rotation of a nonlinear molecule</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="krotor.html#rmgpy.statmech.KRotor" title="rmgpy.statmech.KRotor"><tt class="xref py py-class docutils literal"><span class="pre">KRotor</span></tt></a></td>
+<td>A model of one-dimensional rigid rotation of a K-rotor</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="sphericaltoprotor.html#rmgpy.statmech.SphericalTopRotor" title="rmgpy.statmech.SphericalTopRotor"><tt class="xref py py-class docutils literal"><span class="pre">SphericalTopRotor</span></tt></a></td>
+<td>A model of three-dimensional rigid rotation of a spherical top molecule</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="vibrational-degrees-of-freedom">
+<h2>Vibrational degrees of freedom<a class="headerlink" href="#vibrational-degrees-of-freedom" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="33%" />
+<col width="67%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Class</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><a class="reference internal" href="harmonicoscillator.html#rmgpy.statmech.HarmonicOscillator" title="rmgpy.statmech.HarmonicOscillator"><tt class="xref py py-class docutils literal"><span class="pre">HarmonicOscillator</span></tt></a></td>
+<td>A model of a set of one-dimensional harmonic oscillators</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="torsional-degrees-of-freedom">
+<h2>Torsional degrees of freedom<a class="headerlink" href="#torsional-degrees-of-freedom" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="34%" />
+<col width="66%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Class</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><a class="reference internal" href="hinderedrotor.html#rmgpy.statmech.HinderedRotor" title="rmgpy.statmech.HinderedRotor"><tt class="xref py py-class docutils literal"><span class="pre">HinderedRotor</span></tt></a></td>
+<td>A model of a one-dimensional hindered rotation</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="the-schrodinger-equation">
+<h2>The Schrodinger equation<a class="headerlink" href="#the-schrodinger-equation" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="24%" />
+<col width="76%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Class</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><a class="reference internal" href="schrodinger.html#rmgpy.statmech.schrodinger.getPartitionFunction" title="rmgpy.statmech.schrodinger.getPartitionFunction"><tt class="xref py py-func docutils literal"><span class="pre">getPartitionFunction()</span></tt></a></td>
+<td>Calculate the partition function at a given temperature from energy levels and degeneracies</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="schrodinger.html#rmgpy.statmech.schrodinger.getHeatCapacity" title="rmgpy.statmech.schrodinger.getHeatCapacity"><tt class="xref py py-func docutils literal"><span class="pre">getHeatCapacity()</span></tt></a></td>
+<td>Calculate the dimensionless heat capacity at a given temperature from energy levels and degeneracies</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="schrodinger.html#rmgpy.statmech.schrodinger.getEnthalpy" title="rmgpy.statmech.schrodinger.getEnthalpy"><tt class="xref py py-func docutils literal"><span class="pre">getEnthalpy()</span></tt></a></td>
+<td>Calculate the enthalpy at a given temperature from energy levels and degeneracies</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="schrodinger.html#rmgpy.statmech.schrodinger.getEntropy" title="rmgpy.statmech.schrodinger.getEntropy"><tt class="xref py py-func docutils literal"><span class="pre">getEntropy()</span></tt></a></td>
+<td>Calculate the entropy at a given temperature from energy levels and degeneracies</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="schrodinger.html#rmgpy.statmech.schrodinger.getSumOfStates" title="rmgpy.statmech.schrodinger.getSumOfStates"><tt class="xref py py-func docutils literal"><span class="pre">getSumOfStates()</span></tt></a></td>
+<td>Calculate the sum of states for a given energy domain from energy levels and degeneracies</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="schrodinger.html#rmgpy.statmech.schrodinger.getDensityOfStates" title="rmgpy.statmech.schrodinger.getDensityOfStates"><tt class="xref py py-func docutils literal"><span class="pre">getDensityOfStates()</span></tt></a></td>
+<td>Calculate the density of states for a given energy domain from energy levels and degeneracies</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="convolution">
+<h2>Convolution<a class="headerlink" href="#convolution" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="15%" />
+<col width="85%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Class</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><a class="reference internal" href="schrodinger.html#rmgpy.statmech.schrodinger.convolve" title="rmgpy.statmech.schrodinger.convolve"><tt class="xref py py-func docutils literal"><span class="pre">convolve()</span></tt></a></td>
+<td>Return the convolution of two arrays</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="schrodinger.html#rmgpy.statmech.schrodinger.convolveBS" title="rmgpy.statmech.schrodinger.convolveBS"><tt class="xref py py-func docutils literal"><span class="pre">convolveBS()</span></tt></a></td>
+<td>Convolve a degree of freedom into a density or sum of states using the Beyer-Swinehart (BS) direct count algorithm</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="schrodinger.html#rmgpy.statmech.schrodinger.convolveBSSR" title="rmgpy.statmech.schrodinger.convolveBSSR"><tt class="xref py py-func docutils literal"><span class="pre">convolveBSSR()</span></tt></a></td>
+<td>Convolve a degree of freedom into a density or sum of states using the Beyer-Swinehart-Stein-Rabinovitch (BSSR) direct count algorithm</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="molecular-conformers">
+<h2>Molecular conformers<a class="headerlink" href="#molecular-conformers" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="29%" />
+<col width="71%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Class</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><a class="reference internal" href="conformer.html#rmgpy.statmech.Conformer" title="rmgpy.statmech.Conformer"><tt class="xref py py-class docutils literal"><span class="pre">Conformer</span></tt></a></td>
+<td>A model of a molecular conformation</td>
+</tr>
+</tbody>
+</table>
+<div class="toctree-wrapper compound">
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div class="sidebarlogo">
+<img src="../../_static/rmg-logo-small.png" alt="RMG" />
+</div>
+  <h3><a href="../../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Statistical mechanics (<tt class="docutils literal"><span class="pre">rmgpy.statmech</span></tt>)</a><ul>
+<li><a class="reference internal" href="#translational-degrees-of-freedom">Translational degrees of freedom</a></li>
+<li><a class="reference internal" href="#rotational-degrees-of-freedom">Rotational degrees of freedom</a></li>
+<li><a class="reference internal" href="#vibrational-degrees-of-freedom">Vibrational degrees of freedom</a></li>
+<li><a class="reference internal" href="#torsional-degrees-of-freedom">Torsional degrees of freedom</a></li>
+<li><a class="reference internal" href="#the-schrodinger-equation">The Schrodinger equation</a></li>
+<li><a class="reference internal" href="#convolution">Convolution</a></li>
+<li><a class="reference internal" href="#molecular-conformers">Molecular conformers</a><ul>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../species/transitionstate.html"
+                        title="previous chapter">rmgpy.species.TransitionState</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="idealgastranslation.html"
+                        title="next chapter">Translational degrees of freedom</a></p>
+  <h3>This Page </h3>
+  <ul class="this-page-menu">
+    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/reference/statmech/index.rst"
+           rel="nofollow">Edit this page</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

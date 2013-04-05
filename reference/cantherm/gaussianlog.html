@@ -1,0 +1,190 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>rmgpy.cantherm.gaussian.GaussianLog &mdash; RMG Py 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
+    <link rel="up" title="CanTherm (rmgpy.cantherm)" href="index.html" />
+    <link rel="next" title="rmgpy.cantherm.geometry.Geometry" href="geometry.html" />
+    <link rel="prev" title="CanTherm (rmgpy.cantherm)" href="index.html" /> 
+  </head>
+  <body>
+<div class="header">
+&nbsp;
+</div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="geometry.html" title="rmgpy.cantherm.geometry.Geometry"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="CanTherm (rmgpy.cantherm)"
+             accesskey="P">previous</a> |</li>
+<li><a href="../../index.html">Documentation</a> &raquo;</li>
+
+          <li><a href="../index.html" >RMG API Reference</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">CanTherm (<tt class="docutils literal docutils literal"><span class="pre">rmgpy.cantherm</span></tt>)</a> &raquo;</li> 
+      </ul>
+    </div>
+            
+  <div class="section" id="rmgpy-cantherm-gaussian-gaussianlog">
+<h1>rmgpy.cantherm.gaussian.GaussianLog<a class="headerlink" href="#rmgpy-cantherm-gaussian-gaussianlog" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="rmgpy.cantherm.gaussian.GaussianLog">
+<em class="property">class </em><tt class="descclassname">rmgpy.cantherm.gaussian.</tt><tt class="descname">GaussianLog</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#rmgpy.cantherm.gaussian.GaussianLog" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represent a log file from Gaussian. The attribute <cite>path</cite> refers to the
+location on disk of the Gaussian log file of interest. Methods are provided
+to extract a variety of information into CanTherm classes and/or NumPy
+arrays.</p>
+<dl class="method">
+<dt id="rmgpy.cantherm.gaussian.GaussianLog.getNumberOfAtoms">
+<tt class="descname">getNumberOfAtoms</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.cantherm.gaussian.GaussianLog.getNumberOfAtoms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the number of atoms in the molecular configuration used in
+the Gaussian log file.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.cantherm.gaussian.GaussianLog.loadConformer">
+<tt class="descname">loadConformer</tt><big>(</big><em>symmetry=None</em>, <em>spinMultiplicity=None</em>, <em>opticalIsomers=1</em><big>)</big><a class="headerlink" href="#rmgpy.cantherm.gaussian.GaussianLog.loadConformer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the molecular degree of freedom data from a log file created as
+the result of a Gaussian &#8220;Freq&#8221; quantum chemistry calculation. As
+Gaussian&#8217;s guess of the external symmetry number is not always correct,
+you can use the <cite>symmetry</cite> parameter to substitute your own value; if
+not provided, the value in the Gaussian log file will be adopted. In a
+log file with multiple Thermochemistry sections, only the last one will
+be kept.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.cantherm.gaussian.GaussianLog.loadEnergy">
+<tt class="descname">loadEnergy</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.cantherm.gaussian.GaussianLog.loadEnergy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the energy in J/mol from a Gaussian log file. The file is checked 
+for a complete basis set extrapolation; if found, that value is 
+returned. Only the last energy in the file is returned. The zero-point
+energy is <em>not</em> included in the returned value; it is removed from the
+CBS-QB3 value.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.cantherm.gaussian.GaussianLog.loadForceConstantMatrix">
+<tt class="descname">loadForceConstantMatrix</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.cantherm.gaussian.GaussianLog.loadForceConstantMatrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the force constant matrix from the Gaussian log file. The job
+that generated the log file must have the option <tt class="docutils literal"><span class="pre">iop(7/33=1)</span></tt> in
+order for the proper force constant matrix (in Cartesian coordinates)
+to be printed in the log file. If multiple such matrices are identified,
+only the last is returned. The units of the returned force constants
+are J/m^2. If no force constant matrix can be found in the log file,
+<tt class="docutils literal"><span class="pre">None</span></tt> is returned.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.cantherm.gaussian.GaussianLog.loadGeometry">
+<tt class="descname">loadGeometry</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.cantherm.gaussian.GaussianLog.loadGeometry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the optimum geometry of the molecular configuration from the
+Gaussian log file. If multiple such geometries are identified, only the
+last is returned.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.cantherm.gaussian.GaussianLog.loadNegativeFrequency">
+<tt class="descname">loadNegativeFrequency</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.cantherm.gaussian.GaussianLog.loadNegativeFrequency" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the negative frequency from a transition state frequency
+calculation in cm^-1.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.cantherm.gaussian.GaussianLog.loadScanEnergies">
+<tt class="descname">loadScanEnergies</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.cantherm.gaussian.GaussianLog.loadScanEnergies" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract the optimized energies in J/mol from a log file, e.g. the 
+result of a Gaussian &#8220;Scan&#8221; quantum chemistry calculation.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.cantherm.gaussian.GaussianLog.loadZeroPointEnergy">
+<tt class="descname">loadZeroPointEnergy</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.cantherm.gaussian.GaussianLog.loadZeroPointEnergy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the zero-point energy in J/mol from a Gaussian log file.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div class="sidebarlogo">
+<img src="../../_static/rmg-logo-small.png" alt="RMG" />
+</div>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">CanTherm (<tt class="docutils literal"><span class="pre">rmgpy.cantherm</span></tt>)</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="geometry.html"
+                        title="next chapter">rmgpy.cantherm.geometry.Geometry</a></p>
+  <h3>This Page </h3>
+  <ul class="this-page-menu">
+    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/reference/cantherm/gaussianlog.rst"
+           rel="nofollow">Edit this page</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

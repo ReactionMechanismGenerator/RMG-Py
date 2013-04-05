@@ -1,0 +1,229 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>rmgpy.data.kinetics.KineticsDatabase &mdash; RMG Py 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
+    <link rel="up" title="Database (rmgpy.data)" href="index.html" />
+    <link rel="next" title="rmgpy.data.kinetics.KineticsDepository" href="kineticsdepository.html" />
+    <link rel="prev" title="rmgpy.data.statmech.GroupFrequencies" href="groupfrequencies.html" /> 
+  </head>
+  <body>
+<div class="header">
+&nbsp;
+</div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="kineticsdepository.html" title="rmgpy.data.kinetics.KineticsDepository"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="groupfrequencies.html" title="rmgpy.data.statmech.GroupFrequencies"
+             accesskey="P">previous</a> |</li>
+<li><a href="../../index.html">Documentation</a> &raquo;</li>
+
+          <li><a href="../index.html" >RMG API Reference</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Database (<tt class="docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">rmgpy.data</span></tt>)</a> &raquo;</li> 
+      </ul>
+    </div>
+            
+  <div class="section" id="rmgpy-data-kinetics-kineticsdatabase">
+<h1>rmgpy.data.kinetics.KineticsDatabase<a class="headerlink" href="#rmgpy-data-kinetics-kineticsdatabase" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="rmgpy.data.kinetics.KineticsDatabase">
+<em class="property">class </em><tt class="descclassname">rmgpy.data.kinetics.</tt><tt class="descname">KineticsDatabase</tt><a class="headerlink" href="#rmgpy.data.kinetics.KineticsDatabase" title="Permalink to this definition">¶</a></dt>
+<dd><p>A class for working with the RMG kinetics database.</p>
+<dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsDatabase.generateReactions">
+<tt class="descname">generateReactions</tt><big>(</big><em>reactants</em>, <em>products=None</em>, <em>**options</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsDatabase.generateReactions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate all reactions between the provided list of one or two
+<cite>reactants</cite>, which should be <tt class="xref py py-class docutils literal"><span class="pre">Molecule</span></tt> objects. This method
+searches the depository, libraries, and groups, in that order.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsDatabase.generateReactionsFromFamilies">
+<tt class="descname">generateReactionsFromFamilies</tt><big>(</big><em>reactants</em>, <em>products</em>, <em>only_families=None</em>, <em>**options</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsDatabase.generateReactionsFromFamilies" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate all reactions between the provided list of one or two
+<cite>reactants</cite>, which should be <tt class="xref py py-class docutils literal"><span class="pre">Molecule</span></tt> objects. This method
+applies the reaction family.
+If <cite>only_families</cite> is a list of strings, only families with those labels
+are used.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsDatabase.generateReactionsFromLibraries">
+<tt class="descname">generateReactionsFromLibraries</tt><big>(</big><em>reactants</em>, <em>products</em>, <em>**options</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsDatabase.generateReactionsFromLibraries" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate all reactions between the provided list of one or two
+<cite>reactants</cite>, which should be <tt class="xref py py-class docutils literal"><span class="pre">Molecule</span></tt> objects. This method
+searches the depository.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsDatabase.generateReactionsFromLibrary">
+<tt class="descname">generateReactionsFromLibrary</tt><big>(</big><em>reactants</em>, <em>products</em>, <em>library</em>, <em>**options</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsDatabase.generateReactionsFromLibrary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate all reactions between the provided list of one or two
+<cite>reactants</cite>, which should be <tt class="xref py py-class docutils literal"><span class="pre">Molecule</span></tt> objects. This method
+searches the depository.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsDatabase.getForwardReactionForFamilyEntry">
+<tt class="descname">getForwardReactionForFamilyEntry</tt><big>(</big><em>entry</em>, <em>family</em>, <em>thermoDatabase</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsDatabase.getForwardReactionForFamilyEntry" title="Permalink to this definition">¶</a></dt>
+<dd><p>For a given <cite>entry</cite> for a reaction of the given reaction <cite>family</cite> (the
+string label of the family), return the reaction with kinetics and
+degeneracy for the &#8220;forward&#8221; direction as defined by the reaction 
+family. For families that are their own reverse, the direction the
+kinetics is given in will be preserved. If the entry contains 
+functional groups for the reactants, assume that it is given in the 
+forward direction and do nothing. Returns the reaction in the direction
+consistent with the reaction family template, and the matching template.
+Note that the returned reaction will have its kinetics and degeneracy
+set appropriately.</p>
+<p>In order to reverse the reactions that are given in the reverse of the
+direction the family is defined, we need to compute the thermodynamics
+of the reactants and products. For this reason you must also pass
+the <cite>thermoDatabase</cite> to use to generate the thermo data.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsDatabase.load">
+<tt class="descname">load</tt><big>(</big><em>path</em>, <em>families=None</em>, <em>libraries=None</em>, <em>depositories=None</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsDatabase.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the kinetics database from the given <cite>path</cite> on disk, where <cite>path</cite>
+points to the top-level folder of the families database.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsDatabase.loadFamilies">
+<tt class="descname">loadFamilies</tt><big>(</big><em>path</em>, <em>families=None</em>, <em>depositories=None</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsDatabase.loadFamilies" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the kinetics families from the given <cite>path</cite> on disk, where <cite>path</cite>
+points to the top-level folder of the kinetics families.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsDatabase.loadLibraries">
+<tt class="descname">loadLibraries</tt><big>(</big><em>path</em>, <em>libraries=None</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsDatabase.loadLibraries" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the listed kinetics libraries from the given <cite>path</cite> on disk.</p>
+<p>Loads them all if <cite>libraries</cite> list is not specified or <cite>None</cite>.
+The <cite>path</cite> points to the folder of kinetics libraries in the database,
+and the libraries should be in files like <tt class="file docutils literal"><span class="pre">&lt;path&gt;/&lt;library&gt;.py</span></tt>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsDatabase.loadOld">
+<tt class="descname">loadOld</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsDatabase.loadOld" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the old RMG kinetics database from the given <cite>path</cite> on disk, where
+<cite>path</cite> points to the top-level folder of the old RMG database.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsDatabase.save">
+<tt class="descname">save</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsDatabase.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the kinetics database to the given <cite>path</cite> on disk, where <cite>path</cite>
+points to the top-level folder of the kinetics database.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsDatabase.saveFamilies">
+<tt class="descname">saveFamilies</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsDatabase.saveFamilies" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the kinetics families to the given <cite>path</cite> on disk, where <cite>path</cite>
+points to the top-level folder of the kinetics families.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsDatabase.saveLibraries">
+<tt class="descname">saveLibraries</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsDatabase.saveLibraries" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the kinetics libraries to the given <cite>path</cite> on disk, where <cite>path</cite>
+points to the top-level folder of the kinetics libraries.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsDatabase.saveOld">
+<tt class="descname">saveOld</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsDatabase.saveOld" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the old RMG kinetics database to the given <cite>path</cite> on disk, where
+<cite>path</cite> points to the top-level folder of the old RMG database.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div class="sidebarlogo">
+<img src="../../_static/rmg-logo-small.png" alt="RMG" />
+</div>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="groupfrequencies.html"
+                        title="previous chapter">rmgpy.data.statmech.GroupFrequencies</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="kineticsdepository.html"
+                        title="next chapter">rmgpy.data.kinetics.KineticsDepository</a></p>
+  <h3>This Page </h3>
+  <ul class="this-page-menu">
+    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/reference/data/kineticsdatabase.rst"
+           rel="nofollow">Edit this page</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,193 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Writing Chemkin files &mdash; RMG Py 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
+    <link rel="up" title="Chemkin files (rmgpy.chemkin)" href="index.html" />
+    <link rel="next" title="Physical constants (rmgpy.constants)" href="../constants.html" />
+    <link rel="prev" title="Reading Chemkin files" href="reader.html" /> 
+  </head>
+  <body>
+<div class="header">
+&nbsp;
+</div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../constants.html" title="Physical constants (rmgpy.constants)"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="reader.html" title="Reading Chemkin files"
+             accesskey="P">previous</a> |</li>
+<li><a href="../../index.html">Documentation</a> &raquo;</li>
+
+          <li><a href="../index.html" >RMG API Reference</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Chemkin files (<tt class="docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">rmgpy.chemkin</span></tt>)</a> &raquo;</li> 
+      </ul>
+    </div>
+            
+  <div class="section" id="writing-chemkin-files">
+<h1>Writing Chemkin files<a class="headerlink" href="#writing-chemkin-files" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="main-functions">
+<h2>Main functions<a class="headerlink" href="#main-functions" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="rmgpy.chemkin.saveChemkinFile">
+<tt class="descclassname">rmgpy.chemkin.</tt><tt class="descname">saveChemkinFile</tt><big>(</big><em>path</em>, <em>species</em>, <em>reactions</em>, <em>verbose=True</em><big>)</big><a class="headerlink" href="#rmgpy.chemkin.saveChemkinFile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save a Chemkin input file to <cite>path</cite> on disk containing the provided lists
+of <cite>species</cite> and <cite>reactions</cite>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="rmgpy.chemkin.saveSpeciesDictionary">
+<tt class="descclassname">rmgpy.chemkin.</tt><tt class="descname">saveSpeciesDictionary</tt><big>(</big><em>path</em>, <em>species</em><big>)</big><a class="headerlink" href="#rmgpy.chemkin.saveSpeciesDictionary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the given list of <cite>species</cite> as adjacency lists in a text file <cite>path</cite> 
+on disk.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="rmgpy.chemkin.saveTransportFile">
+<tt class="descclassname">rmgpy.chemkin.</tt><tt class="descname">saveTransportFile</tt><big>(</big><em>path</em>, <em>species</em><big>)</big><a class="headerlink" href="#rmgpy.chemkin.saveTransportFile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save a Chemkin transport properties file to <cite>path</cite> on disk containing the
+transport properties of the given list of <cite>species</cite>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="rmgpy.chemkin.saveHTMLFile">
+<tt class="descclassname">rmgpy.chemkin.</tt><tt class="descname">saveHTMLFile</tt><big>(</big><em>path</em>, <em>readComments=True</em><big>)</big><a class="headerlink" href="#rmgpy.chemkin.saveHTMLFile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save an output HTML file from the contents of a RMG-Java output folder</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="rmgpy.chemkin.saveJavaKineticsLibrary">
+<tt class="descclassname">rmgpy.chemkin.</tt><tt class="descname">saveJavaKineticsLibrary</tt><big>(</big><em>path</em>, <em>species</em>, <em>reactions</em><big>)</big><a class="headerlink" href="#rmgpy.chemkin.saveJavaKineticsLibrary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the reaction files for a RMG-Java kinetics library: pdepreactions.txt
+and reactions.txt given a list of reactions.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="helper-functions">
+<h2>Helper functions<a class="headerlink" href="#helper-functions" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="rmgpy.chemkin.getSpeciesIdentifier">
+<tt class="descclassname">rmgpy.chemkin.</tt><tt class="descname">getSpeciesIdentifier</tt><big>(</big><em>species</em><big>)</big><a class="headerlink" href="#rmgpy.chemkin.getSpeciesIdentifier" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a string identifier for the provided <cite>species</cite> that can be used in a
+Chemkin file. Although the Chemkin format allows up to 16 characters for a
+species identifier, this function uses a maximum of 10 to ensure that all
+reaction equations fit in the maximum limit of 52 characters.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="rmgpy.chemkin.writeKineticsEntry">
+<tt class="descclassname">rmgpy.chemkin.</tt><tt class="descname">writeKineticsEntry</tt><big>(</big><em>reaction</em>, <em>speciesList</em>, <em>verbose=True</em>, <em>javaLibrary=False</em><big>)</big><a class="headerlink" href="#rmgpy.chemkin.writeKineticsEntry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a string representation of the reaction as used in a Chemkin
+file. Use verbose = True to turn on comments.  Use javaLibrary = True in order to 
+generate a kinetics entry suitable for an RMG-Java kinetics library.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="rmgpy.chemkin.writeThermoEntry">
+<tt class="descclassname">rmgpy.chemkin.</tt><tt class="descname">writeThermoEntry</tt><big>(</big><em>species</em>, <em>verbose=True</em><big>)</big><a class="headerlink" href="#rmgpy.chemkin.writeThermoEntry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a string representation of the NASA model readable by Chemkin.
+To use this method you must have exactly two NASA polynomials in your
+model, and you must use the seven-coefficient forms for each.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="rmgpy.chemkin.markDuplicateReactions">
+<tt class="descclassname">rmgpy.chemkin.</tt><tt class="descname">markDuplicateReactions</tt><big>(</big><em>reactions</em><big>)</big><a class="headerlink" href="#rmgpy.chemkin.markDuplicateReactions" title="Permalink to this definition">¶</a></dt>
+<dd><p>For a given list of <cite>reactions</cite>, mark all of the duplicate reactions as
+understood by Chemkin.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div class="sidebarlogo">
+<img src="../../_static/rmg-logo-small.png" alt="RMG" />
+</div>
+  <h3><a href="../../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Writing Chemkin files</a><ul>
+<li><a class="reference internal" href="#main-functions">Main functions</a></li>
+<li><a class="reference internal" href="#helper-functions">Helper functions</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="reader.html"
+                        title="previous chapter">Reading Chemkin files</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../constants.html"
+                        title="next chapter">Physical constants (<tt class="docutils literal"><span class="pre">rmgpy.constants</span></tt>)</a></p>
+  <h3>This Page </h3>
+  <ul class="this-page-menu">
+    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/reference/chemkin/writer.rst"
+           rel="nofollow">Edit this page</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

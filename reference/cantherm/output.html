@@ -1,0 +1,178 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Saving CanTherm output &mdash; RMG Py 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
+    <link rel="up" title="CanTherm (rmgpy.cantherm)" href="index.html" />
+    <link rel="next" title="rmgpy.cantherm.PressureDependenceJob" href="pdep.html" />
+    <link rel="prev" title="rmgpy.cantherm.CanTherm" href="main.html" /> 
+  </head>
+  <body>
+<div class="header">
+&nbsp;
+</div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pdep.html" title="rmgpy.cantherm.PressureDependenceJob"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="main.html" title="rmgpy.cantherm.CanTherm"
+             accesskey="P">previous</a> |</li>
+<li><a href="../../index.html">Documentation</a> &raquo;</li>
+
+          <li><a href="../index.html" >RMG API Reference</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">CanTherm (<tt class="docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">rmgpy.cantherm</span></tt>)</a> &raquo;</li> 
+      </ul>
+    </div>
+            
+  <div class="section" id="saving-cantherm-output">
+<h1>Saving CanTherm output<a class="headerlink" href="#saving-cantherm-output" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="rmgpy.cantherm.output.prettify">
+<tt class="descclassname">rmgpy.cantherm.output.</tt><tt class="descname">prettify</tt><big>(</big><em>string</em>, <em>indent=4</em><big>)</big><a class="headerlink" href="#rmgpy.cantherm.output.prettify" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a &#8220;pretty&#8221; version of the given <cite>string</cite>, representing a snippet of
+Python code such as a representation of an object or function. This 
+involves splitting of tuples, lists, and dicts (including parameter lists)
+onto multiple lines, indenting as appropriate for readability.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="rmgpy.cantherm.output.PrettifyVisitor">
+<em class="property">class </em><tt class="descclassname">rmgpy.cantherm.output.</tt><tt class="descname">PrettifyVisitor</tt><big>(</big><em>level=0</em>, <em>indent=4</em><big>)</big><a class="headerlink" href="#rmgpy.cantherm.output.PrettifyVisitor" title="Permalink to this definition">¶</a></dt>
+<dd><p>A class for traversing an abstract syntax tree to assemble a prettier
+version of the code used to create the tree. Used by the <tt class="xref py py-func docutils literal"><span class="pre">prettify()</span></tt>
+function.</p>
+<dl class="method">
+<dt id="rmgpy.cantherm.output.PrettifyVisitor.generic_visit">
+<tt class="descname">generic_visit</tt><big>(</big><em>node</em><big>)</big><a class="headerlink" href="#rmgpy.cantherm.output.PrettifyVisitor.generic_visit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called if no explicit visitor function exists for a node.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.cantherm.output.PrettifyVisitor.visit">
+<tt class="descname">visit</tt><big>(</big><em>node</em><big>)</big><a class="headerlink" href="#rmgpy.cantherm.output.PrettifyVisitor.visit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Visit a node.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.cantherm.output.PrettifyVisitor.visit_Call">
+<tt class="descname">visit_Call</tt><big>(</big><em>node</em><big>)</big><a class="headerlink" href="#rmgpy.cantherm.output.PrettifyVisitor.visit_Call" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a pretty representation of the class or function call 
+represented by <cite>node</cite>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.cantherm.output.PrettifyVisitor.visit_Dict">
+<tt class="descname">visit_Dict</tt><big>(</big><em>node</em><big>)</big><a class="headerlink" href="#rmgpy.cantherm.output.PrettifyVisitor.visit_Dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a pretty representation of the dict represented by <cite>node</cite>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.cantherm.output.PrettifyVisitor.visit_List">
+<tt class="descname">visit_List</tt><big>(</big><em>node</em><big>)</big><a class="headerlink" href="#rmgpy.cantherm.output.PrettifyVisitor.visit_List" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a pretty representation of the list represented by <cite>node</cite>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.cantherm.output.PrettifyVisitor.visit_Num">
+<tt class="descname">visit_Num</tt><big>(</big><em>node</em><big>)</big><a class="headerlink" href="#rmgpy.cantherm.output.PrettifyVisitor.visit_Num" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a pretty representation of the number represented by <cite>node</cite>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.cantherm.output.PrettifyVisitor.visit_Str">
+<tt class="descname">visit_Str</tt><big>(</big><em>node</em><big>)</big><a class="headerlink" href="#rmgpy.cantherm.output.PrettifyVisitor.visit_Str" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a pretty representation of the string represented by <cite>node</cite>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.cantherm.output.PrettifyVisitor.visit_Tuple">
+<tt class="descname">visit_Tuple</tt><big>(</big><em>node</em><big>)</big><a class="headerlink" href="#rmgpy.cantherm.output.PrettifyVisitor.visit_Tuple" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a pretty representation of the tuple represented by <cite>node</cite>.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div class="sidebarlogo">
+<img src="../../_static/rmg-logo-small.png" alt="RMG" />
+</div>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="main.html"
+                        title="previous chapter">rmgpy.cantherm.CanTherm</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pdep.html"
+                        title="next chapter">rmgpy.cantherm.PressureDependenceJob</a></p>
+  <h3>This Page </h3>
+  <ul class="this-page-menu">
+    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/reference/cantherm/output.rst"
+           rel="nofollow">Edit this page</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

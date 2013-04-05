@@ -1,0 +1,161 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>rmgpy.molecule.symmetry &mdash; RMG Py 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
+    <link rel="up" title="Molecular representations (rmgpy.molecule)" href="index.html" />
+    <link rel="next" title="rmgpy.molecule.draw.MoleculeDrawer" href="moleculedrawer.html" />
+    <link rel="prev" title="Adjacency Lists" href="adjlist.html" /> 
+  </head>
+  <body>
+<div class="header">
+&nbsp;
+</div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="moleculedrawer.html" title="rmgpy.molecule.draw.MoleculeDrawer"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="adjlist.html" title="Adjacency Lists"
+             accesskey="P">previous</a> |</li>
+<li><a href="../../index.html">Documentation</a> &raquo;</li>
+
+          <li><a href="../index.html" >RMG API Reference</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Molecular representations (<tt class="docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">rmgpy.molecule</span></tt>)</a> &raquo;</li> 
+      </ul>
+    </div>
+            
+  <div class="section" id="rmgpy-molecule-symmetry">
+<h1>rmgpy.molecule.symmetry<a class="headerlink" href="#rmgpy-molecule-symmetry" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="rmgpy.molecule.symmetry.calculateBondSymmetryNumber">
+<tt class="descclassname">rmgpy.molecule.symmetry.</tt><tt class="descname">calculateBondSymmetryNumber</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.symmetry.calculateBondSymmetryNumber" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the symmetry number centered at <cite>bond</cite> in the structure.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="rmgpy.molecule.symmetry.calculateAxisSymmetryNumber">
+<tt class="descclassname">rmgpy.molecule.symmetry.</tt><tt class="descname">calculateAxisSymmetryNumber</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.symmetry.calculateAxisSymmetryNumber" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the axis symmetry number correction. The &#8220;axis&#8221; refers to a series
+of two or more cumulated double bonds (e.g. C=C=C, etc.). Corrections
+for single C=C bonds are handled in getBondSymmetryNumber().</p>
+<p>Each axis (C=C=C) has the potential to double the symmetry number.
+If an end has 0 or 1 groups (eg. =C=CJJ or =C=C-R) then it cannot 
+alter the axis symmetry and is disregarded:</p>
+<div class="highlight-python"><pre>A=C=C=C..        A-C=C=C=C-A
+
+  s=1                s=1</pre>
+</div>
+<p>If an end has 2 groups that are different then it breaks the symmetry 
+and the symmetry for that axis is 1, no matter what&#8217;s at the other end:</p>
+<div class="highlight-python"><pre>A\               A\         /A
+  T=C=C=C=C-A      T=C=C=C=T
+B/               A/         \B
+      s=1             s=1</pre>
+</div>
+<p>If you have one or more ends with 2 groups, and neither end breaks the 
+symmetry, then you have an axis symmetry number of 2:</p>
+<div class="highlight-python"><pre>A\         /B      A\         
+  C=C=C=C=C          C=C=C=C-B
+A/         \B      A/         
+      s=2                s=2</pre>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="rmgpy.molecule.symmetry.calculateCyclicSymmetryNumber">
+<tt class="descclassname">rmgpy.molecule.symmetry.</tt><tt class="descname">calculateCyclicSymmetryNumber</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.symmetry.calculateCyclicSymmetryNumber" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the symmetry number correction for cyclic regions of a molecule.
+For complicated fused rings the smallest set of smallest rings is used.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="rmgpy.molecule.symmetry.calculateSymmetryNumber">
+<tt class="descclassname">rmgpy.molecule.symmetry.</tt><tt class="descname">calculateSymmetryNumber</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.symmetry.calculateSymmetryNumber" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the symmetry number for the structure. The symmetry number
+includes both external and internal modes.</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div class="sidebarlogo">
+<img src="../../_static/rmg-logo-small.png" alt="RMG" />
+</div>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="adjlist.html"
+                        title="previous chapter">Adjacency Lists</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="moleculedrawer.html"
+                        title="next chapter">rmgpy.molecule.draw.MoleculeDrawer</a></p>
+  <h3>This Page </h3>
+  <ul class="this-page-menu">
+    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/reference/molecule/symmetry.rst"
+           rel="nofollow">Edit this page</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

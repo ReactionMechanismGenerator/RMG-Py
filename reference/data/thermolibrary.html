@@ -1,0 +1,289 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>rmgpy.data.thermo.ThermoLibrary &mdash; RMG Py 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
+    <link rel="up" title="Database (rmgpy.data)" href="index.html" />
+    <link rel="next" title="Kinetics (rmgpy.kinetics)" href="../kinetics/index.html" />
+    <link rel="prev" title="rmgpy.data.thermo.ThermoGroups" href="thermogroups.html" /> 
+  </head>
+  <body>
+<div class="header">
+&nbsp;
+</div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../kinetics/index.html" title="Kinetics (rmgpy.kinetics)"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="thermogroups.html" title="rmgpy.data.thermo.ThermoGroups"
+             accesskey="P">previous</a> |</li>
+<li><a href="../../index.html">Documentation</a> &raquo;</li>
+
+          <li><a href="../index.html" >RMG API Reference</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Database (<tt class="docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">rmgpy.data</span></tt>)</a> &raquo;</li> 
+      </ul>
+    </div>
+            
+  <div class="section" id="rmgpy-data-thermo-thermolibrary">
+<h1>rmgpy.data.thermo.ThermoLibrary<a class="headerlink" href="#rmgpy-data-thermo-thermolibrary" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="rmgpy.data.thermo.ThermoLibrary">
+<em class="property">class </em><tt class="descclassname">rmgpy.data.thermo.</tt><tt class="descname">ThermoLibrary</tt><big>(</big><em>label=''</em>, <em>name=''</em>, <em>shortDesc=''</em>, <em>longDesc=''</em><big>)</big><a class="headerlink" href="#rmgpy.data.thermo.ThermoLibrary" title="Permalink to this definition">¶</a></dt>
+<dd><p>A class for working with a RMG thermodynamics library.</p>
+<dl class="method">
+<dt id="rmgpy.data.thermo.ThermoLibrary.ancestors">
+<tt class="descname">ancestors</tt><big>(</big><em>node</em><big>)</big><a class="headerlink" href="#rmgpy.data.thermo.ThermoLibrary.ancestors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns all the ancestors of a node, climbing up the tree to the top.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.thermo.ThermoLibrary.descendTree">
+<tt class="descname">descendTree</tt><big>(</big><em>structure</em>, <em>atoms</em>, <em>root=None</em><big>)</big><a class="headerlink" href="#rmgpy.data.thermo.ThermoLibrary.descendTree" title="Permalink to this definition">¶</a></dt>
+<dd><p>Descend the tree in search of the functional group node that best
+matches the local structure around <cite>atoms</cite> in <cite>structure</cite>.</p>
+<p>If root=None then uses the first matching top node.</p>
+<p>Returns None if there is no matching root.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.thermo.ThermoLibrary.descendants">
+<tt class="descname">descendants</tt><big>(</big><em>node</em><big>)</big><a class="headerlink" href="#rmgpy.data.thermo.ThermoLibrary.descendants" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns all the descendants of a node, climbing down the tree to the bottom.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.thermo.ThermoLibrary.generateOldLibraryEntry">
+<tt class="descname">generateOldLibraryEntry</tt><big>(</big><em>data</em><big>)</big><a class="headerlink" href="#rmgpy.data.thermo.ThermoLibrary.generateOldLibraryEntry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of values used to save entries to the old-style RMG
+thermo database based on the thermodynamics object <cite>data</cite>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.thermo.ThermoLibrary.generateOldTree">
+<tt class="descname">generateOldTree</tt><big>(</big><em>entries</em>, <em>level</em><big>)</big><a class="headerlink" href="#rmgpy.data.thermo.ThermoLibrary.generateOldTree" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a multi-line string representation of the current tree using
+the old-style syntax.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.thermo.ThermoLibrary.getEntriesToSave">
+<tt class="descname">getEntriesToSave</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.data.thermo.ThermoLibrary.getEntriesToSave" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a sorted list of the entries in this database that should be
+saved to the output file.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.thermo.ThermoLibrary.isWellFormed">
+<tt class="descname">isWellFormed</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.data.thermo.ThermoLibrary.isWellFormed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <tt class="xref py py-data docutils literal"><span class="pre">True</span></tt> if the database is well-formed. A well-formed
+database has an entry in the dictionary for every entry in the tree, and
+an entry in the tree for every entry in the library. If no tree is
+present (e.g. the primary libraries), then every entry in the library
+must have an entry in the dictionary. Finally, each entry in the
+library must have the same number of nodes as the number of top-level
+nodes in the tree, if the tree is present; this is for databases with
+multiple trees, e.g. the kinetics databases.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.thermo.ThermoLibrary.load">
+<tt class="descname">load</tt><big>(</big><em>path</em>, <em>local_context=None</em>, <em>global_context=None</em><big>)</big><a class="headerlink" href="#rmgpy.data.thermo.ThermoLibrary.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load an RMG-style database from the file at location <cite>path</cite> on disk.
+The <cite>entryName</cite> parameter specifies the identifier used for each data
+entry. The parameters <cite>local_context</cite> and <cite>global_context</cite> are used to
+provide specialized mapping of identifiers in the input file to
+corresponding functions to evaluate. This method will automatically add
+a few identifiers required by all data entries, so you don&#8217;t need to
+provide these.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.thermo.ThermoLibrary.loadOld">
+<tt class="descname">loadOld</tt><big>(</big><em>dictstr</em>, <em>treestr</em>, <em>libstr</em>, <em>numParameters</em>, <em>numLabels=1</em>, <em>pattern=True</em><big>)</big><a class="headerlink" href="#rmgpy.data.thermo.ThermoLibrary.loadOld" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load a dictionary-tree-library based database. The database is stored
+in three files: <cite>dictstr</cite> is the path to the dictionary, <cite>treestr</cite> to
+the tree, and <cite>libstr</cite> to the library. The tree is optional, and should
+be set to &#8216;&#8217; if not desired.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.thermo.ThermoLibrary.loadOldDictionary">
+<tt class="descname">loadOldDictionary</tt><big>(</big><em>path</em>, <em>pattern</em><big>)</big><a class="headerlink" href="#rmgpy.data.thermo.ThermoLibrary.loadOldDictionary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse an old-style RMG database dictionary located at <cite>path</cite>. An RMG
+dictionary is a list of key-value pairs of a one-line string key and a
+multi-line string value. Each record is separated by at least one empty
+line. Returns a <tt class="docutils literal"><span class="pre">dict</span></tt> object with the values converted to
+<tt class="xref py py-class docutils literal"><span class="pre">Molecule</span></tt> or <tt class="xref py py-class docutils literal"><span class="pre">Group</span></tt> objects depending on the
+value of <cite>pattern</cite>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.thermo.ThermoLibrary.loadOldLibrary">
+<tt class="descname">loadOldLibrary</tt><big>(</big><em>path</em>, <em>numParameters</em>, <em>numLabels=1</em><big>)</big><a class="headerlink" href="#rmgpy.data.thermo.ThermoLibrary.loadOldLibrary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse an RMG database library located at <cite>path</cite>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.thermo.ThermoLibrary.loadOldTree">
+<tt class="descname">loadOldTree</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#rmgpy.data.thermo.ThermoLibrary.loadOldTree" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse an old-style RMG database tree located at <cite>path</cite>. An RMG
+tree is an n-ary tree representing the hierarchy of items in the
+dictionary.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.thermo.ThermoLibrary.matchNodeToStructure">
+<tt class="descname">matchNodeToStructure</tt><big>(</big><em>node</em>, <em>structure</em>, <em>atoms</em><big>)</big><a class="headerlink" href="#rmgpy.data.thermo.ThermoLibrary.matchNodeToStructure" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <tt class="xref py py-data docutils literal"><span class="pre">True</span></tt> if the <cite>structure</cite> centered at <cite>atom</cite> matches the
+structure at <cite>node</cite> in the dictionary. The structure at <cite>node</cite> should
+have atoms with the appropriate labels because they are set on loading
+and never change. However, the atoms in <cite>structure</cite> may not have the
+correct labels, hence the <cite>atoms</cite> parameter. The <cite>atoms</cite> parameter may
+include extra labels, and so we only require that every labeled atom in
+the functional group represented by <cite>node</cite> has an equivalent labeled
+atom in <cite>structure</cite>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.thermo.ThermoLibrary.parseOldLibrary">
+<tt class="descname">parseOldLibrary</tt><big>(</big><em>path</em>, <em>numParameters</em>, <em>numLabels=1</em><big>)</big><a class="headerlink" href="#rmgpy.data.thermo.ThermoLibrary.parseOldLibrary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse an RMG database library located at <cite>path</cite>, returning the loaded
+entries (rather than storing them in the database). This method does
+not discard duplicate entries.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.thermo.ThermoLibrary.processOldLibraryEntry">
+<tt class="descname">processOldLibraryEntry</tt><big>(</big><em>data</em><big>)</big><a class="headerlink" href="#rmgpy.data.thermo.ThermoLibrary.processOldLibraryEntry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Process a list of parameters <cite>data</cite> as read from an old-style RMG
+thermo database, returning the corresponding thermodynamics object.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.thermo.ThermoLibrary.save">
+<tt class="descname">save</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#rmgpy.data.thermo.ThermoLibrary.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the current database to the file at location <cite>path</cite> on disk. The
+optional <cite>entryName</cite> parameter specifies the identifier used for each
+data entry.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.thermo.ThermoLibrary.saveEntry">
+<tt class="descname">saveEntry</tt><big>(</big><em>f</em>, <em>entry</em><big>)</big><a class="headerlink" href="#rmgpy.data.thermo.ThermoLibrary.saveEntry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write the given <cite>entry</cite> in the thermo database to the file object <cite>f</cite>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.thermo.ThermoLibrary.saveOld">
+<tt class="descname">saveOld</tt><big>(</big><em>dictstr</em>, <em>treestr</em>, <em>libstr</em><big>)</big><a class="headerlink" href="#rmgpy.data.thermo.ThermoLibrary.saveOld" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the current database to a set of text files using the old-style
+syntax.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.thermo.ThermoLibrary.saveOldDictionary">
+<tt class="descname">saveOldDictionary</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#rmgpy.data.thermo.ThermoLibrary.saveOldDictionary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the current database dictionary to a text file using the old-style
+syntax.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.thermo.ThermoLibrary.saveOldLibrary">
+<tt class="descname">saveOldLibrary</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#rmgpy.data.thermo.ThermoLibrary.saveOldLibrary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the current database library to a text file using the old-style
+syntax.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.thermo.ThermoLibrary.saveOldTree">
+<tt class="descname">saveOldTree</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#rmgpy.data.thermo.ThermoLibrary.saveOldTree" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the current database tree to a text file using the old-style
+syntax.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div class="sidebarlogo">
+<img src="../../_static/rmg-logo-small.png" alt="RMG" />
+</div>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="thermogroups.html"
+                        title="previous chapter">rmgpy.data.thermo.ThermoGroups</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../kinetics/index.html"
+                        title="next chapter">Kinetics (<tt class="docutils literal"><span class="pre">rmgpy.kinetics</span></tt>)</a></p>
+  <h3>This Page </h3>
+  <ul class="this-page-menu">
+    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/reference/data/thermolibrary.rst"
+           rel="nofollow">Edit this page</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

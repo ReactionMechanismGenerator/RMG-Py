@@ -1,0 +1,286 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Pressure dependence (rmgpy.pdep) &mdash; RMG Py 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
+    <link rel="up" title="RMG API Reference" href="../index.html" />
+    <link rel="next" title="rmgpy.pdep.LennardJones" href="lennardjones.html" />
+    <link rel="prev" title="rmgpy.molecule.draw.ReactionDrawer" href="../molecule/reactiondrawer.html" /> 
+  </head>
+  <body>
+<div class="header">
+&nbsp;
+</div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="lennardjones.html" title="rmgpy.pdep.LennardJones"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../molecule/reactiondrawer.html" title="rmgpy.molecule.draw.ReactionDrawer"
+             accesskey="P">previous</a> |</li>
+<li><a href="../../index.html">Documentation</a> &raquo;</li>
+
+          <li><a href="../index.html" accesskey="U">RMG API Reference</a> &raquo;</li> 
+      </ul>
+    </div>
+            
+  <div class="section" id="module-rmgpy.pdep">
+<span id="pressure-dependence-rmgpy-pdep"></span><h1>Pressure dependence (<a class="reference internal" href="#module-rmgpy.pdep" title="rmgpy.pdep"><tt class="xref py py-mod docutils literal"><span class="pre">rmgpy.pdep</span></tt></a>)<a class="headerlink" href="#module-rmgpy.pdep" title="Permalink to this headline">¶</a></h1>
+<p>The <a class="reference internal" href="#module-rmgpy.pdep" title="rmgpy.pdep"><tt class="xref py py-mod docutils literal"><span class="pre">rmgpy.pdep</span></tt></a> subpackage provides functionality for calcuating the
+pressure-dependent rate coefficients <span class="math">\(k(T,P)\)</span> for unimolecular reaction
+networks.</p>
+<p>A unimolecular reaction network is defined by a set of chemically reactive
+molecular configurations - local minima on a potential energy surface - divided
+into unimolecular isomers and bimolecular reactants or products. In our
+vernacular, reactants can associate to form an isomer, while such association
+is neglected for products. These configurations are connected by chemical
+reactions to form a network; these are referred to as <em>path</em> reactions. The
+system also consists of an excess of inert gas M, representing a thermal bath;
+this allows for neglecting all collisions other than those between an isomer
+and the bath gas.</p>
+<p>An isomer molecule at sufficiently high internal energy can be transformed by a
+number of possible events:</p>
+<ul class="simple">
+<li>The isomer molecule can collide with any other molecule, resulting in an
+increase or decrease in energy</li>
+<li>The isomer molecule can isomerize to an adjacent isomer at the same energy</li>
+<li>The isomer molecule can dissociate into any directly connected bimolecular
+reactant or product channel</li>
+</ul>
+<p>It is this competition between collision and reaction events that gives rise
+to pressure-dependent kinetics.</p>
+<div class="section" id="collision-events">
+<h2>Collision events<a class="headerlink" href="#collision-events" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="28%" />
+<col width="72%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Class</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><a class="reference internal" href="lennardjones.html#rmgpy.pdep.LennardJones" title="rmgpy.pdep.LennardJones"><tt class="xref py py-class docutils literal"><span class="pre">LennardJones</span></tt></a></td>
+<td>A collision model based on the Lennard-Jones (12-6) model</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="singleexponentialdown.html#rmgpy.pdep.SingleExponentialDown" title="rmgpy.pdep.SingleExponentialDown"><tt class="xref py py-class docutils literal"><span class="pre">SingleExponentialDown</span></tt></a></td>
+<td>A collisional energy transfer model based on the single exponential down model</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="reaction-events">
+<h2>Reaction events<a class="headerlink" href="#reaction-events" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="37%" />
+<col width="63%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Function</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><a class="reference internal" href="reaction.html#rmgpy.pdep.calculateMicrocanonicalRateCoefficient" title="rmgpy.pdep.calculateMicrocanonicalRateCoefficient"><tt class="xref py py-func docutils literal"><span class="pre">calculateMicrocanonicalRateCoefficient()</span></tt></a></td>
+<td>Return the microcanonical rate coefficient <span class="math">\(k(E)\)</span> for a reaction</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="reaction.html#rmgpy.pdep.applyRRKMTheory" title="rmgpy.pdep.applyRRKMTheory"><tt class="xref py py-func docutils literal"><span class="pre">applyRRKMTheory()</span></tt></a></td>
+<td>Use RRKM theory to compute <span class="math">\(k(E)\)</span> for a reaction</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="reaction.html#rmgpy.pdep.applyInverseLaplaceTransformMethod" title="rmgpy.pdep.applyInverseLaplaceTransformMethod"><tt class="xref py py-func docutils literal"><span class="pre">applyInverseLaplaceTransformMethod()</span></tt></a></td>
+<td>Use the inverse Laplace transform method to compute <span class="math">\(k(E)\)</span> for a reaction</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="pressure-dependent-reaction-networks">
+<h2>Pressure-dependent reaction networks<a class="headerlink" href="#pressure-dependent-reaction-networks" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="23%" />
+<col width="77%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Class</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><a class="reference internal" href="configuration.html#rmgpy.pdep.Configuration" title="rmgpy.pdep.Configuration"><tt class="xref py py-class docutils literal"><span class="pre">Configuration</span></tt></a></td>
+<td>A molecular configuration on a potential energy surface</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="network.html#rmgpy.pdep.Network" title="rmgpy.pdep.Network"><tt class="xref py py-class docutils literal"><span class="pre">Network</span></tt></a></td>
+<td>A collisional energy transfer model based on the single exponential down model</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="the-master-equation">
+<h2>The master equation<a class="headerlink" href="#the-master-equation" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="37%" />
+<col width="63%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Function</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><a class="reference internal" href="mastereqn.html#rmgpy.pdep.me.generateFullMEMatrix" title="rmgpy.pdep.me.generateFullMEMatrix"><tt class="xref py py-func docutils literal"><span class="pre">generateFullMEMatrix()</span></tt></a></td>
+<td>Return the full master equation matrix for a network</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="master-equation-reduction-methods">
+<h2>Master equation reduction methods<a class="headerlink" href="#master-equation-reduction-methods" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="31%" />
+<col width="69%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Function</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><a class="reference internal" href="methods.html#rmgpy.pdep.msc.applyModifiedStrongCollisionMethod" title="rmgpy.pdep.msc.applyModifiedStrongCollisionMethod"><tt class="xref py py-func docutils literal"><span class="pre">msc.applyModifiedStrongCollisionMethod()</span></tt></a></td>
+<td>Reduce the master equation to phenomenological rate coefficients <span class="math">\(k(T,P)\)</span> using the modified strong collision method</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="methods.html#rmgpy.pdep.rs.applyReservoirStateMethod" title="rmgpy.pdep.rs.applyReservoirStateMethod"><tt class="xref py py-func docutils literal"><span class="pre">rs.applyReservoirStateMethod()</span></tt></a></td>
+<td>Reduce the master equation to phenomenological rate coefficients <span class="math">\(k(T,P)\)</span> using the reservoir state method</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="methods.html#rmgpy.pdep.cse.applyChemicallySignificantEigenvaluesMethod" title="rmgpy.pdep.cse.applyChemicallySignificantEigenvaluesMethod"><tt class="xref py py-func docutils literal"><span class="pre">cse.applyChemicallySignificantEigenvaluesMethod()</span></tt></a></td>
+<td>Reduce the master equation to phenomenological rate coefficients <span class="math">\(k(T,P)\)</span> using the chemically-significant eigenvalues method</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="exceptions">
+<h2>Exceptions<a class="headerlink" href="#exceptions" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="28%" />
+<col width="72%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Exception</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><tt class="xref py py-exc docutils literal"><span class="pre">NetworkError</span></tt></td>
+<td>Raised when an error occurs while working with a pressure-dependent reaction network</td>
+</tr>
+<tr class="row-odd"><td><tt class="xref py py-exc docutils literal"><span class="pre">InvalidMicrocanonicalRateError</span></tt></td>
+<td>Raised when the <span class="math">\(k(E)\)</span> is not consistent with the high pressure-limit kinetics or thermodynamics</td>
+</tr>
+</tbody>
+</table>
+<div class="toctree-wrapper compound">
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div class="sidebarlogo">
+<img src="../../_static/rmg-logo-small.png" alt="RMG" />
+</div>
+  <h3><a href="../../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Pressure dependence (<tt class="docutils literal"><span class="pre">rmgpy.pdep</span></tt>)</a><ul>
+<li><a class="reference internal" href="#collision-events">Collision events</a></li>
+<li><a class="reference internal" href="#reaction-events">Reaction events</a></li>
+<li><a class="reference internal" href="#pressure-dependent-reaction-networks">Pressure-dependent reaction networks</a></li>
+<li><a class="reference internal" href="#the-master-equation">The master equation</a></li>
+<li><a class="reference internal" href="#master-equation-reduction-methods">Master equation reduction methods</a></li>
+<li><a class="reference internal" href="#exceptions">Exceptions</a><ul>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../molecule/reactiondrawer.html"
+                        title="previous chapter">rmgpy.molecule.draw.ReactionDrawer</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="lennardjones.html"
+                        title="next chapter">rmgpy.pdep.LennardJones</a></p>
+  <h3>This Page </h3>
+  <ul class="this-page-menu">
+    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/reference/pdep/index.rst"
+           rel="nofollow">Edit this page</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

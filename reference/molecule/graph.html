@@ -1,0 +1,312 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>rmgpy.molecule.graph.Graph &mdash; RMG Py 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
+    <link rel="up" title="Molecular representations (rmgpy.molecule)" href="index.html" />
+    <link rel="next" title="rmgpy.molecule.vf2.VF2" href="vf2.html" />
+    <link rel="prev" title="rmgpy.molecule.graph.Edge" href="edge.html" /> 
+  </head>
+  <body>
+<div class="header">
+&nbsp;
+</div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="vf2.html" title="rmgpy.molecule.vf2.VF2"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="edge.html" title="rmgpy.molecule.graph.Edge"
+             accesskey="P">previous</a> |</li>
+<li><a href="../../index.html">Documentation</a> &raquo;</li>
+
+          <li><a href="../index.html" >RMG API Reference</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Molecular representations (<tt class="docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">rmgpy.molecule</span></tt>)</a> &raquo;</li> 
+      </ul>
+    </div>
+            
+  <div class="section" id="rmgpy-molecule-graph-graph">
+<h1>rmgpy.molecule.graph.Graph<a class="headerlink" href="#rmgpy-molecule-graph-graph" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="rmgpy.molecule.graph.Graph">
+<em class="property">class </em><tt class="descclassname">rmgpy.molecule.graph.</tt><tt class="descname">Graph</tt><a class="headerlink" href="#rmgpy.molecule.graph.Graph" title="Permalink to this definition">¶</a></dt>
+<dd><p>A graph data type. The vertices of the graph are stored in a list
+<cite>vertices</cite>; this provides a consistent traversal order. The edges of the
+graph are stored in a dictionary of dictionaries <cite>edges</cite>. A single edge can
+be accessed using <tt class="docutils literal"><span class="pre">graph.edges[vertex1][vertex2]</span></tt> or the <tt class="xref py py-meth docutils literal"><span class="pre">getEdge()</span></tt>
+method; in either case, an exception will be raised if the edge does not
+exist. All edges of a vertex can be accessed using <tt class="docutils literal"><span class="pre">graph.edges[vertex]</span></tt>
+or the <tt class="xref py py-meth docutils literal"><span class="pre">getEdges()</span></tt> method.</p>
+<dl class="method">
+<dt id="rmgpy.molecule.graph.Graph.addEdge">
+<tt class="descname">addEdge</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.graph.Graph.addEdge" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add an <cite>edge</cite> to the graph. The two vertices in the edge must already
+exist in the graph, or a <tt class="xref py py-class docutils literal"><span class="pre">ValueError</span></tt> is raised.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.graph.Graph.addVertex">
+<tt class="descname">addVertex</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.graph.Graph.addVertex" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a <cite>vertex</cite> to the graph. The vertex is initialized with no edges.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.graph.Graph.copy">
+<tt class="descname">copy</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.graph.Graph.copy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a copy of the current graph. If <cite>deep</cite> is <tt class="docutils literal"><span class="pre">True</span></tt>, a deep copy
+is made: copies of the vertices and edges are used in the new graph.
+If <cite>deep</cite> is <tt class="docutils literal"><span class="pre">False</span></tt> or not specified, a shallow copy is made: the
+original vertices and edges are used in the new graph.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.graph.Graph.findIsomorphism">
+<tt class="descname">findIsomorphism</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.graph.Graph.findIsomorphism" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns <tt class="xref py py-data docutils literal"><span class="pre">True</span></tt> if <cite>other</cite> is subgraph isomorphic and <tt class="xref py py-data docutils literal"><span class="pre">False</span></tt>
+otherwise, and the matching mapping.
+Uses the VF2 algorithm of Vento and Foggia.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.graph.Graph.findSubgraphIsomorphisms">
+<tt class="descname">findSubgraphIsomorphisms</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.graph.Graph.findSubgraphIsomorphisms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns <tt class="xref py py-data docutils literal"><span class="pre">True</span></tt> if <cite>other</cite> is subgraph isomorphic and <tt class="xref py py-data docutils literal"><span class="pre">False</span></tt>
+otherwise. Also returns the lists all of valid mappings.</p>
+<p>Uses the VF2 algorithm of Vento and Foggia.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.graph.Graph.getAllCycles">
+<tt class="descname">getAllCycles</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.graph.Graph.getAllCycles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a starting vertex, returns a list of all the cycles containing
+that vertex.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.graph.Graph.getAllCyclicVertices">
+<tt class="descname">getAllCyclicVertices</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.graph.Graph.getAllCyclicVertices" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns all vertices belonging to one or more cycles.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.graph.Graph.getAllPolycyclicVertices">
+<tt class="descname">getAllPolycyclicVertices</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.graph.Graph.getAllPolycyclicVertices" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return all vertices belonging to two or more cycles, fused or spirocyclic.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.graph.Graph.getEdge">
+<tt class="descname">getEdge</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.graph.Graph.getEdge" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the edge connecting vertices <cite>vertex1</cite> and <cite>vertex2</cite>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.graph.Graph.getEdges">
+<tt class="descname">getEdges</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.graph.Graph.getEdges" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of the edges involving the specified <cite>vertex</cite>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.graph.Graph.getSmallestSetOfSmallestRings">
+<tt class="descname">getSmallestSetOfSmallestRings</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.graph.Graph.getSmallestSetOfSmallestRings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of the smallest set of smallest rings in the graph. The
+algorithm implements was adapted from a description by Fan, Panaye,
+Doucet, and Barbu (doi: 10.1021/ci00015a002)</p>
+<p>B. T. Fan, A. Panaye, J. P. Doucet, and A. Barbu. &#8220;Ring Perception: A
+New Algorithm for Directly Finding the Smallest Set of Smallest Rings
+from a Connection Table.&#8221; <em>J. Chem. Inf. Comput. Sci.</em> <strong>33</strong>,
+p. 657-662 (1993).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.graph.Graph.hasEdge">
+<tt class="descname">hasEdge</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.graph.Graph.hasEdge" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns <tt class="docutils literal"><span class="pre">True</span></tt> if vertices <cite>vertex1</cite> and <cite>vertex2</cite> are connected
+by an edge, or <tt class="docutils literal"><span class="pre">False</span></tt> if not.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.graph.Graph.hasVertex">
+<tt class="descname">hasVertex</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.graph.Graph.hasVertex" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns <tt class="docutils literal"><span class="pre">True</span></tt> if <cite>vertex</cite> is a vertex in the graph, or <tt class="docutils literal"><span class="pre">False</span></tt> if
+not.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.graph.Graph.isCyclic">
+<tt class="descname">isCyclic</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.graph.Graph.isCyclic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if one or more cycles are present in the graph or
+<tt class="docutils literal"><span class="pre">False</span></tt> otherwise.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.graph.Graph.isEdgeInCycle">
+<tt class="descname">isEdgeInCycle</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.graph.Graph.isEdgeInCycle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <tt class="xref py py-data docutils literal"><span class="pre">True</span></tt> if the edge between vertices <cite>vertex1</cite> and <cite>vertex2</cite>
+is in one or more cycles in the graph, or <tt class="xref py py-data docutils literal"><span class="pre">False</span></tt> if not.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.graph.Graph.isIsomorphic">
+<tt class="descname">isIsomorphic</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.graph.Graph.isIsomorphic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns <tt class="xref py py-data docutils literal"><span class="pre">True</span></tt> if two graphs are isomorphic and <tt class="xref py py-data docutils literal"><span class="pre">False</span></tt>
+otherwise. Uses the VF2 algorithm of Vento and Foggia.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.graph.Graph.isMappingValid">
+<tt class="descname">isMappingValid</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.graph.Graph.isMappingValid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check that a proposed <cite>mapping</cite> of vertices from <cite>self</cite> to <cite>other</cite>
+is valid by checking that the vertices and edges involved in the
+mapping are mutually equivalent.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.graph.Graph.isSubgraphIsomorphic">
+<tt class="descname">isSubgraphIsomorphic</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.graph.Graph.isSubgraphIsomorphic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns <tt class="xref py py-data docutils literal"><span class="pre">True</span></tt> if <cite>other</cite> is subgraph isomorphic and <tt class="xref py py-data docutils literal"><span class="pre">False</span></tt>
+otherwise. Uses the VF2 algorithm of Vento and Foggia.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.graph.Graph.isVertexInCycle">
+<tt class="descname">isVertexInCycle</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.graph.Graph.isVertexInCycle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if the given <cite>vertex</cite> is contained in one or more
+cycles in the graph, or <tt class="docutils literal"><span class="pre">False</span></tt> if not.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.graph.Graph.merge">
+<tt class="descname">merge</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.graph.Graph.merge" title="Permalink to this definition">¶</a></dt>
+<dd><p>Merge two graphs so as to store them in a single Graph object.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.graph.Graph.removeEdge">
+<tt class="descname">removeEdge</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.graph.Graph.removeEdge" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove the specified <cite>edge</cite> from the graph.
+Does not remove vertices that no longer have any edges as a result of
+this removal.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.graph.Graph.removeVertex">
+<tt class="descname">removeVertex</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.graph.Graph.removeVertex" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove <cite>vertex</cite> and all edges associated with it from the graph. Does
+not remove vertices that no longer have any edges as a result of this
+removal.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.graph.Graph.resetConnectivityValues">
+<tt class="descname">resetConnectivityValues</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.graph.Graph.resetConnectivityValues" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reset any cached connectivity information. Call this method when you
+have modified the graph.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.graph.Graph.sortVertices">
+<tt class="descname">sortVertices</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.graph.Graph.sortVertices" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sort the vertices in the graph. This can make certain operations, e.g.
+the isomorphism functions, much more efficient.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.graph.Graph.split">
+<tt class="descname">split</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.graph.Graph.split" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a single Graph object containing two or more unconnected graphs
+into separate graphs.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.graph.Graph.updateConnectivityValues">
+<tt class="descname">updateConnectivityValues</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.graph.Graph.updateConnectivityValues" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the connectivity values for each vertex in the graph. These are
+used to accelerate the isomorphism checking.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div class="sidebarlogo">
+<img src="../../_static/rmg-logo-small.png" alt="RMG" />
+</div>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="edge.html"
+                        title="previous chapter">rmgpy.molecule.graph.Edge</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="vf2.html"
+                        title="next chapter">rmgpy.molecule.vf2.VF2</a></p>
+  <h3>This Page </h3>
+  <ul class="this-page-menu">
+    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/reference/molecule/graph.rst"
+           rel="nofollow">Edit this page</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,171 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>rmgpy.data.base.Entry &mdash; RMG Py 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
+    <link rel="up" title="Database (rmgpy.data)" href="index.html" />
+    <link rel="next" title="rmgpy.data.statmech.GroupFrequencies" href="groupfrequencies.html" />
+    <link rel="prev" title="rmgpy.data.kinetics.DepositoryReaction" href="depositoryreaction.html" /> 
+  </head>
+  <body>
+<div class="header">
+&nbsp;
+</div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="groupfrequencies.html" title="rmgpy.data.statmech.GroupFrequencies"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="depositoryreaction.html" title="rmgpy.data.kinetics.DepositoryReaction"
+             accesskey="P">previous</a> |</li>
+<li><a href="../../index.html">Documentation</a> &raquo;</li>
+
+          <li><a href="../index.html" >RMG API Reference</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Database (<tt class="docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">rmgpy.data</span></tt>)</a> &raquo;</li> 
+      </ul>
+    </div>
+            
+  <div class="section" id="rmgpy-data-base-entry">
+<h1>rmgpy.data.base.Entry<a class="headerlink" href="#rmgpy-data-base-entry" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="rmgpy.data.base.Entry">
+<em class="property">class </em><tt class="descclassname">rmgpy.data.base.</tt><tt class="descname">Entry</tt><big>(</big><em>index=-1</em>, <em>label=''</em>, <em>item=None</em>, <em>parent=None</em>, <em>children=None</em>, <em>data=None</em>, <em>reference=None</em>, <em>referenceType=''</em>, <em>shortDesc=''</em>, <em>longDesc=''</em>, <em>rank=None</em>, <em>history=None</em><big>)</big><a class="headerlink" href="#rmgpy.data.base.Entry" title="Permalink to this definition">¶</a></dt>
+<dd><p>A class for representing individual records in an RMG database. Each entry
+in the database associates a chemical item (generally a species, functional
+group, or reaction) with a piece of data corresponding to that item. A
+significant amount of metadata can also be stored with each entry.</p>
+<p>The attributes are:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="14%" />
+<col width="86%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Attribute</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><cite>index</cite></td>
+<td>A unique nonnegative integer index for the entry</td>
+</tr>
+<tr class="row-odd"><td><cite>label</cite></td>
+<td>A unique string identifier for the entry (or &#8216;&#8217; if not used)</td>
+</tr>
+<tr class="row-even"><td><cite>item</cite></td>
+<td>The item that this entry represents</td>
+</tr>
+<tr class="row-odd"><td><cite>parent</cite></td>
+<td>The parent of the entry in the hierarchy (or <tt class="docutils literal"><span class="pre">None</span></tt> if not used)</td>
+</tr>
+<tr class="row-even"><td><cite>children</cite></td>
+<td>A list of the children of the entry in the hierarchy (or <tt class="docutils literal"><span class="pre">None</span></tt> if not used)</td>
+</tr>
+<tr class="row-odd"><td><cite>data</cite></td>
+<td>The data to associate with the item</td>
+</tr>
+<tr class="row-even"><td><cite>reference</cite></td>
+<td>A <tt class="xref py py-class docutils literal"><span class="pre">Reference</span></tt> object containing bibliographic reference information to the source of the data</td>
+</tr>
+<tr class="row-odd"><td><cite>referenceType</cite></td>
+<td>The way the data was determined: <tt class="docutils literal"><span class="pre">'theoretical'</span></tt>, <tt class="docutils literal"><span class="pre">'experimental'</span></tt>, or <tt class="docutils literal"><span class="pre">'review'</span></tt></td>
+</tr>
+<tr class="row-even"><td><cite>shortDesc</cite></td>
+<td>A brief (one-line) description of the data</td>
+</tr>
+<tr class="row-odd"><td><cite>longDesc</cite></td>
+<td>A long, verbose description of the data</td>
+</tr>
+<tr class="row-even"><td><cite>rank</cite></td>
+<td>An integer indicating the degree of confidence in the entry data, or <tt class="docutils literal"><span class="pre">None</span></tt> if not used</td>
+</tr>
+<tr class="row-odd"><td><cite>history</cite></td>
+<td>A list of tuples containing the date/time of change, author, type of change, and a brief description of the change</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div class="sidebarlogo">
+<img src="../../_static/rmg-logo-small.png" alt="RMG" />
+</div>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="depositoryreaction.html"
+                        title="previous chapter">rmgpy.data.kinetics.DepositoryReaction</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="groupfrequencies.html"
+                        title="next chapter">rmgpy.data.statmech.GroupFrequencies</a></p>
+  <h3>This Page </h3>
+  <ul class="this-page-menu">
+    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/reference/data/entry.rst"
+           rel="nofollow">Edit this page</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

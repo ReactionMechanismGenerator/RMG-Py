@@ -1,0 +1,244 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>rmgpy.molecule.Atom &mdash; RMG Py 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
+    <link rel="up" title="Molecular representations (rmgpy.molecule)" href="index.html" />
+    <link rel="next" title="rmgpy.molecule.Bond" href="bond.html" />
+    <link rel="prev" title="Reaction recipes" href="recipe.html" /> 
+  </head>
+  <body>
+<div class="header">
+&nbsp;
+</div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="bond.html" title="rmgpy.molecule.Bond"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="recipe.html" title="Reaction recipes"
+             accesskey="P">previous</a> |</li>
+<li><a href="../../index.html">Documentation</a> &raquo;</li>
+
+          <li><a href="../index.html" >RMG API Reference</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Molecular representations (<tt class="docutils literal docutils literal docutils literal"><span class="pre">rmgpy.molecule</span></tt>)</a> &raquo;</li> 
+      </ul>
+    </div>
+            
+  <div class="section" id="rmgpy-molecule-atom">
+<h1>rmgpy.molecule.Atom<a class="headerlink" href="#rmgpy-molecule-atom" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="rmgpy.molecule.Atom">
+<em class="property">class </em><tt class="descclassname">rmgpy.molecule.</tt><tt class="descname">Atom</tt><a class="headerlink" href="#rmgpy.molecule.Atom" title="Permalink to this definition">¶</a></dt>
+<dd><p>An atom. The attributes are:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="20%" />
+<col width="20%" />
+<col width="59%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Attribute</th>
+<th class="head">Type</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><cite>atomType</cite></td>
+<td><tt class="xref py py-class docutils literal"><span class="pre">AtomType</span></tt></td>
+<td>The <a class="reference internal" href="atomtype.html#atom-types"><em>atom type</em></a></td>
+</tr>
+<tr class="row-odd"><td><cite>element</cite></td>
+<td><tt class="xref py py-class docutils literal"><span class="pre">Element</span></tt></td>
+<td>The chemical element the atom represents</td>
+</tr>
+<tr class="row-even"><td><cite>radicalElectrons</cite></td>
+<td><tt class="docutils literal"><span class="pre">short</span></tt></td>
+<td>The number of radical electrons</td>
+</tr>
+<tr class="row-odd"><td><cite>spinMultiplicity</cite></td>
+<td><tt class="docutils literal"><span class="pre">short</span></tt></td>
+<td>The spin multiplicity of the atom</td>
+</tr>
+<tr class="row-even"><td><cite>charge</cite></td>
+<td><tt class="docutils literal"><span class="pre">short</span></tt></td>
+<td>The formal charge of the atom</td>
+</tr>
+<tr class="row-odd"><td><cite>label</cite></td>
+<td><tt class="docutils literal"><span class="pre">str</span></tt></td>
+<td>A string label that can be used to tag individual atoms</td>
+</tr>
+</tbody>
+</table>
+<p>Additionally, the <tt class="docutils literal"><span class="pre">mass</span></tt>, <tt class="docutils literal"><span class="pre">number</span></tt>, and <tt class="docutils literal"><span class="pre">symbol</span></tt> attributes of the
+atom&#8217;s element can be read (but not written) directly from the atom object,
+e.g. <tt class="docutils literal"><span class="pre">atom.symbol</span></tt> instead of <tt class="docutils literal"><span class="pre">atom.element.symbol</span></tt>.</p>
+<dl class="method">
+<dt id="rmgpy.molecule.Atom.applyAction">
+<tt class="descname">applyAction</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Atom.applyAction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the atom pattern as a result of applying <cite>action</cite>, a tuple
+containing the name of the reaction recipe action along with any
+required parameters. The available actions can be found
+<a class="reference internal" href="recipe.html#reaction-recipe-actions"><em>here</em></a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.Atom.copy">
+<tt class="descname">copy</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Atom.copy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a deep copy of the current atom. Modifying the
+attributes of the copy will not affect the original.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.Atom.decrementRadical">
+<tt class="descname">decrementRadical</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Atom.decrementRadical" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the atom pattern as a result of applying a LOSE_RADICAL action,
+where <cite>radical</cite> specifies the number of radical electrons to remove.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.Atom.equivalent">
+<tt class="descname">equivalent</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Atom.equivalent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if <cite>other</cite> is indistinguishable from this atom, or
+<tt class="docutils literal"><span class="pre">False</span></tt> otherwise. If <cite>other</cite> is an <tt class="xref py py-class docutils literal"><span class="pre">Atom</span></tt> object, then all
+attributes except <cite>label</cite> must match exactly. If <cite>other</cite> is an
+<tt class="xref py py-class docutils literal"><span class="pre">GroupAtom</span></tt> object, then the atom must match any of the
+combinations in the atom pattern.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.Atom.incrementRadical">
+<tt class="descname">incrementRadical</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Atom.incrementRadical" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the atom pattern as a result of applying a GAIN_RADICAL action,
+where <cite>radical</cite> specifies the number of radical electrons to add.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.Atom.isCarbon">
+<tt class="descname">isCarbon</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Atom.isCarbon" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if the atom represents a carbon atom or <tt class="docutils literal"><span class="pre">False</span></tt> if
+not.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.Atom.isHydrogen">
+<tt class="descname">isHydrogen</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Atom.isHydrogen" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if the atom represents a hydrogen atom or <tt class="docutils literal"><span class="pre">False</span></tt> if
+not.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.Atom.isNonHydrogen">
+<tt class="descname">isNonHydrogen</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Atom.isNonHydrogen" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if the atom does not represent a hydrogen atom or
+<tt class="docutils literal"><span class="pre">False</span></tt> if not.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.Atom.isOxygen">
+<tt class="descname">isOxygen</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Atom.isOxygen" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if the atom represents an oxygen atom or <tt class="docutils literal"><span class="pre">False</span></tt> if
+not.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.Atom.isSpecificCaseOf">
+<tt class="descname">isSpecificCaseOf</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Atom.isSpecificCaseOf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if <cite>self</cite> is a specific case of <cite>other</cite>, or <tt class="docutils literal"><span class="pre">False</span></tt>
+otherwise. If <cite>other</cite> is an <tt class="xref py py-class docutils literal"><span class="pre">Atom</span></tt> object, then this is the same
+as the <tt class="xref py py-meth docutils literal"><span class="pre">equivalent()</span></tt> method. If <cite>other</cite> is an
+<tt class="xref py py-class docutils literal"><span class="pre">GroupAtom</span></tt> object, then the atom must match or be more
+specific than any of the combinations in the atom pattern.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.Atom.resetConnectivityValues">
+<tt class="descname">resetConnectivityValues</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Atom.resetConnectivityValues" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reset the cached structure information for this vertex.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div class="sidebarlogo">
+<img src="../../_static/rmg-logo-small.png" alt="RMG" />
+</div>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="recipe.html"
+                        title="previous chapter">Reaction recipes</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="bond.html"
+                        title="next chapter">rmgpy.molecule.Bond</a></p>
+  <h3>This Page </h3>
+  <ul class="this-page-menu">
+    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/reference/molecule/atom.rst"
+           rel="nofollow">Edit this page</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

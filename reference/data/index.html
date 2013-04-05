@@ -1,0 +1,332 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Database (rmgpy.data) &mdash; RMG Py 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
+    <link rel="up" title="RMG API Reference" href="../index.html" />
+    <link rel="next" title="rmgpy.data.base.Database" href="database.html" />
+    <link rel="prev" title="Physical constants (rmgpy.constants)" href="../constants.html" /> 
+  </head>
+  <body>
+<div class="header">
+&nbsp;
+</div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="database.html" title="rmgpy.data.base.Database"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../constants.html" title="Physical constants (rmgpy.constants)"
+             accesskey="P">previous</a> |</li>
+<li><a href="../../index.html">Documentation</a> &raquo;</li>
+
+          <li><a href="../index.html" accesskey="U">RMG API Reference</a> &raquo;</li> 
+      </ul>
+    </div>
+            
+  <div class="section" id="module-rmgpy.data">
+<span id="database-rmgpy-data"></span><span id="dataapireference"></span><h1>Database (<a class="reference internal" href="#module-rmgpy.data" title="rmgpy.data"><tt class="xref py py-mod docutils literal"><span class="pre">rmgpy.data</span></tt></a>)<a class="headerlink" href="#module-rmgpy.data" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="general-classes">
+<h2>General classes<a class="headerlink" href="#general-classes" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="25%" />
+<col width="75%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Class/Function</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><a class="reference internal" href="entry.html#rmgpy.data.base.Entry" title="rmgpy.data.base.Entry"><tt class="xref py py-class docutils literal"><span class="pre">Entry</span></tt></a></td>
+<td>An entry in a database</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="database.html#rmgpy.data.base.Database" title="rmgpy.data.base.Database"><tt class="xref py py-class docutils literal"><span class="pre">Database</span></tt></a></td>
+<td>A database of entries</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="logicnode.html#rmgpy.data.base.LogicNode" title="rmgpy.data.base.LogicNode"><tt class="xref py py-class docutils literal"><span class="pre">LogicNode</span></tt></a></td>
+<td>A node in a database that represents a logical collection of entries</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="logicnode.html#rmgpy.data.base.LogicAnd" title="rmgpy.data.base.LogicAnd"><tt class="xref py py-class docutils literal"><span class="pre">LogicAnd</span></tt></a></td>
+<td>A logical collection of entries, where all entries in the collection must match</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="logicnode.html#rmgpy.data.base.LogicOr" title="rmgpy.data.base.LogicOr"><tt class="xref py py-class docutils literal"><span class="pre">LogicOr</span></tt></a></td>
+<td>A logical collection of entries, where any entry in the collection can match</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="logicnode.html#rmgpy.data.base.makeLogicNode" title="rmgpy.data.base.makeLogicNode"><tt class="xref py py-func docutils literal"><span class="pre">makeLogicNode()</span></tt></a></td>
+<td>Create a <a class="reference internal" href="logicnode.html#rmgpy.data.base.LogicNode" title="rmgpy.data.base.LogicNode"><tt class="xref py py-class docutils literal"><span class="pre">LogicNode</span></tt></a> based on a string representation</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="thermodynamics-database">
+<h2>Thermodynamics database<a class="headerlink" href="#thermodynamics-database" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="22%" />
+<col width="78%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Class</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><a class="reference internal" href="thermodepository.html#rmgpy.data.thermo.ThermoDepository" title="rmgpy.data.thermo.ThermoDepository"><tt class="xref py py-class docutils literal"><span class="pre">ThermoDepository</span></tt></a></td>
+<td>A depository of all thermodynamics parameters for one or more species</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="thermolibrary.html#rmgpy.data.thermo.ThermoLibrary" title="rmgpy.data.thermo.ThermoLibrary"><tt class="xref py py-class docutils literal"><span class="pre">ThermoLibrary</span></tt></a></td>
+<td>A library of curated thermodynamics parameters for one or more species</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="thermogroups.html#rmgpy.data.thermo.ThermoGroups" title="rmgpy.data.thermo.ThermoGroups"><tt class="xref py py-class docutils literal"><span class="pre">ThermoGroups</span></tt></a></td>
+<td>A representation of a portion of a database for implementing the Benson group additivity method</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="thermodatabase.html#rmgpy.data.thermo.ThermoDatabase" title="rmgpy.data.thermo.ThermoDatabase"><tt class="xref py py-class docutils literal"><span class="pre">ThermoDatabase</span></tt></a></td>
+<td>An entire thermodynamics database, including depositories, libraries, and groups</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="kinetics-database">
+<h2>Kinetics database<a class="headerlink" href="#kinetics-database" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="21%" />
+<col width="79%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Class</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><a class="reference internal" href="depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction" title="rmgpy.data.kinetics.DepositoryReaction"><tt class="xref py py-class docutils literal"><span class="pre">DepositoryReaction</span></tt></a></td>
+<td>A reaction with kinetics determined from querying a kinetics depository</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="libraryreaction.html#rmgpy.data.kinetics.LibraryReaction" title="rmgpy.data.kinetics.LibraryReaction"><tt class="xref py py-class docutils literal"><span class="pre">LibraryReaction</span></tt></a></td>
+<td>A reaction with kinetics determined from querying a kinetics library</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="templatereaction.html#rmgpy.data.kinetics.TemplateReaction" title="rmgpy.data.kinetics.TemplateReaction"><tt class="xref py py-class docutils literal"><span class="pre">TemplateReaction</span></tt></a></td>
+<td>A reaction with kinetics determined from querying a kinetics group additivity or rate rules method</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="reactionrecipe.html#rmgpy.data.kinetics.ReactionRecipe" title="rmgpy.data.kinetics.ReactionRecipe"><tt class="xref py py-class docutils literal"><span class="pre">ReactionRecipe</span></tt></a></td>
+<td>A sequence of actions that represent the process of a chemical reaction</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="kineticsdepository.html#rmgpy.data.kinetics.KineticsDepository" title="rmgpy.data.kinetics.KineticsDepository"><tt class="xref py py-class docutils literal"><span class="pre">KineticsDepository</span></tt></a></td>
+<td>A depository of all kinetics parameters for one or more reactions</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="kineticslibrary.html#rmgpy.data.kinetics.KineticsLibrary" title="rmgpy.data.kinetics.KineticsLibrary"><tt class="xref py py-class docutils literal"><span class="pre">KineticsLibrary</span></tt></a></td>
+<td>A library of curated kinetics parameters for one or more reactions</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="kineticsgroups.html#rmgpy.data.kinetics.KineticsGroups" title="rmgpy.data.kinetics.KineticsGroups"><tt class="xref py py-class docutils literal"><span class="pre">KineticsGroups</span></tt></a></td>
+<td>A set of group additivity values for a reaction family, organized in a tree</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="kineticsrules.html#rmgpy.data.kinetics.KineticsRules" title="rmgpy.data.kinetics.KineticsRules"><tt class="xref py py-class docutils literal"><span class="pre">KineticsRules</span></tt></a></td>
+<td>A set of rate rules for a reaction family</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="kineticsfamily.html#rmgpy.data.kinetics.KineticsFamily" title="rmgpy.data.kinetics.KineticsFamily"><tt class="xref py py-class docutils literal"><span class="pre">KineticsFamily</span></tt></a></td>
+<td>A kinetics database for one reaction family, including depositories, libraries, groups, and rules</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="kineticsdatabase.html#rmgpy.data.kinetics.KineticsDatabase" title="rmgpy.data.kinetics.KineticsDatabase"><tt class="xref py py-class docutils literal"><span class="pre">KineticsDatabase</span></tt></a></td>
+<td>A kinetics database for all reaction families, including depositories, libraries, groups, and rules</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="statistical-mechanics-database">
+<h2>Statistical mechanics database<a class="headerlink" href="#statistical-mechanics-database" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="24%" />
+<col width="76%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Class</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><a class="reference internal" href="groupfrequencies.html#rmgpy.data.statmech.GroupFrequencies" title="rmgpy.data.statmech.GroupFrequencies"><tt class="xref py py-class docutils literal"><span class="pre">GroupFrequencies</span></tt></a></td>
+<td>A set of characteristic frequencies for a group in the frequency database</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="statmechdepository.html#rmgpy.data.statmech.StatmechDepository" title="rmgpy.data.statmech.StatmechDepository"><tt class="xref py py-class docutils literal"><span class="pre">StatmechDepository</span></tt></a></td>
+<td>A depository of all statistical mechanics parameters for one or more species</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="statmechlibrary.html#rmgpy.data.statmech.StatmechLibrary" title="rmgpy.data.statmech.StatmechLibrary"><tt class="xref py py-class docutils literal"><span class="pre">StatmechLibrary</span></tt></a></td>
+<td>A library of curated statistical mechanics parameters for one or more species</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="statmechgroups.html#rmgpy.data.statmech.StatmechGroups" title="rmgpy.data.statmech.StatmechGroups"><tt class="xref py py-class docutils literal"><span class="pre">StatmechGroups</span></tt></a></td>
+<td>A set of characteristic frequencies for various functional groups, organized in a tree</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="statmechdatabase.html#rmgpy.data.statmech.StatmechDatabase" title="rmgpy.data.statmech.StatmechDatabase"><tt class="xref py py-class docutils literal"><span class="pre">StatmechDatabase</span></tt></a></td>
+<td>An entire statistical mechanics database, including depositories, libraries, and groups</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="statistical-mechanics-fitting">
+<h2>Statistical mechanics fitting<a class="headerlink" href="#statistical-mechanics-fitting" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="20%" />
+<col width="80%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Class/Function</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><a class="reference internal" href="statmechfit.html#rmgpy.data.statmechfit.DirectFit" title="rmgpy.data.statmechfit.DirectFit"><tt class="xref py py-class docutils literal"><span class="pre">DirectFit</span></tt></a></td>
+<td>DQED class for fitting a small number of vibrational frequencies and hindered rotors</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="statmechfit.html#rmgpy.data.statmechfit.PseudoFit" title="rmgpy.data.statmechfit.PseudoFit"><tt class="xref py py-class docutils literal"><span class="pre">PseudoFit</span></tt></a></td>
+<td>DQED class for fitting a large number of vibrational frequencies and hindered rotors by assuming degeneracies for both</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="statmechfit.html#rmgpy.data.statmechfit.PseudoRotorFit" title="rmgpy.data.statmechfit.PseudoRotorFit"><tt class="xref py py-class docutils literal"><span class="pre">PseudoRotorFit</span></tt></a></td>
+<td>DQED class for fitting a moderate number of vibrational frequencies and hindered rotors by assuming degeneracies for hindered rotors only</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="statmechfit.html#rmgpy.data.statmechfit.fitStatmechDirect" title="rmgpy.data.statmechfit.fitStatmechDirect"><tt class="xref py py-func docutils literal"><span class="pre">fitStatmechDirect()</span></tt></a></td>
+<td>Directly fit a small number of vibrational frequencies and hindered rotors</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="statmechfit.html#rmgpy.data.statmechfit.fitStatmechPseudo" title="rmgpy.data.statmechfit.fitStatmechPseudo"><tt class="xref py py-func docutils literal"><span class="pre">fitStatmechPseudo()</span></tt></a></td>
+<td>Fit a large number of vibrational frequencies and hindered rotors by assuming degeneracies for both</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="statmechfit.html#rmgpy.data.statmechfit.fitStatmechPseudoRotors" title="rmgpy.data.statmechfit.fitStatmechPseudoRotors"><tt class="xref py py-func docutils literal"><span class="pre">fitStatmechPseudoRotors()</span></tt></a></td>
+<td>Fit a moderate number of vibrational frequencies and hindered rotors by assuming degeneracies for hindered rotors only</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="statmechfit.html#rmgpy.data.statmechfit.fitStatmechToHeatCapacity" title="rmgpy.data.statmechfit.fitStatmechToHeatCapacity"><tt class="xref py py-func docutils literal"><span class="pre">fitStatmechToHeatCapacity()</span></tt></a></td>
+<td>Fit vibrational and torsional degrees of freedom to heat capacity data</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="exceptions">
+<h2>Exceptions<a class="headerlink" href="#exceptions" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="28%" />
+<col width="72%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Exception</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><tt class="xref py py-exc docutils literal"><span class="pre">DatabaseError</span></tt></td>
+<td>Raised when an error occurs while working with the database</td>
+</tr>
+<tr class="row-odd"><td><tt class="xref py py-exc docutils literal"><span class="pre">InvalidActionError</span></tt></td>
+<td>Raised when an error occurs while applying a reaction recipe</td>
+</tr>
+<tr class="row-even"><td><tt class="xref py py-exc docutils literal"><span class="pre">UndeterminableKineticsError</span></tt></td>
+<td>Raised when the kinetics of a given reaction cannot be determined</td>
+</tr>
+<tr class="row-odd"><td><tt class="xref py py-exc docutils literal"><span class="pre">StatmechFitError</span></tt></td>
+<td>Raised when an error occurs while fitting internal degrees of freedom to heat capacity data</td>
+</tr>
+</tbody>
+</table>
+<div class="toctree-wrapper compound">
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div class="sidebarlogo">
+<img src="../../_static/rmg-logo-small.png" alt="RMG" />
+</div>
+  <h3><a href="../../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Database (<tt class="docutils literal"><span class="pre">rmgpy.data</span></tt>)</a><ul>
+<li><a class="reference internal" href="#general-classes">General classes</a></li>
+<li><a class="reference internal" href="#thermodynamics-database">Thermodynamics database</a></li>
+<li><a class="reference internal" href="#kinetics-database">Kinetics database</a></li>
+<li><a class="reference internal" href="#statistical-mechanics-database">Statistical mechanics database</a></li>
+<li><a class="reference internal" href="#statistical-mechanics-fitting">Statistical mechanics fitting</a></li>
+<li><a class="reference internal" href="#exceptions">Exceptions</a><ul>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../constants.html"
+                        title="previous chapter">Physical constants (<tt class="docutils literal docutils literal docutils literal"><span class="pre">rmgpy.constants</span></tt>)</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="database.html"
+                        title="next chapter">rmgpy.data.base.Database</a></p>
+  <h3>This Page </h3>
+  <ul class="this-page-menu">
+    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/reference/data/index.rst"
+           rel="nofollow">Edit this page</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

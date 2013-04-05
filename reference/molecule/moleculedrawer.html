@@ -1,0 +1,148 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>rmgpy.molecule.draw.MoleculeDrawer &mdash; RMG Py 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
+    <link rel="up" title="Molecular representations (rmgpy.molecule)" href="index.html" />
+    <link rel="next" title="rmgpy.molecule.draw.ReactionDrawer" href="reactiondrawer.html" />
+    <link rel="prev" title="rmgpy.molecule.symmetry" href="symmetry.html" /> 
+  </head>
+  <body>
+<div class="header">
+&nbsp;
+</div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="reactiondrawer.html" title="rmgpy.molecule.draw.ReactionDrawer"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="symmetry.html" title="rmgpy.molecule.symmetry"
+             accesskey="P">previous</a> |</li>
+<li><a href="../../index.html">Documentation</a> &raquo;</li>
+
+          <li><a href="../index.html" >RMG API Reference</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Molecular representations (<tt class="docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">rmgpy.molecule</span></tt>)</a> &raquo;</li> 
+      </ul>
+    </div>
+            
+  <div class="section" id="rmgpy-molecule-draw-moleculedrawer">
+<h1>rmgpy.molecule.draw.MoleculeDrawer<a class="headerlink" href="#rmgpy-molecule-draw-moleculedrawer" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="rmgpy.molecule.draw.MoleculeDrawer">
+<em class="property">class </em><tt class="descclassname">rmgpy.molecule.draw.</tt><tt class="descname">MoleculeDrawer</tt><big>(</big><em>options=None</em><big>)</big><a class="headerlink" href="#rmgpy.molecule.draw.MoleculeDrawer" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class provides functionality for drawing the skeletal formula of
+molecules using the Cairo 2D graphics engine. The most common use case is
+simply:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">MoleculeDrawer</span><span class="p">()</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">molecule</span><span class="p">,</span> <span class="n">format</span><span class="o">=</span><span class="s">&#39;png&#39;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s">&#39;molecule.png&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>where <tt class="docutils literal"><span class="pre">molecule</span></tt> is the <tt class="xref py py-class docutils literal"><span class="pre">Molecule</span></tt> object to draw. You can also
+pass a dict of options to the constructor to affect how the molecules are
+drawn.</p>
+<dl class="method">
+<dt id="rmgpy.molecule.draw.MoleculeDrawer.draw">
+<tt class="descname">draw</tt><big>(</big><em>molecule</em>, <em>format</em>, <em>path=None</em><big>)</big><a class="headerlink" href="#rmgpy.molecule.draw.MoleculeDrawer.draw" title="Permalink to this definition">¶</a></dt>
+<dd><p>Draw the given <cite>molecule</cite> using the given image <cite>format</cite> - pdf, svg, ps, or
+png. If <cite>path</cite> is given, the drawing is saved to that location on disk. The
+<cite>options</cite> dict is an optional set of key-value pairs that can be used to
+control the generated drawing.</p>
+<p>This function returns the Cairo surface and context used to create the
+drawing, as well as a bounding box for the molecule being drawn as the
+tuple (<cite>left</cite>, <cite>top</cite>, <cite>width</cite>, <cite>height</cite>).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.draw.MoleculeDrawer.render">
+<tt class="descname">render</tt><big>(</big><em>cr</em>, <em>offset=None</em><big>)</big><a class="headerlink" href="#rmgpy.molecule.draw.MoleculeDrawer.render" title="Permalink to this definition">¶</a></dt>
+<dd><p>Uses the Cairo graphics library to create a skeletal formula drawing of a
+molecule containing the list of <cite>atoms</cite> and dict of <cite>bonds</cite> to be drawn.
+The 2D position of each atom in <cite>atoms</cite> is given in the <cite>coordinates</cite> array.
+The symbols to use at each atomic position are given by the list <cite>symbols</cite>.
+You must specify the Cairo context <cite>cr</cite> to render to.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div class="sidebarlogo">
+<img src="../../_static/rmg-logo-small.png" alt="RMG" />
+</div>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="symmetry.html"
+                        title="previous chapter">rmgpy.molecule.symmetry</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="reactiondrawer.html"
+                        title="next chapter">rmgpy.molecule.draw.ReactionDrawer</a></p>
+  <h3>This Page </h3>
+  <ul class="this-page-menu">
+    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/reference/molecule/moleculedrawer.rst"
+           rel="nofollow">Edit this page</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,212 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Kinetics (rmgpy.kinetics) &mdash; RMG Py 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
+    <link rel="up" title="RMG API Reference" href="../index.html" />
+    <link rel="next" title="rmgpy.kinetics.KineticsData" href="kineticsdata.html" />
+    <link rel="prev" title="rmgpy.data.thermo.ThermoLibrary" href="../data/thermolibrary.html" /> 
+  </head>
+  <body>
+<div class="header">
+&nbsp;
+</div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="kineticsdata.html" title="rmgpy.kinetics.KineticsData"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../data/thermolibrary.html" title="rmgpy.data.thermo.ThermoLibrary"
+             accesskey="P">previous</a> |</li>
+<li><a href="../../index.html">Documentation</a> &raquo;</li>
+
+          <li><a href="../index.html" accesskey="U">RMG API Reference</a> &raquo;</li> 
+      </ul>
+    </div>
+            
+  <div class="section" id="module-rmgpy.kinetics">
+<span id="kinetics-rmgpy-kinetics"></span><h1>Kinetics (<a class="reference internal" href="#module-rmgpy.kinetics" title="rmgpy.kinetics"><tt class="xref py py-mod docutils literal"><span class="pre">rmgpy.kinetics</span></tt></a>)<a class="headerlink" href="#module-rmgpy.kinetics" title="Permalink to this headline">¶</a></h1>
+<p>The <a class="reference internal" href="#module-rmgpy.kinetics" title="rmgpy.kinetics"><tt class="xref py py-mod docutils literal"><span class="pre">rmgpy.kinetics</span></tt></a> subpackage contains classes that represent various
+kinetics models of chemical reaction rates and models of quantum mechanical
+tunneling through an activation barrier.</p>
+<div class="section" id="pressure-independent-kinetics-models">
+<h2>Pressure-independent kinetics models<a class="headerlink" href="#pressure-independent-kinetics-models" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="22%" />
+<col width="78%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Class</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><a class="reference internal" href="kineticsdata.html#rmgpy.kinetics.KineticsData" title="rmgpy.kinetics.KineticsData"><tt class="xref py py-class docutils literal"><span class="pre">KineticsData</span></tt></a></td>
+<td>A kinetics model based on a set of discrete rate coefficient points in temperature</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="arrhenius.html#rmgpy.kinetics.Arrhenius" title="rmgpy.kinetics.Arrhenius"><tt class="xref py py-class docutils literal"><span class="pre">Arrhenius</span></tt></a></td>
+<td>A kinetics model based on the (modified) Arrhenius expression</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="multiarrhenius.html#rmgpy.kinetics.MultiArrhenius" title="rmgpy.kinetics.MultiArrhenius"><tt class="xref py py-class docutils literal"><span class="pre">MultiArrhenius</span></tt></a></td>
+<td>A kinetics model based on a sum of <a class="reference internal" href="arrhenius.html#rmgpy.kinetics.Arrhenius" title="rmgpy.kinetics.Arrhenius"><tt class="xref py py-class docutils literal"><span class="pre">Arrhenius</span></tt></a> expressions</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="pressure-dependent-kinetics-models">
+<h2>Pressure-dependent kinetics models<a class="headerlink" href="#pressure-dependent-kinetics-models" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="21%" />
+<col width="79%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Class</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><a class="reference internal" href="pdepkineticsdata.html#rmgpy.kinetics.PDepKineticsData" title="rmgpy.kinetics.PDepKineticsData"><tt class="xref py py-class docutils literal"><span class="pre">PDepKineticsData</span></tt></a></td>
+<td>A kinetics model based on a set of discrete rate coefficient points in temperature and pressure</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pdeparrhenius.html#rmgpy.kinetics.PDepArrhenius" title="rmgpy.kinetics.PDepArrhenius"><tt class="xref py py-class docutils literal"><span class="pre">PDepArrhenius</span></tt></a></td>
+<td>A kinetics model based on a set of Arrhenius expressions for a range of pressures</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="multipdeparrhenius.html#rmgpy.kinetics.MultiPDepArrhenius" title="rmgpy.kinetics.MultiPDepArrhenius"><tt class="xref py py-class docutils literal"><span class="pre">MultiPDepArrhenius</span></tt></a></td>
+<td>A kinetics model based on a sum of <a class="reference internal" href="pdeparrhenius.html#rmgpy.kinetics.PDepArrhenius" title="rmgpy.kinetics.PDepArrhenius"><tt class="xref py py-class docutils literal"><span class="pre">PDepArrhenius</span></tt></a> expressions</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="chebyshev.html#rmgpy.kinetics.Chebyshev" title="rmgpy.kinetics.Chebyshev"><tt class="xref py py-class docutils literal"><span class="pre">Chebyshev</span></tt></a></td>
+<td>A kinetics model based on a Chebyshev polynomial representation</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="thirdbody.html#rmgpy.kinetics.ThirdBody" title="rmgpy.kinetics.ThirdBody"><tt class="xref py py-class docutils literal"><span class="pre">ThirdBody</span></tt></a></td>
+<td>A low pressure-limit kinetics model based on the (modified) Arrhenius expression, with a third body</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="lindemann.html#rmgpy.kinetics.Lindemann" title="rmgpy.kinetics.Lindemann"><tt class="xref py py-class docutils literal"><span class="pre">Lindemann</span></tt></a></td>
+<td>A kinetics model of pressure-dependent falloff based on the Lindemann model</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="troe.html#rmgpy.kinetics.Troe" title="rmgpy.kinetics.Troe"><tt class="xref py py-class docutils literal"><span class="pre">Troe</span></tt></a></td>
+<td>A kinetics model of pressure-dependent falloff based on the Lindemann model with the Troe falloff factor</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="tunneling-models">
+<h2>Tunneling models<a class="headerlink" href="#tunneling-models" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="23%" />
+<col width="77%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Class</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><a class="reference internal" href="wigner.html#rmgpy.kinetics.Wigner" title="rmgpy.kinetics.Wigner"><tt class="xref py py-class docutils literal"><span class="pre">Wigner</span></tt></a></td>
+<td>A one-dimensional tunneling model based on the Wigner expression</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="eckart.html#rmgpy.kinetics.Eckart" title="rmgpy.kinetics.Eckart"><tt class="xref py py-class docutils literal"><span class="pre">Eckart</span></tt></a></td>
+<td>A one-dimensional tunneling model based on the (asymmetric) Eckart expression</td>
+</tr>
+</tbody>
+</table>
+<div class="toctree-wrapper compound">
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div class="sidebarlogo">
+<img src="../../_static/rmg-logo-small.png" alt="RMG" />
+</div>
+  <h3><a href="../../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Kinetics (<tt class="docutils literal"><span class="pre">rmgpy.kinetics</span></tt>)</a><ul>
+<li><a class="reference internal" href="#pressure-independent-kinetics-models">Pressure-independent kinetics models</a></li>
+<li><a class="reference internal" href="#pressure-dependent-kinetics-models">Pressure-dependent kinetics models</a></li>
+<li><a class="reference internal" href="#tunneling-models">Tunneling models</a><ul>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../data/thermolibrary.html"
+                        title="previous chapter">rmgpy.data.thermo.ThermoLibrary</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="kineticsdata.html"
+                        title="next chapter">rmgpy.kinetics.KineticsData</a></p>
+  <h3>This Page </h3>
+  <ul class="this-page-menu">
+    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/reference/kinetics/index.rst"
+           rel="nofollow">Edit this page</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>
