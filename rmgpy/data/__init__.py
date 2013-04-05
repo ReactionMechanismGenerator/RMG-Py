@@ -31,4 +31,9 @@
 import os.path
 
 def getDatabaseDirectory():
+    raise NotImplementedError("This is wrong.")
     return os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'database'))
+
+def getSourceHash():
+    import rmgpy.utilities
+    return rmgpy.utilities.path_checksum([os.path.dirname(__file__)])
