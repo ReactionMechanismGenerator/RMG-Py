@@ -5,6 +5,7 @@ RMG API Reference
 .. toctree::
     :maxdepth: 2
     
+    chemkin/index
     constants
     data/index
     kinetics/index
