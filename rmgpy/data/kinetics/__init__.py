@@ -49,6 +49,7 @@ from .family import TemplateReaction, KineticsFamily, KineticsGroups, \
     ReactionRecipe, InvalidActionError, ReactionPairsError, \
     UndeterminableKineticsError
 from .library import LibraryReaction, KineticsLibrary
+from .rules import KineticsRules
 
 ################################################################################
 
