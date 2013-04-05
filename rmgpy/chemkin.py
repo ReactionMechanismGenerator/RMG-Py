@@ -536,7 +536,12 @@ def readReactionComments(reaction, comments, read = True):
 ################################################################################
 
 def loadSpeciesDictionary(path):
-    
+    """
+    Load an RMG dictionary - containing species identifiers and the associated
+    adjacency lists - from the file located at `path` on disk. Returns a dict
+    mapping the species identifiers to the loaded species. Resonance isomers
+    for each species are automatically generated.
+    """
     speciesDict = {}
     
     with open(path, 'r') as f:
@@ -560,6 +565,9 @@ def loadSpeciesDictionary(path):
     return speciesDict
 
 def removeCommentFromLine(line):
+    """
+    Remove a comment from a line of a Chemkin file or species dictionary file.
+    """
     try:
         index1 = line.index('!')
     except ValueError:
