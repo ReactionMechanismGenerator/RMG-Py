@@ -60,6 +60,8 @@ from pdep import PDepReaction, PDepNetwork, PressureDependenceError
 class Species(rmgpy.species.Species):
     solventName = None
     solventData = None
+    solventViscosity = None
+    diffusionTemp = None
 
     def __init__(self, index=-1, label='', thermo=None, conformer=None, 
                  molecule=None, lennardJones=None, molecularWeight=None, 
