@@ -10,25 +10,34 @@ database(
 
 # List of species
 species(
-    label='ethane',
+    label='octane',
     reactive=True,
-    structure=SMILES("CC"),
+    structure=SMILES("C(CCCCC)CC"),
+)
+
+species(
+    label='oxygen',
+    reactive=True,
+    structure=SMILES("[O][O]"),
 )
 
 # Reaction systems
 liquidReactor(
-    temperature=(750,'K'),
+    temperature=(500,'K'),
     initialConcentrations={
-        "ethane": (1.0,'mol/L')
+        "octane": (6.154e-3,'mol/cm^3'),
+        "oxygen": (4.953e-6,'mol/cm^3')
     },
     terminationConversion={
-        'ethane': 0.9,
+        'octane': 0.9,
     },
     terminationTime=(1e6,'s'),
 )
 
 solvation(
-	solvent='water'
+	solvent='octane',
+	viscosity = (1e-3, "cP"),
+	temperature = (298, "K"), # T at which diffusion limits on reaction rates evaluated for chemkin output
 )
 
 simulator(
