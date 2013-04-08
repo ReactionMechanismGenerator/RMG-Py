@@ -188,6 +188,19 @@ class Species(rmgpy.species.Species):
             T0 = (300,"K"),
             n = 0.85,
         )
+    
+    def getStokesDiffusivity(self):
+        """
+        Get diffusivity of solute using the Stokes-Einstein sphere relation. Radius is 
+        found from the McGowan volume.
+        """
+        soluteData = database.solvation.getSoluteData(self)
+        k_b = 1.3806488e-23 # m2*kg/s2/K
+        T = Species.diffusionTemp.value_si
+        viscosity = Species.solventViscosity.values_si # should have units of kg*m/s
+        radius = ((75*soluteData.V/3.14159)^(1/3))/100 # in meters
+        D = k_b*T/6/3.14159/viscosity/radius # m2/s
+        return D
 
 ################################################################################
 
