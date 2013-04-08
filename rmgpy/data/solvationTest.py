@@ -78,6 +78,17 @@ class TestSoluteDatabase(TestCase):
         ['water', 'methanol', 'CO', -52000, -5110*4.184, None],
         ['water', 'ethanol', 'C(C)O', -50600, -5010*4.184, None],
         ['water', '1,2 propanediol', 'C(CO)CO', -81100, None, None],
+        ['1-octanol', 'methane', 'C', -3900, 510*4.184, None],
+        ['1-octanol', 'octane', 'CCCCCCCC', -40080, -4180*4.184, None],
+        ['1-octanol', 'ethylbenzene', 'C(C)C1=CC=CC=C1', -39910, -5080*4.184, None],
+        ['1-octanol', 'toluene', 'C1(=CC=CC=C1)C', -35990, -4550*4.184, None],
+        ['1-octanol', 'tetrahydrofuran', 'C1CCOC1', -28320, -3930*4.184, None],
+        ['benzene', 'octane', 'CCCCCCCC', -35480, -5350*4.184, None],
+        ['benzene', 'toluene', 'C1(=CC=CC=C1)C', -37660, -5320*4.184, None],
+        ['benzene', '1,4-dioxane', 'C1COCCO1', -39030, -5210*4.184, None],
+        ['benzene', 'methanol', 'CO', None, -2580*4.184, None],
+        ['benzene', 'ethanol', 'C(CO)CO', -29620, -3420*4.184, None],
+        
         ]
         
         for solventName, soluteName, smiles, H, G, S in self.testCases:
