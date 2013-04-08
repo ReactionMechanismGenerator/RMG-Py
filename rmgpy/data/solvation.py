@@ -100,16 +100,75 @@ class SoluteData():
     """
     Stores Abraham parameters to characterize a solute
     """
-    def __init__(self, S=None, B=None, E=None, L=None, A=None, comment=""):
+    def __init__(self, S=None, B=None, E=None, L=None, A=None, V=None, comment=""):
         self.S = S
         self.B = B
         self.E = E
         self.L = L
         self.A = A
+        self.V = V
         self.comment = comment
     def __repr__(self):
         return "SoluteData(S={0},B={1},E={2},L={3},A={4},comment={5!r})".format(self.S, self.B, self.E, self.L, self.A, self.comment)
         
+    def setMcGowanVolume(self, species):
+        """
+        Find and store the McGowan's Volume
+        Returned volumes are in cm^3/mol/100 (see note below)
+        See Table 2 in Abraham & McGowan, Chromatographia Vol. 23, No. 4, p. 243. April 1987
+        doi: 10.1007/BF02311772
+        
+        "V is scaled to have similar values to the other
+        descriptors by division by 100 and has units of (cm3mol−1/100)."
+        the contibutions in this function are in cm3/mol, and the division by 100 is done at the very end.
+        """
+        molecule = species.molecules[0] # any will do, use the first.
+        Vtot = 0
+
+        for atom in molecule.atoms:
+            if isCarbon(atom):
+                thisV = 16.35
+            elif (atom.element.number == 7): # nitrogen, do this way if we don't have an isElement method
+                thisV = 14.39
+            elif isOxygen(atom):
+                thisV = thisV + 12.43
+            #else if (element.equals("F"))
+                #thisV = thisV + 10.48;
+            elif isHydrogen(atom):
+                thisV = thisV + 8.71
+           #  else if (element.equals("Si"))
+#                 thisV = thisV + 26.83;
+#             else if (element.equals("P"))
+#                 thisV = thisV + 24.87;
+#             else if (element.equals("S"))
+#                 thisV = thisV + 22.91;
+#             else if (element.equals("Cl"))
+#                 thisV = thisV + 20.95;
+#             else if (element.equals("B"))
+#                 thisV = thisV + 18.32;
+#             else if (element.equals("Ge"))
+#                 thisV = thisV + 31.02;
+#             else if (element.equals("As"))
+#                 thisV = thisV + 29.42;
+#             else if (element.equals("Se"))
+#                 thisV = thisV + 27.81;
+#             else if (element.equals("Br"))
+#                 thisV = thisV + 26.21;
+#             else if (element.equals("Sn"))
+#                 thisV = thisV + 39.35;
+#             else if (element.equals("Te"))
+#                 thisV = thisV + 36.14;
+#             else if (element.equals("I"))
+#                 thisV = thisV + 34.53;
+            else:
+                raise Exception()
+            Vtot = Vtot + thisV
+
+        for bond in molecule.bonds:
+            Vtot = Vtot - 6.56;
+
+        return Vtot / 100; # division by 100 to get units correct.
+
 
 ################################################################################
 
@@ -456,6 +515,7 @@ class SolvationDatabase(object):
             # Solute not found in any loaded libraries, so estimate
             soluteData = self.getSoluteDataFromGroups(species)
         # Return the resulting solute parameters
+        soluteData.setMcGowanVolume(species)
         return soluteData
         
 
