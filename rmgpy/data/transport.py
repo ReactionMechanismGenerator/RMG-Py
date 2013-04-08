@@ -216,7 +216,7 @@ class TransportDatabase(object):
         self.groups = d['groups']
         self.libraryOrder = d['libraryOrder']
     
-    def getTransportProperties(self, molecule):
+    def getTransportProperties(self, species):
         """
         Return the transport properties for a given :class:`Species`
         object `species`. This function first searches the loaded libraries
@@ -284,7 +284,7 @@ class TransportDatabase(object):
         groupData = []
         counter = 0
         
-        #iterates through resonance structures, then average values
+        #iterates through resonance structures, adding up the critical point values of all the groups
         for molecule in species.molecule:
             molecule.clearLabeledAtoms()
             molecule.updateAtomTypes()
@@ -296,12 +296,14 @@ class TransportDatabase(object):
             groupData.structureIndex += criticalPoint.structureIndex
             counter += 1
         
+        #averages the group values from all the molecules in the species
         groupData.Tc = groupData.Tc / counter
         groupData.Pc = groupData.Pc / counter
         groupData.Vc = groupData.Vc / counter
         groupData.Tb = groupData.Tb / counter
         groupData.structureIndex = groupData.structureIndex / counter
-            
+        
+        #Apply the Joback methods to approximate the leonard jones parameters    
         groupData.Tb = 198.18 + groupData.Tb
         groupData.Vc = 17.5 + groupData.Vc
         groupData.Tc = groupData.Tb/(.584 + .965(groupData.Tc) - (groupData.Tc)^2)
