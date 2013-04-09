@@ -131,7 +131,7 @@ class RMG:
         self.kineticsEstimator = 'group additivity'
         self.solvent = None
         self.viscosity = None
-	    self.diffusionTemp = None
+        self.diffusionTemp = None
         
         self.reactionModel = None
         self.reactionSystems = None
