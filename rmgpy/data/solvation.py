@@ -122,19 +122,20 @@ class SoluteData():
         descriptors by division by 100 and has units of (cm3mol−1/100)."
         the contibutions in this function are in cm3/mol, and the division by 100 is done at the very end.
         """
-        molecule = species.molecules[0] # any will do, use the first.
+        molecule = species.molecule[0] # any will do, use the first.
         Vtot = 0
 
         for atom in molecule.atoms:
-            if isCarbon(atom):
+            thisV = 0.0
+            if atom.isCarbon():
                 thisV = 16.35
             elif (atom.element.number == 7): # nitrogen, do this way if we don't have an isElement method
                 thisV = 14.39
-            elif isOxygen(atom):
+            elif atom.isOxygen():
                 thisV = thisV + 12.43
             #else if (element.equals("F"))
                 #thisV = thisV + 10.48;
-            elif isHydrogen(atom):
+            elif atom.isHydrogen():
                 thisV = thisV + 8.71
            #  else if (element.equals("Si"))
 #                 thisV = thisV + 26.83;
@@ -164,11 +165,10 @@ class SoluteData():
                 raise Exception()
             Vtot = Vtot + thisV
 
-        for bond in molecule.bonds:
-            Vtot = Vtot - 6.56;
+            for bond in molecule.getBonds(atom):
+                Vtot = Vtot - 6.56
 
         return Vtot / 100; # division by 100 to get units correct.
-
 
 ################################################################################
 
