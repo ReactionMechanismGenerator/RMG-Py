@@ -642,6 +642,11 @@ class CoreEdgeReactionModel:
             #  correct barrier heights of estimated kinetics
             if isinstance(reaction,TemplateReaction) or isinstance(reaction,DepositoryReaction): # i.e. not LibraryReaction
                 reaction.fixBarrierHeight() # also converts ArrheniusEP to Arrhenius.
+                
+            if self.pressureDependence and reaction.isUnimolecular():
+                # If this is going to be run through pressure dependence code,
+                # we need to make sure the barrier is positive.
+                reaction.fixBarrierHeight(forcePositive=True)
             
         # Update unimolecular (pressure dependent) reaction networks
         if self.pressureDependence:

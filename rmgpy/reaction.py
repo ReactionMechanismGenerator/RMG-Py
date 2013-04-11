@@ -176,6 +176,14 @@ class Reaction:
         :math:`\\ce{A <=> B + C}` or ``False`` if not.
         """
         return len(self.reactants) == 1 and len(self.products) > 1
+    
+    def isUnimolecular(self):
+        """
+        Return ``True`` if the reaction has a single molecule as either reactant or product (or both)
+        :math:`\\ce{A <=> B + C}` or :math:`\\ce{A + B <=> C}` or :math:`\\ce{A <=> B}`,
+        or ``False`` if not.
+        """
+        return len(self.reactants) == 1 or len(self.products) == 1
 
     def hasTemplate(self, reactants, products):
         """
@@ -552,12 +560,14 @@ class Reaction:
         # Return rate
         return rateConstant * (forward - reverse / equilibriumConstant)
 
-    def fixBarrierHeight(self):
+    def fixBarrierHeight(self, forcePositive=False):
         """
         Turns the kinetics into Arrhenius (if they were ArrheniusEP)
         and ensures the activation energy is at least the endothermicity
         for endothermic reactions, and is not negative only as a result 
         of using Evans Polanyi with an exothermic reaction.
+        If `forcePositive` is True, then all reactions
+        are forced to have a non-negative barrier.
         """
         cython.declare(H0=cython.double, H298=cython.double, Ea=cython.double)
         H298 = self.getEnthalpyOfReaction(298)
@@ -575,6 +585,11 @@ class Reaction:
                 self.kinetics.Ea.value_si = H0
                 self.kinetics.comment += "\nEa raised from {0:.1f} to {1:.1f} kJ/mol to match endothermicity of reaction.".format(Ea/1000,H0/1000)
                 logging.info("For reaction {2!s}, Ea raised from {0:.1f} to {1:.1f} kJ/mol to match endothermicity of reaction.".format(Ea/1000, H0/1000, self))
+        if forcePositive and self.kinetics.Ea.value_si < 0:
+            self.kinetics.comment += "\nEa raised from {0:.1f} to 0 kJ/mol.".format(self.kinetics.Ea.value_si/1000)
+            logging.info("For reaction {1!s} Ea raised from {0:.1f} to 0 kJ/mol.".format(self.kinetics.Ea.value_si/1000, self))
+            self.kinetics.Ea.value_si = 0
+
 
     def generateReverseRateCoefficient(self):
         """
