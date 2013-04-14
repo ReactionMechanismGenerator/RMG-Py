@@ -3,6 +3,9 @@ Created on Feb 26, 2013
 
 @author: Jake
 '''
+
+from rmgpy.quantity import DipoleMoment, Temperature, Length, Polarizability
+
 class TransportData:
     """
     A heat capacity model based on a set of discrete heat capacity data points.
@@ -23,10 +26,10 @@ class TransportData:
 
     def __init__(self, shapeIndex=None, epsilon=None, sigma=None, dipoleMoment=None, polarizability=None, rotrelaxcollnum=None, comment = ''):
         self.shapeIndex = shapeIndex
-        self.epsilon = epsilon
-        self.sigma = sigma
-        self.dipoleMoment = dipoleMoment
-        self.polarizability = polarizability
+        self.epsilon = Temperature(epsilon)
+        self.sigma = Length(sigma)
+        self.dipoleMoment = DipoleMoment(dipoleMoment)
+        self.polarizability = Polarizability(polarizability)
         self.rotrelaxcollnum = rotrelaxcollnum
         self.comment = comment
     
