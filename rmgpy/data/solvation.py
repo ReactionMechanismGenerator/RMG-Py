@@ -166,7 +166,7 @@ class SoluteData():
             Vtot = Vtot + thisV
 
             for bond in molecule.getBonds(atom):
-                Vtot = Vtot - 6.56
+                Vtot = Vtot - 6.56/2
 
         return Vtot / 100; # division by 100 to get units correct.
 
