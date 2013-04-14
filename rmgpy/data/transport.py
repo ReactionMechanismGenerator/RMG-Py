@@ -279,8 +279,6 @@ class TransportDatabase(object):
         additivity values. If no group additivity values are loaded, a
         :class:`DatabaseError` is raised.
         """
-        #Kb boltzmans constant
-        Kb = 1.3806503e-23
         groupData = []
         counter = 0
         
@@ -288,12 +286,13 @@ class TransportDatabase(object):
         for molecule in species.molecule:
             molecule.clearLabeledAtoms()
             molecule.updateAtomTypes()
-            criticalPoint = self.estimateCriticalPropertiesViaGroupAdditivity(molecule)
+            [criticalPoint, numAtoms] = self.estimateCriticalPropertiesViaGroupAdditivity(molecule)
             groupData.Tc += criticalPoint.Tc
             groupData.Pc += criticalPoint.Pc
             groupData.Vc += criticalPoint.Vc
             groupData.Tb += criticalPoint.Tb
             groupData.structureIndex += criticalPoint.structureIndex
+            groupData.numAtoms += numAtoms
             counter += 1
         
         #averages the group values from all the molecules in the species
@@ -302,17 +301,18 @@ class TransportDatabase(object):
         groupData.Vc = groupData.Vc / counter
         groupData.Tb = groupData.Tb / counter
         groupData.structureIndex = groupData.structureIndex / counter
+        groupData.numAtoms = groupData.numAtoms/counter
         
         #Apply the Joback methods to approximate the leonard jones parameters    
-        groupData.Tb = 198.18 + groupData.Tb
-        groupData.Vc = 17.5 + groupData.Vc
-        groupData.Tc = groupData.Tb/(.584 + .965(groupData.Tc) - (groupData.Tc)^2)
-        groupData.Pc = 1/(.113 + .0032*counter + groupData.Pc)^2
-    
-        transport = transport(
+        Tb = 198.18 + groupData.Tb
+        Vc = 17.5 + groupData.Vc
+        Tc = Tb/(.584 + .965(groupData.Tc) - (groupData.Tc)^2)
+        Pc = 1/(.113 + .0032*groupData.numAtoms + groupData.Pc)^2
+
+        transport = TransportData(
                      shapeIndex = 0,
-                     epsilon = .77*groupData.Tc*Kb,
-                     sigma = 2.44*(groupData.Tc/groupData.Pc)^(1/3),
+                     epsilon = .77*Tc*constants.kB,
+                     sigma = 2.44*(Tc/Pc)^(1./3),
                      dipoleMoment = 0,
                      polarizability = 0,
                      rotrelaxcollnum = 0,
@@ -378,6 +378,7 @@ class TransportDatabase(object):
                 
         else: # non-radical species
             
+            numAtoms = 0
             criticalPoint = CriticalPointGroupContribution(
             Tc = 0,
             Pc = 0,
@@ -388,6 +389,7 @@ class TransportDatabase(object):
             
             # Generate estimate of critical point contribution data
             for atom in molecule.atoms:
+                numAtoms+=1
                 # Iterate over heavy (non-hydrogen) atoms
                 if atom.isNonHydrogen():
                     try:
@@ -400,7 +402,7 @@ class TransportDatabase(object):
                         logging.error(molecule)
                         logging.error(molecule.toAdjacencyList())
                         raise
-        return criticalPoint
+        return criticalPoint, numAtoms
                     
     def __addCriticalPointContribution(self, criticalPoint, database, molecule, atom):
         """
