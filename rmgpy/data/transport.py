@@ -308,7 +308,7 @@ class TransportDatabase(object):
         Vc = 17.5 + groupData.Vc
         Tc = Tb/(.584 + .965(groupData.Tc) - (groupData.Tc)^2)
         Pc = 1/(.113 + .0032*groupData.numAtoms + groupData.Pc)^2
-    
+
         transport = TransportData(
                      shapeIndex = 0,
                      epsilon = .77*Tc*constants.kB,
@@ -389,10 +389,10 @@ class TransportDatabase(object):
             
             # Generate estimate of critical point contribution data
             for atom in molecule.atoms:
+                numAtoms+=1
                 # Iterate over heavy (non-hydrogen) atoms
                 if atom.isNonHydrogen():
                     try:
-                        numAtoms += 1
                         if molecule.isVertexInCycle(atom):
                             self.__addCriticalPointContribution(criticalPoint, self.groups['ring'], molecule, {'*':atom})
                         else:
