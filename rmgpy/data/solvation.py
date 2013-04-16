@@ -110,7 +110,19 @@ class SoluteData():
         self.comment = comment
     def __repr__(self):
         return "SoluteData(S={0},B={1},E={2},L={3},A={4},comment={5!r})".format(self.S, self.B, self.E, self.L, self.A, self.comment)
-        
+    
+    def getStokesDiffusivity(self, T, solventViscosity):
+        """
+        Get diffusivity of solute using the Stokes-Einstein sphere relation. Radius is 
+        found from the McGowan volume.
+        """
+        k_b = 1.3806488e-23 # m2*kg/s2/K
+        temp = T.value_si
+        viscosity = solventViscosity.value_si # should have units of kg*m/s
+        radius = ((75*self.V/3.14159)**(1/3))/100 # in meters
+        D = k_b*temp/6/3.14159/viscosity/radius # m2/s
+        return D
+            
     def setMcGowanVolume(self, species):
         """
         Find and store the McGowan's Volume
