@@ -196,6 +196,11 @@ class TransportDatabase(object):
         self.libraries = {}
         self.groups = {}
         self.libraryOrder = []
+        self.local_context = {
+            'CriticalPointGroupContribution': CriticalPointGroupContribution,
+            'TransportData': TransportData,
+        }
+        self.global_context = {}
         
     def __reduce__(self):
         """
@@ -215,7 +220,45 @@ class TransportDatabase(object):
         self.libraries = d['libraries']
         self.groups = d['groups']
         self.libraryOrder = d['libraryOrder']
-    
+        
+    def load(self, path, libraries=None):
+        """
+        Load the transport database from the given `path` on disk, where `path`
+        points to the top-level folder of the transport database.
+        """
+        self.loadLibraries(os.path.join(path, 'libraries'), libraries)
+        self.loadGroups(os.path.join(path, 'groups'))
+   
+    def loadLibraries(self, path, libraries=None):
+        """
+        Load the transport libraries from the given `path` on disk, where `path`
+        points to the libraries folder of the transport database.
+        """
+        self.libraries = {}; self.libraryOrder = []
+        for (root, dirs, files) in os.walk(os.path.join(path)):
+            for f in files:
+                name, ext = os.path.splitext(f)
+                if ext.lower() == '.py' and (libraries is None or name in libraries):
+                    logging.info('Loading transport library from {0} in {1}...'.format(f, root))
+                    library = TransportLibrary()
+                    library.load(os.path.join(root, f), self.local_context, self.global_context)
+                    library.label = os.path.splitext(f)[0]
+                    self.libraries[library.label] = library
+                    self.libraryOrder.append(library.label)
+        if libraries is not None:
+            self.libraryOrder = libraries
+
+    def loadGroups(self, path):
+        """
+        Load the transport groups from the given `path` on disk, where `path`
+        points to the groups folder of the transport database.
+        """
+        logging.info('Loading transport group database from {0}...'.format(path))
+        self.groups = {}
+        self.groups['ring']    =    TransportGroups(label='ring').load(os.path.join(path, 'ring.py'   ), self.local_context, self.global_context)
+        self.groups['nonring']    =    TransportGroups(label='nonring').load(os.path.join(path, 'nonring.py'   ), self.local_context, self.global_context)
+
+
     def getTransportProperties(self, species):
         """
         Return the transport properties for a given :class:`Species`
@@ -279,51 +322,45 @@ class TransportDatabase(object):
         additivity values. If no group additivity values are loaded, a
         :class:`DatabaseError` is raised.
         """
-        groupData = []
+        
+        Tc = 0
+        Pc = 0
+        Tb = 0
+        Vc = 0
         counter = 0
         
         #iterates through resonance structures, adding up the critical point values of all the groups
         for molecule in species.molecule:
             molecule.clearLabeledAtoms()
             molecule.updateAtomTypes()
-            [criticalPoint, numAtoms] = self.estimateCriticalPropertiesViaGroupAdditivity(molecule)
-            groupData.Tc += criticalPoint.Tc
-            groupData.Pc += criticalPoint.Pc
-            groupData.Vc += criticalPoint.Vc
-            groupData.Tb += criticalPoint.Tb
-            groupData.structureIndex += criticalPoint.structureIndex
-            groupData.numAtoms += numAtoms
+            criticalPoint = self.estimateCriticalPropertiesViaGroupAdditivity(molecule)
+            Tc += criticalPoint.Tc
+            Pc += criticalPoint.Pc
+            Vc += criticalPoint.Vc
+            Tb += criticalPoint.Tb
             counter += 1
         
         #averages the group values from all the molecules in the species
-        groupData.Tc = groupData.Tc / counter
-        groupData.Pc = groupData.Pc / counter
-        groupData.Vc = groupData.Vc / counter
-        groupData.Tb = groupData.Tb / counter
-        groupData.structureIndex = groupData.structureIndex / counter
-        groupData.numAtoms = groupData.numAtoms/counter
-        
-        #Apply the Joback methods to approximate the leonard jones parameters    
-        Tb = 198.18 + groupData.Tb
-        Vc = 17.5 + groupData.Vc
-        Tc = Tb/(.584 + .965(groupData.Tc) - (groupData.Tc)^2)
-        Pc = 1/(.113 + .0032*groupData.numAtoms + groupData.Pc)^2
+        Tc = Tc / counter
+        Pc = Pc / counter
+        Vc = Vc / counter
+        Tb = Tb / counter
 
         transport = TransportData(
                      shapeIndex = 0,
-                     epsilon = .77*Tc*constants.kB,
-                     sigma = 2.44*(Tc/Pc)^(1./3),
-                     dipoleMoment = 0,
-                     polarizability = 0,
+                     epsilon = (.77 * Tc * constants.kB, 'K'),
+                     sigma = (2.44 * (Tc/Pc)**(1./3), 'angstroms'),
+                     dipoleMoment = (0, 'C*m'),
+                     polarizability = (0, 'C*m^2*V^-1'),
                      rotrelaxcollnum = 0,
-                     comment = 'group estimate',
+                     comment = 'Estimated with Tc={0} Pc={1} from Joback method'.format(Tc,Pc),
                      )
         return transport
         
     def estimateCriticalPropertiesViaGroupAdditivity(self, molecule):
         """
         Return the set of transport parameters corresponding to a given
-        :class:`Molecule` object `molecule` by estimation using the group
+        :class:`Molecule` object `molecule` by estimation using Joback's group
         additivity values. If no group additivity values are loaded, a
         :class:`DatabaseError` is raised.
         """
@@ -367,7 +404,6 @@ class TransportDatabase(object):
             # Only one radical site should be considered at a time; all others
             # should be saturated with hydrogen atoms
             for atom in added:
-
                 # Remove the added hydrogen atoms and bond and restore the radical
                 for H, bond in added[atom]:
                     saturatedStruct.removeBond(bond)
@@ -375,16 +411,15 @@ class TransportDatabase(object):
                     atom.incrementRadical()
 
                 saturatedStruct.updateConnectivityValues()
-                
+            return criticalPoint
         else: # non-radical species
-            
             numAtoms = 0
-            criticalPoint = CriticalPointGroupContribution(
-            Tc = 0,
-            Pc = 0,
-            Vc = 0,
-            Tb = 0,
-            structureIndex = 0,
+            groupData = CriticalPointGroupContribution(
+                Tc = 0,
+                Pc = 0,
+                Vc = 0,
+                Tb = 0,
+                structureIndex = 0,
             )
             
             # Generate estimate of critical point contribution data
@@ -394,17 +429,30 @@ class TransportDatabase(object):
                 if atom.isNonHydrogen():
                     try:
                         if molecule.isVertexInCycle(atom):
-                            self.__addCriticalPointContribution(criticalPoint, self.groups['ring'], molecule, {'*':atom})
+                            self.__addCriticalPointContribution(groupData, self.groups['ring'], molecule, {'*':atom})
                         else:
-                            self.__addCriticalPointContribution(criticalPoint, self.groups['nonring'], molecule, {'*':atom})                      
+                            self.__addCriticalPointContribution(groupData, self.groups['nonring'], molecule, {'*':atom})                      
                     except KeyError:
                         logging.error("Couldn't find in any transport database:")
                         logging.error(molecule)
                         logging.error(molecule.toAdjacencyList())
                         raise
-        return criticalPoint, numAtoms
                     
-    def __addCriticalPointContribution(self, criticalPoint, database, molecule, atom):
+        Tb = 198.18 + groupData.Tb
+        Vc = 17.5 + groupData.Vc
+        Tc = Tb / (0.584 + 0.965*(groupData.Tc) - (groupData.Tc*groupData.Tc))
+        Pc = 1/(0.113 + 0.0032*numAtoms + groupData.Pc)**2
+        
+        criticalPoint = CriticalPointGroupContribution(
+                Tc = Tc,
+                Pc = Pc,
+                Vc = Vc,
+                Tb = Tb,
+                structureIndex = 0,
+            )
+        return criticalPoint
+                    
+    def __addCriticalPointContribution(self, groupData, database, molecule, atom):
         """
         Determine the critical point contribution values for the atom `atom`
         in the structure `structure`, and add it to the existing criticalPointContribution
@@ -435,13 +483,13 @@ class TransportDatabase(object):
                     break
         comment = '{0}({1})'.format(database.label, comment)
         
-        criticalPoint.Tc += data.Tc
-        criticalPoint.Pc += data.Pc
-        criticalPoint.Vc += data.Vc
-        criticalPoint.Tb += data.Tb
-        criticalPoint.structureIndex += data.structureIndex
+        groupData.Tc += data.Tc
+        groupData.Pc += data.Pc
+        groupData.Vc += data.Vc
+        groupData.Tb += data.Tb
+        groupData.structureIndex += data.structureIndex
         
-        return criticalPoint
+        return groupData
     
 class CriticalPointGroupContribution:
     """Joback group contribution to estimate critical properties"""
