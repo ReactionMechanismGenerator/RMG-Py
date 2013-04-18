@@ -37,7 +37,7 @@ import numpy
 import os
 from rmgpy.species import Species
 from rmgpy.molecule.molecule import Molecule
-from rmgpy.quantity import DipoleMoment, Temperature, Length, Polarizability
+from rmgpy.quantity import DipoleMoment, Length, Polarizability, Energy
 from rmgpy.transport import TransportData
 from rmgpy.data.transport import CriticalPointGroupContribution, TransportDatabase
 #################################################################################
@@ -52,19 +52,19 @@ class TestTransportData(unittest.TestCase):
         A function run before each unit test in this class.
         """
         self.shapeIndex = 1
-        self.epsilon = 2.104
-        self.sigma = 3.402
-        self.dipoleMoment = 1.000,
-        self.polarizability = 0.134,
+        self.epsilon = Energy(2.104, 'kJ/mol')
+        self.sigma = Length(3.402,'angstroms')
+        self.dipoleMoment = DipoleMoment(1.000, 'C*m')
+        self.polarizability = Polarizability(0.134, 'C*m^2*V^-1')
         self.rotrelaxcollnum = 0.000
         self.comment = 'test'
         
         self.transport = TransportData(
             shapeIndex = self.shapeIndex,
-            epsilon = (self.epsilon, 'K'),
-            sigma = (self.sigma, 'angstroms'),
-            dipoleMoment = (self.dipoleMoment, 'C*m'),
-            polarizability = (self.polarizability, 'C*m^2*V^-1'),
+            epsilon = self.epsilon,
+            sigma = self.sigma,
+            dipoleMoment = self.dipoleMoment,
+            polarizability = self.polarizability,
             rotrelaxcollnum = self.rotrelaxcollnum,
             comment = self.comment,
         )
@@ -79,25 +79,25 @@ class TestTransportData(unittest.TestCase):
         """
         Test that the TransportData epsilon property was properly set.
         """
-        self.assertAlmostEqual(self.transport.epsilon.value_si, self.epsilon, 6)
+        self.assertAlmostEqual(self.transport.epsilon.value_si, self.epsilon.value_si, 6)
         
     def test_sigma(self):
         """
         Test that the TransportData sigma property was properly set.
         """
-        self.assertAlmostEqual(self.transport.sigma.value_si*1e10, self.sigma, 6)
+        self.assertAlmostEqual(self.transport.sigma.value_si*1e10, self.sigma.value_si*1e10, 6)
         
     def test_dipoleMoment(self):
         """
         Test that the TransportData dipoleMoment property was properly set.
         """
-        self.assertAlmostEqual(self.transport.dipoleMoment.value_si, self.dipoleMoment, 6)    
+        self.assertAlmostEqual(self.transport.dipoleMoment.value_si, self.dipoleMoment.value_si, 6)
     
     def test_polarizability(self):
         """
         Test that the TransportData polarizability property was properly set.
         """
-        self.assertAlmostEqual(self.transport.polarizability.value_si, self.polarizability, 6)
+        self.assertAlmostEqual(self.transport.polarizability.value_si, self.polarizability.value_si, 6)
     
     def test_rotrelaxcollnum(self):
         """
@@ -236,13 +236,17 @@ class TestTransportDatabase(unittest.TestCase):
         
         #values calculate from joback's estimations
         self.testCases = [
-            ['acetone', 'CC(=O)C', 2.536255455e-10, 5.43244513e-21]
+            ['acetone', 'CC(=O)C', Length(5.36421, 'angstroms'), Energy(3.20446,'kJ/mol'), "Estimated with Tc=500.53 K, Pc=47.11 bar (from Joback method)"]
             ]
-        
-        for name, smiles, sigma, epsilon in self.testCases:
+        for name, smiles, sigma, epsilon, comment in self.testCases:
             species = Species(molecule=[Molecule(SMILES=smiles)])
             transportData = self.transportdb.getTransportPropertiesViaGroupEstimates(species)
             print name, transportData
-            print self.assertAlmostEqual(transportData.sigma.value, sigma*1e10,4)
-            print self.assertAlmostEqual(transportData.epsilon.value, epsilon)
+            # check Joback worked
+            print self.assertTrue(transportData.comment == comment)
+            print self.assertAlmostEqual(transportData.sigma.value_si*1e10, sigma.value_si*1e10,4)
+            print self.assertAlmostEqual(transportData.epsilon.value_si, epsilon.value_si,1)
             
+
+if __name__ == '__main__':
+    unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))
