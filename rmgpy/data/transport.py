@@ -314,7 +314,7 @@ class TransportDatabase(object):
                 if molecule.isIsomorphic(entry.item) and entry.data is not None:
                     return (deepcopy(entry.data), library, entry)
         return None
-    
+
     def getTransportPropertiesViaGroupEstimates(self,species):
         """
         Return the set of transport parameters corresponding to a given
@@ -345,15 +345,17 @@ class TransportDatabase(object):
         Pc = Pc / counter
         Vc = Vc / counter
         Tb = Tb / counter
-
+        # Acetone values from Joback thesis: Tc = 511.455  (based on experimental Tb)  Pc = 47.808    Vc = 209.000    Tb = 322.082
+        #print "Tc={Tc:.2f} K, Pc={Pc:.4g} bar, Vc={Vc:.4g} cm3/mol, Tb={Tb:.4g} K, average of {isomers} isomers".format(Tc=Tc,Pc=Pc,Vc=Vc,Tb=Tb,isomers=counter)
+        #print 'Estimated with Tc={Tc:.2f} K, Pc={Pc:.4g} bar (from Joback method)'.format(Tc=Tc,Pc=Pc)
         transport = TransportData(
                      shapeIndex = 0,
-                     epsilon = (.77 * Tc * constants.kB, 'K'),
+                     epsilon = (.77 * Tc * constants.R, 'J/mol'),
                      sigma = (2.44 * (Tc/Pc)**(1./3), 'angstroms'),
                      dipoleMoment = (0, 'C*m'),
                      polarizability = (0, 'C*m^2*V^-1'),
                      rotrelaxcollnum = 0,
-                     comment = 'Estimated with Tc={0} Pc={1} from Joback method'.format(Tc,Pc),
+                     comment = 'Estimated with Tc={Tc:.2f} K, Pc={Pc:.4g} bar (from Joback method)'.format(Tc=Tc,Pc=Pc),
                      )
         return transport
         

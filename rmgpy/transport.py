@@ -4,7 +4,7 @@ Created on Feb 26, 2013
 @author: Jake
 '''
 
-from rmgpy.quantity import DipoleMoment, Temperature, Length, Polarizability
+from rmgpy.quantity import DipoleMoment, Energy, Length, Polarizability
 
 class TransportData:
     """
@@ -26,7 +26,7 @@ class TransportData:
 
     def __init__(self, shapeIndex=None, epsilon=None, sigma=None, dipoleMoment=None, polarizability=None, rotrelaxcollnum=None, comment = ''):
         self.shapeIndex = shapeIndex
-        self.epsilon = Temperature(epsilon)
+        self.epsilon = Energy(epsilon)
         self.sigma = Length(sigma)
         self.dipoleMoment = DipoleMoment(dipoleMoment)
         self.polarizability = Polarizability(polarizability)
