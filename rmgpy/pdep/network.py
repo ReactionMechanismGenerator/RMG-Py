@@ -55,9 +55,9 @@ class InvalidMicrocanonicalRateError(NetworkError):
         """
         How bad is the error?
         
-        Returns the sub of the absolute logarithmic errors of kf and Kc
+        Returns the max of the absolute logarithmic errors of kf and Kc
         """
-        return abs(math.log10(self.k_ratio)) + abs(math.log10(self.Keq_ratio))
+        return max(abs(math.log10(self.k_ratio)), abs(math.log10(self.Keq_ratio)))
 
 ################################################################################
 
@@ -284,7 +284,7 @@ class Network:
         grainCount = self.grainCount
         
         success = False
-        previous_badness = numpy.infty
+        previous_error = None
         while not success:
             success = True # (set it to false again later if necessary)
             # Update parameters that depend on temperature only if necessary
@@ -317,11 +317,13 @@ class Network:
                     self.calculateMicrocanonicalRates()
                 except InvalidMicrocanonicalRateError as error:
                     badness = error.badness()
-                    improvement = previous_badness/badness
-                    if improvement < 1 or (grainCount > 2e3 and improvement < 0.8) or (grainCount > 1e5):
-                        logging.error("Increasing number of grains did not decrease error enough (Current badness: {0:.1f}). Something must be wrong with network {1}".format(badness,self.label))
-                        raise error
-                    previous_badness = badness
+                    if previous_error and (previous_error.message == error.message): # only compare badness if same reaction is causing problem
+                        improvement = previous_error.badness()/badness
+                        if improvement < 0.5 or (grainCount > 1e4 and improvement < 1.2) or (grainCount > 1e6): # allow it to get worse at first
+                            logging.error(error.message)
+                            logging.error("Increasing number of grains did not decrease error enough (Current badness: {0:.1f}, previous {1:.1f}). Something must be wrong with network {2}".format(badness,previous_error.badness(),self.label))
+                            raise error
+                    previous_error = error
                     success = False
                     grainSize *= 0.5
                     grainCount *= 2
