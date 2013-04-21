@@ -33,6 +33,7 @@ This module contains the main execution functionality for Reaction Mechanism
 Generator (RMG).
 """
 
+import os
 import os.path
 import sys
 import logging
@@ -232,6 +233,11 @@ class RMG:
         self.outputDirectory = args.output_directory
         self.scratchDirectory = args.scratch_directory
         
+        if args.restart:
+            if not os.path.exists(os.path.join(self.outputDirectory,'restart.pkl')):
+                logging.error("Could not find restart file (restart.pkl). Please run without --restart option.")
+                raise Exception("No restart file")
+            
         # Read input file
         self.loadInput(args.file[0])
         
@@ -240,7 +246,6 @@ class RMG:
     
         # See if memory profiling package is available
         try:
-            import os
             import psutil
         except ImportError:
             logging.info('Optional package dependency "psutil" not found; memory profiling information will not be saved.')
