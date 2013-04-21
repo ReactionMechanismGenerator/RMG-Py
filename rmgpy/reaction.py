@@ -585,7 +585,7 @@ class Reaction:
                 self.kinetics.Ea.value_si = H0
                 self.kinetics.comment += "\nEa raised from {0:.1f} to {1:.1f} kJ/mol to match endothermicity of reaction.".format(Ea/1000,H0/1000)
                 logging.info("For reaction {2!s}, Ea raised from {0:.1f} to {1:.1f} kJ/mol to match endothermicity of reaction.".format(Ea/1000, H0/1000, self))
-        if forcePositive and self.kinetics.Ea.value_si < 0:
+        if forcePositive and isinstance(self.kinetics, Arrhenius) and self.kinetics.Ea.value_si < 0:
             self.kinetics.comment += "\nEa raised from {0:.1f} to 0 kJ/mol.".format(self.kinetics.Ea.value_si/1000)
             logging.info("For reaction {1!s} Ea raised from {0:.1f} to 0 kJ/mol.".format(self.kinetics.Ea.value_si/1000, self))
             self.kinetics.Ea.value_si = 0
