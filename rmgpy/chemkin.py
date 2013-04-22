@@ -1302,29 +1302,43 @@ def writeKineticsEntry(reaction, speciesList, verbose = True, javaLibrary = Fals
 
 ################################################################################
 
+def markDuplicateReaction(test_reaction, reaction_list):
+    """
+    If the test_reaction is a duplicate (in Chemkin terms) of one in reaction_list, then set `duplicate=True` on both instances.
+    `reaction_list` can be any iterator.
+    It does not add the testReaction to the reactionList - you probably want to do this yourself afterwards.
+    """
+    reaction1 = test_reaction
+    for reaction2 in reaction_list:
+        if reaction1.__class__ != reaction2.__class__:
+            # TemplateReaction, LibraryReaction, and PDepReaction cannot be
+            # duplicates of one another.
+            # RHW question: why can't TemplateReaction be duplicate of LibraryReaction, in Chemkin terms? I guess it shouldn't happen in RMG.
+            continue
+        if reaction1.reactants == reaction2.reactants and reaction1.products == reaction2.products:
+            if reaction1.duplicate and reaction2.duplicate:
+                continue
+            else:
+                if reaction1.kinetics.isPressureDependent() == reaction2.kinetics.isPressureDependent():
+                    # Only mark as duplicate if both reactions are pressure dependent or both are
+                    # not pressure dependent.  Do not mark as duplicates otherwise.
+                    logging.warning('Marked reaction {0} as duplicate for saving to Chemkin file.'.format(reaction1))
+                    reaction1.duplicate = True
+                    reaction2.duplicate = True
+
 def markDuplicateReactions(reactions):
     """
     For a given list of `reactions`, mark all of the duplicate reactions as
     understood by Chemkin.
+    
+    This is pretty slow (quadratic in size of reactions list) so only call it if you're really worried
+    you may have undetected duplicate reactions.
     """
     for index1 in range(len(reactions)):
         reaction1 = reactions[index1]
-        for index2 in range(index1+1, len(reactions)):
-            reaction2 = reactions[index2]
-            if reaction1.__class__ != reaction2.__class__:
-                # TemplateReaction, LibraryReaction, and PDepReaction cannot be
-                # duplicates of one another
-                continue
-            if reaction1.reactants == reaction2.reactants and reaction1.products == reaction2.products:
-                if reaction1.duplicate and reaction2.duplicate:
-                    continue
-                else:
-                    if reaction1.kinetics.isPressureDependent() == reaction2.kinetics.isPressureDependent():
-                        # Only mark as duplicate if both reactions are pressure dependent or both are
-                        # not pressure dependent.  Do not mark as duplicates otherwise.
-                        logging.warning('Marked reaction {0} as duplicate for saving to Chemkin file.'.format(reaction1))
-                        reaction1.duplicate = True
-                        reaction2.duplicate = True     
+        remainingList = reactions[index1+1:]
+        markDuplicateReaction(reaction1, remainingList)
+ 
 
 def saveSpeciesDictionary(path, species):
     """
@@ -1369,13 +1383,16 @@ def saveTransportFile(path, species):
                 spec.Zrot.value_si,
             ))
 
-def saveChemkinFile(path, species, reactions, verbose = True):
+def saveChemkinFile(path, species, reactions, verbose = True, checkForDuplicates=True):
     """
     Save a Chemkin input file to `path` on disk containing the provided lists
     of `species` and `reactions`.
+    If checkForDuplicates is False then we don't check for unlabeled duplicate reactions,
+    thus saving time (eg. if you are sure you've already labeled them as duplicate).
     """
     # Check for duplicate
-    markDuplicateReactions(reactions)
+    if checkForDuplicates:
+        markDuplicateReactions(reactions)
     
     f = open(path, 'w')
     

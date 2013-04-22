@@ -39,7 +39,7 @@ import os.path
 import itertools
 
 from rmgpy.display import display
-
+import rmgpy.chemkin
 import rmgpy.constants as constants
 from rmgpy.quantity import Quantity
 import rmgpy.species
@@ -654,6 +654,14 @@ class CoreEdgeReactionModel:
             # Recalculate k(T,P) values for modified networks
             self.updateUnimolecularReactionNetworks(database)
             logging.info('')
+            
+        # Check new core reactions for Chemkin duplicates
+        newCoreReactions = self.core.reactions[numOldCoreReactions:]
+        checkedCoreReactions = self.core.reactions[:numOldCoreReactions]
+        from rmgpy.chemkin import markDuplicateReaction
+        for rxn in newCoreReactions:
+            markDuplicateReaction(rxn, itertools.chain(checkedCoreReactions,self.outputReactionList) )
+            checkedCoreReactions.append(rxn)
         
         self.printEnlargeSummary(
             newCoreSpecies=self.core.species[numOldCoreSpecies:],
@@ -1168,12 +1176,16 @@ class CoreEdgeReactionModel:
             if self.pressureDependence and rxn.isUnimolecular():
                 # If this is going to be run through pressure dependence code,
                 # we need to make sure the barrier is positive.
+                # ...but are Seed Mechanisms run through PDep? Perhaps not.
                 for spec in itertools.chain(rxn.reactants, rxn.products):
                     if spec.thermo is None:
                         spec.generateThermoData(database)
                 rxn.fixBarrierHeight(forcePositive=True)
             self.addReactionToCore(rxn)
-
+        
+        # Check we didn't introduce unmarked duplicates
+        self.markChemkinDuplicates()
+        
         self.printEnlargeSummary(
             newCoreSpecies=self.core.species[numOldCoreSpecies:],
             newCoreReactions=self.core.reactions[numOldCoreReactions:],
@@ -1260,6 +1272,7 @@ class CoreEdgeReactionModel:
             else:
                 rxn.kinetics.comment = ("RMG did not find reaction rate to be high enough to be included in model core.")
                 self.outputReactionList.append(rxn)
+        self.markChemkinDuplicates()
 
 
     def addReactionToUnimolecularNetworks(self, newReaction, newSpecies, network=None):
@@ -1515,6 +1528,19 @@ class CoreEdgeReactionModel:
         for rxn in seedReactionList:
             self.addReactionToCore(rxn)
 
+    def markChemkinDuplicates(self):
+        """
+        Check that all reactions that will appear the chemkin output have been checked as duplicates.
+        
+        Call this if you've done something that may have introduced undetected duplicate reactions,
+        like add a reaction library or seed mechanism.
+        Anything added via the :meth:`expand` method should already be detected.
+        """
+        from rmgpy.chemkin import markDuplicateReactions
+        rxnList = self.core.reactions + self.outputReactionList
+        markDuplicateReactions(rxnList)
+        
+        
     def saveChemkinFile(self, path, verbose_path, dictionaryPath=None):
         """
         Save a Chemkin file for the current model core as well as any desired output
@@ -1523,7 +1549,7 @@ class CoreEdgeReactionModel:
         from rmgpy.chemkin import saveChemkinFile, saveSpeciesDictionary
         speciesList = self.core.species + self.outputSpeciesList
         rxnList = self.core.reactions + self.outputReactionList
-        saveChemkinFile(path, speciesList, rxnList, verbose = False)
-        saveChemkinFile(verbose_path, speciesList, rxnList, verbose = True)
+        saveChemkinFile(path, speciesList, rxnList, verbose = False, checkForDuplicates=False) # We should already have marked everything as duplicates by now
+        saveChemkinFile(verbose_path, speciesList, rxnList, verbose = True, checkForDuplicates=False)
         if dictionaryPath:
             saveSpeciesDictionary(dictionaryPath, speciesList)
