@@ -180,7 +180,7 @@ class SoluteData():
             for bond in molecule.getBonds(atom):
                 Vtot = Vtot - 6.56/2
 
-        return Vtot / 100; # division by 100 to get units correct.
+        self.V= Vtot / 100; # division by 100 to get units correct.
 
 ################################################################################
 
