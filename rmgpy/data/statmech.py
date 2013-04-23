@@ -431,8 +431,11 @@ class StatmechGroups(Database):
         modes = fitStatmechToHeatCapacity(Tlist, Cv, numVibrations - len(frequencies), numRotors, molecule)
         for mode in modes:
             if isinstance(mode, HarmonicOscillator):
+                uncertainties = [0 for f in frequencies] # probably shouldn't be zero
                 frequencies.extend(mode.frequencies.value_si)
+                uncertainties.extend(mode.frequencies.uncertainty)
                 mode.frequencies.value_si = numpy.array(frequencies, numpy.float)
+                mode.frequencies.uncertainty = numpy.array(uncertainties, numpy.float)
                 break
         else:
             modes.insert(0, HarmonicOscillator(frequencies=(frequencies,"cm^-1")))

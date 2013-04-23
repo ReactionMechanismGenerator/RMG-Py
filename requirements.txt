@@ -13,6 +13,7 @@ quantities
 cython
 guppy
 sphinx
+pyparsing==1.5.7 # default pyparsing only works with Python3. We don't use it, but pydot does
 pydot
 psutil
 xlwt

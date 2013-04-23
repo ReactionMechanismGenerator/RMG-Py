@@ -12,7 +12,7 @@ import os.path
 
 from rmgpy.molecule import Molecule
 import rmgpy.constants as constants
-from rmgpy.quantity import Quantity
+from rmgpy.quantity import Quantity, Energy
 
 from rmgpy.cantherm.main import CanTherm
 from rmgpy.cantherm.pdep import PressureDependenceJob
@@ -38,6 +38,8 @@ def parseCommandLineArguments():
         help='a file to convert')
     parser.add_argument('-d', '--dictionary', metavar='DICTFILE', type=str, nargs=1,
         help='the RMG dictionary corresponding to these files')
+    parser.add_argument('-x', '--max-energy', metavar='VALUE UNITS', type=str, nargs=2, 
+        help='A maximum energy to crop at')
 
     return parser.parse_args()
 
@@ -102,19 +104,22 @@ def loadFAMEInput(path, moleculeDict=None):
     # Read interpolation model
     model = readMeaningfulLine(f).split()
     if model[0].lower() == 'chebyshev':
-        job.model = ['chebyshev', int(model[1]), int(model[2])]
+        job.interpolationModel = ('chebyshev', int(model[1]), int(model[2]))
     elif model[0].lower() == 'pdeparrhenius':
-        job.model = ['pdeparrhenius']
+        job.interpolationModel = ('pdeparrhenius',)
     
     # Read grain size or number of grains
-    job.grainCount = 0
-    job.grainSize = Quantity(0.0, "J/mol")
+    job.minimumGrainCount = 0
+    job.maximumGrainSize = None
     for i in range(2):
         data = readMeaningfulLine(f).split()
         if data[0].lower() == 'numgrains':
-            job.grainCount = int(data[1])
+            job.minimumGrainCount = int(data[1])
         elif data[0].lower() == 'grainsize':
-            job.grainSize = Quantity(float(data[2]), data[1])
+            job.maximumGrainSize = (float(data[2]), data[1])
+
+    # A FAME file is almost certainly created during an RMG job, so use RMG mode
+    job.rmgmode = True
 
     # Create the Network
     job.network = Network()
@@ -152,6 +157,7 @@ def loadFAMEInput(path, moleculeDict=None):
     for i in range(Nspec):
         species = Species()
         species.conformer = Conformer()
+        species.energyTransferModel = energyTransferModel
         
         # Read species label
         species.label = readMeaningfulLine(f)
@@ -178,6 +184,8 @@ def loadFAMEInput(path, moleculeDict=None):
             S298 = Quantity(float(S298), S298units),
             Tdata = Quantity([300,400,500,600,800,1000,1500], "K"),
             Cpdata = Quantity(Cpdata, Cpunits),
+            Cp0 = (Cpdata[0], Cpunits),
+            CpInf = (Cpdata[-1], Cpunits),
         )
         
         # Read species collision parameters
@@ -229,6 +237,7 @@ def loadFAMEInput(path, moleculeDict=None):
                 inertia = Quantity(I,"kg*m^2"), 
                 barrier = Quantity(V0,barrUnits), 
                 symmetry = 1,
+                semiclassical = False,
             ))
             
         # Read overall symmetry number
@@ -309,12 +318,117 @@ def loadFAMEInput(path, moleculeDict=None):
 
     return job
 
+def pruneNetwork(network, Emax):
+    """
+    Prune the network by removing any configurations with ground-state energy
+    above `Emax` in J/mol and any reactions with transition state energy above
+    `Emax` from the network. All reactions involving removed configurations
+    are also removed. Any configurations that have zero reactions as a result
+    of this process are also removed.
+    """
+    
+    # Remove configurations with ground-state energies above the given Emax
+    isomersToRemove = []
+    for isomer in network.isomers:
+        if isomer.E0 > Emax:
+            isomersToRemove.append(isomer)
+    for isomer in isomersToRemove:
+        network.isomers.remove(isomer)
+    
+    reactantsToRemove = []
+    for reactant in network.reactants:
+        if reactant.E0 > Emax:
+            reactantsToRemove.append(reactant)
+    for reactant in reactantsToRemove:
+        network.reactants.remove(reactant)
+    
+    productsToRemove = []
+    for product in network.products:
+        if product.E0 > Emax:
+            productsToRemove.append(product)
+    for product in productsToRemove:
+        network.products.remove(product)
+        
+    # Remove path reactions involving the removed configurations
+    removedConfigurations = []
+    removedConfigurations.extend([isomer.species for isomer in isomersToRemove])
+    removedConfigurations.extend([reactant.species for reactant in reactantsToRemove])
+    removedConfigurations .extend([product.species for product in productsToRemove])
+    reactionsToRemove = []
+    for rxn in network.pathReactions:
+        if rxn.reactants in removedConfigurations or rxn.products in removedConfigurations:
+            reactionsToRemove.append(rxn)
+    for rxn in reactionsToRemove:
+        network.pathReactions.remove(rxn)
+        
+    # Remove path reactions with barrier heights above the given Emax
+    reactionsToRemove = []
+    for rxn in network.pathReactions:
+        if rxn.transitionState.conformer.E0.value_si > Emax:
+            reactionsToRemove.append(rxn)
+    for rxn in reactionsToRemove:
+        network.pathReactions.remove(rxn)
+
+    def ismatch(speciesList1, speciesList2):
+        if len(speciesList1) == len(speciesList2) == 1:
+            return (speciesList1[0] is speciesList2[0])
+        elif len(speciesList1) == len(speciesList2) == 2:
+            return ((speciesList1[0] is speciesList2[0] and speciesList1[1] is speciesList2[1]) or
+                    (speciesList1[0] is speciesList2[1] and speciesList1[1] is speciesList2[0]))
+        elif len(speciesList1) == len(speciesList2) == 3:
+            return ((speciesList1[0] is speciesList2[0] and speciesList1[1] is speciesList2[1] and speciesList1[2] is speciesList2[2]) or
+                    (speciesList1[0] is speciesList2[0] and speciesList1[1] is speciesList2[2] and speciesList1[2] is speciesList2[1]) or
+                    (speciesList1[0] is speciesList2[1] and speciesList1[1] is speciesList2[0] and speciesList1[2] is speciesList2[2]) or
+                    (speciesList1[0] is speciesList2[1] and speciesList1[1] is speciesList2[2] and speciesList1[2] is speciesList2[0]) or
+                    (speciesList1[0] is speciesList2[2] and speciesList1[1] is speciesList2[0] and speciesList1[2] is speciesList2[1]) or
+                    (speciesList1[0] is speciesList2[2] and speciesList1[1] is speciesList2[1] and speciesList1[2] is speciesList2[0]))
+        else:
+            return False
+        
+    # Remove orphaned configurations (those with zero path reactions involving them)
+    isomersToRemove = []
+    for isomer in network.isomers:
+        for rxn in network.pathReactions:
+            if ismatch(rxn.reactants, isomer.species) or ismatch(rxn.products, isomer.species):
+                break
+        else:
+            isomersToRemove.append(isomer)
+    for isomer in isomersToRemove:
+        network.isomers.remove(isomer)
+    
+    reactantsToRemove = []
+    for reactant in network.reactants:
+        for rxn in network.pathReactions:
+            if ismatch(rxn.reactants, reactant.species) or ismatch(rxn.products, reactant.species):
+                break
+        else:
+            reactantsToRemove.append(reactant)
+    for reactant in reactantsToRemove:
+        network.reactants.remove(reactant)
+    
+    productsToRemove = []
+    for product in network.products:
+        for rxn in network.pathReactions:
+            if ismatch(rxn.reactants, product.species) or ismatch(rxn.products, product.species):
+                break
+        else:
+            productsToRemove.append(product)
+    for product in productsToRemove:
+        network.products.remove(product)
+
 ################################################################################
 
 if __name__ == '__main__':
     
     # Parse the command-line arguments
     args = parseCommandLineArguments()
+    
+    if args.max_energy:
+        Emax = float(args.max_energy[0])
+        Eunits = str(args.max_energy[1])
+        Emax = Energy(Emax, Eunits).value_si
+    else:
+        Emax = None
     
     # Load RMG dictionary if specified
     moleculeDict = {}
@@ -341,6 +455,9 @@ if __name__ == '__main__':
 
         # Construct CanTherm job from FAME input
         job = loadFAMEInput(fstr, moleculeDict)
+        
+        if Emax is not None:
+            pruneNetwork(job.network, Emax)
 
         # Save MEASURE input file based on the above
         dirname, basename = os.path.split(os.path.abspath(fstr))

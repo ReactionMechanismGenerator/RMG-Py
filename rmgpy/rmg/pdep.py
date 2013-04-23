@@ -60,7 +60,13 @@ class PDepReaction(rmgpy.reaction.Reaction):
     def __init__(self, index=-1, label='', reactants=None, products=None, network=None, kinetics=None, reversible=True, transitionState=None, duplicate=False, degeneracy=1, pairs=None):
         rmgpy.reaction.Reaction.__init__(self, index, label, reactants, products, kinetics, reversible, transitionState, duplicate, degeneracy, pairs)
         self.network = network
-        
+
+    def __reduce__(self):
+        """
+        A helper function used when pickling an object.
+        """
+        return (PDepReaction, (self.index, self.label, self.reactants, self.products, self.network, self.kinetics, self.reversible, self.transitionState, self.duplicate, self.degeneracy, self.pairs))
+    
     def getSource(self):
         """
         Get the source of this PDepReaction
@@ -455,6 +461,13 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         for reaction in self.pathReactions:
             for spec in reaction.reactants:
                 if not spec.hasStatMech(): spec.generateStatMech(database)
+        # While we don't need the frequencies for product channels, we do need
+        # the E0, so create a conformer object with the E0 for the product
+        # channel species if necessary
+        for products in self.products:
+            for spec in products.species:
+                if spec.conformer is None:
+                    spec.conformer = Conformer(E0=spec.thermo.E0)
         
         # Determine transition state energies on potential energy surface
         # In the absence of any better information, we simply set it to

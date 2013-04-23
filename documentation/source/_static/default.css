@@ -36,7 +36,7 @@ div.bodywrapper {
 
 div.body {
     color: #000000;
-    padding: 0px 10px 0px 10px;
+    padding: 0px 10px 10px 10px;
 }
 
 div.footer {
@@ -109,6 +109,7 @@ div.sphinxsidebar p {
 
 div.sphinxsidebar p.topless {
     margin: 5px 10px 10px 10px;
+    word-wrap: break-word;
 }
 
 div.sphinxsidebar ul {

@@ -220,7 +220,7 @@ class PressureDependenceJob(object):
             rmgmode = self.rmgmode,
         )
 
-    def execute(self, outputFile):
+    def execute(self, outputFile, plot):
         self.network.printSummary()
         
         if outputFile is not None:
@@ -234,7 +234,8 @@ class PressureDependenceJob(object):
 
         if outputFile is not None:
             self.save(outputFile)
-            self.plot(os.path.dirname(outputFile))
+            if plot:
+                self.plot(os.path.dirname(outputFile))
 
     def generateTemperatureList(self):
         """

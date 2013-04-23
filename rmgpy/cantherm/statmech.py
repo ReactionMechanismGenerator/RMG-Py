@@ -163,7 +163,7 @@ class StatMechJob:
         self.includeHinderedRotors = True
         self.applyBondEnergyCorrections = True
     
-    def execute(self, outputFile=None):
+    def execute(self, outputFile=None, plot=False):
         """
         Execute the statistical mechanics job, saving the results to the
         given `outputFile` on disk.
