@@ -52,6 +52,9 @@ from rmgpy.solver.simple import SimpleReactor
 from rmgpy.data.rmg import RMGDatabase
 from rmgpy.data.kinetics import KineticsLibrary, KineticsFamily, LibraryReaction, TemplateReaction
 
+from rmgpy.reaction import Reaction
+from rmgpy.kinetics.diffusionLimited import DiffusionLimited
+
 from model import Species, CoreEdgeReactionModel
 from pdep import PDepNetwork
 
@@ -299,8 +302,7 @@ class RMG:
         if self.solvent:
         	Species.solventData = self.database.solvation.getSolventData(self.solvent)
         	Species.solventName = self.solvent
-        	Species.solventViscosity = self.viscosity
-        	Species.diffusionTemp = self.diffusionTemp
+        	DiffusionLimited.solventViscosity = self.viscosity
         	logging.info("Setting solvent data for {0}".format(self.solvent))
     
         # Set wall time
