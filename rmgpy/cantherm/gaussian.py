@@ -145,6 +145,8 @@ class GaussianLog:
                 mass[i] = 1.00782503207
             elif number[i] == 6:
                 mass[i] = 12.0
+            elif number[i] == 7:
+                mass[i] = 14.0030740048
             elif number[i] == 8:
                 mass[i] = 15.99491461956
             else:
