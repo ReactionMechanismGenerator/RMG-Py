@@ -1222,14 +1222,6 @@ class CoreEdgeReactionModel:
             self.addSpeciesToEdge(spec)
 
         for rxn in self.newReactionList:
-            if self.pressureDependence and rxn.isUnimolecular():
-                # If this is going to be run through pressure dependence code,
-                # we need to make sure the barrier is positive.
-                for spec in itertools.chain(rxn.reactants, rxn.products):
-                    if spec.thermo is None:
-                        spec.generateThermoData(database)
-                rxn.fixBarrierHeight(forcePositive=True)
-
             # Note that we haven't actually evaluated any fluxes at this point
             # Instead, we remove the comment below if the reaction is moved to
             # the core later in the mechanism generation
