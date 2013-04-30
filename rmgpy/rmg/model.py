@@ -104,9 +104,7 @@ class Species(rmgpy.species.Species):
             wilhoit = thermo0.toWilhoit(Cp0=Cp0, CpInf=CpInf)
             
         wilhoit.comment = thermo0.comment
-<<<<<<< HEAD
-            
-            
+    
         # Add on solvation correction
         if Species.solventData:
         	logging.info("Making solvent correction for {0} with {1!r}".format(Species.solventName,Species.solventData))
@@ -120,8 +118,6 @@ class Species(rmgpy.species.Species):
         if self.conformer is None:
             self.conformer = Conformer()
         self.conformer.E0 = (wilhoit.getEnthalpy(1.0)*1e-3,"kJ/mol")
-=======
->>>>>>> refs/remotes/richard/master
         
         # Convert to desired thermo class
         if isinstance(thermo0, thermoClass):

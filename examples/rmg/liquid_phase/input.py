@@ -36,8 +36,7 @@ liquidReactor(
 
 solvation(
 	solvent='octane',
-	viscosity = (1e-3, "cP"),
-	temperature = (298, "K"), # T at which diffusion limits on reaction rates evaluated for chemkin output
+	viscosity = (1e-3, "cP")
 )
 
 simulator(
@@ -46,9 +45,9 @@ simulator(
 )
 
 model(
-    toleranceKeepInEdge=0.0,
+    toleranceKeepInEdge=1E-9,
     toleranceMoveToCore=0.1,
-    toleranceInterruptSimulation=0.1,
+    toleranceInterruptSimulation=1E9,
     maximumEdgeSpecies=100000
 )
 
