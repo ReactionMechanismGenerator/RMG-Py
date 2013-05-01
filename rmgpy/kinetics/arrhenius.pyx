@@ -548,9 +548,11 @@ cdef class MultiArrhenius(KineticsModel):
         """
         Return an :class:`Arrhenius` instance of the kinetics model 
 
-        Fit the Arrhenius parameters to a set of rate coefficient data `klist`
-        in units of `kunits` corresponding to a set of temperatures `Tlist` in 
-        K. A linear least-squares fit is used, which guarantees that the 
+        Fit the Arrhenius parameters to a set of rate coefficient data generated
+        from the MultiArrhenius kinetics, over the temperature range
+        Tmin to Tmax, in Kelvin. If Tmin or Tmax are unspecified (or -1)
+        then the MultiArrhenius's Tmin and Tmax are used.
+        A linear least-squares fit is used, which guarantees that the 
         resulting parameters provide the best possible approximation to the 
         data.
         """

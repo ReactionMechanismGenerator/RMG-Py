@@ -488,7 +488,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
                 rxn.kinetics = Arrhenius().fitToData(Tlist=rxn.kinetics.Tdata.value_si, klist=rxn.kinetics.kdata.value_si, kunits=kunits)
             elif isinstance(rxn.kinetics, MultiArrhenius):
                 logging.info('Converting multiple kinetics to a single Arrhenius expression for reaction {rxn}'.format(rxn=rxn))
-                rxn.kinetics = rxn.kinetics.toArrhenius(Tmin=self.Tmin, Tmax=self.Tmax)
+                rxn.kinetics = rxn.kinetics.toArrhenius(Tmin=Tmin, Tmax=Tmax)
             elif not isinstance(rxn.kinetics, Arrhenius):
                 raise Exception('Path reaction "{0}" in PDepNetwork #{1:d} has invalid kinetics type "{2!s}".'.format(rxn, self.index, rxn.kinetics.__class__))
             rxn.fixBarrierHeight(forcePositive=True)
