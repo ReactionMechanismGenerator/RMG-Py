@@ -54,7 +54,7 @@ from rmgpy.kinetics.arrhenius import Arrhenius #PyDev: @UnresolvedImport
 from rmgpy.kinetics import KineticsData, ArrheniusEP, ThirdBody, Lindemann, Troe, Chebyshev, PDepArrhenius, MultiArrhenius, MultiPDepArrhenius #PyDev: @UnresolvedImport
 from rmgpy.pdep.reaction import calculateMicrocanonicalRateCoefficient
 
-from rmgpy.kinetics.diffusionLimited import DiffusionLimited
+from rmgpy.kinetics.diffusionLimited import diffusionLimiter
 
 ################################################################################
 
@@ -514,10 +514,9 @@ class Reaction:
         temperature `T` in K and pressure `P` in Pa, including any reaction
         path degeneracies.
         """
-        if DiffusionLimited.solventViscosity:
+        if diffusionLimiter.enabled:
             logging.info("Correcting rate for diffusion limited reaction")
-            diffusionLimited = DiffusionLimited()
-            return diffusionLimited.getEffectiveRate(self, T)
+            return diffusionLimiter.getEffectiveRate(self, T)
         else:
             return  self.kinetics.getRateCoefficient(T, P)
     

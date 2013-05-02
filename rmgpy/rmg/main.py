@@ -52,7 +52,8 @@ from rmgpy.data.rmg import RMGDatabase
 from rmgpy.data.kinetics import KineticsLibrary, KineticsFamily, LibraryReaction, TemplateReaction
 
 from rmgpy.reaction import Reaction
-from rmgpy.kinetics.diffusionLimited import DiffusionLimited
+from rmgpy.kinetics.diffusionLimited import diffusionLimiter
+from rmgpy.quantity import Quantity
 
 from model import Species, CoreEdgeReactionModel
 from pdep import PDepNetwork
@@ -131,7 +132,7 @@ class RMG:
         self.kineticsEstimator = 'group additivity'
         self.solvent = None
         self.viscosity = None
-        self.diffusionTemp = None
+        self.diffusionLimiter = None
         
         self.reactionModel = None
         self.reactionSystems = None
@@ -275,10 +276,11 @@ class RMG:
         # Load databases
         self.loadDatabase()
         
+        # Do all liquid-phase startup things:
         if self.solvent:
         	Species.solventData = self.database.solvation.getSolventData(self.solvent)
         	Species.solventName = self.solvent
-        	DiffusionLimited.solventViscosity = self.viscosity
+        	diffusionLimiter.enable(self.viscosity, self.database.solvation)
         	logging.info("Setting solvent data for {0}".format(self.solvent))
     
         # Set wall time

@@ -1,5 +1,5 @@
 import rmgpy.quantity as quantity
-
+import logging
 from rmgpy.species import Species
 from rmgpy.data.solvation import SoluteData, SoluteGroups, SolvationDatabase
 from rmgpy.reaction import Reaction
@@ -7,12 +7,18 @@ from rmgpy.reaction import Reaction
 
 class DiffusionLimited():
 
-    def __init__(self, database = None, comment=''):
-        self.database = SolvationDatabase()
+    def __init__(self):
+        self.enabled = False
+
+    def enable(self, viscosity, solvationDatabase, comment=''):
+        logging.info("Enabling diffusion-limited kinetics with solvent viscosity {0!r}".format(viscosity))
+        diffusionLimiter.enabled = True
+        diffusionLimiter.database = solvationDatabase
+        diffusionLimiter.solventViscosity = viscosity
+
+    def getSolventViscosity(self, T):
         
-    def getSolventViscosity(T):
-        
-        return solventViscosity or Quantity(1,"cp")
+        return self.solventViscosity or Quantity(1,"cp")
         
     def getEffectiveRate(self, reaction, T):
         """
@@ -36,7 +42,7 @@ class DiffusionLimited():
             if products == 1:
                 k_eff = k_forward
             else: # two products; reverse rate is limited
-                k_diff = self.getDiffusionLimit(T, forward=False)
+                k_diff = self.getDiffusionLimit(T, reaction, forward=False)
                 k_eff_reverse = k_reverse*k_diff/(k_reverse+k_diff)
                 k_eff = k_eff_reverse * Keq
         else: # 2 reactants
@@ -68,6 +74,7 @@ class DiffusionLimited():
         radii = 0.0
         diffusivities = 0.0
         for spec in reacting:
+            #import ipdb; ipdb.set_trace()
             soluteData = self.database.getSoluteData(spec)
             radius = ((75*soluteData.V/3.14159)**(1/3))/100
             diff = soluteData.getStokesDiffusivity(T, self.getSolventViscosity(T))
@@ -76,3 +83,7 @@ class DiffusionLimited():
         N_a = 6.022e23 # Avogadro's Number
         k_diff = 4*3.14159*radii*diffusivities*N_a
         return k_diff
+
+
+# module level variable. There should only ever be one. It starts off disabled
+diffusionLimiter = DiffusionLimited()
