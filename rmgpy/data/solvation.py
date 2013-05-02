@@ -117,10 +117,9 @@ class SoluteData():
         found from the McGowan volume.
         """
         k_b = 1.3806488e-23 # m2*kg/s2/K
-        temp = T.value_si
         viscosity = solventViscosity.value_si # should have units of kg*m/s
         radius = ((75*self.V/3.14159)**(1/3))/100 # in meters
-        D = k_b*temp/6/3.14159/viscosity/radius # m2/s
+        D = k_b*T/6/3.14159/viscosity/radius # m2/s
         return D
             
     def setMcGowanVolume(self, species):
