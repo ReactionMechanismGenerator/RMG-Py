@@ -272,6 +272,15 @@ object.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.markChemkinDuplicates">
+<tt class="descname">markChemkinDuplicates</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.markChemkinDuplicates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check that all reactions that will appear the chemkin output have been checked as duplicates.</p>
+<p>Call this if you&#8217;ve done something that may have introduced undetected duplicate reactions,
+like add a reaction library or seed mechanism.
+Anything added via the <tt class="xref py py-meth docutils literal"><span class="pre">expand()</span></tt> method should already be detected.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.rmg.model.CoreEdgeReactionModel.printEnlargeSummary">
 <tt class="descname">printEnlargeSummary</tt><big>(</big><em>newCoreSpecies</em>, <em>newCoreReactions</em>, <em>newEdgeSpecies</em>, <em>newEdgeReactions</em>, <em>reactionsMovedFromEdge=None</em><big>)</big><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.printEnlargeSummary" title="Permalink to this definition">¶</a></dt>
 <dd><p>Output a summary of a model enlargement step to the log. The details of

@@ -59,7 +59,7 @@
 <li><a href="../../index.html">Documentation</a> &raquo;</li>
 
           <li><a href="../index.html" >RMG API Reference</a> &raquo;</li>
-          <li><a href="index.html" accesskey="U">Reaction mechanism generation (<tt class="docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">rmgpy.rmg</span></tt>)</a> &raquo;</li> 
+          <li><a href="index.html" accesskey="U">Reaction mechanism generation (<tt class="docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">rmgpy.rmg</span></tt>)</a> &raquo;</li> 
       </ul>
     </div>
             
@@ -136,7 +136,9 @@ vector formats.</p>
 <dd><p>Turns the kinetics into Arrhenius (if they were ArrheniusEP)
 and ensures the activation energy is at least the endothermicity
 for endothermic reactions, and is not negative only as a result 
-of using Evans Polanyi with an exothermic reaction.</p>
+of using Evans Polanyi with an exothermic reaction.
+If <cite>forcePositive</cite> is True, then all reactions
+are forced to have a non-negative barrier.</p>
 </dd></dl>
 
 <dl class="method">
@@ -334,6 +336,14 @@ each side of the reaction equation, or <tt class="docutils literal"><span class=
 <dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if this reaction is the same as the <cite>other</cite> reaction,
 or <tt class="docutils literal"><span class="pre">False</span></tt> if they are different. 
 If <cite>eitherDirection=False</cite> then the directions must match.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.rmg.pdep.PDepReaction.isUnimolecular">
+<tt class="descname">isUnimolecular</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.rmg.pdep.PDepReaction.isUnimolecular" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if the reaction has a single molecule as either reactant or product (or both)
+<span class="math">\(\ce{A &lt;=&gt; B + C}\)</span> or <span class="math">\(\ce{A + B &lt;=&gt; C}\)</span> or <span class="math">\(\ce{A &lt;=&gt; B}\)</span>,
+or <tt class="docutils literal"><span class="pre">False</span></tt> if not.</p>
 </dd></dl>
 
 <dl class="method">

@@ -59,7 +59,7 @@
 <li><a href="../../index.html">Documentation</a> &raquo;</li>
 
           <li><a href="../index.html" >RMG API Reference</a> &raquo;</li>
-          <li><a href="index.html" accesskey="U">Chemkin files (<tt class="docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">rmgpy.chemkin</span></tt>)</a> &raquo;</li> 
+          <li><a href="index.html" accesskey="U">Chemkin files (<tt class="docutils literal docutils literal docutils literal docutils literal"><span class="pre">rmgpy.chemkin</span></tt>)</a> &raquo;</li> 
       </ul>
     </div>
             
@@ -69,9 +69,11 @@
 <h2>Main functions<a class="headerlink" href="#main-functions" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="rmgpy.chemkin.saveChemkinFile">
-<tt class="descclassname">rmgpy.chemkin.</tt><tt class="descname">saveChemkinFile</tt><big>(</big><em>path</em>, <em>species</em>, <em>reactions</em>, <em>verbose=True</em><big>)</big><a class="headerlink" href="#rmgpy.chemkin.saveChemkinFile" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">rmgpy.chemkin.</tt><tt class="descname">saveChemkinFile</tt><big>(</big><em>path</em>, <em>species</em>, <em>reactions</em>, <em>verbose=True</em>, <em>checkForDuplicates=True</em><big>)</big><a class="headerlink" href="#rmgpy.chemkin.saveChemkinFile" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save a Chemkin input file to <cite>path</cite> on disk containing the provided lists
-of <cite>species</cite> and <cite>reactions</cite>.</p>
+of <cite>species</cite> and <cite>reactions</cite>.
+If checkForDuplicates is False then we don&#8217;t check for unlabeled duplicate reactions,
+thus saving time (eg. if you are sure you&#8217;ve already labeled them as duplicate).</p>
 </dd></dl>
 
 <dl class="function">
@@ -134,6 +136,8 @@ model, and you must use the seven-coefficient forms for each.</p>
 <tt class="descclassname">rmgpy.chemkin.</tt><tt class="descname">markDuplicateReactions</tt><big>(</big><em>reactions</em><big>)</big><a class="headerlink" href="#rmgpy.chemkin.markDuplicateReactions" title="Permalink to this definition">¶</a></dt>
 <dd><p>For a given list of <cite>reactions</cite>, mark all of the duplicate reactions as
 understood by Chemkin.</p>
+<p>This is pretty slow (quadratic in size of reactions list) so only call it if you&#8217;re really worried
+you may have undetected duplicate reactions.</p>
 </dd></dl>
 
 </div>
