@@ -35,6 +35,7 @@ import math
 import re
 import logging
 import os.path
+import numpy
 from kinetics import *
 from reaction import Reaction
 from species import Species
