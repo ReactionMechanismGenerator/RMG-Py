@@ -152,7 +152,7 @@ def simulator(atol, rtol):
 def solvation(solvent, viscosity):
 	assert isinstance(solvent,str), "solvent should be a string like 'water'"
 	rmg.solvent = solvent
-	rmg.viscosity = viscosity
+	rmg.viscosity = Quantity(viscosity)
 
 def model(toleranceMoveToCore, toleranceKeepInEdge=0.0, toleranceInterruptSimulation=1.0, maximumEdgeSpecies=None):
     rmg.fluxToleranceKeepInEdge = toleranceKeepInEdge
