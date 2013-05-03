@@ -26,7 +26,7 @@
 
 cdef class Vertex(object):
 
-    cdef readonly dict edges
+    cdef public dict edges
 
     # These attributes are used in the VF2 graph isomorphism algorithm
     cdef public short connectivity1
@@ -52,7 +52,7 @@ cpdef short getVertexSortingLabel(Vertex vertex) except -1 # all values should b
 
 cdef class Edge(object):
 
-    cdef readonly Vertex vertex1, vertex2
+    cdef public Vertex vertex1, vertex2
     
     cpdef Edge copy(self)
 
