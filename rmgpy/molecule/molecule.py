@@ -235,6 +235,13 @@ class Atom(Vertex):
         not.
         """
         return self.element.number == 6
+    
+    def isNitrogen(self):
+        """
+        Return ``True`` if the atom represents a nitrogen atom or ``False`` if
+        not.
+        """
+        return self.element.number == 7
 
     def isOxygen(self):
         """
@@ -1326,22 +1333,23 @@ class Molecule(Graph):
         isomers = [self]
 
         # Iterate over resonance isomers
-        if self.isRadical():
-            index = 0
-            while index < len(isomers):
-                isomer = isomers[index]
-                newIsomers = isomer.getAdjacentResonanceIsomers()
-                newIsomers += isomer.getLonePairResonanceIsomers()
-                for newIsomer in newIsomers:
-                    newIsomer.updateAtomTypes()
-                    # Append to isomer list if unique
-                    for isom in isomers:
-                        if isom.isIsomorphic(newIsomer):
-                            break
-                    else:
-                        isomers.append(newIsomer)
-                # Move to next resonance isomer
-                index += 1
+        index = 0
+        while index < len(isomers):
+            isomer = isomers[index]
+            newIsomers = isomer.getAdjacentResonanceIsomers()
+            newIsomers += isomer.getLonePairRadicalResonanceIsomers()
+            newIsomers += isomer.getN4dd_N4tsResonanceIsomers()
+            for newIsomer in newIsomers:
+                newIsomer.updateAtomTypes()
+                # Append to isomer list if unique
+                for isom in isomers:
+                    if isom.isIsomorphic(newIsomer):
+                        break
+                else:
+                    isomers.append(newIsomer)
+                        
+            # Move to next resonance isomer
+            index += 1
         
         return isomers
 
@@ -1387,9 +1395,9 @@ class Molecule(Graph):
 
         return isomers
     
-    def getLonePairResonanceIsomers(self):
+    def getLonePairRadicalResonanceIsomers(self):
         """
-        Generate all of the resonance isomers formed by one lone electron pair radical shift.
+        Generate all of the resonance isomers formed by lone electron pair - radical shifts.
         """
         cython.declare(isomers=list, paths=list, index=cython.int, isomer=Molecule)
         cython.declare(atom=Atom, atom1=Atom, atom2=Atom)
@@ -1401,7 +1409,7 @@ class Molecule(Graph):
         if self.isRadical():
             # Iterate over radicals in structure
             for atom in self.vertices:
-                paths = self.findAllDelocalizationPathsLonePairs(atom)
+                paths = self.findAllDelocalizationPathsLonePairRadical(atom)
                 for atom1, atom2 in paths:
                     # Adjust to (potentially) new resonance isomer
                     atom1.decrementRadical()
@@ -1432,6 +1440,87 @@ class Molecule(Graph):
                     isomers.append(isomer)
 
         return isomers
+    
+    def getN4dd_N4tsResonanceIsomers(self):
+        """
+        Generate all of the resonance isomers formed by shifts between N4dd and N4ts.
+        """
+        cython.declare(isomers=list, paths=list, index=cython.int, isomer=Molecule)
+        cython.declare(atom=Atom, atom1=Atom, atom2=Atom, atom3=Atom)
+        cython.declare(bond12=Bond, bond13=Bond)
+        cython.declare(v1=Vertex, v2=Vertex)
+        
+        isomers = []
+        
+        # Iterate over nitrogen atoms in structure
+        for atom in self.vertices:
+            paths = self.findAllDelocalizationPathsN4dd_N4ts(atom)
+            for atom1, atom2, atom3, bond12, bond13, direction in paths:
+                # from N4dd to N4ts
+                if direction == 1:
+                    # Adjust to (potentially) new resonance isomer
+                    bond12.decrementOrder()
+                    bond13.incrementOrder()
+                    atom2.incrementLonePairs()
+                    atom3.decrementLonePairs()
+                    atom1.updateCharge()
+                    atom2.updateCharge()
+                    atom3.updateCharge()
+                    # Make a copy of isomer
+                    isomer = self.copy(deep=True)
+                    # Also copy the connectivity values, since they are the same
+                    # for all resonance forms
+                    for index in range(len(self.vertices)):
+                        v1 = self.vertices[index]
+                        v2 = isomer.vertices[index]
+                        v2.connectivity1 = v1.connectivity1
+                        v2.connectivity2 = v1.connectivity2
+                        v2.connectivity3 = v1.connectivity3
+                        v2.sortingLabel = v1.sortingLabel
+                    # Restore current isomer
+                    bond12.incrementOrder()
+                    bond13.decrementOrder()
+                    atom2.decrementLonePairs()
+                    atom3.incrementLonePairs()
+                    atom1.updateCharge()
+                    atom2.updateCharge()
+                    atom3.updateCharge()
+                    # Append to isomer list if unique
+                    isomers.append(isomer)
+                
+                # from N4ts to N4dd
+                if direction == 2:
+                    # Adjust to (potentially) new resonance isomer
+                    bond12.decrementOrder()
+                    bond13.incrementOrder()
+                    atom2.incrementLonePairs()
+                    atom3.decrementLonePairs()
+                    atom1.updateCharge()
+                    atom2.updateCharge()
+                    atom3.updateCharge()
+                    # Make a copy of isomer
+                    isomer = self.copy(deep=True)
+                    # Also copy the connectivity values, since they are the same
+                    # for all resonance forms
+                    for index in range(len(self.vertices)):
+                        v1 = self.vertices[index]
+                        v2 = isomer.vertices[index]
+                        v2.connectivity1 = v1.connectivity1
+                        v2.connectivity2 = v1.connectivity2
+                        v2.connectivity3 = v1.connectivity3
+                        v2.sortingLabel = v1.sortingLabel
+                    # Restore current isomer
+                    bond12.incrementOrder()
+                    bond13.decrementOrder()
+                    atom2.decrementLonePairs()
+                    atom3.incrementLonePairs()
+                    atom1.updateCharge()
+                    atom2.updateCharge()
+                    atom3.updateCharge()
+                    # Append to isomer list if unique
+                    isomers.append(isomer)
+                    
+        return isomers
 
     def findAllDelocalizationPaths(self, atom1):
         """
@@ -1456,9 +1545,9 @@ class Molecule(Graph):
                         paths.append([atom1, atom2, atom3, bond12, bond23])
         return paths
     
-    def findAllDelocalizationPathsLonePairs(self, atom1):
+    def findAllDelocalizationPathsLonePairRadical(self, atom1):
         """
-        Find all the delocalization paths lone electron pairs next to the radical center indicated
+        Find all the delocalization paths of lone electron pairs next to the radical center indicated
         by `atom1`. Used to generate resonance isomers.
         """
         cython.declare(paths=list)
@@ -1467,15 +1556,57 @@ class Molecule(Graph):
         # No paths if atom1 is not a radical
         if atom1.radicalElectrons <= 0:
             return []
-
+        
+        # In a first step we only consider nitrogen and oxygen atoms as possible radical centers
+        if not ((atom1.lonePairs == 0 and atom1.isNitrogen()) or(atom1.lonePairs == 2 and atom1.isOxygen())):
+            return []
+        
         # Find all delocalization paths
         paths = []
         for atom2, bond12 in atom1.edges.items():
             # Only single bonds are considered
             if bond12.isSingle():
-                # Neighboring atom must posses an lone electron pair to loose it
-                if atom1 is not atom2 and (atom2.lonePairs >= 1):
-                        paths.append([atom1, atom2])
+                # Neighboring atom must posses a lone electron pair to loose it
+                if ((atom2.lonePairs == 1 and atom2.isNitrogen()) or (atom2.lonePairs == 3 and atom2.isOxygen())) and (atom2.radicalElectrons == 0):
+                    paths.append([atom1, atom2])
+                    
+        return paths
+    
+    def findAllDelocalizationPathsN4dd_N4ts(self, atom1):
+        """
+        Find all the resonance structures of nitrogen atoms with two double bonds (N4dd)
+        and nitrogen atoms with one triple and one single bond (N4ts)
+        """
+        cython.declare(paths=list)
+        cython.declare(atom2=Atom, bond12=Bond)
+        
+        # No paths if atom1 is not nitrogen
+        if not (atom1.isNitrogen()):
+            return []
+        
+        # Find all delocalization paths
+        paths = []
+        index_atom_2 = 0
+        index_atom_3 = 0
+        
+        for atom2, bond12 in atom1.edges.items():
+            index_atom_2 = index_atom_2 + 1
+            # Only double bonds are considered
+            if bond12.isDouble():
+                for atom3, bond13 in atom1.edges.items():
+                    index_atom_3 = index_atom_3 + 1
+                    # Only double bonds are considered, at the moment we only consider non-radical nitrogen and oxygen atoms
+                    if (bond13.isDouble() and atom3.radicalElectrons == 0 and not atom3.isOxygen() and not atom3.isCarbon() and (index_atom_2 != index_atom_3)):
+                        paths.append([atom1, atom2, atom3, bond12, bond13, 1])
+        
+        for atom2, bond12 in atom1.edges.items():
+            # Only triple bonds are considered
+            if bond12.isTriple():
+                for atom3, bond13 in atom1.edges.items():
+                    # Only single bonds are considered, at the moment we only consider negatively charged nitrogen and oxygen
+                    if (bond13.isSingle() and ((atom3.isNitrogen() and atom3.lonePairs >= 2) or (atom3.isOxygen() and atom3.lonePairs >= 3))):
+                        paths.append([atom1, atom2, atom3, bond12, bond13, 2])
+        
         return paths
 
     def getURL(self):
