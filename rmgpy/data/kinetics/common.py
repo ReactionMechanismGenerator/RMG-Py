@@ -60,6 +60,7 @@ BIMOLECULAR_KINETICS_FAMILIES = [
     'SubstitutionS',
     'R_Addition_CSm',
     '1,3_Insertion_RSR',
+    'lone_electron_pair_bond',
 ]
 
 # The names of all of the RMG reaction families that are unimolecular
