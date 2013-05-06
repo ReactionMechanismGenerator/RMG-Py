@@ -1084,7 +1084,7 @@ class MoleculeDrawer:
             boundingRect = [x1, y1, x2, y2]
     
             # Set color for text
-            if heavyAtom == 'C':    cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
+            if   heavyAtom == 'C':  cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
             elif heavyAtom == 'N':  cr.set_source_rgba(0.0, 0.0, 1.0, 1.0)
             elif heavyAtom == 'O':  cr.set_source_rgba(1.0, 0.0, 0.0, 1.0)
             elif heavyAtom == 'F':  cr.set_source_rgba(0.5, 0.75, 1.0, 1.0)
@@ -1253,6 +1253,27 @@ class MoleculeDrawer:
                 cr.move_to(xi, yi - extents[1])
                 cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
                 cr.show_text(text)
+                
+            # Draw lone electron pairs
+            for i in range (atom.lonePairs):
+                cr.new_sub_path()
+                if i == 0:
+                    x1lp = x-2
+                    y1lp = y-8
+                    x2lp = x+2
+                    y2lp = y-12
+                elif i == 1:
+                    x1lp = x+12
+                    y1lp = y-8
+                    x2lp = x+8
+                    y2lp = y-12
+                elif i == 2:
+                    x1lp = x-2
+                    y1lp = y-1
+                    x2lp = x+2
+                    y2lp = y+3
+                self.__drawLine(cr, x1lp, y1lp, x2lp, y2lp)
+                
         elif orientation[0] == 'l' or orientation[0] == 'r':
             # Draw charges first
             text = ''
@@ -1272,6 +1293,25 @@ class MoleculeDrawer:
                 cr.arc(xi + width/2, yi + 3 * i + 1, 1, 0, 2 * math.pi)
                 cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
                 cr.fill()
+            # Draw lone electron pairs
+            for i in range (atom.lonePairs):
+                cr.new_sub_path()
+                if i == 0:
+                    x1lp = x-2
+                    y1lp = y-8
+                    x2lp = x+2
+                    y2lp = y-12
+                elif i == 1:
+                    x1lp = x+12
+                    y1lp = y-8
+                    x2lp = x+8
+                    y2lp = y-12
+                elif i == 2:
+                    x1lp = x-2
+                    y1lp = y-1
+                    x2lp = x+2
+                    y2lp = y+3
+                self.__drawLine(cr, x1lp, y1lp, x2lp, y2lp)
                 
         # Update bounding rect to ensure atoms are included
         if boundingRect[0] < self.left:
