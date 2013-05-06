@@ -150,6 +150,8 @@ class ReactionRecipe:
     BREAK_BOND    `center1`, `order`, `center2` break the bond between `center1` and `center2`, which should be of type `order`
     GAIN_RADICAL  `center`, `radical`           increase the number of free electrons on `center` by `radical`
     LOSE_RADICAL  `center`, `radical`           decrease the number of free electrons on `center` by `radical`
+    GAIN_PAIR     `center`, `pair`              increase the number of lone electron pairs on `center` by `pair`
+    LOSE_PAIR     `center`, `pair`              decrease the number of lone electron pairs on `center` by `pair`
     ============= ============================= ================================
 
     The actions are stored as a list in the `actions` attribute. Each action is
@@ -186,6 +188,10 @@ class ReactionRecipe:
                 other.addAction(['GAIN_RADICAL', action[1], action[2]])
             elif action[0] == 'GAIN_RADICAL':
                 other.addAction(['LOSE_RADICAL', action[1], action[2]])
+            elif action[0] == 'LOSE_PAIR':
+                other.addAction(['GAIN_PAIR', action[1], action[2]])
+            elif action[0] == 'GAIN_PAIR':
+                other.addAction(['LOSE_PAIR', action[1], action[2]])
         return other
 
     def __apply(self, struct, doForward, unique):
@@ -256,6 +262,23 @@ class ReactionRecipe:
                         atom.applyAction(['GAIN_RADICAL', label, 1])
                     elif (action[0] == 'LOSE_RADICAL' and doForward) or (action[0] == 'GAIN_RADICAL' and not doForward):
                         atom.applyAction(['LOSE_RADICAL', label, 1])
+                        
+            elif action[0] in ['LOSE_PAIR', 'GAIN_PAIR']:
+
+                label, change = action[1:]
+                change = int(change)
+
+                # Find associated atom
+                atom = struct.getLabeledAtom(label)
+                if atom is None:
+                    raise InvalidActionError('Unable to find atom with label "{0}" while applying reaction recipe.'.format(label))
+
+                # Apply the action
+                for i in range(change):
+                    if (action[0] == 'GAIN_PAIR' and doForward) or (action[0] == 'LOSE_PAIR' and not doForward):
+                        atom.applyAction(['GAIN_PAIR', label, 1])
+                    elif (action[0] == 'LOSE_PAIR' and doForward) or (action[0] == 'GAIN_PAIR' and not doForward):
+                        atom.applyAction(['LOSE_PAIR', label, 1])
 
             else:
                 raise InvalidActionError('Unknown action "' + action[0] + '" encountered.')
@@ -579,7 +602,7 @@ class KineticsFamily(Database):
         self.forwardRecipe = ReactionRecipe()
         for action in actions:
             action[0] = action[0].upper()
-            assert action[0] in ['CHANGE_BOND','FORM_BOND','BREAK_BOND','GAIN_RADICAL','LOSE_RADICAL']
+            assert action[0] in ['CHANGE_BOND','FORM_BOND','BREAK_BOND','GAIN_RADICAL','LOSE_RADICAL','GAIN_PAIR','LOSE_PAIR']
             self.forwardRecipe.addAction(action)
 
     def loadForbidden(self, label, group, shortDesc='', longDesc='', history=None):
