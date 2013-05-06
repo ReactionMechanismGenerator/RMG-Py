@@ -1,1 +1,1228 @@
-python: can't open file 'test.py': [Errno 2] No such file or directory
+nosetests --all-modules --verbose --with-coverage --cover-inclusive --cover-package=rmgpy --cover-erase --cover-html --cover-html-dir=testing/coverage rmgpy
+Uses a Gaussian03 log file for ethylene (C2H4) to test that its ... FAIL
+Uses a Gaussian03 log file for oxygen (O2) to test that its ... FAIL
+Uses an optimum geometry for s-butanol (CCC(O)C) to test that the ... ok
+Uses an optimum geometry for ethane (CC) to test that the ... ok
+Test that a Geometry object can be successfully reconstructed ... ok
+Test that a Geometry object can be successfully pickled and unpickled ... ok
+Test the value of the atomic mass unit. ... ok
+Test the value of the Avogadro constant. ... ok
+Test the value of the Bohr radius. ... ok
+Test the value of the Boltzmann constant. ... ok
+Test the value of the electron rest mass. ... ok
+Test the value of the elementary charge constant. ... ok
+Test the value of the gas law constant. ... ok
+Test the value of the Hartree energy. ... ok
+Test the value of the neutron rest mass. ... ok
+Test the value of pi. ... ok
+Test the value of the Planck constant. ... ok
+Test the value of the proton rest mass. ... ok
+Test the value of the reduced Planck constant. ... ok
+Test the value of the speed of light in a vacuum. ... ok
+Test that the new ThermoDatabase generates appropriate thermo data. ... ERROR
+Test that the old ThermoDatabase generates relatively accurate thermo data. ... ERROR
+Test that the Arrhenius A property was properly set. ... ok
+Test that the Arrhenius Ea property was properly set. ... ok
+Test that the Arrhenius T0 property was properly set. ... ok
+Test that the Arrhenius Tmax property was properly set. ... ok
+Test that the Arrhenius Tmin property was properly set. ... ok
+Test the Arrhenius.changeT0() method. ... ok
+Test that the Arrhenius comment property was properly set. ... ok
+Test the Arrhenius.fitToData() method. ... ok
+Test the Arrhenius.getRateCoefficient() method. ... ok
+Test the Arrhenius.isTemperatureValid() method. ... ok
+Test that the Arrhenius n property was properly set. ... ok
+Test that an Arrhenius object can be pickled and unpickled with no loss ... ok
+Test that an Arrhenius object can be reconstructed from its repr() ... ok
+Test that the ArrheniusEP A property was properly set. ... ok
+Test that the ArrheniusEP E0 property was properly set. ... ok
+Test that the ArrheniusEP Tmax property was properly set. ... ok
+Test that the ArrheniusEP Tmin property was properly set. ... ok
+Test that the ArrheniusEP alpha property was properly set. ... ok
+Test that the ArrheniusEP comment property was properly set. ... ok
+Test the ArrheniusEP.getRateCoefficient() method. ... ok
+Test the ArrheniusEP.isTemperatureValid() method. ... ok
+Test that the ArrheniusEP n property was properly set. ... ok
+Test that an ArrheniusEP object can be pickled and unpickled with no loss ... ok
+Test that an ArrheniusEP object can be reconstructed from its repr() ... ok
+Test that the MultiArrhenius Tmax property was properly set. ... ok
+Test that the MultiArrhenius Tmin property was properly set. ... ok
+Test that the MultiArrhenius A property was properly set. ... ok
+Test that the MultiArrhenius comment property was properly set. ... ok
+Test the MultiArrhenius.getRateCoefficient() method. ... ok
+Test the MultiArrhenius.isTemperatureValid() method. ... ok
+Test that a MultiArrhenius object can be pickled and unpickled with no loss ... ok
+Test that a MultiArrhenius object can be reconstructed from its repr() ... ok
+Test that we can convert to an Arrhenius ... ok
+Test the toArrhenius fitting multiple kinetics over a small range, see if we're within 5% at a few points ... ok
+Test the toArrhenius temperature range is set correctly. ... ok
+Test that the MultiPDepArrhenius Pmax property was properly set. ... ok
+Test that the MultiPDepArrhenius Pmin property was properly set. ... ok
+Test that the MultiPDepArrhenius Tmax property was properly set. ... ok
+Test that the MultiPDepArrhenius Tmin property was properly set. ... ok
+Test that the MultiPDepArrhenius arrhenius property was properly set. ... ok
+Test that the MultiPDepArrhenius comment property was properly set. ... ok
+Test the MultiPDepArrhenius.getRateCoefficient() method. ... ok
+Test the MultiPDepArrhenius.isPressureValid() method. ... ok
+Test the MultiPDepArrhenius.isTemperatureValid() method. ... ok
+Test that a MultiPDepArrhenius object can be pickled and unpickled with ... ok
+Test that a MultiPDepArrhenius object can be reconstructed from its ... ok
+Test that the PDepArrhenius Pmax property was properly set. ... ok
+Test that the PDepArrhenius Pmin property was properly set. ... ok
+Test that the PDepArrhenius Tmax property was properly set. ... ok
+Test that the PDepArrhenius Tmin property was properly set. ... ok
+Test that the PDepArrhenius arrhenius property was properly set. ... ok
+Test that the PDepArrhenius comment property was properly set. ... ok
+Test the PDepArrhenius.fitToData() method. ... ok
+Test the PDepArrhenius.getRateCoefficient() method. ... ok
+Test the PDepArrhenius.isPressureDependent() method. ... ok
+Test that a PDepArrhenius object can be successfully pickled and ... ok
+Test that the PDepArrhenius pressures property was properly set. ... ok
+Test that a PDepArrhenius object can be successfully reconstructed ... ok
+Test that the Chebyshev Pmax property was properly set. ... ok
+Test that the Chebyshev Pmin property was properly set. ... ok
+Test that the Chebyshev Tmax property was properly set. ... ok
+Test that the Chebyshev Tmin property was properly set. ... ok
+Test that the Chebyshev coeffs property was properly set. ... ok
+Test that the Chebyshev comment property was properly set. ... ok
+Test the Chebyshev.fitToData() method. ... ok
+Test the Chebyshev.getRateCoefficient() method. ... ok
+Test the Chebyshev.isPressureDependent() method. ... ok
+Test that a Chebyshev object can be pickled and unpickled with no loss ... ok
+Test that a Chebyshev object can be reconstructed from its repr() ... ok
+Test that the Lindemann Pmax property was properly set. ... ok
+Test that the Lindemann Pmin property was properly set. ... ok
+Test that the Lindemann Tmax property was properly set. ... ok
+Test that the Lindemann Tmin property was properly set. ... ok
+Test that the Lindemann arrheniusHigh property was properly set. ... ok
+Test that the Lindemann arrheniusLow property was properly set. ... ok
+Test that the Lindemann comment property was properly set. ... ok
+Test the Lindemann.getRateCoefficient() method. ... ok
+Test the Lindemann.isPressureDependent() method. ... ok
+Test that a Lindemann object can be pickled and unpickled with no loss ... ok
+Test that a Lindemann object can be reconstructed from its repr() ... ok
+Test that the ThirdBody Pmax property was properly set. ... ok
+Test that the ThirdBody Pmin property was properly set. ... ok
+Test that the ThirdBody Tmax property was properly set. ... ok
+Test that the ThirdBody Tmin property was properly set. ... ok
+Test that the ThirdBody arrhenius property was properly set. ... ok
+Test that the ThirdBody comment property was properly set. ... ok
+Test the ThirdBody.getEffectivePressure() method. ... ok
+Test the ThirdBody.getRateCoefficient() method. ... ok
+Test the ThirdBody.isPressureDependent() method. ... ok
+Test that a ThirdBody object can be successfully pickled and ... ok
+Test that a ThirdBody object can be successfully reconstructed ... ok
+Test that the Troe Pmax property was properly set. ... ok
+Test that the Troe Pmin property was properly set. ... ok
+Test that the Troe T1 property was properly set. ... ok
+Test that the Troe T2 property was properly set. ... ok
+Test that the Troe T3 property was properly set. ... ok
+Test that the Troe Tmax property was properly set. ... ok
+Test that the Troe Tmin property was properly set. ... ok
+Test that the Troe alpha property was properly set. ... ok
+Test that the Troe arrheniusHigh property was properly set. ... ok
+Test that the Troe arrheniusLow property was properly set. ... ok
+Test that the Troe comment property was properly set. ... ok
+Test the Troe.getRateCoefficient() method. ... ok
+Test the Troe.isPressureDependent() method. ... ok
+Test that a Troe object can be pickled and unpickled with no loss of ... ok
+Test that a Troe object can be reconstructed from its repr() output ... ok
+Test that the KineticsData Tdata property was properly set. ... ok
+Test that the KineticsData Tmax property was properly set. ... ok
+Test that the KineticsData Tmin property was properly set. ... ok
+Test that the KineticsData comment property was properly set. ... ok
+Test the KineticsData.getRateCoefficient() method. ... ok
+Test the KineticsData.isTemperatureValid() method. ... ok
+Test that the KineticsData kdata property was properly set. ... ok
+Test that a KineticsData object can be pickled and unpickled with no ... ok
+Test that a KineticsData object can be reconstructed from its repr() ... ok
+Test that the PDepKineticsData Pdata property was properly set. ... ok
+Test that the PDepKineticsData Pmax property was properly set. ... ok
+Test that the PDepKineticsData Pmin property was properly set. ... ok
+Test that the PDepKineticsData Tdata property was properly set. ... ok
+Test that the PDepKineticsData Tmax property was properly set. ... ok
+Test that the PDepKineticsData Tmin property was properly set. ... ok
+Test that the PDepKineticsData comment property was properly set. ... ok
+Test the PDepKineticsData.getRateCoefficient() method. ... ok
+Test the PDepKineticsData.isPressureValid() method. ... ok
+Test the PDepKineticsData.isTemperatureValid() method. ... ok
+Test that the PDepKineticsData kdata property was properly set. ... ok
+Test that a PDepKineticsData object can be pickled and unpickled with no ... ok
+Test that a PDepKineticsData object can be reconstructed from its repr() ... ok
+Test the conversion of first-order rate coefficient units to an integer ... ok
+Test the conversion of second-order rate coefficient units to an integer ... ok
+Test the conversion of third-order rate coefficient units to an integer ... ok
+Test the conversion of zeroth-order rate coefficient units to an integer ... ok
+Test the conversion of a reaction order of one to rate coefficient ... ok
+Test the conversion of a reaction order of two to rate coefficient ... ok
+Test the conversion of a reaction order of three to rate coefficient ... ok
+Test the conversion of a reaction order of zero to rate coefficient ... ok
+Test that the Eckart E0_TS property was properly set. ... ok
+Test that the Eckart E0_prod property was properly set. ... ok
+Test that the Eckart E0_reac property was properly set. ... ok
+Test the Eckart.calculateTunnelingFactor() method. ... ok
+Test that the Eckart frequency property was properly set. ... ok
+Test that an Eckart object can be successfully pickled and ... ok
+Test that an Eckart object can be successfully reconstructed ... ok
+Test the Wigner.calculateTunnelingFactor() method. ... ok
+Test that the Wigner frequency property was properly set. ... ok
+Test that a Wigner object can be successfully pickled and unpickled ... ok
+Test that a Wigner object can be successfully reconstructed from its ... ok
+Test the AtomType.equivalent() method. ... ok
+Test the AtomType.isSpecificCaseOf() method. ... ok
+Test that we can reconstruct an AtomType object from its repr() ... ok
+Test that an AtomType object can be successfully pickled and ... ok
+Test the AtomType.setActions() method. ... ok
+Test that getAtomType() returns appropriate carbon atom types. ... ok
+Test that getAtomType() returns the hydrogen atom type. ... ok
+Test that getAtomType() returns appropriate NoneTypes. ... ok
+Test that getAtomType() returns appropriate oxygen atom types. ... ok
+Test that getAtomType() returns appropriate silicon atom types. ... ok
+Test that getAtomType() returns appropriate sulfur atom types. ... ok
+Test the rmgpy.elements.getElement() method. ... ok
+Test that we can reconstruct an Element object from its repr() ... ok
+Test that an Element object can be successfully pickled and ... ok
+Test the Graph.addEdge() method. ... ok
+Test the Graph.addVertex() method. ... ok
+Test the graph copy function to ensure a complete copy of the graph is ... ok
+Test the Graph.getAllCycles() method. ... ok
+test_getAllCyclicVertices (rmgpy.molecule.graphTest.TestGraph) ... ok
+test_getAllPolycylicVertices (rmgpy.molecule.graphTest.TestGraph) ... ok
+Test the Graph.getEdge() method. ... ok
+Test the Graph.getEdges() method. ... ok
+Test the Graph.getSmallestSetOfSmallestRings() method. ... ok
+Test the Graph.hasEdge() method. ... ok
+Test the Graph.hasVertex() method. ... ok
+Test the Graph.isCyclic() method. ... ok
+Test the Graph.isEdgeInCycle() method. ... ok
+Test the Graph.isVertexInCycle() method. ... ok
+Check the graph isomorphism functions. ... ok
+Test the graph merge function to ensure a proper merging of the graph ... ok
+Test that a Graph object can be successfully pickled and unpickled ... ok
+Test the Graph.removeEdge() method. ... ok
+Test the Graph.removeVertex() method. ... ok
+Test the Graph.resetConnectivityValues() method. ... ok
+Test the Graph.sortVertices() method. ... ok
+Test the graph split function to ensure a proper splitting of the graph ... ok
+Check the subgraph isomorphism functions. ... ok
+Test the Graph.updateConnectivityValues() method. ... ok
+Tests the vertex connectivity values as introduced by Morgan (1965). ... ok
+Test the Group.clearLabeledAtoms() method. ... ok
+Test the Group.containsLabeledAtom() method. ... ok
+Test the Group.findIsomorphism() method. ... ok
+Test the Group.findSubgraphIsomorphisms() method. ... ok
+Test the Group.fromAdjacencyList() method. ... ok
+Test the Group.getLabeledAtom() method. ... ok
+Test the Group.getLabeledAtoms() method. ... ok
+Test the Group.isIsomorphic() method. ... ok
+Test the Group.isSubgraphIsomorphic() method. ... ok
+Test that a Group object can be successfully pickled and ... ok
+Test the Group.toAdjacencyList() method. ... ok
+Test the GroupAtom.applyAction() method for a BREAK_BOND action. ... ok
+Test the GroupAtom.applyAction() method for a CHANGE_BOND action. ... ok
+Test the GroupAtom.applyAction() method for a FORM_BOND action. ... ok
+Test the GroupAtom.applyAction() method for a GAIN_RADICAL action. ... FAIL
+Test the GroupAtom.applyAction() method for a CHANGE_BOND action. ... ok
+Test the GroupAtom.applyAction() method for a LOSE_RADICAL action. ... FAIL
+Test the GroupAtom.copy() method. ... ok
+Test the GroupAtom.equivalent() method. ... ok
+Test the GroupAtom.isSpecificCaseOf() method. ... ok
+Test that a GroupAtom object can be successfully pickled and ... ok
+Test the GroupBond.applyAction() method for a BREAK_BOND action. ... ok
+Test the GroupBond.applyAction() method for a CHANGE_BOND action. ... ok
+Test the GroupBond.applyAction() method for a FORM_BOND action. ... ok
+Test the GroupBond.applyAction() method for a GAIN_RADICAL action. ... ok
+Test the GroupBond.applyAction() method for a CHANGE_BOND action. ... ok
+Test the GroupBond.applyAction() method for a LOSE_RADICAL action. ... ok
+Test the GroupBond.copy() method. ... ok
+Test the GroupBond.equivalent() method. ... ok
+Test the GroupBond.isSpecificCaseOf() method. ... ok
+Test that a GroupBond object can be successfully pickled and ... ok
+Test the Atom.applyAction() method for a BREAK_BOND action. ... ok
+Test the Atom.applyAction() method for a CHANGE_BOND action. ... ok
+Test the Atom.applyAction() method for a FORM_BOND action. ... ok
+Test the Atom.applyAction() method for a GAIN_RADICAL action. ... ok
+Test the Atom.applyAction() method for a CHANGE_BOND action. ... ok
+Test the Atom.applyAction() method for a LOSE_RADICAL action. ... ok
+Test the Atom.copy() method. ... ok
+Test the Atom.decrementRadical() method. ... ok
+Test the Atom.equivalent() method. ... ok
+Test the Atom.incrementRadical() method. ... ok
+Test the Atom.isCarbon() method. ... ok
+Test the Atom.isHydrogen() method. ... ok
+Test the Atom.isNonHydrogen() method. ... ok
+Test the Atom.isOxygen() method. ... ok
+Test the Atom.isSpecificCaseOf() method. ... ok
+Test the Atom.mass property. ... ok
+Test the Atom.number property. ... ok
+Test that a Atom object can be successfully pickled and ... ok
+Test the Atom.symbol property. ... ok
+Test the Bond.applyAction() method for a BREAK_BOND action. ... ok
+Test the Bond.applyAction() method for a CHANGE_BOND action. ... ok
+Test the Bond.applyAction() method for a FORM_BOND action. ... ok
+Test the Bond.applyAction() method for a GAIN_RADICAL action. ... ok
+Test the Bond.applyAction() method for a CHANGE_BOND action. ... ok
+Test the Bond.applyAction() method for a LOSE_RADICAL action. ... ok
+Test the Bond.copy() method. ... ok
+Test the Bond.decrementOrder() method. ... ok
+Test the GroupBond.equivalent() method. ... ok
+Test the Bond.incrementOrder() method. ... ok
+Test the Bond.isBenzene() method. ... ok
+Test the Bond.isDouble() method. ... ok
+Test the Bond.isSingle() method. ... ok
+Test the Bond.isSpecificCaseOf() method. ... ok
+Test the Bond.isTriple() method. ... ok
+Test that a Bond object can be successfully pickled and ... ok
+Check the adjacency list read/write functions for a full molecule. ... ok
+Test the Molecule.isAromatic() method. ... ok
+Test the Molecule.isAromatic() method. ... ok
+Test the Molecule.isAromatic() method. ... ok
+Test that Augmented InChI generation is printing the /mult layer ... ok
+Test that Augmented InChI Key generation is printing the mult layer ... ok
+Test the Molecule.clearLabeledAtoms() method. ... ok
+Test the Molecule.containsLabeledAtom() method. ... ok
+Test the Molecule.countInternalRotors() method. ... ok
+Test the Molecule.countInternalRotors() method for dimethylacetylene. ... FAIL
+Test the Molecule.countInternalRotors() method. ... ok
+Test the Molecule.countInternalRotors() method. ... ok
+Test the Molecule.countInternalRotors() method. ... ok
+Test the Molecule.countInternalRotors() method. ... ok
+Test the Molecule.countInternalRotors() method. ... ok
+Test the Molecule.fromAdjacencyList() method. ... ok
+Make sure that H radical is produced properly from its InChI ... ok
+Make sure that H radical is produced properly from its SMILES ... ok
+Test the Molecule.getLabeledAtoms() method. ... ok
+Test the Molecule.getLabeledAtom() method. ... ok
+Test the Molecule.getLabeledAtoms() method. ... ok
+Test the Molecule.getMolecularWeight() method. ... ok
+Test that InChI Key generation is working properly. ... ok
+Test the Molecule.isInCycle() method with ethane. ... ok
+Test the Molecule.isInCycle() method with ethane. ... ok
+Check the graph isomorphism functions. ... ok
+Test the Molecule.isLinear() method. ... ok
+Test the Molecule.isLinear() method. ... ok
+Test the Molecule.isLinear() method. ... ok
+Test the Molecule.isLinear() method. ... ok
+Test the Molecule.isLinear() method. ... ok
+Test the Molecule.isLinear() method. ... ok
+Test the Molecule.isLinear() method. ... ok
+Test the Molecule.isLinear() method. ... ok
+Test the Molecule.isLinear() method. ... ok
+Test that a Molecule object can be successfully pickled and ... ok
+Test that the species [CH] has three radical electrons and a spin multiplicity of 4. ... ok
+Test that the species [CH2] has two radical electrons and a spin multiplicity of 3. ... ok
+Test the Molecule.getSmallestSetOfSmallestRings() method with a complex ... ok
+Check the graph isomorphism functions. ... ok
+testSubgraphIsomorphismAgain (rmgpy.molecule.moleculeTest.TestMolecule) ... ok
+testSubgraphIsomorphismManyLabels (rmgpy.molecule.moleculeTest.TestMolecule) ... FAIL
+Test the Molecule.toAdjacencyList() method. ... ok
+Failure: ValueError (rmgpy.molecule.group.Group has the wrong size, try recompiling) ... ERROR
+Test the Molecule.calculateAtomSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateAtomSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateAtomSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateAtomSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateAtomSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateAxisSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateAxisSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateAxisSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateAxisSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateAxisSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateAxisSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateAxisSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateAxisSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateAxisSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateAxisSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateAxisSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateAxisSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateAxisSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateAxisSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateAxisSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateBondSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateBondSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateBondSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateBondSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateBondSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateCyclicSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateCyclicSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateCyclicSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateCyclicSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateSymmetryNumber() method. ... ERROR
+Test the LennardJones.epsilon attribute. ... ok
+Test the LennardJones.getCollisionFrequency() method. ... ok
+Test that a LennardJones object can be successfully pickled and ... ok
+Test that a LennardJones object can be successfully reconstructed from ... ok
+Test the LennardJones.sigma attribute. ... ok
+Test the SingleExponentialDown.T0 attribute. ... ok
+Test the SingleExponentialDown.sigma attribute. ... ok
+Test the SingleExponentialDown.getAlpha() method. ... ok
+Test the SingleExponentialDown.n attribute. ... ok
+Test that a SingleExponentialDown object can be successfully pickled ... ok
+Test that a SingleExponentialDown object can be successfully ... ok
+Test that the network `bathGas` property was properly set. ... ok
+Test that the Network.initialize() method. ... ok
+Test that the network `isomers` property was properly set. ... ok
+Test that the network `label` property was properly set. ... ok
+Test that the network `netReactions` property was properly set. ... ok
+Test that the network `pathReactions` property was properly set. ... ok
+Test that the network `products` property was properly set. ... ok
+Test that the network `reactants` property was properly set. ... ok
+Test the creation of an acceleration quantity with units of cm/s^2. ... ok
+Test the creation of an acceleration quantity with units of m/s^2. ... ok
+Test the creation of an area quantity with units of m^2. ... ok
+Test the creation of an area quantity with units of m^2. ... ok
+Test the creation of an concentration quantity with units of molecules/m^3. ... ok
+Test the creation of an concentration quantity with units of mol/m^3. ... ok
+Test the creation of an concentration quantity with units of m^-3. ... ok
+Test the creation of a dipole moment quantity with units of C*m. ... ok
+Test the creation of a dipole moment quantity with units of J/mol. ... ok
+Test the creation of an energy quantity with units of J. ... ok
+Test the creation of an energy quantity with units of J/mol. ... ok
+Test the creation of an energy quantity with units of cal. ... ok
+Test the creation of an energy quantity with units of cal/mol. ... ok
+Test the creation of an energy quantity with units of kJ. ... ok
+Test the creation of an energy quantity with units of kJ/mol. ... ok
+Test the creation of an energy quantity with units of kcal. ... ok
+Test the creation of an energy quantity with units of kcal/mol. ... ok
+Test the creation of a flux quantity with units of molecules/(m^2*s). ... ok
+Test the creation of a flux quantity with units of mol/(m^2*s). ... ok
+Test the creation of a flux quantity with units of m^-2*s^-1. ... ok
+Test the creation of an force quantity with units of N. ... ok
+Test the creation of a frequency quantity with units of GHz. ... ok
+Test the creation of a frequency quantity with units of Hz. ... ok
+Test the creation of a frequency quantity with units of K. ... ok
+Test the creation of a frequency quantity with units of MHz. ... ok
+Test the creation of a frequency quantity with units of cm^-1. ... ok
+Test the creation of a frequency quantity with units of eV. ... ok
+Test the creation of a frequency quantity with units of kHz. ... ok
+Test the creation of a frequency quantity with units of s^-1. ... ok
+Test the creation of a heat capacity quantity with units of J/K. ... ok
+Test the creation of a heat capacity quantity with units of J/(mol*K). ... ok
+Test the creation of a heat capacity quantity with units of cal/K. ... ok
+Test the creation of a heat capacity quantity with units of cal/(mol*K). ... ok
+Test the creation of a heat capacity quantity with units of kJ/K. ... ok
+Test the creation of a heat capacity quantity with units of kJ/(mol*K). ... ok
+Test the creation of a heat capacity quantity with units of kcal/K. ... ok
+Test the creation of a heat capacity quantity with units of kcal/(mol*K). ... ok
+Test the creation of a moment of inertia quantity with units of amu*angstrom^2. ... ok
+Test the creation of a moment of inertia quantity with units of kg*m^2. ... ok
+Test the creation of a length quantity with units of cm. ... ok
+Test the creation of a length quantity with units of km. ... ok
+Test the creation of a length quantity with units of m. ... ok
+Test the creation of a length quantity with units of mm. ... ok
+Test the creation of a length quantity with units of nm. ... ok
+Test the creation of a length quantity with units of pm. ... ok
+Test the creation of a length quantity with units of um. ... ok
+Test the creation of a mass quantity with units of amu. ... ok
+Test the creation of a mass quantity with units of g/mol. Note that ... ok
+Test the creation of a mass quantity with units of kg. ... ok
+Test the creation of a mass quantity with units of kg/mol. Note that ... ok
+Test the creation of a momentum quantity with units of kg*m/s^2. ... ok
+Test the creation of a power quantity with units of W. ... ok
+Test the creation of a pressure quantity with units of Pa. ... ok
+Test the creation of a pressure quantity with units of atm. ... ok
+Test the creation of a pressure quantity with units of bar. ... ok
+Test the creation of a pressure quantity with units of psi. ... ok
+Test the creation of a pressure quantity with units of torr. ... ok
+Test the creation of a rate coefficient quantity with units of cm^3/(molecule*s). ... ok
+Test the creation of a rate coefficient quantity with units of cm^3/(mol*s). ... ok
+Test the creation of a rate coefficient quantity with units of cm^6/(mol^2*s). ... ok
+Test the creation of a rate coefficient quantity with units of cm^6/(molecule^2*s). ... ok
+Test the creation of a rate coefficient quantity with units of cm^9/(mol^3*s). ... ok
+Test the creation of a rate coefficient quantity with units of cm^9/(molecule^3*s). ... ok
+Test the creation of a rate coefficient quantity with units of m^3/(mol*s). ... ok
+Test the creation of a rate coefficient quantity with units of m^6/(mol^2*s). ... ok
+Test the creation of a rate coefficient quantity with units of m^9/(mol^3*s). ... ok
+Test the creation of a rate coefficient quantity with units of s^-1. ... ok
+Test the creation of a temperature quantity with units of K. ... ok
+Test the creation of a temperature quantity with units of degrees C. ... ok
+Test the creation of a temperature quantity with units of degrees F. ... ok
+Test the creation of a temperature quantity with units of degrees R. ... ok
+Test the creation of a time quantity with units of fs. ... ok
+Test the creation of a time quantity with units of hr. ... ok
+Test the creation of a time quantity with units of min. ... ok
+Test the creation of a time quantity with units of ms. ... ok
+Test the creation of a time quantity with units of ns. ... ok
+Test the creation of a time quantity with units of ps. ... ok
+Test the creation of a time quantity with units of s. ... ok
+Test the creation of a time quantity with units of us. ... ok
+Test the creation of an velocity quantity with units of m/s. ... ok
+Test the creation of an velocity quantity with units of m/s. ... ok
+Test the creation of an volume quantity with units of L. ... ok
+Test the creation of an volume quantity with units of m^3. ... ok
+Test the Reaction.getEnthalpyOfReaction() method. ... ok
+Test the Reaction.getEntropyOfReaction() method. ... ok
+Test the Reaction.getEquilibriumConstant() method. ... ok
+Test the Reaction.getEquilibriumConstant() method. ... ok
+Test the Reaction.getEquilibriumConstant() method. ... ok
+Test the Reaction.getFreeEnergyOfReaction() method. ... ok
+Test the Reaction.generateReverseRateCoefficient() method. ... ok
+Test the Reaction.hasTemplate() method. ... ok
+Test the Reaction.isAssociation() method. ... ok
+Test the Reaction.isDissociation() method. ... ok
+Test the Reaction.isIsomerization() method. ... ok
+Test that a Reaction object can be successfully reconstructed ... ok
+Test that a Reaction object can be successfully pickled and ... ok
+Test the Reaction.getRateCoefficient() method. ... ok
+Test the Reaction.getStoichiometricCoefficient() method. ... ok
+A test of the transition state theory k(T) calculation function, ... ok
+test1to1 (rmgpy.reactionTest.TestReactionIsomorphism) ... ok
+test1to2 (rmgpy.reactionTest.TestReactionIsomorphism) ... ok
+test2to2 (rmgpy.reactionTest.TestReactionIsomorphism) ... ok
+test2to3 (rmgpy.reactionTest.TestReactionIsomorphism) ... ok
+Test the simple batch reactor with a simple kinetic model. Here we ... ok
+Test that a Species object can be successfully reconstructed ... ok
+Test that a Species object can be successfully pickled and ... ok
+Test that toAdjacencyList() works as expected. ... ok
+Test the Conformer.getCenterOfMass() method. ... ok
+Test the StatMech.getDensityOfStates() method for ethylene. ... ok
+Test the StatMech.getDensityOfStates() method for oxygen. ... ok
+Test the StatMech.getEnthalpy() method for ethylene. ... ok
+Test the StatMech.getEnthalpy() method for oxygen. ... ok
+Test the StatMech.getEntropy() method for ethylene. ... ok
+Test the StatMech.getEntropy() method for oxygen. ... ok
+Test the StatMech.getHeatCapacity() method for ethylene. ... ok
+Test the StatMech.getHeatCapacity() method for oxygen. ... ok
+Test the Conformer.getInternalReducedMomentOfInertia() method. ... ok
+Test the Conformer.getMomentOfInertiaTensor() method. ... ok
+Test the StatMech.getPartitionFunction() method for ethylene. ... ok
+Test the StatMech.getPartitionFunction() method for oxygen. ... ok
+Test the Conformer.getPrincipalMomentsOfInertia() method. ... ok
+Test the StatMech.getSumOfStates() method for ethylene. ... ok
+Test the StatMech.getSumOfStates() method for oxygen. ... ok
+Test the Conformer.getTotalMass() method. ... ok
+Test the KRotor.getDensityOfStates() method using a classical ... ok
+Test the KRotor.getDensityOfStates() method using a quantum rotor. ... ok
+Test the KRotor.getEnthalpy() method using a classical rotor. ... ok
+Test the KRotor.getEnthalpy() method using a quantum rotor. ... ok
+Test the KRotor.getEntropy() method using a classical rotor. ... ok
+Test the KRotor.getEntropy() method using a quantum rotor. ... ok
+Test the KRotor.getHeatCapacity() method using a classical rotor. ... ok
+Test the KRotor.getHeatCapacity() method using a quantum rotor. ... ok
+Test the KRotor.getLevelDegeneracy() method. ... ok
+Test the KRotor.getLevelEnergy() method. ... ok
+Test the KRotor.getPartitionFunction() method for a classical ... ok
+Test the KRotor.getPartitionFunction() method for a quantum ... ok
+Test getting the KRotor.rotationalConstant property. ... ok
+Test the KRotor.getSumOfStates() method using a classical rotor. ... ok
+Test the KRotor.getSumOfStates() method using a quantum rotor. ... ok
+Test that a KRotor object can be pickled and unpickled with no loss ... ok
+Test that a KRotor object can be reconstructed from its repr() output ... ok
+Test setting the KRotor.rotationalConstant property. ... ok
+Test the LinearRotor.getDensityOfStates() method using a classical ... ok
+Test the LinearRotor.getDensityOfStates() method using a quantum rotor. ... ok
+Test the LinearRotor.getEnthalpy() method using a classical rotor. ... ok
+Test the LinearRotor.getEnthalpy() method using a quantum rotor. ... ok
+Test the LinearRotor.getEntropy() method using a classical rotor. ... ok
+Test the LinearRotor.getEntropy() method using a quantum rotor. ... ok
+Test the LinearRotor.getHeatCapacity() method using a classical rotor. ... ok
+Test the LinearRotor.getHeatCapacity() method using a quantum rotor. ... ok
+Test the LinearRotor.getLevelDegeneracy() method. ... ok
+Test the LinearRotor.getLevelEnergy() method. ... ok
+Test the LinearRotor.getPartitionFunction() method for a classical ... ok
+Test the LinearRotor.getPartitionFunction() method for a quantum ... ok
+Test getting the LinearRotor.rotationalConstant property. ... ok
+Test the LinearRotor.getSumOfStates() method using a classical rotor. ... ok
+Test the LinearRotor.getSumOfStates() method using a quantum rotor. ... ok
+Test that a LinearRotor object can be pickled and unpickled with no ... ok
+Test that a LinearRotor object can be reconstructed from its repr() ... ok
+Test setting the LinearRotor.rotationalConstant property. ... ok
+Test the NonlinearRotor.getDensityOfStates() method using a classical ... ok
+Test the NonlinearRotor.getEnthalpy() method using a classical rotor. ... ok
+Test the NonlinearRotor.getEntropy() method using a classical rotor. ... ok
+Test the NonlinearRotor.getHeatCapacity() method using a classical ... ok
+Test the NonlinearRotor.getPartitionFunction() method for a classical ... ok
+Test getting the NonlinearRotor.rotationalConstant property. ... ok
+Test the NonlinearRotor.getSumOfStates() method using a classical rotor. ... ok
+Test that a NonlinearRotor object can be pickled and unpickled with ... ok
+Test that a NonlinearRotor object can be reconstructed from its ... ok
+Test setting the NonlinearRotor.rotationalConstant property. ... ok
+Test the SphericalTopRotor.getDensityOfStates() method using a classical ... ok
+Test the SphericalTopRotor.getDensityOfStates() method using a quantum rotor. ... ok
+Test the SphericalTopRotor.getEnthalpy() method using a classical rotor. ... ok
+Test the SphericalTopRotor.getEnthalpy() method using a quantum rotor. ... ok
+Test the SphericalTopRotor.getEntropy() method using a classical rotor. ... ok
+Test the SphericalTopRotor.getEntropy() method using a quantum rotor. ... ok
+Test the SphericalTopRotor.getHeatCapacity() method using a classical rotor. ... ok
+Test the SphericalTopRotor.getHeatCapacity() method using a quantum rotor. ... ok
+Test the SphericalTopRotor.getLevelDegeneracy() method. ... ok
+Test the SphericalTopRotor.getLevelEnergy() method. ... ok
+Test the SphericalTopRotor.getPartitionFunction() method for a classical ... ok
+Test the SphericalTopRotor.getPartitionFunction() method for a quantum ... ok
+Test getting the SphericalTopRotor.rotationalConstant property. ... ok
+Test the SphericalTopRotor.getSumOfStates() method using a classical rotor. ... ok
+Test the SphericalTopRotor.getSumOfStates() method using a quantum rotor. ... ok
+Test that a SphericalTopRotor object can be pickled and unpickled ... ok
+Test that a SphericalTopRotor object can be reconstructed from its ... ok
+Test setting the SphericalTopRotor.rotationalConstant property. ... ok
+Test the getDensityOfStates() method. ... ok
+Test the getEnthalpy() method. ... ok
+Test the getEntropy() method. ... ok
+Test the getHeatCapacity() method. ... ok
+Test the getPartitionFunction() method. ... ok
+Test the HinderedRotor.getDensityOfStates() method using a classical ... ok
+Test the HinderedRotor.getDensityOfStates() method using a Fourier ... ok
+Test the HinderedRotor.getDensityOfStates() method using a classical ... ok
+Test the HinderedRotor.getDensityOfStates() method using a Fourier ... ok
+Test the HinderedRotor.getEnthalpy() method using a cosine potential ... ok
+Test the HinderedRotor.getEnthalpy() method using a Fourier series ... ok
+Test the HinderedRotor.getEnthalpy() method using a cosine potential ... ok
+Test the HinderedRotor.getEnthalpy() method using a Fourier series ... ok
+Test the HinderedRotor.getEntropy() method using a cosine potential ... ok
+Test the HinderedRotor.getEntropy() method using a Fourier series ... ok
+Test the HinderedRotor.getEntropy() method using a cosine potential ... ok
+Test the HinderedRotor.getEntropy() method using a Fourier series ... ok
+Test the HinderedRotor.getHeatCapacity() method using a cosine ... ok
+Test the HinderedRotor.getHeatCapacity() method using a Fourier series ... ok
+Test the HinderedRotor.getHeatCapacity() method using a cosine ... ok
+Test the HinderedRotor.getHeatCapacity() method using a Fourier series ... ok
+Test the HinderedRotor.getPartitionFunction() method for a cosine ... ok
+Test the HinderedRotor.getPartitionFunction() method for a Fourier ... ok
+Test the HinderedRotor.getPartitionFunction() method for a cosine ... ok
+Test the HinderedRotor.getPartitionFunction() method for a Fourier ... ok
+Test the HinderedRotor.getPotential() method for a cosine potential. ... ok
+Test the HinderedRotor.getPotential() method for a Fourier series ... ok
+Test getting the HinderedRotor.rotationalConstant property. ... ok
+Test the HinderedRotor.getSumOfStates() method using a cosine potential ... ok
+Test the HinderedRotor.getSumOfStates() method using a Fourier series ... ok
+Test the HinderedRotor.getSumOfStates() method using a cosine potential ... ok
+Test the HinderedRotor.getSumOfStates() method using a Fourier series ... ok
+Test that a HinderedRotor object can be pickled and unpickled with no ... ok
+Test that a HinderedRotor object can be reconstructed from its repr() ... ok
+Test setting the HinderedRotor.rotationalConstant property. ... ok
+Test the IdealGasTranslation.getDensityOfStates() method using a ... ok
+Test the IdealGasTranslation.getEnthalpy() method using a classical ... ok
+Test the IdealGasTranslation.getEntropy() method using a classical ... ok
+Test the IdealGasTranslation.getHeatCapacity() method using a classical ... ok
+Test the IdealGasTranslation.getPartitionFunction() method for a ... ok
+Test the IdealGasTranslation.getSumOfStates() method using a classical ... ok
+Test that a IdealGasTranslation object can be pickled and unpickled ... ok
+Test that an IdealGasTranslation object can be reconstructed from its ... ok
+Test the HarmonicOscillator.getDensityOfStates() method using a set of ... ok
+Test the HarmonicOscillator.getDensityOfStates() method using a set of ... ok
+Test the HarmonicOscillator.getEnthalpy() method using a set of ... ok
+Test the HarmonicOscillator.getEnthalpy() method using a set of quantum ... ok
+Test the HarmonicOscillator.getEntropy() method using a set of ... ok
+Test the HarmonicOscillator.getEntropy() method using a set of quantum ... ok
+Test the HarmonicOscillator.getHeatCapacity() method using a set of ... ok
+Test the HarmonicOscillator.getHeatCapacity() method using a set of ... ok
+Test the HarmonicOscillator.getPartitionFunction() method for a set of ... ok
+Test the HarmonicOscillator.getPartitionFunction() method for a set of ... ok
+Test the HarmonicOscillator.getSumOfStates() method using a set of ... ok
+Test the HarmonicOscillator.getSumOfStates() method using a set of ... ok
+Test that a HarmonicOscillator object can be pickled and unpickled ... ok
+Test that a HarmonicOscillator object can be reconstructed from its ... ok
+Test round-trip conversion from Wilhoit to NASA and back ... ok
+Test round-trip conversion from Wilhoit to ThermoData and back ... ok
+Test the conversion of a NASA model to a ThermoData model. ... ok
+Test the conversion of a NASA model to a Wilhoit model. ... ok
+Test the conversion of a ThermoData model to a NASA model. ... ok
+Test the conversion of a ThermoData model to a Wilhoit model. ... ok
+Test the conversion of a Wilhoit model to a NASA model. ... ok
+Test the conversion of a Wilhoit model to a ThermoData model. ... ok
+Test that the NASA comment property was properly set. ... ok
+Test that the NASA E0 property was properly set. ... ok
+Test that the NASA Tmax property was properly set. ... ok
+Test that the NASA Tmin property was properly set. ... ok
+Test the NASA.getEnthalpy() method. ... ok
+Test the NASA.getEntropy() method. ... ok
+Test the NASA.getFreeEnergy() method. ... ok
+Test the NASA.getHeatCapacity() method. ... ok
+Test the NASA.isTemperatureValid() method. ... ok
+Test that a NASA object can be pickled and unpickled with no loss of ... ok
+Test that the NASA high-temperature polynomial was properly set. ... ok
+Test that the NASA low-temperature polynomial was properly set. ... ok
+Test that a NASA object can be reconstructed from its repr() output ... ok
+Test that the ThermoData comment property was properly set. ... ok
+Test that the ThermoData Cp0 property was properly set. ... ok
+Test that the ThermoData CpInf property was properly set. ... ok
+Test that the ThermoData Cpdata property was properly set. ... ok
+Test that the ThermoData E0 property was properly set. ... ok
+Test that the ThermoData H298 property was properly set. ... ok
+Test that the ThermoData S298 property was properly set. ... ok
+Test that the ThermoData Tdata property was properly set. ... ok
+Test that the ThermoData Tmax property was properly set. ... ok
+Test that the ThermoData Tmin property was properly set. ... ok
+Test the ThermoData.getEnthalpy() method. ... ok
+Test the ThermoData.getEntropy() method. ... ok
+Test the ThermoData.getFreeEnergy() method. ... ok
+Test the ThermoData.getHeatCapacity() method. ... ok
+Test the ThermoData.isTemperatureValid() method. ... ok
+Test that a ThermoData object can be successfully pickled and ... ok
+Test that a ThermoData object can be successfully reconstructed from its ... ok
+Test that the Wilhoit B property was properly set. ... ok
+Test that the Wilhoit Cp0 property was properly set. ... ok
+Test that the Wilhoit CpInf property was properly set. ... ok
+Test that the Wilhoit E0 property is properly calculated from Enthalpy at 0.001 K ... ok
+Test that the Wilhoit H0 property was properly set. ... ok
+Test that the Wilhoit S0 property was properly set. ... ok
+Test that the Wilhoit Tmax property was properly set. ... ok
+Test that the Wilhoit Tmin property was properly set. ... ok
+Test that the Wilhoit a0 property was properly set. ... ok
+Test that the Wilhoit a1 property was properly set. ... ok
+Test that the Wilhoit a2 property was properly set. ... ok
+Test that the Wilhoit a3 property was properly set. ... ok
+Test that the Wilhoit comment property was properly set. ... ok
+Test the Wilhoit.fitToData() method. ... ok
+Test the Wilhoit.getEnthalpy() method. ... ok
+Test the Wilhoit.getEntropy() method. ... ok
+Test the Wilhoit.getFreeEnergy() method. ... ok
+Test the Wilhoit.getHeatCapacity() method. ... ok
+Test the Wilhoit.isTemperatureValid() method. ... ok
+Test that a Wilhoit object can be pickled and unpickled with no loss ... ok
+Test that a Wilhoit object can be reconstructed from its repr() output ... ok
+
+======================================================================
+ERROR: Test that the new ThermoDatabase generates appropriate thermo data.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermoTest.py", line 25, in setUp
+    self.database.load(os.path.join(settings['database.directory'], 'thermo'))
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermo.py", line 362, in load
+    self.loadDepository(os.path.join(path, 'depository'))
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermo.py", line 374, in loadDepository
+    self.depository['stable']  = ThermoDepository().load(os.path.join(path, 'stable.py'), self.local_context, self.global_context)
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/base.py", line 208, in load
+    f = open(path, 'r')
+IOError: [Errno 2] No such file or directory: '/export/thishost/comocheng/build/RMG-database/input/thermo/depository/stable.py'
+
+======================================================================
+ERROR: Test that the old ThermoDatabase generates relatively accurate thermo data.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermoTest.py", line 25, in setUp
+    self.database.load(os.path.join(settings['database.directory'], 'thermo'))
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermo.py", line 362, in load
+    self.loadDepository(os.path.join(path, 'depository'))
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermo.py", line 374, in loadDepository
+    self.depository['stable']  = ThermoDepository().load(os.path.join(path, 'stable.py'), self.local_context, self.global_context)
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/base.py", line 208, in load
+    f = open(path, 'r')
+IOError: [Errno 2] No such file or directory: '/export/thishost/comocheng/build/RMG-database/input/thermo/depository/stable.py'
+
+======================================================================
+ERROR: Failure: ValueError (rmgpy.molecule.group.Group has the wrong size, try recompiling)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/virtualenvs/rmgweb/local/lib/python2.7/site-packages/nose/loader.py", line 390, in loadTestsFromName
+    addr.filename, addr.module)
+  File "/export/thishost/comocheng/virtualenvs/rmgweb/local/lib/python2.7/site-packages/nose/importer.py", line 39, in importFromPath
+    return self.importFromDir(dir_path, fqname)
+  File "/export/thishost/comocheng/virtualenvs/rmgweb/local/lib/python2.7/site-packages/nose/importer.py", line 86, in importFromDir
+    mod = load_module(part_fqname, fh, filename, desc)
+  File "group.pxd", line 75, in init rmgpy.molecule.symmetry (build/pyrex/rmgpy/molecule/symmetry.c:8019)
+ValueError: rmgpy.molecule.group.Group has the wrong size, try recompiling
+
+======================================================================
+ERROR: Test the Molecule.calculateAtomSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 47, in testAtomSymmetryNumberEthane
+    symmetryNumber *= calculateAtomSymmetryNumber(molecule, atom)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateAtomSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 69, in testAtomSymmetryNumberIsobutane
+    symmetryNumber *= calculateAtomSymmetryNumber(molecule, atom)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateAtomSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 25, in testAtomSymmetryNumberMethane
+    symmetryNumber *= calculateAtomSymmetryNumber(molecule, atom)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateAtomSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 36, in testAtomSymmetryNumberMethyl
+    symmetryNumber *= calculateAtomSymmetryNumber(molecule, atom)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateAtomSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 58, in testAtomSymmetryNumberPropane
+    symmetryNumber *= calculateAtomSymmetryNumber(molecule, atom)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateAxisSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 186, in testAxisSymmetryNumber1
+    self.assertEqual(calculateAxisSymmetryNumber(molecule), 2)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateAxisSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 172, in testAxisSymmetryNumber12Butadienyl
+    self.assertEqual(calculateAxisSymmetryNumber(molecule), 1)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateAxisSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 179, in testAxisSymmetryNumber12Hexadienyl
+    self.assertEqual(calculateAxisSymmetryNumber(molecule), 1)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateAxisSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 193, in testAxisSymmetryNumber2
+    self.assertEqual(calculateAxisSymmetryNumber(molecule), 2)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateAxisSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 200, in testAxisSymmetryNumber3
+    self.assertEqual(calculateAxisSymmetryNumber(molecule), 4)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateAxisSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 207, in testAxisSymmetryNumber4
+    self.assertEqual(calculateAxisSymmetryNumber(molecule), 2)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateAxisSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 214, in testAxisSymmetryNumber5
+    self.assertEqual(calculateAxisSymmetryNumber(molecule), 1)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateAxisSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 221, in testAxisSymmetryNumber6
+    self.assertEqual(calculateAxisSymmetryNumber(molecule), 1)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateAxisSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 228, in testAxisSymmetryNumber7
+    self.assertEqual(calculateAxisSymmetryNumber(molecule), 2)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateAxisSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 151, in testAxisSymmetryNumberButatriene
+    self.assertEqual(calculateAxisSymmetryNumber(molecule), 2)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateAxisSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 158, in testAxisSymmetryNumberButatrienyl
+    self.assertEqual(calculateAxisSymmetryNumber(molecule), 1)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateAxisSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 137, in testAxisSymmetryNumberEthylene
+    self.assertEqual(calculateAxisSymmetryNumber(molecule), 2)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateAxisSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 144, in testAxisSymmetryNumberPropadiene
+    self.assertEqual(calculateAxisSymmetryNumber(molecule), 2)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateAxisSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 165, in testAxisSymmetryNumberPropadienyl
+    self.assertEqual(calculateAxisSymmetryNumber(molecule), 2)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateAxisSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 235, in testAxisSymmetryOxygenSinglet
+    self.assertEqual(calculateAxisSymmetryNumber(molecule), 1)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateBondSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 129, in testBondSymmetryNumberAcetylene
+    symmetryNumber *= calculateBondSymmetryNumber(molecule, atom1, atom2)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateBondSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 105, in testBondSymmetryNumberButane
+    symmetryNumber *= calculateBondSymmetryNumber(molecule, atom1, atom2)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateBondSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 81, in testBondSymmetryNumberEthane
+    symmetryNumber *= calculateBondSymmetryNumber(molecule, atom1, atom2)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateBondSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 117, in testBondSymmetryNumberEthylene
+    symmetryNumber *= calculateBondSymmetryNumber(molecule, atom1, atom2)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateBondSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 93, in testBondSymmetryNumberPropane
+    symmetryNumber *= calculateBondSymmetryNumber(molecule, atom1, atom2)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateCyclicSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 250, in testCyclicSymmetryNumberBenzene
+    symmetryNumber = calculateCyclicSymmetryNumber(molecule)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateCyclicSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 242, in testCyclicSymmetryNumberCyclohexane
+    symmetryNumber = calculateCyclicSymmetryNumber(molecule)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateCyclicSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 266, in testCyclicSymmetryNumberDimethylbenzene
+    symmetryNumber = calculateCyclicSymmetryNumber(molecule)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateCyclicSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 258, in testCyclicSymmetryNumberToluene
+    symmetryNumber = calculateCyclicSymmetryNumber(molecule)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 315, in testSymmetryNumberAcetylene
+    self.assertEqual(Molecule().fromSMILES('C#C').calculateSymmetryNumber(), 2)
+  File "molecule.py", line 1252, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:19694)
+  File "molecule.py", line 1258, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:19634)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 321, in testSymmetryNumberButadiyne
+    self.assertEqual(Molecule().fromSMILES('C#CC#C').calculateSymmetryNumber(), 2)
+  File "molecule.py", line 1252, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:19694)
+  File "molecule.py", line 1258, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:19634)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 363, in testSymmetryNumberCyclic
+    self.assertEqual(Molecule().fromSMILES('C1=C=C=1').calculateSymmetryNumber(), '6?')
+  File "molecule.py", line 1252, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:19694)
+  File "molecule.py", line 1258, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:19634)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 303, in testSymmetryNumberDicarbon
+    self.assertEqual(Molecule().fromSMILES('[C]#[C]').calculateSymmetryNumber(), 2)
+  File "molecule.py", line 1252, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:19694)
+  File "molecule.py", line 1258, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:19634)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 357, in testSymmetryNumberEthenyl
+    self.assertEqual(Molecule().fromSMILES('C=[CH]').calculateSymmetryNumber(), 1)
+  File "molecule.py", line 1252, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:19694)
+  File "molecule.py", line 1258, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:19634)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 351, in testSymmetryNumberEthylene
+    self.assertEqual(Molecule().fromSMILES('C=C').calculateSymmetryNumber(), 4)
+  File "molecule.py", line 1252, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:19694)
+  File "molecule.py", line 1258, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:19634)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 333, in testSymmetryNumberFormaldehyde
+    self.assertEqual(Molecule().fromSMILES('C=O').calculateSymmetryNumber(), 2)
+  File "molecule.py", line 1252, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:19694)
+  File "molecule.py", line 1258, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:19634)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 309, in testSymmetryNumberHydrogen
+    self.assertEqual(Molecule().fromSMILES('[H][H]').calculateSymmetryNumber(), 2)
+  File "molecule.py", line 1252, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:19694)
+  File "molecule.py", line 1258, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:19634)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 291, in testSymmetryNumberHydroxyl
+    self.assertEqual(Molecule().fromSMILES('[OH]').calculateSymmetryNumber(), 1)
+  File "molecule.py", line 1252, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:19694)
+  File "molecule.py", line 1258, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:19634)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 327, in testSymmetryNumberMethane
+    self.assertEqual(Molecule().fromSMILES('C').calculateSymmetryNumber(), 12)
+  File "molecule.py", line 1252, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:19694)
+  File "molecule.py", line 1258, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:19634)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 339, in testSymmetryNumberMethyl
+    self.assertEqual(Molecule().fromSMILES('[CH3]').calculateSymmetryNumber(), 6)
+  File "molecule.py", line 1252, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:19694)
+  File "molecule.py", line 1258, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:19634)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 297, in testSymmetryNumberOxygen
+    self.assertEqual(Molecule().fromSMILES('O=O').calculateSymmetryNumber(), 2)
+  File "molecule.py", line 1252, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:19694)
+  File "molecule.py", line 1258, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:19634)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 345, in testSymmetryNumberWater
+    self.assertEqual(Molecule().fromSMILES('O').calculateSymmetryNumber(), 2)
+  File "molecule.py", line 1252, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:19694)
+  File "molecule.py", line 1258, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:19634)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 279, in testTotalSymmetryNumber1
+    self.assertEqual(Molecule().fromSMILES('C=C=[C]C(C)(C)[C]=C=C').calculateSymmetryNumber(), '???')
+  File "molecule.py", line 1252, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:19694)
+  File "molecule.py", line 1258, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:19634)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 285, in testTotalSymmetryNumber2
+    self.assertEqual(Molecule().fromSMILES('C(=CC(c1ccccc1)C([CH]CCCCCC)C=Cc1ccccc1)[CH]CCCCCC').calculateSymmetryNumber(), 1)
+  File "molecule.py", line 1252, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:19694)
+  File "molecule.py", line 1258, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:19634)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 273, in testTotalSymmetryNumberEthane
+    self.assertEqual(Molecule().fromSMILES('CC').calculateSymmetryNumber(), 18)
+  File "molecule.py", line 1252, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:19694)
+  File "molecule.py", line 1258, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:19634)
+SystemError: Missing type object
+
+======================================================================
+FAIL: Uses a Gaussian03 log file for ethylene (C2H4) to test that its
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/cantherm/gaussianTest.py", line 43, in testLoadEthyleneFromGaussianLog
+    self.assertAlmostEqual(E0 / constants.Na / constants.E_h, -78.416641, 4)
+AssertionError: -78.46745199999998 != -78.416641 within 4 places
+
+======================================================================
+FAIL: Uses a Gaussian03 log file for oxygen (O2) to test that its
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/cantherm/gaussianTest.py", line 70, in testLoadOxygenFromGaussianLog
+    self.assertAlmostEqual(E0 / constants.Na / constants.E_h, -150.374756, 4)
+AssertionError: -150.378487701 != -150.374756 within 4 places
+
+======================================================================
+FAIL: Test the GroupAtom.applyAction() method for a GAIN_RADICAL action.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/groupTest.py", line 114, in testApplyActionGainRadical
+    self.assertTrue(a in atom.atomType)
+AssertionError: False is not true
+
+======================================================================
+FAIL: Test the GroupAtom.applyAction() method for a LOSE_RADICAL action.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/groupTest.py", line 134, in testApplyActionLoseRadical
+    self.assertTrue(a in atom.atomType)
+AssertionError: False is not true
+
+======================================================================
+FAIL: Test the Molecule.countInternalRotors() method for dimethylacetylene.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/moleculeTest.py", line 929, in testCountInternalRotorsDimethylAcetylene
+    self.assertEqual(Molecule().fromSMILES('CC#CC').countInternalRotors(), 1)
+AssertionError: 2 != 1
+
+======================================================================
+FAIL: testSubgraphIsomorphismManyLabels (rmgpy.molecule.moleculeTest.TestMolecule)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/moleculeTest.py", line 670, in testSubgraphIsomorphismManyLabels
+    self.assertTrue(len(mapping) == 1)
+AssertionError: False is not true
+
+Name                             Stmts   Miss Branch BrMiss  Cover   Missing
+----------------------------------------------------------------------------
+rmgpy                               46     12     16      8    68%   70, 93-96, 102, 104, 108, 119-122, 141
+rmgpy.cantherm                       5      0      0      0   100%   
+rmgpy.cantherm.gaussian            205    114    102     60    43%   56-71, 84-110, 119-159, 287, 291, 298-322, 330-369, 377-393
+rmgpy.cantherm.geometry             74     25     14      4    67%   93, 102-103, 130-148, 156-159, 191, 193
+rmgpy.cantherm.input               219    187     98     98    10%   65-118, 122-158, 162-178, 182-247, 251-256, 260-267, 271-276, 285-295, 298, 301, 313-382
+rmgpy.cantherm.kinetics             84     73     16     16    11%   47-48, 55-59, 66-89, 96-140, 150-171
+rmgpy.cantherm.main                 94     75     10     10    18%   45-46, 77-80, 89-130, 139-168, 174-187, 193-194, 201-204, 214-238
+rmgpy.cantherm.output               77     66     23     23    11%   47-49, 56-75, 81-94, 101-121, 127-141, 147-149, 155-157, 167-172
+rmgpy.cantherm.pdep                403    365    156    156     7%   106-142, 147, 150, 155, 158, 163, 166, 171, 174, 179, 182, 187, 190, 195, 198, 204, 224-238, 250-267, 270-297, 309-326, 330-362, 366-382, 386-483, 488-552, 562-571, 578-691
+rmgpy.cantherm.statmech            322    295     92     92     7%   81, 88-119, 127-144, 149, 159-164, 171-173, 182-371, 379-410, 418-448, 465-519, 530-589
+rmgpy.cantherm.thermo              155    140     32     32     8%   55-56, 63-67, 75-122, 129-205, 217-269
+rmgpy.chemkin                      834    796    435    435     3%   70-109, 120-376, 386-535, 546-566, 572-585, 592-607, 615-803, 812-952, 960-970, 982-1024, 1035-1100, 1110-1302, 1312-1328, 1338-1341, 1349-1352, 1359-1377, 1395-1438, 1446-1475
+rmgpy.data                           3      1      0      0    67%   34
+rmgpy.data.base                    617    530    265    263    10%   99-110, 113, 209-223, 230-251, 259-282, 293-311, 324-380, 388-446, 454-464, 471-501, 510-565, 572-580, 588-628, 635-641, 648-660, 667-701, 711, 717-723, 729-734, 748-787, 800-852, 864-887, 899-906, 909-913, 928-935, 942-951, 962-969, 985-1022, 1033-1036, 1045-1049, 1061-1065, 1087-1096, 1102-1103, 1109, 1117-1130, 1145-1172
+rmgpy.data.kinetics                265    231    133    133     9%   62-78, 84-89, 95-97, 104-105, 112-139, 149-174, 181-184, 191-195, 202-208, 215-232, 239-249, 257-260, 268-271, 279-294, 307-316, 337-435, 448-494
+rmgpy.data.kinetics.common         107     95     48     48     8%   100-101, 110-215
+rmgpy.data.kinetics.depository      31     18      0      0    42%   64-77, 83, 102, 115, 141-164, 170
+rmgpy.data.kinetics.family         887    819    494    494     5%   95-108, 114, 133, 159, 167, 175-187, 198-261, 268, 275, 321-332, 342-403, 410-445, 451-462, 468-491, 504-563, 569-570, 577-581, 587-589, 595, 603-606, 613, 621-668, 679-753, 760, 767-770, 777-867, 876-879, 886-889, 897-908, 921-1024, 1037-1106, 1113-1118, 1128-1154, 1163-1172, 1184-1211, 1218-1221, 1233-1433, 1441-1520, 1528, 1537-1542, 1552-1560, 1570-1584, 1592-1595, 1608-1655, 1663-1671, 1678-1686, 1694-1699
+rmgpy.data.kinetics.groups         292    271    180    180     4%   76-77, 83-87, 107-171, 181-207, 216-268, 281-549
+rmgpy.data.kinetics.library        273    247    153    153     6%   71-84, 90, 108, 118, 128-149, 156-163, 171-184, 191-246, 250-260, 282-315, 321, 327-360, 370-374, 384-545
+rmgpy.data.kinetics.rules          302    272    125    125     7%   64, 88-128, 134, 142-190, 197-223, 231-279, 287-343, 350-353, 360, 367, 374-387, 394-410, 416-475, 480-506, 513-567
+rmgpy.data.reference               138    119     48     48    10%   66-70, 89-95, 102-108, 114-132, 158-162, 169-183, 190-200, 226-231, 238-251, 258-269, 292-294, 301-311, 318-326
+rmgpy.data.rmg                      62     45      6      6    25%   54-62, 81-89, 96-97, 104-105, 118-130, 141-142, 149-156, 162-166, 172-176
+rmgpy.data.statmech                295    244    103    103    13%   48-91, 98-101, 108-116, 127, 140, 156, 166, 179, 195, 202, 209, 220, 233-241, 257, 264, 271, 278-285, 294-309, 319-355, 364-445, 455-467, 473-479, 485-488, 495-500, 507, 514-526, 533-534, 541-545, 552-553, 560-562, 569-570, 578-594, 611-624, 637-645, 652-656, 664-667, 676, 689-690, 698-705
+rmgpy.data.statmechfit             248    213     70     70    11%   95-137, 151-193, 207-244, 260-307, 316-319, 327-330, 338-343, 352-355, 364-366, 378-381, 384-407, 419-422, 425-457, 469-472, 475-506
+rmgpy.data.thermo                  396    334    122    121    12%   55-122, 129-147, 167, 186, 202, 212, 225, 241, 248, 255, 265, 278-282, 298, 306, 313, 339-345, 351-354, 364-366, 375, 382-394, 401-409, 416-420, 427-429, 436-438, 445-452, 460-527, 544-587, 600-618, 627-646, 654-665, 676-680, 689-701, 713-855, 862-875, 884-916
+rmgpy.display                       11      3      0      0    73%   37, 41-43
+rmgpy.kinetics                       6      0      0      0   100%   
+rmgpy.measure                        0      0      0      0   100%   
+rmgpy.measure.input                265    234    150    150     7%   76-87, 90-114, 118, 122, 126-137, 141-151, 155-168, 172-185, 189-198, 202-204, 208-209, 222-243, 255-265, 277-287, 328-561
+rmgpy.measure.main                 408    384    140    140     4%   81-85, 91-108, 114-140, 147-165, 172-182, 189-195, 202-208, 215-216, 225-274, 288-534, 543-636, 649-679, 688-694, 705-747
+rmgpy.measure.network              779    732    332    332     4%   109-122, 125-128, 134-161, 168, 174-177, 184-189, 196-207, 215-248, 255, 269-286, 297-318, 336-370, 379-454, 461-472, 478-486, 495-506, 518-624, 634-649, 660-672, 680-700, 711-723, 734-773, 780-787, 794-801, 808-815, 827-921, 932-991, 994-1007, 1022-1228, 1236-1254, 1265-1313
+rmgpy.measure.output               164    146     82     82     7%   53-60, 71-110, 120-124, 135-136, 142-157, 168-169, 175-186, 197-198, 206-231, 241-303
+rmgpy.measure.settings               2      0      0      0   100%   
+rmgpy.measure.simulate              67     54     30     30    13%   46, 49, 66-128, 144-169, 178-179, 182, 185
+rmgpy.molecule                       5      0      0      0   100%   
+rmgpy.molecule.adjlist             196     39    110     33    76%   65, 69-71, 80, 125, 133-143, 167, 180, 182, 184, 202, 214-215, 229-231, 248-257, 270-271, 298
+rmgpy.molecule.draw                867    838    414    414     2%   108-120, 138-146, 149-160, 176-286, 295-310, 320-380, 387-392, 401-432, 440-450, 457-582, 589-643, 650-722, 735-829, 839-865, 876-943, 950-963, 971-1003, 1013-1284, 1302-1306, 1320-1440
+rmgpy.pdep                           5      0      0      0   100%   
+rmgpy.pdep.draw                    291    277     86     86     4%   57-70, 73-79, 87-107, 116-125, 131-142, 148-159, 165-181, 185-213, 222-479
+rmgpy.pdep.network                 532    408    230    209    19%   51-53, 60, 130, 137-149, 161, 181, 194-261, 272-345, 358, 361, 364, 396, 460-464, 473, 495-515, 529-688, 699-716, 724-738, 745-748, 755-758, 768-771, 774-775, 789-860, 871-925, 938-954
+rmgpy.rmg                            2      0      0      0   100%   
+rmgpy.rmg.input                    206    180     44     44    10%   58-81, 84-88, 91, 94, 97, 100, 104-124, 127-128, 131-134, 138-172, 175-180, 183-197, 209-259, 269-369
+rmgpy.rmg.main                     626    581    216    216     5%   45-46, 110-114, 120-153, 160-172, 178-184, 192-194, 198-215, 224-316, 324-462, 473-485, 496-497, 500-507, 514-529, 536-540, 547-613, 619-621, 627-635, 644-657, 670-717, 728-761, 772-925, 932-941, 952-994, 1005, 1007-1008, 1011-1026, 1036-1067
+rmgpy.rmg.model                    860    802    456    456     4%   66-67, 73, 83-123, 131-139, 146-166, 173, 188-189, 213-238, 248-268, 277-320, 330-395, 412-466, 484-495, 501-513, 524-674, 683-743, 750-834, 843-879, 889-915, 921, 929-1011, 1019-1066, 1075-1078, 1088-1089, 1097-1101, 1108-1114, 1122-1132, 1139-1144, 1156-1189, 1204-1230, 1244-1269, 1282-1333, 1348-1429, 1437-1523, 1533-1535, 1543-1549
+rmgpy.rmg.output                   138    130     60     60     4%   62-345, 353-913
+rmgpy.rmg.pdep                     312    285    182    182     5%   61-62, 68, 74, 96-99, 102, 109, 115-135, 144-165, 174-196, 203-222, 230-254, 262-272, 279-334, 344-405, 412-592
+rmgpy.solver                         2      0      0      0   100%   
+rmgpy.statmech                       5      0      0      0   100%   
+rmgpy.thermo                         3      0      0      0   100%   
+----------------------------------------------------------------------------
+TOTAL                            12186  10680   5273   5112    10%   
+----------------------------------------------------------------------
+Ran 686 tests.
+
+FAILED (errors=48, failures=6)
+make: *** [test] Error 1

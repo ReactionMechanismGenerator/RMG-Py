@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -59,7 +57,7 @@
 <li><a href="../../index.html">Documentation</a> &raquo;</li>
 
           <li><a href="../index.html" >RMG API Reference</a> &raquo;</li>
-          <li><a href="index.html" accesskey="U">Database (<tt class="docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">rmgpy.data</span></tt>)</a> &raquo;</li> 
+          <li><a href="index.html" accesskey="U">Database (<tt class="docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">rmgpy.data</span></tt>)</a> &raquo;</li> 
       </ul>
     </div>
             
@@ -140,7 +138,9 @@ vector formats.</p>
 <dd><p>Turns the kinetics into Arrhenius (if they were ArrheniusEP)
 and ensures the activation energy is at least the endothermicity
 for endothermic reactions, and is not negative only as a result 
-of using Evans Polanyi with an exothermic reaction.</p>
+of using Evans Polanyi with an exothermic reaction.
+If <cite>forcePositive</cite> is True, then all reactions
+are forced to have a non-negative barrier.</p>
 </dd></dl>
 
 <dl class="method">
@@ -342,6 +342,14 @@ If <cite>eitherDirection=False</cite> then the directions must match.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.data.kinetics.TemplateReaction.isUnimolecular">
+<tt class="descname">isUnimolecular</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.TemplateReaction.isUnimolecular" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if the reaction has a single molecule as either reactant or product (or both)
+<span class="math">\(\ce{A &lt;=&gt; B + C}\)</span> or <span class="math">\(\ce{A + B &lt;=&gt; C}\)</span> or <span class="math">\(\ce{A &lt;=&gt; B}\)</span>,
+or <tt class="docutils literal"><span class="pre">False</span></tt> if not.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.data.kinetics.TemplateReaction.matchesMolecules">
 <tt class="descname">matchesMolecules</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.TemplateReaction.matchesMolecules" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if the given <tt class="docutils literal"><span class="pre">reactants</span></tt> represent the total set of
@@ -399,7 +407,7 @@ The reactants should be <tt class="xref py py-class docutils literal"><span clas
     </div>
     <div class="footer">
         &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
     </div>
   </body>
 </html>
