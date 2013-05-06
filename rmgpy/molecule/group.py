@@ -64,6 +64,7 @@ class GroupAtom(Vertex):
     `spinMultiplicity`  ``list``            The allowed spin multiplicities (as short integers)
     `charge`            ``list``            The allowed formal charges (as short integers)
     `label`             ``str``             A string label that can be used to tag individual atoms
+    `lonePairs`         ``list``            The number of lone electron pairs
     =================== =================== ====================================
 
     Each list represents a logical OR construct, i.e. an atom will match the
@@ -73,7 +74,7 @@ class GroupAtom(Vertex):
     order to match.
     """
 
-    def __init__(self, atomType=None, radicalElectrons=None, spinMultiplicity=None, charge=None, label=''):
+    def __init__(self, atomType=None, radicalElectrons=None, spinMultiplicity=None, charge=None, label='', lonePairs=0):
         Vertex.__init__(self)
         self.atomType = atomType or []
         for index in range(len(self.atomType)):
@@ -83,6 +84,7 @@ class GroupAtom(Vertex):
         self.spinMultiplicity = spinMultiplicity or []
         self.charge = charge or []
         self.label = label
+        self.lonePairs = lonePairs or []
 
     def __reduce__(self):
         """
@@ -98,7 +100,7 @@ class GroupAtom(Vertex):
         atomType = self.atomType
         if atomType is not None:
             atomType = [a.label for a in atomType]
-        return (GroupAtom, (atomType, self.radicalElectrons, self.spinMultiplicity, self.charge, self.label), d)
+        return (GroupAtom, (atomType, self.radicalElectrons, self.spinMultiplicity, self.charge, self.label, self.lonePairs), d)
 
     def __setstate__(self, d):
         """
@@ -219,6 +221,34 @@ class GroupAtom(Vertex):
         # Set the new radical electron counts and spin multiplicities
         self.radicalElectrons = radicalElectrons
         self.spinMultiplicity = spinMultiplicity
+        
+    def __gainPair(self, pair):
+        """
+        Update the atom group as a result of applying a GAIN_PAIR action,
+        where `pair` specifies the number of lone electron pairs to add.
+        """
+        lonePairs = []
+        if any([len(atomType.incrementLonePair) == 0 for atomType in self.atomType]):
+            raise ActionError('Unable to update GroupAtom due to GAIN_PAIR action: Unknown atom type produced from set "{0}".'.format(self.atomType))
+        for lonePairs in zip(self.lonePairs):
+            lonePairs.append(lonePairs + pair)
+        # Set the new lone electron pair count
+        self.lonePairs = lonePairs
+        
+    def __losePair(self, pair):
+        """
+        Update the atom group as a result of applying a LOSE_PAIR action,
+        where `pair` specifies the number of lone electron pairs to remove.
+        """
+        lonePairs = []
+        if any([len(atomType.decrementLonePair) == 0 for atomType in self.atomType]):
+            raise ActionError('Unable to update GroupAtom due to LOSE_PAIR action: Unknown atom type produced from set "{0}".'.format(self.atomType))
+        for lonePairs in zip(self.lonePairs):
+            if lonePairs - pair < 0:
+                raise ActionError('Unable to update GroupAtom due to LOSE_PAIR action: Invalid lone electron pairs set "{0}".'.format(self.lonePairs))
+            lonePairs.append(lonePairs - pair)
+        # Set the new lone electron pair count
+        self.lonePairs = lonePairs
 
     def applyAction(self, action):
         """
@@ -237,6 +267,10 @@ class GroupAtom(Vertex):
             self.__gainRadical(action[2])
         elif action[0].upper() == 'LOSE_RADICAL':
             self.__loseRadical(action[2])
+        elif action[0].upper() == 'GAIN_PAIR':
+            self.__gainPair(action[2])
+        elif action[0].upper() == 'LOSE_PAIR':
+            self.__losePair(action[2])
         else:
             raise ActionError('Unable to update GroupAtom: Invalid action {0}".'.format(action))
 

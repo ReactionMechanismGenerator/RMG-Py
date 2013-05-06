@@ -36,6 +36,7 @@ cdef class GroupAtom(Vertex):
     cdef public list spinMultiplicity
     cdef public list charge
     cdef public str label
+    cdef public list lonePairs
 
     cpdef Vertex copy(self)
 
@@ -48,6 +49,10 @@ cdef class GroupAtom(Vertex):
     cpdef __gainRadical(self, short radical)
 
     cpdef __loseRadical(self, short radical)
+    
+    cpdef __gainPair(self, short radical)
+
+    cpdef __losePair(self, short radical)
 
     cpdef applyAction(self, list action)
 
