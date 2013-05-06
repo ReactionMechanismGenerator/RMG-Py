@@ -1097,6 +1097,27 @@ class ForbiddenStructures(Database):
                 initialMap[moleculeLabeledAtoms[label]] = entryLabeledAtoms[label]
             if molecule.isMappingValid(entry.item, initialMap) and molecule.isSubgraphIsomorphic(entry.item, initialMap):
                 return True
+            
+            # Until we have more thermodynamic data of charged molecules we will forbid them
+            # We also forbid positively charged oxygen atoms
+            molecule_charge = 0
+            for atom in molecule.atoms:
+                molecule_charge += atom.charge
+                if atom.isOxygen() and atom.charge > 0:
+                    return True
+            if molecule_charge != 0:
+                return True
+            
+            # We forbid at least at the moment oxygen atoms with bond order larger than two and radical oxygen with a bond order of two
+            orders = {'S': 1, 'D': 2, 'T': 3, 'B': 1.5}
+            for atom2 in molecule.atoms:
+                order = 0
+                #for bond in atom2.bonds:
+                for atom3, bond in atom2.bonds.items():
+                    order += orders[bond.order]
+                if (atom2.isOxygen() and order>2) or (atom2.isOxygen() and order==2 and atom2.radicalElectrons>0):
+                    return True
+        
         return False
     
     def loadOld(self, path):
