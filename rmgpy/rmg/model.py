@@ -1488,3 +1488,16 @@ class CoreEdgeReactionModel:
         saveChemkinFile(verbose_path, speciesList, rxnList, verbose = True)
         if dictionaryPath:
             saveSpeciesDictionary(dictionaryPath, speciesList)
+            
+    def saveChemkinFileEdge(self, path, verbose_path, dictionaryPath=None):
+        """
+        Save a Chemkin file for the current model edge as well as any desired output
+        species and reactions to `path`.
+        """
+        from rmgpy.chemkin import saveChemkinFile, saveSpeciesDictionaryEdge
+        speciesList = self.edge.species + self.outputSpeciesList
+        rxnList = self.edge.reactions + self.outputReactionList
+        saveChemkinFile(path, speciesList, rxnList, verbose = False)
+        saveChemkinFile(verbose_path, speciesList, rxnList, verbose = True)
+        if dictionaryPath:
+            saveSpeciesDictionaryEdge(dictionaryPath, speciesList)
