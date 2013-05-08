@@ -47,7 +47,7 @@ class KineticsJob:
         self.reaction = reaction
         self.kunits = None
         
-    def execute(self, outputFile=None):
+    def execute(self, outputFile=None, plot=False):
         """
         Execute the kinetics job, saving the results to the given `outputFile`
         on disk.
@@ -55,7 +55,8 @@ class KineticsJob:
         self.generateKinetics()
         if outputFile is not None:
             self.save(outputFile)
-            self.plot(os.path.dirname(outputFile))
+            if plot:
+                self.plot(os.path.dirname(outputFile))
     
     def generateKinetics(self):
         """
@@ -119,6 +120,23 @@ class KineticsJob:
         string = 'kinetics(label={0!r}, kinetics={1!r})'.format(reaction.label, reaction.kinetics)
         f.write('{0}\n\n'.format(prettify(string)))
         
+        f.close()
+        
+        # Also save the result to chem.inp
+        f = open(os.path.join(os.path.dirname(outputFile), 'chem.inp'), 'a')
+        
+        reaction = self.reaction
+        kinetics = reaction.kinetics
+                
+        string = '{0!s:51} {1:9.3e} {2:9.3f} {3:9.3f}\n'.format(
+            reaction,
+            kinetics.A.value_si * factor,
+            kinetics.n.value_si,
+            kinetics.Ea.value_si / 4184.,
+        )
+                
+        f.write('{0}\n'.format(string))
+            
         f.close()
         
     def plot(self, outputDirectory):

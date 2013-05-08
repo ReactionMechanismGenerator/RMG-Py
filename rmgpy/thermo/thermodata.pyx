@@ -52,13 +52,14 @@ cdef class ThermoData(HeatCapacityModel):
     `CpInf`         The heat capacity at infinite temperature
     `Tmin`          The minimum temperature at which the model is valid, or zero if unknown or undefined
     `Tmax`          The maximum temperature at which the model is valid, or zero if unknown or undefined
+    `E0`            The energy at zero Kelvin (including zero point energy)
     `comment`       Information about the model (e.g. its source)
     =============== ============================================================
     
     """
 
-    def __init__(self, Tdata=None, Cpdata=None, H298=None, S298=None, Cp0=None, CpInf=None, Tmin=None, Tmax=None, comment=''):
-        HeatCapacityModel.__init__(self, Tmin=Tmin, Tmax=Tmax, comment=comment)
+    def __init__(self, Tdata=None, Cpdata=None, H298=None, S298=None, Cp0=None, CpInf=None, Tmin=None, Tmax=None, E0=None, comment=''):
+        HeatCapacityModel.__init__(self, Tmin=Tmin, Tmax=Tmax, E0=E0, comment=comment)
         self.H298 = H298
         self.S298 = S298
         self.Tdata = Tdata
@@ -76,6 +77,7 @@ cdef class ThermoData(HeatCapacityModel):
         if self.CpInf is not None: string += ', CpInf={0!r}'.format(self.CpInf)
         if self.Tmin is not None: string += ', Tmin={0!r}'.format(self.Tmin)
         if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
+        if self.E0 is not None: string += ', E0={0!r}'.format(self.E0)
         if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
         string += ')'
         return string
@@ -84,7 +86,7 @@ cdef class ThermoData(HeatCapacityModel):
         """
         A helper function used when pickling a ThermoData object.
         """
-        return (ThermoData, (self.Tdata, self.Cpdata, self.H298, self.S298, self.Cp0, self.CpInf, self.Tmin, self.Tmax, self.comment))
+        return (ThermoData, (self.Tdata, self.Cpdata, self.H298, self.S298, self.Cp0, self.CpInf, self.Tmin, self.Tmax, self.E0, self.comment))
 
     property Tdata:
         """An array of temperatures at which the heat capacity is known."""
@@ -274,7 +276,7 @@ cdef class ThermoData(HeatCapacityModel):
         S = self._S298.value_si
          
         # Correct the entropy from 298 K to the temperature of the lowest heat capacity point
-        assert Tdata[0] >= 298
+        assert Tdata[0] > 298
         Tlow = Tdata[0]; Thigh = Tdata[1]
         Cplow = Cpdata[0]; Cphigh = Cpdata[1]
         slope = (Cphigh - Cplow) / (Thigh - Tlow)
@@ -296,7 +298,7 @@ cdef class ThermoData(HeatCapacityModel):
             slope = (Cphigh - Cplow) / (Thigh - Tlow)
             intercept = (Cplow * Thigh - Cphigh * Tlow) / (Thigh - Tlow)
             T0 = (Cp0 - Tlow) / slope + Tlow
-            if T > T0 or slope <= 0 or T0 > Tlow:
+            if T > T0 or slope <= 0 or T0 >= Tlow:
                 S += slope * (T - Tlow) + intercept * log(T / Tlow)
             else:
                 S += slope * (T0 - Tlow) + intercept * log(T0 / Tlow) + Cp0 * log(T0 / T)
@@ -317,11 +319,12 @@ cdef class ThermoData(HeatCapacityModel):
             Cplow = Cpdata[N-2]; Cphigh = Cpdata[N-1]
             slope = (Cphigh - Cplow) / (Thigh - Tlow)
             intercept = (Cplow * Thigh - Cphigh * Tlow) / (Thigh - Tlow)
-            T0 = (CpInf - Cphigh) / slope + Thigh
-            if T <= T0:
-                S += slope * (T - Thigh) + intercept * log(T / Thigh)
-            else:
-                S += slope * (T0 - Thigh) + intercept * log(T0 / Thigh) + CpInf * log(T / T0)
+            if slope > 0:
+                T0 = (CpInf - Cphigh) / slope + Thigh
+                if T <= T0:
+                    S += slope * (T - Thigh) + intercept * log(T / Thigh)
+                else:
+                    S += slope * (T0 - Thigh) + intercept * log(T0 / Thigh) + CpInf * log(T / T0)
 
         return S
     

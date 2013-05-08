@@ -149,6 +149,10 @@ class GaussianLog:
                 mass[i] = 14.0030740048
             elif number[i] == 8:
                 mass[i] = 15.99491461956
+            elif number[i] == 15:
+                mass[i] = 30.97376163
+            elif number[i] == 16:
+                mass[i] = 31.97207100
             else:
                 print 'Atomic number {0:d} not yet supported in loadGeometry().'.format(number[i])
         
@@ -244,11 +248,13 @@ class GaussianLog:
 
         return Conformer(E0=(E0*0.001,"kJ/mol"), modes=modes, spinMultiplicity=spinMultiplicity, opticalIsomers=opticalIsomers)
 
-    def loadEnergy(self, frequencyScaleFactor=1.0):
+    def loadEnergy(self):
         """
         Load the energy in J/mol from a Gaussian log file. The file is checked 
         for a complete basis set extrapolation; if found, that value is 
-        returned. Only the last energy in the file is returned.
+        returned. Only the last energy in the file is returned. The zero-point
+        energy is *not* included in the returned value; it is removed from the
+        CBS-QB3 value.
         """
 
         modes = []
@@ -266,6 +272,7 @@ class GaussianLog:
             elif 'Zero-point correction=' in line:
                 ZPE = float(line.split()[2]) * constants.E_h * constants.Na
             elif '\\ZeroPoint=' in line:
+                line = line.strip() + f.readline().strip()
                 start = line.find('\\ZeroPoint=') + 11
                 end = line.find('\\', start)
                 ZPE = float(line[start:end]) * constants.E_h * constants.Na
@@ -275,13 +282,45 @@ class GaussianLog:
         # Close file when finished
         f.close()
         
-        if E0_cbs is not None: return E0_cbs
-        elif E0 is not None: 
+        if E0_cbs is not None:
             if ZPE is None:
                 raise Exception('Unable to find zero-point energy in Gaussian log file.')
-            return E0 + ZPE * frequencyScaleFactor
+            return E0_cbs - ZPE
+        elif E0 is not None:
+            return E0
         else: raise Exception('Unable to find energy in Gaussian log file.')
     
+    def loadZeroPointEnergy(self):
+        """
+        Load the zero-point energy in J/mol from a Gaussian log file.
+        """
+
+        modes = []
+        ZPE = None
+        spinMultiplicity = 1
+
+        f = open(self.path, 'r')
+        line = f.readline()
+        while line != '':
+
+            if 'Zero-point correction=' in line:
+                ZPE = float(line.split()[2]) * constants.E_h * constants.Na
+            elif '\\ZeroPoint=' in line:
+                line = line.strip() + f.readline().strip()
+                start = line.find('\\ZeroPoint=') + 11
+                end = line.find('\\', start)
+                ZPE = float(line[start:end]) * constants.E_h * constants.Na
+            # Read the next line in the file
+            line = f.readline()
+
+        # Close file when finished
+        f.close()
+        
+        if ZPE is not None:
+            return ZPE
+        else:
+            raise Exception('Unable to find zero-point energy in Gaussian log file.')
+
     def loadScanEnergies(self):
         """
         Extract the optimized energies in J/mol from a log file, e.g. the 

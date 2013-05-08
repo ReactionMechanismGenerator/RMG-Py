@@ -543,7 +543,30 @@ cdef class MultiArrhenius(KineticsModel):
                 return False
         
         return True
+    
+    cpdef Arrhenius toArrhenius(self, double Tmin=-1, double Tmax=-1 ):
+        """
+        Return an :class:`Arrhenius` instance of the kinetics model 
 
+        Fit the Arrhenius parameters to a set of rate coefficient data generated
+        from the MultiArrhenius kinetics, over the temperature range
+        Tmin to Tmax, in Kelvin. If Tmin or Tmax are unspecified (or -1)
+        then the MultiArrhenius's Tmin and Tmax are used.
+        A linear least-squares fit is used, which guarantees that the 
+        resulting parameters provide the best possible approximation to the 
+        data.
+        """
+        cdef Arrhenius arrh
+        cdef numpy.ndarray Tlist, klist
+        cdef str kunits
+        if Tmin == -1: Tmin = self.Tmin.value_si
+        if Tmax == -1: Tmax = self.Tmax.value_si
+        kunits = str(quantity.pq.Quantity(1.0, self.arrhenius[0].A.units).simplified).split()[-1] # is this the best way to get the units returned by k??
+        Tlist = numpy.logspace(log10(Tmin), log10(Tmax), num=25)
+        klist = numpy.array( map(self.getRateCoefficient, Tlist) , numpy.float64)
+        arrh = Arrhenius().fitToData(Tlist, klist, kunits)
+        arrh.comment = "Fitted to Multiple Arrhenius kinetics over range {Tmin}-{Tmax} K. {comment}".format(Tmin=Tmin, Tmax=Tmax, comment=self.comment)
+        return arrh
 ################################################################################
 
 cdef class MultiPDepArrhenius(PDepKineticsModel):

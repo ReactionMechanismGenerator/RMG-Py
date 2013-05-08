@@ -33,6 +33,7 @@ This module contains the main execution functionality for Reaction Mechanism
 Generator (RMG).
 """
 
+import os
 import os.path
 import sys
 import logging
@@ -44,7 +45,6 @@ try:
 except ImportError:
     logging.warning('Optional package dependency "xlwt" not loaded; Some output features will not work.')
 
-from rmgpy.species import Species
 from rmgpy.molecule import Molecule
 from rmgpy.solver.base import TerminationTime, TerminationConversion
 from rmgpy.solver.simple import SimpleReactor
@@ -96,6 +96,7 @@ class RMG:
     `units`                     The unit system to use to save output files (currently must be 'si')
     `drawMolecules`             ``True`` to draw pictures of the species in the core, ``False`` otherwise
     `generatePlots`             ``True`` to generate plots of the job execution statistics after each iteration, ``False`` otherwise
+    `verboseComments`           ``True`` to keep the verbose comments for database estimates, ``False`` otherwise
     `pressureDependence`        Whether to process unimolecular (pressure-dependent) reaction networks
     `wallTime`                  The maximum amount of CPU time in seconds to expend on this job; used to stop gracefully so we can still get profiling information
     --------------------------- ------------------------------------------------
@@ -145,6 +146,7 @@ class RMG:
         self.drawMolecules = None
         self.generatePlots = None
         self.saveConcentrationProfiles = None
+        self.verboseComments = None
         self.pressureDependence = None
         self.reactionGenerationOptions = {}
         self.wallTime = 0
@@ -167,6 +169,7 @@ class RMG:
             self.pressureDependence.outputFile = self.outputDirectory
             self.reactionModel.pressureDependence = self.pressureDependence
         self.reactionModel.reactionGenerationOptions = self.reactionGenerationOptions
+        self.reactionModel.verboseComments = self.verboseComments
         
     def checkInput(self):
         """
@@ -230,6 +233,11 @@ class RMG:
         self.outputDirectory = args.output_directory
         self.scratchDirectory = args.scratch_directory
         
+        if args.restart:
+            if not os.path.exists(os.path.join(self.outputDirectory,'restart.pkl')):
+                logging.error("Could not find restart file (restart.pkl). Please run without --restart option.")
+                raise Exception("No restart file")
+            
         # Read input file
         self.loadInput(args.file[0])
         
@@ -238,7 +246,6 @@ class RMG:
     
         # See if memory profiling package is available
         try:
-            import os
             import psutil
         except ImportError:
             logging.info('Optional package dependency "psutil" not found; memory profiling information will not be saved.')
@@ -504,15 +511,14 @@ class RMG:
         Output a header containing identifying information about RMG to the log.
         """
     
-        logging.log(level, '#################################################')
-        logging.log(level, '# RMG - Reaction Mechanism Generator            #')
-        logging.log(level, '# Version: 0.1.0 (14 May 2009)                  #')
-        logging.log(level, '# Authors: RMG Developers (rmg_dev@mit.edu)     #')
-        logging.log(level, '# P.I.:    William H. Green (whgreen@mit.edu)   #')
-        logging.log(level, '# Website: http://rmg.sourceforge.net/          #')
-        logging.log(level, '#################################################\n')
-    
-        import os
+        logging.log(level, '###################################################')
+        logging.log(level, '# RMG-Py - Reaction Mechanism Generator in Python #')
+        logging.log(level, '# Version: Early 2013                             #')
+        logging.log(level, '# Authors: RMG Developers (rmg_dev@mit.edu)       #')
+        logging.log(level, '# P.I.s:   William H. Green (whgreen@mit.edu)     #')
+        logging.log(level, '#          Richard H. West (r.west@neu.edu)       #')
+        logging.log(level, '# Website: http://greengroup.github.com/RMG-Py/   #')
+        logging.log(level, '###################################################\n')
     
         head, date = self.getGitCommit()
         if head != '' and date != '':
@@ -663,7 +669,7 @@ class RMG:
         # Attempt to import the xlwt package; return if not installed
         try:
             xlwt
-        except NamerError:
+        except NameError:
             logging.warning('Package xlwt not loaded. Unable to save execution statistics.')
             return
     
@@ -966,20 +972,12 @@ def initializeLog(verbose, log_file_name):
 
     # create file handler
     if os.path.exists(log_file_name):
-        backups = []
-        backup = os.path.join(log_file_name[:-7], 'RMG_backup')
-        backups.append('{0}.log'.format(backup))
-        i = 1
-        while os.path.exists(backups[-1]):
-            backups.append('{0}_{1}.log'.format(backup, i + 1))
-            i += 1
-        backups.reverse()
-        print '\n'
-        for j in range(1, len(backups)):
-            print 'Renaming {0} to {1}'.format(backups[j], backups[j - 1])
-            os.rename(backups[j], backups[j - 1])
-        print 'Renaming {0} to {1}\n'.format(log_file_name, backups[-1])
-        os.rename(log_file_name, backups[-1])
+        backup = os.path.join(log_file_name[:-7], 'RMG_backup.log')
+        if os.path.exists(backup):
+            print "Removing old "+backup
+            os.remove(backup)
+        print 'Moving {0} to {1}\n'.format(log_file_name, backup)
+        shutil.move(log_file_name, backup)
     fh = logging.FileHandler(filename=log_file_name) #, backupCount=3)
     fh.setLevel(min(logging.DEBUG,verbose)) # always at least VERBOSE in the file
     fh.setFormatter(formatter)
@@ -991,7 +989,7 @@ def initializeLog(verbose, log_file_name):
     while logger.handlers:
         logger.removeHandler(logger.handlers[0])
 
-    # Add ch to logger
+    # Add console and file handlers to logger
     logger.addHandler(ch)
     logger.addHandler(fh)
 

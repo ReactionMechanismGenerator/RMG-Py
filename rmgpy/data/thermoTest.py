@@ -35,24 +35,24 @@ class TestThermoDatabase(unittest.TestCase):
             # 1,3-hexadiene decomposition products
             ['C=CC=CCC',        3,    13.45, 86.37, 29.49, 37.67, 44.54, 50.12, 58.66, 64.95, 74.71],
             ['[CH]=CC=CCC',     3,    72.55, 87.76, 29.30, 36.92, 43.18, 48.20, 55.84, 61.46, 70.18],
-            ['C=[C]C=CCC',      3,    61.2064, 87.2754, 29.68, 36.91, 43.03, 48.11, 55.96, 61.78, 71.54],
-            ['C=C[C]=CCC',      3,    61.2064, 87.2754, 29.68, 36.91, 43.03, 48.11, 55.96, 61.78, 71.54],
-            ['C=CC=[C]CC',      3,    70.4053, 88.3718, 29.15, 36.46, 42.60, 47.60, 55.32, 61.04, 69.95],
-            ['C=CC=C[CH]C',     6,    38.2926, 84.5953, 27.79, 35.46, 41.94, 47.43, 55.74, 61.92, 71.86],
-            ['C=CC=CC[CH2]',    2,    62.5044, 89.9747, 28.72, 36.31, 42.63, 47.72, 55.50, 61.21, 70.05],
-            ['[CH3]',           6,    35.1084, 46.3644,  9.20,  9.98, 10.75, 11.50, 12.86, 14.08, 16.29],
-            ['C=CC=C[CH2]',     2,    46.1521, 75.9733, 22.54, 28.95, 34.24, 38.64, 45.14, 49.97, 57.85],
-            ['[CH2]C',          6,    28.3580, 59.0565, 12.11, 14.59, 17.08, 19.35, 22.93, 25.78, 30.30],
-            ['C=CC=[CH]',       1,    85.2149, 69.4966, 18.93, 23.55, 27.16, 29.92, 34.02, 37.03, 41.81],
-            ['C=[CH]',          1,    71.6377, 55.8964, 10.24, 12.03, 13.71, 15.17, 17.35, 19.07, 21.82],
-            ['[CH]=CCC',        3,    59.0278, 75.1332, 20.38, 25.34, 29.68, 33.36, 39.14, 43.48, 50.22],
+            ['C=[C]C=CCC',      3,    61.15, 87.08, 29.68, 36.91, 43.03, 48.11, 55.96, 61.78, 71.54],
+            ['C=C[C]=CCC',      3,    61.15, 87.08, 29.68, 36.91, 43.03, 48.11, 55.96, 61.78, 71.54],
+            ['C=CC=[C]CC',      3,    70.35, 88.18, 29.15, 36.46, 42.6, 47.6, 55.32, 61.04, 69.95],
+            ['C=CC=C[CH]C',     6,    38.24, 84.41, 27.79, 35.46, 41.94, 47.43, 55.74, 61.92, 71.86],
+            ['C=CC=CC[CH2]',    2,    62.45, 89.78, 28.72, 36.31, 42.63, 47.72, 55.50, 61.21, 70.05],
+            ['[CH3]',           6,    34.81, 46.37, 9.14, 10.18, 10.81, 11.34, 12.57, 13.71, 15.2],
+            ['C=CC=C[CH2]',     2,    46.11, 75.82, 22.54, 28.95, 34.24, 38.64, 45.14, 49.97, 57.85],
+            ['[CH2]C',          6,    28.6, 59.87, 11.73, 14.47, 17.05, 19.34, 23.02, 25.91, 31.53],
+            ['C=CC=[CH]',       1,    85.18, 69.37, 18.93, 23.55, 27.16, 29.92, 34.02, 37.03, 41.81],
+            ['C=[CH]',          1,    71.62, 56.61, 10.01, 11.97, 13.66, 15.08, 17.32, 19.05, 21.85],
+            ['[CH]=CCC',        3,    58.99, 75.0, 20.38, 25.34, 29.68, 33.36, 39.14, 43.48, 50.22],
             
-            # Cyclic structures
+            # Cyclic , tructures
             ['c1ccccc1',        12,    19.80, 64.24, 19.44, 26.64, 32.76, 37.80, 45.24, 50.46, 58.38],
             ['C1CCCCC1',        12,   -29.45, 69.71, 27.20, 37.60, 46.60, 54.80, 67.50, 76.20, 88.50],
-            ['c1ccc2ccccc2c1',  1,    36.06, 79.49, 31.94, 42.88, 52.08, 59.62, 70.72, 78.68, 90.24],
+            ['c1ccc2ccccc2c1',  4,    36.0, 79.49, 31.94, 42.88, 52.08, 59.62, 70.72, 78.68, 90.24],
             ['C1CCC1',          8,     6.51, 63.35, 17.39, 23.91, 29.86, 34.76, 42.40, 47.98, 56.33],
-            ['C1C=CC=C1',       1,    32.53, 65.50, 18.16, 24.71, 30.25, 34.70, 41.25, 45.83, 52.61],
+            ['C1C=CC=C1',       2,    32.5, 65.5, 18.16, 24.71, 30.25, 34.7, 41.25, 45.83, 52.61],
         ]
 
     def testNewThermoGeneration(self):
@@ -77,10 +77,10 @@ class TestThermoDatabase(unittest.TestCase):
                     molecule = mol
             
             self.assertEqual(molecule.calculateSymmetryNumber(), symm)
-            self.assertTrue(1 - thermoData.getEnthalpy(298) / 4184 / H298 < 0.001)
-            self.assertTrue(1 - thermoData.getEntropy(298) / 4.184 / S298 < 0.001)
+            self.assertAlmostEqual(H298, thermoData.getEnthalpy(298) / 4184, places=1)
+            self.assertAlmostEqual(S298, thermoData.getEntropy(298) / 4.184, places=1)
             for T, Cp in zip(self.Tlist, Cplist):
-                self.assertTrue(1 - thermoData.getHeatCapacity(T) / 4.184 / Cp < 0.001)
+                self.assertAlmostEqual(Cp, thermoData.getHeatCapacity(T) / 4.184, places=1)
 
     def testOldThermoGeneration(self):
         """
@@ -103,10 +103,10 @@ class TestThermoDatabase(unittest.TestCase):
                     molecule = mol
             
             self.assertEqual(molecule.calculateSymmetryNumber(), symm)
-            self.assertTrue(1 - thermoData.getEnthalpy(298) / 4184 / H298 < 0.01)
-            self.assertTrue(1 - thermoData.getEntropy(298) / 4.184 / S298 < 0.01)
+            self.assertAlmostEqual(H298, thermoData.getEnthalpy(298) / 4184, places=1)
+            self.assertAlmostEqual(S298, thermoData.getEntropy(298) / 4.184, places=1)
             for T, Cp in zip(self.Tlist, Cplist):
-                self.assertTrue(1 - thermoData.getHeatCapacity(T) / 4.184 / Cp < 0.1)
+                self.assertAlmostEqual(Cp, thermoData.getHeatCapacity(T) / 4.184,  places=1)
 
 ################################################################################
 

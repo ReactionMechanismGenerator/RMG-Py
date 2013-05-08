@@ -136,15 +136,15 @@ def compareModelReactions(model1, model2):
 
     return commonReactions, uniqueReactions1, uniqueReactions2
 
-def saveCompareHTML(outputDir,chemkinPath1,speciesDictPath1,chemkinPath2,speciesDictPath2):
+def saveCompareHTML(outputDir,chemkinPath1,speciesDictPath1,chemkinPath2,speciesDictPath2,readComments1=True,readComments2=True):
     """
     Saves a model comparison HTML file based on two sets of chemkin and species dictionary
     files.
     """
     model1 = ReactionModel()
-    model1.species, model1.reactions = loadChemkinFile(chemkinPath1, speciesDictPath1)
+    model1.species, model1.reactions = loadChemkinFile(chemkinPath1, speciesDictPath1, readComments = readComments1)
     model2 = ReactionModel()
-    model2.species, model2.reactions = loadChemkinFile(chemkinPath2, speciesDictPath2)
+    model2.species, model2.reactions = loadChemkinFile(chemkinPath2, speciesDictPath2, readComments = readComments2)
     commonReactions, uniqueReactions1, uniqueReactions2 = compareModelReactions(model1, model2)
     commonSpecies, uniqueSpecies1, uniqueSpecies2 = compareModelSpecies(model1, model2)
     

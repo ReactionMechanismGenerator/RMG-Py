@@ -86,6 +86,7 @@ cdef class SimpleReactor(ReactionSystem):
 
         cdef int numCoreSpecies, numCoreReactions, numEdgeSpecies, numEdgeReactions, numPdepNetworks
         cdef int i, j, l, index
+        cdef double V
         cdef dict speciesIndex, reactionIndex
         cdef numpy.ndarray[numpy.int_t, ndim=2] reactantIndices, productIndices, networkIndices
         cdef numpy.ndarray[numpy.float64_t, ndim=1] forwardRateCoefficients, reverseRateCoefficients, networkLeakCoefficients
@@ -148,8 +149,11 @@ cdef class SimpleReactor(ReactionSystem):
         t0 = 0.0
         y0 = numpy.zeros((numCoreSpecies), numpy.float64)
         for spec, moleFrac in self.initialMoleFractions.iteritems():
-            y0[speciesIndex[spec]] = moleFrac * (self.P.value_si / constants.R / self.T.value_si)
-            self.coreSpeciesConcentrations[speciesIndex[spec]] = y0[speciesIndex[spec]]
+            y0[speciesIndex[spec]] = moleFrac
+        # Use ideal gas law to compute volume
+        V = constants.R * self.T.value_si * numpy.sum(y0) / self.P.value_si
+        for j in range(y0.shape[0]):
+            self.coreSpeciesConcentrations[j] = y0[j] / V
         
         # Initialize the model
         dydt0 = - self.residual(t0, y0, numpy.zeros((numCoreSpecies), numpy.float64))[0]
@@ -176,8 +180,9 @@ cdef class SimpleReactor(ReactionSystem):
         cdef numpy.ndarray[numpy.float64_t, ndim=1] res, kf, kr, knet
         cdef int numCoreSpecies, numCoreReactions, numEdgeSpecies, numEdgeReactions, numPdepNetworks
         cdef int j, first, second, third
-        cdef double k, reactionRate
+        cdef double k, V, reactionRate
         cdef numpy.ndarray[numpy.float64_t, ndim=1] coreSpeciesConcentrations, coreSpeciesRates, coreReactionRates, edgeSpeciesRates, edgeReactionRates, networkLeakRates
+        cdef numpy.ndarray[numpy.float64_t, ndim=1] C
 
         res = numpy.zeros(y.shape[0], numpy.float64)
 
@@ -201,28 +206,34 @@ cdef class SimpleReactor(ReactionSystem):
         edgeReactionRates = numpy.zeros_like(self.edgeReactionRates)
         networkLeakRates = numpy.zeros_like(self.networkLeakRates)
 
+        C = numpy.zeros_like(self.coreSpeciesConcentrations)
+        
+        # Use ideal gas law to compute volume
+        V = constants.R * self.T.value_si * numpy.sum(y) / self.P.value_si
+
         for j in range(y.shape[0]):
-            coreSpeciesConcentrations[j] = y[j]
+            C[j] = y[j] / V
+            coreSpeciesConcentrations[j] = C[j]
         
         for j in range(ir.shape[0]):
             k = kf[j]
             if ir[j,0] >= numCoreSpecies or ir[j,1] >= numCoreSpecies or ir[j,2] >= numCoreSpecies:
                 reactionRate = 0.0
             elif ir[j,1] == -1: # only one reactant
-                reactionRate = k * y[ir[j,0]]
+                reactionRate = k * C[ir[j,0]]
             elif ir[j,2] == -1: # only two reactants
-                reactionRate = k * y[ir[j,0]] * y[ir[j,1]]
+                reactionRate = k * C[ir[j,0]] * C[ir[j,1]]
             else: # three reactants!! (really?)
-                reactionRate = k * y[ir[j,0]] * y[ir[j,1]] * y[ir[j,2]]
+                reactionRate = k * C[ir[j,0]] * C[ir[j,1]] * C[ir[j,2]]
             k = kr[j]
             if ip[j,0] >= numCoreSpecies or ip[j,1] >= numCoreSpecies or ip[j,2] >= numCoreSpecies:
                 pass
             elif ip[j,1] == -1: # only one reactant
-                reactionRate -= k * y[ip[j,0]]
+                reactionRate -= k * C[ip[j,0]]
             elif ip[j,2] == -1: # only two reactants
-                reactionRate -= k * y[ip[j,0]] * y[ip[j,1]]
+                reactionRate -= k * C[ip[j,0]] * C[ip[j,1]]
             else: # three reactants!! (really?)
-                reactionRate -= k * y[ip[j,0]] * y[ip[j,1]] * y[ip[j,2]]
+                reactionRate -= k * C[ip[j,0]] * C[ip[j,1]] * C[ip[j,2]]
 
             # Set the reaction and species rates
             if j < numCoreReactions:
@@ -277,11 +288,11 @@ cdef class SimpleReactor(ReactionSystem):
         for j in range(inet.shape[0]):
             k = knet[j]
             if inet[j,1] == -1: # only one reactant
-                reactionRate = k * y[inet[j,0]]
+                reactionRate = k * C[inet[j,0]]
             elif inet[j,2] == -1: # only two reactants
-                reactionRate = k * y[inet[j,0]] * y[inet[j,1]]
+                reactionRate = k * C[inet[j,0]] * C[inet[j,1]]
             else: # three reactants!! (really?)
-                reactionRate = k * y[inet[j,0]] * y[inet[j,1]] * y[inet[j,2]]
+                reactionRate = k * C[inet[j,0]] * C[inet[j,1]] * C[inet[j,2]]
             networkLeakRates[j] = reactionRate
 
         self.coreSpeciesConcentrations = coreSpeciesConcentrations
@@ -291,7 +302,7 @@ cdef class SimpleReactor(ReactionSystem):
         self.edgeReactionRates = edgeReactionRates
         self.networkLeakRates = networkLeakRates
 
-        res = coreSpeciesRates - dydt
+        res = coreSpeciesRates * V - dydt
         return res, 0
     
     @cython.boundscheck(False)
@@ -300,7 +311,7 @@ cdef class SimpleReactor(ReactionSystem):
         Return the analytical Jacobian for the reaction system.
         """
         cdef numpy.ndarray[numpy.int_t, ndim=2] ir, ip
-        cdef numpy.ndarray[numpy.float64_t, ndim=1] kf, kr
+        cdef numpy.ndarray[numpy.float64_t, ndim=1] kf, kr, C
         cdef numpy.ndarray[numpy.float64_t, ndim=2] pd
         cdef int numCoreReactions, j 
         cdef double k, deriv
@@ -312,6 +323,13 @@ cdef class SimpleReactor(ReactionSystem):
         kr = self.reverseRateCoefficients
         numCoreReactions = len(self.coreReactionRates)
         
+        # Use ideal gas law to compute volume
+        V = constants.R * self.T.value_si * numpy.sum(y) / self.P.value_si
+
+        C = numpy.zeros_like(self.coreSpeciesConcentrations)
+        for j in range(y.shape[0]):
+            C[j] = y[j] / V
+
         for j in range(numCoreReactions):
            
             k = kf[j]
@@ -328,7 +346,7 @@ cdef class SimpleReactor(ReactionSystem):
                                 
             elif ir[j,2] == -1: # only two reactants
                 if ir[j,0] == ir[j,1]:
-                    deriv = 2 * k * y[ir[j,0]]
+                    deriv = 2 * k * C[ir[j,0]]
                     pd[ir[j,0], ir[j,0]] -= 2 * deriv
                     
                     pd[ip[j,0], ir[j,0]] += deriv       
@@ -339,7 +357,7 @@ cdef class SimpleReactor(ReactionSystem):
                     
                 else:
                     # Derivative with respect to reactant 1
-                    deriv = k * y[ir[j, 1]]
+                    deriv = k * C[ir[j, 1]]
                     pd[ir[j,0], ir[j,0]] -= deriv                    
                     pd[ir[j,1], ir[j,0]] -= deriv
                     
@@ -350,7 +368,7 @@ cdef class SimpleReactor(ReactionSystem):
                             pd[ip[j,2], ir[j,0]] += deriv
                     
                     # Derivative with respect to reactant 2
-                    deriv = k * y[ir[j, 0]]
+                    deriv = k * C[ir[j, 0]]
                     pd[ir[j,0], ir[j,1]] -= deriv                    
                     pd[ir[j,1], ir[j,1]] -= deriv   
                       
@@ -363,7 +381,7 @@ cdef class SimpleReactor(ReactionSystem):
                     
             else: # three reactants!! (really?)
                 if (ir[j,0] == ir[j,1] & ir[j,0] == ir[j,2]):
-                    deriv = 3 * k * y[ir[j,0]] * y[ir[j,0]]
+                    deriv = 3 * k * C[ir[j,0]] * C[ir[j,0]]
                     pd[ir[j,0], ir[j,0]] -= 3 * deriv
                     
                     pd[ip[j,0], ir[j,0]] += deriv                
@@ -374,7 +392,7 @@ cdef class SimpleReactor(ReactionSystem):
                     
                 elif ir[j,0] == ir[j,1]:
                     # derivative with respect to reactant 1
-                    deriv = 2 * k * y[ir[j,0]] * y[ir[j,2]]
+                    deriv = 2 * k * C[ir[j,0]] * C[ir[j,2]]
                     pd[ir[j,0], ir[j,0]] -= 2 * deriv                    
                     pd[ir[j,2], ir[j,0]] -= deriv
                     
@@ -385,7 +403,7 @@ cdef class SimpleReactor(ReactionSystem):
                             pd[ip[j,2], ir[j,0]] += deriv
                     
                     # derivative with respect to reactant 3
-                    deriv = k * y[ir[j,0]] * y[ir[j,0]]
+                    deriv = k * C[ir[j,0]] * C[ir[j,0]]
                     pd[ir[j,0], ir[j,2]] -= 2 * deriv                    
                     pd[ir[j,2], ir[j,2]] -= deriv
                     
@@ -398,7 +416,7 @@ cdef class SimpleReactor(ReactionSystem):
                     
                 elif ir[j,1] == ir[j,2]:                    
                     # derivative with respect to reactant 1
-                    deriv = k * y[ir[j,1]] * y[ir[j,1]]
+                    deriv = k * C[ir[j,1]] * C[ir[j,1]]
                     pd[ir[j,0], ir[j,0]] -= deriv                    
                     pd[ir[j,1], ir[j,0]] -= 2 * deriv
                     
@@ -409,7 +427,7 @@ cdef class SimpleReactor(ReactionSystem):
                             pd[ip[j,2], ir[j,0]] += deriv                 
                     
                     # derivative with respect to reactant 2
-                    deriv = 2 * k * y[ir[j,0]] * y[ir[j,1]]
+                    deriv = 2 * k * C[ir[j,0]] * C[ir[j,1]]
                     pd[ir[j,0], ir[j,1]] -= deriv                    
                     pd[ir[j,1], ir[j,1]] -= 2 * deriv   
                       
@@ -421,7 +439,7 @@ cdef class SimpleReactor(ReactionSystem):
                                 
                 else:
                     # derivative with respect to reactant 1
-                    deriv = k * y[ir[j,1]] * y[ir[j,2]]
+                    deriv = k * C[ir[j,1]] * C[ir[j,2]]
                     pd[ir[j,0], ir[j,0]] -= deriv                    
                     pd[ir[j,1], ir[j,0]] -= deriv
                     pd[ir[j,2], ir[j,0]] -= deriv
@@ -433,7 +451,7 @@ cdef class SimpleReactor(ReactionSystem):
                             pd[ip[j,2], ir[j,0]] += deriv     
                                     
                     # derivative with respect to reactant 2
-                    deriv = k * y[ir[j,0]] * y[ir[j,2]]
+                    deriv = k * C[ir[j,0]] * C[ir[j,2]]
                     pd[ir[j,0], ir[j,1]] -= deriv                    
                     pd[ir[j,1], ir[j,1]] -= deriv   
                     pd[ir[j,2], ir[j,1]] -= deriv
@@ -445,7 +463,7 @@ cdef class SimpleReactor(ReactionSystem):
                             pd[ip[j,2], ir[j,1]] += deriv 
                                  
                     # derivative with respect to reactant 3
-                    deriv = k * y[ir[j,0]] * y[ir[j,1]]                    
+                    deriv = k * C[ir[j,0]] * C[ir[j,1]]                    
                     pd[ir[j,0], ir[j,2]] -= deriv                    
                     pd[ir[j,1], ir[j,2]] -= deriv   
                     pd[ir[j,2], ir[j,2]] -= deriv
@@ -472,7 +490,7 @@ cdef class SimpleReactor(ReactionSystem):
                                 
             elif ip[j,2] == -1: # only two reactants
                 if ip[j,0] == ip[j,1]:
-                    deriv = 2 * k * y[ip[j,0]]
+                    deriv = 2 * k * C[ip[j,0]]
                     pd[ip[j,0], ip[j,0]] -= 2 * deriv
                     
                     pd[ir[j,0], ip[j,0]] += deriv       
@@ -483,7 +501,7 @@ cdef class SimpleReactor(ReactionSystem):
                     
                 else:
                     # Derivative with respect to reactant 1
-                    deriv = k * y[ip[j, 1]]
+                    deriv = k * C[ip[j, 1]]
                     pd[ip[j,0], ip[j,0]] -= deriv                    
                     pd[ip[j,1], ip[j,0]] -= deriv
                     
@@ -494,7 +512,7 @@ cdef class SimpleReactor(ReactionSystem):
                             pd[ir[j,2], ip[j,0]] += deriv
                     
                     # Derivative with respect to reactant 2
-                    deriv = k * y[ip[j, 0]]
+                    deriv = k * C[ip[j, 0]]
                     pd[ip[j,0], ip[j,1]] -= deriv                    
                     pd[ip[j,1], ip[j,1]] -= deriv   
                       
@@ -507,7 +525,7 @@ cdef class SimpleReactor(ReactionSystem):
                     
             else: # three reactants!! (really?)
                 if (ip[j,0] == ip[j,1] & ip[j,0] == ip[j,2]):
-                    deriv = 3 * k * y[ip[j,0]] * y[ip[j,0]]
+                    deriv = 3 * k * C[ip[j,0]] * C[ip[j,0]]
                     pd[ip[j,0], ip[j,0]] -= 3 * deriv
                     
                     pd[ir[j,0], ip[j,0]] += deriv                
@@ -518,7 +536,7 @@ cdef class SimpleReactor(ReactionSystem):
                     
                 elif ip[j,0] == ip[j,1]:
                     # derivative with respect to reactant 1
-                    deriv = 2 * k * y[ip[j,0]] * y[ip[j,2]]
+                    deriv = 2 * k * C[ip[j,0]] * C[ip[j,2]]
                     pd[ip[j,0], ip[j,0]] -= 2 * deriv                    
                     pd[ip[j,2], ip[j,0]] -= deriv
                     
@@ -529,7 +547,7 @@ cdef class SimpleReactor(ReactionSystem):
                             pd[ir[j,2], ip[j,0]] += deriv
                     
                     # derivative with respect to reactant 3
-                    deriv = k * y[ip[j,0]] * y[ip[j,0]]
+                    deriv = k * C[ip[j,0]] * C[ip[j,0]]
                     pd[ip[j,0], ip[j,2]] -= 2 * deriv                    
                     pd[ip[j,2], ip[j,2]] -= deriv
                     
@@ -542,7 +560,7 @@ cdef class SimpleReactor(ReactionSystem):
                     
                 elif ip[j,1] == ip[j,2]:                    
                     # derivative with respect to reactant 1
-                    deriv = k * y[ip[j,1]] * y[ip[j,1]]
+                    deriv = k * C[ip[j,1]] * C[ip[j,1]]
                     pd[ip[j,0], ip[j,0]] -= deriv                    
                     pd[ip[j,1], ip[j,0]] -= 2 * deriv
                     
@@ -553,7 +571,7 @@ cdef class SimpleReactor(ReactionSystem):
                             pd[ir[j,2], ip[j,0]] += deriv                 
                     
                     # derivative with respect to reactant 2
-                    deriv = 2 * k * y[ip[j,0]] * y[ip[j,1]]
+                    deriv = 2 * k * C[ip[j,0]] * C[ip[j,1]]
                     pd[ip[j,0], ip[j,1]] -= deriv                    
                     pd[ip[j,1], ip[j,1]] -= 2 * deriv   
                       
@@ -565,7 +583,7 @@ cdef class SimpleReactor(ReactionSystem):
                                 
                 else:
                     # derivative with respect to reactant 1
-                    deriv = k * y[ip[j,1]] * y[ip[j,2]]
+                    deriv = k * C[ip[j,1]] * C[ip[j,2]]
                     pd[ip[j,0], ip[j,0]] -= deriv                    
                     pd[ip[j,1], ip[j,0]] -= deriv
                     pd[ip[j,2], ip[j,0]] -= deriv
@@ -577,7 +595,7 @@ cdef class SimpleReactor(ReactionSystem):
                             pd[ir[j,2], ip[j,0]] += deriv     
                                     
                     # derivative with respect to reactant 2
-                    deriv = k * y[ip[j,0]] * y[ip[j,2]]
+                    deriv = k * C[ip[j,0]] * C[ip[j,2]]
                     pd[ip[j,0], ip[j,1]] -= deriv                    
                     pd[ip[j,1], ip[j,1]] -= deriv   
                     pd[ip[j,2], ip[j,1]] -= deriv
@@ -589,7 +607,7 @@ cdef class SimpleReactor(ReactionSystem):
                             pd[ir[j,2], ip[j,1]] += deriv 
                                  
                     # derivative with respect to reactant 3
-                    deriv = k * y[ip[j,0]] * y[ip[j,1]]                    
+                    deriv = k * C[ip[j,0]] * C[ip[j,1]]                    
                     pd[ip[j,0], ip[j,2]] -= deriv                    
                     pd[ip[j,1], ip[j,2]] -= deriv   
                     pd[ip[j,2], ip[j,2]] -= deriv

@@ -93,7 +93,6 @@ cdef class ReactionSystem(DASSL):
         self.maxEdgeSpeciesRates = numpy.zeros((numEdgeSpecies), numpy.float64)
         self.maxNetworkLeakRates = numpy.zeros((numPdepNetworks), numpy.float64)
         self.sensitivityCoefficients = numpy.zeros((numCoreSpecies, numCoreReactions), numpy.float64)
-        
 
     
     cpdef writeWorksheetHeader(self, worksheet):
@@ -124,7 +123,7 @@ cdef class ReactionSystem(DASSL):
         cdef int index, maxSpeciesIndex, maxNetworkIndex
         cdef int numCoreSpecies, numEdgeSpecies, numPdepNetworks
         cdef double stepTime, charRate, maxSpeciesRate, maxNetworkRate, realConcentration, prevTime
-        cdef numpy.ndarray[numpy.float64_t, ndim=1] y0
+        cdef numpy.ndarray[numpy.float64_t, ndim=1] y0 #: Vector containing the number of moles of each species
         cdef numpy.ndarray[numpy.float64_t, ndim=1] coreSpeciesRates, edgeSpeciesRates, networkLeakRates
         cdef numpy.ndarray[numpy.float64_t, ndim=1] maxCoreSpeciesRates, maxEdgeSpeciesRates, maxNetworkLeakRates
         cdef bint terminated
@@ -229,12 +228,12 @@ cdef class ReactionSystem(DASSL):
             if maxSpeciesRate > toleranceMoveToCore * charRate and not invalidObject:
                 logging.info('At time {0:10.4e} s, species {1} exceeded the minimum rate for moving to model core'.format(self.t, maxSpecies))
                 self.logRates(charRate, maxSpecies, maxSpeciesRate, maxNetwork, maxNetworkRate)
-                self.logConversions(speciesIndex, y0, realConcentration)
+                self.logConversions(speciesIndex, y0)
                 invalidObject = maxSpecies
             if maxSpeciesRate > toleranceInterruptSimulation * charRate:
                 logging.info('At time {0:10.4e} s, species {1} exceeded the minimum rate for simulation interruption'.format(self.t, maxSpecies))
                 self.logRates(charRate, maxSpecies, maxSpeciesRate, maxNetwork, maxNetworkRate)
-                self.logConversions(speciesIndex, y0, realConcentration)
+                self.logConversions(speciesIndex, y0)
                 break
 
             # If pressure dependence, also check the network leak fluxes
@@ -242,12 +241,12 @@ cdef class ReactionSystem(DASSL):
                 if maxNetworkRate > toleranceMoveToCore * charRate and not invalidObject:
                     logging.info('At time {0:10.4e} s, PDepNetwork #{1:d} exceeded the minimum rate for exploring'.format(self.t, maxNetwork.index))
                     self.logRates(charRate, maxSpecies, maxSpeciesRate, maxNetwork, maxNetworkRate)
-                    self.logConversions(speciesIndex, y0, realConcentration)
+                    self.logConversions(speciesIndex, y0)
                     invalidObject = maxNetwork
                 if maxNetworkRate > toleranceInterruptSimulation * charRate:
                     logging.info('At time {0:10.4e} s, PDepNetwork #{1:d} exceeded the minimum rate for simulation interruption'.format(self.t, maxNetwork.index))
                     self.logRates(charRate, maxSpecies, maxSpeciesRate, maxNetwork, maxNetworkRate)
-                    self.logConversions(speciesIndex, y0, realConcentration)
+                    self.logConversions(speciesIndex, y0)
                     break
 
             # Finish simulation if any of the termination criteria are satisfied
@@ -256,15 +255,14 @@ cdef class ReactionSystem(DASSL):
                     if self.t > term.time.value_si:
                         terminated = True
                         logging.info('At time {0:10.4e} s, reached target termination time.'.format(term.time.value_si))
-                        self.logConversions(speciesIndex, y0, realConcentration)
+                        self.logConversions(speciesIndex, y0)
                         break
                 elif isinstance(term, TerminationConversion):
                     index = speciesIndex[term.species]
-                    # Use normalized concentrations (y0 is already normalized)
-                    if (y0[index] - self.y[index] * realConcentration / sum(self.y)) / y0[index] > term.conversion:
+                    if 1 - (self.y[index] / y0[index]) > term.conversion:
                         terminated = True
                         logging.info('At time {0:10.4e} s, reached target termination conversion: {1:f} of {2}'.format(self.t,term.conversion,term.species))
-                        self.logConversions(speciesIndex, y0, realConcentration)
+                        self.logConversions(speciesIndex, y0)
                         break
 
             # Increment destination step time if necessary
@@ -294,14 +292,14 @@ cdef class ReactionSystem(DASSL):
             if network is not None:
                 logging.info('    PDepNetwork #{0:d} leak rate: {1:10.4e} mol/m^3*s ({2:.4g})'.format(network.index, networkRate, networkRate / charRate))
 
-    cpdef logConversions(self, speciesIndex, y0, realConcentration):
+    cpdef logConversions(self, speciesIndex, y0):
         """
         Log information about the current conversion values.
         """
         for term in self.termination:
             if isinstance(term, TerminationConversion):
                 index = speciesIndex[term.species]
-                X = (y0[index] - self.y[index] * realConcentration / sum(self.y)) / y0[index]
+                X = 1 - (self.y[index] / y0[index])
                 logging.info('    {0} conversion: {1:<10.4g}'.format(term.species, X))
 
 ################################################################################

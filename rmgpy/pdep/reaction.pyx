@@ -273,7 +273,7 @@ def applyInverseLaplaceTransformMethod(transitionState,
         # actually more accurate than trying to handle the T^n piece "properly"
         # For now the implementation is to use this approximation for all n
         # below some critical value, which is purposely placed a bit above zero
-        n_crit = 0.2
+        n_crit = 0.25
         
         if Ea < 0:
             A *= exp(-Ea / R / T)

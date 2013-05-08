@@ -34,14 +34,14 @@ which provide rate coefficient parameters for various combinations of
 functional groups.
 """
 
-import os
 import os.path
 import re
 import logging
 import codecs
+import math
 from copy import copy, deepcopy
 
-from rmgpy.data.base import *
+from rmgpy.data.base import Database, Entry, DatabaseError, makeLogicNode, getAllCombinations
 
 from rmgpy.quantity import Quantity
 from rmgpy.reaction import Reaction, ReactionError

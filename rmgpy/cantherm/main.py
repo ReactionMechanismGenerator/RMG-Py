@@ -107,6 +107,9 @@ class CanTherm:
         parser.add_argument('-o', '--output-directory', type=str, nargs=1, default='',
             metavar='DIR', help='use DIR as output directory')
 
+        # Add options for controlling generation of plots
+        parser.add_argument('-p', '--plot', action='store_true', default=False, help='generate plots of results')
+
         args = parser.parse_args()
         
         # Extract the input file
@@ -114,6 +117,9 @@ class CanTherm:
         
         # Extract the log verbosity
         self.verbose = args.verbose
+        
+        # Extract the plot settings
+        self.plot = args.plot
         
         # Determine the output directory
         # By default the directory containing the input file is used, unless an
@@ -214,16 +220,19 @@ class CanTherm:
         self.jobList = self.loadInputFile(self.inputFile)
         logging.info('')
         
-        # Initialize (and clear!) the output file for the job
+        # Initialize (and clear!) the output files for the job
         if self.outputDirectory is None:
             self.outputDirectory = os.path.dirname(os.path.abspath(self.inputFile))
         outputFile = os.path.join(self.outputDirectory, 'output.py')
         with open(outputFile, 'w') as f:
             pass
+        chemkinFile = os.path.join(self.outputDirectory, 'chem.inp')
+        with open(chemkinFile, 'w') as f:
+            pass
         
         # Run the jobs
         for job in self.jobList:
-            job.execute(outputFile=outputFile)
+            job.execute(outputFile=outputFile, plot=self.plot)
         
         # Print some information to the end of the log
         self.logFooter()

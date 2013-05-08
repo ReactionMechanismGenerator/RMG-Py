@@ -32,24 +32,22 @@
 This module contains functionality for working with kinetics libraries.
 """
 
-import os
 import os.path
-import re
 import logging
 import codecs
 from copy import copy, deepcopy
 
-from rmgpy.data.base import *
-
-from rmgpy.quantity import Quantity
+from rmgpy.data.base import Database, Entry, LogicNode, LogicOr, ForbiddenStructures,\
+                            ForbiddenStructureException, getAllCombinations
 from rmgpy.reaction import Reaction, ReactionError
 from rmgpy.kinetics import Arrhenius, ArrheniusEP, ThirdBody, Lindemann, Troe, \
                            PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, \
                            Chebyshev, KineticsData, PDepKineticsModel
-from rmgpy.molecule import Bond, GroupBond, Group
+from rmgpy.molecule import Bond, GroupBond, Group, Molecule
 from rmgpy.species import Species
 
-from .common import KineticsError, UndeterminableKineticsError, saveEntry
+from .common import KineticsError, UndeterminableKineticsError, saveEntry, \
+                    UNIMOLECULAR_KINETICS_FAMILIES, BIMOLECULAR_KINETICS_FAMILIES
 from .depository import KineticsDepository
 from .groups import KineticsGroups
 from .rules import KineticsRules
@@ -1263,8 +1261,14 @@ class KineticsFamily(Database):
         # original
         reactants = [reactant if isinstance(reactant, list) else [reactant] for reactant in reactants]
 
-        sameReactants = len(reactants) == 2 and reactants[0] == reactants[1]
-                
+        sameReactants = False
+        if len(reactants) == 2 and len(reactants[0]) == len(reactants[1]):
+            reactantA = reactants[0][0]
+            for reactantB in reactants[1]:
+                if reactantA.isIsomorphic(reactantB):
+                    sameReactants = True
+                    break
+                    
         if forward:
             template = self.forwardTemplate
         elif self.reverseTemplate is None:
@@ -1694,4 +1698,25 @@ class KineticsFamily(Database):
         Determine the appropriate kinetics for a reaction with the given
         `template` using rate rules.
         """
-        return self.rules.estimateKinetics(template, degeneracy)
+        kinetics = self.rules.estimateKinetics(template, degeneracy)
+        if self.label.lower() == 'r_recombination':
+            # The kinetics could be stored exactly with the template labels swapped
+            # If this gives an exact match and the other gives an estimate, then keep the exact match
+            # Not sure how to decide which to keep if both are exact or both are estimates
+            kinetics0 = self.rules.estimateKinetics(template[::-1], degeneracy)
+            if 'exact' in kinetics0.comment.lower() and 'exact' not in kinetics.comment.lower():
+                kinetics = kinetics0
+        return kinetics
+
+    def getRateCoefficientUnits(self):
+        """
+        Return the units of the forward kinetics generated for the family.
+        Raises a ValueError if this could not be determined (e.g. if the family
+        has not yet been added to the appropriate list).
+        """
+        if self.label in BIMOLECULAR_KINETICS_FAMILIES:
+            return 'm^3/(mol*s)'
+        elif self.label in UNIMOLECULAR_KINETICS_FAMILIES:
+            return 's^-1'
+        else:
+            raise ValueError('Unable to determine units of rate coefficient for reaction family "{0}".'.format(self.label))

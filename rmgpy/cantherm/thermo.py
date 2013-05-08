@@ -55,7 +55,7 @@ class ThermoJob:
         self.species = species
         self.thermoClass = thermoClass
     
-    def execute(self, outputFile=None):
+    def execute(self, outputFile=None, plot=False):
         """
         Execute the thermodynamics job, saving the results to the
         given `outputFile` on disk.
@@ -63,7 +63,8 @@ class ThermoJob:
         self.generateThermo()
         if outputFile is not None:
             self.save(outputFile)
-            self.plot(os.path.dirname(outputFile))
+            if plot:
+                self.plot(os.path.dirname(outputFile))
     
     def generateThermo(self):
         """
@@ -152,7 +153,7 @@ class ThermoJob:
         
         f.close()
         
-        f = open(os.path.join(os.path.dirname(outputFile), 'chem.inp'), 'w')
+        f = open(os.path.join(os.path.dirname(outputFile), 'chem.inp'), 'a')
         
         thermo = species.thermo
         if isinstance(thermo, NASA):

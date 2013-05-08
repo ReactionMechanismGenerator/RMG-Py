@@ -163,7 +163,7 @@ class StatMechJob:
         self.includeHinderedRotors = True
         self.applyBondEnergyCorrections = True
     
-    def execute(self, outputFile=None):
+    def execute(self, outputFile=None, plot=False):
         """
         Execute the statistical mechanics job, saving the results to the
         given `outputFile` on disk.
@@ -287,12 +287,15 @@ class StatMechJob:
         
         logging.debug('    Reading energy...')
         if E0 is None:
-            E0 = energyLog.loadEnergy(frequencyScaleFactor=self.frequencyScaleFactor)
+            E0 = energyLog.loadEnergy()
         else:
             E0 = E0 * constants.E_h * constants.Na         # Hartree/particle to J/mol
         E0 = applyEnergyCorrections(E0, self.modelChemistry, atoms, bonds if self.applyBondEnergyCorrections else {})
+        ZPE = statmechLog.loadZeroPointEnergy() * self.frequencyScaleFactor
+        E0 += ZPE
+        logging.debug('         ZPE (0 K) = {0:g} kcal/mol'.format(ZPE / 4184.))
         logging.debug('         E0 (0 K) = {0:g} kcal/mol'.format(E0 / 4184.))
-        
+       
         conformer.E0 = (E0*0.001,"kJ/mol")
         
         # If loading a transition state, also read the imaginary frequency
@@ -459,15 +462,15 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds):
     # Spin orbit correction (SOC) in Hartrees
     # Values taken from note 22 of http://jcp.aip.org/resource/1/jcpsa6/v109/i24/p10570_s1 and converted to hartrees
     # Values in millihartree are also available (with fewer significant figures) from http://jcp.aip.org/resource/1/jcpsa6/v106/i3/p1063_s1
-    SOC = {'H':0.0, 'N':0.0, 'O': -0.000355, 'C': -0.000135, 'P': 0.0} 
+    SOC = {'H':0.0, 'N':0.0, 'O': -0.000355, 'C': -0.000135, 'S':  -0.000893, 'P': 0.0} 
     
     # Step 1: Reference all energies to a model chemistry-independent basis
     # by subtracting out that model chemistry's atomic energies
     # Note: If your model chemistry does not include spin orbit coupling, you should add the corrections to the energies here
     if modelChemistry == 'CBS-QB3':
-        atomEnergies = {'H':-0.499818 , 'N':-54.520543, 'O':-74.987624, 'C':-37.785385, 'P':-340.817186}
+        atomEnergies = {'H':-0.499818 , 'N':-54.520543, 'O':-74.987624, 'C':-37.785385, 'P':-340.817186, 'S': -397.657360}
     elif modelChemistry == 'G3':
-        atomEnergies = {'H':-0.5010030, 'N':-54.564343, 'O':-75.030991, 'C':-37.827717, 'P':-341.116432}
+        atomEnergies = {'H':-0.5010030, 'N':-54.564343, 'O':-75.030991, 'C':-37.827717, 'P':-341.116432, 'S': -397.961110}
     elif modelChemistry == 'Klip_1':
         atomEnergies = {'H':-0.50003976 + SOC['H'], 'O':-75.00915718 + SOC['O'], 'C':-37.79249556 + SOC['C']}
     elif modelChemistry == 'Klip_2':
@@ -476,6 +479,9 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds):
     elif modelChemistry == 'Klip_2_cc':
         #Klip CCSD(T)(tz,qz)
         atomEnergies = {'H':-0.50003976 + SOC['H'], 'O':-75.00681155 + SOC['O'], 'C':-37.79029443 + SOC['C']}
+    elif modelChemistry == 'CCSD(T)-F12/cc-pVTZ-F12':
+        # NOTE: THESE ARE NOT CORRECT!!!!!!
+        atomEnergies = {'H':-0.499818 , 'N':-54.520543, 'O':-74.987624, 'C':-37.785385, 'P':-340.817186}
     else:
         logging.warning('Unknown model chemistry "{0}"; not applying energy corrections.'.format(modelChemistry))
         return E0
@@ -489,10 +495,10 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds):
     # See Gaussian thermo whitepaper at http://www.gaussian.com/g_whitepap/thermo.htm)
     # Note: these values are relatively old and some improvement may be possible by using newer values, particularly for carbon
     # However, care should be taken to ensure that they are compatible with the BAC values (if BACs are used)
-    atomHf = {'H': 51.63 , 'N': 112.53 ,'O': 58.99 ,'C': 169.98 }
+    atomHf = {'H': 51.63 , 'N': 112.53 ,'O': 58.99 ,'C': 169.98, 'S': 65.55 }
     # Thermal contribution to enthalpy Hss(298 K) - Hss(0 K) reported by Gaussian thermo whitepaper
     # This will be subtracted from the corresponding value in atomHf to produce an enthalpy used in calculating the enthalpy of formation at 298 K
-    atomThermal = {'H': 1.01 , 'N': 1.04, 'O': 1.04 ,'C': 0.25 }
+    atomThermal = {'H': 1.01 , 'N': 1.04, 'O': 1.04 ,'C': 0.25, 'S': 1.05 }
     # Total energy correction used to reach gas-phase reference state
     # Note: Spin orbit coupling no longer included in these energies, since some model chemistries include it automatically
     atomEnergies = {}

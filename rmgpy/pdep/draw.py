@@ -296,6 +296,7 @@ class NetworkDrawer:
             wellRects.append([l + x - 0.5 * w, t + y + 6, w, h])
         
         # Squish columns together from the left where possible until an isomer is encountered
+        oldLeft = numpy.min(coordinates[:,0])
         Nleft = wells.index(network.isomers[0])-1
         columns = []
         for i in range(Nleft, -1, -1):
@@ -322,6 +323,8 @@ class NetworkDrawer:
                 delta = x - coordinates[c,0]
                 wellRects[c][0] += delta
                 coordinates[c,0] += delta
+        newLeft = numpy.min(coordinates[:,0])
+        coordinates[:,0] -= newLeft - oldLeft
 
         # Squish columns together from the right where possible until an isomer is encountered
         Nright = wells.index(network.isomers[-1])+1

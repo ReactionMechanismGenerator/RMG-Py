@@ -45,6 +45,20 @@ from rmgpy.reaction import Reaction
 class NetworkError(Exception): 
     pass
 
+class InvalidMicrocanonicalRateError(NetworkError):
+    """Used when the k(E) calculation does not give the correct kf(T) or Kc(T)"""
+    def __init__(self,message, k_ratio=1.0, Keq_ratio=1.0):
+        self.message = message
+        self.k_ratio = k_ratio
+        self.Keq_ratio = Keq_ratio
+    def badness(self):
+        """
+        How bad is the error?
+        
+        Returns the max of the absolute logarithmic errors of kf and Kc
+        """
+        return max(abs(math.log10(self.k_ratio)), abs(math.log10(self.Keq_ratio)))
+
 ################################################################################
 
 class Network:
@@ -269,45 +283,66 @@ class Network:
         grainSize = self.grainSize
         grainCount = self.grainCount
         
-        # Update parameters that depend on temperature only if necessary
-        if temperatureChanged:
-            
-            # Choose the energy grains to use to compute k(T,P) values at this temperature
-            Elist = self.Elist = self.selectEnergyGrains(T, grainSize, grainCount)
-            Ngrains = self.Ngrains = len(Elist)
-            logging.info('Using {0:d} grains from {1:.2f} to {2:.2f} kJ/mol in steps of {3:.2f} kJ/mol to compute the k(T,P) values at {4:g} K'.format(
-                Ngrains, numpy.min(Elist) * 0.001, numpy.max(Elist) * 0.001, (Elist[1] - Elist[0]) * 0.001, T))
-            
-            # Choose the angular momenta to use to compute k(T,P) values at this temperature
-            # (This only applies if the J-rotor is adiabatic
-            if not self.activeJRotor:
-                Jlist = self.Jlist = numpy.arange(0, 20, 1, numpy.int)
-                NJ = self.NJ = len(Jlist)
-            else:
-                Jlist = self.Jlist = numpy.array([0], numpy.int)
-                NJ = self.NJ = 1
-            
-            # Map the densities of states onto this set of energies
-            # Also shift each density of states to a common zero of energy
-            self.mapDensitiesOfStates()
-            
-            # Use free energy to determine equilibrium ratios of each isomer and product channel
-            self.calculateEquilibriumRatios()
-            
-            # Calculate microcanonical rate coefficients for each path reaction
-            self.calculateMicrocanonicalRates()
-            
-            # Rescale densities of states such that, when they are integrated
-            # using the Boltzmann factor as a weighting factor, the result is unity
-            for i in range(Nisom+Nreac):
-                Q = 0.0
-                for s in range(NJ):
-                    Q += numpy.sum(self.densStates[i,:,s] * (2*Jlist[s]+1) * numpy.exp(-Elist / constants.R / T))
-                self.densStates[i,:,:] /= Q
-            
-        # Update parameters that depend on temperature and pressure if necessary
-        if temperatureChanged or pressureChanged:
-            self.calculateCollisionModel()
+        success = False
+        previous_error = None
+        while not success:
+            success = True # (set it to false again later if necessary)
+            # Update parameters that depend on temperature only if necessary
+            if temperatureChanged:
+                
+                # Choose the energy grains to use to compute k(T,P) values at this temperature
+                Elist = self.Elist = self.selectEnergyGrains(T, grainSize, grainCount)
+                Ngrains = self.Ngrains = len(Elist)
+                logging.info('Using {0:d} grains from {1:.2f} to {2:.2f} kJ/mol in steps of {3:.2f} kJ/mol to compute the k(T,P) values at {4:g} K'.format(
+                    Ngrains, numpy.min(Elist) * 0.001, numpy.max(Elist) * 0.001, (Elist[1] - Elist[0]) * 0.001, T))
+                
+                # Choose the angular momenta to use to compute k(T,P) values at this temperature
+                # (This only applies if the J-rotor is adiabatic
+                if not self.activeJRotor:
+                    Jlist = self.Jlist = numpy.arange(0, 20, 1, numpy.int)
+                    NJ = self.NJ = len(Jlist)
+                else:
+                    Jlist = self.Jlist = numpy.array([0], numpy.int)
+                    NJ = self.NJ = 1
+                
+                # Map the densities of states onto this set of energies
+                # Also shift each density of states to a common zero of energy
+                self.mapDensitiesOfStates()
+                
+                # Use free energy to determine equilibrium ratios of each isomer and product channel
+                self.calculateEquilibriumRatios()
+                
+                # Calculate microcanonical rate coefficients for each path reaction
+                try:
+                    self.calculateMicrocanonicalRates()
+                except InvalidMicrocanonicalRateError as error:
+                    badness = error.badness()
+                    if previous_error and (previous_error.message == error.message): # only compare badness if same reaction is causing problem
+                        improvement = previous_error.badness()/badness
+                        if improvement < 0.2 or (grainCount > 1e4 and improvement < 1.1) or (grainCount > 1.5e6): # allow it to get worse at first
+                            logging.error(error.message)
+                            logging.error("Increasing number of grains did not decrease error enough (Current badness: {0:.1f}, previous {1:.1f}). Something must be wrong with network {2}".format(badness,previous_error.badness(),self.label))
+                            raise error
+                    previous_error = error
+                    success = False
+                    grainSize *= 0.5
+                    grainCount *= 2
+                    logging.warning("Increasing number of grains, decreasing grain size and trying again. (Current badness: {0:.1f})".format(badness))
+                    continue
+                else:
+                    success = True
+                
+                # Rescale densities of states such that, when they are integrated
+                # using the Boltzmann factor as a weighting factor, the result is unity
+                for i in range(Nisom+Nreac):
+                    Q = 0.0
+                    for s in range(NJ):
+                        Q += numpy.sum(self.densStates[i,:,s] * (2*Jlist[s]+1) * numpy.exp(-Elist / constants.R / T))
+                    self.densStates[i,:,:] /= Q
+                
+            # Update parameters that depend on temperature and pressure if necessary
+            if temperatureChanged or pressureChanged:
+                self.calculateCollisionModel()
 
     def __getEnergyGrains(self, Emin, Emax, grainSize=0.0, grainCount=0):
         """
@@ -566,9 +601,10 @@ class Network:
             kf_actual = kf0 / Qreac if Qreac > 0 else 0
             kr_actual = kr0 / Qprod if Qprod > 0 else 0
             Keq_actual = kf_actual / kr_actual if kr_actual > 0 else 0
-                
-            error = False; warning = False
 
+            error = False; warning = False
+            k_ratio = 1.0
+            Keq_ratio = 1.0
             # Check that the forward rate coefficient is correct
             if kf_actual > 0:
                 k_ratio = kf_expected / kf_actual
@@ -630,13 +666,13 @@ class Network:
             # If the k(E) values are invalid (in that they give the wrong 
             # kf(T) or kr(T) when integrated), then raise an exception
             if error or warning:
-                logging.error('For path reaction {0!s}:'.format(rxn))
-                logging.error('    Expected kf({0:g} K) = {1:g}'.format(T, kf_expected))
-                logging.error('      Actual kf({0:g} K) = {1:g}'.format(T, kf_actual))
-                logging.error('    Expected Keq({0:g} K) = {1:g}'.format(T, Keq_expected))
-                logging.error('      Actual Keq({0:g} K) = {1:g}'.format(T, Keq_actual))
+                logging.warning('For path reaction {0!s}:'.format(rxn))
+                logging.warning('    Expected kf({0:g} K) = {1:g}'.format(T, kf_expected))
+                logging.warning('      Actual kf({0:g} K) = {1:g}'.format(T, kf_actual))
+                logging.warning('    Expected Keq({0:g} K) = {1:g}'.format(T, Keq_expected))
+                logging.warning('      Actual Keq({0:g} K) = {1:g}'.format(T, Keq_actual))
                 if error:
-                    raise NetworkError('Invalid k(E) values computed for path reaction "{0}".'.format(rxn))
+                    raise InvalidMicrocanonicalRateError('Invalid k(E) values computed for path reaction "{0}".'.format(rxn), k_ratio, Keq_ratio)
                 else:
                     logging.warning('Significant corrections to k(E) to be consistent with high-pressure limit for path reaction "{0}".'.format(rxn))
 

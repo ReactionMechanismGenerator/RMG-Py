@@ -32,7 +32,6 @@ This module contains classes and methods for working with physical quantities,
 particularly the :class:`Quantity` class for representing physical quantities.
 """
 
-import math
 import numpy
 import quantities as pq
 
@@ -50,6 +49,7 @@ pq.UnitQuantity('kilojoules', pq.J*1e3, symbol='kJ')
 pq.UnitQuantity('kilomoles', pq.mol*1e3, symbol='kmol')
 pq.UnitQuantity('molecule', pq.mol/6.02214179e23, symbol='molecule')
 pq.UnitQuantity('molecules', pq.mol/6.02214179e23, symbol='molecules')
+pq.UnitQuantity('debye', 1.0/(constants.c*1e21)*pq.C*pq.m, symbol='De')
 
 ################################################################################
 
@@ -566,6 +566,10 @@ Area = UnitType('m^2')
 Concentration = UnitType('mol/m^3')
 
 Dimensionless = UnitType('')
+
+DipoleMoment = UnitType('C*m', extraDimensionality={
+    'De': 1.0 / (1.0e21 * constants.c), 
+})
 
 Energy = Enthalpy = FreeEnergy = UnitType('J/mol', commonUnits=['kJ/mol', 'cal/mol', 'kcal/mol'])
 

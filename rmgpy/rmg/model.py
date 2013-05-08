@@ -36,9 +36,10 @@ import logging
 import math
 import numpy
 import os.path
+import itertools
 
 from rmgpy.display import display
-
+import rmgpy.chemkin
 import rmgpy.constants as constants
 from rmgpy.quantity import Quantity
 import rmgpy.species
@@ -58,15 +59,18 @@ from pdep import PDepReaction, PDepNetwork, PressureDependenceError
 
 class Species(rmgpy.species.Species):
 
-    def __init__(self, index=-1, label='', thermo=None, conformer=None, molecule=None, lennardJones=None, molecularWeight=None, energyTransferModel=None, reactive=True, coreSizeAtCreation=0):
-        rmgpy.species.Species.__init__(self, index, label, thermo, conformer, molecule, lennardJones, molecularWeight, energyTransferModel, reactive)
+    def __init__(self, index=-1, label='', thermo=None, conformer=None, 
+                 molecule=None, lennardJones=None, molecularWeight=None, 
+                 dipoleMoment=None, polarizability=None, Zrot=None, 
+                 energyTransferModel=None, reactive=True, coreSizeAtCreation=0):
+        rmgpy.species.Species.__init__(self, index, label, thermo, conformer, molecule, lennardJones, molecularWeight, dipoleMoment, polarizability, Zrot, energyTransferModel, reactive)
         self.coreSizeAtCreation = coreSizeAtCreation
 
     def __reduce__(self):
         """
         A helper function used when pickling an object.
         """
-        return (Species, (self.index, self.label, self.thermo, self.conformer, self.molecule, self.lennardJones, self.molecularWeight, self.energyTransferModel, self.reactive, self.coreSizeAtCreation),)
+        return (Species, (self.index, self.label, self.thermo, self.conformer, self.molecule, self.lennardJones, self.molecularWeight, self.dipoleMoment, self.polarizability, self.Zrot, self.energyTransferModel, self.reactive, self.coreSizeAtCreation),)
 
     def generateThermoData(self, database, thermoClass=NASA):
         """
@@ -95,15 +99,13 @@ class Species(rmgpy.species.Species):
             wilhoit = thermo0.toWilhoit(Cp0=Cp0, CpInf=CpInf)
             
         wilhoit.comment = thermo0.comment
-            
-        # Compute E0 by extrapolation to 0 K
-        if self.conformer is None:
-            self.conformer = Conformer()
-        self.conformer.E0 = (wilhoit.getEnthalpy(1.0)*1e-3,"kJ/mol")
         
         # Convert to desired thermo class
         if isinstance(thermo0, thermoClass):
             self.thermo = thermo0
+            # If we don't have an E0, copy it across from the Wilhoit that was fitted
+            if self.thermo.E0 is None:
+                self.thermo.E0 = wilhoit.E0
         elif isinstance(wilhoit, thermoClass):
             self.thermo = wilhoit
         else:
@@ -116,7 +118,7 @@ class Species(rmgpy.species.Species):
             for T in Tlist:
                 err += (self.thermo.getHeatCapacity(T) - thermo0.getHeatCapacity(T))**2
             err = math.sqrt(err/len(Tlist))/constants.R
-            logging.log(logging.WARNING if err > 0.1 else 0, 'Average RMS error in heat capacity fit to {0} = {1:g}*R'.format(self, err))
+            logging.log(logging.WARNING if err > 0.2 else 0, 'Average RMS error in heat capacity fit to {0} = {1:g}*R'.format(self, err))
 
         return self.thermo
 
@@ -130,6 +132,9 @@ class Species(rmgpy.species.Species):
             raise Exception("Unable to determine statmech model for species {0}: No thermodynamics model found.".format(self))
         molecule = self.molecule[0]
         conformer = database.statmech.getStatmechData(molecule, self.thermo)
+        if self.conformer is None:
+            self.conformer = Conformer()
+        self.conformer.E0 = self.thermo.E0
         self.conformer.modes = conformer.modes
         self.conformer.spinMultiplicity = conformer.spinMultiplicity
             
@@ -228,6 +233,7 @@ class CoreEdgeReactionModel:
         self.outputSpeciesList = []
         self.outputReactionList = []
         self.pressureDependence = None
+        self.verboseComments = False
         self.kineticsEstimator = 'group additivity'
         self.reactionGenerationOptions = {}
 
@@ -637,12 +643,25 @@ class CoreEdgeReactionModel:
             #  correct barrier heights of estimated kinetics
             if isinstance(reaction,TemplateReaction) or isinstance(reaction,DepositoryReaction): # i.e. not LibraryReaction
                 reaction.fixBarrierHeight() # also converts ArrheniusEP to Arrhenius.
+                
+            if self.pressureDependence and reaction.isUnimolecular():
+                # If this is going to be run through pressure dependence code,
+                # we need to make sure the barrier is positive.
+                reaction.fixBarrierHeight(forcePositive=True)
             
         # Update unimolecular (pressure dependent) reaction networks
         if self.pressureDependence:
             # Recalculate k(T,P) values for modified networks
             self.updateUnimolecularReactionNetworks(database)
             logging.info('')
+            
+        # Check new core reactions for Chemkin duplicates
+        newCoreReactions = self.core.reactions[numOldCoreReactions:]
+        checkedCoreReactions = self.core.reactions[:numOldCoreReactions]
+        from rmgpy.chemkin import markDuplicateReaction
+        for rxn in newCoreReactions:
+            markDuplicateReaction(rxn, itertools.chain(checkedCoreReactions,self.outputReactionList) )
+            checkedCoreReactions.append(rxn)
         
         self.printEnlargeSummary(
             newCoreSpecies=self.core.species[numOldCoreSpecies:],
@@ -798,6 +817,19 @@ class CoreEdgeReactionModel:
                 
             kinetics.comment += "\nKinetics were estimated in this direction instead of the reverse because:\n{0}".format(reason)
             kinetics.comment += "\ndHrxn(298 K) = {0:.2f} kJ/mol, dGrxn(298 K) = {1:.2f} kJ/mol".format(H298 / 1000., G298 / 1000.)
+        
+        # The comments generated by the database for estimated kinetics can
+        # be quite long, and therefore not very useful
+        # We don't want to waste lots of memory storing these long, 
+        # uninformative strings, so here we replace them with much shorter ones
+        if not self.verboseComments:
+            # Only keep a short comment (to save memory)
+            if 'Exact' in kinetics.comment:
+                # Exact match of rate rule
+                kinetics.comment = '{0} exact: [{1}]'.format(reaction.family.label, ','.join([g.label for g in reaction.template])) 
+            else:
+                # Estimated (averaged) rate rule
+                kinetics.comment = '{0} estimate: [{1}]'.format(reaction.family.label, ','.join([g.label for g in reaction.template])) 
         
         return kinetics, source, entry, isForward
     
@@ -1141,8 +1173,19 @@ class CoreEdgeReactionModel:
             self.addSpeciesToCore(spec)
 
         for rxn in self.newReactionList:
+            if self.pressureDependence and rxn.isUnimolecular():
+                # If this is going to be run through pressure dependence code,
+                # we need to make sure the barrier is positive.
+                # ...but are Seed Mechanisms run through PDep? Perhaps not.
+                for spec in itertools.chain(rxn.reactants, rxn.products):
+                    if spec.thermo is None:
+                        spec.generateThermoData(database)
+                rxn.fixBarrierHeight(forcePositive=True)
             self.addReactionToCore(rxn)
-
+        
+        # Check we didn't introduce unmarked duplicates
+        self.markChemkinDuplicates()
+        
         self.printEnlargeSummary(
             newCoreSpecies=self.core.species[numOldCoreSpecies:],
             newCoreReactions=self.core.reactions[numOldCoreReactions:],
@@ -1160,7 +1203,8 @@ class CoreEdgeReactionModel:
 
         database = rmgpy.data.rmg.database
 
-        self.newReactionList = []; self.newSpeciesList = []
+        self.newReactionList = []
+        self.newSpeciesList = []
 
         numOldEdgeSpecies = len(self.edge.species)
         numOldEdgeReactions = len(self.edge.reactions)
@@ -1171,6 +1215,7 @@ class CoreEdgeReactionModel:
         for entry in reactionLibrary.entries.values():
             rxn = LibraryReaction(reactants=entry.item.reactants[:], products=entry.item.products[:], library=reactionLibrary, kinetics=entry.data)
             r, isNew = self.makeNewReaction(rxn) # updates self.newSpeciesList and self.newReactionlist
+            if not isNew: logging.info("This library reaction was not new: {0}".format(rxn))
         for spec in self.newSpeciesList:
             if spec.reactive: spec.generateThermoData(database)
         for spec in self.newSpeciesList:
@@ -1221,6 +1266,7 @@ class CoreEdgeReactionModel:
             else:
                 rxn.kinetics.comment = ("RMG did not find reaction rate to be high enough to be included in model core.")
                 self.outputReactionList.append(rxn)
+        self.markChemkinDuplicates()
 
 
     def addReactionToUnimolecularNetworks(self, newReaction, newSpecies, network=None):
@@ -1476,6 +1522,19 @@ class CoreEdgeReactionModel:
         for rxn in seedReactionList:
             self.addReactionToCore(rxn)
 
+    def markChemkinDuplicates(self):
+        """
+        Check that all reactions that will appear the chemkin output have been checked as duplicates.
+        
+        Call this if you've done something that may have introduced undetected duplicate reactions,
+        like add a reaction library or seed mechanism.
+        Anything added via the :meth:`expand` method should already be detected.
+        """
+        from rmgpy.chemkin import markDuplicateReactions
+        rxnList = self.core.reactions + self.outputReactionList
+        markDuplicateReactions(rxnList)
+        
+        
     def saveChemkinFile(self, path, verbose_path, dictionaryPath=None):
         """
         Save a Chemkin file for the current model core as well as any desired output
@@ -1484,8 +1543,8 @@ class CoreEdgeReactionModel:
         from rmgpy.chemkin import saveChemkinFile, saveSpeciesDictionary
         speciesList = self.core.species + self.outputSpeciesList
         rxnList = self.core.reactions + self.outputReactionList
-        saveChemkinFile(path, speciesList, rxnList, verbose = False)
-        saveChemkinFile(verbose_path, speciesList, rxnList, verbose = True)
+        saveChemkinFile(path, speciesList, rxnList, verbose = False, checkForDuplicates=False) # We should already have marked everything as duplicates by now
+        saveChemkinFile(verbose_path, speciesList, rxnList, verbose = True, checkForDuplicates=False)
         if dictionaryPath:
             saveSpeciesDictionary(dictionaryPath, speciesList)
             

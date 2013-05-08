@@ -32,12 +32,16 @@ import os
 import os.path
 import logging
 from copy import copy, deepcopy
+import numpy
 
 import rmgpy.constants as constants
 from rmgpy.kinetics import Arrhenius, ArrheniusEP, ThirdBody, Lindemann, Troe, \
                            PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, \
                            Chebyshev, KineticsData, PDepKineticsModel
+from rmgpy.molecule import Molecule, Group
 from rmgpy.species import Species
+from rmgpy.reaction import Reaction
+from rmgpy.data.base import LogicNode
 
 from .common import KineticsError, saveEntry
 from .depository import DepositoryReaction, KineticsDepository
@@ -45,6 +49,7 @@ from .family import TemplateReaction, KineticsFamily, KineticsGroups, \
     ReactionRecipe, InvalidActionError, ReactionPairsError, \
     UndeterminableKineticsError
 from .library import LibraryReaction, KineticsLibrary
+from .rules import KineticsRules
 
 ################################################################################
 
@@ -398,29 +403,32 @@ class KineticsDatabase(object):
             if len(forward) == 1 and len(reverse) == 0:
                 # The reaction is in the forward direction, so use as-is
                 reaction = forward[0]
-                template = groups.getReactionTemplate(reaction)
+                template = reaction.template
                 # Don't forget to overwrite the estimated kinetics from the database with the kinetics for this entry
                 reaction.kinetics = entry.data
             elif len(reverse) == 1 and len(forward) == 0:
                 # The reaction is in the reverse direction
                 # First fit Arrhenius kinetics in that direction
-                Tdata = 1.0/numpy.arange(0.0005,0.0035,0.0001,numpy.float64)
-                kdata = []
-                for T in Tdata:
-                    kdata.append(entry.data.getRateCoefficient(T) / reaction.getEquilibriumConstant(T))
-                kdata = numpy.array(kdata, numpy.float64)
+                Tdata = 1000.0 / numpy.arange(0.5, 3.301, 0.1, numpy.float64)
+                kdata = numpy.zeros_like(Tdata)
+                for i in range(Tdata.shape[0]):
+                    kdata[i] = entry.data.getRateCoefficient(Tdata[i]) / reaction.getEquilibriumConstant(Tdata[i])
                 kunits = 'm^3/(mol*s)' if len(reverse[0].reactants) == 2 else 's^-1'
                 kinetics = Arrhenius().fitToData(Tdata, kdata, kunits, T0=1.0)
+                kinetics.Tmin = entry.data.Tmin
+                kinetics.Tmax = entry.data.Tmax
+                kinetics.Pmin = entry.data.Pmin
+                kinetics.Pmax = entry.data.Pmax
                 # Now flip the direction
                 reaction = reverse[0]
                 reaction.kinetics = kinetics
-                template = groups.getReactionTemplate(reaction)
+                template = reaction.template
             elif len(reverse) > 0 and len(forward) > 0:
-                print 'FAIL: Multiple reactions found for "%s".' % (entry.label)
+                print 'FAIL: Multiple reactions found for {0!r}.'.format(entry.label)
             elif len(reverse) == 0 and len(forward) == 0:
                 print 'FAIL: No reactions found for "%s".' % (entry.label)
             else:
-                print 'FAIL: Unable to estimate kinetics for "%s".' % (entry.label)
+                print 'FAIL: Unable to estimate kinetics for {0!r}.'.format(entry.label)
 
         assert reaction is not None
         assert template is not None

@@ -32,21 +32,17 @@
 This module contains functionality for working with kinetics families.
 """
 
-import os
 import os.path
 import re
 import logging
-import codecs
-from copy import copy, deepcopy
 
-from rmgpy.data.base import *
+from rmgpy.data.base import DatabaseError, Database, Entry
 
-from rmgpy.quantity import Quantity
 from rmgpy.reaction import Reaction, ReactionError
 from rmgpy.kinetics import Arrhenius, ArrheniusEP, ThirdBody, Lindemann, Troe, \
                            PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, \
                            Chebyshev, KineticsData, PDepKineticsModel
-from rmgpy.molecule import Bond, GroupBond, Group
+from rmgpy.molecule import Bond, GroupBond, Group, Molecule
 from rmgpy.species import Species
 from .common import KineticsError, saveEntry
 
