@@ -107,11 +107,12 @@ def calculateAtomSymmetryNumber(molecule, atom):
             # Two single bonds
             if count == [2]:
                 symmetryNumber *= 2
-            
-    for groupN in groups:
-        if groupN.toSMILES() == "[N+](=O)[O-]":
-            symmetryNumber *= 2
-            
+    
+    if atom.isNitrogen():
+        for groupN in groups:
+            if groupN.toSMILES() == "[N+](=O)[O-]":
+                symmetryNumber *= 2
+    
     return symmetryNumber
 
 ################################################################################
