@@ -267,7 +267,7 @@ class GaussianLog:
 
             if 'SCF Done:' in line:
                 E0 = float(line.split()[4]) * constants.E_h * constants.Na
-            elif 'CBS-QB3 (0 K)' in line or 'G3 (O K)' in line:
+            elif 'CBS-QB3 (0 K)' in line or 'G3(O K)' in line:
                 E0_cbs = float(line.split()[3]) * constants.E_h * constants.Na
             elif 'Zero-point correction=' in line:
                 ZPE = float(line.split()[2]) * constants.E_h * constants.Na
