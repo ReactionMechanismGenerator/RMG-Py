@@ -57,15 +57,49 @@ class PressureDependenceError(Exception):
 
 class PDepReaction(rmgpy.reaction.Reaction):
 
-    def __init__(self, index=-1, label='', reactants=None, products=None, network=None, kinetics=None, reversible=True, transitionState=None, duplicate=False, degeneracy=1, pairs=None):
-        rmgpy.reaction.Reaction.__init__(self, index, label, reactants, products, kinetics, reversible, transitionState, duplicate, degeneracy, pairs)
+    def __init__(self,
+                 index=-1,
+                 label='',
+                 reactants=None,
+                 products=None,
+                 network=None,
+                 kinetics=None,
+                 reversible=True,
+                 transitionState=None,
+                 duplicate=False,
+                 degeneracy=1,
+                 pairs=None
+                 ):
+        rmgpy.reaction.Reaction.__init__(self,
+                                         index,
+                                         label,
+                                         reactants,
+                                         products,
+                                         kinetics,
+                                         reversible,
+                                         transitionState,
+                                         duplicate,
+                                         degeneracy,
+                                         pairs
+                                         )
         self.network = network
 
     def __reduce__(self):
         """
         A helper function used when pickling an object.
         """
-        return (PDepReaction, (self.index, self.label, self.reactants, self.products, self.network, self.kinetics, self.reversible, self.transitionState, self.duplicate, self.degeneracy, self.pairs))
+        return (PDepReaction, (self.index,
+                               self.label,
+                               self.reactants,
+                               self.products,
+                               self.network,
+                               self.kinetics,
+                               self.reversible,
+                               self.transitionState,
+                               self.duplicate,
+                               self.degeneracy,
+                               self.pairs
+                               ))
     
     def getSource(self):
         """
