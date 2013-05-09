@@ -134,6 +134,15 @@ class PDepNetwork(rmgpy.pdep.network.Network):
     
     def __str__(self):
         return "PDepNetwork #{0}".format(self.index)
+    
+    def __reduce__(self):
+        """
+        A helper function used when pickling an object.
+        """
+        return (PDepNetwork, (self.index, self.source), self.__dict__ )
+    
+    def __setstate__(self,dict):
+        self.__dict__.update(dict)
 
     @property
     def label(self):
