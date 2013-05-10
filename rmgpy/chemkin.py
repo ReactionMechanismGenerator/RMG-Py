@@ -632,36 +632,9 @@ def loadChemkinFile(path, dictionaryPath=None, transportPath=None, readComments 
             tokens_upper = line.upper().split()
             
             if 'SPECIES' in line.upper():
-                # List of species identifiers
-                index = tokens_upper.index('SPECIES')
-                tokens = tokens[index+1:]
-                while 'END' not in tokens_upper:
-                    line = f.readline()
-                    # If the line contains only one species, and also contains
-                    # a comment with only one token, assume that token is 
-                    # intended to be the true identifier for the species, but
-                    # was not used e.g. due to a length limitation
-                    if '!' in line and len(line.split('!')) == 2:
-                        label, alias = line.split('!')
-                        label = label.strip()
-                        alias = alias.strip()
-                        if len(label.split()) == 1 and len(alias.split()) == 1:
-                            speciesAliases[label] = alias
-                    line = removeCommentFromLine(line)[0]
-                    line = line.strip()
-                    tokens.extend(line.split())
-                    tokens_upper.extend(line.upper().split())
-                
-                for token in tokens:
-                    token_upper = token.upper()
-                    if token_upper == 'END':
-                        break
-                    if token_upper in speciesDict:
-                        species = speciesDict[token_upper]
-                    else:
-                        species = Species(label=token)
-                        speciesDict[token_upper] = species
-                    speciesList.append(species)
+                # Unread the line (we'll re-read it in readReactionBlock())
+                f.seek(-len(line0), 1)
+                readSpeciesBlock(f, speciesDict, speciesAliases, speciesList)
                 
                 # Also always add in a few bath gases (since RMG-Java does)
                 for label, smiles in [('Ar','[Ar]'), ('He','[He]'), ('Ne','[Ne]'), ('N2','N#N')]:
@@ -679,30 +652,9 @@ def loadChemkinFile(path, dictionaryPath=None, transportPath=None, readComments 
                         speciesDict[label.upper()] = species                            
                 
             elif 'THERM' in line.upper():
-                # List of thermodynamics (hopefully one per species!)
-                line = f.readline()
-                thermo = ''
-                comments = ''
-                while line != '' and 'END' not in line.upper():
-                    line, comment = removeCommentFromLine(line)
-                    if comment: comments += comment.strip().replace('\t',', ') + '\n'
-                    if len(line) >= 80:
-                        if line[79] in ['1', '2', '3', '4']:
-                            thermo += line
-                            if line[79] == '4':
-                                label, thermo = readThermoEntry(thermo)
-                                label = label.upper()
-                                try:
-                                    speciesDict[label].thermo = thermo
-                                    speciesDict[label].thermo.comment = comments
-                                    comments = ''
-                                except KeyError:
-                                    if label in ['AR', 'N2', 'HE', 'NE']:
-                                        pass
-                                    else:
-                                        logging.warning('Skipping unexpected species "{0}" while reading thermodynamics entry.'.format(label))
-                                thermo = ''
-                    line = f.readline()
+                # Unread the line (we'll re-read it in readThermoBlock())
+                f.seek(-len(line0), 1)
+                readThermoBlock(f, speciesDict)
                 
             elif 'REACTIONS' in line.upper():
                 # Reactions section
@@ -802,6 +754,86 @@ def loadChemkinFile(path, dictionaryPath=None, transportPath=None, readComments 
     reactionList.sort(key=lambda reaction: reaction.index)
     return speciesList, reactionList
 
+
+def readSpeciesBlock(f, speciesDict, speciesAliases, speciesList):
+    """
+    Read a Species block from a chemkin file.
+    
+    f is a file-like object that is just before the 'SPECIES' statement. When finished, it will have just passed the 'END' statement.
+    speciesDict is a dictionary of species that will be updated.
+    speciesAliases is a dictionary of species aliases that will be updated.
+    speciesList is a list of species that will be extended.
+    """
+    line = f.readline()
+    line = removeCommentFromLine(line)[0]
+    line = line.strip()
+    tokens = line.split()
+    tokens_upper = line.upper().split()
+    # List of species identifiers
+    index = tokens_upper.index('SPECIES')
+    tokens = tokens[index+1:]
+    while 'END' not in tokens_upper:
+        line = f.readline()
+        # If the line contains only one species, and also contains
+        # a comment with only one token, assume that token is 
+        # intended to be the true identifier for the species, but
+        # was not used e.g. due to a length limitation
+        if '!' in line and len(line.split('!')) == 2:
+            label, alias = line.split('!')
+            label = label.strip()
+            alias = alias.strip()
+            if len(label.split()) == 1 and len(alias.split()) == 1:
+                speciesAliases[label] = alias
+        line = removeCommentFromLine(line)[0]
+        line = line.strip()
+        tokens.extend(line.split())
+        tokens_upper.extend(line.upper().split())
+    for token in tokens:
+        token_upper = token.upper()
+        if token_upper == 'END':
+            break
+        if token_upper in speciesDict:
+            species = speciesDict[token_upper]
+        else:
+            species = Species(label=token)
+            speciesDict[token_upper] = species
+        speciesList.append(species)
+        
+def readThermoBlock(f, speciesDict):
+    """
+    Read a thermochemistry block from a chemkin file.
+    
+    f is a file-like object that is just before the 'THERM' statement. When finished, it will have just passed the 'END' statement.
+    speciesDict is a dictionary of species that will be updated with the given thermodynamics
+    """
+    # List of thermodynamics (hopefully one per species!)
+    line = f.readline()
+    assert line.upper().strip().startswith('THERM'), "'{0}' doesn't begin with THERM statement.".format(line)
+    line = f.readline()
+    thermo = ''
+    comments = ''
+    while line != '' and 'END' not in line.upper():
+        line, comment = removeCommentFromLine(line)
+        if comment: comments += comment.strip().replace('\t',', ') + '\n'
+        if len(line) >= 80:
+            if line[79] in ['1', '2', '3', '4']:
+                thermo += line
+                if line[79] == '4':
+                    label, thermo = readThermoEntry(thermo)
+                    label = label.upper()
+                    try:
+                        speciesDict[label].thermo = thermo
+                        speciesDict[label].thermo.comment = comments
+                        comments = ''
+                    except KeyError:
+                        if label in ['AR', 'N2', 'HE', 'NE']:
+                            pass
+                        else:
+                            logging.warning('Skipping unexpected species "{0}" while reading thermodynamics entry.'.format(label))
+                    thermo = ''
+        line = f.readline()
+
+        
 def readReactionsBlock(f, speciesDict, readComments = True):
     """
     Read a reactions block from a Chemkin file stream.
