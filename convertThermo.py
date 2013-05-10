@@ -45,6 +45,35 @@ class MagicSpeciesDict(dict):
             self.dictionary[key] = Species()
         return dict.__getitem__(self.dictionary, key)
 
+def convertFormula(formulaDict):
+    """
+    given a formula in dict form {'c':2, 'h':6, 'o':0}
+    return a string "C2H6"
+    """
+
+    elements = {e.capitalize(): n for e, n in formulaDict.iteritems() if n > 0}
+    hasCarbon = 'C' in elements
+    hasHydrogen = 'H' in elements
+    # Use the Hill system to generate the formula
+    formula = ''
+    # Carbon and hydrogen always come first if carbon is present
+    if hasCarbon:
+        count = elements['C']
+        formula += 'C{0:d}'.format(count) if count > 1 else 'C'
+        del elements['C']
+        if hasHydrogen:
+            count = elements['H']
+            formula += 'H{0:d}'.format(count) if count > 1 else 'H'
+            del elements['H']
+    # Other atoms are in alphabetical order
+    # (This includes hydrogen if carbon is not present)
+    keys = elements.keys()
+    keys.sort()
+    for key in keys:
+        count = elements[key]
+        formula += '{0}{1:d}'.format(key, count) if count > 1 else key
+    return formula
+
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
@@ -98,13 +127,45 @@ if __name__ == '__main__':
                 f.seek(-len(line0), 1)
                 formulaDict = readThermoBlock(f, speciesDict)
             line0 = f.readline()
-            
-    for species, formula in formulaDict:
-        formulaString = ''.join([element.upper()+str(number) for element,number in formula.iteritems()])
-        print "Species {species} has formula {formula}. What is its SMILES?".format(species=species, formula=formulaString)
 
+    known = {
+             'CH4': 'C',
+             'CH3': '[CH3]',
+             'CO2': 'O=C=O',
+             'H2O': 'O',
+             'HO': '[OH]',
+             'C2H6': 'CC',
+             'C2H5': 'C[CH2]',
+             'C2H4': 'C=C',
+             'O2': '[O][O]',
+             'H2': '[H][H]',
+             'H2O2': 'OO',
+             'O': '[O]',
+             'N2': 'N#N',
+             'CO': '[C]=[O]',
+             'HO2': '[O]O',
+             'C3H8': 'CCC',
+             'CH': '[CH]',
+             }
+    smilesDict = {}
+    for species in [s.label for s in speciesList] or formulaDict.keys():
+        speciesUpper = species.upper()
+        formula = formulaDict[speciesUpper]
+        formulaString = convertFormula(formula)
+        print "Species {species} has formula {formula}".format(species=species, formula=formulaString)
+        if formulaString in known:
+            known_smiles = known[formulaString]
+            print "I think its SMILES is {0}".format(known_smiles)
+            print "Hit Enter to confirm, or type the new smiles if wrong\n"
+            smiles = raw_input() or known_smiles
+        else:
+            continue  # Remove this line to input all SMILES strings
+            smiles = raw_input('What is its SMILES?\n')
+        smilesDict[species] = smiles
+        while formulaString != Molecule(SMILES=smiles).getFormula():
+            smiles = raw_input("SMILES {0} has formula {1} not required formula {2}. Try again:\n".format(smiles, Molecule(SMILES=smiles).getFormula(), formulaString))
 
-    with open(outputThermoFile,'w') as f:
+    with open(outputThermoFile, 'w') as f:
         counter = 0
         for species in speciesList:
             counter += 1
@@ -112,7 +173,7 @@ if __name__ == '__main__':
             entry = Entry()
             entry.index = counter
             entry.label = species.label
-            molecule = Molecule(SMILES='C')
+            molecule = Molecule(SMILES=smilesDict.get(species, 'C'))
             entry.item = molecule
             entry.data = species.thermo
             entry.longDesc = getattr(species.thermo, 'comment', '') + 'Imported from {source}'.format(source=thermo_file)
