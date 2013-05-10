@@ -69,7 +69,16 @@ def readThermoEntry(entry):
     """
     lines = entry.splitlines()
     species = str(lines[0][0:24].split()[0].strip())
-        
+    
+    comment = lines[0][len(species):24].strip()
+    formula = {}
+    for i in range(24,40,5):
+        element,count = lines[0][i:i+2].strip(), lines[0][i+2:i+5].strip()
+        if element:
+            formula[element]=int(count)
+    phase = lines[0][44]
+    assert phase.upper() == 'G', "Was expecting gas phase thermo data for {0}".format(species)
+    
     # Extract the NASA polynomial coefficients
     # Remember that the high-T polynomial comes first!
     try:
@@ -105,8 +114,10 @@ def readThermoEntry(entry):
         Tmin = (Tmin,"K"),
         Tmax = (Tmax,"K"),
     )
+    if comment:
+        thermo.comment = comment
 
-    return species, thermo
+    return species, thermo, formula
 
 ################################################################################
 
@@ -334,6 +345,7 @@ def readKineticsEntry(entry, speciesDict, Aunits, Eunits):
                 except IndexError:
                     error_msg = 'Could not read collider efficiencies for reaction: {0}.\n'.format(reaction)
                     error_msg += 'The following line was parsed incorrectly:\n{0}'.format(line)
+                    error_msg += "\n(Tokens: {0!r} )".format(tokens)
                     raise ChemkinError(error_msg)
 
         # Decide which kinetics to keep and store them on the reaction object
@@ -804,9 +816,12 @@ def readThermoBlock(f, speciesDict):
     Read a thermochemistry block from a chemkin file.
     
     f is a file-like object that is just before the 'THERM' statement. When finished, it will have just passed the 'END' statement.
-    speciesDict is a dictionary of species that will be updated with the given thermodynamics
+    speciesDict is a dictionary of species that will be updated with the given thermodynamics.
+    
+    Returns a dictionary of molecular formulae for each species.
     """
     # List of thermodynamics (hopefully one per species!)
+    formulaDict = {}
     line = f.readline()
     assert line.upper().strip().startswith('THERM'), "'{0}' doesn't begin with THERM statement.".format(line)
     line = f.readline()
@@ -819,11 +834,12 @@ def readThermoBlock(f, speciesDict):
             if line[79] in ['1', '2', '3', '4']:
                 thermo += line
                 if line[79] == '4':
-                    label, thermo = readThermoEntry(thermo)
+                    label, thermo, formula = readThermoEntry(thermo)
                     label = label.upper()
                     try:
+                        formulaDict[label] = formula
                         speciesDict[label].thermo = thermo
-                        speciesDict[label].thermo.comment = comments
+                        speciesDict[label].thermo.comment = getattr(speciesDict[label].thermo,'comment','') + comments + repr(formula)
                         comments = ''
                     except KeyError:
                         if label in ['AR', 'N2', 'HE', 'NE']:
@@ -832,6 +848,7 @@ def readThermoBlock(f, speciesDict):
                             logging.warning('Skipping unexpected species "{0}" while reading thermodynamics entry.'.format(label))
                     thermo = ''
         line = f.readline()
+    return formulaDict
 
         
 def readReactionsBlock(f, speciesDict, readComments = True):
