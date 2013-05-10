@@ -316,52 +316,51 @@ Check the graph isomorphism functions. ... ok
 testSubgraphIsomorphismAgain (rmgpy.molecule.moleculeTest.TestMolecule) ... ok
 testSubgraphIsomorphismManyLabels (rmgpy.molecule.moleculeTest.TestMolecule) ... FAIL
 Test the Molecule.toAdjacencyList() method. ... ok
-Failure: ValueError (rmgpy.molecule.group.Group has the wrong size, try recompiling) ... ERROR
-Test the Molecule.calculateAtomSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateAtomSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateAtomSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateAtomSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateAtomSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateAxisSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateAxisSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateAxisSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateAxisSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateAxisSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateAxisSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateAxisSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateAxisSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateAxisSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateAxisSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateAxisSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateAxisSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateAxisSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateAxisSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateAxisSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateBondSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateBondSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateBondSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateBondSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateBondSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateCyclicSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateCyclicSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateCyclicSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateCyclicSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateAtomSymmetryNumber() method. ... ok
+Test the Molecule.calculateAtomSymmetryNumber() method. ... ok
+Test the Molecule.calculateAtomSymmetryNumber() method. ... ok
+Test the Molecule.calculateAtomSymmetryNumber() method. ... ok
+Test the Molecule.calculateAtomSymmetryNumber() method. ... ok
+Test the Molecule.calculateAxisSymmetryNumber() method. ... ok
+Test the Molecule.calculateAxisSymmetryNumber() method. ... ok
+Test the Molecule.calculateAxisSymmetryNumber() method. ... ok
+Test the Molecule.calculateAxisSymmetryNumber() method. ... ok
+Test the Molecule.calculateAxisSymmetryNumber() method. ... FAIL
+Test the Molecule.calculateAxisSymmetryNumber() method. ... ok
+Test the Molecule.calculateAxisSymmetryNumber() method. ... ok
+Test the Molecule.calculateAxisSymmetryNumber() method. ... FAIL
+Test the Molecule.calculateAxisSymmetryNumber() method. ... ok
+Test the Molecule.calculateAxisSymmetryNumber() method. ... ok
+Test the Molecule.calculateAxisSymmetryNumber() method. ... ok
+Test the Molecule.calculateAxisSymmetryNumber() method. ... ok
+Test the Molecule.calculateAxisSymmetryNumber() method. ... ok
+Test the Molecule.calculateAxisSymmetryNumber() method. ... ok
+Test the Molecule.calculateAxisSymmetryNumber() method. ... ok
+Test the Molecule.calculateBondSymmetryNumber() method. ... ok
+Test the Molecule.calculateBondSymmetryNumber() method. ... ok
+Test the Molecule.calculateBondSymmetryNumber() method. ... ok
+Test the Molecule.calculateBondSymmetryNumber() method. ... ok
+Test the Molecule.calculateBondSymmetryNumber() method. ... ok
+Test the Molecule.calculateCyclicSymmetryNumber() method. ... ok
+Test the Molecule.calculateCyclicSymmetryNumber() method. ... ok
+Test the Molecule.calculateCyclicSymmetryNumber() method. ... ok
+Test the Molecule.calculateCyclicSymmetryNumber() method. ... ok
+Test the Molecule.calculateSymmetryNumber() method. ... ok
+Test the Molecule.calculateSymmetryNumber() method. ... ok
+Test the Molecule.calculateSymmetryNumber() method. ... FAIL
+Test the Molecule.calculateSymmetryNumber() method. ... ok
+Test the Molecule.calculateSymmetryNumber() method. ... ok
+Test the Molecule.calculateSymmetryNumber() method. ... ok
+Test the Molecule.calculateSymmetryNumber() method. ... ok
+Test the Molecule.calculateSymmetryNumber() method. ... ok
+Test the Molecule.calculateSymmetryNumber() method. ... ok
+Test the Molecule.calculateSymmetryNumber() method. ... ok
+Test the Molecule.calculateSymmetryNumber() method. ... ok
+Test the Molecule.calculateSymmetryNumber() method. ... ok
+Test the Molecule.calculateSymmetryNumber() method. ... ok
+Test the Molecule.calculateSymmetryNumber() method. ... FAIL
+Test the Molecule.calculateSymmetryNumber() method. ... FAIL
+Test the Molecule.calculateSymmetryNumber() method. ... ok
 Test the LennardJones.epsilon attribute. ... ok
 Test the LennardJones.getCollisionFrequency() method. ... ok
 Test that a LennardJones object can be successfully pickled and ... ok
@@ -715,411 +714,6 @@ Traceback (most recent call last):
 IOError: [Errno 2] No such file or directory: '/export/thishost/comocheng/build/RMG-database/input/thermo/depository/stable.py'
 
 ======================================================================
-ERROR: Failure: ValueError (rmgpy.molecule.group.Group has the wrong size, try recompiling)
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/virtualenvs/rmgweb/local/lib/python2.7/site-packages/nose/loader.py", line 390, in loadTestsFromName
-    addr.filename, addr.module)
-  File "/export/thishost/comocheng/virtualenvs/rmgweb/local/lib/python2.7/site-packages/nose/importer.py", line 39, in importFromPath
-    return self.importFromDir(dir_path, fqname)
-  File "/export/thishost/comocheng/virtualenvs/rmgweb/local/lib/python2.7/site-packages/nose/importer.py", line 86, in importFromDir
-    mod = load_module(part_fqname, fh, filename, desc)
-  File "group.pxd", line 75, in init rmgpy.molecule.symmetry (build/pyrex/rmgpy/molecule/symmetry.c:8019)
-ValueError: rmgpy.molecule.group.Group has the wrong size, try recompiling
-
-======================================================================
-ERROR: Test the Molecule.calculateAtomSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 47, in testAtomSymmetryNumberEthane
-    symmetryNumber *= calculateAtomSymmetryNumber(molecule, atom)
-SystemError: Missing type object
-
-======================================================================
-ERROR: Test the Molecule.calculateAtomSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 69, in testAtomSymmetryNumberIsobutane
-    symmetryNumber *= calculateAtomSymmetryNumber(molecule, atom)
-SystemError: Missing type object
-
-======================================================================
-ERROR: Test the Molecule.calculateAtomSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 25, in testAtomSymmetryNumberMethane
-    symmetryNumber *= calculateAtomSymmetryNumber(molecule, atom)
-SystemError: Missing type object
-
-======================================================================
-ERROR: Test the Molecule.calculateAtomSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 36, in testAtomSymmetryNumberMethyl
-    symmetryNumber *= calculateAtomSymmetryNumber(molecule, atom)
-SystemError: Missing type object
-
-======================================================================
-ERROR: Test the Molecule.calculateAtomSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 58, in testAtomSymmetryNumberPropane
-    symmetryNumber *= calculateAtomSymmetryNumber(molecule, atom)
-SystemError: Missing type object
-
-======================================================================
-ERROR: Test the Molecule.calculateAxisSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 186, in testAxisSymmetryNumber1
-    self.assertEqual(calculateAxisSymmetryNumber(molecule), 2)
-SystemError: Missing type object
-
-======================================================================
-ERROR: Test the Molecule.calculateAxisSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 172, in testAxisSymmetryNumber12Butadienyl
-    self.assertEqual(calculateAxisSymmetryNumber(molecule), 1)
-SystemError: Missing type object
-
-======================================================================
-ERROR: Test the Molecule.calculateAxisSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 179, in testAxisSymmetryNumber12Hexadienyl
-    self.assertEqual(calculateAxisSymmetryNumber(molecule), 1)
-SystemError: Missing type object
-
-======================================================================
-ERROR: Test the Molecule.calculateAxisSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 193, in testAxisSymmetryNumber2
-    self.assertEqual(calculateAxisSymmetryNumber(molecule), 2)
-SystemError: Missing type object
-
-======================================================================
-ERROR: Test the Molecule.calculateAxisSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 200, in testAxisSymmetryNumber3
-    self.assertEqual(calculateAxisSymmetryNumber(molecule), 4)
-SystemError: Missing type object
-
-======================================================================
-ERROR: Test the Molecule.calculateAxisSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 207, in testAxisSymmetryNumber4
-    self.assertEqual(calculateAxisSymmetryNumber(molecule), 2)
-SystemError: Missing type object
-
-======================================================================
-ERROR: Test the Molecule.calculateAxisSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 214, in testAxisSymmetryNumber5
-    self.assertEqual(calculateAxisSymmetryNumber(molecule), 1)
-SystemError: Missing type object
-
-======================================================================
-ERROR: Test the Molecule.calculateAxisSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 221, in testAxisSymmetryNumber6
-    self.assertEqual(calculateAxisSymmetryNumber(molecule), 1)
-SystemError: Missing type object
-
-======================================================================
-ERROR: Test the Molecule.calculateAxisSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 228, in testAxisSymmetryNumber7
-    self.assertEqual(calculateAxisSymmetryNumber(molecule), 2)
-SystemError: Missing type object
-
-======================================================================
-ERROR: Test the Molecule.calculateAxisSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 151, in testAxisSymmetryNumberButatriene
-    self.assertEqual(calculateAxisSymmetryNumber(molecule), 2)
-SystemError: Missing type object
-
-======================================================================
-ERROR: Test the Molecule.calculateAxisSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 158, in testAxisSymmetryNumberButatrienyl
-    self.assertEqual(calculateAxisSymmetryNumber(molecule), 1)
-SystemError: Missing type object
-
-======================================================================
-ERROR: Test the Molecule.calculateAxisSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 137, in testAxisSymmetryNumberEthylene
-    self.assertEqual(calculateAxisSymmetryNumber(molecule), 2)
-SystemError: Missing type object
-
-======================================================================
-ERROR: Test the Molecule.calculateAxisSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 144, in testAxisSymmetryNumberPropadiene
-    self.assertEqual(calculateAxisSymmetryNumber(molecule), 2)
-SystemError: Missing type object
-
-======================================================================
-ERROR: Test the Molecule.calculateAxisSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 165, in testAxisSymmetryNumberPropadienyl
-    self.assertEqual(calculateAxisSymmetryNumber(molecule), 2)
-SystemError: Missing type object
-
-======================================================================
-ERROR: Test the Molecule.calculateAxisSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 235, in testAxisSymmetryOxygenSinglet
-    self.assertEqual(calculateAxisSymmetryNumber(molecule), 1)
-SystemError: Missing type object
-
-======================================================================
-ERROR: Test the Molecule.calculateBondSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 129, in testBondSymmetryNumberAcetylene
-    symmetryNumber *= calculateBondSymmetryNumber(molecule, atom1, atom2)
-SystemError: Missing type object
-
-======================================================================
-ERROR: Test the Molecule.calculateBondSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 105, in testBondSymmetryNumberButane
-    symmetryNumber *= calculateBondSymmetryNumber(molecule, atom1, atom2)
-SystemError: Missing type object
-
-======================================================================
-ERROR: Test the Molecule.calculateBondSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 81, in testBondSymmetryNumberEthane
-    symmetryNumber *= calculateBondSymmetryNumber(molecule, atom1, atom2)
-SystemError: Missing type object
-
-======================================================================
-ERROR: Test the Molecule.calculateBondSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 117, in testBondSymmetryNumberEthylene
-    symmetryNumber *= calculateBondSymmetryNumber(molecule, atom1, atom2)
-SystemError: Missing type object
-
-======================================================================
-ERROR: Test the Molecule.calculateBondSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 93, in testBondSymmetryNumberPropane
-    symmetryNumber *= calculateBondSymmetryNumber(molecule, atom1, atom2)
-SystemError: Missing type object
-
-======================================================================
-ERROR: Test the Molecule.calculateCyclicSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 250, in testCyclicSymmetryNumberBenzene
-    symmetryNumber = calculateCyclicSymmetryNumber(molecule)
-SystemError: Missing type object
-
-======================================================================
-ERROR: Test the Molecule.calculateCyclicSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 242, in testCyclicSymmetryNumberCyclohexane
-    symmetryNumber = calculateCyclicSymmetryNumber(molecule)
-SystemError: Missing type object
-
-======================================================================
-ERROR: Test the Molecule.calculateCyclicSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 266, in testCyclicSymmetryNumberDimethylbenzene
-    symmetryNumber = calculateCyclicSymmetryNumber(molecule)
-SystemError: Missing type object
-
-======================================================================
-ERROR: Test the Molecule.calculateCyclicSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 258, in testCyclicSymmetryNumberToluene
-    symmetryNumber = calculateCyclicSymmetryNumber(molecule)
-SystemError: Missing type object
-
-======================================================================
-ERROR: Test the Molecule.calculateSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 315, in testSymmetryNumberAcetylene
-    self.assertEqual(Molecule().fromSMILES('C#C').calculateSymmetryNumber(), 2)
-  File "molecule.py", line 1252, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:19694)
-  File "molecule.py", line 1258, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:19634)
-SystemError: Missing type object
-
-======================================================================
-ERROR: Test the Molecule.calculateSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 321, in testSymmetryNumberButadiyne
-    self.assertEqual(Molecule().fromSMILES('C#CC#C').calculateSymmetryNumber(), 2)
-  File "molecule.py", line 1252, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:19694)
-  File "molecule.py", line 1258, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:19634)
-SystemError: Missing type object
-
-======================================================================
-ERROR: Test the Molecule.calculateSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 363, in testSymmetryNumberCyclic
-    self.assertEqual(Molecule().fromSMILES('C1=C=C=1').calculateSymmetryNumber(), '6?')
-  File "molecule.py", line 1252, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:19694)
-  File "molecule.py", line 1258, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:19634)
-SystemError: Missing type object
-
-======================================================================
-ERROR: Test the Molecule.calculateSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 303, in testSymmetryNumberDicarbon
-    self.assertEqual(Molecule().fromSMILES('[C]#[C]').calculateSymmetryNumber(), 2)
-  File "molecule.py", line 1252, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:19694)
-  File "molecule.py", line 1258, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:19634)
-SystemError: Missing type object
-
-======================================================================
-ERROR: Test the Molecule.calculateSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 357, in testSymmetryNumberEthenyl
-    self.assertEqual(Molecule().fromSMILES('C=[CH]').calculateSymmetryNumber(), 1)
-  File "molecule.py", line 1252, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:19694)
-  File "molecule.py", line 1258, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:19634)
-SystemError: Missing type object
-
-======================================================================
-ERROR: Test the Molecule.calculateSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 351, in testSymmetryNumberEthylene
-    self.assertEqual(Molecule().fromSMILES('C=C').calculateSymmetryNumber(), 4)
-  File "molecule.py", line 1252, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:19694)
-  File "molecule.py", line 1258, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:19634)
-SystemError: Missing type object
-
-======================================================================
-ERROR: Test the Molecule.calculateSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 333, in testSymmetryNumberFormaldehyde
-    self.assertEqual(Molecule().fromSMILES('C=O').calculateSymmetryNumber(), 2)
-  File "molecule.py", line 1252, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:19694)
-  File "molecule.py", line 1258, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:19634)
-SystemError: Missing type object
-
-======================================================================
-ERROR: Test the Molecule.calculateSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 309, in testSymmetryNumberHydrogen
-    self.assertEqual(Molecule().fromSMILES('[H][H]').calculateSymmetryNumber(), 2)
-  File "molecule.py", line 1252, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:19694)
-  File "molecule.py", line 1258, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:19634)
-SystemError: Missing type object
-
-======================================================================
-ERROR: Test the Molecule.calculateSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 291, in testSymmetryNumberHydroxyl
-    self.assertEqual(Molecule().fromSMILES('[OH]').calculateSymmetryNumber(), 1)
-  File "molecule.py", line 1252, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:19694)
-  File "molecule.py", line 1258, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:19634)
-SystemError: Missing type object
-
-======================================================================
-ERROR: Test the Molecule.calculateSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 327, in testSymmetryNumberMethane
-    self.assertEqual(Molecule().fromSMILES('C').calculateSymmetryNumber(), 12)
-  File "molecule.py", line 1252, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:19694)
-  File "molecule.py", line 1258, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:19634)
-SystemError: Missing type object
-
-======================================================================
-ERROR: Test the Molecule.calculateSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 339, in testSymmetryNumberMethyl
-    self.assertEqual(Molecule().fromSMILES('[CH3]').calculateSymmetryNumber(), 6)
-  File "molecule.py", line 1252, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:19694)
-  File "molecule.py", line 1258, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:19634)
-SystemError: Missing type object
-
-======================================================================
-ERROR: Test the Molecule.calculateSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 297, in testSymmetryNumberOxygen
-    self.assertEqual(Molecule().fromSMILES('O=O').calculateSymmetryNumber(), 2)
-  File "molecule.py", line 1252, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:19694)
-  File "molecule.py", line 1258, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:19634)
-SystemError: Missing type object
-
-======================================================================
-ERROR: Test the Molecule.calculateSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 345, in testSymmetryNumberWater
-    self.assertEqual(Molecule().fromSMILES('O').calculateSymmetryNumber(), 2)
-  File "molecule.py", line 1252, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:19694)
-  File "molecule.py", line 1258, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:19634)
-SystemError: Missing type object
-
-======================================================================
-ERROR: Test the Molecule.calculateSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 279, in testTotalSymmetryNumber1
-    self.assertEqual(Molecule().fromSMILES('C=C=[C]C(C)(C)[C]=C=C').calculateSymmetryNumber(), '???')
-  File "molecule.py", line 1252, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:19694)
-  File "molecule.py", line 1258, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:19634)
-SystemError: Missing type object
-
-======================================================================
-ERROR: Test the Molecule.calculateSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 285, in testTotalSymmetryNumber2
-    self.assertEqual(Molecule().fromSMILES('C(=CC(c1ccccc1)C([CH]CCCCCC)C=Cc1ccccc1)[CH]CCCCCC').calculateSymmetryNumber(), 1)
-  File "molecule.py", line 1252, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:19694)
-  File "molecule.py", line 1258, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:19634)
-SystemError: Missing type object
-
-======================================================================
-ERROR: Test the Molecule.calculateSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 273, in testTotalSymmetryNumberEthane
-    self.assertEqual(Molecule().fromSMILES('CC').calculateSymmetryNumber(), 18)
-  File "molecule.py", line 1252, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:19694)
-  File "molecule.py", line 1258, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:19634)
-SystemError: Missing type object
-
-======================================================================
 FAIL: Uses a Gaussian03 log file for ethylene (C2H4) to test that its
 ----------------------------------------------------------------------
 Traceback (most recent call last):
@@ -1166,6 +760,46 @@ Traceback (most recent call last):
   File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/moleculeTest.py", line 670, in testSubgraphIsomorphismManyLabels
     self.assertTrue(len(mapping) == 1)
 AssertionError: False is not true
+
+======================================================================
+FAIL: Test the Molecule.calculateAxisSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 200, in testAxisSymmetryNumber3
+    self.assertEqual(calculateAxisSymmetryNumber(molecule), 4)
+AssertionError: 1 != 4
+
+======================================================================
+FAIL: Test the Molecule.calculateAxisSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 221, in testAxisSymmetryNumber6
+    self.assertEqual(calculateAxisSymmetryNumber(molecule), 1)
+AssertionError: 2 != 1
+
+======================================================================
+FAIL: Test the Molecule.calculateSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 363, in testSymmetryNumberCyclic
+    self.assertEqual(Molecule().fromSMILES('C1=C=C=1').calculateSymmetryNumber(), '6?')
+AssertionError: 6 != '6?'
+
+======================================================================
+FAIL: Test the Molecule.calculateSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 279, in testTotalSymmetryNumber1
+    self.assertEqual(Molecule().fromSMILES('C=C=[C]C(C)(C)[C]=C=C').calculateSymmetryNumber(), '???')
+AssertionError: 18 != '???'
+
+======================================================================
+FAIL: Test the Molecule.calculateSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 285, in testTotalSymmetryNumber2
+    self.assertEqual(Molecule().fromSMILES('C(=CC(c1ccccc1)C([CH]CCCCCC)C=Cc1ccccc1)[CH]CCCCCC').calculateSymmetryNumber(), 1)
+AssertionError: 9 != 1
 
 Name                             Stmts   Miss Branch BrMiss  Cover   Missing
 ----------------------------------------------------------------------------
@@ -1222,7 +856,7 @@ rmgpy.thermo                         3      0      0      0   100%
 ----------------------------------------------------------------------------
 TOTAL                            12186  10680   5273   5112    10%   
 ----------------------------------------------------------------------
-Ran 686 tests.
+Ran 685 tests.
 
-FAILED (errors=48, failures=6)
+FAILED (errors=2, failures=11)
 make: *** [test] Error 1
