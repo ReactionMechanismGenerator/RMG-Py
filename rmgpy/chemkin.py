@@ -248,8 +248,8 @@ def readKineticsEntry(entry, speciesDict, Aunits, Eunits):
         pdepArrhenius = None
         efficiencies = {}
         chebyshevCoeffs = []
-        
-    
+        explicitReverse = False
+
         # Note that the subsequent lines could be in any order
         for line in lines[1:]:
             line = line.upper()
@@ -336,6 +336,14 @@ def readKineticsEntry(entry, speciesDict, Aunits, Eunits):
                     Ea = (float(tokens[3].strip()),Eunits),
                     T0 = (1,"K"),
                 )])
+            elif tokens[0].startswith('REV'):
+                reverseA = float(tokens[1].split()[0])
+                explicitReverse = line.strip()
+                if reverseA == 0:
+                    logging.info("Reverse rate is 0 so making irreversible for reaction {0}".format(reaction))
+                    reaction.reversible = False
+                else:
+                    logging.info("Ignoring explicit reverse rate for reaction {0}".format(reaction))
 
             else:
                 # Assume a list of collider efficiencies
@@ -378,10 +386,13 @@ def readKineticsEntry(entry, speciesDict, Aunits, Eunits):
             reaction.kinetics = Lindemann(arrheniusHigh=arrheniusHigh, arrheniusLow=arrheniusLow)
             reaction.kinetics.efficiencies = efficiencies
         elif thirdBody:
-            reaction.kinetics = ThirdBody(arrheniusLow=arrheniusHigh)
+            reaction.kinetics = ThirdBody(arrheniusLow=arrheniusHigh)  # what we had read first (and assumed High) is in fact the Low pressure rate.
             reaction.kinetics.efficiencies = efficiencies
         elif reaction.duplicate:
             reaction.kinetics = arrheniusHigh
+        elif explicitReverse:
+            reaction.kinetics = arrheniusHigh
+            reaction.kinetics.comment = "Chemkin file stated explicit reverse rate: {0}".format(explicitReverse)
         else:
             raise ChemkinError('Unable to determine pressure-dependent kinetics for reaction {0}.'.format(reaction))
    
@@ -946,11 +957,11 @@ def readReactionsBlock(f, speciesDict, readComments = True):
     
         if 'end' in line or 'END' in line:
             break
-    
-        if 'rev' in line or 'REV' in line:
+
+        # if 'rev' in line or 'REV' in line:
             # can no longer name reactants rev...
-            line = f.readline()
-            continue  # need to re-do the comment stripping!
+        #    line = f.readline()
+        #    continue  # need to re-do the comment stripping!
 
         if '=' in line and not lineStartsWithComment:
             # Finish previous record
