@@ -18,6 +18,8 @@ import os.path
 import argparse
 import logging
 
+import rmgpy
+
 from rmgpy.chemkin import loadChemkinFile, readSpeciesBlock, readThermoBlock, readReactionsBlock, removeCommentFromLine
 from rmgpy.reaction import ReactionModel
 
@@ -25,10 +27,14 @@ from rmgpy.data.thermo import Entry, saveEntry
 from rmgpy.molecule import Molecule
 from rmgpy.species import Species
 
+from rmgpy.rmg.main import RMG, initializeLog
+
 import time
 import sys
 # Put the RMG-database project at the start of the python path, so we use that importOldDatabase script!
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'RMG-database')))
+databaseDirectory = rmgpy.settings['database.directory']
+databaseProjectDirectory = os.path.abspath(os.path.join(databaseDirectory, '..'))
+sys.path.insert(0, databaseProjectDirectory)
 from importOldDatabase import getUsername
 ################################################################################
 
@@ -74,8 +80,7 @@ def convertFormula(formulaDict):
         formula += '{0}{1:d}'.format(key, count) if count > 1 else key
     return formula
 
-if __name__ == '__main__':
-
+def parseCommandLineArguments():
     parser = argparse.ArgumentParser()
     parser.add_argument('--species', metavar='FILE', type=str, nargs='?', default=None,
         help='the Chemkin file containing the list of species')
@@ -83,7 +88,48 @@ if __name__ == '__main__':
         help='the Chemkin file containing the list of reactions')
     parser.add_argument('--thermo', metavar='FILE', type=str,
         help='the Chemkin files containing the thermo')
+    parser.add_argument('-o', '--output-directory', type=str, nargs=1, default='',
+        metavar='DIR', help='use DIR as output directory')
+    parser.add_argument('-s', '--scratch-directory', type=str, nargs=1, default='',
+        metavar='DIR', help='use DIR as scratch directory')
+        
+    # Options for controlling the amount of information printed to the console
+    # By default a moderate level of information is printed; you can either
+    # ask for less (quiet), more (verbose), or much more (debug)
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument('-q', '--quiet', action='store_true', help='only print warnings and errors')
+    group.add_argument('-v', '--verbose', action='store_true', help='print more verbose output')
+    group.add_argument('-d', '--debug', action='store_true', help='print debug information')
+
     args = parser.parse_args()
+    
+    # add some args that RMG will want
+    
+    args.walltime = '0'
+    args.restart = False
+    
+    inputDirectory = os.path.abspath(os.path.dirname(args.thermo))
+    if args.output_directory == '':
+        args.output_directory = os.path.join(inputDirectory,'RMG-Py-output')
+    if args.scratch_directory == '':
+        args.scratch_directory = args.output_directory
+        
+    return args
+
+if __name__ == '__main__':
+    
+    # Parse the command-line arguments (requires the argparse module)
+    args = parseCommandLineArguments()
+    os.path.exists(args.output_directory) or os.makedirs(args.output_directory)
+
+    # Initialize the logging system (resets the RMG.log file)
+    level = logging.INFO
+    if args.debug: level = 0
+    elif args.verbose: level = logging.DEBUG
+    elif args.quiet: level = logging.WARNING
+    initializeLog(level, os.path.join(args.output_directory,'RMG.log'))
+    
+    
 
     species_file = args.species
     reactions_file = args.reactions or species_file
@@ -160,7 +206,7 @@ if __name__ == '__main__':
         # print "Species {species} has formula {formula}".format(species=species_label, formula=formulaString)
         if formulaString in known_formulas:
             known_smiles = known_formulas[formulaString]
-            print "I think its SMILES is {0}".format(known_smiles)
+            logging.info( "I think its SMILES is {0}".format(known_smiles) )
             smiles = known_smiles
             # print "Hit Enter to confirm, or type the new smiles if wrong\n"
             # smiles = raw_input() or known_smiles
@@ -176,16 +222,26 @@ if __name__ == '__main__':
         identified.append(species_label)
         identified_unprocessed.append(species_label)
 
-    print "Identified {0} species:".format(len(identified))
+    logging.info("Identified {0} species:".format(len(identified)))
     for species_label in identified:
-        print "   {0}".format(species_label)
+        logging.info("   {0}".format(species_label))
 
+    logging.info("Reading reactions.")
     with open(reactions_file) as f:
         reactionList = readReactionsBlock(f, speciesDict, readComments=True)
-    print "Loaded {0} reactions.".format(len(reactionList))
+    logging.info( "Read {0} reactions from chemkin file.".format(len(reactionList)))
     
-    
-    
+    logging.info("Loading RMG database...")
+    rmg = RMG()
+    rmg.outputDirectory = args.output_directory
+    rmg.scratchDirectory = args.scratch_directory
+    rmg.makeOutputSubdirectory('species')
+    rmg.databaseDirectory = databaseDirectory
+    rmg.thermoLibraries = []
+    rmg.reactionLibraries = [('Glarborg/HighP',False)]
+    rmg.loadDatabase()
+    logging.info("Loaded database.")
+#    rmg.reactionModel.enlarge([speciesDict[label.upper()] for label in identified])
     
 
     print "Finished reading"
