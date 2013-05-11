@@ -79,11 +79,14 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--species', metavar='FILE', type=str, nargs='?', default=None,
         help='the Chemkin file containing the list of species')
+    parser.add_argument('--reactions', metavar='FILE', type=str, nargs='?', default=None,
+        help='the Chemkin file containing the list of reactions')
     parser.add_argument('--thermo', metavar='FILE', type=str,
         help='the Chemkin files containing the thermo')
     args = parser.parse_args()
 
     species_file = args.species
+    reactions_file = args.reactions or species_file
     thermo_file = args.thermo
 
     outputThermoFile = os.path.splitext(thermo_file)[0] + '.thermo.py'
@@ -128,7 +131,7 @@ if __name__ == '__main__':
                 formulaDict = readThermoBlock(f, speciesDict)
             line0 = f.readline()
 
-    known = {
+    known_formulas = {
              'CH4': 'C',
              'CH3': '[CH3]',
              'CO2': 'O=C=O',
@@ -148,23 +151,44 @@ if __name__ == '__main__':
              'CH': '[CH]',
              }
     smilesDict = {}
-    for species in [s.label for s in speciesList] or formulaDict.keys():
-        speciesUpper = species.upper()
-        formula = formulaDict[speciesUpper]
+    identified = []
+    identified_unprocessed = []
+    for species_label in [s.label for s in speciesList] or formulaDict.keys():
+        species_upper = species_label.upper()
+        formula = formulaDict[species_upper]
         formulaString = convertFormula(formula)
-        print "Species {species} has formula {formula}".format(species=species, formula=formulaString)
-        if formulaString in known:
-            known_smiles = known[formulaString]
+        # print "Species {species} has formula {formula}".format(species=species_label, formula=formulaString)
+        if formulaString in known_formulas:
+            known_smiles = known_formulas[formulaString]
             print "I think its SMILES is {0}".format(known_smiles)
-            print "Hit Enter to confirm, or type the new smiles if wrong\n"
-            smiles = raw_input() or known_smiles
+            smiles = known_smiles
+            # print "Hit Enter to confirm, or type the new smiles if wrong\n"
+            # smiles = raw_input() or known_smiles
         else:
             continue  # Remove this line to input all SMILES strings
             smiles = raw_input('What is its SMILES?\n')
-        smilesDict[species] = smiles
+        smilesDict[species_label] = smiles
         while formulaString != Molecule(SMILES=smiles).getFormula():
             smiles = raw_input("SMILES {0} has formula {1} not required formula {2}. Try again:\n".format(smiles, Molecule(SMILES=smiles).getFormula(), formulaString))
+        species = speciesDict[species_upper]
+        species.molecule = [Molecule(SMILES=smiles)]
+        species.generateResonanceIsomers()
+        identified.append(species_label)
+        identified_unprocessed.append(species_label)
 
+    print "Identified {0} species:".format(len(identified))
+    for species_label in identified:
+        print "   {0}".format(species_label)
+
+    with open(reactions_file) as f:
+        reactionList = readReactionsBlock(f, speciesDict, readComments=True)
+    print "Loaded {0} reactions.".format(len(reactionList))
+    
+    
+    
+    
+
+    print "Finished reading"
     with open(outputThermoFile, 'w') as f:
         counter = 0
         for species in speciesList:
