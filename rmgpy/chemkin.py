@@ -38,7 +38,8 @@ import os.path
 import numpy
 from kinetics import *
 from reaction import Reaction
-from species import Species
+#from species import Species
+from rmg.model import Species
 from thermo import NASAPolynomial, NASA
 import rmgpy.constants as constants
 from quantity import Quantity
