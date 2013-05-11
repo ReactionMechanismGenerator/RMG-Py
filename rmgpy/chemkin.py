@@ -939,8 +939,8 @@ def readReactionsBlock(f, speciesDict, readComments = True):
     
     line = f.readline()
     while line != '':
-        
-        lineStartsWithComment = line.startswith('!') or line.startswith('//') 
+
+        lineStartsWithComment = line.lstrip().startswith('!') or line.lstrip().startswith('//')
         line, comment = removeCommentFromLine(line)
         line = line.strip(); comment = comment.strip()
     
@@ -950,6 +950,7 @@ def readReactionsBlock(f, speciesDict, readComments = True):
         if 'rev' in line or 'REV' in line:
             # can no longer name reactants rev...
             line = f.readline()
+            continue  # need to re-do the comment stripping!
 
         if '=' in line and not lineStartsWithComment:
             # Finish previous record
