@@ -19,13 +19,14 @@ import argparse
 import logging
 
 import rmgpy
+import rmgpy.rmg
 
 from rmgpy.chemkin import loadChemkinFile, readSpeciesBlock, readThermoBlock, readReactionsBlock, removeCommentFromLine
 from rmgpy.reaction import ReactionModel
 
 from rmgpy.data.thermo import Entry, saveEntry
 from rmgpy.molecule import Molecule
-from rmgpy.species import Species
+from rmgpy.rmg.model import Species  # you need this one, not the one in rmgpy.species!
 
 from rmgpy.rmg.main import RMG, initializeLog
 
@@ -176,6 +177,8 @@ if __name__ == '__main__':
                 f.seek(-len(line0), 1)
                 formulaDict = readThermoBlock(f, speciesDict)
             line0 = f.readline()
+    # thermoDict contains original thermo as read from chemkin thermo file
+    thermoDict = {s.label: s.thermo for s in speciesDict.values() }
 
     known_formulas = {
              'CH4': 'C',
@@ -243,6 +246,32 @@ if __name__ == '__main__':
     logging.info("Loaded database.")
 #    rmg.reactionModel.enlarge([speciesDict[label.upper()] for label in identified])
     
+    rmg.reactionModel = rmgpy.rmg.model.CoreEdgeReactionModel()
+    rmg.reactionModel.kineticsEstimator = 'rate rules'
+    rmg.initialSpecies = []
+    rmg.reactionSystems = []
+    
+    rm = rmg.reactionModel
+    
+    logging.info("Importing species into RMG model")
+    # Add identified species to the reaction model complete species list
+    newSpeciesDict = {}
+    for species_label in identified:
+        old_species = speciesDict[species_label.upper()]
+        new_species, wasNew = rm.makeNewSpecies(old_species, label=old_species.label)      
+        assert wasNew, "Species with structure of '{0}' already created with label '{1}'".format(species_label, new_species.label)
+        # For kinetics purposes, we convert the thermo to Wilhoit
+        # This allows us to extrapolating H to 298 to find deltaH rxn
+        # for ArrheniusEP kinetics,
+        # and to 0K so we can do barrier height checks with E0.
+        thermo = old_species.thermo
+        # pretend it was valid down to 298 K
+        thermo.selectPolynomial(thermo.Tmin.value_si).Tmin.value_si = 298
+        Cp0 = new_species.calculateCp0()
+        CpInf = new_species.calculateCpInf()
+        new_species.thermo = old_species.thermo.toWilhoit(Cp0=Cp0,CpInf=CpInf)
+        newSpeciesDict[species_label] = new_species
+        
 
     print "Finished reading"
     with open(outputThermoFile, 'w') as f:
@@ -253,9 +282,9 @@ if __name__ == '__main__':
             entry = Entry()
             entry.index = counter
             entry.label = species.label
-            molecule = Molecule(SMILES=smilesDict.get(species, 'C'))
+            molecule = Molecule(SMILES=smilesDict.get(species.label, 'C'))
             entry.item = molecule
-            entry.data = species.thermo
+            entry.data = thermoDict[species.label]
             entry.longDesc = getattr(species.thermo, 'comment', '') + 'Imported from {source}'.format(source=thermo_file)
             user = getUsername()
             event = [time.asctime(), user, 'action', '{user} imported this entry from {source}'.format(user=user, source=thermo_file)]
