@@ -188,7 +188,7 @@ def readKineticsEntry(entry, speciesDict, Aunits, Eunits):
     
     # Convert the reactants and products to Species objects using the speciesDict
     for reactant in reactants.split('+'):
-        reactant = reactant.strip().upper()
+        reactant = reactant.strip()
         stoichiometry = 1
         if reactant[0].isdigit():
             # This allows for reactions to be of the form 2A=B+C instead of A+A=B+C
@@ -203,7 +203,7 @@ def readKineticsEntry(entry, speciesDict, Aunits, Eunits):
             for i in range(stoichiometry):
                 reaction.reactants.append(speciesDict[reactant])
     for product in products.split('+'):
-        product = product.strip().upper()
+        product = product.strip()
         stoichiometry = 1
         if product[0].isdigit():
             # This allows for reactions to be of the form A+B=2C instead of A+B=C+C
@@ -253,6 +253,7 @@ def readKineticsEntry(entry, speciesDict, Aunits, Eunits):
 
         # Note that the subsequent lines could be in any order
         for line in lines[1:]:
+            case_preserved_tokens = line.split('/')
             line = line.upper()
             tokens = line.split('/')
             if 'DUP' in line:            
@@ -349,12 +350,12 @@ def readKineticsEntry(entry, speciesDict, Aunits, Eunits):
             else:
                 # Assume a list of collider efficiencies
                 try:
-                    for collider, efficiency in zip(tokens[0::2], tokens[1::2]):
-                        efficiencies[speciesDict[collider.strip().upper()].molecule[0]] = float(efficiency.strip())
+                    for collider, efficiency in zip(case_preserved_tokens[0::2], case_preserved_tokens[1::2]):
+                        efficiencies[speciesDict[collider.strip()].molecule[0]] = float(efficiency.strip())
                 except IndexError:
                     error_msg = 'Could not read collider efficiencies for reaction: {0}.\n'.format(reaction)
                     error_msg += 'The following line was parsed incorrectly:\n{0}'.format(line)
-                    error_msg += "\n(Tokens: {0!r} )".format(tokens)
+                    error_msg += "\n(Case-preserved tokens: {0!r} )".format(case_preserved_tokens)
                     raise ChemkinError(error_msg)
 
         # Decide which kinetics to keep and store them on the reaction object
@@ -576,7 +577,7 @@ def loadSpeciesDictionary(path):
                 # Finish this adjacency list
                 species = Species().fromAdjacencyList(adjlist)
                 species.generateResonanceIsomers()
-                label = species.label.upper()
+                label = species.label
                 speciesDict[label] = species
                 adjlist = ''
             else:
@@ -619,7 +620,7 @@ def loadTransportFile(path, speciesDict):
             line = line.strip()
             if line != '':
                 # This line contains an entry, so parse it
-                label = line[0:16].upper().strip()
+                label = line[0:16].strip()
                 data = line[16:].split()
                 species = speciesDict[label]
                 species.lennardJones = LennardJones(
@@ -792,10 +793,11 @@ def readSpeciesBlock(f, speciesDict, speciesAliases, speciesList):
     line = removeCommentFromLine(line)[0]
     line = line.strip()
     tokens = line.split()
-    tokens_upper = line.upper().split()
-    # List of species identifiers
-    index = tokens_upper.index('SPECIES')
-    tokens = tokens[index+1:]
+    tokens_upper = line.upper().split() 
+    firstToken = tokens.pop(0)
+    firstToken = tokens_upper.pop(0) # pop from both lists
+    assert firstToken in ['SPECIES', 'SPEC'] # should be first token in first line
+    # Build list of species identifiers
     while 'END' not in tokens_upper:
         line = f.readline()
         # If the line contains only one species, and also contains
@@ -812,30 +814,40 @@ def readSpeciesBlock(f, speciesDict, speciesAliases, speciesList):
         line = line.strip()
         tokens.extend(line.split())
         tokens_upper.extend(line.upper().split())
+    # Now process list of tokens
+    processed_tokens = []
     for token in tokens:
+        if token in processed_tokens:
+            continue # ignore species declared twice
         token_upper = token.upper()
+        if token_upper in ['SPECIES', 'SPEC']:
+            continue # there may be more than one SPECIES statement
         if token_upper == 'END':
             break
-        if token_upper in speciesDict:
-            species = speciesDict[token_upper]
+        processed_tokens.append(token)
+        if token in speciesDict:
+            logging.debug("Re-using species {0} already in speciesDict".format(token))
+            species = speciesDict[token]
         else:
             species = Species(label=token)
-            speciesDict[token_upper] = species
+            speciesDict[token] = species
         speciesList.append(species)
         
 def readThermoBlock(f, speciesDict):
     """
     Read a thermochemistry block from a chemkin file.
     
-    f is a file-like object that is just before the 'THERM' statement. When finished, it will have just passed the 'END' statement.
+    f is a file-like object that is just before the 'THERM' statement.
+    When finished, it will have just passed the 'END' statement.
     speciesDict is a dictionary of species that will be updated with the given thermodynamics.
     
-    Returns a dictionary of molecular formulae for each species.
+    Returns a dictionary of molecular formulae for each species, in the form
+    `{'methane': {'C':1, 'H':4}}
     """
     # List of thermodynamics (hopefully one per species!)
     formulaDict = {}
     line = f.readline()
-    assert line.upper().strip().startswith('THERM'), "'{0}' doesn't begin with THERM statement.".format(line)
+    assert line.upper().strip().startswith('THER'), "'{0}' doesn't begin with THERM statement.".format(line)
     line = f.readline()
     thermo = ''
     comments = ''
@@ -847,14 +859,13 @@ def readThermoBlock(f, speciesDict):
                 thermo += line
                 if line[79] == '4':
                     label, thermo, formula = readThermoEntry(thermo)
-                    label = label.upper()
                     try:
                         formulaDict[label] = formula
                         speciesDict[label].thermo = thermo
                         speciesDict[label].thermo.comment = getattr(speciesDict[label].thermo,'comment','') + comments + repr(formula)
                         comments = ''
                     except KeyError:
-                        if label in ['AR', 'N2', 'HE', 'NE']:
+                        if label.upper() in ['AR', 'N2', 'HE', 'NE']:
                             pass
                         else:
                             logging.warning('Skipping unexpected species "{0}" while reading thermodynamics entry.'.format(label))
