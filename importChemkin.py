@@ -543,6 +543,9 @@ class ModelMatcher():
             rm.enlarge(self.speciesDict_rmg[labelToProcess])
             reactionsMatch = self.reactionsMatch
             votes = {}
+            if len(self.identified_unprocessed_labels) == 1:
+                logging.info("** Running out of things to process - will check all edge reactions again...")
+                edgeReactionsProcessed = 0
             for edgeReaction in rm.edge.reactions[edgeReactionsProcessed:]:
                 for chemkinReaction in self.chemkinReactions:
                     self.suggestedMatches = {}
