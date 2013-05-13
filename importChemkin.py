@@ -136,6 +136,8 @@ def reactionMatchesFormulas(reaction, reactantFormulas):
     else:
         return False
 
+
+
 class ModelMatcher():
     """
     For identifying species in an imported model
@@ -145,13 +147,15 @@ class ModelMatcher():
         self.thermoDict = {}
         self.formulaDict = {}
         self.smilesDict = {}
-        self.identified = []
-        self.identified_unprocessed = []
+        self.identified_labels = []
+        self.identified_unprocessed_labels = []
         self.speciesList = None
+        self.speciesDict_rmg = {}
+        self.chemkinReactions = []
+        self.suggestedMatches = {}
 
     def loadModel(self, species_file, reactions_file, thermo_file):
         print 'Loading model...'
-        model = ReactionModel()
 
         speciesAliases = {}
         speciesDict = {}
@@ -162,7 +166,6 @@ class ModelMatcher():
                 line0 = f.readline()
                 while line0 != '':
                     line = removeCommentFromLine(line0)[0]
-                    tokens = line.split()
                     tokens_upper = line.upper().split()
                     if tokens_upper and tokens_upper[0] in ('SPECIES', 'SPEC'):
                         # Unread the line (we'll re-read it in readReactionBlock())
@@ -210,6 +213,7 @@ class ModelMatcher():
         rmg.makeOutputSubdirectory('species')
         rmg.databaseDirectory = databaseDirectory
         rmg.thermoLibraries = []
+        rmg.kineticsFamilies = ['!Substitution_O']
         rmg.reactionLibraries = [('Glarborg/HighP', False)]
         rmg.loadDatabase()
         logging.info("Loaded database.")
@@ -221,6 +225,220 @@ class ModelMatcher():
 
         self.rmg_object = rmg
         return rmg
+
+    def speciesMatch(self, rmg_species, chemkin_species):
+        """
+        Return True if the species might match, else False.
+        
+        i.e. if chemkin_species has been identified, it must be the rmg_species,
+        but if it hasn't it must at least have the same formula.
+        If it matches based only on formula, the match it is added to the self.suggestedMatches dictionary.
+        """
+        chemkin_label = chemkin_species.label
+        if chemkin_label in self.identified_labels:
+            return self.speciesDict_rmg[chemkin_label] is rmg_species
+        elif rmg_species.label in self.identified_labels:
+            return False
+        else:
+            if self.formulaDict[chemkin_label] == rmg_species.molecule[0].getFormula():
+                self.suggestedMatches[chemkin_label] = rmg_species
+                return True
+
+    def reactionsMatch(self, rmg_reaction, chemkin_reaction, eitherDirection=True):
+        """
+        This is based on the rmg.reaction.Reaction.isIsomorphic method
+ 
+        Return ``True`` if rmg_reaction is the same as the chemkin_reaction reaction,
+        or ``False`` if they are different. 
+        If `eitherDirection=False` then the directions must match.
+        """
+        speciesMatch = self.speciesMatch
+        # Compare reactants to reactants
+        forwardReactantsMatch = False
+        if len(rmg_reaction.reactants) == len(chemkin_reaction.reactants) == 1:
+            if speciesMatch(rmg_reaction.reactants[0], chemkin_reaction.reactants[0]):
+                forwardReactantsMatch = True
+        elif len(rmg_reaction.reactants) == len(chemkin_reaction.reactants) == 2:
+            if speciesMatch(rmg_reaction.reactants[0], chemkin_reaction.reactants[0]) and speciesMatch(rmg_reaction.reactants[1], chemkin_reaction.reactants[1]):
+                forwardReactantsMatch = True
+            elif speciesMatch(rmg_reaction.reactants[0], chemkin_reaction.reactants[1]) and speciesMatch(rmg_reaction.reactants[1], chemkin_reaction.reactants[0]):
+                forwardReactantsMatch = True
+        elif len(rmg_reaction.reactants) == len(chemkin_reaction.reactants) == 3:
+            if (speciesMatch(rmg_reaction.reactants[0], chemkin_reaction.reactants[0]) and
+                    speciesMatch(rmg_reaction.reactants[1], chemkin_reaction.reactants[1]) and
+                    speciesMatch(rmg_reaction.reactants[2], chemkin_reaction.reactants[2])):
+                forwardReactantsMatch = True
+            elif (speciesMatch(rmg_reaction.reactants[0], chemkin_reaction.reactants[0]) and
+                    speciesMatch(rmg_reaction.reactants[1], chemkin_reaction.reactants[2]) and
+                    speciesMatch(rmg_reaction.reactants[2], chemkin_reaction.reactants[1])):
+                forwardReactantsMatch = True
+            elif (speciesMatch(rmg_reaction.reactants[0], chemkin_reaction.reactants[1]) and
+                    speciesMatch(rmg_reaction.reactants[1], chemkin_reaction.reactants[0]) and
+                    speciesMatch(rmg_reaction.reactants[2], chemkin_reaction.reactants[2])):
+                forwardReactantsMatch = True
+            elif (speciesMatch(rmg_reaction.reactants[0], chemkin_reaction.reactants[2]) and
+                    speciesMatch(rmg_reaction.reactants[1], chemkin_reaction.reactants[0]) and
+                    speciesMatch(rmg_reaction.reactants[2], chemkin_reaction.reactants[1])):
+                forwardReactantsMatch = True
+            elif (speciesMatch(rmg_reaction.reactants[0], chemkin_reaction.reactants[1]) and
+                    speciesMatch(rmg_reaction.reactants[1], chemkin_reaction.reactants[2]) and
+                    speciesMatch(rmg_reaction.reactants[2], chemkin_reaction.reactants[0])):
+                forwardReactantsMatch = True
+            elif (speciesMatch(rmg_reaction.reactants[0], chemkin_reaction.reactants[2]) and
+                    speciesMatch(rmg_reaction.reactants[1], chemkin_reaction.reactants[1]) and
+                    speciesMatch(rmg_reaction.reactants[2], chemkin_reaction.reactants[0])):
+                forwardReactantsMatch = True
+        elif len(rmg_reaction.reactants) == len(chemkin_reaction.reactants):
+            raise NotImplementedError("Can't check isomorphism of reactions with {0} reactants".format(len(rmg_reaction.reactants)))
+
+        # Compare products to products
+        forwardProductsMatch = False
+        if len(rmg_reaction.products) == len(chemkin_reaction.products) == 1:
+            if speciesMatch(rmg_reaction.products[0], chemkin_reaction.products[0]):
+                forwardProductsMatch = True
+        elif len(rmg_reaction.products) == len(chemkin_reaction.products) == 2:
+            if speciesMatch(rmg_reaction.products[0], chemkin_reaction.products[0]) and speciesMatch(rmg_reaction.products[1], chemkin_reaction.products[1]):
+                forwardProductsMatch = True
+            elif speciesMatch(rmg_reaction.products[0], chemkin_reaction.products[1]) and speciesMatch(rmg_reaction.products[1], chemkin_reaction.products[0]):
+                forwardProductsMatch = True
+        elif len(rmg_reaction.products) == len(chemkin_reaction.products) == 3:
+            if (speciesMatch(rmg_reaction.products[0], chemkin_reaction.products[0]) and
+                    speciesMatch(rmg_reaction.products[1], chemkin_reaction.products[1]) and
+                    speciesMatch(rmg_reaction.products[2], chemkin_reaction.products[2])):
+                forwardProductsMatch = True
+            elif (speciesMatch(rmg_reaction.products[0], chemkin_reaction.products[0]) and
+                    speciesMatch(rmg_reaction.products[1], chemkin_reaction.products[2]) and
+                    speciesMatch(rmg_reaction.products[2], chemkin_reaction.products[1])):
+                forwardProductsMatch = True
+            elif (speciesMatch(rmg_reaction.products[0], chemkin_reaction.products[1]) and
+                    speciesMatch(rmg_reaction.products[1], chemkin_reaction.products[0]) and
+                    speciesMatch(rmg_reaction.products[2], chemkin_reaction.products[2])):
+                forwardProductsMatch = True
+            elif (speciesMatch(rmg_reaction.products[0], chemkin_reaction.products[2]) and
+                    speciesMatch(rmg_reaction.products[1], chemkin_reaction.products[0]) and
+                    speciesMatch(rmg_reaction.products[2], chemkin_reaction.products[1])):
+                forwardProductsMatch = True
+            elif (speciesMatch(rmg_reaction.products[0], chemkin_reaction.products[1]) and
+                    speciesMatch(rmg_reaction.products[1], chemkin_reaction.products[2]) and
+                    speciesMatch(rmg_reaction.products[2], chemkin_reaction.products[0])):
+                forwardProductsMatch = True
+            elif (speciesMatch(rmg_reaction.products[0], chemkin_reaction.products[2]) and
+                    speciesMatch(rmg_reaction.products[1], chemkin_reaction.products[1]) and
+                    speciesMatch(rmg_reaction.products[2], chemkin_reaction.products[0])):
+                forwardProductsMatch = True
+        elif len(rmg_reaction.products) == len(chemkin_reaction.products):
+            raise NotImplementedError("Can't check isomorphism of reactions with {0} products".format(len(rmg_reaction.products)))
+
+        # Return now, if we can
+        if (forwardReactantsMatch and forwardProductsMatch):
+            return True
+        if not eitherDirection:
+            return False
+
+        # Compare reactants to products
+        reverseReactantsMatch = False
+        if len(rmg_reaction.reactants) == len(chemkin_reaction.products) == 1:
+            if speciesMatch(rmg_reaction.reactants[0], chemkin_reaction.products[0]):
+                reverseReactantsMatch = True
+        elif len(rmg_reaction.reactants) == len(chemkin_reaction.products) == 2:
+            if speciesMatch(rmg_reaction.reactants[0], chemkin_reaction.products[0]) and speciesMatch(rmg_reaction.reactants[1], chemkin_reaction.products[1]):
+                reverseReactantsMatch = True
+            elif speciesMatch(rmg_reaction.reactants[0], chemkin_reaction.products[1]) and speciesMatch(rmg_reaction.reactants[1], chemkin_reaction.products[0]):
+                reverseReactantsMatch = True
+        elif len(rmg_reaction.reactants) == len(chemkin_reaction.products) == 3:
+            if (speciesMatch(rmg_reaction.reactants[0], chemkin_reaction.products[0]) and
+                    speciesMatch(rmg_reaction.reactants[1], chemkin_reaction.products[1]) and
+                    speciesMatch(rmg_reaction.reactants[2], chemkin_reaction.products[2])):
+                reverseReactantsMatch = True
+            elif (speciesMatch(rmg_reaction.reactants[0], chemkin_reaction.products[0]) and
+                    speciesMatch(rmg_reaction.reactants[1], chemkin_reaction.products[2]) and
+                    speciesMatch(rmg_reaction.reactants[2], chemkin_reaction.products[1])):
+                reverseReactantsMatch = True
+            elif (speciesMatch(rmg_reaction.reactants[0], chemkin_reaction.products[1]) and
+                    speciesMatch(rmg_reaction.reactants[1], chemkin_reaction.products[0]) and
+                    speciesMatch(rmg_reaction.reactants[2], chemkin_reaction.products[2])):
+                reverseReactantsMatch = True
+            elif (speciesMatch(rmg_reaction.reactants[0], chemkin_reaction.products[2]) and
+                    speciesMatch(rmg_reaction.reactants[1], chemkin_reaction.products[0]) and
+                    speciesMatch(rmg_reaction.reactants[2], chemkin_reaction.products[1])):
+                reverseReactantsMatch = True
+            elif (speciesMatch(rmg_reaction.reactants[0], chemkin_reaction.products[1]) and
+                    speciesMatch(rmg_reaction.reactants[1], chemkin_reaction.products[2]) and
+                    speciesMatch(rmg_reaction.reactants[2], chemkin_reaction.products[0])):
+                reverseReactantsMatch = True
+            elif (speciesMatch(rmg_reaction.reactants[0], chemkin_reaction.products[2]) and
+                    speciesMatch(rmg_reaction.reactants[1], chemkin_reaction.products[1]) and
+                    speciesMatch(rmg_reaction.reactants[2], chemkin_reaction.products[0])):
+                reverseReactantsMatch = True
+        elif len(rmg_reaction.reactants) == len(chemkin_reaction.products):
+            raise NotImplementedError("Can't check isomorphism of reactions with {0} reactants".format(len(rmg_reaction.reactants)))
+
+        # Compare products to reactants
+        reverseProductsMatch = False
+        if len(rmg_reaction.products) == len(chemkin_reaction.reactants) == 1:
+            if speciesMatch(rmg_reaction.products[0], chemkin_reaction.reactants[0]):
+                reverseProductsMatch = True
+        elif len(rmg_reaction.products) == len(chemkin_reaction.reactants) == 2:
+            if speciesMatch(rmg_reaction.products[0], chemkin_reaction.reactants[0]) and speciesMatch(rmg_reaction.products[1], chemkin_reaction.reactants[1]):
+                reverseProductsMatch = True
+            elif speciesMatch(rmg_reaction.products[0], chemkin_reaction.reactants[1]) and speciesMatch(rmg_reaction.products[1], chemkin_reaction.reactants[0]):
+                reverseProductsMatch = True
+        elif len(rmg_reaction.products) == len(chemkin_reaction.reactants) == 3:
+            if (speciesMatch(rmg_reaction.products[0], chemkin_reaction.reactants[0]) and
+                    speciesMatch(rmg_reaction.products[1], chemkin_reaction.reactants[1]) and
+                    speciesMatch(rmg_reaction.products[2], chemkin_reaction.reactants[2])):
+                reverseProductsMatch = True
+            elif (speciesMatch(rmg_reaction.products[0], chemkin_reaction.reactants[0]) and
+                    speciesMatch(rmg_reaction.products[1], chemkin_reaction.reactants[2]) and
+                    speciesMatch(rmg_reaction.products[2], chemkin_reaction.reactants[1])):
+                reverseProductsMatch = True
+            elif (speciesMatch(rmg_reaction.products[0], chemkin_reaction.reactants[1]) and
+                    speciesMatch(rmg_reaction.products[1], chemkin_reaction.reactants[0]) and
+                    speciesMatch(rmg_reaction.products[2], chemkin_reaction.reactants[2])):
+                reverseProductsMatch = True
+            elif (speciesMatch(rmg_reaction.products[0], chemkin_reaction.reactants[2]) and
+                    speciesMatch(rmg_reaction.products[1], chemkin_reaction.reactants[0]) and
+                    speciesMatch(rmg_reaction.products[2], chemkin_reaction.reactants[1])):
+                reverseProductsMatch = True
+            elif (speciesMatch(rmg_reaction.products[0], chemkin_reaction.reactants[1]) and
+                    speciesMatch(rmg_reaction.products[1], chemkin_reaction.reactants[2]) and
+                    speciesMatch(rmg_reaction.products[2], chemkin_reaction.reactants[0])):
+                reverseProductsMatch = True
+            elif (speciesMatch(rmg_reaction.products[0], chemkin_reaction.reactants[2]) and
+                    speciesMatch(rmg_reaction.products[1], chemkin_reaction.reactants[1]) and
+                    speciesMatch(rmg_reaction.products[2], chemkin_reaction.reactants[0])):
+                reverseProductsMatch = True
+        elif len(rmg_reaction.products) == len(chemkin_reaction.reactants):
+            raise NotImplementedError("Can't check isomorphism of reactions with {0} products".format(len(rmg_reaction.products)))
+
+        # should have already returned if it matches forwards, or we're not allowed to match backwards
+        return  (reverseReactantsMatch and reverseProductsMatch)
+
+
+    def edgeReactionsMatching(self, chemkinReaction):
+        """A generator giving edge reactions that match the given chemkin reaction"""
+        reactionsMatch = self.reactionsMatch
+        for edgeReaction in self.rmg_object.reactionModel.edge.reactions:
+            if reactionsMatch(edgeReaction, chemkinReaction):
+                yield edgeReaction
+
+    def chemkinReactionsMatching(self, rmgReaction):
+        """A generator giving chemkin reactions that match the given RMG reaction"""
+        reactionsMatch = self.reactionsMatch
+        for chemkinReaction in self.chemkinReactions:
+            if reactionsMatch(rmgReaction, chemkinReaction):
+                yield chemkinReaction
+
+    def setMatch(self, chemkinLabel, rmgSpecies):
+        """Store a match, once you've identified it"""
+        self.identified_labels.append(chemkinLabel)
+        self.identified_unprocessed_labels.append(chemkinLabel)
+        self.speciesDict_rmg[chemkinLabel] = rmgSpecies
+        logging.info("Storing match: {0} = {1!s}".format(chemkinLabel, rmgSpecies))
+        rmgSpecies.label = chemkinLabel
+        with open(self.dictionaryFile, 'a') as f:
+            f.write("{0}\t{1}\n".format(chemkinLabel, rmgSpecies.molecule[0].toSMILES()))
+
 
     def main(self, args):
         """This is the main matcher function that does the whole thing"""
@@ -246,14 +464,13 @@ class ModelMatcher():
              'H2O2': 'OO',
              'O': '[O]',
              'N2': 'N#N',
-             'CO': '[C]=[O]',
+             'CO': '[C]=O',
              'HO2': '[O]O',
              'C3H8': 'CCC',
              'CH': '[CH]',
              }
 
-        identified = self.identified
-        identified_unprocessed = self.identified_unprocessed
+        identified_labels = []
         # use speciesList if it is not None or empty, else the formulaDict keys.
         for species_label in [s.label for s in self.speciesList or []] or self.formulaDict.keys():
             formula = self.formulaDict[species_label]
@@ -273,26 +490,30 @@ class ModelMatcher():
             species = self.speciesDict[species_label]
             species.molecule = [Molecule(SMILES=smiles)]
             species.generateResonanceIsomers()
-            identified.append(species_label)
-            identified_unprocessed.append(species_label)
+            identified_labels.append(species_label)
 
-        logging.info("Identified {0} species:".format(len(identified)))
-        for species_label in identified:
+        logging.info("Identified {0} species:".format(len(identified_labels)))
+        for species_label in identified_labels:
             logging.info("   {0}".format(species_label))
 
         logging.info("Reading reactions.")
         with open(reactions_file) as f:
             reactionList = readReactionsBlock(f, self.speciesDict, readComments=True)
         logging.info("Read {0} reactions from chemkin file.".format(len(reactionList)))
+        self.chemkinReactions = reactionList
 
         logging.info("Initializing RMG")
         self.initializeRMG(args)
         rm = self.rmg_object.reactionModel
 
+        self.dictionaryFile = os.path.join(args.output_directory, 'MatchedSpeciesDictionary.txt')
+        with open(self.dictionaryFile, 'w') as f:
+            f.write("Species identifiers matched automatically:\n")
+
         logging.info("Importing identified species into RMG model")
         # Add identified species to the reaction model complete species list
         newSpeciesDict = {}
-        for species_label in identified:
+        for species_label in identified_labels:
             old_species = self.speciesDict[species_label]
             new_species, wasNew = rm.makeNewSpecies(old_species, label=old_species.label)
             assert wasNew, "Species with structure of '{0}' already created with label '{1}'".format(species_label, new_species.label)
@@ -308,11 +529,56 @@ class ModelMatcher():
             new_species.thermo = old_species.thermo.toWilhoit(Cp0=Cp0, CpInf=CpInf)
             newSpeciesDict[species_label] = new_species
 
-        # : Dictionary of species that are in RMG core/edge reaction model, with structures
-        self.speciesDict_rmg = newSpeciesDict
-        rm.enlarge(newSpeciesDict['ch4'])
-        rm.edge.reactions
-        import ipdb; ipdb.set_trace()
+        # Set match using the function to get all the side-effects.
+        for chemkinLabel in identified_labels:
+            self.setMatch(chemkinLabel, newSpeciesDict[chemkinLabel])
+
+        while self.identified_unprocessed_labels:
+            labelToProcess = self.identified_unprocessed_labels.pop(0)
+            logging.info("Processing species {0}...".format(labelToProcess))
+            if self.formulaDict[labelToProcess] in ('N2', 'Ar'):
+                logging.info("Not processing {0} because I can't react it in RMG".format(labelToProcess))
+                continue
+            edgeReactionsProcessed = len(rm.edge.reactions)
+            rm.enlarge(self.speciesDict_rmg[labelToProcess])
+            reactionsMatch = self.reactionsMatch
+            votes = {}
+            for edgeReaction in rm.edge.reactions[edgeReactionsProcessed:]:
+                for chemkinReaction in self.chemkinReactions:
+                    self.suggestedMatches = {}
+                    if reactionsMatch(edgeReaction, chemkinReaction):
+                        logging.info("Chemkin reaction     {0}\n matches RMG reaction  {1}".format(chemkinReaction, edgeReaction))
+                        if self.suggestedMatches:
+                            logging.info(" suggesting new species match: {0!r}".format({l:str(s) for l, s in self.suggestedMatches.iteritems()}))
+                        else:
+                            logging.info(" suggesting no new species matches.")
+                        for chemkinLabel, rmgSpecies in self.suggestedMatches.iteritems():
+                            if chemkinLabel not in votes:
+                                votes[chemkinLabel] = {rmgSpecies: [chemkinReaction]}
+                            else:
+                                if rmgSpecies not in votes[chemkinLabel]:
+                                    votes[chemkinLabel][rmgSpecies] = [chemkinReaction]
+                                else:
+                                    votes[chemkinLabel][rmgSpecies].append(edgeReaction)
+                            # now votes is a dict of dicts of lists {'ch3':{<Species CH3>: [ voting_reactions ]}}
+            for chemkinLabel, possibleMatches in votes.iteritems():
+                if len(possibleMatches) == 1:
+                    matchingSpecies, votingReactions = possibleMatches.items()[0]
+                    logging.info("\nOnly one suggested match for {0}: {1!s}".format(chemkinLabel, matchingSpecies))
+                    logging.info("With {0} voting reactions:".format(len(votingReactions)))
+                    for reaction in votingReactions:
+                        logging.info("  {0!s}".format(reaction))
+                    allPossibleChemkinSpecies = [ck for ck, matches in votes.iteritems() if matchingSpecies in matches]
+                    if len(allPossibleChemkinSpecies) == 1:
+                        logging.info("Only one chemkin species has this match.")
+                        self.setMatch(chemkinLabel, matchingSpecies)
+                    else:
+                        logging.info("Other Chemkin species that also match {0} are {1!r}".format(matchingSpecies.label, allPossibleChemkinSpecies))
+                        logging.info("Will not make match at this time.")
+            logging.info("Done processing species {0}!".format(labelToProcess))
+            logging.info("Have now identified {0} of {1} species: {2!r}".format(len(self.identified_labels), len(self.speciesList), self.identified_labels))
+            logging.info("Still to process: {0!r}".format(self.identified_unprocessed_labels))
+
 
         print "Finished reading"
         with open(outputThermoFile, 'w') as f:
@@ -323,7 +589,8 @@ class ModelMatcher():
                 entry = Entry()
                 entry.index = counter
                 entry.label = species.label
-                molecule = Molecule(SMILES=self.smilesDict.get(species.label, 'C'))
+                # molecule = Molecule(SMILES=self.smilesDict.get(species.label, 'C'))
+                molecule = self.speciesDict_rmg.get(species.label, Species().fromSMILES('C')).molecule[0]
                 entry.item = molecule
                 entry.data = self.thermoDict[species.label]
                 entry.longDesc = getattr(species.thermo, 'comment', '') + 'Imported from {source}'.format(source=thermo_file)
