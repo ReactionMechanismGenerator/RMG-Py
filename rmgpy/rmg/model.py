@@ -190,7 +190,7 @@ class Species(rmgpy.species.Species):
             logging.info("Making solvent correction for {0}".format(Species.solventName))
             soluteData = database.solvation.getSoluteData(self)
             solvation_correction = database.solvation.getSolvationCorrection(soluteData, Species.solventData)
-            #import ipdb; ipdb.set_trace()
+            # correction is added to the entropy and enthalpy
             wilhoit.S0.value_si = (wilhoit.S0.value_si + solvation_correction.entropy)
             wilhoit.H0.value_si = (wilhoit.H0.value_si + solvation_correction.enthalpy)
             

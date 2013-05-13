@@ -74,8 +74,8 @@ class DiffusionLimited():
         radii = 0.0
         diffusivities = 0.0
         for spec in reacting:
-            #import ipdb; ipdb.set_trace()
             soluteData = self.database.getSoluteData(spec)
+            # calculate radius with the McGowan volume and assuming sphere
             radius = ((75*soluteData.V/3.14159)**(1/3))/100
             diff = soluteData.getStokesDiffusivity(T, self.getSolventViscosity(T))
             radii += radius

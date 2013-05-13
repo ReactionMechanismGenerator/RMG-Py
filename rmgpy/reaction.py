@@ -539,6 +539,10 @@ class Reaction:
         Return the overall rate coefficient for the forward reaction at
         temperature `T` in K and pressure `P` in Pa, including any reaction
         path degeneracies.
+        
+        If diffusionLimiter is enabled, the reaction is in the liquid phase and we use
+        a diffusion limitation to correct the rate. If not, then use the intrinsic rate
+        coefficient.
         """
         if diffusionLimiter.enabled:
             logging.info("Correcting rate for diffusion limited reaction")
