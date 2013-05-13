@@ -536,6 +536,7 @@ class ModelMatcher():
         for chemkinLabel in identified_labels:
             self.setMatch(chemkinLabel, newSpeciesDict[chemkinLabel])
         
+        chemkinFormulas = set(self.formulaDict.values())
 
         chemkinReactionsUnmatched = self.chemkinReactionsUnmatched
         while self.identified_unprocessed_labels:
@@ -546,6 +547,22 @@ class ModelMatcher():
                 continue
             edgeReactionsProcessed = len(rm.edge.reactions)
             rm.enlarge(self.speciesDict_rmg[labelToProcess])
+
+            # do a partial prune of new reactions that definitely aren't going to be useful
+            reactionsToPrune = set()
+            for newSpecies in rm.newSpeciesList:
+                if newSpecies.molecule[0].getFormula() in chemkinFormulas:
+                    continue
+                # else it's not useful to us
+                # identify any reactions it's involved in
+                for rxn in rm.newReactionList:
+                    if newSpecies in rxn.reactants or newSpecies in rxn.products:
+                        reactionsToPrune.add(rxn)
+            logging.info("Removing {0} edge reactions that aren't useful".format(len(reactionsToPrune)))
+            # remove those reactions
+            for rxn in reactionsToPrune:
+                rm.edge.reactions.remove(rxn)
+            
             reactionsMatch = self.reactionsMatch
             votes = {}
             if len(self.identified_unprocessed_labels) == 1:
