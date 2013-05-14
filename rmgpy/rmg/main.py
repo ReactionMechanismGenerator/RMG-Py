@@ -450,6 +450,42 @@ class RMG:
                     logging.info('The current model core has %s species and %s reactions' % (coreSpec, coreReac))
                     logging.info('The current model edge has %s species and %s reactions' % (edgeSpec, edgeReac))
                     return
+        
+        workbook = xlwt.Workbook()
+        
+        # Run sensitivity analysis post-model generation if sensitivity analysis is on
+        for index, reactionSystem in enumerate(self.reactionSystems):
+                
+            if reactionSystem.sensitivity:
+                logging.info('Conducting sensitivity analysis of reaction system %s...' % (index+1))
+                                
+                if self.saveConcentrationProfiles:                    
+                    worksheet = workbook.add_sheet('#{0:d}'.format(index+1))
+                    sensWorksheet = []
+                    for spec in self.reactionModel.core.species:
+                        sensWorksheet.append(workbook.add_sheet('#{0:d} '.format(index+1) + 'SPC({0})'.format(spec.index)))
+                else:
+                    worksheet = None
+                    sensWorksheet = None
+                    
+                terminated, obj = reactionSystem.simulate(
+                    coreSpecies = self.reactionModel.core.species,
+                    coreReactions = self.reactionModel.core.reactions,
+                    edgeSpecies = self.reactionModel.edge.species,
+                    edgeReactions = self.reactionModel.edge.reactions,
+                    toleranceKeepInEdge = self.fluxToleranceKeepInEdge,
+                    toleranceMoveToCore = self.fluxToleranceMoveToCore,
+                    toleranceInterruptSimulation = self.fluxToleranceInterrupt,
+                    pdepNetworks = pdepNetworks,
+                    worksheet = worksheet,
+                    absoluteTolerance = self.absoluteTolerance,
+                    relativeTolerance = self.relativeTolerance,
+                    sensitivity = True,
+                    sensWorksheet = sensWorksheet,
+                )                
+                
+        if self.saveConcentrationProfiles:
+            workbook.save(os.path.join(self.outputDirectory, 'solver', 'simulation_final.xls'))                    
     
         # Write output file
         logging.info('')

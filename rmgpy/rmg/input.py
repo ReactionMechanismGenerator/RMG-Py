@@ -100,7 +100,7 @@ def adjacencyList(string):
     return Molecule().fromAdjacencyList(string)
 
 # Reaction systems
-def simpleReactor(temperature, pressure, initialMoleFractions, terminationConversion=None, terminationTime=None):
+def simpleReactor(temperature, pressure, initialMoleFractions, terminationConversion=None, terminationTime=None, sensitivity=False):
     logging.debug('Found SimpleReactor reaction system')
 
     if sum(initialMoleFractions.values()) != 1:
@@ -120,7 +120,7 @@ def simpleReactor(temperature, pressure, initialMoleFractions, terminationConver
     if len(termination) == 0:
         raise InputError('No termination conditions specified for reaction system #{0}.'.format(len(rmg.reactionSystems)+2))
     
-    system = SimpleReactor(T, P, initialMoleFractions, termination)
+    system = SimpleReactor(T, P, initialMoleFractions, termination, sensitivity)
     rmg.reactionSystems.append(system)
 
 def simulator(atol, rtol):
@@ -314,6 +314,10 @@ def saveInputFile(path, rmg):
             f.write('    terminationConversion = {\n')
             f.write(conversions)
             f.write('    },\n')
+        
+        # Sensitivity analysis
+        if system.sensitivity:
+            f.write('    sensitivity = {0},\n'.format(system.sensitivity))        
         
         f.write(')\n\n')
         

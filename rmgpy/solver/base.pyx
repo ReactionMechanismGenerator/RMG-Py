@@ -26,7 +26,7 @@
 ################################################################################
 
 """
-Contains the :class:`ReactionSystemr` class, a base class for all RMG reaction
+Contains the :class:`ReactionSystem` class, a base class for all RMG reaction
 systems.
 """
 
@@ -107,7 +107,7 @@ cdef class ReactionSystem(DASSL):
     @cython.boundscheck(False)
     cpdef simulate(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions,
         double toleranceKeepInEdge, double toleranceMoveToCore, double toleranceInterruptSimulation,
-        list pdepNetworks=None, worksheet=None, absoluteTolerance=1e-16, relativeTolerance=1e-8, sensitivity=False):
+        list pdepNetworks=None, worksheet=None, absoluteTolerance=1e-16, relativeTolerance=1e-8, sensitivity=False, sensWorksheet=None):
         """
         Simulate the reaction system with the provided reaction model,
         consisting of lists of core species, core reactions, edge species, and
@@ -121,21 +121,22 @@ cdef class ReactionSystem(DASSL):
 
         cdef dict speciesIndex
         cdef int index, maxSpeciesIndex, maxNetworkIndex
-        cdef int numCoreSpecies, numEdgeSpecies, numPdepNetworks
-        cdef double stepTime, charRate, maxSpeciesRate, maxNetworkRate, realConcentration, prevTime
-        cdef numpy.ndarray[numpy.float64_t, ndim=1] y0 #: Vector containing the number of moles of each species
+        cdef int numCoreSpecies, numEdgeSpecies, numPdepNetworks, numCoreReactions
+        cdef double stepTime, charRate, maxSpeciesRate, maxNetworkRate, prevTime, volume
+        cdef numpy.ndarray[numpy.float64_t, ndim=1] y0, dydk  #: Vector containing the number of moles of each species
         cdef numpy.ndarray[numpy.float64_t, ndim=1] coreSpeciesRates, edgeSpeciesRates, networkLeakRates
         cdef numpy.ndarray[numpy.float64_t, ndim=1] maxCoreSpeciesRates, maxEdgeSpeciesRates, maxNetworkLeakRates
         cdef bint terminated
         cdef object maxSpecies, maxNetwork
         cdef int iteration, i
-        cdef numpy.ndarray[numpy.float64_t, ndim=2] A, sens, b
+        cdef numpy.ndarray[numpy.float64_t, ndim=2] A, moleSens, normSens, b
         
         pdepNetworks = pdepNetworks or []
 
         numCoreSpecies = len(coreSpecies)
         numEdgeSpecies = len(edgeSpecies)
         numPdepNetworks = len(pdepNetworks)
+        numCoreReactions = len(coreReactions)
 
         speciesIndex = {}
         for index, spec in enumerate(coreSpecies):
@@ -160,7 +161,6 @@ cdef class ReactionSystem(DASSL):
         # Copy the initial conditions to use in evaluating conversions
         y0 = self.y.copy()
         
-        realConcentration = self.P.value_si / constants.R / self.T.value_si 
         
         if worksheet:
             import xlwt
@@ -171,9 +171,15 @@ cdef class ReactionSystem(DASSL):
             worksheet.write(3, 1, 'Concentrations (mol/m^3)', style0)
             for i in range(numCoreSpecies):
                 worksheet.write(4, i+1, str(coreSpecies[i]), style0)
-                
+            
+        if sensWorksheet:
+            for sheet in sensWorksheet:
+                sheet.write(0, 0, 'Time (s)', style0)
+                for i in range(numCoreReactions):
+                    sheet.write(0, i+1, 'dln(c)/dln(k{0})'.format(i+1), style0)
+                    
         # initializations for sensitivity analysis
-        sens = self.sensitivityCoefficients
+        moleSens = self.sensitivityCoefficients
         
         stepTime = 1e-12
         prevTime = self.t
@@ -182,10 +188,25 @@ cdef class ReactionSystem(DASSL):
             self.step(stepTime)
             iteration += 1
             if sensitivity:
+                self.jacobian(self.t, self.y, self.y, 0)
                 A = self.jacobianMatrix - 1 / (self.t - prevTime) * numpy.identity(numCoreSpecies, numpy.float64)
-                b = - 1 / (self.t - prevTime) * sens - self.computeRateDerivative() 
-                sens = numpy.dot(numpy.linalg.inv(A), b)                
+                b = - 1 / (self.t - prevTime) * moleSens - self.computeRateDerivative() 
+                moleSens = numpy.dot(numpy.linalg.inv(A), b)                                     
+                volume = sum(self.y) * constants.R * self.T.value_si / self.P.value_si  
+                
+                dydk = numpy.zeros(numCoreReactions, numpy.float64)
+                for j in range(numCoreReactions):
+                    dydk[j] = sum(moleSens[:,j])                
+                
+                normSens = 1 / volume * (moleSens - numpy.outer(self.y/sum(self.y), dydk)) * self.getNormalizationFactor()   
                 prevTime = self.t
+                self.sensitivityCoefficients = moleSens
+                
+                if sensWorksheet:
+                    for i in range(numCoreSpecies):                        
+                        sensWorksheet[i].write(iteration, 0, self.t, style1)
+                        for j in range(numCoreReactions):
+                            sensWorksheet[i].write(iteration, j+1, normSens[i,j], style1)
                 
             if worksheet:
                 worksheet.write(iteration+4, 0, self.t, style1)
@@ -272,7 +293,6 @@ cdef class ReactionSystem(DASSL):
         self.maxCoreSpeciesRates = maxCoreSpeciesRates
         self.maxEdgeSpeciesRates = maxEdgeSpeciesRates
         self.maxNetworkLeakRates = maxNetworkLeakRates
-        self.sensitivityCoefficients = sens
 
         # Return the invalid object (if the simulation was invalid) or None
         # (if the simulation was valid)
