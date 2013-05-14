@@ -178,8 +178,8 @@ class ModelMatcher():
             speciesList = None
             speciesDict = MagicSpeciesDict(speciesDict)
 
+        logging.info("Reading thermo...")
         with open(thermo_file) as f:
-            logging.info("Reading thermo...")
             line0 = f.readline()
             while line0 != '':
                 line = removeCommentFromLine(line0)[0]
@@ -195,9 +195,18 @@ class ModelMatcher():
 
         # thermoDict contains original thermo as read from chemkin thermo file
         self.thermoDict = {s.label: s.thermo for s in speciesDict.values() }
-
+        
         self.speciesList = speciesList
         self.speciesDict = speciesDict
+        
+    def loadReactions(self, reactions_file):
+        logging.info("Reading reactions...")
+        with open(reactions_file) as f:
+            reactionList = readReactionsBlock(f, self.speciesDict, readComments=True)
+        logging.info("Read {0} reactions from chemkin file.".format(len(reactionList)))
+        self.chemkinReactions = reactionList
+        self.chemkinReactionsUnmatched = self.chemkinReactions[:]  # make a copy
+
 
     def initializeRMG(self, args):
         """
@@ -415,6 +424,72 @@ class ModelMatcher():
         # should have already returned if it matches forwards, or we're not allowed to match backwards
         return  (reverseReactantsMatch and reverseProductsMatch)
 
+    def identifySmallMolecules(self):
+        """Identify anything little that is uniquely determined by its chemical formula"""
+        
+        known_formulas = {
+             'CH4': 'C',
+             'CH3': '[CH3]',
+             'CO2': 'O=C=O',
+             'H2O': 'O',
+             'HO': '[OH]',
+             'C2H6': 'CC',
+             'C2H5': 'C[CH2]',
+             'C2H4': 'C=C',
+             'O2': '[O][O]',
+             'H2': '[H][H]',
+             'H2O2': 'OO',
+             'O': '[O]',
+             'N2': 'N#N',
+             'CO': '[C]=O',
+             'HO2': '[O]O',
+             'C3H8': 'CCC',
+             'CH': '[CH]',
+             }
+        identified_labels = []
+        known_labels = {
+                        'mb': 'CCCC(=O)OC'
+        }
+        # use speciesList if it is not None or empty, else the formulaDict keys.
+        for species_label in [s.label for s in self.speciesList or []] or self.formulaDict.keys():
+            formula = self.formulaDict[species_label]
+            if formula in known_formulas:
+                known_smiles = known_formulas[formula]
+                logging.info("I think {0} is {1} based on its formula".format(species_label, known_smiles))
+                smiles = known_smiles
+            elif species_label in known_labels:
+                known_smiles = known_labels[species_label]
+                logging.info("I think {0} is {1} based on its label".format(species_label, known_smiles))
+                smiles = known_smiles
+            else:
+                continue
+            self.smilesDict[species_label] = smiles
+            while formula != Molecule(SMILES=smiles).getFormula():
+                smiles = raw_input("SMILES {0} has formula {1} not required formula {2}. Try again:\n".format(smiles, Molecule(SMILES=smiles).getFormula(), formula))
+            species = self.speciesDict[species_label]
+            species.molecule = [Molecule(SMILES=smiles)]
+            species.generateResonanceIsomers()
+            identified_labels.append(species_label)
+
+        logging.info("Identified {0} species:".format(len(identified_labels)))
+        for species_label in identified_labels:
+            logging.info("   {0}".format(species_label))
+
+        self.identified_labels.extend(identified_labels)
+        
+    def askForMatch(self, chemkinSpecies):
+            species_label = chemkinSpecies.label
+            formula = self.formulaDict[species_label]
+            print "Species {species} has formula {formula}".format(species=species_label, formula=formula)
+            smiles = raw_input('What is its SMILES?\n')
+            while formula != Molecule(SMILES=smiles).getFormula():
+                smiles = raw_input("SMILES {0} has formula {1} not required formula {2}. Try again:\n".format(smiles, Molecule(SMILES=smiles).getFormula(), formula))
+            self.smilesDict[species_label] = smiles
+            species = self.speciesDict[species_label]
+            species.molecule = [Molecule(SMILES=smiles)]
+            species.generateResonanceIsomers()
+            self.identified_labels.append(species_label)
+
 
     def edgeReactionsMatching(self, chemkinReaction):
         """A generator giving edge reactions that match the given chemkin reaction"""
@@ -451,64 +526,13 @@ class ModelMatcher():
 
         self.loadModel(species_file, reactions_file, thermo_file)
 
-        known_formulas = {
-             'CH4': 'C',
-             'CH3': '[CH3]',
-             'CO2': 'O=C=O',
-             'H2O': 'O',
-             'HO': '[OH]',
-             'C2H6': 'CC',
-             'C2H5': 'C[CH2]',
-             'C2H4': 'C=C',
-             'O2': '[O][O]',
-             'H2': '[H][H]',
-             'H2O2': 'OO',
-             'O': '[O]',
-             'N2': 'N#N',
-             'CO': '[C]=O',
-             'HO2': '[O]O',
-             'C3H8': 'CCC',
-             'CH': '[CH]',
-             }
+        self.identifySmallMolecules()
 
-        identified_labels = []
-        # use speciesList if it is not None or empty, else the formulaDict keys.
-        for species_label in [s.label for s in self.speciesList or []] or self.formulaDict.keys():
-            formula = self.formulaDict[species_label]
-            # print "Species {species} has formula {formula}".format(species=species_label, formula=formulaString)
-            if formula in known_formulas:
-                known_smiles = known_formulas[formula]
-                logging.info("I think its SMILES is {0}".format(known_smiles))
-                smiles = known_smiles
-                # print "Hit Enter to confirm, or type the new smiles if wrong\n"
-                # smiles = raw_input() or known_smiles
-            else:
-                continue  # Remove this line to input all SMILES strings
-                smiles = raw_input('What is its SMILES?\n')
-            self.smilesDict[species_label] = smiles
-            while formula != Molecule(SMILES=smiles).getFormula():
-                smiles = raw_input("SMILES {0} has formula {1} not required formula {2}. Try again:\n".format(smiles, Molecule(SMILES=smiles).getFormula(), formula))
-            species = self.speciesDict[species_label]
-            species.molecule = [Molecule(SMILES=smiles)]
-            species.generateResonanceIsomers()
-            identified_labels.append(species_label)
-
-        logging.info("Identified {0} species:".format(len(identified_labels)))
-        for species_label in identified_labels:
-            logging.info("   {0}".format(species_label))
-
-        logging.info("Reading reactions.")
-        with open(reactions_file) as f:
-            reactionList = readReactionsBlock(f, self.speciesDict, readComments=True)
-        logging.info("Read {0} reactions from chemkin file.".format(len(reactionList)))
-        self.chemkinReactions = reactionList
-        self.chemkinReactionsUnmatched = self.chemkinReactions[:]  # make a copy
-
+        self.loadReactions(reactions_file)
 
         logging.info("Initializing RMG")
         self.initializeRMG(args)
         rm = self.rmg_object.reactionModel
-
         self.dictionaryFile = os.path.join(args.output_directory, 'MatchedSpeciesDictionary.txt')
         with open(self.dictionaryFile, 'w') as f:
             f.write("Species identifiers matched automatically:\n")
@@ -516,10 +540,10 @@ class ModelMatcher():
         logging.info("Importing identified species into RMG model")
         # Add identified species to the reaction model complete species list
         newSpeciesDict = {}
-        for species_label in identified_labels:
+        for species_label in self.identified_labels:
             old_species = self.speciesDict[species_label]
-            new_species, wasNew = rm.makeNewSpecies(old_species, label=old_species.label)
-            assert wasNew, "Species with structure of '{0}' already created with label '{1}'".format(species_label, new_species.label)
+            rmg_species, wasNew = rm.makeNewSpecies(old_species, label=old_species.label)
+            assert wasNew, "Species with structure of '{0}' already created with label '{1}'".format(species_label, rmg_species.label)
             # For kinetics purposes, we convert the thermo to Wilhoit
             # This allows us to extrapolating H to 298 to find deltaH rxn
             # for ArrheniusEP kinetics,
@@ -527,13 +551,16 @@ class ModelMatcher():
             thermo = old_species.thermo
             # pretend it was valid down to 298 K
             thermo.selectPolynomial(thermo.Tmin.value_si).Tmin.value_si = 298
-            Cp0 = new_species.calculateCp0()
-            CpInf = new_species.calculateCpInf()
-            new_species.thermo = old_species.thermo.toWilhoit(Cp0=Cp0, CpInf=CpInf)
-            newSpeciesDict[species_label] = new_species
+            Cp0 = rmg_species.calculateCp0()
+            CpInf = rmg_species.calculateCpInf()
+            rmg_species.thermo = old_species.thermo.toWilhoit(Cp0=Cp0, CpInf=CpInf)
+            newSpeciesDict[species_label] = rmg_species
 
         # Set match using the function to get all the side-effects.
-        for chemkinLabel in identified_labels:
+        labelsToProcess = self.identified_labels
+        self.identified_labels = []
+        for chemkinLabel in labelsToProcess:
+            # this adds it back into self.identified_labels
             self.setMatch(chemkinLabel, newSpeciesDict[chemkinLabel])
 
         chemkinFormulas = set(self.formulaDict.values())
@@ -632,7 +659,11 @@ class ModelMatcher():
             counter = 0
             for species in self.speciesList:
                 counter += 1
-                print counter, species
+                print counter, species,
+                if species.label not in self.speciesDict_rmg:
+                    print ""
+                    continue # don't save unidentified species
+                print "\t IDENTIFIED"
                 entry = Entry()
                 entry.index = counter
                 entry.label = species.label
