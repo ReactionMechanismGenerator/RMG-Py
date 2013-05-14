@@ -12,6 +12,7 @@ from rmgpy.reaction import Reaction
 from rmgpy.kinetics import Arrhenius
 from rmgpy.thermo import ThermoData
 from rmgpy.solver.simple import SimpleReactor
+from rmgpy.solver.base import TerminationTime, TerminationConversion
 import rmgpy.constants as constants
 
 ################################################################################
@@ -50,7 +51,7 @@ class SimpleReactorCheck(unittest.TestCase):
         edgeReactions = []
 
         T = 1000; P = 1.0e5
-        rxnSystem = SimpleReactor(T, P, initialMoleFractions={C2H5: 0.1, CH3: 0.1, CH4: 0.4, C2H6: 0.4}, termination=[])
+        rxnSystem = SimpleReactor(T, P, initialMoleFractions={C2H5: 0.1, CH3: 0.1, CH4: 0.4, C2H6: 0.4}, termination=[],sensitivity=False)
 
         rxnSystem.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions)
 
@@ -97,8 +98,8 @@ class SimpleReactorCheck(unittest.TestCase):
         rxnList.append(Reaction(reactants=[C2H6], products=[CH3,CH3], kinetics=Arrhenius(A=(686.375*6,'1/s'), n=4.40721, Ea=(7.82799,'kcal/mol'), T0=(298.15,'K'))))
         rxnList.append(Reaction(reactants=[CH3,CH3], products=[C2H6], kinetics=Arrhenius(A=(686.375*6,'m^3/(mol*s)'), n=4.40721, Ea=(7.82799,'kcal/mol'), T0=(298.15,'K'))))
         
-        rxnList.append(Reaction(reactants=[C2H6], products=[C2H5,CH4], kinetics=Arrhenius(A=(46.375*6,'1/s'), n=3.40721, Ea=(6.82799,'kcal/mol'), T0=(298.15,'K'))))        
-        rxnList.append(Reaction(reactants=[C2H5,CH4], products=[C2H6], kinetics=Arrhenius(A=(46.375*6,'m^3/(mol*s)'), n=3.40721, Ea=(6.82799,'kcal/mol'), T0=(298.15,'K'))))        
+        rxnList.append(Reaction(reactants=[C2H6,CH3], products=[C2H5,CH4], kinetics=Arrhenius(A=(46.375*6,'m^3/(mol*s)'), n=3.40721, Ea=(6.82799,'kcal/mol'), T0=(298.15,'K'))))        
+        rxnList.append(Reaction(reactants=[C2H5,CH4], products=[C2H6,CH3], kinetics=Arrhenius(A=(46.375*6,'m^3/(mol*s)'), n=3.40721, Ea=(6.82799,'kcal/mol'), T0=(298.15,'K'))))        
         
         rxnList.append(Reaction(reactants=[C2H5,CH4], products=[CH3,CH3,CH3], kinetics=Arrhenius(A=(246.375*6,'m^3/(mol*s)'), n=1.40721, Ea=(3.82799,'kcal/mol'), T0=(298.15,'K'))))       
         rxnList.append(Reaction(reactants=[CH3,CH3,CH3], products=[C2H5,CH4], kinetics=Arrhenius(A=(246.375*6,'m^6/(mol^2*s)'), n=1.40721, Ea=(3.82799,'kcal/mol'), T0=(298.15,'K'))))#        
@@ -115,7 +116,7 @@ class SimpleReactorCheck(unittest.TestCase):
             edgeSpecies = []
             coreReactions = [rxn]
             
-            rxnSystem0 = SimpleReactor(T,P,initialMoleFractions={CH4:0.2,CH3:0.1,C2H6:0.35,C2H5:0.15, H2:0.2},termination=[])
+            rxnSystem0 = SimpleReactor(T,P,initialMoleFractions={CH4:0.2,CH3:0.1,C2H6:0.35,C2H5:0.15, H2:0.2},termination=[],sensitivity=False)
             rxnSystem0.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions)
             dydt0 = rxnSystem0.residual(0.0, rxnSystem0.y, numpy.zeros(rxnSystem0.y.shape))[0]
             numCoreSpecies = len(coreSpecies)
@@ -136,8 +137,80 @@ class SimpleReactorCheck(unittest.TestCase):
                 for j in range(numCoreSpecies):
                     jacobian[i,j] = (dydt[j][i]-dydt0[i])/dN
                     self.assertAlmostEqual(jacobian[i,j], solverJacobian[i,j], delta=abs(1e-4*jacobian[i,j]))
+        
+        print 'Solver jacobian'
+        print solverJacobian
+        print 'Numerical jacobian'
+        print jacobian
+        
+        ###
+        # Unit test for the compute rate derivative
+        rxnList = []
+        rxnList.append(Reaction(reactants=[C2H6], products=[CH3,CH3], kinetics=Arrhenius(A=(686.375e6,'1/s'), n=4.40721, Ea=(7.82799,'kcal/mol'), T0=(298.15,'K')))) 
+        rxnList.append(Reaction(reactants=[C2H6,CH3], products=[C2H5,CH4], kinetics=Arrhenius(A=(46.375*6,'m^3/(mol*s)'), n=3.40721, Ea=(6.82799,'kcal/mol'), T0=(298.15,'K'))))        
+        rxnList.append(Reaction(reactants=[C2H6,CH3,CH3], products=[C2H5,C2H5,H2], kinetics=Arrhenius(A=(146.375*6,'m^6/(mol^2*s)'), n=2.40721, Ea=(8.82799,'kcal/mol'), T0=(298.15,'K'))))
+        
+        
+        coreSpecies = [CH4,CH3,C2H6,C2H5,H2]
+        edgeSpecies = []
+        coreReactions = rxnList
+        
+        rxnSystem0 = SimpleReactor(T,P,initialMoleFractions={CH4:0.2,CH3:0.1,C2H6:0.35,C2H5:0.15, H2:0.2},termination=[])
+        rxnSystem0.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions)
+        dfdt0 = rxnSystem0.residual(0.0, rxnSystem0.y, numpy.zeros(rxnSystem0.y.shape))[0]
+        solver_dfdk = rxnSystem0.computeRateDerivative()
+        print 'Solver d(dy/dt)/dk'
+        print solver_dfdk
+        
+        integrationTime = 1e-8
+        rxnSystem0.termination.append(TerminationTime((integrationTime,'s')))
+        rxnSystem0.simulate(coreSpecies, coreReactions, [], [], 0, 1, 0)
 
-                
+        y0 = rxnSystem0.y
+        
+        dfdk = numpy.zeros((numCoreSpecies,len(rxnList)))   # d(dy/dt)/dk
+        dydk = numpy.zeros((numCoreSpecies,len(rxnList)))
+        
+        for i in range(len(rxnList)):
+            k0 = rxnList[i].getRateCoefficient(T,P)
+            rxnList[i].kinetics.A.value_si = rxnList[i].kinetics.A.value_si*(1+1e-3)               
+            dk = rxnList[i].getRateCoefficient(T,P) - k0
+
+            rxnSystem = SimpleReactor(T,P,initialMoleFractions={CH4:0.2,CH3:0.1,C2H6:0.35,C2H5:0.15, H2:0.2},termination=[])
+            rxnSystem.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions)
+
+            dfdt = rxnSystem.residual(0.0, rxnSystem.y, numpy.zeros(rxnSystem.y.shape))[0]  
+            dfdk[:,i]=(dfdt-dfdt0)/dk          
+            
+            
+            rxnSystem.termination.append(TerminationTime((integrationTime,'s')))
+            rxnSystem.simulate(coreSpecies, coreReactions, [], [], 0, 1, 0)
+            
+            dydk[:,i] = (rxnSystem.y - y0)/dk
+            
+            rxnList[i].kinetics.A.value_si = rxnList[i].kinetics.A.value_si/(1+1e-3)  # reset A factor
+            
+        for i in range(numCoreSpecies):
+            for j in range(len(rxnList)):
+                self.assertAlmostEqual(dfdk[i,j], solver_dfdk[i,j], delta=abs(1e-3*dfdk[i,j]))
+            
+        print 'Numerical d(dy/dt)/dk'    
+        print dfdk
+        
+        print 'Numerical sensitivity dy/dk'
+        print dydk
+        
+        rxnSystem = SimpleReactor(T,P,initialMoleFractions={CH4:0.2,CH3:0.1,C2H6:0.35,C2H5:0.15, H2:0.2},termination=[])
+        rxnSystem.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions)
+        
+        rxnSystem.termination.append(TerminationTime((integrationTime,'s')))
+        rxnSystem.simulate(coreSpecies, coreReactions, [], [], 0, 1, 0,sensitivity=True)
+        
+        # Numerical sensitivity not yet handled properly, so will display different values from the solver sensitivity coefficients
+        print 'Solver sensitivity dy/dk'
+        print rxnSystem.sensitivityCoefficients
+        
+        
 #        # Visualize the simulation results
 #        import pylab
 #        fig = pylab.figure(figsize=(6,6))
