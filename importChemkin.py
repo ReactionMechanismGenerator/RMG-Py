@@ -502,9 +502,9 @@ class ModelMatcher():
             reactionList = readReactionsBlock(f, self.speciesDict, readComments=True)
         logging.info("Read {0} reactions from chemkin file.".format(len(reactionList)))
         self.chemkinReactions = reactionList
-        self.chemkinReactionsUnmatched = self.chemkinReactions[:] # make a copy
+        self.chemkinReactionsUnmatched = self.chemkinReactions[:]  # make a copy
 
-        
+
         logging.info("Initializing RMG")
         self.initializeRMG(args)
         rm = self.rmg_object.reactionModel
@@ -535,7 +535,7 @@ class ModelMatcher():
         # Set match using the function to get all the side-effects.
         for chemkinLabel in identified_labels:
             self.setMatch(chemkinLabel, newSpeciesDict[chemkinLabel])
-        
+
         chemkinFormulas = set(self.formulaDict.values())
 
         chemkinReactionsUnmatched = self.chemkinReactionsUnmatched
@@ -562,7 +562,7 @@ class ModelMatcher():
             # remove those reactions
             for rxn in reactionsToPrune:
                 rm.edge.reactions.remove(rxn)
-            
+
             reactionsMatch = self.reactionsMatch
             votes = {}
             if len(self.identified_unprocessed_labels) == 1:
@@ -581,20 +581,20 @@ class ModelMatcher():
                                 for reagent in reagents:
                                     if reagent.label not in self.identified_labels:
                                         break
-                                else: # didn't break inner loop so these reagents have all been identified
+                                else:  # didn't break inner loop so these reagents have all been identified
                                     continue
-                                break # did break inner loop, so break outer loop as there's an unidentified species
-                            else: #didn't break outer loop, so all species have been identified
+                                break  # did break inner loop, so break outer loop as there's an unidentified species
+                            else:  # didn't break outer loop, so all species have been identified
                                 # remove it from the list of useful reactions.
                                 chemkinReactionsUnmatched.remove(chemkinReaction)
                         for chemkinLabel, rmgSpecies in self.suggestedMatches.iteritems():
                             if chemkinLabel not in votes:
-                                votes[chemkinLabel] = {rmgSpecies: [chemkinReaction]}
+                                votes[chemkinLabel] = {rmgSpecies: [(chemkinReaction, edgeReaction)]}
                             else:
                                 if rmgSpecies not in votes[chemkinLabel]:
-                                    votes[chemkinLabel][rmgSpecies] = [chemkinReaction]
+                                    votes[chemkinLabel][rmgSpecies] = [(chemkinReaction, edgeReaction)]
                                 else:
-                                    votes[chemkinLabel][rmgSpecies].append(edgeReaction)
+                                    votes[chemkinLabel][rmgSpecies].append((chemkinReaction, edgeReaction))
                             # now votes is a dict of dicts of lists {'ch3':{<Species CH3>: [ voting_reactions ]}}
             for chemkinLabel, possibleMatches in votes.iteritems():
                 if len(possibleMatches) == 1:
@@ -602,7 +602,7 @@ class ModelMatcher():
                     logging.info("\nOnly one suggested match for {0}: {1!s}".format(chemkinLabel, matchingSpecies))
                     logging.info("With {0} voting reactions:".format(len(votingReactions)))
                     for reaction in votingReactions:
-                        logging.info("  {0!s}".format(reaction))
+                        logging.info("  {0!s}".format(reaction[1]))
                     allPossibleChemkinSpecies = [ck for ck, matches in votes.iteritems() if matchingSpecies in matches]
                     if len(allPossibleChemkinSpecies) == 1:
                         logging.info("Only one chemkin species has this match.")
@@ -611,16 +611,22 @@ class ModelMatcher():
                         logging.info("Other Chemkin species that also match {0} are {1!r}".format(matchingSpecies.label, allPossibleChemkinSpecies))
                         logging.info("Will not make match at this time.")
             logging.info("Done processing species {0}!".format(labelToProcess))
-            logging.info("Have now identified {0} of {1} species ({2:.1%} remaining): {3!r}".format(len(self.identified_labels), len(self.speciesList), 1-float(len(self.identified_labels))/len(self.speciesList), self.identified_labels))
-            logging.info("And fully identified {0} of {1} reactions ({2:.1%} remaining).".format(len(self.chemkinReactions)-len(self.chemkinReactionsUnmatched), len(self.chemkinReactions), float(len(self.chemkinReactionsUnmatched))/len(self.chemkinReactions) ))
+            logging.info("Have now identified {0} of {1} species ({2:.1%} remaining): {3!r}".format(len(self.identified_labels), len(self.speciesList), 1 - float(len(self.identified_labels)) / len(self.speciesList), self.identified_labels))
+            logging.info("And fully identified {0} of {1} reactions ({2:.1%} remaining).".format(len(self.chemkinReactions) - len(self.chemkinReactionsUnmatched), len(self.chemkinReactions), float(len(self.chemkinReactionsUnmatched)) / len(self.chemkinReactions)))
             logging.info("Still to process: {0!r}".format(self.identified_unprocessed_labels))
 
-        for chemkinLabel, possibleMatches in votes.iteritems():
-            for matchingSpecies, votingReactions in possibleMatches.iteritems():
-                logging.info("{0}  matches  {1}  according to {2} reactions:".format(chemkinLabel, matchingSpecies.label, len(votingReactions)))
-                for rxn in votingReactions:
-                    logging.info("   {0!s}".format(rxn))
-                        
+            logging.info("Current voting:::")
+
+            flatVotes = {}
+            for chemkinLabel, possibleMatches in votes.iteritems():
+                for matchingSpecies, votingReactions in possibleMatches.iteritems():
+                    flatVotes[(chemkinLabel, matchingSpecies)] = votingReactions
+
+            for (chemkinLabel, matchingSpecies), votingReactions in sorted(flatVotes.iteritems(), key=lambda tup:-len(tup[1])):
+                logging.info("{0}  matches  {1!s}  according to {2} reactions:".format(chemkinLabel, matchingSpecies, len(votingReactions)))
+                for rxns in votingReactions:
+                    logging.info("   {0!s}".format(rxns[1]))
+
         print "Finished reading"
         with open(outputThermoFile, 'w') as f:
             counter = 0
