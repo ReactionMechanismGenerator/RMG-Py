@@ -107,7 +107,7 @@ cdef class ReactionSystem(DASSL):
     @cython.boundscheck(False)
     cpdef simulate(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions,
         double toleranceKeepInEdge, double toleranceMoveToCore, double toleranceInterruptSimulation,
-        list pdepNetworks=None, worksheet=None, absoluteTolerance=1e-16, relativeTolerance=1e-8, sensitivity=False, sensWorksheet=None):
+        list pdepNetworks=None, worksheet=None, absoluteTolerance=1e-16, relativeTolerance=1e-8, sensitivity=None, sensWorksheet=None):
         """
         Simulate the reaction system with the provided reaction model,
         consisting of lists of core species, core reactions, edge species, and
@@ -177,9 +177,15 @@ cdef class ReactionSystem(DASSL):
                 sheet.write(0, 0, 'Time (s)', style0)
                 for i in range(numCoreReactions):
                     sheet.write(0, i+1, 'dln(c)/dln(k{0})'.format(i+1), style0)
-                    
-        # initializations for sensitivity analysis
-        moleSens = self.sensitivityCoefficients
+        
+        if sensitivity:            
+            # initialize molar sensitivity coefficients to zeros
+            moleSens = self.sensitivityCoefficients
+            # identify species indices
+            sensSpeciesIndices = []
+            for spec in sensitivity:
+                sensSpeciesIndices.append(speciesIndex[spec])  # index within coreSpecies list of the sensitive species
+                
         
         stepTime = 1e-12
         prevTime = self.t
@@ -203,10 +209,10 @@ cdef class ReactionSystem(DASSL):
                 self.sensitivityCoefficients = moleSens
                 
                 if sensWorksheet:
-                    for i in range(numCoreSpecies):                        
+                    for i in range(len(sensSpeciesIndices)):                      
                         sensWorksheet[i].write(iteration, 0, self.t, style1)
                         for j in range(numCoreReactions):
-                            sensWorksheet[i].write(iteration, j+1, normSens[i,j], style1)
+                            sensWorksheet[i].write(iteration, j+1, normSens[sensSpeciesIndices[i],j], style1)
                 
             if worksheet:
                 worksheet.write(iteration+4, 0, self.t, style1)

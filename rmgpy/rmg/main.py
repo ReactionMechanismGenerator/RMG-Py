@@ -462,8 +462,8 @@ class RMG:
                 if self.saveConcentrationProfiles:                    
                     worksheet = workbook.add_sheet('#{0:d}'.format(index+1))
                     sensWorksheet = []
-                    for spec in self.reactionModel.core.species:
-                        sensWorksheet.append(workbook.add_sheet('#{0:d} '.format(index+1) + 'SPC({0})'.format(spec.index)))
+                    for spec in reactionSystem.sensitivity:
+                        sensWorksheet.append(workbook.add_sheet('SPC({0}) sens'.format(spec.index)))
                 else:
                     worksheet = None
                     sensWorksheet = None
@@ -480,7 +480,7 @@ class RMG:
                     worksheet = worksheet,
                     absoluteTolerance = self.absoluteTolerance,
                     relativeTolerance = self.relativeTolerance,
-                    sensitivity = True,
+                    sensitivity = reactionSystem.sensitivity,
                     sensWorksheet = sensWorksheet,
                 )                
                 

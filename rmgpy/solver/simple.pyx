@@ -51,7 +51,7 @@ cdef class SimpleReactor(ReactionSystem):
     cdef public ScalarQuantity T
     cdef public ScalarQuantity P
     cdef public dict initialMoleFractions
-    cdef public bint sensitivity
+    cdef public list sensitivity
 
     cdef public numpy.ndarray reactantIndices
     cdef public numpy.ndarray productIndices
@@ -61,7 +61,7 @@ cdef class SimpleReactor(ReactionSystem):
     cdef public numpy.ndarray networkLeakCoefficients
     cdef public numpy.ndarray jacobianMatrix
 
-    def __init__(self, T, P, initialMoleFractions, termination, sensitivity=False):
+    def __init__(self, T, P, initialMoleFractions, termination, sensitivity=None):
         ReactionSystem.__init__(self, termination)
         self.T = Quantity(T)
         self.P = Quantity(P)
@@ -152,6 +152,7 @@ cdef class SimpleReactor(ReactionSystem):
         y0 = numpy.zeros((numCoreSpecies), numpy.float64)
         for spec, moleFrac in self.initialMoleFractions.iteritems():
             y0[speciesIndex[spec]] = moleFrac
+            
         # Use ideal gas law to compute volume
         V = constants.R * self.T.value_si * numpy.sum(y0) / self.P.value_si
         for j in range(y0.shape[0]):
