@@ -40,7 +40,7 @@ class GaussianTest(unittest.TestCase):
         self.assertAlmostEqual(rot.getPartitionFunction(Tlist), 2.59622e3, delta=1e-2)
         self.assertAlmostEqual(vib.getPartitionFunction(Tlist), 1.0481e0, delta=1e-4)
 
-        self.assertAlmostEqual(E0 / constants.Na / constants.E_h, -78.416641, 4)
+        self.assertAlmostEqual(E0 / constants.Na / constants.E_h, -78.467452, 4)
         self.assertEqual(conformer.spinMultiplicity, 1)
         self.assertEqual(conformer.opticalIsomers, 1)
 
@@ -67,7 +67,7 @@ class GaussianTest(unittest.TestCase):
         self.assertAlmostEqual(rot.getPartitionFunction(Tlist), 7.13316e1, delta=1e-4)
         self.assertAlmostEqual(vib.getPartitionFunction(Tlist), 1.00037e0, delta=1e-4)
         
-        self.assertAlmostEqual(E0 / constants.Na / constants.E_h, -150.374756, 4)
+        self.assertAlmostEqual(E0 / constants.Na / constants.E_h, -150.3784877, 4)
         self.assertEqual(conformer.spinMultiplicity, 3)
         self.assertEqual(conformer.opticalIsomers, 1)
 
