@@ -66,7 +66,7 @@ def saveOutputHTML(path, reactionModel):
     try:
         import jinja2
     except ImportError:
-        logging.warning("jinja package not found; HTML output will not be saved.")
+        logging.warning("jinja2 package not found; HTML output will not be saved.")
         return
 
     path = os.path.abspath(path)
