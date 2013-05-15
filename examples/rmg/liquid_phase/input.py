@@ -35,8 +35,7 @@ liquidReactor(
 )
 
 solvation(
-	solvent='octane',
-	viscosity = (1e-3, "cP")
+	solvent='octane'
 )
 
 simulator(
@@ -46,8 +45,8 @@ simulator(
 
 model(
     toleranceKeepInEdge=1E-9,
-    toleranceMoveToCore=0.1,
-    toleranceInterruptSimulation=1E9,
+    toleranceMoveToCore=0.001,
+    toleranceInterruptSimulation=0.1,
     maximumEdgeSpecies=100000
 )
 

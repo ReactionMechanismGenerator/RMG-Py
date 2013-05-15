@@ -169,10 +169,10 @@ def simulator(atol, rtol):
     rmg.absoluteTolerance = atol
     rmg.relativeTolerance = rtol
     
-def solvation(solvent, viscosity):
+def solvation(solvent):
+    # If solvation module in input file, set the RMG solvent variable
 	assert isinstance(solvent,str), "solvent should be a string like 'water'"
 	rmg.solvent = solvent
-	rmg.viscosity = Quantity(viscosity)
 
 def model(toleranceMoveToCore, toleranceKeepInEdge=0.0, toleranceInterruptSimulation=1.0, maximumEdgeSpecies=None):
     rmg.fluxToleranceKeepInEdge = toleranceKeepInEdge
