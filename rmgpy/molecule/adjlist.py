@@ -142,12 +142,33 @@ def fromAdjacencyList(adjlist, group=False):
                 elif e == '4':
                     radicalElectrons.append(4); spinMultiplicity.append(5)
             index += 1
-
+            
+            # Next number defines the number of lone electron pairs (if provided)
+            lonePairElectrons = -1
+            if not group and len(data) > index:
+                lpState = data[index]
+                if lpState[0] != '{':
+                    if lpState == '0':
+                        lonePairElectrons = 0
+                    if lpState == '1':
+                        lonePairElectrons = 1
+                    if lpState == '2':
+                        lonePairElectrons = 2
+                    if lpState == '3':
+                        lonePairElectrons = 3
+                    if lpState == '4':
+                        lonePairElectrons = 4
+                    index += 1
+                else:
+                    lonePairElectrons = -1
+            else:
+                lonePairElectrons = -1
+            
             # Create a new atom based on the above information
             if group:
                 atom = GroupAtom(atomType, radicalElectrons, spinMultiplicity, [0 for e in radicalElectrons], label)
             else:
-                atom = Atom(atomType[0], radicalElectrons[0], spinMultiplicity[0], 0, label)
+                atom = Atom(atomType[0], radicalElectrons[0], spinMultiplicity[0], 0, label, lonePairElectrons)
 
             # Add the atom to the list
             atoms.append(atom)
@@ -204,7 +225,7 @@ def fromAdjacencyList(adjlist, group=False):
                     atom2.edges[atom1] = bond
         
         # Calculate the number of lone pair electrons requiring molecule with all hydrogen atoms present
-        if not group:
+        if not group and lonePairElectrons == -1:
             valences = {'H': 1, 'C': 4, 'O': 2, 'N': 3, 'S': 2, 'Si': 4, 'He': 0, 'Ne': 0, 'Ar': 0}
             orders = {'S': 1, 'D': 2, 'T': 3, 'B': 1.5}
             for atom in atoms:
@@ -231,6 +252,9 @@ def fromAdjacencyList(adjlist, group=False):
                     charge = 2 - valence - order - radical - 2*lonePairs
                     atom.setLonePairs(lonePairs)
                     atom.updateCharge()
+        elif not group:
+            for atom in atoms:
+                atom.updateCharge()
                     
     except InvalidAdjacencyListError:
         print adjlist

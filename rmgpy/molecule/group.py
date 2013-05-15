@@ -74,7 +74,7 @@ class GroupAtom(Vertex):
     order to match.
     """
 
-    def __init__(self, atomType=None, radicalElectrons=None, spinMultiplicity=None, charge=None, label='', lonePairs=0):
+    def __init__(self, atomType=None, radicalElectrons=None, spinMultiplicity=None, charge=None, label='', lonePairs=None):
         Vertex.__init__(self)
         self.atomType = atomType or []
         for index in range(len(self.atomType)):
