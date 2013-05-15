@@ -643,16 +643,24 @@ class ModelMatcher():
             logging.info("Still to process: {0!r}".format(self.identified_unprocessed_labels))
 
             logging.info("Current voting:::")
-
+            chemkinControversy = {label: 0 for label in votes.iterkeys()}
+            rmgControversy = {}
             flatVotes = {}
             for chemkinLabel, possibleMatches in votes.iteritems():
                 for matchingSpecies, votingReactions in possibleMatches.iteritems():
                     flatVotes[(chemkinLabel, matchingSpecies)] = votingReactions
+                    chemkinControversy[chemkinLabel] += len(votingReactions)
+                    rmgControversy[matchingSpecies] = rmgControversy.get(matchingSpecies, 0) + len(votingReactions)
+            
+            for chemkinLabel in sorted(chemkinControversy.keys(), key=lambda label:-chemkinControversy[label]):
+                possibleMatches = votes[chemkinLabel]
+                logging.info("{0} matches {1} RMG species:".format(chemkinLabel, len(possibleMatches)))
+                for matchingSpecies in sorted(possibleMatches.iterkeys(), key=lambda species: -len(possibleMatches[species]) ) :
+                    votingReactions = possibleMatches[matchingSpecies]
+                    logging.info("  {0}  matches  {1!s}  according to {2} reactions:".format(chemkinLabel, matchingSpecies, len(votingReactions)))
+                    for rxns in votingReactions:
+                        logging.info("    {0!s}     //    {1!s}".format(rxns[0], rxns[1]))
 
-            for (chemkinLabel, matchingSpecies), votingReactions in sorted(flatVotes.iteritems(), key=lambda tup:-len(tup[1])):
-                logging.info("{0}  matches  {1!s}  according to {2} reactions:".format(chemkinLabel, matchingSpecies, len(votingReactions)))
-                for rxns in votingReactions:
-                    logging.info("   {0!s}".format(rxns[1]))
 
         print "Finished reading"
         with open(outputThermoFile, 'w') as f:
