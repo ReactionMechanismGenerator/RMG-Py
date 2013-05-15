@@ -1,25 +1,27 @@
 import rmgpy.quantity as quantity
 import logging
 from rmgpy.species import Species
-from rmgpy.data.solvation import SoluteData, SoluteGroups, SolvationDatabase
+from rmgpy.data.solvation import SolventData, SoluteData, SoluteGroups, SolvationDatabase
 from rmgpy.reaction import Reaction
 
 
 class DiffusionLimited():
 
     def __init__(self):
+    # default is false, enabled if there is a solvent
         self.enabled = False
 
-    def enable(self, viscosity, solvationDatabase, comment=''):
-        logging.info("Enabling diffusion-limited kinetics with solvent viscosity {0!r}".format(viscosity))
+    def enable(self, solventData, solvationDatabase, comment=''):
+    # diffusionLimiter is enabled if a solvent has been added to the RMG object.
+        logging.info("Enabling diffusion-limited kinetics...")
         diffusionLimiter.enabled = True
         diffusionLimiter.database = solvationDatabase
-        diffusionLimiter.solventViscosity = viscosity
+        diffusionLimiter.solventData = solventData
 
     def getSolventViscosity(self, T):
-        
-        return self.solventViscosity or Quantity(1,"cp")
-        
+        solventViscosity = self.solventData.getSolventViscosity(T)
+        return solventViscosity or Quantity(1, "cp")
+              
     def getEffectiveRate(self, reaction, T):
         """
         Return the ratio of k_eff to k_intrinsic, which is between 0 and 1.

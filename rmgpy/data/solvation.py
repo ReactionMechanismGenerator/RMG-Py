@@ -31,6 +31,7 @@
 """
 
 """
+import rmgpy.quantity as quantity
 
 import os
 import os.path
@@ -73,7 +74,8 @@ class SolventData():
     Stores Abraham/Mintz parameters for characterizing a solvent.
     """
     def __init__(self, s_h=None, b_h=None, e_h=None, l_h=None, a_h=None,
-    c_h=None, s_g=None, b_g=None, e_g=None, l_g=None, a_g=None, c_g=None):
+    c_h=None, s_g=None, b_g=None, e_g=None, l_g=None, a_g=None, c_g=None, A=None, B=None, 
+    C=None, D=None, E=None):
         self.s_h = s_h
         self.b_h = b_h
         self.e_h = e_h
@@ -86,7 +88,21 @@ class SolventData():
         self.l_g = l_g
         self.a_g = a_g
         self.c_g = c_g
-
+        # These are parameters for calculating viscosity
+        self.A = A
+        self.B = B
+        self.C = C
+        self.D = D
+        self.E = E
+        
+    def getSolventViscosity(self, T):
+        """
+        Returns the viscosity in cp, according to correlation in Perry's Handbook
+        and coefficients in DIPPR
+        """
+        viscosity = (math.exp(self.A + (self.B / T) + (self.C*math.log(T)) + (self.D * (T**self.E))))/1000
+        return Quantity(viscosity, "cp")
+                    
 class SolvationCorrection():
     """
     Stores corrections for enthalpy, entropy, and Gibbs free energy when a species is solvated.

@@ -131,7 +131,6 @@ class RMG:
         self.kineticsDepositories = None
         self.kineticsEstimator = 'group additivity'
         self.solvent = None
-        self.viscosity = None
         self.diffusionLimiter = None
         
         self.reactionModel = None
@@ -280,7 +279,7 @@ class RMG:
         if self.solvent:
         	Species.solventData = self.database.solvation.getSolventData(self.solvent)
         	Species.solventName = self.solvent
-        	diffusionLimiter.enable(self.viscosity, self.database.solvation)
+        	diffusionLimiter.enable(Species.solventData, self.database.solvation)
         	logging.info("Setting solvent data for {0}".format(self.solvent))
     
         # Set wall time
