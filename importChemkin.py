@@ -12,6 +12,8 @@ command-line, e.g.
 If you supply a --species file (containing a SPECIES block) this is used to limit
 the species converted.
 The resulting file is saved next to the thermo input file.
+
+If running in QTconsole, it draws pictures of the species.
 """
 
 import os.path
@@ -20,6 +22,7 @@ import logging
 
 import rmgpy
 import rmgpy.rmg
+from rmgpy.display import display
 
 from rmgpy.chemkin import loadChemkinFile, readSpeciesBlock, readThermoBlock, readReactionsBlock, removeCommentFromLine
 from rmgpy.reaction import ReactionModel
@@ -29,6 +32,7 @@ from rmgpy.molecule import Molecule
 from rmgpy.rmg.model import Species  # you need this one, not the one in rmgpy.species!
 
 from rmgpy.rmg.main import RMG, initializeLog
+from rmgpy.molecule.draw import MoleculeDrawer
 
 import time
 import sys
@@ -235,6 +239,7 @@ class ModelMatcher():
 
         self.rmg_object = rmg
         return rmg
+
 
     def speciesMatch(self, rmg_species, chemkin_species):
         """
@@ -505,15 +510,31 @@ class ModelMatcher():
             if reactionsMatch(rmgReaction, chemkinReaction):
                 yield chemkinReaction
 
+    def drawSpecies(self, rmg_species):
+        "Draw a species, saved in 'species' directory named after its RMG name (label and id)."
+        # Draw molecules if necessary
+        fstr = os.path.join(self.rmg_object.outputDirectory, 'species', '{0!s}.png'.format(rmg_species))
+        if not os.path.exists(fstr):
+            MoleculeDrawer().draw(rmg_species.molecule[0], 'png', fstr)
+
+    def moveSpeciesDrawing(self, rmg_species):
+        "Move a species drawing from 'species' diretory to 'species/MATCHED' directory."
+        source = os.path.join(self.rmg_object.outputDirectory, 'species', '{0!s}.png'.format(rmg_species))
+        destination = os.path.join(self.rmg_object.outputDirectory, 'species', 'MATCHED', '{0!s}.png'.format(rmg_species))
+        if os.path.exists(source):
+            os.renames(source, destination)
+
     def setMatch(self, chemkinLabel, rmgSpecies):
         """Store a match, once you've identified it"""
         self.identified_labels.append(chemkinLabel)
         self.identified_unprocessed_labels.append(chemkinLabel)
         self.speciesDict_rmg[chemkinLabel] = rmgSpecies
         logging.info("Storing match: {0} = {1!s}".format(chemkinLabel, rmgSpecies))
+        self.moveSpeciesDrawing(rmgSpecies)
         rmgSpecies.label = chemkinLabel
         with open(self.dictionaryFile, 'a') as f:
             f.write("{0}\t{1}\n".format(chemkinLabel, rmgSpecies.molecule[0].toSMILES()))
+        self.drawSpecies(rmgSpecies)
 
 
     def main(self, args):
@@ -627,6 +648,7 @@ class ModelMatcher():
                 if len(possibleMatches) == 1:
                     matchingSpecies, votingReactions = possibleMatches.items()[0]
                     logging.info("\nOnly one suggested match for {0}: {1!s}".format(chemkinLabel, matchingSpecies))
+                    display(matchingSpecies)
                     logging.info("With {0} voting reactions:".format(len(votingReactions)))
                     for reaction in votingReactions:
                         logging.info("  {0!s}".format(reaction[1]))
@@ -648,6 +670,7 @@ class ModelMatcher():
             flatVotes = {}
             for chemkinLabel, possibleMatches in votes.iteritems():
                 for matchingSpecies, votingReactions in possibleMatches.iteritems():
+                    self.drawSpecies(matchingSpecies)
                     flatVotes[(chemkinLabel, matchingSpecies)] = votingReactions
                     chemkinControversy[chemkinLabel] += len(votingReactions)
                     rmgControversy[matchingSpecies] = rmgControversy.get(matchingSpecies, 0) + len(votingReactions)
@@ -658,6 +681,7 @@ class ModelMatcher():
                 for matchingSpecies in sorted(possibleMatches.iterkeys(), key=lambda species: -len(possibleMatches[species]) ) :
                     votingReactions = possibleMatches[matchingSpecies]
                     logging.info("  {0}  matches  {1!s}  according to {2} reactions:".format(chemkinLabel, matchingSpecies, len(votingReactions)))
+                    display(matchingSpecies)
                     for rxns in votingReactions:
                         logging.info("    {0!s}     //    {1!s}".format(rxns[0], rxns[1]))
 
