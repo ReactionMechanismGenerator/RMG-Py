@@ -295,6 +295,7 @@ class CoreEdgeReactionModel:
         self.outputSpeciesList = []
         self.outputReactionList = []
         self.pressureDependence = None
+        self.quantumMechanics = None
         self.verboseComments = False
         self.kineticsEstimator = 'group additivity'
         self.reactionGenerationOptions = {}
