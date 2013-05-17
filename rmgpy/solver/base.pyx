@@ -41,6 +41,7 @@ from pydas cimport DASSL
 
 import cython
 import logging
+import csv
 
 from rmgpy.quantity import Quantity
 
@@ -163,20 +164,12 @@ cdef class ReactionSystem(DASSL):
         
         
         if worksheet:
-            import xlwt
-            self.writeWorksheetHeader(worksheet)
-            style0 = xlwt.easyxf('font: bold on')
-            style1 = xlwt.easyxf(num_format_str='0.000E+00')
-            worksheet.write(3, 0, 'Time (s)', style0)
-            worksheet.write(3, 1, 'Concentrations (mol/m^3)', style0)
+            row = ['Time (s)']
+            worksheet.writerow(['Time (s)','Concentrations (mol/m^3)'])
+            row = ['']
             for i in range(numCoreSpecies):
-                worksheet.write(4, i+1, str(coreSpecies[i]), style0)
-            
-        if sensWorksheet:
-            for sheet in sensWorksheet:
-                sheet.write(0, 0, 'Time (s)', style0)
-                for i in range(numCoreReactions):
-                    sheet.write(0, i+1, 'dln(c)/dln(k{0})'.format(i+1), style0)
+                row.append(str(coreSpecies[i]))
+            worksheet.writerow(row)
         
         if sensitivity:            
             # initialize molar sensitivity coefficients to zeros
@@ -185,6 +178,12 @@ cdef class ReactionSystem(DASSL):
             sensSpeciesIndices = []
             for spec in sensitivity:
                 sensSpeciesIndices.append(speciesIndex[spec])  # index within coreSpecies list of the sensitive species
+                
+            if sensWorksheet:            
+                headers = ['Time (s)']
+                headers.extend(['dln(c)/dln(k{0})'.format(i+1) for i in range(numCoreReactions)])
+                for sheet in sensWorksheet:
+                    sheet.writerow(headers)
                 
         
         stepTime = 1e-12
@@ -209,15 +208,16 @@ cdef class ReactionSystem(DASSL):
                 self.sensitivityCoefficients = moleSens
                 
                 if sensWorksheet:
-                    for i in range(len(sensSpeciesIndices)):                      
-                        sensWorksheet[i].write(iteration, 0, self.t, style1)
-                        for j in range(numCoreReactions):
-                            sensWorksheet[i].write(iteration, j+1, normSens[sensSpeciesIndices[i],j], style1)
+                    for i in range(len(sensSpeciesIndices)):     
+                         row = [self.t]
+                         row.extend([normSens[sensSpeciesIndices[i],j] for j in range(numCoreReactions)])       
+                         sensWorksheet[i].writerow(row)         
                 
             if worksheet:
-                worksheet.write(iteration+4, 0, self.t, style1)
+                row = [self.t]
                 for i in range(numCoreSpecies):
-                    worksheet.write(iteration+4, i+1, self.coreSpeciesConcentrations[i], style1)
+                    row.append(self.coreSpeciesConcentrations[i])
+                worksheet.writerow(row)
 
             # Get the characteristic flux
             charRate = sqrt(numpy.sum(self.coreSpeciesRates * self.coreSpeciesRates))

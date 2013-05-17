@@ -821,5 +821,6 @@ cdef class SimpleReactor(ReactionSystem):
         norm = numpy.zeros((c.shape[0],numCoreReactions), numpy.float64)
         for i in range(numCoreSpecies):
             for j in range(numCoreReactions):
-                norm[i,j] = kf[j]/c[i]
+                if c[i] != 0.0:
+                    norm[i,j] = kf[j]/c[i]                
         return norm
