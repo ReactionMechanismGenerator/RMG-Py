@@ -488,7 +488,7 @@ class ModelMatcher():
 
         self.identified_labels.extend(identified_labels)
         
-    def askForMatch(self, chemkinSpecies):
+    def askForMatchSMILES(self, chemkinSpecies):
             species_label = chemkinSpecies.label
             formula = self.formulaDict[species_label]
             print "Species {species} has formula {formula}".format(species=species_label, formula=formula)
@@ -500,7 +500,22 @@ class ModelMatcher():
             species.molecule = [Molecule(SMILES=smiles)]
             species.generateResonanceIsomers()
             self.identified_labels.append(species_label)
-
+            
+    def askForMatchID(self, speciesLabel, possibleMatches):
+            """
+            Ask user for a match for a given speciesLabel, choosing from the iterable possibleMatches
+            """
+            #print "Species {species} has formula {formula}".format(species=species_label, formula=formula)
+            matchesDict = {species.index: species for species in possibleMatches }
+            possibleIndicesStr = [str(i) for i in sorted(matchesDict.keys())]
+            print "Species {0} could be one of:".format(speciesLabel)
+            for index in sorted(matchesDict.keys()):
+                print "{0:6d}  {1}".format(index, matchesDict[index].label)
+            chosenID = raw_input('What is it? (see voting info above)\n')
+            while chosenID not in possibleIndicesStr:
+                chosenID = raw_input("That wasn't one of {0}. Try again:\n".format(','.join(possibleIndicesStr)))
+            logging.info("Based on user input...")
+            self.setMatch(speciesLabel, matchesDict[int(chosenID)])
 
     def edgeReactionsMatching(self, chemkinReaction):
         """A generator giving edge reactions that match the given chemkin reaction"""
@@ -621,7 +636,7 @@ class ModelMatcher():
 
             reactionsMatch = self.reactionsMatch
             votes = {}
-            if len(self.identified_unprocessed_labels) == 1:
+            if len(self.identified_unprocessed_labels) == 0:
                 logging.info("** Running out of things to process - will check all edge reactions again...")
                 edgeReactionsProcessed = 0
             for edgeReaction in rm.edge.reactions[edgeReactionsProcessed:]:
@@ -693,7 +708,14 @@ class ModelMatcher():
                     display(matchingSpecies)
                     for rxns in votingReactions:
                         logging.info("    {0!s}     //    {1!s}".format(rxns[0], rxns[1]))
-
+                
+            if len(self.identified_unprocessed_labels) == 0:
+                logging.info("Run out of options. Asking for help!")
+                speciesLabel = raw_input('Which label would you like to identify? (see voting info above)\n')
+                while speciesLabel not in self.formulaDict and speciesLabel in self.identified_labels:
+                    speciesLabel = raw_input("That wasn't an unidentified label. Try again:\n")
+                possibleMatches = votes[speciesLabel].keys()
+                self.askForMatchID(speciesLabel, possibleMatches)
 
         print "Finished reading"
         with open(outputThermoFile, 'w') as f:
