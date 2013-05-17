@@ -149,6 +149,7 @@ class RMG:
         self.saveConcentrationProfiles = None
         self.verboseComments = None
         self.pressureDependence = None
+        self.quantumMechanics = None
         self.reactionGenerationOptions = {}
         self.wallTime = 0
         self.initializationTime = 0
@@ -171,6 +172,10 @@ class RMG:
             self.reactionModel.pressureDependence = self.pressureDependence
         self.reactionModel.reactionGenerationOptions = self.reactionGenerationOptions
         self.reactionModel.verboseComments = self.verboseComments
+        
+        if self.quantumMechanics:
+            self.quantumMechanics.setDefaultOutputDirectory(self.outputDirectory)
+            self.reactionModel.quantumMechanics = self.quantumMechanics
         
     def checkInput(self):
         """
