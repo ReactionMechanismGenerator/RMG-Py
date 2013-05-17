@@ -536,6 +536,8 @@ class ModelMatcher():
         self.identified_unprocessed_labels.append(chemkinLabel)
         self.speciesDict_rmg[chemkinLabel] = rmgSpecies
         logging.info("Storing match: {0} = {1!s}".format(chemkinLabel, rmgSpecies))
+        logging.info("  On match, Enthalpies at 800K differ by {0:.1f} kJ/mol".format((self.thermoDict[chemkinLabel].getEnthalpy(800) - rmgSpecies.thermo.getEnthalpy(800))/1000. ))
+        display(rmgSpecies)
         self.moveSpeciesDrawing(rmgSpecies)
         rmgSpecies.label = chemkinLabel
         with open(self.dictionaryFile, 'a') as f:
@@ -687,6 +689,7 @@ class ModelMatcher():
                 for matchingSpecies in sorted(possibleMatches.iterkeys(), key=lambda species: -len(possibleMatches[species]) ) :
                     votingReactions = possibleMatches[matchingSpecies]
                     logging.info("  {0}  matches  {1!s}  according to {2} reactions:".format(chemkinLabel, matchingSpecies, len(votingReactions)))
+                    logging.info("  Enthalpies at 800K differ by {0:.1f} kJ/mol".format((self.thermoDict[chemkinLabel].getEnthalpy(800) - matchingSpecies.thermo.getEnthalpy(800))/1000. ))
                     display(matchingSpecies)
                     for rxns in votingReactions:
                         logging.info("    {0!s}     //    {1!s}".format(rxns[0], rxns[1]))
