@@ -33,3 +33,11 @@ jquery.min.js
 from http://ajax.googleapis.com/ajax/libs/jquery/1.4.1/jquery.min.js
 Used by the HTML output of RMG. Useful to have it locally if you do not have
 internet access when you want to look at your results.
+
+
+symmetry
+Brute force symmetry determination program and the associated test set.
+(C) 1996, 2003 S. Patchkovskii, Serguei.Patchkovskii@sympatico.ca
+Published under GNU General Public License
+http://www.cobalt.chem.ucalgary.ca/ps/symmetry/
+This is based on Revision 1.16  2003/04/04

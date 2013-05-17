@@ -98,6 +98,7 @@ class RMG:
     `generatePlots`             ``True`` to generate plots of the job execution statistics after each iteration, ``False`` otherwise
     `verboseComments`           ``True`` to keep the verbose comments for database estimates, ``False`` otherwise
     `pressureDependence`        Whether to process unimolecular (pressure-dependent) reaction networks
+    `quantumMechanics`          Whether to apply quantum mechanical calculations instead of group additivity to certain molecular types.
     `wallTime`                  The maximum amount of CPU time in seconds to expend on this job; used to stop gracefully so we can still get profiling information
     --------------------------- ------------------------------------------------
     `initializationTime`        The time at which the job was initiated, in seconds since the epoch (i.e. from time.time())
@@ -265,6 +266,10 @@ class RMG:
         self.makeOutputSubdirectory('chemkin')
         self.makeOutputSubdirectory('solver')
         
+        # Do any necessary quantum mechanics startup
+        if self.quantumMechanics:
+            self.quantumMechanics.initialize()
+
         # Load databases
         self.loadDatabase()
     
@@ -309,6 +314,7 @@ class RMG:
             # Then add remaining reactive species
             for spec in self.initialSpecies:
                 spec.generateThermoData(self.database)
+                    
             self.reactionModel.enlarge([spec for spec in self.initialSpecies if spec.reactive])
             
             # Save a restart file if desired

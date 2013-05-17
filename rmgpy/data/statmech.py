@@ -367,7 +367,7 @@ class StatmechGroups(Database):
         # For closed-shell molecule the spin multiplicity is 1
         # For monoradicals the spin multiplicity is 2
         # For higher-order radicals the highest allowed spin multiplicity is assumed
-        conformer.spinMultiplicity = sum([atom.radicalElectrons for atom in molecule.atoms]) + 1
+        conformer.spinMultiplicity = molecule.getRadicalCount() + 1
         
         # No need to determine rotational and vibrational modes for single atoms
         if len(molecule.atoms) < 2:

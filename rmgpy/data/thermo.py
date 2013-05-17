@@ -590,66 +590,95 @@ class ThermoDatabase(object):
             libstr = os.path.join(groupsPath, 'Other_Library.txt'),
         )
 
+
     def getThermoData(self, species):
         """
         Return the thermodynamic parameters for a given :class:`Species`
         object `species`. This function first searches the loaded libraries
         in order, returning the first match found, before falling back to
         estimation via group additivity.
+        
+        Returns: ThermoData
+        """
+        # Check the libraries in order first; return the first successful match
+        thermoData = self.getThermoDataFromLibraries(species)
+        if thermoData is None:
+            # Thermo not found in any loaded libraries, so estimate
+            thermoData = self.getThermoDataFromGroups(species)
+
+        # Add Cp0 and CpInf values, if it's a ThermoData type (as opposed to eg. NASA), whether from Library or Groups
+        if isinstance(thermoData, ThermoData):
+            Cp0 = species.calculateCp0()
+            CpInf = species.calculateCpInf()
+            thermoData.Cp0 = (Cp0,"J/(mol*K)")
+            thermoData.CpInf = (CpInf,"J/(mol*K)")
+        # Return the resulting thermo parameters
+        return thermoData
+    
+        
+    def getThermoDataFromLibraries(self, species):
+        """
+        Return the thermodynamic parameters for a given :class:`Species`
+        object `species`. This function first searches the loaded libraries
+        in order, returning the first match found, before failing and returning None.
+        
+        Returns: ThermoData or None
         """
         thermoData = None
         # Check the libraries in order first; return the first successful match
         for label in self.libraryOrder:
             thermoData = self.getThermoDataFromLibrary(species, self.libraries[label])
-            if thermoData is not None: 
-                thermoData[0].comment = label
-                break
-        else:
-            # Thermo not found in any loaded libraries, so estimate
-            thermoData = self.getThermoDataFromGroups(species)
-        # Add Cp0 and CpInf values
+            if thermoData is not None:
+                thermoData.comment = label
+                return thermoData
+        return None
+    
+    def findCp0andCpInf(self, species, thermoData):
+        """
+        Calculate the Cp0 and CpInf values, and add them to the thermoData object.
+        
+        Modifies thermoData in place and doesn't return anything
+        """
+        if not isinstance(thermoData,ThermoData):
+            return # Just skip it
+            raise Exception("Trying to add Cp0 to something that's not a ThermoData: {0!r}".format(thermoData))
         Cp0 = species.calculateCp0()
-        CpInf = species.calculateCpInf()
-        data, library, entry = thermoData
-        if isinstance(data,ThermoData):
-            data.Cp0 = (Cp0,"J/(mol*K)")
-            data.CpInf = (CpInf,"J/(mol*K)")
-        # Return the resulting thermo parameters
-        return data
-
+        CpInf = species.calculateCpInf()  
+        thermoData.Cp0 = (Cp0,"J/(mol*K)")
+        thermoData.CpInf = (CpInf,"J/(mol*K)")
+                
+                
     def getAllThermoData(self, species):
         """
         Return all possible sets of thermodynamic parameters for a given
         :class:`Species` object `species`. The hits from the depository come
         first, then the libraries (in order), and then the group additivity
         estimate. This method is useful for a generic search job.
+        
+        Returns: a list of ThermoData
         """
-        thermoData = []
+        thermoDataList = []
         # Data from depository comes first
-        thermoData.extend(self.getThermoDataFromDepository(species))
+        thermoDataList.extend(self.getThermoDataFromDepository(species))
         # Data from libraries comes second
         for label in self.libraryOrder:
             data = self.getThermoDataFromLibrary(species, self.libraries[label])
             if data: 
-                data[0].comment = label
-                thermoData.append(data)
+                data.comment = label
+                thermoDataList.append(data)
         # Last entry is always the estimate from group additivity
-        thermoData.append(self.getThermoDataFromGroups(species))
-        # Add Cp0 and CpInf values
-        Cp0 = species.calculateCp0()
-        CpInf = species.calculateCpInf()
-        for data, library, entry in thermoData:
-            if isinstance(data,ThermoData):
-                data.Cp0 = (Cp0,"J/(mol*K)")
-                data.CpInf = (CpInf,"J/(mol*K)")
+        thermoDataList.append(self.getThermoDataFromGroups(species))
+
         # Return all of the resulting thermo parameters
-        return thermoData
+        return thermoDataList
 
     def getThermoDataFromDepository(self, species):
         """
         Return all possible sets of thermodynamic parameters for a given
         :class:`Species` object `species` from the depository. If no
         depository is loaded, a :class:`DatabaseError` is raised.
+        
+        Returns: a list of tuples (thermoData, depository, entry) without any Cp0 or CpInf data.
         """
         items = []
         for label, entry in self.depository['stable'].entries.iteritems():
@@ -672,11 +701,15 @@ class ThermoDatabase(object):
         for a library with that name. If no match is found in that library,
         ``None`` is returned. If no corresponding library is found, a
         :class:`DatabaseError` is raised.
+        
+        Returns: ThermoData
         """
         for label, entry in library.entries.iteritems():
             for molecule in species.molecule:
                 if molecule.isIsomorphic(entry.item) and entry.data is not None:
-                    return (deepcopy(entry.data), library, entry)
+                    thermoData = deepcopy(entry.data)
+                    self.findCp0andCpInf(species, thermoData)
+                    return thermoData
         return None
 
     def getThermoDataFromGroups(self, species):
@@ -685,6 +718,8 @@ class ThermoDatabase(object):
         :class:`Species` object `species` by estimation using the group
         additivity values. If no group additivity values are loaded, a
         :class:`DatabaseError` is raised.
+        
+        Returns: ThermoData
         """       
         thermo = []
         for molecule in species.molecule:
@@ -698,7 +733,86 @@ class ThermoDatabase(object):
         
         species.molecule = [species.molecule[ind] for ind in indices]
         
-        return (thermo[indices[0]], None, None)
+        thermoData = thermo[indices[0]]
+        self.findCp0andCpInf(species, thermoData)
+        return thermoData
+        
+    def estimateRadicalThermoViaHBI(self, molecule, stableThermoEstimator ):
+        """
+        Estimate the thermodynamics of a radical by saturating it,
+        applying the provided stableThermoEstimator method on the saturated species,
+        then applying hydrogen bond increment corrections for the radical
+        site(s) and correcting for the symmetry.
+        """
+        assert molecule.getRadicalCount() > 0, "Method only valid for radicals."
+        
+        # Make a copy of the structure so we don't change the original
+        saturatedStruct = molecule.copy(deep=True)
+        
+        # Saturate structure by replacing all radicals with bonds to
+        # hydrogen atoms
+        added = {}
+        for atom in saturatedStruct.atoms:
+            for i in range(atom.radicalElectrons):
+                H = Atom('H')
+                bond = Bond(atom, H, 'S')
+                saturatedStruct.addAtom(H)
+                saturatedStruct.addBond(bond)
+                if atom not in added:
+                    added[atom] = []
+                added[atom].append([H, bond])
+                atom.decrementRadical()
+        
+        # Update the atom types of the saturated structure (not sure why
+        # this is necessary, because saturating with H shouldn't be
+        # changing atom types, but it doesn't hurt anything and is not
+        # very expensive, so will do it anyway)
+        saturatedStruct.updateConnectivityValues()
+        saturatedStruct.sortVertices()
+        saturatedStruct.updateAtomTypes()
+        
+        # Get thermo estimate for saturated form of structure
+        thermoData = stableThermoEstimator(saturatedStruct)
+        if thermoData is None:
+            logging.info("Thermo data of saturated {0} of molecule {1} is None.".format(saturatedStruct, molecule))
+            return None
+        assert thermoData is not None, "Thermo data of saturated {0} of molecule {1} is None!".format(saturatedStruct, molecule)
+        
+        # Undo symmetry number correction for saturated structure
+        saturatedStruct.calculateSymmetryNumber()
+        thermoData.S298.value_si += constants.R * math.log(saturatedStruct.symmetryNumber)
+        # Correct entropy for symmetry number of radical structure
+        molecule.calculateSymmetryNumber()
+        thermoData.S298.value_si -= constants.R * math.log(molecule.symmetryNumber)
+        
+        # For each radical site, get radical correction
+        # Only one radical site should be considered at a time; all others
+        # should be saturated with hydrogen atoms
+        for atom in added:
+            # Remove the added hydrogen atoms and bond and restore the radical
+            for H, bond in added[atom]:
+                saturatedStruct.removeBond(bond)
+                saturatedStruct.removeAtom(H)
+                atom.incrementRadical()
+            saturatedStruct.updateConnectivityValues()
+            try:
+                self.__addGroupThermoData(thermoData, self.groups['radical'], saturatedStruct, {'*':atom})
+            except KeyError:
+                logging.error("Couldn't find in radical thermo database:")
+                logging.error(molecule)
+                logging.error(molecule.toAdjacencyList())
+                raise
+            # Re-saturate
+            for H, bond in added[atom]:
+                saturatedStruct.addAtom(H)
+                saturatedStruct.addBond(bond)
+                atom.decrementRadical()
+            # Subtract the enthalpy of the added hydrogens
+            for H, bond in added[atom]:
+                thermoData.H298.value_si -= 52.103 * 4184
+
+        return thermoData
+        
         
     def estimateThermoViaGroupAdditivity(self, molecule):
         """
@@ -720,71 +834,8 @@ class ThermoDatabase(object):
             S298 = (0.0,"J/(mol*K)"),
         )
 
-        if sum([atom.radicalElectrons for atom in molecule.atoms]) > 0: # radical species
-
-            # Make a copy of the structure so we don't change the original
-            saturatedStruct = molecule.copy(deep=True)
-
-            # Saturate structure by replacing all radicals with bonds to
-            # hydrogen atoms
-            added = {}
-            for atom in saturatedStruct.atoms:
-                for i in range(atom.radicalElectrons):
-                    H = Atom('H')
-                    bond = Bond(atom, H, 'S')
-                    saturatedStruct.addAtom(H)
-                    saturatedStruct.addBond(bond)
-                    if atom not in added:
-                        added[atom] = []
-                    added[atom].append([H, bond])
-                    atom.decrementRadical()
-
-            # Update the atom types of the saturated structure (not sure why
-            # this is necessary, because saturating with H shouldn't be
-            # changing atom types, but it doesn't hurt anything and is not
-            # very expensive, so will do it anyway)
-            saturatedStruct.updateConnectivityValues()
-            saturatedStruct.sortVertices()
-            saturatedStruct.updateAtomTypes()
-
-            # Get thermo estimate for saturated form of structure
-            thermoData = self.estimateThermoViaGroupAdditivity(saturatedStruct)
-            assert thermoData is not None, "Thermo data of saturated {0} of molecule {1} is None!".format(saturatedStruct, molecule)
-            # Undo symmetry number correction for saturated structure
-            thermoData.S298.value_si += constants.R * math.log(saturatedStruct.symmetryNumber)
-
-            # For each radical site, get radical correction
-            # Only one radical site should be considered at a time; all others
-            # should be saturated with hydrogen atoms
-            for atom in added:
-
-                # Remove the added hydrogen atoms and bond and restore the radical
-                for H, bond in added[atom]:
-                    saturatedStruct.removeBond(bond)
-                    saturatedStruct.removeAtom(H)
-                    atom.incrementRadical()
-
-                saturatedStruct.updateConnectivityValues()
-                
-                try:
-                    self.__addGroupThermoData(thermoData, self.groups['radical'], saturatedStruct, {'*':atom})
-                except KeyError:
-                    logging.error("Couldn't find in radical thermo database:")
-                    logging.error(molecule)
-                    logging.error(molecule.toAdjacencyList())
-                    raise
-                        
-                # Re-saturate
-                for H, bond in added[atom]:
-                    saturatedStruct.addAtom(H)
-                    saturatedStruct.addBond(bond)
-                    atom.decrementRadical()
-
-                # Subtract the enthalpy of the added hydrogens
-                for H, bond in added[atom]:
-                    thermoData.H298.value_si -= 52.103 * 4184
-
-            # Correct the entropy for the symmetry number
+        if molecule.getRadicalCount() > 0: # radical species
+            return self.estimateRadicalThermoViaHBI(molecule, self.estimateThermoViaGroupAdditivity )
 
         else: # non-radical species
             # Generate estimate of thermodynamics
