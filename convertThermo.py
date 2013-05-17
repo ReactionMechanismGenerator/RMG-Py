@@ -453,7 +453,13 @@ class ModelMatcher():
              }
         identified_labels = []
         known_labels = {
-                        'mb': 'CCCC(=O)OC'
+                        'mb': 'CCCC(=O)OC',
+                        'mb3d': 'C=CCC(=O)OC',
+                        'c2h5coch3': 'CCC(=O)C',
+                        'c3h4-a': 'C=C=C',
+                        'mb4j': '[CH2]CCC(=O)OC',
+                        'mb3j': 'C[CH]CC(=O)OC',
+                        'mbmj': 'CCCC(=O)O[CH2]',
         }
         # use speciesList if it is not None or empty, else the formulaDict keys.
         for species_label in [s.label for s in self.speciesList or []] or self.formulaDict.keys():
