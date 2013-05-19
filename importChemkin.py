@@ -227,7 +227,7 @@ class ModelMatcher():
         rmg.scratchDirectory = args.scratch_directory
         rmg.makeOutputSubdirectory('species')
         rmg.databaseDirectory = databaseDirectory
-        rmg.thermoLibraries = []
+        rmg.thermoLibraries = ['DFT_QCI_thermo']
         rmg.kineticsFamilies = ['!Substitution_O']
         rmg.reactionLibraries = [('Glarborg/HighP', False)]
         rmg.loadDatabase()
