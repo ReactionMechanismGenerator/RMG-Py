@@ -697,7 +697,10 @@ class ModelMatcher():
             # remove those reactions
             logging.info("Removing {0} edge reactions that didn't match anything.".format(len(reactionsToPrune)))
             for rxn in reactionsToPrune:
-                rm.edge.reactions.remove(rxn)
+                try:
+                    rm.edge.reactions.remove(rxn)
+                except ValueError:
+                    logging.info("Reaction {0!s} was not in edge! Could not remove it.".format(rxn))
 
             # Have just checked all those reactions, so clear the reactionsToCheck,
             # ready to start adding to it again based on new matches.
