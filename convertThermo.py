@@ -550,13 +550,14 @@ class ModelMatcher():
         self.identified_labels.append(chemkinLabel)
         self.identified_unprocessed_labels.append(chemkinLabel)
         self.speciesDict_rmg[chemkinLabel] = rmgSpecies
+        enthalpyDiscrepancy = (self.thermoDict[chemkinLabel].getEnthalpy(800) - rmgSpecies.thermo.getEnthalpy(800))/1000. 
         logging.info("Storing match: {0} = {1!s}".format(chemkinLabel, rmgSpecies))
-        logging.info("  On match, Enthalpies at 800K differ by {0:.1f} kJ/mol".format((self.thermoDict[chemkinLabel].getEnthalpy(800) - rmgSpecies.thermo.getEnthalpy(800))/1000. ))
+        logging.info("  On match, Enthalpies at 800K differ by {0:.1f} kJ/mol".format(enthalpyDiscrepancy))
         display(rmgSpecies)
         self.moveSpeciesDrawing(rmgSpecies)
         rmgSpecies.label = chemkinLabel
         with open(self.dictionaryFile, 'a') as f:
-            f.write("{0}\t{1}\n".format(chemkinLabel, rmgSpecies.molecule[0].toSMILES()))
+            f.write("{0}\t{1}\t{2:.1f}\n".format(chemkinLabel, rmgSpecies.molecule[0].toSMILES(), enthalpyDiscrepancy))
         self.drawSpecies(rmgSpecies)
 
 
