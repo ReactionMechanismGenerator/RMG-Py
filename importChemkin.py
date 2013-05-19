@@ -158,6 +158,7 @@ class ModelMatcher():
         self.chemkinReactions = []
         self.chemkinReactionsUnmatched = []
         self.suggestedMatches = {}
+        self.votes = {}
 
     def loadModel(self, species_file, reactions_file, thermo_file):
         print 'Loading model...'
@@ -560,6 +561,18 @@ class ModelMatcher():
             f.write("{0}\t{1}\t{2:.1f}\n".format(chemkinLabel, rmgSpecies.molecule[0].toSMILES(), enthalpyDiscrepancy))
         self.drawSpecies(rmgSpecies)
 
+    def getInvalidatedReactionsAndRemoveVotes(self, chemkinLabel, rmgSpecies):
+        """Remove the votes, and return the list of voting reactions."""
+        # Remove both chemkinLabel and rmgSpecies from the voting dictionaries
+        reactionsToReCheck = set()
+        possibles = self.votes.pop(chemkinLabel, {})
+        for rxns in possibles.itervalues():
+            for rxn in rxns:
+                reactionsToReCheck.add(rxn[1])
+        for ck, possibles in self.votes.iteritems():
+            for rxn in possibles.pop(rmgSpecies, {}):
+                reactionsToReCheck.add(rxn[1])
+        return reactionsToReCheck
 
     def main(self, args):
         """This is the main matcher function that does the whole thing"""
@@ -580,7 +593,7 @@ class ModelMatcher():
         rm = self.rmg_object.reactionModel
         self.dictionaryFile = os.path.join(args.output_directory, 'MatchedSpeciesDictionary.txt')
         with open(self.dictionaryFile, 'w') as f:
-            f.write("Species identifiers matched automatically:\n")
+            f.write("Species name\tSMILES\tEnthaply discrepancy at 800K\n")
 
         logging.info("Importing identified species into RMG model")
         # Add identified species to the reaction model complete species list
@@ -611,12 +624,16 @@ class ModelMatcher():
         chemkinFormulas = set(self.formulaDict.values())
 
         chemkinReactionsUnmatched = self.chemkinReactionsUnmatched
+        votes = self.votes
+
+        reactionsToCheck = set()
         while self.identified_unprocessed_labels:
             labelToProcess = self.identified_unprocessed_labels.pop(0)
             logging.info("Processing species {0}...".format(labelToProcess))
             if self.formulaDict[labelToProcess] in ('N2', 'Ar'):
                 logging.info("Not processing {0} because I can't react it in RMG".format(labelToProcess))
                 continue
+
             edgeReactionsProcessed = len(rm.edge.reactions)
             rm.enlarge(self.speciesDict_rmg[labelToProcess])
 
@@ -634,16 +651,23 @@ class ModelMatcher():
             # remove those reactions
             for rxn in reactionsToPrune:
                 rm.edge.reactions.remove(rxn)
+                rm.newReactionList.remove(rxn)
+            reactionsToPrune = []
 
+            logging.info("Adding {0} new edge reactions to be checked.".format(len(rm.newReactionList)))
+            reactionsToCheck.update(rm.newReactionList)
+            logging.info("In total will check {0} edge reactions".format(len(reactionsToCheck)))
+            logging.info("against {0} unmatched chemkin reactions.".format(len(chemkinReactionsUnmatched)))
             reactionsMatch = self.reactionsMatch
-            votes = {}
+
             if len(self.identified_unprocessed_labels) == 0:
-                logging.info("** Running out of things to process - will check all edge reactions again...")
-                edgeReactionsProcessed = 0
-            for edgeReaction in rm.edge.reactions[edgeReactionsProcessed:]:
+                logging.info("** Running out of things to process!")
+            for edgeReaction in reactionsToCheck:
+                edgeReactionMatchesSomething = False
                 for chemkinReaction in chemkinReactionsUnmatched:
                     self.suggestedMatches = {}
                     if reactionsMatch(edgeReaction, chemkinReaction):
+                        edgeReactionMatchesSomething = True
                         logging.info("Chemkin reaction     {0}\n matches RMG reaction  {1}".format(chemkinReaction, edgeReaction))
                         if self.suggestedMatches:
                             logging.info(" suggesting new species match: {0!r}".format({l:str(s) for l, s in self.suggestedMatches.iteritems()}))
@@ -668,6 +692,18 @@ class ModelMatcher():
                                 else:
                                     votes[chemkinLabel][rmgSpecies].append((chemkinReaction, edgeReaction))
                             # now votes is a dict of dicts of lists {'ch3':{<Species CH3>: [ voting_reactions ]}}
+                if not edgeReactionMatchesSomething:
+                    reactionsToPrune.append(edgeReaction)
+            # remove those reactions
+            logging.info("Removing {0} edge reactions that didn't match anything.".format(len(reactionsToPrune)))
+            for rxn in reactionsToPrune:
+                rm.edge.reactions.remove(rxn)
+
+            # Have just checked all those reactions, so clear the reactionsToCheck,
+            # ready to start adding to it again based on new matches.
+            reactionsToCheck.clear()
+
+            newMatches = []
             for chemkinLabel, possibleMatches in votes.iteritems():
                 if len(possibleMatches) == 1:
                     matchingSpecies, votingReactions = possibleMatches.items()[0]
@@ -680,9 +716,16 @@ class ModelMatcher():
                     if len(allPossibleChemkinSpecies) == 1:
                         logging.info("Only one chemkin species has this match.")
                         self.setMatch(chemkinLabel, matchingSpecies)
+                        newMatches.append((chemkinLabel, matchingSpecies))
                     else:
                         logging.info("Other Chemkin species that also match {0} are {1!r}".format(matchingSpecies.label, allPossibleChemkinSpecies))
                         logging.info("Will not make match at this time.")
+
+            for chemkinLabel, matchingSpecies in newMatches:
+                invalidatedReactions = self.getInvalidatedReactionsAndRemoveVotes(chemkinLabel, matchingSpecies)
+                reactionsToCheck.update(invalidatedReactions)
+            logging.info("After making {0} matches, will have to re-check {1} edge reactions".format(len(newMatches), len(reactionsToCheck)))
+
             logging.info("Done processing species {0}!".format(labelToProcess))
             logging.info("Have now identified {0} of {1} species ({2:.1%} remaining): {3!r}".format(len(self.identified_labels), len(self.speciesList), 1 - float(len(self.identified_labels)) / len(self.speciesList), self.identified_labels))
             logging.info("And fully identified {0} of {1} reactions ({2:.1%} remaining).".format(len(self.chemkinReactions) - len(self.chemkinReactionsUnmatched), len(self.chemkinReactions), float(len(self.chemkinReactionsUnmatched)) / len(self.chemkinReactions)))
