@@ -100,7 +100,6 @@ class Species(rmgpy.species.Species):
             molecule = self.molecule[0]
             if quantumMechanics.settings.onlyCyclics and not molecule.isCyclic():
                 pass
-                #logging.info("Skipping QM calculation for noncyclic molecule {0}".format(molecule.toSMILES()))
             else: # try a QM calculation
                 if molecule.getRadicalCount() > quantumMechanics.settings.maxRadicalNumber:
                     # Too many radicals for direct calculation: use HBI.
@@ -124,7 +123,6 @@ class Species(rmgpy.species.Species):
                     self.molecule = [self.molecule[ind] for ind in indices]
                     molecule = self.molecule[0]
                     thermo0 = thermo[indices[0]]
-                    #import ipdb; ipdb.set_trace()
                     
                     with open('thermoHBIcheck.txt','a') as f:
                         f.write('// {0!r}\n'.format(thermo0).replace('),','),\n//           '))
