@@ -480,8 +480,9 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds):
         #Klip CCSD(T)(tz,qz)
         atomEnergies = {'H':-0.50003976 + SOC['H'], 'O':-75.00681155 + SOC['O'], 'C':-37.79029443 + SOC['C']}
     elif modelChemistry == 'CCSD(T)-F12/cc-pVTZ-F12':
-        # NOTE: THESE ARE NOT CORRECT!!!!!!
-        atomEnergies = {'H':-0.499818 , 'N':-54.520543, 'O':-74.987624, 'C':-37.785385, 'P':-340.817186}
+        # 'CCSD(T)-F12/cc-pVTZ-F12' calculated by CCLass
+        atomEnergies = {'H':-0.49994557 + SOC['H'], 'N':-54.43186873 + SOC['N'], 'O':-74.92259120 + SOC['O'], 
+                        'C':-37.73766692 + SOC['C'], 'P':-340.77098640 + SOC['P'], 'S': -397.62496049 + SOC['S']}
     else:
         logging.warning('Unknown model chemistry "{0}"; not applying energy corrections.'.format(modelChemistry))
         return E0
