@@ -630,6 +630,33 @@ class ModelMatcher():
             except ValueError:
                 logging.info("Reaction {0!s} was not in edge! Could not remove it.".format(rxn))
 
+    def printVoting(self):
+        """
+        Log the current voting matrix
+        """
+        votes = self.votes
+        logging.info("Current voting:::")
+        chemkinControversy = {label: 0 for label in votes.iterkeys()}
+        rmgControversy = {}
+        flatVotes = {}
+        for chemkinLabel, possibleMatches in votes.iteritems():
+            for matchingSpecies, votingReactions in possibleMatches.iteritems():
+                self.drawSpecies(matchingSpecies)
+                flatVotes[(chemkinLabel, matchingSpecies)] = votingReactions
+                chemkinControversy[chemkinLabel] += len(votingReactions)
+                rmgControversy[matchingSpecies] = rmgControversy.get(matchingSpecies, 0) + len(votingReactions)
+
+        for chemkinLabel in sorted(chemkinControversy.keys(), key=lambda label:-chemkinControversy[label]):
+            possibleMatches = votes[chemkinLabel]
+            logging.info("{0} matches {1} RMG species:".format(chemkinLabel, len(possibleMatches)))
+            for matchingSpecies in sorted(possibleMatches.iterkeys(), key=lambda species:-len(possibleMatches[species])) :
+                votingReactions = possibleMatches[matchingSpecies]
+                logging.info("  {0}  matches  {1!s}  according to {2} reactions:".format(chemkinLabel, matchingSpecies, len(votingReactions)))
+                logging.info("  Enthalpies at 800K differ by {0:.1f} kJ/mol".format((self.thermoDict[chemkinLabel].getEnthalpy(800) - matchingSpecies.thermo.getEnthalpy(800)) / 1000.))
+                display(matchingSpecies)
+                for rxns in votingReactions:
+                    logging.info("    {0!s}     //    {1!s}".format(rxns[0], rxns[1]))
+
     def main(self, args):
         """This is the main matcher function that does the whole thing"""
         species_file = args.species
@@ -752,27 +779,7 @@ class ModelMatcher():
             logging.info("And fully identified {0} of {1} reactions ({2:.1%}).".format(len(self.chemkinReactions) - len(self.chemkinReactionsUnmatched), len(self.chemkinReactions), 1 - float(len(self.chemkinReactionsUnmatched)) / len(self.chemkinReactions)))
             logging.info("Still to process {0} matches: {1!r}".format(len(self.identified_unprocessed_labels), self.identified_unprocessed_labels))
 
-            logging.info("Current voting:::")
-            chemkinControversy = {label: 0 for label in votes.iterkeys()}
-            rmgControversy = {}
-            flatVotes = {}
-            for chemkinLabel, possibleMatches in votes.iteritems():
-                for matchingSpecies, votingReactions in possibleMatches.iteritems():
-                    self.drawSpecies(matchingSpecies)
-                    flatVotes[(chemkinLabel, matchingSpecies)] = votingReactions
-                    chemkinControversy[chemkinLabel] += len(votingReactions)
-                    rmgControversy[matchingSpecies] = rmgControversy.get(matchingSpecies, 0) + len(votingReactions)
-
-            for chemkinLabel in sorted(chemkinControversy.keys(), key=lambda label:-chemkinControversy[label]):
-                possibleMatches = votes[chemkinLabel]
-                logging.info("{0} matches {1} RMG species:".format(chemkinLabel, len(possibleMatches)))
-                for matchingSpecies in sorted(possibleMatches.iterkeys(), key=lambda species:-len(possibleMatches[species])) :
-                    votingReactions = possibleMatches[matchingSpecies]
-                    logging.info("  {0}  matches  {1!s}  according to {2} reactions:".format(chemkinLabel, matchingSpecies, len(votingReactions)))
-                    logging.info("  Enthalpies at 800K differ by {0:.1f} kJ/mol".format((self.thermoDict[chemkinLabel].getEnthalpy(800) - matchingSpecies.thermo.getEnthalpy(800)) / 1000.))
-                    display(matchingSpecies)
-                    for rxns in votingReactions:
-                        logging.info("    {0!s}     //    {1!s}".format(rxns[0], rxns[1]))
+            self.printVoting()
 
             if len(self.identified_unprocessed_labels) == 0:
                 logging.info("Run out of options. Asking for help!")
