@@ -461,7 +461,10 @@ class ModelMatcher():
                         'mb4j': '[CH2]CCC(=O)OC',
                         'mb3j': 'C[CH]CC(=O)OC',
                         'mbmj': 'CCCC(=O)O[CH2]',
+                        'c3h5-a': 'C(=C)[CH2]',
+                        'c2h3cho': 'C(=C)C=O',
         }
+        known_labels.clear()  # for debugging
         # use speciesList if it is not None or empty, else the formulaDict keys.
         for species_label in [s.label for s in self.speciesList or []] or self.formulaDict.keys():
             formula = self.formulaDict[species_label]
@@ -630,11 +633,44 @@ class ModelMatcher():
             except ValueError:
                 logging.info("Reaction {0!s} was not in edge! Could not remove it.".format(rxn))
 
-    def printVoting(self):
+    def pruneVoting(self):
         """
-        Log the current voting matrix
+        Return a voting matrix with only significant (unique) votes.
+        
+        If the same reaction is voting for several species, remove it.
         """
         votes = self.votes
+        uniqueVotes = {}
+
+        # votes matrix containing sets with only the chemkin reactions, not the corresponding RMG reactions
+        ckVotes = {chemkinLabel:
+                   {matchingSpecies:
+                    set([r[0] for r in votingReactions]) for matchingSpecies, votingReactions in possibleMatches.iteritems()
+                   } for chemkinLabel, possibleMatches in votes.iteritems() }
+
+        for chemkinLabel, possibleMatches in ckVotes.iteritems():
+            if len(possibleMatches) == 1:
+                uniqueVotes[chemkinLabel] = possibleMatches
+            commonVotes = None
+            mostVotes = 0
+            for matchingSpecies, votingReactions in possibleMatches.iteritems():
+                mostVotes = max(mostVotes, len(votingReactions))
+                if commonVotes is None:
+                    commonVotes = set(votingReactions)  # make a copy!!
+                else:
+                    commonVotes.intersection_update(votingReactions)
+            if len(commonVotes) < mostVotes:
+                logging.info("Removing {0} voting reactions that are common to all {1} matches for {2}".format(
+                                len(commonVotes), len(possibleMatches), chemkinLabel))
+                uniqueVotes[chemkinLabel] = { matchingSpecies: votingReactions.difference(commonVotes) for matchingSpecies, votingReactions in possibleMatches.iteritems() if votingReactions.difference(commonVotes)}
+            else:
+                uniqueVotes[chemkinLabel] = possibleMatches
+        return uniqueVotes
+
+    def printVoting(self, votes):
+        """
+        Log the passed in voting matrix
+        """
         logging.info("Current voting:::")
         chemkinControversy = {label: 0 for label in votes.iterkeys()}
         rmgControversy = {}
@@ -654,8 +690,11 @@ class ModelMatcher():
                 logging.info("  {0}  matches  {1!s}  according to {2} reactions:".format(chemkinLabel, matchingSpecies, len(votingReactions)))
                 logging.info("  Enthalpies at 800K differ by {0:.1f} kJ/mol".format((self.thermoDict[chemkinLabel].getEnthalpy(800) - matchingSpecies.thermo.getEnthalpy(800)) / 1000.))
                 display(matchingSpecies)
-                for rxns in votingReactions:
-                    logging.info("    {0!s}     //    {1!s}".format(rxns[0], rxns[1]))
+                for rxn in votingReactions:
+                    if isinstance(rxn, tuple):
+                        logging.info("    {0!s}     //    {1!s}".format(rxn[0], rxn[1]))
+                    else:
+                        logging.info("    {0!s}".format(rxn))
 
     def main(self, args):
         """This is the main matcher function that does the whole thing"""
@@ -767,7 +806,7 @@ class ModelMatcher():
                         else:
                             logging.info("Other Chemkin species that also match {0} are {1!r}".format(matchingSpecies.label, allPossibleChemkinSpecies))
                             logging.info("Will not make match at this time.")
-    
+
                 for chemkinLabel, matchingSpecies in newMatches:
                     invalidatedReactions = self.getInvalidatedReactionsAndRemoveVotes(chemkinLabel, matchingSpecies)
                     reactionsToCheck.update(invalidatedReactions)
@@ -779,7 +818,9 @@ class ModelMatcher():
             logging.info("And fully identified {0} of {1} reactions ({2:.1%}).".format(len(self.chemkinReactions) - len(self.chemkinReactionsUnmatched), len(self.chemkinReactions), 1 - float(len(self.chemkinReactionsUnmatched)) / len(self.chemkinReactions)))
             logging.info("Still to process {0} matches: {1!r}".format(len(self.identified_unprocessed_labels), self.identified_unprocessed_labels))
 
-            self.printVoting()
+            self.printVoting(votes)
+            prunedVotes = self.pruneVoting()
+            self.printVoting(prunedVotes)
 
             if len(self.identified_unprocessed_labels) == 0:
                 logging.info("Run out of options. Asking for help!")
