@@ -75,7 +75,7 @@ class SolventData():
     """
     def __init__(self, s_h=None, b_h=None, e_h=None, l_h=None, a_h=None,
     c_h=None, s_g=None, b_g=None, e_g=None, l_g=None, a_g=None, c_g=None, A=None, B=None, 
-    C=None, D=None, E=None):
+    C=None, D=None, E=None, alpha=None, beta=None):
         self.s_h = s_h
         self.b_h = b_h
         self.e_h = e_h
@@ -94,6 +94,16 @@ class SolventData():
         self.C = C
         self.D = D
         self.E = E
+        # These are SOLUTE parameters used for intrinsic rate correction in H-abstraction rxns
+        self.alpha = alpha
+        self.beta = beta
+    
+    def getIntrinsicCorrection
+        """
+        If solvation is on, this will give the log10 of the ratio of the intrinsic rate
+        constants log10(k_sol/k_gas) for H-abstraction rxns
+        """
+        return -8.3*self.alpha*self.beta
         
     def getSolventViscosity(self, T):
         """
