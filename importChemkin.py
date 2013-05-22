@@ -612,12 +612,12 @@ class ModelMatcher():
                             chemkinReactionsUnmatched.remove(chemkinReaction)
                     for chemkinLabel, rmgSpecies in self.suggestedMatches.iteritems():
                         if chemkinLabel not in votes:
-                            votes[chemkinLabel] = {rmgSpecies: [(chemkinReaction, edgeReaction)]}
+                            votes[chemkinLabel] = {rmgSpecies: set([(chemkinReaction, edgeReaction)])}
                         else:
                             if rmgSpecies not in votes[chemkinLabel]:
-                                votes[chemkinLabel][rmgSpecies] = [(chemkinReaction, edgeReaction)]
+                                votes[chemkinLabel][rmgSpecies] = set([(chemkinReaction, edgeReaction)])
                             else:
-                                votes[chemkinLabel][rmgSpecies].append((chemkinReaction, edgeReaction))
+                                votes[chemkinLabel][rmgSpecies].add((chemkinReaction, edgeReaction))
                         # now votes is a dict of dicts of lists {'ch3':{<Species CH3>: [ voting_reactions ]}}
             if not edgeReactionMatchesSomething:
                 reactionsToPrune.add(edgeReaction)
