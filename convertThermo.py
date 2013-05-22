@@ -789,15 +789,20 @@ class ModelMatcher():
                 # Have just checked all those reactions, so clear the reactionsToCheck,
                 # ready to start adding to it again based on new matches.
                 reactionsToCheck.clear()
+
+                self.printVoting(votes)
+                prunedVotes = self.pruneVoting()
+                self.printVoting(prunedVotes)
+
                 newMatches = []
-                for chemkinLabel, possibleMatches in votes.iteritems():
+                for chemkinLabel, possibleMatches in prunedVotes.iteritems():
                     if len(possibleMatches) == 1:
                         matchingSpecies, votingReactions = possibleMatches.items()[0]
                         logging.info("\nOnly one suggested match for {0}: {1!s}".format(chemkinLabel, matchingSpecies))
                         display(matchingSpecies)
-                        logging.info("With {0} voting reactions:".format(len(votingReactions)))
+                        logging.info("With {0} unique voting reactions:".format(len(votingReactions)))
                         for reaction in votingReactions:
-                            logging.info("  {0!s}".format(reaction[1]))
+                            logging.info("  {0!s}".format(reaction))
                         allPossibleChemkinSpecies = [ck for ck, matches in votes.iteritems() if matchingSpecies in matches]
                         if len(allPossibleChemkinSpecies) == 1:
                             logging.info("Only one chemkin species has this match.")
@@ -818,9 +823,7 @@ class ModelMatcher():
             logging.info("And fully identified {0} of {1} reactions ({2:.1%}).".format(len(self.chemkinReactions) - len(self.chemkinReactionsUnmatched), len(self.chemkinReactions), 1 - float(len(self.chemkinReactionsUnmatched)) / len(self.chemkinReactions)))
             logging.info("Still to process {0} matches: {1!r}".format(len(self.identified_unprocessed_labels), self.identified_unprocessed_labels))
 
-            self.printVoting(votes)
-            prunedVotes = self.pruneVoting()
-            self.printVoting(prunedVotes)
+
 
             if len(self.identified_unprocessed_labels) == 0:
                 logging.info("Run out of options. Asking for help!")
