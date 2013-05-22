@@ -19,8 +19,7 @@ class DiffusionLimited():
         diffusionLimiter.solventData = solventData
 
     def getSolventViscosity(self, T):
-        solventViscosity = self.solventData.getSolventViscosity(T)
-        return solventViscosity or Quantity(1, "cp")
+        return self.solventData.getSolventViscosity(T)
               
     def getEffectiveRate(self, reaction, T):
         """

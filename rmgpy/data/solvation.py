@@ -97,11 +97,10 @@ class SolventData():
         
     def getSolventViscosity(self, T):
         """
-        Returns the viscosity in cp, according to correlation in Perry's Handbook
+        Returns the viscosity in Pa s, according to correlation in Perry's Handbook
         and coefficients in DIPPR
         """
-        viscosity = (math.exp(self.A + (self.B / T) + (self.C*math.log(T)) + (self.D * (T**self.E))))/1000
-        return Quantity(viscosity, "cp")
+        return math.exp(self.A + (self.B / T) + (self.C*math.log(T)) + (self.D * (T**self.E)))
                     
 class SolvationCorrection():
     """
@@ -133,9 +132,8 @@ class SoluteData():
         found from the McGowan volume.
         """
         k_b = 1.3806488e-23 # m2*kg/s2/K
-        viscosity = solventViscosity.value_si # should have units of kg/m*s
         radius = ((75*self.V/3.14159)**(1/3))/100 # in meters
-        D = k_b*T/6/3.14159/viscosity/radius # m2/s
+        D = k_b*T/6/3.14159/solventViscosity/radius # m2/s
         return D
             
     def setMcGowanVolume(self, species):
