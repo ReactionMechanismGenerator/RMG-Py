@@ -550,13 +550,19 @@ class ModelMatcher():
         destination = os.path.join(self.rmg_object.outputDirectory, 'species', 'MATCHED', '{0!s}.png'.format(rmg_species))
         if os.path.exists(source):
             os.renames(source, destination)
+    
+    def getEnthalpyDiscrepancy(self, chemkinLabel, rmgSpecies):
+        """
+        Return the difference in enthalpy at 800K in kJ/mol
+        """
+        return (self.thermoDict[chemkinLabel].getEnthalpy(800.) - rmgSpecies.thermo.getEnthalpy(800.)) / 1000.
 
     def setMatch(self, chemkinLabel, rmgSpecies):
         """Store a match, once you've identified it"""
         self.identified_labels.append(chemkinLabel)
         self.identified_unprocessed_labels.append(chemkinLabel)
         self.speciesDict_rmg[chemkinLabel] = rmgSpecies
-        enthalpyDiscrepancy = (self.thermoDict[chemkinLabel].getEnthalpy(800) - rmgSpecies.thermo.getEnthalpy(800)) / 1000.
+        enthalpyDiscrepancy = self.getEnthalpyDiscrepancy(chemkinLabel, rmgSpecies)
         logging.info("Storing match: {0} = {1!s}".format(chemkinLabel, rmgSpecies))
         logging.info("  On match, Enthalpies at 800K differ by {0:.1f} kJ/mol".format(enthalpyDiscrepancy))
         display(rmgSpecies)
@@ -638,6 +644,7 @@ class ModelMatcher():
         Return a voting matrix with only significant (unique) votes.
         
         If the same reaction is voting for several species, remove it.
+        If a match has a large enthalpy discrepancy, remove it.
         """
         votes = self.votes
         uniqueVotes = {}
@@ -647,8 +654,18 @@ class ModelMatcher():
                    {matchingSpecies:
                     set([r[0] for r in votingReactions]) for matchingSpecies, votingReactions in possibleMatches.iteritems()
                    } for chemkinLabel, possibleMatches in votes.iteritems() }
+        
+        for chemkinLabel, possibleMatches in ckVotes.iteritems():
+            for rmgSpecies in possibleMatches.keys():
+                dH = self.getEnthalpyDiscrepancy(chemkinLabel, rmgSpecies)
+                if abs(dH) > 150:
+                    logging.info("Removing possible match {0} : {1!s}  because enthalpy discrepancy is {2:.1f} kJ/mol".format(chemkinLabel, rmgSpecies, dH))
+                    del(possibleMatches[rmgSpecies])
 
         for chemkinLabel, possibleMatches in ckVotes.iteritems():
+            if len(possibleMatches) == 0:
+                logging.info("No remaining matches for {0}".format(chemkinLabel))
+                continue
             if len(possibleMatches) == 1:
                 uniqueVotes[chemkinLabel] = possibleMatches
             commonVotes = None
