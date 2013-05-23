@@ -517,7 +517,10 @@ class ModelMatcher():
             possibleIndicesStr = [str(i) for i in sorted(matchesDict.keys())]
             print "Species {0} could be one of:".format(speciesLabel)
             for index in sorted(matchesDict.keys()):
-                print "{0:6d}  {1}".format(index, matchesDict[index].label)
+                rmgSpecies = matchesDict[index]
+                dH = self.getEnthalpyDiscrepancy(speciesLabel, rmgSpecies)
+                allPossibleChemkinSpecies = [ck for ck, matches in self.votes.iteritems() if rmgSpecies in matches]
+                print "{0:6d} {1:18s} {2:8.1f} kJ/mol   {3!s}".format(index, rmgSpecies.label, dH, allPossibleChemkinSpecies)
             chosenID = raw_input('What is it? (see voting info above)\n')
             while chosenID not in possibleIndicesStr:
                 chosenID = raw_input("That wasn't one of {0}. Try again:\n".format(','.join(possibleIndicesStr)))
@@ -844,12 +847,19 @@ class ModelMatcher():
             logging.info("Still to process {0} matches: {1!r}".format(len(self.identified_unprocessed_labels), self.identified_unprocessed_labels))
 
 
-
-            if len(self.identified_unprocessed_labels) == 0:
+            if len(self.identified_unprocessed_labels) == 0 and self.votes:
                 logging.info("Run out of options. Asking for help!")
                 speciesLabel = raw_input('Which label would you like to identify? (see voting info above)\n')
-                while speciesLabel not in self.formulaDict or speciesLabel in self.identified_labels:
-                    speciesLabel = raw_input("That wasn't an unidentified label. Try again:\n")
+                while True:
+                    if speciesLabel not in self.formulaDict:
+                        print("That's not a known species label")
+                    elif speciesLabel in self.identified_labels:
+                        print("That's already been identified")
+                    elif speciesLabel not in votes:
+                        print("We have no candidate matches for that label.")
+                    else: # label is valid, break out of while loop.
+                        break 
+                    speciesLabel = raw_input("Try again:\n")
                 possibleMatches = votes[speciesLabel].keys()
                 chemkinLabel, matchingSpecies = self.askForMatchID(speciesLabel, possibleMatches)
                 invalidatedReactions = self.getInvalidatedReactionsAndRemoveVotes(chemkinLabel, matchingSpecies)
