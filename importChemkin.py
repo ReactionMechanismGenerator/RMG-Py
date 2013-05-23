@@ -251,14 +251,17 @@ class ModelMatcher():
         If it matches based only on formula, the match it is added to the self.suggestedMatches dictionary.
         """
         chemkin_label = chemkin_species.label
-        if chemkin_label in self.identified_labels:
+        identified_labels = self.identified_labels
+        if chemkin_label in identified_labels:
             return self.speciesDict_rmg[chemkin_label] is rmg_species
-        elif rmg_species.label in self.identified_labels:
+        elif rmg_species.label in identified_labels:
             return False
         else:
             if self.formulaDict[chemkin_label] == rmg_species.molecule[0].getFormula():
                 self.suggestedMatches[chemkin_label] = rmg_species
                 return True
+            else:
+                return False
 
     def reactionsMatch(self, rmg_reaction, chemkin_reaction, eitherDirection=True):
         """
