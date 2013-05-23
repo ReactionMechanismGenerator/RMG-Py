@@ -273,80 +273,92 @@ class ModelMatcher():
         """
         speciesMatch = self.speciesMatch
         # Compare reactants to reactants
+        
+        # get things we refer to a lot into the local namespace, to reduce lookups
+        rmg_reactants = rmg_reaction.reactants
+        ck_reactants = chemkin_reaction.reactants
+        len_rmg_reactants = len(rmg_reactants)
+        len_ck_reactants = len(ck_reactants)
+        
         forwardReactantsMatch = False
-        if len(rmg_reaction.reactants) == len(chemkin_reaction.reactants) == 1:
-            if speciesMatch(rmg_reaction.reactants[0], chemkin_reaction.reactants[0]):
+        if len_rmg_reactants == 1 and len_ck_reactants == 1:
+            if speciesMatch(rmg_reactants[0], ck_reactants[0]):
                 forwardReactantsMatch = True
-        elif len(rmg_reaction.reactants) == len(chemkin_reaction.reactants) == 2:
-            if speciesMatch(rmg_reaction.reactants[0], chemkin_reaction.reactants[0]) and speciesMatch(rmg_reaction.reactants[1], chemkin_reaction.reactants[1]):
+        elif len_rmg_reactants == 2 and len_ck_reactants == 2:
+            if speciesMatch(rmg_reactants[0], ck_reactants[0]) and speciesMatch(rmg_reactants[1], ck_reactants[1]):
                 forwardReactantsMatch = True
-            elif speciesMatch(rmg_reaction.reactants[0], chemkin_reaction.reactants[1]) and speciesMatch(rmg_reaction.reactants[1], chemkin_reaction.reactants[0]):
+            elif speciesMatch(rmg_reactants[0], ck_reactants[1]) and speciesMatch(rmg_reactants[1], ck_reactants[0]):
                 forwardReactantsMatch = True
-        elif len(rmg_reaction.reactants) == len(chemkin_reaction.reactants) == 3:
-            if (speciesMatch(rmg_reaction.reactants[0], chemkin_reaction.reactants[0]) and
-                    speciesMatch(rmg_reaction.reactants[1], chemkin_reaction.reactants[1]) and
-                    speciesMatch(rmg_reaction.reactants[2], chemkin_reaction.reactants[2])):
+        elif len_rmg_reactants == 3 and len_ck_reactants == 3:
+            if (speciesMatch(rmg_reactants[0], ck_reactants[0]) and
+                    speciesMatch(rmg_reactants[1], ck_reactants[1]) and
+                    speciesMatch(rmg_reactants[2], ck_reactants[2])):
                 forwardReactantsMatch = True
-            elif (speciesMatch(rmg_reaction.reactants[0], chemkin_reaction.reactants[0]) and
-                    speciesMatch(rmg_reaction.reactants[1], chemkin_reaction.reactants[2]) and
-                    speciesMatch(rmg_reaction.reactants[2], chemkin_reaction.reactants[1])):
+            elif (speciesMatch(rmg_reactants[0], ck_reactants[0]) and
+                    speciesMatch(rmg_reactants[1], ck_reactants[2]) and
+                    speciesMatch(rmg_reactants[2], ck_reactants[1])):
                 forwardReactantsMatch = True
-            elif (speciesMatch(rmg_reaction.reactants[0], chemkin_reaction.reactants[1]) and
-                    speciesMatch(rmg_reaction.reactants[1], chemkin_reaction.reactants[0]) and
-                    speciesMatch(rmg_reaction.reactants[2], chemkin_reaction.reactants[2])):
+            elif (speciesMatch(rmg_reactants[0], ck_reactants[1]) and
+                    speciesMatch(rmg_reactants[1], ck_reactants[0]) and
+                    speciesMatch(rmg_reactants[2], ck_reactants[2])):
                 forwardReactantsMatch = True
-            elif (speciesMatch(rmg_reaction.reactants[0], chemkin_reaction.reactants[2]) and
-                    speciesMatch(rmg_reaction.reactants[1], chemkin_reaction.reactants[0]) and
-                    speciesMatch(rmg_reaction.reactants[2], chemkin_reaction.reactants[1])):
+            elif (speciesMatch(rmg_reactants[0], ck_reactants[2]) and
+                    speciesMatch(rmg_reactants[1], ck_reactants[0]) and
+                    speciesMatch(rmg_reactants[2], ck_reactants[1])):
                 forwardReactantsMatch = True
-            elif (speciesMatch(rmg_reaction.reactants[0], chemkin_reaction.reactants[1]) and
-                    speciesMatch(rmg_reaction.reactants[1], chemkin_reaction.reactants[2]) and
-                    speciesMatch(rmg_reaction.reactants[2], chemkin_reaction.reactants[0])):
+            elif (speciesMatch(rmg_reactants[0], ck_reactants[1]) and
+                    speciesMatch(rmg_reactants[1], ck_reactants[2]) and
+                    speciesMatch(rmg_reactants[2], ck_reactants[0])):
                 forwardReactantsMatch = True
-            elif (speciesMatch(rmg_reaction.reactants[0], chemkin_reaction.reactants[2]) and
-                    speciesMatch(rmg_reaction.reactants[1], chemkin_reaction.reactants[1]) and
-                    speciesMatch(rmg_reaction.reactants[2], chemkin_reaction.reactants[0])):
+            elif (speciesMatch(rmg_reactants[0], ck_reactants[2]) and
+                    speciesMatch(rmg_reactants[1], ck_reactants[1]) and
+                    speciesMatch(rmg_reactants[2], ck_reactants[0])):
                 forwardReactantsMatch = True
-        elif len(rmg_reaction.reactants) == len(chemkin_reaction.reactants):
-            raise NotImplementedError("Can't check isomorphism of reactions with {0} reactants".format(len(rmg_reaction.reactants)))
+        elif len_rmg_reactants == len_ck_reactants:
+            raise NotImplementedError("Can't check isomorphism of reactions with {0} reactants".format(len_rmg_reactants))
 
+        
+        rmg_products = rmg_reaction.products
+        ck_products = chemkin_reaction.products
+        len_rmg_products = len(rmg_products)
+        len_ck_products = len(ck_products)
         # Compare products to products
         forwardProductsMatch = False
-        if len(rmg_reaction.products) == len(chemkin_reaction.products) == 1:
-            if speciesMatch(rmg_reaction.products[0], chemkin_reaction.products[0]):
+        if len_rmg_products == 1 and len_ck_products == 1:
+            if speciesMatch(rmg_products[0], ck_products[0]):
                 forwardProductsMatch = True
-        elif len(rmg_reaction.products) == len(chemkin_reaction.products) == 2:
-            if speciesMatch(rmg_reaction.products[0], chemkin_reaction.products[0]) and speciesMatch(rmg_reaction.products[1], chemkin_reaction.products[1]):
+        elif len_rmg_products == 2 and len_ck_products == 2:
+            if speciesMatch(rmg_products[0], ck_products[0]) and speciesMatch(rmg_products[1], ck_products[1]):
                 forwardProductsMatch = True
-            elif speciesMatch(rmg_reaction.products[0], chemkin_reaction.products[1]) and speciesMatch(rmg_reaction.products[1], chemkin_reaction.products[0]):
+            elif speciesMatch(rmg_products[0], ck_products[1]) and speciesMatch(rmg_products[1], ck_products[0]):
                 forwardProductsMatch = True
-        elif len(rmg_reaction.products) == len(chemkin_reaction.products) == 3:
-            if (speciesMatch(rmg_reaction.products[0], chemkin_reaction.products[0]) and
-                    speciesMatch(rmg_reaction.products[1], chemkin_reaction.products[1]) and
-                    speciesMatch(rmg_reaction.products[2], chemkin_reaction.products[2])):
+        elif len_rmg_products == 3 and len_ck_products == 3:
+            if (speciesMatch(rmg_products[0], ck_products[0]) and
+                    speciesMatch(rmg_products[1], ck_products[1]) and
+                    speciesMatch(rmg_products[2], ck_products[2])):
                 forwardProductsMatch = True
-            elif (speciesMatch(rmg_reaction.products[0], chemkin_reaction.products[0]) and
-                    speciesMatch(rmg_reaction.products[1], chemkin_reaction.products[2]) and
-                    speciesMatch(rmg_reaction.products[2], chemkin_reaction.products[1])):
+            elif (speciesMatch(rmg_products[0], ck_products[0]) and
+                    speciesMatch(rmg_products[1], ck_products[2]) and
+                    speciesMatch(rmg_products[2], ck_products[1])):
                 forwardProductsMatch = True
-            elif (speciesMatch(rmg_reaction.products[0], chemkin_reaction.products[1]) and
-                    speciesMatch(rmg_reaction.products[1], chemkin_reaction.products[0]) and
-                    speciesMatch(rmg_reaction.products[2], chemkin_reaction.products[2])):
+            elif (speciesMatch(rmg_products[0], ck_products[1]) and
+                    speciesMatch(rmg_products[1], ck_products[0]) and
+                    speciesMatch(rmg_products[2], ck_products[2])):
                 forwardProductsMatch = True
-            elif (speciesMatch(rmg_reaction.products[0], chemkin_reaction.products[2]) and
-                    speciesMatch(rmg_reaction.products[1], chemkin_reaction.products[0]) and
-                    speciesMatch(rmg_reaction.products[2], chemkin_reaction.products[1])):
+            elif (speciesMatch(rmg_products[0], ck_products[2]) and
+                    speciesMatch(rmg_products[1], ck_products[0]) and
+                    speciesMatch(rmg_products[2], ck_products[1])):
                 forwardProductsMatch = True
-            elif (speciesMatch(rmg_reaction.products[0], chemkin_reaction.products[1]) and
-                    speciesMatch(rmg_reaction.products[1], chemkin_reaction.products[2]) and
-                    speciesMatch(rmg_reaction.products[2], chemkin_reaction.products[0])):
+            elif (speciesMatch(rmg_products[0], ck_products[1]) and
+                    speciesMatch(rmg_products[1], ck_products[2]) and
+                    speciesMatch(rmg_products[2], ck_products[0])):
                 forwardProductsMatch = True
-            elif (speciesMatch(rmg_reaction.products[0], chemkin_reaction.products[2]) and
-                    speciesMatch(rmg_reaction.products[1], chemkin_reaction.products[1]) and
-                    speciesMatch(rmg_reaction.products[2], chemkin_reaction.products[0])):
+            elif (speciesMatch(rmg_products[0], ck_products[2]) and
+                    speciesMatch(rmg_products[1], ck_products[1]) and
+                    speciesMatch(rmg_products[2], ck_products[0])):
                 forwardProductsMatch = True
-        elif len(rmg_reaction.products) == len(chemkin_reaction.products):
-            raise NotImplementedError("Can't check isomorphism of reactions with {0} products".format(len(rmg_reaction.products)))
+        elif len_rmg_products == len_ck_products:
+            raise NotImplementedError("Can't check isomorphism of reactions with {0} products".format(len_rmg_products))
 
         # Return now, if we can
         if (forwardReactantsMatch and forwardProductsMatch):
@@ -356,79 +368,79 @@ class ModelMatcher():
 
         # Compare reactants to products
         reverseReactantsMatch = False
-        if len(rmg_reaction.reactants) == len(chemkin_reaction.products) == 1:
-            if speciesMatch(rmg_reaction.reactants[0], chemkin_reaction.products[0]):
+        if len_rmg_reactants == 1 and len_ck_products == 1:
+            if speciesMatch(rmg_reactants[0], ck_products[0]):
                 reverseReactantsMatch = True
-        elif len(rmg_reaction.reactants) == len(chemkin_reaction.products) == 2:
-            if speciesMatch(rmg_reaction.reactants[0], chemkin_reaction.products[0]) and speciesMatch(rmg_reaction.reactants[1], chemkin_reaction.products[1]):
+        elif len_rmg_reactants == 2 and len_ck_products == 2:
+            if speciesMatch(rmg_reactants[0], ck_products[0]) and speciesMatch(rmg_reactants[1], ck_products[1]):
                 reverseReactantsMatch = True
-            elif speciesMatch(rmg_reaction.reactants[0], chemkin_reaction.products[1]) and speciesMatch(rmg_reaction.reactants[1], chemkin_reaction.products[0]):
+            elif speciesMatch(rmg_reactants[0], ck_products[1]) and speciesMatch(rmg_reactants[1], ck_products[0]):
                 reverseReactantsMatch = True
-        elif len(rmg_reaction.reactants) == len(chemkin_reaction.products) == 3:
-            if (speciesMatch(rmg_reaction.reactants[0], chemkin_reaction.products[0]) and
-                    speciesMatch(rmg_reaction.reactants[1], chemkin_reaction.products[1]) and
-                    speciesMatch(rmg_reaction.reactants[2], chemkin_reaction.products[2])):
+        elif len_rmg_reactants == 3 and len_ck_products == 3:
+            if (speciesMatch(rmg_reactants[0], ck_products[0]) and
+                    speciesMatch(rmg_reactants[1], ck_products[1]) and
+                    speciesMatch(rmg_reactants[2], ck_products[2])):
                 reverseReactantsMatch = True
-            elif (speciesMatch(rmg_reaction.reactants[0], chemkin_reaction.products[0]) and
-                    speciesMatch(rmg_reaction.reactants[1], chemkin_reaction.products[2]) and
-                    speciesMatch(rmg_reaction.reactants[2], chemkin_reaction.products[1])):
+            elif (speciesMatch(rmg_reactants[0], ck_products[0]) and
+                    speciesMatch(rmg_reactants[1], ck_products[2]) and
+                    speciesMatch(rmg_reactants[2], ck_products[1])):
                 reverseReactantsMatch = True
-            elif (speciesMatch(rmg_reaction.reactants[0], chemkin_reaction.products[1]) and
-                    speciesMatch(rmg_reaction.reactants[1], chemkin_reaction.products[0]) and
-                    speciesMatch(rmg_reaction.reactants[2], chemkin_reaction.products[2])):
+            elif (speciesMatch(rmg_reactants[0], ck_products[1]) and
+                    speciesMatch(rmg_reactants[1], ck_products[0]) and
+                    speciesMatch(rmg_reactants[2], ck_products[2])):
                 reverseReactantsMatch = True
-            elif (speciesMatch(rmg_reaction.reactants[0], chemkin_reaction.products[2]) and
-                    speciesMatch(rmg_reaction.reactants[1], chemkin_reaction.products[0]) and
-                    speciesMatch(rmg_reaction.reactants[2], chemkin_reaction.products[1])):
+            elif (speciesMatch(rmg_reactants[0], ck_products[2]) and
+                    speciesMatch(rmg_reactants[1], ck_products[0]) and
+                    speciesMatch(rmg_reactants[2], ck_products[1])):
                 reverseReactantsMatch = True
-            elif (speciesMatch(rmg_reaction.reactants[0], chemkin_reaction.products[1]) and
-                    speciesMatch(rmg_reaction.reactants[1], chemkin_reaction.products[2]) and
-                    speciesMatch(rmg_reaction.reactants[2], chemkin_reaction.products[0])):
+            elif (speciesMatch(rmg_reactants[0], ck_products[1]) and
+                    speciesMatch(rmg_reactants[1], ck_products[2]) and
+                    speciesMatch(rmg_reactants[2], ck_products[0])):
                 reverseReactantsMatch = True
-            elif (speciesMatch(rmg_reaction.reactants[0], chemkin_reaction.products[2]) and
-                    speciesMatch(rmg_reaction.reactants[1], chemkin_reaction.products[1]) and
-                    speciesMatch(rmg_reaction.reactants[2], chemkin_reaction.products[0])):
+            elif (speciesMatch(rmg_reactants[0], ck_products[2]) and
+                    speciesMatch(rmg_reactants[1], ck_products[1]) and
+                    speciesMatch(rmg_reactants[2], ck_products[0])):
                 reverseReactantsMatch = True
-        elif len(rmg_reaction.reactants) == len(chemkin_reaction.products):
-            raise NotImplementedError("Can't check isomorphism of reactions with {0} reactants".format(len(rmg_reaction.reactants)))
+        elif len_rmg_reactants == len_ck_products:
+            raise NotImplementedError("Can't check isomorphism of reactions with {0} reactants".format(len_rmg_reactants))
 
         # Compare products to reactants
         reverseProductsMatch = False
-        if len(rmg_reaction.products) == len(chemkin_reaction.reactants) == 1:
-            if speciesMatch(rmg_reaction.products[0], chemkin_reaction.reactants[0]):
+        if len_rmg_products == 1 and len_ck_reactants == 1:
+            if speciesMatch(rmg_products[0], ck_reactants[0]):
                 reverseProductsMatch = True
-        elif len(rmg_reaction.products) == len(chemkin_reaction.reactants) == 2:
-            if speciesMatch(rmg_reaction.products[0], chemkin_reaction.reactants[0]) and speciesMatch(rmg_reaction.products[1], chemkin_reaction.reactants[1]):
+        elif len_rmg_products == 2 and len_ck_reactants == 2:
+            if speciesMatch(rmg_products[0], ck_reactants[0]) and speciesMatch(rmg_products[1], ck_reactants[1]):
                 reverseProductsMatch = True
-            elif speciesMatch(rmg_reaction.products[0], chemkin_reaction.reactants[1]) and speciesMatch(rmg_reaction.products[1], chemkin_reaction.reactants[0]):
+            elif speciesMatch(rmg_products[0], ck_reactants[1]) and speciesMatch(rmg_products[1], ck_reactants[0]):
                 reverseProductsMatch = True
-        elif len(rmg_reaction.products) == len(chemkin_reaction.reactants) == 3:
-            if (speciesMatch(rmg_reaction.products[0], chemkin_reaction.reactants[0]) and
-                    speciesMatch(rmg_reaction.products[1], chemkin_reaction.reactants[1]) and
-                    speciesMatch(rmg_reaction.products[2], chemkin_reaction.reactants[2])):
+        elif len_rmg_products == 3 and len_ck_reactants == 3:
+            if (speciesMatch(rmg_products[0], ck_reactants[0]) and
+                    speciesMatch(rmg_products[1], ck_reactants[1]) and
+                    speciesMatch(rmg_products[2], ck_reactants[2])):
                 reverseProductsMatch = True
-            elif (speciesMatch(rmg_reaction.products[0], chemkin_reaction.reactants[0]) and
-                    speciesMatch(rmg_reaction.products[1], chemkin_reaction.reactants[2]) and
-                    speciesMatch(rmg_reaction.products[2], chemkin_reaction.reactants[1])):
+            elif (speciesMatch(rmg_products[0], ck_reactants[0]) and
+                    speciesMatch(rmg_products[1], ck_reactants[2]) and
+                    speciesMatch(rmg_products[2], ck_reactants[1])):
                 reverseProductsMatch = True
-            elif (speciesMatch(rmg_reaction.products[0], chemkin_reaction.reactants[1]) and
-                    speciesMatch(rmg_reaction.products[1], chemkin_reaction.reactants[0]) and
-                    speciesMatch(rmg_reaction.products[2], chemkin_reaction.reactants[2])):
+            elif (speciesMatch(rmg_products[0], ck_reactants[1]) and
+                    speciesMatch(rmg_products[1], ck_reactants[0]) and
+                    speciesMatch(rmg_products[2], ck_reactants[2])):
                 reverseProductsMatch = True
-            elif (speciesMatch(rmg_reaction.products[0], chemkin_reaction.reactants[2]) and
-                    speciesMatch(rmg_reaction.products[1], chemkin_reaction.reactants[0]) and
-                    speciesMatch(rmg_reaction.products[2], chemkin_reaction.reactants[1])):
+            elif (speciesMatch(rmg_products[0], ck_reactants[2]) and
+                    speciesMatch(rmg_products[1], ck_reactants[0]) and
+                    speciesMatch(rmg_products[2], ck_reactants[1])):
                 reverseProductsMatch = True
-            elif (speciesMatch(rmg_reaction.products[0], chemkin_reaction.reactants[1]) and
-                    speciesMatch(rmg_reaction.products[1], chemkin_reaction.reactants[2]) and
-                    speciesMatch(rmg_reaction.products[2], chemkin_reaction.reactants[0])):
+            elif (speciesMatch(rmg_products[0], ck_reactants[1]) and
+                    speciesMatch(rmg_products[1], ck_reactants[2]) and
+                    speciesMatch(rmg_products[2], ck_reactants[0])):
                 reverseProductsMatch = True
-            elif (speciesMatch(rmg_reaction.products[0], chemkin_reaction.reactants[2]) and
-                    speciesMatch(rmg_reaction.products[1], chemkin_reaction.reactants[1]) and
-                    speciesMatch(rmg_reaction.products[2], chemkin_reaction.reactants[0])):
+            elif (speciesMatch(rmg_products[0], ck_reactants[2]) and
+                    speciesMatch(rmg_products[1], ck_reactants[1]) and
+                    speciesMatch(rmg_products[2], ck_reactants[0])):
                 reverseProductsMatch = True
-        elif len(rmg_reaction.products) == len(chemkin_reaction.reactants):
-            raise NotImplementedError("Can't check isomorphism of reactions with {0} products".format(len(rmg_reaction.products)))
+        elif len_rmg_products == len_ck_reactants:
+            raise NotImplementedError("Can't check isomorphism of reactions with {0} products".format(len_rmg_products))
 
         # should have already returned if it matches forwards, or we're not allowed to match backwards
         return  (reverseReactantsMatch and reverseProductsMatch)
