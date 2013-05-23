@@ -820,13 +820,13 @@ class ModelMatcher():
                         logging.info("With {0} unique voting reactions:".format(len(votingReactions)))
                         for reaction in votingReactions:
                             logging.info("  {0!s}".format(reaction))
-                        allPossibleChemkinSpecies = [ck for ck, matches in votes.iteritems() if matchingSpecies in matches]
+                        allPossibleChemkinSpecies = [ck for ck, matches in prunedVotes.iteritems() if matchingSpecies in matches]
                         if len(allPossibleChemkinSpecies) == 1:
-                            logging.info("Only one chemkin species has this match.")
+                            logging.info("Only one chemkin species has this match (after pruning).")
                             self.setMatch(chemkinLabel, matchingSpecies)
                             newMatches.append((chemkinLabel, matchingSpecies))
                         else:
-                            logging.info("Other Chemkin species that also match {0} are {1!r}".format(matchingSpecies.label, allPossibleChemkinSpecies))
+                            logging.info("Other Chemkin species that also match {0} (after pruning) are {1!r}".format(matchingSpecies.label, allPossibleChemkinSpecies))
                             logging.info("Will not make match at this time.")
 
                 for chemkinLabel, matchingSpecies in newMatches:
