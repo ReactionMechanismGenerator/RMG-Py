@@ -478,6 +478,8 @@ class ModelMatcher():
                         'mbmj': 'CCCC(=O)O[CH2]',
                         'c3h5-a': 'C(=C)[CH2]',
                         'c2h3cho': 'C(=C)C=O',
+                        'ch2cho': '[CH2]C=O',
+                        'c2h5co': 'CC[C]=O',
         }
         known_labels.clear()  # for debugging
         # use speciesList if it is not None or empty, else the formulaDict keys.
@@ -531,13 +533,15 @@ class ModelMatcher():
             for index in sorted(matchesDict.keys()):
                 rmgSpecies = matchesDict[index]
                 dH = self.getEnthalpyDiscrepancy(speciesLabel, rmgSpecies)
+                Nvotes = len(self.votes[speciesLabel][rmgSpecies])
                 allPossibleChemkinSpecies = [ck for ck, matches in self.votes.iteritems() if rmgSpecies in matches]
-                print "{0:6d} {1:18s} {2:8.1f} kJ/mol   {3!s}".format(index, rmgSpecies.label, dH, allPossibleChemkinSpecies)
+                print "{0:6d} {1:18s} {2:8.1f} kJ/mol  ({3} votes) {4!s}".format(index, rmgSpecies.label, dH, Nvotes, allPossibleChemkinSpecies)
             chosenID = raw_input('What is it? (see voting info above)\n')
             while chosenID not in possibleIndicesStr:
                 chosenID = raw_input("That wasn't one of {0}. Try again:\n".format(','.join(possibleIndicesStr)))
-            logging.info("Based on user input...")
+            
             rmgSpecies = matchesDict[int(chosenID)]
+            logging.info("Based on user input, matching {0} with {1!s}".format(speciesLabel, rmgSpecies))
             self.setMatch(speciesLabel, rmgSpecies)
             return speciesLabel, rmgSpecies
 
@@ -825,9 +829,9 @@ class ModelMatcher():
                 # ready to start adding to it again based on new matches.
                 reactionsToCheck.clear()
 
-                self.printVoting(votes)
+                #self.printVoting(votes)
                 prunedVotes = self.pruneVoting()
-                self.printVoting(prunedVotes)
+                #self.printVoting(prunedVotes)
 
                 newMatches = []
                 for chemkinLabel, possibleMatches in prunedVotes.iteritems():
@@ -860,6 +864,7 @@ class ModelMatcher():
 
 
             if len(self.identified_unprocessed_labels) == 0 and self.votes:
+                self.printVoting(prunedVotes)
                 logging.info("Run out of options. Asking for help!")
                 speciesLabel = raw_input('Which label would you like to identify? (see voting info above)\n')
                 while True:
