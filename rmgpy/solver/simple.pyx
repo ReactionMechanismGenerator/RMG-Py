@@ -323,8 +323,8 @@ cdef class SimpleReactor(ReactionSystem):
         cdef numpy.ndarray[numpy.int_t, ndim=2] ir, ip
         cdef numpy.ndarray[numpy.float64_t, ndim=1] kf, kr, C
         cdef numpy.ndarray[numpy.float64_t, ndim=2] pd
-        cdef int numCoreReactions, j 
-        cdef double k, deriv
+        cdef int numCoreReactions, numCoreSpecies, i, j
+        cdef double k, V, Ctot, deriv, corr
         
         pd = -cj * numpy.identity(y.shape[0], numpy.float64)
         ir = self.reactantIndices
@@ -332,12 +332,15 @@ cdef class SimpleReactor(ReactionSystem):
         kf = self.forwardRateCoefficients
         kr = self.reverseRateCoefficients
         numCoreReactions = len(self.coreReactionRates)
+        numCoreSpecies = len(self.coreSpeciesConcentrations)
         
         # Use ideal gas law to compute volume
         V = constants.R * self.T.value_si * numpy.sum(y) / self.P.value_si
+        
+        Ctot = self.P.value_si /(constants.R * self.T.value_si)
 
         C = numpy.zeros_like(self.coreSpeciesConcentrations)
-        for j in range(y.shape[0]):
+        for j in range(numCoreSpecies):
             C[j] = y[j] / V
 
         for j in range(numCoreReactions):
@@ -355,21 +358,30 @@ cdef class SimpleReactor(ReactionSystem):
                 
                                 
             elif ir[j,2] == -1: # only two reactants
-                if ir[j,0] == ir[j,1]:
+                corr = - k * C[ir[j,0]] * C[ir[j,1]] / Ctot
+                if ir[j,0] == ir[j,1]:  # reactants are the same
                     deriv = 2 * k * C[ir[j,0]]
                     pd[ir[j,0], ir[j,0]] -= 2 * deriv
+                    for i in range(numCoreSpecies):
+                        pd[ir[j,0], i] -= 2 * corr
                     
-                    pd[ip[j,0], ir[j,0]] += deriv       
+                    pd[ip[j,0], ir[j,0]] += deriv                       
+                    for i in range(numCoreSpecies):
+                        pd[ip[j,0], i] += corr    
                     if ip[j,1] != -1:
-                        pd[ip[j,1], ir[j,0]] += deriv
+                        pd[ip[j,1], ir[j,0]] += deriv                                               
+                        for i in range(numCoreSpecies):
+                            pd[ip[j,1], i] += corr    
                         if ip[j,2] != -1:
-                            pd[ip[j,2], ir[j,0]] += deriv
+                            pd[ip[j,2], ir[j,0]] += deriv                                          
+                            for i in range(numCoreSpecies):
+                                pd[ip[j,2], i] += corr    
                     
                 else:
                     # Derivative with respect to reactant 1
                     deriv = k * C[ir[j, 1]]
                     pd[ir[j,0], ir[j,0]] -= deriv                    
-                    pd[ir[j,1], ir[j,0]] -= deriv
+                    pd[ir[j,1], ir[j,0]] -= deriv                        
                     
                     pd[ip[j,0], ir[j,0]] += deriv       
                     if ip[j,1] != -1:
@@ -378,33 +390,51 @@ cdef class SimpleReactor(ReactionSystem):
                             pd[ip[j,2], ir[j,0]] += deriv
                     
                     # Derivative with respect to reactant 2
-                    deriv = k * C[ir[j, 0]]
+                    deriv = k * C[ir[j, 0]] 
                     pd[ir[j,0], ir[j,1]] -= deriv                    
-                    pd[ir[j,1], ir[j,1]] -= deriv   
-                      
-                    pd[ip[j,0], ir[j,1]] += deriv       
+                    pd[ir[j,1], ir[j,1]] -= deriv                                           
+                    for i in range(numCoreSpecies):
+                        pd[ir[j,0], i] -= corr
+                        pd[ir[j,1], i] -= corr     
+                            
+                    pd[ip[j,0], ir[j,1]] += deriv                       
+                    for i in range(numCoreSpecies):
+                        pd[ip[j,0], i] += corr    
                     if ip[j,1] != -1:
-                        pd[ip[j,1], ir[j,1]] += deriv
+                        pd[ip[j,1], ir[j,1]] += deriv                                               
+                        for i in range(numCoreSpecies):
+                            pd[ip[j,1], i] += corr    
                         if ip[j,2] != -1:
-                            pd[ip[j,2], ir[j,1]] += deriv              
+                            pd[ip[j,2], ir[j,1]] += deriv                                          
+                            for i in range(numCoreSpecies):
+                                pd[ip[j,2], i] += corr               
                     
                     
             else: # three reactants!! (really?)
+                corr = - 2* k * C[ir[j,0]] * C[ir[j,1]] * C[ir[j,2]] / Ctot
                 if (ir[j,0] == ir[j,1] & ir[j,0] == ir[j,2]):
-                    deriv = 3 * k * C[ir[j,0]] * C[ir[j,0]]
-                    pd[ir[j,0], ir[j,0]] -= 3 * deriv
+                    deriv = 3 * k * C[ir[j,0]] * C[ir[j,0]] 
+                    pd[ir[j,0], ir[j,0]] -= 3 * deriv                                                           
+                    for i in range(numCoreSpecies):
+                        pd[ir[j,0], i] -= 3 * corr
                     
-                    pd[ip[j,0], ir[j,0]] += deriv                
+                    pd[ip[j,0], ir[j,0]] += deriv                       
+                    for i in range(numCoreSpecies):
+                        pd[ip[j,0], i] += corr    
                     if ip[j,1] != -1:
-                        pd[ip[j,1], ir[j,0]] += deriv
+                        pd[ip[j,1], ir[j,0]] += deriv                                               
+                        for i in range(numCoreSpecies):
+                            pd[ip[j,1], i] += corr    
                         if ip[j,2] != -1:
-                            pd[ip[j,2], ir[j,0]] += deriv
+                            pd[ip[j,2], ir[j,0]] += deriv                                          
+                            for i in range(numCoreSpecies):
+                                pd[ip[j,2], i] += corr        
                     
                 elif ir[j,0] == ir[j,1]:
                     # derivative with respect to reactant 1
                     deriv = 2 * k * C[ir[j,0]] * C[ir[j,2]]
-                    pd[ir[j,0], ir[j,0]] -= 2 * deriv                    
-                    pd[ir[j,2], ir[j,0]] -= deriv
+                    pd[ir[j,0], ir[j,0]] -= 2 * deriv                  
+                    pd[ir[j,2], ir[j,0]] -= deriv    
                     
                     pd[ip[j,0], ir[j,0]] += deriv       
                     if ip[j,1] != -1:
@@ -413,20 +443,29 @@ cdef class SimpleReactor(ReactionSystem):
                             pd[ip[j,2], ir[j,0]] += deriv
                     
                     # derivative with respect to reactant 3
-                    deriv = k * C[ir[j,0]] * C[ir[j,0]]
-                    pd[ir[j,0], ir[j,2]] -= 2 * deriv                    
-                    pd[ir[j,2], ir[j,2]] -= deriv
-                    
-                    pd[ip[j,0], ir[j,2]] += deriv       
+                    deriv = k * C[ir[j,0]] * C[ir[j,0]] 
+                    pd[ir[j,0], ir[j,2]] -= 2 * deriv                  
+                    pd[ir[j,2], ir[j,2]] -= deriv                                                                                           
+                    for i in range(numCoreSpecies):
+                        pd[ir[j,0], i] -= 2 * corr
+                        pd[ir[j,2], i] -= corr
+                        
+                    pd[ip[j,0], ir[j,2]] += deriv                       
+                    for i in range(numCoreSpecies):
+                        pd[ip[j,0], i] += corr    
                     if ip[j,1] != -1:
-                        pd[ip[j,1], ir[j,2]] += deriv
+                        pd[ip[j,1], ir[j,2]] += deriv                                               
+                        for i in range(numCoreSpecies):
+                            pd[ip[j,1], i] += corr    
                         if ip[j,2] != -1:
-                            pd[ip[j,2], ir[j,2]] += deriv
+                            pd[ip[j,2], ir[j,2]] += deriv                                          
+                            for i in range(numCoreSpecies):
+                                pd[ip[j,2], i] += corr    
                     
                     
                 elif ir[j,1] == ir[j,2]:                    
                     # derivative with respect to reactant 1
-                    deriv = k * C[ir[j,1]] * C[ir[j,1]]
+                    deriv = k * C[ir[j,1]] * C[ir[j,1]] 
                     pd[ir[j,0], ir[j,0]] -= deriv                    
                     pd[ir[j,1], ir[j,0]] -= 2 * deriv
                     
@@ -434,18 +473,26 @@ cdef class SimpleReactor(ReactionSystem):
                     if ip[j,1] != -1:
                         pd[ip[j,1], ir[j,0]] += deriv
                         if ip[j,2] != -1:
-                            pd[ip[j,2], ir[j,0]] += deriv                 
-                    
+                            pd[ip[j,2], ir[j,0]] += deriv  
                     # derivative with respect to reactant 2
                     deriv = 2 * k * C[ir[j,0]] * C[ir[j,1]]
                     pd[ir[j,0], ir[j,1]] -= deriv                    
-                    pd[ir[j,1], ir[j,1]] -= 2 * deriv   
-                      
-                    pd[ip[j,0], ir[j,1]] += deriv       
+                    pd[ir[j,1], ir[j,1]] -= 2 * deriv                                                                                                         
+                    for i in range(numCoreSpecies):
+                        pd[ir[j,0], i] -= corr
+                        pd[ir[j,1], i] -= 2 * corr
+
+                    pd[ip[j,0], ir[j,1]] += deriv                       
+                    for i in range(numCoreSpecies):
+                        pd[ip[j,0], i] += corr    
                     if ip[j,1] != -1:
-                        pd[ip[j,1], ir[j,1]] += deriv
+                        pd[ip[j,1], ir[j,1]] += deriv                                               
+                        for i in range(numCoreSpecies):
+                            pd[ip[j,1], i] += corr    
                         if ip[j,2] != -1:
-                            pd[ip[j,2], ir[j,1]] += deriv  
+                            pd[ip[j,2], ir[j,1]] += deriv                                          
+                            for i in range(numCoreSpecies):
+                                pd[ip[j,2], i] += corr     
                                 
                 else:
                     # derivative with respect to reactant 1
@@ -473,16 +520,26 @@ cdef class SimpleReactor(ReactionSystem):
                             pd[ip[j,2], ir[j,1]] += deriv 
                                  
                     # derivative with respect to reactant 3
-                    deriv = k * C[ir[j,0]] * C[ir[j,1]]                    
+                    deriv = k * C[ir[j,0]] * C[ir[j,1]]             
                     pd[ir[j,0], ir[j,2]] -= deriv                    
                     pd[ir[j,1], ir[j,2]] -= deriv   
                     pd[ir[j,2], ir[j,2]] -= deriv
-                    
-                    pd[ip[j,0], ir[j,2]] += deriv       
+                    for i in range(numCoreSpecies):
+                        pd[ir[j,0], i] -= corr
+                        pd[ir[j,1], i] -= corr
+                        pd[ir[j,2], i] -= corr
+                        
+                    pd[ip[j,0], ir[j,2]] += deriv                       
+                    for i in range(numCoreSpecies):
+                        pd[ip[j,0], i] += corr    
                     if ip[j,1] != -1:
-                        pd[ip[j,1], ir[j,2]] += deriv
+                        pd[ip[j,1], ir[j,2]] += deriv                                               
+                        for i in range(numCoreSpecies):
+                            pd[ip[j,1], i] += corr    
                         if ip[j,2] != -1:
-                            pd[ip[j,2], ir[j,2]] += deriv
+                            pd[ip[j,2], ir[j,2]] += deriv                                          
+                            for i in range(numCoreSpecies):
+                                pd[ip[j,2], i] += corr     
                     
             
             
@@ -499,15 +556,24 @@ cdef class SimpleReactor(ReactionSystem):
                 
                                 
             elif ip[j,2] == -1: # only two reactants
+                corr = -k * C[ip[j,0]] * C[ip[j,1]] / Ctot
                 if ip[j,0] == ip[j,1]:
-                    deriv = 2 * k * C[ip[j,0]]
-                    pd[ip[j,0], ip[j,0]] -= 2 * deriv
-                    
-                    pd[ir[j,0], ip[j,0]] += deriv       
+                    deriv = 2 * k * C[ip[j,0]] 
+                    pd[ip[j,0], ip[j,0]] -= 2 * deriv                 
+                    for i in range(numCoreSpecies):
+                        pd[ip[j,0], i] -= 2 * corr
+                        
+                    pd[ir[j,0], ip[j,0]] += deriv                
+                    for i in range(numCoreSpecies):
+                        pd[ir[j,0], i] += corr   
                     if ir[j,1] != -1:
-                        pd[ir[j,1], ip[j,0]] += deriv
+                        pd[ir[j,1], ip[j,0]] += deriv          
+                        for i in range(numCoreSpecies):
+                            pd[ir[j,1], i] += corr   
                         if ir[j,2] != -1:
-                            pd[ir[j,2], ip[j,0]] += deriv
+                            pd[ir[j,2], ip[j,0]] += deriv  
+                            for i in range(numCoreSpecies):
+                                pd[ir[j,2], i] += corr   
                     
                 else:
                     # Derivative with respect to reactant 1
@@ -522,31 +588,49 @@ cdef class SimpleReactor(ReactionSystem):
                             pd[ir[j,2], ip[j,0]] += deriv
                     
                     # Derivative with respect to reactant 2
-                    deriv = k * C[ip[j, 0]]
+                    deriv = k * C[ip[j, 0]] 
                     pd[ip[j,0], ip[j,1]] -= deriv                    
-                    pd[ip[j,1], ip[j,1]] -= deriv   
+                    pd[ip[j,1], ip[j,1]] -= deriv              
+                    for i in range(numCoreSpecies):
+                        pd[ip[j,0], i] -= corr
+                        pd[ip[j,1], i] -= corr
                       
-                    pd[ir[j,0], ip[j,1]] += deriv       
+                    pd[ir[j,0], ip[j,1]] += deriv                
+                    for i in range(numCoreSpecies):
+                         pd[ir[j,0], i] += corr   
                     if ir[j,1] != -1:
-                        pd[ir[j,1], ip[j,1]] += deriv
+                        pd[ir[j,1], ip[j,1]] += deriv          
+                        for i in range(numCoreSpecies):
+                            pd[ir[j,1], i] += corr   
                         if ir[j,2] != -1:
-                            pd[ir[j,2], ip[j,1]] += deriv              
+                            pd[ir[j,2], ip[j,1]] += deriv  
+                            for i in range(numCoreSpecies):
+                                pd[ir[j,2], i] += corr              
                     
                     
             else: # three reactants!! (really?)
+                corr = - 2 * k * C[ip[j,0]] * C[ip[j,1]] * C[ip[j,2]] / Ctot
                 if (ip[j,0] == ip[j,1] & ip[j,0] == ip[j,2]):
-                    deriv = 3 * k * C[ip[j,0]] * C[ip[j,0]]
-                    pd[ip[j,0], ip[j,0]] -= 3 * deriv
+                    deriv = 3 * k * C[ip[j,0]] * C[ip[j,0]] 
+                    pd[ip[j,0], ip[j,0]] -= 3 * deriv          
+                    for i in range(numCoreSpecies):
+                        pd[ip[j,0], i] -= 3 * corr
                     
                     pd[ir[j,0], ip[j,0]] += deriv                
+                    for i in range(numCoreSpecies):
+                        pd[ir[j,0], i] += corr   
                     if ir[j,1] != -1:
-                        pd[ir[j,1], ip[j,0]] += deriv
+                        pd[ir[j,1], ip[j,0]] += deriv          
+                        for i in range(numCoreSpecies):
+                            pd[ir[j,1], i] += corr   
                         if ir[j,2] != -1:
-                            pd[ir[j,2], ip[j,0]] += deriv
+                            pd[ir[j,2], ip[j,0]] += deriv  
+                            for i in range(numCoreSpecies):
+                                pd[ir[j,2], i] += corr       
                     
                 elif ip[j,0] == ip[j,1]:
                     # derivative with respect to reactant 1
-                    deriv = 2 * k * C[ip[j,0]] * C[ip[j,2]]
+                    deriv = 2 * k * C[ip[j,0]] * C[ip[j,2]] 
                     pd[ip[j,0], ip[j,0]] -= 2 * deriv                    
                     pd[ip[j,2], ip[j,0]] -= deriv
                     
@@ -555,22 +639,30 @@ cdef class SimpleReactor(ReactionSystem):
                         pd[ir[j,1], ip[j,0]] += deriv
                         if ir[j,2] != -1:
                             pd[ir[j,2], ip[j,0]] += deriv
-                    
                     # derivative with respect to reactant 3
-                    deriv = k * C[ip[j,0]] * C[ip[j,0]]
+                    deriv = k * C[ip[j,0]] * C[ip[j,0]] 
                     pd[ip[j,0], ip[j,2]] -= 2 * deriv                    
-                    pd[ip[j,2], ip[j,2]] -= deriv
-                    
-                    pd[ir[j,0], ip[j,2]] += deriv       
+                    pd[ip[j,2], ip[j,2]] -= deriv                       
+                    for i in range(numCoreSpecies):
+                        pd[ip[j,0], i] -= 2 * corr
+                        pd[ip[j,2], i] -= corr
+
+                    pd[ir[j,0], ip[j,2]] += deriv                
+                    for i in range(numCoreSpecies):
+                        pd[ir[j,0], i] += corr   
                     if ir[j,1] != -1:
-                        pd[ir[j,1], ip[j,2]] += deriv
+                        pd[ir[j,1], ip[j,2]] += deriv          
+                        for i in range(numCoreSpecies):
+                            pd[ir[j,1], i] += corr   
                         if ir[j,2] != -1:
-                            pd[ir[j,2], ip[j,2]] += deriv
+                            pd[ir[j,2], ip[j,2]] += deriv  
+                            for i in range(numCoreSpecies):
+                                pd[ir[j,2], i] += corr     
                     
                     
                 elif ip[j,1] == ip[j,2]:                    
                     # derivative with respect to reactant 1
-                    deriv = k * C[ip[j,1]] * C[ip[j,1]]
+                    deriv = k * C[ip[j,1]] * C[ip[j,1]] 
                     pd[ip[j,0], ip[j,0]] -= deriv                    
                     pd[ip[j,1], ip[j,0]] -= 2 * deriv
                     
@@ -581,19 +673,28 @@ cdef class SimpleReactor(ReactionSystem):
                             pd[ir[j,2], ip[j,0]] += deriv                 
                     
                     # derivative with respect to reactant 2
-                    deriv = 2 * k * C[ip[j,0]] * C[ip[j,1]]
+                    deriv = 2 * k * C[ip[j,0]] * C[ip[j,1]] 
                     pd[ip[j,0], ip[j,1]] -= deriv                    
                     pd[ip[j,1], ip[j,1]] -= 2 * deriv   
-                      
-                    pd[ir[j,0], ip[j,1]] += deriv       
+                    for i in range(numCoreSpecies):
+                        pd[ip[j,0], i] -= corr
+                        pd[ip[j,1], i] -= 2 * corr
+                        
+                    pd[ir[j,0], ip[j,1]] += deriv                
+                    for i in range(numCoreSpecies):
+                        pd[ir[j,0], i] += corr   
                     if ir[j,1] != -1:
-                        pd[ir[j,1], ip[j,1]] += deriv
+                        pd[ir[j,1], ip[j,1]] += deriv          
+                        for i in range(numCoreSpecies):
+                            pd[ir[j,1], i] += corr   
                         if ir[j,2] != -1:
                             pd[ir[j,2], ip[j,1]] += deriv  
+                            for i in range(numCoreSpecies):
+                                pd[ir[j,2], i] += corr     
                                 
                 else:
                     # derivative with respect to reactant 1
-                    deriv = k * C[ip[j,1]] * C[ip[j,2]]
+                    deriv = k * C[ip[j,1]] * C[ip[j,2]] 
                     pd[ip[j,0], ip[j,0]] -= deriv                    
                     pd[ip[j,1], ip[j,0]] -= deriv
                     pd[ip[j,2], ip[j,0]] -= deriv
@@ -605,7 +706,7 @@ cdef class SimpleReactor(ReactionSystem):
                             pd[ir[j,2], ip[j,0]] += deriv     
                                     
                     # derivative with respect to reactant 2
-                    deriv = k * C[ip[j,0]] * C[ip[j,2]]
+                    deriv = k * C[ip[j,0]] * C[ip[j,2]] 
                     pd[ip[j,0], ip[j,1]] -= deriv                    
                     pd[ip[j,1], ip[j,1]] -= deriv   
                     pd[ip[j,2], ip[j,1]] -= deriv
@@ -617,16 +718,26 @@ cdef class SimpleReactor(ReactionSystem):
                             pd[ir[j,2], ip[j,1]] += deriv 
                                  
                     # derivative with respect to reactant 3
-                    deriv = k * C[ip[j,0]] * C[ip[j,1]]                    
+                    deriv = k * C[ip[j,0]] * C[ip[j,1]] 
                     pd[ip[j,0], ip[j,2]] -= deriv                    
                     pd[ip[j,1], ip[j,2]] -= deriv   
-                    pd[ip[j,2], ip[j,2]] -= deriv
+                    pd[ip[j,2], ip[j,2]] -= deriv 
+                    for i in range(numCoreSpecies):
+                        pd[ip[j,0], i] -= corr
+                        pd[ip[j,1], i] -= corr
+                        pd[ip[j,2], i] -= corr
                     
-                    pd[ir[j,0], ip[j,2]] += deriv       
+                    pd[ir[j,0], ip[j,2]] += deriv                
+                    for i in range(numCoreSpecies):
+                        pd[ir[j,0], i] += corr   
                     if ir[j,1] != -1:
-                        pd[ir[j,1], ip[j,2]] += deriv
+                        pd[ir[j,1], ip[j,2]] += deriv          
+                        for i in range(numCoreSpecies):
+                            pd[ir[j,1], i] += corr   
                         if ir[j,2] != -1:
-                            pd[ir[j,2], ip[j,2]] += deriv
+                            pd[ir[j,2], ip[j,2]] += deriv  
+                            for i in range(numCoreSpecies):
+                                pd[ir[j,2], i] += corr  
 
         self.jacobianMatrix = pd + cj * numpy.identity(y.shape[0], numpy.float64)
         return pd
@@ -634,14 +745,14 @@ cdef class SimpleReactor(ReactionSystem):
     @cython.boundscheck(False)
     def computeRateDerivative(self):
         """
-        Returns derivative vector df/dk_j where dc/dt = f(c, t, k) and
+        Returns derivative vector df/dk_j where dy/dt = f(y, t, k) and
         k_j is the rate parameter for the jth core reaction.
         """
         cdef numpy.ndarray[numpy.int_t, ndim=2] ir, ip
-        cdef numpy.ndarray[numpy.float64_t, ndim=1] y, kf, kr
+        cdef numpy.ndarray[numpy.float64_t, ndim=1] y, kf, kr, C
         cdef numpy.ndarray[numpy.float64_t, ndim=2] rateDeriv
-        cdef double fderiv, rderiv, flux
-        cdef int j, numCoreReactions
+        cdef double fderiv, rderiv, flux, V
+        cdef int j, numCoreReactions, numCoreSpecies
         
         ir = self.reactantIndices
         ip = self.productIndices
@@ -650,25 +761,32 @@ cdef class SimpleReactor(ReactionSystem):
         kr = self.reverseRateCoefficients
         y = self.coreSpeciesConcentrations        
         
-        
         numCoreReactions = len(self.coreReactionRates)
+        numCoreSpecies = len(self.coreSpeciesConcentrations)      
         
+        # Use ideal gas law to compute volume
+        V = constants.R * self.T.value_si * numpy.sum(y) / self.P.value_si
+
+        C = numpy.zeros_like(self.coreSpeciesConcentrations)
+        for j in range(numCoreSpecies):
+            C[j] = y[j] / V
+
         rateDeriv = numpy.zeros((y.shape[0],numCoreReactions), numpy.float64)
         
         for j in range(numCoreReactions):
             if ir[j,1] == -1: # only one reactant
-                fderiv = y[ir[j,0]]
+                fderiv = C[ir[j,0]]
             elif ir[j,2] == -1: # only two reactants
-                fderiv = y[ir[j,0]] * y[ir[j,1]]                             
+                fderiv = C[ir[j,0]] * C[ir[j,1]]                             
             else: # three reactants!! (really?)
-                fderiv = y[ir[j,0]] * y[ir[j,1]] * y[ir[j,2]]          
+                fderiv = C[ir[j,0]] * C[ir[j,1]] * C[ir[j,2]]          
                 
             if ip[j,1] == -1: # only one reactant
-                rderiv = kr[j] / kf [j] * y[ip[j,0]]
+                rderiv = kr[j] / kf [j] * C[ip[j,0]]
             elif ip[j,2] == -1: # only two reactants
-                rderiv = kr[j] / kf [j] * y[ip[j,0]] * y[ip[j,1]]
+                rderiv = kr[j] / kf [j] * C[ip[j,0]] * C[ip[j,1]]
             else: # three reactants!! (really?)
-                rderiv = kr[j] / kf [j] * y[ip[j,0]] * y[ip[j,1]] * y[ip[j,2]]
+                rderiv = kr[j] / kf [j] * C[ip[j,0]] * C[ip[j,1]] * C[ip[j,2]]
     
             
             flux = fderiv - rderiv
@@ -690,6 +808,7 @@ cdef class SimpleReactor(ReactionSystem):
             else:
                 rateDeriv[ip[j,0], j] += flux
                 rateDeriv[ip[j,1], j] += flux  
-                rateDeriv[ip[j,2], j] += flux          
-                
+                rateDeriv[ip[j,2], j] += flux  
+                        
+        rateDeriv = V * rateDeriv
         return rateDeriv

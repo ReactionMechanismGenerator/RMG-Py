@@ -409,7 +409,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         Regenerate the :math:`k(T,P)` values for this partial network if the
         network is marked as invalid.
         """
-        from rmgpy.kinetics import Arrhenius, KineticsData
+        from rmgpy.kinetics import Arrhenius, KineticsData, MultiArrhenius
         from rmgpy.measure.collision import SingleExponentialDown
         from rmgpy.measure.reaction import fitInterpolationModel
         from rmgpy.measure.main import MEASURE
@@ -486,8 +486,12 @@ class PDepNetwork(rmgpy.pdep.network.Network):
                 else:
                     kunits = ''
                 rxn.kinetics = Arrhenius().fitToData(Tlist=rxn.kinetics.Tdata.value_si, klist=rxn.kinetics.kdata.value_si, kunits=kunits)
+            elif isinstance(rxn.kinetics, MultiArrhenius):
+                logging.info('Converting multiple kinetics to a single Arrhenius expression for reaction {rxn}'.format(rxn=rxn))
+                rxn.kinetics = rxn.kinetics.toArrhenius(Tmin=Tmin, Tmax=Tmax)
             elif not isinstance(rxn.kinetics, Arrhenius):
                 raise Exception('Path reaction "{0}" in PDepNetwork #{1:d} has invalid kinetics type "{2!s}".'.format(rxn, self.index, rxn.kinetics.__class__))
+            rxn.fixBarrierHeight(forcePositive=True)
             E0 = sum([spec.conformer.E0.value_si for spec in rxn.reactants]) + rxn.kinetics.Ea.value_si
             rxn.transitionState = rmgpy.species.TransitionState(
                 conformer = Conformer(E0=(E0*0.001,"kJ/mol")),

@@ -435,7 +435,7 @@ class PressureDependenceJob(object):
         
         f.close()
         
-        f = open(os.path.join(os.path.dirname(outputFile), 'chem.inp'), 'w')
+        f = open(os.path.join(os.path.dirname(outputFile), 'chem.inp'), 'a')
         
         count = 0
         for prod in range(Nprod):
@@ -445,7 +445,7 @@ class PressureDependenceJob(object):
                 kinetics = reaction.kinetics
                 count += 1
                 
-                string = '{0!s}    1.0 0.0 0.0    0.0 0.0 0.0\n'.format(reaction)
+                string = '{0!s:51} 1.0 0.0 0.0\n'.format(reaction)
                 
                 if isinstance(kinetics, PDepArrhenius):
                     for P, arrhenius in zip(kinetics.pressures.value_si, kinetics.arrhenius):

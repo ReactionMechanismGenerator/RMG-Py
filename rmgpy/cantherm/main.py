@@ -220,11 +220,14 @@ class CanTherm:
         self.jobList = self.loadInputFile(self.inputFile)
         logging.info('')
         
-        # Initialize (and clear!) the output file for the job
+        # Initialize (and clear!) the output files for the job
         if self.outputDirectory is None:
             self.outputDirectory = os.path.dirname(os.path.abspath(self.inputFile))
         outputFile = os.path.join(self.outputDirectory, 'output.py')
         with open(outputFile, 'w') as f:
+            pass
+        chemkinFile = os.path.join(self.outputDirectory, 'chem.inp')
+        with open(chemkinFile, 'w') as f:
             pass
         
         # Run the jobs

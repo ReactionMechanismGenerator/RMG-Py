@@ -1222,7 +1222,8 @@ class CoreEdgeReactionModel:
 
         database = rmgpy.data.rmg.database
 
-        self.newReactionList = []; self.newSpeciesList = []
+        self.newReactionList = []
+        self.newSpeciesList = []
 
         numOldEdgeSpecies = len(self.edge.species)
         numOldEdgeReactions = len(self.edge.reactions)
@@ -1233,20 +1234,13 @@ class CoreEdgeReactionModel:
         for entry in reactionLibrary.entries.values():
             rxn = LibraryReaction(reactants=entry.item.reactants[:], products=entry.item.products[:], library=reactionLibrary, kinetics=entry.data)
             r, isNew = self.makeNewReaction(rxn) # updates self.newSpeciesList and self.newReactionlist
+            if not isNew: logging.info("This library reaction was not new: {0}".format(rxn))
         for spec in self.newSpeciesList:
             if spec.reactive: spec.generateThermoData(database)
         for spec in self.newSpeciesList:
             self.addSpeciesToEdge(spec)
 
         for rxn in self.newReactionList:
-            if self.pressureDependence and rxn.isUnimolecular():
-                # If this is going to be run through pressure dependence code,
-                # we need to make sure the barrier is positive.
-                for spec in itertools.chain(rxn.reactants, rxn.products):
-                    if spec.thermo is None:
-                        spec.generateThermoData(database)
-                rxn.fixBarrierHeight(forcePositive=True)
-
             # Note that we haven't actually evaluated any fluxes at this point
             # Instead, we remove the comment below if the reaction is moved to
             # the core later in the mechanism generation

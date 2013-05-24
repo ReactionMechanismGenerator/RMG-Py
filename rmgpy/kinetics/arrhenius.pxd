@@ -88,6 +88,8 @@ cdef class MultiArrhenius(KineticsModel):
     cpdef double getRateCoefficient(self, double T, double P=?) except -1
 
     cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2
+    
+    cpdef Arrhenius toArrhenius(self, double Tmin=?, double Tmax=?)
 
 ################################################################################
 

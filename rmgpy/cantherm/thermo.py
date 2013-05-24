@@ -153,7 +153,7 @@ class ThermoJob:
         
         f.close()
         
-        f = open(os.path.join(os.path.dirname(outputFile), 'chem.inp'), 'w')
+        f = open(os.path.join(os.path.dirname(outputFile), 'chem.inp'), 'a')
         
         thermo = species.thermo
         if isinstance(thermo, NASA):

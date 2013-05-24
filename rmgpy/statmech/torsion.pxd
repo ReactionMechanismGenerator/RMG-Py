@@ -44,8 +44,8 @@ cdef class HinderedRotor(Torsion):
     cdef public ScalarQuantity _barrier
     cdef public int symmetry
     cdef public bint semiclassical
-    cdef readonly double frequency
-    cdef readonly numpy.ndarray energies
+    cdef public double frequency
+    cdef public numpy.ndarray energies
     
     cpdef double getFrequency(self) except -1
 

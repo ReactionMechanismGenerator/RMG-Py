@@ -543,7 +543,7 @@ class TestMultiArrhenius(unittest.TestCase):
         """
         self.Tmin = 350.
         self.Tmax = 1500.
-        self.comment = ''
+        self.comment = 'Comment'
         self.arrhenius = [
             Arrhenius(
                 A = (9.3e-14,"cm^3/(molecule*s)"),
@@ -566,6 +566,12 @@ class TestMultiArrhenius(unittest.TestCase):
         ]
         self.kinetics = MultiArrhenius(
             arrhenius = self.arrhenius,
+            Tmin = (self.Tmin,"K"),
+            Tmax = (self.Tmax,"K"),
+            comment = self.comment,
+        )
+        self.single_kinetics = MultiArrhenius(
+            arrhenius = self.arrhenius[:1],
             Tmin = (self.Tmin,"K"),
             Tmax = (self.Tmax,"K"),
             comment = self.comment,
@@ -658,7 +664,41 @@ class TestMultiArrhenius(unittest.TestCase):
         self.assertAlmostEqual(self.kinetics.Tmax.value, kinetics.Tmax.value, 4)
         self.assertEqual(self.kinetics.Tmax.units, kinetics.Tmax.units)
         self.assertEqual(self.kinetics.comment, kinetics.comment)
+    
+    def test_toArrhenius(self):
+        """
+        Test that we can convert to an Arrhenius
+        """
+        answer = self.single_kinetics.arrhenius[0]
+        fitted = self.single_kinetics.toArrhenius()
 
+        self.assertAlmostEqual(fitted.A.value_si, answer.A.value_si, delta=1e0)
+        self.assertAlmostEqual(fitted.n.value_si, answer.n.value_si, 1, 4)
+        self.assertAlmostEqual(fitted.Ea.value_si, answer.Ea.value_si, 2)
+        self.assertAlmostEqual(fitted.T0.value_si, answer.T0.value_si, 4)
+
+    def test_toArrheniusTrange(self):
+        """
+        Test the toArrhenius temperature range is set correctly.
+        """
+        answer = self.single_kinetics.arrhenius[0]
+        fitted = self.single_kinetics.toArrhenius(Tmin=800, Tmax=1200)
+        self.assertAlmostEqual(fitted.Tmin.value_si, 800.0)
+        self.assertAlmostEqual(fitted.Tmax.value_si, 1200.0)
+        for T in [800,1000,1200]:
+            self.assertAlmostEqual(fitted.getRateCoefficient(T) / answer.getRateCoefficient(T), 1.0)
+
+    def test_toArrheniusMultiple(self):
+        """
+        Test the toArrhenius fitting multiple kinetics over a small range, see if we're within 5% at a few points
+        """
+        answer = self.kinetics
+        fitted = self.kinetics.toArrhenius(Tmin=800, Tmax=1200)
+        self.assertAlmostEqual(fitted.Tmin.value_si, 800.0)
+        self.assertAlmostEqual(fitted.Tmax.value_si, 1200.0)
+        for T in [800,1000,1200]:
+            self.assertAlmostEqual(fitted.getRateCoefficient(T) / answer.getRateCoefficient(T), 1.0, delta=0.05)
+            
 ################################################################################
 
 class TestMultiPDepArrhenius(unittest.TestCase):

@@ -805,7 +805,7 @@ class Network:
         def jacobian(t, y, K):
             return K
     
-        ymB = self.P * 1e5 / constants.R / self.T * 1e-6
+        ymB = self.P / constants.R / self.T
         M, indices = self.generateFullMEMatrix()
         Nrows = M.shape[0]
         M[:,Nrows-Nreac-Nprod:] *= ymB
@@ -886,8 +886,8 @@ class Network:
         def jacobian(t, y, K):
             return K
     
-        ymB = self.P * 1e5 / constants.R / self.T * 1e-6
-        K = self.K[:,:]
+        ymB = self.P / constants.R / self.T
+        K = self.K.copy()
         K[:,Nisom:] *= ymB
         
         if self.ymB is not None:
