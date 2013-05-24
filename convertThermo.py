@@ -917,8 +917,11 @@ class ModelMatcher():
     def index(self):
         return """Hello World!"""
     @cherrypy.expose
-    def identified(self):
-        return json.dumps(self.identified_labels)
+    def identified(self, type=html):
+        if type == 'html':
+            return "<br>".join(["<img src='/img/{0!s}.png'>".format(self.speciesDict_rmg[lab]) for lab in self.identified_labels])
+        if type == 'json':
+            return json.dumps(self.identified_labels)
         
 
 if __name__ == '__main__':
@@ -945,7 +948,7 @@ if __name__ == '__main__':
                             'log.error_file': 'site.log',
                             'log.screen': True})
 
-    conf = {'/pictures': {'tools.staticdir.on': True,
+    conf = {'/img': {'tools.staticdir.on': True,
                       'tools.staticdir.dir': os.path.join(args.output_directory, 'species'),
             }}
     cherrypy.quickstart(mm, '/', config=conf)
