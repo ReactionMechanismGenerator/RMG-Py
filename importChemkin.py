@@ -24,6 +24,7 @@ import re
 import cherrypy
 import json
 import threading
+import urllib
 
 import rmgpy
 import rmgpy.rmg
@@ -166,6 +167,7 @@ class ModelMatcher():
         self.suggestedMatches = {}
         self.votes = {}
         self.prunedVotes = {}
+        self.manualMatchesToProcess = []
 
     def loadModel(self, species_file, reactions_file, thermo_file):
         print 'Loading model...'
@@ -882,6 +884,13 @@ class ModelMatcher():
             logging.info("And fully identified {0} of {1} reactions ({2:.1%}).".format(len(self.chemkinReactions) - len(self.chemkinReactionsUnmatched), len(self.chemkinReactions), 1 - float(len(self.chemkinReactionsUnmatched)) / len(self.chemkinReactions)))
             logging.info("Still to process {0} matches: {1!r}".format(len(self.identified_unprocessed_labels), self.identified_unprocessed_labels))
 
+            while self.manualMatchesToProcess:
+                logging.info("There is a manual match to process:")
+                chemkinLabel, matchingSpecies = self.manualMatchesToProcess.pop(0)
+                self.setMatch(chemkinLabel, matchingSpecies)
+                invalidatedReactions = self.getInvalidatedReactionsAndRemoveVotes(chemkinLabel, matchingSpecies)
+                reactionsToCheck.update(invalidatedReactions)
+                logging.info("After making that match, will have to re-check {0} edge reactions".format(len(reactionsToCheck)))
 
             if len(self.identified_unprocessed_labels) == 0 and self.votes:
                 self.printVoting(prunedVotes)
@@ -964,6 +973,8 @@ class ModelMatcher():
         rmgControversy = {}
         flatVotes = {}
         
+        labelsWaitingToProcess = [item[0] for item in self.manualMatchesToProcess]
+        speciesWaitingToProcess = [item[1] for item in self.manualMatchesToProcess]
         # to turn reactions into pictures
         searcher = re.compile('(\S+\(\d+\))\s')
         def replacer(match):
@@ -976,11 +987,17 @@ class ModelMatcher():
                 rmgControversy[matchingSpecies] = rmgControversy.get(matchingSpecies, 0) + len(votingReactions)
         output = ["<html><body><h1>Votes</h1>"]
         for chemkinLabel in sorted(chemkinControversy.keys(), key=lambda label:-chemkinControversy[label]):
+            if chemkinLabel in labelsWaitingToProcess:
+                output.append("<hr><h2>{0} has just been identified but not yet processed.</h2>".format(chemkinLabel))
+                continue
             possibleMatches = votes[chemkinLabel]
             output.append("<hr><h2>{0} matches {1} RMG species</h2>".format(chemkinLabel, len(possibleMatches)))
             for matchingSpecies in sorted(possibleMatches.iterkeys(), key=lambda species:-len(possibleMatches[species])) :
+                if matchingSpecies in speciesWaitingToProcess:
+                    output.append("{img} which has just been identified but not yet processed.<br>".format(img=img(matchingSpecies)))
+                    continue
                 votingReactions = possibleMatches[matchingSpecies]
-                output.append("{1}  according to {2} reactions. ".format(chemkinLabel, img(matchingSpecies), len(votingReactions)))
+                output.append("<a href='/match.html?ckLabel={ckl}&rmgLabel={rmgl}'>{img}</a>  according to {n} reactions. ".format(ckl=urllib.quote_plus(chemkinLabel), rmgl=urllib.quote_plus(str(matchingSpecies)), img=img(matchingSpecies), n=len(votingReactions)))
                 output.append("  Enthalpies at 800K differ by {0:.1f} kJ/mol<br>".format((self.thermoDict[chemkinLabel].getEnthalpy(800) - matchingSpecies.thermo.getEnthalpy(800)) / 1000.))
                 output.append('<table  style="width:800px">')
                 for n,rxn in enumerate(votingReactions):
@@ -993,7 +1010,21 @@ class ModelMatcher():
                 output.append("</table>")
         output.append("</body></html>")
         return '\n'.join(output)
-        
+    
+    @cherrypy.expose
+    def match_html(self, ckLabel=None, rmgLabel=None):
+        if ckLabel not in self.votes:
+            return "ckLabel not valid"
+        for rmgSpecies in self.votes[ckLabel].iterkeys():
+            if str(rmgSpecies) == rmgLabel:
+                self.manualMatchesToProcess.append((str(ckLabel),rmgSpecies))
+                break
+        else:
+            return "rmgLabel not a candidate for that ckLabel"
+        ## Wait for it to be processed:
+        #while self.manualMatchesToProcess:
+        #    time.sleep(1)
+        raise cherrypy.HTTPRedirect("/votes.html")
 
 if __name__ == '__main__':
 
