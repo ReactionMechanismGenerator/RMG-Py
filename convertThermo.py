@@ -19,6 +19,7 @@ If running in QTconsole, it draws pictures of the species.
 import os.path
 import argparse
 import logging
+import re
 
 import cherrypy
 import json
@@ -150,7 +151,8 @@ class ModelMatcher():
     """
     For identifying species in an imported model
     """
-    def __init__(self):
+    def __init__(self, args=None):
+        self.args = args
         self.speciesDict = {}
         self.thermoDict = {}
         self.formulaDict = {}
@@ -163,6 +165,7 @@ class ModelMatcher():
         self.chemkinReactionsUnmatched = []
         self.suggestedMatches = {}
         self.votes = {}
+        self.prunedVotes = {}
 
     def loadModel(self, species_file, reactions_file, thermo_file):
         print 'Loading model...'
@@ -569,6 +572,14 @@ class ModelMatcher():
         fstr = os.path.join(self.rmg_object.outputDirectory, 'species', '{0!s}.png'.format(rmg_species))
         if not os.path.exists(fstr):
             MoleculeDrawer().draw(rmg_species.molecule[0], 'png', fstr)
+            
+    def drawAllCandidateSpecies(self):
+        """Draws all the species that are in self.prunedVotes"""
+        candidateSpecies = set()
+        for possibleMatches in self.votes.itervalues():
+            candidateSpecies.update(possibleMatches.keys())
+        for rmg_species in candidateSpecies:
+            self.drawSpecies(rmg_species)
 
     def moveSpeciesDrawing(self, rmg_species):
         "Move a species drawing from 'species' directory to 'species/MATCHED' directory."
@@ -673,7 +684,7 @@ class ModelMatcher():
         If a match has a large enthalpy discrepancy, remove it.
         """
         votes = self.votes
-        uniqueVotes = {}
+        prunedVotes = {}
 
         # votes matrix containing sets with only the chemkin reactions, not the corresponding RMG reactions
         ckVotes = {chemkinLabel:
@@ -693,7 +704,8 @@ class ModelMatcher():
                 logging.info("No remaining matches for {0}".format(chemkinLabel))
                 continue
             if len(possibleMatches) == 1:
-                uniqueVotes[chemkinLabel] = possibleMatches
+                prunedVotes[chemkinLabel] = possibleMatches
+                continue
             commonVotes = None
             mostVotes = 0
             for matchingSpecies, votingReactions in possibleMatches.iteritems():
@@ -705,10 +717,11 @@ class ModelMatcher():
             if len(commonVotes) < mostVotes:
                 logging.info("Removing {0} voting reactions that are common to all {1} matches for {2}".format(
                                 len(commonVotes), len(possibleMatches), chemkinLabel))
-                uniqueVotes[chemkinLabel] = { matchingSpecies: votingReactions.difference(commonVotes) for matchingSpecies, votingReactions in possibleMatches.iteritems() if votingReactions.difference(commonVotes)}
+                prunedVotes[chemkinLabel] = { matchingSpecies: votingReactions.difference(commonVotes) for matchingSpecies, votingReactions in possibleMatches.iteritems() if votingReactions.difference(commonVotes)}
             else:
-                uniqueVotes[chemkinLabel] = possibleMatches
-        return uniqueVotes
+                prunedVotes[chemkinLabel] = possibleMatches
+        self.prunedVotes = prunedVotes
+        return prunedVotes
 
     def printVoting(self, votes):
         """
@@ -739,8 +752,9 @@ class ModelMatcher():
                     else:
                         logging.info("    {0!s}".format(rxn))
 
-    def main(self, args):
+    def main(self):
         """This is the main matcher function that does the whole thing"""
+        args = self.args
         species_file = args.species
         reactions_file = args.reactions or species_file
         thermo_file = args.thermo
@@ -836,6 +850,8 @@ class ModelMatcher():
                 # self.printVoting(votes)
                 prunedVotes = self.pruneVoting()
                 # self.printVoting(prunedVotes)
+                
+                self.drawAllCandidateSpecies()
 
                 newMatches = []
                 for chemkinLabel, possibleMatches in prunedVotes.iteritems():
@@ -913,15 +929,70 @@ class ModelMatcher():
 
         print "done"
 
+    def _img(self, species):
+        """Get the html tag for the image of a species"""
+        imagesPath = 'img' # to serve via cherryPy
+        #imagesPath = 'file://'+os.path.abspath(os.path.join(self.args.output_directory,'species')) # to get from disk
+        return "<img src='{1}/{0!s}.png' title='{0}'>".format(species, imagesPath)
+    
     @cherrypy.expose
     def index(self):
-        return """Hello World!"""
+        return """
+<html>
+<body>
+<h1>Mechanism importer</h1>
+<ul>
+<li><a href="identified.html">List of identified species.</li>
+<li><a href="votes.html">Voting reactions.</li>
+</ul>
+        """
     @cherrypy.expose
-    def identified(self, type=html):
-        if type == 'html':
-            return "<br>".join(["<img src='/img/{0!s}.png'>".format(self.speciesDict_rmg[lab]) for lab in self.identified_labels])
-        if type == 'json':
-            return json.dumps(self.identified_labels)
+    def identified_html(self):
+        img = self._img
+        return ('<html><body><h1>Identified Species</h1><table style="width:500px"><tr>' + 
+                "</tr>\n<tr>".join(["<td>{number}</td><td>{label}</td><td>{img}</td>".format(img=img(self.speciesDict_rmg[lab]),label=lab,number=n+1) for n,lab in enumerate(self.identified_labels)] ) +
+                '</tr></table></body></html>')
+    @cherrypy.expose
+    def identified_json(self):
+        return json.dumps(self.identified_labels)
+
+    @cherrypy.expose
+    def votes_html(self):
+        votes = self.votes.copy()
+        img = self._img
+        chemkinControversy = {label: 0 for label in votes.iterkeys()}
+        rmgControversy = {}
+        flatVotes = {}
+        
+        # to turn reactions into pictures
+        searcher = re.compile('(\S+\(\d+\))\s')
+        def replacer(match):
+            return self._img(match.group(1))
+        
+        for chemkinLabel, possibleMatches in votes.iteritems():
+            for matchingSpecies, votingReactions in possibleMatches.iteritems():
+                flatVotes[(chemkinLabel, matchingSpecies)] = votingReactions
+                chemkinControversy[chemkinLabel] += len(votingReactions)
+                rmgControversy[matchingSpecies] = rmgControversy.get(matchingSpecies, 0) + len(votingReactions)
+        output = ["<html><body><h1>Votes</h1>"]
+        for chemkinLabel in sorted(chemkinControversy.keys(), key=lambda label:-chemkinControversy[label]):
+            possibleMatches = votes[chemkinLabel]
+            output.append("<hr><h2>{0} matches {1} RMG species</h2>".format(chemkinLabel, len(possibleMatches)))
+            for matchingSpecies in sorted(possibleMatches.iterkeys(), key=lambda species:-len(possibleMatches[species])) :
+                votingReactions = possibleMatches[matchingSpecies]
+                output.append("{1}  according to {2} reactions. ".format(chemkinLabel, img(matchingSpecies), len(votingReactions)))
+                output.append("  Enthalpies at 800K differ by {0:.1f} kJ/mol<br>".format((self.thermoDict[chemkinLabel].getEnthalpy(800) - matchingSpecies.thermo.getEnthalpy(800)) / 1000.))
+                output.append('<table  style="width:800px">')
+                for n,rxn in enumerate(votingReactions):
+                    if isinstance(rxn, tuple):
+                        rmgrxn = str(rxn[1])
+                        rmgRxnPics = searcher.sub(replacer, rmgrxn+' ')
+                        output.append("<tr><td>{0}</td><td> {1!s}   </td><td>  {2!s} </td></tr>".format(n+1, rxn[0], rmgRxnPics))
+                    else:
+                        output.append("<tr><td>{0}</td><td> {1!s}</td></tr>".format(n+1, rxn))
+                output.append("</table>")
+        output.append("</body></html>")
+        return '\n'.join(output)
         
 
 if __name__ == '__main__':
@@ -937,9 +1008,9 @@ if __name__ == '__main__':
     elif args.quiet: level = logging.WARNING
     initializeLog(level, os.path.join(args.output_directory, 'RMG.log'))
 
-    mm = ModelMatcher()
+    mm = ModelMatcher(args)
     
-    t = threading.Thread(target=mm.main, args=(args,))
+    t = threading.Thread(target=mm.main)
     t.daemon = True
     t.start()
     import webbrowser
