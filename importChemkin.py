@@ -20,6 +20,10 @@ import os.path
 import argparse
 import logging
 
+import cherrypy
+import json
+import threading
+
 import rmgpy
 import rmgpy.rmg
 from rmgpy.display import display
@@ -273,13 +277,13 @@ class ModelMatcher():
         """
         speciesMatch = self.speciesMatch
         # Compare reactants to reactants
-        
+
         # get things we refer to a lot into the local namespace, to reduce lookups
         rmg_reactants = rmg_reaction.reactants
         ck_reactants = chemkin_reaction.reactants
         len_rmg_reactants = len(rmg_reactants)
         len_ck_reactants = len(ck_reactants)
-        
+
         forwardReactantsMatch = False
         if len_rmg_reactants == 1 and len_ck_reactants == 1:
             if speciesMatch(rmg_reactants[0], ck_reactants[0]):
@@ -317,7 +321,7 @@ class ModelMatcher():
         elif len_rmg_reactants == len_ck_reactants:
             raise NotImplementedError("Can't check isomorphism of reactions with {0} reactants".format(len_rmg_reactants))
 
-        
+
         rmg_products = rmg_reaction.products
         ck_products = chemkin_reaction.products
         len_rmg_products = len(rmg_products)
@@ -539,7 +543,7 @@ class ModelMatcher():
             chosenID = raw_input('What is it? (see voting info above)\n')
             while chosenID not in possibleIndicesStr:
                 chosenID = raw_input("That wasn't one of {0}. Try again:\n".format(','.join(possibleIndicesStr)))
-            
+
             rmgSpecies = matchesDict[int(chosenID)]
             logging.info("Based on user input, matching {0} with {1!s}".format(speciesLabel, rmgSpecies))
             self.setMatch(speciesLabel, rmgSpecies)
@@ -572,7 +576,7 @@ class ModelMatcher():
         destination = os.path.join(self.rmg_object.outputDirectory, 'species', 'MATCHED', '{0!s}.png'.format(rmg_species))
         if os.path.exists(source):
             os.renames(source, destination)
-    
+
     def getEnthalpyDiscrepancy(self, chemkinLabel, rmgSpecies):
         """
         Return the difference in enthalpy at 800K in kJ/mol
@@ -676,7 +680,7 @@ class ModelMatcher():
                    {matchingSpecies:
                     set([r[0] for r in votingReactions]) for matchingSpecies, votingReactions in possibleMatches.iteritems()
                    } for chemkinLabel, possibleMatches in votes.iteritems() }
-        
+
         for chemkinLabel, possibleMatches in ckVotes.iteritems():
             for rmgSpecies in possibleMatches.keys():
                 dH = self.getEnthalpyDiscrepancy(chemkinLabel, rmgSpecies)
@@ -829,9 +833,9 @@ class ModelMatcher():
                 # ready to start adding to it again based on new matches.
                 reactionsToCheck.clear()
 
-                #self.printVoting(votes)
+                # self.printVoting(votes)
                 prunedVotes = self.pruneVoting()
-                #self.printVoting(prunedVotes)
+                # self.printVoting(prunedVotes)
 
                 newMatches = []
                 for chemkinLabel, possibleMatches in prunedVotes.iteritems():
@@ -874,8 +878,8 @@ class ModelMatcher():
                         print("That's already been identified")
                     elif speciesLabel not in votes:
                         print("We have no candidate matches for that label.")
-                    else: # label is valid, break out of while loop.
-                        break 
+                    else:  # label is valid, break out of while loop.
+                        break
                     speciesLabel = raw_input("Try again:\n")
                 possibleMatches = votes[speciesLabel].keys()
                 chemkinLabel, matchingSpecies = self.askForMatchID(speciesLabel, possibleMatches)
@@ -909,6 +913,14 @@ class ModelMatcher():
 
         print "done"
 
+    @cherrypy.expose
+    def index(self):
+        return """Hello World!"""
+    @cherrypy.expose
+    def identified(self):
+        return json.dumps(self.identified_labels)
+        
+
 if __name__ == '__main__':
 
     # Parse the command-line arguments (requires the argparse module)
@@ -923,6 +935,21 @@ if __name__ == '__main__':
     initializeLog(level, os.path.join(args.output_directory, 'RMG.log'))
 
     mm = ModelMatcher()
-    mm.main(args)
+    
+    t = threading.Thread(target=mm.main, args=(args,))
+    t.daemon = True
+    t.start()
+    import webbrowser
+    webbrowser.open('http://127.0.0.1:8080')
+    cherrypy.config.update({'environment': 'production',
+                            'log.error_file': 'site.log',
+                            'log.screen': True})
+
+    conf = {'/pictures': {'tools.staticdir.on': True,
+                      'tools.staticdir.dir': os.path.join(args.output_directory, 'species'),
+            }}
+    cherrypy.quickstart(mm, '/', config=conf)
+    
 
 
+    #mm.main(args)
