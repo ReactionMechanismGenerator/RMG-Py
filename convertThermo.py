@@ -1051,6 +1051,7 @@ if __name__ == '__main__':
     t.start()
     import webbrowser
     webbrowser.open('http://127.0.0.1:8080')
+    cherrypy.server.socket_host = '0.0.0.0'
     cherrypy.config.update({'environment': 'production',
                             'log.error_file': 'site.log',
                             'log.screen': True})
