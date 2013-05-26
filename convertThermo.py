@@ -662,6 +662,21 @@ class ModelMatcher():
             f.write("{0}\t{1}\t{2:.1f}\n".format(chemkinLabel, rmgSpecies.molecule[0].toSMILES(), enthalpyDiscrepancy))
         self.drawSpecies(rmgSpecies)
 
+        # For kinetics purposes, we convert the thermo to Wilhoit
+        # This allows us to extrapolating H to 298 to find deltaH rxn
+        # for ArrheniusEP kinetics,
+        # and to 0K so we can do barrier height checks with E0.
+        Cp0 = rmgSpecies.calculateCp0()
+        CpInf = rmgSpecies.calculateCpInf()
+        thermo = self.thermoDict[chemkinLabel]
+        # pretend it was valid down to 298 K
+        oldLowT = thermo.Tmin.value_si
+        thermo.selectPolynomial(thermo.Tmin.value_si).Tmin.value_si = min(298.0, thermo.Tmin.value_si)
+        newThermo = thermo.toWilhoit(Cp0=Cp0, CpInf=CpInf)
+        thermo.comment += "\nLow T polynomial Tmin changed from {0} to {1} K when importing to RMG".format(oldLowT, 298.0)
+        # thermo.selectPolynomial(thermo.Tmin.value_si).Tmin.value_si = oldLowT  # put it back
+        self.thermoDict[chemkinLabel].E0 = newThermo.E0
+
     def getInvalidatedReactionsAndRemoveVotes(self, chemkinLabel, rmgSpecies):
         """Remove the votes, and return the list of voting reactions."""
         # Remove both chemkinLabel and rmgSpecies from the voting dictionaries
@@ -816,36 +831,28 @@ class ModelMatcher():
 
         self.loadModel(species_file, reactions_file, thermo_file)
 
-        self.identifySmallMolecules()
-
-        self.loadReactions(reactions_file)
-
         logging.info("Initializing RMG")
         self.initializeRMG(args)
         rm = self.rmg_object.reactionModel
         self.dictionaryFile = os.path.join(args.output_directory, 'MatchedSpeciesDictionary.txt')
+
         with open(self.dictionaryFile, 'w') as f:
             f.write("Species name\tSMILES\tEnthaply discrepancy at 800K\n")
+
+        self.identifySmallMolecules()
 
         logging.info("Importing identified species into RMG model")
         # Add identified species to the reaction model complete species list
         newSpeciesDict = {}
         for species_label in self.identified_labels:
             old_species = self.speciesDict[species_label]
+            logging.info(species_label)
             rmg_species, wasNew = rm.makeNewSpecies(old_species, label=old_species.label)
             assert wasNew, "Species with structure of '{0}' already created with label '{1}'".format(species_label, rmg_species.label)
-            # For kinetics purposes, we convert the thermo to Wilhoit
-            # This allows us to extrapolating H to 298 to find deltaH rxn
-            # for ArrheniusEP kinetics,
-            # and to 0K so we can do barrier height checks with E0.
-            thermo = old_species.thermo
-            # pretend it was valid down to 298 K
-            thermo.selectPolynomial(thermo.Tmin.value_si).Tmin.value_si = 298
-            Cp0 = rmg_species.calculateCp0()
-            CpInf = rmg_species.calculateCpInf()
-            rmg_species.thermo = old_species.thermo.toWilhoit(Cp0=Cp0, CpInf=CpInf)
             newSpeciesDict[species_label] = rmg_species
-
+            if self.formulaDict[species_label] in {'N2'}:
+                rmg_species.reactive = False
+            rmg_species.generateThermoData(self.rmg_object.database)
         # Set match using the function to get all the side-effects.
         labelsToProcess = self.identified_labels
         self.identified_labels = []
@@ -855,6 +862,7 @@ class ModelMatcher():
 
         chemkinFormulas = set(self.formulaDict.values())
 
+        self.loadReactions(reactions_file)
         chemkinReactionsUnmatched = self.chemkinReactionsUnmatched
         votes = self.votes
 
