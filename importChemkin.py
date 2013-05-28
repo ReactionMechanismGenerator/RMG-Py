@@ -643,7 +643,7 @@ class ModelMatcher():
         fstr = os.path.join(self.rmg_object.outputDirectory, 'species', '{0!s}.png'.format(rmg_species))
         if not os.path.exists(fstr):
             MoleculeDrawer().draw(rmg_species.molecule[0], 'png', fstr)
-            
+
     def drawAllCandidateSpecies(self):
         """Draws all the species that are in self.prunedVotes"""
         candidateSpecies = set()
@@ -929,7 +929,7 @@ class ModelMatcher():
                 # self.printVoting(votes)
                 prunedVotes = self.pruneVoting()
                 # self.printVoting(prunedVotes)
-                
+
                 self.drawAllCandidateSpecies()
 
                 newMatches = []
@@ -965,7 +965,7 @@ class ModelMatcher():
                 logging.info("Waiting for input from the web front end..")
                 while not self.manualMatchesToProcess:
                     time.sleep(1)
-            
+
             while self.manualMatchesToProcess:
                 chemkinLabel, matchingSpecies = self.manualMatchesToProcess.pop(0)
                 logging.info("There is a manual match to process: {0} is {1!s}".format(chemkinLabel, matchingSpecies))
@@ -1022,10 +1022,10 @@ class ModelMatcher():
 
     def _img(self, species):
         """Get the html tag for the image of a species"""
-        imagesPath = 'img' # to serve via cherryPy
+        imagesPath = 'img'  # to serve via cherryPy
         #imagesPath = 'file://'+os.path.abspath(os.path.join(self.args.output_directory,'species')) # to get from disk
         return "<img src='{1}/{0!s}.png' title='{0}'>".format(species, imagesPath)
-    
+
     @cherrypy.expose
     def index(self):
         return self.html_head + """
@@ -1053,14 +1053,14 @@ class ModelMatcher():
         chemkinControversy = {label: 0 for label in votes.iterkeys()}
         rmgControversy = {}
         flatVotes = {}
-        
+
         labelsWaitingToProcess = [item[0] for item in self.manualMatchesToProcess]
         speciesWaitingToProcess = [item[1] for item in self.manualMatchesToProcess]
         # to turn reactions into pictures
         searcher = re.compile('(\S+\(\d+\))\s')
         def replacer(match):
             return self._img(match.group(1))
-        
+
         for chemkinLabel, possibleMatches in votes.iteritems():
             for matchingSpecies, votingReactions in possibleMatches.iteritems():
                 flatVotes[(chemkinLabel, matchingSpecies)] = votingReactions
@@ -1082,24 +1082,24 @@ class ModelMatcher():
                 output.append("<a href='/match.html?ckLabel={ckl}&rmgLabel={rmgl}'>{img}</a>  according to {n} reactions. ".format(ckl=urllib.quote_plus(chemkinLabel), rmgl=urllib.quote_plus(str(matchingSpecies)), img=img(matchingSpecies), n=len(votingReactions)))
                 output.append("  Enthalpies at 800K differ by {0:.1f} kJ/mol<br>".format((self.thermoDict[chemkinLabel].getEnthalpy(800) - matchingSpecies.thermo.getEnthalpy(800)) / 1000.))
                 output.append('<table  style="width:800px">')
-                for n,rxn in enumerate(votingReactions):
+                for n, rxn in enumerate(votingReactions):
                     if isinstance(rxn, tuple):
                         rmgrxn = str(rxn[1])
-                        rmgRxnPics = searcher.sub(replacer, rmgrxn+' ')
-                        output.append("<tr><td>{0}</td><td> {1!s}   </td><td>  {2!s} </td></tr>".format(n+1, rxn[0], rmgRxnPics))
+                        rmgRxnPics = searcher.sub(replacer, rmgrxn + ' ')
+                        output.append("<tr><td>{0}</td><td> {1!s}   </td><td>  {2!s} </td></tr>".format(n + 1, rxn[0], rmgRxnPics))
                     else:
                         output.append("<tr><td>{0}</td><td> {1!s}</td></tr>".format(n + 1, rxn))
                 output.append("</table>")
         output.append(self.html_tail)
         return '\n'.join(output)
-    
+
     @cherrypy.expose
     def match_html(self, ckLabel=None, rmgLabel=None):
         if ckLabel not in self.votes:
             return "ckLabel not valid"
         for rmgSpecies in self.votes[ckLabel].iterkeys():
             if str(rmgSpecies) == rmgLabel:
-                self.manualMatchesToProcess.append((str(ckLabel),rmgSpecies))
+                self.manualMatchesToProcess.append((str(ckLabel), rmgSpecies))
                 break
         else:
             return "rmgLabel not a candidate for that ckLabel"
@@ -1174,7 +1174,7 @@ if __name__ == '__main__':
     initializeLog(level, os.path.join(args.output_directory, 'RMG.log'))
 
     mm = ModelMatcher(args)
-    
+
     t = threading.Thread(target=mm.main)
     t.daemon = True
     t.start()
@@ -1183,13 +1183,13 @@ if __name__ == '__main__':
     cherrypy.server.socket_host = '0.0.0.0'
     cherrypy.config.update({'environment': 'production',
                             'log.error_file': 'site.log',
-                            'log.screen': True})
+                            'log.screen': False})
 
     conf = {'/img': {'tools.staticdir.on': True,
                       'tools.staticdir.dir': os.path.join(args.output_directory, 'species'),
             }}
     cherrypy.quickstart(mm, '/', config=conf)
-    
 
 
-    #mm.main(args)
+
+    # mm.main(args)
