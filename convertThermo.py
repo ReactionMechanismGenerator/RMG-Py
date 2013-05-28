@@ -1128,10 +1128,11 @@ class ModelMatcher():
 <script>
 function updateStats() {
     $.getJSON( "progress.json", function( json ) {
+            var total = json.processed + json.unprocessed + json.unidentified;
             console.log('Updating stats.. Unidentified now ' + json.unidentified );
-            $('#processed').html(json.processed).width(json.processed);
-            $('#unprocessed').html(json.unprocessed).width(json.unprocessed);
-            $('#unidentified').html(json.unidentified).width(json.unidentified);
+            $('#processed').html(json.processed).width(100*json.processed/total+'%');
+            $('#unprocessed').html(json.unprocessed+json.processed).width(100*json.unprocessed/total+'%');
+            $('#unidentified').html(total).width(100*json.unidentified/total+'%');
             repeater = setTimeout(updateStats, 10000); // do again in 10 seconds
         }).fail(function( jqxhr, textStatus, error ) {
               var err = textStatus + ', ' + error;
@@ -1143,19 +1144,23 @@ $( document ).ready(function() {
 });
 </script>
 <style>
-#processed {background-color: #33ff33;}
-#unprocessed {background-color: yellow;}
-#unidentified {background-color: red;}
+#processed {background-color: #7777ff;}
+#unprocessed {background-color: #9999ff;}
+#unidentified {background-color: #eeeeff;}
+td.bar { text-align: right; overflow: hidden}
 </style>    
 </head>
 
 <body>
-    <table width=100%><tr>
-        <td id="processed"></td>
-        <td id="unprocessed"></td>
-        <td id="unidentified"></td>
+<div style="position: fixed; width: 100%; ">
+    <table width=98% style="table-layout:fixed;"><tr>
+        <td class="bar" id="processed"></td>
+        <td class="bar" id="unprocessed"></td>
+        <td class="bar" id="unidentified"></td>
     </tr>
     </table>
+    </div>
+    <div style="height: 2 em;">&nbsp</div>
     """
     html_tail = """
     </body></html>
