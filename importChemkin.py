@@ -1028,21 +1028,20 @@ class ModelMatcher():
     
     @cherrypy.expose
     def index(self):
-        return """
-<html>
-<body>
+        return self.html_head + """
 <h1>Mechanism importer</h1>
 <ul>
 <li><a href="identified.html">List of identified species.</li>
 <li><a href="votes.html">Voting reactions.</li>
 </ul>
-        """
+        """ + self.html_tail
+
     @cherrypy.expose
     def identified_html(self):
         img = self._img
-        return ('<html><body><h1>Identified Species</h1><table style="width:500px"><tr>' + 
-                "</tr>\n<tr>".join(["<td>{number}</td><td>{label}</td><td>{img}</td>".format(img=img(self.speciesDict_rmg[lab]),label=lab,number=n+1) for n,lab in enumerate(self.identified_labels)] ) +
-                '</tr></table></body></html>')
+        return (self.html_head + '<h1>Identified Species</h1><table style="width:500px"><tr>' +
+                "</tr>\n<tr>".join(["<td>{number}</td><td>{label}</td><td>{img}</td>".format(img=img(self.speciesDict_rmg[lab]), label=lab, number=n + 1) for n, lab in enumerate(self.identified_labels)]) +
+                '</tr></table>' + self.html_tail)
     @cherrypy.expose
     def identified_json(self):
         return json.dumps(self.identified_labels)
@@ -1067,7 +1066,8 @@ class ModelMatcher():
                 flatVotes[(chemkinLabel, matchingSpecies)] = votingReactions
                 chemkinControversy[chemkinLabel] += len(votingReactions)
                 rmgControversy[matchingSpecies] = rmgControversy.get(matchingSpecies, 0) + len(votingReactions)
-        output = ["<html><body><h1>Votes</h1>"]
+        output = [self.html_head]
+        output.append("<h1>Votes</h1>")
         for chemkinLabel in sorted(chemkinControversy.keys(), key=lambda label:-chemkinControversy[label]):
             if chemkinLabel in labelsWaitingToProcess:
                 output.append("<hr><h2>{0} has just been identified but not yet processed.</h2>".format(chemkinLabel))
@@ -1088,9 +1088,9 @@ class ModelMatcher():
                         rmgRxnPics = searcher.sub(replacer, rmgrxn+' ')
                         output.append("<tr><td>{0}</td><td> {1!s}   </td><td>  {2!s} </td></tr>".format(n+1, rxn[0], rmgRxnPics))
                     else:
-                        output.append("<tr><td>{0}</td><td> {1!s}</td></tr>".format(n+1, rxn))
+                        output.append("<tr><td>{0}</td><td> {1!s}</td></tr>".format(n + 1, rxn))
                 output.append("</table>")
-        output.append("</body></html>")
+        output.append(self.html_tail)
         return '\n'.join(output)
     
     @cherrypy.expose
@@ -1107,6 +1107,58 @@ class ModelMatcher():
         #while self.manualMatchesToProcess:
         #    time.sleep(1)
         raise cherrypy.HTTPRedirect("/votes.html")
+
+    @cherrypy.expose
+    def progress_json(self):
+        total = len(self.speciesList)
+        identified = len(self.identified_labels) + len(self.manualMatchesToProcess)
+        unprocessed = len(self.identified_unprocessed_labels) + len(self.manualMatchesToProcess)
+        answer = {'processed': identified - unprocessed,
+                  'unprocessed': unprocessed,
+                  'unidentified': total - identified
+        }
+        return json.dumps(answer)
+
+    html_head = """
+<html>
+<head>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script>
+function updateStats() {
+    $.getJSON( "progress.json", function( json ) {
+            console.log('Updating stats.. Unidentified now ' + json.unidentified );
+            $('#processed').html(json.processed).width(json.processed);
+            $('#unprocessed').html(json.unprocessed).width(json.unprocessed);
+            $('#unidentified').html(json.unidentified).width(json.unidentified);
+            repeater = setTimeout(updateStats, 10000); // do again in 10 seconds
+        }).fail(function( jqxhr, textStatus, error ) {
+              var err = textStatus + ', ' + error;
+              console.log( "Request Failed: " + err);
+        });
+}
+$( document ).ready(function() {
+    updateStats();
+});
+</script>
+<style>
+#processed {background-color: #33ff33;}
+#unprocessed {background-color: yellow;}
+#unidentified {background-color: red;}
+</style>    
+</head>
+
+<body>
+    <table width=100%><tr>
+        <td id="processed"></td>
+        <td id="unprocessed"></td>
+        <td id="unidentified"></td>
+    </tr>
+    </table>
+    """
+    html_tail = """
+    </body></html>
+    """
+
 
 if __name__ == '__main__':
 
