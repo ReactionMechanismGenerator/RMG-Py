@@ -51,6 +51,8 @@ cdef class SimpleReactor(ReactionSystem):
     cdef public ScalarQuantity T
     cdef public ScalarQuantity P
     cdef public dict initialMoleFractions
+    cdef public list sensitivity
+    cdef public double sensitivityThreshold
 
     cdef public numpy.ndarray reactantIndices
     cdef public numpy.ndarray productIndices
@@ -60,11 +62,13 @@ cdef class SimpleReactor(ReactionSystem):
     cdef public numpy.ndarray networkLeakCoefficients
     cdef public numpy.ndarray jacobianMatrix
 
-    def __init__(self, T, P, initialMoleFractions, termination):
+    def __init__(self, T, P, initialMoleFractions, termination, sensitivity=None, sensitivityThreshold=1e-3):
         ReactionSystem.__init__(self, termination)
         self.T = Quantity(T)
         self.P = Quantity(P)
         self.initialMoleFractions = initialMoleFractions
+        self.sensitivity = sensitivity
+        self.sensitivityThreshold = sensitivityThreshold
         
         # These are helper variables used within the solver
         self.reactantIndices = None
@@ -150,6 +154,7 @@ cdef class SimpleReactor(ReactionSystem):
         y0 = numpy.zeros((numCoreSpecies), numpy.float64)
         for spec, moleFrac in self.initialMoleFractions.iteritems():
             y0[speciesIndex[spec]] = moleFrac
+            
         # Use ideal gas law to compute volume
         V = constants.R * self.T.value_si * numpy.sum(y0) / self.P.value_si
         for j in range(y0.shape[0]):
@@ -739,7 +744,7 @@ cdef class SimpleReactor(ReactionSystem):
         k_j is the rate parameter for the jth core reaction.
         """
         cdef numpy.ndarray[numpy.int_t, ndim=2] ir, ip
-        cdef numpy.ndarray[numpy.float64_t, ndim=1] y, kf, kr, C
+        cdef numpy.ndarray[numpy.float64_t, ndim=1] kf, kr, C
         cdef numpy.ndarray[numpy.float64_t, ndim=2] rateDeriv
         cdef double fderiv, rderiv, flux, V
         cdef int j, numCoreReactions, numCoreSpecies
@@ -748,20 +753,17 @@ cdef class SimpleReactor(ReactionSystem):
         ip = self.productIndices
         
         kf = self.forwardRateCoefficients
-        kr = self.reverseRateCoefficients
-        y = self.coreSpeciesConcentrations        
+        kr = self.reverseRateCoefficients    
         
         numCoreReactions = len(self.coreReactionRates)
         numCoreSpecies = len(self.coreSpeciesConcentrations)      
         
         # Use ideal gas law to compute volume
-        V = constants.R * self.T.value_si * numpy.sum(y) / self.P.value_si
+        V = constants.R * self.T.value_si * numpy.sum(self.y) / self.P.value_si
 
-        C = numpy.zeros_like(self.coreSpeciesConcentrations)
-        for j in range(numCoreSpecies):
-            C[j] = y[j] / V
+        C = self.coreSpeciesConcentrations
 
-        rateDeriv = numpy.zeros((y.shape[0],numCoreReactions), numpy.float64)
+        rateDeriv = numpy.zeros((numCoreSpecies,numCoreReactions), numpy.float64)
         
         for j in range(numCoreReactions):
             if ir[j,1] == -1: # only one reactant
@@ -801,4 +803,26 @@ cdef class SimpleReactor(ReactionSystem):
                 rateDeriv[ip[j,2], j] += flux  
                         
         rateDeriv = V * rateDeriv
+
         return rateDeriv
+    
+    @cython.boundscheck(False)
+    def getNormalizationFactor(self):
+        """
+        Returns the normalization factor k_i/c_i for calculating the normalized sensitivities.
+        """
+        cdef numpy.ndarray[numpy.float64_t, ndim=1] c, kf 
+        cdef numpy.ndarray[numpy.float64_t, ndim=2] norm       
+        cdef int i, j, numCoreSpecies, numCoreReactions
+        
+        kf = self.forwardRateCoefficients
+        c = self.coreSpeciesConcentrations
+        numCoreReactions = len(self.coreReactionRates)
+        numCoreSpecies = len(self.coreSpeciesConcentrations)
+        
+        norm = numpy.zeros((c.shape[0],numCoreReactions), numpy.float64)
+        for i in range(numCoreSpecies):
+            for j in range(numCoreReactions):
+                if c[i] != 0.0:
+                    norm[i,j] = kf[j]/c[i]                
+        return norm

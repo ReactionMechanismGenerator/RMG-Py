@@ -473,7 +473,7 @@ def loadRMGJavaJob(inputFile, chemkinFile=None, speciesDict=None):
 
 ################################################################################
 
-def loadRMGPyJob(inputFile, chemkinFile=None, speciesDict=None):
+def loadRMGPyJob(inputFile, chemkinFile=None, speciesDict=None, generateImages=True):
     """
     Load the results of an RMG-Py job generated from the given `inputFile`.
     """
@@ -508,21 +508,23 @@ def loadRMGPyJob(inputFile, chemkinFile=None, speciesDict=None):
         for t in reactionSystem.termination:
             if isinstance(t, TerminationConversion):
                 t.species = speciesDict[t.species]
+        reactionSystem.sensitivity = [speciesDict[spec] for spec in reactionSystem.sensitivity]
     
     # Set reaction model to match model loaded from Chemkin file
     rmg.reactionModel.core.species = speciesList
     rmg.reactionModel.core.reactions = reactionList
 
     # Generate species images
-    speciesPath = os.path.join(os.path.dirname(inputFile), 'species')
-    try:
-        os.mkdir(speciesPath)
-    except OSError:
-        pass
-    for species in speciesList:
-        path = os.path.join(speciesPath, '{0!s}.png'.format(species))
-        if not os.path.exists(path):
-            species.molecule[0].draw(str(path))
+    if generateImages:
+        speciesPath = os.path.join(os.path.dirname(inputFile), 'species')
+        try:
+            os.mkdir(speciesPath)
+        except OSError:
+            pass
+        for species in speciesList:
+            path = os.path.join(speciesPath, '{0!s}.png'.format(species))
+            if not os.path.exists(path):
+                species.molecule[0].draw(str(path))
     
     return rmg
 
