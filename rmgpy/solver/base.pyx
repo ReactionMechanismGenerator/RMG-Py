@@ -174,16 +174,14 @@ cdef class ReactionSystem(DASSL):
         if sensitivity:            
             # initialize molar sensitivity coefficients to zeros
             moleSens = self.sensitivityCoefficients
+            
+            time_array = []
+            normSens_array = [[] for spec in sensitivity]    
+            
             # identify species indices
             sensSpeciesIndices = []
             for spec in sensitivity:
                 sensSpeciesIndices.append(speciesIndex[spec])  # index within coreSpecies list of the sensitive species
-                
-            if sensWorksheet:            
-                headers = ['Time (s)']
-                headers.extend(['dln(c)/dln(k{0})'.format(i+1) for i in range(numCoreReactions)])
-                for sheet in sensWorksheet:
-                    sheet.writerow(headers)
                 
         
         stepTime = 1e-12
@@ -207,11 +205,9 @@ cdef class ReactionSystem(DASSL):
                 prevTime = self.t
                 self.sensitivityCoefficients = moleSens
                 
-                if sensWorksheet:
-                    for i in range(len(sensSpeciesIndices)):     
-                         row = [self.t]
-                         row.extend([normSens[sensSpeciesIndices[i],j] for j in range(numCoreReactions)])       
-                         sensWorksheet[i].writerow(row)         
+                time_array.append(self.t)
+                for i in range(len(sensitivity)):
+                    normSens_array[i].append([normSens[sensSpeciesIndices[i],j] for j in range(numCoreReactions)])
                 
             if worksheet:
                 row = [self.t]
@@ -295,7 +291,26 @@ cdef class ReactionSystem(DASSL):
             # Increment destination step time if necessary
             if self.t >= 0.9999 * stepTime:
                 stepTime *= 10.0
-
+                
+            
+        if sensWorksheet:   
+            for i in range(len(sensitivity)):
+                reactionsAboveThreshold = []
+                for j in range(numCoreReactions):
+                    for k in range(len(time_array)):
+                        if abs(normSens_array[i][k][j]) > self.sensitivityThreshold:
+                            reactionsAboveThreshold.append(j)
+                            break
+                                                              
+                headers = ['Time (s)']
+                headers.extend(['dln(c)/dln(k{0})'.format(j+1) for j in reactionsAboveThreshold])
+                sensWorksheet[i].writerow(headers)               
+            
+                for k in range(len(time_array)):
+                    row = [time_array[k]]
+                    row.extend([normSens_array[i][k][j] for j in reactionsAboveThreshold])       
+                    sensWorksheet[i].writerow(row)  
+        
         self.maxCoreSpeciesRates = maxCoreSpeciesRates
         self.maxEdgeSpeciesRates = maxEdgeSpeciesRates
         self.maxNetworkLeakRates = maxNetworkLeakRates

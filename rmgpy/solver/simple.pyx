@@ -52,6 +52,7 @@ cdef class SimpleReactor(ReactionSystem):
     cdef public ScalarQuantity P
     cdef public dict initialMoleFractions
     cdef public list sensitivity
+    cdef public double sensitivityThreshold
 
     cdef public numpy.ndarray reactantIndices
     cdef public numpy.ndarray productIndices
@@ -61,12 +62,13 @@ cdef class SimpleReactor(ReactionSystem):
     cdef public numpy.ndarray networkLeakCoefficients
     cdef public numpy.ndarray jacobianMatrix
 
-    def __init__(self, T, P, initialMoleFractions, termination, sensitivity=None):
+    def __init__(self, T, P, initialMoleFractions, termination, sensitivity=None, sensitivityThreshold=1e-3):
         ReactionSystem.__init__(self, termination)
         self.T = Quantity(T)
         self.P = Quantity(P)
         self.initialMoleFractions = initialMoleFractions
         self.sensitivity = sensitivity
+        self.sensitivityThreshold = sensitivityThreshold
         
         # These are helper variables used within the solver
         self.reactantIndices = None
