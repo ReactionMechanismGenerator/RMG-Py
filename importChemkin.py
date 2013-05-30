@@ -477,6 +477,7 @@ class ModelMatcher():
              'HO2': '[O]O',
              'C3H8': 'CCC',
              'CH': '[CH]',
+             'Ar': '[Ar]',
              }
         identified_labels = []
         known_labels = {
