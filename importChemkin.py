@@ -544,99 +544,13 @@ class ModelMatcher():
              'Ar': '[Ar]',
              }
         identified_labels = []
-        known_labels = {
-                        'mb': 'CCCC(=O)OC',
-                        'mb3d': 'C=CCC(=O)OC',
-                        'c2h5coch3': 'CCC(=O)C',
-                        'c3h4-a': 'C=C=C',
-                        'mb4j': '[CH2]CCC(=O)OC',
-                        'mb3j': 'C[CH]CC(=O)OC',
-                        'mbmj': 'CCCC(=O)O[CH2]',
-                        'c3h5-a': 'C(=C)[CH2]',
-                        'c2h3cho': 'C(=C)C=O',
-                        'ch2cho': '[CH2]C=O',
-                        'c2h5co': 'CC[C]=O',
-'ac3h4coch3': '[CH2]C=CC(=O)C',
-'ac3h5co': 'C=CC[C]=O',
-'baoj': 'CCCC(=O)[O]',
-'baoj2*o': 'CCC(=O)C(=O)[O]',
-'c2h3co': 'C=C[C]=O',
-'c2h5chco': 'CCC=C=O',
-'c2h5coch2': 'CCC(=O)[CH2]',
-'c2h5coco': 'CCC(=O)[C]=O',
-'c2h5o2': 'CCO[O]',
-'c3h5o': '[O]CC=C',
-'c3h6cho-1': '[CH2]CCC=O',
-'c3h6cho-3': 'CC[CH]C=O',
-'c3h6coc2h5-1': '[CH2]CCC(=O)CC',
-'c3h6coc2h5-3': 'CC[CH]C(=O)CC',
-'c3h6coch3-1': '[CH2]CCC(=O)C',
-'c3h6coch3-2': 'C[CH]CC(=O)C',
-'c3h6o1-3': 'C1CCO1',
-'c3h6ooh2-1': 'OOC([CH2])C',
-'c5h7o2': 'COC(=O)[CH]C=C',
-'ch2cch2oh': 'OC[C]=C',
-'ch2ch2cho': '[CH2]CC=O',
-'ch2ch2coch3': '[CH2]CC(=O)C',
-'ch2choohcoch3': '[CH2]C(C(=O)C)OO',
-'ch3chch2co': 'C[CH]CC=O',
-'ch3chchco': 'C[CH]C=C=O',
-'ch3chcho': 'C[CH]C=O',
-'ch3coco': 'O=[C]C(=O)C',
-'ch3cooch2': '[CH2]OC(=O)C',
-'ic3h5cho': 'CC(=C)C=O',
-'ic3h5co': 'CC(=C)[C]=O',
-'ic3h5coc2h4p': '[CH2]CC(=O)C(=C)C',
-'ic3h5coch2': 'CC=CC(=O)[CH2]',
-'ic3h5coch3': 'CC=CC(=O)C',
-'ic3h6coc2h5': 'CCC(=O)C(C)[CH2]',
-'ic3h7co': 'O=[C]C(C)C',
-'ic3h7coc2h4s': 'C[CH]C(=O)C(C)C',
-'ic3h7coch2': '[CH2]C(=O)C(C)C',
-'ic3h7coch3': 'CC(=O)C(C)C',
-'ic3h7o': 'CC([O])C',
-'ic3h7o2': '[O]OC(C)C',
-'mb2o': 'CCC(C(=O)OC)[O]',
-'mb2oo': 'CCC(C(=O)OC)O[O]',
-'mb2ooh3j': 'C[CH]C(C(=O)OC)OO',
-'mb2ooh4j': '[CH2]CC(C(=O)OC)OO',
-'mb2oohmj': 'CCC(C(=O)O[CH2])OO',
-'mb3o': 'COC(=O)CC([O])C',
-'mb3oo': '[O]OC(CC(=O)OC)C',
-'mb3ooh2j': 'OOC([CH]C(=O)OC)C',
-'mb3ooh4j': 'OOC(CC(=O)OC)[CH2]',
-'mb4j*o': 'COC(=O)CC[C]=O',
-'mb4o': 'COC(=O)CCC[O]',
-'mb4ooh2j': 'OOCC[CH]C(=O)OC',
-'mb4ooh3j': 'OOC[CH]CC(=O)OC',
-'mb4ooh3oo': 'OOCC(CC(=O)OC)O[O]',
-'mbmj*o': 'CCCC(=O)O[C]=O',
-'mbmooh2j': 'CC[CH]C(=O)OCOO',
-'me2*omj*o': 'O=[C]OC(=O)C=O',
-'me2j*o': 'COC(=O)[C]=O',
-'mp2d2j': 'COC(=O)[C]=C',
-'mp2d3j': 'COC(=O)C=[CH]',
-'mp2dmj': '[CH2]OC(=O)C=C',
-'mp3j*o': 'COC(=O)C[C]=O',
-'mp3j*o2*o': 'COC(=O)C(=O)[C]=O',
-'nc3h7coch2': 'CCCC(=O)[CH2]',
-'nc3h7o': 'CCC[O]',
-'pc2h4coc2h3': '[CH2]CC(=O)C=C',
-'sc2h4coc2h3': 'C[CH]C(=O)C=C',
-'tc3h6cho': 'O=C[C](C)C',
-'tc3h6coch3': 'CC(=O)[C](C)C',
-        }
-       # known_labels.clear()  # for debugging
+
         # use speciesList if it is not None or empty, else the formulaDict keys.
         for species_label in [s.label for s in self.speciesList or []] or self.formulaDict.keys():
             formula = self.formulaDict[species_label]
             if formula in known_formulas:
                 known_smiles = known_formulas[formula]
                 logging.info("I think {0} is {1} based on its formula".format(species_label, known_smiles))
-                smiles = known_smiles
-            elif species_label in known_labels:
-                known_smiles = known_labels[species_label]
-                logging.info("I think {0} is {1} based on its label".format(species_label, known_smiles))
                 smiles = known_smiles
             else:
                 continue
