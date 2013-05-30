@@ -102,6 +102,8 @@ def parseCommandLineArguments():
         help='the Chemkin file containing the list of reactions')
     parser.add_argument('--thermo', metavar='FILE', type=str,
         help='the Chemkin files containing the thermo')
+    parser.add_argument('--port', metavar='N', type=int, nargs='?', default=8080,
+        help='the port to serve the web interface on')
     parser.add_argument('-o', '--output-directory', type=str, nargs=1, default='',
         metavar='DIR', help='use DIR as output directory')
     parser.add_argument('-s', '--scratch-directory', type=str, nargs=1, default='',
@@ -1173,14 +1175,17 @@ if __name__ == '__main__':
     elif args.quiet: level = logging.WARNING
     initializeLog(level, os.path.join(args.output_directory, 'RMG.log'))
 
+    port = args.port
     mm = ModelMatcher(args)
 
     t = threading.Thread(target=mm.main)
     t.daemon = True
     t.start()
     import webbrowser
-    webbrowser.open('http://127.0.0.1:8080')
+    webbrowser.open('http://127.0.0.1:{:d}'.format(port))
     cherrypy.server.socket_host = '0.0.0.0'
+    cherrypy.server.socket_port = port
+
     cherrypy.config.update({'environment': 'production',
                             'log.error_file': 'site.log',
                             'log.screen': False})
