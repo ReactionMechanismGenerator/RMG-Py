@@ -978,6 +978,9 @@ class ModelMatcher():
             while self.manualMatchesToProcess:
                 chemkinLabel, matchingSpecies = self.manualMatchesToProcess.pop(0)
                 logging.info("There is a manual match to process: {0} is {1!s}".format(chemkinLabel, matchingSpecies))
+                if chemkinLabel in self.identified_labels:
+                    assert self.speciesDict_rmg[chemkinLabel] == matchingSpecies, "Manual match disagrees with an automatic match!"
+                    continue # don't match something that's already matched. 
                 self.setMatch(chemkinLabel, matchingSpecies)
                 invalidatedReactions = self.getInvalidatedReactionsAndRemoveVotes(chemkinLabel, matchingSpecies)
                 reactionsToCheck.update(invalidatedReactions)
