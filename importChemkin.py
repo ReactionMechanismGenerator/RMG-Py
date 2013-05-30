@@ -1241,6 +1241,19 @@ td.bar { text-align: right; overflow: hidden}
     </body></html>
     """
 
+def runCherryPyServer(args):
+    import cherrypy
+    cherrypy.server.socket_host = '0.0.0.0'
+    cherrypy.server.socket_port = args.port
+    cherrypy.config.update({'environment': 'production',
+                            'log.error_file': os.path.join(args.output_directory, 'CherryPyError.log'),
+                            'log.access_file': '',
+                            'log.screen': False})
+
+    conf = {'/img': {'tools.staticdir.on': True,
+                      'tools.staticdir.dir': os.path.join(args.output_directory, 'species'),
+            }}
+    cherrypy.quickstart(mm, '/', config=conf)
 
 if __name__ == '__main__':
 
@@ -1255,26 +1268,18 @@ if __name__ == '__main__':
     elif args.quiet: level = logging.WARNING
     initializeLog(level, os.path.join(args.output_directory, 'RMG.log'))
 
-    port = args.port
+
     mm = ModelMatcher(args)
 
-    t = threading.Thread(target=mm.main)
-    t.daemon = False
-    t.start()
+#     t = threading.Thread(target=mm.main)
+#     t.daemon = False
+#     t.start()
+    
+    t2 = threading.Thread(target=runCherryPyServer, args=(args,))
+    t2.daemon = True
+    t2.start()
+    
     import webbrowser
-    webbrowser.open('http://127.0.0.1:{:d}'.format(port))
-    cherrypy.server.socket_host = '0.0.0.0'
-    cherrypy.server.socket_port = port
-
-    cherrypy.config.update({'environment': 'production',
-                            'log.error_file': 'site.log',
-                            'log.screen': False})
-
-    conf = {'/img': {'tools.staticdir.on': True,
-                      'tools.staticdir.dir': os.path.join(args.output_directory, 'species'),
-            }}
-    cherrypy.quickstart(mm, '/', config=conf)
-
-
-
-    # mm.main(args)
+    webbrowser.open('http://127.0.0.1:{:d}'.format(args.port))
+    
+    mm.main()
