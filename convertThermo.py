@@ -102,6 +102,8 @@ def parseCommandLineArguments():
         help='the Chemkin file containing the list of reactions')
     parser.add_argument('--thermo', metavar='FILE', type=str,
         help='the Chemkin files containing the thermo')
+    parser.add_argument('--known', metavar='FILE', type=str, nargs='?', default=None,
+        help='the file containing the list of already known species')
     parser.add_argument('--port', metavar='N', type=int, nargs='?', default=8080,
         help='the port to serve the web interface on')
     parser.add_argument('-o', '--output-directory', type=str, nargs=1, default='',
@@ -229,6 +231,63 @@ class ModelMatcher():
         self.chemkinReactionsUnmatched = self.chemkinReactions[:]  # make a copy
 
 
+    def loadKnownSpecies(self, known_species_file):
+        """
+        Load (or make) the list of known species
+        """
+        logging.info("Reading known species...")
+        if not os.path.exists(known_species_file):
+            logging.info("Known species file does not exist. Will create on first manual match.")
+            return
+        known_smiles = {}
+        known_names = []
+        identified_labels = []
+        with open(known_species_file) as f:
+            for line in f:
+                if not line.strip():
+                    continue
+                try:
+                    tokens = line.split()
+                    assert len(tokens)==2, "Not two tokens on line (was expecting NAME    SMILES)"
+                    name, smiles = tokens
+                    if name in known_smiles:
+                        assert smiles == known_smiles[name], "{0} defined twice".format(name)
+                    known_smiles[name] = smiles
+                    if name not in known_names:
+                        known_names.append(name)
+                except Exception as e:
+                    logging.info("Error reading line '{0}'".format(line))
+                    raise e
+        if line != '\n':
+            logging.info("Ensuring known species file ends with a blank line!")
+            with open(known_species_file,'a') as f:
+                f.write('\n')
+            
+
+        for species_label in known_names:
+            if name not in self.formulaDict:
+                logging.info("{0} is not in the chemkin model. Skipping".format(species_label))
+                continue
+            formula = self.formulaDict[species_label]
+            smiles = known_smiles[species_label]
+            molecule = Molecule(SMILES=smiles)
+            if formula != molecule.getFormula():
+                raise Exception("{0} cannot be {1} because the SMILES formula is {2} not required formula {3}.".format(species_label, smiles, molecule.getFormula(), formula))
+            logging.info("I think {0} is {1} based on its label".format(species_label, smiles))
+            self.smilesDict[species_label] = smiles
+
+            species = self.speciesDict[species_label]
+            species.molecule = [molecule]
+            species.generateResonanceIsomers()
+            identified_labels.append(species_label)
+
+        logging.info("Identified {0} species:".format(len(identified_labels)))
+        for species_label in identified_labels:
+            logging.info("   {0}".format(species_label))
+
+        self.identified_labels.extend(identified_labels)
+
+        
     def initializeRMG(self, args):
         """
         Create an RMG object, store it in self.rmg_object, and set it up.
@@ -852,11 +911,14 @@ class ModelMatcher():
         species_file = args.species
         reactions_file = args.reactions or species_file
         thermo_file = args.thermo
+        known_species_file = args.known or species_file+'.SMILES.txt'
+        self.known_species_file = known_species_file
 
         outputThermoFile = os.path.splitext(thermo_file)[0] + '.thermo.py'
 
         self.loadSpecies(species_file)
         self.loadThermo(thermo_file)
+        self.loadKnownSpecies(known_species_file)
 
         logging.info("Initializing RMG")
         self.initializeRMG(args)
@@ -1115,6 +1177,9 @@ class ModelMatcher():
                 break
         else:
             return "rmgLabel not a candidate for that ckLabel"
+        
+        with open(self.known_species_file,'a') as f:
+            f.write("{0}\t{1}\n".format(ckLabel, rmgSpecies.molecule[0].toSMILES() ))
         ## Wait for it to be processed:
         #while self.manualMatchesToProcess:
         #    time.sleep(1)
@@ -1194,7 +1259,7 @@ if __name__ == '__main__':
     mm = ModelMatcher(args)
 
     t = threading.Thread(target=mm.main)
-    t.daemon = True
+    t.daemon = False
     t.start()
     import webbrowser
     webbrowser.open('http://127.0.0.1:{:d}'.format(port))
