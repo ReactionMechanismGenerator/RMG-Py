@@ -1253,6 +1253,7 @@ def runCherryPyServer(args):
     conf = {'/img': {'tools.staticdir.on': True,
                       'tools.staticdir.dir': os.path.join(args.output_directory, 'species'),
             }}
+    cherrypy.log.access_log.propagate = False
     cherrypy.quickstart(mm, '/', config=conf)
 
 if __name__ == '__main__':
