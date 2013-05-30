@@ -171,9 +171,10 @@ class ModelMatcher():
         self.prunedVotes = {}
         self.manualMatchesToProcess = []
 
-    def loadModel(self, species_file, reactions_file, thermo_file):
-        print 'Loading model...'
-
+    def loadSpecies(self, species_file):
+        """
+        Load the chemkin list of species
+        """
         speciesAliases = {}
         speciesDict = {}
         if species_file:
@@ -193,8 +194,15 @@ class ModelMatcher():
             logging.info("No species file to limit species. Will read everything in thermo file")
             speciesList = None
             speciesDict = MagicSpeciesDict(speciesDict)
+        self.speciesList = speciesList
+        self.speciesDict = speciesDict
 
-        logging.info("Reading thermo...")
+    def loadThermo(self, thermo_file):
+        """
+        Load the chemkin thermochemistry file
+        """
+        logging.info("Reading thermo file...")
+        speciesDict = self.speciesDict
         with open(thermo_file) as f:
             line0 = f.readline()
             while line0 != '':
@@ -212,9 +220,6 @@ class ModelMatcher():
         # thermoDict contains original thermo as read from chemkin thermo file
         self.thermoDict = {s.label: s.thermo for s in speciesDict.values() }
 
-        self.speciesList = speciesList
-        self.speciesDict = speciesDict
-
     def loadReactions(self, reactions_file):
         logging.info("Reading reactions...")
         with open(reactions_file) as f:
@@ -226,7 +231,7 @@ class ModelMatcher():
 
     def initializeRMG(self, args):
         """
-        Creata an RMG object, store it in self.rmg_object, and set it up.
+        Create an RMG object, store it in self.rmg_object, and set it up.
         
         This loads the database, makes some settings, etc.
         `args` should have attributes `output_directory` and `scratch_directory`.
@@ -850,7 +855,8 @@ class ModelMatcher():
 
         outputThermoFile = os.path.splitext(thermo_file)[0] + '.thermo.py'
 
-        self.loadModel(species_file, reactions_file, thermo_file)
+        self.loadSpecies(species_file)
+        self.loadThermo(thermo_file)
 
         logging.info("Initializing RMG")
         self.initializeRMG(args)
