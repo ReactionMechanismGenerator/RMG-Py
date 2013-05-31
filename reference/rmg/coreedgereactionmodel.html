@@ -184,7 +184,8 @@ reaction (if found).</p>
 <dl class="method">
 <dt id="rmgpy.rmg.model.CoreEdgeReactionModel.enlarge">
 <tt class="descname">enlarge</tt><big>(</big><em>newObject</em><big>)</big><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.enlarge" title="Permalink to this definition">¶</a></dt>
-<dd><p>Enlarge a reaction model by processing <cite>newObject</cite>. If <cite>newObject</cite> is a
+<dd><p>Enlarge a reaction model by processing the objects in the list <cite>newObject</cite>. 
+If <cite>newObject</cite> is a
 <tt class="xref py py-class docutils literal"><span class="pre">rmg.species.Species</span></tt> object, then the species is moved from
 the edge to the core and reactions generated for that species, reacting
 with itself and with all other species in the model core. If <cite>newObject</cite>
