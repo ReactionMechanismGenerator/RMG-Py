@@ -51,7 +51,7 @@ class SimpleReactorCheck(unittest.TestCase):
         edgeReactions = []
 
         T = 1000; P = 1.0e5
-        rxnSystem = SimpleReactor(T, P, initialMoleFractions={C2H5: 0.1, CH3: 0.1, CH4: 0.4, C2H6: 0.4}, termination=[],sensitivity=False)
+        rxnSystem = SimpleReactor(T, P, initialMoleFractions={C2H5: 0.1, CH3: 0.1, CH4: 0.4, C2H6: 0.4}, termination=[])
 
         rxnSystem.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions)
 
@@ -116,7 +116,7 @@ class SimpleReactorCheck(unittest.TestCase):
             edgeSpecies = []
             coreReactions = [rxn]
             
-            rxnSystem0 = SimpleReactor(T,P,initialMoleFractions={CH4:0.2,CH3:0.1,C2H6:0.35,C2H5:0.15, H2:0.2},termination=[],sensitivity=False)
+            rxnSystem0 = SimpleReactor(T,P,initialMoleFractions={CH4:0.2,CH3:0.1,C2H6:0.35,C2H5:0.15, H2:0.2},termination=[])
             rxnSystem0.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions)
             dydt0 = rxnSystem0.residual(0.0, rxnSystem0.y, numpy.zeros(rxnSystem0.y.shape))[0]
             numCoreSpecies = len(coreSpecies)
@@ -169,7 +169,6 @@ class SimpleReactorCheck(unittest.TestCase):
         y0 = rxnSystem0.y
         
         dfdk = numpy.zeros((numCoreSpecies,len(rxnList)))   # d(dy/dt)/dk
-        dydk = numpy.zeros((numCoreSpecies,len(rxnList)))
         
         for i in range(len(rxnList)):
             k0 = rxnList[i].getRateCoefficient(T,P)
@@ -186,8 +185,6 @@ class SimpleReactorCheck(unittest.TestCase):
             rxnSystem.termination.append(TerminationTime((integrationTime,'s')))
             rxnSystem.simulate(coreSpecies, coreReactions, [], [], 0, 1, 0)
             
-            dydk[:,i] = (rxnSystem.y - y0)/dk
-            
             rxnList[i].kinetics.A.value_si = rxnList[i].kinetics.A.value_si/(1+1e-3)  # reset A factor
             
         for i in range(numCoreSpecies):
@@ -197,18 +194,6 @@ class SimpleReactorCheck(unittest.TestCase):
         print 'Numerical d(dy/dt)/dk'    
         print dfdk
         
-        print 'Numerical sensitivity dy/dk'
-        print dydk
-        
-        rxnSystem = SimpleReactor(T,P,initialMoleFractions={CH4:0.2,CH3:0.1,C2H6:0.35,C2H5:0.15, H2:0.2},termination=[])
-        rxnSystem.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions)
-        
-        rxnSystem.termination.append(TerminationTime((integrationTime,'s')))
-        rxnSystem.simulate(coreSpecies, coreReactions, [], [], 0, 1, 0,sensitivity=True)
-        
-        # Numerical sensitivity not yet handled properly, so will display different values from the solver sensitivity coefficients
-        print 'Solver sensitivity dy/dk'
-        print rxnSystem.sensitivityCoefficients
         
         
 #        # Visualize the simulation results
