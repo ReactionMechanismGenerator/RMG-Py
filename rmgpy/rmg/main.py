@@ -931,21 +931,17 @@ class RMG:
         assert len(Tlist) > 0
         assert len(Plist) > 0
         concentrationList = numpy.array(concentrationList)
-        assert concentrationList.shape[1] == 1 or concentrationList.shape[1] == len(Tlist) * len(Plist) 
+        assert concentrationList.shape[1] > 0  # An arbitrary number of concentrations is acceptable, and should be run for each reactor system 
         
         # Make a reaction system for each (T,P) combination
-        systemCounter = 0
         for T in Tlist:
             for P in Plist:
-                if concentrationList.shape[1] == 1:
-                    concentrations = concentrationList[:,0]
-                else:
-                    concentrations = concentrationList[:,systemCounter]
-                totalConc = numpy.sum(concentrations)
-                initialMoleFractions = dict([(self.initialSpecies[i], concentrations[i] / totalConc) for i in range(len(self.initialSpecies))])
-                reactionSystem = SimpleReactor(T, P, initialMoleFractions=initialMoleFractions, termination=termination)
-                self.reactionSystems.append(reactionSystem)
-                systemCounter += 1
+                for i in range(concentrationList.shape[1]):
+                    concentrations = concentrationList[:,i]
+                    totalConc = numpy.sum(concentrations)
+                    initialMoleFractions = dict([(self.initialSpecies[i], concentrations[i] / totalConc) for i in range(len(self.initialSpecies))])
+                    reactionSystem = SimpleReactor(T, P, initialMoleFractions=initialMoleFractions, termination=termination)
+                    self.reactionSystems.append(reactionSystem)
     
     def readMeaningfulLineJava(self, f):
         """
