@@ -39,7 +39,7 @@ import os.path
 import itertools
 
 from rmgpy.display import display
-import rmgpy.chemkin
+#import rmgpy.chemkin
 import rmgpy.constants as constants
 from rmgpy.quantity import Quantity
 import rmgpy.species
