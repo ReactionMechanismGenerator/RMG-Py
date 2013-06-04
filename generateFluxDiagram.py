@@ -143,7 +143,7 @@ def generateFluxDiagram(reactionModel, times, concentrations, reactionRates, out
     # Add a node for each species
     for index in nodes:
         species = speciesList[index]
-        node = pydot.Node(name=species.label)
+        node = pydot.Node(name=str(species))
         node.set_penwidth(maximumNodePenWidth)
         graph.add_node(node)
         # Try to use an image instead of the label
@@ -164,7 +164,7 @@ def generateFluxDiagram(reactionModel, times, concentrations, reactionRates, out
         if reactantIndex in nodes and productIndex in nodes:
             reactant = speciesList[reactantIndex]
             product = speciesList[productIndex]
-            edge = pydot.Edge(reactant.label, product.label)
+            edge = pydot.Edge(str(reactant), str(product))
             edge.set_penwidth(maximumEdgePenWidth)
             graph.add_edge(edge) 
     
@@ -178,8 +178,14 @@ def generateFluxDiagram(reactionModel, times, concentrations, reactionRates, out
         # Update the nodes
         slope = -maximumNodePenWidth / math.log10(concentrationTolerance)
         for index in nodes:
-            species = speciesList[index]
-            node = graph.get_node('{0}'.format(species.label))[0]
+            species = speciesList[index]         
+            if re.search(r'^[a-zA-Z0-9_]*$',str(species)) is not None:
+                species_string = str(species)
+            else:
+                # species name contains special characters                
+                species_string = '"{0}"'.format(str(species))
+                
+            node = graph.get_node(species_string)[0]
             concentration = concentrations[t,index] / maxConcentration
             if concentration < concentrationTolerance:
                 penwidth = 0.0
@@ -193,7 +199,18 @@ def generateFluxDiagram(reactionModel, times, concentrations, reactionRates, out
             if reactantIndex in nodes and productIndex in nodes:
                 reactant = speciesList[reactantIndex]
                 product = speciesList[productIndex]
-                edge = graph.get_edge('{0}'.format(reactant.label), '{0}'.format(product.label))[0]
+                
+                if re.search(r'^[a-zA-Z0-9_]*$',str(reactant)) is not None:
+                    reactant_string = str(reactant)
+                else:
+                    reactant_string = '"{0}"'.format(str(reactant))
+                    
+                if re.search(r'^[a-zA-Z0-9_]*$',str(product)) is not None:
+                    product_string = str(product)
+                else:
+                    product_string = '"{0}"'.format(str(product))
+                    
+                edge = graph.get_edge(reactant_string, product_string)[0]
                 # Determine direction of arrow based on sign of rate
                 speciesRate = speciesRates[t,reactantIndex,productIndex] / maxSpeciesRate
                 if speciesRate < 0:
