@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-.PHONY : all minimal main measure solver cantherm clean decython
+.PHONY : all minimal main measure solver cantherm clean decython documentation
 
 all: main measure solver
 
@@ -22,6 +22,10 @@ solver:
 
 cantherm:
 	python setup.py build_ext cantherm --build-lib . --build-temp build --pyrex-c-in-temp
+
+documentation:
+	$(MAKE) -C documentation html
+	echo "Start at: documentation/build/html/index.html"
 
 clean:
 	python setup.py clean --build-temp build
