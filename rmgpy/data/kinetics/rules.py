@@ -348,7 +348,11 @@ class KineticsRules(Database):
         sorted by index.
         """
         entries = []
-        for e in self.entries.values(): entries.extend(e)
+        for e in self.entries.values(): 
+            if isinstance(e,list):
+                entries.extend(e)
+            else:
+                entries.append(e)
         entries.sort(key=lambda x: x.index)
         return entries
 
