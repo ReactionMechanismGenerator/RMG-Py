@@ -31,8 +31,6 @@ import os
 
 import logging
 
-import rmgpy
-import rmgpy.qm
 import rmgpy.qm.mopac
 import rmgpy.qm.gaussian
 
