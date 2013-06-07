@@ -183,7 +183,7 @@ class ThermoDepository(Database):
         Database.__init__(self, label=label, name=name, shortDesc=shortDesc, longDesc=longDesc)
 
     def loadEntry(self, index, label, molecule, thermo, reference=None, referenceType='', shortDesc='', longDesc='', history=None):
-        self.entries[label] = Entry(
+        entry = Entry(
             index = index,
             label = label,
             item = Molecule().fromAdjacencyList(molecule),
@@ -194,6 +194,8 @@ class ThermoDepository(Database):
             longDesc = longDesc.strip(),
             history = history or [],
         )
+        self.entries[label] = entry
+        return entry
 
     def saveEntry(self, f, entry):
         """
