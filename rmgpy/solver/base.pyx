@@ -26,7 +26,7 @@
 ################################################################################
 
 """
-Contains the :class:`ReactionSystemr` class, a base class for all RMG reaction
+Contains the :class:`ReactionSystem` class, a base class for all RMG reaction
 systems.
 """
 
@@ -41,6 +41,7 @@ from pydas cimport DASSL
 
 import cython
 import logging
+import csv
 
 from rmgpy.quantity import Quantity
 
@@ -107,7 +108,7 @@ cdef class ReactionSystem(DASSL):
     @cython.boundscheck(False)
     cpdef simulate(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions,
         double toleranceKeepInEdge, double toleranceMoveToCore, double toleranceInterruptSimulation,
-        list pdepNetworks=None, worksheet=None, absoluteTolerance=1e-16, relativeTolerance=1e-8, sensitivity=False):
+        list pdepNetworks=None, worksheet=None, absoluteTolerance=1e-16, relativeTolerance=1e-8, sensitivity=None, sensWorksheet=None):
         """
         Simulate the reaction system with the provided reaction model,
         consisting of lists of core species, core reactions, edge species, and
@@ -121,21 +122,22 @@ cdef class ReactionSystem(DASSL):
 
         cdef dict speciesIndex
         cdef int index, maxSpeciesIndex, maxNetworkIndex
-        cdef int numCoreSpecies, numEdgeSpecies, numPdepNetworks
-        cdef double stepTime, charRate, maxSpeciesRate, maxNetworkRate, realConcentration, prevTime
-        cdef numpy.ndarray[numpy.float64_t, ndim=1] y0 #: Vector containing the number of moles of each species
+        cdef int numCoreSpecies, numEdgeSpecies, numPdepNetworks, numCoreReactions
+        cdef double stepTime, charRate, maxSpeciesRate, maxNetworkRate, prevTime, volume
+        cdef numpy.ndarray[numpy.float64_t, ndim=1] y0, dydk  #: Vector containing the number of moles of each species
         cdef numpy.ndarray[numpy.float64_t, ndim=1] coreSpeciesRates, edgeSpeciesRates, networkLeakRates
         cdef numpy.ndarray[numpy.float64_t, ndim=1] maxCoreSpeciesRates, maxEdgeSpeciesRates, maxNetworkLeakRates
         cdef bint terminated
         cdef object maxSpecies, maxNetwork
         cdef int iteration, i
-        cdef numpy.ndarray[numpy.float64_t, ndim=2] A, sens, b
+        cdef numpy.ndarray[numpy.float64_t, ndim=2] A, moleSens, normSens, b
         
         pdepNetworks = pdepNetworks or []
 
         numCoreSpecies = len(coreSpecies)
         numEdgeSpecies = len(edgeSpecies)
         numPdepNetworks = len(pdepNetworks)
+        numCoreReactions = len(coreReactions)
 
         speciesIndex = {}
         for index, spec in enumerate(coreSpecies):
@@ -160,20 +162,27 @@ cdef class ReactionSystem(DASSL):
         # Copy the initial conditions to use in evaluating conversions
         y0 = self.y.copy()
         
-        realConcentration = self.P.value_si / constants.R / self.T.value_si 
         
         if worksheet:
-            import xlwt
-            self.writeWorksheetHeader(worksheet)
-            style0 = xlwt.easyxf('font: bold on')
-            style1 = xlwt.easyxf(num_format_str='0.000E+00')
-            worksheet.write(3, 0, 'Time (s)', style0)
-            worksheet.write(3, 1, 'Concentrations (mol/m^3)', style0)
+            row = ['Time (s)']
+            worksheet.writerow(['Time (s)','Concentrations (mol/m^3)'])
+            row = ['']
             for i in range(numCoreSpecies):
-                worksheet.write(4, i+1, str(coreSpecies[i]), style0)
+                row.append(str(coreSpecies[i]))
+            worksheet.writerow(row)
+        
+        if sensitivity:            
+            # initialize molar sensitivity coefficients to zeros
+            moleSens = self.sensitivityCoefficients
+            
+            time_array = []
+            normSens_array = [[] for spec in sensitivity]    
+            
+            # identify species indices
+            sensSpeciesIndices = []
+            for spec in sensitivity:
+                sensSpeciesIndices.append(speciesIndex[spec])  # index within coreSpecies list of the sensitive species
                 
-        # initializations for sensitivity analysis
-        sens = self.sensitivityCoefficients
         
         stepTime = 1e-12
         prevTime = self.t
@@ -182,15 +191,29 @@ cdef class ReactionSystem(DASSL):
             self.step(stepTime)
             iteration += 1
             if sensitivity:
+                self.jacobian(self.t, self.y, self.y, 0)
                 A = self.jacobianMatrix - 1 / (self.t - prevTime) * numpy.identity(numCoreSpecies, numpy.float64)
-                b = - 1 / (self.t - prevTime) * sens - self.computeRateDerivative() 
-                sens = numpy.dot(numpy.linalg.inv(A), b)                
+                b = - 1 / (self.t - prevTime) * moleSens - self.computeRateDerivative() 
+                moleSens = numpy.dot(numpy.linalg.inv(A), b)                                     
+                volume = sum(self.y) * constants.R * self.T.value_si / self.P.value_si  
+                
+                dydk = numpy.zeros(numCoreReactions, numpy.float64)
+                for j in range(numCoreReactions):
+                    dydk[j] = sum(moleSens[:,j])                
+                
+                normSens = 1 / volume * (moleSens - numpy.outer(self.y/sum(self.y), dydk)) * self.getNormalizationFactor()   
                 prevTime = self.t
+                self.sensitivityCoefficients = moleSens
+                
+                time_array.append(self.t)
+                for i in range(len(sensitivity)):
+                    normSens_array[i].append([normSens[sensSpeciesIndices[i],j] for j in range(numCoreReactions)])
                 
             if worksheet:
-                worksheet.write(iteration+4, 0, self.t, style1)
+                row = [self.t]
                 for i in range(numCoreSpecies):
-                    worksheet.write(iteration+4, i+1, self.coreSpeciesConcentrations[i], style1)
+                    row.append(self.coreSpeciesConcentrations[i])
+                worksheet.writerow(row)
 
             # Get the characteristic flux
             charRate = sqrt(numpy.sum(self.coreSpeciesRates * self.coreSpeciesRates))
@@ -268,11 +291,29 @@ cdef class ReactionSystem(DASSL):
             # Increment destination step time if necessary
             if self.t >= 0.9999 * stepTime:
                 stepTime *= 10.0
-
+                
+            
+        if sensWorksheet:   
+            for i in range(len(sensitivity)):
+                reactionsAboveThreshold = []
+                for j in range(numCoreReactions):
+                    for k in range(len(time_array)):
+                        if abs(normSens_array[i][k][j]) > self.sensitivityThreshold:
+                            reactionsAboveThreshold.append(j)
+                            break
+                                                              
+                headers = ['Time (s)']
+                headers.extend(['dln(c)/dln(k{0})'.format(j+1) for j in reactionsAboveThreshold])
+                sensWorksheet[i].writerow(headers)               
+            
+                for k in range(len(time_array)):
+                    row = [time_array[k]]
+                    row.extend([normSens_array[i][k][j] for j in reactionsAboveThreshold])       
+                    sensWorksheet[i].writerow(row)  
+        
         self.maxCoreSpeciesRates = maxCoreSpeciesRates
         self.maxEdgeSpeciesRates = maxEdgeSpeciesRates
         self.maxNetworkLeakRates = maxNetworkLeakRates
-        self.sensitivityCoefficients = sens
 
         # Return the invalid object (if the simulation was invalid) or None
         # (if the simulation was valid)

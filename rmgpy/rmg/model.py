@@ -39,7 +39,7 @@ import os.path
 import itertools
 
 from rmgpy.display import display
-import rmgpy.chemkin
+#import rmgpy.chemkin
 import rmgpy.constants as constants
 from rmgpy.quantity import Quantity
 import rmgpy.species
@@ -574,7 +574,8 @@ class CoreEdgeReactionModel:
 
     def enlarge(self, newObject):
         """
-        Enlarge a reaction model by processing `newObject`. If `newObject` is a
+        Enlarge a reaction model by processing the objects in the list `newObject`. 
+        If `newObject` is a
         :class:`rmg.species.Species` object, then the species is moved from
         the edge to the core and reactions generated for that species, reacting
         with itself and with all other species in the model core. If `newObject`
@@ -637,7 +638,7 @@ class CoreEdgeReactionModel:
                 self.processNewReactions(newReactions, newSpecies, pdepNetwork)
     
             else:
-                raise TypeError('Unable to use object {0} to enlarge reaction model; expecting an object of class rmg.model.Species or rmg.model.PDepNetwork.'.format(obj))
+                raise TypeError('Unable to use object {0} to enlarge reaction model; expecting an object of class rmg.model.Species or rmg.model.PDepNetwork, not {1}'.format(obj, obj.__class__))
 
             # If there are any core species among the unimolecular product channels
             # of any existing network, they need to be made included

@@ -40,6 +40,7 @@ import logging
 import time
 import shutil
 import numpy
+import csv
 try:
     import xlwt
 except ImportError:
@@ -256,13 +257,6 @@ class RMG:
         except ImportError:
             logging.info('Optional package dependency "psutil" not found; memory profiling information will not be saved.')
     
-        # See if spreadsheet writing package is available
-        if self.saveConcentrationProfiles:
-            try:
-                xlwt
-            except NameError:
-                logging.warning('Package dependency "xlwt" not loaded; reaction system concentration profiles will not be saved, despite saveConcentrationProfiles = True option.')
-                self.saveConcentrationProfiles = False
         
         # Make output subdirectories
         self.makeOutputSubdirectory('plot')
@@ -347,10 +341,6 @@ class RMG:
         self.saveEverything()
         # Main RMG loop
         while not self.done:
-    
-            if self.saveConcentrationProfiles:
-                # self.saveConcentrationProfiles should have been set to false if xlwt cannot be loaded
-                workbook = xlwt.Workbook()
                 
             self.done = True
             objectsToEnlarge = []
@@ -358,7 +348,8 @@ class RMG:
             for index, reactionSystem in enumerate(self.reactionSystems):
     
                 if self.saveConcentrationProfiles:
-                    worksheet = workbook.add_sheet('#{0:d}'.format(index+1))
+                    csvfile = file(os.path.join(self.outputDirectory, 'solver', 'simulation_{0}_{1:d}.csv'.format(index+1, len(self.reactionModel.core.species))),'w')
+                    worksheet = csv.writer(csvfile)
                 else:
                     worksheet = None
                 
@@ -394,8 +385,6 @@ class RMG:
                     objectsToEnlarge.append(obj)
                     self.done = False
     
-            if self.saveConcentrationProfiles:
-                workbook.save(os.path.join(self.outputDirectory, 'solver', 'simulation_{0:d}.xls'.format(len(self.reactionModel.core.species))))
     
             if not self.done: # There is something that needs exploring/enlarging
     
@@ -461,6 +450,40 @@ class RMG:
                     logging.info('The current model core has %s species and %s reactions' % (coreSpec, coreReac))
                     logging.info('The current model edge has %s species and %s reactions' % (edgeSpec, edgeReac))
                     return
+        
+        
+        # Run sensitivity analysis post-model generation if sensitivity analysis is on
+        for index, reactionSystem in enumerate(self.reactionSystems):
+            
+            if reactionSystem.sensitivity:
+                logging.info('Conducting sensitivity analysis of reaction system %s...' % (index+1))
+                                
+                if self.saveConcentrationProfiles:                    
+                    csvfile = file(os.path.join(self.outputDirectory, 'solver', 'simulation_{0}_final.csv'.format(index+1)),'w')
+                    worksheet = csv.writer(csvfile)
+                else:
+                    worksheet = None
+                    
+                sensWorksheet = []
+                for spec in reactionSystem.sensitivity:
+                    csvfile = file(os.path.join(self.outputDirectory, 'solver', 'sensitivity_{0}_SPC_{1}.csv'.format(index+1, spec.index)),'w')
+                    sensWorksheet.append(csv.writer(csvfile))
+                    
+                terminated, obj = reactionSystem.simulate(
+                    coreSpecies = self.reactionModel.core.species,
+                    coreReactions = self.reactionModel.core.reactions,
+                    edgeSpecies = self.reactionModel.edge.species,
+                    edgeReactions = self.reactionModel.edge.reactions,
+                    toleranceKeepInEdge = self.fluxToleranceKeepInEdge,
+                    toleranceMoveToCore = self.fluxToleranceMoveToCore,
+                    toleranceInterruptSimulation = self.fluxToleranceInterrupt,
+                    pdepNetworks = pdepNetworks,
+                    worksheet = worksheet,
+                    absoluteTolerance = self.absoluteTolerance,
+                    relativeTolerance = self.relativeTolerance,
+                    sensitivity = reactionSystem.sensitivity,
+                    sensWorksheet = sensWorksheet,
+                )                                 
     
         # Write output file
         logging.info('')
@@ -919,21 +942,17 @@ class RMG:
         assert len(Tlist) > 0
         assert len(Plist) > 0
         concentrationList = numpy.array(concentrationList)
-        assert concentrationList.shape[1] == 1 or concentrationList.shape[1] == len(Tlist) * len(Plist) 
+        assert concentrationList.shape[1] > 0  # An arbitrary number of concentrations is acceptable, and should be run for each reactor system 
         
         # Make a reaction system for each (T,P) combination
-        systemCounter = 0
         for T in Tlist:
             for P in Plist:
-                if concentrationList.shape[1] == 1:
-                    concentrations = concentrationList[:,0]
-                else:
-                    concentrations = concentrationList[:,systemCounter]
-                totalConc = numpy.sum(concentrations)
-                initialMoleFractions = dict([(self.initialSpecies[i], concentrations[i] / totalConc) for i in range(len(self.initialSpecies))])
-                reactionSystem = SimpleReactor(T, P, initialMoleFractions=initialMoleFractions, termination=termination)
-                self.reactionSystems.append(reactionSystem)
-                systemCounter += 1
+                for i in range(concentrationList.shape[1]):
+                    concentrations = concentrationList[:,i]
+                    totalConc = numpy.sum(concentrations)
+                    initialMoleFractions = dict([(self.initialSpecies[i], concentrations[i] / totalConc) for i in range(len(self.initialSpecies))])
+                    reactionSystem = SimpleReactor(T, P, initialMoleFractions=initialMoleFractions, termination=termination)
+                    self.reactionSystems.append(reactionSystem)
     
     def readMeaningfulLineJava(self, f):
         """

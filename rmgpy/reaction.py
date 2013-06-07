@@ -87,7 +87,18 @@ class Reaction:
     
     """
     
-    def __init__(self, index=-1, label='', reactants=None, products=None, kinetics=None, reversible=True, transitionState=None, duplicate=False, degeneracy=1, pairs=None):
+    def __init__(self,
+                 index=-1,
+                 label='',
+                 reactants=None,
+                 products=None,
+                 kinetics=None,
+                 reversible=True,
+                 transitionState=None,
+                 duplicate=False,
+                 degeneracy=1,
+                 pairs=None
+                 ):
         self.index = index
         self.label = label
         self.reactants = reactants
@@ -130,7 +141,17 @@ class Reaction:
         """
         A helper function used when pickling an object.
         """
-        return (Reaction, (self.index, self.label, self.reactants, self.products, self.kinetics, self.reversible, self.transitionState, self.duplicate, self.degeneracy, self.pairs))
+        return (Reaction, (self.index,
+                           self.label,
+                           self.reactants,
+                           self.products,
+                           self.kinetics,
+                           self.reversible,
+                           self.transitionState,
+                           self.duplicate,
+                           self.degeneracy,
+                           self.pairs
+                           ))
 
     def toChemkin(self, speciesList):
         """
