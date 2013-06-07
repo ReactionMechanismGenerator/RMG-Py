@@ -1,7 +1,7 @@
 import os
 
 import openbabel
-import cclib.parser
+import external.cclib as cclib
 import logging
 from subprocess import Popen, PIPE
 
