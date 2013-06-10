@@ -111,6 +111,9 @@ class Reaction:
         self.duplicate = duplicate
         self.degeneracy = degeneracy
         self.pairs = pairs
+        
+        if diffusionLimiter.enabled:
+            self.__k_effective_cache = {}
 
     def __repr__(self):
         """
@@ -545,8 +548,12 @@ class Reaction:
         coefficient.
         """
         if diffusionLimiter.enabled:
-            logging.info("Correcting rate for diffusion limited reaction")
-            return diffusionLimiter.getEffectiveRate(self, T)
+            try:
+                k = self.__k_effective_cache[T]
+            except KeyError:
+                k = diffusionLimiter.getEffectiveRate(self, T)
+                self.__k_effective_cache[T] = k
+            return k
         else:
             return  self.kinetics.getRateCoefficient(T, P)
     
