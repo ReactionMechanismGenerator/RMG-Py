@@ -98,7 +98,7 @@ class SolventData():
         self.alpha = alpha
         self.beta = beta
     
-    def getIntrinsicCorrection
+    def getIntrinsicCorrection(self):
         """
         If solvation is on, this will give the log10 of the ratio of the intrinsic rate
         constants log10(k_sol/k_gas) for H-abstraction rxns
