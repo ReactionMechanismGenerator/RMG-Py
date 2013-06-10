@@ -1,6 +1,6 @@
 
 import re
-import rmgpy.quantity as quantity
+from rmgpy.quantity import Energy, Mass, Length, Frequency
 
 class QMData:
     """
@@ -21,17 +21,17 @@ class QMData:
         #: Electronic ground state degeneracy in RMG taken as number of radicals +1
         self.groundStateDegeneracy = groundStateDegeneracy
         self.numberOfAtoms = numberOfAtoms #: Number of atoms.
-        self.stericEnergy = quantity.Energy(stericEnergy)
+        self.stericEnergy = Energy(stericEnergy)
         """
         Steric energy.
         """
-        self.molecularMass = quantity.Mass(molecularMass)
-        self.energy = quantity.Energy(energy)
+        self.molecularMass = Mass(molecularMass)
+        self.energy = Energy(energy)
         self.atomicNumbers = atomicNumbers
         #: Rotational constants, in Hz.
-        self.rotationalConstants = quantity.Frequency(rotationalConstants)
-        self.atomCoords = quantity.Length(atomCoords)
-        self.frequencies = quantity.Frequency(frequencies)
+        self.rotationalConstants = Frequency(rotationalConstants)
+        self.atomCoords = Length(atomCoords)
+        self.frequencies = Frequency(frequencies)
         self.source = source
         
         self.testValid()

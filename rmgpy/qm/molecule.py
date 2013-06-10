@@ -9,6 +9,8 @@ from rdkit.Chem import AllChem
 import rmgpy.quantity
 from rmgpy.thermo import ThermoData
 import rmgpy.statmech
+import rmgpy.thermo
+import rmgpy.molecule
 import symmetry
 import qmdata
 

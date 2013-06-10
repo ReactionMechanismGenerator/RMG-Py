@@ -231,8 +231,6 @@ class SymmetryJob:
         """
         self.writeInputFile();
 
-        result = "";
-
         #continue trying to generate symmetry group until too many no. of attempts or until a point group is found: 
         for attempt, arguments in enumerate(self.argumentsList):
             """
