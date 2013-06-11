@@ -36,6 +36,7 @@ describe the corresponding atom or bond.
 """
 
 import cython
+import logging
 import os
 import re
 import element as elements
@@ -60,6 +61,7 @@ class Atom(Vertex):
     `spinMultiplicity`  ``short``           The spin multiplicity of the atom
     `charge`            ``short``           The formal charge of the atom
     `label`             ``str``             A string label that can be used to tag individual atoms
+    `coords`
     =================== =================== ====================================
 
     Additionally, the ``mass``, ``number``, and ``symbol`` attributes of the
@@ -78,6 +80,7 @@ class Atom(Vertex):
         self.charge = charge
         self.label = label
         self.atomType = None
+        self.coords = list()
 
     def __str__(self):
         """
@@ -209,6 +212,7 @@ class Atom(Vertex):
         a.charge = self.charge
         a.label = self.label
         a.atomType = self.atomType
+        a.coords = self.coords[:]
         return a
 
     def isHydrogen(self):
@@ -614,12 +618,22 @@ class Molecule(Graph):
         """
         Return the molecular weight of the molecule in kg/mol.
         """
+        cython.declare(atom=Atom, mass=cython.double)
         mass = 0
-        H = elements.getElement('H')
         for atom in self.vertices:
             mass += atom.element.mass
         return mass
     
+    def getRadicalCount(self):
+        """
+        Return the number of unpaired electrons.
+        """
+        cython.declare(atom=Atom, radicals=cython.short)
+        radicals = 0
+        for atom in self.vertices:
+            radicals += atom.radicalElectrons
+        return radicals
+
     def getNumAtoms(self, element = None):
         """
         Return the number of atoms in molecule.  If element is given, ie. "H" or "C",
@@ -686,7 +700,7 @@ class Molecule(Graph):
         connectivity values. If there's nothing but hydrogens, it does nothing.
         It destroys information; be careful with it.
         """
-        cython.declare(atom=Atom, neighbor=Atom, hydrogens=list)
+        cython.declare(atom=Atom, hydrogens=list)
         # Check that the structure contains at least one heavy atom
         for atom in self.vertices:
             if not atom.isHydrogen():
@@ -697,7 +711,6 @@ class Molecule(Graph):
         hydrogens = []
         for atom in self.vertices:
             if atom.isHydrogen() and atom.label == '':
-                neighbor = atom.edges.keys()[0]
                 hydrogens.append(atom)
         # Remove the hydrogen atoms from the structure
         for atom in hydrogens:
@@ -1372,4 +1385,4 @@ class Molecule(Graph):
         adjlist = self.toAdjacencyList(removeH=True)
         url += "{0}".format(re.sub('\s+', '%20', adjlist.replace('\n', ';')))
         return url.strip('_')
-        
+
