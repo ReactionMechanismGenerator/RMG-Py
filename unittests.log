@@ -311,6 +311,8 @@ Test the Molecule.isLinear() method. ... ok
 Test that a Molecule object can be successfully pickled and ... ok
 Test that the species [CH] has three radical electrons and a spin multiplicity of 4. ... ok
 Test that the species [CH2] has two radical electrons and a spin multiplicity of 3. ... ok
+Test radical count on [CH2]C[CH2] ... ok
+Test the Molecule.getRadicalCount() method. ... ok
 Test the Molecule.getSmallestSetOfSmallestRings() method with a complex ... ok
 Check the graph isomorphism functions. ... ok
 testSubgraphIsomorphismAgain (rmgpy.molecule.moleculeTest.TestMolecule) ... ok
@@ -380,6 +382,10 @@ Test that the network `netReactions` property was properly set. ... ok
 Test that the network `pathReactions` property was properly set. ... ok
 Test that the network `products` property was properly set. ... ok
 Test that the network `reactants` property was properly set. ... ok
+Failure: ImportError (No module named rdkit) ... ERROR
+Failure: ImportError (No module named rdkit) ... ERROR
+Failure: ImportError (No module named rdkit) ... ERROR
+Failure: ImportError (No module named rdkit) ... ERROR
 Test the creation of an acceleration quantity with units of cm/s^2. ... ok
 Test the creation of an acceleration quantity with units of m/s^2. ... ok
 Test the creation of an area quantity with units of m^2. ... ok
@@ -714,6 +720,70 @@ Traceback (most recent call last):
 IOError: [Errno 2] No such file or directory: '/export/thishost/comocheng/build/RMG-database/input/thermo/depository/stable.py'
 
 ======================================================================
+ERROR: Failure: ImportError (No module named rdkit)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/virtualenvs/rmgweb/local/lib/python2.7/site-packages/nose/loader.py", line 390, in loadTestsFromName
+    addr.filename, addr.module)
+  File "/export/thishost/comocheng/virtualenvs/rmgweb/local/lib/python2.7/site-packages/nose/importer.py", line 39, in importFromPath
+    return self.importFromDir(dir_path, fqname)
+  File "/export/thishost/comocheng/virtualenvs/rmgweb/local/lib/python2.7/site-packages/nose/importer.py", line 86, in importFromDir
+    mod = load_module(part_fqname, fh, filename, desc)
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/qm/gaussian.py", line 9, in <module>
+    from molecule import QMMolecule
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/qm/molecule.py", line 6, in <module>
+    from rdkit import Chem
+ImportError: No module named rdkit
+
+======================================================================
+ERROR: Failure: ImportError (No module named rdkit)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/virtualenvs/rmgweb/local/lib/python2.7/site-packages/nose/loader.py", line 390, in loadTestsFromName
+    addr.filename, addr.module)
+  File "/export/thishost/comocheng/virtualenvs/rmgweb/local/lib/python2.7/site-packages/nose/importer.py", line 39, in importFromPath
+    return self.importFromDir(dir_path, fqname)
+  File "/export/thishost/comocheng/virtualenvs/rmgweb/local/lib/python2.7/site-packages/nose/importer.py", line 86, in importFromDir
+    mod = load_module(part_fqname, fh, filename, desc)
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/qm/main.py", line 34, in <module>
+    import rmgpy.qm.mopac
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/qm/mopac.py", line 9, in <module>
+    from molecule import QMMolecule
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/qm/molecule.py", line 6, in <module>
+    from rdkit import Chem
+ImportError: No module named rdkit
+
+======================================================================
+ERROR: Failure: ImportError (No module named rdkit)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/virtualenvs/rmgweb/local/lib/python2.7/site-packages/nose/loader.py", line 390, in loadTestsFromName
+    addr.filename, addr.module)
+  File "/export/thishost/comocheng/virtualenvs/rmgweb/local/lib/python2.7/site-packages/nose/importer.py", line 39, in importFromPath
+    return self.importFromDir(dir_path, fqname)
+  File "/export/thishost/comocheng/virtualenvs/rmgweb/local/lib/python2.7/site-packages/nose/importer.py", line 86, in importFromDir
+    mod = load_module(part_fqname, fh, filename, desc)
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/qm/molecule.py", line 6, in <module>
+    from rdkit import Chem
+ImportError: No module named rdkit
+
+======================================================================
+ERROR: Failure: ImportError (No module named rdkit)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/virtualenvs/rmgweb/local/lib/python2.7/site-packages/nose/loader.py", line 390, in loadTestsFromName
+    addr.filename, addr.module)
+  File "/export/thishost/comocheng/virtualenvs/rmgweb/local/lib/python2.7/site-packages/nose/importer.py", line 39, in importFromPath
+    return self.importFromDir(dir_path, fqname)
+  File "/export/thishost/comocheng/virtualenvs/rmgweb/local/lib/python2.7/site-packages/nose/importer.py", line 86, in importFromDir
+    mod = load_module(part_fqname, fh, filename, desc)
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/qm/mopac.py", line 9, in <module>
+    from molecule import QMMolecule
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/qm/molecule.py", line 6, in <module>
+    from rdkit import Chem
+ImportError: No module named rdkit
+
+======================================================================
 FAIL: Uses a Gaussian03 log file for ethylene (C2H4) to test that its
 ----------------------------------------------------------------------
 Traceback (most recent call last):
@@ -749,7 +819,7 @@ AssertionError: False is not true
 FAIL: Test the Molecule.countInternalRotors() method for dimethylacetylene.
 ----------------------------------------------------------------------
 Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/moleculeTest.py", line 929, in testCountInternalRotorsDimethylAcetylene
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/moleculeTest.py", line 945, in testCountInternalRotorsDimethylAcetylene
     self.assertEqual(Molecule().fromSMILES('CC#CC').countInternalRotors(), 1)
 AssertionError: 2 != 1
 
@@ -757,7 +827,7 @@ AssertionError: 2 != 1
 FAIL: testSubgraphIsomorphismManyLabels (rmgpy.molecule.moleculeTest.TestMolecule)
 ----------------------------------------------------------------------
 Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/moleculeTest.py", line 670, in testSubgraphIsomorphismManyLabels
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/moleculeTest.py", line 677, in testSubgraphIsomorphismManyLabels
     self.assertTrue(len(mapping) == 1)
 AssertionError: False is not true
 
@@ -854,7 +924,7 @@ rmgpy.data.reference               138    119     48     48    10%   66-70, 89-9
 rmgpy.data.rmg                      62     45      6      6    25%   54-62, 81-89, 96-97, 104-105, 118-130, 141-142, 149-156, 162-166, 172-176
 rmgpy.data.statmech                295    244    103    103    13%   48-91, 98-101, 108-116, 127, 140, 156, 166, 179, 195, 202, 209, 220, 233-241, 257, 264, 271, 278-285, 294-309, 319-355, 364-445, 455-467, 473-479, 485-488, 495-500, 507, 514-526, 533-534, 541-545, 552-553, 560-562, 569-570, 578-594, 611-624, 637-645, 652-656, 664-667, 676, 689-690, 698-705
 rmgpy.data.statmechfit             248    213     70     70    11%   95-137, 151-193, 207-244, 260-307, 316-319, 327-330, 338-343, 352-355, 364-366, 378-381, 384-407, 419-422, 425-457, 469-472, 475-506
-rmgpy.data.thermo                  398    336    122    121    12%   55-122, 129-147, 167, 186-198, 204, 214, 227, 243, 250, 257, 267, 280-284, 300, 308, 315, 341-347, 353-356, 366-368, 377, 384-396, 403-411, 418-422, 429-431, 438-440, 447-454, 462-529, 546-589, 602-620, 629-648, 656-667, 678-682, 691-703, 715-857, 864-877, 886-918
+rmgpy.data.thermo                  417    352    124    123    12%   55-122, 129-147, 167, 186-198, 204, 214, 227, 243, 250, 257, 267, 280-284, 300, 308, 315, 341-347, 353-356, 366-368, 377, 384-396, 403-411, 418-422, 429-431, 438-440, 447-454, 462-529, 546-589, 606-618, 629-636, 644-650, 662-675, 685-696, 709-715, 726-740, 749-816, 829-908, 915-928, 937-969
 rmgpy.display                       11      3      0      0    73%   37, 41-43
 rmgpy.kinetics                       6      0      0      0   100%   
 rmgpy.measure                        0      0      0      0   100%   
@@ -870,19 +940,23 @@ rmgpy.molecule.draw                867    838    414    414     2%   108-120, 13
 rmgpy.pdep                           5      0      0      0   100%   
 rmgpy.pdep.draw                    291    277     86     86     4%   57-70, 73-79, 87-107, 116-125, 131-142, 148-159, 165-181, 185-213, 222-479
 rmgpy.pdep.network                 532    408    230    209    19%   51-53, 60, 130, 137-149, 161, 181, 194-261, 272-345, 358, 361, 364, 396, 460-464, 473, 495-515, 529-688, 699-716, 724-738, 745-748, 755-758, 768-771, 774-775, 789-860, 871-925, 938-954
+rmgpy.qm                             0      0      0      0   100%   
+rmgpy.qm.qmdata                     23     16      2      2    28%   22-37, 40, 74-88
+rmgpy.qm.qmverifier                 26     20      6      6    19%   18-24, 40-61, 71
+rmgpy.qm.symmetry                   78     49     18     14    34%   128-130, 133, 163-173, 179, 185-194, 200-205, 211-223, 232-254
 rmgpy.rmg                            2      0      0      0   100%   
-rmgpy.rmg.input                    214    188     52     52    10%   58-81, 84-88, 91, 94, 97, 100, 104-128, 131-132, 135-138, 142-176, 179-184, 187-201, 213-263, 273-379
-rmgpy.rmg.main                     627    581    218    218     5%   46-47, 111-115, 121-154, 161-173, 179-185, 193-195, 199-216, 225-310, 318-485, 496-508, 519-520, 523-530, 537-552, 559-563, 570-636, 642-644, 650-658, 667-680, 693-740, 751-784, 795-944, 951-960, 971-1013, 1024, 1026-1027, 1030-1045, 1055-1086
-rmgpy.rmg.model                    859    802    456    456     4%   66-67, 73, 83-123, 131-139, 146-166, 173, 188-189, 213-238, 248-268, 277-320, 330-395, 412-466, 484-495, 501-513, 525-675, 684-744, 751-835, 844-880, 890-916, 922, 930-1012, 1020-1067, 1076-1079, 1089-1090, 1098-1102, 1109-1115, 1123-1133, 1140-1145, 1157-1190, 1205-1231, 1245-1270, 1283-1334, 1349-1430, 1438-1524, 1534-1536, 1544-1550
+rmgpy.rmg.input                    224    195     52     52    11%   67-90, 93-97, 100, 103, 106, 109, 120-144, 147-148, 151-154, 163-169, 182-216, 219-224, 227-241, 253-304, 314-420
+rmgpy.rmg.main                     633    587    222    222     5%   46-47, 112-116, 122-156, 163-179, 185-191, 199-201, 205-222, 231-321, 329-496, 507-519, 530-531, 534-541, 548-563, 570-574, 581-647, 653-655, 661-669, 678-691, 704-751, 762-795, 806-955, 962-971, 982-1024, 1035, 1037-1038, 1041-1056, 1066-1097
+rmgpy.rmg.model                    892    833    470    470     4%   70-71, 77, 92-136, 146-183, 191-199, 206-226, 233, 248-249, 273-299, 309-329, 337-380, 390-455, 472-526, 544-555, 561-573, 585-736, 745-805, 812-896, 905-941, 951-977, 983, 991-1073, 1081-1128, 1137-1140, 1150-1151, 1159-1163, 1170-1176, 1184-1194, 1201-1206, 1218-1251, 1266-1292, 1306-1331, 1344-1395, 1410-1491, 1499-1585, 1595-1597, 1605-1611
 rmgpy.rmg.output                   138    130     60     60     4%   62-345, 353-913
 rmgpy.rmg.pdep                     316    287    182    182     6%   73-85, 91, 108, 130-133, 136, 142, 145, 152, 158-178, 187-208, 217-239, 246-265, 273-297, 305-315, 322-377, 387-448, 455-635
 rmgpy.solver                         2      0      0      0   100%   
 rmgpy.statmech                       5      0      0      0   100%   
 rmgpy.thermo                         3      0      0      0   100%   
 ----------------------------------------------------------------------------
-TOTAL                            12253  10743   5299   5138    10%   
+TOTAL                            12448  10888   5345   5180    10%   
 ----------------------------------------------------------------------
-Ran 685 tests.
+Ran 691 tests.
 
-FAILED (errors=2, failures=13)
+FAILED (errors=6, failures=13)
 make: *** [test] Error 1

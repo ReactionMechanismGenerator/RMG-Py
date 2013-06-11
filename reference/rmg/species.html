@@ -129,10 +129,14 @@ have already provided a thermodynamics model using e.g.
 
 <dl class="method">
 <dt id="rmgpy.rmg.model.Species.generateThermoData">
-<tt class="descname">generateThermoData</tt><big>(</big><em>database</em>, <em>thermoClass=&lt;type 'rmgpy.thermo.nasa.NASA'&gt;</em><big>)</big><a class="headerlink" href="#rmgpy.rmg.model.Species.generateThermoData" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generate thermodynamic data for the species using the thermo database.</p>
-<p>Generates the thermo data for each structure (resonance isomer),
-picks that with lowest H298 value, and saves it to <cite>self.thermoData</cite>.</p>
+<tt class="descname">generateThermoData</tt><big>(</big><em>database</em>, <em>thermoClass=&lt;type 'rmgpy.thermo.nasa.NASA'&gt;</em>, <em>quantumMechanics=None</em><big>)</big><a class="headerlink" href="#rmgpy.rmg.model.Species.generateThermoData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates thermo data, using either QM or Database.</p>
+<p>If quantumMechanics is not None, it is aksed to calculate the thermo.
+Failing that, the database is used.</p>
+<p>The database enerates the thermo data for each structure (resonance isomer),
+picks that with lowest H298 value.</p>
+<p>It then calls <tt class="xref py py-meth docutils literal"><span class="pre">processThermoData()</span></tt>.
+Result stored in <cite>self.thermo</cite> and returned.</p>
 </dd></dl>
 
 <dl class="method">
@@ -203,6 +207,13 @@ or <tt class="docutils literal"><span class="pre">False</span></tt> otherwise.</
 <tt class="descname">isIsomorphic</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.rmg.model.Species.isIsomorphic" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if the species is isomorphic to <cite>other</cite>, which can be
 either a <tt class="xref py py-class docutils literal"><span class="pre">Molecule</span></tt> object or a <tt class="xref py py-class docutils literal"><span class="pre">Species</span></tt> object.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.rmg.model.Species.processThermoData">
+<tt class="descname">processThermoData</tt><big>(</big><em>thermo0</em>, <em>thermoClass=&lt;type 'rmgpy.thermo.nasa.NASA'&gt;</em><big>)</big><a class="headerlink" href="#rmgpy.rmg.model.Species.processThermoData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts via Wilhoit into required <cite>thermoClass</cite> and sets <cite>E0</cite>.</p>
+<p>Resulting thermo is stored (<cite>self.thermo</cite>) and returned.</p>
 </dd></dl>
 
 <dl class="method">

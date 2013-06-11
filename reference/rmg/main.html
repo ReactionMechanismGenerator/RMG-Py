@@ -169,13 +169,16 @@ attributes are:</p>
 <tr class="row-odd"><td><cite>pressureDependence</cite></td>
 <td>Whether to process unimolecular (pressure-dependent) reaction networks</td>
 </tr>
-<tr class="row-even"><td><cite>wallTime</cite></td>
+<tr class="row-even"><td><cite>quantumMechanics</cite></td>
+<td>Whether to apply quantum mechanical calculations instead of group additivity to certain molecular types.</td>
+</tr>
+<tr class="row-odd"><td><cite>wallTime</cite></td>
 <td>The maximum amount of CPU time in seconds to expend on this job; used to stop gracefully so we can still get profiling information</td>
 </tr>
-<tr class="row-odd"><td><cite>initializationTime</cite></td>
+<tr class="row-even"><td><cite>initializationTime</cite></td>
 <td>The time at which the job was initiated, in seconds since the epoch (i.e. from time.time())</td>
 </tr>
-<tr class="row-even"><td><cite>done</cite></td>
+<tr class="row-odd"><td><cite>done</cite></td>
 <td>Whether the job has completed (there is nothing new to add)</td>
 </tr>
 </tbody>
