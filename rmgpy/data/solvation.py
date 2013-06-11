@@ -279,7 +279,7 @@ class SoluteLibrary(Database):
         self.entries[label] = Entry(
             index = index,
             label = label,
-            item = Molecule().fromAdjacencyList(molecule),
+            item = Molecule(SMILES=molecule),
             data = solute,
             reference = reference,
             referenceType = referenceType,
@@ -528,18 +528,17 @@ class SolvationDatabase(object):
         """
         soluteData = None
         
-        # Check the library first (not currently used)
+        # Check the library first
         soluteData = self.getSoluteDataFromLibrary(species, self.soluteLibrary)
         if soluteData is not None: 
-           soluteData[0].comment = 'solute'
+            soluteData[0].comment = 'solute'
         else:
             # Solute not found in any loaded libraries, so estimate
             soluteData = self.getSoluteDataFromGroups(species)
+            # No Platts group additivity for V, so set using atom sizes
+            soluteData.setMcGowanVolume(species)
         # Return the resulting solute parameters S, B, E, L, A
-        # Set McGowan Volume (V)
-        soluteData.setMcGowanVolume(species)
         return soluteData
-        
 
     def getAllSoluteData(self, species):
         """
