@@ -43,7 +43,9 @@ cdef class NASAPolynomial(HeatCapacityModel):
 
     cpdef double getEntropy(self, double T) except -100000000
 
-    cpdef double getFreeEnergy(self, double T) except 100000000
+    cpdef double getFreeEnergy(self, double T) except 100000000    
+    
+    cpdef changeBaseEnthalpy(self, double deltaH)
 
     cdef double integral2_T0(self, double T)
     
@@ -66,3 +68,5 @@ cdef class NASA(HeatCapacityModel):
     cpdef ThermoData toThermoData(self, double Cp0=?, double CpInf=?)
 
     cpdef Wilhoit toWilhoit(self, double Cp0, double CpInf)
+    
+    cpdef NASA changeBaseEnthalpy(self, double deltaH)
