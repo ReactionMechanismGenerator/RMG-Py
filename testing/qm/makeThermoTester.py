@@ -20,17 +20,17 @@ settings.fileStore = folder
 settings.scratchDirectory = folder
 settings.onlyCyclics = False
 
-import os 
+import os
 
 
-with open('/Users/rwest/Code/RMG-Java/thermotest/input.txt','w') as output:
+with open(os.path.expandvars('$RMG/thermotest/input.txt'),'w') as output:
     output.write(
 """
 Database: RMG_database
 
 //QM? true/false
 true
-//method: both/gaussian03/mopac/mm4/mm4hr 
+//method: both/gaussian03/mopac/mm4/mm4hr
 mopac
 //ForCyclicsOnly? true/false
 false
