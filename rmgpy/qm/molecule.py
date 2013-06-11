@@ -3,9 +3,13 @@ import logging
 import math
 
 import numpy
-from rdkit import Chem
-from rdkit.Chem import AllChem
 
+try:
+    from rdkit import Chem
+    from rdkit.Chem import AllChem
+except ImportError:
+    logging.debug("To use QM calculations you must correctly install rdkit.")
+    
 import rmgpy.quantity
 from rmgpy.thermo import ThermoData
 import rmgpy.statmech
