@@ -625,13 +625,13 @@ Test the HarmonicOscillator.getSumOfStates() method using a set of ... ok
 Test the HarmonicOscillator.getSumOfStates() method using a set of ... ok
 Test that a HarmonicOscillator object can be pickled and unpickled ... ok
 Test that a HarmonicOscillator object can be reconstructed from its ... ok
-Test round-trip conversion from Wilhoit to NASA and back ... ok
+Test round-trip conversion from Wilhoit to NASA and back ... FAIL
 Test round-trip conversion from Wilhoit to ThermoData and back ... ok
 Test the conversion of a NASA model to a ThermoData model. ... ok
 Test the conversion of a NASA model to a Wilhoit model. ... ok
 Test the conversion of a ThermoData model to a NASA model. ... ok
 Test the conversion of a ThermoData model to a Wilhoit model. ... ok
-Test the conversion of a Wilhoit model to a NASA model. ... ok
+Test the conversion of a Wilhoit model to a NASA model. ... FAIL
 Test the conversion of a Wilhoit model to a ThermoData model. ... ok
 Test that the NASA comment property was properly set. ... ok
 Test that the NASA E0 property was properly set. ... ok
@@ -801,6 +801,32 @@ Traceback (most recent call last):
     self.assertEqual(Molecule().fromSMILES('C(=CC(c1ccccc1)C([CH]CCCCCC)C=Cc1ccccc1)[CH]CCCCCC').calculateSymmetryNumber(), 1)
 AssertionError: 9 != 1
 
+======================================================================
+FAIL: Test round-trip conversion from Wilhoit to NASA and back
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/thermo/convertTest.py", line 223, in test_Wilhoit_NASA_Wilhoit
+    self.assertAlmostEqual(H_1, H_2, delta=2e1)
+AssertionError: -66264.06227429758 != -66243.9309246391 within 20.0 delta
+-------------------- >> begin captured stdout << ---------------------
+Negative ISE of -781.665 reset to zero.
+Poor Wilhoit-to-NASA fit quality: RMS error = 6.333*R
+
+--------------------- >> end captured stdout << ----------------------
+
+======================================================================
+FAIL: Test the conversion of a Wilhoit model to a NASA model.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/thermo/convertTest.py", line 104, in test_convert_Wilhoit_to_NASA
+    self.assertAlmostEqual(H_nasa, H_wilhoit, delta=2e1)
+AssertionError: -66241.35363224777 != -66264.06227429758 within 20.0 delta
+-------------------- >> begin captured stdout << ---------------------
+Negative ISE of -781.665 reset to zero.
+Poor Wilhoit-to-NASA fit quality: RMS error = 6.333*R
+
+--------------------- >> end captured stdout << ----------------------
+
 Name                             Stmts   Miss Branch BrMiss  Cover   Missing
 ----------------------------------------------------------------------------
 rmgpy                               46     12     16      8    68%   70, 93-96, 102, 104, 108, 119-122, 141
@@ -858,5 +884,5 @@ TOTAL                            12253  10743   5299   5138    10%
 ----------------------------------------------------------------------
 Ran 685 tests.
 
-FAILED (errors=2, failures=11)
+FAILED (errors=2, failures=13)
 make: *** [test] Error 1
