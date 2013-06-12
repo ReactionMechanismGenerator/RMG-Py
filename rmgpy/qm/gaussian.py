@@ -33,8 +33,14 @@ class Gaussian:
     successKeys = [
                    'Normal termination of Gaussian'
                   ]
-    
+ 
+    def testReady(self):
+        if not os.path.exists(self.executablePath):
+            raise Exception("Couldn't find Gaussian executable at {0}. Try setting your GAUSS_EXEDIR environment variable.".format(self.executablePath))
+
+   
     def run(self):
+        self.testReady()
         # submits the input file to Gaussian
         process = Popen([self.executablePath, self.inputFilePath, self.outputFilePath])
         process.communicate()# necessary to wait for executable termination!

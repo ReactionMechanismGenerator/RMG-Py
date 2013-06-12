@@ -18,7 +18,6 @@ class Mopac:
     inputFileExtension = '.mop'
     outputFileExtension = '.out'
     executablePath = os.path.join(os.getenv('MOPAC_DIR', default="/opt/mopac") , 'MOPAC2012.exe')
-    assert os.path.exists(executablePath), "Couldn't find MOPAC 2009 executable at {0}. Try setting your MOPAC_DIR environment variable.".format(executablePath)
     
     usePolar = False #use polar keyword in MOPAC
     
@@ -48,8 +47,13 @@ class Mopac:
                    'DESCRIPTION OF VIBRATIONS',
                   ]
 
+    def testReady(self):
+        if not os.path.exists(self.executablePath):
+            raise Exception("Couldn't find MOPAC 2012 executable at {0}. Try setting your MOPAC_DIR environment variable.".format(self.executablePath))
+
 
     def run(self):
+        self.testReady()
         # submits the input file to mopac
         process = Popen([self.executablePath, self.inputFilePath])
         process.communicate()# necessary to wait for executable termination!
