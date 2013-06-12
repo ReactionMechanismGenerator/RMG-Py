@@ -382,8 +382,6 @@ Test that the network `netReactions` property was properly set. ... ok
 Test that the network `pathReactions` property was properly set. ... ok
 Test that the network `products` property was properly set. ... ok
 Test that the network `reactants` property was properly set. ... ok
-Failure: AssertionError (Couldn't find MOPAC 2009 executable at /opt/mopac/MOPAC2012.exe. Try setting your MOPAC_DIR environment variable.) ... FAIL
-Failure: AssertionError (Couldn't find MOPAC 2009 executable at /opt/mopac/MOPAC2012.exe. Try setting your MOPAC_DIR environment variable.) ... FAIL
 Test the creation of an acceleration quantity with units of cm/s^2. ... ok
 Test the creation of an acceleration quantity with units of m/s^2. ... ok
 Test the creation of an area quantity with units of m^2. ... ok
@@ -809,40 +807,6 @@ Traceback (most recent call last):
 AssertionError: 9 != 1
 
 ======================================================================
-FAIL: Failure: AssertionError (Couldn't find MOPAC 2009 executable at /opt/mopac/MOPAC2012.exe. Try setting your MOPAC_DIR environment variable.)
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/virtualenvs/rmgweb/local/lib/python2.7/site-packages/nose/loader.py", line 390, in loadTestsFromName
-    addr.filename, addr.module)
-  File "/export/thishost/comocheng/virtualenvs/rmgweb/local/lib/python2.7/site-packages/nose/importer.py", line 39, in importFromPath
-    return self.importFromDir(dir_path, fqname)
-  File "/export/thishost/comocheng/virtualenvs/rmgweb/local/lib/python2.7/site-packages/nose/importer.py", line 86, in importFromDir
-    mod = load_module(part_fqname, fh, filename, desc)
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/qm/main.py", line 34, in <module>
-    import rmgpy.qm.mopac
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/qm/mopac.py", line 11, in <module>
-    class Mopac:
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/qm/mopac.py", line 21, in Mopac
-    assert os.path.exists(executablePath), "Couldn't find MOPAC 2009 executable at {0}. Try setting your MOPAC_DIR environment variable.".format(executablePath)
-AssertionError: Couldn't find MOPAC 2009 executable at /opt/mopac/MOPAC2012.exe. Try setting your MOPAC_DIR environment variable.
-
-======================================================================
-FAIL: Failure: AssertionError (Couldn't find MOPAC 2009 executable at /opt/mopac/MOPAC2012.exe. Try setting your MOPAC_DIR environment variable.)
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/virtualenvs/rmgweb/local/lib/python2.7/site-packages/nose/loader.py", line 390, in loadTestsFromName
-    addr.filename, addr.module)
-  File "/export/thishost/comocheng/virtualenvs/rmgweb/local/lib/python2.7/site-packages/nose/importer.py", line 39, in importFromPath
-    return self.importFromDir(dir_path, fqname)
-  File "/export/thishost/comocheng/virtualenvs/rmgweb/local/lib/python2.7/site-packages/nose/importer.py", line 86, in importFromDir
-    mod = load_module(part_fqname, fh, filename, desc)
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/qm/mopac.py", line 11, in <module>
-    class Mopac:
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/qm/mopac.py", line 21, in Mopac
-    assert os.path.exists(executablePath), "Couldn't find MOPAC 2009 executable at {0}. Try setting your MOPAC_DIR environment variable.".format(executablePath)
-AssertionError: Couldn't find MOPAC 2009 executable at /opt/mopac/MOPAC2012.exe. Try setting your MOPAC_DIR environment variable.
-
-======================================================================
 FAIL: Test round-trip conversion from Wilhoit to NASA and back
 ----------------------------------------------------------------------
 Traceback (most recent call last):
@@ -912,8 +876,10 @@ rmgpy.pdep                           5      0      0      0   100%
 rmgpy.pdep.draw                    291    277     86     86     4%   57-70, 73-79, 87-107, 116-125, 131-142, 148-159, 165-181, 185-213, 222-479
 rmgpy.pdep.network                 532    408    230    209    19%   51-53, 60, 130, 137-149, 161, 181, 194-261, 272-345, 358, 361, 364, 396, 460-464, 473, 495-515, 529-688, 699-716, 724-738, 745-748, 755-758, 768-771, 774-775, 789-860, 871-925, 938-954
 rmgpy.qm                             0      0      0      0   100%   
-rmgpy.qm.gaussian                  107     81     34     34    18%   39-42, 60-113, 119-124, 141-157, 169-183, 214, 219, 227-230
+rmgpy.qm.gaussian                  111     84     36     36    18%   38-39, 43-48, 66-119, 125-130, 147-163, 175-189, 220, 225, 233-236
+rmgpy.qm.main                       59     45     16     16    19%   50-57, 63-70, 90-92, 98-103, 109, 115-116, 122-132, 142-150
 rmgpy.qm.molecule                  206    166     52     52    16%   9, 28-38, 46, 50, 54, 63-71, 77-109, 115-136, 140-142, 152-185, 200-204, 213, 218, 223, 229-232, 239, 248-265, 271-279, 285-303, 310, 319-322, 330-332, 338-341, 350-393
+rmgpy.qm.mopac                     115     87     34     34    19%   51-52, 56-61, 80-126, 133-138, 153-170, 182-200, 217, 222, 231-251
 rmgpy.qm.qmdata                     23     16      2      2    28%   22-37, 40, 74-88
 rmgpy.qm.qmverifier                 26     20      6      6    19%   18-24, 40-61, 71
 rmgpy.qm.symmetry                   78     49     18     14    34%   128-130, 133, 163-173, 179, 185-194, 200-205, 211-223, 232-254
@@ -927,9 +893,9 @@ rmgpy.solver                         2      0      0      0   100%
 rmgpy.statmech                       5      0      0      0   100%   
 rmgpy.thermo                         3      0      0      0   100%   
 ----------------------------------------------------------------------------
-TOTAL                            12761  11135   5431   5266    10%   
+TOTAL                            12939  11270   5483   5318    10%   
 ----------------------------------------------------------------------
-Ran 689 tests.
+Ran 687 tests.
 
-FAILED (errors=2, failures=15)
+FAILED (errors=2, failures=13)
 make: *** [test] Error 1
