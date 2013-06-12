@@ -1,6 +1,7 @@
 nosetests --all-modules --verbose --with-coverage --cover-inclusive --cover-package=rmgpy --cover-erase --cover-html --cover-html-dir=testing/coverage rmgpy
-Uses a Gaussian03 log file for ethylene (C2H4) to test that its ... FAIL
-Uses a Gaussian03 log file for oxygen (O2) to test that its ... FAIL
+Uses a Gaussian03 log file for ethylene (C2H4) to test that its ... ok
+Uses a Gaussian03 log file for ethylene (C2H4) to test that its ... ok
+Uses a Gaussian03 log file for oxygen (O2) to test that its ... ok
 Uses an optimum geometry for s-butanol (CCC(O)C) to test that the ... ok
 Uses an optimum geometry for ethane (CC) to test that the ... ok
 Test that a Geometry object can be successfully reconstructed ... ok
@@ -716,25 +717,6 @@ Traceback (most recent call last):
 IOError: [Errno 2] No such file or directory: '/export/thishost/comocheng/build/RMG-database/input/thermo/depository/stable.py'
 
 ======================================================================
-FAIL: Uses a Gaussian03 log file for ethylene (C2H4) to test that its
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/cantherm/gaussianTest.py", line 43, in testLoadEthyleneFromGaussianLog
-    self.assertAlmostEqual(E0 / constants.Na / constants.E_h, -78.416641, 4)
-AssertionError: -78.46745199999998 != -78.416641 within 4 places
--------------------- >> begin captured logging << --------------------
-root: DEBUG: To use QM calculations you must correctly install rdkit.
---------------------- >> end captured logging << ---------------------
-
-======================================================================
-FAIL: Uses a Gaussian03 log file for oxygen (O2) to test that its
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/cantherm/gaussianTest.py", line 70, in testLoadOxygenFromGaussianLog
-    self.assertAlmostEqual(E0 / constants.Na / constants.E_h, -150.374756, 4)
-AssertionError: -150.378487701 != -150.374756 within 4 places
-
-======================================================================
 FAIL: Test the GroupAtom.applyAction() method for a GAIN_RADICAL action.
 ----------------------------------------------------------------------
 Traceback (most recent call last):
@@ -836,7 +818,7 @@ Name                             Stmts   Miss Branch BrMiss  Cover   Missing
 ----------------------------------------------------------------------------
 rmgpy                               46     12     16      8    68%   70, 93-96, 102, 104, 108, 119-122, 141
 rmgpy.cantherm                       5      0      0      0   100%   
-rmgpy.cantherm.gaussian            205    114    102     60    43%   56-71, 84-110, 119-159, 287, 291, 298-322, 330-369, 377-393
+rmgpy.cantherm.gaussian            207    114    104     60    44%   56-71, 84-110, 119-159, 290, 294, 301-326, 334-373, 381-397
 rmgpy.cantherm.geometry             74     25     14      4    67%   93, 102-103, 130-148, 156-159, 191, 193
 rmgpy.cantherm.input               219    187     98     98    10%   65-118, 122-158, 162-178, 182-247, 251-256, 260-267, 271-276, 285-295, 298, 301, 313-382
 rmgpy.cantherm.kinetics             84     73     16     16    11%   47-48, 55-59, 66-89, 96-140, 150-171
@@ -893,9 +875,9 @@ rmgpy.solver                         2      0      0      0   100%
 rmgpy.statmech                       5      0      0      0   100%   
 rmgpy.thermo                         3      0      0      0   100%   
 ----------------------------------------------------------------------------
-TOTAL                            12939  11270   5483   5318    10%   
+TOTAL                            12941  11270   5485   5318    10%   
 ----------------------------------------------------------------------
-Ran 687 tests.
+Ran 688 tests.
 
-FAILED (errors=2, failures=13)
+FAILED (errors=2, failures=11)
 make: *** [test] Error 1
