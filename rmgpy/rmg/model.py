@@ -78,15 +78,17 @@ class Species(rmgpy.species.Species):
 
     def generateThermoData(self, database, thermoClass=NASA, quantumMechanics=None):
         """
-        Generates thermo data, using either QM or Database.
+        Generates thermo data, first checking Libraries, then using either QM or Database.
         
-        If quantumMechanics is not None, it is aksed to calculate the thermo.
+        If quantumMechanics is not None, it is asked to calculate the thermo.
         Failing that, the database is used.
         
-        The database enerates the thermo data for each structure (resonance isomer),
+        The database generates the thermo data for each structure (resonance isomer),
         picks that with lowest H298 value.
         
-        It then calls :meth:`processThermoData`.
+        It then calls :meth:`processThermoData`, to convert (via Wilhoit) to NASA
+        and set the E0.
+        
         Result stored in `self.thermo` and returned.
         """
         thermo0 = None
@@ -95,6 +97,8 @@ class Species(rmgpy.species.Species):
         
         if thermo0 is not None:
             logging.info("Found thermo for {0} in thermo library".format(self.label))
+            assert len(thermo0) == 3, "thermo0 should be a tuple at this point: (thermoData, library, entry)"
+            thermo0 = thermo0[0]
             
         elif quantumMechanics:
             molecule = self.molecule[0]

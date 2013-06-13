@@ -604,7 +604,10 @@ class ThermoDatabase(object):
         """
         # Check the libraries in order first; return the first successful match
         thermoData = self.getThermoDataFromLibraries(species)
-        if thermoData is None:
+        if thermoData is not None:
+            assert len(thermoData)==3, "thermoData should be a tuple at this point, eg. (thermoData, library, entry)"
+            thermoData = thermoData[0]
+        else:
             # Thermo not found in any loaded libraries, so estimate
             thermoData = self.getThermoDataFromGroups(species)
 
@@ -631,7 +634,8 @@ class ThermoDatabase(object):
         for label in self.libraryOrder:
             thermoData = self.getThermoDataFromLibrary(species, self.libraries[label])
             if thermoData is not None:
-                thermoData.comment = label
+                assert len(thermoData) == 3, "thermoData should be a tuple at this point"
+                thermoData[0].comment += label
                 return thermoData
         return None
     
@@ -657,7 +661,8 @@ class ThermoDatabase(object):
         first, then the libraries (in order), and then the group additivity
         estimate. This method is useful for a generic search job.
         
-        Returns: a list of ThermoData
+        Returns: a list of tuples (ThermoData, source, entry) 
+        (Source is a library or depository, or None)
         """
         thermoDataList = []
         # Data from depository comes first
@@ -666,10 +671,13 @@ class ThermoDatabase(object):
         for label in self.libraryOrder:
             data = self.getThermoDataFromLibrary(species, self.libraries[label])
             if data: 
-                data.comment = label
+                assert len(data) == 3, "thermoData should be a tuple at this point"
+                data[0].comment += label
                 thermoDataList.append(data)
         # Last entry is always the estimate from group additivity
-        thermoDataList.append(self.getThermoDataFromGroups(species))
+        # Make it a tuple
+        data = (self.getThermoDataFromGroups(species), None, None)
+        thermoDataList.append(data)
 
         # Return all of the resulting thermo parameters
         return thermoDataList
@@ -704,14 +712,14 @@ class ThermoDatabase(object):
         ``None`` is returned. If no corresponding library is found, a
         :class:`DatabaseError` is raised.
         
-        Returns: ThermoData
+        Returns a tuple: (ThermoData, library, entry)  or None.
         """
         for label, entry in library.entries.iteritems():
             for molecule in species.molecule:
                 if molecule.isIsomorphic(entry.item) and entry.data is not None:
                     thermoData = deepcopy(entry.data)
                     self.findCp0andCpInf(species, thermoData)
-                    return thermoData
+                    return (thermoData, library, entry)
         return None
 
     def getThermoDataFromGroups(self, species):
@@ -720,6 +728,9 @@ class ThermoDatabase(object):
         :class:`Species` object `species` by estimation using the group
         additivity values. If no group additivity values are loaded, a
         :class:`DatabaseError` is raised.
+        
+        The resonance isomer (molecule) with the lowest H298 is used, and as a side-effect
+        the resonance isomers (items in `species.molecule` list) are sorted in ascending order.
         
         Returns: ThermoData
         """       
