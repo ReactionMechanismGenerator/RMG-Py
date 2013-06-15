@@ -111,23 +111,24 @@ class Geometry:
             crude = Chem.Mol(rdmol.ToBinary())
             rdmol, minEid = self.optimize(rdmol)
         else:
-            for i in range(0,20):
+            for i in range(0,numConfAttempts):
                 """
-                The condition above may need to be changed to be dependent on the size of the
-                molecules. It may be the case that larger molecules will require more iterations
-                of the bounds matrix embedding.
-                
-                Also need to consider handling other types of exceptions that may occur.
+                Embed the molecule according to the bounds matrix. Built to handle possible failures
+                of some of the embedding attempts.
                 """
                 try:
                     Pharm3D.EmbedLib.EmbedMol(rdmol, boundsMatrix)
                 except ValueError:
                     pass
                 except RuntimeError:
-                    import ipdb; ipdb.set_trace()
                     pass
-                else:
-                    break
+            """
+            RDKit currently embeds the conformers and sets the id as 0, so even though multiple
+            conformers have been generated, only 1 can be called. Below the id's are resolved.
+            """
+            for i in range(len(rdmol.GetConformers())):
+                rdmol.GetConformers()[i].SetId(i)
+            
             crude = Chem.Mol(rdmol.ToBinary())
             rdmol, minEid = self.optimize(rdmol, boundsMatrix)
         
