@@ -12,6 +12,10 @@ import rmgpy.statmech
 import symmetry
 import qmdata
 
+class RDKitFailedError(Exception):
+    """For when RDkit failed. try the next reaction """
+    pass
+    
 class Geometry:
     """
     A geometry, used for quantum calculations.
@@ -47,7 +51,7 @@ class Geometry:
         "Returns the path the the refined mol file."
         return self.getFilePath('.refined.mol')
 
-    def generateRDKitGeometries(self, boundsMatrix=None):
+    def generateRDKitGeometries(self, boundsMatrix=None, atomMatch=None):
         """
         Use RDKit to guess geometry.
 
@@ -61,7 +65,7 @@ class Geometry:
         if atoms > 3:#this check prevents the number of attempts from being negative
             distGeomAttempts = 5*(atoms-3) #number of conformer attempts is just a linear scaling with molecule size, due to time considerations in practice, it is probably more like 3^(n-3) or something like that
         
-        rdmol, minEid = self.rd_embed(rdmol, distGeomAttempts, boundsMatrix)
+        rdmol, minEid = self.rd_embed(rdmol, distGeomAttempts, bm=boundsMatrix, match=atomMatch)
         self.save_coordinates(rdmol, minEid, rdAtIdx)
         
     def rd_build(self):
@@ -102,11 +106,11 @@ class Geometry:
 
         return rdmol, rdAtomIdx
 
-    def rd_embed(self, rdmol, numConfAttempts, boundsMatrix=None):
+    def rd_embed(self, rdmol, numConfAttempts, bm=None, match=None):
         """
         Embed the RDKit molecule and create the crude molecule file.
         """
-        if boundsMatrix == None:
+        if bm == None:
             AllChem.EmbedMultipleConfs(rdmol, numConfAttempts,randomSeed=1)
             crude = Chem.Mol(rdmol.ToBinary())
             rdmol, minEid = self.optimize(rdmol)
@@ -117,27 +121,26 @@ class Geometry:
                 of some of the embedding attempts.
                 """
                 try:
-                    Pharm3D.EmbedLib.EmbedMol(rdmol, boundsMatrix)
+                    Pharm3D.EmbedLib.EmbedMol(rdmol, bm, atomMatch=match)
                 except ValueError:
                     pass
                 except RuntimeError:
-                    pass
+                    raise RDKitFailedError()
             """
             RDKit currently embeds the conformers and sets the id as 0, so even though multiple
             conformers have been generated, only 1 can be called. Below the id's are resolved.
             """
             for i in range(len(rdmol.GetConformers())):
                 rdmol.GetConformers()[i].SetId(i)
-            
             crude = Chem.Mol(rdmol.ToBinary())
-            rdmol, minEid = self.optimize(rdmol, boundsMatrix)
+            rdmol, minEid = self.optimize(rdmol, boundsMatrix=bm, atomMatch=match)
         
         self.writeMolFile(crude, self.getCrudeMolFilePath(), minEid)
         self.writeMolFile(rdmol, self.getRefinedMolFilePath(), minEid)
         
         return rdmol, minEid
     
-    def optimize(self, rdmol, boundsMatrix = None):
+    def optimize(self, rdmol, boundsMatrix=None, atomMatch=None):
         
         energy=0.0
         minEid=0;
@@ -153,7 +156,7 @@ class Geometry:
             if energy < lowestE:
                 minEid = i
                 lowestE = energy
-            
+                
         return rdmol, minEid
         
     def writeMolFile(self, mol, path, minEid):
@@ -247,13 +250,13 @@ class QMMolecule:
         """Get the input file name."""
         return self.getFilePath(self.inputFileExtension)
         
-    def createGeometry(self, boundsMatrix=None):
+    def createGeometry(self, boundsMatrix=None, atomMatch=None):
         """
         Creates self.geometry with RDKit geometries
         """
         multiplicity = sum([i.radicalElectrons for i in self.molecule.atoms]) + 1
         self.geometry = Geometry(self.settings, self.uniqueID, self.molecule, multiplicity, uniqueIDlong=self.uniqueIDlong)
-        self.geometry.generateRDKitGeometries(boundsMatrix)
+        self.geometry.generateRDKitGeometries(boundsMatrix, atomMatch)
         return self.geometry
     
     def generateQMData(self):
