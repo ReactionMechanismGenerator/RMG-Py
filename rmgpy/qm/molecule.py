@@ -139,20 +139,20 @@ class Geometry:
     
     def optimize(self, rdmol, boundsMatrix = None):
         
-        if boundsMatrix == None:
-            energy=0.0
-            minEid=0;
-            lowestE=9.999999e99;#start with a very high number, which would never be reached
-            
-            for i in range(rdmol.GetNumConformers()):
+        energy=0.0
+        minEid=0;
+        lowestE=9.999999e99;#start with a very high number, which would never be reached
+        
+        for i in range(rdmol.GetNumConformers()):
+            if boundsMatrix == None:    
                 AllChem.UFFOptimizeMolecule(rdmol,confId=i)
                 energy=AllChem.UFFGetMoleculeForceField(rdmol,confId=i).CalcEnergy()
-                if energy < lowestE:
-                    minEid = i
-                    lowestE = energy 
-        else:
-            eBefore, eAfter = Pharm3D.EmbedLib.OptimizeMol(rdmol, boundsMatrix)
-            minEid = 0
+            else:
+                eBefore, energy = Pharm3D.EmbedLib.OptimizeMol(rdmol, boundsMatrix)
+            
+            if energy < lowestE:
+                minEid = i
+                lowestE = energy
             
         return rdmol, minEid
         
