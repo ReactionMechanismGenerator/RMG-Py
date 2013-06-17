@@ -12,9 +12,14 @@ RDKit
 ================
 
 Project home on GitHub: https://github.com/rdkit/rdkit
-Installation instructions: http://code.google.com/p/rdkit/wiki/GettingStarted
 
+Installation instructions: http://code.google.com/p/rdkit/wiki/GettingStarted
 Build it with InChI support.
+
+Mac users with `homebrew <http://brew.sh/>`_ can install it most easily with::
+
+	brew tap edc/homebrew-rdkit
+	brew install rdkit --with-inchi
 
 You'll need various environment variables set, eg.::
 
