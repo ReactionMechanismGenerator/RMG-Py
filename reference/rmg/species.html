@@ -130,13 +130,14 @@ have already provided a thermodynamics model using e.g.
 <dl class="method">
 <dt id="rmgpy.rmg.model.Species.generateThermoData">
 <tt class="descname">generateThermoData</tt><big>(</big><em>database</em>, <em>thermoClass=&lt;type 'rmgpy.thermo.nasa.NASA'&gt;</em>, <em>quantumMechanics=None</em><big>)</big><a class="headerlink" href="#rmgpy.rmg.model.Species.generateThermoData" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generates thermo data, using either QM or Database.</p>
-<p>If quantumMechanics is not None, it is aksed to calculate the thermo.
+<dd><p>Generates thermo data, first checking Libraries, then using either QM or Database.</p>
+<p>If quantumMechanics is not None, it is asked to calculate the thermo.
 Failing that, the database is used.</p>
-<p>The database enerates the thermo data for each structure (resonance isomer),
+<p>The database generates the thermo data for each structure (resonance isomer),
 picks that with lowest H298 value.</p>
-<p>It then calls <tt class="xref py py-meth docutils literal"><span class="pre">processThermoData()</span></tt>.
-Result stored in <cite>self.thermo</cite> and returned.</p>
+<p>It then calls <tt class="xref py py-meth docutils literal"><span class="pre">processThermoData()</span></tt>, to convert (via Wilhoit) to NASA
+and set the E0.</p>
+<p>Result stored in <cite>self.thermo</cite> and returned.</p>
 </dd></dl>
 
 <dl class="method">

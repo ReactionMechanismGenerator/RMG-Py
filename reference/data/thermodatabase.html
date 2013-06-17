@@ -99,7 +99,8 @@ additivity values. If no group additivity values are loaded, a
 <tt class="xref py py-class docutils literal"><span class="pre">Species</span></tt> object <cite>species</cite>. The hits from the depository come
 first, then the libraries (in order), and then the group additivity
 estimate. This method is useful for a generic search job.</p>
-<p>Returns: a list of ThermoData</p>
+<p>Returns: a list of tuples (ThermoData, source, entry) 
+(Source is a library or depository, or None)</p>
 </dd></dl>
 
 <dl class="method">
@@ -128,6 +129,8 @@ depository is loaded, a <tt class="xref py py-class docutils literal"><span clas
 <tt class="xref py py-class docutils literal"><span class="pre">Species</span></tt> object <cite>species</cite> by estimation using the group
 additivity values. If no group additivity values are loaded, a
 <tt class="xref py py-class docutils literal"><span class="pre">DatabaseError</span></tt> is raised.</p>
+<p>The resonance isomer (molecule) with the lowest H298 is used, and as a side-effect
+the resonance isomers (items in <cite>species.molecule</cite> list) are sorted in ascending order.</p>
 <p>Returns: ThermoData</p>
 </dd></dl>
 
@@ -149,7 +152,7 @@ in order, returning the first match found, before failing and returning None.</p
 for a library with that name. If no match is found in that library,
 <tt class="docutils literal"><span class="pre">None</span></tt> is returned. If no corresponding library is found, a
 <tt class="xref py py-class docutils literal"><span class="pre">DatabaseError</span></tt> is raised.</p>
-<p>Returns: ThermoData</p>
+<p>Returns a tuple: (ThermoData, library, entry)  or None.</p>
 </dd></dl>
 
 <dl class="method">
