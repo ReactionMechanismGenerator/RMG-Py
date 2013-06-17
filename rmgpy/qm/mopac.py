@@ -17,7 +17,14 @@ class Mopac:
 
     inputFileExtension = '.mop'
     outputFileExtension = '.out'
-    executablePath = os.path.join(os.getenv('MOPAC_DIR', default="/opt/mopac") , 'MOPAC2012.exe')
+    
+    mopacEnv = os.getenv('MOPAC_DIR', default="/opt/mopac")
+    if os.path.exists(os.path.join(mopacEnv , 'MOPAC2012.exe')):
+        executablePath = os.path.join(mopacEnv , 'MOPAC2012.exe')
+    elif os.path.exists(os.path.join(mopacEnv , 'MOPAC2009.exe')):
+        executablePath = os.path.join(mopacEnv , 'MOPAC2009.exe')
+    else:
+        executablePath = os.path.join(mopacEnv , '(MOPAC 2009 or 2012)')
     
     usePolar = False #use polar keyword in MOPAC
     

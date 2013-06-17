@@ -16,8 +16,15 @@ class Gaussian:
     """
     
     inputFileExtension = '.gjf'
-    outputFileExtension = '.out'
-    executablePath = os.path.join(os.getenv('GAUSS_EXEDIR', default="$g09root/g09") , 'g09')
+    outputFileExtension = '.log'
+    
+    gaussEnv = os.getenv('GAUSS_EXEDIR')
+    if os.path.exists(os.path.join(gaussEnv , 'g09')):
+        executablePath = os.path.join(gaussEnv , 'g09')
+    elif os.path.exists(os.path.join(gaussEnv , 'g03')):
+        executablePath = os.path.join(gaussEnv , 'g03')
+    else:
+        executablePath = os.path.join(gaussEnv , '(g03 or g09)')
 
     usePolar = False
     
