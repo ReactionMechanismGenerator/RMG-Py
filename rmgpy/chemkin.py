@@ -1546,3 +1546,5 @@ def saveJavaKineticsLibrary(path, species, reactions):
             f.write('\n')
     f.close()
     f2.close()
+    
+    saveSpeciesDictionary(os.path.join(os.path.dirname(path), 'species.txt'), species)
