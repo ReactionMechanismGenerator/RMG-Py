@@ -1638,16 +1638,23 @@ class KineticsFamily(Database):
         # If no estimation method was given, prioritize rate rule estimation. 
         # If returning all kinetics, add estimations from both rate rules and group additivity.
         else:
-            kinetics = self.getKineticsForTemplate(template, degeneracy, method='rate rules')
-            if kinetics:
+            try:
+                kinetics = self.getKineticsForTemplate(template, degeneracy, method='rate rules')
                 if not returnAllKinetics:
                     return kinetics, None, None, True
                 kineticsList.append([kinetics, 'rate rules', None, True])
-            kinetics2 = self.getKineticsForTemplate(template, degeneracy, method='group additivity')
-            if kinetics2:
+            except KineticsError:
+                # If kinetics were undeterminable for rate rules estimation, do nothing.
+                pass
+            
+            try:
+                kinetics2 = self.getKineticsForTemplate(template, degeneracy, method='group additivity')
                 if not returnAllKinetics:
                     return kinetics, None, None, True
                 kineticsList.append([kinetics2, 'group additivity', None, True])
+            except KineticsError:                
+                # If kinetics were undeterminable for group additivity estimation, do nothing.
+                pass
         
         if not returnAllKinetics:
             raise UndeterminableKineticsError(reaction)

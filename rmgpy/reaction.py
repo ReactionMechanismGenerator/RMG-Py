@@ -89,7 +89,18 @@ class Reaction:
     
     """
     
-    def __init__(self, index=-1, label='', reactants=None, products=None, kinetics=None, reversible=True, transitionState=None, duplicate=False, degeneracy=1, pairs=None):
+    def __init__(self,
+                 index=-1,
+                 label='',
+                 reactants=None,
+                 products=None,
+                 kinetics=None,
+                 reversible=True,
+                 transitionState=None,
+                 duplicate=False,
+                 degeneracy=1,
+                 pairs=None
+                 ):
         self.index = index
         self.label = label
         self.reactants = reactants
@@ -135,7 +146,17 @@ class Reaction:
         """
         A helper function used when pickling an object.
         """
-        return (Reaction, (self.index, self.label, self.reactants, self.products, self.kinetics, self.reversible, self.transitionState, self.duplicate, self.degeneracy, self.pairs))
+        return (Reaction, (self.index,
+                           self.label,
+                           self.reactants,
+                           self.products,
+                           self.kinetics,
+                           self.reversible,
+                           self.transitionState,
+                           self.duplicate,
+                           self.degeneracy,
+                           self.pairs
+                           ))
 
     def toChemkin(self, speciesList):
         """
@@ -874,6 +895,75 @@ class Reaction:
         from rmgpy.molecule.draw import ReactionDrawer
         format = os.path.splitext(path)[1].lower()[1:]
         ReactionDrawer().draw(self, format, path)
+            
+    # Build the transition state geometry
+    def generate3dTS(self, reactants, products):
+        """
+        Generate the 3D structure of the transition state. Called from 
+        model.generateKinetics().
+        
+        self.reactants is a list of reactants
+        self.products is a list of products
+        """
+        import rdkit
+        import rdkit.Chem
+        import rdkit.Chem.AllChem
+        import rdkit.Geometry
+        
+        """
+        Iterate through each reactant, then iterate through its atoms to find the
+        atoms involved in the reaction. If a radical is involved, can find the atom
+        with radical electrons. If a more reliable method can be found, would greatly
+        improve the method.
+        
+        Repeat for the products
+        """
+        for i in range(0, len(reactants)):
+            mol = reactants[i].molecule[0]
+            for j in range(0, mol.rdMol.GetNumAtoms()):
+                if mol.rdMol.GetAtomWithIdx(j).GetNumRadicalElectrons():
+                    point = mol.rdMol.GetConformer(mol.rdMolConfId).GetAtomPosition(j)
+                    neighbor = mol.rdMol.GetAtomWithIdx(j).GetNeighbors()
+                    dirVec = [{} for k in range(len(neighbor))]
+                    lenVec = [None]*len(neighbor)
+                    for k in range(0, len(neighbor)):
+                        newIdx = neighbor[k].GetIdx()
+                        newPt = mol.rdMol.GetConformer(mol.rdMolConfId).GetAtomPosition(newIdx)
+                        dirVec[k] = point.DirectionVector(newPt)
+                        lenVec[k] = point.Distance(newPt)
+                    xCoord = [None]*len(neighbor)
+                    yCoord = [None]*len(neighbor)
+                    zCoord = [None]*len(neighbor) 
+                    for k in range(0, len(neighbor)):
+                        xCoord[k] = dirVec[k].x*lenVec[k]
+                        yCoord[k] = dirVec[k].y*lenVec[k]
+                        zCoord[k] = dirVec[k].z*lenVec[k]
+            reactionAxis = [sum(xCoord), sum(yCoord), sum(zCoord)]
+            reactants[i].reactionAxis = reactionAxis
+        
+        for i in range(0, len(products)):
+            mol = products[i].molecule[0]
+            for j in range(0, mol.rdMol.GetNumAtoms()):
+                if mol.rdMol.GetAtomWithIdx(j).GetNumRadicalElectrons():
+                    point = mol.rdMol.GetConformer(mol.rdMolConfId).GetAtomPosition(j)
+                    neighbor = mol.rdMol.GetAtomWithIdx(j).GetNeighbors()
+                    dirVec = [{} for k in range(len(neighbor))]
+                    lenVec = [None]*len(neighbor)
+                    for k in range(0, len(neighbor)):
+                        newIdx = neighbor[k].GetIdx()
+                        newPt = mol.rdMol.GetConformer(mol.rdMolConfId).GetAtomPosition(newIdx)
+                        dirVec[k] = point.DirectionVector(newPt)
+                        lenVec[k] = point.Distance(newPt)
+                    xCoord = [None]*len(neighbor)
+                    yCoord = [None]*len(neighbor)
+                    zCoord = [None]*len(neighbor) 
+                    for k in range(0, len(neighbor)):
+                        xCoord[k] = dirVec[k].x*lenVec[k]
+                        yCoord[k] = dirVec[k].y*lenVec[k]
+                        zCoord[k] = dirVec[k].z*lenVec[k]
+            reactionAxis = [sum(xCoord), sum(yCoord), sum(zCoord)]
+            products[i].reactionAxis = reactionAxis
+
                 
 ################################################################################
 

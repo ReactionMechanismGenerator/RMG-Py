@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-.PHONY : all minimal main measure solver cantherm clean decython
+.PHONY : all minimal main measure solver cantherm clean decython documentation QM
 
 all: main measure solver
 
@@ -23,11 +23,24 @@ solver:
 cantherm:
 	python setup.py build_ext cantherm --build-lib . --build-temp build --pyrex-c-in-temp
 
+bin/symmetry:
+	$(MAKE) -C external/symmetry install
+
+QM: bin/symmetry
+	echo "Checking you have rdkit..."
+	python -c 'import rdkit; print rdkit.__file__'
+
+documentation:
+	$(MAKE) -C documentation html
+	echo "Start at: documentation/build/html/index.html"
+
 clean:
 	python setup.py clean --build-temp build
 	rm -rf build/
 	find . -name '*.so' -exec rm -f '{}' \;
 	find . -name '*.pyc' -exec rm -f '{}' \;
+	$(MAKE) -C external/symmetry clean
+	rm -f bin/symmetry
 
 decython:
 	# de-cythonize all but the 'minimal'. Helpful for debugging in "pure python" mode.
@@ -46,7 +59,7 @@ eg1: all
 	coverage run rmg.py -p testing/minimal/input.py
 	coverage report
 	coverage html
-eg2: all
+eg2: all QM
 	mkdir -p testing/hexadiene
 	rm -rf testing/hexadiene/*
 	cp examples/rmg/1,3-hexadiene/input.py testing/hexadiene/input.py

@@ -40,6 +40,7 @@ cdef class Atom(Vertex):
     cdef public short charge
     cdef public str label
     cdef public AtomType atomType
+    cdef public list coords
 
     cpdef bint equivalent(self, Vertex other) except -2
 
@@ -89,6 +90,8 @@ cdef class Molecule(Graph):
 
     cdef public bint implicitHydrogens
     cdef public int symmetryNumber
+    cdef public object rdMol
+    cdef public int rdMolConfId
     cdef str _fingerprint
     
     cpdef str getFingerprint(self)
@@ -112,6 +115,8 @@ cdef class Molecule(Graph):
     cpdef sortAtoms(self)
 
     cpdef str getFormula(self)
+
+    cpdef short getRadicalCount(self)
 
     cpdef double getMolecularWeight(self)
 

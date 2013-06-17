@@ -39,7 +39,7 @@ import os.path
 import itertools
 
 from rmgpy.display import display
-import rmgpy.chemkin
+#import rmgpy.chemkin
 import rmgpy.constants as constants
 from rmgpy.quantity import Quantity
 import rmgpy.species
@@ -53,7 +53,11 @@ from rmgpy.data.kinetics import *
 from rmgpy.data.statmech import *
 import rmgpy.data.rmg
 
+#needed to call the generate3dTS method in Reaction class
+from rmgpy.reaction import Reaction
+
 from pdep import PDepReaction, PDepNetwork, PressureDependenceError
+# generateThermoDataFromQM under the Species class imports the qm package
 
 
 ################################################################################
@@ -77,15 +81,75 @@ class Species(rmgpy.species.Species):
         """
         return (Species, (self.index, self.label, self.thermo, self.conformer, self.molecule, self.lennardJones, self.molecularWeight, self.dipoleMoment, self.polarizability, self.Zrot, self.energyTransferModel, self.reactive, self.coreSizeAtCreation),)
 
-    def generateThermoData(self, database, thermoClass=NASA):
+    def generateThermoData(self, database, thermoClass=NASA, quantumMechanics=None):
         """
-        Generate thermodynamic data for the species using the thermo database.
+        Generates thermo data, first checking Libraries, then using either QM or Database.
+        
+        If quantumMechanics is not None, it is asked to calculate the thermo.
+        Failing that, the database is used.
+        
+        The database generates the thermo data for each structure (resonance isomer),
+        picks that with lowest H298 value.
+        
+        It then calls :meth:`processThermoData`, to convert (via Wilhoit) to NASA
+        and set the E0.
+        
+        Result stored in `self.thermo` and returned.
+        """
+        thermo0 = None
+        
+        thermo0 = database.thermo.getThermoDataFromLibraries(self)
+        
+        if thermo0 is not None:
+            logging.info("Found thermo for {0} in thermo library".format(self.label))
+            assert len(thermo0) == 3, "thermo0 should be a tuple at this point: (thermoData, library, entry)"
+            thermo0 = thermo0[0]
+            
+        elif quantumMechanics:
+            molecule = self.molecule[0]
+            if quantumMechanics.settings.onlyCyclics and not molecule.isCyclic():
+                pass
+            else: # try a QM calculation
+                if molecule.getRadicalCount() > quantumMechanics.settings.maxRadicalNumber:
+                    # Too many radicals for direct calculation: use HBI.
+                    logging.info("{0} radicals on {1} exceeds limit of {2}. Using HBI method.".format(
+                        self.molecule[0].getRadicalCount(),
+                        self.label,
+                        quantumMechanics.settings.maxRadicalNumber,
+                        ))
+                    
+                    # Need to estimate thermo via each resonance isomer
+                    thermo = []
+                    for molecule in self.molecule:
+                        molecule.clearLabeledAtoms()
+                        molecule.updateAtomTypes()
+                        tdata = database.thermo.estimateRadicalThermoViaHBI(molecule, quantumMechanics.getThermoData)
+                        thermo.append(tdata)
+                    H298 = numpy.array([t.getEnthalpy(298.) for t in thermo])
+                    indices = H298.argsort()
+                    for i, ind in enumerate(indices):
+                        logging.info("Resonance isomer {0} {1} gives H298={2:.0f} J/mol".format(i, self.molecule[ind].toSMILES(), H298[ind]))
+                    self.molecule = [self.molecule[ind] for ind in indices]
+                    molecule = self.molecule[0]
+                    thermo0 = thermo[indices[0]]
+                    
+                    with open('thermoHBIcheck.txt','a') as f:
+                        f.write('// {0!r}\n'.format(thermo0).replace('),','),\n//           '))
+                        f.write('{0}\n'.format(molecule.toSMILES()))
+                        f.write('{0}\n\n'.format(molecule.toAdjacencyList(removeH=True)))
+                else: # Not too many radicals: do a direct calculation.
+                    thermo0 = quantumMechanics.getThermoData(molecule) # returns None if it fails
+        if thermo0 is None:
+            thermo0 = database.thermo.getThermoData(self)
 
-        Generates the thermo data for each structure (resonance isomer),
-        picks that with lowest H298 value, and saves it to `self.thermoData`.
+        return self.processThermoData(thermo0, thermoClass)
+
+    def processThermoData(self, thermo0, thermoClass=NASA):
         """
-        # Get the thermo data for the species from the database
-        thermo0 = database.thermo.getThermoData(self)
+        Converts via Wilhoit into required `thermoClass` and sets `E0`.
+        
+        Resulting thermo is stored (`self.thermo`) and returned.
+        """
 
         # Always convert to Wilhoit so we can compute E0
         if isinstance(thermo0, Wilhoit):
@@ -252,6 +316,7 @@ class CoreEdgeReactionModel:
         self.outputSpeciesList = []
         self.outputReactionList = []
         self.pressureDependence = None
+        self.quantumMechanics = None
         self.verboseComments = False
         self.kineticsEstimator = 'group additivity'
         self.reactionGenerationOptions = {}
@@ -292,7 +357,6 @@ class CoreEdgeReactionModel:
         either a :class:`Molecule` object or an :class:`rmgpy.species.Species`
         object.
         """
-
         if isinstance(object, rmgpy.species.Species):
             molecule = object.molecule[0]
             label = label if label != '' else object.label
@@ -533,7 +597,8 @@ class CoreEdgeReactionModel:
 
     def enlarge(self, newObject):
         """
-        Enlarge a reaction model by processing `newObject`. If `newObject` is a
+        Enlarge a reaction model by processing the objects in the list `newObject`. 
+        If `newObject` is a
         :class:`rmg.species.Species` object, then the species is moved from
         the edge to the core and reactions generated for that species, reacting
         with itself and with all other species in the model core. If `newObject`
@@ -584,8 +649,9 @@ class CoreEdgeReactionModel:
     
                 # Add new species
                 reactionsMovedFromEdge = self.addSpeciesToCore(newSpecies)
-    
+                
                 # Process the new reactions
+                # While adding to core/edge/pdep network, this clears atom labels:
                 self.processNewReactions(newReactions, newSpecies, pdepNetwork)
     
             elif isinstance(obj, tuple) and isinstance(obj[0], PDepNetwork) and self.pressureDependence:
@@ -595,7 +661,7 @@ class CoreEdgeReactionModel:
                 self.processNewReactions(newReactions, newSpecies, pdepNetwork)
     
             else:
-                raise TypeError('Unable to use object {0} to enlarge reaction model; expecting an object of class rmg.model.Species or rmg.model.PDepNetwork.'.format(obj))
+                raise TypeError('Unable to use object {0} to enlarge reaction model; expecting an object of class rmg.model.Species or rmg.model.PDepNetwork, not {1}'.format(obj, obj.__class__))
 
             # If there are any core species among the unimolecular product channels
             # of any existing network, they need to be made included
@@ -632,7 +698,7 @@ class CoreEdgeReactionModel:
         # Generate thermodynamics of new species
         logging.info('Generating thermodynamics for new species...')
         for spec in newSpeciesList:
-            spec.generateThermoData(database)
+            spec.generateThermoData(database, quantumMechanics=self.quantumMechanics)
         
         # Generate kinetics of new reactions
         logging.info('Generating kinetics for new reactions...')

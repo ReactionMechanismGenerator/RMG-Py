@@ -36,3 +36,10 @@ Refer to these platform-specific instructions for details on the best ways to in
     windows
     linux
     macos
+
+See also the instructions for installing these optional components:
+
+.. toctree::
+    :maxdepth: 1
+
+    QMthermo
