@@ -68,9 +68,13 @@
 you will need some additional software.</p>
 <div class="section" id="rdkit">
 <h2>2.4.1. RDKit<a class="headerlink" href="#rdkit" title="Permalink to this headline">¶</a></h2>
-<p>Project home on GitHub: <a class="reference external" href="https://github.com/rdkit/rdkit">https://github.com/rdkit/rdkit</a>
-Installation instructions: <a class="reference external" href="http://code.google.com/p/rdkit/wiki/GettingStarted">http://code.google.com/p/rdkit/wiki/GettingStarted</a></p>
-<p>Build it with InChI support.</p>
+<p>Project home on GitHub: <a class="reference external" href="https://github.com/rdkit/rdkit">https://github.com/rdkit/rdkit</a></p>
+<p>Installation instructions: <a class="reference external" href="http://code.google.com/p/rdkit/wiki/GettingStarted">http://code.google.com/p/rdkit/wiki/GettingStarted</a>
+Build it with InChI support.</p>
+<p>Mac users with <a class="reference external" href="http://brew.sh/">homebrew</a> can install it most easily with:</p>
+<div class="highlight-python"><pre>brew tap edc/homebrew-rdkit
+brew install rdkit --with-inchi</pre>
+</div>
 <p>You&#8217;ll need various environment variables set, eg.:</p>
 <div class="highlight-python"><pre>export RDBASE=$HOME/rdkit # CHECK THIS (maybe you put RDKit somewhere else)
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$RDBASE/lib
