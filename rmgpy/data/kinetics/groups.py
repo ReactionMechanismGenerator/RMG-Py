@@ -39,6 +39,8 @@ import os.path
 import re
 import logging
 import codecs
+import math
+import numpy
 from copy import copy, deepcopy
 
 from rmgpy.data.base import *
@@ -50,7 +52,7 @@ from rmgpy.kinetics import Arrhenius, ArrheniusEP, ThirdBody, Lindemann, Troe, \
                            Chebyshev, KineticsData, PDepKineticsModel
 from rmgpy.molecule import Bond, GroupBond, Group
 from rmgpy.species import Species
-
+from rmgpy.quantity import constants
 from .common import KineticsError, UndeterminableKineticsError, saveEntry
 
 ################################################################################
