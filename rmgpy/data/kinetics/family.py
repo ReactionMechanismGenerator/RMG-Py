@@ -51,6 +51,7 @@ from .common import KineticsError, UndeterminableKineticsError, saveEntry, \
 from .depository import KineticsDepository
 from .groups import KineticsGroups
 from .rules import KineticsRules
+from .transitionstates import TransitionStates
 
 ################################################################################
 
@@ -553,6 +554,7 @@ class KineticsFamily(Database):
                 if 'training' in root: continue
                 for f in files:
                     if not f.endswith('.py'): continue
+                    if f.startswith('TS_'): continue # skip transition state files
                     name = f.split('.py')[0]
                     if name not in ['groups', 'rules'] and name not in (depositoryLabels or ['training']):
                         fpath = os.path.join(root, f)
@@ -561,6 +563,11 @@ class KineticsFamily(Database):
                         logging.debug("Loading kinetics family depository from {0}".format(fpath))
                         depository.load(fpath, local_context, global_context)
                         self.depositories.append(depository)
+
+        self.TS = TransitionStates(label='{0}/TS'.format(self.label))
+        logging.debug("Loading transition state family info from {0}".format(os.path.join(path, 'TS_*')))
+        self.TS.load(path, local_context, global_context)
+
             
     def loadTemplate(self, reactants, products, ownReverse=False):
         """
