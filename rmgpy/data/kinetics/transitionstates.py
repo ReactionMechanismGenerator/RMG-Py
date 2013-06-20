@@ -51,6 +51,34 @@ from rmgpy.species import Species
 
 from .common import KineticsError, UndeterminableKineticsError, saveEntry
 
+
+
+################################################################################
+
+class TransitionStates(Database):
+    """
+    loads, and contains, both Depository and Groups
+    """
+    def __init__(self):
+        self.groups = None
+        self.depository = None
+
+    def load(self, path, local_context, global_context):
+        """
+        Load the TS database
+        """
+        fpath = os.path.join(path,'TS_training.py')
+        logging.debug("Loading transitions state family training set from {0}".format(fpath))
+        depository = TransitionStateDepository(label='TS Training')
+        depository.load(fpath, local_context, global_context )
+        self.depository = depository
+        
+        fpath = os.path.join(path,'TS_groups.py')
+        logging.debug("Loading transitions state family groups from {0}".format(fpath))
+        groups = TSGroups(label="TS groups")
+        groups.load(fpath , local_context, global_context )
+        self.groups = groups
+            
 ################################################################################
 
 class TransitionStateDepository(Database):

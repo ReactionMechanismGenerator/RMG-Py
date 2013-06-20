@@ -333,7 +333,6 @@ class KineticsFamily(Database):
         self.depositories = []
         # Transition state depositories of training and test data
         self.tsgroups = None
-        self.tsrules = None
         self.tsdepositories = []
 
     def __repr__(self):
@@ -568,18 +567,10 @@ class KineticsFamily(Database):
                         depository.load(fpath, local_context, global_context)
                         self.depositories.append(depository)
         
-        for name in (['TS_training'] if depositoryLabels is None else depositoryLabels) :
-            label = '{0}/{1}'.format(self.label, name)
-            f = name+'.py'
-            fpath = os.path.join(path,f)
-            if not os.path.exists(fpath):
-                logging.warning("Requested depository {0} does not exist".format(fpath))
-                continue
-            import ipdb; ipdb.set_trace()
-            depository = TransitionStateDepository(label=label)
-            logging.debug("Loading transitions state family depository from {0}".format(fpath))
-            depository.load(fpath, local_context, global_context)
-            self.tsdepositories.append(depository)
+        self.TS = TransitionStates(label='{0}/TS'.format(self.label))
+        logging.debug("Loading transition state family info from {0}".format(os.path.join(path, 'TS_*')))
+        self.TS.load(path, local_context, global_context)
+
             
     def loadTemplate(self, reactants, products, ownReverse=False):
         """
