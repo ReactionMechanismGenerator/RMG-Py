@@ -168,15 +168,15 @@ class TSGroups(Database):
 
         return template
 
-    def estimateDistancesUsingGroupAdditivity(self, template, referenceKinetics, degeneracy=1):
+    def estimateDistancesUsingGroupAdditivity(self, template, referenceDistances, degeneracy=1):
         """
         Determine the appropriate transition state distances for a reaction 
         with the given `template` using group additivity.
         """
 
-        # Start with the generic kinetics of the top-level nodes
+        # Start with the generic distances of the top-level nodes
         # Make a copy so we don't modify the original
-        kinetics = deepcopy(referenceKinetics)
+        tsDistances = deepcopy(referenceDistances)
         
         # Now add in more specific corrections if possible
         for node in template:
@@ -187,83 +187,34 @@ class TSGroups(Database):
                 comment_line += "{0} >> ".format(entry.label)
                 entry = entry.parent
             if entry.data is not None and entry not in self.top:
-                kinetics = self.__multiplyKineticsData(kinetics, entry.data)
+                tsDistances = self.__multiplyDistanceData(tsDistances, entry.data)
                 comment_line += "{0} ({1})".format(entry.label, entry.longDesc.split('\n')[0])
             elif entry in self.top:
                 comment_line += "{0} (Top node)".format(entry.label)
-            kinetics.comment += comment_line + '\n'
-
-        # Also include reaction-path degeneracy
-        if isinstance(kinetics, KineticsData):
-            kinetics.kdata.value_si *= degeneracy
-        elif isinstance(kinetics, Arrhenius):
-            kinetics.A.value_si *= degeneracy
-        elif kinetics is not None:
-            raise KineticsError('Unexpected kinetics type "{0}" encountered while generating kinetics from group values.'.format(kinetics.__class__))
-        kinetics.comment += "Multiplied by reaction path degeneracy {0}".format(degeneracy)
+            tsDistances.comment += comment_line + '\n'
         
-        return kinetics
+        return tsDistances
 
-    def __multiplyKineticsData(self, kinetics1, kinetics2):
+    def __multiplyDistanceData(self, distances1, distances2):
         """
-        Multiply two kinetics objects `kinetics1` and `kinetics2` of the same
-        class together, returning their product as a new kinetics object of
-        that class. Currently this only works for :class:`KineticsData` or
-        :class:`Arrhenius` objects.
+        Multiply two distance objects `distance1` and `distance2` of the same
+        class together, returning their product as a new distance object of
+        that class. Currently this only works for :class:`DistanceData`.
         """
-        if isinstance(kinetics1, KineticsData) and isinstance(kinetics2, KineticsData):
-            if len(kinetics1.Tdata.value_si) != len(kinetics2.Tdata.value_si) or any([T1 != T2 for T1, T2 in zip(kinetics1.Tdata.value_si, kinetics2.Tdata.value_si)]):
-                raise KineticsError('Cannot add these KineticsData objects due to their having different temperature points.')
-            kinetics = KineticsData(
-                Tdata = (kinetics1.Tdata.value, kinetics2.Tdata.units),
-                kdata = (kinetics1.kdata.value * kinetics2.kdata.value, kinetics1.kdata.units),
-            )
-        elif isinstance(kinetics1, Arrhenius) and isinstance(kinetics2, Arrhenius):
-            assert kinetics1.A.units == kinetics2.A.units
-            assert kinetics1.Ea.units == kinetics2.Ea.units
-            assert kinetics1.T0.units == kinetics2.T0.units
-            assert kinetics1.T0.value == kinetics2.T0.value
-            kinetics = Arrhenius(
-                A = (kinetics1.A.value * kinetics2.A.value, kinetics1.A.units),
-                n = (kinetics1.n.value + kinetics2.n.value, kinetics1.n.units),
-                Ea = (kinetics1.Ea.value + kinetics2.Ea.value, kinetics1.Ea.units),
-                T0 = (kinetics1.T0.value, kinetics1.T0.units),
+        if isinstance(distances1, DistanceData) and isinstance(distances2, DistanceData):
+            if len(distances1.method) != len(distances2.method) or any([T1 != T2 for T1, T2 in zip(distances1.method, distances2.method)]):
+                raise TSError('Cannot add these DistanceData objects due to their being at different levels of theory')
+            distances = DistanceData(
+                distances = (distances1.distances * distances2.distances, distances1.distances.units),
+                method = (distances1.method.structMethod, distances1.method.basisSet),
             )
         else:
-            raise KineticsError('Unable to multiply kinetics types "{0}" and "{1}".'.format(kinetics1.__class__, kinetics2.__class__))
+            raise TSError('Unable to multiply distance types "{0}" and "{1}".'.format(distances1.__class__, distances2.__class__))
         
-        if kinetics1.Tmin is not None and kinetics2.Tmin is not None:
-            kinetics.Tmin = kinetics1.Tmin if kinetics1.Tmin.value_si > kinetics2.Tmin.value_si else kinetics2.Tmin
-        elif kinetics1.Tmin is not None and kinetics2.Tmin is None:
-            kinetics.Tmin = kinetics1.Tmin
-        elif kinetics1.Tmin is None and kinetics2.Tmin is not None:
-            kinetics.Tmin = kinetics2.Tmin
-        
-        if kinetics1.Tmax is not None and kinetics2.Tmax is not None:
-            kinetics.Tmax = kinetics1.Tmax if kinetics1.Tmax.value_si < kinetics2.Tmax.value_si else kinetics2.Tmax
-        elif kinetics1.Tmax is not None and kinetics2.Tmax is None:
-            kinetics.Tmax = kinetics1.Tmax
-        elif kinetics1.Tmax is None and kinetics2.Tmax is not None:
-            kinetics.Tmax = kinetics2.Tmax
-        
-        if kinetics1.Pmin is not None and kinetics2.Pmin is not None:
-            kinetics.Pmin = kinetics1.Pmin if kinetics1.Pmin.value_si > kinetics2.Pmin.value_si else kinetics2.Pmin
-        elif kinetics1.Pmin is not None and kinetics2.Pmin is None:
-            kinetics.Pmin = kinetics1.Pmin
-        elif kinetics1.Pmin is None and kinetics2.Pmin is not None:
-            kinetics.Pmin = kinetics2.Pmin
-        
-        if kinetics1.Pmax is not None and kinetics2.Pmax is not None:
-            kinetics.Pmax = kinetics1.Pmax if kinetics1.Pmax.value_si < kinetics2.Pmax.value_si else kinetics2.Pmax
-        elif kinetics1.Pmax is not None and kinetics2.Pmax is None:
-            kinetics.Pmax = kinetics1.Pmax
-        elif kinetics1.Pmax is None and kinetics2.Pmax is not None:
-            kinetics.Pmax = kinetics2.Pmax
-        
-        if kinetics1.comment == '': kinetics.comment = kinetics2.comment
-        elif kinetics2.comment == '': kinetics.comment = kinetics1.comment
-        else: kinetics.comment = kinetics1.comment + ' + ' + kinetics2.comment
-        return kinetics
+        if distances1.comment == '': distances.comment = distances2.comment
+        elif distances2.comment == '': distances.comment = distances1.comment
+        else: distances.comment = distances1.comment + ' + ' + distances2.comment
+        return distances
 
     def generateGroupAdditivityValues(self, trainingSet, kunits='Angstroms', method='Arrhenius'):
         """
@@ -288,21 +239,187 @@ class TSGroups(Database):
         
         # Determine a unique list of the groups we will be able to fit parameters for
         groupList = []
-        for template, geometries in trainingSet:
+        for template, distances in trainingSet:
             for group in template:
                 if group not in self.top:
                     groupList.append(group)
                     groupList.extend(self.ancestors(group)[:-1])
         groupList = list(set(groupList))
         groupList.sort(key=lambda x: x.index)
-
+        
         if method == 'DistanceGeometry':
-            # Fit distances by training against distances taken from geoemtries
-            # determined via computational chemistry.
+            # Initialize dictionaries of fitted group values and uncertainties
+            groupValues = {}; groupUncertainties = {}; groupCounts = {}; groupComments = {}
+            for entry in groupEntries:
+                groupValues[entry] = []
+                groupUncertainties[entry] = []
+                groupCounts[entry] = []
+                groupComments[entry] = set()
+            
+            # Generate least-squares matrix and vector
+            A = []; b = []
+            
+            kdata = []
+            for template, distances in trainingSet:
+                
+                if isinstance(distances, (Arrhenius, DistanceGeometry)):
+                    kd = [distances.getRateCoefficient(T) for T in Tdata]
+                elif isinstance(kinetics, DistanceGeometry):
+                    kd = [kinetics.getRateCoefficient(T, 0) for T in Tdata]
+                else:
+                    raise Exception('Unexpected kinetics model of type {0} for reaction {1}.'.format(reaction.kinetics.__class__, reaction))
+                kdata.append(kd)
+                    
+                # Create every combination of each group and its ancestors with each other
+                combinations = []
+                for group in template:
+                    groups = [group]; groups.extend(self.ancestors(group))
+                    combinations.append(groups)
+                combinations = getAllCombinations(combinations)
+                # Add a row to the matrix for each combination
+                for groups in combinations:
+                    Arow = [1 if group in groups else 0 for group in groupList]
+                    Arow.append(1)
+                    brow = [math.log10(k) for k in kd]
+                    A.append(Arow); b.append(brow)
+                    
+                    for group in groups:
+                        groupComments[group].add("{0!s}".format(template))
+                
+            if len(A) == 0:
+                logging.warning('Unable to fit kinetics groups for family "{0}"; no valid data found.'.format(self.label))
+                return
+            A = numpy.array(A)
+            b = numpy.array(b)
+            kdata = numpy.array(kdata)
+            
+            x, residues, rank, s = numpy.linalg.lstsq(A, b)
+            
+            for t, T in enumerate(Tdata):
+                
+                # Determine error in each group (on log scale)
+                stdev = numpy.zeros(len(groupList)+1, numpy.float64)
+                count = numpy.zeros(len(groupList)+1, numpy.int)
+                
+                for index in range(len(trainingSet)):
+                    template, kinetics = trainingSet[index]
+                    kd = math.log10(kdata[index,t])
+                    km = x[-1,t] + sum([x[groupList.index(group),t] for group in template if group in groupList])
+                    variance = (km - kd)**2
+                    for group in template:
+                        groups = [group]; groups.extend(self.ancestors(group))
+                        for g in groups:
+                            if g not in self.top:
+                                ind = groupList.index(g)
+                                stdev[ind] += variance
+                                count[ind] += 1
+                    stdev[-1] += variance
+                    count[-1] += 1
+                stdev = numpy.sqrt(stdev / (count - 1))
+                import scipy.stats
+                ci = scipy.stats.t.ppf(0.975, count - 1) * stdev
+                
+                # Update dictionaries of fitted group values and uncertainties
+                for entry in groupEntries:
+                    if entry == self.top[0]:
+                        groupValues[entry].append(10**x[-1,t])
+                        groupUncertainties[entry].append(10**ci[-1])
+                        groupCounts[entry].append(count[-1])
+                    elif entry in groupList:
+                        index = groupList.index(entry)
+                        groupValues[entry].append(10**x[index,t])
+                        groupUncertainties[entry].append(10**ci[index])
+                        groupCounts[entry].append(count[index])
+                    else:
+                        groupValues[entry] = None
+                        groupUncertainties[entry] = None
+                        groupCounts[entry] = None
+            
+            # Store the fitted group values and uncertainties on the associated entries
+            for entry in groupEntries:
+                if groupValues[entry] is not None:
+                    entry.data = KineticsData(Tdata=(Tdata,"K"), kdata=(groupValues[entry],kunits))
+                    if not any(numpy.isnan(numpy.array(groupUncertainties[entry]))):
+                        entry.data.kdata.uncertainties = numpy.array(groupUncertainties[entry])
+                        entry.data.kdata.uncertaintyType = '*|/'
+                    entry.shortDesc = "Group additive kinetics."
+                    entry.longDesc = "Fitted to {0} rates.\n".format(groupCounts[entry])
+                    entry.longDesc += "\n".join(groupComments[entry])
+                else:
+                    entry.data = None
+        
+        elif method == 'Arrhenius':
+            # Fit Arrhenius parameters (A, n, Ea) by training against k(T) data
+            
+            Tdata = numpy.array([300,400,500,600,800,1000,1500,2000])
+            logTdata = numpy.log(Tdata)
+            Tinvdata = 1000. / (constants.R * Tdata)
             
             A = []; b = []
             
-            for template, geometries in trainingSet:
+            kdata = []
+            for template, kinetics in trainingSet:
+                
+                if isinstance(kinetics, (Arrhenius, KineticsData)):
+                    kd = [kinetics.getRateCoefficient(T) for T in Tdata]
+                elif isinstance(kinetics, ArrheniusEP):
+                    kd = [kinetics.getRateCoefficient(T, 0) for T in Tdata]
+                else:
+                    raise Exception('Unexpected kinetics model of type {0} for reaction {1}.'.format(kinetics.__class__, reaction))
+                kdata.append(kd)
+                
+                # Create every combination of each group and its ancestors with each other
+                combinations = []
+                for group in template:
+                    groups = [group]; groups.extend(self.ancestors(group))
+                    combinations.append(groups)
+                combinations = getAllCombinations(combinations)
+                
+                # Add a row to the matrix for each combination at each temperature
+                for t, T in enumerate(Tdata):
+                    logT = logTdata[t]
+                    Tinv = Tinvdata[t]
+                    for groups in combinations:
+                        Arow = []
+                        for group in groupList:
+                            if group in groups:
+                                Arow.extend([1,logT,-Tinv])
+                            else:
+                                Arow.extend([0,0,0])
+                        Arow.extend([1,logT,-Tinv])
+                        brow = math.log(kd[t])
+                        A.append(Arow); b.append(brow)
+            
+            if len(A) == 0:
+                logging.warning('Unable to fit kinetics groups for family "{0}"; no valid data found.'.format(self.label))
+                return
+            A = numpy.array(A)
+            b = numpy.array(b)
+            kdata = numpy.array(kdata)
+            
+            x, residues, rank, s = numpy.linalg.lstsq(A, b)
+            
+            # Store the results
+            self.top[0].data = Arrhenius(
+                A = (math.exp(x[-3]),kunits),
+                n = x[-2],
+                Ea = (x[-1],"kJ/mol"),
+                T0 = (1,"K"),
+            )
+            for i, group in enumerate(groupList):
+                group.data = Arrhenius(
+                    A = (math.exp(x[3*i]),kunits),
+                    n = x[3*i+1],
+                    Ea = (x[3*i+2],"kJ/mol"),
+                    T0 = (1,"K"),
+                )
+        
+        elif method == 'Arrhenius2':
+            # Fit Arrhenius parameters (A, n, Ea) by training against (A, n, Ea) values
+            
+            A = []; b = []
+            
+            for template, kinetics in trainingSet:
                 
                 # Create every combination of each group and its ancestors with each other
                 combinations = []
@@ -312,7 +429,7 @@ class TSGroups(Database):
                 combinations = getAllCombinations(combinations)
                         
                 # Add a row to the matrix for each parameter
-                if isinstance(geometries, DistanceGeometry):
+                if isinstance(kinetics, Arrhenius) or (isinstance(kinetics, ArrheniusEP) and kinetics.alpha.value_si == 0):
                     for groups in combinations:
                         Arow = []
                         for group in groupList:
@@ -321,11 +438,12 @@ class TSGroups(Database):
                             else:
                                 Arow.append(0)
                         Arow.append(1)
-                        brow = [math.log(geometries.d12), math.log(geometries.d23), math.log(geometries.d13)]
+                        Ea = kinetics.E0.value_si if isinstance(kinetics, ArrheniusEP) else kinetics.Ea.value_si
+                        brow = [math.log(kinetics.A.value_si), kinetics.n.value_si, Ea / 1000.]
                         A.append(Arow); b.append(brow)
             
             if len(A) == 0:
-                logging.warning('Unable to fit distance geometry groups for family "{0}"; no valid data found.'.format(self.label))
+                logging.warning('Unable to fit kinetics groups for family "{0}"; no valid data found.'.format(self.label))
                 return
             A = numpy.array(A)
             b = numpy.array(b)
@@ -333,16 +451,18 @@ class TSGroups(Database):
             x, residues, rank, s = numpy.linalg.lstsq(A, b)
             
             # Store the results
-            self.top[0].data = DistanceGeometry(
-                d12 = (math.exp(x[-1,0]),kunits),
-                d23 = (math.exp(x[-1,1]),kunits),
-                d13 = (math.exp((x[-1,2]),kunits),
+            self.top[0].data = Arrhenius(
+                A = (math.exp(x[-1,0]),kunits),
+                n = x[-1,1],
+                Ea = (x[-1,2],"kJ/mol"),
+                T0 = (1,"K"),
             )
             for i, group in enumerate(groupList):
-                group.data = DistanceGeometry(
-                    d12 = (math.exp(x[i,0]),kunits),
-                    d23 = (math.exp(x[i,1]),kunits),
-                    d13 = (math.exp(x[i,2]),kunits),
+                group.data = Arrhenius(
+                    A = (math.exp(x[i,0]),kunits),
+                    n = x[i,1],
+                    Ea = (x[i,2],"kJ/mol"),
+                    T0 = (1,"K"),
                 )
         
         # Add a note to the history of each changed item indicating that we've generated new group values
@@ -350,13 +470,13 @@ class TSGroups(Database):
         changed = False
         for label, entry in self.entries.items():
             if entry.data is not None and old_entries.has_key(label):
-                if (isinstance(entry.data, TSData) and
-                    isinstance(old_entries[label], TSData) and
+                if (isinstance(entry.data, KineticsData) and 
+                    isinstance(old_entries[label], KineticsData) and
                     len(entry.data.kdata.value_si) == len(old_entries[label].kdata.value_si) and
                     all(abs(entry.data.kdata.value_si / old_entries[label].kdata.value_si - 1) < 0.01)):
                     #print "New group values within 1% of old."
                     pass
-                elif (isinstance(entry.data, Arrhenius) and
+                elif (isinstance(entry.data, Arrhenius) and 
                     isinstance(old_entries[label], Arrhenius) and
                     abs(entry.data.A.value_si / old_entries[label].A.value_si - 1) < 0.01 and
                     abs(entry.data.n.value_si / old_entries[label].n.value_si - 1) < 0.01 and
