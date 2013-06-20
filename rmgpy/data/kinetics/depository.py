@@ -168,3 +168,71 @@ class KineticsDepository(Database):
         Write the given `entry` in the thermo database to the file object `f`.
         """
         return saveEntry(f, entry)
+        
+################################################################################
+
+class TransitionStateDepository(Database):
+    """
+    A class for working with an RMG transition state depository. Each depository 
+    corresponds to a reaction family (a :class:`KineticsFamily` object). Each
+    entry in a transition state depository involves a reaction defined either by a
+    real reactant and product species.
+    """
+
+    def __init__(self, label='', name='', shortDesc='', longDesc='', recommended=False):
+        Database.__init__(self, label=label, name=name, shortDesc=shortDesc, longDesc=longDesc, recommended=recommended)
+
+    def __repr__(self):
+        return '<TransitionStateDepository "{0}">'.format(self.label)
+
+    def loadEntry(self,
+                  index,
+                  reactant1=None,
+                  reactant2=None,
+                  reactant3=None,
+                  product1=None,
+                  product2=None,
+                  product3=None,
+                  distances=None,
+                  degeneracy=1,
+                  label='',
+                  duplicate=False,
+                  reversible=True,
+                  reference=None,
+                  referenceType='',
+                  shortDesc='',
+                  longDesc='',
+                  rank=None,
+                  history=None
+                  ):
+
+        reactants = [Molecule().fromAdjacencyList(reactant1)]
+        if reactant2 is not None: reactants.append(Molecule().fromAdjacencyList(reactant2))
+        if reactant3 is not None: reactants.append(Molecule().fromAdjacencyList(reactant3))
+
+        products = [Molecule().fromAdjacencyList(product1)]
+        if product2 is not None: products.append(Molecule().fromAdjacencyList(product2))
+        if product3 is not None: products.append(Molecule().fromAdjacencyList(product3))
+
+        reaction = Reaction(reactants=reactants, products=products, degeneracy=degeneracy, duplicate=duplicate, reversible=reversible)
+
+        entry = Entry(
+            index = index,
+            label = label,
+            item = reaction,
+            data = kinetics,
+            reference = reference,
+            referenceType = referenceType,
+            shortDesc = shortDesc,
+            longDesc = longDesc.strip(),
+            rank = rank,
+            history = history or [],
+        )
+        self.entries['{0:d}:{1}'.format(index,label)] = entry
+        return entry
+
+    def saveEntry(self, f, entry):
+        """
+        Write the given `entry` in the thermo database to the file object `f`.
+        """
+        return saveEntry(f, entry)
