@@ -76,7 +76,12 @@ def readThermoEntry(entry):
     for i in range(24,40,5):
         element,count = lines[0][i:i+2].strip(), lines[0][i+2:i+5].strip()
         if element:
-            formula[element]=int(count)
+            try:
+                formula[element]=int(count)
+            except ValueError:
+                # Chemkin allows float values for the number of atoms, so try this next.
+                formula[element]=int(float(count))
+            
     phase = lines[0][44]
     assert phase.upper() == 'G', "Was expecting gas phase thermo data for {0}".format(species)
     
