@@ -177,38 +177,30 @@ class TransitionStates(Database):
                     forward.append(rxn)
                 if matchSpeciesToMolecules(reaction.reactants, rxn.products) and matchSpeciesToMolecules(reaction.products, rxn.reactants):
                     reverse.append(rxn)
-    
+            
             # We should now know whether the reaction is given in the forward or
             # reverse direction
             if len(forward) == 1 and len(reverse) == 0:
                 # The reaction is in the forward direction, so use as-is
                 reaction = forward[0]
                 template = reaction.template
-                # Don't forget to overwrite the estimated kinetics from the database with the kinetics for this entry
-                reaction.kinetics = entry.data
+                # Don't forget to overwrite the estimated distances from the database with the distances for this entry
+                reaction.distances = entry.data
             elif len(reverse) == 1 and len(forward) == 0:
                 # The reaction is in the reverse direction
-                # First fit Arrhenius kinetics in that direction
-                Tdata = 1000.0 / numpy.arange(0.5, 3.301, 0.1, numpy.float64)
-                kdata = numpy.zeros_like(Tdata)
-                for i in range(Tdata.shape[0]):
-                    kdata[i] = entry.data.getRateCoefficient(Tdata[i]) / reaction.getEquilibriumConstant(Tdata[i])
-                kunits = 'm^3/(mol*s)' if len(reverse[0].reactants) == 2 else 's^-1'
-                kinetics = Arrhenius().fitToData(Tdata, kdata, kunits, T0=1.0)
-                kinetics.Tmin = entry.data.Tmin
-                kinetics.Tmax = entry.data.Tmax
-                kinetics.Pmin = entry.data.Pmin
-                kinetics.Pmax = entry.data.Pmax
-                # Now flip the direction
-                reaction = reverse[0]
-                reaction.kinetics = kinetics
+                # The reaction is in the forward direction, so use as-is
+                reaction = forward[0]
                 template = reaction.template
+                # The distances to the H atom are reversed
+                reaction.distances = entry.data
+                reaction.distances['d12'] = entry.data['d23']
+                reaction.distances['d23'] = entry.data['d12']
             elif len(reverse) > 0 and len(forward) > 0:
                 print 'FAIL: Multiple reactions found for {0!r}.'.format(entry.label)
             elif len(reverse) == 0 and len(forward) == 0:
                 print 'FAIL: No reactions found for "%s".' % (entry.label)
             else:
-                print 'FAIL: Unable to estimate kinetics for {0!r}.'.format(entry.label)
+                print 'FAIL: Unable to estimate distances for {0!r}.'.format(entry.label)
     
         assert reaction is not None
         assert template is not None
