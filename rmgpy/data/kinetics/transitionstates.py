@@ -77,7 +77,200 @@ class TransitionStates(Database):
         groups = TSGroups(label="H_Abstraction/TS_groups")
         groups.load(fpath , local_context, global_context )
         self.groups = groups
+    
+    def generateReactions(self, reactants, products=None, **options):
+        """
+        Generate all reactions between the provided list of one or two
+        `reactants`, which should be :class:`Molecule` objects. This method
+        searches the depository, libraries, and groups, in that order.
+        """
+        reactionList = []
+        reactionList.extend(self.generateReactionsFromLibraries(reactants, products, **options))
+        reactionList.extend(self.generateReactionsFromFamilies(reactants, products, **options))
+        return reactionList
+        
+    def generateReactionsFromFamilies(self, reactants, products, only_families=None, families=None, **options):
+        """
+        Generate all reactions between the provided list of one or two
+        `reactants`, which should be :class:`Molecule` objects. This method
+        applies the reaction family.
+        If `only_families` is a list of strings, only families with those labels
+        are used.
+        """
+        # If there are two structures and they are the same, then make a copy
+        # of the second one so we can independently manipulate both of them 
+        # This is for the case where A + A --> products
+        if len(reactants) == 2 and reactants[0] == reactants[1]:
+            reactants[1] = reactants[1].copy(deep=True)
+        
+        reactionList = []
+        reactionList.extend(families.generateReactions(reactants, **options))
+        
+        if products:
+            reactionList = filterReactions(reactants, products, reactionList)
+        
+        return reactionList
+        
+    def getForwardReactionForFamilyEntry(self, entry, family, groups, rxnFamily):
+        """
+        For a given `entry` for a reaction of the given reaction `family` (the
+        string label of the family), return the reaction with transition state
+        distances for the "forward" direction as defined by the reaction 
+        family. For families that are their own reverse, the direction the
+        kinetics is given in will be preserved. If the entry contains 
+        functional groups for the reactants, assume that it is given in the 
+        forward direction and do nothing. Returns the reaction in the direction
+        consistent with the reaction family template, and the matching template.
+        """
+    
+        def matchSpeciesToMolecules(species, molecules):
+            if len(species) == len(molecules) == 1:
+                return species[0].isIsomorphic(molecules[0])
+            elif len(species) == len(molecules) == 2:
+                if species[0].isIsomorphic(molecules[0]) and species[1].isIsomorphic(molecules[1]):
+                    return True
+                elif species[0].isIsomorphic(molecules[1]) and species[1].isIsomorphic(molecules[0]):
+                    return True
+            return False
+    
+        reaction = None; template = None
+        
+        # Get the indicated reaction family
+        if groups == None:
+            raise ValueError('Invalid value "{0}" for family parameter.'.format(family))
+        
+        if all([(isinstance(reactant, Group) or isinstance(reactant, LogicNode)) for reactant in entry.item.reactants]):
+            # The entry is a rate rule, containing functional groups only
+            # By convention, these are always given in the forward direction and
+            # have kinetics defined on a per-site basis
+            reaction = Reaction(
+                reactants = entry.item.reactants[:],
+                products = [],
+                kinetics = entry.data,
+                degeneracy = 1,
+            )
+            template = [groups.entries[label] for label in entry.label.split(';')]
+    
+        elif (all([isinstance(reactant, Molecule) for reactant in entry.item.reactants]) and
+            all([isinstance(product, Molecule) for product in entry.item.products])):
+            # The entry is a real reaction, containing molecules
+            # These could be defined for either the forward or reverse direction
+            # and could have a reaction-path degeneracy
+    
+            reaction = Reaction(reactants=[], products=[])
+            for molecule in entry.item.reactants:
+                reactant = Species(molecule=[molecule])
+                reactant.generateResonanceIsomers()
+                reaction.reactants.append(reactant)
+            for molecule in entry.item.products:
+                product = Species(molecule=[molecule])
+                product.generateResonanceIsomers()
+                reaction.products.append(product)
             
+            # Generate all possible reactions involving the reactant species
+            generatedReactions = self.generateReactionsFromFamilies([reactant.molecule for reactant in reaction.reactants], [], only_families=[family], families=rxnFamily)
+            
+            # Remove from that set any reactions that don't produce the desired reactants and products
+            forward = []; reverse = []
+            for rxn in generatedReactions:
+                if matchSpeciesToMolecules(reaction.reactants, rxn.reactants) and matchSpeciesToMolecules(reaction.products, rxn.products):
+                    forward.append(rxn)
+                if matchSpeciesToMolecules(reaction.reactants, rxn.products) and matchSpeciesToMolecules(reaction.products, rxn.reactants):
+                    reverse.append(rxn)
+    
+            # We should now know whether the reaction is given in the forward or
+            # reverse direction
+            if len(forward) == 1 and len(reverse) == 0:
+                # The reaction is in the forward direction, so use as-is
+                reaction = forward[0]
+                template = reaction.template
+                # Don't forget to overwrite the estimated kinetics from the database with the kinetics for this entry
+                reaction.kinetics = entry.data
+            elif len(reverse) == 1 and len(forward) == 0:
+                # The reaction is in the reverse direction
+                # First fit Arrhenius kinetics in that direction
+                Tdata = 1000.0 / numpy.arange(0.5, 3.301, 0.1, numpy.float64)
+                kdata = numpy.zeros_like(Tdata)
+                for i in range(Tdata.shape[0]):
+                    kdata[i] = entry.data.getRateCoefficient(Tdata[i]) / reaction.getEquilibriumConstant(Tdata[i])
+                kunits = 'm^3/(mol*s)' if len(reverse[0].reactants) == 2 else 's^-1'
+                kinetics = Arrhenius().fitToData(Tdata, kdata, kunits, T0=1.0)
+                kinetics.Tmin = entry.data.Tmin
+                kinetics.Tmax = entry.data.Tmax
+                kinetics.Pmin = entry.data.Pmin
+                kinetics.Pmax = entry.data.Pmax
+                # Now flip the direction
+                reaction = reverse[0]
+                reaction.kinetics = kinetics
+                template = reaction.template
+            elif len(reverse) > 0 and len(forward) > 0:
+                print 'FAIL: Multiple reactions found for {0!r}.'.format(entry.label)
+            elif len(reverse) == 0 and len(forward) == 0:
+                print 'FAIL: No reactions found for "%s".' % (entry.label)
+            else:
+                print 'FAIL: Unable to estimate kinetics for {0!r}.'.format(entry.label)
+    
+        assert reaction is not None
+        assert template is not None
+        return reaction, template
+
+def filterReactions(reactants, products, reactionList):
+    """
+    Remove any reactions from the given `reactionList` whose reactants do
+    not involve all the given `reactants` or whose products do not involve 
+    all the given `products`. This method checks both forward and reverse
+    directions, and only filters out reactions that don't match either.
+    """
+
+    # Convert from molecules to species and generate resonance isomers.
+    reactant_species = []
+    for mol in reactants:
+        s = Species(molecule=[mol])
+        s.generateResonanceIsomers()
+        reactant_species.append(s)
+    reactants = reactant_species
+    product_species = []
+    for mol in products:
+        s = Species(molecule=[mol])
+        s.generateResonanceIsomers()
+        product_species.append(s)
+    products = product_species
+
+    reactions = reactionList[:]
+
+    for reaction in reactionList:
+        # Forward direction
+        reactants0 = [r for r in reaction.reactants]
+        for reactant in reactants:
+            for reactant0 in reactants0:
+                if reactant.isIsomorphic(reactant0):
+                    reactants0.remove(reactant0)
+                    break
+        products0 = [p for p in reaction.products]
+        for product in products:
+            for product0 in products0:
+                if product.isIsomorphic(product0):
+                    products0.remove(product0)
+                    break
+        forward = not (len(reactants0) != 0 or len(products0) != 0)
+        # Reverse direction
+        reactants0 = [r for r in reaction.products]
+        for reactant in reactants:
+            for reactant0 in reactants0:
+                if reactant.isIsomorphic(reactant0):
+                    reactants0.remove(reactant0)
+                    break
+        products0 = [p for p in reaction.reactants]
+        for product in products:
+            for product0 in products0:
+                if product.isIsomorphic(product0):
+                    products0.remove(product0)
+                    break
+        reverse = not (len(reactants0) != 0 or len(products0) != 0)
+        if not forward and not reverse:
+            reactions.remove(reaction)
+    return reactions
+    
 ################################################################################
 
 class TransitionStateDepository(Database):
@@ -457,3 +650,4 @@ class TSGroups(Database):
                         changed = True
                         break        
         return changed
+        
