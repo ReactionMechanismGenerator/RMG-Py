@@ -638,7 +638,7 @@ class TSGroups(Database):
                 for key, distance in entry.data.iteritems():
                     diff = 0
                     for k in range(3):
-                        diff += abs(distance[k]/old_entry[0] - 1)
+                        diff += abs(distance[0][k]/old_entry[k] - 1)
                     if diff > 0.01:
                         changed = True
                         break        
