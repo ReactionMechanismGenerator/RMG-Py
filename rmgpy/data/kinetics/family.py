@@ -620,54 +620,8 @@ class KineticsFamily(Database):
         optional `entryName` parameter specifies the identifier used for each
         data entry.
         """
-        entries = self.groups.getEntriesToSave()
-                
-        # Write the header
-        f = codecs.open(path, 'w', 'utf-8')
-        f.write('#!/usr/bin/env python\n')
-        f.write('# encoding: utf-8\n\n')
-        f.write('name = "{0}/groups"\n'.format(self.name))
-        f.write('shortDesc = u"{0}"\n'.format(self.shortDesc))
-        f.write('longDesc = u"""\n')
-        f.write(self.longDesc)
-        f.write('\n"""\n\n')
-
-        # Write the template
-        f.write('template(reactants=[{0}], products=[{1}], ownReverse={2})\n\n'.format(
-            ', '.join(['"{0}"'.format(entry.label) for entry in self.forwardTemplate.reactants]),
-            ', '.join(['"{0}"'.format(entry.label) for entry in self.forwardTemplate.products]),
-            self.ownReverse))
-
-        # Write reverse name
-        if not self.ownReverse:
-            f.write('reverse = "{0}"\n\n'.format(self.reverse))
-
-        # Write the recipe
-        f.write('recipe(actions=[\n')
-        for action in self.forwardRecipe.actions:
-            f.write('    {0!r},\n'.format(action))
-        f.write('])\n\n')
-
-        # Save the entries
-        for entry in entries:
-            self.saveEntry(f, entry)
-
-        # Write the tree
-        if len(self.groups.top) > 0:
-            f.write('tree(\n')
-            f.write('"""\n')
-            f.write(self.generateOldTree(self.groups.top, 1))
-            f.write('"""\n')
-            f.write(')\n\n')
-
-        # Save forbidden structures, if present
-        if self.forbidden is not None:
-            entries = self.forbidden.entries.values()
-            entries.sort(key=lambda x: x.label)
-            for entry in entries:
-                self.forbidden.saveEntry(f, entry, name='forbidden')
-    
-        f.close()
+        self.groups.saveGroups(path, entryName=entryName)
+        
 
     def generateProductTemplate(self, reactants0):
         """
