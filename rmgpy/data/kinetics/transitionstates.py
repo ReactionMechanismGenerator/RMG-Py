@@ -122,7 +122,6 @@ class TransitionStates(Database):
         forward direction and do nothing. Returns the reaction in the direction
         consistent with the reaction family template, and the matching template.
         """
-    
         def matchSpeciesToMolecules(species, molecules):
             if len(species) == len(molecules) == 1:
                 return species[0].isIsomorphic(molecules[0])
@@ -201,7 +200,7 @@ class TransitionStates(Database):
                 print 'FAIL: No reactions found for "%s".' % (entry.label)
             else:
                 print 'FAIL: Unable to estimate distances for {0!r}.'.format(entry.label)
-    
+        
         assert reaction is not None
         assert template is not None
         return reaction, template
@@ -563,9 +562,9 @@ class TSGroups(Database):
                     A.append(Arow)
                     b.append(brow)
                     
-                    for group in groups:
+                    for group in groupEntries:
                         groupComments[group].add("{0!s}".format(template))
-                
+            
             if len(A) == 0:
                 logging.warning('Unable to fit kinetics groups for family "{0}"; no valid data found.'.format(self.label))
                 return
@@ -590,7 +589,7 @@ class TSGroups(Database):
                         groups = [group]
                         groups.extend(self.ancestors(group))
                         for g in groups:
-                            if g not in self.top:
+                            if g.label not in [top.label for top in self.top]:
                                 ind = groupList.index(g)
                                 stdev[ind] += variance
                                 count[ind] += 1
@@ -599,7 +598,6 @@ class TSGroups(Database):
                 stdev = numpy.sqrt(stdev / (count - 1))
                 import scipy.stats
                 ci = scipy.stats.t.ppf(0.975, count - 1) * stdev
-                
                 # Update dictionaries of fitted group values and uncertainties
                 for entry in groupEntries:
                     if entry == self.top[0]:
@@ -619,26 +617,29 @@ class TSGroups(Database):
             # Store the fitted group values and uncertainties on the associated entries
             for entry in groupEntries:
                 if groupValues[entry] is not None:
-                    entry.data = groupValues[entry]
-                    
                     if not any(numpy.isnan(numpy.array(groupUncertainties[entry]))):
-                        entry.data.kdata.uncertainties = numpy.array(groupUncertainties[entry])
-                        entry.data.kdata.uncertaintyType = '*|/'
-                    entry.shortDesc = "Group additive distances."
-                    entry.longDesc = "Fitted to {0} distances.\n".format(groupCounts[entry])
-                    entry.longDesc += "\n".join(groupComments[entry])
+                        # should be entry.data.* (e.g. entry.data.uncertainties)
+                        uncertainties = numpy.array(groupUncertainties[entry])
+                        uncertaintyType = '*|/'
+                    # should be entry.*
+                    shortDesc = "Group additive distances."
+                    longDesc = "Fitted to {0} distances.\n".format(groupCounts[entry])
+                    longDesc += "\n".join(groupComments[entry])
+                    entry.data[entry.label] = groupValues[entry], uncertainties, uncertaintyType, shortDesc, longDesc
                 else:
                     entry.data = None
         
-    
         # Add a note to the history of each changed item indicating that we've generated new group values
         import time
         changed = False
         for label, entry in self.entries.items():
             if entry.data is not None and old_entries.has_key(label):
-                old_entry = old_entries[label]
+                old_entry = old_entries[label][label][0]
                 for key, distance in entry.data.iteritems():
-                    if abs(distance / old_entry[key] - 1) > 0.01:
+                    diff = 0
+                    for k in range(3):
+                        diff += abs(distance[k]/old_entry[0] - 1)
+                    if diff > 0.01:
                         changed = True
                         break        
         return changed
