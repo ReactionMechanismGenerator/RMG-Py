@@ -621,6 +621,14 @@ class KineticsFamily(Database):
         data entry.
         """
         self.groups.saveGroups(path, entryName=entryName)
+
+    def saveTransitionStateGroups(self, path, entryName='entry'):
+        """
+        Save the current TS groups to the file at location `path` on disk. The
+        optional `entryName` parameter specifies the identifier used for each
+        data entry.
+        """
+        self.transitionstates.saveTransitionStateGroups(path, entryName=entryName)
         
 
     def generateProductTemplate(self, reactants0):

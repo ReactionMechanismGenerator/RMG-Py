@@ -78,6 +78,45 @@ class TransitionStates(Database):
         groups.load(fpath , local_context, global_context )
         self.groups = groups
     
+    def saveTransitionStateGroups(self, path, entryName='entry'):
+        """
+        Save the current database to the file at location `path` on disk. The
+        optional `entryName` parameter specifies the identifier used for each
+        data entry.
+        """
+
+        entries = self.getEntriesToSave()
+                
+        # Write the header
+        f = codecs.open(path, 'w', 'utf-8')
+        f.write('#!/usr/bin/env python\n')
+        f.write('# encoding: utf-8\n\n')
+        f.write('name = "{0}/TS_groups"\n'.format(self.name))
+        f.write('shortDesc = u"{0}"\n'.format(self.shortDesc))
+        f.write('longDesc = u"""\n')
+        f.write(self.longDesc)
+        f.write('\n"""\n\n')
+
+        # Save the entries
+        for entry in entries:
+            self.saveEntry(f, entry)
+
+        # Write the tree
+        if len(self.groups.top) > 0:
+            f.write('tree(\n')
+            f.write('"""\n')
+            f.write(self.generateOldTree(self.groups.top, 1))
+            f.write('"""\n')
+            f.write(')\n\n')
+
+        # Save forbidden structures, if present
+        if self.forbidden is not None:
+            entries = self.forbidden.entries.values()
+            entries.sort(key=lambda x: x.label)
+            for entry in entries:
+                self.forbidden.saveEntry(f, entry, name='forbidden')
+        f.close()
+    
     def generateReactions(self, reactants, products=None, **options):
         """
         Generate all reactions between the provided list of one or two
