@@ -174,10 +174,14 @@ def saveEntry(f, entry):
     else:
         raise DatabaseError("Encountered unexpected item of type {0} while saving database.".format(entry.item.__class__))
     
+    from .transitionstates import DistanceData # would be nice to import this earlier, but where it currently lives that would cause a cyclic import
     # Write kinetics
     if isinstance(entry.data, str):
         f.write('    kinetics = "{0}",\n'.format(entry.data))
-    # Or write transition state disctances
+    # Or write transition state distances
+    elif isinstance(entry.data, DistanceData):
+        distances = prettify(repr(entry.data))
+        f.write('    distances = {0},\n'.format(distances.replace('\n', '\n    ')))
     elif isinstance(entry.data, dict):
         distances = entry.data[entry.data.keys()[0]][0]
         f.write('    distances = {\n')

@@ -72,7 +72,7 @@ class DistanceData():
             strings.append("{0!r}: {1!r},".format(key, self.distances[key]))
         strings.append("}")
 
-        if self.uncertainties:
+        if self.uncertainties is not None:
             strings.append(", uncertainties={")
             for key in sorted(self.uncertainties.keys()):
                 strings.append("{0!r}: {1!r},".format(key, self.uncertainties[key]))
@@ -111,6 +111,9 @@ class TransitionStates(Database):
         """
         Load the TS database
         """
+        if local_context is None: local_context = {}
+        local_context['DistanceData'] = DistanceData
+        
         fpath = os.path.join(path,'TS_training.py')
         logging.debug("Loading transitions state family training set from {0}".format(fpath))
         depository = TransitionStateDepository(label='H_Abstraction/TS_training')
@@ -702,9 +705,13 @@ class TSGroups(Database):
                     shortDesc = "Group additive distances."
                     longDesc = "Fitted to {0} distances.\n".format(groupCounts[entry])
                     longDesc += "\n".join(groupComments[entry])
-                    entry.data[entry.label] = groupValues[entry], uncertainties, uncertaintyType, shortDesc, longDesc
+                    distances_dict = {key:distance for key, distance in zip(distance_keys, groupValues[entry])}
+                    uncertainties_dict = {key:distance for key, distance in zip(distance_keys, uncertainties)}
+                    entry.data = DistanceData(distances=distances_dict, uncertainties=uncertainties_dict)
+                    entry.shortDesc = shortDesc
+                    entry.longDesc = longDesc
                 else:
-                    entry.data = None
+                    entry.data = DistanceData()
         
         # Add a note to the history of each changed item indicating that we've generated new group values
         import time
