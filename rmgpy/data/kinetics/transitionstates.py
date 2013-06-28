@@ -636,8 +636,8 @@ class TSGroups(Database):
                         groupValues[entry].append(x[-1,t])
                         groupUncertainties[entry].append(ci[-1])
                         groupCounts[entry].append(count[-1])
-                    elif entry in groupList:
-                        index = groupList.index(entry)
+                    elif entry.label in [group.label for group in groupList]:
+                        index = [group.label for group in groupList].index(entry.label)
                         groupValues[entry].append(x[index,t])
                         groupUncertainties[entry].append(ci[index])
                         groupCounts[entry].append(count[index])
