@@ -181,9 +181,9 @@ def saveEntry(f, entry):
     elif isinstance(entry.data, dict):
         distances = entry.data[entry.data.keys()[0]][0]
         f.write('    distances = {\n')
-        f.write('        "d12" : {0}\n'.format(distances[0]))
-        f.write('        "d23" : {0}\n'.format(distances[2]))
-        f.write('        "d13" : {0}\n'.format(distances[1]))
+        f.write('        "d12": {0},\n'.format(distances[0]))
+        f.write('        "d23": {0},\n'.format(distances[2]))
+        f.write('        "d13": {0},\n'.format(distances[1]))
         f.write('    },\n')
     elif entry.data is not None:
         efficiencies = None
