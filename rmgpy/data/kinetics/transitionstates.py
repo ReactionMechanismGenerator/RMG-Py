@@ -84,22 +84,21 @@ class TransitionStates(Database):
         optional `entryName` parameter specifies the identifier used for each
         data entry.
         """
-
-        entries = self.getEntriesToSave()
+        entries = self.groups.getEntriesToSave()
                 
         # Write the header
         f = codecs.open(path, 'w', 'utf-8')
         f.write('#!/usr/bin/env python\n')
         f.write('# encoding: utf-8\n\n')
-        f.write('name = "{0}/TS_groups"\n'.format(self.name))
-        f.write('shortDesc = u"{0}"\n'.format(self.shortDesc))
+        f.write('name = "{0}"\n'.format(self.groups.name))
+        f.write('shortDesc = u"{0}"\n'.format(self.groups.shortDesc))
         f.write('longDesc = u"""\n')
-        f.write(self.longDesc)
+        f.write(self.groups.longDesc)
         f.write('\n"""\n\n')
 
         # Save the entries
         for entry in entries:
-            self.saveEntry(f, entry)
+            saveEntry(f, entry)
 
         # Write the tree
         if len(self.groups.top) > 0:
