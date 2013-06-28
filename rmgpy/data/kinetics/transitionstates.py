@@ -109,12 +109,6 @@ class TransitionStates(Database):
             f.write('"""\n')
             f.write(')\n\n')
 
-        # Save forbidden structures, if present
-        if self.forbidden is not None:
-            entries = self.forbidden.entries.values()
-            entries.sort(key=lambda x: x.label)
-            for entry in entries:
-                self.forbidden.saveEntry(f, entry, name='forbidden')
         f.close()
     
     def generateReactions(self, reactants, products=None, **options):
