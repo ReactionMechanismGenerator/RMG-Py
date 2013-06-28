@@ -531,7 +531,7 @@ class TSGroups(Database):
         else: distances.comment = distances1.comment + ' + ' + distances2.comment
         return distances
 
-    def generateGroupAdditivityValues(self, trainingSet, kunits='Angstroms', method='Arrhenius'):
+    def generateGroupAdditivityValues(self, trainingSet, user="Anonymous User"):
         """
         Generate the group additivity values using the given `trainingSet`,
         a list of 2-tuples of the form ``(template, kinetics)``. You must also
@@ -562,7 +562,7 @@ class TSGroups(Database):
         groupList = list(set(groupList))
         groupList.sort(key=lambda x: x.index)
         
-        if method == 'DistanceGeometry':
+        if True: # should remove this IF block, as we only have one method.
             # Initialize dictionaries of fitted group values and uncertainties
             groupValues = {}; groupUncertainties = {}; groupCounts = {}; groupComments = {}
             for entry in groupEntries:
@@ -663,16 +663,23 @@ class TSGroups(Database):
         
         # Add a note to the history of each changed item indicating that we've generated new group values
         import time
+        event = [time.asctime(), user, 'action', 'Generated new group additivity values for this entry.']
         changed = False
         for label, entry in self.entries.items():
-            if entry.data is not None and old_entries.has_key(label):
-                old_entry = old_entries[label][label][0]
-                for key, distance in entry.data.iteritems():
-                    diff = 0
-                    for k in range(3):
-                        diff += abs(distance[0][k]/old_entry[k] - 1)
-                    if diff > 0.01:
-                        changed = True
-                        break        
+            if entry.data is not None:
+                continue # because this is broken:
+                if old_entries.has_key(label):
+                    old_entry = old_entries[label][label][0]
+                    for key, distance in entry.data.iteritems():
+                        diff = 0
+                        for k in range(3):
+                            diff += abs(distance[0][k]/old_entry[k] - 1)
+                        if diff > 0.01:
+                            changed = True
+                            entry.history.append(event)
+            else:
+                changed = True
+                entry.history.append(event)
+        return True # because the thing above is broken
         return changed
         
