@@ -53,6 +53,51 @@ from .common import KineticsError, UndeterminableKineticsError, saveEntry
 
 ################################################################################
 
+class DistanceData():
+    """
+    A class for storing distance matrix data, for geometry estimation
+    """
+    def __init__(self, distances={}, uncertainties=None, method=None):
+        self.distances = distances
+        self.uncertainties = uncertainties
+        self.method = method
+        assert isinstance(distances,dict), "distances should be a dict"
+        if method: assert isinstance(method,str), "method should be a string"
+        
+    def __repr__(self):
+        strings = ["DistanceData("]
+
+        strings.append("distances={")
+        for key in sorted(self.distances.keys()):
+            strings.append("{0!r}: {1!r},".format(key, self.distances[key]))
+        strings.append("}")
+
+        if self.uncertainties:
+            strings.append(", uncertainties={")
+            for key in sorted(self.uncertainties.keys()):
+                strings.append("{0!r}: {1!r},".format(key, self.uncertainties[key]))
+            strings.append("}")
+
+        if self.method:
+            strings.append(", method={0!r}".format(self.method))
+        strings.append(")")
+        return ''.join(strings)
+    
+    def add(self, other):
+        """Adds the `other` distances to these."""
+        assert len(self.distances)==len(other.distances), "self and other must have the same size dictionary of distances, but self={0!r} and other={1!r}".format(self,other)
+        for key, value in other.distances.iteritems():
+            self.distances[key] += value
+        if self.uncertainties and other.uncertainties:
+            for key, value in other.uncertainties.iteritems():
+                self.uncertainties[key] += value
+        else:
+            self.uncertainties = None
+        
+    def __copy__(self):
+        return DistanceData(distances=self.distances.copy(), uncertainties=self.uncertainties.copy(), method=self.method)
+        
+
 class TransitionStates(Database):
     """
     loads, and contains, both Depository and Groups
