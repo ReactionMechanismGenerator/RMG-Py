@@ -526,7 +526,6 @@ class TSGroups(Database):
 
         return template
 
-
     def estimateDistancesUsingGroupAdditivity(self, reaction):
         """
         Determine the appropriate transition state distances for a reaction 
@@ -549,7 +548,7 @@ class TSGroups(Database):
                 comment_line += "{0} >> ".format(entry.label)
                 entry = entry.parent
             if entry.data is not None and entry not in self.top:
-                tsDistances = self.__multiplyDistanceData(tsDistances, entry.data)
+                tsDistances.add(entry.data)
                 comment_line += "{0} ({1})".format(entry.label, entry.longDesc.split('\n')[0])
             elif entry in self.top:
                 comment_line += "{0} (Top node)".format(entry.label)
@@ -557,27 +556,6 @@ class TSGroups(Database):
         
         return tsDistances
 
-    def __multiplyDistanceData(self, distances1, distances2):
-        """
-        Multiply two distance objects `distance1` and `distance2` of the same
-        class together, returning their product as a new distance object of
-        that class. Currently this only works for :class:`DistanceData`.
-        """
-        raise NotImplementedError()
-        if isinstance(distances1, DistanceData) and isinstance(distances2, DistanceData):
-            if len(distances1.method) != len(distances2.method) or any([T1 != T2 for T1, T2 in zip(distances1.method, distances2.method)]):
-                raise TSError('Cannot add these DistanceData objects due to their being at different levels of theory')
-            distances = DistanceData(
-                distances = (distances1.distances * distances2.distances, distances1.distances.units),
-                method = (distances1.method.structMethod, distances1.method.basisSet),
-            )
-        else:
-            raise TSError('Unable to multiply distance types "{0}" and "{1}".'.format(distances1.__class__, distances2.__class__))
-        
-        if distances1.comment == '': distances.comment = distances2.comment
-        elif distances2.comment == '': distances.comment = distances1.comment
-        else: distances.comment = distances1.comment + ' + ' + distances2.comment
-        return distances
 
     def generateGroupAdditivityValues(self, trainingSet, user="Anonymous User"):
         """
@@ -587,8 +565,7 @@ class TSGroups(Database):
         generating the group values. Returns ``True`` if the group values have
         changed significantly since the last time they were fitted, or ``False``
         otherwise.
-        """
-        
+        """        
         # keep track of previous values so we can detect if they change
         old_entries = dict()
         for label,entry in self.entries.items():
