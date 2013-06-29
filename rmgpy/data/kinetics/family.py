@@ -331,6 +331,8 @@ class KineticsFamily(Database):
         self.groups = None
         self.rules = None
         self.depositories = []
+        #: Transition state estimator database
+        self.transitionStates = None
 
     def __repr__(self):
         return '<ReactionFamily "{0}">'.format(self.label)
@@ -563,6 +565,13 @@ class KineticsFamily(Database):
                         logging.debug("Loading kinetics family depository from {0}".format(fpath))
                         depository.load(fpath, local_context, global_context)
                         self.depositories.append(depository)
+
+        # Create and load a transition states database if possible
+        if os.path.exists(os.path.join(path, 'TS_groups.py')):
+            logging.debug("Loading transition state groups for {0}".format(path))
+            self.transitionStates = TransitionStates()
+            self.transitionStates.load(path, local_context, global_context)
+        
             
     def loadTemplate(self, reactants, products, ownReverse=False):
         """
