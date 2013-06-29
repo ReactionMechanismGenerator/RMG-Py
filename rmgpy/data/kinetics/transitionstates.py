@@ -126,6 +126,13 @@ class TransitionStates(Database):
         groups.load(fpath , local_context, global_context )
         self.groups = groups
     
+    def estimateDistances(self, reaction):
+        """
+        Return estimated DistanceData for the given reaction
+        """
+        # Should check depository first, but for now just go straight to group additive estimate:
+        return self.groups.estimateDistancesUsingGroupAdditivity(reaction)
+    
     def saveTransitionStateGroups(self, path, entryName='entry'):
         """
         Save the current database to the file at location `path` on disk. The
