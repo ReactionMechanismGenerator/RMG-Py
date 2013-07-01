@@ -12,17 +12,17 @@ database(
 species(
 	label='TEOS',
 	reactive=True,
-	structure=structure=InChI("InChI=1/C8H20O4Si/c1-5-9-13(10-6-2,11-7-3)12-8-4/h5-8H2,1-4H3"),
+	structure=InChI("InChI=1/C8H20O4Si/c1-5-9-13(10-6-2,11-7-3)12-8-4/h5-8H2,1-4H3"),
 )
 species(
 	label='EtOH',
 	reactive=True,
-	structure=structure=InChI("InChI=1/C2H6O/c1-2-3/h3H,2H2,1H3"),
+	structure=InChI("InChI=1/C2H6O/c1-2-3/h3H,2H2,1H3"),
 )
 species(
 	label='Ar',
 	reactive=False,
-	structure=structure=InChI("InChI=1/Ar"),
+	structure=InChI("InChI=1/Ar"),
 )
 
 # Reaction systems
