@@ -606,10 +606,10 @@ class TSGroups(Database):
             # Generate least-squares matrix and vector
             A = []; b = []
             
-            distance_keys = sorted(trainingSet[0][1].keys())  # ['d12', 'd13', 'd23']
+            distance_keys = sorted(trainingSet[0][1].distances.keys())  # ['d12', 'd13', 'd23']
             distance_data = []
-            for template, distances in trainingSet:
-                d = [distances[key] for key in distance_keys]
+            for template, distanceData in trainingSet:
+                d = [distanceData.distances[key] for key in distance_keys]
                 distance_data.append(d)
                     
                 # Create every combination of each group and its ancestors with each other
