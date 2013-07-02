@@ -6,7 +6,7 @@ import numpy
 
 try:
     from rdkit import Chem
-    from rdkit.Chem import AllChem
+    from rdkit.Chem import AllChem, Pharm3D
 except ImportError:
     logging.debug("To use QM calculations you must correctly install rdkit.")
     
@@ -18,6 +18,10 @@ import rmgpy.molecule
 import symmetry
 import qmdata
 
+class RDKitFailedError(Exception):
+    """For when RDkit failed. try the next reaction """
+    pass
+    
 class Geometry:
     """
     A geometry, used for quantum calculations.
@@ -53,7 +57,7 @@ class Geometry:
         "Returns the path the the refined mol file."
         return self.getFilePath('.refined.mol')
 
-    def generateRDKitGeometries(self, boundsMatrix=None):
+    def generateRDKitGeometries(self, boundsMatrix=None, atomMatch=None):
         """
         Use RDKit to guess geometry.
 
@@ -67,7 +71,7 @@ class Geometry:
         if atoms > 3:#this check prevents the number of attempts from being negative
             distGeomAttempts = 5*(atoms-3) #number of conformer attempts is just a linear scaling with molecule size, due to time considerations in practice, it is probably more like 3^(n-3) or something like that
         
-        rdmol, minEid = self.rd_embed(rdmol, distGeomAttempts, boundsMatrix)
+        rdmol, minEid = self.rd_embed(rdmol, distGeomAttempts, bm=boundsMatrix, match=atomMatch)
         self.save_coordinates(rdmol, minEid, rdAtIdx)
         
     def rd_build(self):
@@ -86,8 +90,8 @@ class Geometry:
         # Add the bonds
         for atom1 in self.molecule.vertices:
             for atom2, bond in atom1.edges.items():
-                index1 = rdAtomIdx[atom1] # atom1.sortingLabel
-                index2 = rdAtomIdx[atom2] # atom2.sortingLabel
+                index1 = rdAtomIdx[atom1]
+                index2 = rdAtomIdx[atom2]
                 if index1 > index2:
                     # Check the RMG bond order and add the appropriate rdkit bond.
                     if bond.order == 'S':
@@ -99,7 +103,7 @@ class Geometry:
                     elif bond.order == 'B':
                         rdBond = AllChem.rdchem.BondType.AROMATIC
                     else:
-                        print "Unknown bond order"
+                        logging.error('Unknown bond order')
                     rdmol.AddBond(index1, index2, rdBond)
 
         # Make editable mol into a mol and rectify the molecule
@@ -108,33 +112,63 @@ class Geometry:
 
         return rdmol, rdAtomIdx
 
-    def rd_embed(self, rdmol, numConfAttempts, boundsMatrix=None):
+    def rd_embed(self, rdmol, numConfAttempts, bm=None, match=None):
         """
         Embed the RDKit molecule and create the crude molecule file.
         """
-        AllChem.EmbedMultipleConfs(rdmol, numConfAttempts,randomSeed=1)
+        if bm == None:
+            AllChem.EmbedMultipleConfs(rdmol, numConfAttempts,randomSeed=1)
+            crude = Chem.Mol(rdmol.ToBinary())
+            rdmol, minEid = self.optimize(rdmol)
+        else:
+            for i in range(0,numConfAttempts):
+                """
+                Embed the molecule according to the bounds matrix. Built to handle possible failures
+                of some of the embedding attempts.
+                """
+                try:
+                    Pharm3D.EmbedLib.EmbedMol(rdmol, bm, atomMatch=match)
+                except ValueError:
+                    pass
+                except RuntimeError:
+                    raise RDKitFailedError()
+            """
+            RDKit currently embeds the conformers and sets the id as 0, so even though multiple
+            conformers have been generated, only 1 can be called. Below the id's are resolved.
+            """
+            for i in range(len(rdmol.GetConformers())):
+                rdmol.GetConformers()[i].SetId(i)
+            crude = Chem.Mol(rdmol.ToBinary())
+            rdmol, minEid = self.optimize(rdmol, boundsMatrix=bm, atomMatch=match)
+        
+        self.writeMolFile(crude, self.getCrudeMolFilePath(), minEid)
+        self.writeMolFile(rdmol, self.getRefinedMolFilePath(), minEid)
+        
+        return rdmol, minEid
+    
+    def optimize(self, rdmol, boundsMatrix=None, atomMatch=None):
         
         energy=0.0
         minEid=0;
         lowestE=9.999999e99;#start with a very high number, which would never be reached
-
-        crude = Chem.Mol(rdmol.ToBinary())
         
         for i in range(rdmol.GetNumConformers()):
-            AllChem.UFFOptimizeMolecule(rdmol,confId=i)
-            energy=AllChem.UFFGetMoleculeForceField(rdmol,confId=i).CalcEnergy()
+            if boundsMatrix == None:    
+                AllChem.UFFOptimizeMolecule(rdmol,confId=i)
+                energy=AllChem.UFFGetMoleculeForceField(rdmol,confId=i).CalcEnergy()
+            else:
+                eBefore, energy = Pharm3D.EmbedLib.OptimizeMol(rdmol, boundsMatrix)
+            
             if energy < lowestE:
                 minEid = i
-                lowestE = energy 
-        
-        with open(self.getCrudeMolFilePath(), 'w') as out3Dcrude:
-            out3Dcrude.write(Chem.MolToMolBlock(crude,confId=minEid))
-        
-        with open(self.getRefinedMolFilePath(), 'w') as out3D:
-            out3D.write(Chem.MolToMolBlock(rdmol,confId=minEid))
-
+                lowestE = energy
+                
         return rdmol, minEid
-
+        
+    def writeMolFile(self, mol, path, minEid):
+        with open(path, 'w') as out3Dcrude:
+            out3Dcrude.write(Chem.MolToMolBlock(mol,confId=minEid))
+    
     def save_coordinates(self, rdmol, minEid, rdAtIdx):
         # Save xyz coordinates on each atom in molecule ****
         for atom in self.molecule.atoms:
@@ -222,13 +256,13 @@ class QMMolecule:
         """Get the input file name."""
         return self.getFilePath(self.inputFileExtension)
         
-    def createGeometry(self):
+    def createGeometry(self, boundsMatrix=None, atomMatch=None):
         """
         Creates self.geometry with RDKit geometries
         """
         multiplicity = sum([i.radicalElectrons for i in self.molecule.atoms]) + 1
         self.geometry = Geometry(self.settings, self.uniqueID, self.molecule, multiplicity, uniqueIDlong=self.uniqueIDlong)
-        self.geometry.generateRDKitGeometries()
+        self.geometry.generateRDKitGeometries(boundsMatrix, atomMatch)
         return self.geometry
     
     def generateQMData(self):

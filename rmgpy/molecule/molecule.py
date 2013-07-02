@@ -971,6 +971,7 @@ class Molecule(Graph):
         # Iterate through atoms in obmol
         for i in range(0, obmol.NumAtoms()):
             obatom = obmol.GetAtom(i + 1)
+            obatom.thisown = False
 
             # Use atomic number as key for element
             number = obatom.GetAtomicNum()
@@ -1001,8 +1002,10 @@ class Molecule(Graph):
             # Add bonds by iterating again through atoms
             for j in range(0, i):
                 obatom2 = obmol.GetAtom(j + 1)
+                obatom2.thisown = False
                 obbond = obatom.GetBond(obatom2)
                 if obbond is not None:
+                    obbond.thisown = False
                     order = 0
 
                     # Process bond type
