@@ -681,6 +681,13 @@ class CoreEdgeReactionModel:
         for spec in newSpeciesList:
             spec.generateThermoData(database, quantumMechanics=self.quantumMechanics)
         
+        
+        logging.info("Generating transition states!!")
+        for reaction in newReactionList:
+            estimator = reaction.family.transitionStates
+            if estimator:
+                distances = estimator.estimateDistances(reaction)
+                logging.info("Reaction {0!s} has {1!r}".format(reaction, distances))
         # Generate kinetics of new reactions
         logging.info('Generating kinetics for new reactions...')
         for reaction in newReactionList:

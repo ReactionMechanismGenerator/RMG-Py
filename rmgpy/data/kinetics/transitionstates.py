@@ -61,6 +61,7 @@ class DistanceData():
         self.distances = distances
         self.uncertainties = uncertainties
         self.method = method
+        self.comment = u''
         assert isinstance(distances,dict), "distances should be a dict"
         if method: assert isinstance(method,str), "method should be a string"
         
@@ -80,6 +81,8 @@ class DistanceData():
 
         if self.method:
             strings.append(", method={0!r}".format(self.method))
+        if self.comment:
+            strings.append(", comment={0!r}".format(self.comment))
         strings.append(")")
         return ''.join(strings)
     
@@ -465,7 +468,8 @@ class TSGroups(Database):
         as the reactants, determine the most specific nodes in the tree that
         describe the reaction.
         """
-
+        # from .family import TemplateReaction
+        #assert isinstance(reaction, TemplateReaction), "Can only match TemplateReactions"
         # Get forward reaction template and remove any duplicates
         forwardTemplate = self.top[:]
 
@@ -480,6 +484,9 @@ class TSGroups(Database):
                 assert len(forwardTemplate)==2 , 'Can currently only do symmetric trees with nothing else in them'
                 symmetricTree = True
         forwardTemplate = temporary
+        
+        for label, atom in reaction.labeledAtoms:
+            atom.label = label
 
         # Descend reactant trees as far as possible
         template = []
@@ -521,16 +528,28 @@ class TSGroups(Database):
         # template is a list of the actual matched nodes
         # forwardTemplate is a list of the top level nodes that should be matched
         if len(template) != len(forwardTemplate):
-            #logging.warning('Unable to find matching template for reaction {0} in reaction family {1}'.format(str(reaction), str(self)) )
-            #logging.warning(" Trying to match " + str(forwardTemplate))
-            #logging.warning(" Matched "+str(template))
-            #print str(self), template, forwardTemplate
-            #for reactant in reaction.reactants:
-            #    print reactant.toAdjacencyList() + '\n'
-            #for product in reaction.products:
-            #    print product.toAdjacencyList() + '\n'
+            logging.warning('Unable to find matching template for reaction {0} in reaction family {1}'.format(str(reaction), str(self)) )
+            logging.warning(" Trying to match " + str(forwardTemplate))
+            logging.warning(" Matched "+str(template))
+            print str(self), template, forwardTemplate
+            for n,reactant in enumerate(reaction.reactants):
+                print "Reactant", n
+                print reactant.toAdjacencyList() + '\n'
+            for n,product in enumerate(reaction.products):
+                print "Product", n
+                print product.toAdjacencyList() + '\n'
             raise UndeterminableKineticsError(reaction)
+        
+        for reactant in reaction.reactants:
+            if isinstance(reactant, Species):
+                reactant = reactant.molecule[0]
+            reactant.clearLabeledAtoms()
 
+        # Unlabel the atoms
+        for label, atom in reaction.labeledAtoms:
+            atom.label = ''
+        # We're (hopefully now) done with the labeled atoms, so delete the attribute
+        del reaction.labeledAtoms
         return template
 
     def estimateDistancesUsingGroupAdditivity(self, reaction):
@@ -550,11 +569,11 @@ class TSGroups(Database):
         for node in template:
             entry = node
             comment_line = "Matched node "
-            while entry.data is None and entry not in self.top:
-                # Keep climbing tree until you find a (non-top) node with data.
+            while not entry.data.distances and entry not in self.top:
+                # Keep climbing tree until you find a (non-top) node with distances.
                 comment_line += "{0} >> ".format(entry.label)
                 entry = entry.parent
-            if entry.data is not None and entry not in self.top:
+            if entry.data.distances and entry not in self.top:
                 tsDistances.add(entry.data)
                 comment_line += "{0} ({1})".format(entry.label, entry.longDesc.split('\n')[0])
             elif entry in self.top:
