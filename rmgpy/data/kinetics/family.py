@@ -880,7 +880,7 @@ class KineticsFamily(Database):
         elif isinstance(struct, Molecule):
             return reactant.findSubgraphIsomorphisms(struct)
 
-    def applyRecipe(self, reactantStructures, forward=True, unique=True):
+    def applyRecipe(self, reactantStructures, forward=True, unique=True, getTS=False):
         """
         Apply the recipe for this reaction family to the list of
         :class:`Molecule` objects `reactantStructures`. The atoms
@@ -917,12 +917,20 @@ class KineticsFamily(Database):
             if identicalCenterCounter != 2:
                 raise Exception('Unable to change labels from "*" to "*1" and "*2" for reaction family {0}.'.format(label))
 
+        if getTS:
+            transitionStateStructure = list()
+            transitionStateStructure.append(reactantStructure.copy(deep=True)) # before resorting, merged reactants
+
+
         # Generate the product structure by applying the recipe
         if forward:
             self.forwardRecipe.applyForward(reactantStructure, unique)
         else:
             self.reverseRecipe.applyForward(reactantStructure, unique)
         productStructure = reactantStructure
+        
+        if getTS:
+            transitionStateStructure.append(productStructure.copy(deep=True)) # before resorting, merged products
 
         # Hardcoding of reaction family for reverse of radical recombination
         # (Unimolecular homolysis)
@@ -994,7 +1002,10 @@ class KineticsFamily(Database):
                 struct.updateAtomTypes()
 
         # Return the product structures
-        return productStructures
+        if getTS:
+            return productStructures, transitionStateStructure
+        else:
+            return productStructures
 
     def __generateProductStructures(self, reactantStructures, maps, forward, **options):
         """
@@ -1006,6 +1017,7 @@ class KineticsFamily(Database):
         *template* reactant to the corresponding *structure*. This function
         returns the product structures.
         """
+        getTS = options.get('getTS', False)
 
         if not forward: template = self.reverseTemplate
         else:           template = self.forwardTemplate
@@ -1025,7 +1037,10 @@ class KineticsFamily(Database):
 
         # Generate the product structures by applying the forward reaction recipe
         try:
-            productStructures = self.applyRecipe(reactantStructures, forward=forward)
+            if getTS:
+                productStructures, transitionStateStructure = self.applyRecipe(reactantStructures, forward=forward, getTS=True)
+            else:
+                productStructures = self.applyRecipe(reactantStructures, forward=forward)
             if not productStructures: return None
         except InvalidActionError, e:
             logging.error('Unable to apply reaction recipe!')
@@ -1076,7 +1091,10 @@ class KineticsFamily(Database):
             struct.updateAtomTypes()
             if self.isMoleculeForbidden(struct): raise ForbiddenStructureException()
 
-        return productStructures
+        if getTS:
+            return productStructures, transitionStateStructure
+        else:
+            return productStructures
 
     def isMoleculeForbidden(self, molecule):
         """
@@ -1202,6 +1220,11 @@ class KineticsFamily(Database):
         be a list of :class:`Molecule` objects, each representing a resonance
         isomer of the species of interest.
         """
+        
+        ## This would make all calls to __generateProductStructures() also return
+        ## the "transition state structure", a list containing [merged_reactants, merged_products]
+        ## with the atom ordering consistent (needed for double-ended searches):
+        # options['getTS']=True
 
         rxnList = []; speciesList = []
 
