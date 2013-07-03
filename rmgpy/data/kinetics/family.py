@@ -931,7 +931,8 @@ class KineticsFamily(Database):
         
         if getTS:
             transitionStateStructure.append(productStructure.copy(deep=True)) # before resorting, merged products
-
+            return productStructure.split(), transitionStateStructure
+            
         # Hardcoding of reaction family for reverse of radical recombination
         # (Unimolecular homolysis)
         # Because the two products are identical, they should the same tags
@@ -968,7 +969,7 @@ class KineticsFamily(Database):
                 if highest>4:
                     for i in range(4,highest+1):
                         atomLabels['*{0:d}'.format(i)].label = '*{0:d}'.format(4+highest-i)
-
+        
         if not forward: template = self.reverseTemplate
         else:           template = self.forwardTemplate
 
