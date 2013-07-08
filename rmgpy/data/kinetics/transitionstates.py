@@ -472,7 +472,6 @@ class TSGroups(Database):
         #assert isinstance(reaction, TemplateReaction), "Can only match TemplateReactions"
         # Get forward reaction template and remove any duplicates
         forwardTemplate = self.top[:]
-
         temporary = []
         symmetricTree = False
         for entry in forwardTemplate:
@@ -484,9 +483,6 @@ class TSGroups(Database):
                 assert len(forwardTemplate)==2 , 'Can currently only do symmetric trees with nothing else in them'
                 symmetricTree = True
         forwardTemplate = temporary
-        
-        for label, atom in reaction.labeledAtoms:
-            atom.label = label
 
         # Descend reactant trees as far as possible
         template = []
@@ -545,11 +541,6 @@ class TSGroups(Database):
                 reactant = reactant.molecule[0]
             reactant.clearLabeledAtoms()
 
-        # Unlabel the atoms
-        for label, atom in reaction.labeledAtoms:
-            atom.label = ''
-        # We're (hopefully now) done with the labeled atoms, so delete the attribute
-        del reaction.labeledAtoms
         return template
 
     def estimateDistancesUsingGroupAdditivity(self, reaction):
@@ -558,7 +549,6 @@ class TSGroups(Database):
         with the given `template` using group additivity.
         """
         template = self.getReactionTemplate(reaction)
-        
         referenceDistances = self.top[0].data # or something like that
 
         # Start with the generic distances of the top-level nodes
