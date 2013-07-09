@@ -1115,36 +1115,40 @@ class Molecule(Graph):
         return SMILEwriter.WriteString(mol).strip()
 
     def toOBMol(self):
+    def toRDKitMol(self):
         """
-        Convert a molecular structure to an OpenBabel OBMol object. Uses
-        `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
+        Convert a molecular structure to a RDKit rdmol object. Uses
+        `RDKit <http://rdkit.org/>`_ to perform the conversion.
         """
-        cython.declare(atom=Atom, atom1=Atom, bonds=dict, atom2=Atom, bond=Bond)
-        cython.declare(index1=cython.int, index2=cython.int, order=cython.int)
-
+        
         # Sort the atoms before converting to ensure output is consistent
         # between different runs
         self.sortAtoms()
-
+        
         atoms = self.vertices
-
-        obmol = openbabel.OBMol()
-        for atom in atoms:
-            a = obmol.NewAtom()
-            a.SetAtomicNum(atom.number)
-            a.SetFormalCharge(atom.charge)
-        orders = {'S': 1, 'D': 2, 'T': 3, 'B': 5}
+        
+        rdkitmol = Chem.rdchem.EditableMol(Chem.rdchem.Mol())
+        for index, atom in enumerate(self.vertices):
+            rdAtom = Chem.rdchem.Atom(atom.element.symbol)
+            rdAtom.SetNumRadicalElectrons(atom.radicalElectrons)
+            rdkitmol.AddAtom(rdAtom)
+        
+        rdBonds = Chem.rdchem.BondType
+        orders = {'S': rdBonds.SINGLE, 'D': rdBonds.DOUBLE, 'T': rdBonds.TRIPLE, 'B': rdBonds.AROMATIC}
+        # Add the bonds
         for atom1 in self.vertices:
             for atom2, bond in atom1.edges.iteritems():
                 index1 = atoms.index(atom1)
                 index2 = atoms.index(atom2)
                 if index1 < index2:
                     order = orders[bond.order]
-                    obmol.AddBond(index1+1, index2+1, order)
-
-        obmol.AssignSpinMultiplicity(True)
-
-        return obmol
+                    rdkitmol.AddBond(index1, index2, order)
+        
+        # Make editable mol into a mol and rectify the molecule
+        rdkitmol = rdkitmol.GetMol()
+        Chem.SanitizeMol(rdkitmol)
+        
+        return rdkitmol
 
     def toAdjacencyList(self, label='', removeH=False):
         """
