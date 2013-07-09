@@ -914,18 +914,6 @@ class Molecule(Graph):
         png = open(tempFileName,'rb').read()
         os.unlink(tempFileName)
         return png
-        
-
-    def fromCML(self, cmlstr):
-        """
-        Convert a string of CML `cmlstr` to a molecular structure. Uses
-        `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
-        """
-        import pybel
-        cmlstr = cmlstr.replace('\t', '')
-        mol = pybel.readstring('cml', cmlstr)
-        self.fromOBMol(mol.OBMol)
-        return self
 
     def fromInChI(self, inchistr):
         """
