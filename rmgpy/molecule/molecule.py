@@ -955,6 +955,62 @@ class Molecule(Graph):
         self.fromOBMol(mol.OBMol)
         return self
 
+    def fromRDKitMol(self, rdkitmol):
+        """
+        Convert a RDKit Mol object `rdkitmol` to a molecular structure. Uses
+        `RDKit <http://rdkit.org/>`_ to perform the conversion.
+        """
+        
+        self.vertices = []
+        
+        # Add hydrogen atoms to complete molecule if needed
+        Chem.AddHs(rdkitmol)
+        
+        # iterate though atoms in rdkitmol
+        for i in range(rdkitmol.GetNumAtoms()):
+            rdkitatom = rdkitmol.GetAtomWithIdx(i)
+            
+            # Use atomic number as key for element
+            number = rdkitatom.GetAtomicNum()
+            element = elements.getElement(number)
+            
+            # Process spin multiplicity
+            radicalElectrons = rdkitatom.GetNumRadicalElectrons()
+            
+            # Assume this is always true
+            # There are cases where 2 radicalElectrons is a singlet, but
+            # the triplet is often more stable
+            spinMultiplicity = radicalElectrons + 1
+                
+            # Process charge
+            charge = rdkitatom.GetFormalCharge()
+            
+            atom = Atom(element, radicalElectrons, spinMultiplicity, charge)
+            self.vertices.append(atom)
+            
+            # Add bonds by iterating again through atoms
+            for j in range(0, i):
+                rdkitatom2 = rdkitmol.GetAtomWithIdx(j + 1)
+                rdkitbond = rdkitmol.GetBondBetweenAtoms(i, j)
+                if rdkitbond is not None:
+                    order = 0
+        
+                    # Process bond type
+                    rdbondtype = rdkitbond.GetBondType()
+                    if rdbondtype.name == 'SINGLE': order = 'S'
+                    elif rdbondtype.name == 'DOUBLE': order = 'D'
+                    elif rdbondtype.name == 'TRIPLE': order = 'T'
+                    elif rdbondtype.name == 'AROMATIC': order = 'B'
+        
+                    bond = Bond(self.vertices[i], self.vertices[j], order)
+                    self.addBond(bond)
+        
+        # Set atom types and connectivity values
+        self.updateConnectivityValues()
+        self.updateAtomTypes()
+        
+        return self
+        
     def fromOBMol(self, obmol):
         """
         Convert an OpenBabel OBMol object `obmol` to a molecular structure. Uses
