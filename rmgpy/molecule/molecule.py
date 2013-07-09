@@ -1034,27 +1034,15 @@ class Molecule(Graph):
         self.updateAtomTypes()
         return self
 
-    def toCML(self):
-        """
-        Convert the molecular structure to CML. Uses
-        `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
-        """
-        import pybel
-        mol = pybel.Molecule(self.toOBMol())
-        cml = mol.write('cml').strip()
-        return '\n'.join([l for l in cml.split('\n') if l.strip()])
-
     def toInChI(self):
         """
         Convert a molecular structure to an InChI string. Uses
-        `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
+        `RDKit <http://rdkit.org/>`_ to perform the conversion.
         """
         # This version does not write a warning to stderr if stereochemistry is undefined
-        obmol = self.toOBMol()
-        obConversion = openbabel.OBConversion()
-        obConversion.SetOutFormat('inchi')
-        obConversion.SetOptions('w', openbabel.OBConversion.OUTOPTIONS)
-        return obConversion.WriteString(obmol).strip()
+        rdkitmol = self.toRDKitMol()
+        
+        return Chem.rdinchi.MolToInchi(rdkitmol)[0].strip()
     
     def toAugmentedInChI(self):
         """
@@ -1073,19 +1061,14 @@ class Molecule(Graph):
     def toInChIKey(self):
         """
         Convert a molecular structure to an InChI Key string. Uses
-        `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
+        `RDKit <http://rdkit.org/>`_ to perform the conversion.
         
         Removes check-sum dash (-) and character so that only 
         the 14 + 9 characters remain.
         """
-        import openbabel
-        # This version does not write a warning to stderr if stereochemistry is undefined
-        obmol = self.toOBMol()
-        obConversion = openbabel.OBConversion()
-        obConversion.SetOutFormat('inchi')
-        obConversion.SetOptions('w', openbabel.OBConversion.OUTOPTIONS)
-        obConversion.SetOptions('K', openbabel.OBConversion.OUTOPTIONS)
-        return obConversion.WriteString(obmol).strip()[:-2]
+        inchi = self.toInChi()
+        
+        return Chem.rdinchi.InchiToInchiKey(inchi)
     
     def toAugmentedInChIKey(self):
         """
@@ -1101,20 +1084,24 @@ class Molecule(Graph):
         else:
             return key
 
-
+    def toSMARTS(self):
+        """
+        Convert a molecular structure to an SMARTS string. Uses
+        `RDKit <http://rdkit.org/>`_ to perform the conversion.
+        """
+        rdkitmol = self.toRDKitMol()
+        
+        return Chem.MolToSmarts(rdkitmol)
+    
     def toSMILES(self):
         """
-        Convert a molecular structure to an SMILES string. Uses
-        `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
+        Convert a molecular structure to a canonical SMILES string. Uses
+        `RDKit <http://rdkit.org/>`_ to perform the conversion.
         """
-        mol = self.toOBMol()
-        if self.getFormula() == 'H2':
-            return '[H][H]'
-        elif self.getFormula() == 'H':
-            return '[H]'
-        return SMILEwriter.WriteString(mol).strip()
-
-    def toOBMol(self):
+        rdkitmol = self.toRDKitMol()
+        
+        return Chem.MolToSmiles(rdkitmol)
+    
     def toRDKitMol(self):
         """
         Convert a molecular structure to a RDKit rdmol object. Uses
