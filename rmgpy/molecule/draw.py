@@ -90,6 +90,7 @@ import numpy
 import os.path
 import re
 import logging
+from copy import copy
 
 from numpy.linalg import LinAlgError
 
@@ -201,7 +202,7 @@ class MoleculeDrawer:
         # Generate information about any cycles present in the molecule, as
         # they will need special attention
         self.__findRingGroups()
-    
+        
         # Generate the coordinates to use to draw the molecule
         try:
             self.__generateCoordinates()
@@ -340,6 +341,7 @@ class MoleculeDrawer:
             # Flatten backbone so that it contains a list of the atoms in the
             # backbone, rather than a list of the cycles in the backbone
             backbone = list(set([atom for cycle in backbone for atom in cycle]))
+            
         else:
             # Straight chain molecule
             backbone = self.__findStraightChainBackbone()
@@ -457,9 +459,10 @@ class MoleculeDrawer:
         coordinates = self.coordinates
         atoms = atoms[:]
         processed = []
-    
+
         # Lay out largest cycle in ring system first
         cycle = atoms[0]
+
         for cycle0 in atoms[1:]:
             if len(cycle0) > len(cycle):
                 cycle = cycle0
@@ -471,10 +474,10 @@ class MoleculeDrawer:
             coordinates[index,:] *= radius
         atoms.remove(cycle)
         processed.append(cycle)
-    
+        
         # If there are other cycles, then try to lay them out as well
         while len(atoms) > 0:
-    
+            
             # Find the largest cycle that shares one or two atoms with a ring that's
             # already been processed
             cycle = None
@@ -507,7 +510,7 @@ class MoleculeDrawer:
                     center0 += center1
                     count += 1
             center0 /= count
-    
+            
             if len(commonAtoms) > 1:
                 index0 = cycle.index(commonAtoms[0])
                 index1 = cycle.index(commonAtoms[1])
@@ -516,13 +519,18 @@ class MoleculeDrawer:
                 if cycle.index(commonAtoms[1]) < cycle.index(commonAtoms[0]):
                     cycle.reverse()
                 index = cycle.index(commonAtoms[0])
-                cycle = cycle[index:] + cycle[0:index]
-    
+                cycle = cycle[index:] + cycle[0:index]            
+
             # Determine center of cycle based on already-assigned positions of
             # common atoms (which won't be changed)
             if len(commonAtoms) == 1 or len(commonAtoms) == 2:
                 # Center of new cycle is reflection of center of adjacent cycle
                 # across common atom or bond
+                
+                #let's try adding trig components of the radius instead of reflecting
+                #so that it's actually right
+                
+                
                 center = numpy.zeros(2, numpy.float64)
                 for atom in commonAtoms:
                     center += coordinates[self.molecule.atoms.index(atom),:]
@@ -557,15 +565,17 @@ class MoleculeDrawer:
                 startAngle = math.atan2(vector[1], vector[0])
                 vector = coordinates[cycle.index(commonAtoms[0]),:] - center
                 endAngle = math.atan2(vector[1], vector[0])
-            
+                
             # Place remaining atoms in cycle
             if endAngle < startAngle:
                 endAngle += 2 * math.pi
-                dAngle = (endAngle - startAngle) / (len(cycle) - len(commonAtoms) + 1)
+                dAngle = (endAngle - startAngle) / (len(cycle) )
+                #dAngle = (endAngle - startAngle) / (len(cycle) - len(commonAtoms) + 1)
             else:
                 endAngle -= 2 * math.pi
-                dAngle = (endAngle - startAngle) / (len(cycle) - len(commonAtoms) + 1)
-            
+                dAngle = (endAngle - startAngle) / (len(cycle) )
+                #dAngle = (endAngle - startAngle) / (len(cycle) - len(commonAtoms) + 1)
+                
             count = 1
             for i in range(len(commonAtoms), len(cycle)):
                 angle = startAngle + count * dAngle
@@ -577,7 +587,7 @@ class MoleculeDrawer:
                     vector = numpy.array([math.cos(angle), math.sin(angle)], numpy.float64)
                     coordinates[index,:] = center + radius * vector
                 count += 1
-    
+                    
             # We're done assigning coordinates for this cycle, so mark it as processed
             processed.append(cycle)
     
@@ -702,7 +712,7 @@ class MoleculeDrawer:
                         self.__generateFunctionalGroupCoordinates(atom0, atom1)
     
             else:
-    
+                
                 # The bonds are not evenly spaced (e.g. due to a ring)
                 # We place all of the remaining bonds evenly over the reflex angle
                 startAngle = max(bondAngles)
@@ -752,10 +762,13 @@ class MoleculeDrawer:
         if ringSystem is not None:
             # atom1 is part of a ring system, so we need to process the entire
             # ring system at once
-    
+            
+            #need to copy the coordinate so atom1s place is not lost (vl)
+            temp = copy(coordinates)
+            
             # Generate coordinates for all atoms in the ring system
             self.__generateRingSystemCoordinates(ringSystem)
-    
+            
             cycleAtoms = list(set([atom for ring in ringSystem for atom in ring]))
             
             coordinates_cycle = numpy.zeros_like(self.coordinates)
@@ -764,21 +777,25 @@ class MoleculeDrawer:
     
             # Rotate the ring system coordinates so that the line connecting atom1
             # and the center of mass of the ring is parallel to that between
-            # atom0 and atom1
+            # atom0 and atom1 (used to be before translate)
             center = numpy.zeros(2, numpy.float64)
             for atom in cycleAtoms:
                 center += coordinates_cycle[atoms.index(atom),:]
             center /= len(cycleAtoms)
-            vector0 = center - coordinates_cycle[atoms.index(atom1),:]
-            angle = math.atan2(vector[1] - vector0[1], vector[0] - vector0[0])
+            vector0 = coordinates_cycle[atoms.index(atom1),:] - center
+            #angle = math.atan2(vector[1] - vector0[1], vector[0] - vector0[0])
+            angle = math.acos(numpy.dot(vector, vector0) / (numpy.linalg.norm(vector)*numpy.linalg.norm(vector0)))
+            xangle0 = math.atan2(vector0[1],vector0[0])
+            xangle = math.atan2(vector[1],vector[0])
+            if xangle > xangle0 and xangle < xangle0 + math.pi: angle = 2*math.pi - angle               
             rot = numpy.array([[math.cos(angle), -math.sin(angle)], [math.sin(angle), math.cos(angle)]], numpy.float64)
             coordinates_cycle = numpy.dot(coordinates_cycle, rot)
             
             # Translate the ring system coordinates to the position of atom1
-            coordinates_cycle += coordinates[atoms.index(atom1),:] - coordinates_cycle[atoms.index(atom1),:]
+            coordinates_cycle += temp[atoms.index(atom1),:] - coordinates_cycle[atoms.index(atom1),:]
             for atom in cycleAtoms:
                 coordinates[atoms.index(atom),:] = coordinates_cycle[atoms.index(atom),:]
-    
+                
             # Generate coordinates for remaining neighbors of ring system,
             # continuing to recurse as needed
             self.__generateNeighborCoordinates(cycleAtoms)
