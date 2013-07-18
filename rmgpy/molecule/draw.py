@@ -525,11 +525,7 @@ class MoleculeDrawer:
             # common atoms (which won't be changed)
             if len(commonAtoms) == 1 or len(commonAtoms) == 2:
                 # Center of new cycle is reflection of center of adjacent cycle
-                # across common atom or bond
-                
-                #let's try adding trig components of the radius instead of reflecting
-                #so that it's actually right
-                
+                # across common atom or bond               
                 
                 center = numpy.zeros(2, numpy.float64)
                 for atom in commonAtoms:
@@ -763,7 +759,7 @@ class MoleculeDrawer:
             # atom1 is part of a ring system, so we need to process the entire
             # ring system at once
             
-            #need to copy the coordinate so atom1s place is not lost (vl)
+            #need to copy the coordinate so atom1s place is not lost upon ring generation
             temp = copy(coordinates)
             
             # Generate coordinates for all atoms in the ring system
@@ -783,11 +779,19 @@ class MoleculeDrawer:
                 center += coordinates_cycle[atoms.index(atom),:]
             center /= len(cycleAtoms)
             vector0 = coordinates_cycle[atoms.index(atom1),:] - center
-            #angle = math.atan2(vector[1] - vector0[1], vector[0] - vector0[0])
             angle = math.acos(numpy.dot(vector, vector0) / (numpy.linalg.norm(vector)*numpy.linalg.norm(vector0)))
             xangle0 = math.atan2(vector0[1],vector0[0])
             xangle = math.atan2(vector[1],vector[0])
-            if xangle > xangle0 and xangle < xangle0 + math.pi: angle = 2*math.pi - angle               
+            #if the angle of rotation is in the clockwise direction, must rotate by 2*pi - angle
+            if xangle > 0:
+                if xangle0 < xangle and xangle0 > xangle - math.pi:
+                    angle = 2*math.pi - angle
+            elif xangle < 0:
+                if xangle0 < xangle or xangle0 > xangle + math.pi:
+                    angle = 2*math.pi - angle
+            else:
+                if xangle0 < 0: 
+                    angle = 2*math.pi - angle                                          
             rot = numpy.array([[math.cos(angle), -math.sin(angle)], [math.sin(angle), math.cos(angle)]], numpy.float64)
             coordinates_cycle = numpy.dot(coordinates_cycle, rot)
             
