@@ -142,9 +142,9 @@ class Species(rmgpy.species.Species):
         if thermo0 is None:
             thermo0 = database.thermo.getThermoData(self)
 
-        return self.processThermoData(thermo0, thermoClass)
+        return self.processThermoData(database, thermo0, thermoClass)
 
-    def processThermoData(self, thermo0, thermoClass=NASA):
+    def processThermoData(self, database, thermo0, thermoClass=NASA):
         """
         Converts via Wilhoit into required `thermoClass` and sets `E0`.
         
