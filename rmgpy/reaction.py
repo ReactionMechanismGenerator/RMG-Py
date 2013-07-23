@@ -676,7 +676,7 @@ class Reaction:
                 Tlist = 1.0/numpy.linspace(1.0/kf.Tmax.value, 1.0/kf.Tmin.value, 50)
             else:
                 Tlist = 1.0/numpy.arange(0.0005, 0.0035, 0.0001)
-            Plist = kf.pressures.values
+            Plist = kf.pressures.value_si
             K = numpy.zeros((len(Tlist), len(Plist)), numpy.float64)
             for Tindex, T in enumerate(Tlist):
                 for Pindex, P in enumerate(Plist):
