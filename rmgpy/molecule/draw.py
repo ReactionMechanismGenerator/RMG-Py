@@ -466,8 +466,10 @@ class MoleculeDrawer:
         for cycle0 in atoms[1:]:
             if len(cycle0) > len(cycle):
                 cycle = cycle0
+                
         angle = - 2 * math.pi / len(cycle)
         radius = 1.0 / (2 * math.sin(math.pi / len(cycle)))
+        
         for i, atom in enumerate(cycle):
             index = self.molecule.atoms.index(atom)
             coordinates[index,:] = [math.cos(math.pi / 2 + i * angle), math.sin(math.pi / 2 + i * angle)]
@@ -488,7 +490,7 @@ class MoleculeDrawer:
                         if cycle is None or len(cycle0) > len(cycle): cycle = cycle0
             cycle0 = cycle1
             atoms.remove(cycle)
-    
+            
             # Shuffle atoms in cycle such that the common atoms come first
             # Also find the average center of the processed cycles that touch the
             # current cycles
@@ -505,13 +507,17 @@ class MoleculeDrawer:
                 if found:
                     center1 = numpy.zeros(2, numpy.float64)
                     for atom in cycle1:
-                        center1 += coordinates[cycle1.index(atom),:]
+                        center1 += coordinates[self.molecule.atoms.index(atom),:]
                     center1 /= len(cycle1)
                     center0 += center1
                     count += 1
             center0 /= count
-            
-            if len(commonAtoms) > 1:
+
+            if len(commonAtoms) == 1:
+                index = cycle.index(commonAtoms[0])
+                cycle = cycle[index:] + cycle[0:index]
+
+            elif len(commonAtoms) > 1:
                 index0 = cycle.index(commonAtoms[0])
                 index1 = cycle.index(commonAtoms[1])
                 if (index0 == 0 and index1 == len(cycle) - 1) or (index1 == 0 and index0 == len(cycle) - 1):
@@ -523,17 +529,28 @@ class MoleculeDrawer:
 
             # Determine center of cycle based on already-assigned positions of
             # common atoms (which won't be changed)
-            if len(commonAtoms) == 1 or len(commonAtoms) == 2:
+            if len(commonAtoms) == 1:
                 # Center of new cycle is reflection of center of adjacent cycle
-                # across common atom or bond               
+                # across common atom or bond
+                radius = 1.0 / (2 * math.sin(math.pi / len(cycle)))                               
+                index = self.molecule.atoms.index(commonAtoms[0])
+                vector = coordinates[index]- center0
+                center = coordinates[index] + vector * (radius / numpy.linalg.norm(vector))
                 
-                center = numpy.zeros(2, numpy.float64)
-                for atom in commonAtoms:
-                    center += coordinates[self.molecule.atoms.index(atom),:]
-                center /= len(commonAtoms)
-                vector = center - center0
-                center += vector
+            elif len(commonAtoms) == 2:
+                # The polygon is fused and regular, find the center using vector addition
+                # from the point at the center of the bond
+                index0 = self.molecule.atoms.index(commonAtoms[0])
+                index1 = self.molecule.atoms.index(commonAtoms[1])
+                
                 radius = 1.0 / (2 * math.sin(math.pi / len(cycle)))
+                # Calculate the distance from the center of the bond to the center of the ring
+                distance = math.sqrt(radius**2 - 0.5**2)
+
+                centerBond = (coordinates[index0] + coordinates[index1]) / 2
+                vector = centerBond - center0
+                
+                center = centerBond + vector * (distance / numpy.linalg.norm(vector))
                 
             else:
                 # Use any three points to determine the point equidistant from these
@@ -553,25 +570,30 @@ class MoleculeDrawer:
             startAngle = 0.0; endAngle = 0.0
             if len(commonAtoms) == 1:
                 # We will use the full 360 degrees to place the other atoms in the cycle
-                startAngle = math.atan2(-vector[1], vector[0])
+                vector = coordinates[index] - center
+                startAngle = math.atan2(vector[1], vector[0])
                 endAngle = startAngle + 2 * math.pi
+                
             elif len(commonAtoms) >= 2:
                 # Divide other atoms in cycle equally among unused angle
-                vector = coordinates[cycle.index(commonAtoms[-1]),:] - center
+                vector = coordinates[self.molecule.atoms.index(commonAtoms[-1]),:] - center
                 startAngle = math.atan2(vector[1], vector[0])
-                vector = coordinates[cycle.index(commonAtoms[0]),:] - center
+                vector = coordinates[self.molecule.atoms.index(commonAtoms[0]),:] - center
                 endAngle = math.atan2(vector[1], vector[0])
-                
             # Place remaining atoms in cycle
-            if endAngle < startAngle:
-                endAngle += 2 * math.pi
-                dAngle = (endAngle - startAngle) / (len(cycle) )
-                #dAngle = (endAngle - startAngle) / (len(cycle) - len(commonAtoms) + 1)
+            
+            #The rotation direction is chosen depending on the start/end angle
+            if startAngle >= 0:
+                if endAngle < startAngle and endAngle > startAngle - math.pi:
+                    dAngle = (2 * math.pi) / len(cycle)
+                else:
+                    dAngle = -(2 * math.pi) / len(cycle)
             else:
-                endAngle -= 2 * math.pi
-                dAngle = (endAngle - startAngle) / (len(cycle) )
-                #dAngle = (endAngle - startAngle) / (len(cycle) - len(commonAtoms) + 1)
-                
+                if endAngle < startAngle or endAngle > startAngle + math.pi:
+                    dAngle = (2 * math.pi) / len(cycle)
+                else:
+                    dAngle = -(2 * math.pi) / len(cycle)
+              
             count = 1
             for i in range(len(commonAtoms), len(cycle)):
                 angle = startAngle + count * dAngle
@@ -582,11 +604,10 @@ class MoleculeDrawer:
                 if numpy.linalg.norm(coordinates[index,:]) < 1e-4:
                     vector = numpy.array([math.cos(angle), math.sin(angle)], numpy.float64)
                     coordinates[index,:] = center + radius * vector
-                count += 1
-                    
+                count += 1   
             # We're done assigning coordinates for this cycle, so mark it as processed
             processed.append(cycle)
-    
+
     def __generateStraightChainCoordinates(self, atoms):
         """
         Update the coordinates for the linear straight chain of `atoms` in
@@ -779,19 +800,21 @@ class MoleculeDrawer:
                 center += coordinates_cycle[atoms.index(atom),:]
             center /= len(cycleAtoms)
             vector0 = coordinates_cycle[atoms.index(atom1),:] - center
-            angle = math.acos(numpy.dot(vector, vector0) / (numpy.linalg.norm(vector)*numpy.linalg.norm(vector0)))
+            
+            dotProdCalc = numpy.dot(vector, vector0) / (numpy.linalg.norm(vector)*numpy.linalg.norm(vector0))
+            #protects the cosine from rounding domain errors
+            if dotProdCalc > 1: dotProdCalc = 1
+            
+            angle = math.acos(dotProdCalc)
             xangle0 = math.atan2(vector0[1],vector0[0])
             xangle = math.atan2(vector[1],vector[0])
             #if the angle of rotation is in the clockwise direction, must rotate by 2*pi - angle
             if xangle > 0:
                 if xangle0 < xangle and xangle0 > xangle - math.pi:
                     angle = 2*math.pi - angle
-            elif xangle < 0:
-                if xangle0 < xangle or xangle0 > xangle + math.pi:
-                    angle = 2*math.pi - angle
             else:
-                if xangle0 < 0: 
-                    angle = 2*math.pi - angle                                          
+                if xangle0 < xangle or xangle0 > xangle + math.pi:
+                    angle = 2*math.pi - angle                                        
             rot = numpy.array([[math.cos(angle), -math.sin(angle)], [math.sin(angle), math.cos(angle)]], numpy.float64)
             coordinates_cycle = numpy.dot(coordinates_cycle, rot)
             
