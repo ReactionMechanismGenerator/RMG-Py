@@ -857,7 +857,7 @@ def readThermoBlock(f, speciesDict):
     line = f.readline()
     thermo = ''
     comments = ''
-    while line != '' and 'END' not in line.upper():
+    while line != '' and not line.upper().strip().startswith('END'):
         line, comment = removeCommentFromLine(line)
         if comment: comments += comment.strip().replace('\t',', ') + '\n'
         if len(line) >= 80:
@@ -876,6 +876,11 @@ def readThermoBlock(f, speciesDict):
                         else:
                             logging.warning('Skipping unexpected species "{0}" while reading thermodynamics entry.'.format(label))
                     thermo = ''
+                assert len(thermo.split('/n'))<=4, "Should only have 4 lines in a thermo block:\n{0}".format(thermo)
+            else:
+                logging.info("Ignoring line without 1,2,3 or 4 in 80th column: {0!r}".format(line))
+        else:
+            logging.info("Ignoring short line: {0!r}".format(line))
         line = f.readline()
     return formulaDict
 
