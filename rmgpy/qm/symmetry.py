@@ -188,6 +188,7 @@ class SymmetryJob:
                 break
         else:
             logging.exception("Couldn't find point group from symmetry output:\n{0}".format(output))
+            return "Not found"
             raise RuntimeError("Couldn't find point group in symmetry output.")
 
         logging.info("Point group: "+ result)
