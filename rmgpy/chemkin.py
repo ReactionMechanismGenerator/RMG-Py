@@ -1043,8 +1043,15 @@ def readReactionsBlock(f, speciesDict, readComments = True):
         
     reactionList = []
     for kinetics, comments in zip(kineticsList, commentsList):
-        reaction = readKineticsEntry(kinetics, speciesDict, Aunits, Eunits)
-        reaction = readReactionComments(reaction, comments, read = readComments)
+        try:
+            reaction = readKineticsEntry(kinetics, speciesDict, Aunits, Eunits)
+            reaction = readReactionComments(reaction, comments, read = readComments)
+        except ChemkinError, e:
+            if e.message == "Skip reaction!":
+                logging.warning("Skipping the reaction {0!r}".format(kinetics))
+                continue
+            else:
+                raise e
         reactionList.append(reaction)
         
     return reactionList
