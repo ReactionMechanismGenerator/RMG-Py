@@ -41,6 +41,8 @@ import os
 import re
 import element as elements
 import openbabel
+import rdkit
+from rdkit import Chem
 from .graph import Vertex, Edge, Graph
 from .group import GroupAtom, GroupBond, Group, ActionError
 from .atomtype import AtomType, atomTypes, getAtomType
@@ -912,18 +914,6 @@ class Molecule(Graph):
         png = open(tempFileName,'rb').read()
         os.unlink(tempFileName)
         return png
-        
-
-    def fromCML(self, cmlstr):
-        """
-        Convert a string of CML `cmlstr` to a molecular structure. Uses
-        `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
-        """
-        import pybel
-        cmlstr = cmlstr.replace('\t', '')
-        mol = pybel.readstring('cml', cmlstr)
-        self.fromOBMol(mol.OBMol)
-        return self
 
     def fromInChI(self, inchistr):
         """
@@ -953,6 +943,62 @@ class Molecule(Graph):
         self.fromOBMol(mol.OBMol)
         return self
 
+    def fromRDKitMol(self, rdkitmol):
+        """
+        Convert a RDKit Mol object `rdkitmol` to a molecular structure. Uses
+        `RDKit <http://rdkit.org/>`_ to perform the conversion.
+        """
+        
+        self.vertices = []
+        
+        # Add hydrogen atoms to complete molecule if needed
+        Chem.AddHs(rdkitmol)
+        
+        # iterate though atoms in rdkitmol
+        for i in range(rdkitmol.GetNumAtoms()):
+            rdkitatom = rdkitmol.GetAtomWithIdx(i)
+            
+            # Use atomic number as key for element
+            number = rdkitatom.GetAtomicNum()
+            element = elements.getElement(number)
+            
+            # Process spin multiplicity
+            radicalElectrons = rdkitatom.GetNumRadicalElectrons()
+            
+            # Assume this is always true
+            # There are cases where 2 radicalElectrons is a singlet, but
+            # the triplet is often more stable
+            spinMultiplicity = radicalElectrons + 1
+                
+            # Process charge
+            charge = rdkitatom.GetFormalCharge()
+            
+            atom = Atom(element, radicalElectrons, spinMultiplicity, charge)
+            self.vertices.append(atom)
+            
+            # Add bonds by iterating again through atoms
+            for j in range(0, i):
+                rdkitatom2 = rdkitmol.GetAtomWithIdx(j + 1)
+                rdkitbond = rdkitmol.GetBondBetweenAtoms(i, j)
+                if rdkitbond is not None:
+                    order = 0
+        
+                    # Process bond type
+                    rdbondtype = rdkitbond.GetBondType()
+                    if rdbondtype.name == 'SINGLE': order = 'S'
+                    elif rdbondtype.name == 'DOUBLE': order = 'D'
+                    elif rdbondtype.name == 'TRIPLE': order = 'T'
+                    elif rdbondtype.name == 'AROMATIC': order = 'B'
+        
+                    bond = Bond(self.vertices[i], self.vertices[j], order)
+                    self.addBond(bond)
+        
+        # Set atom types and connectivity values
+        self.updateConnectivityValues()
+        self.updateAtomTypes()
+        
+        return self
+        
     def fromOBMol(self, obmol):
         """
         Convert an OpenBabel OBMol object `obmol` to a molecular structure. Uses
@@ -1032,27 +1078,15 @@ class Molecule(Graph):
         self.updateAtomTypes()
         return self
 
-    def toCML(self):
-        """
-        Convert the molecular structure to CML. Uses
-        `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
-        """
-        import pybel
-        mol = pybel.Molecule(self.toOBMol())
-        cml = mol.write('cml').strip()
-        return '\n'.join([l for l in cml.split('\n') if l.strip()])
-
     def toInChI(self):
         """
         Convert a molecular structure to an InChI string. Uses
-        `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
+        `RDKit <http://rdkit.org/>`_ to perform the conversion.
         """
         # This version does not write a warning to stderr if stereochemistry is undefined
-        obmol = self.toOBMol()
-        obConversion = openbabel.OBConversion()
-        obConversion.SetOutFormat('inchi')
-        obConversion.SetOptions('w', openbabel.OBConversion.OUTOPTIONS)
-        return obConversion.WriteString(obmol).strip()
+        rdkitmol = self.toRDKitMol()
+        
+        return Chem.rdinchi.MolToInchi(rdkitmol)[0].strip()
     
     def toAugmentedInChI(self):
         """
@@ -1071,19 +1105,14 @@ class Molecule(Graph):
     def toInChIKey(self):
         """
         Convert a molecular structure to an InChI Key string. Uses
-        `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
+        `RDKit <http://rdkit.org/>`_ to perform the conversion.
         
         Removes check-sum dash (-) and character so that only 
         the 14 + 9 characters remain.
         """
-        import openbabel
-        # This version does not write a warning to stderr if stereochemistry is undefined
-        obmol = self.toOBMol()
-        obConversion = openbabel.OBConversion()
-        obConversion.SetOutFormat('inchi')
-        obConversion.SetOptions('w', openbabel.OBConversion.OUTOPTIONS)
-        obConversion.SetOptions('K', openbabel.OBConversion.OUTOPTIONS)
-        return obConversion.WriteString(obmol).strip()[:-2]
+        inchi = self.toInChi()
+        
+        return Chem.rdinchi.InchiToInchiKey(inchi)
     
     def toAugmentedInChIKey(self):
         """
@@ -1099,50 +1128,58 @@ class Molecule(Graph):
         else:
             return key
 
-
+    def toSMARTS(self):
+        """
+        Convert a molecular structure to an SMARTS string. Uses
+        `RDKit <http://rdkit.org/>`_ to perform the conversion.
+        """
+        rdkitmol = self.toRDKitMol()
+        
+        return Chem.MolToSmarts(rdkitmol)
+    
     def toSMILES(self):
         """
-        Convert a molecular structure to an SMILES string. Uses
-        `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
+        Convert a molecular structure to a canonical SMILES string. Uses
+        `RDKit <http://rdkit.org/>`_ to perform the conversion.
         """
-        mol = self.toOBMol()
-        if self.getFormula() == 'H2':
-            return '[H][H]'
-        elif self.getFormula() == 'H':
-            return '[H]'
-        return SMILEwriter.WriteString(mol).strip()
-
-    def toOBMol(self):
+        rdkitmol = self.toRDKitMol()
+        
+        return Chem.MolToSmiles(rdkitmol)
+    
+    def toRDKitMol(self):
         """
-        Convert a molecular structure to an OpenBabel OBMol object. Uses
-        `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
+        Convert a molecular structure to a RDKit rdmol object. Uses
+        `RDKit <http://rdkit.org/>`_ to perform the conversion.
         """
-        cython.declare(atom=Atom, atom1=Atom, bonds=dict, atom2=Atom, bond=Bond)
-        cython.declare(index1=cython.int, index2=cython.int, order=cython.int)
-
+        
         # Sort the atoms before converting to ensure output is consistent
         # between different runs
         self.sortAtoms()
-
+        
         atoms = self.vertices
-
-        obmol = openbabel.OBMol()
-        for atom in atoms:
-            a = obmol.NewAtom()
-            a.SetAtomicNum(atom.number)
-            a.SetFormalCharge(atom.charge)
-        orders = {'S': 1, 'D': 2, 'T': 3, 'B': 5}
+        
+        rdkitmol = Chem.rdchem.EditableMol(Chem.rdchem.Mol())
+        for index, atom in enumerate(self.vertices):
+            rdAtom = Chem.rdchem.Atom(atom.element.symbol)
+            rdAtom.SetNumRadicalElectrons(atom.radicalElectrons)
+            rdkitmol.AddAtom(rdAtom)
+        
+        rdBonds = Chem.rdchem.BondType
+        orders = {'S': rdBonds.SINGLE, 'D': rdBonds.DOUBLE, 'T': rdBonds.TRIPLE, 'B': rdBonds.AROMATIC}
+        # Add the bonds
         for atom1 in self.vertices:
             for atom2, bond in atom1.edges.iteritems():
                 index1 = atoms.index(atom1)
                 index2 = atoms.index(atom2)
                 if index1 < index2:
                     order = orders[bond.order]
-                    obmol.AddBond(index1+1, index2+1, order)
-
-        obmol.AssignSpinMultiplicity(True)
-
-        return obmol
+                    rdkitmol.AddBond(index1, index2, order)
+        
+        # Make editable mol into a mol and rectify the molecule
+        rdkitmol = rdkitmol.GetMol()
+        Chem.SanitizeMol(rdkitmol)
+        
+        return rdkitmol
 
     def toAdjacencyList(self, label='', removeH=False):
         """
