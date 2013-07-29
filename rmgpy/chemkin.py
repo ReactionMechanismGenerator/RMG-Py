@@ -218,6 +218,9 @@ def readKineticsEntry(entry, speciesDict, Aunits, Eunits):
         if product.upper() == 'M':
             pass
         elif product not in speciesDict:
+            if re.match('[0-9.]+',product):
+                logging.warning("Looks like reaction {0!r} has fractional stoichiometry, which RMG cannot handle. Ignoring".format(lines[0]))
+                raise ChemkinError('Skip reaction!')
             raise ChemkinError('Unexpected product "{0}" in reaction {1}.'.format(product, reaction))
         else:
             for i in range(stoichiometry):
