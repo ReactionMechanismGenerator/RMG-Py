@@ -304,6 +304,14 @@ def readKineticsEntry(entry, speciesDict, Aunits, Eunits):
                     T1 = (T1,"K"),
                     T2 = (T2,"K") if T2 is not None else None,
                 )
+            elif line.strip().startswith('SRI'):
+                pass
+                """To define an SRI pressure-dependent reaction, in addition to the LOW or HIGH parameters, the 
+                keyword SRI followed by three or five parameters must be included in the following order: a, b,
+                c, d, and e [Eq. (74)]. The fourth and fifth parameters are options. If only the first three are 
+                stated, then by default d = 1 and e = 0. 
+                """
+                # see eg. http://www.dipic.unipd.it/faculty/canu/files/Comb/Docs/chemkinCK.pdf
             
             elif 'CHEB' in line:
                 # Chebyshev parameters
