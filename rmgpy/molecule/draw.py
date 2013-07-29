@@ -40,48 +40,8 @@ The `Cairo <http://cairographics.org/>`_ 2D graphics library is used to create
 the drawings. The :class:`MoleculeDrawer` class module will fail gracefully if
 Cairo is not installed.
 
-The general procedure for creating drawings of skeletal formula is as follows:
-
-1.  **Find the molecular backbone.** If the molecule contains no cycles, the
-    longest straight chain of heavy atoms is used as the backbone. If the 
-    molecule contains cycles, the largest independent cycle group is used as the
-    backbone. The :meth:`findBackbone()` method is used for this purpose.
-
-2.  **Generate coordinates for the backbone atoms.** Straight-chain backbones
-    are laid out in a horizontal seesaw pattern. Cyclic backbones are laid out
-    as regular polygons (or as close to this as is possible). The
-    :meth:`generateStraightChainCoordinates()` and 
-    :meth:`generateRingSystemCoordinates()` methods are used for this purpose.
-
-3.  **Generate coordinates for immediate neighbors to backbone.** Each neighbor
-    atom represents the start of a functional group attached to the backbone.
-    Generating coordinates for these means that we have determined the bonds
-    for all backbone atoms. The :meth:`generateNeighborCoordinates()` method is
-    used for this purpose.
-
-4.  **Continue generating coordinates for atoms in functional groups.** Moving
-    away from the molecular backbone and its immediate neighbors, the
-    coordinates for each atom in each functional group are determined such that
-    the functional groups tend to radiate away from the center of the backbone
-    (to reduce chances of overlap). If cycles are encountered in the functional
-    groups, their coordinates are processed as a unit. This continues until
-    the coordinates of all atoms in the molecule have been assigned. The
-    :meth:`generateFunctionalGroupCoordinates()` recursive method is used for
-    this.
-
-5.  **Use the generated coordinates and the atom and bond types to render the
-    skeletal formula.** The :meth:`render()`,  and :meth:`renderBond()`, and
-    :meth:`renderAtom()` methods are used for this.
-
-The developed procedure seems to be rather robust, but occasionally it will
-encounter a molecule that it renders incorrectly. In particular, features which
-have not yet been implemented by this drawing algorithm include:
-
-* cis-trans isomerism
-
-* stereoisomerism
-
-* bridging atoms in fused rings
+The implementation uses the 2D coordinate generation of rdKit to find coordinates,
+then uses Cairo to render the atom.
 
 """
 
@@ -315,10 +275,7 @@ class MoleculeDrawer:
     def __generateCoordinates(self):
         """
         Generate the 2D coordinates to be used when drawing the current 
-        molecule. The vertices are arranged based on a standard bond length of
-        unity, and can be scaled later for longer bond lengths. The coordinates
-        are arranged such that the "center" of the molecule is at the origin.
-        This function ignores any previously-existing coordinate information.
+        molecule. The function uses rdKits 2D coordinate generation.
         """
         atoms = self.molecule.atoms
         Natoms = len(atoms)
