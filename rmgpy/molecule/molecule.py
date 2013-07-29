@@ -942,12 +942,19 @@ class Molecule(Graph):
         mol = pybel.readstring('smiles', smilesstr)
         self.fromOBMol(mol.OBMol)
         return self
+        
+    def fromSMARTS(self, smartsstr):
+        pass
 
     def fromRDKitMol(self, rdkitmol):
         """
         Convert a RDKit Mol object `rdkitmol` to a molecular structure. Uses
         `RDKit <http://rdkit.org/>`_ to perform the conversion.
         """
+        # # Below are the declared variables for cythonizing the module
+        # cython.declare(i=cython.int)
+        # cython.declare(radicalElectrons=cython.int, spinMultiplicity=cython.int, charge=cython.int)
+        # cython.declare(atom=Atom, atom1=Atom, atom2=Atom, bond=Bond)
         
         self.vertices = []
         
@@ -968,7 +975,10 @@ class Molecule(Graph):
             # Assume this is always true
             # There are cases where 2 radicalElectrons is a singlet, but
             # the triplet is often more stable
-            spinMultiplicity = radicalElectrons + 1
+            if radicalElectrons == 2:
+                spinMultipliity == 1
+            else:
+                spinMultiplicity = radicalElectrons + 1
                 
             # Process charge
             charge = rdkitatom.GetFormalCharge()
@@ -999,72 +1009,72 @@ class Molecule(Graph):
         
         return self
         
-    def fromOBMol(self, obmol):
-        """
-        Convert an OpenBabel OBMol object `obmol` to a molecular structure. Uses
-        `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
-        """
-
-        cython.declare(i=cython.int)
-        cython.declare(radicalElectrons=cython.int, spinMultiplicity=cython.int, charge=cython.int)
-        cython.declare(atom=Atom, atom1=Atom, atom2=Atom, bond=Bond)
-
-        self.vertices = []
-
-        # Add hydrogen atoms to complete molecule if needed
-        obmol.AddHydrogens()
-
-        # Iterate through atoms in obmol
-        for i in range(0, obmol.NumAtoms()):
-            obatom = obmol.GetAtom(i + 1)
-
-            # Use atomic number as key for element
-            number = obatom.GetAtomicNum()
-            element = elements.getElement(number)
-            
-            # Process spin multiplicity
-            radicalElectrons = 0
-            spinMultiplicity = obatom.GetSpinMultiplicity()
-            if spinMultiplicity == 0:
-                radicalElectrons = 0; spinMultiplicity = 1
-            elif spinMultiplicity == 1:
-                radicalElectrons = 2; spinMultiplicity = 1
-            elif spinMultiplicity == 2:
-                radicalElectrons = 1; spinMultiplicity = 2
-            elif spinMultiplicity == 3:
-                radicalElectrons = 2; spinMultiplicity = 3
-            elif spinMultiplicity == 4:
-                radicalElectrons = 3; spinMultiplicity = 4
-            elif spinMultiplicity == 5:
-                radicalElectrons = 4; spinMultiplicity = 5
-            
-            # Process charge
-            charge = obatom.GetFormalCharge()
-
-            atom = Atom(element, radicalElectrons, spinMultiplicity, charge)
-            self.vertices.append(atom)
-            
-            # Add bonds by iterating again through atoms
-            for j in range(0, i):
-                obatom2 = obmol.GetAtom(j + 1)
-                obbond = obatom.GetBond(obatom2)
-                if obbond is not None:
-                    order = 0
-
-                    # Process bond type
-                    if obbond.IsSingle(): order = 'S'
-                    elif obbond.IsDouble(): order = 'D'
-                    elif obbond.IsTriple(): order = 'T'
-                    elif obbond.IsAromatic(): order = 'B'
-
-                    bond = Bond(self.vertices[i], self.vertices[j], order)
-                    self.addBond(bond)
-
-        # Set atom types and connectivity values
-        self.updateConnectivityValues()
-        self.updateAtomTypes()
-
-        return self
+    # def fromOBMol(self, obmol):
+    #     """
+    #     Convert an OpenBabel OBMol object `obmol` to a molecular structure. Uses
+    #     `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
+    #     """
+    # 
+    #     cython.declare(i=cython.int)
+    #     cython.declare(radicalElectrons=cython.int, spinMultiplicity=cython.int, charge=cython.int)
+    #     cython.declare(atom=Atom, atom1=Atom, atom2=Atom, bond=Bond)
+    # 
+    #     self.vertices = []
+    # 
+    #     # Add hydrogen atoms to complete molecule if needed
+    #     obmol.AddHydrogens()
+    # 
+    #     # Iterate through atoms in obmol
+    #     for i in range(0, obmol.NumAtoms()):
+    #         obatom = obmol.GetAtom(i + 1)
+    # 
+    #         # Use atomic number as key for element
+    #         number = obatom.GetAtomicNum()
+    #         element = elements.getElement(number)
+    #         
+    #         # Process spin multiplicity
+    #         radicalElectrons = 0
+    #         spinMultiplicity = obatom.GetSpinMultiplicity()
+    #         if spinMultiplicity == 0:
+    #             radicalElectrons = 0; spinMultiplicity = 1
+    #         elif spinMultiplicity == 1:
+    #             radicalElectrons = 2; spinMultiplicity = 1
+    #         elif spinMultiplicity == 2:
+    #             radicalElectrons = 1; spinMultiplicity = 2
+    #         elif spinMultiplicity == 3:
+    #             radicalElectrons = 2; spinMultiplicity = 3
+    #         elif spinMultiplicity == 4:
+    #             radicalElectrons = 3; spinMultiplicity = 4
+    #         elif spinMultiplicity == 5:
+    #             radicalElectrons = 4; spinMultiplicity = 5
+    #         
+    #         # Process charge
+    #         charge = obatom.GetFormalCharge()
+    # 
+    #         atom = Atom(element, radicalElectrons, spinMultiplicity, charge)
+    #         self.vertices.append(atom)
+    #         
+    #         # Add bonds by iterating again through atoms
+    #         for j in range(0, i):
+    #             obatom2 = obmol.GetAtom(j + 1)
+    #             obbond = obatom.GetBond(obatom2)
+    #             if obbond is not None:
+    #                 order = 0
+    # 
+    #                 # Process bond type
+    #                 if obbond.IsSingle(): order = 'S'
+    #                 elif obbond.IsDouble(): order = 'D'
+    #                 elif obbond.IsTriple(): order = 'T'
+    #                 elif obbond.IsAromatic(): order = 'B'
+    # 
+    #                 bond = Bond(self.vertices[i], self.vertices[j], order)
+    #                 self.addBond(bond)
+    # 
+    #     # Set atom types and connectivity values
+    #     self.updateConnectivityValues()
+    #     self.updateAtomTypes()
+    # 
+    #     return self
 
     def fromAdjacencyList(self, adjlist):
         """
@@ -1083,7 +1093,6 @@ class Molecule(Graph):
         Convert a molecular structure to an InChI string. Uses
         `RDKit <http://rdkit.org/>`_ to perform the conversion.
         """
-        # This version does not write a warning to stderr if stereochemistry is undefined
         rdkitmol = self.toRDKitMol()
         
         return Chem.rdinchi.MolToInchi(rdkitmol)[0].strip()
