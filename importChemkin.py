@@ -214,6 +214,7 @@ class ModelMatcher():
                     # Unread the line (we'll re-read it in readThermoBlock())
                     f.seek(-len(line0), 1)
                     formulaDict = readThermoBlock(f, speciesDict)
+                    assert formulaDict, "Didn't read any thermo data"
                 line0 = f.readline()
 
         # Save the formulaDict, converting from {'c':1,'h':4} into "CH4" in the process.
@@ -542,6 +543,7 @@ class ModelMatcher():
              'C3H8': 'CCC',
              'CH': '[CH]',
              'Ar': '[Ar]',
+             'He': '[He]',
              }
         identified_labels = []
 
