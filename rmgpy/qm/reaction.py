@@ -21,9 +21,24 @@ class QMReaction:
         logging.info("Creating directory %s for mol files."%os.path.abspath(file_store_path))
         os.makedirs(file_store_path)
     
-    def __init__(self):
+    def __init__(self, reaction, settings):
+        self.reaction = reaction
+        self.settings = settings
+        
         self.geometry = None
         self.transitionState = None
+        
+    def getFilePath(self, extension):
+        """
+        Should return the path to the file with the given extension.
+        
+        The provided extension should include the leading dot.
+        
+        Need to define some reaction line notation.
+        Possibly '<Reaction_Family>/<reactant1SMILES>+<reactant2SMILES>--<product1SMILES>+<product2SMILES>' ???
+        """
+        raise NotImplementedError("This should be a unique string representing the reaction")
+        return os.path.join(self.settings.fileStore, self.uniqueID  + extension)
         
     def fixSortLabel(self, molecule):
         """
