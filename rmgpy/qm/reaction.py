@@ -1,6 +1,3 @@
-"""
-authors: P Bhoorasingh, S Troiano
-"""
 import os
 import logging
 import numpy
@@ -10,9 +7,12 @@ from rmgpy.species import TransitionState
 from molecule import QMMolecule, Geometry
 from collections import defaultdict
 
-import rdkit
-from rdkit import DistanceGeometry
-from rdkit.Chem.Pharm3D import EmbedLib
+try:
+    import rdkit
+    from rdkit import DistanceGeometry
+    from rdkit.Chem.Pharm3D import EmbedLib
+except ImportError:
+    logging.info("To use transition state searches, you must correctly install rdkit")
 
 class QMReaction:
     
@@ -46,8 +46,8 @@ class QMReaction:
         rmg sorting labels would be set after where we tried to generate the TS.
         """
         sortLbl = 0
-        for atom in molecule.atoms:
-            atom.sortingLabel = sortLbl
+        for vertex in molecule.vertices:
+            vertex.sortingLabel = sortLbl
             sortLbl += 1
         return molecule
     
@@ -68,144 +68,100 @@ class QMReaction:
         rdKitMol = rdkit.Chem.MolFromMolFile(geometry.getCrudeMolFilePath(), removeHs=False)      
         
         return rdKitMol
-    
-    def getDeepCopy(self, molecule):
-        """
-        Gets a deep copy of the molecule so that any edits to the molecule does not affect the
-        original rmg molecule.
-        """
-        copyMol = molecule.copy(deep=True)
-        
-        return copyMol
         
     def generateBoundsMatrix(self, molecule, settings):
         """
         Uses rdkit to generate the bounds matrix of a rdkit molecule.
         """
-        self.geometry, multiplicity = self.getGeometry(molecule, settings)
-        rdKitMol = self.getRDKitMol(self.geometry)
+        self.geometry, multiplicity = getGeometry(molecule, settings)
+        rdKitMol = getRDKitMol(self.geometry)
         boundsMatrix = rdkit.Chem.rdDistGeom.GetMoleculeBoundsMatrix(rdKitMol)
         
         return rdKitMol, boundsMatrix, multiplicity
-    
-    def getBMParameters(self, reactant, product):
-        for action in self.reaction.family.forwardRecipe.actions:
-            if action[0].lower() == 'form_bond' or action[0].lower() == 'break_bond':
-                atlbl1 = action[1]
-                atlbl2 = action[3]
         
-        if reactant.isCyclic():
-            rdMol, bMatrix, mult = self.generateBoundsMatrix(reactant)
-            lbl = (reactant.getLabeledAtom(atlbl1).sortingLabel, reactant.getLabeledAtom(atlbl2).sortingLabel)
-            oRDMol, oBM, oMult = self.generateBoundsMatrix(product)
-            other = (product.getLabeledAtom(atlbl1).sortingLabel, product.getLabeledAtom(atlbl2).sortingLabel)
-            other = (oBM[other[0]][other[1]], oBM[other[1]][other[0]])
-        elif product.isCyclic():
-            rdMol, bMatrix, mult = self.generateBoundsMatrix(product)
-            lbl = (product.getLabeledAtom(atlbl1).sortingLabel, product.getLabeledAtom(atlbl2).sortingLabel)
-            oRDMol, oBM, oMult = self.generateBoundsMatrix(reactant)
-            other = (reactant.getLabeledAtom(atlbl1).sortingLabel, reactant.getLabeledAtom(atlbl2).sortingLabel)
-            other = (oBM[other[0]][other[1]], oBM[other[1]][other[0]])
+    def generateGeometry(self):
+        quantumMechanics = QMCalculator()
+        quantumMechanics.settings.software = 'gaussian'
+        quantumMechanics.settings.fileStore = 'QMfiles'
+        quantumMechanics.settings.scratchDirectory = 'scratch'
+        quantumMechanics.settings.onlyCyclics = False
+        quantumMechanics.settings.maxRadicalNumber = 0
         
-        return rdMol, bMatrix, mult, lbl, other
-    
-    def insertString(self, string, insert):
-        num = len(string)
-        for i in range(1, len(string)):
-            j = num - i
-            string.insert(j, insert)
-        return string
-    
-    def stretchBond(self, editLine, line):
-        bondLen = float(editLine.pop(1))
-        bondLen += 0.1
-        bondLen = str(round(bondLen, 6))
-        editLine.insert(1, bondLen)
-        difSplit = line.split('    ')
-        oSplit = difSplit[1].split()
-        oSplit.pop(0)
-        oSplit.insert(0, bondLen + '  ')
-        difSplit[1] = ''.join(oSplit)
         
-        return difSplit
-    
-    def editAngle(self, editLine, line):
-        angle = float(editLine.pop(3))
-        angle -= 10
-        angle = str(round(angle, 6))
-        editLine.insert(3, angle)
-        difSplit = line.split('    ')
-        oSplit = difSplit[1].split()
-        oSplit.pop(0)
-        oSplit.insert(0, bondLen + '  ')
-        difSplit[1] = ''.join(oSplit)
+        notes = ''
         
-        return difSplit
+        reactant = fixSortLabel(TS[0])
+        product = fixSortLabel(TS[1])
         
-    def nonEditableVar(self, splitString):
-        for i in range(1, 4):
-            splitString[i] = splitString[i][:-1] + '0'
+        rRDMol, tsBM, tsMult = generateBoundsMatrix(reactant, quantumMechanics.settings)
+        
+        # edit bounds distances to align reacting atoms
+        if family.lower() == 'h_abstraction':
+            sect = len(reactant.split()[1].atoms)
+        
+            tsBM[sect:,:sect] = 1.8
+        
+            lbl1 = reactant.getLabeledAtom('*1').sortingLabel
+            lbl2 = reactant.getLabeledAtom('*2').sortingLabel
+            lbl3 = reactant.getLabeledAtom('*3').sortingLabel
             
-        return splitString
-    
-    def fixBond(self, inputString, lbl):
-        splits = inputString.splitlines()
-        if lbl[0] > lbl[1]:
-            line = splits[lbl[0] + 3]
-            otherLine = splits[lbl[1] + 3]
-            editLine = line.split()
-            if line.split()[-3] == str(lbl[1] + 1):
-                difSplit = self.stretchBond(editLine, line)
-            elif line.split()[-2] == str(lbl[1] + 1):
-                disSplit = self.editAngle(editLine, line)
-                import ipdb; ipdb.set_trace()
-            otherSplit = otherLine.split('    ')
-            difSplit = self.nonEditableVar(difSplit)
-            otherSplit = self.nonEditableVar(otherSplit)
+            labels = [lbl1, lbl2, lbl3]
+            atomMatch = ((lbl1,),(lbl2,),(lbl3,))
             
-            difSplit = self.insertString(difSplit, '    ')
-            otherSplit = self.insertString(otherSplit, '    ')
+            reaction = Reaction(reactants=reactant.split(), products=product.split())
+            distanceData = transitionStates.estimateDistances(reaction)
             
-            splits[lbl[0] + 3] = ''.join(difSplit)
-            splits[lbl[1] + 3] = ''.join(otherSplit)
-            splits = self.insertString(splits, '\n')
-            
-            inputString = ''.join(splits) + '\n'
-        elif lbl[1] > lbl[0]:
-            line = splits[lbl[1] + 3]
-            otherLine = splits[lbl[0] + 3]
-            editLine = line.split()
-            if line.split()[-3] == str(lbl[0] + 1):
-                difSplit = self.stretchBond(editLine, line)
-            elif line.split()[-2] == str(lbl[0] + 1):
-                import ipdb; ipdb.set_trace()
-                disSplit = self.editAngle(editLine, line)
-            otherSplit = otherLine.split('    ')
-            difSplit = self.nonEditableVar(difSplit)
-            otherSplit = self.nonEditableVar(otherSplit)
-            
-            difSplit = self.insertString(difSplit, '    ')
-            otherSplit = self.insertString(otherSplit, '    ')
-            
-            splits[lbl[1] + 3] = ''.join(difSplit)
-            splits[lbl[0] + 3] = ''.join(otherSplit)
-            splits = self.insertString(splits, '\n')
-            
-            inputString = ''.join(splits) + '\n'
+            tsBM = editMatrix(tsBM, lbl1, lbl2, distanceData.distances['d12'], 0.1)
+            tsBM = editMatrix(tsBM, lbl2, lbl3, distanceData.distances['d23'], 0.001)
+            tsBM = editMatrix(tsBM, lbl1, lbl3, distanceData.distances['d13'], 0.001)
         
-        return inputString
-    
-    def getTSBMatrix(self):
+        setBM = rdkit.DistanceGeometry.DoTriangleSmoothing(tsBM)
         
-        reactant = self.getDeepCopy(self.reactants[0])
-        product = self.getDeepCopy(self.products[0])
-        if reactant.atoms[0].sortingLabel == -1:
-            reactant = self.fixSortLabel(reactant)
-        if product.atoms[0].sortingLabel == -1:
-            product = self.fixSortLabel(product)
+        if setBM:
+            tssorted_atom_list = reactant.vertices[:]
+            qmcalcTS = rmgpy.qm.gaussian.GaussianMolPM3(reactant, quantumMechanics.settings)
+            reactant.vertices = tssorted_atom_list
+        
+            qmcalcTS.createGeometry(tsBM,atomMatch)
+        
+            geometryTS = qmcalcTS.geometry
+            tsmolFilePathForCalc = qmcalcTS.getMolFilePathForCalculation(attempt)
+        
+            # Create filenames
+            tsFilePath = os.path.join(quantumMechanics.settings.fileStore, 'transitionState' + str(count) + '.gjf')
+            tsOutPath = os.path.join(quantumMechanics.settings.fileStore, 'transitionState' + str(count) + '.log')
+            ircInPath = os.path.join(quantumMechanics.settings.fileStore, 'transitionStateIRC' + str(count) + '.gjf')
+            ircOutPath = os.path.join(quantumMechanics.settings.fileStore, 'transitionStateIRC' + str(count) + '.log')
+            tsOutputDataFile = os.path.join(quantumMechanics.settings.fileStore, 'data' + str(count) + outputFileExtension)
+        
+            # QM saddle search
+            # Write and run the TS optimization
+            tsConverge = 0
+            if os.path.exists(tsOutPath):
+                tsConverge = checkOutput(tsOutPath)
+            else:
+                writeTSInputFile(tsFilePath, tsmolFilePathForCalc, geometryTS, family)
+                run(executablePath, tsFilePath, tsOutPath)
+                tsConverge = checkOutput(tsOutPath)
+                # writeSubFile(tsFilePath.split('.')[0])
+                # os.system('bsub < ' + tsFilePath.split('.')[0] + '.sh')
+        
+            # Validation
+            if tsConverge == 2:
+                # Error in internal coodinate system, continue calculation in cartesian
+                writeTSCartInput(tsFilePath, count)
+                run(executablePath, tsFilePath, tsOutPath)
+                tsConverge = checkOutput(tsOutPath)
+                # os.system('bsub < ' + tsFilePath.split('.')[0] + '.sh')
             
-        rdMol, tsBM, mult, lbl, other = self.getBMParameters(reactant, product)
-        
-        DistanceGeometry.DoTriangleSmoothing(tsBM)
-        
-        return rdMol, tsBM, mult, lbl, other
+            # If saddle found, write and run the IRC calculation to check the TS geometry
+            if tsConverge == 1:
+                writeIRCInput(ircInPath, count)
+                run(executablePath, ircInPath, ircOutPath)
+                # writeSubFile(ircInPath.split('.')[0])
+                # os.system('bsub < ' + ircInPath.split('.')[0] + '.sh')
+                ircCheck, notes = testGeometries(reactant, product, ircOutPath, notes)
+                if ircCheck == 1:
+                    vibFreq, activeAts, atomDist = parse(tsOutPath, tsOutputDataFile, labels)
+                    writeRxnOutputFile(tsOutputDataFile, reactant, product, vibFreq, activeAts, atomDist, notes)
+                    
