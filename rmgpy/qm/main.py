@@ -33,6 +33,7 @@ import logging
 
 import rmgpy.qm.mopac
 import rmgpy.qm.gaussian
+from rmgpy.data.thermo import ThermoLibrary
 
 class QMSettings():
     """
@@ -71,7 +72,7 @@ class QMSettings():
 
 class QMCalculator():
     """
-    A Quantum Mechanics calculator obect, to store settings. 
+    A Quantum Mechanics calculator object, to store settings. 
     
     The attributes are:
 
@@ -79,6 +80,7 @@ class QMCalculator():
     Attribute           Type                    Description
     =================== ======================= ====================================
     `settings`          ``QMSettings``          Settings for QM calculations
+    `database`          ``ThermoLibrary``       Database containing QM calculations
     =================== ======================= ====================================
 
     """
@@ -90,6 +92,7 @@ class QMCalculator():
         self.settings = QMSettings()
         self.settings.fileStore = fileStore
         self.settings.scratchDirectory = scratchDirectory
+        self.database = ThermoLibrary(name='QM Thermo Library')
         
     def setDefaultOutputDirectory(self, outputDirectory):
         """

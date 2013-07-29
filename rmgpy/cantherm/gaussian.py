@@ -30,6 +30,7 @@
 
 import math
 import numpy
+import os.path
 
 import rmgpy.constants as constants
 from rmgpy.statmech import IdealGasTranslation, NonlinearRotor, LinearRotor, HarmonicOscillator, Conformer
@@ -332,6 +333,7 @@ class GaussianLog:
         """
 
         optfreq = False
+        rigidScan=False
 
         # The array of potentials at each scan angle
         Vlist = []
@@ -344,10 +346,17 @@ class GaussianLog:
             # If the job contains a "freq" then we want to ignore the last energy
             if ' freq ' in line:
                 optfreq = True
+            #if # scan is keyword instead of # opt, then this is a rigid scan job
+            #and parsing the energies is done a little differently
+            if '# scan' in line:
+                rigidScan=True
             # The lines containing "SCF Done" give the energy at each
             # iteration (even the intermediate ones)
             if 'SCF Done:' in line:
                 E = float(line.split()[4])
+                #rigid scans will only not optimize, so just append every time it finds an energy.
+                if rigidScan:
+                    Vlist.append(E)
             # We want to keep the values of E that come most recently before
             # the line containing "Optimization completed", since it refers
             # to the optimized geometry
@@ -356,6 +365,10 @@ class GaussianLog:
             line = f.readline()
         # Close file when finished
         f.close()
+        
+        #give warning in case this assumption is not true
+        if rigidScan==True:
+            print '   Assuming', os.path.basename(self.path), 'is the output from a rigid scan...'
         
         # Adjust energies to be relative to minimum energy conformer
         # Also convert units from Hartree/particle to kJ/mol

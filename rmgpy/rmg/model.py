@@ -47,6 +47,7 @@ from rmgpy.thermo import Wilhoit, NASA, ThermoData
 from rmgpy.pdep import LennardJones, SingleExponentialDown
 from rmgpy.statmech import  Conformer
 
+from rmgpy.data.base import Entry
 from rmgpy.data.thermo import *
 from rmgpy.data.kinetics import *
 from rmgpy.data.statmech import *
@@ -91,6 +92,8 @@ class Species(rmgpy.species.Species):
         
         Result stored in `self.thermo` and returned.
         """
+        from rmgpy.data.thermo import saveEntry
+
         thermo0 = None
         
         thermo0 = database.thermo.getThermoDataFromLibraries(self)
@@ -134,6 +137,14 @@ class Species(rmgpy.species.Species):
                         f.write('{0}\n\n'.format(molecule.toAdjacencyList(removeH=True)))
                 else: # Not too many radicals: do a direct calculation.
                     thermo0 = quantumMechanics.getThermoData(molecule) # returns None if it fails
+                
+                # Write the QM molecule thermo to a library so that can be used in future RMG jobs.
+                quantumMechanics.database.loadEntry(index = len(quantumMechanics.database.entries) + 1,
+                                                    label = molecule.toSMILES(),
+                                                    molecule = molecule.toAdjacencyList(),
+                                                    thermo = thermo0,
+                                                    shortDesc = thermo0.comment
+                                                    )                    
         if thermo0 is None:
             thermo0 = database.thermo.getThermoData(self)
 

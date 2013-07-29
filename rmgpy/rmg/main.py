@@ -520,7 +520,10 @@ class RMG:
                                   self.reactionModel,
                                   delay=0 if self.done else self.saveRestartPeriod.value_si
                                 )
-            
+        # Save the QM thermo to a library if QM was turned on
+        if self.quantumMechanics:
+            logging.info('Saving the QM generated thermo to qmThermoLibrary.py ...')
+            self.quantumMechanics.database.save(os.path.join(self.outputDirectory,'qmThermoLibrary.py'))            
             
     def finish(self):
         """
