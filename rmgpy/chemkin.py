@@ -356,10 +356,16 @@ def readKineticsEntry(entry, speciesDict, Aunits, Eunits):
                 # Assume a list of collider efficiencies
                 try:
                     for collider, efficiency in zip(case_preserved_tokens[0::2], case_preserved_tokens[1::2]):
+                        try:
+                            efficiency = float(efficiency.strip())
+                        except ValueError:
+                            error_msg = "{0!r} doesn't look like a collision efficiency for species {1} in line {2!r}".format(efficiency,collider.strip(),line)
+                            logging.error(error_msg)
+                            raise ChemkinError(error_msg)
                         if collider.strip() in speciesDict:
-                            efficiencies[speciesDict[collider.strip()].molecule[0]] = float(efficiency.strip())
-                        else:
-                            efficiencies[speciesDict[collider.strip().upper()].molecule[0]] = float(efficiency.strip())
+                            efficiencies[speciesDict[collider.strip()].molecule[0]] = efficiency
+                        else: # try it with capital letters? Not sure whose malformed chemkin files this is needed for.
+                            efficiencies[speciesDict[collider.strip().upper()].molecule[0]] = efficiency
                 except IndexError:
                     error_msg = 'Could not read collider efficiencies for reaction: {0}.\n'.format(reaction)
                     error_msg += 'The following line was parsed incorrectly:\n{0}'.format(line)
