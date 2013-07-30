@@ -189,7 +189,6 @@ class SymmetryJob:
         else:
             logging.exception("Couldn't find point group from symmetry output:\n{0}".format(output))
             return "Not found"
-            raise RuntimeError("Couldn't find point group in symmetry output.")
 
         logging.info("Point group: "+ result)
         return result;
@@ -251,6 +250,8 @@ class SymmetryJob:
                 return pointGroupDictionary[pointGroupName]
             else:
                 logging.info("Attempt number {0} did not identify a recognized point group ({1}).".format(attempt,pointGroupName))
+                if attempt+2 == len(self.argumentsList):
+                    logging.warning("Using last-resort symmetry estimation options; symmetry may be underestimated.")
         logging.critical("Final attempt did not identify a recognized point group. Exiting.")
         return None
 
