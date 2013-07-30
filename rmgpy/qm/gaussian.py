@@ -1,9 +1,9 @@
 import os
 
-import openbabel
 import external.cclib as cclib
 import logging
 from subprocess import Popen, PIPE
+import re
 
 from qmdata import CCLibData
 from molecule import QMMolecule
@@ -88,7 +88,7 @@ class Gaussian:
                     if element in line:
                         logging.error("Gaussian output file contains the following error: {0}".format(element) )
                         return False
-                    
+
                 for element in self.successKeys: #search for success keywords
                     if element in line:
                         successKeysFound[element] = True
@@ -150,19 +150,28 @@ class GaussianMol(QMMolecule, Gaussian):
         Using the :class:`Geometry` object, write the input file
         for the `attmept`th attempt.
         """
+        molfile = self.getMolFilePathForCalculation(attempt) 
+        atomline = re.compile('\s*([\- ][0-9.]+\s+[\-0-9.]+\s+[\-0-9.]+)\s+([A-Za-z]+)')
+        
+        output = ['', self.geometry.uniqueIDlong, '' ]
+        output.append("{charge}   {mult}".format(charge=0, mult=(self.molecule.getRadicalCount() + 1) ))
+        
+        atomCount = 0
+        with open(molfile) as molinput:
+            for line in molinput:
+                match = atomline.match(line)
+                if match:
+                    output.append("{0:8s} {1}".format(match.group(2), match.group(1)))
+                    atomCount += 1
+        assert atomCount == len(self.molecule.atoms)
     
-        obConversion = openbabel.OBConversion()
-        obConversion.SetInAndOutFormats("mol", "gjf")
-        mol = openbabel.OBMol()
-    
-        obConversion.ReadFile(mol, self.getMolFilePathForCalculation(attempt) )
-    
-        mol.SetTitle(self.geometry.uniqueIDlong)
-        obConversion.SetOptions('k', openbabel.OBConversion.OUTOPTIONS)
-        input_string = obConversion.WriteString(mol)
+        output.append('')
+        input_string = '\n'.join(output)
+        
         top_keys = self.inputFileKeywords(attempt)
         with open(self.inputFilePath, 'w') as gaussianFile:
             gaussianFile.write(top_keys)
+            gaussianFile.write('\n')
             gaussianFile.write(input_string)
             gaussianFile.write('\n')
             if self.usePolar:
