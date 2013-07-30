@@ -919,7 +919,8 @@ class Molecule(Graph):
     def fromInChI(self, inchistr):
         """
         Convert an InChI string `inchistr` to a molecular structure. Uses
-        `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
+        `RDKit <http://rdkit.org/>`_ to perform the conversion.
+        This Kekulizes everything, removing all aromatic atom types.
         """
         #RDkit was improperly handling the Hydrogen radical from InChI
         if inchistr == 'InChI=1/H':
@@ -934,6 +935,7 @@ class Molecule(Graph):
         """
         Convert a SMILES string `smilesstr` to a molecular structure. Uses
         `RDKit <http://rdkit.org/>`_ to perform the conversion.
+        This Kekulizes everything, removing all aromatic atom types.
         """
         rdkitmol = Chem.MolFromSmiles(smilesstr)
         self.fromRDKitMol(rdkitmol)
@@ -943,6 +945,7 @@ class Molecule(Graph):
         """
         Convert a SMARTS string `smartsstr` to a molecular structure. Uses
         `RDKit <http://rdkit.org/>`_ to perform the conversion.
+        This Kekulizes everything, removing all aromatic atom types.
         """
         rdkitmol = Chem.MolFromSmarts(smartsstr)
         self.fromRDKitMol(rdkitmol)
@@ -952,6 +955,7 @@ class Molecule(Graph):
         """
         Convert a RDKit Mol object `rdkitmol` to a molecular structure. Uses
         `RDKit <http://rdkit.org/>`_ to perform the conversion.
+        This Kekulizes everything, removing all aromatic atom types.
         """
         # Below are the declared variables for cythonizing the module
         cython.declare(i=cython.int)
@@ -962,6 +966,7 @@ class Molecule(Graph):
         
         # Add hydrogen atoms to complete molecule if needed
         rdkitmol = Chem.AddHs(rdkitmol)
+        Chem.rdmolops.Kekulize(rdkitmol, clearAromaticFlags=True)
         
         # iterate though atoms in rdkitmol
         for i in range(rdkitmol.GetNumAtoms()):
@@ -977,8 +982,6 @@ class Molecule(Graph):
             # Assume this is always true
             # There are cases where 2 radicalElectrons is a singlet, but
             # the triplet is often more stable, 
-            # This calculation comes from the fromOBmol code.
-            
             spinMultiplicity = radicalElectrons + 1
                 
             # Process charge
@@ -1093,9 +1096,9 @@ class Molecule(Graph):
         """
         Convert a molecular structure to an InChI string. Uses
         `RDKit <http://rdkit.org/>`_ to perform the conversion.
+        Perceives aromaticity.
         """
         rdkitmol = self.toRDKitMol()
-        
         return Chem.inchi.MolToInchi(rdkitmol)
     
     def toAugmentedInChI(self):
@@ -1142,6 +1145,7 @@ class Molecule(Graph):
         """
         Convert a molecular structure to an SMARTS string. Uses
         `RDKit <http://rdkit.org/>`_ to perform the conversion.
+        Perceives aromaticity and removes Hydrogen atoms.
         """
         rdkitmol = self.toRDKitMol()
         
@@ -1151,6 +1155,7 @@ class Molecule(Graph):
         """
         Convert a molecular structure to a canonical SMILES string. Uses
         `RDKit <http://rdkit.org/>`_ to perform the conversion.
+        Perceives aromaticity and removes Hydrogen atoms.
         """
         rdkitmol = self.toRDKitMol()
         
@@ -1160,8 +1165,8 @@ class Molecule(Graph):
         """
         Convert a molecular structure to a RDKit rdmol object. Uses
         `RDKit <http://rdkit.org/>`_ to perform the conversion.
+        Perceives aromaticity and removes Hydrogen atoms.
         """
-        
         # Sort the atoms before converting to ensure output is consistent
         # between different runs
         self.sortAtoms()
