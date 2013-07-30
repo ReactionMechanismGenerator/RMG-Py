@@ -484,12 +484,13 @@ class Molecule(Graph):
     `InChI` string representing the molecular structure.
     """
 
-    def __init__(self, atoms=None, symmetry=1, SMILES='', InChI=''):
+    def __init__(self, atoms=None, symmetry=1, SMILES='', InChI='', SMARTS = ''):
         Graph.__init__(self, atoms)
         self.symmetryNumber = symmetry
         self._fingerprint = None
         if SMILES != '': self.fromSMILES(SMILES)
         elif InChI != '': self.fromInChI(InChI)
+        elif SMARTS != '': self.fromSMARTS(SMARTS)
     
     def __str__(self):
         """
@@ -920,46 +921,47 @@ class Molecule(Graph):
         Convert an InChI string `inchistr` to a molecular structure. Uses
         `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
         """
-        if inchistr in ['InChI=1/H', 'InChI=1S/H']:
-            # cope with a bug in OpenBabel
-            return self.fromAdjacencyList('1 H 1')
-        import pybel
-        mol = pybel.readstring('inchi', inchistr)
-        self.fromOBMol(mol.OBMol)
-        return self
+        #RDkit was improperly handling the Hydrogen radical from InChI
+        if inchistr == 'InChI=1/H':
+            self.fromSMILES('[H]')
+            return self          
+        else:
+            rdkitmol = Chem.inchi.MolFromInchi(inchistr)
+            self.fromRDKitMol(rdkitmol)
+            return self
 
     def fromSMILES(self, smilesstr):
         """
         Convert a SMILES string `smilesstr` to a molecular structure. Uses
-        `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
+        `RDKit <http://rdkit.org/>`_ to perform the conversion.
         """
-        if smilesstr == '[H]' or smilesstr == 'H':
-            # cope with a bug in OpenBabel < 2.3
-            return self.fromAdjacencyList('1 H 1')
-        elif smilesstr == 'H2':
-            return self.fromSMILES('[H][H]')
-        import pybel
-        mol = pybel.readstring('smiles', smilesstr)
-        self.fromOBMol(mol.OBMol)
+        rdkitmol = Chem.MolFromSmiles(smilesstr)
+        self.fromRDKitMol(rdkitmol)
         return self
         
     def fromSMARTS(self, smartsstr):
-        pass
-
+        """
+        Convert a SMARTS string `smartsstr` to a molecular structure. Uses
+        `RDKit <http://rdkit.org/>`_ to perform the conversion.
+        """
+        rdkitmol = Chem.MolFromSmarts(smartsstr)
+        self.fromRDKitMol(rdkitmol)
+        return self
+        
     def fromRDKitMol(self, rdkitmol):
         """
         Convert a RDKit Mol object `rdkitmol` to a molecular structure. Uses
         `RDKit <http://rdkit.org/>`_ to perform the conversion.
         """
-        # # Below are the declared variables for cythonizing the module
-        # cython.declare(i=cython.int)
-        # cython.declare(radicalElectrons=cython.int, spinMultiplicity=cython.int, charge=cython.int)
-        # cython.declare(atom=Atom, atom1=Atom, atom2=Atom, bond=Bond)
+        # Below are the declared variables for cythonizing the module
+        cython.declare(i=cython.int)
+        cython.declare(radicalElectrons=cython.int, spinMultiplicity=cython.int, charge=cython.int)
+        cython.declare(atom=Atom, atom1=Atom, atom2=Atom, bond=Bond)
         
         self.vertices = []
         
         # Add hydrogen atoms to complete molecule if needed
-        Chem.AddHs(rdkitmol)
+        rdkitmol = Chem.AddHs(rdkitmol)
         
         # iterate though atoms in rdkitmol
         for i in range(rdkitmol.GetNumAtoms()):
@@ -974,11 +976,10 @@ class Molecule(Graph):
             
             # Assume this is always true
             # There are cases where 2 radicalElectrons is a singlet, but
-            # the triplet is often more stable
-            if radicalElectrons == 2:
-                spinMultipliity == 1
-            else:
-                spinMultiplicity = radicalElectrons + 1
+            # the triplet is often more stable, 
+            # This calculation comes from the fromOBmol code.
+            
+            spinMultiplicity = radicalElectrons + 1
                 
             # Process charge
             charge = rdkitatom.GetFormalCharge()
@@ -1095,7 +1096,7 @@ class Molecule(Graph):
         """
         rdkitmol = self.toRDKitMol()
         
-        return Chem.rdinchi.MolToInchi(rdkitmol)[0].strip()
+        return Chem.inchi.MolToInchi(rdkitmol)
     
     def toAugmentedInChI(self):
         """
@@ -1119,9 +1120,9 @@ class Molecule(Graph):
         Removes check-sum dash (-) and character so that only 
         the 14 + 9 characters remain.
         """
-        inchi = self.toInChi()
+        inchi = self.toInChI()
         
-        return Chem.rdinchi.InchiToInchiKey(inchi)
+        return Chem.inchi.InchiToInchiKey(inchi)[:-2]
     
     def toAugmentedInChIKey(self):
         """
@@ -1187,6 +1188,7 @@ class Molecule(Graph):
         # Make editable mol into a mol and rectify the molecule
         rdkitmol = rdkitmol.GetMol()
         Chem.SanitizeMol(rdkitmol)
+        rdkitmol = Chem.RemoveHs(rdkitmol)
         
         return rdkitmol
 

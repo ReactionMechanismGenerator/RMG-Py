@@ -674,7 +674,7 @@ class TestMolecule(unittest.TestCase):
         self.assertTrue(molecule.isSubgraphIsomorphic(group, initialMap))
 
         mapping = molecule.findSubgraphIsomorphisms(group, initialMap)
-        self.assertTrue(len(mapping) == 1)
+        self.assertEqual(len(mapping), 1)
         for map in mapping:
             self.assertTrue(len(map) == min(len(molecule.atoms), len(group.atoms)))
             for key, value in map.iteritems():
@@ -742,10 +742,10 @@ class TestMolecule(unittest.TestCase):
         representation.
         """
         molecule = Molecule(SMILES='[H]')
-        self.assertTrue(len(molecule.atoms) == 1)
+        self.assertEqual(len(molecule.atoms), 1)
         H = molecule.atoms[0]
         self.assertTrue(H.isHydrogen())
-        self.assertTrue(H.radicalElectrons == 1)
+        self.assertEqual(H.radicalElectrons, 1)
 
     def testFromInChIH(self):
         """
@@ -753,10 +753,10 @@ class TestMolecule(unittest.TestCase):
         representation.
         """
         molecule = Molecule(InChI='InChI=1/H')
-        self.assertTrue(len(molecule.atoms) == 1)
+        self.assertEqual(len(molecule.atoms), 1)
         H = molecule.atoms[0]
         self.assertTrue(H.isHydrogen())
-        self.assertTrue(H.radicalElectrons == 1)
+        self.assertEqual(H.radicalElectrons, 1)
 
     def testPickle(self):
         """

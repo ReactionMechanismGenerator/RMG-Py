@@ -150,17 +150,13 @@ cdef class Molecule(Graph):
 
     cpdef draw(self, str path)
 
-    cpdef fromCML(self, str cmlstr)
-
     cpdef fromInChI(self, str inchistr)
 
     cpdef fromSMILES(self, str smilesstr)
 
-    cpdef fromOBMol(self, obmol)
+    cpdef fromRDKitMol(self, rdkitmol)
 
     cpdef fromAdjacencyList(self, str adjlist)
-
-    cpdef str toCML(self)
 
     cpdef str toInChI(self)
 
@@ -172,7 +168,7 @@ cdef class Molecule(Graph):
 
     cpdef str toSMILES(self)
 
-    cpdef toOBMol(self)
+#    cpdef tRDKitMol(self)
 
     cpdef toAdjacencyList(self, str label=?, bint removeH=?)
 
