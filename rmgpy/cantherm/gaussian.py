@@ -248,7 +248,7 @@ class GaussianLog:
 
         return Conformer(E0=(E0*0.001,"kJ/mol"), modes=modes, spinMultiplicity=spinMultiplicity, opticalIsomers=opticalIsomers)
 
-    def loadEnergy(self):
+    def loadEnergy(self,frequencyScaleFactor=1.):
         """
         Load the energy in J/mol from a Gaussian log file. The file is checked 
         for a complete basis set extrapolation; if found, that value is 
@@ -258,7 +258,7 @@ class GaussianLog:
         """
 
         modes = []
-        E0 = None; E0_cbs = None; ZPE = None
+        E0 = None; E0_cbs = None; scaledZPE = None
         spinMultiplicity = 1
 
         f = open(self.path, 'r')
@@ -271,14 +271,20 @@ class GaussianLog:
                 E0_cbs = float(line.split()[3]) * constants.E_h * constants.Na
             elif 'G3(0 K)' in line:
                 E0_cbs = float(line.split()[2]) * constants.E_h * constants.Na
-            # Do NOT read the ZPE from the "E(ZPE)=" line, as this is the scaled version!
-            elif 'Zero-point correction=' in line:
-                ZPE = float(line.split()[2]) * constants.E_h * constants.Na
+            
+            # Read the ZPE from the "E(ZPE)=" line, as this is the scaled version.
+            # Gaussian defines the following as
+            # E (0 K) = Elec + E(ZPE), 
+            # The ZPE is the scaled ZPE given by E(ZPE) in the log file, 
+            # hence to get the correct Elec from E (0 K) we need to subtract the scaled ZPE
+            
+            elif 'E(ZPE)' in line:
+                scaledZPE = float(line.split()[1]) * constants.E_h * constants.Na
             elif '\\ZeroPoint=' in line:
                 line = line.strip() + f.readline().strip()
                 start = line.find('\\ZeroPoint=') + 11
                 end = line.find('\\', start)
-                ZPE = float(line[start:end]) * constants.E_h * constants.Na
+                scaledZPE = float(line[start:end]) * constants.E_h * constants.Na * frequencyScaleFactor
             # Read the next line in the file
             line = f.readline()
 
@@ -286,16 +292,16 @@ class GaussianLog:
         f.close()
         
         if E0_cbs is not None:
-            if ZPE is None:
+            if scaledZPE is None:
                 raise Exception('Unable to find zero-point energy in Gaussian log file.')
-            return E0_cbs - ZPE
+            return E0_cbs - scaledZPE
         elif E0 is not None:
             return E0
         else: raise Exception('Unable to find energy in Gaussian log file.')
     
     def loadZeroPointEnergy(self):
         """
-        Load the zero-point energy in J/mol from a Gaussian log file.
+        Load the unscaled zero-point energy in J/mol from a Gaussian log file.
         """
 
         modes = []
@@ -307,6 +313,8 @@ class GaussianLog:
         while line != '':
 
             # Do NOT read the ZPE from the "E(ZPE)=" line, as this is the scaled version!
+            # We will read in the unscaled ZPE and later multiply the scaling factor
+            # from the input file
             if 'Zero-point correction=' in line:
                 ZPE = float(line.split()[2]) * constants.E_h * constants.Na
             elif '\\ZeroPoint=' in line:
