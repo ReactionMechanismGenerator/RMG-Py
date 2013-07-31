@@ -91,7 +91,7 @@ be kept.</p>
 
 <dl class="method">
 <dt id="rmgpy.cantherm.gaussian.GaussianLog.loadEnergy">
-<tt class="descname">loadEnergy</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.cantherm.gaussian.GaussianLog.loadEnergy" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">loadEnergy</tt><big>(</big><em>frequencyScaleFactor=1.0</em><big>)</big><a class="headerlink" href="#rmgpy.cantherm.gaussian.GaussianLog.loadEnergy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load the energy in J/mol from a Gaussian log file. The file is checked 
 for a complete basis set extrapolation; if found, that value is 
 returned. Only the last energy in the file is returned. The zero-point
@@ -136,7 +136,7 @@ result of a Gaussian &#8220;Scan&#8221; quantum chemistry calculation.</p>
 <dl class="method">
 <dt id="rmgpy.cantherm.gaussian.GaussianLog.loadZeroPointEnergy">
 <tt class="descname">loadZeroPointEnergy</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.cantherm.gaussian.GaussianLog.loadZeroPointEnergy" title="Permalink to this definition">¶</a></dt>
-<dd><p>Load the zero-point energy in J/mol from a Gaussian log file.</p>
+<dd><p>Load the unscaled zero-point energy in J/mol from a Gaussian log file.</p>
 </dd></dl>
 
 </dd></dl>
