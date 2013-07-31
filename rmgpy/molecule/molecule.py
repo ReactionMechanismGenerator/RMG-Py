@@ -40,8 +40,7 @@ import logging
 import os
 import re
 import element as elements
-import openbabel
-import rdkit
+
 from rdkit import Chem
 from .graph import Vertex, Edge, Graph
 from .group import GroupAtom, GroupBond, Group, ActionError
