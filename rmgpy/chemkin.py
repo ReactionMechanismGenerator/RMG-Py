@@ -356,7 +356,10 @@ def readKineticsEntry(entry, speciesDict, Aunits, Eunits):
                 # Assume a list of collider efficiencies
                 try:
                     for collider, efficiency in zip(case_preserved_tokens[0::2], case_preserved_tokens[1::2]):
-                        efficiencies[speciesDict[collider.strip()].molecule[0]] = float(efficiency.strip())
+                        if collider.strip() in speciesDict:
+                            efficiencies[speciesDict[collider.strip()].molecule[0]] = float(efficiency.strip())
+                        else:
+                            efficiencies[speciesDict[collider.strip().upper()].molecule[0]] = float(efficiency.strip())
                 except IndexError:
                     error_msg = 'Could not read collider efficiencies for reaction: {0}.\n'.format(reaction)
                     error_msg += 'The following line was parsed incorrectly:\n{0}'.format(line)
