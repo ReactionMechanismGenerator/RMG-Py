@@ -293,7 +293,7 @@ class MoleculeDrawer:
         for atom in atoms:
             index = rdAtomIdx[atom]
             point = rdmol.GetConformer(0).GetAtomPosition(index)
-            coordinates[index,:]= [point.x, point.y]
+            coordinates[index,:]= [point.x*0.6, point.y*0.6]
     
         return coordinates
     
