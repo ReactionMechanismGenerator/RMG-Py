@@ -1161,23 +1161,26 @@ class Molecule(Graph):
         
         return Chem.MolToSmiles(rdkitmol)
     
-    def toRDKitMol(self):
+    def toRDKitMol(self, removeHs=True, returnMapping=False):
         """
         Convert a molecular structure to a RDKit rdmol object. Uses
         `RDKit <http://rdkit.org/>`_ to perform the conversion.
-        Perceives aromaticity and removes Hydrogen atoms.
+        Perceives aromaticity and, unless removeHs==False, removes Hydrogen atoms.
+        
+        If returnMapping==True then it also returns a dictionary mapping the 
+        atoms to RDKit's atom indices.
         """
         # Sort the atoms before converting to ensure output is consistent
         # between different runs
         self.sortAtoms()
-        
         atoms = self.vertices
-        
+        rdAtomIndices = {} # dictionary of RDKit atom indices
         rdkitmol = Chem.rdchem.EditableMol(Chem.rdchem.Mol())
         for index, atom in enumerate(self.vertices):
             rdAtom = Chem.rdchem.Atom(atom.element.symbol)
             rdAtom.SetNumRadicalElectrons(atom.radicalElectrons)
             rdkitmol.AddAtom(rdAtom)
+            rdAtomIndices[atom] = index
         
         rdBonds = Chem.rdchem.BondType
         orders = {'S': rdBonds.SINGLE, 'D': rdBonds.DOUBLE, 'T': rdBonds.TRIPLE, 'B': rdBonds.AROMATIC}
@@ -1193,8 +1196,11 @@ class Molecule(Graph):
         # Make editable mol into a mol and rectify the molecule
         rdkitmol = rdkitmol.GetMol()
         Chem.SanitizeMol(rdkitmol)
-        rdkitmol = Chem.RemoveHs(rdkitmol)
+        if removeHs:
+            rdkitmol = Chem.RemoveHs(rdkitmol)
         
+        if returnMapping:
+            return rdkitmol, rdAtomIndices
         return rdkitmol
 
     def toAdjacencyList(self, label='', removeH=False):
