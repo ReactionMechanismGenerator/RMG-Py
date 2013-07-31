@@ -12,26 +12,7 @@ database(
 species(
     label='HXD13',
     reactive=True,
-    structure=CML(
-        """
-        <molecule>
-            <atomArray>
-                <atom id="a1" elementType="C" />
-                <atom id="a2" elementType="C" />
-                <atom id="a3" elementType="C" />
-                <atom id="a4" elementType="C" />
-                <atom id="a5" elementType="C" />
-                <atom id="a6" elementType="C" />
-            </atomArray>
-            <bondArray>
-                <bond atomRefs2="a1 a2" order="D" />
-                <bond atomRefs2="a2 a3" order="S" />
-                <bond atomRefs2="a3 a4" order="D" />
-                <bond atomRefs2="a4 a5" order="S" />
-                <bond atomRefs2="a5 a6" order="S" />
-            </bondArray>
-        </molecule>
-        """),
+    structure=SMILES("C=CC=CCC"),
 )
 species(
     label='CH4',
