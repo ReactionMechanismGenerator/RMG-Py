@@ -462,10 +462,7 @@ class Bond(Edge):
         else:
             raise ActionError('Unable to update GroupBond: Invalid action {0}.'.format(action))
 
-################################################################################
-SMILEwriter = openbabel.OBConversion()
-SMILEwriter.SetOutFormat('smi')
-SMILEwriter.SetOptions("i",SMILEwriter.OUTOPTIONS) # turn off isomer and stereochemistry information (the @ signs!)
+#################################################################################
     
 class Molecule(Graph):
     """
