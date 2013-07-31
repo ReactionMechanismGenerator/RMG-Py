@@ -123,7 +123,11 @@ class Species(rmgpy.species.Species):
                         molecule.updateAtomTypes()
                         tdata = database.thermo.estimateRadicalThermoViaHBI(molecule, quantumMechanics.getThermoData)
                         thermo.append(tdata)
-                    H298 = numpy.array([t.getEnthalpy(298.) for t in thermo])
+                    thermoVals = []
+                    for t in thermo:
+                        if t is not None:
+                            thermoVals.append(t)
+                    H298 = numpy.array([t.getEnthalpy(298.) for t in thermoVals])
                     indices = H298.argsort()
                     for i, ind in enumerate(indices):
                         logging.info("Resonance isomer {0} {1} gives H298={2:.0f} J/mol".format(i, self.molecule[ind].toSMILES(), H298[ind]))
