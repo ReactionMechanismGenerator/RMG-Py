@@ -124,13 +124,16 @@ class Species(rmgpy.species.Species):
                         tdata = database.thermo.estimateRadicalThermoViaHBI(molecule, quantumMechanics.getThermoData)
                         if tdata is not None:
                             thermo.append(tdata)
-                    H298 = numpy.array([t.getEnthalpy(298.) for t in thermo])
-                    indices = H298.argsort()
-                    for i, ind in enumerate(indices):
-                        logging.info("Resonance isomer {0} {1} gives H298={2:.0f} J/mol".format(i, self.molecule[ind].toSMILES(), H298[ind]))
-                    self.molecule = [self.molecule[ind] for ind in indices]
-                    molecule = self.molecule[0]
-                    thermo0 = thermo[indices[0]]
+                    if thermo is not None:
+                        H298 = numpy.array([t.getEnthalpy(298.) for t in thermo])
+                        indices = H298.argsort()
+                        for i, ind in enumerate(indices):
+                            logging.info("Resonance isomer {0} {1} gives H298={2:.0f} J/mol".format(i, self.molecule[ind].toSMILES(), H298[ind]))
+                        self.molecule = [self.molecule[ind] for ind in indices]
+                        molecule = self.molecule[0]
+                        thermo0 = thermo[indices[0]]
+                    else:
+                        pass
                     
                     with open('thermoHBIcheck.txt','a') as f:
                         f.write('// {0!r}\n'.format(thermo0).replace('),','),\n//           '))
