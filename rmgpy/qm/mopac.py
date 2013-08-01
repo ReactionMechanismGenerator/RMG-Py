@@ -52,12 +52,12 @@ class Mopac:
     #: ALL of these must be present in a successful job.
     successKeys = [
                    'DESCRIPTION OF VIBRATIONS',
+                   'MOPAC DONE'
                   ]
 
     def testReady(self):
         if not os.path.exists(self.executablePath):
-            raise Exception("Couldn't find MOPAC 2012 executable at {0}. Try setting your MOPAC_DIR environment variable.".format(self.executablePath))
-
+            raise Exception("Couldn't find MOPAC executable at {0}. Try setting your MOPAC_DIR environment variable.".format(self.executablePath))
 
     def run(self):
         self.testReady()
