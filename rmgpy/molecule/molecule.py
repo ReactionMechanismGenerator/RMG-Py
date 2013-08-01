@@ -934,6 +934,8 @@ class Molecule(Graph):
         This Kekulizes everything, removing all aromatic atom types.
         """
         rdkitmol = Chem.MolFromSmiles(smilesstr)
+        if rdkitmol is None:
+            raise ValueError("Could not interpret the SMILES string {0!r}".format(smilesstr))
         self.fromRDKitMol(rdkitmol)
         return self
         
