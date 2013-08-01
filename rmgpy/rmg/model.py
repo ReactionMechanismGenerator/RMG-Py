@@ -139,13 +139,14 @@ class Species(rmgpy.species.Species):
                 else: # Not too many radicals: do a direct calculation.
                     thermo0 = quantumMechanics.getThermoData(molecule) # returns None if it fails
                 
-                # Write the QM molecule thermo to a library so that can be used in future RMG jobs.
-                quantumMechanics.database.loadEntry(index = len(quantumMechanics.database.entries) + 1,
-                                                    label = molecule.toSMILES(),
-                                                    molecule = molecule.toAdjacencyList(),
-                                                    thermo = thermo0,
-                                                    shortDesc = thermo0.comment
-                                                    )                    
+                if thermo0 is not None:
+                    # Write the QM molecule thermo to a library so that can be used in future RMG jobs.
+                    quantumMechanics.database.loadEntry(index = len(quantumMechanics.database.entries) + 1,
+                                                        label = molecule.toSMILES(),
+                                                        molecule = molecule.toAdjacencyList(),
+                                                        thermo = thermo0,
+                                                        shortDesc = thermo0.comment
+                                                        )                    
         if thermo0 is None:
             thermo0 = database.thermo.getThermoData(self)
 
