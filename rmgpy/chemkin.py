@@ -62,6 +62,12 @@ class ChemkinError(Exception):
 
 ################################################################################
 
+def Ffloat(string):
+    """
+    Parse a Fortran-ish string into a float, like "1.00D 03"
+    """
+    return float(string.replace("D", "E").replace("E ", "E+"))
+    
 def readThermoEntry(entry, Tmin=0, Tint=0, Tmax=0):
     """
     Read a thermodynamics `entry` for one species in a Chemkin file. Returns
@@ -102,22 +108,22 @@ def readThermoEntry(entry, Tmin=0, Tint=0, Tmax=0):
             Tint = float(lines[0][65:75].strip())
         except ValueError:
             pass
-        a0_high = float(lines[1][0:15].strip())
-        a1_high = float(lines[1][15:30].strip())
-        a2_high = float(lines[1][30:45].strip())
-        a3_high = float(lines[1][45:60].strip())
-        a4_high = float(lines[1][60:75].strip())
+        a0_high = Ffloat(lines[1][0:15].strip())
+        a1_high = Ffloat(lines[1][15:30].strip())
+        a2_high = Ffloat(lines[1][30:45].strip())
+        a3_high = Ffloat(lines[1][45:60].strip())
+        a4_high = Ffloat(lines[1][60:75].strip())
     
-        a5_high = float(lines[2][0:15].strip())
-        a6_high = float(lines[2][15:30].strip())
-        a0_low = float(lines[2][30:45].strip())
-        a1_low = float(lines[2][45:60].strip())
-        a2_low = float(lines[2][60:75].strip())
+        a5_high = Ffloat(lines[2][0:15].strip())
+        a6_high = Ffloat(lines[2][15:30].strip())
+        a0_low = Ffloat(lines[2][30:45].strip())
+        a1_low = Ffloat(lines[2][45:60].strip())
+        a2_low = Ffloat(lines[2][60:75].strip())
     
-        a3_low = float(lines[3][0:15].strip())
-        a4_low = float(lines[3][15:30].strip())
-        a5_low = float(lines[3][30:45].strip())
-        a6_low = float(lines[3][45:60].strip())
+        a3_low = Ffloat(lines[3][0:15].strip())
+        a4_low = Ffloat(lines[3][15:30].strip())
+        a5_low = Ffloat(lines[3][30:45].strip())
+        a6_low = Ffloat(lines[3][45:60].strip())
     except (IndexError, ValueError), e:
         logging.warning('Error while reading thermo entry for species {0}'.format(species))
         logging.warning(e.message)
