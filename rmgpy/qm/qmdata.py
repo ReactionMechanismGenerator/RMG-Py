@@ -74,12 +74,12 @@ class CCLibData(QMData):
         #: data object returned by a parsing tool like CCLib.parse()
         self.cclib_data = cclib_data
         try:
-            numberOfAtoms = cclib_data.natom,
-            molecularMass = (cclib_data.molmass,'amu'),
-            energy = (cclib_data.scfenergies[-1],'eV/molecule'), # final optimized PM3 energy (cclib gives this in eV)
-            atomicNumbers = cclib_data.atomnos,
-            rotationalConstants = ([i * 1e9 for i in cclib_data.rotcons[-1]],'hertz'), # Hz. #print the final rotational constants (note that ideally we would use next to last value ([-2]) as this has more significant digits and is for the same geometry, but there is a complication for linear molecules (labeled as "Rotational constant" rather than "...constants"...there might be some ways around this like looking for "Rotational constant" string instead, but it is probably not a big deal to just use rounded values
-            atomCoords = (cclib_data.atomcoords[-1],"angstrom"), # I assume Angstrom (not Bohr?)
+            numberOfAtoms = cclib_data.natom
+            molecularMass = (cclib_data.molmass,'amu')
+            energy = (cclib_data.scfenergies[-1],'eV/molecule') # final optimized PM3 energy (cclib gives this in eV)
+            atomicNumbers = cclib_data.atomnos
+            rotationalConstants = ([i * 1e9 for i in cclib_data.rotcons[-1]],'hertz') # Hz. #print the final rotational constants (note that ideally we would use next to last value ([-2]) as this has more significant digits and is for the same geometry, but there is a complication for linear molecules (labeled as "Rotational constant" rather than "...constants"...there might be some ways around this like looking for "Rotational constant" string instead, but it is probably not a big deal to just use rounded values
+            atomCoords = (cclib_data.atomcoords[-1],"angstrom") # I assume Angstrom (not Bohr?)
             frequencies = (cclib_data.vibfreqs, "cm^-1") # 1/cm
 
         except AttributeError, e:
