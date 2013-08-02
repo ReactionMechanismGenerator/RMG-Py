@@ -124,7 +124,7 @@ class Species(rmgpy.species.Species):
                         tdata = database.thermo.estimateRadicalThermoViaHBI(molecule, quantumMechanics.getThermoData)
                         if tdata is not None:
                             thermo.append(tdata)
-                    if thermo is not None:
+                    if thermo:
                         H298 = numpy.array([t.getEnthalpy(298.) for t in thermo])
                         indices = H298.argsort()
                         for i, ind in enumerate(indices):
