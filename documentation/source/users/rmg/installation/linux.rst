@@ -33,14 +33,31 @@ The instructions listed below have been confirmed on a fresh Ubuntu 12.04 instal
 
 * Install RDKit
 
-  Installation instructions: http://code.google.com/p/rdkit/wiki/GettingStarted
-  **Build it with InChI support.**
+  Full installation instructions: http://code.google.com/p/rdkit/wiki/GettingStarted
+  Be sure to **build it with InChI support.** Here's a synopsis::
   
+	cd ~
+	sudo apt-get install flex bison build-essential python-numpy cmake python-dev sqlite3 libsqlite3-dev
+libboost-dev libboost-python-dev libboost-regex-dev
+	git clone https://github.com/rdkit/rdkit.git
+	cd rdkit
+	export RDBASE=`pwd`
+  	export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$RDBASE/lib
+  	export PYTHONPATH=$PYTHONPATH:$RDBASE
+	cd External/INCHI-API
+	./download-inchi.sh
+	cd ../../
+	mkdir build
+	cd build
+	cmake .. -DRDK_BUILD_INCHI_SUPPORT=ON
+	make
+	make install
+	
   You'll need various environment variables set (you may want to add these to your `.bash_profile` file), eg.::
   
   	export RDBASE=$HOME/rdkit # CHECK THIS (maybe you put RDKit somewhere else)
   	export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$RDBASE/lib
-  	export PYTHONPATH=$PYTHONPATH:$RDBASE
+  	export PYTHONPATH=$PYTHONPATH:$RDBASE  # (or some other way to make sure it's on your Python path)
 
 * Install RMG-Py: ::
 
