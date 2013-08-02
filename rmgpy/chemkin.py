@@ -62,7 +62,7 @@ class ChemkinError(Exception):
 
 ################################################################################
 
-def readThermoEntry(entry):
+def readThermoEntry(entry, Tmin=0, Tint=0, Tmax=0):
     """
     Read a thermodynamics `entry` for one species in a Chemkin file. Returns
     the label of the species and the thermodynamics model as a :class:`NASA`
@@ -90,10 +90,18 @@ def readThermoEntry(entry):
     # Extract the NASA polynomial coefficients
     # Remember that the high-T polynomial comes first!
     try:
-        Tmin = float(lines[0][45:55].strip())
-        Tmax = float(lines[0][55:65].strip())
-        Tint = float(lines[0][65:75].strip())
-    
+        try:
+            Tmin = float(lines[0][45:55].strip())
+        except ValueError:
+            pass
+        try:
+            Tmax = float(lines[0][55:65].strip())
+        except ValueError:
+            pass
+        try:
+            Tint = float(lines[0][65:75].strip())
+        except ValueError:
+            pass
         a0_high = float(lines[1][0:15].strip())
         a1_high = float(lines[1][15:30].strip())
         a2_high = float(lines[1][30:45].strip())
@@ -876,6 +884,22 @@ def readThermoBlock(f, speciesDict):
     line = f.readline()
     assert line.upper().strip().startswith('THER'), "'{0}' doesn't begin with THERM statement.".format(line)
     line = f.readline()
+    
+    # In case there are commented lines immediately after THER
+    meaningfulline, comment = removeCommentFromLine(line)
+    while not meaningfulline.strip():
+        line = f.readline()
+        meaningfulline, comment = removeCommentFromLine(line)
+    Tmin = Tint = Tmax = None
+    try:
+        Tmin = float(meaningfulline[0:9].strip())
+        Tint = float(meaningfulline[10:19].strip())
+        Tmax = float(meaningfulline[20:29].strip())
+        logging.info("Thermo file has default temperature range {0} to {1} and {1} to {2}".format(Tmin, Tint, Tmax))
+        line = f.readline()
+    except:
+        logging.info("Thermo file has no default temperature ranges")
+    
     thermoBlock = ''
     comments = ''
     while line != '' and not line.upper().strip().startswith('END'):
@@ -885,7 +909,7 @@ def readThermoBlock(f, speciesDict):
             if line[79] in ['1', '2', '3', '4']:
                 thermoBlock += line
                 if line[79] == '4':
-                    label, thermo, formula = readThermoEntry(thermoBlock)
+                    label, thermo, formula = readThermoEntry(thermoBlock, Tmin=Tmin, Tint=Tint, Tmax=Tmax)
                     if label not in speciesDict:
                         logging.info("Ignoring thermo data for {0}.".format(label))
                         thermoBlock = ''
