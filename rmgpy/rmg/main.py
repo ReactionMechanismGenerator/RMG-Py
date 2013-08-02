@@ -480,6 +480,8 @@ class RMG:
         self.saveOutputHTML()
         # Save a Chemkin file containing the current model core
         self.saveChemkinFile()
+        # Save a Chemkin file containing the current model edge
+        self.saveChemkinFileEdge()
         # Save the restart file if desired
         if self.saveRestartPeriod or self.done:
             self.saveRestartFile( os.path.join(self.outputDirectory,'restart.pkl'),
@@ -630,6 +632,20 @@ class RMG:
         latest_chemkin_verbose_path = os.path.join(self.outputDirectory, 'chemkin', 'chem_annotated.inp')
         latest_dictionary_path = os.path.join(self.outputDirectory, 'chemkin','species_dictionary.txt')
         self.reactionModel.saveChemkinFile(this_chemkin_path, latest_chemkin_verbose_path, latest_dictionary_path)
+        if os.path.exists(latest_chemkin_path):
+            os.unlink(latest_chemkin_path)
+        shutil.copy2(this_chemkin_path,latest_chemkin_path)
+        
+    def saveChemkinFileEdge(self):
+        """
+        Save the current reaction edge to a Chemkin file.
+        """        
+        logging.info('Saving current edge to Chemkin file...')
+        this_chemkin_path = os.path.join(self.outputDirectory, 'chemkin', 'chem_edge%04i.inp' % len(self.reactionModel.edge.species))
+        latest_chemkin_path = os.path.join(self.outputDirectory, 'chemkin','chem_edge.inp')
+        latest_chemkin_verbose_path = os.path.join(self.outputDirectory, 'chemkin', 'chem_edge_annotated.inp')
+        latest_dictionary_path = os.path.join(self.outputDirectory, 'chemkin','species_edge_dictionary.txt')
+        self.reactionModel.saveChemkinFileEdge(this_chemkin_path, latest_chemkin_verbose_path, latest_dictionary_path)
         if os.path.exists(latest_chemkin_path):
             os.unlink(latest_chemkin_path)
         shutil.copy2(this_chemkin_path,latest_chemkin_path)
