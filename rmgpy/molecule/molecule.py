@@ -1036,6 +1036,8 @@ class Molecule(Graph):
         `RDKit <http://rdkit.org/>`_ to perform the conversion.
         Perceives aromaticity.
         """
+        if not Chem.inchi.INCHI_AVAILABLE:
+            return "RDKitInstalledWithoutInChI"
         rdkitmol = self.toRDKitMol()
         return Chem.inchi.MolToInchi(rdkitmol)
     
@@ -1061,8 +1063,9 @@ class Molecule(Graph):
         Removes check-sum dash (-) and character so that only 
         the 14 + 9 characters remain.
         """
+        if not Chem.inchi.INCHI_AVAILABLE:
+            return "RDKitInstalledWithoutInChI"
         inchi = self.toInChI()
-        
         return Chem.inchi.InchiToInchiKey(inchi)[:-2]
     
     def toAugmentedInChIKey(self):
