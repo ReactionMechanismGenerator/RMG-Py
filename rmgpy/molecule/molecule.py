@@ -933,11 +933,18 @@ class Molecule(Graph):
         `RDKit <http://rdkit.org/>`_ to perform the conversion.
         This Kekulizes everything, removing all aromatic atom types.
         """
-        rdkitmol = Chem.MolFromSmiles(smilesstr)
-        if rdkitmol is None:
-            raise ValueError("Could not interpret the SMILES string {0!r}".format(smilesstr))
-        self.fromRDKitMol(rdkitmol)
-        return self
+        # Special handling of helium
+        if smilesstr == '[He]':
+            # RDKit improperly handles helium and returns it in a triplet state
+            self.fromAdjacencyList('1 He 0')
+            return self
+        
+        else:
+            rdkitmol = Chem.MolFromSmiles(smilesstr)
+            if rdkitmol is None:
+                raise ValueError("Could not interpret the SMILES string {0!r}".format(smilesstr))
+            self.fromRDKitMol(rdkitmol)
+            return self
         
     def fromSMARTS(self, smartsstr):
         """
