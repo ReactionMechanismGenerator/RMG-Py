@@ -83,7 +83,9 @@ def readThermoEntry(entry):
                 formula[element]=int(float(count))
             
     phase = lines[0][44]
-    assert phase.upper() == 'G', "Was expecting gas phase thermo data for {0}".format(species)
+    if phase.upper() != 'G':
+        logging.warning("Was expecting gas phase thermo data for {0}. Skipping thermo data.".format(species))
+        return species, None, None
     
     # Extract the NASA polynomial coefficients
     # Remember that the high-T polynomial comes first!
@@ -108,8 +110,10 @@ def readThermoEntry(entry):
         a4_low = float(lines[3][15:30].strip())
         a5_low = float(lines[3][30:45].strip())
         a6_low = float(lines[3][45:60].strip())
-    except (IndexError, ValueError):
-        raise ChemkinError('Error while reading thermo entry for species {0}'.format(species))
+    except (IndexError, ValueError), e:
+        logging.warning('Error while reading thermo entry for species {0}'.format(species))
+        logging.warning(e.message)
+        return species, None, None
     
     # Construct and return the thermodynamics model
     thermo = NASA(
@@ -872,16 +876,25 @@ def readThermoBlock(f, speciesDict):
     line = f.readline()
     assert line.upper().strip().startswith('THER'), "'{0}' doesn't begin with THERM statement.".format(line)
     line = f.readline()
-    thermo = ''
+    thermoBlock = ''
     comments = ''
     while line != '' and not line.upper().strip().startswith('END'):
         line, comment = removeCommentFromLine(line)
         if comment: comments += comment.strip().replace('\t',', ') + '\n'
         if len(line) >= 80:
             if line[79] in ['1', '2', '3', '4']:
-                thermo += line
+                thermoBlock += line
                 if line[79] == '4':
-                    label, thermo, formula = readThermoEntry(thermo)
+                    label, thermo, formula = readThermoEntry(thermoBlock)
+                    if label not in speciesDict:
+                        logging.info("Ignoring thermo data for {0}.".format(label))
+                        thermoBlock = ''
+                        line = f.readline()
+                        continue
+                    else:
+                        if thermo is None:
+                            logging.error("Problematic thermo block:\n{0}".format(thermoBlock))
+                            raise ChemkinError('Error while reading thermo entry for species {0}'.format(label))
                     try:
                         formulaDict[label] = formula
                         speciesDict[label].thermo = thermo
@@ -892,8 +905,8 @@ def readThermoBlock(f, speciesDict):
                             pass
                         else:
                             logging.warning('Skipping unexpected species "{0}" while reading thermodynamics entry.'.format(label))
-                    thermo = ''
-                assert len(thermo.split('/n'))<=4, "Should only have 4 lines in a thermo block:\n{0}".format(thermo)
+                    thermoBlock = ''
+                assert len(thermoBlock.split('/n'))<=4, "Should only have 4 lines in a thermo block:\n{0}".format(thermoBlock)
             else:
                 logging.info("Ignoring line without 1,2,3 or 4 in 80th column: {0!r}".format(line))
         else:
