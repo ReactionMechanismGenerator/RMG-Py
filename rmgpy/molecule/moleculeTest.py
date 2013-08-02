@@ -527,6 +527,13 @@ class TestMolecule(unittest.TestCase):
         """
         self.assertEqual(self.molecule.getFormula(), 'C2H3O')
 
+
+    def testRadicalCount(self):
+        """
+        Test the Molecule.getRadicalCount() method.
+        """
+        self.assertEqual( self.molecule.getRadicalCount(), sum([atom.radicalElectrons for atom in self.molecule.atoms]) )
+        
     def testGetMolecularWeight(self):
         """
         Test the Molecule.getMolecularWeight() method.
@@ -774,6 +781,7 @@ class TestMolecule(unittest.TestCase):
         molecule = Molecule().fromSMILES('[CH]')
         self.assertEqual(molecule.atoms[0].radicalElectrons, 3)
         self.assertEqual(molecule.atoms[0].spinMultiplicity, 4)
+        self.assertEqual(molecule.getRadicalCount(), 3)
 
     def testRadicalCH2(self):
         """
@@ -782,6 +790,14 @@ class TestMolecule(unittest.TestCase):
         molecule = Molecule().fromSMILES('[CH2]')
         self.assertEqual(molecule.atoms[0].radicalElectrons, 2)
         self.assertEqual(molecule.atoms[0].spinMultiplicity, 3)
+        self.assertEqual(molecule.getRadicalCount(), 2)
+        
+    def testRadicalCH2CH2CH2(self):
+        """
+        Test radical count on [CH2]C[CH2]
+        """
+        molecule = Molecule().fromSMILES('[CH2]C[CH2]')
+        self.assertEqual(molecule.getRadicalCount(), 2)
         
     def testInChIKey(self):
         """

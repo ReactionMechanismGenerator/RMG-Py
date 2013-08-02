@@ -80,6 +80,7 @@ class Atom(Vertex):
         self.label = label
         self.atomType = None
         self.lonePairs = lonePairs
+        self.coords = list()
 
     def __str__(self):
         """
@@ -213,6 +214,7 @@ class Atom(Vertex):
         a.label = self.label
         a.atomType = self.atomType
         a.lonePairs = self.lonePairs
+        a.coords = self.coords[:]
         return a
 
     def isHydrogen(self):

@@ -45,6 +45,7 @@ from rmgpy.statmech.translation cimport *
 from rmgpy.statmech.rotation cimport *
 from rmgpy.statmech.vibration cimport *
 from rmgpy.statmech.torsion cimport *
+import logging
 
 ################################################################################
 
@@ -133,6 +134,7 @@ cdef class Conformer:
         cdef double Q = 1.0
         cdef Mode mode
         for mode in self.modes:
+            logging.debug('        Calculating Partition Function for ' + mode.__class__.__name__)
             Q *= mode.getPartitionFunction(T)
         return Q * self.spinMultiplicity * self.opticalIsomers
 

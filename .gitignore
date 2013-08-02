@@ -30,3 +30,7 @@ nbproject/*
 .project
 .pydevproject
 .settings/*
+
+# Unit test files
+.coverage
+testing/*

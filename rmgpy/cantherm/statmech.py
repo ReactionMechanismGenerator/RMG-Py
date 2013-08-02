@@ -145,8 +145,8 @@ class ScanLog:
 
 ################################################################################
 
-def hinderedRotor(scanLog, pivots, top, symmetry):
-    return [scanLog, pivots, top, symmetry]
+def hinderedRotor(scanLog, pivots, top, symmetry, fit='best'):
+    return [scanLog, pivots, top, symmetry, fit]
 
 class StatMechJob:
     """
@@ -286,17 +286,22 @@ class StatMechJob:
         conformer.mass = (mass,"amu")
         
         logging.debug('    Reading energy...')
+        # The E0 that is read from the log file is without the ZPE and corresponds to E_elec
         if E0 is None:
-            E0 = energyLog.loadEnergy()
+            E0 = energyLog.loadEnergy(self.frequencyScaleFactor)
         else:
             E0 = E0 * constants.E_h * constants.Na         # Hartree/particle to J/mol
         E0 = applyEnergyCorrections(E0, self.modelChemistry, atoms, bonds if self.applyBondEnergyCorrections else {})
         ZPE = statmechLog.loadZeroPointEnergy() * self.frequencyScaleFactor
-        E0 += ZPE
+        
+        # The E0_withZPE at this stage contains the ZPE
+        E0_withZPE = E0 + ZPE
+        
+        logging.debug('         Scaling factor used = {0:g}'.format(self.frequencyScaleFactor))
         logging.debug('         ZPE (0 K) = {0:g} kcal/mol'.format(ZPE / 4184.))
-        logging.debug('         E0 (0 K) = {0:g} kcal/mol'.format(E0 / 4184.))
+        logging.debug('         E0 (0 K) = {0:g} kcal/mol'.format(E0_withZPE / 4184.))
        
-        conformer.E0 = (E0*0.001,"kJ/mol")
+        conformer.E0 = (E0_withZPE*0.001,"kJ/mol")
         
         # If loading a transition state, also read the imaginary frequency
         if TS:
@@ -310,7 +315,7 @@ class StatMechJob:
             
             logging.debug('    Fitting {0} hindered rotors...'.format(len(rotors)))
             rotorCount = 0
-            for scanLog, pivots, top, symmetry in rotors:
+            for scanLog, pivots, top, symmetry, fit in rotors:
                 
                 # Load the hindered rotor scan energies
                 if isinstance(scanLog, GaussianLog):
@@ -337,22 +342,28 @@ class StatMechJob:
                     Vlist_cosine[i] = cosineRotor.getPotential(angle[i])
                     Vlist_fourier[i] = fourierRotor.getPotential(angle[i])
                 
-                rms_cosine = numpy.sqrt(numpy.sum((Vlist_cosine - Vlist) * (Vlist_cosine - Vlist)) / (len(Vlist) - 1)) / 4184.
-                rms_fourier = numpy.sqrt(numpy.sum((Vlist_fourier - Vlist) * (Vlist_fourier - Vlist))/ (len(Vlist) - 1)) / 4184.
+                if fit=='cosine':
+                    rotor=cosineRotor
+                elif fit =='fourier':
+                    rotor=fourierRotor
+                elif fit =='best':
                 
-                # Keep the rotor with the most accurate potential
-                rotor = cosineRotor if rms_cosine < rms_fourier else fourierRotor
-                # However, keep the cosine rotor if it is accurate enough, the
-                # fourier rotor is not significantly more accurate, and the cosine
-                # rotor has the correct symmetry 
-                if rms_cosine < 0.05 and rms_cosine / rms_fourier < 2.0 and rms_cosine / rms_fourier < 4.0 and symmetry == cosineRotor.symmetry:
-                    rotor = cosineRotor
+                    rms_cosine = numpy.sqrt(numpy.sum((Vlist_cosine - Vlist) * (Vlist_cosine - Vlist)) / (len(Vlist) - 1)) / 4184.
+                    rms_fourier = numpy.sqrt(numpy.sum((Vlist_fourier - Vlist) * (Vlist_fourier - Vlist))/ (len(Vlist) - 1)) / 4184.
                 
-                conformer.modes.append(rotor)
-                
-                self.plotHinderedRotor(angle, Vlist, cosineRotor, fourierRotor, rotor, rotorCount, directory)
-                
-                rotorCount += 1
+                    # Keep the rotor with the most accurate potential
+                    rotor = cosineRotor if rms_cosine < rms_fourier else fourierRotor
+                    # However, keep the cosine rotor if it is accurate enough, the
+                    # fourier rotor is not significantly more accurate, and the cosine
+                    # rotor has the correct symmetry 
+                    if rms_cosine < 0.05 and rms_cosine / rms_fourier < 2.0 and rms_cosine / rms_fourier < 4.0 and symmetry == cosineRotor.symmetry:
+                        rotor = cosineRotor
+                    
+                    conformer.modes.append(rotor)
+                    
+                    self.plotHinderedRotor(angle, Vlist, cosineRotor, fourierRotor, rotor, rotorCount, directory)
+                    
+                    rotorCount += 1
                        
             logging.debug('    Determining frequencies from reduced force constant matrix...')
             frequencies = numpy.array(projectRotors(conformer, F, rotors, linear, TS))
@@ -480,8 +491,9 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds):
         #Klip CCSD(T)(tz,qz)
         atomEnergies = {'H':-0.50003976 + SOC['H'], 'O':-75.00681155 + SOC['O'], 'C':-37.79029443 + SOC['C']}
     elif modelChemistry == 'CCSD(T)-F12/cc-pVTZ-F12':
-        # NOTE: THESE ARE NOT CORRECT!!!!!!
-        atomEnergies = {'H':-0.499818 , 'N':-54.520543, 'O':-74.987624, 'C':-37.785385, 'P':-340.817186}
+        # 'CCSD(T)-F12/cc-pVTZ-F12' calculated by CCLass
+        atomEnergies = {'H':-0.49994557 + SOC['H'], 'N':-54.43186873 + SOC['N'], 'O':-74.92259120 + SOC['O'], 
+                        'C':-37.73766692 + SOC['C'], 'P':-340.77098640 + SOC['P'], 'S': -397.62496049 + SOC['S']}
     else:
         logging.warning('Unknown model chemistry "{0}"; not applying energy corrections.'.format(modelChemistry))
         return E0
@@ -549,7 +561,7 @@ def projectRotors(conformer, F, rotors, linear, TS):
         if not linear:
             D[3*i:3*i+3,5] = numpy.array([-coordinates[i,1], coordinates[i,0], 0], numpy.float64)
     for i, rotor in enumerate(rotors):
-        scanLog, pivots, top, symmetry = rotor
+        scanLog, pivots, top, symmetry, fit = rotor
         # Determine pivot atom
         if pivots[0] in top: pivot = pivots[0]
         elif pivots[1] in top: pivot = pivots[1]

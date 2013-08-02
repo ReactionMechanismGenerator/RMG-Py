@@ -29,12 +29,13 @@
 ################################################################################
 
 import logging
+import quantities
 import os
 
 from rmgpy import settings
 
 from rmgpy.molecule import Molecule
-
+from rmgpy.quantity import Quantity
 from rmgpy.data.rmg import RMGDatabase
 from rmgpy.quantity import Quantity
 from rmgpy.solver.base import TerminationTime, TerminationConversion
@@ -51,7 +52,15 @@ class InputError(Exception): pass
 rmg = None
 speciesDict = {}
 
-def database(thermoLibraries=None, reactionLibraries=None, frequenciesLibraries=None, seedMechanisms=None, kineticsFamilies='default', kineticsDepositories='default', kineticsEstimator='group additivity'):
+def database(
+             thermoLibraries = None,
+             reactionLibraries = None,
+             frequenciesLibraries = None,
+             seedMechanisms = None,
+             kineticsFamilies = 'default',
+             kineticsDepositories = 'default',
+             kineticsEstimator = 'group additivity',
+             ):
     # This function just stores the information about the database to be loaded
     # We don't actually load the database until after we're finished reading
     # the input file
@@ -100,7 +109,14 @@ def adjacencyList(string):
     return Molecule().fromAdjacencyList(string)
 
 # Reaction systems
-def simpleReactor(temperature, pressure, initialMoleFractions, terminationConversion=None, terminationTime=None):
+def simpleReactor(temperature,
+                  pressure,
+                  initialMoleFractions,
+                  terminationConversion=None,
+                  terminationTime=None,
+                  sensitivity=None,
+                  sensitivityThreshold=1e-3
+                  ):
     logging.debug('Found SimpleReactor reaction system')
 
     if sum(initialMoleFractions.values()) != 1:
@@ -120,7 +136,11 @@ def simpleReactor(temperature, pressure, initialMoleFractions, terminationConver
     if len(termination) == 0:
         raise InputError('No termination conditions specified for reaction system #{0}.'.format(len(rmg.reactionSystems)+2))
     
-    system = SimpleReactor(T, P, initialMoleFractions, termination)
+    sensitivitySpecies = []
+    if sensitivity:
+        for spec in sensitivity:
+            sensitivitySpecies.append(speciesDict[spec])
+    system = SimpleReactor(T, P, initialMoleFractions, termination, sensitivitySpecies, sensitivityThreshold)
     rmg.reactionSystems.append(system)
 
 def simulator(atol, rtol):
@@ -133,7 +153,31 @@ def model(toleranceMoveToCore, toleranceKeepInEdge=0.0, toleranceInterruptSimula
     rmg.fluxToleranceInterrupt = toleranceInterruptSimulation
     rmg.maximumEdgeSpecies = maximumEdgeSpecies
 
-def pressureDependence(method, temperatures, pressures, maximumGrainSize=0.0, minimumNumberOfGrains=0, interpolation=None, maximumAtoms=None):
+def quantumMechanics(
+                    software,
+                    fileStore = None,
+                    scratchDirectory = None,
+                    onlyCyclics = False,
+                    maxRadicalNumber = 0,
+                    ):
+    from rmgpy.qm.main import QMCalculator
+    rmg.quantumMechanics = QMCalculator()
+    rmg.quantumMechanics.settings.software = software
+    rmg.quantumMechanics.settings.fileStore = fileStore
+    rmg.quantumMechanics.settings.scratchDirectory = scratchDirectory
+    rmg.quantumMechanics.settings.onlyCyclics = onlyCyclics
+    rmg.quantumMechanics.settings.maxRadicalNumber = maxRadicalNumber
+                    
+
+def pressureDependence(
+                       method,
+                       temperatures,
+                       pressures,
+                       maximumGrainSize = 0.0,
+                       minimumNumberOfGrains = 0,
+                       interpolation = None,
+                       maximumAtoms=None,
+                       ):
 
     from rmgpy.cantherm.pdep import PressureDependenceJob
     
@@ -236,6 +280,7 @@ def readInputFile(path, rmg0):
         'simpleReactor': simpleReactor,
         'simulator': simulator,
         'model': model,
+        'quantumMechanics': quantumMechanics,
         'pressureDependence': pressureDependence,
         'options': options,
         'generatedSpeciesConstraints': generatedSpeciesConstraints,
@@ -314,6 +359,12 @@ def saveInputFile(path, rmg):
             f.write('    terminationConversion = {\n')
             f.write(conversions)
             f.write('    },\n')
+        
+        # Sensitivity analysis
+        if system.sensitivity:
+            f.write('    sensitivity = {0},\n'.format(system.sensitivity))       
+        if system.sensitivityThreshold:
+            f.write('    sensitivityThreshold = {0},\n'.format(system.sensitivity))      
         
         f.write(')\n\n')
         

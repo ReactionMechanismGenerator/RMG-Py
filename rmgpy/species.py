@@ -83,7 +83,10 @@ class Species(object):
     `energyTransferModel`   The collisional energy transfer model to use
     `reactive`              ``True`` if the species participates in reactions, ``False`` if not
     ======================= ====================================================
+
+    note::
     
+        :class:`rmg.model.Species` inherits from this class, and adds some extra methods.
     """
 
     def __init__(self, index=-1, label='', thermo=None, conformer=None, 
@@ -352,7 +355,7 @@ class Species(object):
 
 ################################################################################
 
-class TransitionState:
+class TransitionState():
     """
     A chemical transition state, representing a first-order saddle point on a
     potential energy surface. The attributes are:
@@ -366,7 +369,6 @@ class TransitionState:
     `tunneling`     The type of tunneling model to use for tunneling through the reaction barrier
     `degeneracy`    The reaction path degeneracy
     =============== ============================================================
-
     """
 
     def __init__(self, label='', conformer=None, frequency=None, tunneling=None, degeneracy=1):
