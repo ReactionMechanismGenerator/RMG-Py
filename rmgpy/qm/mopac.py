@@ -112,8 +112,10 @@ class Mopac:
                     if logFileInChI == self.uniqueIDlong:
                         InChIMatch = True
                     else:
-                        logging.info("InChI in log file ({0}) didn't match that in geometry ({1}).".format(logFileInChI, self.uniqueIDlong))                    
-        
+                        logging.warning("InChI in log file ({0}) didn't match that in geometry ({1}).".format(logFileInChI, self.uniqueIDlong))                    
+                        if self.uniqueIDlong.startswith(logFileInChI):
+                            logging.warning("but the beginning matches so it's probably just a truncation problem.")
+                            InChIMatch = True
         # Check that ALL 'success' keywords were found in the file.
         if not all( successKeysFound.values() ):
             logging.error('Not all of the required keywords for success were found in the output file!')
