@@ -82,6 +82,7 @@ UNIMOLECULAR_KINETICS_FAMILIES = [
     'intra_substitutionCS_isomerization',
     'intra_substitutionS_cyclization',
     'intra_substitutionS_isomerization',
+    'intra_NO2_ONO_conversion',
 ]
 
 ################################################################################
