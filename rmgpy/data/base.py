@@ -176,12 +176,12 @@ class Database:
         provide these.
         """
 
-        # Collision efficiencies are in SMILES format, so we'll need OpenBabel
+        # Collision efficiencies are in SMILES format, so we'll need RDKit
         # to convert them to Molecule objects
         # Do the import here to ensure it is imported from a pure Python
         # environment (as opposed to a Cythonized environment, which is not
         # allowed during an exec() call)
-        import pybel
+        from rdkit import Chem
 
         # Clear any previously-loaded data
         self.entries = {}

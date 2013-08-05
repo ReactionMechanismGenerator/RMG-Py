@@ -96,8 +96,8 @@ def species(label, structure, reactive=True):
     rmg.initialSpecies.append(spec)
     speciesDict[label] = spec
     
-def CML(string):
-    return Molecule().fromCML(string)
+def SMARTS(string):
+    return Molecule().fromSMARTS(string)
 
 def SMILES(string):
     return Molecule().fromSMILES(string)
@@ -273,7 +273,7 @@ def readInputFile(path, rmg0):
         'False': False,
         'database': database,
         'species': species,
-        'CML': CML,
+        'SMARTS': SMARTS,
         'SMILES': SMILES,
         'InChI': InChI,
         'adjacencyList': adjacencyList,

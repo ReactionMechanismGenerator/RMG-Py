@@ -1,6 +1,5 @@
 import os
-
-import openbabel
+import re
 import external.cclib as cclib
 import logging
 from subprocess import Popen, PIPE
@@ -157,18 +156,27 @@ class MopacMol(QMMolecule, Mopac):
         for the `attmept`th attempt.
         """
         
-        obConversion = openbabel.OBConversion()
-        obConversion.SetInAndOutFormats("mol", "mop")
-        mol = openbabel.OBMol()
-
-        obConversion.ReadFile(mol, self.getMolFilePathForCalculation(attempt) )
+        molfile = self.getMolFilePathForCalculation(attempt) 
+        atomline = re.compile('\s*([\- ][0-9.]+)\s+([\- ][0-9.]+)+\s+([\- ][0-9.]+)\s+([A-Za-z]+)')
         
-        mol.SetTitle(self.geometry.uniqueIDlong)
-        obConversion.SetOptions('k', openbabel.OBConversion.OUTOPTIONS)
-        input_string = obConversion.WriteString(mol)
+        output = [ self.geometry.uniqueIDlong, '' ]
+ 
+        atomCount = 0
+        with open(molfile) as molinput:
+            for line in molinput:
+                match = atomline.match(line)
+                if match:
+                    output.append("{0:4s} {1} 1 {2} 1 {3} 1".format(match.group(4), match.group(1), match.group(2), match.group(3)))
+                    atomCount += 1
+        assert atomCount == len(self.molecule.atoms)
+    
+        output.append('')
+        input_string = '\n'.join(output)
+        
         top_keys, bottom_keys, polar_keys = self.inputFileKeywords(attempt)
         with open(self.inputFilePath, 'w') as mopacFile:
             mopacFile.write(top_keys)
+            mopacFile.write('\n')
             mopacFile.write(input_string)
             mopacFile.write('\n')
             mopacFile.write(bottom_keys)
