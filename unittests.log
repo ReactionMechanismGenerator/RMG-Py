@@ -174,12 +174,18 @@ Test the AtomType.isSpecificCaseOf() method. ... ok
 Test that we can reconstruct an AtomType object from its repr() ... ok
 Test that an AtomType object can be successfully pickled and ... ok
 Test the AtomType.setActions() method. ... ok
-Test that getAtomType() returns appropriate carbon atom types. ... ok
-Test that getAtomType() returns the hydrogen atom type. ... ok
-Test that getAtomType() returns appropriate NoneTypes. ... ok
-Test that getAtomType() returns appropriate oxygen atom types. ... ok
-Test that getAtomType() returns appropriate silicon atom types. ... ok
-Test that getAtomType() returns appropriate sulfur atom types. ... ok
+Test that getAtomType() returns appropriate carbon atom types. ... [12:16:20] Explicit valence for atom # 2 O, 3, is greater than permitted
+ERROR
+Test that getAtomType() returns the hydrogen atom type. ... [12:16:20] Explicit valence for atom # 2 O, 3, is greater than permitted
+ERROR
+Test that getAtomType() returns appropriate NoneTypes. ... [12:16:20] Explicit valence for atom # 2 O, 3, is greater than permitted
+ERROR
+Test that getAtomType() returns appropriate oxygen atom types. ... [12:16:20] Explicit valence for atom # 2 O, 3, is greater than permitted
+ERROR
+Test that getAtomType() returns appropriate silicon atom types. ... [12:16:20] Explicit valence for atom # 2 O, 3, is greater than permitted
+ERROR
+Test that getAtomType() returns appropriate sulfur atom types. ... [12:16:20] Explicit valence for atom # 2 O, 3, is greater than permitted
+ERROR
 Test the rmgpy.elements.getElement() method. ... ok
 Test that we can reconstruct an Element object from its repr() ... ok
 Test that an Element object can be successfully pickled and ... ok
@@ -275,9 +281,9 @@ Test the Bond.isSpecificCaseOf() method. ... ok
 Test the Bond.isTriple() method. ... ok
 Test that a Bond object can be successfully pickled and ... ok
 Check the adjacency list read/write functions for a full molecule. ... ok
+Test the Molecule.isAromatic() method. ... FAIL
 Test the Molecule.isAromatic() method. ... ok
-Test the Molecule.isAromatic() method. ... ok
-Test the Molecule.isAromatic() method. ... ok
+Test the Molecule.isAromatic() method. ... FAIL
 Test that Augmented InChI generation is printing the /mult layer ... ok
 Test that Augmented InChI Key generation is printing the mult layer ... ok
 Test the Molecule.clearLabeledAtoms() method. ... ok
@@ -296,7 +302,8 @@ Test the Molecule.getLabeledAtoms() method. ... ok
 Test the Molecule.getLabeledAtom() method. ... ok
 Test the Molecule.getLabeledAtoms() method. ... ok
 Test the Molecule.getMolecularWeight() method. ... ok
-Test that InChI Key generation is working properly. ... ok
+Test that InChI Key generation is working properly. ... [12:16:20] WARNING: Omitted undefined stereo
+ok
 Test the Molecule.isInCycle() method with ethane. ... ok
 Test the Molecule.isInCycle() method with ethane. ... ok
 Check the graph isomorphism functions. ... ok
@@ -344,7 +351,7 @@ Test the Molecule.calculateBondSymmetryNumber() method. ... ok
 Test the Molecule.calculateBondSymmetryNumber() method. ... ok
 Test the Molecule.calculateBondSymmetryNumber() method. ... ok
 Test the Molecule.calculateBondSymmetryNumber() method. ... ok
-Test the Molecule.calculateCyclicSymmetryNumber() method. ... ok
+Test the Molecule.calculateCyclicSymmetryNumber() method. ... FAIL
 Test the Molecule.calculateCyclicSymmetryNumber() method. ... ok
 Test the Molecule.calculateCyclicSymmetryNumber() method. ... ok
 Test the Molecule.calculateCyclicSymmetryNumber() method. ... ok
@@ -717,6 +724,66 @@ Traceback (most recent call last):
 IOError: [Errno 2] No such file or directory: '/export/thishost/comocheng/build/RMG-database/input/thermo/depository/stable.py'
 
 ======================================================================
+ERROR: Test that getAtomType() returns appropriate carbon atom types.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/atomtypeTest.py", line 110, in setUp
+    self.mol1 = Molecule().fromSMILES('COO=CC=C=CC#C')
+  File "molecule.py", line 930, in rmgpy.molecule.molecule.Molecule.fromSMILES (build/pyrex/rmgpy/molecule/molecule.c:15075)
+  File "molecule.py", line 945, in rmgpy.molecule.molecule.Molecule.fromSMILES (build/pyrex/rmgpy/molecule/molecule.c:14996)
+ValueError: Could not interpret the SMILES string 'COO=CC=C=CC#C'
+
+======================================================================
+ERROR: Test that getAtomType() returns the hydrogen atom type.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/atomtypeTest.py", line 110, in setUp
+    self.mol1 = Molecule().fromSMILES('COO=CC=C=CC#C')
+  File "molecule.py", line 930, in rmgpy.molecule.molecule.Molecule.fromSMILES (build/pyrex/rmgpy/molecule/molecule.c:15075)
+  File "molecule.py", line 945, in rmgpy.molecule.molecule.Molecule.fromSMILES (build/pyrex/rmgpy/molecule/molecule.c:14996)
+ValueError: Could not interpret the SMILES string 'COO=CC=C=CC#C'
+
+======================================================================
+ERROR: Test that getAtomType() returns appropriate NoneTypes.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/atomtypeTest.py", line 110, in setUp
+    self.mol1 = Molecule().fromSMILES('COO=CC=C=CC#C')
+  File "molecule.py", line 930, in rmgpy.molecule.molecule.Molecule.fromSMILES (build/pyrex/rmgpy/molecule/molecule.c:15075)
+  File "molecule.py", line 945, in rmgpy.molecule.molecule.Molecule.fromSMILES (build/pyrex/rmgpy/molecule/molecule.c:14996)
+ValueError: Could not interpret the SMILES string 'COO=CC=C=CC#C'
+
+======================================================================
+ERROR: Test that getAtomType() returns appropriate oxygen atom types.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/atomtypeTest.py", line 110, in setUp
+    self.mol1 = Molecule().fromSMILES('COO=CC=C=CC#C')
+  File "molecule.py", line 930, in rmgpy.molecule.molecule.Molecule.fromSMILES (build/pyrex/rmgpy/molecule/molecule.c:15075)
+  File "molecule.py", line 945, in rmgpy.molecule.molecule.Molecule.fromSMILES (build/pyrex/rmgpy/molecule/molecule.c:14996)
+ValueError: Could not interpret the SMILES string 'COO=CC=C=CC#C'
+
+======================================================================
+ERROR: Test that getAtomType() returns appropriate silicon atom types.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/atomtypeTest.py", line 110, in setUp
+    self.mol1 = Molecule().fromSMILES('COO=CC=C=CC#C')
+  File "molecule.py", line 930, in rmgpy.molecule.molecule.Molecule.fromSMILES (build/pyrex/rmgpy/molecule/molecule.c:15075)
+  File "molecule.py", line 945, in rmgpy.molecule.molecule.Molecule.fromSMILES (build/pyrex/rmgpy/molecule/molecule.c:14996)
+ValueError: Could not interpret the SMILES string 'COO=CC=C=CC#C'
+
+======================================================================
+ERROR: Test that getAtomType() returns appropriate sulfur atom types.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/atomtypeTest.py", line 110, in setUp
+    self.mol1 = Molecule().fromSMILES('COO=CC=C=CC#C')
+  File "molecule.py", line 930, in rmgpy.molecule.molecule.Molecule.fromSMILES (build/pyrex/rmgpy/molecule/molecule.c:15075)
+  File "molecule.py", line 945, in rmgpy.molecule.molecule.Molecule.fromSMILES (build/pyrex/rmgpy/molecule/molecule.c:14996)
+ValueError: Could not interpret the SMILES string 'COO=CC=C=CC#C'
+
+======================================================================
 FAIL: Uses a Gaussian03 log file for ethylene (C2H4) to test that its
 ----------------------------------------------------------------------
 Traceback (most recent call last):
@@ -749,6 +816,31 @@ Traceback (most recent call last):
 AssertionError: False is not true
 
 ======================================================================
+FAIL: Test the Molecule.isAromatic() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/moleculeTest.py", line 890, in testAromaticBenzene
+    self.assertTrue(Molecule().fromSMILES('C1=CC=CC=C1').isAromatic())
+AssertionError: False is not true
+-------------------- >> begin captured stdout << ---------------------
+Cd
+
+--------------------- >> end captured stdout << ----------------------
+
+======================================================================
+FAIL: Test the Molecule.isAromatic() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/moleculeTest.py", line 896, in testAromaticNaphthalene
+    self.assertTrue(Molecule().fromSMILES('C12C(C=CC=C1)=CC=CC=2').isAromatic())
+AssertionError: False is not true
+-------------------- >> begin captured stdout << ---------------------
+Cd
+Cd
+
+--------------------- >> end captured stdout << ----------------------
+
+======================================================================
 FAIL: Test the Molecule.countInternalRotors() method for dimethylacetylene.
 ----------------------------------------------------------------------
 Traceback (most recent call last):
@@ -761,8 +853,8 @@ FAIL: testSubgraphIsomorphismManyLabels (rmgpy.molecule.moleculeTest.TestMolecul
 ----------------------------------------------------------------------
 Traceback (most recent call last):
   File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/moleculeTest.py", line 677, in testSubgraphIsomorphismManyLabels
-    self.assertTrue(len(mapping) == 1)
-AssertionError: False is not true
+    self.assertEqual(len(mapping), 1)
+AssertionError: 6 != 1
 
 ======================================================================
 FAIL: Test the Molecule.calculateAxisSymmetryNumber() method.
@@ -779,6 +871,14 @@ Traceback (most recent call last):
   File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 221, in testAxisSymmetryNumber6
     self.assertEqual(calculateAxisSymmetryNumber(molecule), 1)
 AssertionError: 2 != 1
+
+======================================================================
+FAIL: Test the Molecule.calculateCyclicSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 251, in testCyclicSymmetryNumberBenzene
+    self.assertEqual(symmetryNumber, 12)
+AssertionError: 3 != 12
 
 ======================================================================
 FAIL: Test the Molecule.calculateSymmetryNumber() method.
@@ -869,15 +969,15 @@ rmgpy.measure.settings               2      0      0      0   100%
 rmgpy.measure.simulate              67     54     30     30    13%   46, 49, 66-128, 144-169, 178-179, 182, 185
 rmgpy.molecule                       5      0      0      0   100%   
 rmgpy.molecule.adjlist             196     39    110     33    76%   65, 69-71, 80, 125, 133-143, 167, 180, 182, 184, 202, 214-215, 229-231, 248-257, 270-271, 298
-rmgpy.molecule.draw                867    838    414    414     2%   108-120, 138-146, 149-160, 176-286, 295-310, 320-380, 387-392, 401-432, 440-450, 457-582, 589-643, 650-722, 735-829, 839-865, 876-943, 950-963, 971-1003, 1013-1284, 1302-1306, 1320-1440
+rmgpy.molecule.draw                564    540    268    268     3%   71-83, 101-109, 112-123, 139-249, 258-273, 280-298, 308-334, 345-412, 419-432, 440-472, 482-753, 771-775, 789-909
 rmgpy.pdep                           5      0      0      0   100%   
 rmgpy.pdep.draw                    291    277     86     86     4%   57-70, 73-79, 87-107, 116-125, 131-142, 148-159, 165-181, 185-213, 222-479
 rmgpy.pdep.network                 532    408    230    209    19%   51-53, 60, 130, 137-149, 161, 181, 194-261, 272-345, 358, 361, 364, 396, 460-464, 473, 495-515, 529-688, 699-716, 724-738, 745-748, 755-758, 768-771, 774-775, 789-860, 871-925, 938-954
 rmgpy.qm                             0      0      0      0   100%   
-rmgpy.qm.gaussian                  115     85     40     38    21%   23, 25, 45-46, 50-55, 73-124, 130-135, 152-168, 180-195, 226, 231, 239-242
+rmgpy.qm.gaussian                  123     93     44     42    19%   23, 25, 45-46, 50-55, 73-124, 130-135, 151-177, 189-204, 235, 240, 248-251
 rmgpy.qm.main                       61     46     16     16    19%   51-58, 64-71, 92-95, 101-106, 112, 118-119, 125-135, 145-153
-rmgpy.qm.molecule                  208    169     54     54    15%   10-11, 28-38, 46, 50, 54, 63-71, 77-109, 115-136, 140-142, 152-185, 200-204, 213, 218, 223, 229-232, 239, 248-270, 276-284, 290-308, 315, 324-327, 335-337, 343-346, 355-398
-rmgpy.qm.mopac                     120     89     38     36    21%   23, 25, 59-60, 63-68, 87-133, 140-145, 160-177, 189-207, 224, 229, 238-258
+rmgpy.qm.molecule                  184    145     38     38    18%   10-11, 28-38, 46, 50, 54, 63-71, 77, 84-105, 109-111, 121-154, 169-173, 182, 187, 192, 198-201, 208, 217-239, 245-253, 259-277, 284, 293-296, 304-306, 312-315, 324-367
+rmgpy.qm.mopac                     127     96     42     40    20%   22, 24, 58-59, 62-67, 86-132, 139-144, 159-185, 197-215, 232, 237, 246-266
 rmgpy.qm.qmdata                     35     27      2      2    22%   23-38, 41, 75-101
 rmgpy.qm.qmverifier                 26     20      6      6    19%   18-24, 40-61, 71
 rmgpy.qm.symmetry                   80     51     20     16    33%   128-130, 133, 163-173, 179, 185-194, 200-205, 211-223, 232-256
@@ -891,9 +991,9 @@ rmgpy.solver                         2      0      0      0   100%
 rmgpy.statmech                       5      0      0      0   100%   
 rmgpy.thermo                         3      0      0      0   100%   
 ----------------------------------------------------------------------------
-TOTAL                            13005  11322   5517   5346    10%   
+TOTAL                            12693  11015   5363   5192    10%   
 ----------------------------------------------------------------------
 Ran 688 tests.
 
-FAILED (errors=2, failures=13)
+FAILED (errors=8, failures=16)
 make: *** [test] Error 1

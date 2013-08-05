@@ -26,7 +26,7 @@
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="RMG Py 0.1.0 documentation" href="../../../index.html" />
     <link rel="up" title="2. Installation" href="index.html" />
-    <link rel="next" title="CanTherm User’s Guide" href="../../cantherm/index.html" />
+    <link rel="next" title="2.4. Quantum Mechanical Calculations" href="QMthermo.html" />
     <link rel="prev" title="2.2. Linux Installation" href="linux.html" /> 
   </head>
   <body>
@@ -49,7 +49,7 @@
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="../../cantherm/index.html" title="CanTherm User’s Guide"
+          <a href="QMthermo.html" title="2.4. Quantum Mechanical Calculations"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="linux.html" title="2.2. Linux Installation"
@@ -75,18 +75,14 @@ but other methods like the <a class="reference external" href="http://fonnesbeck
 brew install git</pre>
 </div>
 </li>
-<li><p class="first">Install <a class="reference external" href="http://openbabel.org/">Open Babel</a> and its Python bindings. For now, the easiest way to get version 2.3.1 and the Python bindings is:</p>
-<div class="highlight-python"><pre>brew install https://raw.github.com/rwest/homebrew/open-babel-new/Library/Formula/eigen2.rb
-brew install https://raw.github.com/rwest/homebrew/open-babel-new/Library/Formula/open-babel.rb</pre>
-</div>
-</li>
 <li><p class="first">Make a directory to put everything in:</p>
 <div class="highlight-python"><pre>mkdir ~/Code</pre>
 </div>
 </li>
 <li><p class="first">Get the RMG-Py source code from GitHub:</p>
 <div class="highlight-python"><pre>cd ~/Code
-git clone git@github.com:GreenGroup/RMG-database.git</pre>
+git clone git@github.com:GreenGroup/RMG-database.git
+git clone git@github.com:GreenGroup/RMG-Py.git</pre>
 </div>
 </li>
 <li><p class="first">Install the Python dependencies listed in the <tt class="file docutils literal"><span class="pre">RMG-Py/requirements.txt</span></tt> file using <cite>pip</cite> (do <tt class="docutils literal"><span class="pre">easy_install</span> <span class="pre">pip</span></tt> if you don&#8217;t already have it):</p>
@@ -121,11 +117,16 @@ cd RMG-Py
 make</pre>
 </div>
 </li>
-<li><p class="first">Install RDKit, <em>if</em> (and only if) you want to use the new 3D geometry branch:</p>
+<li><p class="first">Install RDKit:</p>
 <div class="highlight-python"><pre>brew uninstall boost
 brew install boost --build-from-source
-brew tap rwest/homebrew-rdkit
+brew tap edc/homebrew-rdkit
 brew install rdkit --with-inchi</pre>
+</div>
+<p>You&#8217;ll need various environment variables set, eg.:</p>
+<div class="highlight-python"><pre>export RDBASE=$HOME/rdkit # CHECK THIS (maybe you put RDKit somewhere else)
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$RDBASE/lib
+export PYTHONPATH=$PYTHONPATH:$RDBASE</pre>
 </div>
 </li>
 <li><p class="first">Run an example:</p>
@@ -133,6 +134,11 @@ brew install rdkit --with-inchi</pre>
 python rmg.py examples/rmg/minimal/input.py</pre>
 </div>
 <p>Verify your installation by opening the resulting output.html file under the &#8220;examples/rmg/minimal&#8221; directory.</p>
+<p>You can also use the Makefile targets to test and run examples:</p>
+<div class="highlight-python"><pre>make test
+make eg1
+make eg2</pre>
+</div>
 </li>
 </ul>
 </div>
@@ -150,8 +156,8 @@ python rmg.py examples/rmg/minimal/input.py</pre>
   <p class="topless"><a href="linux.html"
                         title="previous chapter">2.2. Linux Installation</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="../../cantherm/index.html"
-                        title="next chapter">CanTherm User&#8217;s Guide</a></p>
+  <p class="topless"><a href="QMthermo.html"
+                        title="next chapter">2.4. Quantum Mechanical Calculations</a></p>
   <h3>This Page </h3>
   <ul class="this-page-menu">
     <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/users/rmg/installation/macos.rst"

@@ -181,16 +181,28 @@ cp libcairo-2.dll libpng14-14.dll zlib1.dll $SYSTEMROOT/System32</pre>
 </li>
 </ul>
 </div>
+<div class="section" id="rdkit">
+<span id="remainingdependencies"></span><h2>2.1.6. RDKit<a class="headerlink" href="#rdkit" title="Permalink to this headline">¶</a></h2>
+<p>Project home on GitHub: <a class="reference external" href="https://github.com/rdkit/rdkit">https://github.com/rdkit/rdkit</a></p>
+<p>Installation instructions: <a class="reference external" href="http://code.google.com/p/rdkit/wiki/GettingStarted">http://code.google.com/p/rdkit/wiki/GettingStarted</a>
+Build it with InChI support.
+Required environment variables:</p>
+<ul class="simple">
+<li>RDBASE pointing to the root of the distribution</li>
+<li>PYTHONPATH: should include $RDBASE</li>
+<li>PATH: should include $RDBASE/lib</li>
+</ul>
+</div>
 <div class="section" id="remaining-dependencies">
-<span id="remainingdependencies"></span><h2>2.1.6. Remaining Dependencies<a class="headerlink" href="#remaining-dependencies" title="Permalink to this headline">¶</a></h2>
+<h2>2.1.7. Remaining Dependencies<a class="headerlink" href="#remaining-dependencies" title="Permalink to this headline">¶</a></h2>
 <p>Install the remaining six python dependencies using &#8216;pip&#8217;:</p>
 <div class="highlight-python"><pre>curl https://raw.github.com/pypa/pip/master/contrib/get-pip.py | python
 easy_install pip
-pip install nose quantities sphinx pydot psutil xlwt cython==0.16</pre>
+pip install nose quantities sphinx pydot psutil xlwt cython</pre>
 </div>
 </div>
 <div class="section" id="rmg">
-<span id="rmgsources"></span><h2>2.1.7. RMG<a class="headerlink" href="#rmg" title="Permalink to this headline">¶</a></h2>
+<span id="rmgsources"></span><h2>2.1.8. RMG<a class="headerlink" href="#rmg" title="Permalink to this headline">¶</a></h2>
 <ul>
 <li><p class="first">Download all RMG source packages:</p>
 <div class="highlight-python"><pre>cd /c
@@ -244,8 +256,9 @@ python rmg.py examples/rmg/minimal/input.py</pre>
 <li><a class="reference internal" href="#mingw">2.1.3. MinGW</a></li>
 <li><a class="reference internal" href="#python">2.1.4. Python</a></li>
 <li><a class="reference internal" href="#prepackaged-dependencies">2.1.5. Prepackaged Dependencies</a></li>
-<li><a class="reference internal" href="#remaining-dependencies">2.1.6. Remaining Dependencies</a></li>
-<li><a class="reference internal" href="#rmg">2.1.7. RMG</a></li>
+<li><a class="reference internal" href="#rdkit">2.1.6. RDKit</a></li>
+<li><a class="reference internal" href="#remaining-dependencies">2.1.7. Remaining Dependencies</a></li>
+<li><a class="reference internal" href="#rmg">2.1.8. RMG</a></li>
 </ul>
 </li>
 </ul>
