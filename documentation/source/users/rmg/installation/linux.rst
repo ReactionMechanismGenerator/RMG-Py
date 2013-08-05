@@ -34,11 +34,10 @@ The instructions listed below have been confirmed on a fresh Ubuntu 12.04 instal
 * Install RDKit
 
   Full installation instructions: http://code.google.com/p/rdkit/wiki/GettingStarted
-  Be sure to **build it with InChI support.** Here's a synopsis::
+  Be sure to **build it with InChI support.** Here's a synopsis: ::
   
 	cd ~
-	sudo apt-get install flex bison build-essential python-numpy cmake python-dev sqlite3 libsqlite3-dev
-libboost-dev libboost-python-dev libboost-regex-dev
+	sudo apt-get install flex bison build-essential python-numpy cmake python-dev sqlite3 libsqlite3-dev libboost-dev libboost-python-dev libboost-regex-dev
 	git clone https://github.com/rdkit/rdkit.git
 	cd rdkit
 	export RDBASE=`pwd`
