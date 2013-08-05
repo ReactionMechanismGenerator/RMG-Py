@@ -40,48 +40,8 @@ The `Cairo <http://cairographics.org/>`_ 2D graphics library is used to create
 the drawings. The :class:`MoleculeDrawer` class module will fail gracefully if
 Cairo is not installed.
 
-The general procedure for creating drawings of skeletal formula is as follows:
-
-1.  **Find the molecular backbone.** If the molecule contains no cycles, the
-    longest straight chain of heavy atoms is used as the backbone. If the 
-    molecule contains cycles, the largest independent cycle group is used as the
-    backbone. The :meth:`findBackbone()` method is used for this purpose.
-
-2.  **Generate coordinates for the backbone atoms.** Straight-chain backbones
-    are laid out in a horizontal seesaw pattern. Cyclic backbones are laid out
-    as regular polygons (or as close to this as is possible). The
-    :meth:`generateStraightChainCoordinates()` and 
-    :meth:`generateRingSystemCoordinates()` methods are used for this purpose.
-
-3.  **Generate coordinates for immediate neighbors to backbone.** Each neighbor
-    atom represents the start of a functional group attached to the backbone.
-    Generating coordinates for these means that we have determined the bonds
-    for all backbone atoms. The :meth:`generateNeighborCoordinates()` method is
-    used for this purpose.
-
-4.  **Continue generating coordinates for atoms in functional groups.** Moving
-    away from the molecular backbone and its immediate neighbors, the
-    coordinates for each atom in each functional group are determined such that
-    the functional groups tend to radiate away from the center of the backbone
-    (to reduce chances of overlap). If cycles are encountered in the functional
-    groups, their coordinates are processed as a unit. This continues until
-    the coordinates of all atoms in the molecule have been assigned. The
-    :meth:`generateFunctionalGroupCoordinates()` recursive method is used for
-    this.
-
-5.  **Use the generated coordinates and the atom and bond types to render the
-    skeletal formula.** The :meth:`render()`,  and :meth:`renderBond()`, and
-    :meth:`renderAtom()` methods are used for this.
-
-The developed procedure seems to be rather robust, but occasionally it will
-encounter a molecule that it renders incorrectly. In particular, features which
-have not yet been implemented by this drawing algorithm include:
-
-* cis-trans isomerism
-
-* stereoisomerism
-
-* bridging atoms in fused rings
+The implementation uses the 2D coordinate generation of rdKit to find coordinates,
+then uses Cairo to render the atom.
 
 """
 
@@ -90,6 +50,9 @@ import numpy
 import os.path
 import re
 import logging
+
+from rmgpy.qm.molecule import Geometry
+from rdkit.Chem import AllChem
 
 from numpy.linalg import LinAlgError
 
@@ -201,7 +164,7 @@ class MoleculeDrawer:
         # Generate information about any cycles present in the molecule, as
         # they will need special attention
         self.__findRingGroups()
-    
+        
         # Generate the coordinates to use to draw the molecule
         try:
             self.__generateCoordinates()
@@ -214,7 +177,7 @@ class MoleculeDrawer:
 
         self.coordinates[:,1] *= -1
         self.coordinates *= self.options['bondLength']
-
+        
         # Generate labels to use
         self.__generateAtomLabels()
         
@@ -312,521 +275,27 @@ class MoleculeDrawer:
     def __generateCoordinates(self):
         """
         Generate the 2D coordinates to be used when drawing the current 
-        molecule. The vertices are arranged based on a standard bond length of
-        unity, and can be scaled later for longer bond lengths. The coordinates
-        are arranged such that the "center" of the molecule is at the origin.
-        This function ignores any previously-existing coordinate information.
+        molecule. The function uses rdKits 2D coordinate generation.
         """
         atoms = self.molecule.atoms
         Natoms = len(atoms)
         
         # Initialize array of coordinates
         self.coordinates = coordinates = numpy.zeros((Natoms, 2))
-    
-        # If there are only one or two atoms to draw, then determining the
-        # coordinates is trivial
-        if Natoms == 1:
-            self.coordinates[0,:] = [0.0, 0.0]
-            return self.coordinates
-        elif Natoms == 2:
-            self.coordinates[0,:] = [-0.5, 0.0]
-            self.coordinates[1,:] = [0.5, 0.0]
-            return self.coordinates
-    
-        if len(self.cycles) > 0:
-            # Cyclic molecule
-            backbone = self.__findCyclicBackbone()
-            self.__generateRingSystemCoordinates(backbone)
-            # Flatten backbone so that it contains a list of the atoms in the
-            # backbone, rather than a list of the cycles in the backbone
-            backbone = list(set([atom for cycle in backbone for atom in cycle]))
-        else:
-            # Straight chain molecule
-            backbone = self.__findStraightChainBackbone()
-            self.__generateStraightChainCoordinates(backbone)
-            
-            # If backbone is linear, then rotate so that the bond is parallel to the
-            # horizontal axis
-            vector0 = coordinates[atoms.index(backbone[1]),:] - coordinates[atoms.index(backbone[0]),:]
-            for i in range(2, len(backbone)):
-                vector = coordinates[atoms.index(backbone[i]),:] - coordinates[atoms.index(backbone[i-1]),:]
-                if numpy.linalg.norm(vector - vector0) > 1e-4:
-                    break
-            else:
-                angle = math.atan2(vector0[0], vector0[1]) - math.pi / 2
-                rot = numpy.array([[math.cos(angle), math.sin(angle)], [-math.sin(angle), math.cos(angle)]], numpy.float64)
-                coordinates = numpy.dot(coordinates, rot)
-            
-        # Center backbone at origin
-        xmin = numpy.min(coordinates[:,0])
-        xmax = numpy.max(coordinates[:,0])
-        ymin = numpy.min(coordinates[:,1])
-        ymax = numpy.max(coordinates[:,1])
-        xmid = 0.5 * (xmax + xmin)
-        ymid = 0.5 * (ymax + ymin)
-        for atom in backbone:
-            index = atoms.index(atom)
-            coordinates[index,0] -= xmid
-            coordinates[index,1] -= ymid
         
-        # We now proceed by calculating the coordinates of the functional groups
-        # attached to the backbone
-        # Each functional group is independent, although they may contain further
-        # branching and cycles
-        # In general substituents should try to grow away from the origin to
-        # minimize likelihood of overlap
-        self.__generateNeighborCoordinates(backbone)
+        #Use rdkit 2D coordinate generation
+
+        self.geometry = Geometry(None, None, self.molecule, None)
+        
+        rdmol, rdAtomIdx = self.geometry.rd_build()
+        AllChem.Compute2DCoords(rdmol)
+
+        for atom in atoms:
+            index = rdAtomIdx[atom]
+            point = rdmol.GetConformer(0).GetAtomPosition(index)
+            coordinates[index,:]= [point.x*0.6, point.y*0.6]
     
         return coordinates
-
-    def __findCyclicBackbone(self):
-        """
-        Return a set of atoms to use as the "backbone" of the molecule. For
-        cyclics this is simply the largest ring system.
-        """
-        count = [len(set([atom for ring in ringSystem for atom in ring])) for ringSystem in self.ringSystems]
-        index = 0
-        for i in range(1, len(self.ringSystems)):
-            if count[i] > count[index]:
-                index = i
-        return self.ringSystems[index]
-    
-    def __findStraightChainBackbone(self):
-        """
-        Return a set of atoms to use as the "backbone" of the molecule. For
-        non-cyclics this is the largest straight chain between atoms. If carbon
-        atoms are present, then we define the backbone only in terms of them.
-        """
-        # Find the terminal atoms - those that only have one explicit bond
-        terminalAtoms = [atom for atom in self.molecule.atoms if len(atom.bonds) == 1]
-        assert len(terminalAtoms) >= 2
-        
-        # Starting from each terminal atom, find the longest straight path to
-        # another terminal
-        # The longest found is the backbone
-        backbone = []
-        paths = []
-        for atom in terminalAtoms:
-            paths.extend(self.__findStraightChainPaths([atom]))
-        
-        # Remove any paths that don't end in a terminal atom
-        # (I don't think this should remove any!)
-        paths = [path for path in paths if path[-1] in terminalAtoms]
-        
-        # Remove all paths shorter than the maximum
-        length = max([len(path) for path in paths])
-        paths = [path for path in paths if len(path) == length]
-        
-        # Prefer the paths with the most carbon atoms
-        carbons = [sum([1 for atom in path if atom.isCarbon()]) for path in paths]
-        maxCarbons = max(carbons)
-        paths = [path for path, carbon in zip(paths, carbons) if carbon == maxCarbons]
-        
-        # At this point we could choose any remaining path, so simply choose the first
-        backbone = paths[0]
-
-        assert len(backbone) > 1
-        assert backbone[0] in terminalAtoms
-        assert backbone[-1] in terminalAtoms
-        
-        return backbone
-    
-    def __findStraightChainPaths(self, atoms0):
-        """
-        Finds the paths containing the list of atoms `atoms0` in the
-        current molecule. The atoms are assumed to already be in a path, with
-         ``atoms0[0]`` being a terminal atom.
-        """
-        atom1 = atoms0[-1]
-        paths = []
-        for atom2 in atom1.bonds:
-            if atom2 not in atoms0:
-                atoms = atoms0[:]
-                atoms.append(atom2)
-                if not self.molecule.isAtomInCycle(atom2):
-                    paths.extend(self.__findStraightChainPaths(atoms))
-        if len(paths) == 0:
-            paths.append(atoms0[:])
-        return paths
-
-    def __generateRingSystemCoordinates(self, atoms):
-        """
-        For a ring system composed of the given cycles of `atoms`, update the
-        coordinates of each atom in the system.
-        """
-        coordinates = self.coordinates
-        atoms = atoms[:]
-        processed = []
-    
-        # Lay out largest cycle in ring system first
-        cycle = atoms[0]
-        for cycle0 in atoms[1:]:
-            if len(cycle0) > len(cycle):
-                cycle = cycle0
-        angle = - 2 * math.pi / len(cycle)
-        radius = 1.0 / (2 * math.sin(math.pi / len(cycle)))
-        for i, atom in enumerate(cycle):
-            index = self.molecule.atoms.index(atom)
-            coordinates[index,:] = [math.cos(math.pi / 2 + i * angle), math.sin(math.pi / 2 + i * angle)]
-            coordinates[index,:] *= radius
-        atoms.remove(cycle)
-        processed.append(cycle)
-    
-        # If there are other cycles, then try to lay them out as well
-        while len(atoms) > 0:
-    
-            # Find the largest cycle that shares one or two atoms with a ring that's
-            # already been processed
-            cycle = None
-            for cycle0 in atoms:
-                for cycle1 in processed:
-                    count = sum([1 for atom in cycle0 if atom in cycle1])
-                    if (count == 1 or count == 2):
-                        if cycle is None or len(cycle0) > len(cycle): cycle = cycle0
-            cycle0 = cycle1
-            atoms.remove(cycle)
-    
-            # Shuffle atoms in cycle such that the common atoms come first
-            # Also find the average center of the processed cycles that touch the
-            # current cycles
-            found = False
-            commonAtoms = []
-            count = 0
-            center0 = numpy.zeros(2, numpy.float64)
-            for cycle1 in processed:
-                found = False
-                for atom in cycle1:
-                    if atom in cycle and atom not in commonAtoms:
-                        commonAtoms.append(atom)
-                        found = True
-                if found:
-                    center1 = numpy.zeros(2, numpy.float64)
-                    for atom in cycle1:
-                        center1 += coordinates[cycle1.index(atom),:]
-                    center1 /= len(cycle1)
-                    center0 += center1
-                    count += 1
-            center0 /= count
-    
-            if len(commonAtoms) > 1:
-                index0 = cycle.index(commonAtoms[0])
-                index1 = cycle.index(commonAtoms[1])
-                if (index0 == 0 and index1 == len(cycle) - 1) or (index1 == 0 and index0 == len(cycle) - 1):
-                    cycle = cycle[-1:] + cycle[0:-1]
-                if cycle.index(commonAtoms[1]) < cycle.index(commonAtoms[0]):
-                    cycle.reverse()
-                index = cycle.index(commonAtoms[0])
-                cycle = cycle[index:] + cycle[0:index]
-    
-            # Determine center of cycle based on already-assigned positions of
-            # common atoms (which won't be changed)
-            if len(commonAtoms) == 1 or len(commonAtoms) == 2:
-                # Center of new cycle is reflection of center of adjacent cycle
-                # across common atom or bond
-                center = numpy.zeros(2, numpy.float64)
-                for atom in commonAtoms:
-                    center += coordinates[self.molecule.atoms.index(atom),:]
-                center /= len(commonAtoms)
-                vector = center - center0
-                center += vector
-                radius = 1.0 / (2 * math.sin(math.pi / len(cycle)))
-                
-            else:
-                # Use any three points to determine the point equidistant from these
-                # three; this is the center
-                index0 = self.molecule.atoms.index(commonAtoms[0])
-                index1 = self.molecule.atoms.index(commonAtoms[1])
-                index2 = self.molecule.atoms.index(commonAtoms[2])
-                A = numpy.zeros((2,2), numpy.float64)
-                b = numpy.zeros((2), numpy.float64)
-                A[0,:] = 2 * (coordinates[index1,:] - coordinates[index0,:])
-                A[1,:] = 2 * (coordinates[index2,:] - coordinates[index0,:])
-                b[0] = coordinates[index1,0]**2 + coordinates[index1,1]**2 - coordinates[index0,0]**2 - coordinates[index0,1]**2
-                b[1] = coordinates[index2,0]**2 + coordinates[index2,1]**2 - coordinates[index0,0]**2 - coordinates[index0,1]**2
-                center = numpy.linalg.solve(A, b)
-                radius = numpy.linalg.norm(center - coordinates[index0,:])
-                
-            startAngle = 0.0; endAngle = 0.0
-            if len(commonAtoms) == 1:
-                # We will use the full 360 degrees to place the other atoms in the cycle
-                startAngle = math.atan2(-vector[1], vector[0])
-                endAngle = startAngle + 2 * math.pi
-            elif len(commonAtoms) >= 2:
-                # Divide other atoms in cycle equally among unused angle
-                vector = coordinates[cycle.index(commonAtoms[-1]),:] - center
-                startAngle = math.atan2(vector[1], vector[0])
-                vector = coordinates[cycle.index(commonAtoms[0]),:] - center
-                endAngle = math.atan2(vector[1], vector[0])
-            
-            # Place remaining atoms in cycle
-            if endAngle < startAngle:
-                endAngle += 2 * math.pi
-                dAngle = (endAngle - startAngle) / (len(cycle) - len(commonAtoms) + 1)
-            else:
-                endAngle -= 2 * math.pi
-                dAngle = (endAngle - startAngle) / (len(cycle) - len(commonAtoms) + 1)
-            
-            count = 1
-            for i in range(len(commonAtoms), len(cycle)):
-                angle = startAngle + count * dAngle
-                index = self.molecule.atoms.index(cycle[i])
-                # Check that we aren't reassigning any atom positions
-                # This version assumes that no atoms belong at the origin, which is
-                # usually fine because the first ring is centered at the origin
-                if numpy.linalg.norm(coordinates[index,:]) < 1e-4:
-                    vector = numpy.array([math.cos(angle), math.sin(angle)], numpy.float64)
-                    coordinates[index,:] = center + radius * vector
-                count += 1
-    
-            # We're done assigning coordinates for this cycle, so mark it as processed
-            processed.append(cycle)
-    
-    def __generateStraightChainCoordinates(self, atoms):
-        """
-        Update the coordinates for the linear straight chain of `atoms` in
-        the current molecule. 
-        """
-        coordinates = self.coordinates
-    
-        # First atom goes at origin
-        index0 = self.molecule.atoms.index(atoms[0])
-        coordinates[index0,:] = [0.0, 0.0]
-    
-        # Second atom goes on x-axis (for now; this could be improved!)
-        index1 = self.molecule.atoms.index(atoms[1])
-        vector = numpy.array([1.0, 0.0], numpy.float64)
-        if atoms[0].bonds[atoms[1]].isTriple():
-            rotatePositive = False
-        else:
-            rotatePositive = True
-            rot = numpy.array([[math.cos(-math.pi / 6), math.sin(-math.pi / 6)], [-math.sin(-math.pi / 6), math.cos(-math.pi / 6)]], numpy.float64)
-            vector = numpy.array([1.0, 0.0], numpy.float64)
-            vector = numpy.dot(rot, vector)
-        coordinates[index1,:] = coordinates[index0,:] + vector
-    
-        # Other atoms
-        for i in range(2, len(atoms)):
-            atom0 = atoms[i-2]
-            atom1 = atoms[i-1]
-            atom2 = atoms[i]
-            index1 = self.molecule.atoms.index(atom1)
-            index2 = self.molecule.atoms.index(atom2)
-            bond0 = atom0.bonds[atom1]
-            bond = atom1.bonds[atom2]
-            # Angle of next bond depends on the number of bonds to the start atom
-            numBonds = len(atom1.bonds)
-            if numBonds == 2:
-                if (bond0.isTriple() or bond.isTriple()) or (bond0.isDouble() and bond.isDouble()):
-                    # Rotate by 0 degrees towards horizontal axis (to get angle of 180)
-                    angle = 0.0
-                else:
-                    # Rotate by 60 degrees towards horizontal axis (to get angle of 120)
-                    angle = math.pi / 3
-            elif numBonds == 3:
-                # Rotate by 60 degrees towards horizontal axis (to get angle of 120)
-                angle = math.pi / 3
-            elif numBonds == 4:
-                # Rotate by 0 degrees towards horizontal axis (to get angle of 90)
-                angle = 0.0
-            elif numBonds == 5:
-                # Rotate by 36 degrees towards horizontal axis (to get angle of 144)
-                angle = math.pi / 5
-            elif numBonds == 6:
-                # Rotate by 0 degrees towards horizontal axis (to get angle of 180)
-                angle = 0.0
-            # Determine coordinates for atom
-            if angle != 0:
-                if not rotatePositive: angle = -angle
-                rot = numpy.array([[math.cos(angle), math.sin(angle)], [-math.sin(angle), math.cos(angle)]], numpy.float64)
-                vector = numpy.dot(rot, vector)
-                rotatePositive = not rotatePositive
-            coordinates[index2,:] = coordinates[index1,:] + vector
-    
-    def __generateNeighborCoordinates(self, backbone):
-        """
-        Recursively update the coordinates for the atoms immediately adjacent
-        to the atoms in the molecular `backbone`.
-        """
-        atoms = self.molecule.atoms
-        coordinates = self.coordinates
-        
-        for i in range(len(backbone)):
-            atom0 = backbone[i]
-            index0 = atoms.index(atom0)
-    
-            # Determine bond angles of all previously-determined bond locations for
-            # this atom
-            bondAngles = []
-            for atom1 in atom0.bonds:
-                index1 = atoms.index(atom1)
-                if atom1 in backbone:
-                    vector = coordinates[index1,:] - coordinates[index0,:]
-                    angle = math.atan2(vector[1], vector[0])
-                    bondAngles.append(angle)
-            bondAngles.sort()
-            
-            bestAngle = 2 * math.pi / len(atom0.bonds)
-            regular = True
-            for angle1, angle2 in zip(bondAngles[0:-1], bondAngles[1:]):
-                if all([abs(angle2 - angle1 - (i+1) * bestAngle) > 1e-4 for i in range(len(atom0.bonds))]):
-                    regular = False
-    
-            if regular:
-                # All the bonds around each atom are equally spaced
-                # We just need to fill in the missing bond locations
-    
-                # Determine rotation angle and matrix
-                rot = numpy.array([[math.cos(bestAngle), -math.sin(bestAngle)], [math.sin(bestAngle), math.cos(bestAngle)]], numpy.float64)
-                # Determine the vector of any currently-existing bond from this atom
-                vector = None
-                for atom1 in atom0.bonds:
-                    index1 = atoms.index(atom1)
-                    if atom1 in backbone or numpy.linalg.norm(coordinates[index1,:]) > 1e-4:
-                        vector = coordinates[index1,:] - coordinates[index0,:]
-    
-                # Iterate through each neighboring atom to this backbone atom
-                # If the neighbor is not in the backbone and does not yet have
-                # coordinates, then we need to determine coordinates for it
-                for atom1 in atom0.bonds:
-                    if atom1 not in backbone and numpy.linalg.norm(coordinates[atoms.index(atom1),:]) < 1e-4:
-                        occupied = True; count = 0
-                        # Rotate vector until we find an unoccupied location
-                        while occupied and count < len(atom0.bonds):
-                            count += 1; occupied = False
-                            vector = numpy.dot(rot, vector)
-                            for atom2 in atom0.bonds:
-                                index2 = atoms.index(atom2)
-                                if numpy.linalg.norm(coordinates[index2,:] - coordinates[index0,:] - vector) < 1e-4:
-                                    occupied = True
-                        coordinates[atoms.index(atom1),:] = coordinates[index0,:] + vector
-                        self.__generateFunctionalGroupCoordinates(atom0, atom1)
-    
-            else:
-    
-                # The bonds are not evenly spaced (e.g. due to a ring)
-                # We place all of the remaining bonds evenly over the reflex angle
-                startAngle = max(bondAngles)
-                endAngle = min(bondAngles)
-                if 0.0 < endAngle - startAngle < math.pi: endAngle += 2 * math.pi
-                elif 0.0 > endAngle - startAngle > -math.pi: startAngle -= 2 * math.pi
-                dAngle = (endAngle - startAngle) / (len(atom0.bonds) - len(bondAngles) + 1)
-                
-                index = 1
-                for atom1 in atom0.bonds:
-                    if atom1 not in backbone and numpy.linalg.norm(coordinates[atoms.index(atom1),:]) < 1e-4:
-                        angle = startAngle + index * dAngle
-                        index += 1
-                        vector = numpy.array([math.cos(angle), math.sin(angle)], numpy.float64)
-                        vector /= numpy.linalg.norm(vector)
-                        coordinates[atoms.index(atom1),:] = coordinates[index0,:] + vector
-                        self.__generateFunctionalGroupCoordinates(atom0, atom1)
-
-    def __generateFunctionalGroupCoordinates(self, atom0, atom1):
-        """
-        For the functional group starting with the bond from `atom0` to `atom1`,
-        generate the coordinates of the rest of the functional group. `atom0` is
-        treated as if a terminal atom. `atom0` and `atom1` must already have their
-        coordinates determined. `atoms` is a list of the atoms to be drawn, `bonds`
-        is a dictionary of the bonds to draw, and `coordinates` is an array of the
-        coordinates for each atom to be drawn. This function is designed to be
-        recursive.
-        """
-    
-        atoms = self.molecule.atoms
-        coordinates = self.coordinates
-
-        index0 = atoms.index(atom0)
-        index1 = atoms.index(atom1)
-    
-        # Determine the vector of any currently-existing bond from this atom
-        # (We use the bond to the previous atom here)
-        vector = coordinates[index0,:] - coordinates[index1,:]
-        bondAngle = math.atan2(vector[1], vector[0])
-        
-        # Check to see if atom1 is in any cycles in the molecule
-        ringSystem = None
-        for ringSys in self.ringSystems:
-            if any([atom1 in ring for ring in ringSys]):
-                ringSystem = ringSys
-    
-        if ringSystem is not None:
-            # atom1 is part of a ring system, so we need to process the entire
-            # ring system at once
-    
-            # Generate coordinates for all atoms in the ring system
-            self.__generateRingSystemCoordinates(ringSystem)
-    
-            cycleAtoms = list(set([atom for ring in ringSystem for atom in ring]))
-            
-            coordinates_cycle = numpy.zeros_like(self.coordinates)
-            for atom in cycleAtoms:
-                coordinates_cycle[atoms.index(atom),:] = coordinates[atoms.index(atom),:]
-    
-            # Rotate the ring system coordinates so that the line connecting atom1
-            # and the center of mass of the ring is parallel to that between
-            # atom0 and atom1
-            center = numpy.zeros(2, numpy.float64)
-            for atom in cycleAtoms:
-                center += coordinates_cycle[atoms.index(atom),:]
-            center /= len(cycleAtoms)
-            vector0 = center - coordinates_cycle[atoms.index(atom1),:]
-            angle = math.atan2(vector[1] - vector0[1], vector[0] - vector0[0])
-            rot = numpy.array([[math.cos(angle), -math.sin(angle)], [math.sin(angle), math.cos(angle)]], numpy.float64)
-            coordinates_cycle = numpy.dot(coordinates_cycle, rot)
-            
-            # Translate the ring system coordinates to the position of atom1
-            coordinates_cycle += coordinates[atoms.index(atom1),:] - coordinates_cycle[atoms.index(atom1),:]
-            for atom in cycleAtoms:
-                coordinates[atoms.index(atom),:] = coordinates_cycle[atoms.index(atom),:]
-    
-            # Generate coordinates for remaining neighbors of ring system,
-            # continuing to recurse as needed
-            self.__generateNeighborCoordinates(cycleAtoms)
-            
-        else:
-            # atom1 is not in any rings, so we can continue as normal
-    
-            # Determine rotation angle and matrix
-            numBonds = len(atom1.bonds)
-            angle = 0.0
-            if numBonds == 2:
-                bond0, bond = atom1.bonds.values()
-                if (bond0.isTriple() or bond.isTriple()) or (bond0.isDouble() and bond.isDouble()):
-                    angle = math.pi
-                else:
-                    angle = 2 * math.pi / 3
-                    # Make sure we're rotating such that we move away from the origin,
-                    # to discourage overlap of functional groups
-                    rot1 = numpy.array([[math.cos(angle), -math.sin(angle)], [math.sin(angle), math.cos(angle)]], numpy.float64)
-                    rot2 = numpy.array([[math.cos(angle), math.sin(angle)], [-math.sin(angle), math.cos(angle)]], numpy.float64)
-                    vector1 = coordinates[index1,:] + numpy.dot(rot1, vector)
-                    vector2 = coordinates[index1,:] + numpy.dot(rot2, vector)
-                    if bondAngle < -0.5 * math.pi or bondAngle > 0.5 * math.pi:
-                        angle = abs(angle)
-                    else:
-                        angle = -abs(angle)
-            else:
-                angle = 2 * math.pi / numBonds
-            rot = numpy.array([[math.cos(angle), -math.sin(angle)], [math.sin(angle), math.cos(angle)]], numpy.float64)
-    
-            # Iterate through each neighboring atom to this backbone atom
-            # If the neighbor is not in the backbone, then we need to determine
-            # coordinates for it
-            for atom, bond in atom1.bonds.iteritems():
-                if atom is not atom0:
-                    occupied = True; count = 0
-                    # Rotate vector until we find an unoccupied location
-                    while occupied and count < len(atom1.bonds):
-                        count += 1; occupied = False
-                        vector = numpy.dot(rot, vector)
-                        for atom2 in atom1.bonds:
-                            index2 = atoms.index(atom2)
-                            if numpy.linalg.norm(coordinates[index2,:] - coordinates[index1,:] - vector) < 1e-4:
-                                occupied = True
-                    coordinates[atoms.index(atom),:] = coordinates[index1,:] + vector
-    
-                    # Recursively continue with functional group
-                    self.__generateFunctionalGroupCoordinates(atom1, atom)
     
     def __generateAtomLabels(self):
         """
