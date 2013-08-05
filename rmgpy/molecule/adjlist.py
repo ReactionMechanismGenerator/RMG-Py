@@ -314,6 +314,7 @@ def toAdjacencyList(atoms, label=None, group=False, removeH=False):
     
     atomTypes = {}
     atomElectronStates = {}
+    atomLonePairs = {}
     if group:
         for atom in atomNumbers:
             # Atom type(s)
@@ -331,14 +332,17 @@ def toAdjacencyList(atoms, label=None, group=False, removeH=False):
             # Atom type
             atomTypes[atom] = '{0}'.format(atom.element.symbol)
             # Electron state(s)
-            atomElectronStates[atom] = '{0}'.format(getElectronState(atom.radicalElectrons, atom.spinMultiplicity))    
+            atomElectronStates[atom] = '{0}'.format(getElectronState(atom.radicalElectrons, atom.spinMultiplicity))  
+            # Lone Pair(s)
+            atomLonePairs[atom] = atom.lonePairs
     
     # Determine field widths
     atomNumberWidth = max([len(s) for s in atomNumbers.values()]) + 1
     atomLabelWidth = max([len(s) for s in atomLabels.values()])
     if atomLabelWidth > 0: atomLabelWidth += 1
     atomTypeWidth = max([len(s) for s in atomTypes.values()]) + 1
-    atomElectronStateWidth = max([len(s) for s in atomElectronStates.values()])
+    atomElectronStateWidth = max([len(s) for s in atomElectronStates.values()]) + 1
+    atomLonePairWidth = 1
     
     # Assemble the adjacency list
     for atom in atoms:
@@ -352,6 +356,8 @@ def toAdjacencyList(atoms, label=None, group=False, removeH=False):
         adjlist += '{0:<{1:d}}'.format(atomTypes[atom], atomTypeWidth)
         # Electron state(s)
         adjlist += '{0:<{1:d}}'.format(atomElectronStates[atom], atomElectronStateWidth)
+        # Lone Pair(s)
+        adjlist += '{0:<{1:d}}'.format(atomLonePairs[atom], atomLonePairWidth)
         
         # Bonds list
         atoms2 = atom.bonds.keys()
