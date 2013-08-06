@@ -266,7 +266,7 @@ class ModelMatcher():
             
 
         for species_label in known_names:
-            if name not in self.formulaDict:
+            if species_label not in self.formulaDict:
                 logging.info("{0} is not in the chemkin model. Skipping".format(species_label))
                 continue
             formula = self.formulaDict[species_label]
