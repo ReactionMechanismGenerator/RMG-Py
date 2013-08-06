@@ -1034,6 +1034,8 @@ class ModelMatcher():
 <ul>
 <li><a href="identified.html">List of identified species.</li>
 <li><a href="votes.html">Voting reactions.</li>
+<li><a href="unidentifiedreactions.html">Unidentified reactions.</li>
+
 </ul>
         """ + self.html_tail
 
@@ -1046,6 +1048,26 @@ class ModelMatcher():
     @cherrypy.expose
     def identified_json(self):
         return json.dumps(self.identified_labels)
+
+    @cherrypy.expose
+    def unidentifiedreactions_html(self):
+        img = self._img
+        output = [self.html_head, '<h1>{0}Unidentified Reactions</h1><table style="width:500px"><tr>'.format(len(self.chemkinReactionsUnmatched)) ]
+        for i, reaction in enumerate(self.chemkinReactionsUnmatched):
+            reaction_string = []
+            for token in str(reaction).split():
+                if token in ['+', '<=>']:
+                    pass
+                elif token in self.speciesDict_rmg:
+                    token = img(self.speciesDict_rmg[token])
+                else:
+                    token = "<span class='unid'>{0}</span>".format(token)
+                reaction_string.append(token)
+            reaction_string = ' '.join(reaction_string)
+            output.append("<tr><td>{number}</td><td>{rxn}</td></tr>".format(number=i+1, rxn=reaction_string))
+        output.append(self.html_tail)
+        return ('\n'.join(output))
+        
 
     @cherrypy.expose
     def votes_html(self):
@@ -1150,6 +1172,7 @@ $( document ).ready(function() {
 #unprocessed {background-color: #9999ff;}
 #unidentified {background-color: #eeeeff;}
 td.bar { text-align: right; overflow: hidden}
+.unid {color: #00DE1A;}
 </style>    
 </head>
 
