@@ -205,12 +205,16 @@ class ModelMatcher():
         """
         logging.info("Reading thermo file...")
         speciesDict = self.speciesDict
+        foundThermoBlock = False
+        #import codecs
+        #with codecs.open(thermo_file, "r", "utf-8") as f:
         with open(thermo_file) as f:
             line0 = f.readline()
             while line0 != '':
                 line = removeCommentFromLine(line0)[0]
                 tokens_upper = line.upper().split()
                 if tokens_upper and tokens_upper[0] in ('THERMO', 'THER'):
+                    foundThermoBlock = True
                     # Unread the line (we'll re-read it in readThermoBlock())
                     f.seek(-len(line0), 1)
                     formulaDict = readThermoBlock(f, speciesDict)
