@@ -290,6 +290,11 @@ class QMMolecule:
             return None
             
         self.determinePointGroup()
+        
+        # If that fails, give up and return None.
+        if self.pointGroup is None:
+            return None
+            
         self.calculateThermoData()
         Cp0 = self.molecule.calculateCp0()
         CpInf = self.molecule.calculateCpInf()

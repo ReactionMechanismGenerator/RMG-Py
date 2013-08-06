@@ -122,14 +122,18 @@ class Species(rmgpy.species.Species):
                         molecule.clearLabeledAtoms()
                         molecule.updateAtomTypes()
                         tdata = database.thermo.estimateRadicalThermoViaHBI(molecule, quantumMechanics.getThermoData)
-                        thermo.append(tdata)
-                    H298 = numpy.array([t.getEnthalpy(298.) for t in thermo])
-                    indices = H298.argsort()
-                    for i, ind in enumerate(indices):
-                        logging.info("Resonance isomer {0} {1} gives H298={2:.0f} J/mol".format(i, self.molecule[ind].toSMILES(), H298[ind]))
-                    self.molecule = [self.molecule[ind] for ind in indices]
-                    molecule = self.molecule[0]
-                    thermo0 = thermo[indices[0]]
+                        if tdata is not None:
+                            thermo.append(tdata)
+                    if thermo:
+                        H298 = numpy.array([t.getEnthalpy(298.) for t in thermo])
+                        indices = H298.argsort()
+                        for i, ind in enumerate(indices):
+                            logging.info("Resonance isomer {0} {1} gives H298={2:.0f} J/mol".format(i, self.molecule[ind].toSMILES(), H298[ind]))
+                        self.molecule = [self.molecule[ind] for ind in indices]
+                        molecule = self.molecule[0]
+                        thermo0 = thermo[indices[0]]
+                    else:
+                        pass
                     
                     with open('thermoHBIcheck.txt','a') as f:
                         f.write('// {0!r}\n'.format(thermo0).replace('),','),\n//           '))
@@ -138,13 +142,14 @@ class Species(rmgpy.species.Species):
                 else: # Not too many radicals: do a direct calculation.
                     thermo0 = quantumMechanics.getThermoData(molecule) # returns None if it fails
                 
-                # Write the QM molecule thermo to a library so that can be used in future RMG jobs.
-                quantumMechanics.database.loadEntry(index = len(quantumMechanics.database.entries) + 1,
-                                                    label = molecule.toSMILES(),
-                                                    molecule = molecule.toAdjacencyList(),
-                                                    thermo = thermo0,
-                                                    shortDesc = thermo0.comment
-                                                    )                    
+                if thermo0 is not None:
+                    # Write the QM molecule thermo to a library so that can be used in future RMG jobs.
+                    quantumMechanics.database.loadEntry(index = len(quantumMechanics.database.entries) + 1,
+                                                        label = molecule.toSMILES(),
+                                                        molecule = molecule.toAdjacencyList(),
+                                                        thermo = thermo0,
+                                                        shortDesc = thermo0.comment
+                                                        )                    
         if thermo0 is None:
             thermo0 = database.thermo.getThermoData(self)
 

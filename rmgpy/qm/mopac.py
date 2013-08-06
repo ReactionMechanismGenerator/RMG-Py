@@ -53,12 +53,12 @@ class Mopac:
     #: ALL of these must be present in a successful job.
     successKeys = [
                    'DESCRIPTION OF VIBRATIONS',
+                   'MOPAC DONE'
                   ]
 
     def testReady(self):
         if not os.path.exists(self.executablePath):
-            raise Exception("Couldn't find MOPAC 2012 executable at {0}. Try setting your MOPAC_DIR environment variable.".format(self.executablePath))
-
+            raise Exception("Couldn't find MOPAC executable at {0}. Try setting your MOPAC_DIR environment variable.".format(self.executablePath))
 
     def run(self):
         self.testReady()
@@ -112,11 +112,11 @@ class Mopac:
                     if logFileInChI == self.uniqueIDlong:
                         InChIMatch = True
                     else:
-                        logging.info("InChI in log file didn't match that in geometry.")
+                        logging.info("InChI in log file ({0}) didn't match that in geometry ({1}).".format(logFileInChI, self.uniqueIDlong))                    
         
         # Check that ALL 'success' keywords were found in the file.
         if not all( successKeysFound.values() ):
-            logging.error('Not all of the required keywords for sucess were found in the output file!')
+            logging.error('Not all of the required keywords for success were found in the output file!')
             return False
         
         if not InChIFound:
