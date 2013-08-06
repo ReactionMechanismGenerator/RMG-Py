@@ -36,16 +36,9 @@ class QMReaction:
         self.reaction = reaction
         self.settings = settings
         
-        species = []
-        for molecule in self.reaction.reactants:
-            species.append(molecule.toSMILES())
-        for molecule in self.reaction.products:
-            species.append(molecule.toSMILES())
-        
-        species.sort()
-        stringID = ''
-        for marker in species:
-            stringID = stringID + marker
+        reactants = sorted([s.toSMILES() for s in self.reaction.reactants])
+        products = sorted([s.toSMILES() for s in self.reaction.products])
+        stringID = "+".join(reactants) + "<=>" + "+".join(products)
         
         self.uniqueID = stringID
         
@@ -123,8 +116,14 @@ class QMReaction:
         return bm
     
     def editMatrix(self, reactant, bm):
+        
         # edit bounds distances to align reacting atoms
         if self.reaction.label.lower() == 'h_abstraction':
+            
+            """
+            Reduce the minimum distance between atoms on the two reactants
+            to 1.8 Angstrom. 
+            """
             sect = len(reactant.split()[1].atoms)        
             bm[sect:,:sect] = 1.8
         
@@ -140,10 +139,14 @@ class QMReaction:
             bm = self.setLimits(bm, lbl1, lbl2, distanceData.distances['d12'], 0.1)
             bm = self.setLimits(bm, lbl2, lbl3, distanceData.distances['d23'], 0.001)
             bm = self.setLimits(bm, lbl1, lbl3, distanceData.distances['d13'], 0.001)
+        # elif .....:
         
         return bm, labels, atomMatch
         
     def generateGeometry(self):
+        """
+        
+        """
         if len(self.reaction.reactants)==2:
             reactant = self.reaction.reactants[0].merge(self.reaction.reactants[1])
         if len(self.reaction.products)==2:

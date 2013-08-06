@@ -29,6 +29,7 @@ from .atomtype cimport AtomType
 from .group cimport GroupAtom, GroupBond, Group
 from .element cimport Element
 cimport rmgpy.constants as constants
+cimport numpy
 
 ################################################################################
 
@@ -40,7 +41,7 @@ cdef class Atom(Vertex):
     cdef public short charge
     cdef public str label
     cdef public AtomType atomType
-    cdef public list coords
+    cdef public numpy.ndarray coords
 
     cpdef bint equivalent(self, Vertex other) except -2
 
@@ -63,6 +64,8 @@ cdef class Atom(Vertex):
 ################################################################################
 
 cpdef object SMILEwriter
+
+cpdef float distanceSquared(Atom atom1, Atom atom2)
     
 cdef class Bond(Edge):
 

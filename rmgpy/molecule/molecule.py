@@ -61,7 +61,7 @@ class Atom(Vertex):
     `spinMultiplicity`  ``short``           The spin multiplicity of the atom
     `charge`            ``short``           The formal charge of the atom
     `label`             ``str``             A string label that can be used to tag individual atoms
-    `coords`
+    `coords`            ``numpy Array``     The (x,y,z) coordinates in Angstrom
     =================== =================== ====================================
 
     Additionally, the ``mass``, ``number``, and ``symbol`` attributes of the
@@ -80,7 +80,7 @@ class Atom(Vertex):
         self.charge = charge
         self.label = label
         self.atomType = None
-        self.coords = list()
+        self.coords = numpy.Array()
 
     def __str__(self):
         """
@@ -101,6 +101,7 @@ class Atom(Vertex):
     def __reduce__(self):
         """
         A helper function used when pickling an object.
+        Atomic coords are not saved.
         """
         d = {
             'edges': self.edges,
@@ -131,6 +132,9 @@ class Atom(Vertex):
 
     @property
     def symbol(self): return self.element.symbol
+    
+    @property
+    def radius(self): return self.element.radius
 
     @property
     def bonds(self): return self.edges
@@ -465,7 +469,14 @@ class Bond(Edge):
 SMILEwriter = openbabel.OBConversion()
 SMILEwriter.SetOutFormat('smi')
 SMILEwriter.SetOptions("i",SMILEwriter.OUTOPTIONS) # turn off isomer and stereochemistry information (the @ signs!)
-    
+
+def distanceSquared(atom1, atom2):
+    """
+    Return the square of the distance (in Angstrom) between the two atoms.
+    """
+    diff = (atom1.coords - atom2.coords)
+    return sum(diff * diff)
+
 class Molecule(Graph):
     """
     A representation of a molecular structure using a graph data type, extending
@@ -715,6 +726,26 @@ class Molecule(Graph):
         # Remove the hydrogen atoms from the structure
         for atom in hydrogens:
             self.removeAtom(atom)
+            
+    def connectTheDots(self):
+        """
+        Delete all bonds, and set them again based on the Atoms' coords.
+        Does not detect bond type.
+        """
+        cython.declare(criticalDistance=float, i=int, atom1=Atom, atom2=Atom,
+                       bond=Bond, groupBond=GroupBond, atoms=list)
+        self._fingerprint = None
+        atoms = self.vertices
+        for atom1 in atoms:
+            for bond in self.getBonds(atom1):
+                self.removeEdge(bond)
+        for i, atom1 in enumerate(atoms):
+            for atom2 in atoms[i+1:]:
+                criticalDistance = atom1.radius + atom2.radius + 0.2
+                if distanceSquared(atom1,atom2) < (criticalDistance * criticalDistance):
+                    groupBond = GroupBond(atom1, atom2, ['S','D','T','B'])
+                    self.addBond(bond)
+        self.updateAtomTypes()
 
     def updateAtomTypes(self):
         """
