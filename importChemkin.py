@@ -953,6 +953,11 @@ class ModelMatcher():
             logging.info("And fully identified {0} of {1} reactions ({2:.1%}).".format(len(self.chemkinReactions) - len(self.chemkinReactionsUnmatched), len(self.chemkinReactions), 1 - float(len(self.chemkinReactionsUnmatched)) / len(self.chemkinReactions)))
             logging.info("Still to process {0} matches: {1!r}".format(len(self.identified_unprocessed_labels), self.identified_unprocessed_labels))
 
+            logging.info("Saving chemkin files")
+            rm.saveChemkinFile(os.path.join(self.rmg_object.outputDirectory, 'identified_chemkin.txt'),
+                               os.path.join(self.rmg_object.outputDirectory, 'identified_chemkin_verbose.txt'),
+                               os.path.join(self.rmg_object.outputDirectory, 'identified_RMG_dictionary.txt'))
+
             if len(self.identified_unprocessed_labels) == 0 and self.prunedVotes and not self.manualMatchesToProcess:
                 logging.info("Waiting for input from the web front end..")
                 while not self.manualMatchesToProcess:
