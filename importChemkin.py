@@ -549,6 +549,7 @@ class ModelMatcher():
              'Ar': '[Ar]',
              'He': '[He]',
              'H': '[H]',
+             'CH4O': 'CO',
              }
         identified_labels = []
 
