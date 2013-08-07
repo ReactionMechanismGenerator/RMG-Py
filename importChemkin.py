@@ -172,6 +172,7 @@ class ModelMatcher():
         self.votes = {}
         self.prunedVotes = {}
         self.manualMatchesToProcess = []
+        self.tentativeMatches = []
 
     def loadSpecies(self, species_file):
         """
@@ -635,7 +636,7 @@ class ModelMatcher():
             MoleculeDrawer().draw(rmg_species.molecule[0], 'png', fstr)
 
     def drawAllCandidateSpecies(self):
-        """Draws all the species that are in self.prunedVotes"""
+        """Draws all the species that are in self.votes"""
         candidateSpecies = set()
         for possibleMatches in self.votes.itervalues():
             candidateSpecies.update(possibleMatches.keys())
@@ -655,6 +656,23 @@ class ModelMatcher():
         """
         return (self.thermoDict[chemkinLabel].getEnthalpy(800.) - rmgSpecies.thermo.getEnthalpy(800.)) / 1000.
 
+    def setTentativeMatch(self, chemkinLabel, rmgSpecies):
+        """
+        Store a tentative match, waiting for user confirmation
+        """
+        self.drawSpecies(rmgSpecies)
+        for (l,s,h) in self.tentativeMatches:
+            if l == chemkinLabel:
+                if s == rmgSpecies:
+                    return True # it's already there
+                else:
+                    # something else was there! Remove both
+                    self.tentativeMatches.remove((l,s,h))
+                    return False
+        # that label is new, add it
+        self.tentativeMatches.append((chemkinLabel, rmgSpecies, self.getEnthalpyDiscrepancy(chemkinLabel, rmgSpecies) ))
+        
+        
     def setMatch(self, chemkinLabel, rmgSpecies):
         """Store a match, once you've identified it"""
         self.identified_labels.append(chemkinLabel)
@@ -938,8 +956,8 @@ class ModelMatcher():
                         allPossibleChemkinSpecies = [ck for ck, matches in prunedVotes.iteritems() if matchingSpecies in matches]
                         if len(allPossibleChemkinSpecies) == 1:
                             logging.info("Only one chemkin species has this match (after pruning).")
-                            self.setMatch(chemkinLabel, matchingSpecies)
-                            newMatches.append((chemkinLabel, matchingSpecies))
+                            self.setTentativeMatch(chemkinLabel, matchingSpecies)
+                            #newMatches.append((chemkinLabel, matchingSpecies))
                         else:
                             logging.info("Other Chemkin species that also match {0} (after pruning) are {1!r}".format(matchingSpecies.label, allPossibleChemkinSpecies))
                             logging.info("Will not make match at this time.")
@@ -1026,7 +1044,7 @@ class ModelMatcher():
         """Get the html tag for the image of a species"""
         imagesPath = 'img'  # to serve via cherryPy
         #imagesPath = 'file://'+os.path.abspath(os.path.join(self.args.output_directory,'species')) # to get from disk
-        return "<img src='{1}/{0!s}.png' title='{0}'>".format(species, imagesPath)
+        return "<img src='{1}/{0!s}.png' title='{0}'>".format(urllib.quote_plus(str(species)), imagesPath)
 
     @cherrypy.expose
     def index(self):
@@ -1034,6 +1052,7 @@ class ModelMatcher():
 <h1>Mechanism importer</h1>
 <ul>
 <li><a href="identified.html">List of identified species.</li>
+<li><a href="tentative.html">Tentative Matches.</li>
 <li><a href="votes.html">Voting reactions.</li>
 <li><a href="unidentifiedreactions.html">Unidentified reactions.</li>
 
@@ -1043,9 +1062,20 @@ class ModelMatcher():
     @cherrypy.expose
     def identified_html(self):
         img = self._img
-        return (self.html_head + '<h1>Identified Species</h1><table style="width:500px"><tr>' +
+        return (self.html_head + '<h1>{0} Identified Species</h1><table style="width:500px"><tr>'.format(len(self.identified_labels)) +
                 "</tr>\n<tr>".join(["<td>{number}</td><td>{label}</td><td>{img}</td>".format(img=img(self.speciesDict_rmg[lab]), label=lab, number=n + 1) for n, lab in enumerate(self.identified_labels)]) +
                 '</tr></table>' + self.html_tail)
+
+    @cherrypy.expose
+    def tentative_html(self):
+        img = self._img
+        output = [self.html_head, '<h1>{0} Tentative Matches</h1><table style="width:500px">'.format(len(self.tentativeMatches))]
+        for (chemkinLabel, rmgSpec, deltaH) in self.tentativeMatches:
+            output.append("<tr><td>{label}</td><td>{img}</td><td>{delH:.1f} kJ/mol</td>".format(img=img(rmgSpec), label=chemkinLabel, delH=deltaH))
+            output.append("<td><a href='/confirm.html?ckLabel={ckl}&rmgLabel={rmgl}'>confirm</a></td></tr>".format(ckl=urllib.quote_plus(chemkinLabel), rmgl=urllib.quote_plus(str(rmgSpec))))
+        output.extend(['</table>', self.html_tail])
+        return ('\n'.join(output))
+        
     @cherrypy.expose
     def identified_json(self):
         return json.dumps(self.identified_labels)
@@ -1053,7 +1083,7 @@ class ModelMatcher():
     @cherrypy.expose
     def unidentifiedreactions_html(self):
         img = self._img
-        output = [self.html_head, '<h1>{0}Unidentified Reactions</h1><table style="width:500px"><tr>'.format(len(self.chemkinReactionsUnmatched)) ]
+        output = [self.html_head, '<h1>{0} Unidentified Reactions</h1><table style="width:500px"><tr>'.format(len(self.chemkinReactionsUnmatched)) ]
         for i, reaction in enumerate(self.chemkinReactionsUnmatched):
             reaction_string = []
             for token in str(reaction).split():
@@ -1117,6 +1147,26 @@ class ModelMatcher():
         output.append(self.html_tail)
         return '\n'.join(output)
 
+    @cherrypy.expose
+    def confirm_html(self, ckLabel=None, rmgLabel=None):
+        if ckLabel not in self.votes:
+            return "ckLabel not valid"
+        for rmgSpecies in self.votes[ckLabel].iterkeys():
+            if str(rmgSpecies) == rmgLabel:
+                self.manualMatchesToProcess.append((str(ckLabel), rmgSpecies))
+                break
+        else:
+            return "rmgLabel not a candidate for that ckLabel"
+        for (l,s,h) in self.tentativeMatches:
+            if l == ckLabel:
+                if s != rmgSpecies:
+                    self.manualMatchesToProcess.remove((str(ckLabel), rmgSpecies))
+                    return "Trying to confirm something that wasn't a tentative match!"
+                self.tentativeMatches.remove((l,s,h))
+        with open(self.known_species_file,'a') as f:
+            f.write("{0}\t{1}\n".format(ckLabel, rmgSpecies.molecule[0].toSMILES() ))
+        raise cherrypy.HTTPRedirect("/tentative.html")
+    
     @cherrypy.expose
     def match_html(self, ckLabel=None, rmgLabel=None):
         if ckLabel not in self.votes:
