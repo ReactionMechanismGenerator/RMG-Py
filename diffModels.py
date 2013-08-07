@@ -245,3 +245,7 @@ if __name__ == '__main__':
     print '{0:d} reactions were only found in the second model:'.format(len(uniqueReactions2))
     for rxn in uniqueReactions2:
         print '    {0!s}'.format(rxn)
+    print "Saving output in diff.html"
+    outputPath = 'diff.html'
+    saveDiffHTML(outputPath, commonSpecies, uniqueSpecies1, uniqueSpecies2, commonReactions, uniqueReactions1, uniqueReactions2)
+    print "Finished!"
