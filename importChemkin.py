@@ -550,6 +550,7 @@ class ModelMatcher():
              'He': '[He]',
              'H': '[H]',
              'CH4O': 'CO',
+             'C': '[C]',
              }
         identified_labels = []
 
