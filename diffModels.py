@@ -8,7 +8,7 @@ pass the
 
 import math
 import numpy
-import pylab
+from matplotlib import pylab
 import os.path
 #import matplotlib.pyplot
 
@@ -150,6 +150,18 @@ def saveCompareHTML(outputDir,chemkinPath1,speciesDictPath1,chemkinPath2,species
     
     outputPath = outputDir + 'diff.html'            
     saveDiffHTML(outputPath, commonSpecies, uniqueSpecies1, uniqueSpecies2, commonReactions, uniqueReactions1, uniqueReactions2)
+
+def enthalpyDiff(species):
+    """
+    Returns the enthalpy difference between the same species in the two models
+    """
+    thermo0 = species[0].thermo
+    thermo1 = species[1].thermo
+    if thermo0 and thermo1:    
+        diff =  species[0].thermo.discrepancy(species[1].thermo)
+    else:
+        diff = 99999999
+    return -1*diff
     
 ################################################################################
 
@@ -245,6 +257,9 @@ if __name__ == '__main__':
     print '{0:d} reactions were only found in the second model:'.format(len(uniqueReactions2))
     for rxn in uniqueReactions2:
         print '    {0!s}'.format(rxn)
+    
+    commonSpecies.sort(key = enthalpyDiff)
+    
     print "Saving output in diff.html"
     outputPath = 'diff.html'
     saveDiffHTML(outputPath, commonSpecies, uniqueSpecies1, uniqueSpecies2, commonReactions, uniqueReactions1, uniqueReactions2)
