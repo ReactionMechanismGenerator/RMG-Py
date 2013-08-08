@@ -723,9 +723,11 @@ class ModelMatcher():
         thermo = self.thermoDict[chemkinLabel]
         # pretend it was valid down to 298 K
         oldLowT = thermo.Tmin.value_si
-        thermo.selectPolynomial(thermo.Tmin.value_si).Tmin.value_si = min(298.0, thermo.Tmin.value_si)
+        if oldLowT>298.0:
+            thermo.selectPolynomial(thermo.Tmin.value_si).Tmin.value_si = min(298.0, thermo.Tmin.value_si)
+            thermo.Tmin.value_si = min(298.0, thermo.Tmin.value_si)
+            thermo.comment += "\nLow T polynomial Tmin changed from {0} to {1} K when importing to RMG".format(oldLowT, 298.0)
         newThermo = thermo.toWilhoit(Cp0=Cp0, CpInf=CpInf)
-        thermo.comment += "\nLow T polynomial Tmin changed from {0} to {1} K when importing to RMG".format(oldLowT, 298.0)
         # thermo.selectPolynomial(thermo.Tmin.value_si).Tmin.value_si = oldLowT  # put it back
         self.thermoDict[chemkinLabel].E0 = newThermo.E0
 
@@ -1055,7 +1057,13 @@ class ModelMatcher():
                 molecule = self.speciesDict_rmg.get(species.label, Species().fromSMILES('C')).molecule[0]
                 entry.item = molecule
                 entry.data = self.thermoDict[species.label]
-                entry.longDesc = getattr(species.thermo, 'comment', '') + 'Imported from {source}'.format(source=thermo_file)
+                comment = getattr(species.thermo, 'comment', '')
+                if comment:
+                    entry.longDesc = comment + '.\n'
+                else:
+                    entry.longDesc = ''
+                entry.longDesc += '{smiles}\nImported from {source}.'.format(source=thermo_file,smiles=molecule.toSMILES())
+                entry.shortDesc = comment.split('\n')[0].strip()
                 user = getUsername()
                 event = [time.asctime(), user, 'action', '{user} imported this entry from {source}'.format(user=user, source=thermo_file)]
                 entry.history = [event]
