@@ -1074,16 +1074,17 @@ class ModelMatcher():
 
     @cherrypy.expose
     def index(self):
+        location = os.path.abspath(self.args.reactions or self.args.species)
         return self.html_head + """
 <h1>Mechanism importer</h1>
 <ul>
-<li><a href="identified.html">List of identified species.</li>
-<li><a href="tentative.html">Tentative Matches.</li>
-<li><a href="votes.html">Voting reactions.</li>
-<li><a href="unidentifiedreactions.html">Unidentified reactions.</li>
-
+<li><a href="identified.html">Identified species.</a></li>
+<li><a href="tentative.html">Tentative Matches.</a></li>
+<li><a href="votes.html">Voting reactions.</a></li>
+<li><a href="unidentifiedreactions.html">Unidentified reactions.</a></li>
 </ul>
-        """ + self.html_tail
+{loc}
+        """.format(loc=location) + self.html_tail
 
     @cherrypy.expose
     def identified_html(self):
@@ -1261,8 +1262,9 @@ td.bar { text-align: right; overflow: hidden}
         <td class="bar" id="unidentified"></td>
     </tr>
     </table>
-    </div>
-    <div style="height: 2 em;">&nbsp</div>
+</div>
+<div style="height: 2 em;"><br><a href="/">Home</a>&nbsp</div>
+    
     """
     html_tail = """
     </body></html>
