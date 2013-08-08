@@ -924,15 +924,17 @@ def readThermoBlock(f, speciesDict):
                     else:
                         if thermo is None:
                             logging.error("Problematic thermo block:\n{0}".format(thermoBlock))
-                            raise ChemkinError('Error while reading thermo entry for species {0}'.format(label))
+                            raise ChemkinError('Error while reading thermo entry for required species {0}'.format(label))
                     try:
                         formulaDict[label] = formula
                         speciesDict[label].thermo = thermo
-                        speciesDict[label].thermo.comment = getattr(speciesDict[label].thermo,'comment') + comments.strip()
+                        speciesDict[label].thermo.comment = getattr(speciesDict[label].thermo,'comment','') 
+                        if comments:
+                            speciesDict[label].thermo.comment += '\n{0}'.format(comments)
                         comments = ''
                     except KeyError:
                         if label.upper() in ['AR', 'N2', 'HE', 'NE']:
-                            pass
+                            logging.info('Skipping species"{0}" while reading thermodynamics entry.'.format(label))
                         else:
                             logging.warning('Skipping unexpected species "{0}" while reading thermodynamics entry.'.format(label))
                     thermoBlock = ''
