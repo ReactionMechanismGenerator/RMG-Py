@@ -153,7 +153,7 @@ def saveCompareHTML(outputDir,chemkinPath1,speciesDictPath1,chemkinPath2,species
 
 def enthalpyDiff(species):
     """
-    Returns the enthalpy difference between the same species in the two models
+    Returns the enthalpy discrepancy between the same species in the two models
     """
     thermo0 = species[0].thermo
     thermo1 = species[1].thermo
@@ -162,7 +162,18 @@ def enthalpyDiff(species):
     else:
         diff = 99999999
     return -1*diff
-    
+
+def kineticsDiff(reaction):
+    """
+    Returns some measure of the discrepancy between two reactions in a model
+    """    
+    kinetics0 = reaction[0].kinetics
+    kinetics1 = reaction[1].kinetics
+    if kinetics0 and kinetics1:
+        diff = reaction[0].kinetics.discrepancy(reaction[1].kinetics)        
+    else:
+        diff = 9999999
+    return -1*diff
 ################################################################################
 
 if __name__ == '__main__':
@@ -259,6 +270,9 @@ if __name__ == '__main__':
         print '    {0!s}'.format(rxn)
     
     commonSpecies.sort(key = enthalpyDiff)
+    commonReactions.sort(key = kineticsDiff)
+    for reaction in commonReactions:
+        print kineticsDiff(reaction)
     
     print "Saving output in diff.html"
     outputPath = 'diff.html'
