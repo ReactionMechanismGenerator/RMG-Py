@@ -268,7 +268,11 @@ class ModelMatcher():
             logging.info("Ensuring known species file ends with a blank line!")
             with open(known_species_file,'a') as f:
                 f.write('\n')
-            
+        
+        special_smiles_to_adj_list = {
+            'singlet[CH2]': "1 C 2S",
+            'triplet[CH2]': "1 C 2T",
+            }
 
         for species_label in known_names:
             if species_label not in self.formulaDict:
@@ -276,7 +280,12 @@ class ModelMatcher():
                 continue
             formula = self.formulaDict[species_label]
             smiles = known_smiles[species_label]
-            molecule = Molecule(SMILES=smiles)
+            if smiles in special_smiles_to_adj_list:
+                adjlist = special_smiles_to_adj_list[smiles]
+                molecule = Molecule()
+                molecule.fromAdjacencyList(adjlist)
+            else:
+                molecule = Molecule(SMILES=smiles)
             if formula != molecule.getFormula():
                 raise Exception("{0} cannot be {1} because the SMILES formula is {2} not required formula {3}.".format(species_label, smiles, molecule.getFormula(), formula))
             logging.info("I think {0} is {1} based on its label".format(species_label, smiles))
