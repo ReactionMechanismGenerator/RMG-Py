@@ -656,6 +656,15 @@ class ModelMatcher():
         """
         return (self.thermoDict[chemkinLabel].getEnthalpy(800.) - rmgSpecies.thermo.getEnthalpy(800.)) / 1000.
 
+    def clearTentativeMatch(self, chemkinLabel, rmgSpecies):
+        """
+        Clear all tentative matches from that have either that label or species, 
+        eg. because you've confirmed a match.
+        """
+        for (l,s,h) in self.tentativeMatches:
+            if l == chemkinLabel or s == rmgSpecies:
+                self.tentativeMatches.remove((l,s,h))
+        
     def setTentativeMatch(self, chemkinLabel, rmgSpecies):
         """
         Store a tentative match, waiting for user confirmation
@@ -666,15 +675,32 @@ class ModelMatcher():
                 if s == rmgSpecies:
                     return True # it's already there
                 else:
-                    # something else was there! Remove both
+                    # something else matches that label! Remove both
                     self.tentativeMatches.remove((l,s,h))
                     return False
-        # that label is new, add it
+            elif s == rmgSpecies:
+                # something else matches that rmgSpecies! Remove both
+                self.tentativeMatches.remove((l,s,h))
+                return False
+        for (l,s) in self.manualMatchesToProcess:
+            if l == chemkinLabel:
+                if s == rmgSpecies:
+                    return True # it's already matched
+                else:
+                    # It's matched something else!
+                    logging.info("Tentative match conflicts with unprocessed manual match! Ignoring.") 
+                    return False
+            elif s == rmgSpecies:
+                logging.info("Tentative match conflicts with unprocessed manual match! Ignoring.") 
+                return False
+        # haven't already returned? then
+        # that tentative match is new, add it
         self.tentativeMatches.append((chemkinLabel, rmgSpecies, self.getEnthalpyDiscrepancy(chemkinLabel, rmgSpecies) ))
         
         
     def setMatch(self, chemkinLabel, rmgSpecies):
         """Store a match, once you've identified it"""
+        self.clearTentativeMatch(chemkinLabel, rmgSpecies)
         self.identified_labels.append(chemkinLabel)
         self.identified_unprocessed_labels.append(chemkinLabel)
         self.speciesDict_rmg[chemkinLabel] = rmgSpecies
