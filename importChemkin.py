@@ -906,7 +906,7 @@ class ModelMatcher():
             rmg_species, wasNew = rm.makeNewSpecies(old_species, label=old_species.label)
             assert wasNew, "Species with structure of '{0}' already created with label '{1}'".format(species_label, rmg_species.label)
             newSpeciesDict[species_label] = rmg_species
-            if self.formulaDict[species_label] in {'N2'}:
+            if self.formulaDict[species_label] in {'N2', 'Ar', 'He'}:
                 rmg_species.reactive = False
             rmg_species.generateThermoData(self.rmg_object.database)
         # Set match using the function to get all the side-effects.
@@ -926,34 +926,31 @@ class ModelMatcher():
         while self.identified_unprocessed_labels:
             labelToProcess = self.identified_unprocessed_labels.pop(0)
             logging.info("Processing species {0}...".format(labelToProcess))
-            if self.formulaDict[labelToProcess] in ('N2', 'Ar'):
-                logging.info("Not processing {0} because I can't react it in RMG".format(labelToProcess))
-            else:
 
-                # Add species to RMG core.
-                rm.enlarge(self.speciesDict_rmg[labelToProcess])
+            # Add species to RMG core.
+            rm.enlarge(self.speciesDict_rmg[labelToProcess])
     
-                # do a partial prune of new reactions that definitely aren't going to be useful
-                reactionsToPrune = set()
-                for newSpecies in rm.newSpeciesList:
-                    if newSpecies.molecule[0].getFormula() in chemkinFormulas:
-                        continue
-                    # else it's not useful to us
-                    # identify any reactions it's involved in
-                    for rxn in rm.newReactionList:
-                        if newSpecies in rxn.reactants or newSpecies in rxn.products:
-                            reactionsToPrune.add(rxn)
-                logging.info("Removing {0} edge reactions that aren't useful".format(len(reactionsToPrune)))
-                # remove those reactions
-                for rxn in reactionsToPrune:
-                    rm.edge.reactions.remove(rxn)
-                    rm.newReactionList.remove(rxn)
-                reactionsToPrune.clear()
+            # do a partial prune of new reactions that definitely aren't going to be useful
+            reactionsToPrune = set()
+            for newSpecies in rm.newSpeciesList:
+                if newSpecies.molecule[0].getFormula() in chemkinFormulas:
+                    continue
+                # else it's not useful to us
+                # identify any reactions it's involved in
+                for rxn in rm.newReactionList:
+                    if newSpecies in rxn.reactants or newSpecies in rxn.products:
+                        reactionsToPrune.add(rxn)
+            logging.info("Removing {0} edge reactions that aren't useful".format(len(reactionsToPrune)))
+            # remove those reactions
+            for rxn in reactionsToPrune:
+                rm.edge.reactions.remove(rxn)
+                rm.newReactionList.remove(rxn)
+            reactionsToPrune.clear()
     
-                logging.info("Adding {0} new RMG reactions to be checked.".format(len(rm.newReactionList)))
-                reactionsToCheck.update(rm.newReactionList)
-                logging.info("In total will check {0} edge reactions".format(len(reactionsToCheck)))
-                logging.info("against {0} unmatched chemkin reactions.".format(len(chemkinReactionsUnmatched)))
+            logging.info("Adding {0} new RMG reactions to be checked.".format(len(rm.newReactionList)))
+            reactionsToCheck.update(rm.newReactionList)
+            logging.info("In total will check {0} edge reactions".format(len(reactionsToCheck)))
+            logging.info("against {0} unmatched chemkin reactions.".format(len(chemkinReactionsUnmatched)))
 
             if len(self.identified_unprocessed_labels) == 0:
                 logging.info("** Running out of things to process!")
