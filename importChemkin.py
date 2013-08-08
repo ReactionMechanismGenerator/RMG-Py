@@ -928,32 +928,32 @@ class ModelMatcher():
             logging.info("Processing species {0}...".format(labelToProcess))
             if self.formulaDict[labelToProcess] in ('N2', 'Ar'):
                 logging.info("Not processing {0} because I can't react it in RMG".format(labelToProcess))
-                continue
+            else:
 
-            # Add species to RMG core.
-            rm.enlarge(self.speciesDict_rmg[labelToProcess])
-
-            # do a partial prune of new reactions that definitely aren't going to be useful
-            reactionsToPrune = set()
-            for newSpecies in rm.newSpeciesList:
-                if newSpecies.molecule[0].getFormula() in chemkinFormulas:
-                    continue
-                # else it's not useful to us
-                # identify any reactions it's involved in
-                for rxn in rm.newReactionList:
-                    if newSpecies in rxn.reactants or newSpecies in rxn.products:
-                        reactionsToPrune.add(rxn)
-            logging.info("Removing {0} edge reactions that aren't useful".format(len(reactionsToPrune)))
-            # remove those reactions
-            for rxn in reactionsToPrune:
-                rm.edge.reactions.remove(rxn)
-                rm.newReactionList.remove(rxn)
-            reactionsToPrune.clear()
-
-            logging.info("Adding {0} new RMG reactions to be checked.".format(len(rm.newReactionList)))
-            reactionsToCheck.update(rm.newReactionList)
-            logging.info("In total will check {0} edge reactions".format(len(reactionsToCheck)))
-            logging.info("against {0} unmatched chemkin reactions.".format(len(chemkinReactionsUnmatched)))
+                # Add species to RMG core.
+                rm.enlarge(self.speciesDict_rmg[labelToProcess])
+    
+                # do a partial prune of new reactions that definitely aren't going to be useful
+                reactionsToPrune = set()
+                for newSpecies in rm.newSpeciesList:
+                    if newSpecies.molecule[0].getFormula() in chemkinFormulas:
+                        continue
+                    # else it's not useful to us
+                    # identify any reactions it's involved in
+                    for rxn in rm.newReactionList:
+                        if newSpecies in rxn.reactants or newSpecies in rxn.products:
+                            reactionsToPrune.add(rxn)
+                logging.info("Removing {0} edge reactions that aren't useful".format(len(reactionsToPrune)))
+                # remove those reactions
+                for rxn in reactionsToPrune:
+                    rm.edge.reactions.remove(rxn)
+                    rm.newReactionList.remove(rxn)
+                reactionsToPrune.clear()
+    
+                logging.info("Adding {0} new RMG reactions to be checked.".format(len(rm.newReactionList)))
+                reactionsToCheck.update(rm.newReactionList)
+                logging.info("In total will check {0} edge reactions".format(len(reactionsToCheck)))
+                logging.info("against {0} unmatched chemkin reactions.".format(len(chemkinReactionsUnmatched)))
 
             if len(self.identified_unprocessed_labels) == 0:
                 logging.info("** Running out of things to process!")
@@ -1004,7 +1004,7 @@ class ModelMatcher():
                                os.path.join(self.rmg_object.outputDirectory, 'identified_chemkin_verbose.txt'),
                                os.path.join(self.rmg_object.outputDirectory, 'identified_RMG_dictionary.txt'))
 
-            if len(self.identified_unprocessed_labels) == 0 and self.prunedVotes and not self.manualMatchesToProcess:
+            if len(self.identified_unprocessed_labels) == 0 and (self.prunedVotes or self.tentativeMatches) and not self.manualMatchesToProcess :
                 logging.info("Waiting for input from the web front end..")
                 while not self.manualMatchesToProcess:
                     time.sleep(1)
