@@ -367,7 +367,7 @@ class Database:
                 record = self.entries[label].item
                 lines = record.splitlines()
                 # If record is a logical node, make it into one.
-                if re.match('(?i)\s*OR\s*\{|AND|NOT|UNION\s*\{',lines[1] ):
+                if re.match("(?i)\s*(NOT\s)?\s*(OR|AND|UNION)\s*(\{.*\})", lines[1]):
                     self.entries[label].item = makeLogicNode(' '.join(lines[1:]) )
                 # Otherwise convert adjacency list to molecule or pattern
                 elif pattern:
@@ -898,7 +898,7 @@ class LogicNode:
     def __init__(self,items,invert):
         self.components = []
         for item in items:
-            if re.match('(?i)\s*OR\s*\{|AND|NOT|UNION\s*\{',item):
+            if re.match("(?i)\s*(NOT\s)?\s*(OR|AND|UNION)\s*(\{.*\})",item):
                 component = makeLogicNode(item)
             else:
                 component = item
@@ -982,7 +982,7 @@ def makeLogicNode(string):
     And the returned object will be of class LogicOr or LogicAnd
     """
 
-    match = re.match("(?i)\s*(NOT)?\s*(OR|AND|UNION)\s*(.*)",string)  # the (?i) makes it case-insensitive
+    match = re.match("(?i)\s*(NOT\s)?\s*(OR|AND|UNION)\s*(\{.*\})",string)  # the (?i) makes it case-insensitive
     if not match:
         raise Exception("Unexpected string for Logic Node: {0}".format(string))
 
