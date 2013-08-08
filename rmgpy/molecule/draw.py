@@ -283,18 +283,31 @@ class MoleculeDrawer:
         # Initialize array of coordinates
         self.coordinates = coordinates = numpy.zeros((Natoms, 2))
         
-        #Use rdkit 2D coordinate generation
-
+        # Use rdkit 2D coordinate generation:
+        
+        # Generate the RDkit molecule from the RDkit molecule, use geometry
+        # in order to match the atoms in the rdmol with the atoms in the
+        # RMG molecule (which is required to extract coordinates).
         self.geometry = Geometry(None, None, self.molecule, None)
         
         rdmol, rdAtomIdx = self.geometry.rd_build()
         AllChem.Compute2DCoords(rdmol)
-
+        
+        # Extract the coordinates from each atom.
         for atom in atoms:
             index = rdAtomIdx[atom]
             point = rdmol.GetConformer(0).GetAtomPosition(index)
             coordinates[index,:]= [point.x*0.6, point.y*0.6]
-    
+        
+        # RDKit generates some molecules more vertically than horizontally,
+        # Especially linear ones. This will reflect any molecule taller than
+        # it is wide across the line y=x
+        ranges = numpy.ptp(coordinates, axis = 0)
+        if ranges[1] > ranges[0]:
+            temp = numpy.copy(coordinates)
+            coordinates[:,0] = temp[:,1]
+            coordinates[:,1] = temp[:,0]
+            
         return coordinates
     
     def __generateAtomLabels(self):
