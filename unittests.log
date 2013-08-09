@@ -174,17 +174,17 @@ Test the AtomType.isSpecificCaseOf() method. ... ok
 Test that we can reconstruct an AtomType object from its repr() ... ok
 Test that an AtomType object can be successfully pickled and ... ok
 Test the AtomType.setActions() method. ... ok
-Test that getAtomType() returns appropriate carbon atom types. ... [15:41:06] Explicit valence for atom # 2 O, 3, is greater than permitted
+Test that getAtomType() returns appropriate carbon atom types. ... [20:04:07] Explicit valence for atom # 2 O, 3, is greater than permitted
 ERROR
-Test that getAtomType() returns the hydrogen atom type. ... [15:41:06] Explicit valence for atom # 2 O, 3, is greater than permitted
+Test that getAtomType() returns the hydrogen atom type. ... [20:04:07] Explicit valence for atom # 2 O, 3, is greater than permitted
 ERROR
-Test that getAtomType() returns appropriate NoneTypes. ... [15:41:06] Explicit valence for atom # 2 O, 3, is greater than permitted
+Test that getAtomType() returns appropriate NoneTypes. ... [20:04:07] Explicit valence for atom # 2 O, 3, is greater than permitted
 ERROR
-Test that getAtomType() returns appropriate oxygen atom types. ... [15:41:06] Explicit valence for atom # 2 O, 3, is greater than permitted
+Test that getAtomType() returns appropriate oxygen atom types. ... [20:04:07] Explicit valence for atom # 2 O, 3, is greater than permitted
 ERROR
-Test that getAtomType() returns appropriate silicon atom types. ... [15:41:06] Explicit valence for atom # 2 O, 3, is greater than permitted
+Test that getAtomType() returns appropriate silicon atom types. ... [20:04:07] Explicit valence for atom # 2 O, 3, is greater than permitted
 ERROR
-Test that getAtomType() returns appropriate sulfur atom types. ... [15:41:06] Explicit valence for atom # 2 O, 3, is greater than permitted
+Test that getAtomType() returns appropriate sulfur atom types. ... [20:04:07] Explicit valence for atom # 2 O, 3, is greater than permitted
 ERROR
 Test the rmgpy.elements.getElement() method. ... ok
 Test that we can reconstruct an Element object from its repr() ... ok
@@ -302,7 +302,7 @@ Test the Molecule.getLabeledAtoms() method. ... ok
 Test the Molecule.getLabeledAtom() method. ... ok
 Test the Molecule.getLabeledAtoms() method. ... ok
 Test the Molecule.getMolecularWeight() method. ... ok
-Test that InChI Key generation is working properly. ... [15:41:06] WARNING: Omitted undefined stereo
+Test that InChI Key generation is working properly. ... [20:04:07] WARNING: Omitted undefined stereo
 ok
 Test the Molecule.isInCycle() method with ethane. ... ok
 Test the Molecule.isInCycle() method with ethane. ... ok
