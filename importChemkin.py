@@ -1090,16 +1090,23 @@ class ModelMatcher():
     def index(self):
         location = os.path.abspath(self.args.reactions or self.args.species)
         return self.html_head + """
+<script>
+function alsoUpdate(json) {
+$('#identified_count').html("("+json.confirmed+")");
+$('#tentative_count').html("("+json.tentative+")");
+$('#unmatchedreactions_count').html("("+json.unmatchedreactions+")");
+$('#unconfirmedspecies_count').html("("+json.unconfirmed+")");
+}
+</script>
 <h1>Mechanism importer</h1>
 <ul>
-<li><a href="identified.html">Identified species.</a></li>
-<li><a href="tentative.html">Tentative Matches.</a></li>
+<li><a href="identified.html">Identified species.</a> <span id="identified_count"></span></li>
+<li><a href="tentative.html">Tentative Matches.</a> <span id="tentative_count"></span></li>
 <li><a href="votes.html">Voting reactions.</a></li>
-<li><a href="unidentifiedreactions.html">Unidentified reactions.</a></li>
-<li><a href="unidentifiedspecies.html">Unidentified species.</a></li>
+<li><a href="unmatchedreactions.html">Unmatched reactions.</a> <span id="unmatchedreactions_count"></span></li>
+<li><a href="unconfirmedspecies.html">Unconfirmed species.</a> <span id="unconfirmedspecies_count"></span></li>
 </ul>
-{loc}
-        """.format(loc=location) + self.html_tail
+        """ + location + self.html_tail
 
     @cherrypy.expose
     def identified_html(self):
@@ -1120,8 +1127,8 @@ class ModelMatcher():
         return ('\n'.join(output))
         
     @cherrypy.expose
-    def unidentifiedspecies_html(self):
-        output = [self.html_head, '<h1>{0} Unidentified species</h1><table style="width:500px">'.format(len(self.speciesList) - len(self.identified_labels) - len(self.manualMatchesToProcess))]
+    def unconfirmedspecies_html(self):
+        output = [self.html_head, '<h1>{0} Unconfirmed species</h1><table style="width:500px">'.format(len(self.speciesList) - len(self.identified_labels) - len(self.manualMatchesToProcess))]
         for label in [s.label for s in self.speciesList]:
             if label in self.identified_labels:
                 continue
@@ -1138,9 +1145,9 @@ class ModelMatcher():
         return json.dumps(self.identified_labels)
 
     @cherrypy.expose
-    def unidentifiedreactions_html(self):
+    def unmatchedreactions_html(self):
         img = self._img
-        output = [self.html_head, '<h1>{0} Unidentified Reactions</h1><table style="width:500px"><tr>'.format(len(self.chemkinReactionsUnmatched)) ]
+        output = [self.html_head, '<h1>{0} Unmatched Reactions</h1><table style="width:500px"><tr>'.format(len(self.chemkinReactionsUnmatched)) ]
         for i, reaction in enumerate(self.chemkinReactionsUnmatched):
             reaction_string = []
             for token in str(reaction).split():
@@ -1312,9 +1319,18 @@ class ModelMatcher():
         total = len(self.speciesList)
         identified = len(self.identified_labels) + len(self.manualMatchesToProcess)
         unprocessed = len(self.identified_unprocessed_labels) + len(self.manualMatchesToProcess)
+        tentative = len(self.tentativeMatches)
+        unmatchedreactions = len(self.chemkinReactionsUnmatched)
+        totalreactions = len(self.chemkinReactions)
         answer = {'processed': identified - unprocessed,
                   'unprocessed': unprocessed,
-                  'unidentified': total - identified
+                  'confirmed': identified,
+                  'tentative': tentative,
+                  'unidentified': total - identified - tentative,
+                  'unconfirmed': total - identified,
+                  'total': total,
+                  'unmatchedreactions': unmatchedreactions,
+                  'totalreactions': totalreactions
         }
         return json.dumps(answer)
 
@@ -1323,13 +1339,23 @@ class ModelMatcher():
 <head>
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 <script>
+function alsoUpdate(json) {
+ // replace this with another <script> block on a specific page if you want it to do something
+ }
+var lastAlert = 5;
 function updateStats() {
     $.getJSON( "progress.json", function( json ) {
-            var total = json.processed + json.unprocessed + json.unidentified;
+            var total = json.total;
             console.log('Updating stats.. Unidentified now ' + json.unidentified );
             $('#processed').html(json.processed).width(100*json.processed/total+'%');
             $('#unprocessed').html(json.unprocessed+json.processed).width(100*json.unprocessed/total+'%');
+            $('#tentative').html(json.unprocessed+json.processed+json.tentative).width(100*json.tentative/total+'%');
             $('#unidentified').html(total).width(100*json.unidentified/total+'%');
+            alsoUpdate(json); // any other update scripts for specific pages
+            if ((json.processed>lastAlert) && (json.unprocessed==0)) {
+                alert("Input needed! Please confirm a match.");
+                lastAlert = json.processed;
+            }
             repeater = setTimeout(updateStats, 10000); // do again in 10 seconds
         }).fail(function( jqxhr, textStatus, error ) {
               var err = textStatus + ', ' + error;
@@ -1343,6 +1369,7 @@ $( document ).ready(function() {
 <style>
 #processed {background-color: #7777ff;}
 #unprocessed {background-color: #9999ff;}
+#tentative {background-color: #bbbbff;}
 #unidentified {background-color: #eeeeff;}
 td.bar { text-align: right; overflow: hidden}
 .unid {color: #00DE1A;}
@@ -1356,12 +1383,12 @@ a.unid:hover {text-decoration: underline;}
     <table width=98% style="table-layout:fixed;"><tr>
         <td class="bar" id="processed"></td>
         <td class="bar" id="unprocessed"></td>
+        <td class="bar" id="tentative"></td>
         <td class="bar" id="unidentified"></td>
     </tr>
     </table>
 </div>
 <div style="height: 2 em;"><br><a href="/">Home</a>&nbsp</div>
-    
     """
     html_tail = """
     </body></html>
