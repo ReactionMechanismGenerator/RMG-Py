@@ -721,6 +721,9 @@ class ModelMatcher():
         rmgSpecies.label = chemkinLabel
         with open(self.dictionaryFile, 'a') as f:
             f.write("{0}\t{1}\t{2:.1f}\n".format(chemkinLabel, rmgSpecies.molecule[0].toSMILES(), enthalpyDiscrepancy))
+        with open(self.RMGdictionaryFile, 'a') as f:
+            f.write("{0}\n{1}\n\n".format(chemkinLabel, rmgSpecies.molecule[0].toAdjacencyList()))
+        
         self.drawSpecies(rmgSpecies)
 
         # For kinetics purposes, we convert the thermo to Wilhoit
@@ -902,10 +905,12 @@ class ModelMatcher():
         self.initializeRMG(args)
         rm = self.rmg_object.reactionModel
         self.dictionaryFile = os.path.join(args.output_directory, 'MatchedSpeciesDictionary.txt')
+        self.RMGdictionaryFile = os.path.join(args.output_directory, 'Original_RMG_dictionary.txt')
 
         with open(self.dictionaryFile, 'w') as f:
             f.write("Species name\tSMILES\tEnthaply discrepancy at 800K\n")
-
+        with open(self.RMGdictionaryFile, 'w') as f:
+            f.write("\n")
         self.identifySmallMolecules()
 
         logging.info("Importing identified species into RMG model")
