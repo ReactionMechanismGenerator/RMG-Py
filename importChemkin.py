@@ -722,7 +722,7 @@ class ModelMatcher():
         with open(self.dictionaryFile, 'a') as f:
             f.write("{0}\t{1}\t{2:.1f}\n".format(chemkinLabel, rmgSpecies.molecule[0].toSMILES(), enthalpyDiscrepancy))
         with open(self.RMGdictionaryFile, 'a') as f:
-            f.write("{0}\n{1}\n\n".format(chemkinLabel, rmgSpecies.molecule[0].toAdjacencyList()))
+            f.write("{0}\n{1}\n\n".format(chemkinLabel, rmgSpecies.molecule[0].toAdjacencyList(removeH=True)))
         
         self.drawSpecies(rmgSpecies)
 
