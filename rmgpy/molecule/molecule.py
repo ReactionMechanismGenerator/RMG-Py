@@ -36,6 +36,7 @@ describe the corresponding atom or bond.
 """
 
 import cython
+import logging
 import os
 import re
 import element as elements
@@ -60,6 +61,7 @@ class Atom(Vertex):
     `spinMultiplicity`  ``short``           The spin multiplicity of the atom
     `charge`            ``short``           The formal charge of the atom
     `label`             ``str``             A string label that can be used to tag individual atoms
+    `coords`
     `lonePairs`         ``short``           The number of lone electron pairs
     =================== =================== ====================================
 
@@ -294,6 +296,7 @@ class Atom(Vertex):
         self.lonePairs = lonePairs
         if self.lonePairs < 0:
             raise ActionError('Unable to update Atom due to setLonePairs : Invalid lone electron pairs set "{0}".'.format(self.setLonePairs))
+        self.updateCharge()
 
     def incrementLonePairs(self):
         """
@@ -303,6 +306,7 @@ class Atom(Vertex):
         self.lonePairs += 1
         if self.lonePairs <= 0:
             raise ActionError('Unable to update Atom due to GAIN_PAIR action: Invalid lone electron pairs set "{0}".'.format(self.lonePairs))
+        self.updateCharge()
 
     def decrementLonePairs(self):
         """
@@ -312,6 +316,7 @@ class Atom(Vertex):
         self.lonePairs -= 1
         if self.lonePairs  < 0:
             raise ActionError('Unable to update Atom due to LOSE_PAIR action: Invalid lone electron pairs set "{0}".'.format(self.lonePairs))
+        self.updateCharge()
         
     def updateCharge(self):
         valences = {'H': 1, 'C': 4, 'O': 2, 'N': 3, 'S': 2, 'Si': 4, 'He': 0, 'Ne': 0, 'Ar': 0}
@@ -670,12 +675,22 @@ class Molecule(Graph):
         """
         Return the molecular weight of the molecule in kg/mol.
         """
+        cython.declare(atom=Atom, mass=cython.double)
         mass = 0
-        H = elements.getElement('H')
         for atom in self.vertices:
             mass += atom.element.mass
         return mass
     
+    def getRadicalCount(self):
+        """
+        Return the number of unpaired electrons.
+        """
+        cython.declare(atom=Atom, radicals=cython.short)
+        radicals = 0
+        for atom in self.vertices:
+            radicals += atom.radicalElectrons
+        return radicals
+
     def getNumAtoms(self, element = None):
         """
         Return the number of atoms in molecule.  If element is given, ie. "H" or "C",
@@ -742,7 +757,7 @@ class Molecule(Graph):
         connectivity values. If there's nothing but hydrogens, it does nothing.
         It destroys information; be careful with it.
         """
-        cython.declare(atom=Atom, neighbor=Atom, hydrogens=list)
+        cython.declare(atom=Atom, hydrogens=list)
         # Check that the structure contains at least one heavy atom
         for atom in self.vertices:
             if not atom.isHydrogen():
@@ -753,7 +768,6 @@ class Molecule(Graph):
         hydrogens = []
         for atom in self.vertices:
             if atom.isHydrogen() and atom.label == '':
-                neighbor = atom.edges.keys()[0]
                 hydrogens.append(atom)
         # Remove the hydrogen atoms from the structure
         for atom in hydrogens:
@@ -1338,6 +1352,7 @@ class Molecule(Graph):
         index = 0
         while index < len(isomers):
             isomer = isomers[index]
+                
             newIsomers = isomer.getAdjacentResonanceIsomers()
             newIsomers += isomer.getLonePairRadicalResonanceIsomers()
             newIsomers += isomer.getN4dd_N4tsResonanceIsomers()
@@ -1621,4 +1636,4 @@ class Molecule(Graph):
         adjlist = self.toAdjacencyList(removeH=True)
         url += "{0}".format(re.sub('\s+', '%20', adjlist.replace('\n', ';')))
         return url.strip('_')
-        
+
