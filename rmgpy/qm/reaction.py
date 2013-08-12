@@ -38,7 +38,7 @@ class QMReaction:
         
         reactants = sorted([s.toSMILES() for s in self.reaction.reactants])
         products = sorted([s.toSMILES() for s in self.reaction.products])
-        stringID = "+".join(reactants) + "<=>" + "+".join(products)
+        stringID = "+".join(reactants) + "_" + "+".join(products)
         
         self.uniqueID = stringID
         
@@ -165,6 +165,7 @@ class QMReaction:
             self.geometry.rd_embed(tsRDMol, distGeomAttempts, bm=tsBM, match=atomMatch)
             
             self.writeInputFile(1)
+            import ipdb; ipdb.set_trace()
             self.run()
             self.writeIRCFile()
             self.run()

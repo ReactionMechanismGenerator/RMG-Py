@@ -41,6 +41,7 @@ import os
 import re
 import element as elements
 import openbabel
+import numpy
 from .graph import Vertex, Edge, Graph
 from .group import GroupAtom, GroupBond, Group, ActionError
 from .atomtype import AtomType, atomTypes, getAtomType
@@ -61,7 +62,7 @@ class Atom(Vertex):
     `spinMultiplicity`  ``short``           The spin multiplicity of the atom
     `charge`            ``short``           The formal charge of the atom
     `label`             ``str``             A string label that can be used to tag individual atoms
-    `coords`            ``numpy Array``     The (x,y,z) coordinates in Angstrom
+    `coords`            ``numpy array``     The (x,y,z) coordinates in Angstrom
     =================== =================== ====================================
 
     Additionally, the ``mass``, ``number``, and ``symbol`` attributes of the
@@ -69,7 +70,7 @@ class Atom(Vertex):
     e.g. ``atom.symbol`` instead of ``atom.element.symbol``.
     """
 
-    def __init__(self, element=None, radicalElectrons=0, spinMultiplicity=1, charge=0, label=''):
+    def __init__(self, element=None, radicalElectrons=0, spinMultiplicity=1, charge=0, label='', coords=None):
         Vertex.__init__(self)
         if isinstance(element, str):
             self.element = elements.__dict__[element]
@@ -80,7 +81,7 @@ class Atom(Vertex):
         self.charge = charge
         self.label = label
         self.atomType = None
-        self.coords = numpy.Array()
+        self.coords = coords
 
     def __str__(self):
         """
@@ -216,7 +217,8 @@ class Atom(Vertex):
         a.charge = self.charge
         a.label = self.label
         a.atomType = self.atomType
-        a.coords = self.coords[:]
+        if self.coords is not None:
+            a.coords = self.coords[:]
         return a
 
     def isHydrogen(self):

@@ -121,6 +121,7 @@ class Geometry:
             crude = Chem.Mol(rdmol.ToBinary())
             rdmol, minEid = self.optimize(rdmol)
         else:
+            rdmol.RemoveAllConformers()
             for i in range(0,numConfAttempts):
                 """
                 Embed the molecule according to the bounds matrix. Built to handle possible failures
@@ -173,7 +174,7 @@ class Geometry:
         # Save xyz coordinates on each atom in molecule ****
         for atom in self.molecule.atoms:
             point = rdmol.GetConformer(minEid).GetAtomPosition(atom.sortingLabel)
-            atom.coords = numpy.Array([point.x, point.y, point.z])
+            atom.coords = numpy.array([point.x, point.y, point.z])
     
     def saveCoordinatesFromQMData(self, qmdata):
         """
