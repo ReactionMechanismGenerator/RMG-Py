@@ -41,6 +41,7 @@ comparisons.
 """
 
 import cython
+from rdkit.Chem import GetPeriodicTable
 
 ################################################################################
 
@@ -53,7 +54,7 @@ class ElementError(Exception):
     pass
 
 ################################################################################
-
+_rdkit_periodic_table = GetPeriodicTable()
 class Element:
     """
     A chemical element. The attributes are:
@@ -65,7 +66,7 @@ class Element:
     `symbol`    ``str``         The symbol used for the element
     `name`      ``str``         The IUPAC name of the element
     `mass`      ``float``       The mass of the element in kg/mol
-    `radius`    ``float``       Atomic radius in Angstrom
+    `covRadius` ``float``       Covalent bond radius in Angstrom
     =========== =============== ================================================
     
     This class is specifically for properties that all atoms of the same element
@@ -77,7 +78,7 @@ class Element:
         self.symbol = intern(symbol)
         self.name = name
         self.mass = mass
-        self.radius = 0.0
+        self.covRadius = _rdkit_periodic_table.GetRcovalent(symbol)
     
     def __str__(self):
         """
@@ -273,8 +274,3 @@ elementList = [
     Cs, Ba, La, Ce, Pr, Nd, Pm, Sm, Eu, Gd, Tb, Dy, Ho, Er, Tm, Yb, Lu, Hf, Ta, W, Re, Os, Ir, Pt, Au, Hg, Tl, Pb, Bi, Po, At, Rn,
     Fr, Ra, Ac, Th, Pa, U, Np, Pu, Am, Cm, Bk, Cf, Es, Fm, Md, No, Lr, Rf, Db, Sg, Bh, Hs, Mt, Ds, Rg, Cn
 ]
-
-C.radius = 2.2
-H.radius = 1.5
-O.radius = 2.3
-

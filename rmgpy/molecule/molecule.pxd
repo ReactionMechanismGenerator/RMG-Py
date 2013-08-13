@@ -162,6 +162,8 @@ cdef class Molecule(Graph):
     cpdef fromOBMol(self, obmol)
 
     cpdef fromAdjacencyList(self, str adjlist)
+    
+    cpdef fromXYZ(self, numpy.ndarray atomicNums, numpy.ndarray coordinates)
 
     cpdef str toCML(self)
 
