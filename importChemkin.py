@@ -742,6 +742,30 @@ class ModelMatcher():
         newThermo = thermo.toWilhoit(Cp0=Cp0, CpInf=CpInf)
         # thermo.selectPolynomial(thermo.Tmin.value_si).Tmin.value_si = oldLowT  # put it back
         self.thermoDict[chemkinLabel].E0 = newThermo.E0
+        
+        
+        
+        entry = Entry()
+        entry.index = len(self.identified_labels)
+        entry.label = rmgSpecies.label
+        source = self.args.thermo
+        # molecule = Molecule(SMILES=self.smilesDict.get(species.label, 'C'))
+        # molecule = self.speciesDict_rmg.get(rmgSpecies.label, Species().fromSMILES('C')).molecule[0]
+        molecule = rmgSpecies.molecule[0]
+        entry.item = molecule
+        entry.data = thermo
+        comment = getattr(thermo, 'comment', '')
+        if comment:
+            entry.longDesc = comment + '.\n'
+        else:
+            entry.longDesc = ''
+        entry.longDesc += '{smiles}\nImported from {source}.'.format(source=source, smiles=molecule.toSMILES())
+        entry.shortDesc = comment.split('\n')[0].strip()
+        user = getUsername()
+        event = [time.asctime(), user, 'action', '{user} imported this entry from {source}'.format(user=user, source=source)]
+        entry.history = [event]
+        with open(self.outputThermoFile, 'a') as f:
+            saveEntry(f, entry)
 
     def getInvalidatedReactionsAndRemoveVotes(self, chemkinLabel, rmgSpecies):
         """Remove the votes, and return the list of voting reactions."""
@@ -895,7 +919,7 @@ class ModelMatcher():
         known_species_file = args.known or species_file+'.SMILES.txt'
         self.known_species_file = known_species_file
 
-        outputThermoFile = os.path.splitext(thermo_file)[0] + '.thermo.py'
+        self.outputThermoFile = os.path.splitext(thermo_file)[0] + '.thermo.py'
 
         self.loadSpecies(species_file)
         self.loadThermo(thermo_file)
@@ -911,7 +935,28 @@ class ModelMatcher():
             f.write("Species name\tSMILES\tEnthaply discrepancy at 800K\n")
         with open(self.RMGdictionaryFile, 'w') as f:
             f.write("\n")
+        try:
+            with open('source.txt') as f:
+                source = f.read()
+        except IOError:
+            source = "Unknown source"
+        with open(self.outputThermoFile, 'w') as f:
+            f.write("""
+!/usr/bin/env python
+# encoding: utf-8
+
+name = "{name}"
+shortDesc = u"{shortDesc}"
+longDesc = u"\""
+{longDesc}
+"\""
+recommended = False
+
+
+            """.format(name=thermo_file.replace('"',''), shortDesc=os.path.abspath(thermo_file).replace('"',''), longDesc=source))
+            
         self.identifySmallMolecules()
+        
 
         logging.info("Importing identified species into RMG model")
         # Add identified species to the reaction model complete species list
@@ -1055,34 +1100,13 @@ class ModelMatcher():
 
 
         print "Finished reading"
-        with open(outputThermoFile, 'w') as f:
-            counter = 0
-            for species in self.speciesList:
-                counter += 1
-                print counter, species,
-                if species.label not in self.speciesDict_rmg:
-                    print ""
-                    continue  # don't save unidentified species
-                print "\t IDENTIFIED"
-                entry = Entry()
-                entry.index = counter
-                entry.label = species.label
-                # molecule = Molecule(SMILES=self.smilesDict.get(species.label, 'C'))
-                molecule = self.speciesDict_rmg.get(species.label, Species().fromSMILES('C')).molecule[0]
-                entry.item = molecule
-                entry.data = self.thermoDict[species.label]
-                comment = getattr(species.thermo, 'comment', '')
-                if comment:
-                    entry.longDesc = comment + '.\n'
-                else:
-                    entry.longDesc = ''
-                entry.longDesc += '{smiles}\nImported from {source}.'.format(source=thermo_file,smiles=molecule.toSMILES())
-                entry.shortDesc = comment.split('\n')[0].strip()
-                user = getUsername()
-                event = [time.asctime(), user, 'action', '{user} imported this entry from {source}'.format(user=user, source=thermo_file)]
-                entry.history = [event]
-                saveEntry(f, entry)
-
+        for species in self.speciesList:
+            counter += 1
+            print counter, species,
+            if species.label not in self.speciesDict_rmg:
+                print ""
+                continue  # don't save unidentified species
+            print "\t IDENTIFIED"
         print "done"
 
     def _img(self, species):
