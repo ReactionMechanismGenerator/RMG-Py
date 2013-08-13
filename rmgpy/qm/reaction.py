@@ -163,11 +163,11 @@ class QMReaction:
         setBM = rdkit.DistanceGeometry.DoTriangleSmoothing(tsBM)
         if setBM:
             self.geometry.rd_embed(tsRDMol, distGeomAttempts, bm=tsBM, match=atomMatch)
-            
-            self.writeInputFile(1)
+            self.verifyIRCOutput()
             import ipdb; ipdb.set_trace()
-            self.run()
-            self.writeIRCFile()
-            self.run()
-            self.verifyTSGeometry()
+            # self.writeInputFile(1)
+            # self.run()
+            # self.writeIRCFile()
+            # self.run()
+            # self.verifyTSGeometry()
             

@@ -5,6 +5,7 @@ import external.cclib as cclib
 import logging
 from subprocess import Popen, PIPE
 
+from rmgpy.molecule import Group #Molecule
 from qmdata import CCLibData
 from molecule import QMMolecule
 from reaction import QMReaction
@@ -28,13 +29,7 @@ class Gaussian:
         executablePath = os.path.join(gaussEnv , '(g03 or g09)')
 
     usePolar = False
-    
-    #: List of phrases to indicate success.
-    #: ALL of these must be present in a successful job.
-    successKeys = [
-                   'Normal termination of Gaussian'
-                  ]
- 
+     
     def testReady(self):
         if not os.path.exists(self.executablePath):
             raise Exception("Couldn't find Gaussian executable at {0}. Try setting your GAUSS_EXEDIR environment variable.".format(self.executablePath))
@@ -67,6 +62,11 @@ class GaussianMol(QMMolecule, Gaussian):
     
     Inherits from both :class:`QMMolecule` and :class:`Gaussian`.
     """
+    #: List of phrases to indicate success.
+    #: ALL of these must be present in a successful job.
+    successKeys = [
+                   'Normal termination of Gaussian',
+                  ]
     
     #: List of phrases that indicate failure
     #: NONE of these must be present in a succesful job.
@@ -340,6 +340,12 @@ class GaussianTS(QMReaction, Gaussian):
     Inherits from both :class:`QMReaction` and :class:`Gaussian`.
     """
     
+    #: List of phrases to indicate success.
+    #: ALL of these must be present in a successful job.
+    successKeys = [
+                   'Normal termination of Gaussian',
+                   '******    1 imaginary frequencies (negative Signs) ******',
+                  ]
     
     #: List of phrases that indicate failure
     #: NONE of these must be present in a succesful job.
@@ -463,7 +469,7 @@ class GaussianTS(QMReaction, Gaussian):
         else:
             return True
     
-    def verifyTSGeometry(self):
+    def verifyIRCOutput(self):
         """
         Check's that the resulting geometries of the path analysis match the reaction.
         """
@@ -471,30 +477,52 @@ class GaussianTS(QMReaction, Gaussian):
         """
         Compares IRC geometries to input geometries.
         """
-        # Search IRC output for steps on each side of the path
-        readFile = file(ircOutput)
+        ircFile = 'IRC.'.join(self.outputFilePath.split('.'))
+        if not os.path.exists(ircFile):
+            logging.info("Output file {0} does not exist.".format(self.outputFilePath))
+            return False
+        
+        # Initialize dictionary with "False"s 
+        successKeysFound = dict([(key, False) for key in self.successKeys])
+        
         pth1 = list()
         steps = list()
-        for line in readFile.readlines():
-            if line.startswith(' Point Number:'):
-                if int(line.split()[2]) > 0:
-                    if int(line.split()[-1]) == 1:
-                        ptNum = int(line.split()[2])
-                        pth1.append(ptNum)
-                    else:
-                        pass
-            elif line.startswith('  # OF STEPS ='):
-                numStp = int(line.split()[-1])
-                steps.append(numStp)
+        with open(ircFile) as outputFile:
+            for line in outputFile:
+                line = line.strip()
+                
+                for element in self.failureKeys: #search for failure keywords
+                    if element in line:
+                        logging.error("Gaussian IRC output file contains the following error: {0}".format(element) )
+                        return False
+                    
+                for element in self.successKeys: #search for success keywords
+                    if element in line:
+                        successKeysFound[element] = True
+                
+                if line.startswith('Point Number:'):
+                    if int(line.split()[2]) > 0:
+                        if int(line.split()[-1]) == 1:
+                            ptNum = int(line.split()[2])
+                            pth1.append(ptNum)
+                        else:
+                            pass
+                elif line.startswith('# OF STEPS ='):
+                    numStp = int(line.split()[-1])
+                    steps.append(numStp)
         
+        # Check that ALL 'success' keywords were found in the file.
+        if not successKeysFound['Normal termination of Gaussian']:
+            logging.error('Not all of the required keywords for sucess were found in the IRC output file!')
+            return False
         # This indexes the coordinate to be used from the parsing
-        if steps == []:
-            notes = ' IRC failed '
-            return 0, notes
+        elif steps == []:
+            logging.error('No steps taken in the IRC calculation!')
+            return False
         else:
             pth1End = sum(steps[:pth1[-1]])		
             # Compare the reactants and products
-            ircParse = external.cclib.parser.Gaussian(ircOutput)
+            ircParse = cclib.parser.Gaussian(ircFile)
             ircParse = ircParse.parse()
         
             atomnos = ircParse.atomnos
@@ -503,20 +531,85 @@ class GaussianTS(QMReaction, Gaussian):
             # Convert the IRC geometries into RMG molecules
             # We don't know which is reactant or product, so take the two at the end of the
             # paths and compare to the reactants and products
-        
-            mol1 = fromXYZ(atomcoords[pth1End], atomnos)
-            mol2 = fromXYZ(atomcoords[-1], atomnos)
+            mol1 = Group()
+            mol1.fromXYZ(atomnos, atomcoords[pth1End])
+            mol2 = Group()
+            mol2.fromXYZ(atomnos, atomcoords[-1])
             
-            # Had trouble with isIsomorphic, but resetting the connectivity seems to fix it (WHY??).
-            reactant.resetConnectivityValues()
-            product.resetConnectivityValues()
-            mol1.resetConnectivityValues()
-            mol2.resetConnectivityValues()
+            rMade = mol1.split()
+            pMade = mol2.split()
             
-            if reactant.isIsomorphic(mol1) and product.isIsomorphic(mol2):
+            reactant = self.reaction.reactants
+            product = self.reaction.products  
+            
+            for react in reactant:
+                react.resetConnectivityValues()
+            for react in product:
+                react.resetConnectivityValues()
+            for react in rMade:
+                react.resetConnectivityValues()
+            for react in pMade:
+                react.resetConnectivityValues()
+            # # Had trouble with isSubgraphIsomorphic, but resetting the connectivity seems to fix it (WHY??)
+            # reactant.resetConnectivityValues()
+            # product.resetConnectivityValues()
+            # mol1.resetConnectivityValues()
+            # mol2.resetConnectivityValues()
+            
+            if reactant[0].isSubgraphIsomorphic(rMade[0]):
+                if product[0].isSubgraphIsomorphic(pMade[0]):
+                    if reactant[1].isSubgraphIsomorphic(rMade[1]) and product[1].isSubgraphIsomorphic(pMade[1]):
+                        print True
+                    else:
+                        print False
+                elif product[0].isSubgraphIsomorphic(pMade[1]):
+                    if reactant[1].isSubgraphIsomorphic(rMade[1]) and product[1].isSubgraphIsomorphic(pMade[0]):
+                        print True
+                    else:
+                        print False
+            elif reactant[0].isSubgraphIsomorphic(rMade[1]):
+                if product[0].isSubgraphIsomorphic(pMade[0]):
+                    if reactant[1].isSubgraphIsomorphic(rMade[0]) and product[1].isSubgraphIsomorphic(pMade[1]):
+                        print True
+                    else:
+                        print False
+                elif product[0].isSubgraphIsomorphic(pMade[1]):
+                    if reactant[1].isSubgraphIsomorphic(rMade[0]) and product[1].isSubgraphIsomorphic(pMade[0]):
+                        print True
+                    else:
+                        print False
+            elif reactant[0].isSubgraphIsomorphic(pMade[0]):
+                if product[0].isSubgraphIsomorphic(rMade[0]):
+                    if reactant[1].isSubgraphIsomorphic(pMade[1]) and product[1].isSubgraphIsomorphic(rMade[1]):
+                        print True
+                    else:
+                        print False
+                elif product[0].isSubgraphIsomorphic(rMade[1]):
+                    if reactant[1].isSubgraphIsomorphic(pMade[1]) and product[1].isSubgraphIsomorphic(rMade[0]):
+                        print True
+                    else:
+                        print False
+            elif reactant[0].isSubgraphIsomorphic(pMade[1]):
+                if product[0].isSubgraphIsomorphic(rMade[0]):
+                    if reactant[1].isSubgraphIsomorphic(pMade[0]) and product[1].isSubgraphIsomorphic(rMade[1]):
+                        print True
+                    else:
+                        print False
+                elif product[0].isSubgraphIsomorphic(rMade[1]):
+                    if reactant[1].isSubgraphIsomorphic(pMade[0]) and product[1].isSubgraphIsomorphic(rMade[0]):
+                        print True
+                    else:
+                        print False
+            else:
+                import ipdb; ipdb.set_trace()
+            
+            import ipdb; ipdb.set_trace()
+            
+            
+            if reactant.isSubgraphIsomorphic(mol1) and product.isSubgraphIsomorphic(mol2):
                     notes = 'Verified TS'
                     return 1, notes
-            elif reactant.isIsomorphic(mol2) and product.isIsomorphic(mol1):
+            elif reactant.isSubgraphIsomorphic(mol2) and product.isSubgraphIsomorphic(mol1):
                     notes = 'Verified TS'
                     return 1, notes
             else:
