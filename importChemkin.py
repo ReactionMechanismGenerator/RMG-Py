@@ -1105,6 +1105,7 @@ $('#unconfirmedspecies_count').html("("+json.unconfirmed+")");
 </script>
 <h1>Mechanism importer</h1>
 <ul>
+<li><a href="species.html">All species.</a> (Sorted by <a href="species.html?sort=name">name</a> or <a href="species.html?sort=formula">formula</a>.)</li>
 <li><a href="identified.html">Identified species.</a> <span id="identified_count"></span></li>
 <li><a href="tentative.html">Tentative Matches.</a> <span id="tentative_count"></span></li>
 <li><a href="votes.html">Voting reactions.</a></li>
@@ -1142,6 +1143,59 @@ $('#unconfirmedspecies_count').html("("+json.unconfirmed+")");
                     continue
             output.append("<tr><td>{label}</td>".format(label=label))
             output.append("<td><a href='/propose.html?ckLabel={ckl}'>propose match</a></td></tr>".format(ckl=urllib2.quote(label), ))
+        output.extend(['</table>', self.html_tail])
+        return ('\n'.join(output))
+    
+    @cherrypy.expose
+    def species_html(self, sort="ck"):
+        img = self._img
+        output = [self.html_head, '<h1>All {0} Species</h1><table>'.format(len(self.speciesList))]
+        tentativeDict = {chemkinLabel: (rmgSpec, deltaH) for (chemkinLabel, rmgSpec, deltaH) in self.tentativeMatches }
+        manualDict = {chemkinLabel: rmgSpec for (chemkinLabel, rmgSpec) in self.manualMatchesToProcess}
+        
+        labels = [s.label for s in self.speciesList]
+        if sort=='name':
+            labels.sort()
+            output.append('Sorted by name. Sort by <a href="/species.html">chemkin file</a> or <a href="?sort=formula">formula</a>.')
+        elif sort=='formula':
+            labels.sort(key=lambda l: self.formulaDict[l])
+            output.append('Sorted by formula. Sort by <a href="/species.html">chemkin file</a> or <a href="?sort=name">name</a>.')
+        else:
+            output.append('Sorted by chemkin file. Sort by <a href="?sort=name">name</a> or <a href="?sort=formula">formula</a>.')
+        for chemkinLabel in labels:
+            if (chemkinLabel in self.identified_labels) or (chemkinLabel in manualDict):
+                try:
+                    rmgSpec = self.speciesDict_rmg[chemkinLabel]
+                    pending = False
+                except KeyError:
+                    rmgSpec = manualDict[chemkinLabel]
+                    pending = True
+                deltaH = self.getEnthalpyDiscrepancy(chemkinLabel, rmgSpec)
+                output.append("<tr><td class='confirmed'>{label}</td><td class='centered'>{img}</td><td>{smi}</td><td>{delH:.1f} kJ/mol</td>".format(
+                                    img=img(rmgSpec), label=chemkinLabel, delH=deltaH, smi=rmgSpec.molecule[0].toSMILES() ))
+                if chemkinLabel in self.identified_unprocessed_labels:
+                    output.append("<td>Identified, waiting to react.</td>")
+                elif pending:
+                    output.append("<td>Identified, pending processing.</td>")
+                else:
+                    output.append("<td>Identified, reacted, in model.</td>")
+            elif chemkinLabel in tentativeDict:
+                rmgSpec, deltaH = tentativeDict[chemkinLabel]
+                output.append("<tr><td class='tentative'>{label}</td><td class='centered'>{img}</td><td>{smi}</td><td>{delH:.1f} kJ/mol</td>".format(
+                                    img=img(rmgSpec), label=chemkinLabel, delH=deltaH, smi=rmgSpec.molecule[0].toSMILES() ))
+                output.append("<td>Tentative match. <a href='/confirm.html?ckLabel={ckl}&rmgLabel={rmgl}'>confirm</a> / ".format(ckl=urllib2.quote(chemkinLabel), rmgl=urllib2.quote(str(rmgSpec))))
+                output.append("<a href='/edit.html?ckLabel={ckl}&SMILES={smi}'>edit</a></td></tr>".format(ckl=urllib2.quote(chemkinLabel), smi=urllib2.quote(rmgSpec.molecule[0].toSMILES())))
+            else:
+                output.append("<tr><td class='unknown'>{label}</td><td class='centered'>?</td>".format(label=chemkinLabel))
+                output.append("""
+            <form action="edit.html" method="get"><td>
+            <input type=hidden name="ckLabel" value="{lab}">
+            <input type=text name="SMILES"></td>
+            <td><input type=submit></td>
+            </form>
+            """.format(lab=chemkinLabel))
+                votes = "<a href='/votes.html'>check votes</a> / " if chemkinLabel in self.votes else "No votes yet. "
+                output.append("<td>Unknown species. {votes} <a href='/propose.html?ckLabel={ckl}'>propose match</a></td></tr>".format(ckl=urllib2.quote(chemkinLabel), votes=votes))
         output.extend(['</table>', self.html_tail])
         return ('\n'.join(output))
     
@@ -1382,6 +1436,11 @@ td.bar { text-align: right; overflow: hidden}
 .unid {color: #00DE1A;}
 a.unid {text-decoration: none;}
 a.unid:hover {text-decoration: underline;}
+td.confirmed {border-left: 5px solid green;}
+td.tentative {border-left: 5px solid orange;}
+td.unknown {border-left: 5px solid red;}
+h1, h2 {font-family: Helvetica, sans-serif;}
+td.centered {text-align: center;}
 </style>    
 </head>
 
