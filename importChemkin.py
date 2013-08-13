@@ -22,6 +22,7 @@ import logging
 import re
 
 import cherrypy
+from cherrypy.lib.static import serve_file
 import json
 import threading
 import urllib2
@@ -946,14 +947,15 @@ class ModelMatcher():
 # encoding: utf-8
 
 name = "{name}"
+
 shortDesc = u"{shortDesc}"
+
 longDesc = u"\""
 {longDesc}
 "\""
 recommended = False
 
-
-            """.format(name=thermo_file.replace('"',''), shortDesc=os.path.abspath(thermo_file).replace('"',''), longDesc=source))
+""".format(name=thermo_file.replace('"',''), shortDesc=os.path.abspath(thermo_file).replace('"',''), longDesc=source.strip()))
             
         self.identifySmallMolecules()
         
@@ -1135,6 +1137,7 @@ $('#unconfirmedspecies_count').html("("+json.unconfirmed+")");
 <li><a href="votes.html">Voting reactions.</a></li>
 <li><a href="unmatchedreactions.html">Unmatched reactions.</a> <span id="unmatchedreactions_count"></span></li>
 <li><a href="unconfirmedspecies.html">Unconfirmed species.</a> <span id="unconfirmedspecies_count"></span></li>
+<li><a href="thermo.py">Download thermo library.</a></li>
 </ul>
         """ + location + self.html_tail
 
@@ -1248,6 +1251,11 @@ $('#unconfirmedspecies_count').html("("+json.unconfirmed+")");
         output.append(self.html_tail)
         return ('\n'.join(output))
         
+    @cherrypy.expose
+    def thermo_py(self):
+        """The thermo database in py format"""
+        return serve_file(os.path.abspath(self.outputThermoFile),
+                              content_type='application/octet-stream')
 
     @cherrypy.expose
     def votes_html(self):
