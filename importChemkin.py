@@ -715,17 +715,36 @@ class ModelMatcher():
         self.clearTentativeMatch(chemkinLabel, rmgSpecies)
         self.identified_labels.append(chemkinLabel)
         self.identified_unprocessed_labels.append(chemkinLabel)
-        self.speciesDict_rmg[chemkinLabel] = rmgSpecies
+        
         enthalpyDiscrepancy = self.getEnthalpyDiscrepancy(chemkinLabel, rmgSpecies)
         logging.info("Storing match: {0} = {1!s}".format(chemkinLabel, rmgSpecies))
         logging.info("  On match, Enthalpies at 800K differ by {0:.1f} kJ/mol".format(enthalpyDiscrepancy))
         display(rmgSpecies)
         self.moveSpeciesDrawing(rmgSpecies)
-        rmgSpecies.label = chemkinLabel
+        
+        duplicate = False
+        if rmgSpecies.label in self.speciesDict_rmg:
+            otherSpecies = self.speciesDict_rmg[rmgSpecies.label]
+            if otherSpecies is rmgSpecies:
+                logging.warning("This RMG species has already been matched to the chemkin label {0}".format(otherSpecies.label))
+                duplicate = otherSpecies.label
+                self.identified_unprocessed_labels.remove(chemkinLabel)
+            else:
+                logging.warning("Coincidence that RMG made a species with the same label as some other chemkin species: {0}.".format(rmgSpecies.label))
+        if duplicate:
+            logging.warning("Will not rename the RMG species with duplicate chemkin labels; leaving as it's first match: {0}".format(rmgSpecies.label))
+        else:
+            rmgSpecies.label = chemkinLabel
+    
+        self.speciesDict_rmg[chemkinLabel] = rmgSpecies
+
         with open(self.dictionaryFile, 'a') as f:
-            f.write("{0}\t{1}\t{2:.1f}\n".format(chemkinLabel, rmgSpecies.molecule[0].toSMILES(), enthalpyDiscrepancy))
+            f.write("{0}\t{1}\t{2:.1f}{3}\n".format(chemkinLabel, rmgSpecies.molecule[0].toSMILES(),
+                                        enthalpyDiscrepancy, '\tDUPLICATE of '+duplicate if duplicate else '' ))
+        
         with open(self.RMGdictionaryFile, 'a') as f:
-            f.write("{0}\n{1}\n\n".format(chemkinLabel, rmgSpecies.molecule[0].toAdjacencyList(removeH=True)))
+            f.write("{2}{0}\n{1}\n\n".format(chemkinLabel, rmgSpecies.molecule[0].toAdjacencyList(removeH=True),
+                                             '// Warning! Duplicate of '+duplicate+'\n' if duplicate else ''))
         
         self.drawSpecies(rmgSpecies)
 
@@ -746,11 +765,9 @@ class ModelMatcher():
         # thermo.selectPolynomial(thermo.Tmin.value_si).Tmin.value_si = oldLowT  # put it back
         self.thermoDict[chemkinLabel].E0 = newThermo.E0
         
-        
-        
         entry = Entry()
         entry.index = len(self.identified_labels)
-        entry.label = rmgSpecies.label
+        entry.label = chemkinLabel
         source = self.args.thermo
         # molecule = Molecule(SMILES=self.smilesDict.get(species.label, 'C'))
         # molecule = self.speciesDict_rmg.get(rmgSpecies.label, Species().fromSMILES('C')).molecule[0]
@@ -762,6 +779,8 @@ class ModelMatcher():
             entry.longDesc = comment + '.\n'
         else:
             entry.longDesc = ''
+        if duplicate:
+            entry.longDesc += "Duplicate of species {0} (i.e. same molecular structure according to RMG)\n".format(duplicate)
         entry.longDesc += '{smiles}\nImported from {source}.'.format(source=source, smiles=molecule.toSMILES())
         entry.shortDesc = comment.split('\n')[0].strip()
         user = getUsername()
@@ -969,7 +988,9 @@ recommended = False
             old_species = self.speciesDict[species_label]
             logging.info(species_label)
             rmg_species, wasNew = rm.makeNewSpecies(old_species, label=old_species.label)
-            assert wasNew, "Species with structure of '{0}' already created with label '{1}'".format(species_label, rmg_species.label)
+            if not wasNew:
+                logging.warning("Species with structure of '{0}' already created with label '{1}'".format(species_label, rmg_species.label))
+                
             newSpeciesDict[species_label] = rmg_species
             if self.formulaDict[species_label] in {'N2', 'Ar', 'He'}:
                 rmg_species.reactive = False
