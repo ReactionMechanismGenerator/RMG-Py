@@ -963,8 +963,7 @@ class ModelMatcher():
         except IOError:
             source = "Unknown source"
         with open(self.outputThermoFile, 'w') as f:
-            f.write("""
-!/usr/bin/env python
+            f.write("""#!/usr/bin/env python
 # encoding: utf-8
 
 name = "{name}"
