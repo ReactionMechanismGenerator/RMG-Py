@@ -57,10 +57,50 @@ class PressureDependenceError(Exception):
 
 class PDepReaction(rmgpy.reaction.Reaction):
 
-    def __init__(self, index=-1, label='', reactants=None, products=None, network=None, kinetics=None, reversible=True, transitionState=None, duplicate=False, degeneracy=1, pairs=None):
-        rmgpy.reaction.Reaction.__init__(self, index, label, reactants, products, kinetics, reversible, transitionState, duplicate, degeneracy, pairs)
+    def __init__(self,
+                 index=-1,
+                 label='',
+                 reactants=None,
+                 products=None,
+                 network=None,
+                 kinetics=None,
+                 reversible=True,
+                 transitionState=None,
+                 duplicate=False,
+                 degeneracy=1,
+                 pairs=None
+                 ):
+        rmgpy.reaction.Reaction.__init__(self,
+                                         index,
+                                         label,
+                                         reactants,
+                                         products,
+                                         kinetics,
+                                         reversible,
+                                         transitionState,
+                                         duplicate,
+                                         degeneracy,
+                                         pairs
+                                         )
         self.network = network
-        
+
+    def __reduce__(self):
+        """
+        A helper function used when pickling an object.
+        """
+        return (PDepReaction, (self.index,
+                               self.label,
+                               self.reactants,
+                               self.products,
+                               self.network,
+                               self.kinetics,
+                               self.reversible,
+                               self.transitionState,
+                               self.duplicate,
+                               self.degeneracy,
+                               self.pairs
+                               ))
+    
     def getSource(self):
         """
         Get the source of this PDepReaction
@@ -94,6 +134,15 @@ class PDepNetwork(rmgpy.pdep.network.Network):
     
     def __str__(self):
         return "PDepNetwork #{0}".format(self.index)
+    
+    def __reduce__(self):
+        """
+        A helper function used when pickling an object.
+        """
+        return (PDepNetwork, (self.index, self.source), self.__dict__ )
+    
+    def __setstate__(self,dict):
+        self.__dict__.update(dict)
 
     @property
     def label(self):
@@ -403,7 +452,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         Regenerate the :math:`k(T,P)` values for this partial network if the
         network is marked as invalid.
         """
-        from rmgpy.kinetics import Arrhenius, KineticsData
+        from rmgpy.kinetics import Arrhenius, KineticsData, MultiArrhenius
         from rmgpy.measure.collision import SingleExponentialDown
         from rmgpy.measure.reaction import fitInterpolationModel
         from rmgpy.measure.main import MEASURE
@@ -480,8 +529,12 @@ class PDepNetwork(rmgpy.pdep.network.Network):
                 else:
                     kunits = ''
                 rxn.kinetics = Arrhenius().fitToData(Tlist=rxn.kinetics.Tdata.value_si, klist=rxn.kinetics.kdata.value_si, kunits=kunits)
+            elif isinstance(rxn.kinetics, MultiArrhenius):
+                logging.info('Converting multiple kinetics to a single Arrhenius expression for reaction {rxn}'.format(rxn=rxn))
+                rxn.kinetics = rxn.kinetics.toArrhenius(Tmin=Tmin, Tmax=Tmax)
             elif not isinstance(rxn.kinetics, Arrhenius):
                 raise Exception('Path reaction "{0}" in PDepNetwork #{1:d} has invalid kinetics type "{2!s}".'.format(rxn, self.index, rxn.kinetics.__class__))
+            rxn.fixBarrierHeight(forcePositive=True)
             E0 = sum([spec.conformer.E0.value_si for spec in rxn.reactants]) + rxn.kinetics.Ea.value_si
             rxn.transitionState = rmgpy.species.TransitionState(
                 conformer = Conformer(E0=(E0*0.001,"kJ/mol")),

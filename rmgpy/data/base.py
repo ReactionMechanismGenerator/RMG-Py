@@ -176,12 +176,12 @@ class Database:
         provide these.
         """
 
-        # Collision efficiencies are in SMILES format, so we'll need OpenBabel
+        # Collision efficiencies are in SMILES format, so we'll need RDKit
         # to convert them to Molecule objects
         # Do the import here to ensure it is imported from a pure Python
         # environment (as opposed to a Cythonized environment, which is not
         # allowed during an exec() call)
-        import pybel
+        from rdkit import Chem
 
         # Clear any previously-loaded data
         self.entries = {}
@@ -367,7 +367,7 @@ class Database:
                 record = self.entries[label].item
                 lines = record.splitlines()
                 # If record is a logical node, make it into one.
-                if re.match('(?i)\s*OR|AND|NOT|UNION',lines[1] ):
+                if re.match("(?i)\s*(NOT\s)?\s*(OR|AND|UNION)\s*(\{.*\})", lines[1]):
                     self.entries[label].item = makeLogicNode(' '.join(lines[1:]) )
                 # Otherwise convert adjacency list to molecule or pattern
                 elif pattern:
@@ -898,7 +898,7 @@ class LogicNode:
     def __init__(self,items,invert):
         self.components = []
         for item in items:
-            if re.match('(?i)\s*OR|AND|NOT|UNION',item):
+            if re.match("(?i)\s*(NOT\s)?\s*(OR|AND|UNION)\s*(\{.*\})",item):
                 component = makeLogicNode(item)
             else:
                 component = item
@@ -982,7 +982,7 @@ def makeLogicNode(string):
     And the returned object will be of class LogicOr or LogicAnd
     """
 
-    match = re.match("(?i)\s*(NOT)?\s*(OR|AND|UNION)\s*(.*)",string)  # the (?i) makes it case-insensitive
+    match = re.match("(?i)\s*(NOT\s)?\s*(OR|AND|UNION)\s*(\{.*\})",string)  # the (?i) makes it case-insensitive
     if not match:
         raise Exception("Unexpected string for Logic Node: {0}".format(string))
 

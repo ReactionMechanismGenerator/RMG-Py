@@ -47,7 +47,17 @@ class NetworkError(Exception):
 
 class InvalidMicrocanonicalRateError(NetworkError):
     """Used when the k(E) calculation does not give the correct kf(T) or Kc(T)"""
-    pass
+    def __init__(self,message, k_ratio=1.0, Keq_ratio=1.0):
+        self.message = message
+        self.k_ratio = k_ratio
+        self.Keq_ratio = Keq_ratio
+    def badness(self):
+        """
+        How bad is the error?
+        
+        Returns the max of the absolute logarithmic errors of kf and Kc
+        """
+        return max(abs(math.log10(self.k_ratio)), abs(math.log10(self.Keq_ratio)))
 
 ################################################################################
 
@@ -274,6 +284,7 @@ class Network:
         grainCount = self.grainCount
         
         success = False
+        previous_error = None
         while not success:
             success = True # (set it to false again later if necessary)
             # Update parameters that depend on temperature only if necessary
@@ -304,11 +315,19 @@ class Network:
                 # Calculate microcanonical rate coefficients for each path reaction
                 try:
                     self.calculateMicrocanonicalRates()
-                except InvalidMicrocanonicalRateError:
+                except InvalidMicrocanonicalRateError as error:
+                    badness = error.badness()
+                    if previous_error and (previous_error.message == error.message): # only compare badness if same reaction is causing problem
+                        improvement = previous_error.badness()/badness
+                        if improvement < 0.2 or (grainCount > 1e4 and improvement < 1.1) or (grainCount > 1.5e6): # allow it to get worse at first
+                            logging.error(error.message)
+                            logging.error("Increasing number of grains did not decrease error enough (Current badness: {0:.1f}, previous {1:.1f}). Something must be wrong with network {2}".format(badness,previous_error.badness(),self.label))
+                            raise error
+                    previous_error = error
                     success = False
                     grainSize *= 0.5
                     grainCount *= 2
-                    logging.warning("Increasing number of grains, decreasing grain size and trying again.")
+                    logging.warning("Increasing number of grains, decreasing grain size and trying again. (Current badness: {0:.1f})".format(badness))
                     continue
                 else:
                     success = True
@@ -582,9 +601,10 @@ class Network:
             kf_actual = kf0 / Qreac if Qreac > 0 else 0
             kr_actual = kr0 / Qprod if Qprod > 0 else 0
             Keq_actual = kf_actual / kr_actual if kr_actual > 0 else 0
-                
-            error = False; warning = False
 
+            error = False; warning = False
+            k_ratio = 1.0
+            Keq_ratio = 1.0
             # Check that the forward rate coefficient is correct
             if kf_actual > 0:
                 k_ratio = kf_expected / kf_actual
@@ -646,13 +666,13 @@ class Network:
             # If the k(E) values are invalid (in that they give the wrong 
             # kf(T) or kr(T) when integrated), then raise an exception
             if error or warning:
-                logging.error('For path reaction {0!s}:'.format(rxn))
-                logging.error('    Expected kf({0:g} K) = {1:g}'.format(T, kf_expected))
-                logging.error('      Actual kf({0:g} K) = {1:g}'.format(T, kf_actual))
-                logging.error('    Expected Keq({0:g} K) = {1:g}'.format(T, Keq_expected))
-                logging.error('      Actual Keq({0:g} K) = {1:g}'.format(T, Keq_actual))
+                logging.warning('For path reaction {0!s}:'.format(rxn))
+                logging.warning('    Expected kf({0:g} K) = {1:g}'.format(T, kf_expected))
+                logging.warning('      Actual kf({0:g} K) = {1:g}'.format(T, kf_actual))
+                logging.warning('    Expected Keq({0:g} K) = {1:g}'.format(T, Keq_expected))
+                logging.warning('      Actual Keq({0:g} K) = {1:g}'.format(T, Keq_actual))
                 if error:
-                    raise InvalidMicrocanonicalRateError('Invalid k(E) values computed for path reaction "{0}".'.format(rxn))
+                    raise InvalidMicrocanonicalRateError('Invalid k(E) values computed for path reaction "{0}".'.format(rxn), k_ratio, Keq_ratio)
                 else:
                     logging.warning('Significant corrections to k(E) to be consistent with high-pressure limit for path reaction "{0}".'.format(rxn))
 
@@ -785,7 +805,7 @@ class Network:
         def jacobian(t, y, K):
             return K
     
-        ymB = self.P * 1e5 / constants.R / self.T * 1e-6
+        ymB = self.P / constants.R / self.T
         M, indices = self.generateFullMEMatrix()
         Nrows = M.shape[0]
         M[:,Nrows-Nreac-Nprod:] *= ymB
@@ -866,8 +886,8 @@ class Network:
         def jacobian(t, y, K):
             return K
     
-        ymB = self.P * 1e5 / constants.R / self.T * 1e-6
-        K = self.K[:,:]
+        ymB = self.P / constants.R / self.T
+        K = self.K.copy()
         K[:,Nisom:] *= ymB
         
         if self.ymB is not None:

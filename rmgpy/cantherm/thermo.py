@@ -106,13 +106,13 @@ class ThermoJob:
     
         wilhoit = Wilhoit()
         if Nfreq == 0 and Nrotors == 0:
-            wilhoit.Cp0 = Cplist[0]
-            wilhoit.CpInf = Cplist[0]
-            wilhoit.B = 500.
-            wilhoit.H0 = 0.0
-            wilhoit.S0 = 0.0
-            wilhoit.H0 = H298 - wilhoit.getEnthalpy(298.15)
-            wilhoit.S0 = S298 - wilhoit.getEntropy(298.15)
+            wilhoit.Cp0 = (Cplist[0],"J/(mol*K)") 
+            wilhoit.CpInf = (Cplist[0],"J/(mol*K)")
+            wilhoit.B = (500.,"K") 
+            wilhoit.H0 = (0.0,"J/mol")
+            wilhoit.S0 = (0.0,"J/(mol*K)") 
+            wilhoit.H0 =  (H298 -wilhoit.getEnthalpy(298.15), "J/mol") 
+            wilhoit.S0 = (S298 - wilhoit.getEntropy(298.15),"J/(mol*K)")
         else:
             wilhoit.fitToData(Tlist, Cplist, Cp0, CpInf, H298, S298, B0=500.0)
         
@@ -153,7 +153,7 @@ class ThermoJob:
         
         f.close()
         
-        f = open(os.path.join(os.path.dirname(outputFile), 'chem.inp'), 'w')
+        f = open(os.path.join(os.path.dirname(outputFile), 'chem.inp'), 'a')
         
         thermo = species.thermo
         if isinstance(thermo, NASA):

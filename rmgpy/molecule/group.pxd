@@ -77,10 +77,10 @@ cdef class Group(Graph):
 
     # These read-only attribues act as a "fingerprint" for accelerating
     # subgraph isomorphism checks
-    cdef readonly short carbonCount
-    cdef readonly short oxygenCount
-    cdef readonly short sulfurCount
-    cdef readonly short radicalCount
+    cdef public short carbonCount
+    cdef public short oxygenCount
+    cdef public short sulfurCount
+    cdef public short radicalCount
 
     cpdef addAtom(self, GroupAtom atom)
 

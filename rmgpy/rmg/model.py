@@ -36,12 +36,13 @@ import logging
 import math
 import numpy
 import os.path
+import itertools
 
 import scoop
 from scoop import futures
 
 from rmgpy.display import display
-
+#import rmgpy.chemkin
 import rmgpy.constants as constants
 from rmgpy.quantity import Quantity
 import rmgpy.species
@@ -49,12 +50,17 @@ from rmgpy.thermo import Wilhoit, NASA, ThermoData
 from rmgpy.pdep import LennardJones, SingleExponentialDown
 from rmgpy.statmech import  Conformer
 
+from rmgpy.data.base import Entry
 from rmgpy.data.thermo import *
 from rmgpy.data.kinetics import *
 from rmgpy.data.statmech import *
 import rmgpy.data.rmg
 
+#needed to call the generate3dTS method in Reaction class
+from rmgpy.reaction import Reaction
+
 from pdep import PDepReaction, PDepNetwork, PressureDependenceError
+# generateThermoDataFromQM under the Species class imports the qm package
 
 __database = None
 
@@ -93,15 +99,90 @@ class Species(rmgpy.species.Species):
         """
         return (Species, (self.index, self.label, self.thermo, self.conformer, self.molecule, self.lennardJones, self.molecularWeight, self.dipoleMoment, self.polarizability, self.Zrot, self.energyTransferModel, self.reactive, self.coreSizeAtCreation),)
 
-    def generateThermoData(self, database, thermoClass=NASA):
+    def generateThermoData(self, database, thermoClass=NASA, quantumMechanics=None):
         """
-        Generate thermodynamic data for the species using the thermo database.
+        Generates thermo data, first checking Libraries, then using either QM or Database.
+        
+        If quantumMechanics is not None, it is asked to calculate the thermo.
+        Failing that, the database is used.
+        
+        The database generates the thermo data for each structure (resonance isomer),
+        picks that with lowest H298 value.
+        
+        It then calls :meth:`processThermoData`, to convert (via Wilhoit) to NASA
+        and set the E0.
+        
+        Result stored in `self.thermo` and returned.
+        """
+        from rmgpy.data.thermo import saveEntry
 
-        Generates the thermo data for each structure (resonance isomer),
-        picks that with lowest H298 value, and saves it to `self.thermoData`.
+        thermo0 = None
+        
+        thermo0 = database.thermo.getThermoDataFromLibraries(self)
+        
+        if thermo0 is not None:
+            logging.info("Found thermo for {0} in thermo library".format(self.label))
+            assert len(thermo0) == 3, "thermo0 should be a tuple at this point: (thermoData, library, entry)"
+            thermo0 = thermo0[0]
+            
+        elif quantumMechanics:
+            molecule = self.molecule[0]
+            if quantumMechanics.settings.onlyCyclics and not molecule.isCyclic():
+                pass
+            else: # try a QM calculation
+                if molecule.getRadicalCount() > quantumMechanics.settings.maxRadicalNumber:
+                    # Too many radicals for direct calculation: use HBI.
+                    logging.info("{0} radicals on {1} exceeds limit of {2}. Using HBI method.".format(
+                        self.molecule[0].getRadicalCount(),
+                        self.label,
+                        quantumMechanics.settings.maxRadicalNumber,
+                        ))
+                    
+                    # Need to estimate thermo via each resonance isomer
+                    thermo = []
+                    for molecule in self.molecule:
+                        molecule.clearLabeledAtoms()
+                        molecule.updateAtomTypes()
+                        tdata = database.thermo.estimateRadicalThermoViaHBI(molecule, quantumMechanics.getThermoData)
+                        if tdata is not None:
+                            thermo.append(tdata)
+                    if thermo:
+                        H298 = numpy.array([t.getEnthalpy(298.) for t in thermo])
+                        indices = H298.argsort()
+                        for i, ind in enumerate(indices):
+                            logging.info("Resonance isomer {0} {1} gives H298={2:.0f} J/mol".format(i, self.molecule[ind].toSMILES(), H298[ind]))
+                        self.molecule = [self.molecule[ind] for ind in indices]
+                        molecule = self.molecule[0]
+                        thermo0 = thermo[indices[0]]
+                    else:
+                        pass
+                    
+                    with open('thermoHBIcheck.txt','a') as f:
+                        f.write('// {0!r}\n'.format(thermo0).replace('),','),\n//           '))
+                        f.write('{0}\n'.format(molecule.toSMILES()))
+                        f.write('{0}\n\n'.format(molecule.toAdjacencyList(removeH=True)))
+                else: # Not too many radicals: do a direct calculation.
+                    thermo0 = quantumMechanics.getThermoData(molecule) # returns None if it fails
+                
+                if thermo0 is not None:
+                    # Write the QM molecule thermo to a library so that can be used in future RMG jobs.
+                    quantumMechanics.database.loadEntry(index = len(quantumMechanics.database.entries) + 1,
+                                                        label = molecule.toSMILES(),
+                                                        molecule = molecule.toAdjacencyList(),
+                                                        thermo = thermo0,
+                                                        shortDesc = thermo0.comment
+                                                        )                    
+        if thermo0 is None:
+            thermo0 = database.thermo.getThermoData(self)
+
+        return self.processThermoData(thermo0, thermoClass)
+
+    def processThermoData(self, thermo0, thermoClass=NASA):
         """
-        # Get the thermo data for the species from the database
-        thermo0 = database.thermo.getThermoData(self)
+        Converts via Wilhoit into required `thermoClass` and sets `E0`.
+        
+        Resulting thermo is stored (`self.thermo`) and returned.
+        """
 
         # Always convert to Wilhoit so we can compute E0
         if isinstance(thermo0, Wilhoit):
@@ -254,6 +335,7 @@ class CoreEdgeReactionModel:
         self.outputSpeciesList = []
         self.outputReactionList = []
         self.pressureDependence = None
+        self.quantumMechanics = None
         self.verboseComments = False
         self.kineticsEstimator = 'group additivity'
         self.reactionGenerationOptions = {}
@@ -294,7 +376,6 @@ class CoreEdgeReactionModel:
         either a :class:`Molecule` object or an :class:`rmgpy.species.Species`
         object.
         """
-
         if isinstance(object, rmgpy.species.Species):
             molecule = object.molecule[0]
             label = label if label != '' else object.label
@@ -535,7 +616,8 @@ class CoreEdgeReactionModel:
 
     def enlarge(self, newObject):
         """
-        Enlarge a reaction model by processing `newObject`. If `newObject` is a
+        Enlarge a reaction model by processing the objects in the list `newObject`. 
+        If `newObject` is a
         :class:`rmg.species.Species` object, then the species is moved from
         the edge to the core and reactions generated for that species, reacting
         with itself and with all other species in the model core. If `newObject`
@@ -586,8 +668,9 @@ class CoreEdgeReactionModel:
     
                 # Add new species
                 reactionsMovedFromEdge = self.addSpeciesToCore(newSpecies)
-    
+                
                 # Process the new reactions
+                # While adding to core/edge/pdep network, this clears atom labels:
                 self.processNewReactions(newReactions, newSpecies, pdepNetwork)
     
             elif isinstance(obj, tuple) and isinstance(obj[0], PDepNetwork) and self.pressureDependence:
@@ -597,7 +680,7 @@ class CoreEdgeReactionModel:
                 self.processNewReactions(newReactions, newSpecies, pdepNetwork)
     
             else:
-                raise TypeError('Unable to use object {0} to enlarge reaction model; expecting an object of class rmg.model.Species or rmg.model.PDepNetwork.'.format(obj))
+                raise TypeError('Unable to use object {0} to enlarge reaction model; expecting an object of class rmg.model.Species or rmg.model.PDepNetwork, not {1}'.format(obj, obj.__class__))
 
             # If there are any core species among the unimolecular product channels
             # of any existing network, they need to be made included
@@ -663,12 +746,25 @@ class CoreEdgeReactionModel:
             #  correct barrier heights of estimated kinetics
             if isinstance(reaction,TemplateReaction) or isinstance(reaction,DepositoryReaction): # i.e. not LibraryReaction
                 reaction.fixBarrierHeight() # also converts ArrheniusEP to Arrhenius.
+                
+            if self.pressureDependence and reaction.isUnimolecular():
+                # If this is going to be run through pressure dependence code,
+                # we need to make sure the barrier is positive.
+                reaction.fixBarrierHeight(forcePositive=True)
             
         # Update unimolecular (pressure dependent) reaction networks
         if self.pressureDependence:
             # Recalculate k(T,P) values for modified networks
             self.updateUnimolecularReactionNetworks(database)
             logging.info('')
+            
+        # Check new core reactions for Chemkin duplicates
+        newCoreReactions = self.core.reactions[numOldCoreReactions:]
+        checkedCoreReactions = self.core.reactions[:numOldCoreReactions]
+        from rmgpy.chemkin import markDuplicateReaction
+        for rxn in newCoreReactions:
+            markDuplicateReaction(rxn, itertools.chain(checkedCoreReactions,self.outputReactionList) )
+            checkedCoreReactions.append(rxn)
         
         self.printEnlargeSummary(
             newCoreSpecies=self.core.species[numOldCoreSpecies:],
@@ -1193,8 +1289,19 @@ class CoreEdgeReactionModel:
             self.addSpeciesToCore(spec)
 
         for rxn in self.newReactionList:
+            if self.pressureDependence and rxn.isUnimolecular():
+                # If this is going to be run through pressure dependence code,
+                # we need to make sure the barrier is positive.
+                # ...but are Seed Mechanisms run through PDep? Perhaps not.
+                for spec in itertools.chain(rxn.reactants, rxn.products):
+                    if spec.thermo is None:
+                        spec.generateThermoData(database)
+                rxn.fixBarrierHeight(forcePositive=True)
             self.addReactionToCore(rxn)
-
+        
+        # Check we didn't introduce unmarked duplicates
+        self.markChemkinDuplicates()
+        
         self.printEnlargeSummary(
             newCoreSpecies=self.core.species[numOldCoreSpecies:],
             newCoreReactions=self.core.reactions[numOldCoreReactions:],
@@ -1212,7 +1319,8 @@ class CoreEdgeReactionModel:
 
         database = rmgpy.data.rmg.database
 
-        self.newReactionList = []; self.newSpeciesList = []
+        self.newReactionList = []
+        self.newSpeciesList = []
 
         numOldEdgeSpecies = len(self.edge.species)
         numOldEdgeReactions = len(self.edge.reactions)
@@ -1223,6 +1331,7 @@ class CoreEdgeReactionModel:
         for entry in reactionLibrary.entries.values():
             rxn = LibraryReaction(reactants=entry.item.reactants[:], products=entry.item.products[:], library=reactionLibrary, kinetics=entry.data)
             r, isNew = self.makeNewReaction(rxn) # updates self.newSpeciesList and self.newReactionlist
+            if not isNew: logging.info("This library reaction was not new: {0}".format(rxn))
         for spec in self.newSpeciesList:
             if spec.reactive: spec.generateThermoData(database)
         for spec in self.newSpeciesList:
@@ -1273,6 +1382,7 @@ class CoreEdgeReactionModel:
             else:
                 rxn.kinetics.comment = ("RMG did not find reaction rate to be high enough to be included in model core.")
                 self.outputReactionList.append(rxn)
+        self.markChemkinDuplicates()
 
 
     def addReactionToUnimolecularNetworks(self, newReaction, newSpecies, network=None):
@@ -1528,6 +1638,19 @@ class CoreEdgeReactionModel:
         for rxn in seedReactionList:
             self.addReactionToCore(rxn)
 
+    def markChemkinDuplicates(self):
+        """
+        Check that all reactions that will appear the chemkin output have been checked as duplicates.
+        
+        Call this if you've done something that may have introduced undetected duplicate reactions,
+        like add a reaction library or seed mechanism.
+        Anything added via the :meth:`expand` method should already be detected.
+        """
+        from rmgpy.chemkin import markDuplicateReactions
+        rxnList = self.core.reactions + self.outputReactionList
+        markDuplicateReactions(rxnList)
+        
+        
     def saveChemkinFile(self, path, verbose_path, dictionaryPath=None):
         """
         Save a Chemkin file for the current model core as well as any desired output
@@ -1536,7 +1659,7 @@ class CoreEdgeReactionModel:
         from rmgpy.chemkin import saveChemkinFile, saveSpeciesDictionary
         speciesList = self.core.species + self.outputSpeciesList
         rxnList = self.core.reactions + self.outputReactionList
-        saveChemkinFile(path, speciesList, rxnList, verbose = False)
-        saveChemkinFile(verbose_path, speciesList, rxnList, verbose = True)
+        saveChemkinFile(path, speciesList, rxnList, verbose = False, checkForDuplicates=False) # We should already have marked everything as duplicates by now
+        saveChemkinFile(verbose_path, speciesList, rxnList, verbose = True, checkForDuplicates=False)
         if dictionaryPath:
             saveSpeciesDictionary(dictionaryPath, speciesList)

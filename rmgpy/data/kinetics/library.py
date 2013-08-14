@@ -327,7 +327,7 @@ class KineticsLibrary(Database):
         path = os.path.abspath(path)
 
         self.loadOldDictionary(os.path.join(path,'species.txt'), pattern=False)
-        species = dict([(label.upper(), Species(label=label, molecule=[entry.item])) for label, entry in self.entries.iteritems()])
+        species = dict([(label, Species(label=label, molecule=[entry.item])) for label, entry in self.entries.iteritems()])
         
         # Add common bath gases (Ar, Ne, He, N2) if not already present
         for label, smiles in [('AR','[Ar]'), ('HE','[He]'), ('NE','[Ne]'), ('N2','N#N')]:

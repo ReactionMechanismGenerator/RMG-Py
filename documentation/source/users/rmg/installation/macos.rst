@@ -17,12 +17,6 @@ but other methods like the `Scipy Superpack <http://fonnesbeck.github.com/ScipyS
 	brew update
 	brew install git
 
-* Install `Open Babel <http://openbabel.org/>`_ and its Python bindings. For now, the easiest way to get version 2.3.1 and the Python bindings is::
-
-	brew install https://raw.github.com/rwest/homebrew/open-babel-new/Library/Formula/eigen2.rb
-	brew install https://raw.github.com/rwest/homebrew/open-babel-new/Library/Formula/open-babel.rb
-
-
 * Make a directory to put everything in::
 
 	mkdir ~/Code
@@ -31,6 +25,7 @@ but other methods like the `Scipy Superpack <http://fonnesbeck.github.com/ScipyS
 
 	cd ~/Code
 	git clone git@github.com:GreenGroup/RMG-database.git
+	git clone git@github.com:GreenGroup/RMG-Py.git
 
 * Install the Python dependencies listed in the :file:`RMG-Py/requirements.txt` file using `pip` (do ``easy_install pip`` if you don't already have it)::
 
@@ -66,12 +61,18 @@ but other methods like the `Scipy Superpack <http://fonnesbeck.github.com/ScipyS
 	cd RMG-Py
 	make
 
-* Install RDKit, *if* (and only if) you want to use the new 3D geometry branch::
+* Install RDKit::
 
 	brew uninstall boost
 	brew install boost --build-from-source
-	brew tap rwest/homebrew-rdkit
+	brew tap edc/homebrew-rdkit
 	brew install rdkit --with-inchi
+	
+  You'll need various environment variables set, eg.::
+	
+	export RDBASE=$HOME/rdkit # CHECK THIS (maybe you put RDKit somewhere else)
+	export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$RDBASE/lib
+	export PYTHONPATH=$PYTHONPATH:$RDBASE
 
 * Run an example: ::
 
@@ -79,3 +80,9 @@ but other methods like the `Scipy Superpack <http://fonnesbeck.github.com/ScipyS
 	python rmg.py examples/rmg/minimal/input.py
 
   Verify your installation by opening the resulting output.html file under the "examples/rmg/minimal" directory.
+  
+  You can also use the Makefile targets to test and run examples: ::
+
+	make test
+	make eg1
+	make eg2

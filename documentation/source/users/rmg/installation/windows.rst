@@ -118,6 +118,20 @@ Download and run the installers listed below. These builds have been verified as
 
 .. _remainingdependencies:
 
+
+RDKit
+================
+
+Project home on GitHub: https://github.com/rdkit/rdkit
+
+Installation instructions: http://code.google.com/p/rdkit/wiki/GettingStarted
+Build it with InChI support.
+Required environment variables:
+
+* RDBASE pointing to the root of the distribution
+* PYTHONPATH: should include $RDBASE
+* PATH: should include $RDBASE/lib
+
 Remaining Dependencies
 ======================
 
@@ -125,7 +139,7 @@ Install the remaining six python dependencies using 'pip': ::
 
 	curl https://raw.github.com/pypa/pip/master/contrib/get-pip.py | python
 	easy_install pip
-	pip install nose quantities sphinx pydot psutil xlwt cython==0.16
+	pip install nose quantities sphinx pydot psutil xlwt cython
 
 .. _rmgsources:
 

@@ -348,7 +348,11 @@ class KineticsRules(Database):
         sorted by index.
         """
         entries = []
-        for e in self.entries.values(): entries.extend(e)
+        for e in self.entries.values(): 
+            if isinstance(e,list):
+                entries.extend(e)
+            else:
+                entries.append(e)
         entries.sort(key=lambda x: x.index)
         return entries
 
@@ -564,4 +568,4 @@ class KineticsRules(Database):
                             templateList.append(t)
                 
         # If we're here then we couldn't estimate any kinetics, which is an exception
-        raise Exception('Unable to determine kinetics for reaction with template {0}.'.format(template))
+        raise KineticsError('Unable to determine kinetics for reaction with template {0}.'.format(template))

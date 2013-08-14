@@ -237,7 +237,7 @@ def getAtomType(atom, bonds):
     """
 
     cython.declare(atomType=str)
-    cython.declare(double=cython.double, double0=cython.double, triple=cython.double, benzene=cython.double)
+    cython.declare(double=cython.int, double0=cython.int, triple=cython.int, benzene=cython.int)
     
     atomType = ''
     
@@ -282,6 +282,6 @@ def getAtomType(atom, bonds):
 
     # Raise exception if we could not identify the proper atom type
     if atomType == '':
-        raise AtomTypeError('Unable to determine atom type for atom %s.' % atom)
+        raise AtomTypeError('Unable to determine atom type for atom {0}, which has {1:d} double bonds to C, {2:d} double bonds to O, {3:d} triple bonds, and {4:d} benzene bonds.'.format(atom, double, doubleO, triple, benzene))
 
     return atomTypes[atomType]

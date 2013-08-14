@@ -53,6 +53,8 @@ cdef class Reaction:
     cpdef bint isDissociation(self)
 
     cpdef bint isAssociation(self)
+    
+    cpdef bint isUnimolecular(self)
 
     cpdef bint hasTemplate(self, list reactants, list products)
     
@@ -82,7 +84,7 @@ cdef class Reaction:
 
     cpdef double getRate(self, double T, double P, dict conc, double totalConc=?)
 
-    cpdef fixBarrierHeight(self)
+    cpdef fixBarrierHeight(self, bint forcePositive=?)
 
     cpdef generateReverseRateCoefficient(self)
 

@@ -4,7 +4,8 @@
 Linux Installation
 ******************
 
-RMG-Py and all of its dependencies may be easily installed through a short series of Terminal commands. The instructions listed below have been confirmed on a fresh Ubuntu 12.04 installation and should generally apply to other distributions.
+RMG-Py and all of its dependencies may be easily installed through a short series of Terminal commands.
+The instructions listed below have been confirmed on a fresh Ubuntu 12.04 installation and should generally apply to other distributions.
 
 * Install compilers and libraries: ::
 
@@ -30,11 +31,39 @@ RMG-Py and all of its dependencies may be easily installed through a short serie
 	cd PyDAS; make F77=gfortran; sudo make install
 	cd ../PyDQED; make F77=gfortran; sudo make install
 
+* Install RDKit
+
+  Full installation instructions: http://code.google.com/p/rdkit/wiki/GettingStarted
+  Be sure to **build it with InChI support.** Here's a synopsis: ::
+  
+	cd ~
+	sudo apt-get install flex bison build-essential python-numpy cmake python-dev sqlite3 libsqlite3-dev libboost-dev libboost-python-dev libboost-regex-dev
+	git clone https://github.com/rdkit/rdkit.git
+	cd rdkit
+	export RDBASE=`pwd`
+  	export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$RDBASE/lib
+  	export PYTHONPATH=$PYTHONPATH:$RDBASE
+	cd External/INCHI-API
+	./download-inchi.sh
+	cd ../../
+	mkdir build
+	cd build
+	cmake .. -DRDK_BUILD_INCHI_SUPPORT=ON
+	make
+	make install
+	
+  You'll need various environment variables set (you may want to add these to your `.bash_profile` file), eg.::
+  
+  	export RDBASE=$HOME/rdkit # CHECK THIS (maybe you put RDKit somewhere else)
+  	export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$RDBASE/lib
+  	export PYTHONPATH=$PYTHONPATH:$RDBASE  # (or some other way to make sure it's on your Python path)
+
 * Install RMG-Py: ::
 
 	cd ~
 	git clone git@github.com:GreenGroup/RMG-database.git
 	git clone git@github.com:GreenGroup/RMG-Py.git
+	sudo pip install -r RMG-Py/requirements.txt
 	cd RMG-Py; make
 
 * Run an example: ::
@@ -42,3 +71,9 @@ RMG-Py and all of its dependencies may be easily installed through a short serie
 	python rmg.py examples/rmg/minimal/input.py
 
   Verify your installation by opening the resulting output.html file under the "examples/rmg/minimal" directory.
+
+  You can also use the Makefile targets to test and run examples: ::
+  
+  make test
+  make eg1
+  make eg2

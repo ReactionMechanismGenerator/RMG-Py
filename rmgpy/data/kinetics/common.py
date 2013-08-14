@@ -112,7 +112,12 @@ def saveEntry(f, entry):
     def sortEfficiencies(efficiencies0):
         efficiencies = {}
         for mol, eff in efficiencies0.iteritems():
-            smiles = mol.toSMILES()
+            if isinstance(mol, str):
+                # already in SMILES string format
+                smiles = mol
+            else:
+                smiles = mol.toSMILES()
+                
             efficiencies[smiles] = eff
         keys = efficiencies.keys()
         keys.sort()

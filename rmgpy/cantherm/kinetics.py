@@ -122,6 +122,23 @@ class KineticsJob:
         
         f.close()
         
+        # Also save the result to chem.inp
+        f = open(os.path.join(os.path.dirname(outputFile), 'chem.inp'), 'a')
+        
+        reaction = self.reaction
+        kinetics = reaction.kinetics
+                
+        string = '{0!s:51} {1:9.3e} {2:9.3f} {3:9.3f}\n'.format(
+            reaction,
+            kinetics.A.value_si * factor,
+            kinetics.n.value_si,
+            kinetics.Ea.value_si / 4184.,
+        )
+                
+        f.write('{0}\n'.format(string))
+            
+        f.close()
+        
     def plot(self, outputDirectory):
         """
         Plot both the raw kinetics data and the Arrhenius fit versus 

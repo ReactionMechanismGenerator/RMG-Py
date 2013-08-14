@@ -33,12 +33,14 @@ This module contains the main execution functionality for Reaction Mechanism
 Generator (RMG).
 """
 
+import os
 import os.path
 import sys
 import logging
 import time
 import shutil
 import numpy
+import csv
 try:
     import xlwt
 except ImportError:
@@ -97,6 +99,7 @@ class RMG:
     `generatePlots`             ``True`` to generate plots of the job execution statistics after each iteration, ``False`` otherwise
     `verboseComments`           ``True`` to keep the verbose comments for database estimates, ``False`` otherwise
     `pressureDependence`        Whether to process unimolecular (pressure-dependent) reaction networks
+    `quantumMechanics`          Whether to apply quantum mechanical calculations instead of group additivity to certain molecular types.
     `wallTime`                  The maximum amount of CPU time in seconds to expend on this job; used to stop gracefully so we can still get profiling information
     --------------------------- ------------------------------------------------
     `initializationTime`        The time at which the job was initiated, in seconds since the epoch (i.e. from time.time())
@@ -147,6 +150,7 @@ class RMG:
         self.saveConcentrationProfiles = None
         self.verboseComments = None
         self.pressureDependence = None
+        self.quantumMechanics = None
         self.reactionGenerationOptions = {}
         self.wallTime = 0
         self.initializationTime = 0
@@ -169,6 +173,10 @@ class RMG:
             self.reactionModel.pressureDependence = self.pressureDependence
         self.reactionModel.reactionGenerationOptions = self.reactionGenerationOptions
         self.reactionModel.verboseComments = self.verboseComments
+        
+        if self.quantumMechanics:
+            self.quantumMechanics.setDefaultOutputDirectory(self.outputDirectory)
+            self.reactionModel.quantumMechanics = self.quantumMechanics
         
     def checkInput(self):
         """
@@ -300,6 +308,11 @@ class RMG:
         self.outputDirectory = args.output_directory
         self.scratchDirectory = args.scratch_directory
         
+        if args.restart:
+            if not os.path.exists(os.path.join(self.outputDirectory,'restart.pkl')):
+                logging.error("Could not find restart file (restart.pkl). Please run without --restart option.")
+                raise Exception("No restart file")
+            
         # Read input file
         self.loadInput(args.file[0])
         
@@ -308,18 +321,10 @@ class RMG:
     
         # See if memory profiling package is available
         try:
-            import os
             import psutil
         except ImportError:
             logging.info('Optional package dependency "psutil" not found; memory profiling information will not be saved.')
     
-        # See if spreadsheet writing package is available
-        if self.saveConcentrationProfiles:
-            try:
-                xlwt
-            except NameError:
-                logging.warning('Package dependency "xlwt" not loaded; reaction system concentration profiles will not be saved, despite saveConcentrationProfiles = True option.')
-                self.saveConcentrationProfiles = False
         
         # Make output subdirectories
         self.makeOutputSubdirectory('plot')
@@ -328,6 +333,10 @@ class RMG:
         self.makeOutputSubdirectory('chemkin')
         self.makeOutputSubdirectory('solver')
         
+        # Do any necessary quantum mechanics startup
+        if self.quantumMechanics:
+            self.quantumMechanics.initialize()
+
         # Load databases
         self.loadDatabase()
     
@@ -372,6 +381,7 @@ class RMG:
             # Then add remaining reactive species
             for spec in self.initialSpecies:
                 spec.generateThermoData(self.database)
+                    
             self.reactionModel.enlarge([spec for spec in self.initialSpecies if spec.reactive])
             
             # Save a restart file if desired
@@ -399,10 +409,6 @@ class RMG:
         self.saveEverything()
         # Main RMG loop
         while not self.done:
-    
-            if self.saveConcentrationProfiles:
-                # self.saveConcentrationProfiles should have been set to false if xlwt cannot be loaded
-                workbook = xlwt.Workbook()
                 
             self.done = True
             objectsToEnlarge = []
@@ -410,7 +416,8 @@ class RMG:
             for index, reactionSystem in enumerate(self.reactionSystems):
     
                 if self.saveConcentrationProfiles:
-                    worksheet = workbook.add_sheet('#{0:d}'.format(index+1))
+                    csvfile = file(os.path.join(self.outputDirectory, 'solver', 'simulation_{0}_{1:d}.csv'.format(index+1, len(self.reactionModel.core.species))),'w')
+                    worksheet = csv.writer(csvfile)
                 else:
                     worksheet = None
                 
@@ -446,8 +453,6 @@ class RMG:
                     objectsToEnlarge.append(obj)
                     self.done = False
     
-            if self.saveConcentrationProfiles:
-                workbook.save(os.path.join(self.outputDirectory, 'solver', 'simulation_{0:d}.xls'.format(len(self.reactionModel.core.species))))
     
             if not self.done: # There is something that needs exploring/enlarging
     
@@ -513,6 +518,40 @@ class RMG:
                     logging.info('The current model core has %s species and %s reactions' % (coreSpec, coreReac))
                     logging.info('The current model edge has %s species and %s reactions' % (edgeSpec, edgeReac))
                     return
+        
+        
+        # Run sensitivity analysis post-model generation if sensitivity analysis is on
+        for index, reactionSystem in enumerate(self.reactionSystems):
+            
+            if reactionSystem.sensitivity:
+                logging.info('Conducting sensitivity analysis of reaction system %s...' % (index+1))
+                                
+                if self.saveConcentrationProfiles:                    
+                    csvfile = file(os.path.join(self.outputDirectory, 'solver', 'simulation_{0}_final.csv'.format(index+1)),'w')
+                    worksheet = csv.writer(csvfile)
+                else:
+                    worksheet = None
+                    
+                sensWorksheet = []
+                for spec in reactionSystem.sensitivity:
+                    csvfile = file(os.path.join(self.outputDirectory, 'solver', 'sensitivity_{0}_SPC_{1}.csv'.format(index+1, spec.index)),'w')
+                    sensWorksheet.append(csv.writer(csvfile))
+                    
+                terminated, obj = reactionSystem.simulate(
+                    coreSpecies = self.reactionModel.core.species,
+                    coreReactions = self.reactionModel.core.reactions,
+                    edgeSpecies = self.reactionModel.edge.species,
+                    edgeReactions = self.reactionModel.edge.reactions,
+                    toleranceKeepInEdge = self.fluxToleranceKeepInEdge,
+                    toleranceMoveToCore = self.fluxToleranceMoveToCore,
+                    toleranceInterruptSimulation = self.fluxToleranceInterrupt,
+                    pdepNetworks = pdepNetworks,
+                    worksheet = worksheet,
+                    absoluteTolerance = self.absoluteTolerance,
+                    relativeTolerance = self.relativeTolerance,
+                    sensitivity = reactionSystem.sensitivity,
+                    sensWorksheet = sensWorksheet,
+                )                                 
     
         # Write output file
         logging.info('')
@@ -549,7 +588,10 @@ class RMG:
                                   self.reactionModel,
                                   delay=0 if self.done else self.saveRestartPeriod.value_si
                                 )
-            
+        # Save the QM thermo to a library if QM was turned on
+        if self.quantumMechanics:
+            logging.info('Saving the QM generated thermo to qmThermoLibrary.py ...')
+            self.quantumMechanics.database.save(os.path.join(self.outputDirectory,'qmThermoLibrary.py'))            
             
     def finish(self):
         """
@@ -971,21 +1013,17 @@ class RMG:
         assert len(Tlist) > 0
         assert len(Plist) > 0
         concentrationList = numpy.array(concentrationList)
-        assert concentrationList.shape[1] == 1 or concentrationList.shape[1] == len(Tlist) * len(Plist) 
+        assert concentrationList.shape[1] > 0  # An arbitrary number of concentrations is acceptable, and should be run for each reactor system 
         
         # Make a reaction system for each (T,P) combination
-        systemCounter = 0
         for T in Tlist:
             for P in Plist:
-                if concentrationList.shape[1] == 1:
-                    concentrations = concentrationList[:,0]
-                else:
-                    concentrations = concentrationList[:,systemCounter]
-                totalConc = numpy.sum(concentrations)
-                initialMoleFractions = dict([(self.initialSpecies[i], concentrations[i] / totalConc) for i in range(len(self.initialSpecies))])
-                reactionSystem = SimpleReactor(T, P, initialMoleFractions=initialMoleFractions, termination=termination)
-                self.reactionSystems.append(reactionSystem)
-                systemCounter += 1
+                for i in range(concentrationList.shape[1]):
+                    concentrations = concentrationList[:,i]
+                    totalConc = numpy.sum(concentrations)
+                    initialMoleFractions = dict([(self.initialSpecies[i], concentrations[i] / totalConc) for i in range(len(self.initialSpecies))])
+                    reactionSystem = SimpleReactor(T, P, initialMoleFractions=initialMoleFractions, termination=termination)
+                    self.reactionSystems.append(reactionSystem)
     
     def readMeaningfulLineJava(self, f):
         """

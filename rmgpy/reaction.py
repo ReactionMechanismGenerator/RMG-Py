@@ -87,7 +87,18 @@ class Reaction:
     
     """
     
-    def __init__(self, index=-1, label='', reactants=None, products=None, kinetics=None, reversible=True, transitionState=None, duplicate=False, degeneracy=1, pairs=None):
+    def __init__(self,
+                 index=-1,
+                 label='',
+                 reactants=None,
+                 products=None,
+                 kinetics=None,
+                 reversible=True,
+                 transitionState=None,
+                 duplicate=False,
+                 degeneracy=1,
+                 pairs=None
+                 ):
         self.index = index
         self.label = label
         self.reactants = reactants
@@ -130,7 +141,17 @@ class Reaction:
         """
         A helper function used when pickling an object.
         """
-        return (Reaction, (self.index, self.label, self.reactants, self.products, self.kinetics, self.reversible, self.transitionState, self.duplicate, self.degeneracy, self.pairs))
+        return (Reaction, (self.index,
+                           self.label,
+                           self.reactants,
+                           self.products,
+                           self.kinetics,
+                           self.reversible,
+                           self.transitionState,
+                           self.duplicate,
+                           self.degeneracy,
+                           self.pairs
+                           ))
 
     def toChemkin(self, speciesList):
         """
@@ -176,6 +197,14 @@ class Reaction:
         :math:`\\ce{A <=> B + C}` or ``False`` if not.
         """
         return len(self.reactants) == 1 and len(self.products) > 1
+    
+    def isUnimolecular(self):
+        """
+        Return ``True`` if the reaction has a single molecule as either reactant or product (or both)
+        :math:`\\ce{A <=> B + C}` or :math:`\\ce{A + B <=> C}` or :math:`\\ce{A <=> B}`,
+        or ``False`` if not.
+        """
+        return len(self.reactants) == 1 or len(self.products) == 1
 
     def hasTemplate(self, reactants, products):
         """
@@ -552,12 +581,14 @@ class Reaction:
         # Return rate
         return rateConstant * (forward - reverse / equilibriumConstant)
 
-    def fixBarrierHeight(self):
+    def fixBarrierHeight(self, forcePositive=False):
         """
         Turns the kinetics into Arrhenius (if they were ArrheniusEP)
         and ensures the activation energy is at least the endothermicity
         for endothermic reactions, and is not negative only as a result 
         of using Evans Polanyi with an exothermic reaction.
+        If `forcePositive` is True, then all reactions
+        are forced to have a non-negative barrier.
         """
         cython.declare(H0=cython.double, H298=cython.double, Ea=cython.double)
         H298 = self.getEnthalpyOfReaction(298)
@@ -575,6 +606,11 @@ class Reaction:
                 self.kinetics.Ea.value_si = H0
                 self.kinetics.comment += "\nEa raised from {0:.1f} to {1:.1f} kJ/mol to match endothermicity of reaction.".format(Ea/1000,H0/1000)
                 logging.info("For reaction {2!s}, Ea raised from {0:.1f} to {1:.1f} kJ/mol to match endothermicity of reaction.".format(Ea/1000, H0/1000, self))
+        if forcePositive and isinstance(self.kinetics, Arrhenius) and self.kinetics.Ea.value_si < 0:
+            self.kinetics.comment += "\nEa raised from {0:.1f} to 0 kJ/mol.".format(self.kinetics.Ea.value_si/1000)
+            logging.info("For reaction {1!s} Ea raised from {0:.1f} to 0 kJ/mol.".format(self.kinetics.Ea.value_si/1000, self))
+            self.kinetics.Ea.value_si = 0
+
 
     def generateReverseRateCoefficient(self):
         """
@@ -640,7 +676,7 @@ class Reaction:
                 Tlist = 1.0/numpy.linspace(1.0/kf.Tmax.value, 1.0/kf.Tmin.value, 50)
             else:
                 Tlist = 1.0/numpy.arange(0.0005, 0.0035, 0.0001)
-            Plist = kf.pressures.values
+            Plist = kf.pressures.value_si
             K = numpy.zeros((len(Tlist), len(Plist)), numpy.float64)
             for Tindex, T in enumerate(Tlist):
                 for Pindex, P in enumerate(Plist):
@@ -693,8 +729,10 @@ class Reaction:
         Qreac = 1.0
         E0 = 0.0
         for spec in self.reactants:
+            logging.debug('    Calculating Partition function for ' + spec.label)
             Qreac *= spec.getPartitionFunction(T) / (constants.R * T / 101325.)
             E0 -= spec.conformer._E0.value_si
+        logging.debug('    Calculating Partition function for ' + self.transitionState.label)
         Qts = self.transitionState.getPartitionFunction(T) / (constants.R * T / 101325.)
         E0 += self.transitionState.conformer._E0.value_si
         k = (constants.kB * T / constants.h * Qts / Qreac) * math.exp(-E0 / constants.R / T)
@@ -840,6 +878,75 @@ class Reaction:
         from rmgpy.molecule.draw import ReactionDrawer
         format = os.path.splitext(path)[1].lower()[1:]
         ReactionDrawer().draw(self, format, path)
+            
+    # Build the transition state geometry
+    def generate3dTS(self, reactants, products):
+        """
+        Generate the 3D structure of the transition state. Called from 
+        model.generateKinetics().
+        
+        self.reactants is a list of reactants
+        self.products is a list of products
+        """
+        import rdkit
+        import rdkit.Chem
+        import rdkit.Chem.AllChem
+        import rdkit.Geometry
+        
+        """
+        Iterate through each reactant, then iterate through its atoms to find the
+        atoms involved in the reaction. If a radical is involved, can find the atom
+        with radical electrons. If a more reliable method can be found, would greatly
+        improve the method.
+        
+        Repeat for the products
+        """
+        for i in range(0, len(reactants)):
+            mol = reactants[i].molecule[0]
+            for j in range(0, mol.rdMol.GetNumAtoms()):
+                if mol.rdMol.GetAtomWithIdx(j).GetNumRadicalElectrons():
+                    point = mol.rdMol.GetConformer(mol.rdMolConfId).GetAtomPosition(j)
+                    neighbor = mol.rdMol.GetAtomWithIdx(j).GetNeighbors()
+                    dirVec = [{} for k in range(len(neighbor))]
+                    lenVec = [None]*len(neighbor)
+                    for k in range(0, len(neighbor)):
+                        newIdx = neighbor[k].GetIdx()
+                        newPt = mol.rdMol.GetConformer(mol.rdMolConfId).GetAtomPosition(newIdx)
+                        dirVec[k] = point.DirectionVector(newPt)
+                        lenVec[k] = point.Distance(newPt)
+                    xCoord = [None]*len(neighbor)
+                    yCoord = [None]*len(neighbor)
+                    zCoord = [None]*len(neighbor) 
+                    for k in range(0, len(neighbor)):
+                        xCoord[k] = dirVec[k].x*lenVec[k]
+                        yCoord[k] = dirVec[k].y*lenVec[k]
+                        zCoord[k] = dirVec[k].z*lenVec[k]
+            reactionAxis = [sum(xCoord), sum(yCoord), sum(zCoord)]
+            reactants[i].reactionAxis = reactionAxis
+        
+        for i in range(0, len(products)):
+            mol = products[i].molecule[0]
+            for j in range(0, mol.rdMol.GetNumAtoms()):
+                if mol.rdMol.GetAtomWithIdx(j).GetNumRadicalElectrons():
+                    point = mol.rdMol.GetConformer(mol.rdMolConfId).GetAtomPosition(j)
+                    neighbor = mol.rdMol.GetAtomWithIdx(j).GetNeighbors()
+                    dirVec = [{} for k in range(len(neighbor))]
+                    lenVec = [None]*len(neighbor)
+                    for k in range(0, len(neighbor)):
+                        newIdx = neighbor[k].GetIdx()
+                        newPt = mol.rdMol.GetConformer(mol.rdMolConfId).GetAtomPosition(newIdx)
+                        dirVec[k] = point.DirectionVector(newPt)
+                        lenVec[k] = point.Distance(newPt)
+                    xCoord = [None]*len(neighbor)
+                    yCoord = [None]*len(neighbor)
+                    zCoord = [None]*len(neighbor) 
+                    for k in range(0, len(neighbor)):
+                        xCoord[k] = dirVec[k].x*lenVec[k]
+                        yCoord[k] = dirVec[k].y*lenVec[k]
+                        zCoord[k] = dirVec[k].z*lenVec[k]
+            reactionAxis = [sum(xCoord), sum(yCoord), sum(zCoord)]
+            products[i].reactionAxis = reactionAxis
+
                 
 ################################################################################
 
