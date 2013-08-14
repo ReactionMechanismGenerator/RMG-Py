@@ -273,6 +273,8 @@ class ModelMatcher():
         special_smiles_to_adj_list = {
             'singlet[CH2]': "1 C 2S",
             'triplet[CH2]': "1 C 2T",
+            'singletC=[C]': "1 C 0 {2,D}\n2 C 2S {1,D}",
+            'tripletC=[C]': "1 C 0 {2,D}\n2 C 2T {1,D}",
             }
 
         for species_label in known_names:
