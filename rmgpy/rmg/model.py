@@ -483,11 +483,14 @@ class CoreEdgeReactionModel:
                     if not rxn.duplicate:
                         return True, rxn0
                 else:
-                    return True, rxn0
+                    if rxn0.template == rxn.template:
+                        print 'here'
+                        return True, rxn0
             
             if isinstance(family,KineticsFamily) and family.ownReverse:
                 if (rxn0.reactants == rxn.products and rxn0.products == rxn.reactants):
-                    return True, rxn0
+                    if rxn0.template == rxn.template:
+                        return True, rxn0
 
         # Now check seed mechanisms
         # We want to check for duplicates in *other* seed mechanisms, but allow
