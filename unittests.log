@@ -174,17 +174,17 @@ Test the AtomType.isSpecificCaseOf() method. ... ok
 Test that we can reconstruct an AtomType object from its repr() ... ok
 Test that an AtomType object can be successfully pickled and ... ok
 Test the AtomType.setActions() method. ... ok
-Test that getAtomType() returns appropriate carbon atom types. ... [20:04:07] Explicit valence for atom # 2 O, 3, is greater than permitted
+Test that getAtomType() returns appropriate carbon atom types. ... [12:00:04] Explicit valence for atom # 2 O, 3, is greater than permitted
 ERROR
-Test that getAtomType() returns the hydrogen atom type. ... [20:04:07] Explicit valence for atom # 2 O, 3, is greater than permitted
+Test that getAtomType() returns the hydrogen atom type. ... [12:00:04] Explicit valence for atom # 2 O, 3, is greater than permitted
 ERROR
-Test that getAtomType() returns appropriate NoneTypes. ... [20:04:07] Explicit valence for atom # 2 O, 3, is greater than permitted
+Test that getAtomType() returns appropriate NoneTypes. ... [12:00:04] Explicit valence for atom # 2 O, 3, is greater than permitted
 ERROR
-Test that getAtomType() returns appropriate oxygen atom types. ... [20:04:07] Explicit valence for atom # 2 O, 3, is greater than permitted
+Test that getAtomType() returns appropriate oxygen atom types. ... [12:00:04] Explicit valence for atom # 2 O, 3, is greater than permitted
 ERROR
-Test that getAtomType() returns appropriate silicon atom types. ... [20:04:07] Explicit valence for atom # 2 O, 3, is greater than permitted
+Test that getAtomType() returns appropriate silicon atom types. ... [12:00:04] Explicit valence for atom # 2 O, 3, is greater than permitted
 ERROR
-Test that getAtomType() returns appropriate sulfur atom types. ... [20:04:07] Explicit valence for atom # 2 O, 3, is greater than permitted
+Test that getAtomType() returns appropriate sulfur atom types. ... [12:00:04] Explicit valence for atom # 2 O, 3, is greater than permitted
 ERROR
 Test the rmgpy.elements.getElement() method. ... ok
 Test that we can reconstruct an Element object from its repr() ... ok
@@ -302,7 +302,7 @@ Test the Molecule.getLabeledAtoms() method. ... ok
 Test the Molecule.getLabeledAtom() method. ... ok
 Test the Molecule.getLabeledAtoms() method. ... ok
 Test the Molecule.getMolecularWeight() method. ... ok
-Test that InChI Key generation is working properly. ... [20:04:07] WARNING: Omitted undefined stereo
+Test that InChI Key generation is working properly. ... [12:00:04] WARNING: Omitted undefined stereo
 ok
 Test the Molecule.isInCycle() method with ethane. ... ok
 Test the Molecule.isInCycle() method with ethane. ... ok
@@ -960,13 +960,7 @@ rmgpy.data.statmechfit             248    213     70     70    11%   95-137, 151
 rmgpy.data.thermo                  422    357    124    123    12%   55-122, 129-147, 167, 186-198, 204, 214, 227, 243, 250, 257, 267, 280-284, 300, 308, 315, 341-347, 353-356, 366-368, 377, 384-396, 403-411, 418-422, 429-431, 438-440, 447-454, 462-529, 546-589, 606-621, 632-640, 648-654, 667-683, 693-704, 717-723, 737-751, 760-827, 840-919, 926-939, 948-980
 rmgpy.display                       11      3      0      0    73%   37, 41-43
 rmgpy.kinetics                       6      0      0      0   100%   
-rmgpy.measure                        0      0      0      0   100%   
-rmgpy.measure.input                265    234    150    150     7%   76-87, 90-114, 118, 122, 126-137, 141-151, 155-168, 172-185, 189-198, 202-204, 208-209, 222-243, 255-265, 277-287, 328-561
-rmgpy.measure.main                 408    384    140    140     4%   81-85, 91-108, 114-140, 147-165, 172-182, 189-195, 202-208, 215-216, 225-274, 288-534, 543-636, 649-679, 688-694, 705-747
-rmgpy.measure.network              779    732    332    332     4%   109-122, 125-128, 134-161, 168, 174-177, 184-189, 196-207, 215-248, 255, 269-286, 297-318, 336-370, 379-454, 461-472, 478-486, 495-506, 518-624, 634-649, 660-672, 680-700, 711-723, 734-773, 780-787, 794-801, 808-815, 827-921, 932-991, 994-1007, 1022-1228, 1236-1254, 1265-1313
-rmgpy.measure.output               164    146     82     82     7%   53-60, 71-110, 120-124, 135-136, 142-157, 168-169, 175-186, 197-198, 206-231, 241-303
-rmgpy.measure.settings               2      0      0      0   100%   
-rmgpy.measure.simulate              67     54     30     30    13%   46, 49, 66-128, 144-169, 178-179, 182, 185
+rmgpy.measure   NoSource: No source for code: '/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/measure/__init__.py'
 rmgpy.molecule                       5      0      0      0   100%   
 rmgpy.molecule.adjlist             196     39    110     33    76%   65, 69-71, 80, 125, 133-143, 167, 180, 182, 184, 202, 214-215, 229-231, 248-257, 270-271, 298
 rmgpy.molecule.draw                569    545    270    270     3%   71-83, 101-109, 112-123, 139-249, 258-273, 280-311, 321-347, 358-425, 432-445, 453-485, 495-766, 784-788, 802-922
@@ -977,7 +971,7 @@ rmgpy.qm                             0      0      0      0   100%
 rmgpy.qm.gaussian                  126     96     46     44    19%   23, 25, 45-46, 50-55, 73-126, 132-137, 153-179, 191-206, 237, 242, 250-253
 rmgpy.qm.main                       61     46     16     16    19%   51-58, 64-71, 92-95, 101-106, 112, 118-119, 125-135, 145-153
 rmgpy.qm.molecule                  184    145     38     38    18%   10-11, 28-38, 46, 50, 54, 63-71, 77, 84-105, 109-111, 121-154, 169-173, 182, 187, 192, 198-201, 208, 217-239, 245-253, 259-277, 284, 293-296, 304-306, 312-315, 324-367
-rmgpy.qm.mopac                     130     99     44     42    19%   22, 24, 58-59, 62-67, 86-134, 141-146, 161-187, 199-217, 234, 239, 248-268
+rmgpy.qm.mopac                     130     99     44     42    19%   22, 24, 58-59, 62-67, 86-135, 142-147, 162-188, 200-218, 235, 240, 249-269
 rmgpy.qm.qmdata                     35     27      2      2    22%   23-38, 41, 75-101
 rmgpy.qm.qmverifier                 26     20      6      6    19%   18-24, 40-61, 71
 rmgpy.qm.symmetry                   80     51     20     16    33%   128-130, 133, 163-173, 179, 185-194, 200-205, 211-223, 232-256
@@ -991,9 +985,35 @@ rmgpy.solver                         2      0      0      0   100%
 rmgpy.statmech                       5      0      0      0   100%   
 rmgpy.thermo                         3      0      0      0   100%   
 ----------------------------------------------------------------------------
-TOTAL                            12704  11026   5369   5198    10%   
-----------------------------------------------------------------------
-Ran 688 tests.
-
-FAILED (errors=8, failures=16)
+TOTAL                            11019   9476   4635   4464    11%   
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/virtualenvs/rmgweb/bin/nosetests", line 8, in <module>
+    load_entry_point('nose==1.1.2', 'console_scripts', 'nosetests')()
+  File "/export/thishost/comocheng/virtualenvs/rmgweb/local/lib/python2.7/site-packages/nose/core.py", line 118, in __init__
+    **extra_args)
+  File "/usr/lib/python2.7/unittest/main.py", line 95, in __init__
+    self.runTests()
+  File "/export/thishost/comocheng/virtualenvs/rmgweb/local/lib/python2.7/site-packages/nose/core.py", line 197, in runTests
+    result = self.testRunner.run(self.test)
+  File "/export/thishost/comocheng/virtualenvs/rmgweb/local/lib/python2.7/site-packages/nose/core.py", line 63, in run
+    result.printErrors()
+  File "/export/thishost/comocheng/virtualenvs/rmgweb/local/lib/python2.7/site-packages/nose/result.py", line 110, in printErrors
+    self.config.plugins.report(self.stream)
+  File "/export/thishost/comocheng/virtualenvs/rmgweb/local/lib/python2.7/site-packages/nose/plugins/manager.py", line 94, in __call__
+    return self.call(*arg, **kw)
+  File "/export/thishost/comocheng/virtualenvs/rmgweb/local/lib/python2.7/site-packages/nose/plugins/manager.py", line 162, in simple
+    result = meth(*arg, **kw)
+  File "/export/thishost/comocheng/virtualenvs/rmgweb/local/lib/python2.7/site-packages/nose/plugins/cover.py", line 176, in report
+    self.coverInstance.html_report(modules, self.coverHtmlDir)
+  File "/export/thishost/comocheng/virtualenvs/rmgweb/local/lib/python2.7/site-packages/coverage/control.py", line 615, in html_report
+    return reporter.report(morfs)
+  File "/export/thishost/comocheng/virtualenvs/rmgweb/local/lib/python2.7/site-packages/coverage/html.py", line 90, in report
+    self.report_files(self.html_file, morfs, self.config.html_dir)
+  File "/export/thishost/comocheng/virtualenvs/rmgweb/local/lib/python2.7/site-packages/coverage/report.py", line 84, in report_files
+    report_fn(cu, self.coverage._analyze(cu))
+  File "/export/thishost/comocheng/virtualenvs/rmgweb/local/lib/python2.7/site-packages/coverage/control.py", line 545, in _analyze
+    return Analysis(self, it)
+  File "/export/thishost/comocheng/virtualenvs/rmgweb/local/lib/python2.7/site-packages/coverage/results.py", line 24, in __init__
+    raise NoSource("No source for code: '%s'" % self.filename)
+coverage.misc.NoSource: No source for code: '/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/measure/__init__.py'
 make: *** [test] Error 1
