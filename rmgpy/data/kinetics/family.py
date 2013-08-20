@@ -1478,7 +1478,7 @@ class KineticsFamily(Database):
                 # If we found a match, remove it from the list
                 # Also increment the reaction path degeneracy of the remaining reaction
                 if match:
-                    if reaction0.template == reaction.template:
+                    if set(reaction0.template) == set(reaction.template):
                         # template must match, otherwise we may have found an alternate transition state
                         reaction0.degeneracy += 1
                         rxnList.remove(reaction)
@@ -1498,9 +1498,6 @@ class KineticsFamily(Database):
         # what it should be, so divide those by two
         if sameReactants or self.label.lower().startswith('r_recombination'):
             for rxn in rxnList:
-                print rxn
-                print rxn.template
-                print rxn.degeneracy
                 assert(rxn.degeneracy % 2 == 0)
                 rxn.degeneracy /= 2
                 
