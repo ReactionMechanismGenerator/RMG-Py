@@ -206,16 +206,24 @@ class GroupAtom(Vertex):
         """
         radicalElectrons = []
         spinMultiplicity = []
+        pairs = set()
         if any([len(atomType.decrementRadical) == 0 for atomType in self.atomType]):
             raise ActionError('Unable to update GroupAtom due to LOSE_RADICAL action: Unknown atom type produced from set "{0}".'.format(self.atomType))
         for electron, spin in zip(self.radicalElectrons, self.spinMultiplicity):
-            if electron - radical < 0:
+            electron = electron - radical
+            if electron < 0:
                 raise ActionError('Unable to update GroupAtom due to LOSE_RADICAL action: Invalid radical electron set "{0}".'.format(self.radicalElectrons))
-            radicalElectrons.append(electron - radical)
-            if spin - radical < 0:
-                spinMultiplicity.append(spin - radical + 2)
-            else:
-                spinMultiplicity.append(spin - radical)
+            spin = spin - radical
+            if spin <= 0:
+                spin += 2
+            
+            pair = (electron,spin)
+            if pair in pairs:
+                continue # with next electron,spin pair, so we don't get redundant answers. Otherwise....
+            pairs.add(pair)
+            radicalElectrons.append(electron)
+            spinMultiplicity.append(spin)
+            
         # Set the new radical electron counts and spin multiplicities
         self.radicalElectrons = radicalElectrons
         self.spinMultiplicity = spinMultiplicity
