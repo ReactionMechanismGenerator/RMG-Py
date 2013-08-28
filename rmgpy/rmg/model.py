@@ -64,7 +64,7 @@ from pdep import PDepReaction, PDepNetwork, PressureDependenceError
 
 __database = None
 
-def makeThermoForSpecies(spec):
+def makeThermoForSpecies(spec,qmValue=None):
     """
     Make thermo for a species.
     """
@@ -74,12 +74,12 @@ def makeThermoForSpecies(spec):
         import cPickle, logging
         filename = scoop.shared.getConst('databaseFile')
         database_hash = scoop.shared.getConst('databaseHash')
-        logging.info('Loading database pickle file from {0!r} on worker {1}'.format(filename, scoop.WORKER_NAME.decode() ))
+        logging.info('Loading database pickle2 file from {0!r} on worker {1}'.format(filename, scoop.WORKER_NAME.decode() ))
         f = open(filename, 'rb')
         __database = cPickle.load(f)
         f.close()
         assert __database.hash == database_hash, "Database loaded from {0!r} doesn't match expected hash!".format(filename)
-    spec.generateThermoData(__database)
+    spec.generateThermoData(__database,quantumMechanics=qmValue)
     return spec.thermo
 
 ################################################################################
@@ -785,7 +785,7 @@ class CoreEdgeReactionModel:
         # this works without scoop:
         #outputs = map(makeThermoForSpecies, listOfSpecies)
         # this tried so do it via scoop's map:
-        outputs = futures.map(makeThermoForSpecies, listOfSpecies)
+        outputs = futures.map(makeThermoForSpecies, listOfSpecies,qmValue=self.quantumMechanics)
         for spec, thermo in zip(listOfSpecies, outputs):
             spec.thermo = thermo
 
