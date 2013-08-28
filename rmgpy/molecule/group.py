@@ -235,15 +235,16 @@ class GroupAtom(Vertex):
         required parameters. The available actions can be found
         :ref:`here <reaction-recipe-actions>`.
         """
-        if action[0].upper() == 'CHANGE_BOND':
+        act = action[0].upper()
+        if act == 'CHANGE_BOND':
             self.__changeBond(action[2])
-        elif action[0].upper() == 'FORM_BOND':
+        elif act == 'FORM_BOND':
             self.__formBond(action[2])
-        elif action[0].upper() == 'BREAK_BOND':
+        elif act == 'BREAK_BOND':
             self.__breakBond(action[2])
-        elif action[0].upper() == 'GAIN_RADICAL':
+        elif act == 'GAIN_RADICAL':
             self.__gainRadical(action[2])
-        elif action[0].upper() == 'LOSE_RADICAL':
+        elif act == 'LOSE_RADICAL':
             self.__loseRadical(action[2])
         else:
             raise ActionError('Unable to update GroupAtom: Invalid action {0}".'.format(action))
