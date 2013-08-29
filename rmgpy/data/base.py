@@ -614,7 +614,7 @@ class Database:
                 if isinstance(entry.item, Molecule):
                     f.write(entry.item.toAdjacencyList(removeH=True) + '\n')
                 elif isinstance(entry.item, Group):
-                    f.write(entry.item.toAdjacencyList() + '\n')
+                    f.write(entry.item.toAdjacencyList().replace('{2S,2T}','2') + '\n')
                 elif isinstance(entry.item, LogicOr):
                     f.write('{0}\n\n'.format(entry.item).replace('OR{', 'Union {'))
                 elif entry.label[0:7] == 'Others-':

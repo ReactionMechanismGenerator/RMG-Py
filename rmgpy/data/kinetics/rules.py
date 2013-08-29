@@ -43,7 +43,7 @@ from copy import copy, deepcopy
 
 from rmgpy.data.base import Database, Entry, DatabaseError, makeLogicNode, getAllCombinations
 
-from rmgpy.quantity import Quantity
+from rmgpy.quantity import Quantity, ScalarQuantity
 from rmgpy.reaction import Reaction, ReactionError
 from rmgpy.kinetics import Arrhenius, ArrheniusEP, ThirdBody, Lindemann, Troe, \
                            PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, \
@@ -309,8 +309,15 @@ class KineticsRules(Database):
             for label in entry.label.split(';'):
                 flib.write('{0:<23} '.format(label))
             if entry.data.Tmax is None:
-                # Tmin contains string of Trange
-                Trange = '{0}    '.format(entry.data.Tmin)
+                if re.match('\d+\-\d+',str(entry.data.Tmin).strip()):
+                    # Tmin contains string of Trange
+                    Trange = '{0}    '.format(entry.data.Tmin)
+                elif isinstance(entry.data.Tmin, ScalarQuantity):
+                    # Tmin is a temperature. Make range 1 degree either side!
+                    Trange = '{0:g}-{1:g}    '.format(entry.data.Tmin.value_si-1, entry.data.Tmin.value_si+1)
+                else:
+                    # Range is missing, but we have to put something:
+                    Trange = '1-9999 '
             else:
                 Trange = '{0:g}-{1:g}    '.format(entry.data.Tmin.value_si, entry.data.Tmax.value_si)
             flib.write('{0:<12}'.format(Trange))
