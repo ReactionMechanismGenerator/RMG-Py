@@ -42,6 +42,7 @@ import logging
 import rmgpy.constants as constants
 from rmgpy.cantherm.output import prettify
 from rmgpy.cantherm.gaussian import GaussianLog
+from rmgpy.cantherm.molepro import MoleProLog
 from rmgpy.species import TransitionState
 from rmgpy.statmech import *
 
@@ -195,6 +196,7 @@ class StatMechJob:
             'HinderedRotor': hinderedRotor,
             # File formats
             'GaussianLog': GaussianLog,
+            'MoleProLog': MoleProLog,
             'ScanLog': ScanLog,
         }
     
@@ -247,7 +249,10 @@ class StatMechJob:
             except KeyError:
                 raise InputError('Model chemistry {0!r} not found in from dictionary of energy values in species file {1!r}.'.format(self.modelChemistry, path))
         if isinstance(energy, GaussianLog):
-            energyLog = energy; E0 = None
+            energyLog = energy; E0 = 'Gaussian'
+            energyLog.path = os.path.join(directory, energyLog.path)
+        if isinstance(energy, MoleProLog):
+            energyLog = energy; E0 = 'MolePro'
             energyLog.path = os.path.join(directory, energyLog.path)
         elif isinstance(energy, float):
             energyLog = None; E0 = energy
@@ -287,8 +292,10 @@ class StatMechJob:
         
         logging.debug('    Reading energy...')
         # The E0 that is read from the log file is without the ZPE and corresponds to E_elec
-        if E0 is None:
+        if E0 is 'Gaussian':
             E0 = energyLog.loadEnergy(self.frequencyScaleFactor)
+        elif E0 is 'MolePro':
+            E0 = energyLog.loadF12aEnergy()
         else:
             E0 = E0 * constants.E_h * constants.Na         # Hartree/particle to J/mol
         E0 = applyEnergyCorrections(E0, self.modelChemistry, atoms, bonds if self.applyBondEnergyCorrections else {})
