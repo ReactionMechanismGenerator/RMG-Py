@@ -135,6 +135,24 @@ of`units` to the SI equivalent units.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.quantity.ScalarQuantity.getUncertainty">
+<tt class="descname">getUncertainty</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.quantity.ScalarQuantity.getUncertainty" title="Permalink to this definition">¶</a></dt>
+<dd><p>The numeric value of the uncertainty, in the given units if additive, or no units if multiplicative.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.quantity.ScalarQuantity.getUncertaintyType">
+<tt class="descname">getUncertaintyType</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.quantity.ScalarQuantity.getUncertaintyType" title="Permalink to this definition">¶</a></dt>
+<dd><p>The type of uncertainty: <tt class="docutils literal"><span class="pre">'+|-'</span></tt> for additive, <tt class="docutils literal"><span class="pre">'*|/'</span></tt> for multiplicative</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.quantity.ScalarQuantity.getValue">
+<tt class="descname">getValue</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.quantity.ScalarQuantity.getValue" title="Permalink to this definition">¶</a></dt>
+<dd><p>The numeric value of the quantity, in the given units</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.quantity.ScalarQuantity.isUncertaintyAdditive">
 <tt class="descname">isUncertaintyAdditive</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.quantity.ScalarQuantity.isUncertaintyAdditive" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if the uncertainty is specified in additive format
@@ -146,6 +164,32 @@ and <tt class="docutils literal"><span class="pre">False</span></tt> otherwise.<
 <tt class="descname">isUncertaintyMultiplicative</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.quantity.ScalarQuantity.isUncertaintyMultiplicative" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if the uncertainty is specified in multiplicative 
 format and <tt class="docutils literal"><span class="pre">False</span></tt> otherwise.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.quantity.ScalarQuantity.setUncertaintyType">
+<tt class="descname">setUncertaintyType</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.quantity.ScalarQuantity.setUncertaintyType" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check the uncertainty type is valid, then set it, and set the uncertainty to -1.</p>
+<p>If you set the uncertainty then change the type, we have no idea what to do with 
+the units. This ensures you set the type first.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.quantity.ScalarQuantity.uncertainty">
+<tt class="descname">uncertainty</tt><a class="headerlink" href="#rmgpy.quantity.ScalarQuantity.uncertainty" title="Permalink to this definition">¶</a></dt>
+<dd><p>The numeric value of the uncertainty, in the given units if additive, or no units if multiplicative.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.quantity.ScalarQuantity.uncertaintyType">
+<tt class="descname">uncertaintyType</tt><a class="headerlink" href="#rmgpy.quantity.ScalarQuantity.uncertaintyType" title="Permalink to this definition">¶</a></dt>
+<dd><p>The type of uncertainty: <tt class="docutils literal"><span class="pre">'+|-'</span></tt> for additive, <tt class="docutils literal"><span class="pre">'*|/'</span></tt> for multiplicative</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.quantity.ScalarQuantity.value">
+<tt class="descname">value</tt><a class="headerlink" href="#rmgpy.quantity.ScalarQuantity.value" title="Permalink to this definition">¶</a></dt>
+<dd><p>The numeric value of the quantity, in the given units</p>
 </dd></dl>
 
 </dd></dl>

@@ -191,6 +191,13 @@ points to the top-level folder of the thermo database.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.data.thermo.ThermoDatabase.pruneHeteroatoms">
+<tt class="descname">pruneHeteroatoms</tt><big>(</big><em>allowed=['C', 'H', 'O', 'S']</em><big>)</big><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.pruneHeteroatoms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove all species from thermo libraries that contain atoms other than those allowed.</p>
+<p>This is useful before saving the database for use in RMG-Java</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.data.thermo.ThermoDatabase.save">
 <tt class="descname">save</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.save" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the thermo database to the given <cite>path</cite> on disk, where <cite>path</cite>
