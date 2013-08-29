@@ -306,20 +306,24 @@ class KineticsRules(Database):
         
         for entry in entries:
             flib.write('{0:<5d} '.format(entry.index))
+            line = ''
             for label in entry.label.split(';'):
-                flib.write('{0:<23} '.format(label))
+                line = line + '{0:<23} '.format(label)
+            flib.write(line)
+            if len(line)>48: # make long lines line up in 10-space columns
+                flib.write(' '*(10-len(line)%10))
             if entry.data.Tmax is None:
                 if re.match('\d+\-\d+',str(entry.data.Tmin).strip()):
                     # Tmin contains string of Trange
-                    Trange = '{0}    '.format(entry.data.Tmin)
+                    Trange = '{0} '.format(entry.data.Tmin)
                 elif isinstance(entry.data.Tmin, ScalarQuantity):
                     # Tmin is a temperature. Make range 1 degree either side!
-                    Trange = '{0:g}-{1:g}    '.format(entry.data.Tmin.value_si-1, entry.data.Tmin.value_si+1)
+                    Trange = '{0:4g}-{1:g} '.format(entry.data.Tmin.value_si-1, entry.data.Tmin.value_si+1)
                 else:
                     # Range is missing, but we have to put something:
-                    Trange = '1-9999 '
+                    Trange = '   1-9999 '
             else:
-                Trange = '{0:g}-{1:g}    '.format(entry.data.Tmin.value_si, entry.data.Tmax.value_si)
+                Trange = '{0:4g}-{1:g} '.format(entry.data.Tmin.value_si, entry.data.Tmax.value_si)
             flib.write('{0:<12}'.format(Trange))
             flib.write('{0:11.2e} {1:9.2f} {2:9.2f} {3:11.2f} '.format(
                             entry.data.A.value_si * factor,
