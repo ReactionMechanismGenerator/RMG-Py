@@ -29,6 +29,7 @@ import urllib2
 
 import rmgpy
 import rmgpy.rmg
+import rmgpy.rmg.input
 from rmgpy.display import display
 
 from rmgpy.chemkin import loadChemkinFile, readSpeciesBlock, readThermoBlock, readReactionsBlock, removeCommentFromLine
@@ -323,13 +324,44 @@ class ModelMatcher():
         rmg.thermoLibraries = ['primaryThermoLibrary', 'KlippensteinH2O2', 'DFT_QCI_thermo', 'CBS_QB3_1dHR', 'USC-Mech-ii', 'GRI-Mech3.0', ]
         rmg.kineticsFamilies = ['!Substitution_O']
         rmg.reactionLibraries = [('KlippensteinH2O2', False), ('Glarborg/C3', False), ('Glarborg/highP', False), ('GRI-Mech3.0', False), ]
+
+        rmgpy.rmg.input.rmg = rmg # put it in this scope so these functions can modify it
+        rmgpy.rmg.input.pressureDependence(
+            method='modified strong collision',
+            maximumGrainSize=(0.5,'kcal/mol'),
+            minimumNumberOfGrains=250,
+            temperatures=(300,2000,'K',8),
+            pressures=(0.01,100,'atm',3),
+            interpolation=('pdeparrhenius',),
+        )
+        rmgpy.rmg.input.quantumMechanics(
+            software='mopac',
+            fileStore=os.path.join(rmgpy.getPath(),'QMfiles'),
+            scratchDirectory = None, # not currently used
+            onlyCyclics = True,
+            maxRadicalNumber = 0,
+        )
+        
         rmg.loadDatabase()
         logging.info("Loaded database.")
 
         rmg.reactionModel = rmgpy.rmg.model.CoreEdgeReactionModel()
         rmg.reactionModel.kineticsEstimator = 'rate rules'
+        rmg.reactionModel.verboseComments = True
         rmg.initialSpecies = []
         rmg.reactionSystems = []
+        
+        rmg.makeOutputSubdirectory('pdep') # deletes contents
+        # This is annoying!
+        if rmg.pressureDependence:
+            rmg.pressureDependence.outputFile = rmg.outputDirectory
+            rmg.reactionModel.pressureDependence = rmg.pressureDependence
+        #rmg.reactionModel.reactionGenerationOptions = rmg.reactionGenerationOptions
+        if rmg.quantumMechanics:
+            rmg.quantumMechanics.setDefaultOutputDirectory(rmg.outputDirectory)
+            rmg.reactionModel.quantumMechanics = rmg.quantumMechanics
+            rmg.quantumMechanics.initialize()
+            
 
         self.rmg_object = rmg
         return rmg
@@ -1006,7 +1038,9 @@ recommended = False
         self.loadReactions(reactions_file)
         chemkinReactionsUnmatched = self.chemkinReactionsUnmatched
         votes = self.votes
-
+        
+        # we want to put inert things in the core first, so we can do PDep calculations.
+        self.identified_unprocessed_labels.sort(key=lambda x: newSpeciesDict[x].reactive)
         reactionsToCheck = set()
         while self.identified_unprocessed_labels:
             labelToProcess = self.identified_unprocessed_labels.pop(0)
@@ -1028,7 +1062,10 @@ recommended = False
             logging.info("Removing {0} edge reactions that aren't useful".format(len(reactionsToPrune)))
             # remove those reactions
             for rxn in reactionsToPrune:
-                rm.edge.reactions.remove(rxn)
+                try:
+                    rm.edge.reactions.remove(rxn)
+                except ValueError:
+                    pass # "It wasn't in the edge. Presumably leaking from a pdep network"
                 rm.newReactionList.remove(rxn)
             reactionsToPrune.clear()
     
@@ -1124,6 +1161,7 @@ recommended = False
 
 
         print "Finished reading"
+        counter = 0
         for species in self.speciesList:
             counter += 1
             print counter, species,
