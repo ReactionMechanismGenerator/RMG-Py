@@ -5,6 +5,8 @@ Created on Feb 26, 2013
 '''
 
 from rmgpy.quantity import DipoleMoment, Energy, Length, Polarizability
+import rmgpy.constants as constants
+import numpy
 
 class TransportData:
     """
@@ -48,3 +50,17 @@ class TransportData:
         A helper function used when picking a TransportData object.
         """
         return (TransportData, (self.shapeIndex, self.epsilon, self.sigma, self.dipoleMoment, self.polarizability, self.rotrelaxcollnum, self.comment))
+
+    def getCollisionFrequency(self, T, M, mu):
+        """
+        Return the value of the Lennard-Jones collision frequency in Hz at the
+        given temperature `T` in K for colliders with the given concentration
+        `M` in mol/m^3 and reduced mass `mu` in amu.
+        """
+        sigma = self.sigma.value_si
+        epsilon = self.epsilon.value_si
+        M *= constants.Na       # mol/m^3 -> molecules/m^3
+        Tred = constants.R * T / epsilon
+        omega22 = 1.16145 * Tred**(-0.14874) + 0.52487 * numpy.exp(-0.77320 * Tred) + 2.16178 * numpy.exp(-2.43787 * Tred)
+        mu *= constants.amu
+        return omega22 * numpy.sqrt(8 * constants.kB * T / constants.pi / mu) * constants.pi * sigma * sigma * M
