@@ -48,7 +48,6 @@ import cython
 import rmgpy.constants as constants
 import rmgpy.quantity as quantity
 from rmgpy.molecule import Molecule
-from rmgpy.pdep.collision import LennardJones
 
 ################################################################################
 

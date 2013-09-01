@@ -35,6 +35,7 @@ This script contains unit test of the :mod: 'rmgpy.transport' module and :mod: '
 import unittest
 import numpy
 import os
+import rmgpy.constants as constants
 from rmgpy.species import Species
 from rmgpy.molecule.molecule import Molecule
 from rmgpy.quantity import DipoleMoment, Length, Polarizability, Energy
@@ -110,6 +111,16 @@ class TestTransportData(unittest.TestCase):
         Test that the TransportData comment property was properly set.
         """
         self.assertEqual(self.transport.comment, self.comment)
+        
+    def test_getCollisionFrequency(self):
+        """
+        Test the LennardJones.getCollisionFrequency() method.
+        """
+        T = 1000; P = 1.0e5
+        M = P / constants.R / T
+        mu = 1.0
+        omega = self.lennardJones.getCollisionFrequency(T, M, mu)
+        self.assertAlmostEqual(omega / 3.13010e10, 1.0, 4)
     
     def test_pickle(self):
         """

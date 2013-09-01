@@ -167,18 +167,18 @@ cdef class Configuration:
         cdef double sigma, epsilon, mu, gasConc, frac, Tred, omega22
         
         assert self.isUnimolecular()
-        assert isinstance(self.species[0].lennardJones, LennardJones)
+        assert isinstance(self.species[0].transportData, transportData)
         for spec, frac in bathGas.items():
-            assert isinstance(spec.lennardJones, LennardJones)
+            assert isinstance(spec.transportData, transportData)
         
         bathGasSigma = 0.0; bathGasEpsilon = 1.0; bathGasMW = 0.0
         for spec, frac in bathGas.iteritems():
-            bathGasSigma += spec.lennardJones._sigma.value_si * frac
-            bathGasEpsilon *= spec.lennardJones._epsilon.value_si ** frac
+            bathGasSigma += spec.transportData._sigma.value_si * frac
+            bathGasEpsilon *= spec.transportData._epsilon.value_si ** frac
             bathGasMW += spec._molecularWeight.value_si * frac
         
-        sigma = 0.5 * (self.species[0].lennardJones._sigma.value_si + bathGasSigma)
-        epsilon = sqrt((self.species[0].lennardJones._epsilon.value_si * bathGasEpsilon))
+        sigma = 0.5 * (self.species[0].transportData._sigma.value_si + bathGasSigma)
+        epsilon = sqrt((self.species[0].transportData._epsilon.value_si * bathGasEpsilon))
         mu = 1.0 / (1.0/self.species[0]._molecularWeight.value_si + 1.0/bathGasMW)
         gasConc = P / constants.kB / T
         
