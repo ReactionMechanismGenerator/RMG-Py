@@ -497,10 +497,12 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds):
     elif modelChemistry == 'Klip_2_cc':
         #Klip CCSD(T)(tz,qz)
         atomEnergies = {'H':-0.50003976 + SOC['H'], 'O':-75.00681155 + SOC['O'], 'C':-37.79029443 + SOC['C']}
+    elif modelChemistry == 'CCSD(T)-F12/cc-pVDZ-F12':
+        atomEnergies = {'H':-0.499811124128 + SOC['H'], 'N':-54.526406291655 + SOC['N'], 'O':-74.995458316117 + SOC['O'], 'C':-37.788203485235 + SOC['C'], 'S':-397.663040369707 + SOC['S']}
     elif modelChemistry == 'CCSD(T)-F12/cc-pVTZ-F12':
-        # 'CCSD(T)-F12/cc-pVTZ-F12' calculated by CCLass
-        atomEnergies = {'H':-0.49994557 + SOC['H'], 'N':-54.43186873 + SOC['N'], 'O':-74.92259120 + SOC['O'], 
-                        'C':-37.73766692 + SOC['C'], 'P':-340.77098640 + SOC['P'], 'S': -397.62496049 + SOC['S']}
+        atomEnergies = {'H':-0.499946213243 + SOC['H'], 'N':-54.53000909621 + SOC['N'], 'O':-75.004127673424 + SOC['O'], 'C':-37.789862146471 + SOC['C'], 'S':-397.675447483960 + SOC['S']}
+    elif modelChemistry == 'CCSD(T)-F12/cc-pVQZ-F12':
+        atomEnergies = {'H':-0.499994558325 + SOC['H'], 'N':-54.530515226371 + SOC['N'], 'O':-75.005600062003 + SOC['O'], 'C':-37.789961656228 + SOC['C'], 'S':-397.676719771259 + SOC['S']}
     else:
         logging.warning('Unknown model chemistry "{0}"; not applying energy corrections.'.format(modelChemistry))
         return E0
