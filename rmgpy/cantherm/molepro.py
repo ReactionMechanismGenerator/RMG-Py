@@ -56,19 +56,27 @@ class MoleProLog:
         #search for basisSet
         while line!='':
             if 'basis' in line.lower():
-                if 'vtz' or 'vdz' in line.lower():
+                if 'vtz' in line.lower() or'vdz' in line.lower():
                     f12a=True
                 else: f12a=False
                 break
             line=f.readline()
         else: raise Exception('Could not find basis set in MolePro File')
         #search for energy
-        while line!='':
-            if f12a and '!CCSD(T)-F12a total energy' in line:
-                E0=float(line.split()[-1])
-            elif not f12a and '!CCSD(T)-F12b total energy' in line:
-                E0=float(line.split()[-1])
-            line=f.readline()
+        E0=None
+        if f12a:
+            while line!='':
+                #first one is for radicals second is for non radicals
+                if 'RHF-UCCSD(T)-F12a energy' in line or 'CCSD(T)-F12a total energy  ' in line:
+                    E0=float(line.split()[-1])
+                    break
+                line=f.readline()
+        else:
+            while line!='':
+                if 'RHF-UCCSD(T)-F12b energy' in line or 'CCSD(T)-F12b total energy  ' in line:
+                    E0=float(line.split()[-1])
+                    break
+                line=f.readline()
         
         f.close()
         
