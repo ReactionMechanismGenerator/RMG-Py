@@ -44,6 +44,12 @@ class TransportData:
         if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
         string += ')'
         return string
+    
+    def getLennardJones(self):
+        """
+        Return a string representation that can be used for collision Frequencies
+        """
+        string = 'sigma={2!r}, epsilon={1!r}'.format(self.comment)
 
     def __reduce__(self):
         """
@@ -60,7 +66,7 @@ class TransportData:
         sigma = self.sigma.value_si
         epsilon = self.epsilon.value_si
         M *= constants.Na       # mol/m^3 -> molecules/m^3
-        Tred = constants.R * T / epsilon
+        Tred = constants.R*T / epsilon
         omega22 = 1.16145 * Tred**(-0.14874) + 0.52487 * numpy.exp(-0.77320 * Tred) + 2.16178 * numpy.exp(-2.43787 * Tred)
         mu *= constants.amu
         return omega22 * numpy.sqrt(8 * constants.kB * T / constants.pi / mu) * constants.pi * sigma * sigma * M

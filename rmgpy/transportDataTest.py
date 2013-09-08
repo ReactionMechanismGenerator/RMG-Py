@@ -119,7 +119,7 @@ class TestTransportData(unittest.TestCase):
         T = 1000; P = 1.0e5
         M = P / constants.R / T
         mu = 1.0
-        omega = self.lennardJones.getCollisionFrequency(T, M, mu)
+        omega = self.transport.getCollisionFrequency(T, M, mu)
         self.assertAlmostEqual(omega / 3.13010e10, 1.0, 4)
     
     def test_pickle(self):
@@ -240,7 +240,7 @@ class TestTransportDatabase(unittest.TestCase):
         self.groups = ['ring', 'nonring']
         self.libraryOrder = []
         
-        path = os.path.normpath(os.path.join( os.path.dirname(os.path.abspath(__file__)), '../../../RMG Database/RMG-database/input/transport'))
+        path = os.path.normpath(os.path.join( os.path.dirname(os.path.abspath(__file__)), '../../RMG-database/input/transport'))
         self.transportdb = TransportDatabase()
         self.transportdb.load(path,self.libraries)
     def testJoback(self):    

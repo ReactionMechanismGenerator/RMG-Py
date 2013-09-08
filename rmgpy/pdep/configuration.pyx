@@ -44,6 +44,7 @@ import rmgpy.constants as constants
 from rmgpy.pdep.collision import *
 from rmgpy.statmech import *
 from rmgpy.statmech.conformer import getDensityOfStatesForst
+from rmgpy.transport import TransportData
 
 from rmgpy.species import Species, TransitionState
 from rmgpy.reaction import Reaction
@@ -167,9 +168,9 @@ cdef class Configuration:
         cdef double sigma, epsilon, mu, gasConc, frac, Tred, omega22
         
         assert self.isUnimolecular()
-        assert isinstance(self.species[0].transportData, transportData)
+        assert isinstance(self.species[0].transportData, TransportData)
         for spec, frac in bathGas.items():
-            assert isinstance(spec.transportData, transportData)
+            assert isinstance(spec.transportData, TransportData)
         
         bathGasSigma = 0.0; bathGasEpsilon = 1.0; bathGasMW = 0.0
         for spec, frac in bathGas.iteritems():
