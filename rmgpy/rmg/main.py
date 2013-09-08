@@ -121,6 +121,7 @@ class RMG:
         """
         self.databaseDirectory = None
         self.thermoLibraries = None
+        self.transportLibraries = None
         self.reactionLibraries = None
         self.statmechLibraries = None
         self.seedMechanisms = None
@@ -206,6 +207,7 @@ class RMG:
         self.database.load(
             path = self.databaseDirectory,
             thermoLibraries = self.thermoLibraries,
+            transportLibraries = self.transportLibraries,
             reactionLibraries = [library for library, option in self.reactionLibraries],
             seedMechanisms = self.seedMechanisms,
             kineticsFamilies = self.kineticsFamilies,
@@ -316,7 +318,7 @@ class RMG:
             # Then add remaining reactive species
             for spec in self.initialSpecies:
                 spec.generateThermoData(self.database)
-                    
+                spec.generateTransportData(self.database)
             self.reactionModel.enlarge([spec for spec in self.initialSpecies if spec.reactive])
             
             # Save a restart file if desired

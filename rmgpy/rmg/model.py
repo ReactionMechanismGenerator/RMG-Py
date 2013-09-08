@@ -221,12 +221,12 @@ class Species(rmgpy.species.Species):
             
     def generateTransportData(self, database):
         """
-        Generate the transportData parameters for the species. This "algorithm"
-        is *very* much in need of improvement.
+        Generate the transportData parameters for the species.
         """
         #count = sum([1 for atom in self.molecule[0].vertices if atom.isNonHydrogen()])
-        self.transportData = database.getTransportPropertiesViaGroupEstimates(self)
+        self.transportData = database.transport.getTransportProperties(self)
 
+        #previous method for calculating transport properties
         '''
         if count == 1:
             self.transportData.sigma = (3.758e-10,"m")
@@ -387,7 +387,7 @@ class CoreEdgeReactionModel:
         spec.coreSizeAtCreation = len(self.core.species)
         spec.generateResonanceIsomers()
         spec.molecularWeight = Quantity(spec.molecule[0].getMolecularWeight()*1000.,"amu")
-        spec.generateLennardJonesParameters()
+        # spec.generateTransportData(database)
         spec.generateEnergyTransferModel()
         formula = molecule.getFormula()
         if formula in self.speciesDict:
@@ -698,7 +698,8 @@ class CoreEdgeReactionModel:
         # Generate thermodynamics of new species
         logging.info('Generating thermodynamics for new species...')
         for spec in newSpeciesList:
-            spec.generateThermoData(database, quantumMechanics=self.quantumMechanics)
+            spec.generateThermoData(database)
+            spec.generateTransportData(database)
         
         # Generate kinetics of new reactions
         logging.info('Generating kinetics for new reactions...')

@@ -1180,7 +1180,9 @@ def writeThermoEntry(species, verbose = True):
 ################################################################################
 
 def writeTransportEntry(species, verbose = True):
-    ''
+    """
+    Return a string representation of the reaction as used in a Chemkin file. Lists the 
+    """
     
 ################################################################################
 
@@ -1494,6 +1496,9 @@ def saveChemkinFile(path, species, reactions, verbose = True, checkForDuplicates
 
     ## Transport section would go here
     #f.write('TRANSPORT\n')
+    #for spec in sorted_species:
+        #f.write(writeTransportEntry(spec)
+        #f.write('\n')
     #f.write('END\n\n')
 
     # Reactions section
