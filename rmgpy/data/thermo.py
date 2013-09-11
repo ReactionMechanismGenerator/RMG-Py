@@ -655,7 +655,7 @@ class ThermoDatabase(object):
             thermoData = self.getThermoDataFromLibrary(species, self.libraries[label])
             if thermoData is not None:
                 assert len(thermoData) == 3, "thermoData should be a tuple at this point"
-                thermoData[0].comment += label
+                thermoData[0].comment += 'Thermo library: ' + label
                 return thermoData
         return None
     

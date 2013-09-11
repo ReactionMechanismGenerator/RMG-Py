@@ -565,9 +565,7 @@ cdef class Wilhoit(HeatCapacityModel):
         nasa_high.c4 *= 1.0e-12
         
         # output comment
-        comment = 'NASA function fitted to Wilhoit function with B = {0:g} K. {1}\n{2}'.format(self.B.value_si, rmsStr, self.comment)
-        nasa_low.comment = 'Low temperature range polynomial'
-        nasa_high.comment = 'High temperature range polynomial'
+        # comment = 'NASA function fitted to Wilhoit function with B = {0:g} K. {1}\n{2}'.format(self.B.value_si, rmsStr, self.comment)
     
         # For the low polynomial, we want the results to match the Wilhoit value at 298 K
         nasa_low.c5 = (self.getEnthalpy(298) - nasa_low.getEnthalpy(298)) / constants.R
@@ -582,7 +580,7 @@ cdef class Wilhoit(HeatCapacityModel):
             Tmin = nasa_low.Tmin,
             Tmax = nasa_high.Tmax,
             E0 = self.E0,
-            comment = comment,
+            comment = self.comment,
         )
     
         return nasa
