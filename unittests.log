@@ -177,17 +177,17 @@ Test the AtomType.isSpecificCaseOf() method. ... ok
 Test that we can reconstruct an AtomType object from its repr() ... ok
 Test that an AtomType object can be successfully pickled and ... ok
 Test the AtomType.setActions() method. ... ok
-Test that getAtomType() returns appropriate carbon atom types. ... [14:00:06] Explicit valence for atom # 2 O, 3, is greater than permitted
+Test that getAtomType() returns appropriate carbon atom types. ... [11:49:14] Explicit valence for atom # 2 O, 3, is greater than permitted
 ERROR
-Test that getAtomType() returns the hydrogen atom type. ... [14:00:06] Explicit valence for atom # 2 O, 3, is greater than permitted
+Test that getAtomType() returns the hydrogen atom type. ... [11:49:14] Explicit valence for atom # 2 O, 3, is greater than permitted
 ERROR
-Test that getAtomType() returns appropriate NoneTypes. ... [14:00:06] Explicit valence for atom # 2 O, 3, is greater than permitted
+Test that getAtomType() returns appropriate NoneTypes. ... [11:49:14] Explicit valence for atom # 2 O, 3, is greater than permitted
 ERROR
-Test that getAtomType() returns appropriate oxygen atom types. ... [14:00:06] Explicit valence for atom # 2 O, 3, is greater than permitted
+Test that getAtomType() returns appropriate oxygen atom types. ... [11:49:14] Explicit valence for atom # 2 O, 3, is greater than permitted
 ERROR
-Test that getAtomType() returns appropriate silicon atom types. ... [14:00:06] Explicit valence for atom # 2 O, 3, is greater than permitted
+Test that getAtomType() returns appropriate silicon atom types. ... [11:49:14] Explicit valence for atom # 2 O, 3, is greater than permitted
 ERROR
-Test that getAtomType() returns appropriate sulfur atom types. ... [14:00:06] Explicit valence for atom # 2 O, 3, is greater than permitted
+Test that getAtomType() returns appropriate sulfur atom types. ... [11:49:14] Explicit valence for atom # 2 O, 3, is greater than permitted
 ERROR
 Test the rmgpy.elements.getElement() method. ... ok
 Test that we can reconstruct an Element object from its repr() ... ok
@@ -305,7 +305,7 @@ Test the Molecule.getLabeledAtoms() method. ... ok
 Test the Molecule.getLabeledAtom() method. ... ok
 Test the Molecule.getLabeledAtoms() method. ... ok
 Test the Molecule.getMolecularWeight() method. ... ok
-Test that InChI Key generation is working properly. ... [14:00:06] WARNING: Omitted undefined stereo
+Test that InChI Key generation is working properly. ... [11:49:14] WARNING: Omitted undefined stereo
 ok
 Test the Molecule.isInCycle() method with ethane. ... ok
 Test the Molecule.isInCycle() method with ethane. ... ok
@@ -638,13 +638,13 @@ Test the HarmonicOscillator.getSumOfStates() method using a set of ... ok
 Test the HarmonicOscillator.getSumOfStates() method using a set of ... ok
 Test that a HarmonicOscillator object can be pickled and unpickled ... ok
 Test that a HarmonicOscillator object can be reconstructed from its ... ok
-Test round-trip conversion from Wilhoit to NASA and back ... FAIL
+Test round-trip conversion from Wilhoit to NASA and back ... ok
 Test round-trip conversion from Wilhoit to ThermoData and back ... ok
 Test the conversion of a NASA model to a ThermoData model. ... ok
 Test the conversion of a NASA model to a Wilhoit model. ... ok
 Test the conversion of a ThermoData model to a NASA model. ... ok
 Test the conversion of a ThermoData model to a Wilhoit model. ... ok
-Test the conversion of a Wilhoit model to a NASA model. ... FAIL
+Test the conversion of a Wilhoit model to a NASA model. ... ok
 Test the conversion of a Wilhoit model to a ThermoData model. ... ok
 Test that the NASA comment property was properly set. ... ok
 Test that the NASA E0 property was properly set. ... ok
@@ -907,32 +907,6 @@ Traceback (most recent call last):
     self.assertEqual(Molecule().fromSMILES('C(=CC(c1ccccc1)C([CH]CCCCCC)C=Cc1ccccc1)[CH]CCCCCC').calculateSymmetryNumber(), 1)
 AssertionError: 9 != 1
 
-======================================================================
-FAIL: Test round-trip conversion from Wilhoit to NASA and back
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/thermo/convertTest.py", line 223, in test_Wilhoit_NASA_Wilhoit
-    self.assertAlmostEqual(H_1, H_2, delta=2e1)
-AssertionError: -66264.06227429758 != -66243.9309246391 within 20.0 delta
--------------------- >> begin captured stdout << ---------------------
-Negative ISE of -781.665 reset to zero.
-Poor Wilhoit-to-NASA fit quality: RMS error = 6.333*R
-
---------------------- >> end captured stdout << ----------------------
-
-======================================================================
-FAIL: Test the conversion of a Wilhoit model to a NASA model.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/thermo/convertTest.py", line 104, in test_convert_Wilhoit_to_NASA
-    self.assertAlmostEqual(H_nasa, H_wilhoit, delta=2e1)
-AssertionError: -66241.35363224777 != -66264.06227429758 within 20.0 delta
--------------------- >> begin captured stdout << ---------------------
-Negative ISE of -781.665 reset to zero.
-Poor Wilhoit-to-NASA fit quality: RMS error = 6.333*R
-
---------------------- >> end captured stdout << ----------------------
-
 Name                             Stmts   Miss Branch BrMiss  Cover   Missing
 ----------------------------------------------------------------------------
 rmgpy                               46     12     16      8    68%   70, 93-96, 102, 104, 108, 119-122, 141
@@ -947,7 +921,7 @@ rmgpy.cantherm.output               77     66     23     23    11%   47-49, 56-7
 rmgpy.cantherm.pdep                403    365    156    156     7%   106-142, 147, 150, 155, 158, 163, 166, 171, 174, 179, 182, 187, 190, 195, 198, 204, 224-238, 250-267, 270-297, 309-326, 330-362, 366-382, 386-483, 488-552, 562-571, 578-691
 rmgpy.cantherm.statmech            394    366    162    162     5%   82, 89-120, 128-145, 150, 160-165, 172-174, 183-389, 397-428, 436-466, 483-618, 629-688
 rmgpy.cantherm.thermo              155    140     32     32     8%   55-56, 63-67, 75-122, 129-205, 217-269
-rmgpy.chemkin                      882    842    449    449     3%   71-126, 137-409, 419-568, 579-599, 605-618, 625-640, 648-786, 798-840, 854-880, 890-1031, 1039-1049, 1061-1103, 1114-1179, 1189-1381, 1391-1407, 1417-1420, 1428-1431, 1438-1456, 1474-1517, 1525-1556
+rmgpy.chemkin                      878    838    449    449     3%   71-126, 137-409, 419-568, 579-599, 605-618, 625-640, 648-786, 798-840, 854-880, 890-1031, 1039-1049, 1061-1103, 1114-1178, 1188-1369, 1379-1395, 1405-1408, 1416-1419, 1426-1444, 1462-1505, 1513-1544
 rmgpy.data                           3      1      0      0    67%   34
 rmgpy.data.base                    654    567    295    293     9%   99-110, 113, 209-223, 230-251, 259-282, 293-311, 324-380, 388-446, 454-464, 471-501, 510-565, 572-580, 588-681, 688-694, 701-713, 720-754, 764, 770-776, 782-787, 801-840, 853-905, 917-940, 952-959, 962-966, 981-988, 995-1004, 1015-1022, 1038-1075, 1086-1089, 1098-1102, 1114-1118, 1140-1149, 1155-1156, 1162, 1170-1183, 1198-1225
 rmgpy.data.kinetics                269    235    135    135     8%   62-78, 84-89, 95-97, 104-105, 112-139, 149-174, 181-184, 191-195, 202-208, 215-232, 239-273, 281-284, 292-295, 303-318, 331-340, 361-459, 472-518
@@ -988,16 +962,16 @@ rmgpy.qm.symmetry                   80     51     20     16    33%   128-130, 13
 rmgpy.rmg                            2      0      0      0   100%   
 rmgpy.rmg.input                    224    195     52     52    11%   67-90, 93-97, 100, 103, 106, 109, 120-144, 147-148, 151-154, 163-169, 182-216, 219-224, 227-241, 253-304, 314-420
 rmgpy.rmg.main                     636    590    224    224     5%   46-47, 112-116, 122-156, 163-179, 185-191, 199-201, 205-222, 231-321, 329-496, 507-526, 533-534, 537-544, 551-566, 573-577, 584-650, 656-658, 664-672, 681-694, 707-754, 765-798, 809-958, 965-974, 985-1027, 1038, 1040-1041, 1044-1059, 1069-1100
-rmgpy.rmg.model                    900    840    476    476     4%   71-72, 78, 95-156, 166-203, 211-219, 226-246, 253, 268-269, 293-319, 329-349, 357-400, 410-475, 492-546, 564-575, 581-593, 605-756, 765-825, 832-916, 925-961, 971-997, 1003, 1011-1093, 1101-1148, 1157-1160, 1170-1171, 1179-1183, 1190-1196, 1204-1214, 1221-1226, 1238-1271, 1286-1312, 1326-1351, 1364-1415, 1430-1511, 1519-1605, 1615-1617, 1625-1631
+rmgpy.rmg.model                    901    841    478    478     4%   71-72, 78, 95-156, 166-203, 211-219, 226-246, 253, 268-269, 293-319, 329-349, 357-400, 410-475, 492-546, 564-575, 581-593, 605-756, 765-825, 832-917, 926-962, 972-998, 1004, 1012-1094, 1102-1149, 1158-1161, 1171-1172, 1180-1184, 1191-1197, 1205-1215, 1222-1227, 1239-1272, 1287-1313, 1327-1352, 1365-1416, 1431-1512, 1520-1606, 1616-1618, 1626-1632
 rmgpy.rmg.output                   138    130     60     60     4%   62-345, 353-913
 rmgpy.rmg.pdep                     316    287    182    182     6%   73-85, 91, 108, 130-133, 136, 142, 145, 152, 158-178, 187-208, 217-239, 246-265, 273-297, 305-315, 322-377, 387-448, 455-635
 rmgpy.solver                         2      0      0      0   100%   
 rmgpy.statmech                       5      0      0      0   100%   
 rmgpy.thermo                         3      0      0      0   100%   
 ----------------------------------------------------------------------------
-TOTAL                            12867  11154   5499   5314    10%   
+TOTAL                            12864  11151   5501   5316    10%   
 ----------------------------------------------------------------------
 Ran 691 tests.
 
-FAILED (errors=8, failures=16)
+FAILED (errors=8, failures=14)
 make: *** [test] Error 1
