@@ -480,13 +480,14 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds):
     # Spin orbit correction (SOC) in Hartrees
     # Values taken from note 22 of http://jcp.aip.org/resource/1/jcpsa6/v109/i24/p10570_s1 and converted to hartrees
     # Values in millihartree are also available (with fewer significant figures) from http://jcp.aip.org/resource/1/jcpsa6/v106/i3/p1063_s1
-    SOC = {'H':0.0, 'N':0.0, 'O': -0.000355, 'C': -0.000135, 'S':  -0.000893, 'P': 0.0} 
+    SOC = {'H':0.0, 'N':0.0, 'O': -0.000355, 'C': -0.000135, 'S':  -0.000893, 'P': 0.0, 'Cl': -0.001338} 
     
     # Step 1: Reference all energies to a model chemistry-independent basis
     # by subtracting out that model chemistry's atomic energies
     # Note: If your model chemistry does not include spin orbit coupling, you should add the corrections to the energies here
     if modelChemistry == 'CBS-QB3':
-        atomEnergies = {'H':-0.499818 , 'N':-54.520543, 'O':-74.987624, 'C':-37.785385, 'P':-340.817186, 'S': -397.657360}
+        # 0K Energy
+        atomEnergies = {'H':-0.499818 , 'N':-54.520543, 'O':-74.987624, 'C':-37.785385, 'P':-340.817186, 'S': -397.657360, 'Cl': -459.683605}
     elif modelChemistry == 'G3':
         atomEnergies = {'H':-0.5010030, 'N':-54.564343, 'O':-75.030991, 'C':-37.827717, 'P':-341.116432, 'S': -397.961110}
 
@@ -578,7 +579,7 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds):
         logging.warning('Unknown model chemistry "{0}"; not applying energy corrections.'.format(modelChemistry))
         return E0
     for symbol, count in atoms.items():
-        if symbol in atomEnergies: E0 -= count * atomEnergies[symbol] * 4.35974394e-18 * constants.Na
+        if symbol in atomEnergies: E0 -= count * atomEnergies[symbol] * constants.E_h * constants.Na
         else:
             logging.warning('Ignored unknown atom type "{0}".'.format(symbol))
     
@@ -587,10 +588,10 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds):
     # See Gaussian thermo whitepaper at http://www.gaussian.com/g_whitepap/thermo.htm)
     # Note: these values are relatively old and some improvement may be possible by using newer values, particularly for carbon
     # However, care should be taken to ensure that they are compatible with the BAC values (if BACs are used)
-    atomHf = {'H': 51.63 , 'N': 112.53 ,'O': 58.99 ,'C': 169.98, 'S': 65.66 }
+    atomHf = {'H': 51.63 , 'N': 112.53 ,'O': 58.99 ,'C': 169.98, 'S': 65.66, 'Cl': 28.59 }
     # Thermal contribution to enthalpy Hss(298 K) - Hss(0 K) reported by Gaussian thermo whitepaper
     # This will be subtracted from the corresponding value in atomHf to produce an enthalpy used in calculating the enthalpy of formation at 298 K
-    atomThermal = {'H': 1.01 , 'N': 1.04, 'O': 1.04 ,'C': 0.25, 'S': 1.05 }
+    atomThermal = {'H': 1.01 , 'N': 1.04, 'O': 1.04 ,'C': 0.25, 'S': 1.05, 'Cl': 1.10 }
     # Total energy correction used to reach gas-phase reference state
     # Note: Spin orbit coupling no longer included in these energies, since some model chemistries include it automatically
     atomEnergies = {}
@@ -606,9 +607,11 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds):
             'N=C': -1.50, 'N#C': -3.54, 'N-O': 0.60, 'N_O': -0.17, 'N=O': -0.72,
             'N-H': -0.75, 'N-N': -1.45, 'N=N': -1.98, 'N#N': -2.05,}
     else:
+        # BAC corrections from Table IX in http://jcp.aip.org/resource/1/jcpsa6/v109/i24/p10570_s1 for CBS-Q method
         bondEnergies = { 'C-H': -0.11, 'C-C': -0.3, 'C=C': -0.08, 'C#C': -0.64,
             'O-H': 0.02, 'C-O': 0.33, 'C=O': 0.55, 'N#N': -2.0, 'O=O': -0.2, 
-            'H-H': 1.1, 'C#N': -0.89, 'C-S': 0.43, 'S=O': -0.78 }
+            'H-H': 1.1, 'C#N': -0.89, 'C-S': 0.43, 'S=O': -0.78, 'C-Cl': 1.29,
+            'N-H': -0.42, 'C-N': -0.13, 'S-H': 0.00 }
 
     for symbol, count in bonds.items():
         if symbol in bondEnergies: E0 += count * bondEnergies[symbol] * 4184.
