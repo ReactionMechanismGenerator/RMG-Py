@@ -600,7 +600,7 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds):
     for symbol, count in atoms.items():
         if symbol in atomEnergies: E0 += count * atomEnergies[symbol] * 4184.
     
-    # Step 3: Bond energy corrections
+    # Step 3: Bond additivity corrections
     if modelChemistry == 'CCSD(T)-F12/cc-pVDZ-F12':
         bondEnergies = { 'C-H': -0.56, 'C-C': -0.53, 'C=C': -1.90, 'C#C': -0.64,
             'O-H': -0.34, 'C-O': -0.30, 'C=O': -0.92, 'O-O': 0.03, 'N-C': -0.49,
@@ -608,10 +608,11 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds):
             'N-H': -0.75, 'N-N': -1.45, 'N=N': -1.98, 'N#N': -2.05,}
     else:
         # BAC corrections from Table IX in http://jcp.aip.org/resource/1/jcpsa6/v109/i24/p10570_s1 for CBS-Q method
+        # H-Cl correction from CBS-QB3 enthalpy difference with Gurvich 1989, HF298=-92.31 kJ
         bondEnergies = { 'C-H': -0.11, 'C-C': -0.3, 'C=C': -0.08, 'C#C': -0.64,
             'O-H': 0.02, 'C-O': 0.33, 'C=O': 0.55, 'N#N': -2.0, 'O=O': -0.2, 
             'H-H': 1.1, 'C#N': -0.89, 'C-S': 0.43, 'S=O': -0.78, 'C-Cl': 1.29,
-            'N-H': -0.42, 'C-N': -0.13, 'S-H': 0.00 }
+            'N-H': -0.42, 'C-N': -0.13, 'S-H': 0.00, 'H-Cl': 1.16 }
 
     for symbol, count in bonds.items():
         if symbol in bondEnergies: E0 += count * bondEnergies[symbol] * 4184.
