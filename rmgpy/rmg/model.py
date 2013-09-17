@@ -416,10 +416,10 @@ class CoreEdgeReactionModel:
         else: r2 = rxn.reactants[1]
         family = rxn.family
         try:
-            my_reactionList = self.reactionDict[family][r1][r2]
+            my_reactionList = self.reactionDict[family][r1][r2][:]
         except KeyError: # no such short-list: must be new, unless in seed.
             my_reactionList = []
-        
+                   
         # if the family is its own reverse (H-Abstraction) then check the other direction
         if isinstance(family,KineticsFamily) and family.ownReverse: # (family may be a KineticsLibrary)
             # Get the short-list of reactions with the same family, product1 and product2
