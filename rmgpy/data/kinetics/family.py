@@ -830,8 +830,8 @@ class KineticsFamily(Database):
                 ),
                 rank = 3,
                 reference=entry.reference,
-                shortDesc="Rate rule generated from training reaction. " + entry.shortDesc,
-                longDesc="Rate rule generated from training reaction. " + entry.longDesc,
+                shortDesc="Rate rule generated from training reaction {0}. ".format(entry.index) + entry.shortDesc,
+                longDesc="Rate rule generated from training reaction {0}. ".format(entry.index) + entry.longDesc,
                 history=entry.history,
             )
             new_entry.data.A.value_si /= entry.item.degeneracy
@@ -882,8 +882,8 @@ class KineticsFamily(Database):
                 ),
                 rank = 3,
                 reference=entry.reference,
-                shortDesc="Rate rule generated from training reaction. " + entry.shortDesc,
-                longDesc="Rate rule generated from training reaction. " + entry.longDesc,
+                shortDesc="Rate rule generated from training reaction {0}. ".format(entry.index) + entry.shortDesc,
+                longDesc="Rate rule generated from training reaction {0}. ".format(entry.index) + entry.longDesc,
                 history=entry.history,
             )
             new_entry.data.A.value_si /= item.degeneracy
