@@ -818,8 +818,8 @@ class KineticsFamily(Database):
             new_entry = Entry(
                 index = index,
                 label = ';'.join([g.label for g in template]),
-                item=Reaction(reactants=template[:],
-                                                   products=None),
+                item=Reaction(reactants=[g.item for g in template],
+                                                   products=[]),
                 data = ArrheniusEP(
                     A = deepcopy(data.A),
                     n = deepcopy(data.n),
@@ -870,8 +870,8 @@ class KineticsFamily(Database):
             new_entry = Entry(
                 index = index,
                 label = ';'.join([g.label for g in template]),
-                item=Reaction(reactants=template[:],
-                                                   products=None),
+                item=Reaction(reactants=[g.item for g in template],
+                                                   products=[]),
                 data = ArrheniusEP(
                     A = deepcopy(data.A),
                     n = deepcopy(data.n),
