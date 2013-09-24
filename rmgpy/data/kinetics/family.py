@@ -533,9 +533,23 @@ class KineticsFamily(Database):
         self.rules.load(os.path.join(path, 'rules.py'), local_context, global_context)
         
         self.depositories = []
-        # If depositoryLabels is None then load 'training' first then everything else.
-        # If depositoryLabels is not None then load in the order specified in depositoryLabels.
-        for name in (['training'] if depositoryLabels is None else depositoryLabels) :
+        
+                                
+        if not depositoryLabels:
+            # If depository labels is None or there are no depositories listed, then use the training
+            # depository and add them to the RMG rate rules by default:
+            depositoryLabels = ['training']
+        if depositoryLabels:
+            # If there are depository labels, load them in the order specified, but 
+            # append the training reactions unless the user specifically declares it not
+            # to be included with a '!training' flag
+            if '!training' not in depositoryLabels:
+                if 'training' not in depositoryLabels:
+                    depositoryLabels.append('training')
+            
+        for name in depositoryLabels :
+            if name == '!training':
+                continue
             label = '{0}/{1}'.format(self.label, name)
             f = name+'.py'
             fpath = os.path.join(path,f)
@@ -778,7 +792,10 @@ class KineticsFamily(Database):
             if depository.label.endswith('training'):
                 break
         else:
-            raise Exception('Could not find training depository in family {0}.'.format(self.label))
+            logging.info('Could not find training depository in family {0}.'.format(self.label))
+            logging.info('Must be because you turned off the training depository.')
+            return
+        
         
         index = max([e.index for e in self.rules.getEntries()] or [0]) + 1
         
