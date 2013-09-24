@@ -818,7 +818,8 @@ class KineticsFamily(Database):
             new_entry = Entry(
                 index = index,
                 label = ';'.join([g.label for g in template]),
-                item = template,
+                item=Reaction(reactants=template[:],
+                                                   products=None),
                 data = ArrheniusEP(
                     A = deepcopy(data.A),
                     n = deepcopy(data.n),
@@ -828,12 +829,16 @@ class KineticsFamily(Database):
                     Tmax = deepcopy(data.Tmax),
                 ),
                 rank = 3,
+                reference=entry.reference,
+                shortDesc="Rate rule generated from training reaction. " + entry.shortDesc,
+                longDesc="Rate rule generated from training reaction. " + entry.longDesc,
+                history=entry.history,
             )
             new_entry.data.A.value_si /= entry.item.degeneracy
             try:
-                self.entries[new_entry.label].append(new_entry)
+                self.rules.entries[new_entry.label].append(new_entry)
             except KeyError:
-                self.entries[new_entry.label] = [new_entry]
+                self.rules.entries[new_entry.label] = [new_entry]
             index += 1
         
         # Process the entries that are stored in the reverse direction of the
@@ -865,7 +870,8 @@ class KineticsFamily(Database):
             new_entry = Entry(
                 index = index,
                 label = ';'.join([g.label for g in template]),
-                item = template,
+                item=Reaction(reactants=template[:],
+                                                   products=None),
                 data = ArrheniusEP(
                     A = deepcopy(data.A),
                     n = deepcopy(data.n),
@@ -875,12 +881,16 @@ class KineticsFamily(Database):
                     Tmax = deepcopy(data.Tmax),
                 ),
                 rank = 3,
+                reference=entry.reference,
+                shortDesc="Rate rule generated from training reaction. " + entry.shortDesc,
+                longDesc="Rate rule generated from training reaction. " + entry.longDesc,
+                history=entry.history,
             )
             new_entry.data.A.value_si /= item.degeneracy
             try:
-                self.entries[new_entry.label].append(new_entry)
+                self.rules.entries[new_entry.label].append(new_entry)
             except KeyError:
-                self.entries[new_entry.label] = [new_entry]
+                self.rules.entries[new_entry.label] = [new_entry]
             index += 1
     
     def getRootTemplate(self):
