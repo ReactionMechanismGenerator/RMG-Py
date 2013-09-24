@@ -472,8 +472,8 @@ class KineticsRules(Database):
             
             # We found one or more results! Let's average them together
             kinetics = self.__getAverageKinetics([k for k, t in kineticsList])
-            kinetics.comment += '(Average of {0})'.format(
-                ' + '.join([k.comment if k.comment != '' else ';'.join([g.label for g in t]) for k, t in kineticsList]),
+            kinetics.comment += 'Average of ({0}). '.format(
+                ' + '.join([k.comment if k.comment != '' else ','.join([g.label for g in t]) for k, t in kineticsList]),
             )
             entry = Entry(
                 index = 0,
