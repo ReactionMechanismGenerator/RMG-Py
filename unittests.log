@@ -177,17 +177,17 @@ Test the AtomType.isSpecificCaseOf() method. ... ok
 Test that we can reconstruct an AtomType object from its repr() ... ok
 Test that an AtomType object can be successfully pickled and ... ok
 Test the AtomType.setActions() method. ... ok
-Test that getAtomType() returns appropriate carbon atom types. ... [12:45:05] Explicit valence for atom # 2 O, 3, is greater than permitted
+Test that getAtomType() returns appropriate carbon atom types. ... [17:11:08] Explicit valence for atom # 2 O, 3, is greater than permitted
 ERROR
-Test that getAtomType() returns the hydrogen atom type. ... [12:45:05] Explicit valence for atom # 2 O, 3, is greater than permitted
+Test that getAtomType() returns the hydrogen atom type. ... [17:11:08] Explicit valence for atom # 2 O, 3, is greater than permitted
 ERROR
-Test that getAtomType() returns appropriate NoneTypes. ... [12:45:05] Explicit valence for atom # 2 O, 3, is greater than permitted
+Test that getAtomType() returns appropriate NoneTypes. ... [17:11:08] Explicit valence for atom # 2 O, 3, is greater than permitted
 ERROR
-Test that getAtomType() returns appropriate oxygen atom types. ... [12:45:05] Explicit valence for atom # 2 O, 3, is greater than permitted
+Test that getAtomType() returns appropriate oxygen atom types. ... [17:11:08] Explicit valence for atom # 2 O, 3, is greater than permitted
 ERROR
-Test that getAtomType() returns appropriate silicon atom types. ... [12:45:05] Explicit valence for atom # 2 O, 3, is greater than permitted
+Test that getAtomType() returns appropriate silicon atom types. ... [17:11:08] Explicit valence for atom # 2 O, 3, is greater than permitted
 ERROR
-Test that getAtomType() returns appropriate sulfur atom types. ... [12:45:05] Explicit valence for atom # 2 O, 3, is greater than permitted
+Test that getAtomType() returns appropriate sulfur atom types. ... [17:11:08] Explicit valence for atom # 2 O, 3, is greater than permitted
 ERROR
 Test the rmgpy.elements.getElement() method. ... ok
 Test that we can reconstruct an Element object from its repr() ... ok
@@ -305,7 +305,7 @@ Test the Molecule.getLabeledAtoms() method. ... ok
 Test the Molecule.getLabeledAtom() method. ... ok
 Test the Molecule.getLabeledAtoms() method. ... ok
 Test the Molecule.getMolecularWeight() method. ... ok
-Test that InChI Key generation is working properly. ... [12:45:05] WARNING: Omitted undefined stereo
+Test that InChI Key generation is working properly. ... [17:11:08] WARNING: Omitted undefined stereo
 ok
 Test the Molecule.isInCycle() method with ethane. ... ok
 Test the Molecule.isInCycle() method with ethane. ... ok
@@ -927,7 +927,7 @@ rmgpy.data.base                    654    567    295    293     9%   99-110, 113
 rmgpy.data.kinetics                269    235    135    135     8%   62-78, 84-89, 95-97, 104-105, 112-139, 149-174, 181-184, 191-195, 202-208, 215-232, 239-273, 281-284, 292-295, 303-318, 331-340, 361-459, 472-518
 rmgpy.data.kinetics.common         109     97     50     50     8%   100-101, 110-220
 rmgpy.data.kinetics.depository      31     18      0      0    42%   64-77, 83, 102, 115, 141-164, 170
-rmgpy.data.kinetics.family         891    823    490    490     5%   95-108, 114, 133, 159, 167, 175-187, 198-261, 268, 275, 321-332, 342-403, 410-445, 451-462, 468-491, 504-563, 569-570, 577-581, 587-589, 595, 603-606, 613, 621-668, 679-753, 760, 767-770, 777-867, 876-879, 886-889, 897-908, 921-1024, 1037-1106, 1113-1118, 1128-1154, 1163-1172, 1184-1211, 1218-1221, 1233-1433, 1441-1520, 1528, 1537-1542, 1552-1560, 1570-1584, 1592-1595, 1608-1662, 1670-1678, 1685-1693, 1701-1706
+rmgpy.data.kinetics.family         901    833    496    496     5%   95-108, 114, 133, 159, 167, 175-187, 198-261, 268, 275, 321-332, 342-403, 410-445, 451-462, 468-491, 504-577, 583-584, 591-595, 601-603, 609, 617-620, 627, 635-682, 693-767, 774, 781-784, 791-894, 903-906, 913-916, 924-935, 948-1051, 1064-1133, 1140-1145, 1155-1181, 1190-1199, 1211-1238, 1245-1248, 1260-1460, 1468-1547, 1555, 1564-1569, 1579-1587, 1597-1611, 1619-1622, 1635-1689, 1697-1705, 1712-1720, 1728-1733
 rmgpy.data.kinetics.groups         295    271    180    180     5%   78-79, 85-89, 109-173, 183-209, 218-270, 283-551
 rmgpy.data.kinetics.library        273    247    153    153     6%   71-84, 90, 108, 118, 128-149, 156-163, 171-184, 191-246, 250-260, 282-315, 321, 327-360, 370-374, 384-545
 rmgpy.data.kinetics.rules          313    283    135    135     7%   64, 88-128, 134, 142-190, 197-223, 231-279, 287-354, 361-368, 375, 382, 389-402, 409-425, 431-490, 495-521, 528-582
@@ -961,7 +961,7 @@ rmgpy.qm.qmverifier                 26     20      6      6    19%   18-24, 40-6
 rmgpy.qm.symmetry                   80     51     20     16    33%   128-130, 133, 163-173, 179, 185-194, 200-205, 211-223, 232-256
 rmgpy.rmg                            2      0      0      0   100%   
 rmgpy.rmg.input                    224    195     52     52    11%   67-90, 93-97, 100, 103, 106, 109, 120-144, 147-148, 151-154, 163-169, 182-216, 219-224, 227-241, 253-304, 314-420
-rmgpy.rmg.main                     636    590    224    224     5%   46-47, 112-116, 122-156, 163-179, 185-191, 199-201, 205-222, 231-321, 329-496, 507-526, 533-534, 537-544, 551-566, 573-577, 584-650, 656-658, 664-672, 681-694, 707-754, 765-798, 809-958, 965-974, 985-1027, 1038, 1040-1041, 1044-1059, 1069-1100
+rmgpy.rmg.main                     638    592    226    226     5%   46-47, 112-116, 122-156, 163-179, 185-191, 199-201, 205-225, 234-324, 332-499, 510-529, 536-537, 540-547, 554-569, 576-580, 587-653, 659-661, 667-675, 684-697, 710-757, 768-801, 812-961, 968-977, 988-1030, 1041, 1043-1044, 1047-1062, 1072-1103
 rmgpy.rmg.model                    901    841    478    478     4%   71-72, 78, 95-156, 166-203, 211-219, 226-246, 253, 268-269, 293-319, 329-349, 357-400, 410-475, 492-546, 564-575, 581-593, 605-756, 765-825, 832-917, 926-962, 972-998, 1004, 1012-1094, 1102-1149, 1158-1161, 1171-1172, 1180-1184, 1191-1197, 1205-1215, 1222-1227, 1239-1272, 1287-1313, 1327-1352, 1365-1416, 1431-1512, 1520-1606, 1616-1618, 1626-1632
 rmgpy.rmg.output                   138    130     60     60     4%   62-345, 353-913
 rmgpy.rmg.pdep                     316    287    182    182     6%   73-85, 91, 108, 130-133, 136, 142, 145, 152, 158-178, 187-208, 217-239, 246-265, 273-297, 305-315, 322-377, 387-448, 455-635
@@ -969,7 +969,7 @@ rmgpy.solver                         2      0      0      0   100%
 rmgpy.statmech                       5      0      0      0   100%   
 rmgpy.thermo                         3      0      0      0   100%   
 ----------------------------------------------------------------------------
-TOTAL                            12866  11153   5503   5318    10%   
+TOTAL                            12878  11165   5511   5326    10%   
 ----------------------------------------------------------------------
 Ran 691 tests.
 
