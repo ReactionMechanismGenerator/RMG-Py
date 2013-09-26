@@ -252,6 +252,7 @@ class ModelMatcher():
         known_smiles = {}
         known_names = []
         identified_labels = []
+        line = None
         with open(known_species_file) as f:
             for line in f:
                 if not line.strip():
@@ -268,7 +269,7 @@ class ModelMatcher():
                 except Exception as e:
                     logging.info("Error reading line '{0}'".format(line))
                     raise e
-        if line != '\n':
+        if not line or line != '\n':
             logging.info("Ensuring known species file ends with a blank line!")
             with open(known_species_file,'a') as f:
                 f.write('\n')
