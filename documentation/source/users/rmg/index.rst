@@ -11,4 +11,6 @@ RMG User's Guide
     introduction
     features
     installation/index
+    input
+    faq
     credits
