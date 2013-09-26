@@ -74,7 +74,7 @@ def convertFormula(formulaDict):
     """
 
 #    elements = {e.capitalize(): n for e, n in formulaDict.iteritems() if n > 0}
-    elements = dict((e.capitalize(),n) for (e,n) in formulaDict.iteritimes() if n>n>0)
+    elements = dict((e.capitalize(),n) for (e,n) in formulaDict.iteritems() if n>0)
     hasCarbon = 'C' in elements
     hasHydrogen = 'H' in elements
     # Use the Hill system to generate the formula
