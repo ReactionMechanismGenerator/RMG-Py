@@ -715,7 +715,11 @@ class ModelMatcher():
         
     def setTentativeMatch(self, chemkinLabel, rmgSpecies):
         """
-        Store a tentative match, waiting for user confirmation
+        Store a tentative match, waiting for user confirmation.
+        
+        If it conflicts with an existing tentative match, it instead
+        removes that one, and returns false. If you want to add
+        the new one, call it again.
         """
         self.drawSpecies(rmgSpecies)
         for (l,s,h) in self.tentativeMatches:
@@ -744,7 +748,7 @@ class ModelMatcher():
         # haven't already returned? then
         # that tentative match is new, add it
         self.tentativeMatches.append((chemkinLabel, rmgSpecies, self.getEnthalpyDiscrepancy(chemkinLabel, rmgSpecies) ))
-        
+        return True
         
     def setMatch(self, chemkinLabel, rmgSpecies):
         """Store a match, once you've identified it"""
@@ -1399,7 +1403,10 @@ $('#unconfirmedspecies_count').html("("+json.unconfirmed+")");
             """.format(lab=ckLabel, smi=smiles))
         
         if self.formulaDict[ckLabel] == species.molecule[0].getFormula():
-            self.setTentativeMatch(ckLabel, species)
+            if not self.setTentativeMatch(ckLabel, species):
+                # first attempt removed the old tentative match
+                # second attempt should add the new!
+                self.setTentativeMatch(ckLabel, species)
             output.append("Return to <a href='tentative.html'>Tentative matches</a> to confirm.")
         else:
             output.append('<p><b>Invalid match!</b></p>Species "{lab}" has formula {f1}<br/>\n but SMILES "{smi}" has formula {f2}'.format(
