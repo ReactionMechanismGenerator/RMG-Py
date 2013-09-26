@@ -73,7 +73,8 @@ def convertFormula(formulaDict):
     rmgpy.molecule.Molecule class.
     """
 
-    elements = {e.capitalize(): n for e, n in formulaDict.iteritems() if n > 0}
+#    elements = {e.capitalize(): n for e, n in formulaDict.iteritems() if n > 0}
+    elements = dict((e.capitalize(),n) for (e,n) in formulaDict.iteritimes() if n>n>0)
     hasCarbon = 'C' in elements
     hasHydrogen = 'H' in elements
     # Use the Hill system to generate the formula
@@ -225,10 +226,11 @@ class ModelMatcher():
                 line0 = f.readline()
 
         # Save the formulaDict, converting from {'c':1,'h':4} into "CH4" in the process.
-        self.formulaDict = {label: convertFormula(formula) for label, formula in formulaDict.iteritems()}
-
+        #self.formulaDict = {label: convertFormula(formula) for label, formula in formulaDict.iteritems()}
+        self.formulaDict = dict((label, convertFormula(formula)) for (label, formula) in formulaDict.iteritems())
         # thermoDict contains original thermo as read from chemkin thermo file
-        self.thermoDict = {s.label: s.thermo for s in speciesDict.values() }
+        #self.thermoDict = {s.label: s.thermo for s in speciesDict.values() }
+        self.thermoDict = dict((s.label,s.thermo) for s in speciesDict.values() )
 
     def loadReactions(self, reactions_file):
         logging.info("Reading reactions...")
@@ -640,7 +642,8 @@ class ModelMatcher():
             Ask user for a match for a given speciesLabel, choosing from the iterable possibleMatches
             """
             # print "Species {species} has formula {formula}".format(species=species_label, formula=formula)
-            matchesDict = {species.index: species for species in possibleMatches }
+            #matchesDict = {species.index: species for species in possibleMatches }
+            matchesDict = dict((species.index, species) for species in possibleMatches )
             possibleIndicesStr = [str(i) for i in sorted(matchesDict.keys())]
             print "Species {0} could be one of:".format(speciesLabel)
             for index in sorted(matchesDict.keys()):
@@ -855,7 +858,7 @@ class ModelMatcher():
                     edgeReactionMatchesSomething = True
                     logging.info("Chemkin reaction     {0}\n matches RMG reaction  {1}".format(chemkinReaction, edgeReaction))
                     if self.suggestedMatches:
-                        logging.info(" suggesting new species match: {0!r}".format({l:str(s) for l, s in self.suggestedMatches.iteritems()}))
+                        logging.info(" suggesting new species match: {0!r}".format(dict((l,str(s)) for (l, s) in self.suggestedMatches.iteritems())))
                     else:
                         logging.info(" suggesting no new species matches.")
                         for reagents in (chemkinReaction.reactants, chemkinReaction.products):
@@ -899,10 +902,11 @@ class ModelMatcher():
         prunedVotes = {}
 
         # votes matrix containing sets with only the chemkin reactions, not the corresponding RMG reactions
-        ckVotes = {chemkinLabel:
-                   {matchingSpecies:
-                    set([r[0] for r in votingReactions]) for matchingSpecies, votingReactions in possibleMatches.iteritems()
-                   } for chemkinLabel, possibleMatches in votes.iteritems() }
+        ckVotes = dict()
+        for chemkinLabel, possibleMatches in votes.iteritems():
+            ckVotes[chemkinLabel] = dict( (matchingSpecies, set([r[0] for r in votingReactions]))
+                    for (matchingSpecies, votingReactions) in possibleMatches.iteritems()
+                   )
 
         for chemkinLabel, possibleMatches in ckVotes.iteritems():
             for rmgSpecies in possibleMatches.keys():
@@ -929,7 +933,7 @@ class ModelMatcher():
             if len(commonVotes) < mostVotes:
                 logging.info("Removing {0} voting reactions that are common to all {1} matches for {2}".format(
                                 len(commonVotes), len(possibleMatches), chemkinLabel))
-                prunedVotes[chemkinLabel] = { matchingSpecies: votingReactions.difference(commonVotes) for matchingSpecies, votingReactions in possibleMatches.iteritems() if votingReactions.difference(commonVotes)}
+                prunedVotes[chemkinLabel] = dict((matchingSpecies, votingReactions.difference(commonVotes)) for (matchingSpecies, votingReactions)in possibleMatches.iteritems() if votingReactions.difference(commonVotes))
             else:
                 prunedVotes[chemkinLabel] = possibleMatches
         self.prunedVotes = prunedVotes
@@ -940,7 +944,7 @@ class ModelMatcher():
         Log the passed in voting matrix
         """
         logging.info("Current voting:::")
-        chemkinControversy = {label: 0 for label in votes.iterkeys()}
+        chemkinControversy = dict((label, 0) for label in votes.iterkeys())
         rmgControversy = {}
         flatVotes = {}
         for chemkinLabel, possibleMatches in votes.iteritems():
@@ -1023,7 +1027,7 @@ recommended = False
                 logging.warning("Species with structure of '{0}' already created with label '{1}'".format(species_label, rmg_species.label))
                 
             newSpeciesDict[species_label] = rmg_species
-            if self.formulaDict[species_label] in {'N2', 'Ar', 'He'}:
+            if self.formulaDict[species_label] in ['N2', 'Ar', 'He']:
                 rmg_species.reactive = False
             rmg_species.generateThermoData(self.rmg_object.database)
         # Set match using the function to get all the side-effects.
@@ -1237,8 +1241,8 @@ $('#unconfirmedspecies_count').html("("+json.unconfirmed+")");
     def species_html(self, sort="ck"):
         img = self._img
         output = [self.html_head, '<h1>All {0} Species</h1><table>'.format(len(self.speciesList))]
-        tentativeDict = {chemkinLabel: (rmgSpec, deltaH) for (chemkinLabel, rmgSpec, deltaH) in self.tentativeMatches }
-        manualDict = {chemkinLabel: rmgSpec for (chemkinLabel, rmgSpec) in self.manualMatchesToProcess}
+        tentativeDict = dict((chemkinLabel, (rmgSpec, deltaH)) for (chemkinLabel, rmgSpec, deltaH) in self.tentativeMatches )
+        manualDict = dict((chemkinLabel, rmgSpec) for (chemkinLabel, rmgSpec) in self.manualMatchesToProcess)
         
         labels = [s.label for s in self.speciesList]
         if sort=='name':
@@ -1321,7 +1325,7 @@ $('#unconfirmedspecies_count').html("("+json.unconfirmed+")");
     def votes_html(self):
         votes = self.votes.copy()
         img = self._img
-        chemkinControversy = {label: 0 for label in votes.iterkeys()}
+        chemkinControversy = dict((label,0) for label in votes.iterkeys())
         rmgControversy = {}
         flatVotes = {}
 
@@ -1591,7 +1595,8 @@ if __name__ == '__main__':
     t2.daemon = True
     t2.start()
     
-    import webbrowser
-    webbrowser.open('http://127.0.0.1:{:d}'.format(args.port))
+    #import webbrowser
+    print 'http://127.0.0.1:{0:d}'.format(args.port)
+    #webbrowser.open('http://127.0.0.1:{0:d}'.format(args.port))
     
     mm.main()
