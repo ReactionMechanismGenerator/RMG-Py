@@ -745,6 +745,31 @@ class ModelMatcher():
             elif s == rmgSpecies:
                 logging.info("Tentative match conflicts with unprocessed manual match! Ignoring.") 
                 return False
+        for l in self.identified_labels:
+            s = self.speciesDict_rmg[l]
+            if l == chemkinLabel:
+                if s == rmgSpecies:
+                    return True # it's already matched
+                else:
+                    # It's matched something else!
+                    logging.info("Tentative match conflicts with earlier match! Ignoring.") 
+                    return False
+            elif s == rmgSpecies:
+                logging.info("Tentative match conflicts with earlier match! Ignoring.") 
+                return False
+        for l in self.identified_unprocessed_labels:
+            s = self.speciesDict_rmg[l]
+            if l == chemkinLabel:
+                if s == rmgSpecies:
+                    return True # it's already matched
+                else:
+                    # It's matched something else!
+                    logging.info("Tentative match conflicts with earlier, but unprocessed match! Ignoring.") 
+                    return False
+            elif s == rmgSpecies:
+                logging.info("Tentative match conflicts with earlier, but unprocessed match! Ignoring.") 
+                return False
+                
         # haven't already returned? then
         # that tentative match is new, add it
         self.tentativeMatches.append((chemkinLabel, rmgSpecies, self.getEnthalpyDiscrepancy(chemkinLabel, rmgSpecies) ))
