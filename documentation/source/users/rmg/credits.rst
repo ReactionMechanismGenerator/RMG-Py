@@ -49,7 +49,7 @@ Previous Developers:
 
 
 ***********
-How to cite
+How to Cite
 ***********
 
 William H. Green, Joshua W. Allen, Pierre Bhoorasingh, Beat A. Buesser, Robert W. Ashcraft, 
