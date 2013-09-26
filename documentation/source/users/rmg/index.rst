@@ -9,4 +9,6 @@ RMG User's Guide
     :numbered:
 
     introduction
+    features
     installation/index
+    credits
