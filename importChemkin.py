@@ -1247,9 +1247,11 @@ $('#unconfirmedspecies_count').html("("+json.unconfirmed+")");
         img = self._img
         output = [self.html_head, '<h1>{0} Tentative Matches</h1><table style="width:500px">'.format(len(self.tentativeMatches))]
         for (chemkinLabel, rmgSpec, deltaH) in self.tentativeMatches:
-            output.append("<tr><td>{label}</td><td>{img}</td><td>{delH:.1f} kJ/mol</td>".format(img=img(rmgSpec), label=chemkinLabel, delH=deltaH))
+            output.append("<tr><td>{label}</td><td>{img}</td><td title='{Hsource}'>{delH:.1f} kJ/mol</td>".format(img=img(rmgSpec), label=chemkinLabel, delH=deltaH, Hsource=rmgSpec.thermo.comment))
             output.append("<td><a href='/confirm.html?ckLabel={ckl}&rmgLabel={rmgl}'>confirm</a></td>".format(ckl=urllib2.quote(chemkinLabel), rmgl=urllib2.quote(str(rmgSpec))))
-            output.append("<td><a href='/edit.html?ckLabel={ckl}&SMILES={smi}'>edit</a></td></tr>".format(ckl=urllib2.quote(chemkinLabel), smi=urllib2.quote(rmgSpec.molecule[0].toSMILES())))
+            output.append("<td><a href='/edit.html?ckLabel={ckl}&SMILES={smi}'>edit</a></td>".format(ckl=urllib2.quote(chemkinLabel), smi=urllib2.quote(rmgSpec.molecule[0].toSMILES())))
+            output.append("<td><a href='/votes.html#{0}'>check votes</a></td>".format(urllib2.quote(chemkinLabel)) if chemkinLabel in self.votes else "<td>No votes yet.</td>" )
+            output.append("</tr>")
         output.extend(['</table>', self.html_tail])
         return ('\n'.join(output))
         
@@ -1292,8 +1294,8 @@ $('#unconfirmedspecies_count').html("("+json.unconfirmed+")");
                     rmgSpec = manualDict[chemkinLabel]
                     pending = True
                 deltaH = self.getEnthalpyDiscrepancy(chemkinLabel, rmgSpec)
-                output.append("<tr><td class='confirmed'>{label}</td><td class='centered'>{img}</td><td>{smi}</td><td>{delH:.1f} kJ/mol</td>".format(
-                                    img=img(rmgSpec), label=chemkinLabel, delH=deltaH, smi=rmgSpec.molecule[0].toSMILES() ))
+                output.append("<tr><td class='confirmed'>{label}</td><td class='centered'>{img}</td><td>{smi}</td><td title='{Hsource}'>{delH:.1f} kJ/mol</td>".format(
+                                    img=img(rmgSpec), label=chemkinLabel, delH=deltaH, Hsource=rmgSpec.thermo.comment,  smi=rmgSpec.molecule[0].toSMILES() ))
                 if chemkinLabel in self.identified_unprocessed_labels:
                     output.append("<td>Identified, waiting to react.</td>")
                 elif pending:
@@ -1302,8 +1304,8 @@ $('#unconfirmedspecies_count').html("("+json.unconfirmed+")");
                     output.append("<td>Identified, reacted, in model.</td>")
             elif chemkinLabel in tentativeDict:
                 rmgSpec, deltaH = tentativeDict[chemkinLabel]
-                output.append("<tr><td class='tentative'>{label}</td><td class='centered'>{img}</td><td>{smi}</td><td>{delH:.1f} kJ/mol</td>".format(
-                                    img=img(rmgSpec), label=chemkinLabel, delH=deltaH, smi=rmgSpec.molecule[0].toSMILES() ))
+                output.append("<tr><td class='tentative'>{label}</td><td class='centered'>{img}</td><td>{smi}</td><td title='{Hsource}'>{delH:.1f} kJ/mol</td>".format(
+                                    img=img(rmgSpec), label=chemkinLabel, delH=deltaH, Hsource=rmgSpec.thermo.comment, smi=rmgSpec.molecule[0].toSMILES() ))
                 output.append("<td>Tentative match. <a href='/confirm.html?ckLabel={ckl}&rmgLabel={rmgl}'>confirm</a> / ".format(ckl=urllib2.quote(chemkinLabel), rmgl=urllib2.quote(str(rmgSpec))))
                 output.append("<a href='/edit.html?ckLabel={ckl}&SMILES={smi}'>edit</a></td></tr>".format(ckl=urllib2.quote(chemkinLabel), smi=urllib2.quote(rmgSpec.molecule[0].toSMILES())))
             else:
@@ -1315,7 +1317,7 @@ $('#unconfirmedspecies_count').html("("+json.unconfirmed+")");
             <td><input type=submit></td>
             </form>
             """.format(lab=chemkinLabel))
-                votes = "<a href='/votes.html'>check votes</a> / " if chemkinLabel in self.votes else "No votes yet. "
+                votes = "<a href='/votes.html#{0}'>check votes</a> / ".format(urllib2.quote(chemkinLabel)) if chemkinLabel in self.votes else "No votes yet. "
                 output.append("<td>Unknown species. {votes} <a href='/propose.html?ckLabel={ckl}'>propose match</a></td></tr>".format(ckl=urllib2.quote(chemkinLabel), votes=votes))
         output.extend(['</table>', self.html_tail])
         return ('\n'.join(output))
@@ -1374,18 +1376,19 @@ $('#unconfirmedspecies_count').html("("+json.unconfirmed+")");
         output = [self.html_head]
         output.append("<h1>Votes</h1>")
         for chemkinLabel in sorted(chemkinControversy.keys(), key=lambda label:-chemkinControversy[label]):
+            output.append("<hr id='{0}' />".format(chemkinLabel))
             if chemkinLabel in labelsWaitingToProcess:
-                output.append("<hr><h2>{0} has just been identified but not yet processed.</h2>".format(chemkinLabel))
+                output.append("<h2>{0} has just been identified but not yet processed.</h2>".format(chemkinLabel))
                 continue
             possibleMatches = votes[chemkinLabel]
-            output.append("<hr><h2>{0} matches {1} RMG species</h2>".format(chemkinLabel, len(possibleMatches)))
+            output.append("<h2>{0} matches {1} RMG species</h2>".format(chemkinLabel, len(possibleMatches)))
             for matchingSpecies in sorted(possibleMatches.iterkeys(), key=lambda species:-len(possibleMatches[species])) :
                 if matchingSpecies in speciesWaitingToProcess:
                     output.append("{img} which has just been identified but not yet processed.<br>".format(img=img(matchingSpecies)))
                     continue
                 votingReactions = possibleMatches[matchingSpecies]
                 output.append("<a href='/match.html?ckLabel={ckl}&rmgLabel={rmgl}'>{img}</a>  according to {n} reactions. ".format(ckl=urllib2.quote(chemkinLabel), rmgl=urllib2.quote(str(matchingSpecies)), img=img(matchingSpecies), n=len(votingReactions)))
-                output.append("  Enthalpies at 800K differ by {0:.1f} kJ/mol<br>".format((self.thermoDict[chemkinLabel].getEnthalpy(800) - matchingSpecies.thermo.getEnthalpy(800)) / 1000.))
+                output.append("  Enthalpies at 800K differ by <span title='{Hsource}'>{0:.1f} kJ/mol</span><br>".format((self.thermoDict[chemkinLabel].getEnthalpy(800) - matchingSpecies.thermo.getEnthalpy(800)) / 1000., Hsource=matchingSpecies.thermo.comment))
                 output.append('<table  style="width:800px">')
                 for n, rxn in enumerate(votingReactions):
                     if isinstance(rxn, tuple):
