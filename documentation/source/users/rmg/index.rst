@@ -15,6 +15,7 @@ RMG User's Guide
     running    
     output
     species
+    group
     database/index
     thermo
     kinetics 

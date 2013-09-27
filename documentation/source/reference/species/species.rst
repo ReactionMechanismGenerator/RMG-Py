@@ -1,3 +1,5 @@
+.. _rmgpy.species.Species:
+
 *********************
 rmgpy.species.Species
 *********************
