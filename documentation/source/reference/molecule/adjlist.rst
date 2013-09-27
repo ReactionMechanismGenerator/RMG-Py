@@ -1,8 +1,17 @@
+.. _rmgpy.molecule.adjlist:
+
+
 ***************
 Adjacency Lists
 ***************
 
 .. module:: rmgpy.molecule.adjlist
+
+.. note::
+    To quickly visualize any adjacency list, or to generate an adjacency list from
+    other types of molecular representations such as SMILES, InChI, or even common
+    species names, use the Molecule Search tool found here: http://rmg.mit.edu/molecule_search
+
 
 An adjacency list is the most general way of specifying a chemical molecule or
 molecular pattern in RMG. It is based on the adjacency list representation of
@@ -55,6 +64,52 @@ can be omitted if desired, as their presence is inferred::
     4    C 0 {3,D} {5,S}
     5 *1 C 0 {4,S} {6,S}
     6 *2 C 0 {5,S}
+    
+The allowed element types, radicals, and bonds are listed in the following table:
+
+ +----------------------+----------+---------------------+
+ |                      | Notation | Explanation         |
+ +======================+==========+=====================+
+ | Chemical Element     | C        | Carbon atom         |
+ |                      +----------+---------------------+
+ |                      | O        | Oxygen atom         | 
+ |                      +----------+---------------------+
+ |                      | H        | Hydrogen atom       |
+ |                      +----------+---------------------+
+ |                      | S        | Sulfur atom         |
+ +----------------------+----------+---------------------+
+ | Nonreactive Elements | N        | Nitrogen atom       |
+ |                      +----------+---------------------+
+ |                      | Si       | Silicon atom        |
+ |                      +----------+---------------------+
+ |                      | Cl       | Chlorine atom       |
+ |                      +----------+---------------------+
+ |                      | He       | Helium atom         |
+ |                      +----------+---------------------+
+ |                      | Ar       | Argon atom          |
+ |                      +----------+---------------------+
+ +----------------------+----------+---------------------+
+ | Free Electrons       | 0        | Non-radical         |
+ |                      +----------+---------------------+
+ |                      | 1        | Mono-radical        |
+ |                      +----------+---------------------+
+ |                      | 2        | Bi-radical          |
+ |                      +----------+---------------------+
+ |                      | 2T       | Triplet             |
+ |                      +----------+---------------------+
+ |                      | 2S       | Singlet             |
+ |                      +----------+---------------------+
+ |                      | 3        | Tri-radical         |
+ +----------------------+----------+---------------------+
+ | Chemical Bond        | S        | Single Bond         |
+ |                      +----------+---------------------+
+ |                      | D        | Double Bond         |
+ |                      +----------+---------------------+
+ |                      | T        | Triple bond         |
+ |                      +----------+---------------------+
+ |                      | B        | Benzene bond        |
+ +----------------------+----------+---------------------+
+
 
 .. autofunction:: rmgpy.molecule.adjlist.fromAdjacencyList
 
