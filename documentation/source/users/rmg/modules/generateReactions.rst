@@ -1,6 +1,6 @@
 .. _generateReactions:
 
-*****************
-generateReactions
-*****************
+******************
+Generate Reactions
+******************
 
