@@ -40,3 +40,43 @@ the same species: ::
 To quickly generate any adjacency list, or to generate an adjacency list from
 other types of molecular representations such as SMILES, InChI, or even common
 species names, use the Molecule Search tool found here: http://rmg.mit.edu/molecule_search
+
+
+Representing Oxygen
+===================
+
+Special care should be taken when constructing a mechanism that involves 
+molecular oxygen. The ground electronic state of molecular oxygen,
+:math:`^3\Sigma^-_g`, does *not* contain a double bond, but instead a single
+bond and two lone electrons. In RMG's adjaceny list notation the ground state
+of oxygen is represented as ::
+
+   1 O 1 {2,S}
+   2 O 1 {1,S}
+
+You should use the above adjacency list to represent molecular oxygen in
+your condition files, seed mechanisms, etc. The triplet form is 22 kcal/mol
+more stable than the first singlet excited state, :math:`^1\Delta_g`, which 
+does contain a double bond. The adjacency list for singlet oxygen is ::
+
+   1 O 0 {2,D}
+   2 O 0 {1,D}
+
+Selecting the correct structure for oxygen is important, as the reactions
+generated from a double bond are significantly different than those generated
+from a radical or diradical. For example, the reaction
+
+.. math:: \mathrm{CH_4} + \mathrm{O_2} \rightarrow \mathrm{CH_3} + \mathrm{HO_2}
+
+would occur for both triplet and singlet oxygen, but in entirely different
+families. For triplet oxygen the above represents a hydrogen abstraction, while
+for singlet oxygen it represents the reverse of a disproportionation reaction.
+
+The RMG databases have been modified to make all of the
+oxygen-related chemistry that was present in RMG databases consistent with the
+single-bonded biradical representation.
+
+Conversion between triplet and singlet forms is possible through the primary
+reaction library ``OxygenSingTrip``; the reactions involved are very slow, however,
+and are likely to be absent from any mechanisms generated. At this point, no other
+reactions of singlet oxygen have been included in RMG.
