@@ -73,21 +73,32 @@ def readThermoEntry(entry, Tmin=0, Tint=0, Tmax=0):
     Read a thermodynamics `entry` for one species in a Chemkin file. Returns
     the label of the species and the thermodynamics model as a :class:`NASA`
     object.
+    
+    Format specification at http://www2.galcit.caltech.edu/EDL/public/formats/chemkin.html
     """
     lines = entry.splitlines()
-    species = str(lines[0][0:24].split()[0].strip())
+    species = str(lines[0][0:18].split()[0].strip())
     
     comment = lines[0][len(species):24].strip()
     formula = {}
-    for i in range(24,40,5):
+    for i in [24, 29, 34, 39, 73]:
         element,count = lines[0][i:i+2].strip(), lines[0][i+2:i+5].strip()
         if element:
             try:
-                formula[element]=int(count)
+                count = int(count)
             except ValueError:
                 # Chemkin allows float values for the number of atoms, so try this next.
-                formula[element]=int(float(count))
-            
+                try:
+                    count = int(float(count))
+                except ValueError:
+                    logging.info("Trouble reading line '{0}' element segment '{1}'".format(lines[0].strip(),lines[0][i:i+5]))
+                    if i==73 and count=='' and re.match('\.?0*',element):
+                        logging.info("Assuming it's spillover from Tint, and ignoring.")
+                        count = 0
+                    else:
+                        raise
+            if count != 0: # Some people put garbage elements in, with zero count. Ignore these. Allow negative counts though (eg. negative one electron)
+                formula[element] = count
     phase = lines[0][44]
     if phase.upper() != 'G':
         logging.warning("Was expecting gas phase thermo data for {0}. Skipping thermo data.".format(species))
@@ -105,7 +116,7 @@ def readThermoEntry(entry, Tmin=0, Tint=0, Tmax=0):
         except ValueError:
             pass
         try:
-            Tint = float(lines[0][65:75].strip())
+            Tint = float(lines[0][65:73].strip())
         except ValueError:
             pass
         a0_high = Ffloat(lines[1][0:15].strip())
