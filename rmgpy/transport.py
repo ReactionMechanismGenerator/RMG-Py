@@ -49,7 +49,7 @@ class TransportData:
         """
         Return a string representation that can be used for collision Frequencies
         """
-        string = 'sigma={2!r}, epsilon={1!r}'.format(self.comment)
+        string = 'sigma={0!r}, epsilon={1!r}'.format(self.sigma, self.epsilon)
 
     def __reduce__(self):
         """

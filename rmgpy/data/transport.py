@@ -357,7 +357,8 @@ class TransportDatabase(object):
                      rotrelaxcollnum = 0,
                      comment = 'Estimated with Tc={Tc:.2f} K, Pc={Pc:.4g} bar (from Joback method)'.format(Tc=Tc,Pc=Pc),
                      )
-        return transport
+        return (transport, None, None)
+        #Things calling this expect a tuple with the library and entry that it came from.
         
     def estimateCriticalPropertiesViaGroupAdditivity(self, molecule):
         """

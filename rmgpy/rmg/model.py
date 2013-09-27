@@ -224,7 +224,8 @@ class Species(rmgpy.species.Species):
         Generate the transportData parameters for the species.
         """
         #count = sum([1 for atom in self.molecule[0].vertices if atom.isNonHydrogen()])
-        self.transportData = database.transport.getTransportProperties(self)
+        self.transportData = database.transport.getTransportProperties(self)[0]
+        
 
         #previous method for calculating transport properties
         '''
