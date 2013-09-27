@@ -12,6 +12,7 @@ RMG User's Guide
     features
     installation/index
     input
+    examples
     running    
     output
     species
