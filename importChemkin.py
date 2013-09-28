@@ -113,6 +113,7 @@ def parseCommandLineArguments():
         metavar='DIR', help='use DIR as output directory')
     parser.add_argument('-s', '--scratch-directory', type=str, nargs=1, default='',
         metavar='DIR', help='use DIR as scratch directory')
+    parser.add_argument('--pdep', action='store_true', help='run pressure-dependence calculations')
 
     # Options for controlling the amount of information printed to the console
     # By default a moderate level of information is printed; you can either
@@ -329,14 +330,16 @@ class ModelMatcher():
         rmg.reactionLibraries = [('KlippensteinH2O2', False), ('Glarborg/C3', False), ('Glarborg/highP', False), ('GRI-Mech3.0', False), ]
 
         rmgpy.rmg.input.rmg = rmg # put it in this scope so these functions can modify it
-        rmgpy.rmg.input.pressureDependence(
-            method='modified strong collision',
-            maximumGrainSize=(0.5,'kcal/mol'),
-            minimumNumberOfGrains=250,
-            temperatures=(300,2000,'K',8),
-            pressures=(0.01,100,'atm',3),
-            interpolation=('pdeparrhenius',),
-        )
+        
+        if args.pdep:
+            rmgpy.rmg.input.pressureDependence(
+                method='modified strong collision',
+                maximumGrainSize=(0.5,'kcal/mol'),
+                minimumNumberOfGrains=250,
+                temperatures=(300,2000,'K',8),
+                pressures=(0.01,100,'atm',3),
+                interpolation=('pdeparrhenius',),
+            )
         rmgpy.rmg.input.quantumMechanics(
             software='mopac',
             fileStore=os.path.join(rmgpy.getPath(),'QMfiles'),
