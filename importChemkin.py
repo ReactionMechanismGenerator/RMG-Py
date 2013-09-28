@@ -703,9 +703,9 @@ class ModelMatcher():
 
     def getEnthalpyDiscrepancy(self, chemkinLabel, rmgSpecies):
         """
-        Return the difference in enthalpy at 800K in kJ/mol
+        Return the difference in enthalpy at 298K in kJ/mol
         """
-        return (self.thermoDict[chemkinLabel].getEnthalpy(800.) - rmgSpecies.thermo.getEnthalpy(800.)) / 1000.
+        return (self.thermoDict[chemkinLabel].getEnthalpy(298.) - rmgSpecies.thermo.getEnthalpy(298.)) / 1000.
 
     def clearTentativeMatch(self, chemkinLabel, rmgSpecies):
         """
@@ -784,9 +784,26 @@ class ModelMatcher():
         self.identified_labels.append(chemkinLabel)
         self.identified_unprocessed_labels.append(chemkinLabel)
 
+        # For kinetics purposes, we convert the thermo to Wilhoit
+        # This allows us to extrapolating H to 298 to find deltaH rxn
+        # for ArrheniusEP kinetics,
+        # and to 0K so we can do barrier height checks with E0.
+        Cp0 = rmgSpecies.calculateCp0()
+        CpInf = rmgSpecies.calculateCpInf()
+        thermo = self.thermoDict[chemkinLabel]
+        # pretend it was valid down to 298 K
+        oldLowT = thermo.Tmin.value_si
+        if oldLowT > 298.0:
+            thermo.selectPolynomial(thermo.Tmin.value_si).Tmin.value_si = min(298.0, thermo.Tmin.value_si)
+            thermo.Tmin.value_si = min(298.0, thermo.Tmin.value_si)
+            thermo.comment += "\nLow T polynomial Tmin changed from {0} to {1} K when importing to RMG".format(oldLowT, 298.0)
+        newThermo = thermo.toWilhoit(Cp0=Cp0, CpInf=CpInf)
+        # thermo.selectPolynomial(thermo.Tmin.value_si).Tmin.value_si = oldLowT  # put it back
+        self.thermoDict[chemkinLabel].E0 = newThermo.E0
+
         enthalpyDiscrepancy = self.getEnthalpyDiscrepancy(chemkinLabel, rmgSpecies)
         logging.info("Storing match: {0} = {1!s}".format(chemkinLabel, rmgSpecies))
-        logging.info("  On match, Enthalpies at 800K differ by {0:.1f} kJ/mol".format(enthalpyDiscrepancy))
+        logging.info("  On match, Enthalpies at 298K differ by {0:.1f} kJ/mol".format(enthalpyDiscrepancy))
         display(rmgSpecies)
         self.moveSpeciesDrawing(rmgSpecies)
 
@@ -816,22 +833,7 @@ class ModelMatcher():
 
         self.drawSpecies(rmgSpecies)
 
-        # For kinetics purposes, we convert the thermo to Wilhoit
-        # This allows us to extrapolating H to 298 to find deltaH rxn
-        # for ArrheniusEP kinetics,
-        # and to 0K so we can do barrier height checks with E0.
-        Cp0 = rmgSpecies.calculateCp0()
-        CpInf = rmgSpecies.calculateCpInf()
-        thermo = self.thermoDict[chemkinLabel]
-        # pretend it was valid down to 298 K
-        oldLowT = thermo.Tmin.value_si
-        if oldLowT > 298.0:
-            thermo.selectPolynomial(thermo.Tmin.value_si).Tmin.value_si = min(298.0, thermo.Tmin.value_si)
-            thermo.Tmin.value_si = min(298.0, thermo.Tmin.value_si)
-            thermo.comment += "\nLow T polynomial Tmin changed from {0} to {1} K when importing to RMG".format(oldLowT, 298.0)
-        newThermo = thermo.toWilhoit(Cp0=Cp0, CpInf=CpInf)
-        # thermo.selectPolynomial(thermo.Tmin.value_si).Tmin.value_si = oldLowT  # put it back
-        self.thermoDict[chemkinLabel].E0 = newThermo.E0
+
 
         entry = Entry()
         entry.index = len(self.identified_labels)
@@ -993,7 +995,7 @@ class ModelMatcher():
             for matchingSpecies in sorted(possibleMatches.iterkeys(), key=lambda species:-len(possibleMatches[species])) :
                 votingReactions = possibleMatches[matchingSpecies]
                 logging.info("  {0}  matches  {1!s}  according to {2} reactions:".format(chemkinLabel, matchingSpecies, len(votingReactions)))
-                logging.info("  Enthalpies at 800K differ by {0:.1f} kJ/mol".format((self.thermoDict[chemkinLabel].getEnthalpy(800) - matchingSpecies.thermo.getEnthalpy(800)) / 1000.))
+                logging.info("  Enthalpies at 298K differ by {0:.1f} kJ/mol".format((self.thermoDict[chemkinLabel].getEnthalpy(298) - matchingSpecies.thermo.getEnthalpy(298)) / 1000.))
                 display(matchingSpecies)
                 for rxn in votingReactions:
                     if isinstance(rxn, tuple):
@@ -1023,7 +1025,7 @@ class ModelMatcher():
         self.RMGdictionaryFile = os.path.join(args.output_directory, 'Original_RMG_dictionary.txt')
 
         with open(self.dictionaryFile, 'w') as f:
-            f.write("Species name\tSMILES\tEnthaply discrepancy at 800K\n")
+            f.write("Species name\tSMILES\tEnthaply discrepancy at 298K\n")
         with open(self.RMGdictionaryFile, 'w') as f:
             f.write("\n")
         try:
@@ -1394,7 +1396,7 @@ $('#unconfirmedspecies_count').html("("+json.unconfirmed+")");
                     continue
                 votingReactions = possibleMatches[matchingSpecies]
                 output.append("<a href='/match.html?ckLabel={ckl}&rmgLabel={rmgl}'>{img}</a>  according to {n} reactions. ".format(ckl=urllib2.quote(chemkinLabel), rmgl=urllib2.quote(str(matchingSpecies)), img=img(matchingSpecies), n=len(votingReactions)))
-                output.append("  Enthalpies at 800K differ by <span title='{Hsource}'>{0:.1f} kJ/mol</span><br>".format((self.thermoDict[chemkinLabel].getEnthalpy(800) - matchingSpecies.thermo.getEnthalpy(800)) / 1000., Hsource=matchingSpecies.thermo.comment))
+                output.append("  Enthalpies at 298K differ by <span title='{Hsource}'>{0:.1f} kJ/mol</span><br>".format((self.thermoDict[chemkinLabel].getEnthalpy(298) - matchingSpecies.thermo.getEnthalpy(298)) / 1000., Hsource=matchingSpecies.thermo.comment))
                 output.append('<table  style="width:800px">')
                 for n, rxn in enumerate(votingReactions):
                     if isinstance(rxn, tuple):
@@ -1447,7 +1449,7 @@ $('#unconfirmedspecies_count').html("("+json.unconfirmed+")");
                                     lab=ckLabel, f1=self.formulaDict[ckLabel],
                                     smi=smiles, f2=species.molecule[0].getFormula()))
         output.append("<div style='margin: 2em;'>{img}</div>".format(img=self._img(species)))
-        output.append("Thermo difference at 800K: {dh:.1f} kJ/mol<br/><br/>".format(dh=self.getEnthalpyDiscrepancy(ckLabel, species)))
+        output.append("Thermo difference at 298K: {dh:.1f} kJ/mol<br/><br/>".format(dh=self.getEnthalpyDiscrepancy(ckLabel, species)))
         output.append("Names:")
         for name in response.splitlines():
             output.append("<li>{name}</li>".format(name=name))
