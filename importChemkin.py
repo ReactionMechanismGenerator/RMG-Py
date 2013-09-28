@@ -703,9 +703,9 @@ class ModelMatcher():
 
     def getEnthalpyDiscrepancy(self, chemkinLabel, rmgSpecies):
         """
-        Return the difference in enthalpy at 298K in kJ/mol
+        Return the difference in enthalpy at 298.15K in kJ/mol
         """
-        return (self.thermoDict[chemkinLabel].getEnthalpy(298.) - rmgSpecies.thermo.getEnthalpy(298.)) / 1000.
+        return (self.thermoDict[chemkinLabel].getEnthalpy(298.15) - rmgSpecies.thermo.getEnthalpy(298.15)) / 1000.
 
     def clearTentativeMatch(self, chemkinLabel, rmgSpecies):
         """
@@ -946,7 +946,7 @@ class ModelMatcher():
         for chemkinLabel, possibleMatches in ckVotes.iteritems():
             for rmgSpecies in possibleMatches.keys():
                 dH = self.getEnthalpyDiscrepancy(chemkinLabel, rmgSpecies)
-                if abs(dH) > 150:
+                if abs(dH) > 250:
                     logging.info("Removing possible match {0} : {1!s}  because enthalpy discrepancy is {2:.1f} kJ/mol".format(chemkinLabel, rmgSpecies, dH))
                     del(possibleMatches[rmgSpecies])
 
@@ -995,7 +995,7 @@ class ModelMatcher():
             for matchingSpecies in sorted(possibleMatches.iterkeys(), key=lambda species:-len(possibleMatches[species])) :
                 votingReactions = possibleMatches[matchingSpecies]
                 logging.info("  {0}  matches  {1!s}  according to {2} reactions:".format(chemkinLabel, matchingSpecies, len(votingReactions)))
-                logging.info("  Enthalpies at 298K differ by {0:.1f} kJ/mol".format((self.thermoDict[chemkinLabel].getEnthalpy(298) - matchingSpecies.thermo.getEnthalpy(298)) / 1000.))
+                logging.info("  Enthalpies at 298K differ by {0:.1f} kJ/mol".format(self.getEnthalpyDiscrepancy(chemkinLabel, matchingSpecies) ))
                 display(matchingSpecies)
                 for rxn in votingReactions:
                     if isinstance(rxn, tuple):
@@ -1094,6 +1094,14 @@ recommended = False
             reactionsToPrune = set()
             for newSpecies in rm.newSpeciesList:
                 if newSpecies.molecule[0].getFormula() in chemkinFormulas:
+                    # This allows us to extrapolating H to 298 for comparison
+                    thermo = newSpecies.thermo
+                    oldLowT = thermo.Tmin.value_si
+                    if oldLowT > 298.0:
+                        thermo.selectPolynomial(thermo.Tmin.value_si).Tmin.value_si = min(298.0, thermo.Tmin.value_si)
+                        thermo.Tmin.value_si = min(298.0, thermo.Tmin.value_si)
+                        thermo.comment += "\nExtrapolated from Tmin={0} to {1} for comparison.".format(oldLowT, 298.0)
+                        logging.warning ("Changing Tmin from {0} to {1} for RMG-generated thermo for {2}".format(oldLowT, 298.0, newSpecies))
                     continue
                 # else it's not useful to us
                 # identify any reactions it's involved in
@@ -1396,7 +1404,7 @@ $('#unconfirmedspecies_count').html("("+json.unconfirmed+")");
                     continue
                 votingReactions = possibleMatches[matchingSpecies]
                 output.append("<a href='/match.html?ckLabel={ckl}&rmgLabel={rmgl}'>{img}</a>  according to {n} reactions. ".format(ckl=urllib2.quote(chemkinLabel), rmgl=urllib2.quote(str(matchingSpecies)), img=img(matchingSpecies), n=len(votingReactions)))
-                output.append("  Enthalpies at 298K differ by <span title='{Hsource}'>{0:.1f} kJ/mol</span><br>".format((self.thermoDict[chemkinLabel].getEnthalpy(298) - matchingSpecies.thermo.getEnthalpy(298)) / 1000., Hsource=matchingSpecies.thermo.comment))
+                output.append("  Enthalpies at 298K differ by <span title='{Hsource}'>{0:.1f} kJ/mol</span><br>".format(self.getEnthalpyDiscrepancy(chemkinLabel, matchingSpecies), Hsource=matchingSpecies.thermo.comment))
                 output.append('<table  style="width:800px">')
                 for n, rxn in enumerate(votingReactions):
                     if isinstance(rxn, tuple):
