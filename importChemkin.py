@@ -74,7 +74,7 @@ def convertFormula(formulaDict):
     """
 
 #    elements = {e.capitalize(): n for e, n in formulaDict.iteritems() if n > 0}
-    elements = dict((e.capitalize(),n) for (e,n) in formulaDict.iteritems() if n>0)
+    elements = dict((e.capitalize(), n) for (e, n) in formulaDict.iteritems() if n > 0)
     hasCarbon = 'C' in elements
     hasHydrogen = 'H' in elements
     # Use the Hill system to generate the formula
@@ -231,7 +231,7 @@ class ModelMatcher():
         self.formulaDict = dict((label, convertFormula(formula)) for (label, formula) in formulaDict.iteritems())
         # thermoDict contains original thermo as read from chemkin thermo file
         #self.thermoDict = {s.label: s.thermo for s in speciesDict.values() }
-        self.thermoDict = dict((s.label,s.thermo) for s in speciesDict.values() )
+        self.thermoDict = dict((s.label, s.thermo) for s in speciesDict.values())
 
     def loadReactions(self, reactions_file):
         logging.info("Reading reactions...")
@@ -260,7 +260,7 @@ class ModelMatcher():
                     continue
                 try:
                     tokens = line.split()
-                    assert len(tokens)==2, "Not two tokens on line (was expecting NAME    SMILES)"
+                    assert len(tokens) == 2, "Not two tokens on line (was expecting NAME    SMILES)"
                     name, smiles = tokens
                     if name in known_smiles:
                         assert smiles == known_smiles[name], "{0} defined twice".format(name)
@@ -272,9 +272,9 @@ class ModelMatcher():
                     raise e
         if not line or line != '\n':
             logging.info("Ensuring known species file ends with a blank line!")
-            with open(known_species_file,'a') as f:
+            with open(known_species_file, 'a') as f:
                 f.write('\n')
-        
+
         special_smiles_to_adj_list = {
             'singlet[CH2]': "1 C 2S",
             'triplet[CH2]': "1 C 2T",
@@ -310,7 +310,7 @@ class ModelMatcher():
 
         self.identified_labels.extend(identified_labels)
 
-        
+
     def initializeRMG(self, args):
         """
         Create an RMG object, store it in self.rmg_object, and set it up.
@@ -329,25 +329,25 @@ class ModelMatcher():
         rmg.kineticsFamilies = ['!Substitution_O']
         rmg.reactionLibraries = [('KlippensteinH2O2', False), ('Glarborg/C3', False), ('Glarborg/highP', False), ('GRI-Mech3.0', False), ]
 
-        rmgpy.rmg.input.rmg = rmg # put it in this scope so these functions can modify it
-        
+        rmgpy.rmg.input.rmg = rmg  # put it in this scope so these functions can modify it
+
         if args.pdep:
             rmgpy.rmg.input.pressureDependence(
                 method='modified strong collision',
-                maximumGrainSize=(0.5,'kcal/mol'),
+                maximumGrainSize=(0.5, 'kcal/mol'),
                 minimumNumberOfGrains=250,
-                temperatures=(300,2000,'K',8),
-                pressures=(0.01,100,'atm',3),
+                temperatures=(300, 2000, 'K', 8),
+                pressures=(0.01, 100, 'atm', 3),
                 interpolation=('pdeparrhenius',),
             )
         rmgpy.rmg.input.quantumMechanics(
             software='mopac',
-            fileStore=os.path.join(rmgpy.getPath(),'QMfiles'),
-            scratchDirectory = None, # not currently used
-            onlyCyclics = True,
-            maxRadicalNumber = 0,
+            fileStore=os.path.join(rmgpy.getPath(), 'QMfiles'),
+            scratchDirectory=None,  # not currently used
+            onlyCyclics=True,
+            maxRadicalNumber=0,
         )
-        
+
         rmg.loadDatabase()
         logging.info("Loaded database.")
 
@@ -356,8 +356,8 @@ class ModelMatcher():
         rmg.reactionModel.verboseComments = True
         rmg.initialSpecies = []
         rmg.reactionSystems = []
-        
-        rmg.makeOutputSubdirectory('pdep') # deletes contents
+
+        rmg.makeOutputSubdirectory('pdep')  # deletes contents
         # This is annoying!
         if rmg.pressureDependence:
             rmg.pressureDependence.outputFile = rmg.outputDirectory
@@ -367,7 +367,7 @@ class ModelMatcher():
             rmg.quantumMechanics.setDefaultOutputDirectory(rmg.outputDirectory)
             rmg.reactionModel.quantumMechanics = rmg.quantumMechanics
             rmg.quantumMechanics.initialize()
-            
+
 
         self.rmg_object = rmg
         return rmg
@@ -647,7 +647,7 @@ class ModelMatcher():
             """
             # print "Species {species} has formula {formula}".format(species=species_label, formula=formula)
             #matchesDict = {species.index: species for species in possibleMatches }
-            matchesDict = dict((species.index, species) for species in possibleMatches )
+            matchesDict = dict((species.index, species) for species in possibleMatches)
             possibleIndicesStr = [str(i) for i in sorted(matchesDict.keys())]
             print "Species {0} could be one of:".format(speciesLabel)
             for index in sorted(matchesDict.keys()):
@@ -712,10 +712,10 @@ class ModelMatcher():
         Clear all tentative matches from that have either that label or species, 
         eg. because you've confirmed a match.
         """
-        for (l,s,h) in self.tentativeMatches:
+        for (l, s, h) in self.tentativeMatches:
             if l == chemkinLabel or s == rmgSpecies:
-                self.tentativeMatches.remove((l,s,h))
-        
+                self.tentativeMatches.remove((l, s, h))
+
     def setTentativeMatch(self, chemkinLabel, rmgSpecies):
         """
         Store a tentative match, waiting for user confirmation.
@@ -725,71 +725,71 @@ class ModelMatcher():
         the new one, call it again.
         """
         self.drawSpecies(rmgSpecies)
-        for (l,s,h) in self.tentativeMatches:
+        for (l, s, h) in self.tentativeMatches:
             if l == chemkinLabel:
                 if s == rmgSpecies:
-                    return True # it's already there
+                    return True  # it's already there
                 else:
                     # something else matches that label! Remove both
-                    self.tentativeMatches.remove((l,s,h))
+                    self.tentativeMatches.remove((l, s, h))
                     return False
             elif s == rmgSpecies:
                 # something else matches that rmgSpecies! Remove both
-                self.tentativeMatches.remove((l,s,h))
+                self.tentativeMatches.remove((l, s, h))
                 return False
-        for (l,s) in self.manualMatchesToProcess:
+        for (l, s) in self.manualMatchesToProcess:
             if l == chemkinLabel:
                 if s == rmgSpecies:
-                    return True # it's already matched
+                    return True  # it's already matched
                 else:
                     # It's matched something else!
-                    logging.info("Tentative match conflicts with unprocessed manual match! Ignoring.") 
+                    logging.info("Tentative match conflicts with unprocessed manual match! Ignoring.")
                     return False
             elif s == rmgSpecies:
-                logging.info("Tentative match conflicts with unprocessed manual match! Ignoring.") 
+                logging.info("Tentative match conflicts with unprocessed manual match! Ignoring.")
                 return False
         for l in self.identified_labels:
             s = self.speciesDict_rmg[l]
             if l == chemkinLabel:
                 if s == rmgSpecies:
-                    return True # it's already matched
+                    return True  # it's already matched
                 else:
                     # It's matched something else!
-                    logging.info("Tentative match conflicts with earlier match! Ignoring.") 
+                    logging.info("Tentative match conflicts with earlier match! Ignoring.")
                     return False
             elif s == rmgSpecies:
-                logging.info("Tentative match conflicts with earlier match! Ignoring.") 
+                logging.info("Tentative match conflicts with earlier match! Ignoring.")
                 return False
         for l in self.identified_unprocessed_labels:
             s = self.speciesDict_rmg[l]
             if l == chemkinLabel:
                 if s == rmgSpecies:
-                    return True # it's already matched
+                    return True  # it's already matched
                 else:
                     # It's matched something else!
-                    logging.info("Tentative match conflicts with earlier, but unprocessed match! Ignoring.") 
+                    logging.info("Tentative match conflicts with earlier, but unprocessed match! Ignoring.")
                     return False
             elif s == rmgSpecies:
-                logging.info("Tentative match conflicts with earlier, but unprocessed match! Ignoring.") 
+                logging.info("Tentative match conflicts with earlier, but unprocessed match! Ignoring.")
                 return False
-                
+
         # haven't already returned? then
         # that tentative match is new, add it
-        self.tentativeMatches.append((chemkinLabel, rmgSpecies, self.getEnthalpyDiscrepancy(chemkinLabel, rmgSpecies) ))
+        self.tentativeMatches.append((chemkinLabel, rmgSpecies, self.getEnthalpyDiscrepancy(chemkinLabel, rmgSpecies)))
         return True
-        
+
     def setMatch(self, chemkinLabel, rmgSpecies):
         """Store a match, once you've identified it"""
         self.clearTentativeMatch(chemkinLabel, rmgSpecies)
         self.identified_labels.append(chemkinLabel)
         self.identified_unprocessed_labels.append(chemkinLabel)
-        
+
         enthalpyDiscrepancy = self.getEnthalpyDiscrepancy(chemkinLabel, rmgSpecies)
         logging.info("Storing match: {0} = {1!s}".format(chemkinLabel, rmgSpecies))
         logging.info("  On match, Enthalpies at 800K differ by {0:.1f} kJ/mol".format(enthalpyDiscrepancy))
         display(rmgSpecies)
         self.moveSpeciesDrawing(rmgSpecies)
-        
+
         duplicate = False
         if rmgSpecies.label in self.speciesDict_rmg:
             otherSpecies = self.speciesDict_rmg[rmgSpecies.label]
@@ -803,17 +803,17 @@ class ModelMatcher():
             logging.warning("Will not rename the RMG species with duplicate chemkin labels; leaving as it's first match: {0}".format(rmgSpecies.label))
         else:
             rmgSpecies.label = chemkinLabel
-    
+
         self.speciesDict_rmg[chemkinLabel] = rmgSpecies
 
         with open(self.dictionaryFile, 'a') as f:
             f.write("{0}\t{1}\t{2:.1f}{3}\n".format(chemkinLabel, rmgSpecies.molecule[0].toSMILES(),
-                                        enthalpyDiscrepancy, '\tDUPLICATE of '+duplicate if duplicate else '' ))
-        
+                                        enthalpyDiscrepancy, '\tDUPLICATE of ' + duplicate if duplicate else ''))
+
         with open(self.RMGdictionaryFile, 'a') as f:
             f.write("{2}{0}\n{1}\n\n".format(chemkinLabel, rmgSpecies.molecule[0].toAdjacencyList(removeH=True),
-                                             '// Warning! Duplicate of '+duplicate+'\n' if duplicate else ''))
-        
+                                             '// Warning! Duplicate of ' + duplicate + '\n' if duplicate else ''))
+
         self.drawSpecies(rmgSpecies)
 
         # For kinetics purposes, we convert the thermo to Wilhoit
@@ -825,14 +825,14 @@ class ModelMatcher():
         thermo = self.thermoDict[chemkinLabel]
         # pretend it was valid down to 298 K
         oldLowT = thermo.Tmin.value_si
-        if oldLowT>298.0:
+        if oldLowT > 298.0:
             thermo.selectPolynomial(thermo.Tmin.value_si).Tmin.value_si = min(298.0, thermo.Tmin.value_si)
             thermo.Tmin.value_si = min(298.0, thermo.Tmin.value_si)
             thermo.comment += "\nLow T polynomial Tmin changed from {0} to {1} K when importing to RMG".format(oldLowT, 298.0)
         newThermo = thermo.toWilhoit(Cp0=Cp0, CpInf=CpInf)
         # thermo.selectPolynomial(thermo.Tmin.value_si).Tmin.value_si = oldLowT  # put it back
         self.thermoDict[chemkinLabel].E0 = newThermo.E0
-        
+
         entry = Entry()
         entry.index = len(self.identified_labels)
         entry.label = chemkinLabel
@@ -891,7 +891,7 @@ class ModelMatcher():
                     edgeReactionMatchesSomething = True
                     logging.info("Chemkin reaction     {0}\n matches RMG reaction  {1}".format(chemkinReaction, edgeReaction))
                     if self.suggestedMatches:
-                        logging.info(" suggesting new species match: {0!r}".format(dict((l,str(s)) for (l, s) in self.suggestedMatches.iteritems())))
+                        logging.info(" suggesting new species match: {0!r}".format(dict((l, str(s)) for (l, s) in self.suggestedMatches.iteritems())))
                     else:
                         logging.info(" suggesting no new species matches.")
                         for reagents in (chemkinReaction.reactants, chemkinReaction.products):
@@ -937,7 +937,7 @@ class ModelMatcher():
         # votes matrix containing sets with only the chemkin reactions, not the corresponding RMG reactions
         ckVotes = dict()
         for chemkinLabel, possibleMatches in votes.iteritems():
-            ckVotes[chemkinLabel] = dict( (matchingSpecies, set([r[0] for r in votingReactions]))
+            ckVotes[chemkinLabel] = dict((matchingSpecies, set([r[0] for r in votingReactions]))
                     for (matchingSpecies, votingReactions) in possibleMatches.iteritems()
                    )
 
@@ -1007,7 +1007,7 @@ class ModelMatcher():
         species_file = args.species
         reactions_file = args.reactions or species_file
         thermo_file = args.thermo
-        known_species_file = args.known or species_file+'.SMILES.txt'
+        known_species_file = args.known or species_file + '.SMILES.txt'
         self.known_species_file = known_species_file
 
         self.outputThermoFile = os.path.splitext(thermo_file)[0] + '.thermo.py'
@@ -1044,10 +1044,10 @@ longDesc = u"\""
 "\""
 recommended = False
 
-""".format(name=thermo_file.replace('"',''), shortDesc=os.path.abspath(thermo_file).replace('"',''), longDesc=source.strip()))
-            
+""".format(name=thermo_file.replace('"', ''), shortDesc=os.path.abspath(thermo_file).replace('"', ''), longDesc=source.strip()))
+
         self.identifySmallMolecules()
-        
+
 
         logging.info("Importing identified species into RMG model")
         # Add identified species to the reaction model complete species list
@@ -1058,7 +1058,7 @@ recommended = False
             rmg_species, wasNew = rm.makeNewSpecies(old_species, label=old_species.label)
             if not wasNew:
                 logging.warning("Species with structure of '{0}' already created with label '{1}'".format(species_label, rmg_species.label))
-                
+
             newSpeciesDict[species_label] = rmg_species
             if self.formulaDict[species_label] in ['N2', 'Ar', 'He']:
                 rmg_species.reactive = False
@@ -1075,7 +1075,6 @@ recommended = False
         self.loadReactions(reactions_file)
         chemkinReactionsUnmatched = self.chemkinReactionsUnmatched
         votes = self.votes
-        
 
         # Let's put things in the core by size, smallest first.
         self.identified_unprocessed_labels.sort(key=lambda x: newSpeciesDict[x].molecularWeight.value_si)
@@ -1088,7 +1087,7 @@ recommended = False
 
             # Add species to RMG core.
             rm.enlarge(self.speciesDict_rmg[labelToProcess])
-    
+
             # do a partial prune of new reactions that definitely aren't going to be useful
             reactionsToPrune = set()
             for newSpecies in rm.newSpeciesList:
@@ -1105,10 +1104,10 @@ recommended = False
                 try:
                     rm.edge.reactions.remove(rxn)
                 except ValueError:
-                    pass # "It wasn't in the edge. Presumably leaking from a pdep network"
+                    pass  # "It wasn't in the edge. Presumably leaking from a pdep network"
                 rm.newReactionList.remove(rxn)
             reactionsToPrune.clear()
-    
+
             logging.info("Adding {0} new RMG reactions to be checked.".format(len(rm.newReactionList)))
             reactionsToCheck.update(rm.newReactionList)
             logging.info("In total will check {0} edge reactions".format(len(reactionsToCheck)))
@@ -1173,7 +1172,7 @@ recommended = False
                 logging.info("There is a manual match to process: {0} is {1!s}".format(chemkinLabel, matchingSpecies))
                 if chemkinLabel in self.identified_labels:
                     assert self.speciesDict_rmg[chemkinLabel] == matchingSpecies, "Manual match disagrees with an automatic match!"
-                    continue # don't match something that's already matched. 
+                    continue  # don't match something that's already matched.
                 self.setMatch(chemkinLabel, matchingSpecies)
                 invalidatedReactions = self.getInvalidatedReactionsAndRemoveVotes(chemkinLabel, matchingSpecies)
                 reactionsToCheck.update(invalidatedReactions)
@@ -1257,11 +1256,11 @@ $('#unconfirmedspecies_count').html("("+json.unconfirmed+")");
             output.append("<td><a href='/confirm.html?ckLabel={ckl}&rmgLabel={rmgl}'>confirm</a></td>".format(ckl=urllib2.quote(chemkinLabel), rmgl=urllib2.quote(str(rmgSpec))))
             output.append("<td><a href='/edit.html?ckLabel={ckl}&SMILES={smi}'>edit</a></td>".format(ckl=urllib2.quote(chemkinLabel), smi=urllib2.quote(rmgSpec.molecule[0].toSMILES())))
             output.append("<td><a href='/clear.html?ckLabel={ckl}'>clear</a></td>".format(ckl=urllib2.quote(chemkinLabel)))
-            output.append("<td><a href='/votes.html#{0}'>check votes</a></td>".format(urllib2.quote(chemkinLabel)) if chemkinLabel in self.votes else "<td>No votes yet.</td>" )
+            output.append("<td><a href='/votes.html#{0}'>check votes</a></td>".format(urllib2.quote(chemkinLabel)) if chemkinLabel in self.votes else "<td>No votes yet.</td>")
             output.append("</tr>")
         output.extend(['</table>', self.html_tail])
         return ('\n'.join(output))
-        
+
     @cherrypy.expose
     def unconfirmedspecies_html(self):
         output = [self.html_head, '<h1>{0} Unconfirmed species</h1><table style="width:500px">'.format(len(self.speciesList) - len(self.identified_labels) - len(self.manualMatchesToProcess))]
@@ -1272,22 +1271,22 @@ $('#unconfirmedspecies_count').html("("+json.unconfirmed+")");
                 if pair[0] == label:
                     continue
             output.append("<tr><td>{label}</td>".format(label=label))
-            output.append("<td><a href='/propose.html?ckLabel={ckl}'>propose match</a></td></tr>".format(ckl=urllib2.quote(label), ))
+            output.append("<td><a href='/propose.html?ckLabel={ckl}'>propose match</a></td></tr>".format(ckl=urllib2.quote(label),))
         output.extend(['</table>', self.html_tail])
         return ('\n'.join(output))
-    
+
     @cherrypy.expose
     def species_html(self, sort="ck"):
         img = self._img
         output = [self.html_head, '<h1>All {0} Species</h1><table>'.format(len(self.speciesList))]
-        tentativeDict = dict((chemkinLabel, (rmgSpec, deltaH)) for (chemkinLabel, rmgSpec, deltaH) in self.tentativeMatches )
+        tentativeDict = dict((chemkinLabel, (rmgSpec, deltaH)) for (chemkinLabel, rmgSpec, deltaH) in self.tentativeMatches)
         manualDict = dict((chemkinLabel, rmgSpec) for (chemkinLabel, rmgSpec) in self.manualMatchesToProcess)
-        
+
         labels = [s.label for s in self.speciesList]
-        if sort=='name':
+        if sort == 'name':
             labels.sort()
             output.append('Sorted by name. Sort by <a href="/species.html">chemkin file</a> or <a href="?sort=formula">formula</a>.')
-        elif sort=='formula':
+        elif sort == 'formula':
             labels.sort(key=lambda l: self.formulaDict[l])
             output.append('Sorted by formula. Sort by <a href="/species.html">chemkin file</a> or <a href="?sort=name">name</a>.')
         else:
@@ -1302,7 +1301,7 @@ $('#unconfirmedspecies_count').html("("+json.unconfirmed+")");
                     pending = True
                 deltaH = self.getEnthalpyDiscrepancy(chemkinLabel, rmgSpec)
                 output.append("<tr><td class='confirmed'>{label}</td><td class='centered'>{img}</td><td>{smi}</td><td title='{Hsource}'>{delH:.1f} kJ/mol</td>".format(
-                                    img=img(rmgSpec), label=chemkinLabel, delH=deltaH, Hsource=rmgSpec.thermo.comment,  smi=rmgSpec.molecule[0].toSMILES() ))
+                                    img=img(rmgSpec), label=chemkinLabel, delH=deltaH, Hsource=rmgSpec.thermo.comment, smi=rmgSpec.molecule[0].toSMILES()))
                 if chemkinLabel in self.identified_unprocessed_labels:
                     output.append("<td>Identified, waiting to react.</td>")
                 elif pending:
@@ -1312,7 +1311,7 @@ $('#unconfirmedspecies_count').html("("+json.unconfirmed+")");
             elif chemkinLabel in tentativeDict:
                 rmgSpec, deltaH = tentativeDict[chemkinLabel]
                 output.append("<tr><td class='tentative'>{label}</td><td class='centered'>{img}</td><td>{smi}</td><td title='{Hsource}'>{delH:.1f} kJ/mol</td>".format(
-                                    img=img(rmgSpec), label=chemkinLabel, delH=deltaH, Hsource=rmgSpec.thermo.comment, smi=rmgSpec.molecule[0].toSMILES() ))
+                                    img=img(rmgSpec), label=chemkinLabel, delH=deltaH, Hsource=rmgSpec.thermo.comment, smi=rmgSpec.molecule[0].toSMILES()))
                 output.append("<td>Tentative match. <a href='/confirm.html?ckLabel={ckl}&rmgLabel={rmgl}'>confirm</a> / ".format(ckl=urllib2.quote(chemkinLabel), rmgl=urllib2.quote(str(rmgSpec))))
                 output.append("<a href='/edit.html?ckLabel={ckl}&SMILES={smi}'>edit</a></td></tr>".format(ckl=urllib2.quote(chemkinLabel), smi=urllib2.quote(rmgSpec.molecule[0].toSMILES())))
             else:
@@ -1328,7 +1327,7 @@ $('#unconfirmedspecies_count').html("("+json.unconfirmed+")");
                 output.append("<td>Unknown species. {votes} <a href='/propose.html?ckLabel={ckl}'>propose match</a></td></tr>".format(ckl=urllib2.quote(chemkinLabel), votes=votes))
         output.extend(['</table>', self.html_tail])
         return ('\n'.join(output))
-    
+
     @cherrypy.expose
     def identified_json(self):
         return json.dumps(self.identified_labels)
@@ -1345,15 +1344,15 @@ $('#unconfirmedspecies_count').html("("+json.unconfirmed+")");
                 elif token in self.speciesDict_rmg:
                     token = img(self.speciesDict_rmg[token])
                 elif token in self.speciesDict:
-                    token = "<a href='/propose.html?ckLabel={escaped}' class='unid'>{plain}</a>".format(escaped=urllib2.quote(token),plain=token)
+                    token = "<a href='/propose.html?ckLabel={escaped}' class='unid'>{plain}</a>".format(escaped=urllib2.quote(token), plain=token)
                 else:
                     token = "<span class='unid'>{0}</span>".format(token)
                 reaction_string.append(token)
             reaction_string = ' '.join(reaction_string)
-            output.append("<tr><td>{number}</td><td>{rxn}</td></tr>".format(number=i+1, rxn=reaction_string))
+            output.append("<tr><td>{number}</td><td>{rxn}</td></tr>".format(number=i + 1, rxn=reaction_string))
         output.append(self.html_tail)
         return ('\n'.join(output))
-        
+
     @cherrypy.expose
     def thermo_py(self):
         """The thermo database in py format"""
@@ -1364,7 +1363,7 @@ $('#unconfirmedspecies_count').html("("+json.unconfirmed+")");
     def votes_html(self):
         votes = self.votes.copy()
         img = self._img
-        chemkinControversy = dict((label,0) for label in votes.iterkeys())
+        chemkinControversy = dict((label, 0) for label in votes.iterkeys())
         rmgControversy = {}
         flatVotes = {}
 
@@ -1417,7 +1416,7 @@ $('#unconfirmedspecies_count').html("("+json.unconfirmed+")");
         self.drawSpecies(species)
         if isnew:
             species.generateThermoData(self.rmg_object.database)
-        
+
         # get a list of names from Cactus
         url = "http://cactus.nci.nih.gov/chemical/structure/{0}/names".format(urllib2.quote(smiles))
         try:
@@ -1426,7 +1425,7 @@ $('#unconfirmedspecies_count').html("("+json.unconfirmed+")");
         except urllib2.URLError, e:
             print "Couldn't identify {0}. NCI resolver responded {1} to request for {2}".format(smiles, e, url)
             response = "Unknown"
-        
+
         output = [self.html_head]
         output.append("<h1>Edit {0}</h1>".format(ckLabel))
         output.append("""
@@ -1436,7 +1435,7 @@ $('#unconfirmedspecies_count').html("("+json.unconfirmed+")");
             <input type=submit label="Edit">
             </form>
             """.format(lab=ckLabel, smi=smiles))
-        
+
         if self.formulaDict[ckLabel] == species.molecule[0].getFormula():
             if not self.setTentativeMatch(ckLabel, species):
                 # first attempt removed the old tentative match
@@ -1452,9 +1451,9 @@ $('#unconfirmedspecies_count').html("("+json.unconfirmed+")");
         output.append("Names:")
         for name in response.splitlines():
             output.append("<li>{name}</li>".format(name=name))
-        
+
         output.append(self.html_tail)
-        
+
         return '\n'.join(output)
 
     @cherrypy.expose
@@ -1470,7 +1469,7 @@ $('#unconfirmedspecies_count').html("("+json.unconfirmed+")");
             """.format(lab=ckLabel))
         output.append(self.html_tail)
         return '\n'.join(output)
-    
+
     @cherrypy.expose
     def confirm_html(self, ckLabel=None, rmgLabel=None):
         if ckLabel not in self.votes:
@@ -1481,16 +1480,16 @@ $('#unconfirmedspecies_count').html("("+json.unconfirmed+")");
                     break
             else:
                 logging.warning("Confirming a match that had no votes: {0} is {1}".format(ckLabel, rmgLabel))
-        
-        for (l,rmgSpecies,h) in self.tentativeMatches:
+
+        for (l, rmgSpecies, h) in self.tentativeMatches:
             if l == ckLabel:
                 if str(rmgSpecies) != rmgLabel:
                     return "Trying to confirm something that wasn't a tentative match!"
                 self.manualMatchesToProcess.append((str(ckLabel), rmgSpecies))
-                self.tentativeMatches.remove((l,rmgSpecies,h))
+                self.tentativeMatches.remove((l, rmgSpecies, h))
                 break
-        with open(self.known_species_file,'a') as f:
-            f.write("{0}\t{1}\n".format(ckLabel, rmgSpecies.molecule[0].toSMILES() ))
+        with open(self.known_species_file, 'a') as f:
+            f.write("{0}\t{1}\n".format(ckLabel, rmgSpecies.molecule[0].toSMILES()))
         raise cherrypy.HTTPRedirect("/tentative.html")
 
     @cherrypy.expose
@@ -1498,7 +1497,7 @@ $('#unconfirmedspecies_count').html("("+json.unconfirmed+")");
         logging.info("Clearing the tentative match for {0} at user's request".format(ckLabel))
         self.clearTentativeMatch(ckLabel, None)
         raise cherrypy.HTTPRedirect("/tentative.html")
-    
+
     @cherrypy.expose
     def match_html(self, ckLabel=None, rmgLabel=None):
         if ckLabel not in self.votes:
@@ -1509,9 +1508,9 @@ $('#unconfirmedspecies_count').html("("+json.unconfirmed+")");
                 break
         else:
             return "rmgLabel not a candidate for that ckLabel"
-        
-        with open(self.known_species_file,'a') as f:
-            f.write("{0}\t{1}\n".format(ckLabel, rmgSpecies.molecule[0].toSMILES() ))
+
+        with open(self.known_species_file, 'a') as f:
+            f.write("{0}\t{1}\n".format(ckLabel, rmgSpecies.molecule[0].toSMILES()))
         ## Wait for it to be processed:
         #while self.manualMatchesToProcess:
         #    time.sleep(1)
@@ -1638,13 +1637,13 @@ if __name__ == '__main__':
 #     t = threading.Thread(target=mm.main)
 #     t.daemon = False
 #     t.start()
-    
+
     t2 = threading.Thread(target=runCherryPyServer, args=(args,))
     t2.daemon = True
     t2.start()
-    
+
     #import webbrowser
     print 'http://127.0.0.1:{0:d}'.format(args.port)
     #webbrowser.open('http://127.0.0.1:{0:d}'.format(args.port))
-    
+
     mm.main()
