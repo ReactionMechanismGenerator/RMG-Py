@@ -703,9 +703,14 @@ class ModelMatcher():
 
     def getEnthalpyDiscrepancy(self, chemkinLabel, rmgSpecies):
         """
-        Return the difference in enthalpy at 298.15K in kJ/mol
+        Return the difference in enthalpy at 298.15K (or lowest valid T) in kJ/mol
         """
-        return (self.thermoDict[chemkinLabel].getEnthalpy(298.15) - rmgSpecies.thermo.getEnthalpy(298.15)) / 1000.
+        ck_thermo = self.thermoDict[chemkinLabel]
+        rmg_thermo = rmgSpecies.thermo
+        temperature = max(298.15, ck_thermo.Tmin.value_si, rmg_thermo.Tmin.value_si)
+        ckH = ck_thermo.getEnthalpy(temperature)
+        rmgH = rmg_thermo.getEnthalpy(temperature)
+        return (ckH - rmgH) / 1000.
 
     def clearTentativeMatch(self, chemkinLabel, rmgSpecies):
         """
@@ -946,7 +951,7 @@ class ModelMatcher():
         for chemkinLabel, possibleMatches in ckVotes.iteritems():
             for rmgSpecies in possibleMatches.keys():
                 dH = self.getEnthalpyDiscrepancy(chemkinLabel, rmgSpecies)
-                if abs(dH) > 250:
+                if abs(dH) > 150:
                     logging.info("Removing possible match {0} : {1!s}  because enthalpy discrepancy is {2:.1f} kJ/mol".format(chemkinLabel, rmgSpecies, dH))
                     del(possibleMatches[rmgSpecies])
 
@@ -995,7 +1000,7 @@ class ModelMatcher():
             for matchingSpecies in sorted(possibleMatches.iterkeys(), key=lambda species:-len(possibleMatches[species])) :
                 votingReactions = possibleMatches[matchingSpecies]
                 logging.info("  {0}  matches  {1!s}  according to {2} reactions:".format(chemkinLabel, matchingSpecies, len(votingReactions)))
-                logging.info("  Enthalpies at 298K differ by {0:.1f} kJ/mol".format(self.getEnthalpyDiscrepancy(chemkinLabel, matchingSpecies) ))
+                logging.info("  Enthalpies at 298K differ by {0:.1f} kJ/mol".format(self.getEnthalpyDiscrepancy(chemkinLabel, matchingSpecies)))
                 display(matchingSpecies)
                 for rxn in votingReactions:
                     if isinstance(rxn, tuple):
