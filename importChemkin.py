@@ -1253,6 +1253,7 @@ $('#unconfirmedspecies_count').html("("+json.unconfirmed+")");
             output.append("<tr><td>{label}</td><td>{img}</td><td title='{Hsource}'>{delH:.1f} kJ/mol</td>".format(img=img(rmgSpec), label=chemkinLabel, delH=deltaH, Hsource=rmgSpec.thermo.comment))
             output.append("<td><a href='/confirm.html?ckLabel={ckl}&rmgLabel={rmgl}'>confirm</a></td>".format(ckl=urllib2.quote(chemkinLabel), rmgl=urllib2.quote(str(rmgSpec))))
             output.append("<td><a href='/edit.html?ckLabel={ckl}&SMILES={smi}'>edit</a></td>".format(ckl=urllib2.quote(chemkinLabel), smi=urllib2.quote(rmgSpec.molecule[0].toSMILES())))
+            output.append("<td><a href='/clear.html?ckLabel={ckl}'>clear</a></td>".format(ckl=urllib2.quote(chemkinLabel)))
             output.append("<td><a href='/votes.html#{0}'>check votes</a></td>".format(urllib2.quote(chemkinLabel)) if chemkinLabel in self.votes else "<td>No votes yet.</td>" )
             output.append("</tr>")
         output.extend(['</table>', self.html_tail])
@@ -1488,7 +1489,12 @@ $('#unconfirmedspecies_count').html("("+json.unconfirmed+")");
         with open(self.known_species_file,'a') as f:
             f.write("{0}\t{1}\n".format(ckLabel, rmgSpecies.molecule[0].toSMILES() ))
         raise cherrypy.HTTPRedirect("/tentative.html")
-    
+
+    @cherrypy.expose
+    def clear_html(self, ckLabel=None):
+        logging.info("Clearing the tentative match for {0} at user's request".format(ckLabel))
+        self.clearTentativeMatch(ckLabel, None)
+        raise cherrypy.HTTPRedirect("/tentative.html")
     
     @cherrypy.expose
     def match_html(self, ckLabel=None, rmgLabel=None):
