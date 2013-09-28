@@ -81,7 +81,7 @@ def readThermoEntry(entry, Tmin=0, Tint=0, Tmax=0):
     
     comment = lines[0][len(species):24].strip()
     formula = {}
-    for i in [24, 29, 34, 39, 73]:
+    for i in [24, 29, 34, 39, 74]:
         element,count = lines[0][i:i+2].strip(), lines[0][i+2:i+5].strip()
         if element:
             try:
@@ -92,7 +92,7 @@ def readThermoEntry(entry, Tmin=0, Tint=0, Tmax=0):
                     count = int(float(count))
                 except ValueError:
                     logging.info("Trouble reading line '{0}' element segment '{1}'".format(lines[0].strip(),lines[0][i:i+5]))
-                    if i==73 and count=='' and re.match('\.?0*',element):
+                    if i == 74 and count == '' and re.match('\.?0*', element):
                         logging.info("Assuming it's spillover from Tint, and ignoring.")
                         count = 0
                     else:
@@ -928,7 +928,7 @@ def readThermoBlock(f, speciesDict):
                 if line[79] == '4':
                     label, thermo, formula = readThermoEntry(thermoBlock, Tmin=Tmin, Tint=Tint, Tmax=Tmax)
                     if label not in speciesDict:
-                        logging.info("Ignoring thermo data for {0}.".format(label))
+                        logging.info("Ignoring thermo data for {0} because it's not in the requested list of species.".format(label))
                         thermoBlock = ''
                         line = f.readline()
                         continue
