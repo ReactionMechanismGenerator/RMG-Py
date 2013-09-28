@@ -1076,6 +1076,9 @@ recommended = False
         chemkinReactionsUnmatched = self.chemkinReactionsUnmatched
         votes = self.votes
         
+
+        # Let's put things in the core by size, smallest first.
+        self.identified_unprocessed_labels.sort(key=lambda x: newSpeciesDict[x].molecularWeight.value_si)
         # we want to put inert things in the core first, so we can do PDep calculations.
         self.identified_unprocessed_labels.sort(key=lambda x: newSpeciesDict[x].reactive)
         reactionsToCheck = set()
