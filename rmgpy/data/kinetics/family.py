@@ -1641,7 +1641,7 @@ class KineticsFamily(Database):
             kineticsList0 = self.getKineticsFromDepository(depository, reaction, template, degeneracy)
             if len(kineticsList0) > 0 and not returnAllKinetics:
                 kinetics, entry, isForward = self.__selectBestKinetics(kineticsList0)
-                kinetics, depository, entry, isForward
+                return kinetics, depository, entry, isForward
             else:
                 for kinetics, entry, isForward in kineticsList0:
                     kineticsList.append([kinetics, depository, entry, isForward])
