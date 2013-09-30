@@ -161,7 +161,7 @@ class RMGDatabase:
         self.thermo = ThermoDatabase()
         self.thermo.loadOld(path)
         self.transport = TransportDatabase()
-        self.transpoirt.loadOld(path)
+        self.transport.loadOld(path)
         self.forbiddenStructures = ForbiddenStructures()
         self.forbiddenStructures.loadOld(os.path.join(path, 'ForbiddenStructures.txt'))
         self.kinetics = KineticsDatabase()
