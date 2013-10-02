@@ -754,7 +754,7 @@ class ModelMatcher():
                 logging.info("Tentative match conflicts with unprocessed manual match! Ignoring.")
                 return False
         for l in self.identified_labels:
-            s = self.speciesDict_rmg[l]
+            s = self.speciesDict[l]
             if l == chemkinLabel:
                 if s == rmgSpecies:
                     return True  # it's already matched
@@ -764,18 +764,6 @@ class ModelMatcher():
                     return False
             elif s == rmgSpecies:
                 logging.info("Tentative match conflicts with earlier match! Ignoring.")
-                return False
-        for l in self.identified_unprocessed_labels:
-            s = self.speciesDict_rmg[l]
-            if l == chemkinLabel:
-                if s == rmgSpecies:
-                    return True  # it's already matched
-                else:
-                    # It's matched something else!
-                    logging.info("Tentative match conflicts with earlier, but unprocessed match! Ignoring.")
-                    return False
-            elif s == rmgSpecies:
-                logging.info("Tentative match conflicts with earlier, but unprocessed match! Ignoring.")
                 return False
 
         # haven't already returned? then
