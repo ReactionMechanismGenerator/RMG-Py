@@ -490,8 +490,14 @@ class KineticsRules(Database):
         return None
 
     def __getAverageKinetics(self, kineticsList):
-        # Although computing via logA is slower, it is necessary because
-        # otherwise you could overflow if you are averaging too many values
+        """
+        Based on averaging log k. For most complex case:
+        k = AT^n * exp(-Ea+alpha*H)
+        log k = log(A) * nlog(T) * (-Ea + alpha*H)
+        
+        Hence we average n, Ea, and alpha arithmetically, but we
+        average log A (geometric average) 
+        """
         logA = 0.0; n = 0.0; E0 = 0.0; alpha = 0.0
         count = len(kineticsList)
         for kinetics in kineticsList:
