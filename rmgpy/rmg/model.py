@@ -1254,7 +1254,7 @@ class CoreEdgeReactionModel:
             rxn = LibraryReaction(reactants=entry.item.reactants[:], products=entry.item.products[:], library=seedMechanism, kinetics=entry.data)
             r, isNew = self.makeNewReaction(rxn) # updates self.newSpeciesList and self.newReactionlist
         for spec in self.newSpeciesList:
-            if spec.reactive: spec.generateThermoData(database)
+            if spec.reactive: spec.generateThermoData(database, quantumMechanics=self.quantumMechanics)
         for spec in self.newSpeciesList:
             self.addSpeciesToCore(spec)
 
@@ -1265,7 +1265,7 @@ class CoreEdgeReactionModel:
                 # ...but are Seed Mechanisms run through PDep? Perhaps not.
                 for spec in itertools.chain(rxn.reactants, rxn.products):
                     if spec.thermo is None:
-                        spec.generateThermoData(database)
+                        spec.generateThermoData(database, quantumMechanics=self.quantumMechanics)
                 rxn.fixBarrierHeight(forcePositive=True)
             self.addReactionToCore(rxn)
         
@@ -1303,7 +1303,7 @@ class CoreEdgeReactionModel:
             r, isNew = self.makeNewReaction(rxn) # updates self.newSpeciesList and self.newReactionlist
             if not isNew: logging.info("This library reaction was not new: {0}".format(rxn))
         for spec in self.newSpeciesList:
-            if spec.reactive: spec.generateThermoData(database)
+            if spec.reactive: spec.generateThermoData(database, quantumMechanics=self.quantumMechanics)
         for spec in self.newSpeciesList:
             self.addSpeciesToEdge(spec)
 
