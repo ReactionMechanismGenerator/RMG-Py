@@ -770,6 +770,42 @@ class ModelMatcher():
         # that tentative match is new, add it
         self.tentativeMatches.append((chemkinLabel, rmgSpecies, self.getEnthalpyDiscrepancy(chemkinLabel, rmgSpecies)))
         return True
+    
+    def checkThermoLibraries(self):
+        """Compares the thermo data of species to be imported
+        to all previously identified species in other libraries"""
+
+        formulaToLabelsDict = {}
+        for label,formula in self.formulaDict.iteritems():
+            if formula not in formulaToLabelsDict:
+                formulaToLabelsDict[formula] = [label]
+            else:
+                formulaToLabelsDict[formula].append(label)
+
+        for library_name in self.rmg_object.thermoLibraries:
+            library = self.rmg_object.database.thermo.libraries[library_name]
+            for __, entry in library.entries.iteritems():
+                formula = entry.item.getFormula()
+                if formula in formulaToLabelsDict:
+                    for ck_label in formulaToLabelsDict[formula]:
+                        #Skip already identified species
+                        if ck_label in self.identified_labels: continue
+                        ck_thermo = self.thermoDict[ck_label]
+                        try:
+                            match = entry.data.isIdenticalTo(ck_thermo) #isIdenticalTo requires improvement before this should be fully implemented
+                        except ValueError:
+                            logging.info("Could not compare two thermo files, skipping entry for chemkin species {0} in the thermo library {1}".format(ck_label, library_name))
+                        if match:
+                            # Successfully found a tentative match, set the match and report.
+                            rmg_species, wasNew = self.rmg_object.reactionModel.makeNewSpecies(entry.item, label = entry.label)
+                            
+                            if wasNew is False:
+                                logging.info("Trying to match {0}, from {1}, but it's already in the model!".format(ck_label, library_name))
+                                continue
+                            rmg_species.generateThermoData(self.rmg_object.database)
+                            self.speciesDict_rmg[rmg_species.label] = rmg_species
+                            self.setTentativeMatch(ck_label, rmg_species)
+                            logging.info("Tentative match found for chemkin species {0} in thermo library {1}".format(ck_label, library_name))
 
     def setMatch(self, chemkinLabel, rmgSpecies):
         """Store a match, once you've identified it"""
@@ -1043,6 +1079,7 @@ recommended = False
 
         self.identifySmallMolecules()
 
+        self.checkThermoLibraries()
 
         logging.info("Importing identified species into RMG model")
         # Add identified species to the reaction model complete species list
