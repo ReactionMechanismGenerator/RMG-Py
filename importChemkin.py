@@ -353,6 +353,21 @@ class ModelMatcher():
         rmg.loadDatabase()
         logging.info("Loaded database.")
 
+        # Should probably look elsewhere, but this is where they tend to be for now...
+        dir = os.path.abspath(os.path.join(os.path.split(os.path.abspath(args.thermo))[0], '..'))
+        logging.info("Looking in {dir} for additional thermo libraries to import".format(dir=dir))
+        for root, dirs, files in os.walk(dir):
+            for filename in files:
+                if not filename.endswith(".thermo.py"):
+                    continue
+                path = os.path.join(root, filename)
+                logging.info("I think I found one at {0}".format(path))
+                library = rmgpy.data.thermo.ThermoLibrary()
+                library.load(path, rmg.database.thermo.local_context, rmg.database.thermo.global_context)
+                library.label = os.path.splitext(filename)[0]
+                rmg.database.thermo.libraries[library.label] = library
+                rmg.database.thermo.libraryOrder.append(library.label)
+
         rmg.reactionModel = rmgpy.rmg.model.CoreEdgeReactionModel()
         rmg.reactionModel.kineticsEstimator = 'rate rules'
         rmg.reactionModel.verboseComments = True
