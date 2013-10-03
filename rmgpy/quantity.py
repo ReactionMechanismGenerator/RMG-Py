@@ -644,6 +644,8 @@ Velocity = UnitType('m/s')
 
 Volume = UnitType('m^3')
 
+Polarizability = UnitType('C*m^2*V^-1')
+
 # RateCoefficient is handled as a special case since it can take various
 # units depending on the reaction order
 RATECOEFFICIENT_CONVERSION_FACTORS = {

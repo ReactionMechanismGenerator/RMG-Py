@@ -21,4 +21,4 @@
 ################################################################################
 
 # The path to the directory where the RMG-database is located on disk
-#database.directory : ../../RMG-database/input
+database.directory: ../../RMG-database/input

@@ -36,67 +36,7 @@ import numpy
 import unittest
 
 import rmgpy.constants as constants
-from rmgpy.pdep.collision import LennardJones, SingleExponentialDown
-
-################################################################################
-
-class TestLennardJones(unittest.TestCase):
-    """
-    Contains unit tests of the LennardJones class.
-    """
-    
-    def setUp(self):
-        self.sigma = 5.09
-        self.epsilon = 473
-        self.lennardJones = LennardJones(
-            sigma = (self.sigma,"angstrom"),
-            epsilon = (self.epsilon,"K"),
-        )
-       
-    def test_sigma(self):
-        """
-        Test the LennardJones.sigma attribute.
-        """
-        self.assertAlmostEqual(self.lennardJones.sigma.value_si*1e10, self.sigma, 4)
-
-    def test_epsilon(self):
-        """
-        Test the LennardJones.epsilon attribute.
-        """
-        self.assertAlmostEqual(self.lennardJones.epsilon.value_si / constants.R, self.epsilon, 4)
-
-    def test_getCollisionFrequency(self):
-        """
-        Test the LennardJones.getCollisionFrequency() method.
-        """
-        T = 1000; P = 1.0e5
-        M = P / constants.R / T
-        mu = 1.0
-        omega = self.lennardJones.getCollisionFrequency(T, M, mu)
-        self.assertAlmostEqual(omega / 3.13010e10, 1.0, 4)
-
-    def test_pickle(self):
-        """
-        Test that a LennardJones object can be successfully pickled and
-        unpickled with no loss of information.
-        """
-        import cPickle
-        lennardJones = cPickle.loads(cPickle.dumps(self.lennardJones))        
-        self.assertAlmostEqual(self.lennardJones.sigma.value, lennardJones.sigma.value, 6)
-        self.assertEqual(self.lennardJones.sigma.units, lennardJones.sigma.units)
-        self.assertAlmostEqual(self.lennardJones.epsilon.value, lennardJones.epsilon.value, 4)
-        self.assertEqual(self.lennardJones.epsilon.units, lennardJones.epsilon.units)
-
-    def test_repr(self):
-        """
-        Test that a LennardJones object can be successfully reconstructed from
-        its repr() with no loss of information.
-        """
-        exec('lennardJones = {0!r}'.format(self.lennardJones))
-        self.assertAlmostEqual(self.lennardJones.sigma.value, lennardJones.sigma.value, 6)
-        self.assertEqual(self.lennardJones.sigma.units, lennardJones.sigma.units)
-        self.assertAlmostEqual(self.lennardJones.epsilon.value, lennardJones.epsilon.value, 4)
-        self.assertEqual(self.lennardJones.epsilon.units, lennardJones.epsilon.units)
+from rmgpy.pdep.collision import  SingleExponentialDown
 
 ################################################################################
 

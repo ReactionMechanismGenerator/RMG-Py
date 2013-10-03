@@ -20,7 +20,7 @@ simpleReactor(
     temperature=(1350,'K'),
     pressure=(1.0,'bar'),
     initialMoleFractions={
-        "ethane": 1.0,
+        "ethane": 1,
     },
     terminationConversion={
         'ethane': 0.9,

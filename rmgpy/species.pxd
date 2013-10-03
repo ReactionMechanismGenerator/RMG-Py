@@ -40,7 +40,7 @@ cdef class Species:
     cdef public str label
     cdef public HeatCapacityModel thermo
     cdef public Conformer conformer
-    cdef public object lennardJones
+    cdef public object transportData
     cdef public list molecule
     cdef public ScalarQuantity _molecularWeight
     cdef public ScalarQuantity _dipoleMoment
