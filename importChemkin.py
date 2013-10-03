@@ -364,7 +364,7 @@ class ModelMatcher():
                 logging.info("I think I found one at {0}".format(path))
                 library = rmgpy.data.thermo.ThermoLibrary()
                 library.load(path, rmg.database.thermo.local_context, rmg.database.thermo.global_context)
-                library.label = os.path.splitext(filename)[0]
+                library.label = root.split('/')[-1]
                 rmg.database.thermo.libraries[library.label] = library
                 rmg.database.thermo.libraryOrder.append(library.label)
 
@@ -1345,7 +1345,7 @@ $('#unconfirmedspecies_count').html("("+json.unconfirmed+")");
             for rmgSpec, libraries in rmgSpecsDict.iteritems():
                 libs = '<br>'.join(["{spec} ({lib})".format(spec=formatSpec(spec), lib=lib) for (lib, spec) in libraries])
                 output.append("<tr><td>{label}</td><td>{img}</td><td>{libs}</td>".format(img=img(rmgSpec), label=label, libs=libs))
-                output.append("<td><a href='/confirm.html?ckLabel={ckl}&rmgLabel={rmgl}'>confirm</a></td>".format(ckl=urllib2.quote(chemkinLabel), rmgl=urllib2.quote(str(rmgSpec))))
+                output.append("<td><a href='/confirmthermomatch.html?ckLabel={ckl}&rmgLabel={rmgl}'>confirm</a></td>".format(ckl=urllib2.quote(chemkinLabel), rmgl=urllib2.quote(str(rmgSpec))))
                 output.append("</tr>")
         output.extend(['</table>', self.html_tail])
         return ('\n'.join(output))
@@ -1591,10 +1591,25 @@ $('#unconfirmedspecies_count').html("("+json.unconfirmed+")");
                 self.manualMatchesToProcess.append((str(ckLabel), rmgSpecies))
                 self.tentativeMatches.remove((l, rmgSpecies, h))
                 break
+        else:
+            return "Trying to confirm something that wasn't a tentative match!"
+
         with open(self.known_species_file, 'a') as f:
             f.write("{0}\t{1}\n".format(ckLabel, rmgSpecies.molecule[0].toSMILES()))
         referer = cherrypy.request.headers.get("Referer", "/tentative.html")
         raise cherrypy.HTTPRedirect(referer)
+
+    @cherrypy.expose
+    def confirmthermomatch_html(self, ckLabel=None, rmgLabel=None):
+        rmgSpecies = self.speciesDict_rmg[rmgLabel]
+        self.clearThermoMatch(chemkinLabel)
+        self.manualMatchesToProcess.append((str(ckLabel), rmgSpecies))
+        self.clearTentativeMatch(ckLabel, None)
+        with open(self.known_species_file, 'a') as f:
+            f.write("{0}\t{1}\n".format(ckLabel, rmgSpecies.molecule[0].toSMILES()))
+        referer = cherrypy.request.headers.get("Referer", "/thermomatches.html")
+        raise cherrypy.HTTPRedirect(referer)
+    
 
     @cherrypy.expose
     def clear_html(self, ckLabel=None):
