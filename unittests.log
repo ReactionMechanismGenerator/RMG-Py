@@ -177,17 +177,17 @@ Test the AtomType.isSpecificCaseOf() method. ... ok
 Test that we can reconstruct an AtomType object from its repr() ... ok
 Test that an AtomType object can be successfully pickled and ... ok
 Test the AtomType.setActions() method. ... ok
-Test that getAtomType() returns appropriate carbon atom types. ... [16:39:05] Explicit valence for atom # 2 O, 3, is greater than permitted
+Test that getAtomType() returns appropriate carbon atom types. ... [15:29:09] Explicit valence for atom # 2 O, 3, is greater than permitted
 ERROR
-Test that getAtomType() returns the hydrogen atom type. ... [16:39:05] Explicit valence for atom # 2 O, 3, is greater than permitted
+Test that getAtomType() returns the hydrogen atom type. ... [15:29:09] Explicit valence for atom # 2 O, 3, is greater than permitted
 ERROR
-Test that getAtomType() returns appropriate NoneTypes. ... [16:39:05] Explicit valence for atom # 2 O, 3, is greater than permitted
+Test that getAtomType() returns appropriate NoneTypes. ... [15:29:09] Explicit valence for atom # 2 O, 3, is greater than permitted
 ERROR
-Test that getAtomType() returns appropriate oxygen atom types. ... [16:39:05] Explicit valence for atom # 2 O, 3, is greater than permitted
+Test that getAtomType() returns appropriate oxygen atom types. ... [15:29:09] Explicit valence for atom # 2 O, 3, is greater than permitted
 ERROR
-Test that getAtomType() returns appropriate silicon atom types. ... [16:39:05] Explicit valence for atom # 2 O, 3, is greater than permitted
+Test that getAtomType() returns appropriate silicon atom types. ... [15:29:09] Explicit valence for atom # 2 O, 3, is greater than permitted
 ERROR
-Test that getAtomType() returns appropriate sulfur atom types. ... [16:39:05] Explicit valence for atom # 2 O, 3, is greater than permitted
+Test that getAtomType() returns appropriate sulfur atom types. ... [15:29:09] Explicit valence for atom # 2 O, 3, is greater than permitted
 ERROR
 Test the rmgpy.elements.getElement() method. ... ok
 Test that we can reconstruct an Element object from its repr() ... ok
@@ -305,7 +305,7 @@ Test the Molecule.getLabeledAtoms() method. ... ok
 Test the Molecule.getLabeledAtom() method. ... ok
 Test the Molecule.getLabeledAtoms() method. ... ok
 Test the Molecule.getMolecularWeight() method. ... ok
-Test that InChI Key generation is working properly. ... [16:39:05] WARNING: Omitted undefined stereo
+Test that InChI Key generation is working properly. ... [15:29:09] WARNING: Omitted undefined stereo
 ok
 Test the Molecule.isInCycle() method with ethane. ... ok
 Test the Molecule.isInCycle() method with ethane. ... ok
@@ -962,14 +962,14 @@ rmgpy.qm.symmetry                   80     51     20     16    33%   128-130, 13
 rmgpy.rmg                            2      0      0      0   100%   
 rmgpy.rmg.input                    224    195     52     52    11%   67-90, 93-97, 100, 103, 106, 109, 120-144, 147-148, 151-154, 163-169, 182-216, 219-224, 227-241, 253-304, 314-420
 rmgpy.rmg.main                     638    592    226    226     5%   46-47, 112-116, 122-156, 163-179, 185-191, 199-201, 205-225, 234-324, 332-499, 510-529, 536-537, 540-547, 554-569, 576-580, 587-653, 659-661, 667-675, 684-697, 710-757, 768-801, 812-961, 968-977, 988-1030, 1041, 1043-1044, 1047-1062, 1072-1103
-rmgpy.rmg.model                    901    841    478    478     4%   71-72, 78, 95-156, 166-203, 211-219, 226-246, 253, 268-269, 293-319, 329-349, 357-400, 410-475, 492-546, 564-575, 581-593, 605-756, 765-825, 832-917, 926-962, 972-998, 1004, 1012-1094, 1102-1149, 1158-1161, 1171-1172, 1180-1184, 1191-1197, 1205-1215, 1222-1227, 1239-1272, 1287-1313, 1327-1352, 1365-1416, 1431-1512, 1520-1606, 1616-1618, 1626-1632
-rmgpy.rmg.output                   138    130     60     60     4%   62-345, 353-913
+rmgpy.rmg.model                    903    843    480    480     4%   71-72, 78, 95-156, 166-203, 211-219, 226-246, 253, 268-269, 293-319, 329-349, 357-400, 410-475, 492-546, 564-575, 581-593, 605-756, 765-825, 832-920, 929-965, 975-1001, 1007, 1015-1097, 1105-1152, 1161-1164, 1174-1175, 1183-1187, 1194-1200, 1208-1218, 1225-1230, 1242-1275, 1290-1316, 1330-1355, 1368-1419, 1434-1515, 1523-1609, 1619-1621, 1629-1635
+rmgpy.rmg.output                   138    130     60     60     4%   62-350, 358-927
 rmgpy.rmg.pdep                     316    287    182    182     6%   73-85, 91, 108, 130-133, 136, 142, 145, 152, 158-178, 187-208, 217-239, 246-265, 273-297, 305-315, 322-377, 387-448, 455-635
 rmgpy.solver                         2      0      0      0   100%   
 rmgpy.statmech                       5      0      0      0   100%   
 rmgpy.thermo                         3      0      0      0   100%   
 ----------------------------------------------------------------------------
-TOTAL                            12878  11165   5511   5326    10%   
+TOTAL                            12880  11167   5513   5328    10%   
 ----------------------------------------------------------------------
 Ran 691 tests.
 
