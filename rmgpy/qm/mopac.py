@@ -70,6 +70,9 @@ class Mopac:
         process = Popen([self.executablePath, self.inputFilePath])
         process.communicate()# necessary to wait for executable termination!
     
+        #Wait for OS to flush the buffer to disk. There should be a better way
+        import time
+        time.sleep(1)
         return self.verifyOutputFile()
         
     def verifyOutputFile(self):
