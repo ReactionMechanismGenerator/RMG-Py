@@ -63,7 +63,9 @@ class Mopac:
         # submits the input file to mopac
         process = Popen([self.executablePath, self.inputFilePath])
         process.communicate()# necessary to wait for executable termination!
-    
+        #Wait for OS to flush the buffer to disk. There should be a better way
+        import time
+        time.sleep(1)
         return self.verifyOutputFile()
         
     def verifyOutputFile(self):
@@ -86,7 +88,7 @@ class Mopac:
         if not os.path.exists(self.outputFilePath):
             logging.debug("Output file {0} does not (yet) exist.".format(self.outputFilePath))
             return False
-    
+        
         InChIMatch=False #flag (1 or 0) indicating whether the InChI in the file matches InChIaug this can only be 1 if InChIFound is also 1
         InChIFound=False #flag (1 or 0) indicating whether an InChI was found in the log file
         
