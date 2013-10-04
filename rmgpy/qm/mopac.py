@@ -139,7 +139,8 @@ class Mopac(object):
         stdout, stderr = process.communicate(input=command)  # necessary to wait for executable termination!
         if b"ended normally" not in stderr.strip():
             logging.warning("Mopac error message:" + stderr.decode('utf-8'))
-
+        import time
+        time.sleep(1)
         # copy output file from temp dir to output dir:
         tempOutFile = os.path.join(dirpath, os.path.basename(self.output_file_path))
         shutil.copy(tempOutFile, self.output_file_path)
