@@ -816,10 +816,12 @@ class ModelMatcher():
                         if match:
                             # Successfully found a tentative match, set the match and report.
                             rmg_species, wasNew = self.rmg_object.reactionModel.makeNewSpecies(entry.item, label=entry.label)
-
-                            if wasNew is False:
+                            if wasNew:
+                                self.drawSpecies(rmg_species)
+                            else:
                                 logging.info("Trying to match {0}, from {1}, but it's already in the model!".format(ck_label, library_name))
                                 #continue
+
                             rmg_species.generateThermoData(self.rmg_object.database)
                             self.speciesDict_rmg[rmg_species.label] = rmg_species
                             #self.setTentativeMatch(ck_label, rmg_species)
@@ -849,7 +851,7 @@ class ModelMatcher():
                     del(self.thermoMatches[chemkinLabel][rmgSpecies])
             if len(self.thermoMatches[chemkinLabel]) == 0:
                 del(self.thermoMatches[chemkinLabel])
-                
+
 
     def setMatch(self, chemkinLabel, rmgSpecies):
         """Store a match, once you've identified it"""
@@ -1620,7 +1622,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
             self.clearThermoMatch(ckLabel, rmgName)
         referer = cherrypy.request.headers.get("Referer", "/thermomatches.html")
         raise cherrypy.HTTPRedirect(referer)
-        
+
     @cherrypy.expose
     def confirmthermomatch_html(self, ckLabel=None, rmgName=None):
         for rmgSpecies in self.thermoMatches[ckLabel].iterkeys():
@@ -1635,7 +1637,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
             f.write("{0}\t{1}\n".format(ckLabel, rmgSpecies.molecule[0].toSMILES()))
         referer = cherrypy.request.headers.get("Referer", "/thermomatches.html")
         raise cherrypy.HTTPRedirect(referer)
-    
+
 
     @cherrypy.expose
     def clear_html(self, ckLabel=None):
