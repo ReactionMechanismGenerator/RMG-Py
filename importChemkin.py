@@ -1357,6 +1357,7 @@ $('#unconfirmedspecies_count').html("("+json.unconfirmed+")");
                 libs = '<br>'.join(["{spec} ({lib})".format(spec=formatSpec(spec), lib=lib) for (lib, spec) in libraries])
                 output.append("<tr><td>{label}</td><td>{img}</td><td>{libs}</td>".format(img=img(rmgSpec), label=label, libs=libs))
                 output.append("<td><a href='/confirmthermomatch.html?ckLabel={ckl}&rmgName={rmgl}'>confirm</a></td>".format(ckl=urllib2.quote(chemkinLabel), rmgl=urllib2.quote(str(rmgSpec))))
+                output.append("<td><a href='/clearthermomatch.html?ckLabel={ckl}&rmgName={rmgl}'>clear</a></td>".format(ckl=urllib2.quote(chemkinLabel), rmgl=urllib2.quote(str(rmgSpec))))
                 output.append("</tr>")
         output.extend(['</table>', self.html_tail])
         return ('\n'.join(output))
@@ -1610,6 +1611,14 @@ $('#unconfirmedspecies_count').html("("+json.unconfirmed+")");
         referer = cherrypy.request.headers.get("Referer", "/tentative.html")
         raise cherrypy.HTTPRedirect(referer)
 
+    @cherrypy.expose
+    def clearthermomatch_html(self, ckLabel=None, rmgName=None):
+        "Clear the specified thermo match"
+        if ckLabel:
+            self.clearThermoMatch(ckLabel, rmgName)
+        referer = cherrypy.request.headers.get("Referer", "/thermomatches.html")
+        raise cherrypy.HTTPRedirect(referer)
+        
     @cherrypy.expose
     def confirmthermomatch_html(self, ckLabel=None, rmgName=None):
         for rmgSpecies in self.thermoMatches[ckLabel].iterkeys():
