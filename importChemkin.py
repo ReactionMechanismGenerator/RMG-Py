@@ -1252,7 +1252,7 @@ recommended = False
                                os.path.join(self.rmg_object.outputDirectory, 'identified_chemkin_verbose.txt'),
                                os.path.join(self.rmg_object.outputDirectory, 'identified_RMG_dictionary.txt'))
 
-            if len(self.identified_unprocessed_labels) == 0 and (self.prunedVotes or self.tentativeMatches) and not self.manualMatchesToProcess :
+            if len(self.identified_unprocessed_labels) == 0 and not self.manualMatchesToProcess :
                 logging.info("Waiting for input from the web front end..")
                 while not self.manualMatchesToProcess:
                     time.sleep(1)
@@ -1268,7 +1268,8 @@ recommended = False
                 reactionsToCheck.update(invalidatedReactions)
                 logging.info("After making that match, will have to re-check {0} edge reactions".format(len(reactionsToCheck)))
 
-            if len(self.identified_unprocessed_labels) == 0 and self.votes:
+            terminal_input_enabled = False
+            if len(self.identified_unprocessed_labels) == 0 and self.votes and terminal_input_enabled:
                 self.printVoting(prunedVotes)
                 logging.info("Run out of options. Asking for help!")
                 speciesLabel = raw_input('Which label would you like to identify? (see voting info above)\n')
