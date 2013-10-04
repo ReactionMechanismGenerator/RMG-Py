@@ -1345,13 +1345,13 @@ $('#unconfirmedspecies_count').html("("+json.unconfirmed+")");
         for chemkinLabel, rmgSpecsDict in self.thermoMatches.iteritems():
             label = chemkinLabel
             if len(rmgSpecsDict) > 1:
-                label = "<span style='color: red;'>{0}</span>".format(label)
+                label = "<span class='badmatch'>{0}</span>".format(label)
             def formatSpec(name):
                 "Makes 'name' green if it matches 'label'"
                 if name.upper() == chemkinLabel.upper():
-                    return "<span style='color: green;'>{0}</span>".format(name)
+                    return "<span class='goodmatch'>{0}</span>".format(name)
                 else:
-                    return name
+                    return "<span class='badmatch'>{0}</span>".format(name)
 
             for rmgSpec, libraries in rmgSpecsDict.iteritems():
                 libs = '<br>'.join(["{spec} ({lib})".format(spec=formatSpec(spec), lib=lib) for (lib, spec) in libraries])
@@ -1719,6 +1719,8 @@ $( document ).ready(function() {
 #tentative {background-color: #bbbbff;}
 #unidentified {background-color: #eeeeff;}
 td.bar { text-align: right; overflow: hidden}
+.goodmatch {color: green;}
+.badmatch {color: red;}
 .unid {color: #00DE1A;}
 a.unid {text-decoration: none;}
 a.unid:hover {text-decoration: underline;}
