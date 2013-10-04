@@ -822,8 +822,8 @@ class ModelMatcher():
                                 #continue
                             rmg_species.generateThermoData(self.rmg_object.database)
                             self.speciesDict_rmg[rmg_species.label] = rmg_species
-                            self.setTentativeMatch(ck_label, rmg_species)
-                            logging.info("Tentative match found for chemkin species {0} in thermo library {1}".format(ck_label, library_name))
+                            #self.setTentativeMatch(ck_label, rmg_species)
+                            logging.info("Thermo match found for chemkin species {0} in thermo library {1}".format(ck_label, library_name))
                             self.setThermoMatch(ck_label, rmg_species, library_name, entry.label)
 
     def setThermoMatch(self, chemkinLabel, rmgSpecies, libraryName, librarySpeciesName):
