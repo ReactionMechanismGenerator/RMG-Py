@@ -592,6 +592,19 @@ class ModelMatcher():
 
         # should have already returned if it matches forwards, or we're not allowed to match backwards
         return  (reverseReactantsMatch and reverseProductsMatch)
+    
+    
+    def speciesReactAccordingToChemkin(self, rmgSpecies1, rmgSpecies2):
+        for chemkin_reaction in self.chemkinReactions:
+            for reacting in [chemkin_reaction.reactants, chemkin_reaction.products]:
+                matchedSpecies = set()
+                for ckSpecies in reacting:
+                    if ckSpecies.label in self.identified_labels:
+                        matchedSpecies.add( self.speciesDict_rmg[ckSpecies.label] )
+
+                if rmgSpecies1 in matchedSpecies and rmgSpecies2 in matchedSpecies:
+                    return True
+        return False
 
     def identifySmallMolecules(self):
         """Identify anything little that is uniquely determined by its chemical formula"""
@@ -1095,8 +1108,7 @@ class ModelMatcher():
         
         database = rmgpy.data.rmg.database
         
-        if not isinstance(newObject, list):
-            newObject = [newObject]
+        obj = newObject
         
         numOldCoreSpecies = len(rm.core.species)
         numOldCoreReactions = len(rm.core.reactions)
@@ -1104,55 +1116,52 @@ class ModelMatcher():
         numOldEdgeReactions = len(rm.edge.reactions)
         reactionsMovedFromEdge = []
         newReactionList = []; newSpeciesList = []
-        
-        for obj in newObject:
             
-            rm.newReactionList = []; rm.newSpeciesList = []
-            newReactions = []
-            pdepNetwork = None
-            objectWasInEdge = False
-        
-            if isinstance(obj, Species):
+        rm.newReactionList = []; rm.newSpeciesList = []
+        newReactions = []
+        pdepNetwork = None
+        objectWasInEdge = False
 
-                newSpecies = obj
-                objectWasInEdge = newSpecies in rm.edge.species
-                
-                if not newSpecies.reactive:
-                    logging.info('NOT generating reactions for unreactive species {0}'.format(newSpecies))
-                else:
-                    logging.info('Adding species {0} to model core'.format(newSpecies))
-                    display(newSpecies) # if running in IPython --pylab mode, draws the picture!
-                    
-                    # Find reactions involving the new species as unimolecular reactant
-                    # or product (e.g. A <---> products)
-                    newReactions.extend(rm.react(database, newSpecies))
-                    # Find reactions involving the new species as bimolecular reactants
-                    # or products with other core species (e.g. A + B <---> products)
-                    # This is the primary differenct from a standard enlarge, where
-                    # normally it would react with all things in the core, this just
-                    # finds reactions in the chemkin file and creates those
-                    for coreSpecies in rm.core.species:
-                        if coreSpecies.reactive:
-                            newReactions.extend(rm.react(database, newSpecies, coreSpecies))
-                    # Find reactions involving the new species as bimolecular reactants
-                    # or products with itrm (e.g. A + A <---> products)
-                    newReactions.extend(rm.react(database, newSpecies, newSpecies))
-    
-                # Add new species
-                reactionsMovedFromEdge = rm.addSpeciesToCore(newSpecies)
-                
-                # Process the new reactions
-                # While adding to core/edge/pdep network, this clears atom labels:
-                rm.processNewReactions(newReactions, newSpecies, pdepNetwork)
-            
-            if isinstance(obj, Species) and objectWasInEdge:
-                # moved one species from edge to core
-                numOldEdgeSpecies -= 1
-                # moved these reactions from edge to core
-                numOldEdgeReactions -= len(reactionsMovedFromEdge)
-            
-            newSpeciesList.extend(rm.newSpeciesList)
-            newReactionList.extend(rm.newReactionList)
+        newSpecies = obj
+        
+        objectWasInEdge = newSpecies in rm.edge.species
+        
+        if not newSpecies.reactive:
+            logging.info('NOT generating reactions for unreactive species {0}'.format(newSpecies))
+        else:
+            logging.info('Adding species {0} to model core'.format(newSpecies))
+       
+            # Find reactions involving the new species as unimolecular reactant
+            # or product (e.g. A <---> products)
+            newReactions.extend(rm.react(database, newSpecies))
+            # Find reactions involving the new species as bimolecular reactants
+            # or products with other core species (e.g. A + B <---> products)
+            # This is the primary differenct from a standard enlarge, where
+            # normally it would react with all things in the core, this just
+            # finds reactions in the chemkin file and creates those
+            for coreSpecies in rm.core.species:
+                if coreSpecies.reactive:
+                    if self.speciesReactAccordingToChemkin(newSpecies, coreSpecies):
+                        newReactions.extend(rm.react(database, newSpecies, coreSpecies))
+            # Find reactions involving the new species as bimolecular reactants
+            # or products with itrm (e.g. A + A <---> products)
+            newReactions.extend(rm.react(database, newSpecies, newSpecies))
+
+        # Add new species
+        reactionsMovedFromEdge = rm.addSpeciesToCore(newSpecies)
+        
+        # Process the new reactions
+        # While adding to core/edge/pdep network, this clears atom labels:
+        rm.processNewReactions(newReactions, newSpecies, pdepNetwork)
+        
+        if objectWasInEdge:
+            # moved one species from edge to core
+            numOldEdgeSpecies -= 1
+            # moved these reactions from edge to core
+            numOldEdgeReactions -= len(reactionsMovedFromEdge)
+        
+        newSpeciesList.extend(rm.newSpeciesList)
+        newReactionList.extend(rm.newReactionList)
             
         # Generate thermodynamics of new species
         logging.info('Generating thermodynamics for new species...')
