@@ -835,10 +835,21 @@ class ModelMatcher():
         if rmgSpecies not in d: d[rmgSpecies] = list()
         d[rmgSpecies].append((libraryName, librarySpeciesName))
 
-    def clearThermoMatch(self, chemkinLabel):
-        """Clear any thermo matches for that chemkin label"""
+    def clearThermoMatch(self, chemkinLabel, rmgName=None):
+        """
+        Clear any thermo matches for that chemkin label,
+        or only that rmgLabel if supplied.
+        """
         if chemkinLabel in self.thermoMatches:
-            del(self.thermoMatches[chemkinLabel])
+            if rmgName is None:
+                del(self.thermoMatches[chemkinLabel])
+                return
+            for rmgSpecies in self.thermoMatches[chemkinLabel].keys():
+                if str(rmgSpecies) == rmgName:
+                    del(self.thermoMatches[chemkinLabel][rmgSpecies])
+            if len(self.thermoMatches[chemkinLabel]) == 0:
+                del(self.thermoMatches[chemkinLabel])
+                
 
     def setMatch(self, chemkinLabel, rmgSpecies):
         """Store a match, once you've identified it"""
@@ -1345,7 +1356,7 @@ $('#unconfirmedspecies_count').html("("+json.unconfirmed+")");
             for rmgSpec, libraries in rmgSpecsDict.iteritems():
                 libs = '<br>'.join(["{spec} ({lib})".format(spec=formatSpec(spec), lib=lib) for (lib, spec) in libraries])
                 output.append("<tr><td>{label}</td><td>{img}</td><td>{libs}</td>".format(img=img(rmgSpec), label=label, libs=libs))
-                output.append("<td><a href='/confirmthermomatch.html?ckLabel={ckl}&rmgLabel={rmgl}'>confirm</a></td>".format(ckl=urllib2.quote(chemkinLabel), rmgl=urllib2.quote(str(rmgSpec))))
+                output.append("<td><a href='/confirmthermomatch.html?ckLabel={ckl}&rmgName={rmgl}'>confirm</a></td>".format(ckl=urllib2.quote(chemkinLabel), rmgl=urllib2.quote(str(rmgSpec))))
                 output.append("</tr>")
         output.extend(['</table>', self.html_tail])
         return ('\n'.join(output))
@@ -1600,9 +1611,13 @@ $('#unconfirmedspecies_count').html("("+json.unconfirmed+")");
         raise cherrypy.HTTPRedirect(referer)
 
     @cherrypy.expose
-    def confirmthermomatch_html(self, ckLabel=None, rmgLabel=None):
-        rmgSpecies = self.speciesDict_rmg[rmgLabel]
-        self.clearThermoMatch(chemkinLabel)
+    def confirmthermomatch_html(self, ckLabel=None, rmgName=None):
+        for rmgSpecies in self.thermoMatches[ckLabel].iterkeys():
+            if str(rmgSpecies) == rmgName:
+                break
+        else:
+            return "Trying to confirm something that wasn't a thermo match"
+        self.clearThermoMatch(ckLabel, None)
         self.manualMatchesToProcess.append((str(ckLabel), rmgSpecies))
         self.clearTentativeMatch(ckLabel, None)
         with open(self.known_species_file, 'a') as f:
