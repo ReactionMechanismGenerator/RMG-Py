@@ -1316,6 +1316,7 @@ $('#identified_count').html("("+json.confirmed+")");
 $('#tentative_count').html("("+json.tentative+")");
 $('#unmatchedreactions_count').html("("+json.unmatchedreactions+")");
 $('#unconfirmedspecies_count').html("("+json.unconfirmed+")");
+$('#thermomatches_count').html("("+json.thermomatches+")");
 }
 </script>
 <h1>Mechanism importer</h1>
@@ -1326,7 +1327,7 @@ $('#unconfirmedspecies_count').html("("+json.unconfirmed+")");
 <li><a href="votes.html">Voting reactions.</a></li>
 <li><a href="unmatchedreactions.html">Unmatched reactions.</a> <span id="unmatchedreactions_count"></span></li>
 <li><a href="unconfirmedspecies.html">Unconfirmed species.</a> <span id="unconfirmedspecies_count"></span></li>
-<li><a href="thermomatches.html">Unconfirmed thermodynamics matches.</a></li>
+<li><a href="thermomatches.html">Unconfirmed thermodynamics matches.</a> <span id="thermomatches_count"></span></li>
 <li><a href="thermo.py">Download thermo library.</a></li>
 </ul>
         """ + location + self.html_tail
@@ -1667,6 +1668,7 @@ $('#unconfirmedspecies_count').html("("+json.unconfirmed+")");
         tentative = len(self.tentativeMatches)
         unmatchedreactions = len(self.chemkinReactionsUnmatched)
         totalreactions = len(self.chemkinReactions)
+        thermomatches = len(self.thermoMatches)
         answer = {'processed': identified - unprocessed,
                   'unprocessed': unprocessed,
                   'confirmed': identified,
@@ -1675,7 +1677,8 @@ $('#unconfirmedspecies_count').html("("+json.unconfirmed+")");
                   'unconfirmed': total - identified,
                   'total': total,
                   'unmatchedreactions': unmatchedreactions,
-                  'totalreactions': totalreactions
+                  'totalreactions': totalreactions,
+                  'thermomatches': thermomatches,
         }
         return json.dumps(answer)
 
