@@ -92,8 +92,9 @@ def readThermoEntry(entry, Tmin=0, Tint=0, Tmax=0):
                     count = int(float(count))
                 except ValueError:
                     logging.info("Trouble reading line '{0}' element segment '{1}'".format(lines[0].strip(),lines[0][i:i+5]))
-                    if i == 74 and count == '' and re.match('\.?0*', element):
-                        logging.info("Assuming it's spillover from Tint, and ignoring.")
+                    if count == '' and re.match('\.?0*', element):
+                        if i == 74: logging.info("Assuming it's spillover from Tint, and ignoring.")
+                        else: logging.warning("Assuming it's not meant to be there, although it would be good to fix the chemkin file.")
                         count = 0
                     else:
                         raise
