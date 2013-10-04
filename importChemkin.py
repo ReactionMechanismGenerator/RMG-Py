@@ -1078,7 +1078,139 @@ class ModelMatcher():
                         logging.info("    {0!s}     //    {1!s}".format(rxn[0], rxn[1]))
                     else:
                         logging.info("    {0!s}".format(rxn))
+                        
+    def limitEnlarge(self, newObject):
+        """
+        Enlarges the rmg reaction model, but only reacts the new species with
+        species it is predicted to react with in the chemkin reaction file
+        
+        Follows a similar procedure to rmg.CoreEdgeReactionModel.enlarge
+        """
+        rm = self.rmg_object.reactionModel
+        
+        import rmgpy.data.rmg
+        import itertools
+        from rmgpy.rmg.pdep import PDepNetwork
+        from rmgpy.data.kinetics import TemplateReaction, DepositoryReaction, KineticsData
+        
+        database = rmgpy.data.rmg.database
+        
+        if not isinstance(newObject, list):
+            newObject = [newObject]
+        
+        numOldCoreSpecies = len(rm.core.species)
+        numOldCoreReactions = len(rm.core.reactions)
+        numOldEdgeSpecies = len(rm.edge.species)
+        numOldEdgeReactions = len(rm.edge.reactions)
+        reactionsMovedFromEdge = []
+        newReactionList = []; newSpeciesList = []
+        
+        for obj in newObject:
+            
+            rm.newReactionList = []; rm.newSpeciesList = []
+            newReactions = []
+            pdepNetwork = None
+            objectWasInEdge = False
+        
+            if isinstance(obj, Species):
 
+                newSpecies = obj
+                objectWasInEdge = newSpecies in rm.edge.species
+                
+                if not newSpecies.reactive:
+                    logging.info('NOT generating reactions for unreactive species {0}'.format(newSpecies))
+                else:
+                    logging.info('Adding species {0} to model core'.format(newSpecies))
+                    display(newSpecies) # if running in IPython --pylab mode, draws the picture!
+                    
+                    # Find reactions involving the new species as unimolecular reactant
+                    # or product (e.g. A <---> products)
+                    newReactions.extend(rm.react(database, newSpecies))
+                    # Find reactions involving the new species as bimolecular reactants
+                    # or products with other core species (e.g. A + B <---> products)
+                    # This is the primary differenct from a standard enlarge, where
+                    # normally it would react with all things in the core, this just
+                    # finds reactions in the chemkin file and creates those
+                    for coreSpecies in rm.core.species:
+                        if coreSpecies.reactive:
+                            newReactions.extend(rm.react(database, newSpecies, coreSpecies))
+                    # Find reactions involving the new species as bimolecular reactants
+                    # or products with itrm (e.g. A + A <---> products)
+                    newReactions.extend(rm.react(database, newSpecies, newSpecies))
+    
+                # Add new species
+                reactionsMovedFromEdge = rm.addSpeciesToCore(newSpecies)
+                
+                # Process the new reactions
+                # While adding to core/edge/pdep network, this clears atom labels:
+                rm.processNewReactions(newReactions, newSpecies, pdepNetwork)
+            
+            if isinstance(obj, Species) and objectWasInEdge:
+                # moved one species from edge to core
+                numOldEdgeSpecies -= 1
+                # moved these reactions from edge to core
+                numOldEdgeReactions -= len(reactionsMovedFromEdge)
+            
+            newSpeciesList.extend(rm.newSpeciesList)
+            newReactionList.extend(rm.newReactionList)
+            
+        # Generate thermodynamics of new species
+        logging.info('Generating thermodynamics for new species...')
+        for spec in newSpeciesList:
+            spec.generateThermoData(database, quantumMechanics=rm.quantumMechanics)
+        
+        # Generate kinetics of new reactions
+        logging.info('Generating kinetics for new reactions...')
+        for reaction in newReactionList:
+            # If the reaction already has kinetics (e.g. from a library),
+            # assume the kinetics are satisfactory
+            if reaction.kinetics is None:
+                # Set the reaction kinetics
+                kinetics, source, entry, isForward = rm.generateKinetics(reaction)
+                reaction.kinetics = kinetics
+                # Flip the reaction direction if the kinetics are defined in the reverse direction
+                if not isForward:
+                    reaction.reactants, reaction.products = reaction.products, reaction.reactants
+                    reaction.pairs = [(p,r) for r,p in reaction.pairs]
+                if reaction.family.ownReverse and hasattr(reaction,'reverse'):
+                    if not isForward:
+                        reaction.template = reaction.reverse.template
+                    # We're done with the "reverse" attribute, so delete it to save a bit of memory
+                    delattr(reaction,'reverse')
+                    
+        # For new reactions, convert ArrheniusEP to Arrhenius, and fix barrier heights.
+        # rm.newReactionList only contains *actually* new reactions, all in the forward direction.
+        for reaction in newReactionList:
+            # convert KineticsData to Arrhenius forms
+            if isinstance(reaction.kinetics, KineticsData):
+                reaction.kinetics = reaction.kinetics.toArrhenius()
+            #  correct barrier heights of estimated kinetics
+            if isinstance(reaction, TemplateReaction) or isinstance(reaction, DepositoryReaction): # i.e. not LibraryReaction
+                reaction.fixBarrierHeight() # also converts ArrheniusEP to Arrhenius.
+                
+            if rm.pressureDependence and reaction.isUnimolecular():
+                # If this is going to be run through pressure dependence code,
+                # we need to make sure the barrier is positive.
+                reaction.fixBarrierHeight(forcePositive=True)
+                        
+        # Check new core reactions for Chemkin duplicates
+        newCoreReactions = rm.core.reactions[numOldCoreReactions:]
+        checkedCoreReactions = rm.core.reactions[:numOldCoreReactions]
+        from rmgpy.chemkin import markDuplicateReaction
+        for rxn in newCoreReactions:
+            markDuplicateReaction(rxn, itertools.chain(checkedCoreReactions,rm.outputReactionList) )
+            checkedCoreReactions.append(rxn)
+        
+        rm.printEnlargeSummary(
+            newCoreSpecies=rm.core.species[numOldCoreSpecies:],
+            newCoreReactions=rm.core.reactions[numOldCoreReactions:],
+            reactionsMovedFromEdge=reactionsMovedFromEdge,
+            newEdgeSpecies=rm.edge.species[numOldEdgeSpecies:],
+            newEdgeReactions=rm.edge.reactions[numOldEdgeReactions:]
+        )
+
+        logging.info('')
+    
     def main(self):
         """This is the main matcher function that does the whole thing"""
         args = self.args
@@ -1171,7 +1303,7 @@ recommended = False
             logging.info("Processing species {0}...".format(labelToProcess))
 
             # Add species to RMG core.
-            rm.enlarge(self.speciesDict_rmg[labelToProcess])
+            self.limitEnlarge(self.speciesDict_rmg[labelToProcess])
 
             # do a partial prune of new reactions that definitely aren't going to be useful
             reactionsToPrune = set()
