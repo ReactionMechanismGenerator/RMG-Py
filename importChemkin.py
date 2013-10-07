@@ -243,6 +243,49 @@ class ModelMatcher():
         self.chemkinReactions = reactionList
         self.chemkinReactionsUnmatched = self.chemkinReactions[:]  # make a copy
 
+    def pruneInertSpecies(self):
+        """
+        Remove from consideration any chemkin species that don't participate in any reactions
+        """
+        reactiveSpecies = set()
+        reactiveMolecules = set()
+        for s in ['N#N', '[Ar]', ]:
+            reactiveMolecules.add(Molecule(SMILES=s))
+        for reaction in self.chemkinReactions:
+            for species in reaction.reactants:
+                reactiveSpecies.add(species)
+            for species in reaction.products:
+                reactiveSpecies.add(species)
+            if isinstance(reaction.kinetics, rmgpy.kinetics.PDepKineticsModel):
+                for molecule in reaction.kinetics.efficiencies.keys():
+                    reactiveMolecules.add(molecule)
+        unreactiveSpecies = []
+        for species in self.speciesList:
+            if species not in reactiveSpecies:
+                label = species.label
+                if label in self.identified_labels:
+                    thisMolecule = self.speciesDict_rmg[label].molecule[0]
+                    for reactiveMolecule in reactiveMolecules:
+                        if reactiveMolecule.isIsomorphic(thisMolecule):
+                            break
+                    else:
+                        unreactiveSpecies.append(species)
+                else:
+                    unreactiveSpecies.append(species)
+        for species in unreactiveSpecies:
+            label = species.label
+            logging.info("Removing species {0} because it doesn't react".format(label))
+            self.speciesList.remove(species)
+            del(self.speciesDict[label])
+            if label in self.speciesDict_rmg:
+                del(self.speciesDict_rmg[label])
+            self.clearThermoMatch(label)
+            if label in self.identified_labels:
+                self.identified_labels.remove(label)
+            if label in self.identified_unprocessed_labels:
+                self.identified_unprocessed_labels.remove(label)
+            del(self.formulaDict[label])
+        logging.info("Removed {0} species that did not react.".format(len(unreactiveSpecies)))
 
     def loadKnownSpecies(self, known_species_file):
         """
@@ -1300,6 +1343,8 @@ recommended = False
         self.loadReactions(reactions_file)
         chemkinReactionsUnmatched = self.chemkinReactionsUnmatched
         votes = self.votes
+
+        self.pruneInertSpecies()
 
         # Let's put things in the core by size, smallest first.
         self.identified_unprocessed_labels.sort(key=lambda x: newSpeciesDict[x].molecularWeight.value_si)
