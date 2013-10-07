@@ -338,7 +338,7 @@ class ModelMatcher():
             'triplet[CH2]': "1 C 2T",
             'singletC=[C]': "1 C 0 {2,D}\n2 C 2S {1,D}",
             'tripletC=[C]': "1 C 0 {2,D}\n2 C 2T {1,D}",
-            'singlet[CH]O': "1 C 2T {2,S}\n2 O 0  {1,S}",
+            'singlet[CH]O': "1 C 2S {2,S}\n2 O 0  {1,S}",
             'triplet[CH]O': "1 C 2T {2,S}\n2 O 0  {1,S}",
             }
 
