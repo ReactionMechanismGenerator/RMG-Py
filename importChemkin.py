@@ -1557,13 +1557,26 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
     @cherrypy.expose
     def tentative_html(self):
         img = self._img
-        output = [self.html_head, '<h1>{0} Tentative Matches</h1><table style="width:500px">'.format(len(self.tentativeMatches))]
+        output = [self.html_head, '<h1>{0} Tentative Matches</h1><table style="width:800px">'.format(len(self.tentativeMatches))]
+        output.append("<tr><th>Name</th><th>Molecule</th><th>&Delta;H&deg;<sub>f</sub>(298K)</th><th>Matching Thermo</th></tr>")
         for (chemkinLabel, rmgSpec, deltaH) in self.tentativeMatches:
             output.append("<tr><td>{label}</td><td>{img}</td><td title='{Hsource}'>{delH:.1f} kJ/mol</td>".format(img=img(rmgSpec), label=chemkinLabel, delH=deltaH, Hsource=rmgSpec.thermo.comment))
+            output.append("<td>")
+            try:
+                for libraryName, librarySpeciesName in self.thermoMatches[chemkinLabel][rmgSpec]:
+                    output.append("<span title='{spec}' class='{match}'>{lib}</span><br>".format(
+                                        lib=libraryName,
+                                        spec=librarySpeciesName,
+                                        match=('goodmatch' if librarySpeciesName.upper() == chemkinLabel.upper() else 'badmatch'),
+                                        ))
+            except KeyError:
+                output.append('-')
+            output.append("</td>")
             output.append("<td><a href='/confirm.html?ckLabel={ckl}&rmgLabel={rmgl}'>confirm</a></td>".format(ckl=urllib2.quote(chemkinLabel), rmgl=urllib2.quote(str(rmgSpec))))
             output.append("<td><a href='/edit.html?ckLabel={ckl}&SMILES={smi}'>edit</a></td>".format(ckl=urllib2.quote(chemkinLabel), smi=urllib2.quote(rmgSpec.molecule[0].toSMILES())))
             output.append("<td><a href='/clear.html?ckLabel={ckl}'>clear</a></td>".format(ckl=urllib2.quote(chemkinLabel)))
             output.append("<td><a href='/votes.html#{0}'>check votes</a></td>".format(urllib2.quote(chemkinLabel)) if chemkinLabel in self.votes else "<td>No votes yet.</td>")
+
             output.append("</tr>")
         output.extend(['</table>', self.html_tail])
         return ('\n'.join(output))
@@ -1702,6 +1715,16 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
                 votingReactions = possibleMatches[matchingSpecies]
                 output.append("<a href='/match.html?ckLabel={ckl}&rmgLabel={rmgl}'>{img}</a>  according to {n} reactions. ".format(ckl=urllib2.quote(chemkinLabel), rmgl=urllib2.quote(str(matchingSpecies)), img=img(matchingSpecies), n=len(votingReactions)))
                 output.append("  Enthalpies at 298K differ by <span title='{Hsource}'>{0:.1f} kJ/mol</span><br>".format(self.getEnthalpyDiscrepancy(chemkinLabel, matchingSpecies), Hsource=matchingSpecies.thermo.comment))
+                try:
+                    for libraryName, librarySpeciesName in self.thermoMatches[chemkinLabel][matchingSpecies]:
+                        output.append("<span title='{spec}' class='{match}'>{lib}</span>, ".format(
+                                            lib=libraryName,
+                                            spec=librarySpeciesName,
+                                            match=('goodmatch' if librarySpeciesName.upper() == chemkinLabel.upper() else 'badmatch'),
+                                            ))
+                    output.append("have the same thermo.<br>")
+                except KeyError:
+                    pass
                 output.append('<table  style="width:800px">')
                 for n, rxn in enumerate(votingReactions):
                     if isinstance(rxn, tuple):
