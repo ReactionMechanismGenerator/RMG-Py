@@ -1495,7 +1495,7 @@ recommended = False
         """Get the html tag for the image of a species"""
         imagesPath = 'img'  # to serve via cherryPy
         #imagesPath = 'file://'+os.path.abspath(os.path.join(self.args.output_directory,'species')) # to get from disk
-        return "<img src='{1}/{0!s}.png' title='{0}'>".format(urllib2.quote(str(species)), imagesPath)
+        return "<img src='{path}/{file!s}.png' title='{title}'>".format(file=urllib2.quote(str(species)), path=imagesPath, title=str(species))
 
     @cherrypy.expose
     def index(self):
