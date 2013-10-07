@@ -173,6 +173,7 @@ class ModelMatcher():
         self.speciesDict_rmg = {}
         self.chemkinReactions = []
         self.chemkinReactionsUnmatched = []
+        self.chemkinReactionsDict = {}
         self.suggestedMatches = {}
         self.votes = {}
         self.prunedVotes = {}
@@ -242,6 +243,18 @@ class ModelMatcher():
         logging.info("Read {0} reactions from chemkin file.".format(len(reactionList)))
         self.chemkinReactions = reactionList
         self.chemkinReactionsUnmatched = self.chemkinReactions[:]  # make a copy
+
+        # Populate the self.chemkinReactionsDict such that
+        # self.chemkinReactionsDict[chemkinLabel] = {set of reactions it is part of}
+        chemkinReactionsDict = self.chemkinReactionsDict
+        for chemkin_reaction in self.chemkinReactions:
+            for reacting in [chemkin_reaction.reactants, chemkin_reaction.products]:
+                for ckSpecies in reacting:
+                    label = ckSpecies.label
+                    if label not in chemkinReactionsDict:
+                        chemkinReactionsDict[label] = set()
+                    chemkinReactionsDict[label].add(chemkin_reaction)
+
 
     def pruneInertSpecies(self):
         """
@@ -640,16 +653,27 @@ class ModelMatcher():
 
         # should have already returned if it matches forwards, or we're not allowed to match backwards
         return  (reverseReactantsMatch and reverseProductsMatch)
-    
-    
+
+
     def speciesReactAccordingToChemkin(self, rmgSpecies1, rmgSpecies2):
-        for chemkin_reaction in self.chemkinReactions:
+        """
+        Return true if the two species have been identified and are on 
+        the same side of at least one chemkin reaction. i.e. we know that
+        according to the chemkin file, they react with each other.
+        """
+        try:
+            set1 = self.chemkinReactionsDict[rmgSpecies1.label]
+            set2 = self.chemkinReactionsDict[rmgSpecies2.label]
+        except KeyError:
+            # one of the rmg species has not yet been given a label corresponding to a chemkin species
+            # therefore it has not been identified
+            return False
+        for chemkin_reaction in set1.intersection(set2):
             for reacting in [chemkin_reaction.reactants, chemkin_reaction.products]:
                 matchedSpecies = set()
                 for ckSpecies in reacting:
                     if ckSpecies.label in self.identified_labels:
-                        matchedSpecies.add( self.speciesDict_rmg[ckSpecies.label] )
-
+                        matchedSpecies.add(self.speciesDict_rmg[ckSpecies.label])
                 if rmgSpecies1 in matchedSpecies and rmgSpecies2 in matchedSpecies:
                     return True
         return False
@@ -970,8 +994,6 @@ class ModelMatcher():
 
         self.drawSpecies(rmgSpecies)
 
-
-
         entry = Entry()
         entry.index = len(self.identified_labels)
         entry.label = chemkinLabel
@@ -1139,7 +1161,7 @@ class ModelMatcher():
                         logging.info("    {0!s}     //    {1!s}".format(rxn[0], rxn[1]))
                     else:
                         logging.info("    {0!s}".format(rxn))
-                        
+
     def limitEnlarge(self, newObject):
         """
         Enlarges the rmg reaction model, but only reacts the new species with
@@ -1148,37 +1170,37 @@ class ModelMatcher():
         Follows a similar procedure to rmg.CoreEdgeReactionModel.enlarge
         """
         rm = self.rmg_object.reactionModel
-        
+
         import rmgpy.data.rmg
         import itertools
         from rmgpy.rmg.pdep import PDepNetwork
         from rmgpy.data.kinetics import TemplateReaction, DepositoryReaction, KineticsData
-        
+
         database = rmgpy.data.rmg.database
-        
+
         obj = newObject
-        
+
         numOldCoreSpecies = len(rm.core.species)
         numOldCoreReactions = len(rm.core.reactions)
         numOldEdgeSpecies = len(rm.edge.species)
         numOldEdgeReactions = len(rm.edge.reactions)
         reactionsMovedFromEdge = []
         newReactionList = []; newSpeciesList = []
-            
+
         rm.newReactionList = []; rm.newSpeciesList = []
         newReactions = []
         pdepNetwork = None
         objectWasInEdge = False
 
         newSpecies = obj
-        
+
         objectWasInEdge = newSpecies in rm.edge.species
-        
+
         if not newSpecies.reactive:
             logging.info('NOT generating reactions for unreactive species {0}'.format(newSpecies))
         else:
             logging.info('Adding species {0} to model core'.format(newSpecies))
-       
+
             # Find reactions involving the new species as unimolecular reactant
             # or product (e.g. A <---> products)
             newReactions.extend(rm.react(database, newSpecies))
@@ -1197,25 +1219,25 @@ class ModelMatcher():
 
         # Add new species
         reactionsMovedFromEdge = rm.addSpeciesToCore(newSpecies)
-        
+
         # Process the new reactions
         # While adding to core/edge/pdep network, this clears atom labels:
         rm.processNewReactions(newReactions, newSpecies, pdepNetwork)
-        
+
         if objectWasInEdge:
             # moved one species from edge to core
             numOldEdgeSpecies -= 1
             # moved these reactions from edge to core
             numOldEdgeReactions -= len(reactionsMovedFromEdge)
-        
+
         newSpeciesList.extend(rm.newSpeciesList)
         newReactionList.extend(rm.newReactionList)
-            
+
         # Generate thermodynamics of new species
         logging.info('Generating thermodynamics for new species...')
         for spec in newSpeciesList:
             spec.generateThermoData(database, quantumMechanics=rm.quantumMechanics)
-        
+
         # Generate kinetics of new reactions
         logging.info('Generating kinetics for new reactions...')
         for reaction in newReactionList:
@@ -1228,13 +1250,13 @@ class ModelMatcher():
                 # Flip the reaction direction if the kinetics are defined in the reverse direction
                 if not isForward:
                     reaction.reactants, reaction.products = reaction.products, reaction.reactants
-                    reaction.pairs = [(p,r) for r,p in reaction.pairs]
-                if reaction.family.ownReverse and hasattr(reaction,'reverse'):
+                    reaction.pairs = [(p, r) for r, p in reaction.pairs]
+                if reaction.family.ownReverse and hasattr(reaction, 'reverse'):
                     if not isForward:
                         reaction.template = reaction.reverse.template
                     # We're done with the "reverse" attribute, so delete it to save a bit of memory
-                    delattr(reaction,'reverse')
-                    
+                    delattr(reaction, 'reverse')
+
         # For new reactions, convert ArrheniusEP to Arrhenius, and fix barrier heights.
         # rm.newReactionList only contains *actually* new reactions, all in the forward direction.
         for reaction in newReactionList:
@@ -1242,22 +1264,22 @@ class ModelMatcher():
             if isinstance(reaction.kinetics, KineticsData):
                 reaction.kinetics = reaction.kinetics.toArrhenius()
             #  correct barrier heights of estimated kinetics
-            if isinstance(reaction, TemplateReaction) or isinstance(reaction, DepositoryReaction): # i.e. not LibraryReaction
-                reaction.fixBarrierHeight() # also converts ArrheniusEP to Arrhenius.
-                
+            if isinstance(reaction, TemplateReaction) or isinstance(reaction, DepositoryReaction):  # i.e. not LibraryReaction
+                reaction.fixBarrierHeight()  # also converts ArrheniusEP to Arrhenius.
+
             if rm.pressureDependence and reaction.isUnimolecular():
                 # If this is going to be run through pressure dependence code,
                 # we need to make sure the barrier is positive.
                 reaction.fixBarrierHeight(forcePositive=True)
-                        
+
         # Check new core reactions for Chemkin duplicates
         newCoreReactions = rm.core.reactions[numOldCoreReactions:]
         checkedCoreReactions = rm.core.reactions[:numOldCoreReactions]
         from rmgpy.chemkin import markDuplicateReaction
         for rxn in newCoreReactions:
-            markDuplicateReaction(rxn, itertools.chain(checkedCoreReactions,rm.outputReactionList) )
+            markDuplicateReaction(rxn, itertools.chain(checkedCoreReactions, rm.outputReactionList))
             checkedCoreReactions.append(rxn)
-        
+
         rm.printEnlargeSummary(
             newCoreSpecies=rm.core.species[numOldCoreSpecies:],
             newCoreReactions=rm.core.reactions[numOldCoreReactions:],
@@ -1267,7 +1289,7 @@ class ModelMatcher():
         )
 
         logging.info('')
-    
+
     def main(self):
         """This is the main matcher function that does the whole thing"""
         args = self.args
@@ -1357,7 +1379,7 @@ recommended = False
         self.identified_unprocessed_labels.sort(key=lambda x: newSpeciesDict[x].reactive)
         reactionsToCheck = set()
         while self.identified_unprocessed_labels:
-            
+
             labelToProcess = self.identified_unprocessed_labels.pop(0)
             logging.info("Processing species {0}...".format(labelToProcess))
 
