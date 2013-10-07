@@ -407,6 +407,9 @@ class ModelMatcher():
                     continue
                 path = os.path.join(root, filename)
                 logging.info("I think I found one at {0}".format(path))
+                if os.path.split(path)[0] == os.path.split(os.path.abspath(args.thermo))[0]:
+                    logging.info("But it's the model currently being imported, so not loading.")
+                    break
                 library = rmgpy.data.thermo.ThermoLibrary()
                 library.load(path, rmg.database.thermo.local_context, rmg.database.thermo.global_context)
                 library.label = root.split('/')[-1]
