@@ -359,7 +359,7 @@ class CoreEdgeReactionModel:
         # Return an existing species if a match is found
         formula = molecule.getFormula()
         try:
-             speciesList = self.speciesDict[formula]
+            speciesList = self.speciesDict[formula]
         except KeyError:
             return False, None
         for spec in speciesList:

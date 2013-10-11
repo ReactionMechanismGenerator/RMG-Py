@@ -51,7 +51,8 @@ class Gaussian:
         # submits the input file to Gaussian
         process = Popen([self.executablePath, self.inputFilePath, self.outputFilePath])
         process.communicate()# necessary to wait for executable termination!
-        
+        import time
+        time.sleep(1)
         return self.verifyOutputFile()
         
     def verifyOutputFile(self):
