@@ -177,6 +177,21 @@ class RMG:
         if self.quantumMechanics:
             self.quantumMechanics.setDefaultOutputDirectory(self.outputDirectory)
             self.reactionModel.quantumMechanics = self.quantumMechanics
+            
+    def loadThermoInput(self, path=None):
+        """
+        Load an Thermo Estimation job from a thermo input file located at `inputFile`, or
+        from the `inputFile` attribute if not given as a parameter.
+        """
+        from input import readThermoInputFile
+        if path is None: path = self.inputFile
+        if not self.outputDirectory:
+            self.outputDirectory = os.path.dirname(path)
+        readThermoInputFile(path, self)
+        
+        if self.quantumMechanics:
+            self.quantumMechanics.setDefaultOutputDirectory(self.outputDirectory)
+            self.reactionModel.quantumMechanics = self.quantumMechanics
         
     def checkInput(self):
         """
