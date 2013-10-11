@@ -1179,6 +1179,50 @@ def writeThermoEntry(species, verbose = True):
 
 ################################################################################
 
+def writeReactionString(reaction, javaLibrary = False):
+    """
+    Return a reaction string in chemkin format.
+    """
+    kinetics = reaction.kinetics
+    
+    if javaLibrary:
+        thirdBody = ''
+        if kinetics.isPressureDependent():
+            if isinstance(kinetics, ThirdBody) and not isinstance(kinetics, Lindemann) and not isinstance(kinetics, Troe):
+                thirdBody = ' + M'
+            elif isinstance(kinetics, PDepArrhenius):
+                thirdBody = ''
+            elif isinstance(kinetics, Chebyshev):
+                thirdBody = ''
+            else:
+                thirdBody = ' (+M)'
+        
+        reaction_string = ' + '.join([getSpeciesIdentifier(reactant) for reactant in reaction.reactants])
+        reaction_string += thirdBody
+        reaction_string += ' => ' if not reaction.reversible else ' = '
+        reaction_string += ' + '.join([getSpeciesIdentifier(product) for product in reaction.products])
+        reaction_string += thirdBody
+    
+    else:
+        thirdBody = ''
+        if kinetics.isPressureDependent():
+            if isinstance(kinetics, ThirdBody) and not isinstance(kinetics, Lindemann) and not isinstance(kinetics, Troe):
+                thirdBody = '+M'
+            elif isinstance(kinetics, PDepArrhenius):
+                thirdBody = ''
+            else:
+                thirdBody = '(+M)'
+        
+        reaction_string = '+'.join([getSpeciesIdentifier(reactant) for reactant in reaction.reactants])
+        reaction_string += thirdBody
+        reaction_string += '=>' if not reaction.reversible else '='
+        reaction_string += '+'.join([getSpeciesIdentifier(product) for product in reaction.products])
+        reaction_string += thirdBody
+        
+    return reaction_string
+
+################################################################################
+
 def writeKineticsEntry(reaction, speciesList, verbose = True, javaLibrary = False):
     """
     Return a string representation of the reaction as used in a Chemkin
@@ -1235,41 +1279,7 @@ def writeKineticsEntry(reaction, speciesList, verbose = True, javaLibrary = Fals
     
     kinetics = reaction.kinetics
     numReactants = len(reaction.reactants)
-    
-    if javaLibrary:
-        thirdBody = ''
-        if kinetics.isPressureDependent():
-            if isinstance(kinetics, ThirdBody) and not isinstance(kinetics, Lindemann) and not isinstance(kinetics, Troe):
-                thirdBody = ' + M'
-            elif isinstance(kinetics, PDepArrhenius):
-                thirdBody = ''
-            elif isinstance(kinetics, Chebyshev):
-                thirdBody = ''
-            else:
-                thirdBody = ' (+M)'
-        
-        reaction_string = ' + '.join([getSpeciesIdentifier(reactant) for reactant in reaction.reactants])
-        reaction_string += thirdBody
-        reaction_string += ' => ' if not reaction.reversible else ' = '
-        reaction_string += ' + '.join([getSpeciesIdentifier(product) for product in reaction.products])
-        reaction_string += thirdBody
-    
-    else:
-        thirdBody = ''
-        if kinetics.isPressureDependent():
-            if isinstance(kinetics, ThirdBody) and not isinstance(kinetics, Lindemann) and not isinstance(kinetics, Troe):
-                thirdBody = '+M'
-            elif isinstance(kinetics, PDepArrhenius):
-                thirdBody = ''
-            else:
-                thirdBody = '(+M)'
-        
-        reaction_string = '+'.join([getSpeciesIdentifier(reactant) for reactant in reaction.reactants])
-        reaction_string += thirdBody
-        reaction_string += '=>' if not reaction.reversible else '='
-        reaction_string += '+'.join([getSpeciesIdentifier(product) for product in reaction.products])
-        reaction_string += thirdBody
-    
+    reaction_string = writeReactionString(reaction, javaLibrary)    
     
     string += '{0!s:<51} '.format(reaction_string)
 

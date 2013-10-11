@@ -153,14 +153,19 @@ class Reaction:
                            self.pairs
                            ))
 
-    def toChemkin(self, speciesList):
+    def toChemkin(self, speciesList=None, kinetics=True):
         """
         Return the chemkin-formatted string for this reaction.
         
-        Requires the `speciesList` to figure out third body colliders.
+        If `kinetics` is set to True, the chemkin format kinetics will also
+        be returned (requires the `speciesList` to figure out third body colliders.)
+        Otherwise, only the reaction string will be returned.
         """
         import rmgpy.chemkin
-        return rmgpy.chemkin.writeKineticsEntry(self, speciesList)
+        if kinetics:
+            return rmgpy.chemkin.writeKineticsEntry(self, speciesList)
+        else:
+            return rmgpy.chemkin.writeReactionString(self)
         
     def getURL(self):
         """
