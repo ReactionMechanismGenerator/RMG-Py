@@ -206,16 +206,24 @@ class GroupAtom(Vertex):
         """
         radicalElectrons = []
         spinMultiplicity = []
+        pairs = set()
         if any([len(atomType.decrementRadical) == 0 for atomType in self.atomType]):
             raise ActionError('Unable to update GroupAtom due to LOSE_RADICAL action: Unknown atom type produced from set "{0}".'.format(self.atomType))
         for electron, spin in zip(self.radicalElectrons, self.spinMultiplicity):
-            if electron - radical < 0:
+            electron = electron - radical
+            if electron < 0:
                 raise ActionError('Unable to update GroupAtom due to LOSE_RADICAL action: Invalid radical electron set "{0}".'.format(self.radicalElectrons))
-            radicalElectrons.append(electron - radical)
-            if spin - radical < 0:
-                spinMultiplicity.append(spin - radical + 2)
-            else:
-                spinMultiplicity.append(spin - radical)
+            spin = spin - radical
+            if spin <= 0:
+                spin += 2
+            
+            pair = (electron,spin)
+            if pair in pairs:
+                continue # with next electron,spin pair, so we don't get redundant answers. Otherwise....
+            pairs.add(pair)
+            radicalElectrons.append(electron)
+            spinMultiplicity.append(spin)
+            
         # Set the new radical electron counts and spin multiplicities
         self.radicalElectrons = radicalElectrons
         self.spinMultiplicity = spinMultiplicity
@@ -227,15 +235,16 @@ class GroupAtom(Vertex):
         required parameters. The available actions can be found
         :ref:`here <reaction-recipe-actions>`.
         """
-        if action[0].upper() == 'CHANGE_BOND':
+        act = action[0].upper()
+        if act == 'CHANGE_BOND':
             self.__changeBond(action[2])
-        elif action[0].upper() == 'FORM_BOND':
+        elif act == 'FORM_BOND':
             self.__formBond(action[2])
-        elif action[0].upper() == 'BREAK_BOND':
+        elif act == 'BREAK_BOND':
             self.__breakBond(action[2])
-        elif action[0].upper() == 'GAIN_RADICAL':
+        elif act == 'GAIN_RADICAL':
             self.__gainRadical(action[2])
-        elif action[0].upper() == 'LOSE_RADICAL':
+        elif act == 'LOSE_RADICAL':
             self.__loseRadical(action[2])
         else:
             raise ActionError('Unable to update GroupAtom: Invalid action {0}".'.format(action))

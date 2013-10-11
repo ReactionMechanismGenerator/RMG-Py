@@ -177,10 +177,48 @@ class ScalarQuantity(Units):
         return ScalarQuantity(self.value, self.units, self.uncertainty, self.uncertaintyType)
 
     def getValue(self):
+        """
+        The numeric value of the quantity, in the given units
+        """
         return self.value_si * self.getConversionFactorFromSI()
     def setValue(self, v):
         self.value_si = float(v) * self.getConversionFactorToSI()
     value = property(getValue, setValue)
+    
+    def getUncertainty(self):
+        """
+        The numeric value of the uncertainty, in the given units if additive, or no units if multiplicative.
+        """
+        if self.isUncertaintyAdditive():
+            return self.uncertainty_si * self.getConversionFactorFromSI()
+        else:
+            return self.uncertainty_si
+    def setUncertainty(self, v):
+        if self.isUncertaintyAdditive():
+            self.uncertainty_si = float(v) * self.getConversionFactorToSI()
+        else:
+            self.uncertainty_si = float(v)
+    uncertainty = property(getUncertainty, setUncertainty)
+    
+    def getUncertaintyType(self):
+        """
+        The type of uncertainty: ``'+|-'`` for additive, ``'*|/'`` for multiplicative
+        """
+        return self._uncertaintyType
+    def setUncertaintyType(self, v):
+        """
+        Check the uncertainty type is valid, then set it, and set the uncertainty to -1.
+        
+        If you set the uncertainty then change the type, we have no idea what to do with 
+        the units. This ensures you set the type first.
+        """
+        if v not in ['+|-','*|/']:
+            raise QuantityError("Invalid uncertainty type")
+        self._uncertaintyType = v
+        self.uncertainty_si = -1
+    uncertaintyType = property(getUncertaintyType, setUncertaintyType)
+    
+    
     
     def equals(self, quantity):
         """
@@ -224,14 +262,14 @@ class ScalarQuantity(Units):
         Return ``True`` if the uncertainty is specified in additive format
         and ``False`` otherwise.
         """
-        return self.uncertaintyType == '+|-'
+        return self._uncertaintyType == '+|-'
 
     def isUncertaintyMultiplicative(self):
         """
         Return ``True`` if the uncertainty is specified in multiplicative 
         format and ``False`` otherwise.
         """
-        return self.uncertaintyType == '*|/'
+        return self._uncertaintyType == '*|/'
 
 ################################################################################
 

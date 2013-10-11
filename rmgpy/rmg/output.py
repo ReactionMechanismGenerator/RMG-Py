@@ -279,8 +279,13 @@ def saveOutputHTML(path, reactionModel):
                     <th>Cp1500</th>
                 </tr>
                 <tr>
-                    <td>{{ "%.2f"|format(spec.thermo.getEnthalpy(298) / 4184) }}</td>
-                    <td>{{ "%.2f"|format(spec.thermo.getEntropy(298) / 4.184) }}</td>
+                    <td>
+                    {% if spec.thermo.Tmin.value_si <= 298 %}                    
+                    {{ "%.2f"|format(spec.thermo.getEnthalpy(298) / 4184) }}
+                    {% endif %} </td>
+                    <td>{% if spec.thermo.Tmin.value_si <= 298 %}
+                    {{ "%.2f"|format(spec.thermo.getEntropy(298) / 4.184) }}
+                    {% endif %}</td>
                     <td>{{ "%.2f"|format(spec.thermo.getHeatCapacity(300) / 4.184) }}</td>
                     <td>{{ "%.2f"|format(spec.thermo.getHeatCapacity(500) / 4.184) }}</td>
                     <td>{{ "%.2f"|format(spec.thermo.getHeatCapacity(1000) / 4.184) }}</td>
@@ -637,8 +642,13 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
                     <th>Cp1500</th>
                 </tr>
                 <tr>
-                    <td>{{ "%.2f"|format(spec1.thermo.getEnthalpy(298) / 4184) }}</td>
-                    <td>{{ "%.2f"|format(spec1.thermo.getEntropy(298) / 4.184) }}</td>
+                    <td>{% if spec1.thermo.Tmin.value_si <= 298 %}
+                    {{ "%.2f"|format(spec1.thermo.getEnthalpy(298) / 4184) }}
+                    {% endif %}</td>
+                    <td>
+                    {% if spec1.thermo.Tmin.value_si <= 298 %}
+                    {{ "%.2f"|format(spec1.thermo.getEntropy(298) / 4.184) }}
+                    {% endif %}</td>
                     <td>{{ "%.2f"|format(spec1.thermo.getHeatCapacity(300) / 4.184) }}</td>
                     <td>{{ "%.2f"|format(spec1.thermo.getHeatCapacity(500) / 4.184) }}</td>
                     <td>{{ "%.2f"|format(spec1.thermo.getHeatCapacity(1000) / 4.184) }}</td>
@@ -658,8 +668,12 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
                     <th>Cp1500</th>
                 </tr>
                 <tr>
-                    <td>{{ "%.2f"|format(spec2.thermo.getEnthalpy(298) / 4184) }}</td>
-                    <td>{{ "%.2f"|format(spec2.thermo.getEntropy(298) / 4.184) }}</td>
+                    <td>{% if spec2.thermo.Tmin.value_si <= 298 %}
+                    {{ "%.2f"|format(spec2.thermo.getEnthalpy(298) / 4184) }}
+                    {% endif %}</td>
+                    <td>{% if spec2.thermo.Tmin.value_si <= 298 %}
+                    {{ "%.2f"|format(spec2.thermo.getEntropy(298) / 4.184) }}
+                    {% endif %}</td>
                     <td>{{ "%.2f"|format(spec2.thermo.getHeatCapacity(300) / 4.184) }}</td>
                     <td>{{ "%.2f"|format(spec2.thermo.getHeatCapacity(500) / 4.184) }}</td>
                     <td>{{ "%.2f"|format(spec2.thermo.getHeatCapacity(1000) / 4.184) }}</td>

@@ -45,6 +45,7 @@ from rmgpy.pdep.collision import *
 from rmgpy.molecule import Molecule
 
 from rmgpy.cantherm.gaussian import GaussianLog
+from rmgpy.cantherm.molepro import MoleProLog
 from rmgpy.cantherm.kinetics import KineticsJob
 from rmgpy.cantherm.statmech import StatMechJob
 from rmgpy.cantherm.thermo import ThermoJob
