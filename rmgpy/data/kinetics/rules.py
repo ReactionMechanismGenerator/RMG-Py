@@ -43,7 +43,7 @@ from copy import copy, deepcopy
 
 from rmgpy.data.base import Database, Entry, DatabaseError, makeLogicNode, getAllCombinations
 
-from rmgpy.quantity import Quantity
+from rmgpy.quantity import Quantity, ScalarQuantity
 from rmgpy.reaction import Reaction, ReactionError
 from rmgpy.kinetics import Arrhenius, ArrheniusEP, ThirdBody, Lindemann, Troe, \
                            PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, \
@@ -306,13 +306,24 @@ class KineticsRules(Database):
         
         for entry in entries:
             flib.write('{0:<5d} '.format(entry.index))
+            line = ''
             for label in entry.label.split(';'):
-                flib.write('{0:<23} '.format(label))
+                line = line + '{0:<23} '.format(label)
+            flib.write(line)
+            if len(line)>48: # make long lines line up in 10-space columns
+                flib.write(' '*(10-len(line)%10))
             if entry.data.Tmax is None:
-                # Tmin contains string of Trange
-                Trange = '{0}    '.format(entry.data.Tmin)
+                if re.match('\d+\-\d+',str(entry.data.Tmin).strip()):
+                    # Tmin contains string of Trange
+                    Trange = '{0} '.format(entry.data.Tmin)
+                elif isinstance(entry.data.Tmin, ScalarQuantity):
+                    # Tmin is a temperature. Make range 1 degree either side!
+                    Trange = '{0:4g}-{1:g} '.format(entry.data.Tmin.value_si-1, entry.data.Tmin.value_si+1)
+                else:
+                    # Range is missing, but we have to put something:
+                    Trange = '   1-9999 '
             else:
-                Trange = '{0:g}-{1:g}    '.format(entry.data.Tmin.value_si, entry.data.Tmax.value_si)
+                Trange = '{0:4g}-{1:g} '.format(entry.data.Tmin.value_si, entry.data.Tmax.value_si)
             flib.write('{0:<12}'.format(Trange))
             flib.write('{0:11.2e} {1:9.2f} {2:9.2f} {3:11.2f} '.format(
                             entry.data.A.value_si * factor,
@@ -321,13 +332,13 @@ class KineticsRules(Database):
                             entry.data.E0.value_si / 4184.
                             ))
             if entry.data.A.isUncertaintyMultiplicative():
-                flib.write('*{0:<6g} '.format(entry.data.A.uncertainty))
+                flib.write('*{0:<6g} '.format(entry.data.A.uncertainty_si))
             else:
-                flib.write('{0:<7g} '.format(entry.data.A.uncertainty * factor))
+                flib.write('{0:<7g} '.format(entry.data.A.uncertainty_si * factor))
             flib.write('{0:6g} {1:6g} {2:6g} '.format(
-                            entry.data.n.uncertainty,
-                            entry.data.alpha.uncertainty,
-                            entry.data.E0.uncertainty / 4184.
+                            entry.data.n.uncertainty_si,
+                            entry.data.alpha.uncertainty_si,
+                            entry.data.E0.uncertainty_si / 4184.
                             ))
 
             if not entry.rank:
@@ -461,8 +472,8 @@ class KineticsRules(Database):
             
             # We found one or more results! Let's average them together
             kinetics = self.__getAverageKinetics([k for k, t in kineticsList])
-            kinetics.comment += '(Average of {0})'.format(
-                ' + '.join([k.comment if k.comment != '' else ';'.join([g.label for g in t]) for k, t in kineticsList]),
+            kinetics.comment += 'Average of ({0}). '.format(
+                ' + '.join([k.comment if k.comment != '' else ','.join([g.label for g in t]) for k, t in kineticsList]),
             )
             entry = Entry(
                 index = 0,
@@ -479,8 +490,14 @@ class KineticsRules(Database):
         return None
 
     def __getAverageKinetics(self, kineticsList):
-        # Although computing via logA is slower, it is necessary because
-        # otherwise you could overflow if you are averaging too many values
+        """
+        Based on averaging log k. For most complex case:
+        k = AT^n * exp(-Ea+alpha*H)
+        log k = log(A) * nlog(T) * (-Ea + alpha*H)
+        
+        Hence we average n, Ea, and alpha arithmetically, but we
+        average log A (geometric average) 
+        """
         logA = 0.0; n = 0.0; E0 = 0.0; alpha = 0.0
         count = len(kineticsList)
         for kinetics in kineticsList:

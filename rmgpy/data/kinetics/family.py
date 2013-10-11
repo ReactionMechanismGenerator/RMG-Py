@@ -533,9 +533,23 @@ class KineticsFamily(Database):
         self.rules.load(os.path.join(path, 'rules.py'), local_context, global_context)
         
         self.depositories = []
-        # If depositoryLabels is None then load 'training' first then everything else.
-        # If depositoryLabels is not None then load in the order specified in depositoryLabels.
-        for name in (['training'] if depositoryLabels is None else depositoryLabels) :
+        
+                                
+        if not depositoryLabels:
+            # If depository labels is None or there are no depositories listed, then use the training
+            # depository and add them to the RMG rate rules by default:
+            depositoryLabels = ['training']
+        if depositoryLabels:
+            # If there are depository labels, load them in the order specified, but 
+            # append the training reactions unless the user specifically declares it not
+            # to be included with a '!training' flag
+            if '!training' not in depositoryLabels:
+                if 'training' not in depositoryLabels:
+                    depositoryLabels.append('training')
+            
+        for name in depositoryLabels :
+            if name == '!training':
+                continue
             label = '{0}/{1}'.format(self.label, name)
             f = name+'.py'
             fpath = os.path.join(path,f)
@@ -778,7 +792,10 @@ class KineticsFamily(Database):
             if depository.label.endswith('training'):
                 break
         else:
-            raise Exception('Could not find training depository in family {0}.'.format(self.label))
+            logging.info('Could not find training depository in family {0}.'.format(self.label))
+            logging.info('Must be because you turned off the training depository.')
+            return
+        
         
         index = max([e.index for e in self.rules.getEntries()] or [0]) + 1
         
@@ -801,7 +818,8 @@ class KineticsFamily(Database):
             new_entry = Entry(
                 index = index,
                 label = ';'.join([g.label for g in template]),
-                item = template,
+                item=Reaction(reactants=[g.item for g in template],
+                                                   products=[]),
                 data = ArrheniusEP(
                     A = deepcopy(data.A),
                     n = deepcopy(data.n),
@@ -810,13 +828,17 @@ class KineticsFamily(Database):
                     Tmin = deepcopy(data.Tmin),
                     Tmax = deepcopy(data.Tmax),
                 ),
-                rank = 3,
+                rank = entry.rank,
+                reference=entry.reference,
+                shortDesc="Rate rule generated from training reaction {0}. ".format(entry.index) + entry.shortDesc,
+                longDesc="Rate rule generated from training reaction {0}. ".format(entry.index) + entry.longDesc,
+                history=entry.history,
             )
             new_entry.data.A.value_si /= entry.item.degeneracy
             try:
-                self.entries[new_entry.label].append(new_entry)
+                self.rules.entries[new_entry.label].append(new_entry)
             except KeyError:
-                self.entries[new_entry.label] = [new_entry]
+                self.rules.entries[new_entry.label] = [new_entry]
             index += 1
         
         # Process the entries that are stored in the reverse direction of the
@@ -848,7 +870,8 @@ class KineticsFamily(Database):
             new_entry = Entry(
                 index = index,
                 label = ';'.join([g.label for g in template]),
-                item = template,
+                item=Reaction(reactants=[g.item for g in template],
+                                                   products=[]),
                 data = ArrheniusEP(
                     A = deepcopy(data.A),
                     n = deepcopy(data.n),
@@ -857,13 +880,17 @@ class KineticsFamily(Database):
                     Tmin = deepcopy(data.Tmin),
                     Tmax = deepcopy(data.Tmax),
                 ),
-                rank = 3,
+                rank = entry.rank,
+                reference=entry.reference,
+                shortDesc="Rate rule generated from training reaction {0}. ".format(entry.index) + entry.shortDesc,
+                longDesc="Rate rule generated from training reaction {0}. ".format(entry.index) + entry.longDesc,
+                history=entry.history,
             )
             new_entry.data.A.value_si /= item.degeneracy
             try:
-                self.entries[new_entry.label].append(new_entry)
+                self.rules.entries[new_entry.label].append(new_entry)
             except KeyError:
-                self.entries[new_entry.label] = [new_entry]
+                self.rules.entries[new_entry.label] = [new_entry]
             index += 1
     
     def getRootTemplate(self):
@@ -1614,7 +1641,7 @@ class KineticsFamily(Database):
             kineticsList0 = self.getKineticsFromDepository(depository, reaction, template, degeneracy)
             if len(kineticsList0) > 0 and not returnAllKinetics:
                 kinetics, entry, isForward = self.__selectBestKinetics(kineticsList0)
-                kinetics, depository, entry, isForward
+                return kinetics, depository, entry, isForward
             else:
                 for kinetics, entry, isForward in kineticsList0:
                     kineticsList.append([kinetics, depository, entry, isForward])

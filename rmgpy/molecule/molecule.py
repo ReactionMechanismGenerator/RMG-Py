@@ -265,15 +265,16 @@ class Atom(Vertex):
         Update the atom pattern as a result of applying a LOSE_RADICAL action,
         where `radical` specifies the number of radical electrons to remove.
         """
+        cython.declare(radicalElectrons=cython.short)
         # Set the new radical electron counts and spin multiplicities
-        self.radicalElectrons -= 1
-        if self.radicalElectrons  < 0:
+        radicalElectrons = self.radicalElectrons = self.radicalElectrons - 1
+        if radicalElectrons  < 0:
             raise ActionError('Unable to update Atom due to LOSE_RADICAL action: Invalid radical electron set "{0}".'.format(self.radicalElectrons))
-        elif self.radicalElectrons == 0:
+        elif radicalElectrons == 0:
             self.spinMultiplicity = 1
-        elif self.radicalElectrons == 1:
+        elif radicalElectrons == 1:
             self.spinMultiplicity = 2
-        elif self.radicalElectrons == 2:
+        elif radicalElectrons == 2:
             self.spinMultiplicity = 3   # Assume this always results in the triplet, as they tend to be more stable than the singlet (though there are exceptions!)
         else:
             self.spinMultiplicity = self.radicalElectrons + 1
@@ -287,13 +288,14 @@ class Atom(Vertex):
         """
         # Invalidate current atom type
         self.atomType = None
+        act = action[0].upper()
         # Modify attributes if necessary
-        if action[0].upper() in ['CHANGE_BOND', 'FORM_BOND', 'BREAK_BOND']:
+        if act in ['CHANGE_BOND', 'FORM_BOND', 'BREAK_BOND']:
             # Nothing else to do here
             pass
-        elif action[0].upper() == 'GAIN_RADICAL':
+        elif act == 'GAIN_RADICAL':
             for i in range(action[2]): self.incrementRadical()
-        elif action[0].upper() == 'LOSE_RADICAL':
+        elif act == 'LOSE_RADICAL':
             for i in range(abs(action[2])): self.decrementRadical()
         else:
             raise ActionError('Unable to update Atom: Invalid action {0}".'.format(action))
