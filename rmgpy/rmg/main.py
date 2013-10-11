@@ -164,11 +164,11 @@ class RMG:
         if path is None: path = self.inputFile
         readInputFile(path, self)
         self.reactionModel.kineticsEstimator = self.kineticsEstimator
+        # If the output directory is not yet set, then set it to the same
+        # directory as the input file by default
+        if not self.outputDirectory:
+            self.outputDirectory = os.path.dirname(path)
         if self.pressureDependence:
-            # If the output directory is not yet set, then set it to the same
-            # directory as the input file by default
-            if not self.outputDirectory:
-                self.outputDirectory = os.path.dirname(path)
             self.pressureDependence.outputFile = self.outputDirectory
             self.reactionModel.pressureDependence = self.pressureDependence
         self.reactionModel.reactionGenerationOptions = self.reactionGenerationOptions
