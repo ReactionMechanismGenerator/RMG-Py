@@ -734,6 +734,8 @@ class ThermoDatabase(object):
         
         Returns a tuple: (ThermoData, library, entry)  or None.
         """
+        if library is None:
+            return None
         for label, entry in library.entries.iteritems():
             for molecule in species.molecule:
                 if molecule.isIsomorphic(entry.item) and entry.data is not None:
