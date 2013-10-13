@@ -176,12 +176,12 @@ class Database:
         provide these.
         """
 
-        # Collision efficiencies are in SMILES format, so we'll need OpenBabel
+        # Collision efficiencies are in SMILES format, so we'll need RDKit
         # to convert them to Molecule objects
         # Do the import here to ensure it is imported from a pure Python
         # environment (as opposed to a Cythonized environment, which is not
         # allowed during an exec() call)
-        import pybel
+        from rdkit import Chem
 
         # Clear any previously-loaded data
         self.entries = {}
@@ -367,7 +367,7 @@ class Database:
                 record = self.entries[label].item
                 lines = record.splitlines()
                 # If record is a logical node, make it into one.
-                if re.match('(?i)\s*OR\s*\{|AND|NOT|UNION\s*\{',lines[1] ):
+                if re.match("(?i)\s*(NOT\s)?\s*(OR|AND|UNION)\s*(\{.*\})", lines[1]):
                     self.entries[label].item = makeLogicNode(' '.join(lines[1:]) )
                 # Otherwise convert adjacency list to molecule or pattern
                 elif pattern:
@@ -586,15 +586,47 @@ class Database:
         """
 
         entries = []
+        entriesNotInTree = []
         # If we have tree information, save the dictionary in the same order as
         # the tree (so that it saves in the same order each time)
+        def getLogicNodeComponents(entry_or_item):
+            """
+            If we want to save an entry, but that is a logic node, we also want
+            to save its components, recursively. This is a horribly complicated way
+            to *not* save in the dictionary any things which are not accessed from
+            (or needed to define things that are accessed from) the tree.
+            """
+            if isinstance(entry_or_item, Entry):
+                entry = entry_or_item
+                item = entry.item
+                nodes = [entry]
+            else:
+                entry = None
+                item = entry_or_item
+                nodes = []
+            if isinstance(item, LogicNode):
+                for child in item.components:
+                    if isinstance(child, LogicNode):
+                        nodes.extend(getLogicNodeComponents(child))
+                    else:
+                        nodes.extend(getLogicNodeComponents(self.entries[child]))
+                return nodes
+            else:
+                return [entry]
+
         if len(self.top) > 0:
             for entry in self.top:
-                entries.extend(self.descendants(entry))
+                entries.extend(getLogicNodeComponents(entry))
+                for descendant in self.descendants(entry):
+                    for entry2 in getLogicNodeComponents(descendant):
+                        if entry2 not in entries:
+                            entries.append(entry2)
+                
             # Don't forget entries that aren't in the tree
             for entry in self.entries.values():
                 if entry not in entries:
-                    entries.append(entry)
+                    entriesNotInTree.append(entry)
+            entriesNotInTree.sort(key=lambda x: (x.index, x.label))
         # Otherwise save the dictionary in any order
         else:
             # Save the library in order by index
@@ -614,7 +646,7 @@ class Database:
                 if isinstance(entry.item, Molecule):
                     f.write(entry.item.toAdjacencyList(removeH=True) + '\n')
                 elif isinstance(entry.item, Group):
-                    f.write(entry.item.toAdjacencyList() + '\n')
+                    f.write(entry.item.toAdjacencyList().replace('{2S,2T}','2') + '\n')
                 elif isinstance(entry.item, LogicOr):
                     f.write('{0}\n\n'.format(entry.item).replace('OR{', 'Union {'))
                 elif entry.label[0:7] == 'Others-':
@@ -622,9 +654,30 @@ class Database:
                     f.write('{0}\n\n'.format(entry.item))
                 else:
                     raise DatabaseError('Unexpected item with label {0} encountered in dictionary while attempting to save.'.format(entry.label))
+            
+            def comment(s):
+                "Return the string, with each line prefixed with '// '"
+                return '\n'.join('// '+line if line else '' for line in s.split('\n'))
+            if entriesNotInTree:
+                f.write(comment("These entries do not appear in the tree:\n\n"))
+            for entry in entriesNotInTree:
+                f.write(comment(entry.label + '\n'))
+                if isinstance(entry.item, Molecule):
+                    f.write(comment(entry.item.toAdjacencyList(removeH=True) + '\n'))
+                elif isinstance(entry.item, Group):
+                    f.write(comment(entry.item.toAdjacencyList().replace('{2S,2T}','2') + '\n'))
+                elif isinstance(entry.item, LogicOr):
+                    f.write(comment('{0}\n\n'.format(entry.item).replace('OR{', 'Union {')))
+                elif entry.label[0:7] == 'Others-':
+                    assert isinstance(entry.item, LogicNode)
+                    f.write(comment('{0}\n\n'.format(entry.item)))
+                else:
+                    raise DatabaseError('Unexpected item with label {0} encountered in dictionary while attempting to save.'.format(entry.label))
+           
+           
             f.close()
         except IOError, e:
-            logging.exception('Unable to save old-style tree to "{0}".'.format(os.path.abspath(path)))
+            logging.exception('Unable to save old-style dictionary to "{0}".'.format(os.path.abspath(path)))
             raise
 
     def generateOldTree(self, entries, level):
@@ -899,7 +952,7 @@ class LogicNode:
     def __init__(self,items,invert):
         self.components = []
         for item in items:
-            if re.match('(?i)\s*OR\s*\{|AND|NOT|UNION\s*\{',item):
+            if re.match("(?i)\s*(NOT\s)?\s*(OR|AND|UNION)\s*(\{.*\})",item):
                 component = makeLogicNode(item)
             else:
                 component = item
@@ -983,7 +1036,7 @@ def makeLogicNode(string):
     And the returned object will be of class LogicOr or LogicAnd
     """
 
-    match = re.match("(?i)\s*(NOT)?\s*(OR|AND|UNION)\s*(.*)",string)  # the (?i) makes it case-insensitive
+    match = re.match("(?i)\s*(NOT\s)?\s*(OR|AND|UNION)\s*(\{.*\})",string)  # the (?i) makes it case-insensitive
     if not match:
         raise Exception("Unexpected string for Logic Node: {0}".format(string))
 

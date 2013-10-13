@@ -96,8 +96,8 @@ def species(label, structure, reactive=True):
     rmg.initialSpecies.append(spec)
     speciesDict[label] = spec
     
-def CML(string):
-    return Molecule().fromCML(string)
+def SMARTS(string):
+    return Molecule().fromSMARTS(string)
 
 def SMILES(string):
     return Molecule().fromSMILES(string)
@@ -273,7 +273,7 @@ def readInputFile(path, rmg0):
         'False': False,
         'database': database,
         'species': species,
-        'CML': CML,
+        'SMARTS': SMARTS,
         'SMILES': SMILES,
         'InChI': InChI,
         'adjacencyList': adjacencyList,
@@ -302,6 +302,57 @@ def readInputFile(path, rmg0):
         reactionSystem.initialMoleFractions = initialMoleFractions
 
     logging.info('')
+    
+################################################################################
+
+def readThermoInputFile(path, rmg0):
+    """
+    Read an thermo estimation input file at `path` on disk into the :class:`RMG` object 
+    `rmg`.
+    """
+
+    global rmg, speciesDict
+    
+    full_path = os.path.abspath(os.path.expandvars(path))
+    try:
+        f = open(full_path)
+    except IOError, e:
+        logging.error('The input file "{0}" could not be opened.'.format(full_path))
+        logging.info('Check that the file exists and that you have read access.')
+        raise e
+
+    logging.info('Reading input file "{0}"...'.format(full_path))
+
+    rmg = rmg0
+    rmg.reactionModel = CoreEdgeReactionModel()
+    rmg.initialSpecies = []
+    rmg.reactionSystems = []
+    speciesDict = {}
+    
+    global_context = { '__builtins__': None }
+    local_context = {
+        '__builtins__': None,
+        'True': True,
+        'False': False,
+        'database': database,
+        'species': species,
+        'SMARTS': SMARTS,
+        'SMILES': SMILES,
+        'InChI': InChI,
+        'adjacencyList': adjacencyList,
+        'quantumMechanics': quantumMechanics,
+    }
+
+    try:
+        exec f in global_context, local_context
+    except (NameError, TypeError, SyntaxError), e:
+        logging.error('The input file "{0}" was invalid:'.format(full_path))
+        logging.exception(e)
+        raise
+    finally:
+        f.close()
+
+    logging.info('')    
 
 ################################################################################
 

@@ -275,7 +275,7 @@ def getAtomType(atom, bonds):
     Determine the appropriate atom type for an :class:`Atom` object `atom`
     with local bond structure `bonds`, a ``dict`` containing atom-bond pairs.
     """
-    
+
     cython.declare(atomType=str)
     cython.declare(double=cython.int, double0=cython.int, triple=cython.int, benzene=cython.int)
     
@@ -291,7 +291,7 @@ def getAtomType(atom, bonds):
             else:                double += 1
         elif bond12.isTriple(): triple += 1
         elif bond12.isBenzene(): benzene += 1
-    
+
     # Use element and counts to determine proper atom type
     if atom.symbol == 'C':
         if   double == 0 and doubleO == 0 and triple == 0 and benzene == 0: atomType = 'Cs'
@@ -339,7 +339,7 @@ def getAtomType(atom, bonds):
         if   double + doubleO == 0 and triple == 0 and benzene == 0: atomType = 'Ss'
         elif double + doubleO == 1 and triple == 0 and benzene == 0: atomType = 'Sd'
         elif len(bonds) == 0:                                        atomType = 'Sa'
-    elif atom.symbol == 'Ar' or atom.symbol == 'He' or atom.symbol == 'Ne':
+    elif atom.symbol == 'Ar' or atom.symbol == 'He' or atom.symbol == 'Ne' or atom.symbol == 'Cl':
         return None
 
     # Raise exception if we could not identify the proper atom type

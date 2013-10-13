@@ -324,7 +324,7 @@ class KineticsGroups(Database):
                 elif isinstance(kinetics, ArrheniusEP):
                     kd = [kinetics.getRateCoefficient(T, 0) for T in Tdata]
                 else:
-                    raise Exception('Unexpected kinetics model of type {0} for reaction {1}.'.format(reaction.kinetics.__class__, reaction))
+                    raise Exception('Unexpected kinetics model of type {0} for template {1}.'.format(kinetics.__class__, template))
                 kdata.append(kd)
                     
                 # Create every combination of each group and its ancestors with each other
@@ -422,7 +422,7 @@ class KineticsGroups(Database):
                 elif isinstance(kinetics, ArrheniusEP):
                     kd = [kinetics.getRateCoefficient(T, 0) for T in Tdata]
                 else:
-                    raise Exception('Unexpected kinetics model of type {0} for reaction {1}.'.format(kinetics.__class__, reaction))
+                    raise Exception('Unexpected kinetics model of type {0} for template {1}.'.format(kinetics.__class__, template))
                 kdata.append(kd)
                 
                 # Create every combination of each group and its ancestors with each other

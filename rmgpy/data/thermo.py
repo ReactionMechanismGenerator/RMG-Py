@@ -43,6 +43,7 @@ from base import Database, Entry, makeLogicNode, DatabaseError
 import rmgpy.constants as constants
 from rmgpy.thermo import NASAPolynomial, NASA, ThermoData, Wilhoit
 from rmgpy.molecule import Molecule, Atom, Bond, Group
+import rmgpy.molecule
 
 ################################################################################
 
@@ -534,6 +535,25 @@ class ThermoDatabase(object):
             numLabels = 1,
             pattern = True,
         )
+        
+    def pruneHeteroatoms(self, allowed=['C','H','O','S']):
+        """
+        Remove all species from thermo libraries that contain atoms other than those allowed.
+        
+        This is useful before saving the database for use in RMG-Java
+        """
+        allowedElements = [rmgpy.molecule.element.getElement(label) for label in allowed]
+        for library in self.libraries.values():
+            logging.info("Removing hetoroatoms from thermo library '{0}'".format(library.name))
+            toDelete = []
+            for entry in library.entries.values():
+                for atom in entry.item.atoms:
+                    if atom.element not in allowedElements:
+                        toDelete.append(entry.label)
+                        break
+            for label in toDelete:
+                logging.info(" {0}".format(label))
+                library.entries.pop(label)
 
     def saveOld(self, path):
         """
@@ -635,7 +655,7 @@ class ThermoDatabase(object):
             thermoData = self.getThermoDataFromLibrary(species, self.libraries[label])
             if thermoData is not None:
                 assert len(thermoData) == 3, "thermoData should be a tuple at this point"
-                thermoData[0].comment += label
+                thermoData[0].comment += 'Thermo library: ' + label
                 return thermoData
         return None
     
