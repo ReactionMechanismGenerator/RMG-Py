@@ -1946,7 +1946,7 @@ function updateStats() {
                 alert("Input needed! Please confirm a match.");
                 lastAlert = json.processed;
             }
-            repeater = setTimeout(updateStats, 10000); // do again in 10 seconds
+            repeater = setTimeout(updateStats, 300000); // do again in 5 minutes
             progressUpdates++;
         }).fail(function( jqxhr, textStatus, error ) {
               var err = textStatus + ', ' + error;
