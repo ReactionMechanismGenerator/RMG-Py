@@ -1477,7 +1477,7 @@ def saveChemkinFile(path, species, reactions, verbose = True, checkForDuplicates
     sorted_species = sorted(species, key=lambda species: species.index)
 
     # Elements section
-    f.write('ELEMENTS H C O N Ne Ar He Si S END\n\n')
+    f.write('ELEMENTS H C O N Ne Ar He Si S Cl END\n\n')
 
     # Species section
     f.write('SPECIES\n')
