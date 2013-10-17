@@ -1257,11 +1257,14 @@ def writeKineticsEntry(reaction, speciesList, verbose = True, javaLibrary = Fals
             string += "DUPLICATE\n"
         return string + "\n"
     
+    # Add to global chemkin reaction count if the kinetics is not a duplicate
+    global __chemkin_reaction_count
+    if __chemkin_reaction_count is not None:
+        __chemkin_reaction_count += 1
+            
     if verbose:        
         # Next line of comment contains Chemkin and RMG indices
-        global __chemkin_reaction_count
         if __chemkin_reaction_count is not None:
-            __chemkin_reaction_count += 1
             string += "! Reaction index: Chemkin #{0:d}; RMG #{1:d}\n".format(__chemkin_reaction_count, reaction.index)
         
         # Next line of comment contains information about the type of reaction
