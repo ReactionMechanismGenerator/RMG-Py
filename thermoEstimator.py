@@ -12,7 +12,9 @@ import os.path
 from rmgpy.rmg.main import RMG
 from rmgpy.data.thermo import ThermoLibrary
 from rmgpy.chemkin import writeThermoEntry
-
+from rmgpy.rmg.model import makeThermoForSpecies
+import scoop
+from scoop import futures
 ################################################################################
 
 def runThermoEstimator(inputFile):
@@ -32,9 +34,12 @@ def runThermoEstimator(inputFile):
     # ThermoLibrary format with values for H, S, and Cp's.
     output = open(os.path.join(rmg.outputDirectory, 'output.txt'),'wb')
     library = ThermoLibrary(name='Thermo Estimation Library')
-    for species in rmg.initialSpecies:
-        species.generateThermoData(rmg.database, quantumMechanics=rmg.reactionModel.quantumMechanics)
-
+ #   for species in rmg.initialSpecies:
+ #       species.generateThermoData(rmg.database, quantumMechanics=rmg.reactionModel.quantumMechanics)
+    listOfSpecies=rmg.initialSpecies
+    outputList = futures.map(makeThermoForSpecies, listOfSpecies,qmValue=rmg.reactionModel.quantumMechanics)
+    for species, thermo in zip(listOfSpecies, outputList):
+        species.thermo = thermo   
         library.loadEntry(
             index = len(library.entries) + 1,
             label = species.label,
