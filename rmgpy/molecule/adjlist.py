@@ -341,7 +341,7 @@ def toAdjacencyList(atoms, label=None, group=False, removeH=False):
     atomLabelWidth = max([len(s) for s in atomLabels.values()])
     if atomLabelWidth > 0: atomLabelWidth += 1
     atomTypeWidth = max([len(s) for s in atomTypes.values()]) + 1
-    atomElectronStateWidth = max([len(s) for s in atomElectronStates.values()])
+    atomElectronStateWidth = max([len(s) for s in atomElectronStates.values()]) + 1
     atomLonePairWidth = 1
     
     # Assemble the adjacency list
