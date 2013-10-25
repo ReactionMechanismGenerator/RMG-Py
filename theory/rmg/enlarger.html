@@ -1,0 +1,130 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>1. Rate-Based Model Enlarger &mdash; RMG Py 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
+    <link rel="up" title="RMG Theory Guide" href="index.html" />
+    <link rel="next" title="MEASURE Theory Guide" href="../measure/index.html" />
+    <link rel="prev" title="RMG Theory Guide" href="index.html" /> 
+  </head>
+  <body>
+<div class="header">
+&nbsp;
+</div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../measure/index.html" title="MEASURE Theory Guide"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="RMG Theory Guide"
+             accesskey="P">previous</a> |</li>
+<li><a href="../../index.html">Documentation</a> &raquo;</li>
+
+          <li><a href="../index.html" >RMG Theory Guide</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">RMG Theory Guide</a> &raquo;</li> 
+      </ul>
+    </div>
+            
+  <div class="section" id="rate-based-model-enlarger">
+<span id="ratebasedmodelenlarger"></span><h1>1. Rate-Based Model Enlarger<a class="headerlink" href="#rate-based-model-enlarger" title="Permalink to this headline">¶</a></h1>
+<p>To construct a mechanism, the user must specify an initial set of species and
+the initial conditions (temperature, pressure, species concentrations, etc.).
+RMG reacts the initial species in all possible ways according to its known
+reaction families, and it integrates the model in time. RMG tracks the rate
+(flux) at which each new &#8220;edge&#8221; species is produced, and species (and the
+reactions producing them) that are produced with significant fluxes are
+incorporated into the model (the &#8220;core&#8221;). These new core species are reacted
+with all other core species in the model, to generate a new set of edge species
+and reactions. The time-integration restarts, and the expanded list of edge
+species is monitored for significant species to be included in the core. The
+process continues until all significant species and reactions have been
+included in the model. The user is free to vary the definition of a
+&#8220;significant&#8221; rate to refine the mechanism as desired. For a more detailed
+description on rate-based model enlargement, please see <a class="reference internal" href="#susnow1997" id="id1">[Susnow1997]</a>.</p>
+<table class="docutils citation" frame="void" id="susnow1997" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[Susnow1997]</a></td><td>R. G. Susnow, A. M. Dean, W. H. Green, P. K. Peczak, and L. J. Broadbelt. &#8220;Rate-Based Construction of Kinetic Models for Complex Systems.&#8221; <em>J. Phys. Chem. A</em> <strong>101</strong>, p. 3731-3740 (1997).</td></tr>
+</tbody>
+</table>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div class="sidebarlogo">
+<a href="../../index.html"><img src="../../_static/rmg-logo-small.png" alt="RMG" /></a>
+</div>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">RMG Theory Guide</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../measure/index.html"
+                        title="next chapter">MEASURE Theory Guide</a></p>
+  <h3>This Page </h3>
+  <ul class="this-page-menu">
+    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/theory/rmg/enlarger.rst"
+           rel="nofollow">Edit this page</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+    </div>
+  </body>
+</html>

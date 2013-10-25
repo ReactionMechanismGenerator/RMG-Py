@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>2.4. Quantum Mechanical Calculations &mdash; RMG Py 0.1.0 documentation</title>
+    <title>3.4. Quantum Mechanical Calculations &mdash; RMG Py 0.1.0 documentation</title>
     
     <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -25,9 +25,9 @@
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="RMG Py 0.1.0 documentation" href="../../../index.html" />
-    <link rel="up" title="2. Installation" href="index.html" />
-    <link rel="next" title="CanTherm User’s Guide" href="../../cantherm/index.html" />
-    <link rel="prev" title="2.3. MacOS X Installation" href="macos.html" /> 
+    <link rel="up" title="3. Installation" href="index.html" />
+    <link rel="next" title="4. Creating Input Files" href="../input.html" />
+    <link rel="prev" title="3.3. MacOS X Installation" href="macos.html" /> 
   </head>
   <body>
 <div class="header">
@@ -49,25 +49,25 @@
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="../../cantherm/index.html" title="CanTherm User’s Guide"
+          <a href="../input.html" title="4. Creating Input Files"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="macos.html" title="2.3. MacOS X Installation"
+          <a href="macos.html" title="3.3. MacOS X Installation"
              accesskey="P">previous</a> |</li>
 <li><a href="../../../index.html">Documentation</a> &raquo;</li>
 
           <li><a href="../../index.html" >User&#8217;s Guide</a> &raquo;</li>
           <li><a href="../index.html" >RMG User&#8217;s Guide</a> &raquo;</li>
-          <li><a href="index.html" accesskey="U">2. Installation</a> &raquo;</li> 
+          <li><a href="index.html" accesskey="U">3. Installation</a> &raquo;</li> 
       </ul>
     </div>
             
   <div class="section" id="quantum-mechanical-calculations">
-<span id="qmthermoinstall"></span><h1>2.4. Quantum Mechanical Calculations<a class="headerlink" href="#quantum-mechanical-calculations" title="Permalink to this headline">¶</a></h1>
+<span id="qmthermoinstall"></span><h1>3.4. Quantum Mechanical Calculations<a class="headerlink" href="#quantum-mechanical-calculations" title="Permalink to this headline">¶</a></h1>
 <p>To run quantum mechanical calculations for improved thermochemistry estimates of cyclic species,
 you will need some additional software.</p>
 <div class="section" id="rdkit">
-<h2>2.4.1. RDKit<a class="headerlink" href="#rdkit" title="Permalink to this headline">¶</a></h2>
+<h2>3.4.1. RDKit<a class="headerlink" href="#rdkit" title="Permalink to this headline">¶</a></h2>
 <p>Project home on GitHub: <a class="reference external" href="https://github.com/rdkit/rdkit">https://github.com/rdkit/rdkit</a></p>
 <p>Installation instructions: <a class="reference external" href="http://code.google.com/p/rdkit/wiki/GettingStarted">http://code.google.com/p/rdkit/wiki/GettingStarted</a>
 Build it with InChI support.</p>
@@ -82,7 +82,7 @@ export PYTHONPATH=$PYTHONPATH:$RDBASE</pre>
 </div>
 </div>
 <div class="section" id="symmetry">
-<h2>2.4.2. SYMMETRY<a class="headerlink" href="#symmetry" title="Permalink to this headline">¶</a></h2>
+<h2>3.4.2. SYMMETRY<a class="headerlink" href="#symmetry" title="Permalink to this headline">¶</a></h2>
 <p>See <a class="reference external" href="http://www.cobalt.chem.ucalgary.ca/ps/symmetry">http://www.cobalt.chem.ucalgary.ca/ps/symmetry</a>.
 The source code for this is included in the <cite>external</cite> folder, but it needs compiling.:</p>
 <div class="highlight-python"><pre>$ make -C $RMGpy/external/symmetry</pre>
@@ -92,7 +92,7 @@ The source code for this is included in the <cite>external</cite> folder, but it
 </div>
 </div>
 <div class="section" id="mopac">
-<h2>2.4.3. MOPAC<a class="headerlink" href="#mopac" title="Permalink to this headline">¶</a></h2>
+<h2>3.4.3. MOPAC<a class="headerlink" href="#mopac" title="Permalink to this headline">¶</a></h2>
 <p>This is a semi-empirical software package you can use for QM calculations.
 See <a class="reference external" href="http://openmopac.net/">http://openmopac.net/</a></p>
 <p>Ensure your environment contains the variables <cite>MOPAC_LICENSE</cite> and <cite>MOPAC_DIR</cite>. eg.:</p>
@@ -101,7 +101,7 @@ export MOPAC_DIR=$HOME/mopac</pre>
 </div>
 </div>
 <div class="section" id="gaussian">
-<h2>2.4.4. Gaussian<a class="headerlink" href="#gaussian" title="Permalink to this headline">¶</a></h2>
+<h2>3.4.4. Gaussian<a class="headerlink" href="#gaussian" title="Permalink to this headline">¶</a></h2>
 <p>This can be used instead of MOPAC for QM calculations.</p>
 <p>See <a class="reference external" href="http://www.gaussian.com">http://www.gaussian.com</a></p>
 </div>
@@ -114,25 +114,25 @@ export MOPAC_DIR=$HOME/mopac</pre>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
 <div class="sidebarlogo">
-<img src="../../../_static/rmg-logo-small.png" alt="RMG" />
+<a href="../../../index.html"><img src="../../../_static/rmg-logo-small.png" alt="RMG" /></a>
 </div>
   <h3><a href="../../../contents.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">2.4. Quantum Mechanical Calculations</a><ul>
-<li><a class="reference internal" href="#rdkit">2.4.1. RDKit</a></li>
-<li><a class="reference internal" href="#symmetry">2.4.2. SYMMETRY</a></li>
-<li><a class="reference internal" href="#mopac">2.4.3. MOPAC</a></li>
-<li><a class="reference internal" href="#gaussian">2.4.4. Gaussian</a></li>
+<li><a class="reference internal" href="#">3.4. Quantum Mechanical Calculations</a><ul>
+<li><a class="reference internal" href="#rdkit">3.4.1. RDKit</a></li>
+<li><a class="reference internal" href="#symmetry">3.4.2. SYMMETRY</a></li>
+<li><a class="reference internal" href="#mopac">3.4.3. MOPAC</a></li>
+<li><a class="reference internal" href="#gaussian">3.4.4. Gaussian</a></li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="macos.html"
-                        title="previous chapter">2.3. MacOS X Installation</a></p>
+                        title="previous chapter">3.3. MacOS X Installation</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="../../cantherm/index.html"
-                        title="next chapter">CanTherm User&#8217;s Guide</a></p>
+  <p class="topless"><a href="../input.html"
+                        title="next chapter">4. Creating Input Files</a></p>
   <h3>This Page </h3>
   <ul class="this-page-menu">
     <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/users/rmg/installation/QMthermo.rst"

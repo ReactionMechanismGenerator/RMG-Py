@@ -1,0 +1,193 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>12. Kinetics Estimation &mdash; RMG Py 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
+    <link rel="up" title="RMG User’s Guide" href="index.html" />
+    <link rel="next" title="13. Guidelines for Building a Model" href="guidelines.html" />
+    <link rel="prev" title="11. Thermochemistry Estimation" href="thermo.html" /> 
+  </head>
+  <body>
+<div class="header">
+&nbsp;
+</div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="guidelines.html" title="13. Guidelines for Building a Model"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="thermo.html" title="11. Thermochemistry Estimation"
+             accesskey="P">previous</a> |</li>
+<li><a href="../../index.html">Documentation</a> &raquo;</li>
+
+          <li><a href="../index.html" >User&#8217;s Guide</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">RMG User&#8217;s Guide</a> &raquo;</li> 
+      </ul>
+    </div>
+            
+  <div class="section" id="kinetics-estimation">
+<span id="kinetics"></span><h1>12. Kinetics Estimation<a class="headerlink" href="#kinetics-estimation" title="Permalink to this headline">¶</a></h1>
+<p>This section gives in-depth descriptions of algorithms used for determining
+kinetic parameters. For general usage of the kinetic database see <a class="reference internal" href="database/kinetics.html#kineticsdatabase"><em>Kinetics Database</em></a>.</p>
+<div class="section" id="priority-of-kinetic-databases">
+<h2>12.1. Priority of Kinetic Databases<a class="headerlink" href="#priority-of-kinetic-databases" title="Permalink to this headline">¶</a></h2>
+<p>When multiple sources are available for kinetic parameters, the following priority
+is followed:</p>
+<ol class="arabic simple">
+<li>Kinetic libraries (based on listed order in input.py)</li>
+<li>Matched training set reactions</li>
+<li>Exact template matches from rules or matched training groups (based on rank)</li>
+<li>Estimated averaged rules</li>
+</ol>
+<p>In the case where multiple rules or training set reactions fall under the same
+template node, we use a user-defined rank to determine the priority of kinetic
+parameters</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Rank</th>
+<th class="head">Example methods</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>Rank 1</td>
+<td>Experiment</td>
+</tr>
+<tr class="row-odd"><td>Rank 2</td>
+<td>High level calculation: CCSD(T)-F12, MS-Tor, 2d rotors</td>
+</tr>
+<tr class="row-even"><td>Rank 3</td>
+<td>Mid level calculation:  CBS-QB3, 1-d rotors</td>
+</tr>
+<tr class="row-odd"><td>Rank 4</td>
+<td>Low level calculation: no rotor treatment</td>
+</tr>
+<tr class="row-even"><td>Rank 5</td>
+<td>User&#8217;s estimates without supporting methods</td>
+</tr>
+<tr class="row-odd"><td>Rank 0</td>
+<td>Untrusted method and never used in generation</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="kinetic-families">
+<h2>12.2. Kinetic Families<a class="headerlink" href="#kinetic-families" title="Permalink to this headline">¶</a></h2>
+<p>To show the algorithm used by kinetic families, the following H-abstraction will be
+used an example</p>
+<img alt="../../_images/ExampleReaction.png" class="align-center" src="../../_images/ExampleReaction.png" />
+<p>First the reacting atoms will be identified. Then, the family`s trees will be
+descended as far as possible to give the reaction`s groups.</p>
+<img alt="../../_images/DescendedGroups.png" class="align-center" src="../../_images/DescendedGroups.png" />
+<p>Using the sample tree shown above, the desired template is (C_sec, O_pri_rad). The
+algorithm will then search the database for parameters for the template. If they are present,
+an exact match will be returned using the kinetics of that template. Note that an
+exact match refers to the nodes (C_sec, O_pri_rad) and not the molecules
+(propane, OH).</p>
+<p>There may not be an entry for (C_sec, O_pri_rad) in the database. In that case,
+the rule will attempt to &#8220;fall up&#8221; to more general nodes:</p>
+<img alt="../../_images/Fallup.png" class="align-center" src="../../_images/Fallup.png" />
+<p>Now the preferred rule is (Cs_H, O_rad). If database contains parameters for this,
+those will be returned as an estimated match.</p>
+<p>If there is still no kinetics for the template, the entire set of children for Cs_H and O_rad will be
+checked. For this example, this set would include every combination of
+{C_pri, C_sec, C_ter} with {O_pri_rad, O_sec_rad}. If any these templates have kinetics,
+an average of their parameters will be returned as an estimated match. The
+average for <span class="math">\(A\)</span> is a geometric mean, while the average for <span class="math">\(n\)</span>,
+<span class="math">\(E_a\)</span>, and <span class="math">\(\alpha\)</span> are arithmetic means.</p>
+<p>If there are still no &#8220;sibling&#8221; kinetics, then the groups will continue to fall
+up to more and more general nodes. In the worst case, the root nodes may be used.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div class="sidebarlogo">
+<a href="../../index.html"><img src="../../_static/rmg-logo-small.png" alt="RMG" /></a>
+</div>
+  <h3><a href="../../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">12. Kinetics Estimation</a><ul>
+<li><a class="reference internal" href="#priority-of-kinetic-databases">12.1. Priority of Kinetic Databases</a></li>
+<li><a class="reference internal" href="#kinetic-families">12.2. Kinetic Families</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="thermo.html"
+                        title="previous chapter">11. Thermochemistry Estimation</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="guidelines.html"
+                        title="next chapter">13. Guidelines for Building a Model</a></p>
+  <h3>This Page </h3>
+  <ul class="this-page-menu">
+    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/users/rmg/kinetics.rst"
+           rel="nofollow">Edit this page</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+    </div>
+  </body>
+</html>

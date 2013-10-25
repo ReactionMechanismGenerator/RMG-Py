@@ -62,7 +62,13 @@
     </div>
             
   <div class="section" id="module-rmgpy.molecule.adjlist">
-<span id="adjacency-lists"></span><h1>Adjacency Lists<a class="headerlink" href="#module-rmgpy.molecule.adjlist" title="Permalink to this headline">¶</a></h1>
+<span id="adjacency-lists"></span><span id="rmgpy-molecule-adjlist"></span><h1>Adjacency Lists<a class="headerlink" href="#module-rmgpy.molecule.adjlist" title="Permalink to this headline">¶</a></h1>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">To quickly visualize any adjacency list, or to generate an adjacency list from
+other types of molecular representations such as SMILES, InChI, or even common
+species names, use the Molecule Search tool found here: <a class="reference external" href="http://rmg.mit.edu/molecule_search">http://rmg.mit.edu/molecule_search</a></p>
+</div>
 <p>An adjacency list is the most general way of specifying a chemical molecule or
 molecular pattern in RMG. It is based on the adjacency list representation of
 the graph data type &#8211;  the underlying data type for molecules and patterns in
@@ -110,6 +116,88 @@ can be omitted if desired, as their presence is inferred:</p>
 5 *1 C 0 {4,S} {6,S}
 6 *2 C 0 {5,S}</pre>
 </div>
+<p>The allowed element types, radicals, and bonds are listed in the following table:</p>
+<blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="42%" />
+<col width="19%" />
+<col width="40%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">&nbsp;</th>
+<th class="head">Notation</th>
+<th class="head">Explanation</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td rowspan="4">Chemical Element</td>
+<td>C</td>
+<td>Carbon atom</td>
+</tr>
+<tr class="row-odd"><td>O</td>
+<td>Oxygen atom</td>
+</tr>
+<tr class="row-even"><td>H</td>
+<td>Hydrogen atom</td>
+</tr>
+<tr class="row-odd"><td>S</td>
+<td>Sulfur atom</td>
+</tr>
+<tr class="row-even"><td rowspan="6">Nonreactive Elements</td>
+<td>N</td>
+<td>Nitrogen atom</td>
+</tr>
+<tr class="row-odd"><td>Si</td>
+<td>Silicon atom</td>
+</tr>
+<tr class="row-even"><td>Cl</td>
+<td>Chlorine atom</td>
+</tr>
+<tr class="row-odd"><td>He</td>
+<td>Helium atom</td>
+</tr>
+<tr class="row-even"><td>Ar</td>
+<td>Argon atom</td>
+</tr>
+<tr class="row-odd"><td>&nbsp;</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td rowspan="6">Free Electrons</td>
+<td>0</td>
+<td>Non-radical</td>
+</tr>
+<tr class="row-odd"><td>1</td>
+<td>Mono-radical</td>
+</tr>
+<tr class="row-even"><td>2</td>
+<td>Bi-radical</td>
+</tr>
+<tr class="row-odd"><td>2T</td>
+<td>Triplet</td>
+</tr>
+<tr class="row-even"><td>2S</td>
+<td>Singlet</td>
+</tr>
+<tr class="row-odd"><td>3</td>
+<td>Tri-radical</td>
+</tr>
+<tr class="row-even"><td rowspan="4">Chemical Bond</td>
+<td>S</td>
+<td>Single Bond</td>
+</tr>
+<tr class="row-odd"><td>D</td>
+<td>Double Bond</td>
+</tr>
+<tr class="row-even"><td>T</td>
+<td>Triple bond</td>
+</tr>
+<tr class="row-odd"><td>B</td>
+<td>Benzene bond</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
 <dl class="function">
 <dt id="rmgpy.molecule.adjlist.fromAdjacencyList">
 <tt class="descclassname">rmgpy.molecule.adjlist.</tt><tt class="descname">fromAdjacencyList</tt><big>(</big><em>adjlist</em>, <em>group=False</em><big>)</big><a class="headerlink" href="#rmgpy.molecule.adjlist.fromAdjacencyList" title="Permalink to this definition">¶</a></dt>
@@ -133,7 +221,7 @@ adjacency list.</p>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
 <div class="sidebarlogo">
-<img src="../../_static/rmg-logo-small.png" alt="RMG" />
+<a href="../../index.html"><img src="../../_static/rmg-logo-small.png" alt="RMG" /></a>
 </div>
   <h4>Previous topic</h4>
   <p class="topless"><a href="group.html"

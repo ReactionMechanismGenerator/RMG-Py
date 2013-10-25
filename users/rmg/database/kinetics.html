@@ -1,0 +1,381 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>10.2. Kinetics Database &mdash; RMG Py 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../../index.html" />
+    <link rel="up" title="10. Databases" href="index.html" />
+    <link rel="next" title="10.3. Database Modification" href="modification.html" />
+    <link rel="prev" title="10.1. Thermo Database" href="thermo.html" /> 
+  </head>
+  <body>
+<div class="header">
+&nbsp;
+</div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="modification.html" title="10.3. Database Modification"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="thermo.html" title="10.1. Thermo Database"
+             accesskey="P">previous</a> |</li>
+<li><a href="../../../index.html">Documentation</a> &raquo;</li>
+
+          <li><a href="../../index.html" >User&#8217;s Guide</a> &raquo;</li>
+          <li><a href="../index.html" >RMG User&#8217;s Guide</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">10. Databases</a> &raquo;</li> 
+      </ul>
+    </div>
+            
+  <div class="section" id="kinetics-database">
+<span id="kineticsdatabase"></span><h1>10.2. Kinetics Database<a class="headerlink" href="#kinetics-database" title="Permalink to this headline">¶</a></h1>
+<p>This section describes the general usage of RMG&#8217;s kinetic database. See <a class="reference internal" href="modification.html#kinetic-database-modification"><em>Modifying the Kinetics Database</em></a> for
+instructions on modifying the database.</p>
+<p>Pressure independent reaction rates in RMG are calculated using a modified
+Arrhenius equation, designating the reaction coefficient as <span class="math">\(k(T)\)</span> at
+temperature <span class="math">\(T\)</span>.</p>
+<div class="math">
+\[k(T) = A\left(\frac{T}{T_0}\right)^ne^{-(E_a + \alpha \Delta H_{rxn})/(RT)}\]</div>
+<p><span class="math">\(R\)</span> is the universal gas constant. The <strong>kinetic parameters</strong> determining
+the rate coefficient are:</p>
+<ul class="simple">
+<li><span class="math">\(A\)</span>:    the pre-exponential A-factor</li>
+<li><span class="math">\(T_0\)</span>:  the reference temperature</li>
+<li><span class="math">\(n\)</span>:    the temperature exponent</li>
+<li><span class="math">\(E_a\)</span>:  the activation energy</li>
+<li><span class="math">\(\alpha\)</span>:       the Evans-Polanyi coefficient</li>
+<li><span class="math">\(\Delta H_{rxn}\)</span>: the enthalpy of reaction</li>
+</ul>
+<p>When Evans-Polanyi corrections are used, <span class="math">\(\Delta H_{rxn}\)</span> is calculated
+using RMG&#8217;s thermo database, instead of being specified in the kinetic database.</p>
+<div class="section" id="libraries">
+<h2>10.2.1. Libraries<a class="headerlink" href="#libraries" title="Permalink to this headline">¶</a></h2>
+<p>Kinetic libraries delineate kinetic parameters for specific reactions.
+RMG always chooses to use kinetics from libraries over families. If multiple libraries
+contain the same reaction, then precedence is given to whichever library is
+listed first in the input.py file.</p>
+<p>For combustion mechanisms, you should always use <em>one</em> small-molecule
+combustion library, such as the pre-packaged ERC-Foundation Fuel.
+The reactions contained in these libraries are poorly estimated by kinetic
+families and are universally important to combustion systems.</p>
+<p>Kinetic libraries should also be used in the cases where:</p>
+<ul class="simple">
+<li>A set of reaction rates were optimized together</li>
+<li>You know the reaction rate is not generalizable to similar species (perhaps due to catalysis or aromatic structures)</li>
+<li>No family exists for the class of reaction</li>
+<li>You are not confident about the accuracy of kinetic parameters</li>
+</ul>
+</div>
+<div class="section" id="families">
+<h2>10.2.2. Families<a class="headerlink" href="#families" title="Permalink to this headline">¶</a></h2>
+<p>Allowable reactions in RMG are divided up into classes called <strong>reaction families</strong>.
+All reactions not listed in a kinetic library have their kinetic parameters
+estimated from the reaction families.</p>
+<p>Each reaction family contains the files:</p>
+<ul class="simple">
+<li>groups.py containing the recipe, group definitions, and hierarchical trees</li>
+<li>training.py containing a training set for the family</li>
+<li>rules.py containing kinetic parameters for rules</li>
+</ul>
+<div class="section" id="recipe">
+<h3>10.2.2.1. Recipe<a class="headerlink" href="#recipe" title="Permalink to this headline">¶</a></h3>
+<p>The recipe can be found near the top of groups.py and describes the changes in
+bond order and radicals that occur during the reaction. Reacting atoms are
+labelled with a starred number. Shown below is the recipe for the H-abstraction
+family.</p>
+<a class="reference internal image-reference" href="../../../_images/Recipe.png"><img alt="../../../_images/Recipe.png" class="align-center" src="../../../_images/Recipe.png" /></a>
+<p>The table below shows the possible actions for recipes. The arguments are given
+in the curly braces as shown above. For the order of bond change in the
+Change_Bond action, a -1 could represent a triple bond changing to a double
+bond while a +1 could represent a single bond changing to a double bond.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="18%" />
+<col width="25%" />
+<col width="31%" />
+<col width="26%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Action</th>
+<th class="head">Argument1</th>
+<th class="head">Argument2</th>
+<th class="head">Argument3</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>Break_Bond</td>
+<td>First bonded atom</td>
+<td>Type of bond</td>
+<td>Second bonded atom</td>
+</tr>
+<tr class="row-odd"><td>Form_Bond</td>
+<td>First bonded atom</td>
+<td>Type of bond</td>
+<td>Second bonded atom</td>
+</tr>
+<tr class="row-even"><td>Change_Bond</td>
+<td>First bonded atom</td>
+<td>Order of bond change</td>
+<td>Second bonded atom</td>
+</tr>
+<tr class="row-odd"><td>Gain_Radical</td>
+<td>Specified atom</td>
+<td>Number of radicals</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td>Lose_Radical</td>
+<td>Specified atom</td>
+<td>Number of radicals</td>
+<td>&nbsp;</td>
+</tr>
+</tbody>
+</table>
+<p>Change_Bond order cannot be directly used on benzene bonds. During generation,
+aromatic species are kekulized to alternating double and single bonds such that
+reaction families can be applied. However, RMG cannot properly handle benzene bonds
+written in the kinetic group definitions.</p>
+</div>
+<div class="section" id="group-definitions">
+<h3>10.2.2.2. Group Definitions<a class="headerlink" href="#group-definitions" title="Permalink to this headline">¶</a></h3>
+<p>The main section in groups.py are the group definitions. Groups are adjacency
+lists that describe structures around the reacting atoms. Between the adjacency
+list&#8217;s index number and atom type, a starred number is inserted if the
+atom is a reacting atom.</p>
+<p>Because groups typically do not describe entire molecules, atoms may appear to
+be lacking full valency. When this occurs, the omitted bonds are allowed to be
+anything. An example of a primary carbon group from H-Abstraction is shown below.
+The adjacency list defined on the left matches any of the three drawn structures
+on the right (the numbers correspond to the index from the adjacency list).</p>
+<a class="reference internal image-reference" href="../../../_images/Group.png"><img alt="../../../_images/Group.png" class="align-center" src="../../../_images/Group.png" /></a>
+<p>New <strong>atom types</strong> are also introduced to describe atoms in group definitions. The
+table below shows all atoms types in RMG.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="13%" />
+<col width="25%" />
+<col width="61%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Atom Type</th>
+<th class="head">Chemical Element</th>
+<th class="head">Bonding</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>R</td>
+<td>Any</td>
+<td>No requirements</td>
+</tr>
+<tr class="row-odd"><td>R!H</td>
+<td>Any except hydrogen</td>
+<td>No requirements</td>
+</tr>
+<tr class="row-even"><td>H</td>
+<td>Hydrogen</td>
+<td>No requirements</td>
+</tr>
+<tr class="row-odd"><td>C</td>
+<td>Carbon</td>
+<td>No requirements</td>
+</tr>
+<tr class="row-even"><td>Cs</td>
+<td>Carbon</td>
+<td>No double or triple bonds</td>
+</tr>
+<tr class="row-odd"><td>Cd</td>
+<td>Carbon</td>
+<td>Exactly one double bond to any non-oxygen atom</td>
+</tr>
+<tr class="row-even"><td>Cdd</td>
+<td>Carbon</td>
+<td>Two double bonds to any atoms</td>
+</tr>
+<tr class="row-odd"><td>Ct</td>
+<td>Carbon</td>
+<td>One triple bond</td>
+</tr>
+<tr class="row-even"><td>CO</td>
+<td>Carbon</td>
+<td>Exactly one double bond to an oxygen atom</td>
+</tr>
+<tr class="row-odd"><td>Cb</td>
+<td>Carbon</td>
+<td>Exactly two benzene bonds</td>
+</tr>
+<tr class="row-even"><td>Cbf</td>
+<td>Carbon</td>
+<td>Three benzene bonds (Fused aromatics)</td>
+</tr>
+<tr class="row-odd"><td>O</td>
+<td>Oxygen</td>
+<td>No requirements</td>
+</tr>
+<tr class="row-even"><td>Os</td>
+<td>Oxygen</td>
+<td>No double bonds</td>
+</tr>
+<tr class="row-odd"><td>Od</td>
+<td>Oxygen</td>
+<td>One double bond</td>
+</tr>
+<tr class="row-even"><td>Oa</td>
+<td>Oxygen</td>
+<td>No bonds (Oxygen atom)</td>
+</tr>
+<tr class="row-odd"><td>S</td>
+<td>Sulfur</td>
+<td>No requirements</td>
+</tr>
+<tr class="row-even"><td>Ss</td>
+<td>Sulfur</td>
+<td>No double bond</td>
+</tr>
+<tr class="row-odd"><td>Sd</td>
+<td>Sulfur</td>
+<td>One double bond</td>
+</tr>
+<tr class="row-even"><td>Sa</td>
+<td>Sulfur</td>
+<td>No bonds (Sulfur atom)</td>
+</tr>
+</tbody>
+</table>
+<p>Additionally, groups can also be defined as unions of other groups. For example,:</p>
+<div class="highlight-python"><pre>label="X_H_or_Xrad_H",
+group=OR{X_H, Xrad_H},</pre>
+</div>
+</div>
+<div class="section" id="hierarchical-trees">
+<h3>10.2.2.3. Hierarchical Trees<a class="headerlink" href="#hierarchical-trees" title="Permalink to this headline">¶</a></h3>
+<p>Kinetic groups are ordered into the nodes of a hierarchical trees which is written
+at the end of groups.py. The root node of each tree is the most general group with
+the reacting atoms required for the family. Descending from the root node are
+more specific groups. Each child node is a subset of the parent node above it.</p>
+<p>A simplified example of the trees for H-abstraction is shown below. The indented
+text shows the syntax in groups.py and a schematic is given underneath.</p>
+<img alt="../../../_images/Trees.png" class="align-center" src="../../../_images/Trees.png" />
+<p>Individual groups only describe part of the reaction. To describe an entire reaction
+we need one group from each tree, which we call <strong>node templates</strong> or simply templates.
+(C_pri, O_pri_rad), (H2, O_sec_rad), and (X_H, Y_rad) are all valid examples of templates.
+Templates can be filled in with kinetic parameters from the training set or rules.</p>
+</div>
+<div class="section" id="training-set-vs-rules">
+<h3>10.2.2.4. Training Set vs Rules<a class="headerlink" href="#training-set-vs-rules" title="Permalink to this headline">¶</a></h3>
+<p>The training set and rules both contain trusted kinetics that are used to fill in
+templates in a family. The <strong>training set</strong> contains kinetics for specific reactions,
+which are then matched to a template. The kinetic <strong>rules</strong> contain kinetic
+parameters that do not necessarily correspond to a specific reaction, but have
+been generalized for a template.</p>
+<p>When determining the kinetics for a reaction, a match for the template
+is searched for in the kinetic database. The three cases in order
+of decreasing reliability are:</p>
+<ol class="arabic simple">
+<li>Reaction match from training set</li>
+<li>Node template exact match using either training set or rules</li>
+<li>Node template estimate averaged from children nodes</li>
+</ol>
+<p>The reaction match from training set is accurate within the documented uncertainty for that
+reaction. A template exact match is usually accurate within about one order
+of magnitude. When there is no kinetics available for for the template in
+either the training set or rules, the kinetics are averaged from the children
+nodes as an estimate. In these cases, the kinetic parameters are much less reliable.
+For more information on the estimation algorithm see <a class="reference internal" href="../kinetics.html#kinetics"><em>Kinetics Estimation</em></a>.</p>
+<p>The training set can be modified in training.py and the rules can be modified in
+rules.py. For more information on modification see <a class="reference internal" href="modification.html#kinetic-training-set"><em>Adding Training Reactions</em></a> and <a class="reference internal" href="modification.html#kinetic-rules"><em>Adding Kinetic Rules</em></a>.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div class="sidebarlogo">
+<a href="../../../index.html"><img src="../../../_static/rmg-logo-small.png" alt="RMG" /></a>
+</div>
+  <h3><a href="../../../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">10.2. Kinetics Database</a><ul>
+<li><a class="reference internal" href="#libraries">10.2.1. Libraries</a></li>
+<li><a class="reference internal" href="#families">10.2.2. Families</a><ul>
+<li><a class="reference internal" href="#recipe">10.2.2.1. Recipe</a></li>
+<li><a class="reference internal" href="#group-definitions">10.2.2.2. Group Definitions</a></li>
+<li><a class="reference internal" href="#hierarchical-trees">10.2.2.3. Hierarchical Trees</a></li>
+<li><a class="reference internal" href="#training-set-vs-rules">10.2.2.4. Training Set vs Rules</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="thermo.html"
+                        title="previous chapter">10.1. Thermo Database</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="modification.html"
+                        title="next chapter">10.3. Database Modification</a></p>
+  <h3>This Page </h3>
+  <ul class="this-page-menu">
+    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/users/rmg/database/kinetics.rst"
+           rel="nofollow">Edit this page</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,383 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>10.3. Database Modification &mdash; RMG Py 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../../index.html" />
+    <link rel="up" title="10. Databases" href="index.html" />
+    <link rel="next" title="11. Thermochemistry Estimation" href="../thermo.html" />
+    <link rel="prev" title="10.2. Kinetics Database" href="kinetics.html" /> 
+  </head>
+  <body>
+<div class="header">
+&nbsp;
+</div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../thermo.html" title="11. Thermochemistry Estimation"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="kinetics.html" title="10.2. Kinetics Database"
+             accesskey="P">previous</a> |</li>
+<li><a href="../../../index.html">Documentation</a> &raquo;</li>
+
+          <li><a href="../../index.html" >User&#8217;s Guide</a> &raquo;</li>
+          <li><a href="../index.html" >RMG User&#8217;s Guide</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">10. Databases</a> &raquo;</li> 
+      </ul>
+    </div>
+            
+  <div class="section" id="database-modification">
+<span id="databasemodification"></span><h1>10.3. Database Modification<a class="headerlink" href="#database-modification" title="Permalink to this headline">¶</a></h1>
+<p>Note that the RMG-Py database is written in Python code where line indentions
+determine the scope. When modifying the database, be sure to preserve all
+line indentions shown in the examples.</p>
+<div class="section" id="modifying-the-thermo-database">
+<h2>10.3.1. Modifying the Thermo Database<a class="headerlink" href="#modifying-the-thermo-database" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="creating-thermo-libraries">
+<h3>10.3.1.1. Creating Thermo Libraries<a class="headerlink" href="#creating-thermo-libraries" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="adding-thermo-groups">
+<h3>10.3.1.2. Adding Thermo Groups<a class="headerlink" href="#adding-thermo-groups" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="adding-thermo-to-the-depository">
+<h3>10.3.1.3. Adding Thermo to the Depository<a class="headerlink" href="#adding-thermo-to-the-depository" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+<div class="section" id="modifying-the-kinetics-database">
+<span id="kinetic-database-modification"></span><h2>10.3.2. Modifying the Kinetics Database<a class="headerlink" href="#modifying-the-kinetics-database" title="Permalink to this headline">¶</a></h2>
+<p>For the casual user, it is recommended to use either a kinetic library or
+add to the training set instead of modifying the kinetic groups.</p>
+<p>Put kinetic parameters into a kinetic library when:</p>
+<ul class="simple">
+<li>A set of reaction rates were optimized together</li>
+<li>You know the reaction rate is not generalizable to similar species (perhaps due to catalysis or aromatic structures)</li>
+<li>No family exists for the class of reaction</li>
+<li>You are not confident about the accuracy of kinetic parameters</li>
+</ul>
+<p>Put kinetic parameters into the training set when:</p>
+<ul class="simple">
+<li>You are confident on the accurcy of the kinetic parameter</li>
+<li>You wish for the reaction to be generalized to similar reactions in your mechanism</li>
+</ul>
+<div class="section" id="creating-kinetics-libraries">
+<h3>10.3.2.1. Creating Kinetics Libraries<a class="headerlink" href="#creating-kinetics-libraries" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="adding-new-kinetic-groups-and-rate-rules">
+<h3>10.3.2.2. Adding New Kinetic Groups and Rate Rules<a class="headerlink" href="#adding-new-kinetic-groups-and-rate-rules" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="decide-on-a-template">
+<h3>10.3.2.3. Decide on a Template<a class="headerlink" href="#decide-on-a-template" title="Permalink to this headline">¶</a></h3>
+<p>First you need to know the template for your reaction to decide whether or not
+to create new groups:</p>
+<ol class="arabic simple">
+<li>Type your reaction into the kinetics search at <a class="reference external" href="http://rmg.mit.edu/database/kinetics/search/">http://rmg.mit.edu/database/kinetics/search/</a></li>
+<li>Select the correct reaction</li>
+<li>In the results search for &#8220;(RMG-Py rate rules)&#8221; and select that link. The kinetic family listed is the family of interest.</li>
+<li>Scroll to the bottom and look at the end of the long description. There may be very long description of the averaging scheme, but the template for the reaction is the very last one listed:</li>
+</ol>
+<img alt="../../../_images/GroupSearch.png" class="align-center" src="../../../_images/GroupSearch.png" />
+<p>Now you must determine whether the chosen template is appropriate.  A good rule
+of thumb is to see if the all neighbours of the reacting atoms are as specified
+as possible. For example, assume your species is ethanol</p>
+<a class="reference internal image-reference" href="../../../_images/ethanol.png"><img alt="../../../_images/ethanol.png" class="align-center" src="../../../_images/ethanol.png" /></a>
+<p>and RMG suggests the group:</p>
+<div class="highlight-python"><pre>label = "C_sec",
+group =
+"""
+1 *1 Cs  0 {2,S} {3,S} {4,S}
+2 *2 H   0 {1,S}
+3    R!H 0 {1,S}
+4    R!H 0 {1,S}
+""",</pre>
+</div>
+<p>If you use the suggested groups you will not capture the effect of the alcohol
+group. Therefore it is better to make a new group.</p>
+<div class="highlight-python"><pre>label = "C/H2/CsO",
+group =
+"""
+1 *1 Cs  0 {2,S} {3,S} {4,S} {5,S}
+2 *2 H  0 {1,S}
+3    H  0 {1,S}
+4    O  0 {1,S}
+5    Cs 0 {1,S}
+""",</pre>
+</div>
+<p>If you have determined the suggested groups is appropriate, skip to
+<a class="reference internal" href="#kinetic-training-set"><em>Adding Training Reactions</em></a> or <a class="reference internal" href="#kinetic-rules"><em>Adding Kinetic Rules</em></a>. Otherwise proceed to the
+next section for instructions on creating the new group.</p>
+</div>
+<div class="section" id="creating-a-new-group">
+<h3>10.3.2.4. Creating a New Group<a class="headerlink" href="#creating-a-new-group" title="Permalink to this headline">¶</a></h3>
+<p>In the family&#8217;s groups.py, you will need to add an entry of the format:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">entry</span><span class="p">(</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="mi">61</span><span class="p">,</span>
+        <span class="n">label</span> <span class="o">=</span> <span class="s">&quot;C_sec&quot;</span><span class="p">,</span>
+        <span class="n">group</span> <span class="o">=</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">1 *1 Cs   0 {2,S} {3,S} {4,S} {5,S}</span>
+<span class="sd">2 *2 H   0 {1,S}</span>
+<span class="sd">3    C   0 {1,S}</span>
+<span class="sd">4    H   0 {1,S}</span>
+<span class="sd">5    R!H 0 {1,S}</span>
+<span class="sd">&quot;&quot;&quot;</span><span class="p">,</span>
+        <span class="n">kinetics</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span>
+        <span class="n">reference</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span>
+        <span class="n">referenceType</span> <span class="o">=</span> <span class="s">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">shortDesc</span> <span class="o">=</span> <span class="s">u&quot;&quot;&quot;&quot;&quot;&quot;</span><span class="p">,</span>
+        <span class="n">longDesc</span> <span class="o">=</span> <span class="s">u&quot;&quot;&quot;&quot;&quot;&quot;</span><span class="p">,</span>
+<span class="n">history</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">(</span><span class="s">&quot;Wed Dec  5 10:25:25 2012&quot;</span><span class="p">,</span><span class="s">&quot;Josh Allen &lt;jwallen@mit.edu&gt;&quot;</span><span class="p">,</span><span class="s">&quot;action&quot;</span><span class="p">,</span><span class="s">&quot;&quot;&quot;Josh Allen &lt;jwallen@mit.edu&gt; imported this entry from the old RMG database.&quot;&quot;&quot;</span><span class="p">),</span>
+<span class="p">],</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li>The index can be any number not already present in the set</li>
+<li>The label is the name of the group.</li>
+<li>The group is the group adjacency list with the starred reacting atoms.</li>
+<li>The other attributes do not need to be filled for a group</li>
+</ul>
+<p>Next, you must enter your new group into the tree. At the bottom of groups.py
+you will find the trees. Place your group in the appropriate position. In the
+example given in the previous section, the new group would be added under the C_sec.</p>
+<div class="highlight-python"><pre>L1: X_H
+        L2: H2
+        L2: Cs_H
+                L3: C_pri
+                L3: C_sec
+                        L4: C/H2/CsO
+                L3: C_ter</pre>
+</div>
+</div>
+<div class="section" id="adding-kinetic-rules">
+<span id="kinetic-rules"></span><h3>10.3.2.5. Adding Kinetic Rules<a class="headerlink" href="#adding-kinetic-rules" title="Permalink to this headline">¶</a></h3>
+<p>Rules give generalized kinetic parameters for a specific node template. In most
+cases, your kinetic parameters describe a specific reaction in which case you
+will want to add your reaction to the training set.</p>
+<p>The rule must be added into rules.py in the form:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">entry</span><span class="p">(</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="mi">150</span><span class="p">,</span>
+        <span class="n">label</span> <span class="o">=</span> <span class="s">&quot;C/H/Cs3;O_rad/NonDeO&quot;</span><span class="p">,</span>
+        <span class="n">group1</span> <span class="o">=</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">1 *1 Cs  0 {2,S} {3,S} {4,S} {5,S}</span>
+<span class="sd">2 *2 H  0 {1,S}</span>
+<span class="sd">3    Cs 0 {1,S}</span>
+<span class="sd">4    Cs 0 {1,S}</span>
+<span class="sd">5    Cs 0 {1,S}</span>
+<span class="sd">&quot;&quot;&quot;</span><span class="p">,</span>
+        <span class="n">group2</span> <span class="o">=</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">1 *3 O 1 {2,S}</span>
+<span class="sd">2    O 0 {1,S}</span>
+<span class="sd">&quot;&quot;&quot;</span><span class="p">,</span>
+        <span class="n">kinetics</span> <span class="o">=</span> <span class="n">ArrheniusEP</span><span class="p">(</span>
+                <span class="n">A</span> <span class="o">=</span> <span class="p">(</span><span class="mf">2800000000000.0</span><span class="p">,</span> <span class="s">&#39;cm^3/(mol*s)&#39;</span><span class="p">,</span> <span class="s">&#39;*|/&#39;</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span>
+                <span class="n">n</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+                <span class="n">alpha</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+                <span class="n">E0</span> <span class="o">=</span> <span class="p">(</span><span class="mf">16.013</span><span class="p">,</span> <span class="s">&#39;kcal/mol&#39;</span><span class="p">,</span> <span class="s">&#39;+|-&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+                <span class="n">Tmin</span> <span class="o">=</span> <span class="p">(</span><span class="mi">300</span><span class="p">,</span> <span class="s">&#39;K&#39;</span><span class="p">),</span>
+                <span class="n">Tmax</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1500</span><span class="p">,</span> <span class="s">&#39;K&#39;</span><span class="p">),</span>
+        <span class="p">),</span>
+        <span class="n">reference</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span>
+        <span class="n">referenceType</span> <span class="o">=</span> <span class="s">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">rank</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
+        <span class="n">shortDesc</span> <span class="o">=</span> <span class="s">u&quot;&quot;&quot;Curran et al. [8] Rate expressions for H atom abstraction from fuels.&quot;&quot;&quot;</span><span class="p">,</span>
+        <span class="n">longDesc</span> <span class="o">=</span>
+<span class="sd">u&quot;&quot;&quot;</span>
+<span class="sd">[8] Curran, H.J.; Gaffuri, P.; Pit z, W.J.; Westbrook, C.K. Combust. Flame 2002, 129, 253.</span>
+<span class="sd">Rate expressions for H atom abstraction from fuels.</span>
+
+<span class="sd">pg 257 A Comprehensive Modelling Study of iso-Octane Oxidation, Table 1. Radical:HO2, Site: tertiary (c)</span>
+
+<span class="sd">Verified by Karma James</span>
+<span class="sd">&quot;&quot;&quot;</span><span class="p">,</span>
+        <span class="n">history</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="p">(</span><span class="s">&quot;Wed Jan  9 11:01:40 2013&quot;</span><span class="p">,</span><span class="s">&quot;Josh Allen &lt;jwallen@mit.edu&gt;&quot;</span><span class="p">,</span><span class="s">&quot;action&quot;</span><span class="p">,</span><span class="s">&quot;&quot;&quot;Josh Allen &lt;jwallen@mit.edu&gt; imported this entry from the old RMG database.&quot;&quot;&quot;</span><span class="p">),</span>
+        <span class="p">],</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<ul>
+<li><p class="first">The index can be any number not already used in rules.py.</p>
+</li>
+<li><p class="first">The label is the name of the rule.</p>
+</li>
+<li><p class="first">The groups must have the adjacency list of the respective groups. Between them they should have all starred atoms from the recipe.</p>
+</li>
+<li><dl class="first docutils">
+<dt>The value and units of kinetic parameters must be given.</dt>
+<dd><ul class="first last simple">
+<li>Multiplicative uncertainty is given as &#8220;&#8217;<a href="#id1"><span class="problematic" id="id2">*</span></a>|/,&#8217; 5&#8221; meaning within a factor of 5</li>
+<li>Additive uncertainty is given as &#8220;&#8217;+|/-&#8216;, 2&#8221; meaning plus or minus 2.</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p class="first">Rank determines the priority of the rule when compared with other rules.</p>
+</li>
+<li><p class="first">The short description will appear in the annotated chemkin file.</p>
+</li>
+<li><p class="first">The long description only appears in the database.</p>
+</li>
+</ul>
+</div>
+<div class="section" id="adding-training-reactions">
+<span id="kinetic-training-set"></span><h3>10.3.2.6. Adding Training Reactions<a class="headerlink" href="#adding-training-reactions" title="Permalink to this headline">¶</a></h3>
+<p>If you know the kinetics of a specific reaction, rather than a rate rule for a template, you can
+add the kinetics to the database training set.  By default, RMG creates new rate rules from this
+training set, which in turn benefits the kinetics of similar reactions.  The new rate rules
+are formed by matching the reaction to the most most specific template nodes within
+the reaction&#8217;s respective family. If you do not want the
+training depository reactions to create new rate rules in the database, set the option for
+<tt class="docutils literal"><span class="pre">kineticsDepositories</span></tt> within the <tt class="docutils literal"><span class="pre">database</span></tt> field in your input file to</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">kineticsDepositories</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;!training&#39;</span><span class="p">],</span>
+</pre></div>
+</div>
+<p>Currently, RMG&#8217;s rate rule estimates overrides all kinetics depository kinetics, including training
+reactions.  Unless the training reaction&#8217;s rate rule ranks higher than the existing node, it
+will not be used.  If you want the training reaction to override the rate rule estimates, you should put the reaction into
+a reaction library or seed mechanism.</p>
+<p>The easiest way to add training reactions to the database is via the RMG website.  First, search for
+the reaction using <a class="reference external" href="http://rmg.mit.edu/database/kinetics/search/">http://rmg.mit.edu/database/kinetics/search/</a> . This will automatically search
+the existing RMG database for the reaction, as well as identify the reaction family template
+that this reaction matches.  If the reaction does not match any family, then it cannot be added to the
+training reactions.  Click the &#8216;Create training rate from average&#8217; button underneath the kinetics plot
+for the reaction and edit the kinetics and reference descriptions for the reaction.  The atom labels
+marking the reaction recipe actions (lose bond, add radical, etc.) will already be automatically
+labeled for you.  After editing the reaction data, write a short message for the reaction added under
+the &#8216;Summary of changes&#8217; field, then click &#8216;Save.&#8217;  You will need an account for the RMG website to
+make an entry.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>If you are entering the reaction in the reverse direction of the family, you must still label the
+reactants and products with the atomLabels of the original reaction template.  Otherwise, RMG
+will not be able to locate the nodes in the group tree to match the reaction.</p>
+<p class="last">Entries added in the reverse direction of the original template will use the current RMG job&#8217;s
+thermo database to estimate the kinetics in the forward direction.  Therefore this value can differ
+depending on the order of thermo libraries used when running a job.</p>
+</div>
+<p>If adding the training reaction manually, first identify the reaction family of the reaction, then
+go to the family&#8217;s folder in <tt class="docutils literal"><span class="pre">RMG-database/input/kinetics/families/</span></tt>.  Create a new kinetics entry
+in the <tt class="docutils literal"><span class="pre">training.py</span></tt> file.  Make sure to apply the reaction recipe labels properly for the
+reactants and products.</p>
+</div>
+<div class="section" id="pitfalls">
+<h3>10.3.2.7. Pitfalls<a class="headerlink" href="#pitfalls" title="Permalink to this headline">¶</a></h3>
+<p>Be careful with the specificity when naming neighbouring atoms. On upper nodes,
+you should try to be general so that you do not exclude reactions.</p>
+<p>Sibling nodes must be exclusive from one another so that there is no question
+which group a molecule qualifies as. However, you do not need to be exhaustive and
+list out every possibility.</p>
+<p>Make sure your nodes are actually children of their parents. Currently RMG does
+no atom-by-atom checking and assumes whatever is put into the tree is correct.</p>
+<p>Be sure to give errors whenever adding rules. If you don&#8217;t know the uncertainty,
+why do you trust the kinetics?</p>
+<p>After you are done always check via populate reactions or the website, that your
+modifications are behaving the way you expect.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div class="sidebarlogo">
+<a href="../../../index.html"><img src="../../../_static/rmg-logo-small.png" alt="RMG" /></a>
+</div>
+  <h3><a href="../../../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">10.3. Database Modification</a><ul>
+<li><a class="reference internal" href="#modifying-the-thermo-database">10.3.1. Modifying the Thermo Database</a><ul>
+<li><a class="reference internal" href="#creating-thermo-libraries">10.3.1.1. Creating Thermo Libraries</a></li>
+<li><a class="reference internal" href="#adding-thermo-groups">10.3.1.2. Adding Thermo Groups</a></li>
+<li><a class="reference internal" href="#adding-thermo-to-the-depository">10.3.1.3. Adding Thermo to the Depository</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#modifying-the-kinetics-database">10.3.2. Modifying the Kinetics Database</a><ul>
+<li><a class="reference internal" href="#creating-kinetics-libraries">10.3.2.1. Creating Kinetics Libraries</a></li>
+<li><a class="reference internal" href="#adding-new-kinetic-groups-and-rate-rules">10.3.2.2. Adding New Kinetic Groups and Rate Rules</a></li>
+<li><a class="reference internal" href="#decide-on-a-template">10.3.2.3. Decide on a Template</a></li>
+<li><a class="reference internal" href="#creating-a-new-group">10.3.2.4. Creating a New Group</a></li>
+<li><a class="reference internal" href="#adding-kinetic-rules">10.3.2.5. Adding Kinetic Rules</a></li>
+<li><a class="reference internal" href="#adding-training-reactions">10.3.2.6. Adding Training Reactions</a></li>
+<li><a class="reference internal" href="#pitfalls">10.3.2.7. Pitfalls</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="kinetics.html"
+                        title="previous chapter">10.2. Kinetics Database</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../thermo.html"
+                        title="next chapter">11. Thermochemistry Estimation</a></p>
+  <h3>This Page </h3>
+  <ul class="this-page-menu">
+    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/users/rmg/database/modification.rst"
+           rel="nofollow">Edit this page</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+    </div>
+  </body>
+</html>

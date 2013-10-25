@@ -1,0 +1,184 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>8. Species Representation &mdash; RMG Py 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
+    <link rel="up" title="RMG User’s Guide" href="index.html" />
+    <link rel="next" title="9. Group Representation" href="group.html" />
+    <link rel="prev" title="7. Analyzing the Output Files" href="output.html" /> 
+  </head>
+  <body>
+<div class="header">
+&nbsp;
+</div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="group.html" title="9. Group Representation"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="output.html" title="7. Analyzing the Output Files"
+             accesskey="P">previous</a> |</li>
+<li><a href="../../index.html">Documentation</a> &raquo;</li>
+
+          <li><a href="../index.html" >User&#8217;s Guide</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">RMG User&#8217;s Guide</a> &raquo;</li> 
+      </ul>
+    </div>
+            
+  <div class="section" id="species-representation">
+<span id="species"></span><h1>8. Species Representation<a class="headerlink" href="#species-representation" title="Permalink to this headline">¶</a></h1>
+<p>Species objects in RMG contain a variety of attributes, including user given names,
+thermochemistry, as well as structural isomers.  See the <a class="reference internal" href="../../reference/species/species.html#rmgpy-species-species"><em>rmgpy.species.Species</em></a> class
+documentation for more information.</p>
+<p>RMG considers each species to be unique, and comprised of a set of molecular structural
+isomers, including resonance isomers.  RMG uses the list of resonance isomers to
+compare whether two species are the same. Each molecular structure is stored in RMG using
+graph representations, using vertices and edges, where the vertices are the atoms and the
+edges are the bonds.  This form of representation is known as an adjacency list.  For
+more information on adjacency lists, see the <a class="reference internal" href="../../reference/molecule/adjlist.html#rmgpy-molecule-adjlist"><em>Adjacency Lists</em></a> page.</p>
+<p>Species objects in the input file can also be constructed using other common representations
+such as SMILES, SMARTS, and InChIs.  The following can all be used to represent the methane
+species:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">species</span><span class="p">(</span>
+    <span class="n">label</span><span class="o">=</span><span class="s">&#39;CH4&#39;</span><span class="p">,</span>
+    <span class="n">reactive</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s">&quot;C&quot;</span><span class="p">),</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Replacing the structure with any of the following representations will also produce
+the same species:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">structure</span><span class="o">=</span><span class="n">adjacencyList</span><span class="p">(</span><span class="s">&quot;1 C 0&quot;</span><span class="p">),</span>
+
+<span class="n">structure</span><span class="o">=</span><span class="n">SMARTS</span><span class="p">(</span><span class="s">&quot;[CH4]&quot;</span><span class="p">),</span>
+
+<span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s">&quot;C&quot;</span><span class="p">),</span>
+
+<span class="n">structure</span><span class="o">=</span><span class="n">InChI</span><span class="p">(</span><span class="s">&quot;InChI=1S/CH4/h1H4&quot;</span><span class="p">),</span>
+</pre></div>
+</div>
+<p>To quickly generate any adjacency list, or to generate an adjacency list from
+other types of molecular representations such as SMILES, InChI, or even common
+species names, use the Molecule Search tool found here: <a class="reference external" href="http://rmg.mit.edu/molecule_search">http://rmg.mit.edu/molecule_search</a></p>
+<div class="section" id="representing-oxygen">
+<h2>8.1. Representing Oxygen<a class="headerlink" href="#representing-oxygen" title="Permalink to this headline">¶</a></h2>
+<p>Special care should be taken when constructing a mechanism that involves
+molecular oxygen. The ground electronic state of molecular oxygen,
+<span class="math">\(^3\Sigma^-_g\)</span>, does <em>not</em> contain a double bond, but instead a single
+bond and two lone electrons. In RMG&#8217;s adjaceny list notation the ground state
+of oxygen is represented as</p>
+<div class="highlight-python"><pre>1 O 1 {2,S}
+2 O 1 {1,S}</pre>
+</div>
+<p>You should use the above adjacency list to represent molecular oxygen in
+your condition files, seed mechanisms, etc. The triplet form is 22 kcal/mol
+more stable than the first singlet excited state, <span class="math">\(^1\Delta_g\)</span>, which
+does contain a double bond. The adjacency list for singlet oxygen is</p>
+<div class="highlight-python"><pre>1 O 0 {2,D}
+2 O 0 {1,D}</pre>
+</div>
+<p>Selecting the correct structure for oxygen is important, as the reactions
+generated from a double bond are significantly different than those generated
+from a radical or diradical. For example, the reaction</p>
+<div class="math">
+\[\mathrm{CH_4} + \mathrm{O_2} \rightarrow \mathrm{CH_3} + \mathrm{HO_2}\]</div>
+<p>would occur for both triplet and singlet oxygen, but in entirely different
+families. For triplet oxygen the above represents a hydrogen abstraction, while
+for singlet oxygen it represents the reverse of a disproportionation reaction.</p>
+<p>The RMG databases have been modified to make all of the
+oxygen-related chemistry that was present in RMG databases consistent with the
+single-bonded biradical representation.</p>
+<p>Conversion between triplet and singlet forms is possible through the primary
+reaction library <tt class="docutils literal"><span class="pre">OxygenSingTrip</span></tt>; the reactions involved are very slow, however,
+and are likely to be absent from any mechanisms generated. At this point, no other
+reactions of singlet oxygen have been included in RMG.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div class="sidebarlogo">
+<a href="../../index.html"><img src="../../_static/rmg-logo-small.png" alt="RMG" /></a>
+</div>
+  <h3><a href="../../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">8. Species Representation</a><ul>
+<li><a class="reference internal" href="#representing-oxygen">8.1. Representing Oxygen</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="output.html"
+                        title="previous chapter">7. Analyzing the Output Files</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="group.html"
+                        title="next chapter">9. Group Representation</a></p>
+  <h3>This Page </h3>
+  <ul class="this-page-menu">
+    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/users/rmg/species.rst"
+           rel="nofollow">Edit this page</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,462 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>4. Creating Input Files &mdash; RMG Py 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
+    <link rel="up" title="RMG User’s Guide" href="index.html" />
+    <link rel="next" title="5. Example Input Files" href="examples.html" />
+    <link rel="prev" title="3.4. Quantum Mechanical Calculations" href="installation/QMthermo.html" /> 
+  </head>
+  <body>
+<div class="header">
+&nbsp;
+</div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="examples.html" title="5. Example Input Files"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="installation/QMthermo.html" title="3.4. Quantum Mechanical Calculations"
+             accesskey="P">previous</a> |</li>
+<li><a href="../../index.html">Documentation</a> &raquo;</li>
+
+          <li><a href="../index.html" >User&#8217;s Guide</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">RMG User&#8217;s Guide</a> &raquo;</li> 
+      </ul>
+    </div>
+            
+  <div class="section" id="creating-input-files">
+<span id="input"></span><h1>4. Creating Input Files<a class="headerlink" href="#creating-input-files" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="syntax">
+<h2>4.1. Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
+<p>The format of RMG-Py input files is based on Python syntax.</p>
+<p>Each section is made up of one or more function calls, where parameters are
+specified as text strings, numbers, or objects. Text strings must be wrapped in
+either single or double quotes.</p>
+</div>
+<div class="section" id="datasources">
+<h2>4.2. Datasources<a class="headerlink" href="#datasources" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="thermo-libraries">
+<span id="thermolibraries"></span><h3>4.2.1. Thermo Libraries<a class="headerlink" href="#thermo-libraries" title="Permalink to this headline">¶</a></h3>
+<p>By default, RMG will calculate the thermodynamic properties of the species from
+Benson additivity formulas. In general, the group-additivity results are
+suitably accurate. However, if you would like to override the default settings,
+you may specify the thermodynamic properties of species in the
+ThermoLibrary. When a species is specified in the ThermoLibrary,
+RMG will automatically use those thermodynamic properties instead of generating
+them from Benson&#8217;s formulas. Multiple libraries may be created, if so desired.
+The order in which the thermo libraries are specified is important:
+If a species appears in multiple thermo libraries, the first instance will
+be used.</p>
+<p>Please see Section <em class="xref std std-ref">editingthermodatabase</em> for details on editing the
+thermo library. In general, it is best to leave the ThermoLibrary
+set to its default value.  In particular, the thermodynamic properties for H and H2
+must be specified in one of the primary thermo libraries as they cannot be estimated
+by Benson&#8217;s method</p>
+<p>In addition to the default library, RMG comes with the thermodynamic properties
+of the species in the GRI-Mech 3.0 mechanism <a class="reference internal" href="#grimech3-0" id="id1">[GRIMech3.0]</a>.</p>
+<table class="docutils citation" frame="void" id="grimech3-0" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[GRIMech3.0]</a></td><td>Gregory P. Smith, David M. Golden, Michael Frenklach, Nigel W. Moriarty, Boris Eiteneer, Mikhail Goldenberg, C. Thomas Bowman, Ronald K. Hanson, Soonho Song, William C. Gardiner, Jr., Vitali V. Lissianski, and Zhiwei Qin <a class="reference external" href="http://www.me.berkeley.edu/gri_mech/">http://www.me.berkeley.edu/gri_mech/</a></td></tr>
+</tbody>
+</table>
+<p>This library is located in the
+<tt class="file docutils literal"><span class="pre">$RMG/RMG-database/input/thermo/libraries</span></tt> directory.  All &#8220;Locations&#8221; for the
+ThermoLibrary field must be with respect to the <tt class="file docutils literal"><span class="pre">$RMG/RMG-database/input/thermo/libraries</span></tt>
+directory.:</p>
+<div class="highlight-python"><pre>.. _reactionlibraries:</pre>
+</div>
+</div>
+<div class="section" id="reaction-libraries">
+<h3>4.2.2. Reaction Libraries<a class="headerlink" href="#reaction-libraries" title="Permalink to this headline">¶</a></h3>
+<p>The next section of the <tt class="file docutils literal"><span class="pre">input.py</span></tt> file specifies which, if any,
+Reaction Libraries should be used. When a reaction library is specified, RMG will first
+use the reaction library to generate all the relevant reactions for the species
+in the core before going through the reaction templates.Unlike the Seed Mechanism,
+reactions present in a Reaction Library will not be included in the core automatically
+from the start.</p>
+<p>You can specify your own reaction library in the location section.
+In the following example, the user has created
+a reaction library with a few additional reactions specific to n-butane, and these reactions
+are to be used in addition to the Glarborg C3 library:</p>
+<div class="highlight-python"><pre>ReactionLibrary:
+Name: nbutane
+Location: nbutane
+Name: Glarborg
+Location: Glarborg/C3
+END</pre>
+</div>
+<p>The reaction libraries are stored in <tt class="file docutils literal"><span class="pre">$RMG/databases/RMG_database/kinetics_libraries/</span></tt>
+and the <cite>Location:</cite> should be specified relative to this path.</p>
+<p>Please note that the keyword <tt class="docutils literal"><span class="pre">END</span></tt> must be placed at the end of the Reaction Library
+section. Because the units for the Arrhenius parameters are
+given in each mechanism, the different mechanisms can have different units.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>While using a Reaction Library the user must be careful enough to provide
+all instances of a particular reaction in the library file, as RMG will
+ignore all reactions generated by its templates.  For example, suppose you supply the
+Reaction Library with butyl_1 &#8211;&gt; butyl_2.  Although RMG would find two unique
+instances of this reaction (via a three- and four-member cyclic Transition State),
+RMG would only use the rate coefficient supplied by you in generating the mechanism.</p>
+<p class="last">RMG will not handle irreversible reactions correctly, if supplied in a Reaction
+Library, see <em class="xref std std-ref">irreversiblekinetics</em>.</p>
+</div>
+</div>
+<div class="section" id="seed-mechanisms">
+<span id="seedmechanism"></span><h3>4.2.3. Seed Mechanisms<a class="headerlink" href="#seed-mechanisms" title="Permalink to this headline">¶</a></h3>
+<p>The next section of the <tt class="file docutils literal"><span class="pre">condition.txt</span></tt> file specifies which, if any,
+Seed Mechanisms should be used.  If a seed mechanism is passed to RMG, every
+species and reaction present in the mechanism will be placed into the core, in
+addition to the species that are listed in the <em class="xref std std-ref">reactants</em> section.</p>
+<p>For details of the kinetics libraries included with RMG that can be used as a seed mechanism,
+see <em class="xref std std-ref">reactionlibraries</em>.</p>
+<p>You can specify your own
+seed mechanism in the location section. Please note that the oxidation
+library should not be used for pyrolysis models. The syntax for the seed mechanisms
+is similar to that of the primary reaction libraries, except for the <tt class="docutils literal"><span class="pre">GenerateReactions</span></tt>
+line, explained below.:</p>
+<div class="highlight-python"><pre>SeedMechanism:
+Name: GRI-Mech 3.0
+Location: GRI-Mech3.0
+GenerateReactions: yes
+Name: Leeds
+Location: combustion_core/version5
+GenerateReactions: yes
+END</pre>
+</div>
+<p>The seed mechanisms are stored in <tt class="file docutils literal"><span class="pre">$RMG/databases/RMG_database/kinetics_libraries/</span></tt>
+and the <cite>Location:</cite> should be specified relative to this path.</p>
+<p>There is a new required <tt class="docutils literal"><span class="pre">GenerateReactions</span></tt> line in seed mechanisms that controls how RMG adds the
+seed species and reactions to the model core. If set to <tt class="docutils literal"><span class="pre">yes</span></tt>, RMG will use its
+reaction families to react all seed species with one another; the generated
+reactions will supplement the seed reactions. If set to <tt class="docutils literal"><span class="pre">no</span></tt>, RMG will not
+generate reactions of the seed species. In either case, RMG will react the
+species in the condition file with one another and with all species in the
+seed mechanism.</p>
+<p>As the units for the Arrhenius parameters are given in each mechanism,
+different mechanisms can have different units. Additionally, if the same
+reaction occurs more than once in the combined mechanism,
+the instance of it from the first mechanism in which it appears is
+the one that gets used.</p>
+</div>
+<div class="section" id="kinetics-depositories">
+<h3>4.2.4. Kinetics Depositories<a class="headerlink" href="#kinetics-depositories" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="kinetics-families">
+<h3>4.2.5. Kinetics Families<a class="headerlink" href="#kinetics-families" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="kinetics-estimator">
+<h3>4.2.6. Kinetics Estimator<a class="headerlink" href="#kinetics-estimator" title="Permalink to this headline">¶</a></h3>
+<p>The following is an example of a database block, based on above chosen libraries and options:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">database</span><span class="p">(</span>
+        <span class="n">thermoLibraries</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;primaryThermoLibrary&#39;</span><span class="p">,</span> <span class="s">&#39;GRI-Mech3.0&#39;</span><span class="p">],</span>
+        <span class="n">reactionLibraries</span> <span class="o">=</span> <span class="p">[],</span>
+        <span class="n">seedMechanisms</span> <span class="o">=</span> <span class="p">[],</span>
+        <span class="n">kineticsDepositories</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;training&#39;</span><span class="p">],</span> <span class="c">#  &#39;all&#39;, &#39;default&#39;==[&#39;training&#39;], [],</span>
+        <span class="n">kineticsFamilies</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;!Intra_Disproportionation&#39;</span><span class="p">],</span>
+        <span class="n">kineticsEstimator</span> <span class="o">=</span> <span class="s">&#39;rate rules&#39;</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="species">
+<h2>4.3. Species<a class="headerlink" href="#species" title="Permalink to this headline">¶</a></h2>
+<p>Species to be included in the core at the start of your RMG job are defined in the species block.
+The label, reactive or inert, and structure of each reactant must be specified.
+The label field will be used throughout your mechanism to identify the species. Inert
+species in the model cab be defined by setting reactive to be <tt class="docutils literal"><span class="pre">False</span></tt>, for all
+other species the reactive status must be set as <tt class="docutils literal"><span class="pre">True</span></tt>. The structure of the
+species can be defined using either by using SMILES or adjacencyList.</p>
+<p>The following is an example of a typical species item, based on methane using SMILE or adjacency list to define the structure:</p>
+<div class="highlight-python"><pre>species(
+        label='CH4',
+        reactive=True,
+        structure=SMILES("C"),
+)
+
+species(
+        label='CH4',
+        reactive=True,
+        structure=adjacencyList(
+                """
+                1 C 0
+                """
+)</pre>
+</div>
+</div>
+<div class="section" id="reaction-system">
+<h2>4.4. Reaction System<a class="headerlink" href="#reaction-system" title="Permalink to this headline">¶</a></h2>
+<p>Every reaction system we want the model to be generated at must be defined individually.
+Currently, RMG can only model constant temperature and pressure systems. Future versions
+will allow for variable temperature and pressure. To define a reaction system we need to
+define the temperature, pressure and initial mole fractions of the reactant species. The
+initial mole fractions are defined using the label for the species in
+the species block. Every reaction system can have its termination criterion based on
+species conversion or termination time or both. When both termination criterion are specified
+the model generation will stop when either of the termination criterion is satisfied.</p>
+<p>The following is an example of a simple reactor system:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">simpleReactor</span><span class="p">(</span>
+        <span class="n">temperature</span><span class="o">=</span><span class="p">(</span><span class="mi">1350</span><span class="p">,</span><span class="s">&#39;K&#39;</span><span class="p">),</span>
+        <span class="n">pressure</span><span class="o">=</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span><span class="s">&#39;bar&#39;</span><span class="p">),</span>
+        <span class="n">initialMoleFractions</span><span class="o">=</span><span class="p">{</span>
+                <span class="s">&quot;CH4&quot;</span><span class="p">:</span> <span class="mf">0.104</span><span class="p">,</span>
+                <span class="s">&quot;H2&quot;</span><span class="p">:</span> <span class="mf">0.0156</span><span class="p">,</span>
+                <span class="s">&quot;N2&quot;</span><span class="p">:</span> <span class="mf">0.8797</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="n">terminationConversion</span><span class="o">=</span><span class="p">{</span>
+                <span class="s">&#39;CH4&#39;</span><span class="p">:</span> <span class="mf">0.9</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="n">terminationTime</span><span class="o">=</span><span class="p">(</span><span class="mf">1e0</span><span class="p">,</span><span class="s">&#39;s&#39;</span><span class="p">),</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="on-the-fly-quantum-calculations">
+<h2>4.5. On the fly Quantum Calculations<a class="headerlink" href="#on-the-fly-quantum-calculations" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="pressure-dependence">
+<h2>4.6. Pressure Dependence<a class="headerlink" href="#pressure-dependence" title="Permalink to this headline">¶</a></h2>
+<p>This block is used when the model should account for pressure
+dependent rate coefficients. RMG can estimate pressure dependence kinetics based on : <tt class="docutils literal"><span class="pre">Modified</span> <span class="pre">Strong</span> <span class="pre">Collision</span></tt> and <tt class="docutils literal"><span class="pre">Reservoir</span> <span class="pre">State</span></tt>.
+The former utilizes the modified strong collision approach of Chang, Bozzelli, and Dean <a class="reference internal" href="#chang2000" id="id2">[Chang2000]</a>,
+and works reasonably well while running more rapidly. The latter
+utilizes the steady-state/reservoir-state approach of Green and Bhatti <a class="reference internal" href="#green2007" id="id3">[Green2007]</a>,
+and is more theoretically sound but more expensive.</p>
+<p>The pressure dependence block should specify the following</p>
+<div class="section" id="method-used-for-estimating-pressure-dependent-kinetics">
+<h3>4.6.1. Method used for estimating pressure dependent kinetics<a class="headerlink" href="#method-used-for-estimating-pressure-dependent-kinetics" title="Permalink to this headline">¶</a></h3>
+<p>To specify the modified strong collision approach, this item should read</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">method</span><span class="o">=</span><span class="s">&#39;Modified Strong Collision&#39;</span>
+</pre></div>
+</div>
+<p>To specify the reservoir state approach, this item should read</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">method</span><span class="o">=</span><span class="s">&#39;Reservoir State&#39;</span>
+</pre></div>
+</div>
+<p>For more information on the two methods, consult the following resources :</p>
+<table class="docutils citation" frame="void" id="chang2000" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id2">[Chang2000]</a></td><td>A.Y. Chang, J.W. Bozzelli, and A. M. Dean. &#8220;Kinetic Analysis of Complex Chemical Activation and Unimolecular Dissociation Reactions using QRRK Theory and the Modified Strong Collision Approximation.&#8221; <em>Z. Phys. Chem.</em> <strong>214</strong> (11), p. 1533-1568 (2000).</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="green2007" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id3">[Green2007]</a></td><td>N.J.B. Green and Z.A. Bhatti. &#8220;Steady-State Master Equation Methods.&#8221; <em>Phys. Chem. Chem. Phys.</em> <strong>9</strong>, p. 4275-4290 (2007).</td></tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="grain-size-and-minimum-number-of-grains">
+<h3>4.6.2. Grain size and minimum number of grains<a class="headerlink" href="#grain-size-and-minimum-number-of-grains" title="Permalink to this headline">¶</a></h3>
+<p>Since the <span class="math">\(k(E)\)</span> requires discretization in the energy space, we need to specify the number of energy grains to use
+when solving the Master Equation. The default value for the minimum number of grains is 250; this was selected to balance the speed
+and accuracy of the Master Equation solver method.  However, for some pressure-dependent networks,
+this number of energy grains will result in the pressure-dependent <span class="math">\(k(T, P)\)</span> being greater than
+the high-P limit</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">maximumGrainSize</span><span class="o">=</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span><span class="s">&#39;kcal/mol&#39;</span><span class="p">)</span>
+<span class="n">minimumNumberOfGrains</span><span class="o">=</span><span class="mi">250</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="temperature-and-pressure-for-the-interpolation-scheme">
+<h3>4.6.3. Temperature and pressure for the interpolation scheme<a class="headerlink" href="#temperature-and-pressure-for-the-interpolation-scheme" title="Permalink to this headline">¶</a></h3>
+<p>To generate the <span class="math">\(k(T,P)\)</span> interpolation model, a set of temperatures and pressures must be used. RMG can do this automatically, but it must be told a few parameters.
+We need to specify the limits of the temperature and pressure for the fitting of the interpolation scheme and the number of points to be considered in between this limit.
+For typical combustion model temperatures of the experiments range from 300 - 2000 K and pressure 1E-2 to 100 bar</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">temperatures</span><span class="o">=</span><span class="p">(</span><span class="mi">300</span><span class="p">,</span><span class="mi">2000</span><span class="p">,</span><span class="s">&#39;K&#39;</span><span class="p">,</span><span class="mi">8</span><span class="p">)</span>
+<span class="n">pressures</span><span class="o">=</span><span class="p">(</span><span class="mf">0.01</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="s">&#39;bar&#39;</span><span class="p">,</span><span class="mi">5</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="interpolation-scheme">
+<h3>4.6.4. Interpolation scheme<a class="headerlink" href="#interpolation-scheme" title="Permalink to this headline">¶</a></h3>
+<p>To disregard all temperature and pressure dependence and simply output the rate at the provided
+temperature and pressure, use the line</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">interpolation</span><span class="o">=</span><span class="bp">False</span>
+</pre></div>
+</div>
+<p>To use logarithmic interpolation of pressure and Arrhenius interpolation for temperature, use the
+line</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">interpolation</span><span class="o">=</span><span class="p">(</span><span class="s">&#39;PDepArrhenius&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The auxillary information printed to the Chemkin chem.inp file will have the &#8220;PLOG&#8221;
+format.  Refer to Section 3.5.3 of the <tt class="file docutils literal"><span class="pre">CHEMKIN_Input.pdf</span></tt> document and/or
+Section 3.6.3 of the <tt class="file docutils literal"><span class="pre">CHEMKIN_Theory.pdf</span></tt> document.  These files are part of
+the CHEMKIN manual.</p>
+<p>To fit a set of Chebyshev polynomials on inverse temperature and logarithmic pressure axes mapped
+to [-1,1], use the line</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">interpolation</span><span class="o">=</span><span class="p">(</span><span class="s">&#39;Chebyshev&#39;</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>You should also specify the number of temperature and pressure basis functions by adding the appropriate integers.
+For example, the following specifies that six basis functions in temperature and four in pressure should be used</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">interpolation</span><span class="o">=</span><span class="p">(</span><span class="s">&#39;Chebyshev&#39;</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The auxillary information printed to the Chemkin chem.inp file will have the &#8220;CHEB&#8221;
+format.  Refer to Section 3.5.3 of the <tt class="file docutils literal"><span class="pre">CHEMKIN_Input.pdf</span></tt> document and/or
+Section 3.6.4 of the <tt class="file docutils literal"><span class="pre">CHEMKIN_Theory.pdf</span></tt> document.</p>
+</div>
+<div class="section" id="maximum-size-of-adduct-for-which-pressure-dependence-kinetics-be-generated">
+<h3>4.6.5. Maximum size of adduct for which pressure dependence kinetics be generated<a class="headerlink" href="#maximum-size-of-adduct-for-which-pressure-dependence-kinetics-be-generated" title="Permalink to this headline">¶</a></h3>
+<p>By default pressure dependence is run for every system that might show pressure
+dependence, i.e. every isomerization, dissociation, and association reaction.
+In reality, larger molecules are less likely to exhibit pressure-dependent
+behavior than smaller molecules due to the presence of more modes for
+randomization of the internal energy. In certain cases involving very large
+molecules, it makes sense to only consider pressure dependence for molecules
+smaller than some user-defined number of atoms. This is specified e.g. using
+the line</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">maximumAtoms</span><span class="o">=</span><span class="mi">16</span>
+</pre></div>
+</div>
+<p>to turn off pressure dependence for all molecules larger than the given number
+of atoms (16 in the above example).</p>
+<p>The following is an example of pressure dependence options</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">pressureDependence</span><span class="p">(</span>
+        <span class="n">method</span><span class="o">=</span><span class="s">&#39;modified strong collision&#39;</span><span class="p">,</span>
+        <span class="n">maximumGrainSize</span><span class="o">=</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span><span class="s">&#39;kcal/mol&#39;</span><span class="p">),</span>
+        <span class="n">minimumNumberOfGrains</span><span class="o">=</span><span class="mi">250</span><span class="p">,</span>
+        <span class="n">temperatures</span><span class="o">=</span><span class="p">(</span><span class="mi">300</span><span class="p">,</span><span class="mi">2000</span><span class="p">,</span><span class="s">&#39;K&#39;</span><span class="p">,</span><span class="mi">8</span><span class="p">),</span>
+        <span class="n">pressures</span><span class="o">=</span><span class="p">(</span><span class="mf">0.01</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="s">&#39;bar&#39;</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span>
+        <span class="n">interpolation</span><span class="o">=</span><span class="p">(</span><span class="s">&#39;Chebyshev&#39;</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span>
+        <span class="n">maximumAtoms</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="miscellaneous-options">
+<h2>4.7. Miscellaneous Options<a class="headerlink" href="#miscellaneous-options" title="Permalink to this headline">¶</a></h2>
+<p>Miscellaneous options:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">options</span><span class="p">(</span>
+        <span class="n">units</span><span class="o">=</span><span class="s">&#39;si&#39;</span><span class="p">,</span>
+        <span class="n">saveRestartPeriod</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="s">&#39;hour&#39;</span><span class="p">),</span>
+        <span class="n">drawMolecules</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+        <span class="n">generatePlots</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="examples">
+<h2>4.8. Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<p>Perhaps the best way to learn the input file syntax is by example. To that end,
+a number of example input files and their corresponding output have been given
+in the <tt class="docutils literal"><span class="pre">examples</span></tt> directory.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div class="sidebarlogo">
+<a href="../../index.html"><img src="../../_static/rmg-logo-small.png" alt="RMG" /></a>
+</div>
+  <h3><a href="../../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">4. Creating Input Files</a><ul>
+<li><a class="reference internal" href="#syntax">4.1. Syntax</a></li>
+<li><a class="reference internal" href="#datasources">4.2. Datasources</a><ul>
+<li><a class="reference internal" href="#thermo-libraries">4.2.1. Thermo Libraries</a></li>
+<li><a class="reference internal" href="#reaction-libraries">4.2.2. Reaction Libraries</a></li>
+<li><a class="reference internal" href="#seed-mechanisms">4.2.3. Seed Mechanisms</a></li>
+<li><a class="reference internal" href="#kinetics-depositories">4.2.4. Kinetics Depositories</a></li>
+<li><a class="reference internal" href="#kinetics-families">4.2.5. Kinetics Families</a></li>
+<li><a class="reference internal" href="#kinetics-estimator">4.2.6. Kinetics Estimator</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#species">4.3. Species</a></li>
+<li><a class="reference internal" href="#reaction-system">4.4. Reaction System</a></li>
+<li><a class="reference internal" href="#on-the-fly-quantum-calculations">4.5. On the fly Quantum Calculations</a></li>
+<li><a class="reference internal" href="#pressure-dependence">4.6. Pressure Dependence</a><ul>
+<li><a class="reference internal" href="#method-used-for-estimating-pressure-dependent-kinetics">4.6.1. Method used for estimating pressure dependent kinetics</a></li>
+<li><a class="reference internal" href="#grain-size-and-minimum-number-of-grains">4.6.2. Grain size and minimum number of grains</a></li>
+<li><a class="reference internal" href="#temperature-and-pressure-for-the-interpolation-scheme">4.6.3. Temperature and pressure for the interpolation scheme</a></li>
+<li><a class="reference internal" href="#interpolation-scheme">4.6.4. Interpolation scheme</a></li>
+<li><a class="reference internal" href="#maximum-size-of-adduct-for-which-pressure-dependence-kinetics-be-generated">4.6.5. Maximum size of adduct for which pressure dependence kinetics be generated</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#miscellaneous-options">4.7. Miscellaneous Options</a></li>
+<li><a class="reference internal" href="#examples">4.8. Examples</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="installation/QMthermo.html"
+                        title="previous chapter">3.4. Quantum Mechanical Calculations</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="examples.html"
+                        title="next chapter">5. Example Input Files</a></p>
+  <h3>This Page </h3>
+  <ul class="this-page-menu">
+    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/users/rmg/input.rst"
+           rel="nofollow">Edit this page</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+    </div>
+  </body>
+</html>
