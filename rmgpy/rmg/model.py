@@ -138,7 +138,7 @@ class Species(rmgpy.species.Species):
                     with open('thermoHBIcheck.txt','a') as f:
                         f.write('// {0!r}\n'.format(thermo0).replace('),','),\n//           '))
                         f.write('{0}\n'.format(molecule.toSMILES()))
-                        f.write('{0}\n\n'.format(molecule.toAdjacencyList(removeH=True)))
+                        f.write('{0}\n\n'.format(molecule.toAdjacencyList(removeH=False)))
                 else: # Not too many radicals: do a direct calculation.
                     thermo0 = quantumMechanics.getThermoData(molecule) # returns None if it fails
                 
