@@ -40,7 +40,7 @@ import logging
 import os
 import re
 import element as elements
-
+import openbabel
 from rdkit import Chem
 from .graph import Vertex, Edge, Graph
 from .group import GroupAtom, GroupBond, Group, ActionError
@@ -1117,11 +1117,30 @@ class Molecule(Graph):
     def toInChIKey(self):
         """
         Convert a molecular structure to an InChI Key string. Uses
+        `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
+        
+        or 
+        
+        Convert a molecular structure to an InChI Key string. Uses
         `RDKit <http://rdkit.org/>`_ to perform the conversion.
         
         Removes check-sum dash (-) and character so that only 
         the 14 + 9 characters remain.
         """
+
+        import openbabel
+
+
+        for atom in self.vertices:
+            if atom.isNitrogen():
+                # This version does not write a warning to stderr if stereochemistry is undefined
+                obmol = self.toOBMol()
+                obConversion = openbabel.OBConversion()
+                obConversion.SetOutFormat('inchi')
+                obConversion.SetOptions('w', openbabel.OBConversion.OUTOPTIONS)
+                obConversion.SetOptions('K', openbabel.OBConversion.OUTOPTIONS)
+                return obConversion.WriteString(obmol).strip()[:-2]
+
         if not Chem.inchi.INCHI_AVAILABLE:
             return "RDKitInstalledWithoutInChI"
         inchi = self.toInChI()
@@ -1165,6 +1184,38 @@ class Molecule(Graph):
         rdkitmol = self.toRDKitMol()
         
         return Chem.MolToSmiles(rdkitmol)
+
+    def toOBMol(self):
+        """
+        Convert a molecular structure to an OpenBabel OBMol object. Uses
+        `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
+        """
+        cython.declare(atom=Atom, atom1=Atom, bonds=dict, atom2=Atom, bond=Bond)
+        cython.declare(index1=cython.int, index2=cython.int, order=cython.int)
+
+        # Sort the atoms before converting to ensure output is consistent
+        # between different runs
+        self.sortAtoms()
+
+        atoms = self.vertices
+
+        obmol = openbabel.OBMol()
+        for atom in atoms:
+            a = obmol.NewAtom()
+            a.SetAtomicNum(atom.number)
+            a.SetFormalCharge(atom.charge)
+        orders = {'S': 1, 'D': 2, 'T': 3, 'B': 5}
+        for atom1 in self.vertices:
+            for atom2, bond in atom1.edges.iteritems():
+                index1 = atoms.index(atom1)
+                index2 = atoms.index(atom2)
+                if index1 < index2:
+                    order = orders[bond.order]
+                    obmol.AddBond(index1+1, index2+1, order)
+
+        obmol.AssignSpinMultiplicity(True)
+
+        return obmol
     
     def toRDKitMol(self, removeHs=True, returnMapping=False):
         """
