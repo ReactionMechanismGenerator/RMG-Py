@@ -197,6 +197,10 @@ class MopacMol(QMMolecule, Mopac):
         """
         Calculate the QM data and return a QMData object, or None if it fails.
         """
+        for atom in self.molecule.vertices:
+            if atom.atomType.label == 'N4s' or atom.atomType.label == 'N4d' or atom.atomType.label =='N4dd' or atom.atomType.label == 'N4t' or atom.atomType.label == 'N4b':
+                return None
+
         if self.verifyOutputFile():
             logging.info("Found a successful output file already; using that.")
             source = "QM MOPAC result file found from previous run."
