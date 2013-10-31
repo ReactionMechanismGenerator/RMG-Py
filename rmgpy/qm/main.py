@@ -141,9 +141,21 @@ class QMCalculator():
         
         Ignores the settings onlyCyclics and maxRadicalNumber and does the calculation anyway if asked.
         (I.e. the code that chooses whether to call this method should consider those settings).
+        Options for QM calculations are:
+        mopac: Default calculation with Mopac is PM3 semiempirical method, should be changed to PM6 or PM7
+        mopacPM3: PM3, Same as mopac option.
+        mopacPM6: PM6, better than PM3 (Journal of Molecular Modeling 13, 1173–1213, 2007.)
+        mopacPM7: PM7, excludes computational results from training set, might be better or slightly worse compared to PM6
+        gaussian: Only PM3 is available. 
         """
         if self.settings.software == 'mopac':
             qm_molecule_calculator = rmgpy.qm.mopac.MopacMolPM3(molecule, self.settings)
+            thermo0 = qm_molecule_calculator.generateThermoData()
+        elif self.settings.software == 'mopacPM6':
+            qm_molecule_calculator = rmgpy.qm.mopac.MopacMolPM6(molecule, self.settings)
+            thermo0 = qm_molecule_calculator.generateThermoData()
+        elif self.settings.software == 'mopacPM7':
+            qm_molecule_calculator = rmgpy.qm.mopac.MopacMolPM7(molecule, self.settings)
             thermo0 = qm_molecule_calculator.generateThermoData()
         elif self.settings.software == 'gaussian':
             qm_molecule_calculator = rmgpy.qm.gaussian.GaussianMolPM3(molecule, self.settings)
