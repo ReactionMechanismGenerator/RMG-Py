@@ -18,18 +18,15 @@ class Gaussian:
     inputFileExtension = '.gjf'
     outputFileExtension = '.log'
     
-    #gaussEnv = os.getenv('GAUSS_EXEDIR') or os.getenv('g09root') or os.getenv('g03root') or ""
-    gaussEnv = os.getenv('g03root') or os.getenv('g09root') 
-    print gaussEnv
+    gaussEnv = os.getenv('GAUSS_EXEDIR') or os.getenv('g09root') or os.getenv('g03root') or ""
     if os.path.exists(os.path.join(gaussEnv , 'g09')):
         executablePath = os.path.join(gaussEnv , 'g09')
-    elif os.path.lexists(os.path.join(gaussEnv , 'g03')):
-        executablePath = os.path.join(gaussEnv , 'g03/g03')
+    elif os.path.exists(os.path.join(gaussEnv , 'g03')):
+        executablePath = os.path.join(gaussEnv , 'g03')
     else:
         executablePath = os.path.join(gaussEnv , '(g03 or g09)')
 
     usePolar = False
-    logging.info('executablePath=',executablePath)
     
     #: List of phrases that indicate failure
     #: NONE of these must be present in a succesful job.
@@ -52,7 +49,6 @@ class Gaussian:
     def run(self):
         self.testReady()
         # submits the input file to Gaussian
-        print [self.executablePath, self.inputFilePath, self.outputFilePath]
         process = Popen([self.executablePath, self.inputFilePath, self.outputFilePath])
         process.communicate()# necessary to wait for executable termination!
         
