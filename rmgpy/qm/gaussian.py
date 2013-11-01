@@ -5,7 +5,7 @@ import external.cclib as cclib
 import logging
 from subprocess import Popen, PIPE
 
-from rmgpy.molecule import Group #Molecule
+from rmgpy.molecule import Molecule# Group
 from qmdata import CCLibData
 from molecule import QMMolecule
 from reaction import QMReaction
@@ -531,90 +531,22 @@ class GaussianTS(QMReaction, Gaussian):
             # Convert the IRC geometries into RMG molecules
             # We don't know which is reactant or product, so take the two at the end of the
             # paths and compare to the reactants and products
-            mol1 = Group()
+            mol1 = Molecule()
             mol1.fromXYZ(atomnos, atomcoords[pth1End])
-            mol2 = Group()
+            mol2 = Molecule()
             mol2.fromXYZ(atomnos, atomcoords[-1])
             
-            rMade = mol1.split()
-            pMade = mol2.split()
+            rInChI = sorted([x.toInChI() for x in self.reaction.reactants])
+            pInChI = sorted([x.toInChI() for x in self.reaction.products])
+            m1InChI = sorted([x.toInChI() for x in mol1.split()])
+            m2InChI = sorted([x.toInChI() for x in mol2.split()])
             
-            reactant = self.reaction.reactants
-            product = self.reaction.products  
-            
-            for react in reactant:
-                react.resetConnectivityValues()
-            for react in product:
-                react.resetConnectivityValues()
-            for react in rMade:
-                react.resetConnectivityValues()
-            for react in pMade:
-                react.resetConnectivityValues()
-            # # Had trouble with isSubgraphIsomorphic, but resetting the connectivity seems to fix it (WHY??)
-            # reactant.resetConnectivityValues()
-            # product.resetConnectivityValues()
-            # mol1.resetConnectivityValues()
-            # mol2.resetConnectivityValues()
-            
-            if reactant[0].isSubgraphIsomorphic(rMade[0]):
-                if product[0].isSubgraphIsomorphic(pMade[0]):
-                    if reactant[1].isSubgraphIsomorphic(rMade[1]) and product[1].isSubgraphIsomorphic(pMade[1]):
-                        print True
-                    else:
-                        print False
-                elif product[0].isSubgraphIsomorphic(pMade[1]):
-                    if reactant[1].isSubgraphIsomorphic(rMade[1]) and product[1].isSubgraphIsomorphic(pMade[0]):
-                        print True
-                    else:
-                        print False
-            elif reactant[0].isSubgraphIsomorphic(rMade[1]):
-                if product[0].isSubgraphIsomorphic(pMade[0]):
-                    if reactant[1].isSubgraphIsomorphic(rMade[0]) and product[1].isSubgraphIsomorphic(pMade[1]):
-                        print True
-                    else:
-                        print False
-                elif product[0].isSubgraphIsomorphic(pMade[1]):
-                    if reactant[1].isSubgraphIsomorphic(rMade[0]) and product[1].isSubgraphIsomorphic(pMade[0]):
-                        print True
-                    else:
-                        print False
-            elif reactant[0].isSubgraphIsomorphic(pMade[0]):
-                if product[0].isSubgraphIsomorphic(rMade[0]):
-                    if reactant[1].isSubgraphIsomorphic(pMade[1]) and product[1].isSubgraphIsomorphic(rMade[1]):
-                        print True
-                    else:
-                        print False
-                elif product[0].isSubgraphIsomorphic(rMade[1]):
-                    if reactant[1].isSubgraphIsomorphic(pMade[1]) and product[1].isSubgraphIsomorphic(rMade[0]):
-                        print True
-                    else:
-                        print False
-            elif reactant[0].isSubgraphIsomorphic(pMade[1]):
-                if product[0].isSubgraphIsomorphic(rMade[0]):
-                    if reactant[1].isSubgraphIsomorphic(pMade[0]) and product[1].isSubgraphIsomorphic(rMade[1]):
-                        print True
-                    else:
-                        print False
-                elif product[0].isSubgraphIsomorphic(rMade[1]):
-                    if reactant[1].isSubgraphIsomorphic(pMade[0]) and product[1].isSubgraphIsomorphic(rMade[0]):
-                        print True
-                    else:
-                        print False
+            if rInChI == m1InChI and pInChI == m2InChI:
+                return True
+            elif rInChI == m2InChI and pInChI == m1InChI:
+                return True
             else:
-                import ipdb; ipdb.set_trace()
-            
-            import ipdb; ipdb.set_trace()
-            
-            
-            if reactant.isSubgraphIsomorphic(mol1) and product.isSubgraphIsomorphic(mol2):
-                    notes = 'Verified TS'
-                    return 1, notes
-            elif reactant.isSubgraphIsomorphic(mol2) and product.isSubgraphIsomorphic(mol1):
-                    notes = 'Verified TS'
-                    return 1, notes
-            else:
-                notes = 'Saddle found, but wrong one'
-                return 0, notes
+                return True
         
 class GaussianTSM062X(GaussianTS):
 

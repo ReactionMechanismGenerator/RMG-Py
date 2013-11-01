@@ -642,9 +642,6 @@ class Group(Graph):
                 else:
                     bond = GroupBond(atom1, atom2, ['S','D','T','B'])
                     self.addBond(bond)
-    
-    def getRDKitPeriodicTable(self):
-        return elements.GetPeriodicTable()
 
     def fromAdjacencyList(self, adjlist):
         """
