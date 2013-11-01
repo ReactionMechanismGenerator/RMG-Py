@@ -65,7 +65,7 @@ class Mopac:
         process.communicate()# necessary to wait for executable termination!
         #Wait for OS to flush the buffer to disk. There should be a better way
         import time
-        time.sleep(1)
+ #       time.sleep(1)
         return self.verifyOutputFile()
         
     def verifyOutputFile(self):
@@ -179,7 +179,8 @@ class MopacMol(QMMolecule, Mopac):
         input_string = '\n'.join(output)
         
         top_keys, bottom_keys, polar_keys = self.inputFileKeywords(attempt)
-        with open(self.inputFilePath, 'w') as mopacFile:
+        buffering=0
+        with open(self.inputFilePath, 'w',buffering) as mopacFile:
             mopacFile.write(top_keys)
             mopacFile.write('\n')
             mopacFile.write(input_string)
