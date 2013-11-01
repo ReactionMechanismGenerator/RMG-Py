@@ -30,6 +30,7 @@ Test that the Arrhenius Ea property was properly set. ... ok
 Test that the Arrhenius T0 property was properly set. ... ok
 Test that the Arrhenius Tmax property was properly set. ... ok
 Test that the Arrhenius Tmin property was properly set. ... ok
+Test the Arrhenius.changeRate() method. ... ok
 Test the Arrhenius.changeT0() method. ... ok
 Test that the Arrhenius comment property was properly set. ... ok
 Test the Arrhenius.fitToData() method. ... ok
@@ -43,6 +44,7 @@ Test that the ArrheniusEP E0 property was properly set. ... ok
 Test that the ArrheniusEP Tmax property was properly set. ... ok
 Test that the ArrheniusEP Tmin property was properly set. ... ok
 Test that the ArrheniusEP alpha property was properly set. ... ok
+Test the ArrheniusEP.changeRate() method. ... ok
 Test that the ArrheniusEP comment property was properly set. ... ok
 Test the ArrheniusEP.getRateCoefficient() method. ... ok
 Test the ArrheniusEP.isTemperatureValid() method. ... ok
@@ -52,6 +54,7 @@ Test that an ArrheniusEP object can be reconstructed from its repr() ... ok
 Test that the MultiArrhenius Tmax property was properly set. ... ok
 Test that the MultiArrhenius Tmin property was properly set. ... ok
 Test that the MultiArrhenius A property was properly set. ... ok
+Test the MultiArrhenius.changeRate() method. ... ok
 Test that the MultiArrhenius comment property was properly set. ... ok
 Test the MultiArrhenius.getRateCoefficient() method. ... ok
 Test the MultiArrhenius.isTemperatureValid() method. ... ok
@@ -65,6 +68,7 @@ Test that the MultiPDepArrhenius Pmin property was properly set. ... ok
 Test that the MultiPDepArrhenius Tmax property was properly set. ... ok
 Test that the MultiPDepArrhenius Tmin property was properly set. ... ok
 Test that the MultiPDepArrhenius arrhenius property was properly set. ... ok
+Test the PDepMultiArrhenius.changeRate() method. ... ok
 Test that the MultiPDepArrhenius comment property was properly set. ... ok
 Test the MultiPDepArrhenius.getRateCoefficient() method. ... ok
 Test the MultiPDepArrhenius.isPressureValid() method. ... ok
@@ -76,6 +80,7 @@ Test that the PDepArrhenius Pmin property was properly set. ... ok
 Test that the PDepArrhenius Tmax property was properly set. ... ok
 Test that the PDepArrhenius Tmin property was properly set. ... ok
 Test that the PDepArrhenius arrhenius property was properly set. ... ok
+Test the PDepArrhenius.changeRate() method. ... ok
 Test that the PDepArrhenius comment property was properly set. ... ok
 Test the PDepArrhenius.fitToData() method. ... ok
 Test the PDepArrhenius.getRateCoefficient() method. ... ok
@@ -87,6 +92,7 @@ Test that the Chebyshev Pmax property was properly set. ... ok
 Test that the Chebyshev Pmin property was properly set. ... ok
 Test that the Chebyshev Tmax property was properly set. ... ok
 Test that the Chebyshev Tmin property was properly set. ... ok
+Test the Chebyshev.changeRate() method. ... ok
 Test that the Chebyshev coeffs property was properly set. ... ok
 Test that the Chebyshev comment property was properly set. ... ok
 Test the Chebyshev.fitToData() method. ... ok
@@ -100,6 +106,7 @@ Test that the Lindemann Tmax property was properly set. ... ok
 Test that the Lindemann Tmin property was properly set. ... ok
 Test that the Lindemann arrheniusHigh property was properly set. ... ok
 Test that the Lindemann arrheniusLow property was properly set. ... ok
+Test the Lindemann.changeRate() method. ... ok
 Test that the Lindemann comment property was properly set. ... ok
 Test the Lindemann.getRateCoefficient() method. ... ok
 Test the Lindemann.isPressureDependent() method. ... ok
@@ -110,6 +117,7 @@ Test that the ThirdBody Pmin property was properly set. ... ok
 Test that the ThirdBody Tmax property was properly set. ... ok
 Test that the ThirdBody Tmin property was properly set. ... ok
 Test that the ThirdBody arrhenius property was properly set. ... ok
+Test the ThirdBody.changeRate() method. ... ok
 Test that the ThirdBody comment property was properly set. ... ok
 Test the ThirdBody.getEffectivePressure() method. ... ok
 Test the ThirdBody.getRateCoefficient() method. ... ok
@@ -126,6 +134,7 @@ Test that the Troe Tmin property was properly set. ... ok
 Test that the Troe alpha property was properly set. ... ok
 Test that the Troe arrheniusHigh property was properly set. ... ok
 Test that the Troe arrheniusLow property was properly set. ... ok
+Test the Troe.changeRate() method. ... ok
 Test that the Troe comment property was properly set. ... ok
 Test the Troe.getRateCoefficient() method. ... ok
 Test the Troe.isPressureDependent() method. ... ok
@@ -177,17 +186,17 @@ Test the AtomType.isSpecificCaseOf() method. ... ok
 Test that we can reconstruct an AtomType object from its repr() ... ok
 Test that an AtomType object can be successfully pickled and ... ok
 Test the AtomType.setActions() method. ... ok
-Test that getAtomType() returns appropriate carbon atom types. ... [15:49:16] Explicit valence for atom # 2 O, 3, is greater than permitted
+Test that getAtomType() returns appropriate carbon atom types. ... [12:18:31] Explicit valence for atom # 2 O, 3, is greater than permitted
 ERROR
-Test that getAtomType() returns the hydrogen atom type. ... [15:49:16] Explicit valence for atom # 2 O, 3, is greater than permitted
+Test that getAtomType() returns the hydrogen atom type. ... [12:18:31] Explicit valence for atom # 2 O, 3, is greater than permitted
 ERROR
-Test that getAtomType() returns appropriate NoneTypes. ... [15:49:16] Explicit valence for atom # 2 O, 3, is greater than permitted
+Test that getAtomType() returns appropriate NoneTypes. ... [12:18:31] Explicit valence for atom # 2 O, 3, is greater than permitted
 ERROR
-Test that getAtomType() returns appropriate oxygen atom types. ... [15:49:16] Explicit valence for atom # 2 O, 3, is greater than permitted
+Test that getAtomType() returns appropriate oxygen atom types. ... [12:18:31] Explicit valence for atom # 2 O, 3, is greater than permitted
 ERROR
-Test that getAtomType() returns appropriate silicon atom types. ... [15:49:16] Explicit valence for atom # 2 O, 3, is greater than permitted
+Test that getAtomType() returns appropriate silicon atom types. ... [12:18:31] Explicit valence for atom # 2 O, 3, is greater than permitted
 ERROR
-Test that getAtomType() returns appropriate sulfur atom types. ... [15:49:16] Explicit valence for atom # 2 O, 3, is greater than permitted
+Test that getAtomType() returns appropriate sulfur atom types. ... [12:18:31] Explicit valence for atom # 2 O, 3, is greater than permitted
 ERROR
 Test the rmgpy.elements.getElement() method. ... ok
 Test that we can reconstruct an Element object from its repr() ... ok
@@ -305,7 +314,7 @@ Test the Molecule.getLabeledAtoms() method. ... ok
 Test the Molecule.getLabeledAtom() method. ... ok
 Test the Molecule.getLabeledAtoms() method. ... ok
 Test the Molecule.getMolecularWeight() method. ... ok
-Test that InChI Key generation is working properly. ... [15:49:16] WARNING: Omitted undefined stereo
+Test that InChI Key generation is working properly. ... [12:18:31] WARNING: Omitted undefined stereo
 ok
 Test the Molecule.isInCycle() method with ethane. ... ok
 Test the Molecule.isInCycle() method with ethane. ... ok
@@ -921,7 +930,7 @@ rmgpy.cantherm.output               77     66     23     23    11%   47-49, 56-7
 rmgpy.cantherm.pdep                403    365    156    156     7%   106-142, 147, 150, 155, 158, 163, 166, 171, 174, 179, 182, 187, 190, 195, 198, 204, 224-238, 250-267, 270-297, 309-326, 330-362, 366-382, 386-483, 488-552, 562-571, 578-691
 rmgpy.cantherm.statmech            394    366    162    162     5%   82, 89-120, 128-145, 150, 160-165, 172-174, 183-389, 397-428, 436-466, 483-622, 633-692
 rmgpy.cantherm.thermo              155    140     32     32     8%   55-56, 63-67, 75-122, 129-205, 217-269
-rmgpy.chemkin                      878    838    449    449     3%   71-126, 137-409, 419-568, 579-599, 605-618, 625-640, 648-786, 798-840, 854-880, 890-1031, 1039-1049, 1061-1103, 1114-1178, 1188-1369, 1379-1395, 1405-1408, 1416-1419, 1426-1444, 1462-1505, 1513-1544
+rmgpy.chemkin                      883    842    451    451     3%   71-126, 137-409, 419-568, 579-599, 605-618, 625-640, 648-786, 798-840, 854-880, 890-1031, 1039-1049, 1061-1103, 1114-1178, 1186-1222, 1232-1382, 1392-1408, 1418-1421, 1429-1432, 1439-1457, 1475-1518, 1526-1557
 rmgpy.data                           3      1      0      0    67%   34
 rmgpy.data.base                    654    567    295    293     9%   99-110, 113, 209-223, 230-251, 259-282, 293-311, 324-380, 388-446, 454-464, 471-501, 510-565, 572-580, 588-681, 688-694, 701-713, 720-754, 764, 770-776, 782-787, 801-840, 853-905, 917-940, 952-959, 962-966, 981-988, 995-1004, 1015-1022, 1038-1075, 1086-1089, 1098-1102, 1114-1118, 1140-1149, 1155-1156, 1162, 1170-1183, 1198-1225
 rmgpy.data.kinetics                269    235    135    135     8%   62-78, 84-89, 95-97, 104-105, 112-139, 149-174, 181-184, 191-195, 202-208, 215-232, 239-273, 281-284, 292-295, 303-318, 331-340, 361-459, 472-518
@@ -969,9 +978,9 @@ rmgpy.solver                         2      0      0      0   100%
 rmgpy.statmech                       5      0      0      0   100%   
 rmgpy.thermo                         3      0      0      0   100%   
 ----------------------------------------------------------------------------
-TOTAL                            12913  11198   5517   5332    10%   
+TOTAL                            12918  11202   5519   5334    10%   
 ----------------------------------------------------------------------
-Ran 691 tests.
+Ran 700 tests.
 
 FAILED (errors=8, failures=14)
 make: *** [test] Error 1

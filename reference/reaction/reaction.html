@@ -415,7 +415,9 @@ The reactants should be <tt class="xref py py-class docutils literal"><span clas
 <dt id="rmgpy.reaction.Reaction.toChemkin">
 <tt class="descname">toChemkin</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.reaction.Reaction.toChemkin" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the chemkin-formatted string for this reaction.</p>
-<p>Requires the <cite>speciesList</cite> to figure out third body colliders.</p>
+<p>If <cite>kinetics</cite> is set to True, the chemkin format kinetics will also
+be returned (requires the <cite>speciesList</cite> to figure out third body colliders.)
+Otherwise, only the reaction string will be returned.</p>
 </dd></dl>
 
 </dd></dl>
