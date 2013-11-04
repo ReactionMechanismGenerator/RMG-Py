@@ -1413,7 +1413,7 @@ class Molecule(Graph):
                 
             newIsomers = isomer.getAdjacentResonanceIsomers()
             newIsomers += isomer.getLonePairRadicalResonanceIsomers()
-            newIsomers += isomer.getN4dd_N4tsResonanceIsomers()
+            newIsomers += isomer.getN5dd_N5tsResonanceIsomers()
             for newIsomer in newIsomers:
                 newIsomer.updateAtomTypes()
                 # Append to isomer list if unique
@@ -1516,9 +1516,9 @@ class Molecule(Graph):
 
         return isomers
     
-    def getN4dd_N4tsResonanceIsomers(self):
+    def getN5dd_N5tsResonanceIsomers(self):
         """
-        Generate all of the resonance isomers formed by shifts between N4dd and N4ts.
+        Generate all of the resonance isomers formed by shifts between N5dd and N5ts.
         """
         cython.declare(isomers=list, paths=list, index=cython.int, isomer=Molecule)
         cython.declare(atom=Atom, atom1=Atom, atom2=Atom, atom3=Atom)
@@ -1529,9 +1529,9 @@ class Molecule(Graph):
         
         # Iterate over nitrogen atoms in structure
         for atom in self.vertices:
-            paths = self.findAllDelocalizationPathsN4dd_N4ts(atom)
+            paths = self.findAllDelocalizationPathsN5dd_N5ts(atom)
             for atom1, atom2, atom3, bond12, bond13, direction in paths:
-                # from N4dd to N4ts
+                # from N5dd to N5ts
                 if direction == 1:
                     # Adjust to (potentially) new resonance isomer
                     bond12.decrementOrder()
@@ -1563,7 +1563,7 @@ class Molecule(Graph):
                     # Append to isomer list if unique
                     isomers.append(isomer)
                 
-                # from N4ts to N4dd
+                # from N5ts to N5dd
                 if direction == 2:
                     # Adjust to (potentially) new resonance isomer
                     bond12.decrementOrder()
@@ -1647,10 +1647,10 @@ class Molecule(Graph):
                     
         return paths
     
-    def findAllDelocalizationPathsN4dd_N4ts(self, atom1):
+    def findAllDelocalizationPathsN5dd_N5ts(self, atom1):
         """
-        Find all the resonance structures of nitrogen atoms with two double bonds (N4dd)
-        and nitrogen atoms with one triple and one single bond (N4ts)
+        Find all the resonance structures of nitrogen atoms with two double bonds (N5dd)
+        and nitrogen atoms with one triple and one single bond (N5ts)
         """
         cython.declare(paths=list)
         cython.declare(atom2=Atom, bond12=Bond)
