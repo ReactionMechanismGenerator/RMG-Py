@@ -198,7 +198,7 @@ class MopacMol(QMMolecule, Mopac):
         Calculate the QM data and return a QMData object, or None if it fails.
         """
         for atom in self.molecule.vertices:
-            if atom.atomType.label == 'N4s' or atom.atomType.label == 'N4d' or atom.atomType.label =='N4dd' or atom.atomType.label == 'N4t' or atom.atomType.label == 'N4b':
+            if atom.atomType.label == 'N5s' or atom.atomType.label == 'N5d' or atom.atomType.label =='N5dd' or atom.atomType.label == 'N5t' or atom.atomType.label == 'N5b':
                 return None
 
         if self.verifyOutputFile():
