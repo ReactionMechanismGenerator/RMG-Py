@@ -178,6 +178,7 @@ class MopacMol(QMMolecule, Mopac):
         output.append('')
         input_string = '\n'.join(output)
         
+        top_keys, bottom_keys, polar_keys = self.inputFileKeywords(attempt)
         with open(self.inputFilePath, 'w') as mopacFile:
             mopacFile.write(top_keys)
             mopacFile.write('\n')
