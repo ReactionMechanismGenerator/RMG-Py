@@ -112,6 +112,12 @@ cdef class ThirdBody(PDepKineticsModel):
             return False
         
         return True
+    
+    cpdef changeRate(self, double factor):
+        """
+        Changes kinetics rate by a multiple ``factor``.
+        """
+        self.arrheniusLow.changeRate(factor)
 
 ################################################################################
 
@@ -193,6 +199,13 @@ cdef class Lindemann(PDepKineticsModel):
             return False
         
         return True
+    
+    cpdef changeRate(self, double factor):
+        """
+        Changes kinetics rate by a multiple ``factor``.
+        """
+        self.arrheniusLow.changeRate(factor)
+        self.arrheniusHigh.changeRate(factor)
 
 ################################################################################
 
@@ -332,3 +345,10 @@ cdef class Troe(PDepKineticsModel):
             return False
         
         return True
+    
+    cpdef changeRate(self, double factor):
+        """
+        Changes kinetics rate by a multiple ``factor``.
+        """
+        self.arrheniusLow.changeRate(factor)
+        self.arrheniusHigh.changeRate(factor)

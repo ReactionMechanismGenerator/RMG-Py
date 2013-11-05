@@ -165,6 +165,6 @@ class KineticsDepository(Database):
 
     def saveEntry(self, f, entry):
         """
-        Write the given `entry` in the thermo database to the file object `f`.
+        Write the given `entry` in the kinetics database to the file object `f`.
         """
         return saveEntry(f, entry)

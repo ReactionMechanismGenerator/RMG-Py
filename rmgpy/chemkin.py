@@ -1179,62 +1179,11 @@ def writeThermoEntry(species, verbose = True):
 
 ################################################################################
 
-def writeKineticsEntry(reaction, speciesList, verbose = True, javaLibrary = False):
+def writeReactionString(reaction, javaLibrary = False):
     """
-    Return a string representation of the reaction as used in a Chemkin
-    file. Use verbose = True to turn on comments.  Use javaLibrary = True in order to 
-    generate a kinetics entry suitable for an RMG-Java kinetics library.  
+    Return a reaction string in chemkin format.
     """
-    string = ""
-    
-    if isinstance(reaction.kinetics, (MultiArrhenius, MultiPDepArrhenius)):
-        if verbose:
-            if isinstance(reaction,LibraryReaction):
-                string += '! Library reaction: {0!s}\n'.format(reaction.library.label)
-            if reaction.kinetics.comment:
-                for line in reaction.kinetics.comment.split("\n"):
-                    string += "! {0}\n".format(line) 
-        for kinetics in reaction.kinetics.arrhenius:
-            if isinstance(reaction,LibraryReaction):
-                new_reaction = LibraryReaction( index=reaction.index,
-                     reactants=reaction.reactants,
-                     products=reaction.products,
-                     reversible=reaction.reversible,
-                     kinetics=kinetics,
-                     library=reaction.library
-                     )
-            else:
-                new_reaction = Reaction( index=reaction.index,
-                         reactants=reaction.reactants,
-                         products=reaction.products,
-                         reversible=reaction.reversible,
-                         kinetics=kinetics)
-            string += writeKineticsEntry(new_reaction, speciesList, verbose, javaLibrary)
-            string += "DUPLICATE\n"
-        return string + "\n"
-    
-    if verbose:        
-        # Next line of comment contains Chemkin and RMG indices
-        global __chemkin_reaction_count
-        if __chemkin_reaction_count is not None:
-            __chemkin_reaction_count += 1
-            string += "! Reaction index: Chemkin #{0:d}; RMG #{1:d}\n".format(__chemkin_reaction_count, reaction.index)
-        
-        # Next line of comment contains information about the type of reaction
-        if isinstance(reaction, TemplateReaction):
-            string += '! Template reaction: {0!s}\n'.format(reaction.family.label)
-        elif isinstance(reaction, LibraryReaction):
-            string += '! Library reaction: {0!s}\n'.format(reaction.library.label)
-        elif isinstance(reaction, PDepReaction):
-            string += '! PDep reaction: {0!s}\n'.format(reaction.network)                         
-    
-        # Remaining lines of comments taken from reaction kinetics
-        if reaction.kinetics.comment:
-            for line in reaction.kinetics.comment.split("\n"):
-                string += "! {0}\n".format(line)                               
-    
     kinetics = reaction.kinetics
-    numReactants = len(reaction.reactants)
     
     if javaLibrary:
         thirdBody = ''
@@ -1269,7 +1218,71 @@ def writeKineticsEntry(reaction, speciesList, verbose = True, javaLibrary = Fals
         reaction_string += '=>' if not reaction.reversible else '='
         reaction_string += '+'.join([getSpeciesIdentifier(product) for product in reaction.products])
         reaction_string += thirdBody
+        
+    return reaction_string
+
+################################################################################
+
+def writeKineticsEntry(reaction, speciesList, verbose = True, javaLibrary = False):
+    """
+    Return a string representation of the reaction as used in a Chemkin
+    file. Use verbose = True to turn on comments.  Use javaLibrary = True in order to 
+    generate a kinetics entry suitable for an RMG-Java kinetics library.  
+    """
+    string = ""
     
+    if isinstance(reaction.kinetics, (MultiArrhenius, MultiPDepArrhenius)):
+        if verbose:
+            if isinstance(reaction,LibraryReaction):
+                string += '! Library reaction: {0!s}\n'.format(reaction.library.label)
+            if reaction.kinetics.comment:
+                for line in reaction.kinetics.comment.split("\n"):
+                    string += "! {0}\n".format(line) 
+        for kinetics in reaction.kinetics.arrhenius:
+            if isinstance(reaction,LibraryReaction):
+                new_reaction = LibraryReaction( index=reaction.index,
+                     reactants=reaction.reactants,
+                     products=reaction.products,
+                     reversible=reaction.reversible,
+                     kinetics=kinetics,
+                     library=reaction.library
+                     )
+            else:
+                new_reaction = Reaction( index=reaction.index,
+                         reactants=reaction.reactants,
+                         products=reaction.products,
+                         reversible=reaction.reversible,
+                         kinetics=kinetics)
+            string += writeKineticsEntry(new_reaction, speciesList, verbose, javaLibrary)
+            string += "DUPLICATE\n"
+        return string + "\n"
+    
+    # Add to global chemkin reaction count if the kinetics is not a duplicate
+    global __chemkin_reaction_count
+    if __chemkin_reaction_count is not None:
+        __chemkin_reaction_count += 1
+            
+    if verbose:        
+        # Next line of comment contains Chemkin and RMG indices
+        if __chemkin_reaction_count is not None:
+            string += "! Reaction index: Chemkin #{0:d}; RMG #{1:d}\n".format(__chemkin_reaction_count, reaction.index)
+        
+        # Next line of comment contains information about the type of reaction
+        if isinstance(reaction, TemplateReaction):
+            string += '! Template reaction: {0!s}\n'.format(reaction.family.label)
+        elif isinstance(reaction, LibraryReaction):
+            string += '! Library reaction: {0!s}\n'.format(reaction.library.label)
+        elif isinstance(reaction, PDepReaction):
+            string += '! PDep reaction: {0!s}\n'.format(reaction.network)                         
+    
+        # Remaining lines of comments taken from reaction kinetics
+        if reaction.kinetics.comment:
+            for line in reaction.kinetics.comment.split("\n"):
+                string += "! {0}\n".format(line)                               
+    
+    kinetics = reaction.kinetics
+    numReactants = len(reaction.reactants)
+    reaction_string = writeReactionString(reaction, javaLibrary)    
     
     string += '{0!s:<51} '.format(reaction_string)
 
@@ -1485,7 +1498,7 @@ def saveChemkinFile(path, species, reactions, verbose = True, checkForDuplicates
     sorted_species = sorted(species, key=lambda species: species.index)
 
     # Elements section
-    f.write('ELEMENTS H C O N Ne Ar He Si S END\n\n')
+    f.write('ELEMENTS H C O N Ne Ar He Si S Cl END\n\n')
 
     # Species section
     f.write('SPECIES\n')
