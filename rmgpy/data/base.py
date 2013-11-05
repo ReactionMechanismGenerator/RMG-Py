@@ -644,7 +644,7 @@ class Database:
             for entry in entries:
                 f.write(entry.label + '\n')
                 if isinstance(entry.item, Molecule):
-                    f.write(entry.item.toAdjacencyList(removeH=True) + '\n')
+                    f.write(entry.item.toAdjacencyList(removeH=False) + '\n')
                 elif isinstance(entry.item, Group):
                     f.write(entry.item.toAdjacencyList().replace('{2S,2T}','2') + '\n')
                 elif isinstance(entry.item, LogicOr):
@@ -663,7 +663,7 @@ class Database:
             for entry in entriesNotInTree:
                 f.write(comment(entry.label + '\n'))
                 if isinstance(entry.item, Molecule):
-                    f.write(comment(entry.item.toAdjacencyList(removeH=True) + '\n'))
+                    f.write(comment(entry.item.toAdjacencyList(removeH=False) + '\n'))
                 elif isinstance(entry.item, Group):
                     f.write(comment(entry.item.toAdjacencyList().replace('{2S,2T}','2') + '\n'))
                 elif isinstance(entry.item, LogicOr):
