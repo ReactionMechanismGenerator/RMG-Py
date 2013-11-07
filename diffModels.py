@@ -271,9 +271,7 @@ if __name__ == '__main__':
     
     commonSpecies.sort(key = enthalpyDiff)
     commonReactions.sort(key = kineticsDiff)
-    for reaction in commonReactions:
-        print kineticsDiff(reaction)
-    
+
     print "Saving output in diff.html"
     outputPath = 'diff.html'
     saveDiffHTML(outputPath, commonSpecies, uniqueSpecies1, uniqueSpecies2, commonReactions, uniqueReactions1, uniqueReactions2)
