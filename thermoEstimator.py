@@ -16,7 +16,13 @@ from rmgpy.rmg.model import makeThermoForSpecies
 import scoop
 from scoop import futures
 ################################################################################
-
+def chunks(l, n):
+    """ Yield successive n-sized chunks from l.
+        From http://stackoverflow.com/questions/312443/how-do-you-split-a-list-into-evenly-sized-chunks-in-python
+    """
+    for i in xrange(0, len(l), n):
+        yield l[i:i+n]
+        
 def runThermoEstimator(inputFile):
     """
     Estimate thermo for a list of species using RMG and the settings chosen inside a thermo input file.
@@ -37,18 +43,20 @@ def runThermoEstimator(inputFile):
  #   for species in rmg.initialSpecies:
  #       species.generateThermoData(rmg.database, quantumMechanics=rmg.reactionModel.quantumMechanics)
     listOfSpecies=rmg.initialSpecies
-    outputList = futures.map(makeThermoForSpecies, listOfSpecies,qmValue=rmg.reactionModel.quantumMechanics)
-    for species, thermo in zip(listOfSpecies, outputList):
-        species.thermo = thermo   
-        library.loadEntry(
-            index = len(library.entries) + 1,
-            label = species.label,
-            molecule = species.molecule[0].toAdjacencyList(),
-            thermo = species.thermo.toThermoData(),
-            shortDesc = species.thermo.comment,
-        )
-        output.write(writeThermoEntry(species))
-        output.write('\n')
+    chunksize=50
+    for chunk in list(chunks(listOfSpecies,chunksize)):
+        outputList = futures.map(makeThermoForSpecies, chunk,qmValue=rmg.reactionModel.quantumMechanics)
+        for species, thermo in zip(chunk, outputList):
+            species.thermo = thermo   
+            library.loadEntry(
+                index = len(library.entries) + 1,
+                label = species.label,
+                molecule = species.molecule[0].toAdjacencyList(),
+                thermo = species.thermo.toThermoData(),
+                shortDesc = species.thermo.comment,
+            )
+            output.write(writeThermoEntry(species))
+            output.write('\n')
     
     output.close()
     library.save(os.path.join(rmg.outputDirectory,'ThermoLibrary.py'))
