@@ -655,7 +655,7 @@ def loadChemkinFile(path, dictionaryPath=None, transportPath=None, readComments 
     if dictionaryPath:
         speciesDict = loadSpeciesDictionary(dictionaryPath)
     
-    with open(path, 'r') as f:
+    with open(path, 'rb') as f:
     
         line0 = f.readline()
         while line0 != '':        
