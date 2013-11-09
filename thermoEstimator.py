@@ -80,6 +80,7 @@ if __name__ == '__main__':
    
     if args.postprocess:
         print "Postprocessing the profiler statistics (will be appended to thermo.log)"
+        print  "Use `dot -Tpdf thermo_profile.dot -o thermo_profile.pdf`"
         args.profile = True
     
     if args.profile:
