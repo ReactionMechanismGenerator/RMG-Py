@@ -1380,9 +1380,18 @@ class KineticsFamily(Database):
             for reaction in rxnList0:
             
                 products0 = reaction.products if forward else reaction.reactants
+                
+                # If the forward reaction contains CH(S) as reactant then correct product of reverse reaction from CH2(T) to CH2(S)
+                for product in products:
+                    for molecule in product:
+                        if molecule.isBiradicalSinglet() and molecule.getFormula() == 'CH2':
+                            for product0 in products0:
+                                if product0.isBiradicalTriplet() and product0.getFormula() == 'CH2':
+                                    product0.changeTripletSinglet()
                     
                 # Skip reactions that don't match the given products
                 match = False
+
                 if len(products) == len(products0) == 1:
                     for product in products[0]:
                         if products0[0].isIsomorphic(product):
