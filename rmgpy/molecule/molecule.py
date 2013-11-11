@@ -1718,4 +1718,15 @@ class Molecule(Graph):
                 if atom.spinMultiplicity == 3:
                     return True
         return False
+    
+    def changeTripletSinglet(self):
+        """
+        If the molecule is a 1-centered biradical in triplet state,
+        change it to singlet state.
+        """
+        cython.declare(atom=Atom)
+        for atom in self.vertices:
+            if atom.radicalElectrons == 2:
+                if atom.spinMultiplicity == 3:
+                    atom.spinMultiplicity = 1
 
