@@ -1144,7 +1144,7 @@ class KineticsFamily(Database):
                     raise ForbiddenStructureException()
                 if len(struct.atoms) - H > maxHeavyAtoms:
                     raise ForbiddenStructureException()
-                if struct.getNumberOfRadicalElectrons() > maxRadicals:
+                if (struct.getNumberOfRadicalElectrons() > maxRadicals) and (len(struct.atoms) - H < 1):
                     raise ForbiddenStructureException()
 
         # Check that product structures are allowed in this family
