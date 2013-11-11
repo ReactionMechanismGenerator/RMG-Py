@@ -1694,4 +1694,28 @@ class Molecule(Graph):
         adjlist = self.toAdjacencyList(removeH=False)
         url += "{0}".format(re.sub('\s+', '%20', adjlist.replace('\n', ';')))
         return url.strip('_')
+    
+    def isBiradicalSinglet(self):
+        """
+        Return ``True`` if the molecule is a 1-centered biradical in singlet state,
+        or ``False`` otherwise.
+        """
+        cython.declare(atom=Atom)
+        for atom in self.vertices:
+            if atom.radicalElectrons == 2:
+                if atom.spinMultiplicity == 1:
+                    return True
+        return False
+    
+    def isBiradicalTriplet(self):
+        """
+        Return ``True`` if the molecule is a 1-centered biradical in triplet state,
+        or ``False`` otherwise.
+        """
+        cython.declare(atom=Atom)
+        for atom in self.vertices:
+            if atom.radicalElectrons == 2:
+                if atom.spinMultiplicity == 3:
+                    return True
+        return False
 
