@@ -74,7 +74,7 @@ def makeThermoForSpecies(spec,qmValue=None):
         import cPickle, logging
         filename = scoop.shared.getConst('databaseFile')
         database_hash = scoop.shared.getConst('databaseHash')
-        logging.info('Loading database pickle2 file from {0!r} on worker {1}'.format(filename, scoop.WORKER_NAME.decode() ))
+        #logging.info('Loading database pickle2 file from {0!r} on worker {1}'.format(filename, scoop.WORKER_NAME.decode() ))
         f = open(filename, 'rb')
         __database = cPickle.load(f)
         f.close()

@@ -63,9 +63,7 @@ class Mopac:
         # submits the input file to mopac
         process = Popen([self.executablePath, self.inputFilePath])
         process.communicate()# necessary to wait for executable termination!
-        #Wait for OS to flush the buffer to disk. There should be a better way
- #       import time
- #       time.sleep(1)
+    
         return self.verifyOutputFile()
         
     def verifyOutputFile(self):
@@ -88,7 +86,7 @@ class Mopac:
         if not os.path.exists(self.outputFilePath):
             logging.debug("Output file {0} does not (yet) exist.".format(self.outputFilePath))
             return False
-        
+    
         InChIMatch=False #flag (1 or 0) indicating whether the InChI in the file matches InChIaug this can only be 1 if InChIFound is also 1
         InChIFound=False #flag (1 or 0) indicating whether an InChI was found in the log file
         
@@ -195,31 +193,6 @@ class MopacMol(QMMolecule, Mopac):
         """
         raise NotImplementedError("Should be defined by subclass, eg. MopacMolPM3")
         
-    def generateQMData(self):
-        """
-        Calculate the QM data and return a QMData object, or None if it fails.
-        """
-        if self.verifyOutputFile():
-            logging.info("Found a successful output file already; using that.")
-            source = "QM MOPAC result file found from previous run."
-        else:
-            self.createGeometry()
-            success = False
-            for attempt in range(1, self.maxAttempts+1):
-                self.writeInputFile(attempt)
-                logging.info('Trying {3} attempt {0} of {1} on molecule {2}.'.format(attempt, self.maxAttempts, self.molecule.toSMILES(), self.__class__.__name__))
-                success = self.run()
-                if success:
-                    source = "QM {0} calculation attempt {1}".format(self.__class__.__name__, attempt )
-                    break
-            else:
-                logging.error('QM thermo calculation failed for {0}.'.format(self.molecule.toAugmentedInChI()))
-                return None
-        result = self.parse() # parsed in cclib
-        result.source = source
-        return result # a CCLibData object
-
-
 class MopacMolPM3(MopacMol):
 
     #: Keywords that will be added at the top and bottom of the qm input file

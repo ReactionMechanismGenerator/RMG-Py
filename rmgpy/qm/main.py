@@ -96,7 +96,7 @@ class QMCalculator():
         
     def setDefaultOutputDirectory(self, outputDirectory):
         """
-        IF the fileStore or scratchDirectory are not already set, put them in here.
+        If the fileStore or scratchDirectory are not already set, put them in here.
         """
         if not self.settings.fileStore:
             self.settings.fileStore = os.path.join(outputDirectory, 'QMfiles')
@@ -124,7 +124,8 @@ class QMCalculator():
         """
         self.settings.fileStore = os.path.expandvars(self.settings.fileStore) # to allow things like $HOME or $RMGpy
         self.settings.scratchDirectory = os.path.expandvars(self.settings.scratchDirectory)
-        for path in [self.settings.fileStore, self.settings.scratchDirectory]:
+#        for path in [self.settings.fileStore, self.settings.scratchDirectory]:
+        for path in [self.settings.fileStore]:
             if not os.path.exists(path):
                 logging.info("Creating directory %s for QM files."%os.path.abspath(path))
                 os.makedirs(path)
@@ -148,7 +149,7 @@ class QMCalculator():
         mopacPM7: PM7, excludes computational results from training set, might be better or slightly worse compared to PM6
         gaussian: Only PM3 is available. 
         """
-        if self.settings.software == 'mopac':
+        if self.settings.software == 'mopac' or self.settings.software == 'mopacPM3':
             qm_molecule_calculator = rmgpy.qm.mopac.MopacMolPM3(molecule, self.settings)
             thermo0 = qm_molecule_calculator.generateThermoData()
         elif self.settings.software == 'mopacPM6':

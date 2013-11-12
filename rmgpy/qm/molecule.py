@@ -202,10 +202,27 @@ class QMMolecule:
     
     def generateQMData(self):
         """
-        Calculate the QM data somehow and return a CCLibData object, or None if it fails.
+        Calculate the QM data and return a QMData object, or None if it fails.
         """
-        raise NotImplementedError("This should be defined in a subclass that inherits from QMMolecule")
-        return qmdata.QMData() or None
+        if self.verifyOutputFile():
+            logging.info("Found a successful output file already; using that.")
+            source = "QM {0} result file found from previous run.".format(self.__class__.__name__)
+        else:
+            self.createGeometry()
+            success = False
+            for attempt in range(1, self.maxAttempts+1):
+                self.writeInputFile(attempt)
+                logging.info('Trying {3} attempt {0} of {1} on molecule {2}.'.format(attempt, self.maxAttempts, self.molecule.toSMILES(), self.__class__.__name__))
+                success = self.run()
+                if success:
+                    source = "QM {0} calculation attempt {1}".format(self.__class__.__name__, attempt )
+                    break
+            else:
+                logging.error('QM thermo calculation failed for {0}.'.format(self.molecule.toAugmentedInChI()))
+                return None
+        result = self.parse() # parsed in cclib
+        result.source = source
+        return result # a CCLibData object
     
     def generateThermoData(self):
         """

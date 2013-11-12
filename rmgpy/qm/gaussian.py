@@ -51,8 +51,7 @@ class Gaussian:
         # submits the input file to Gaussian
         process = Popen([self.executablePath, self.inputFilePath, self.outputFilePath])
         process.communicate()# necessary to wait for executable termination!
-        import time
-        time.sleep(1)
+        
         return self.verifyOutputFile()
         
     def verifyOutputFile(self):
@@ -185,28 +184,6 @@ class GaussianMol(QMMolecule, Gaussian):
         """
         raise NotImplementedError("Should be defined by subclass, eg. GaussianMolPM3")
     
-    def generateQMData(self):
-        """
-        Calculate the QM data and return a QMData object.
-        """
-        self.createGeometry()
-        if self.verifyOutputFile():
-            logging.info("Found a successful output file already; using that.")
-        else:
-            success = False
-            for attempt in range(1, self.maxAttempts+1):
-                self.writeInputFile(attempt)
-                success = self.run()
-                if success:
-                    logging.info('Attempt {0} of {1} on species {2} succeeded.'.format(attempt, self.maxAttempts, self.molecule.toAugmentedInChI()))
-                    break
-            else:
-                logging.error('QM thermo calculation failed for {0}.'.format(self.molecule.toAugmentedInChI()))
-                return None
-        result = self.parse() # parsed in cclib
-        return result
-    
-
 
 class GaussianMolPM3(GaussianMol):
 
