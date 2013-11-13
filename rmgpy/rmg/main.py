@@ -1080,7 +1080,7 @@ def initializeLog(verbose, log_file_name):
     logging.addLevelName(logging.ERROR, 'Error: ')
     logging.addLevelName(logging.WARNING, 'Warning: ')
     logging.addLevelName(logging.INFO, '')
-    logging.addLevelName(logging.DEBUG, '')
+    logging.addLevelName(logging.DEBUG, 'Debug:')
     logging.addLevelName(0, '')
 
     # Create formatter and add to console handler

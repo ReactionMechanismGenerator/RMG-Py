@@ -69,6 +69,7 @@ class QMSettings():
         assert type(self.onlyCyclics) is BooleanType
         assert self.maxRadicalNumber is not None # but it can be 0
         assert type(self.maxRadicalNumber) is IntType
+        logging.debug("QM settings are ok.")
 
 class QMCalculator():
     """
@@ -134,6 +135,7 @@ class QMCalculator():
             raise Exception("RMG-Py 'bin' directory {0} does not exist.".format(self.settings.RMG_bin_path))
         if not os.path.isdir(self.settings.RMG_bin_path):
             raise Exception("RMG-Py 'bin' directory {0} is not a directory.".format(self.settings.RMG_bin_path))
+        logging.debug("QM paths are ok.")
             
         
     def getThermoData(self, molecule):
@@ -150,15 +152,20 @@ class QMCalculator():
         gaussian: Only PM3 is available. 
         """
         if self.settings.software == 'mopac' or self.settings.software == 'mopacPM3':
+            logging.debug("Attempting for a {0} calculation.".format(self.settings.software))
             qm_molecule_calculator = rmgpy.qm.mopac.MopacMolPM3(molecule, self.settings)
             thermo0 = qm_molecule_calculator.generateThermoData()
+            logging.debug("{0} calculation attempted.".format(self.settings.software))
         elif self.settings.software == 'mopacPM6':
+            logging.debug("Attempting for a {0} calculation.".format(self.settings.software))
             qm_molecule_calculator = rmgpy.qm.mopac.MopacMolPM6(molecule, self.settings)
             thermo0 = qm_molecule_calculator.generateThermoData()
         elif self.settings.software == 'mopacPM7':
+            logging.debug("Attempting for a {0} calculation.".format(self.settings.software))
             qm_molecule_calculator = rmgpy.qm.mopac.MopacMolPM7(molecule, self.settings)
             thermo0 = qm_molecule_calculator.generateThermoData()
         elif self.settings.software == 'gaussian':
+            logging.debug("Attempting for a {0} calculation.".format(self.settings.software))
             qm_molecule_calculator = rmgpy.qm.gaussian.GaussianMolPM3(molecule, self.settings)
             thermo0 = qm_molecule_calculator.generateThermoData()
         else:

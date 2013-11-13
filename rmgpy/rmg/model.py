@@ -39,7 +39,7 @@ import os.path
 import itertools
 
 import scoop
-from scoop import futures
+from scoop import futures,shared
 
 from rmgpy.display import display
 #import rmgpy.chemkin
@@ -64,22 +64,28 @@ from pdep import PDepReaction, PDepNetwork, PressureDependenceError
 
 __database = None
 
-def makeThermoForSpecies(spec,qmValue=None):
+def makeThermoForSpecies(spec):
     """
     Make thermo for a species.
     """
+    import logging
+    qmValue=shared.getConst('qmValue')
+    if qmValue: logging.debug("qmValue fine @ makeThermoForSpecies")
     global __database
     if __database == None:
         """Load the database from some pickle file"""
-        import cPickle, logging
+        import cPickle
         filename = scoop.shared.getConst('databaseFile')
         database_hash = scoop.shared.getConst('databaseHash')
+        logging.debug('Loading database pickle2 file'.format(filename))
         #logging.info('Loading database pickle2 file from {0!r} on worker {1}'.format(filename, scoop.WORKER_NAME.decode() ))
         f = open(filename, 'rb')
         __database = cPickle.load(f)
         f.close()
         assert __database.hash == database_hash, "Database loaded from {0!r} doesn't match expected hash!".format(filename)
+    logging.debug("Generate thermo data in makeThermoForSpecies")
     spec.generateThermoData(__database,quantumMechanics=qmValue)
+    logging.debug("Thermo generated for {0}".format(spec.label))
     return spec.thermo
 
 ################################################################################
@@ -117,17 +123,18 @@ class Species(rmgpy.species.Species):
         from rmgpy.data.thermo import saveEntry
 
         thermo0 = None
-        
         thermo0 = database.thermo.getThermoDataFromLibraries(self)
-        
+        if quantumMechanics is None : logging.debug("qmValue is None at generateThermoData in model.py")
         if thermo0 is not None:
-            logging.info("Found thermo for {0} in thermo library".format(self.label))
+            logging.debug("Found thermo for {0} in thermo library".format(self.label))
             assert len(thermo0) == 3, "thermo0 should be a tuple at this point: (thermoData, library, entry)"
             thermo0 = thermo0[0]
             
         elif quantumMechanics:
+            logging.debug("Generate thermo data with QM")
             molecule = self.molecule[0]
             if quantumMechanics.settings.onlyCyclics and not molecule.isCyclic():
+                logging.debug("Bypassing QM for ".format(self.label))
                 pass
             else: # try a QM calculation
                 if molecule.getRadicalCount() > quantumMechanics.settings.maxRadicalNumber:
@@ -162,10 +169,12 @@ class Species(rmgpy.species.Species):
                         f.write('{0}\n'.format(molecule.toSMILES()))
                         f.write('{0}\n\n'.format(molecule.toAdjacencyList(removeH=True)))
                 else: # Not too many radicals: do a direct calculation.
+                    logging.debug("Generate thermo for {0} with QM".format(self.label))
                     thermo0 = quantumMechanics.getThermoData(molecule) # returns None if it fails
-                
+                    if thermo0 is None: logging.debug("QM for {0} failed.".format(self.label))
                 if thermo0 is not None:
                     # Write the QM molecule thermo to a library so that can be used in future RMG jobs.
+                    logging.debug("QM for {0} is successful.".format(self.label))
                     quantumMechanics.database.loadEntry(index = len(quantumMechanics.database.entries) + 1,
                                                         label = molecule.toSMILES(),
                                                         molecule = molecule.toAdjacencyList(),

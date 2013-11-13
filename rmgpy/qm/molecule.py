@@ -204,6 +204,7 @@ class QMMolecule:
         """
         Calculate the QM data and return a QMData object, or None if it fails.
         """
+        logging.debug("{0} calculation".format(self.__class__.__name__))
         if self.verifyOutputFile():
             logging.info("Found a successful output file already; using that.")
             source = "QM {0} result file found from previous run.".format(self.__class__.__name__)
@@ -232,6 +233,7 @@ class QMMolecule:
         """
         # First, see if we already have it.
         if self.loadThermoData():
+            logging.debug("Already have thermo data")
             return self.thermo
         
         # If not, generate the QM data
@@ -239,20 +241,24 @@ class QMMolecule:
         
         # If that fails, give up and return None.
         if self.qmData  is None:
+            logging.debug("QM data is not found")
             return None
             
         self.determinePointGroup()
         
         # If that fails, give up and return None.
         if self.pointGroup is None:
+            logging.debug("No point group found")
             return None
             
         self.calculateThermoData()
+        logging.debug("Thermo data calculated")
         Cp0 = self.molecule.calculateCp0()
         CpInf = self.molecule.calculateCpInf()
         self.thermo.Cp0 = (Cp0,"J/(mol*K)")
         self.thermo.CpInf = (CpInf,"J/(mol*K)")
         self.saveThermoData()
+        logging.debug("Thermo data saved")
         return self.thermo
         
     def saveThermoData(self):
@@ -343,6 +349,7 @@ class QMMolecule:
         
         trans = rmgpy.statmech.IdealGasTranslation( mass=self.qmData.molecularMass )
         if self.pointGroup.linear:
+            logging.debug("Linear molecule")
             rot = rmgpy.statmech.LinearRotor(
                                          rotationalConstant = self.qmData.rotationalConstants,
                                          symmetry = self.pointGroup.symmetryNumber,

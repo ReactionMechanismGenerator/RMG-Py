@@ -20,10 +20,13 @@ class Mopac:
     mopacEnv = os.getenv('MOPAC_DIR', default="/opt/mopac")
     if os.path.exists(os.path.join(mopacEnv , 'MOPAC2012.exe')):
         executablePath = os.path.join(mopacEnv , 'MOPAC2012.exe')
+        logging.debug("{0} is found.".format(executablePath))
     elif os.path.exists(os.path.join(mopacEnv , 'MOPAC2009.exe')):
         executablePath = os.path.join(mopacEnv , 'MOPAC2009.exe')
+        logging.debug("{0} is found.".format(executablePath))
     else:
         executablePath = os.path.join(mopacEnv , '(MOPAC 2009 or 2012)')
+        logging.debug("{0} is found.".format(executablePath))
     
     usePolar = False #use polar keyword in MOPAC
     
@@ -56,6 +59,7 @@ class Mopac:
 
     def testReady(self):
         if not os.path.exists(self.executablePath):
+            logging.debug("{0} is not found.").format(self.executablePath)
             raise Exception("Couldn't find MOPAC executable at {0}. Try setting your MOPAC_DIR environment variable.".format(self.executablePath))
 
     def run(self):
