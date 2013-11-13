@@ -609,7 +609,7 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds):
             'N-H': -0.69, 'N-N': -0.47, 'N=N': -1.54, 'N#N': -2.05,}
     elif modelChemistry == 'CCSD(T)-F12/cc-pVTZ-F12':
         bondEnergies = { 'C-H': -0.09, 'C-C': -0.27, 'C=C': -1.03, 'C#C': -1.79,
-            'O-H': -0.06, 'C-O': -0.14, 'C=O': -0.19, 'O-O': 0.16, 'N-C': -0.18,
+            'O-H': -0.06, 'C-O': 0.14, 'C=O': -0.19, 'O-O': 0.16, 'N-C': -0.18,
             'N=C': -0.41, 'N#C': -1.41, 'N-O': 0.87, 'N_O': -0.09, 'N=O': -0.23,
             'N-H': -0.01, 'N-N': -0.21, 'N=N': -0.44, 'N#N': -0.76,}
     elif modelChemistry == 'CCSD(T)-F12/cc-pVQZ-F12':
