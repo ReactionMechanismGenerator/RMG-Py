@@ -40,7 +40,10 @@ import logging
 import os
 import re
 import element as elements
-import openbabel
+try:
+    import openbabel
+except:
+    pass
 from rdkit import Chem
 from .graph import Vertex, Edge, Graph
 from .group import GroupAtom, GroupBond, Group, ActionError
@@ -1142,24 +1145,25 @@ class Molecule(Graph):
         Removes check-sum dash (-) and character so that only 
         the 14 + 9 characters remain.
         """
-
+        try:
+            if not Chem.inchi.INCHI_AVAILABLE:
+                return "RDKitInstalledWithoutInChI"
+            inchi = self.toInChI()
+            return Chem.inchi.InchiToInchiKey(inchi)[:-2]
+        except:
+            pass
+        
         import openbabel
 
-
-        for atom in self.vertices:
-            if atom.isNitrogen():
-                # This version does not write a warning to stderr if stereochemistry is undefined
-                obmol = self.toOBMol()
-                obConversion = openbabel.OBConversion()
-                obConversion.SetOutFormat('inchi')
-                obConversion.SetOptions('w', openbabel.OBConversion.OUTOPTIONS)
-                obConversion.SetOptions('K', openbabel.OBConversion.OUTOPTIONS)
-                return obConversion.WriteString(obmol).strip()[:-2]
-
-        if not Chem.inchi.INCHI_AVAILABLE:
-            return "RDKitInstalledWithoutInChI"
-        inchi = self.toInChI()
-        return Chem.inchi.InchiToInchiKey(inchi)[:-2]
+#        for atom in self.vertices:
+ #           if atom.isNitrogen():
+        # This version does not write a warning to stderr if stereochemistry is undefined
+        obmol = self.toOBMol()
+        obConversion = openbabel.OBConversion()
+        obConversion.SetOutFormat('inchi')
+        obConversion.SetOptions('w', openbabel.OBConversion.OUTOPTIONS)
+        obConversion.SetOptions('K', openbabel.OBConversion.OUTOPTIONS)
+        return obConversion.WriteString(obmol).strip()[:-2]
     
     def toAugmentedInChIKey(self):
         """
