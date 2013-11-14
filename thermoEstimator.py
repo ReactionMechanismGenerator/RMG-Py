@@ -17,10 +17,10 @@ from rmgpy.rmg.model import makeThermoForSpecies
 from scoop import futures,shared
 ################################################################################
 def chunks(l, n):
-    """ Yield successive n-sized chunks from l.
-        From http://stackoverflow.com/questions/312443/how-do-you-split-a-list-into-evenly-sized-chunks-in-python
+    """ 
+    Yield successive n-sized chunks from l.
     """
-    for i in xrange(0, len(l), n):
+    for i in range(0, len(l), n):
         yield l[i:i+n]
         
 def runThermoEstimator(inputFile):
@@ -41,17 +41,17 @@ def runThermoEstimator(inputFile):
     # ThermoLibrary format with values for H, S, and Cp's.
     output = open(os.path.join(rmg.outputDirectory, 'output.txt'),'wb')
     library = ThermoLibrary(name='Thermo Estimation Library')
- #   for species in rmg.initialSpecies:
- #       species.generateThermoData(rmg.database, quantumMechanics=rmg.reactionModel.quantumMechanics)
     listOfSpecies=rmg.initialSpecies
     chunksize=50
     if rmg.reactionModel.quantumMechanics: logging.debug("qmValue fine @ runThermoEstimator")
     shared.setConst(qmValue=rmg.reactionModel.quantumMechanics)
     for chunk in list(chunks(listOfSpecies,chunksize)):
+        logging.debug("Parallelized section starts...")
+        # There will be no stdout from workers except the main one.
         outputList = futures.map(makeThermoForSpecies, chunk)
-        logging.debug("mapped")
+        logging.debug("Parallelized section ends.")
         for species, thermo in zip(chunk, outputList):
-            logging.debug("specie {0}".format(species.label))
+            logging.debug("Species {0}".format(species.label))
             species.thermo = thermo   
             library.loadEntry(
                 index = len(library.entries) + 1,
@@ -106,7 +106,7 @@ if __name__ == '__main__':
         makeProfileGraph(stats_file)
         
     else:
-        level = logging.DEBUG
+        level = logging.INFO
         initializeLog(level, 'thermo.log')
-        logging.debug("runThermoEstimator...")
+        logging.debug("runThermoEstimator starts...")
         runThermoEstimator(inputFile)
