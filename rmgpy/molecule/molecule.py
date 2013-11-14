@@ -1094,11 +1094,26 @@ class Molecule(Graph):
         Convert a molecular structure to an InChI string. Uses
         `RDKit <http://rdkit.org/>`_ to perform the conversion.
         Perceives aromaticity.
+        
+        or
+        
+        Convert a molecular structure to an InChI string. Uses
+        `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
         """
-        if not Chem.inchi.INCHI_AVAILABLE:
-            return "RDKitInstalledWithoutInChI"
-        rdkitmol = self.toRDKitMol()
-        return Chem.inchi.MolToInchi(rdkitmol)
+        try:
+            if not Chem.inchi.INCHI_AVAILABLE:
+                return "RDKitInstalledWithoutInChI"
+            rdkitmol = self.toRDKitMol()
+            return Chem.inchi.MolToInchi(rdkitmol)
+        except:
+            pass
+    
+        # This version does not write a warning to stderr if stereochemistry is undefined
+        obmol = self.toOBMol()
+        obConversion = openbabel.OBConversion()
+        obConversion.SetOutFormat('inchi')
+        obConversion.SetOptions('w', openbabel.OBConversion.OUTOPTIONS)
+        return obConversion.WriteString(obmol).strip()
     
     def toAugmentedInChI(self):
         """
