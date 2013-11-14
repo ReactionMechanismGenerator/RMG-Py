@@ -62,6 +62,7 @@ def saveOutputHTML(path, reactionModel):
     from model import PDepReaction
     
     from rmgpy.molecule.draw import MoleculeDrawer
+    from rmgpy.chemkin import getSpeciesIdentifier
 
     try:
         import jinja2
@@ -92,8 +93,11 @@ def saveOutputHTML(path, reactionModel):
         # Draw molecules if necessary
         fstr = os.path.join(dirname, 'species', '{0}.png'.format(spec))
         if not os.path.exists(fstr):
-            MoleculeDrawer().draw(spec.molecule[0], 'png', fstr)
-
+            try:
+                MoleculeDrawer().draw(spec.molecule[0], 'png', fstr)
+            except:
+                raise OutputError("{0} species could not be drawn because it did not contain a molecular structure. Please recheck your files.".format(getSpeciesIdentifier(spec)))
+                
     # We want to keep species sorted in the original order in which they were added to the RMG core.
     # Rather than ordered by index
 #    species.sort(key=lambda x: x.index)
@@ -398,11 +402,19 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
         # Draw molecules if necessary
         fstr = os.path.join(dirname, 'species1', '{0}.png'.format(spec1))
         if not os.path.exists(fstr):
-            MoleculeDrawer().draw(spec1.molecule[0], 'png', fstr)
+            try:
+                MoleculeDrawer().draw(spec1.molecule[0], 'png', fstr)
+            except IndexError:
+                raise OutputError('{0} species could not be drawn because it did not contain a molecular structure. Please recheck your files.'.format(getSpeciesIdentifier(spec1)))
+
             
         fstr = os.path.join(dirname, 'species2', '{0}.png'.format(spec2))
         if not os.path.exists(fstr):
-            MoleculeDrawer().draw(spec2.molecule[0], 'png', fstr)
+            try:
+                MoleculeDrawer().draw(spec2.molecule[0], 'png', fstr)
+            except IndexError:
+                raise OutputError('{0} species could not be drawn because it did not contain a molecular structure. Please recheck your files.'.format(getSpeciesIdentifier(spec2)))
+    
                 
     for spec in speciesList1:
         match = re_index.search(spec.label)
@@ -412,8 +424,11 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
         # Draw molecules if necessary
         fstr = os.path.join(dirname, 'species1', '{0}.png'.format(spec))
         if not os.path.exists(fstr):
-            MoleculeDrawer().draw(spec.molecule[0], 'png', fstr)
-            
+            try:
+                MoleculeDrawer().draw(spec.molecule[0], 'png', fstr)
+            except IndexError:
+                raise OutputError('{0} species could not be drawn because it did not contain a molecular structure. Please recheck your files.'.format(getSpeciesIdentifier(spec)))
+    
     for spec in speciesList2:
         match = re_index.search(spec.label)
         if match:
@@ -422,7 +437,10 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
         # Draw molecules if necessary
         fstr = os.path.join(dirname, 'species2', '{0}.png'.format(spec))
         if not os.path.exists(fstr):
-            MoleculeDrawer().draw(spec.molecule[0], 'png', fstr)
+            try:
+                MoleculeDrawer().draw(spec.molecule[0], 'png', fstr)
+            except IndexError:
+                raise OutputError('{0} species could not be drawn because it did not contain a molecular structure. Please recheck your files.'.format(getSpeciesIdentifier(spec)))
     
 
 
