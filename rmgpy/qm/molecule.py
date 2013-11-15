@@ -202,7 +202,7 @@ class QMMolecule:
     
     def generateQMData(self):
         """
-        Calculate the QM data and return a QMData object, or None if it fails.
+        Calculate the QM data somehow and return a CCLibData object, or None if it fails.
         """
         logging.debug("{0} calculation".format(self.__class__.__name__))
         if self.verifyOutputFile():
