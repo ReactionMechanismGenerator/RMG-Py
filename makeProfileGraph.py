@@ -10,11 +10,14 @@ def makeProfileGraph(stats_file,thresh_node,thresh_edge):
     `dot -Tpdf input.dot -o output.pdf`.
     """
     try:
-        from gprof2dot import gprof2dot
+        from external.gprof2dot import gprof2dot
     except ImportError:
-        print('Package gprof2dot not found. Unable to create a graph of the profile statistics.')
-        print("`pip install gprof2dot` if you don't have it.")
-        return
+        try:
+            from external import gprof2dot
+        except ImportError:    
+            print('Package gprof2dot not found. Unable to create a graph of the profile statistics.')
+            print("`pip install gprof2dot` if you don't have it.")
+            return
     import subprocess
     m = gprof2dot.Main()
     class Options:
@@ -47,9 +50,9 @@ if __name__ == '__main__':
     import argparse
      
     parser = argparse.ArgumentParser(description="Creates a call graph with profiling information.")
-    parser.add_argument('FILE', type=str, default='RMG.profile', help='.profile file')
-    parser.add_argument('THRESH_NODE', type=float, default=0.8, help='threshold percentage value for nodes')
-    parser.add_argument('THRESH_EDGE', type=float, default=0.1, help='threshold percentage value for nodes') 
+    parser.add_argument('FILE', type=str, default='RMG.profile',nargs='?', help='.profile file (default file is RMG.profile)')
+    parser.add_argument('THRESH_NODE', type=float, default=0.8,nargs='?', help='threshold percentage value for nodes (default value is 0.8)')
+    parser.add_argument('THRESH_EDGE', type=float, default=0.1, nargs='?', help='threshold percentage value for nodes (default value is 0.1)') 
     args = parser.parse_args()
     stats_file=args.FILE
     thresh_node=args.THRESH_NODE
