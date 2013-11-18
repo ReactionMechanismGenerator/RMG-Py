@@ -573,6 +573,8 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds):
         atomEnergies = {'H':-0.499994558 + SOC['H'], 'N':-54.53051523 + SOC['N'], 'O':-75.00560006 + SOC['O'], 'C':-37.78996166 + SOC['C']}
     elif modelChemistry == 'CCSD_core_DZ':
         atomEnergies = {'H':-0.499811124 + SOC['H'], 'N':-54.58213718 + SOC['N'], 'O':-75.05304555 + SOC['O'], 'C':-37.84086912 + SOC['C']}
+    elif modelChemistry == 'BMK/cbsb7':
+        atomEnergies = {'H':-0.498618853119+ SOC['H'], 'N':-54.5697851544+ SOC['N'], 'O':-75.0515210278+ SOC['O'], 'C':-37.8287310027+ SOC['C'], 'P':-341.167615941+ SOC['P'], 'S': -398.001619915+ SOC['S']}
         
         
     else:
