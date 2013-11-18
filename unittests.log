@@ -186,17 +186,17 @@ Test the AtomType.isSpecificCaseOf() method. ... ok
 Test that we can reconstruct an AtomType object from its repr() ... ok
 Test that an AtomType object can be successfully pickled and ... ok
 Test the AtomType.setActions() method. ... ok
-Test that getAtomType() returns appropriate carbon atom types. ... [16:48:06] Explicit valence for atom # 2 O, 3, is greater than permitted
+Test that getAtomType() returns appropriate carbon atom types. ... [19:45:06] Explicit valence for atom # 2 O, 3, is greater than permitted
 ERROR
-Test that getAtomType() returns the hydrogen atom type. ... [16:48:06] Explicit valence for atom # 2 O, 3, is greater than permitted
+Test that getAtomType() returns the hydrogen atom type. ... [19:45:06] Explicit valence for atom # 2 O, 3, is greater than permitted
 ERROR
-Test that getAtomType() returns appropriate NoneTypes. ... [16:48:06] Explicit valence for atom # 2 O, 3, is greater than permitted
+Test that getAtomType() returns appropriate NoneTypes. ... [19:45:06] Explicit valence for atom # 2 O, 3, is greater than permitted
 ERROR
-Test that getAtomType() returns appropriate oxygen atom types. ... [16:48:06] Explicit valence for atom # 2 O, 3, is greater than permitted
+Test that getAtomType() returns appropriate oxygen atom types. ... [19:45:06] Explicit valence for atom # 2 O, 3, is greater than permitted
 ERROR
-Test that getAtomType() returns appropriate silicon atom types. ... [16:48:06] Explicit valence for atom # 2 O, 3, is greater than permitted
+Test that getAtomType() returns appropriate silicon atom types. ... [19:45:06] Explicit valence for atom # 2 O, 3, is greater than permitted
 ERROR
-Test that getAtomType() returns appropriate sulfur atom types. ... [16:48:06] Explicit valence for atom # 2 O, 3, is greater than permitted
+Test that getAtomType() returns appropriate sulfur atom types. ... [19:45:06] Explicit valence for atom # 2 O, 3, is greater than permitted
 ERROR
 Test the rmgpy.elements.getElement() method. ... ok
 Test that we can reconstruct an Element object from its repr() ... ok
@@ -314,7 +314,7 @@ Test the Molecule.getLabeledAtoms() method. ... ok
 Test the Molecule.getLabeledAtom() method. ... ok
 Test the Molecule.getLabeledAtoms() method. ... ok
 Test the Molecule.getMolecularWeight() method. ... ok
-Test that InChI Key generation is working properly. ... [16:48:06] WARNING: Omitted undefined stereo
+Test that InChI Key generation is working properly. ... [19:45:06] WARNING: Omitted undefined stereo
 ok
 Test the Molecule.isInCycle() method with ethane. ... ok
 Test the Molecule.isInCycle() method with ethane. ... ok
@@ -928,7 +928,7 @@ rmgpy.cantherm.main                 94     75     10     10    18%   45-46, 77-8
 rmgpy.cantherm.molepro              33      2     18      4    88%   64, 87
 rmgpy.cantherm.output               77     66     23     23    11%   47-49, 56-75, 81-94, 101-121, 127-141, 147-149, 155-157, 167-172
 rmgpy.cantherm.pdep                403    365    156    156     7%   106-142, 147, 150, 155, 158, 163, 166, 171, 174, 179, 182, 187, 190, 195, 198, 204, 224-238, 250-267, 270-297, 309-326, 330-362, 366-382, 386-483, 488-552, 562-571, 578-691
-rmgpy.cantherm.statmech            394    366    162    162     5%   82, 89-120, 128-145, 150, 160-165, 172-174, 183-389, 397-428, 436-466, 483-622, 633-692
+rmgpy.cantherm.statmech            396    368    164    164     5%   82, 89-120, 128-145, 150, 160-165, 172-174, 183-389, 397-428, 436-466, 483-624, 635-694
 rmgpy.cantherm.thermo              155    140     32     32     8%   55-56, 63-67, 75-122, 129-205, 217-269
 rmgpy.chemkin                      883    842    451    451     3%   71-126, 137-409, 419-568, 579-599, 605-618, 625-640, 648-786, 798-840, 854-880, 890-1031, 1039-1049, 1061-1103, 1114-1178, 1186-1222, 1232-1382, 1392-1408, 1418-1421, 1429-1432, 1439-1457, 1475-1518, 1526-1557
 rmgpy.data                           3      1      0      0    67%   34
@@ -978,7 +978,7 @@ rmgpy.solver                         2      0      0      0   100%
 rmgpy.statmech                       5      0      0      0   100%   
 rmgpy.thermo                         3      0      0      0   100%   
 ----------------------------------------------------------------------------
-TOTAL                            12934  11218   5519   5334    10%   
+TOTAL                            12936  11220   5521   5336    10%   
 ----------------------------------------------------------------------
 Ran 700 tests.
 
