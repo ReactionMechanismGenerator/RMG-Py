@@ -826,8 +826,8 @@ class KineticsFamily(Database):
         entries.sort(key=lambda x: x.index)
         reverse_entries = []
         for entry in entries:
-            try:
-                template = self.getReactionTemplate(entry.item)
+            try:        
+                template = self.getReactionTemplate(deepcopy(entry.item))
             except UndeterminableKineticsError:
                 # Some entries might be stored in the reverse direction for
                 # this family; save them so we can try this
@@ -886,7 +886,7 @@ class KineticsFamily(Database):
             item.kinetics = data
             data = item.generateReverseRateCoefficient()
             
-            item = Reaction(reactants=entry.item.products, products=entry.item.reactants)
+            item = Reaction(reactants=[m.copy(deep=True) for m in entry.item.products], products=[m.copy(deep=True) for m in entry.item.reactants])
             template = self.getReactionTemplate(item)
             item.degeneracy = self.calculateDegeneracy(item)
             

@@ -575,7 +575,10 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds):
         atomEnergies = {'C':-37.781266669684}
     elif modelChemistry == 'FCI/cc-pVQZ':
         atomEnergies = {'C':-37.787052110598}
-
+        
+    elif modelChemistry == 'BMK/cbsb7':
+        atomEnergies = {'H':-0.498618853119+ SOC['H'], 'N':-54.5697851544+ SOC['N'], 'O':-75.0515210278+ SOC['O'], 'C':-37.8287310027+ SOC['C'], 'P':-341.167615941+ SOC['P'], 'S': -398.001619915+ SOC['S']}
+        
     else:
         logging.warning('Unknown model chemistry "{0}"; not applying energy corrections.'.format(modelChemistry))
         return E0
