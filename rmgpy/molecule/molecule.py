@@ -525,6 +525,12 @@ class Bond(Edge):
             raise ActionError('Unable to update GroupBond: Invalid action {0}.'.format(action))
 
 #################################################################################
+try:
+    SMILEwriter = openbabel.OBConversion()
+    SMILEwriter.SetOutFormat('smi')
+    SMILEwriter.SetOptions("i",SMILEwriter.OUTOPTIONS) # turn off isomer and stereochemistry information (the @ signs!)
+except:
+    pass
     
 class Molecule(Graph):
     """
@@ -1191,6 +1197,11 @@ class Molecule(Graph):
     
     def toSMILES(self):
         """
+        Convert a molecular structure to an SMILES string. Uses
+        `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
+        
+        or
+        
         Convert a molecular structure to a canonical SMILES string. Uses
         `RDKit <http://rdkit.org/>`_ to perform the conversion.
         Perceives aromaticity and removes Hydrogen atoms.
@@ -1198,7 +1209,12 @@ class Molecule(Graph):
         
         for atom in self.vertices:
             if atom.isNitrogen():
-                return self.getFormula()
+                mol = self.toOBMol()
+                if self.getFormula() == 'H2':
+                    return '[H][H]'
+                elif self.getFormula() == 'H':
+                    return '[H]'
+                return SMILEwriter.WriteString(mol).strip()
             
         rdkitmol = self.toRDKitMol()
         
