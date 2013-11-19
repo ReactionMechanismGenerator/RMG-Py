@@ -648,20 +648,24 @@ cdef class Graph:
                     if len(c) < len(cycle):
                         cycle = c
                 cycleList.append(cycle)
+                
+                # Remove the root vertex to create single edges, note this will not
+                # function properly if there is no vertex with 2 edges (i.e. cubane)
+                graph.removeVertex(rootVertex)
 
-                # Remove from the graph all vertices in the cycle that have only two edges
-                verticesToRemove = []
-                for vertex in cycle:
-                    if len(vertex.edges) <= 2:
-                        verticesToRemove.append(vertex)
-                if len(verticesToRemove) == 0:
-                    # there are no vertices in this cycle that with only two edges
-                    # Remove edge between root vertex and any one vertex it is connected to
-                    vertex = rootVertex.edges.keys()[0]
-                    graph.removeEdge(rootVertex.edges[vertex])
-                else:
-                    for vertex in verticesToRemove:
-                        graph.removeVertex(vertex)
+                # Remove from the graph all vertices in the cycle that have only one edge
+                loneCarbon = True
+                while loneCarbon:
+                    loneCarbon = False
+                    verticesToRemove = []
+                    
+                    for vertex in cycle:
+                        if len(vertex.edges) == 1:
+                            loneCarbon = True
+                            verticesToRemove.append(vertex)
+                    else:
+                        for vertex in verticesToRemove:
+                            graph.removeVertex(vertex)
 
         # Map atoms in cycles back to atoms in original graph
         for i in range(len(cycleList)):
