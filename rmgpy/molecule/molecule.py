@@ -892,7 +892,7 @@ class Molecule(Graph):
         be a :class:`Group` object, or a :class:`TypeError` is raised.
         """
         cython.declare(group=Group, atom=Atom)
-        cython.declare(carbonCount=cython.short, oxygenCount=cython.short, sulfurCount=cython.short, radicalCount=cython.short)
+        cython.declare(carbonCount=cython.short, nitrogenCount=cython.short, oxygenCount=cython.short, sulfurCount=cython.short, radicalCount=cython.short)
         
         # It only makes sense to compare a Molecule to a Group for subgraph
         # isomorphism, so raise an exception if this is not what was requested
@@ -901,10 +901,12 @@ class Molecule(Graph):
         group = other
         
         # Count the number of carbons, oxygens, and radicals in the molecule
-        carbonCount = 0; oxygenCount = 0; sulfurCount = 0; radicalCount = 0
+        carbonCount = 0; nitrogenCount = 0; oxygenCount = 0; sulfurCount = 0; radicalCount = 0
         for atom in self.vertices:
             if atom.element.symbol == 'C':
                 carbonCount += 1
+            elif atom.element.symbol == 'N':
+                nitrogenCount += 1
             elif atom.element.symbol == 'O':
                 oxygenCount += 1
             elif atom.element.symbol == 'S':
@@ -915,6 +917,7 @@ class Molecule(Graph):
         # needing to perform the full isomorphism check
         if (radicalCount < group.radicalCount or
             carbonCount < group.carbonCount or
+            nitrogenCount < group.nitrogenCount or
             oxygenCount < group.oxygenCount or
             sulfurCount < group.sulfurCount):
             return False

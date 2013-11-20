@@ -673,28 +673,33 @@ class Group(Graph):
         isomorphism checks.
         """
         cython.declare(atom=GroupAtom, atomType=AtomType)
-        cython.declare(carbon=AtomType, oxygen=AtomType, sulfur=AtomType)
-        cython.declare(isCarbon=cython.bint, isOxygen=cython.bint, isSulfur=cython.bint, radical=cython.int)
+        cython.declare(carbon=AtomType, nitrogen=AtomType, oxygen=AtomType, sulfur=AtomType)
+        cython.declare(isCarbon=cython.bint, isNitrogen=cython.bint, isOxygen=cython.bint, isSulfur=cython.bint, radical=cython.int)
         
-        carbon = atomTypes['C']
-        oxygen = atomTypes['O']
-        sulfur = atomTypes['S']
+        carbon   = atomTypes['C']
+        nitrogen = atomTypes['N']
+        oxygen   = atomTypes['O']
+        sulfur   = atomTypes['S']
         
-        self.carbonCount = 0
-        self.oxygenCount = 0
-        self.sulfurCount = 0
-        self.radicalCount = 0
+        self.carbonCount   = 0
+        self.nitrogenCount = 0
+        self.oxygenCount   = 0
+        self.sulfurCount   = 0
+        self.radicalCount  = 0
         for atom in self.vertices:
             if len(atom.atomType) == 1:
-                atomType = atom.atomType[0]
-                isCarbon = atomType.equivalent(carbon)
-                isOxygen = atomType.equivalent(oxygen)
-                isSulfur = atomType.equivalent(sulfur)
-                if isCarbon and not isOxygen and not isSulfur:
+                atomType   = atom.atomType[0]
+                isCarbon   = atomType.equivalent(carbon)
+                isNitrogen = atomType.equivalent(nitrogen)
+                isOxygen   = atomType.equivalent(oxygen)
+                isSulfur   = atomType.equivalent(sulfur)
+                if isCarbon and not isNitrogen and not isOxygen and not isSulfur:
                     self.carbonCount += 1
-                elif isOxygen and not isCarbon and not isSulfur:
+                elif isNitrogen and not isCarbon and not isOxygen and not isSulfur:
+                    self.nitrogenCount += 1
+                elif isOxygen and not isCarbon and not isNitrogen and not isSulfur:
                     self.oxygenCount += 1
-                elif isSulfur and not isCarbon and not isOxygen:
+                elif isSulfur and not isCarbon and not isNitrogen and not isOxygen:
                     self.sulfurCount += 1
             if len(atom.radicalElectrons) == 1:
                 radical = atom.radicalElectrons[0]
