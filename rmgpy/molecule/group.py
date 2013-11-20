@@ -37,6 +37,7 @@ import cython
 
 from .graph import Vertex, Edge, Graph
 from .atomtype import atomTypes
+import element as elements
 
 ################################################################################
 
@@ -64,6 +65,7 @@ class GroupAtom(Vertex):
     `spinMultiplicity`  ``list``            The allowed spin multiplicities (as short integers)
     `charge`            ``list``            The allowed formal charges (as short integers)
     `label`             ``str``             A string label that can be used to tag individual atoms
+    `coords`            ``numpy array``     The (x,y,z) coordinates in Angstrom
     =================== =================== ====================================
 
     Each list represents a logical OR construct, i.e. an atom will match the
@@ -73,7 +75,7 @@ class GroupAtom(Vertex):
     order to match.
     """
 
-    def __init__(self, atomType=None, radicalElectrons=None, spinMultiplicity=None, charge=None, label=''):
+    def __init__(self, atomType=None, radicalElectrons=None, spinMultiplicity=None, charge=None, label='', coords=None):
         Vertex.__init__(self)
         self.atomType = atomType or []
         for index in range(len(self.atomType)):
@@ -83,6 +85,7 @@ class GroupAtom(Vertex):
         self.spinMultiplicity = spinMultiplicity or []
         self.charge = charge or []
         self.label = label
+        self.coords = coords
 
     def __reduce__(self):
         """
@@ -604,6 +607,41 @@ class Group(Graph):
                 else:
                     labeled[atom.label] = atom
         return labeled
+        
+    def connectTheDots(self):
+        """
+        Delete all bonds, and set them again based on the Atoms' coords.
+        Does not detect bond type.
+        """
+        cython.declare(criticalDistance=float, i=int, atom1=GroupAtom, atom2=GroupAtom,
+                       bond=GroupBond, atoms=list, zBoundary=float)
+                       
+        # Code below should be placed in rmgpy.molecule ConnectTheDots
+        atoms = self.vertices
+        
+        # Ensure there are coordinates to work with
+        for atom in atoms:
+            assert atom.coords != None
+        
+        _rdkit_periodic_table = self.getRDKitPeriodicTable()
+        for i, atom1 in enumerate(atoms):
+            for atom2 in atoms[i+1:]:
+                # Set upper limit for bond distance
+                criticalDistance = (_rdkit_periodic_table.GetRcovalent(atom1.atomType[0].label) + _rdkit_periodic_table.GetRcovalent(atom2.atomType[0].label) + 0.45)**2
+                
+                # First atom that is more than 4.0 Anstroms away in the z-axis, break the loop
+                # Atoms are sorted along the z-axis, so all following atoms should be even further
+                zBoundary = (atom1.coords[2] - atom2.coords[2])**2
+                if zBoundary > 16.0:
+                    break
+                
+                distanceSquared = sum((atom1.coords - atom2.coords)**2)
+                
+                if distanceSquared > criticalDistance or distanceSquared < 0.40:
+                    continue
+                else:
+                    bond = GroupBond(atom1, atom2, ['S','D','T','B'])
+                    self.addBond(bond)
 
     def fromAdjacencyList(self, adjlist):
         """
@@ -616,6 +654,29 @@ class Group(Graph):
         self.updateConnectivityValues()
         self.updateFingerprint()
         return self
+        
+    def fromXYZ(self, atomicNums, coordinates):
+        """
+        Create an RMG molecule from a list of coordinates and a corresponding
+        list of atomic numbers. These are typically received from CCLib and the
+        returned molecule will only contain the atoms and not the bonds. Bonds
+        can be determined in `ConnectTheDots`.
+        """
+        _rdkit_periodic_table = self.getRDKitPeriodicTable()
+        
+        atoms = []
+        for i, atNum in enumerate(atomicNums):
+            atom = GroupAtom([_rdkit_periodic_table.GetElementSymbol(int(atNum))])
+            atom.coords = coordinates[i]
+            atoms.append(atom)
+        
+        # Sort atoms by distance on the z-axis
+        sortedAtoms = sorted(atoms, key=lambda x: x.coords[2])
+        
+        for atom in sortedAtoms:
+            self.addAtom(atom)
+        
+        return self.connectTheDots()
 
     def toAdjacencyList(self, label=''):
         """

@@ -610,7 +610,7 @@ class TSGroups(Database):
                 groupValues[entry] = []
                 groupUncertainties[entry] = []
                 groupCounts[entry] = []
-                groupComments[entry] = set()
+                groupComments[entry.label] = set()
             
             # Generate least-squares matrix and vector
             A = []; b = []
@@ -632,11 +632,10 @@ class TSGroups(Database):
                     Arow = [1 if group in groups else 0 for group in groupList]
                     Arow.append(1)
                     brow = d
-                    A.append(Arow)
-                    b.append(brow)
+                    A.append(Arow); b.append(brow)
                     
-                    for group in groupEntries:
-                        groupComments[group].add("{0!s}".format(template))
+                    for group in groups:
+                        groupComments[group.label].add("{0!s}".format(template))
             
             if len(A) == 0:
                 logging.warning('Unable to fit kinetics groups for family "{0}"; no valid data found.'.format(self.label))
@@ -655,7 +654,7 @@ class TSGroups(Database):
                 
                 for index in range(len(trainingSet)):
                     template, distances = trainingSet[index]
-                    d = distance_data[index,t]
+                    d = numpy.float64(distance_data[index,t])
                     dm = x[-1,t] + sum([x[groupList.index(group),t] for group in template if group in groupList])
                     variance = (dm - d)**2
                     for group in template:
@@ -668,9 +667,16 @@ class TSGroups(Database):
                                 count[ind] += 1
                     stdev[-1] += variance
                     count[-1] += 1
-                stdev = numpy.sqrt(stdev / (count - 1))
+                
                 import scipy.stats
-                ci = scipy.stats.t.ppf(0.975, count - 1) * stdev
+                ci = numpy.zeros(len(count))
+                for i in range(len(count)):
+                    if count[i] > 1:
+                        stdev[i] = numpy.sqrt(stdev[i] / (count[i] - 1))
+                        ci[i] = scipy.stats.t.ppf(0.975, count[i] - 1) * stdev[i]
+                    else:
+                        stdev[i] = None
+                        ci[i] = None
                 # Update dictionaries of fitted group values and uncertainties
                 for entry in groupEntries:
                     if entry == self.top[0]:
@@ -693,11 +699,13 @@ class TSGroups(Database):
                     if not any(numpy.isnan(numpy.array(groupUncertainties[entry]))):
                         # should be entry.data.* (e.g. entry.data.uncertainties)
                         uncertainties = numpy.array(groupUncertainties[entry])
-                        uncertaintyType = '*|/'
+                        uncertaintyType = '+|-'
+                    else:
+                        uncertainties = {}
                     # should be entry.*
                     shortDesc = "Group additive distances."
-                    longDesc = "Fitted to {0} distances.\n".format(groupCounts[entry])
-                    longDesc += "\n".join(groupComments[entry])
+                    longDesc = "Fitted to {0} distances.\n".format(groupCounts[entry][0])
+                    longDesc += "\n".join(groupComments[entry.label])
                     distances_dict = {key:distance for key, distance in zip(distance_keys, groupValues[entry])}
                     uncertainties_dict = {key:distance for key, distance in zip(distance_keys, uncertainties)}
                     entry.data = DistanceData(distances=distances_dict, uncertainties=uncertainties_dict)
