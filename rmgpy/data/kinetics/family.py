@@ -1384,9 +1384,9 @@ class KineticsFamily(Database):
                 # If the forward reaction contains CH(S) as reactant then correct product of reverse reaction from CH2(T) to CH2(S)
                 for product in products:
                     for molecule in product:
-                        if molecule.isBiradicalSinglet() and molecule.getFormula() == 'CH2':
+                        if molecule.isBiradicalSinglet() and (molecule.getFormula() == 'CH2' or molecule.getFormula() == 'NH'):
                             for product0 in products0:
-                                if product0.isBiradicalTriplet() and product0.getFormula() == 'CH2':
+                                if product0.isBiradicalTriplet() and (product0.getFormula() == 'CH2' or product0.getFormula() == 'NH'):
                                     product0.changeTripletSinglet()
                     
                 # Skip reactions that don't match the given products
