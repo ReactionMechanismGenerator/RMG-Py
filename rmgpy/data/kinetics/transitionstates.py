@@ -70,13 +70,13 @@ class DistanceData():
 
         strings.append("distances={")
         for key in sorted(self.distances.keys()):
-            strings.append("{0!r}: {1!r},".format(key, self.distances[key]))
+            strings.append("{0!r}: {1:.6f},".format(key, self.distances[key]))
         strings.append("}")
 
         if self.uncertainties is not None:
             strings.append(", uncertainties={")
             for key in sorted(self.uncertainties.keys()):
-                strings.append("{0!r}: {1!r},".format(key, self.uncertainties[key]))
+                strings.append("{0!r}: {1:.6f},".format(key, self.uncertainties[key]))
             strings.append("}")
 
         if self.method:
