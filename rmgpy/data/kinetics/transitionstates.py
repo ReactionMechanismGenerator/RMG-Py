@@ -655,7 +655,7 @@ class TSGroups(Database):
                 
                 for index in range(len(trainingSet)):
                     template, distances = trainingSet[index]
-                    d = distance_data[index,t]
+                    d = numpy.float64(distance_data[index,t])
                     dm = x[-1,t] + sum([x[groupList.index(group),t] for group in template if group in groupList])
                     variance = (dm - d)**2
                     for group in template:
@@ -668,9 +668,16 @@ class TSGroups(Database):
                                 count[ind] += 1
                     stdev[-1] += variance
                     count[-1] += 1
-                stdev = numpy.sqrt(stdev / (count - 1))
+                
                 import scipy.stats
-                ci = scipy.stats.t.ppf(0.975, count - 1) * stdev
+                ci = numpy.zeros(len(count))
+                for i in range(len(count)):
+                    if count[i] > 1:
+                        stdev[i] = numpy.sqrt(stdev[i] / (count[i] - 1))
+                        ci[i] = scipy.stats.t.ppf(0.975, count[i] - 1) * stdev[i]
+                    else:
+                        stdev[i] = None
+                        ci[i] = None
                 # Update dictionaries of fitted group values and uncertainties
                 for entry in groupEntries:
                     if entry == self.top[0]:
