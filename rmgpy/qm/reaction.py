@@ -105,13 +105,13 @@ class QMReaction:
         
         return rdKitMol, boundsMatrix, multiplicity
     
-    def setLimits(self, bm, lbl1, lbl2, num, diff):
+    def setLimits(self, bm, lbl1, lbl2, value, uncertainty):
         if lbl1 > lbl2:
-            bm[lbl2][lbl1] = num + diff
-            bm[lbl1][lbl2] = num
+            bm[lbl2][lbl1] = value + uncertainty
+            bm[lbl1][lbl2] = value - uncertainty
         else:
-            bm[lbl2][lbl1] = num
-            bm[lbl1][lbl2] = num + diff
+            bm[lbl2][lbl1] = value - uncertainty
+            bm[lbl1][lbl2] = value + uncertainty
     
         return bm
     
@@ -119,14 +119,10 @@ class QMReaction:
         
         # edit bounds distances to align reacting atoms
         if self.reaction.label.lower() == 'h_abstraction':
+            """
+            Reduce the minimum distance between atoms on the two reactants. 
+            """
             
-            """
-            Reduce the minimum distance between atoms on the two reactants
-            to 1.8 Angstrom. 
-            """
-            sect = len(reactant.split()[1].atoms)        
-            bm[sect:,:sect] = 1.8
-        
             lbl1 = reactant.getLabeledAtom('*1').sortingLabel
             lbl2 = reactant.getLabeledAtom('*2').sortingLabel
             lbl3 = reactant.getLabeledAtom('*3').sortingLabel
@@ -136,10 +132,24 @@ class QMReaction:
             
             distanceData = transitionStates.estimateDistances(self.reaction)
             
-            bm = self.setLimits(bm, lbl1, lbl2, distanceData.distances['d12'], 0.1)
-            bm = self.setLimits(bm, lbl2, lbl3, distanceData.distances['d23'], 0.001)
-            bm = self.setLimits(bm, lbl1, lbl3, distanceData.distances['d13'], 0.001)
-        # elif .....:
+            sect = len(reactant.split()[1].atoms)
+            
+            if lbl1 > lbl3:
+                vdwDiff = bm[lbl1][lbl3] - distanceData.distances['d13']
+            else:
+                vdwDiff = bm[lbl3][lbl1] - distanceData.distances['d13']
+            """
+            storeVDWDist = bm[sect:,:sect]
+            Could I store the vdw radii minimum distances, and if the BM doesn't embed,
+            I reedit these distances by a little more, reset the TS distances, and retry
+            the embed? 
+            """
+            bm[sect:,:sect] = bm[sect:,:sect] - vdwDiff
+                        
+            bm = self.setLimits(bm, lbl1, lbl2, distanceData.distances['d12'], distanceData.uncertainties['d12'])
+            bm = self.setLimits(bm, lbl2, lbl3, distanceData.distances['d23'], distanceData.uncertainties['d23'])
+            bm = self.setLimits(bm, lbl1, lbl3, distanceData.distances['d13'], distanceData.uncertainties['d13'])
+        # elif self.reaction.label.lower() == 'disproportionation':
         
         return bm, labels, atomMatch
         
@@ -154,20 +164,22 @@ class QMReaction:
         
         reactant = self.fixSortLabel(reactant)
         product = self.fixSortLabel(product)
-        
         tsRDMol, tsBM, tsMult = self.generateBoundsMatrix(reactant)
+        
+        self.geometry.uniqueID = self.uniqueID
+        
         tsBM, labels, atomMatch = self.editMatrix(reactant, tsBM)
         atoms = len(reactant.atoms)
         distGeomAttempts = 5*(atoms-3) # number of conformers embedded from the bounds matrix
-        
         setBM = rdkit.DistanceGeometry.DoTriangleSmoothing(tsBM)
         if setBM:
             self.geometry.rd_embed(tsRDMol, distGeomAttempts, bm=tsBM, match=atomMatch)
             
-            self.writeInputFile(1)
-            import ipdb; ipdb.set_trace()
-            self.run()
-            self.writeIRCFile()
-            self.run()
-            self.verifyTSGeometry()
+            # self.writeInputFile(1)
+            # self.run()
+            # self.writeIRCFile()
+            # self.run()
+            # self.verifyTSGeometry()
+        else:
+            print self.geometry.uniqueID
             

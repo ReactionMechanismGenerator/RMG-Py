@@ -121,24 +121,35 @@ class Geometry:
             crude = Chem.Mol(rdmol.ToBinary())
             rdmol, minEid = self.optimize(rdmol)
         else:
+            # # For the double-ended method I had to comment out the changes. (lines between #########)
+            # # Need to work out a stable way to keep this to accomodate both methods
+            #########
             rdmol.RemoveAllConformers()
             for i in range(0,numConfAttempts):
-                """
-                Embed the molecule according to the bounds matrix. Built to handle possible failures
-                of some of the embedding attempts.
-                """
                 try:
                     Pharm3D.EmbedLib.EmbedMol(rdmol, bm, atomMatch=match)
+                    break
                 except ValueError:
-                    pass
+                    print("RDKit failed to embed")
+                    # What do I do next!!!!! what if they all fail?
                 except RuntimeError:
                     raise RDKitFailedError()
+            #########
+            """
+            Embed the molecule according to the bounds matrix. Built to handle possible failures
+            of some of the embedding attempts.
+            """
+            #########
+            # while True:
+            #########
             """
             RDKit currently embeds the conformers and sets the id as 0, so even though multiple
             conformers have been generated, only 1 can be called. Below the id's are resolved.
             """
+            #########
             for i in range(len(rdmol.GetConformers())):
                 rdmol.GetConformers()[i].SetId(i)
+            #########
             crude = Chem.Mol(rdmol.ToBinary())
             rdmol, minEid = self.optimize(rdmol, boundsMatrix=bm, atomMatch=match)
         
@@ -153,15 +164,15 @@ class Geometry:
         minEid=0;
         lowestE=9.999999e99;#start with a very high number, which would never be reached
         
-        for i in range(rdmol.GetNumConformers()):
+        for conf in rdmol.GetConformers():
             if boundsMatrix == None:    
-                AllChem.UFFOptimizeMolecule(rdmol,confId=i)
-                energy=AllChem.UFFGetMoleculeForceField(rdmol,confId=i).CalcEnergy()
+                AllChem.UFFOptimizeMolecule(rdmol,confId=conf.GetId())
+                energy=AllChem.UFFGetMoleculeForceField(rdmol,confId=conf.GetId()).CalcEnergy()
             else:
-                eBefore, energy = Pharm3D.EmbedLib.OptimizeMol(rdmol, boundsMatrix)
+                eBefore, energy = Pharm3D.EmbedLib.OptimizeMol(rdmol, boundsMatrix, atomMatches=atomMatch)
             
             if energy < lowestE:
-                minEid = i
+                minEid = conf.GetId()
                 lowestE = energy
                 
         return rdmol, minEid

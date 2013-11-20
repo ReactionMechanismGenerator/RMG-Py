@@ -556,3 +556,39 @@ class GaussianTSM062X(GaussianTS):
     #     if attempt > self.scriptAttempts:
     #         attempt -= self.scriptAttempts
     #     return self.keywords[attempt-1]
+
+class GaussianTSB3LYP(GaussianTS):
+
+    #: Keywords that will be added at the top of the qm input file
+    keywords = [
+               "# b3lyp/6-31+g(d,p) opt=(ts,calcall,tight,noeigentest)  int=ultrafine nosymm",
+               "# b3lyp/6-31+g(d,p) opt=(ts,calcall,tight,noeigentest,cartesian)  int=ultrafine nosymm",
+               "# b3lyp/6-31+g(d,p) opt=(ts,calcall,noeigentest) nosymm",
+               "# b3lyp/6-31+g(d,p) opt=(ts,calcall,noeigentest,cartesian) nosymm",
+               "# b3lyp/6-31+g(d,p) irc=(calcall,report=read) geom=allcheck guess=check nosymm",
+               ]
+    """
+    This needs some work, to determine options that are best used. Commented out the
+    methods for now.
+    """
+
+    # @property
+    # def scriptAttempts(self):
+    #     "The number of attempts with different script keywords"
+    #     return len(self.keywords)
+    # 
+    # @property
+    # def maxAttempts(self):
+    #     "The total number of attempts to try"
+    #     return 2 * len(self.keywords)
+    # 
+    # def inputFileKeywords(self, attempt):
+    #     """
+    #     Return the top keywords for attempt number `attempt`.
+    # 
+    #     NB. `attempt`s begin at 1, not 0.
+    #     """
+    #     assert attempt <= self.maxAttempts
+    #     if attempt > self.scriptAttempts:
+    #         attempt -= self.scriptAttempts
+    #     return self.keywords[attempt-1]
