@@ -700,10 +700,12 @@ class TSGroups(Database):
                     if not any(numpy.isnan(numpy.array(groupUncertainties[entry]))):
                         # should be entry.data.* (e.g. entry.data.uncertainties)
                         uncertainties = numpy.array(groupUncertainties[entry])
-                        uncertaintyType = '*|/'
+                        uncertaintyType = '+|-'
+                    else:
+                        uncertainties = {}
                     # should be entry.*
                     shortDesc = "Group additive distances."
-                    longDesc = "Fitted to {0} distances.\n".format(groupCounts[entry])
+                    longDesc = "Fitted to {0} distances.\n".format(groupCounts[entry][0])
                     longDesc += "\n".join(groupComments[entry])
                     distances_dict = {key:distance for key, distance in zip(distance_keys, groupValues[entry])}
                     uncertainties_dict = {key:distance for key, distance in zip(distance_keys, uncertainties)}
