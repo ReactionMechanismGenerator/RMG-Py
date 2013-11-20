@@ -610,7 +610,7 @@ class TSGroups(Database):
                 groupValues[entry] = []
                 groupUncertainties[entry] = []
                 groupCounts[entry] = []
-                groupComments[entry] = set()
+                groupComments[entry.label] = set()
             
             # Generate least-squares matrix and vector
             A = []; b = []
@@ -632,11 +632,10 @@ class TSGroups(Database):
                     Arow = [1 if group in groups else 0 for group in groupList]
                     Arow.append(1)
                     brow = d
-                    A.append(Arow)
-                    b.append(brow)
+                    A.append(Arow); b.append(brow)
                     
-                    for group in groupEntries:
-                        groupComments[group].add("{0!s}".format(template))
+                    for group in groups:
+                        groupComments[group.label].add("{0!s}".format(template))
             
             if len(A) == 0:
                 logging.warning('Unable to fit kinetics groups for family "{0}"; no valid data found.'.format(self.label))
@@ -706,7 +705,7 @@ class TSGroups(Database):
                     # should be entry.*
                     shortDesc = "Group additive distances."
                     longDesc = "Fitted to {0} distances.\n".format(groupCounts[entry][0])
-                    longDesc += "\n".join(groupComments[entry])
+                    longDesc += "\n".join(groupComments[entry.label])
                     distances_dict = {key:distance for key, distance in zip(distance_keys, groupValues[entry])}
                     uncertainties_dict = {key:distance for key, distance in zip(distance_keys, uncertainties)}
                     entry.data = DistanceData(distances=distances_dict, uncertainties=uncertainties_dict)
