@@ -170,11 +170,24 @@ class QMReaction:
         
         self.geometry.uniqueID = self.uniqueID
         
+        print 
+        print self.uniqueID
+        numpy.set_printoptions(precision=3, suppress=True, linewidth=200)
+        print "Before editing"
+        print tsBM
+        
         tsBM, labels, atomMatch = self.editMatrix(reactant, tsBM)
         atoms = len(reactant.atoms)
         distGeomAttempts = 5*(atoms-3) # number of conformers embedded from the bounds matrix
+
+        print "Before smoothing"
+        print tsBM
         setBM = rdkit.DistanceGeometry.DoTriangleSmoothing(tsBM)
+
         if setBM:
+            print "After smoothing"
+            print tsBM
+        
             self.geometry.rd_embed(tsRDMol, distGeomAttempts, bm=tsBM, match=atomMatch)
             
             self.writeInputFile(1)
@@ -183,3 +196,5 @@ class QMReaction:
             self.run()
             self.verifyTSGeometry()
             
+        else: 
+            assert setBM, "couldn't smooth"
