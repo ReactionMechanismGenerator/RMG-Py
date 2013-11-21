@@ -147,7 +147,6 @@ class QMReaction:
                 bm = self.setLimits(bm, lbl2, lbl3, distanceData.distances['d23'], distanceData.uncertainties['d23'])
                 bm = self.setLimits(bm, lbl1, lbl3, distanceData.distances['d13'], distanceData.uncertainties['d13'])
             else:
-<<<<<<< Updated upstream
                 vdwDiff = bm[lbl3][lbl1] - distanceData.distances['d13']
             """
             storeVDWDist = bm[sect:,:sect]
@@ -164,11 +163,7 @@ class QMReaction:
             bm = self.setLimits(bm, lbl1, lbl2, distanceData.distances['d12'], uncertainties['d12'])
             bm = self.setLimits(bm, lbl2, lbl3, distanceData.distances['d23'], uncertainties['d23'])
             bm = self.setLimits(bm, lbl1, lbl3, distanceData.distances['d13'], uncertainties['d13'])
-=======
-                bm = self.setLimits(bm, lbl1, lbl2, distanceData.distances['d12'], 0.2)
-                bm = self.setLimits(bm, lbl2, lbl3, distanceData.distances['d23'], 0.2)
-                bm = self.setLimits(bm, lbl1, lbl3, distanceData.distances['d13'], 0.2)
->>>>>>> Stashed changes
+
         # elif self.reaction.label.lower() == 'disproportionation':
         
             print "before my vdv fix"
