@@ -88,7 +88,9 @@ class TestAtomType(unittest.TestCase):
                                self.atomType.formBond,
                                self.atomType.breakBond,
                                self.atomType.incrementRadical,
-                               self.atomType.decrementRadical)
+                               self.atomType.decrementRadical,
+                               self.atomType.incrementLonePair,
+                               self.atomType.decrementLonePair)
         self.assertEqual(self.atomType.incrementBond, other.incrementBond)
         self.assertEqual(self.atomType.decrementBond, other.decrementBond)
         self.assertEqual(self.atomType.formBond, other.formBond)
