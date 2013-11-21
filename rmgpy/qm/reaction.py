@@ -144,7 +144,9 @@ class QMReaction:
             I reedit these distances by a little more, reset the TS distances, and retry
             the embed? 
             """
-            bm[sect:,:sect] = bm[sect:,:sect] - vdwDiff
+            # bm[sect:,:sect] = bm[sect:,:sect] - vdwDiff
+            
+
             
             uncertainties = distanceData.uncertainties or {'d12':0.1, 'd13':0.1, 'd23':0.1 } # default if uncertainty is None
             
@@ -152,6 +154,22 @@ class QMReaction:
             bm = self.setLimits(bm, lbl2, lbl3, distanceData.distances['d23'], uncertainties['d23'])
             bm = self.setLimits(bm, lbl1, lbl3, distanceData.distances['d13'], uncertainties['d13'])
         # elif self.reaction.label.lower() == 'disproportionation':
+        
+            print "before my vdv fix"
+            print bm
+            for i in range(sect,len(bm)):
+                for j in range(0,sect):
+                    for k in range(len(bm)):
+                        if k==i or k==j: continue
+                        Uik = bm[i,k] if k>i else bm[k,i]
+                        Ukj = bm[j,k] if k>j else bm[k,j]
+                        
+                        maxLij = Uik + Ukj - 0.15
+                        if bm[i,j] >  maxLij:
+                            print "CHANGING {0} to {1}".format(bm[i,j], maxLij)
+                            bm[i,j] = maxLij
+            print "after my vdw fix"
+            print bm
         
         return bm, labels, atomMatch
         
@@ -197,4 +215,4 @@ class QMReaction:
             self.verifyTSGeometry()
             
         else: 
-            assert setBM, "couldn't smooth"
+            assert setBM, "Smoothing failed - gave a lower bound higher than an upper bound!"
