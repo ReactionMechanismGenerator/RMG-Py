@@ -1179,9 +1179,9 @@ class KineticsFamily(Database):
             if reactants[0].isIsomorphic(products[0]):
                 return None
         elif len(reactants) == len(products) == 2:
-            if reactants[0].isIsomorphic(products[0]) and reactants[1].isIsomorphic(products[1]):
+            if reactants[0].isIsomorphic(products[0]) and reactants[1].isIsomorphic(products[1]) and reactants[0].getFormula() != ('CH2' or 'CH') and reactants[1].getFormula() != ('CH2' or 'CH'):
                 return None
-            elif reactants[0].isIsomorphic(products[1]) and reactants[1].isIsomorphic(products[0]):
+            elif reactants[0].isIsomorphic(products[1]) and reactants[1].isIsomorphic(products[0]) and reactants[0].getFormula() != ('CH2' or 'CH') and reactants[1].getFormula() != ('CH2' or 'CH'):
                 return None
 
         # Create and return template reaction object
