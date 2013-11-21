@@ -139,7 +139,17 @@ def fromAdjacencyList(adjlist, group=False):
                     radicalElectrons.append(2); spinMultiplicity.append(3)
                 elif e == '3':
                     radicalElectrons.append(3); spinMultiplicity.append(4)
+                elif e == '3D':
+                    radicalElectrons.append(3); spinMultiplicity.append(2)
+                elif e == '3Q':
+                    radicalElectrons.append(3); spinMultiplicity.append(4)
                 elif e == '4':
+                    radicalElectrons.append(4); spinMultiplicity.append(5)
+                elif e == '4S':
+                    radicalElectrons.append(4); spinMultiplicity.append(1)
+                elif e == '4T':
+                    radicalElectrons.append(4); spinMultiplicity.append(3)
+                elif e == '4V':
                     radicalElectrons.append(4); spinMultiplicity.append(5)
             index += 1
             
@@ -279,10 +289,16 @@ def getElectronState(radicalElectrons, spinMultiplicity):
         electronState = '2S'
     elif radicalElectrons == 2 and spinMultiplicity == 3: 
         electronState = '2T'
-    elif radicalElectrons == 3: 
-        electronState = '3'
-    elif radicalElectrons == 4: 
-        electronState = '4'
+    elif radicalElectrons == 3 and spinMultiplicity == 2: 
+        electronState = '3D'
+    elif radicalElectrons == 3 and spinMultiplicity == 4: 
+        electronState = '3Q'
+    elif radicalElectrons == 4 and spinMultiplicity == 1: 
+        electronState = '4S'
+    elif radicalElectrons == 4 and spinMultiplicity == 3: 
+        electronState = '4T'
+    elif radicalElectrons == 4 and spinMultiplicity == 5: 
+        electronState = '4V'
     else:
         raise ValueError('Unable to determine electron state for {0:d} radical electrons with spin multiplicity of {1:d}.'.format(radicalElectrons, spinMultiplicity))
     return electronState
