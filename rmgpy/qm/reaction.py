@@ -134,9 +134,20 @@ class QMReaction:
             
             sect = len(reactant.split()[1].atoms)
             
-            if lbl1 > lbl3:
-                vdwDiff = bm[lbl1][lbl3] - distanceData.distances['d13']
+            # if lbl1 > lbl3:
+            #     vdwDiff = bm[lbl1][lbl3] - distanceData.distances['d13']
+            # else:
+            #     vdwDiff = bm[lbl3][lbl1] - distanceData.distances['d13']
+            # 
+            # print vdwDiff
+            bm[sect:,:sect] = 2.0#bm[sect:,:sect]//2
+            
+            if distanceData.uncertainties:
+                bm = self.setLimits(bm, lbl1, lbl2, distanceData.distances['d12'], distanceData.uncertainties['d12'])
+                bm = self.setLimits(bm, lbl2, lbl3, distanceData.distances['d23'], distanceData.uncertainties['d23'])
+                bm = self.setLimits(bm, lbl1, lbl3, distanceData.distances['d13'], distanceData.uncertainties['d13'])
             else:
+<<<<<<< Updated upstream
                 vdwDiff = bm[lbl3][lbl1] - distanceData.distances['d13']
             """
             storeVDWDist = bm[sect:,:sect]
@@ -153,6 +164,11 @@ class QMReaction:
             bm = self.setLimits(bm, lbl1, lbl2, distanceData.distances['d12'], uncertainties['d12'])
             bm = self.setLimits(bm, lbl2, lbl3, distanceData.distances['d23'], uncertainties['d23'])
             bm = self.setLimits(bm, lbl1, lbl3, distanceData.distances['d13'], uncertainties['d13'])
+=======
+                bm = self.setLimits(bm, lbl1, lbl2, distanceData.distances['d12'], 0.2)
+                bm = self.setLimits(bm, lbl2, lbl3, distanceData.distances['d23'], 0.2)
+                bm = self.setLimits(bm, lbl1, lbl3, distanceData.distances['d13'], 0.2)
+>>>>>>> Stashed changes
         # elif self.reaction.label.lower() == 'disproportionation':
         
             print "before my vdv fix"
@@ -188,6 +204,7 @@ class QMReaction:
         
         self.geometry.uniqueID = self.uniqueID
         
+<<<<<<< Updated upstream
         print 
         print self.uniqueID
         numpy.set_printoptions(precision=3, suppress=True, linewidth=200)
@@ -222,3 +239,28 @@ class QMReaction:
             
         else: 
             assert setBM, "Smoothing failed - gave a lower bound higher than an upper bound!"
+=======
+        if not os.path.exists(os.path.join(self.file_store_path, self.uniqueID + '.data')):
+            tsBM, labels, atomMatch = self.editMatrix(reactant, tsBM)
+            atoms = len(reactant.atoms)
+            distGeomAttempts = 5*(atoms-3) # number of conformers embedded from the bounds matrix
+            setBM = rdkit.DistanceGeometry.DoTriangleSmoothing(tsBM)
+            if setBM:
+                self.geometry.rd_embed(tsRDMol, distGeomAttempts, bm=tsBM, match=atomMatch)
+                
+                if not os.path.exists(self.outputFilePath):
+                    self.writeInputFile(1)
+                    converged = self.run()
+                else:
+                    converged = self.verifyOutputFile()
+                if converged:
+                    self.inputFilePath = self.inputFilePath.split('.')[0] + 'IRC.gjf'
+                    self.outputFilePath = self.outputFilePath.split('.')[0] + 'IRC.log'
+                    if not os.path.exists(self.outputFilePath):
+                        self.writeIRCFile()
+                        rightTS = self.runIRC()
+                    else:
+                        rightTS = self.verifyIRCOutputFile()
+                    if rightTS:
+                        self.writeRxnOutputFile(labels)
+>>>>>>> Stashed changes
