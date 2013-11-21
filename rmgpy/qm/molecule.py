@@ -130,10 +130,13 @@ class Geometry:
                     Pharm3D.EmbedLib.EmbedMol(rdmol, bm, atomMatch=match)
                     break
                 except ValueError:
-                    print("RDKit failed to embed")
+                    print("RDKit failed to embed on attemt {0} of {1}".format(i+1, numConfAttempts))
                     # What do I do next!!!!! what if they all fail?
                 except RuntimeError:
                     raise RDKitFailedError()
+            else:
+                print("RDKit failed all attempts to embed")
+                return None, None
             #########
             """
             Embed the molecule according to the bounds matrix. Built to handle possible failures
