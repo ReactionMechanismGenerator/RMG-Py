@@ -196,7 +196,8 @@ class QMReaction:
         
         tsBM, labels, atomMatch = self.editMatrix(reactant, tsBM)
         atoms = len(reactant.atoms)
-        distGeomAttempts = 5*(atoms-3) # number of conformers embedded from the bounds matrix
+        distGeomAttempts = 15*(atoms-3) # number of conformers embedded from the bounds matrix
+
 
         print "Before smoothing"
         print tsBM
