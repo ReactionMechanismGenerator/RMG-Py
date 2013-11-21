@@ -145,10 +145,12 @@ class QMReaction:
             the embed? 
             """
             bm[sect:,:sect] = bm[sect:,:sect] - vdwDiff
-                        
-            bm = self.setLimits(bm, lbl1, lbl2, distanceData.distances['d12'], distanceData.uncertainties['d12'])
-            bm = self.setLimits(bm, lbl2, lbl3, distanceData.distances['d23'], distanceData.uncertainties['d23'])
-            bm = self.setLimits(bm, lbl1, lbl3, distanceData.distances['d13'], distanceData.uncertainties['d13'])
+            
+            uncertainties = distanceData.uncertainties or {'d12':0.1, 'd13':0.1, 'd23':0.1 } # default if uncertainty is None
+            
+            bm = self.setLimits(bm, lbl1, lbl2, distanceData.distances['d12'], uncertainties['d12'])
+            bm = self.setLimits(bm, lbl2, lbl3, distanceData.distances['d23'], uncertainties['d23'])
+            bm = self.setLimits(bm, lbl1, lbl3, distanceData.distances['d13'], uncertainties['d13'])
         # elif self.reaction.label.lower() == 'disproportionation':
         
         return bm, labels, atomMatch
