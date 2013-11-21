@@ -657,16 +657,22 @@ class TestMolecule(unittest.TestCase):
     def testSubgraphIsomorphismManyLabels(self):
         molecule = Molecule() # specific case (species)
         molecule.fromAdjacencyList("""
-1 *1 C  1 {2,S} {3,S}
-2    C  0 {1,S} {3,S}
-3    C  0 {1,S} {2,S}
+1 *1 C  1 {2,S} {3,S} {4,S}
+2    C  0 {1,S} {3,S} {5,S} {6,S}
+3    C  0 {1,S} {2,S} {7,S} {8,S}
+4    H  0 {1,S}
+5    H  0 {2,S}
+6    H  0 {2,S}
+7    H  0 {3,S}
+8    H  0 {3,S}
         """)
+        print molecule.toAdjacencyList()
 
         group = Group() # general case (functional group)
         group.fromAdjacencyList("""
-1 *1 C 1 {2,S}, {3,S}
-2    R 0 {1,S}
-3    R 0 {1,S}
+1 *1 C   1 {2,S}, {3,S}
+2    R!H 0 {1,S}
+3    R!H 0 {1,S}
         """)
 
         labeled1 = molecule.getLabeledAtoms()
@@ -677,7 +683,7 @@ class TestMolecule(unittest.TestCase):
         self.assertTrue(molecule.isSubgraphIsomorphic(group, initialMap))
 
         mapping = molecule.findSubgraphIsomorphisms(group, initialMap)
-        self.assertEqual(len(mapping), 1)
+        self.assertEqual(len(mapping), 2)
         for map in mapping:
             self.assertTrue(len(map) == min(len(molecule.atoms), len(group.atoms)))
             for key, value in map.iteritems():
