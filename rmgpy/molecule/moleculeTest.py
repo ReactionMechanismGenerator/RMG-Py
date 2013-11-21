@@ -471,7 +471,10 @@ class TestMolecule(unittest.TestCase):
         self.adjlist = """
 1 *2 C 1 {2,D} {3,S}
 2 *1 O 0 {1,D}
-3    C 0 {1,S}
+3    C 0 {1,S} {4,S} {5,S} {6,S}
+4    H 0 {3,S}
+5    H 0 {3,S}
+6    H 0 {3,S}
             """
         self.molecule = Molecule().fromAdjacencyList(self.adjlist)
         
