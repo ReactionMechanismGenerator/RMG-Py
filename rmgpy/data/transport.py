@@ -403,18 +403,19 @@ class TransportDatabase(object):
             criticalPoint = self.estimateCriticalPropertiesViaGroupAdditivity(saturatedStruct)
             assert criticalPoint is not None, "critical point contribution of saturated {0} of molecule {1} is None!".format(saturatedStruct, molecule)
             
-            # For each radical site, get radical correction
-            # Only one radical site should be considered at a time; all others
-            # should be saturated with hydrogen atoms
-            for atom in added:
-                # Remove the added hydrogen atoms and bond and restore the radical
-                for H, bond in added[atom]:
-                    saturatedStruct.removeBond(bond)
-                    saturatedStruct.removeAtom(H)
-                    atom.incrementRadical()
-
-                saturatedStruct.updateConnectivityValues()
+#            We have no radical corrections for critical point estimates, so this is commented out:
+#            # For each radical site, get radical correction
+#            # Only one radical site should be considered at a time; all others
+#            # should be saturated with hydrogen atoms
+#            for atom in added:
+#                # Remove the added hydrogen atoms and bond and restore the radical
+#                for H, bond in added[atom]:
+#                    saturatedStruct.removeBond(bond)
+#                    saturatedStruct.removeAtom(H)
+#                    atom.incrementRadical()
+#                saturatedStruct.updateConnectivityValues()
             return criticalPoint
+
         else: # non-radical species
             numAtoms = 0
             groupData = CriticalPointGroupContribution(
