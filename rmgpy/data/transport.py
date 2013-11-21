@@ -51,7 +51,6 @@ def saveEntry(f, entry):
     Write a Pythonic string representation of the given `entry` in the transport
     database to the file object `f`.
     """
-    
     f.write('entry(\n')
     f.write('    index = {0:d},\n'.format(entry.index))
     f.write('    label = "{0}",\n'.format(entry.label))
@@ -74,12 +73,14 @@ def generateOldLibraryEntry(data):
     Return a list of values used to save entries to the old-style RMG
     transport database based on the transport object `data`.
     """
+    raise NotImplementedError
     
 def processOldLibraryEntry(data):
     """
     Process a list of parameters `data` as read from an old-style RMG
     transport database, returning the corresponding transport object.
     """
+    raise NotImplementedError
     
 class TransportLibrary(Database):
     """
@@ -177,7 +178,6 @@ class TransportGroups(Database):
         Return a list of values used to save entries to the old-style RMG
         transport database based on the transport object `data`.
         """
-        
         return generateOldLibraryEntry(data)
 
     def processOldLibraryEntry(self, data):
@@ -255,8 +255,8 @@ class TransportDatabase(object):
         """
         logging.info('Loading transport group database from {0}...'.format(path))
         self.groups = {}
-        self.groups['ring']    =    TransportGroups(label='ring').load(os.path.join(path, 'ring.py'   ), self.local_context, self.global_context)
-        self.groups['nonring']    =    TransportGroups(label='nonring').load(os.path.join(path, 'nonring.py'   ), self.local_context, self.global_context)
+        self.groups['ring'] = TransportGroups(label='ring').load(os.path.join(path, 'ring.py'), self.local_context, self.global_context)
+        self.groups['nonring'] = TransportGroups(label='nonring').load(os.path.join(path, 'nonring.py'), self.local_context, self.global_context)
 
 
     def getTransportProperties(self, species):
@@ -493,7 +493,7 @@ class TransportDatabase(object):
         groupData.structureIndex += data.structureIndex
         
         return groupData
-    
+
 class CriticalPointGroupContribution:
     """Joback group contribution to estimate critical properties"""
     def __init__(self, Tc=None, Pc=None, Vc=None, Tb=None, structureIndex=None):
