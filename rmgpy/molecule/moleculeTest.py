@@ -686,12 +686,21 @@ class TestMolecule(unittest.TestCase):
         Check the adjacency list read/write functions for a full molecule.
         """
         molecule1 = Molecule().fromAdjacencyList("""
-        1 C 0       {2,D}
-        2 C 0 {1,D} {3,S}
-        3 C 0 {2,S} {4,D}
-        4 C 0 {3,D} {5,S}
-        5 C 1 {4,S} {6,S}
-        6 C 0 {5,S}
+        1 C 0       {2,D} {7,S} {8,S}
+        2 C 0 {1,D} {3,S} {9,S}
+        3 C 0 {2,S} {4,D} {10,S}
+        4 C 0 {3,D} {5,S} {11,S}
+        5 C 1 {4,S} {6,S} {12,S}
+        6 C 0 {5,S} {13,S} {14,S} {15,S}
+        7 H 0 {1,S}
+        8 H 0 {1,S}
+        9 H 0 {2,S}
+        10 H 0 {3,S}
+        11 H 0 {4,S}
+        12 H 0 {5,S}
+        13 H 0 {6,S}
+        14 H 0 {6,S}
+        15 H 0 {6,S}
         """)
         molecule2 = Molecule().fromSMILES('C=CC=C[CH]C')
         self.assertTrue(molecule1.isIsomorphic(molecule2))
