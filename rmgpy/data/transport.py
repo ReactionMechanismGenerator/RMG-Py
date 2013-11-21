@@ -329,32 +329,30 @@ class TransportDatabase(object):
         Vc = 0
         counter = 0
         
-        #iterates through resonance structures, adding up the critical point values of all the groups
-        for molecule in species.molecule:
-            molecule.clearLabeledAtoms()
-            molecule.updateAtomTypes()
-            criticalPoint = self.estimateCriticalPropertiesViaGroupAdditivity(molecule)
-            Tc += criticalPoint.Tc
-            Pc += criticalPoint.Pc
-            Vc += criticalPoint.Vc
-            Tb += criticalPoint.Tb
-            counter += 1
-        
-        #averages the group values from all the molecules in the species
-        Tc = Tc / counter
-        Pc = Pc / counter
-        Vc = Vc / counter
-        Tb = Tb / counter
+        # assume that the stablest resonance isomer has already been put as the first
+        # and that we want the transport properties of this isomer
+        molecule = species.molecule[0]
+        molecule.clearLabeledAtoms()
+        molecule.updateAtomTypes()
+        criticalPoint = self.estimateCriticalPropertiesViaGroupAdditivity(molecule)
+        Tc = criticalPoint.Tc
+        Pc = criticalPoint.Pc
+        Vc = criticalPoint.Vc
+        Tb = criticalPoint.Tb
+        if criticalPoint.linear != molecule.isLinear():
+            logging.warning("Group-based structure index and isLinear() function disagree about linearity of {mol!r}".format(mol=molecule))
+        shapeIndex = 1 if molecule.isLinear() else 2
+          
         # Acetone values from Joback thesis: Tc = 511.455  (based on experimental Tb)  Pc = 47.808    Vc = 209.000    Tb = 322.082
         #print "Tc={Tc:.2f} K, Pc={Pc:.4g} bar, Vc={Vc:.4g} cm3/mol, Tb={Tb:.4g} K, average of {isomers} isomers".format(Tc=Tc,Pc=Pc,Vc=Vc,Tb=Tb,isomers=counter)
         #print 'Estimated with Tc={Tc:.2f} K, Pc={Pc:.4g} bar (from Joback method)'.format(Tc=Tc,Pc=Pc)
         transport = TransportData(
-                     shapeIndex = 0,
+                     shapeIndex = shapeIndex,  # 1 if linear, else 2
                      epsilon = (.77 * Tc * constants.R, 'J/mol'),
                      sigma = (2.44 * (Tc/Pc)**(1./3), 'angstroms'),
                      dipoleMoment = (0, 'C*m'),
                      polarizability = (0, 'C*m^2*V^-1'),
-                     rotrelaxcollnum = 0,
+                     rotrelaxcollnum = 0,  # rotational relaxation collision number at 298 K
                      comment = 'Estimated with Tc={Tc:.2f} K, Pc={Pc:.4g} bar (from Joback method)'.format(Tc=Tc,Pc=Pc),
                      )
         return (transport, None, None)
@@ -401,7 +399,7 @@ class TransportDatabase(object):
 
             # Get critical point contribution estimates for saturated form of structure
             criticalPoint = self.estimateCriticalPropertiesViaGroupAdditivity(saturatedStruct)
-            assert criticalPoint is not None, "critical point contribution of saturated {0} of molecule {1} is None!".format(saturatedStruct, molecule)
+            assert criticalPoint is not None, "critical point estimate of saturated {0} of molecule {1} is None!".format(saturatedStruct, molecule)
             
 #            We have no radical corrections for critical point estimates, so this is commented out:
 #            # For each radical site, get radical correction
@@ -446,13 +444,14 @@ class TransportDatabase(object):
         Vc = 17.5 + groupData.Vc
         Tc = Tb / (0.584 + 0.965*(groupData.Tc) - (groupData.Tc*groupData.Tc))
         Pc = 1/(0.113 + 0.0032*numAtoms + groupData.Pc)**2
+        isLinear = (groupData.structureIndex == 0)
         
-        criticalPoint = CriticalPointGroupContribution(
+        criticalPoint = CriticalPoint(
                 Tc = Tc,
                 Pc = Pc,
                 Vc = Vc,
                 Tb = Tb,
-                structureIndex = 0,
+                linear = isLinear,
             )
         return criticalPoint
                     
@@ -495,6 +494,26 @@ class TransportDatabase(object):
         
         return groupData
 
+class CriticalPoint:
+    """
+    The critical properties of the species (and structureIndex)
+    """
+    def __init__(self, Tc=None, Pc=None, Vc=None, Tb=None, linear=None):
+        self.Tc = Tc
+        self.Pc = Pc
+        self.Vc = Vc
+        self.Tb = Tb
+        self.linear = linear
+        
+    def __repr__(self):
+        """
+        Return a string representation that can be used to reconstruct the
+        CriticalPoint object
+        """
+        string = 'CriticalPoint(Tc={0!r}, Pc={1!r}, Vc={2!r}, Tb={3!r}, linear={4!r}'.format(self.Tc, self.Pc, self.Vc, self.Tb, self.linear)
+        string += ')'
+        return string
+    
 class CriticalPointGroupContribution:
     """Joback group contribution to estimate critical properties"""
     def __init__(self, Tc=None, Pc=None, Vc=None, Tb=None, structureIndex=None):
@@ -502,7 +521,7 @@ class CriticalPointGroupContribution:
         self.Pc = Pc
         self.Vc = Vc
         self.Tb = Tb
-        self.structureIndex = structureIndex
+        self.structureIndex = structureIndex # 0 if linear, 1 if makes molecule nonlinear
         
     def __repr__(self):
         """
