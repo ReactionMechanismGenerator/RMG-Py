@@ -199,48 +199,19 @@ class QMReaction:
         
         self.geometry.uniqueID = self.uniqueID
         
-<<<<<<< Updated upstream
-        print 
-        print self.uniqueID
-        numpy.set_printoptions(precision=3, suppress=True, linewidth=200)
-        print "Before editing"
-        print tsBM
-        
-        tsBM, labels, atomMatch = self.editMatrix(reactant, tsBM)
-        atoms = len(reactant.atoms)
-        distGeomAttempts = 15*(atoms-3) # number of conformers embedded from the bounds matrix
-
-
-        print "Before smoothing"
-        print tsBM
-        setBM = rdkit.DistanceGeometry.DoTriangleSmoothing(tsBM)
-
-        if setBM:
-            print "After smoothing"
-            print tsBM
-        
-            for i in range(len(tsBM)):
-                for j in range(i,len(tsBM)):
-                    if tsBM[j,i] > tsBM[i,j]:
-                            print "BOUNDS MATRIX FLAWED {0}>{1}".format(tsBM[j,i], tsBM[i,j])
-
-            self.geometry.rd_embed(tsRDMol, distGeomAttempts, bm=tsBM, match=atomMatch)
-            
-            self.writeInputFile(1)
-            self.run()
-            self.writeIRCFile()
-            self.run()
-            self.verifyTSGeometry()
-            
-        else: 
-            assert setBM, "Smoothing failed - gave a lower bound higher than an upper bound!"
-=======
         if not os.path.exists(os.path.join(self.file_store_path, self.uniqueID + '.data')):
             tsBM, labels, atomMatch = self.editMatrix(reactant, tsBM)
             atoms = len(reactant.atoms)
-            distGeomAttempts = 5*(atoms-3) # number of conformers embedded from the bounds matrix
+            distGeomAttempts = 15*(atoms-3) # number of conformers embedded from the bounds matrix
+            
             setBM = rdkit.DistanceGeometry.DoTriangleSmoothing(tsBM)
+
             if setBM:
+                for i in range(len(tsBM)):
+                    for j in range(i,len(tsBM)):
+                        if tsBM[j,i] > tsBM[i,j]:
+                                print "BOUNDS MATRIX FLAWED {0}>{1}".format(tsBM[j,i], tsBM[i,j])
+
                 self.geometry.rd_embed(tsRDMol, distGeomAttempts, bm=tsBM, match=atomMatch)
                 
                 if not os.path.exists(self.outputFilePath):
@@ -258,4 +229,4 @@ class QMReaction:
                         rightTS = self.verifyIRCOutputFile()
                     if rightTS:
                         self.writeRxnOutputFile(labels)
->>>>>>> Stashed changes
+
