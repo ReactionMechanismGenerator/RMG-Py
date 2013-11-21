@@ -206,6 +206,11 @@ class QMReaction:
             print "After smoothing"
             print tsBM
         
+            for i in range(len(tsBM)):
+                for j in range(i,len(tsBM)):
+                    if tsBM[j,i] > tsBM[i,j]:
+                            print "BOUNDS MATRIX FLAWED {0}>{1}".format(tsBM[j,i], tsBM[i,j])
+
             self.geometry.rd_embed(tsRDMol, distGeomAttempts, bm=tsBM, match=atomMatch)
             
             self.writeInputFile(1)
