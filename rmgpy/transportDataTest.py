@@ -243,15 +243,16 @@ class TestTransportDatabase(unittest.TestCase):
         path = os.path.normpath(os.path.join( os.path.dirname(os.path.abspath(__file__)), '../../RMG-database/input/transport'))
         self.transportdb = TransportDatabase()
         self.transportdb.load(path,self.libraries)
+
     def testJoback(self):    
-        
         #values calculate from joback's estimations
         self.testCases = [
-            ['acetone', 'CC(=O)C', Length(5.36421, 'angstroms'), Energy(3.20446,'kJ/mol'), "Estimated with Tc=500.53 K, Pc=47.11 bar (from Joback method)"]
+            ['acetone', 'CC(=O)C', Length(5.36421, 'angstroms'), Energy(3.20446, 'kJ/mol'), "Estimated with Tc=500.53 K, Pc=47.11 bar (from Joback method)"],
+            ['cyclopenta-1,2-diene', 'C1=C=CCC1', None, None, "unknown"],
             ]
         for name, smiles, sigma, epsilon, comment in self.testCases:
             species = Species(molecule=[Molecule(SMILES=smiles)])
-            transportData = self.transportdb.getTransportPropertiesViaGroupEstimates(species)
+            transportData, blank, blank2 = self.transportdb.getTransportPropertiesViaGroupEstimates(species)
             print name, transportData
             # check Joback worked
             print self.assertTrue(transportData.comment == comment)
