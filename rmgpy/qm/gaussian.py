@@ -536,17 +536,20 @@ class GaussianTS(QMReaction, Gaussian):
             mol2 = Molecule()
             mol2.fromXYZ(atomnos, atomcoords[-1])
             
-            rInChI = sorted([x.toInChI() for x in self.reaction.reactants])
-            pInChI = sorted([x.toInChI() for x in self.reaction.products])
-            m1InChI = sorted([x.toInChI() for x in mol1.split()])
-            m2InChI = sorted([x.toInChI() for x in mol2.split()])
-            
-            if rInChI == m1InChI and pInChI == m2InChI:
-                return True
-            elif rInChI == m2InChI and pInChI == m1InChI:
+            targetReaction = rmgpy.reaction.Reaction(
+                                    reactants = [reactant.toSingleBonds() for reactant in self.reaction.reactants],
+                                    products = [product.toSingleBonds() for product in self.reaction.products],
+                                    )
+            testReaction = rmgpy.reaction.Reaction(
+                                    reactants = mol1.split(),
+                                    products = mol2.split(),                     
+                                    )
+
+            if targetReaction.isIsomorphic(testReaction):
                 return True
             else:
-                return True
+                logging.warning("Didn't make expected reaction")
+                return False
         
 class GaussianTSM062X(GaussianTS):
 

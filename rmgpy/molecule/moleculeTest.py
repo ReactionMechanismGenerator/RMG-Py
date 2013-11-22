@@ -509,7 +509,9 @@ H          -3.76460         1.23850        -0.32410
         self.assertEqual(len(separated), 2)
         one = Molecule(SMILES='[CH]1[CH]=[CH][CH]=[CH]1')
         two = Molecule(SMILES='[CH]([CH2])=[CH2]')
-
+        
+        self.assertTrue( separated[0].isIsomorphic(one.toSingleBonds()) )
+        self.assertTrue( separated[1].isIsomorphic(two.toSingleBonds()) )
         
 ################################################################################
 
