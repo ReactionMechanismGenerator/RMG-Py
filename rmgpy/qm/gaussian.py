@@ -181,7 +181,7 @@ class GaussianMol(QMMolecule, Gaussian):
         
         # Check that ALL 'success' keywords were found in the file.
         if not all( successKeysFound.values() ):
-            logging.error('Not all of the required keywords for sucess were found in the output file!')
+            logging.error('Not all of the required keywords for success were found in the output file!')
             return False
         
         if not InChIFound:
@@ -355,6 +355,7 @@ class GaussianTS(QMReaction, Gaussian):
     #: NONE of these must be present in a succesful job.
     failureKeys = [
                    'ERROR TERMINATION',
+                   'Error in internal coordinate system.',
                    ]
     
     def writeInputFile(self, attempt):
@@ -381,7 +382,10 @@ class GaussianTS(QMReaction, Gaussian):
             gaussianFile.write(chk_file)
             gaussianFile.write('\n')
             gaussianFile.write(top_keys)
-            gaussianFile.write(input_string)
+            if attempt == 1:
+                gaussianFile.write(input_string)
+            else:
+                gaussianFile.write('\n\n')
     
     def writeIRCFile(self):
         """
@@ -460,6 +464,7 @@ class GaussianTS(QMReaction, Gaussian):
         
         # Initialize dictionary with "False"s 
         successKeysFound = dict([(key, False) for key in self.successKeys])
+        failureKeysFound = dict([(key, False) for key in self.failureKeys])
         
         with open(self.outputFilePath) as outputFile:
             for line in outputFile:
@@ -468,18 +473,24 @@ class GaussianTS(QMReaction, Gaussian):
                 for element in self.failureKeys: #search for failure keywords
                     if element in line:
                         logging.error("Gaussian output file contains the following error: {0}".format(element) )
-                        return False
+                        failureKeysFound[element] = True
                     
                 for element in self.successKeys: #search for success keywords
                     if element in line:
                         successKeysFound[element] = True
         
+        if any(failureKeysFound.values()):
+            if failureKeysFound['Error in internal coordinate system.']:
+                return False, True
+            else:
+                return False, False
+        
         # Check that ALL 'success' keywords were found in the file.
         if not all( successKeysFound.values() ):
-            logging.error('Not all of the required keywords for sucess were found in the output file!')
-            return False
+            logging.error('Not all of the required keywords for success were found in the output file!')
+            return False, False
         else:
-            return True
+            return True, False
     
     def verifyIRCOutputFile(self):
         """
@@ -524,7 +535,7 @@ class GaussianTS(QMReaction, Gaussian):
         
         # Check that ALL 'success' keywords were found in the file.
         if not successKeysFound['Normal termination of Gaussian']:
-            logging.error('Not all of the required keywords for sucess were found in the IRC output file!')
+            logging.error('Not all of the required keywords for success were found in the IRC output file!')
             return False
         # This indexes the coordinate to be used from the parsing
         elif steps == []:
@@ -542,10 +553,15 @@ class GaussianTS(QMReaction, Gaussian):
             # Convert the IRC geometries into RMG molecules
             # We don't know which is reactant or product, so take the two at the end of the
             # paths and compare to the reactants and products
-            mol1 = Molecule()
-            mol1.fromXYZ(atomnos, atomcoords[pth1End])
-            mol2 = Molecule()
-            mol2.fromXYZ(atomnos, atomcoords[-1])
+            mol1 = cclib.bridge.makeopenbabel(atomcoords[pth1End], atomnos)
+            mol1 = Molecule().fromOBMol(mol1)
+            mol2 = cclib.bridge.makeopenbabel(atomcoords[-1], atomnos)
+            mol2 = Molecule().fromOBMol(mol2)
+            
+            # mol1 = Molecule()
+            # mol1.fromXYZ(atomnos, atomcoords[pth1End])
+            # mol2 = Molecule()
+            # mol2.fromXYZ(atomnos, atomcoords[-1])
             
             targetReaction = rmgpy.reaction.Reaction(
                                     reactants = [reactant.toSingleBonds() for reactant in self.reaction.reactants],
@@ -559,7 +575,74 @@ class GaussianTS(QMReaction, Gaussian):
             if targetReaction.isIsomorphic(testReaction):
                 return True
             else:
-                return True
+                return False
+            
+            # rInChI = sorted([x.toInChI() for x in self.reaction.reactants])
+            # pInChI = sorted([x.toInChI() for x in self.reaction.products])
+            # m1InChI = sorted([x.toInChI() for x in mol1.split()])
+            # m2InChI = sorted([x.toInChI() for x in mol2.split()])
+            # 
+            # if rInChI == m1InChI and pInChI == m2InChI:
+            #     return True
+            # elif rInChI == m2InChI and pInChI == m1InChI:
+            #     return True
+            # else:
+            #     return True
+    
+    def parseTS(self, labels):
+    
+        tsParse = cclib.parser.Gaussian(os.path.join(self.file_store_path, self.uniqueID + '.log'))
+        tsParse = tsParse.parse()
+    
+        atom1 = openbabel.OBAtom()
+        atom2 = openbabel.OBAtom()
+        atom3 = openbabel.OBAtom()
+    
+        atom1.SetAtomicNum(int(tsParse.atomnos[labels[0]]))
+        atom2.SetAtomicNum(int(tsParse.atomnos[labels[1]]))
+        atom3.SetAtomicNum(int(tsParse.atomnos[labels[2]]))
+    
+        atom1coords = tsParse.atomcoords[-1][labels[0]].tolist()
+        atom2coords = tsParse.atomcoords[-1][labels[1]].tolist()
+        atom3coords = tsParse.atomcoords[-1][labels[2]].tolist()
+    
+        atom1.SetVector(*atom1coords)
+        atom2.SetVector(*atom2coords)
+        atom3.SetVector(*atom3coords)
+        
+        # from rmgpy.molecule.element import getElement
+        # at1 = getElement(atom1.GetAtomicNum()).symbol
+        # at2 = getElement(atom2.GetAtomicNum()).symbol
+        # at3 = getElement(atom3.GetAtomicNum()).symbol
+    
+        atomDist = [str(atom1.GetDistance(atom2)), str(atom2.GetDistance(atom3)), str(atom1.GetDistance(atom3))]
+    
+        return atomDist
+    
+    def writeRxnOutputFile(self, labels):
+        
+        product = self.reaction.products[0].merge(self.reaction.products[1])
+        star3 = product.getLabeledAtom('*1').sortingLabel
+        star1 = product.getLabeledAtom('*3').sortingLabel
+        product.atoms[star1].label = '*1'
+        product.atoms[star3].label = '*3'
+        
+        atomDist = self.parseTS(labels)
+        
+        distances = {'d12':float(atomDist[0]), 'd23':float(atomDist[1]), 'd13':float(atomDist[2])}
+        user = "Pierre Bhoorasingh <bhoorasingh.p@husky.neu.edu>"
+        description = "Found via group estimation strategy using automatic transition state generator"
+        entry = Entry(
+            index = 1,
+            item = self.reaction,
+            data = DistanceData(distances=distances, method='B3LYP/6-31+G(d,p)'),
+            shortDesc = "B3LYP/6-31+G(d,p) calculation via group estimated TS generator.",
+            history = [(time.asctime(), user, 'action', description)]
+        )
+        
+        outputDataFile = os.path.join(self.file_store_path, self.uniqueID + '.data')
+        with open(outputDataFile, 'w') as parseFile:
+            saveEntry(parseFile, entry)
         
 class GaussianTSM062X(GaussianTS):
 
@@ -599,10 +682,10 @@ class GaussianTSB3LYP(GaussianTS):
 
     #: Keywords that will be added at the top of the qm input file
     keywords = [
-               "# b3lyp/6-31+g(d,p) opt=(ts,calcall,tight,noeigentest)  int=ultrafine nosymm",
-               "# b3lyp/6-31+g(d,p) opt=(ts,calcall,tight,noeigentest,cartesian)  int=ultrafine nosymm",
+               "# b3lyp/6-31+g(d,p) opt=(ts,calcall,tight,noeigentest) int=ultrafine nosymm",
+               "# b3lyp/6-31+g(d,p) opt=(ts,calcall,tight,noeigentest,cartesian) int=ultrafine geom=allcheck guess=check nosymm",
                "# b3lyp/6-31+g(d,p) opt=(ts,calcall,noeigentest) nosymm",
-               "# b3lyp/6-31+g(d,p) opt=(ts,calcall,noeigentest,cartesian) nosymm",
+               "# b3lyp/6-31+g(d,p) opt=(ts,calcall,noeigentest,cartesian) nosymm geom=allcheck guess=check nosymm",
                "# b3lyp/6-31+g(d,p) irc=(calcall,report=read) geom=allcheck guess=check nosymm",
                ]
     """

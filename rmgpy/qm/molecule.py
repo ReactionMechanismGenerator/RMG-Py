@@ -67,9 +67,9 @@ class Geometry:
         rdmol, rdAtIdx = self.rd_build()
         
         atoms = len(self.molecule.atoms)
-        distGeomAttempts=1
+        distGeomAttempts=15
         if atoms > 3:#this check prevents the number of attempts from being negative
-            distGeomAttempts = 5*(atoms-3) #number of conformer attempts is just a linear scaling with molecule size, due to time considerations in practice, it is probably more like 3^(n-3) or something like that
+            distGeomAttempts = 15*(atoms-3) #number of conformer attempts is just a linear scaling with molecule size, due to time considerations in practice, it is probably more like 3^(n-3) or something like that
         
         rdmol, minEid = self.rd_embed(rdmol, distGeomAttempts, bm=boundsMatrix, match=atomMatch)
         self.saveCoordinatesFromRDMol(rdmol, minEid, rdAtIdx)
