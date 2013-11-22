@@ -750,8 +750,11 @@ class Molecule(Graph):
             for bond in self.getBonds(atom1):
                 self.removeEdge(bond)
         
-        for i, atom1 in enumerate(atoms):
-            for atom2 in atoms[i+1:]:
+        # Sort atoms by distance on the z-axis
+        sortedAtoms = sorted(atoms, key=lambda x: x.coords[2])
+        
+        for i, atom1 in enumerate(sortedAtoms):
+            for atom2 in sortedAtoms[i+1:]:
                 # Set upper limit for bond distance
                 criticalDistance = (atom1.element.covRadius + atom2.element.covRadius + 0.45)**2
                 
@@ -1099,16 +1102,9 @@ class Molecule(Graph):
         """
         _rdkit_periodic_table = elements.GetPeriodicTable()
         
-        atoms = []
         for i, atNum in enumerate(atomicNums):
             atom = Atom(_rdkit_periodic_table.GetElementSymbol(int(atNum)))
             atom.coords = coordinates[i]
-            atoms.append(atom)
-        
-        # Sort atoms by distance on the z-axis
-        sortedAtoms = sorted(atoms, key=lambda x: x.coords[2])
-        
-        for atom in sortedAtoms:
             self.addAtom(atom)
         
         return self.connectTheDots()
