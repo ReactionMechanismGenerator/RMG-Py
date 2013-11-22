@@ -534,7 +534,7 @@ class RMG:
         # Save the current state of the model core to a pretty HTML file
         self.saveOutputHTML()
         # Save a Chemkin file containing the current model core
-        self.saveChemkinFile()
+        self.saveChemkinFiles()
         # Save the restart file if desired
         if self.saveRestartPeriod or self.done:
             self.saveRestartFile( os.path.join(self.outputDirectory,'restart.pkl'),
@@ -678,16 +678,17 @@ class RMG:
         from rmgpy.rmg.output import saveOutputHTML
         saveOutputHTML(os.path.join(self.outputDirectory, 'output.html'), self.reactionModel)
         
-    def saveChemkinFile(self):
+    def saveChemkinFiles(self):
         """
-        Save the current reaction model to a Chemkin file.
+        Save the current reaction model to a set of Chemkin files.
         """        
         logging.info('Saving current model to Chemkin file...')
-        this_chemkin_path = os.path.join(self.outputDirectory, 'chemkin', 'chem%04i.inp' % len(self.reactionModel.core.species))
+        this_chemkin_path = os.path.join(self.outputDirectory, 'chemkin', 'chem{0:04d}.inp'.format(len(self.reactionModel.core.species)))
         latest_chemkin_path = os.path.join(self.outputDirectory, 'chemkin','chem.inp')
         latest_chemkin_verbose_path = os.path.join(self.outputDirectory, 'chemkin', 'chem_annotated.inp')
         latest_dictionary_path = os.path.join(self.outputDirectory, 'chemkin','species_dictionary.txt')
-        self.reactionModel.saveChemkinFile(this_chemkin_path, latest_chemkin_verbose_path, latest_dictionary_path)
+        latest_transport_path = os.path.join(self.outputDirectory, 'chemkin', 'tran.dat')
+        self.reactionModel.saveChemkinFile(this_chemkin_path, latest_chemkin_verbose_path, latest_dictionary_path, latest_transport_path)
         if os.path.exists(latest_chemkin_path):
             os.unlink(latest_chemkin_path)
         shutil.copy2(this_chemkin_path,latest_chemkin_path)

@@ -1626,15 +1626,17 @@ class CoreEdgeReactionModel:
         markDuplicateReactions(rxnList)
         
         
-    def saveChemkinFile(self, path, verbose_path, dictionaryPath=None):
+    def saveChemkinFile(self, path, verbose_path, dictionaryPath=None, transportPath=None):
         """
         Save a Chemkin file for the current model core as well as any desired output
         species and reactions to `path`.
         """
-        from rmgpy.chemkin import saveChemkinFile, saveSpeciesDictionary
+        from rmgpy.chemkin import saveChemkinFile, saveSpeciesDictionary, saveTransportFile
         speciesList = self.core.species + self.outputSpeciesList
         rxnList = self.core.reactions + self.outputReactionList
         saveChemkinFile(path, speciesList, rxnList, verbose = False, checkForDuplicates=False) # We should already have marked everything as duplicates by now
         saveChemkinFile(verbose_path, speciesList, rxnList, verbose = True, checkForDuplicates=False)
         if dictionaryPath:
             saveSpeciesDictionary(dictionaryPath, speciesList)
+        if transportPath:
+            saveTransportFile(transportPath, speciesList)
