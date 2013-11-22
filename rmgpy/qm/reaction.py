@@ -107,11 +107,11 @@ class QMReaction:
     
     def setLimits(self, bm, lbl1, lbl2, value, uncertainty):
         if lbl1 > lbl2:
-            bm[lbl2][lbl1] = value + uncertainty
-            bm[lbl1][lbl2] = max(0,value - uncertainty)
+            bm[lbl2][lbl1] = value + uncertainty//2
+            bm[lbl1][lbl2] = max(0,value - uncertainty//2)
         else:
-            bm[lbl2][lbl1] = max(0,value - uncertainty)
-            bm[lbl1][lbl2] = value + uncertainty
+            bm[lbl2][lbl1] = max(0,value - uncertainty//2)
+            bm[lbl1][lbl2] = value + uncertainty//2
     
         return bm
     
@@ -216,9 +216,14 @@ class QMReaction:
                 
                 if not os.path.exists(self.outputFilePath):
                     self.writeInputFile(1)
-                    converged = self.run()
+                    converged, internalCoord = self.run()
                 else:
-                    converged = self.verifyOutputFile()
+                    converged, internalCoord = self.verifyOutputFile()
+                
+                if internalCoord:
+                    self.writeInputFile(2)
+                    converged = self.run()
+                
                 if converged:
                     self.inputFilePath = self.inputFilePath.split('.')[0] + 'IRC.gjf'
                     self.outputFilePath = self.outputFilePath.split('.')[0] + 'IRC.log'
