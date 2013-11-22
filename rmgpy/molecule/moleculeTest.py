@@ -459,6 +459,57 @@ class TestBond(unittest.TestCase):
         import cPickle
         bond = cPickle.loads(cPickle.dumps(self.bond))
         self.assertEqual(self.bond.order, bond.order)
+    
+class TestFromXYZ(unittest.TestCase):
+    """
+    Test the methods to read in a molecule from a series of XYZ coordinates
+    """
+    
+    def setUp(self):
+        self.gjf = """
+C           2.23430        -0.40070         0.56150
+C           1.26180         0.72840         0.44770
+C           3.52630        -0.24910         0.26500
+H           1.86880        -1.36950         0.89640
+H           1.54210         1.56320         1.12920
+H           1.19980         1.09380        -0.60240
+H           4.21000        -1.09080         0.35800
+H           3.92140         0.70790        -0.07260
+C          -0.74150        -0.21200        -0.68620
+C          -1.48690        -1.05830         0.29330
+C          -1.76580         0.83600        -0.97560
+C          -2.69840        -0.57640         0.51210
+C          -2.87450         0.61910        -0.28860
+H          -0.48630        -0.78900        -1.60370
+H          -1.09280        -1.95140         0.76730
+H          -1.62590         1.66850        -1.65740
+H          -3.43350        -1.01010         1.18210
+H          -3.76460         1.23850        -0.32410
+            """
+        atomicNums = []
+        coordinates = []
+        atomicNumDict = {'C':6, 'H':1, 'O':8}
+        for line in self.gjf.split('\n'):
+            if line.strip()=='': continue
+            element, x, y, z = line.split()
+            atomicNums.append(int(atomicNumDict[element]))
+            coordinates.append((float(x),float(y),float(z)))
+        self.atomicNums = numpy.array(atomicNums)
+        self.coordinates = numpy.array(coordinates)
+        
+    def testFromXYZ(self):
+        """Test the fromXYZ method"""
+        m = Molecule()
+        m.fromXYZ(self.atomicNums, self.coordinates)
+        print "The molecule made from the XYZ coordinates is:"
+        print m.toAdjacencyList('label', False)
+        self.assertEqual( m.getFormula(), 'C8H10' )
+        separated = m.split()
+        print separated
+        self.assertEqual(len(separated), 2)
+        one = Molecule(SMILES='[CH]1[CH]=[CH][CH]=[CH]1')
+        two = Molecule(SMILES='[CH]([CH2])=[CH2]')
+
         
 ################################################################################
 
