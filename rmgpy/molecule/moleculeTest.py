@@ -629,6 +629,17 @@ class TestMolecule(unittest.TestCase):
         """
         adjlist = self.molecule.toAdjacencyList(removeH=True)
         self.assertEqual(adjlist.strip(), self.adjlist.strip())
+        
+    def testToSingleBonds(self):
+        """
+        Test the Molecule.toSingleBonds() method
+        """
+        original = self.molecule
+        singles =  original.toSingleBonds()
+        self.assertEqual(original.getFormula(), singles.getFormula())
+        for atom1 in singles.atoms:
+            for bond in atom1.bonds.values():
+                self.assertTrue( bond.isSingle() )
 
     def testIsomorphism(self):
         """
