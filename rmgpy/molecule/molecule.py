@@ -750,8 +750,11 @@ class Molecule(Graph):
             for bond in self.getBonds(atom1):
                 self.removeEdge(bond)
         
-        for i, atom1 in enumerate(atoms):
-            for atom2 in atoms[i+1:]:
+        # Sort atoms by distance on the z-axis
+        sortedAtoms = sorted(atoms, key=lambda x: x.coords[2])
+        
+        for i, atom1 in enumerate(sortedAtoms):
+            for atom2 in sortedAtoms[i+1:]:
                 # Set upper limit for bond distance
                 criticalDistance = (atom1.element.covRadius + atom2.element.covRadius + 0.45)**2
                 
@@ -1099,20 +1102,36 @@ class Molecule(Graph):
         """
         _rdkit_periodic_table = elements.GetPeriodicTable()
         
-        atoms = []
         for i, atNum in enumerate(atomicNums):
             atom = Atom(_rdkit_periodic_table.GetElementSymbol(int(atNum)))
             atom.coords = coordinates[i]
-            atoms.append(atom)
-        
-        # Sort atoms by distance on the z-axis
-        sortedAtoms = sorted(atoms, key=lambda x: x.coords[2])
-        
-        for atom in sortedAtoms:
             self.addAtom(atom)
-        
         return self.connectTheDots()
+    
+    def toSingleBonds(self):
+        """
+        Returns a copy of the current molecule, consisting of only single bonds.
+        
+        This is useful for isomorphism comparison against something that was made
+        via fromXYZ, which does not attempt to perceive bond orders
+        """
+        cython.declare(atom1=Atom, atom2=Atom, bond=Bond, newMol=Molecule, atoms=list)
 
+        newMol = Molecule()
+        atoms = self.atoms
+        mapping = {}
+        for atom1 in atoms:
+            atom2 = newMol.addAtom(Atom(atom1.element))
+            mapping[atom1] = atom2
+
+        for atom1 in atoms:
+            for atom2 in atom1.bonds:
+                bond = Bond(mapping[atom1], mapping[atom2], 'S')
+                newMol.addBond(bond)
+        newMol.updateAtomTypes()
+        return newMol
+    
+    
     def toCML(self):
         """
         Convert the molecular structure to CML. Uses

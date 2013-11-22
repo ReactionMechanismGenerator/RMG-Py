@@ -547,87 +547,19 @@ class GaussianTS(QMReaction, Gaussian):
             mol2 = Molecule()
             mol2.fromXYZ(atomnos, atomcoords[-1])
             
-            reactant = self.reaction.reactants[0].merge(self.reaction.reactants[1])
-            product = self.reaction.products[0].merge(self.reaction.products[1])
-            
-            reactant.resetConnectivityValues()
-            product.resetConnectivityValues()
-            mol1.resetConnectivityValues()
-            mol2.resetConnectivityValues()
-            
-            if mol1.isIsomorphic(reactant) and mol2.isIsomorphic(product):
-                    return True
-            elif mol2.isIsomorphic(reactant) and mol1.isIsomorphic(product):
-                    return True
+            targetReaction = rmgpy.reaction.Reaction(
+                                    reactants = [reactant.toSingleBonds() for reactant in self.reaction.reactants],
+                                    products = [product.toSingleBonds() for product in self.reaction.products],
+                                    )
+            testReaction = rmgpy.reaction.Reaction(
+                                    reactants = mol1.split(),
+                                    products = mol2.split(),                     
+                                    )
+
+            if targetReaction.isIsomorphic(testReaction):
+                return True
             else:
-                return False
-            
-            # rInChI = sorted([x.toInChI() for x in self.reaction.reactants])
-            # pInChI = sorted([x.toInChI() for x in self.reaction.products])
-            # m1InChI = sorted([x.toInChI() for x in mol1.split()])
-            # m2InChI = sorted([x.toInChI() for x in mol2.split()])
-            # 
-            # if rInChI == m1InChI and pInChI == m2InChI:
-            #     return True
-            # elif rInChI == m2InChI and pInChI == m1InChI:
-            #     return True
-            # else:
-            #     return True
-    
-    def parseTS(self, labels):
-    
-        tsParse = cclib.parser.Gaussian(os.path.join(self.file_store_path, self.uniqueID + '.log'))
-        tsParse = tsParse.parse()
-    
-        atom1 = openbabel.OBAtom()
-        atom2 = openbabel.OBAtom()
-        atom3 = openbabel.OBAtom()
-    
-        atom1.SetAtomicNum(int(tsParse.atomnos[labels[0]]))
-        atom2.SetAtomicNum(int(tsParse.atomnos[labels[1]]))
-        atom3.SetAtomicNum(int(tsParse.atomnos[labels[2]]))
-    
-        atom1coords = tsParse.atomcoords[-1][labels[0]].tolist()
-        atom2coords = tsParse.atomcoords[-1][labels[1]].tolist()
-        atom3coords = tsParse.atomcoords[-1][labels[2]].tolist()
-    
-        atom1.SetVector(*atom1coords)
-        atom2.SetVector(*atom2coords)
-        atom3.SetVector(*atom3coords)
-        
-        # from rmgpy.molecule.element import getElement
-        # at1 = getElement(atom1.GetAtomicNum()).symbol
-        # at2 = getElement(atom2.GetAtomicNum()).symbol
-        # at3 = getElement(atom3.GetAtomicNum()).symbol
-    
-        atomDist = [str(atom1.GetDistance(atom2)), str(atom2.GetDistance(atom3)), str(atom1.GetDistance(atom3))]
-    
-        return atomDist
-    
-    def writeRxnOutputFile(self, labels):
-        
-        product = self.reaction.products[0].merge(self.reaction.products[1])
-        star3 = product.getLabeledAtom('*1').sortingLabel
-        star1 = product.getLabeledAtom('*3').sortingLabel
-        product.atoms[star1].label = '*1'
-        product.atoms[star3].label = '*3'
-        
-        atomDist = self.parseTS(labels)
-        
-        distances = {'d12':atomDist[0], 'd23':atomDist[1], 'd13':atomDist[2]}
-        user = "Pierre Bhoorasingh <bhoorasingh.p@husky.neu.edu>"
-        description = "Found via group estimation strategy using automatic transition state generator"
-        entry = Entry(
-            index = 1,
-            item = self.reaction,
-            data = DistanceData(distances=distances, method='B3LYP/6-31+G(d,p)'),
-            shortDesc = "B3LYP/6-31+G(d,p) calculation via group estimated TS generator.",
-            history = [(time.asctime(), user, 'action', description)]
-        )
-        
-        outputDataFile = os.path.join(self.file_store_path, self.uniqueID + '.data')
-        with open(outputDataFile, 'w') as parseFile:
-            saveEntry(parseFile, entry)
+                return True
         
 class GaussianTSM062X(GaussianTS):
 
