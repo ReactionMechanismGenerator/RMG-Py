@@ -69,6 +69,8 @@ cdef class Atom(Vertex):
     
     cpdef updateCharge(self)
     
+    cpdef setSpinMultiplicity(self, int spinMultiplicity)
+    
 ################################################################################
 
 cpdef object SMILEwriter
