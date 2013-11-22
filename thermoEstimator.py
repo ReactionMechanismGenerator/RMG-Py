@@ -42,14 +42,12 @@ def runThermoEstimator(inputFile):
     output = open(os.path.join(rmg.outputDirectory, 'output.txt'),'wb')
     library = ThermoLibrary(name='Thermo Estimation Library')
     listOfSpecies=rmg.initialSpecies
-    chunksize=50
+    chunksize=1000
     if rmg.reactionModel.quantumMechanics: logging.debug("qmValue fine @ runThermoEstimator")
     shared.setConst(qmValue=rmg.reactionModel.quantumMechanics)
     for chunk in list(chunks(listOfSpecies,chunksize)):
-        logging.debug("Parallelized section starts...")
         # There will be no stdout from workers except the main one.
         outputList = futures.map(makeThermoForSpecies, chunk)
-        logging.debug("Parallelized section ends.")
         for species, thermo in zip(chunk, outputList):
             logging.debug("Species {0}".format(species.label))
             species.thermo = thermo   
@@ -60,7 +58,6 @@ def runThermoEstimator(inputFile):
                 thermo = species.thermo.toThermoData(),
                 shortDesc = species.thermo.comment,
             )
-            logging.debug("chunk done")
             output.write(writeThermoEntry(species))
             output.write('\n')
     
@@ -74,12 +71,22 @@ if __name__ == '__main__':
 
     import argparse
     
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description=
+     """
+     thermoEstimator.py generates thermochemical parameters based on Benson group additivity
+     or quantum mechanical calculations. \n
+     Generates three output files.
+     RMG.log: Contains information about the process.
+     output.txt: Contains string representations of the NASA model for each species, readable by Chemkin.
+     ThermoLibrary.py: Thermo library that can be used in RMG simulations. Can be uploaded to RMG-database.
+     """)
     parser.add_argument('input', metavar='FILE', type=str, nargs=1,
         help='Thermo input file')
     parser.add_argument('-p', '--profile', action='store_true', help='run under cProfile to gather profiling statistics, and postprocess them if job completes')
     parser.add_argument('-P', '--postprocess', action='store_true', help='postprocess profiling statistics from previous [failed] run; does not run the simulation')
-
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument('-d', '--debug', action='store_true', help='print debug information')
+    group.add_argument('-q', '--quiet', action='store_true', help='only print warnings and errors')
     args = parser.parse_args()
     
     inputFile = os.path.abspath(args.input[0])
@@ -106,7 +113,10 @@ if __name__ == '__main__':
         makeProfileGraph(stats_file)
         
     else:
-        level = logging.INFO
-        initializeLog(level, 'thermo.log')
+        
+        if args.debug: level = logging.DEBUG
+        elif args.quiet: level = logging.WARNING
+        else: level = logging.INFO
+        initializeLog(level, 'RMG.log')
         logging.debug("runThermoEstimator starts...")
         runThermoEstimator(inputFile)
