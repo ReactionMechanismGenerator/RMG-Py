@@ -351,9 +351,9 @@ class TransportDatabase(object):
                      epsilon = (.77 * Tc * constants.R, 'J/mol'),
                      sigma = (2.44 * (Tc/Pc)**(1./3), 'angstroms'),
                      dipoleMoment = (0, 'C*m'),
-                     polarizability = (0, 'C*m^2*V^-1'),
+                     polarizability = (0, 'angstroms^3'),
                      rotrelaxcollnum = 0,  # rotational relaxation collision number at 298 K
-                     comment = 'Estimated with Tc={Tc:.2f} K, Pc={Pc:.4g} bar (from Joback method)'.format(Tc=Tc,Pc=Pc),
+                     comment = 'Epsilon & sigma estimated with Tc={Tc:.2f} K, Pc={Pc:.4g} bar (from Joback method)'.format(Tc=Tc,Pc=Pc),
                      )
         return (transport, None, None)
         #Things calling this expect a tuple with the library and entry that it came from.
@@ -475,7 +475,7 @@ class TransportDatabase(object):
         while node is not None and node.data is None:
             node = node.parent
         if node is None:
-            raise KeyError('Node has no parent with data in database.')
+            raise KeyError('Node {!r} has no parent with data in the transport database.'.format(node0))
         data = node.data
         comment = node.label
         while isinstance(data, basestring) and data is not None:

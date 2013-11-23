@@ -644,7 +644,13 @@ Velocity = UnitType('m/s')
 
 Volume = UnitType('m^3')
 
-Polarizability = UnitType('C*m^2*V^-1')
+# Polarizability = UnitType('C*m^2*V^-1')
+"""
+What's called Polarizability in the transport properties is in fact a polarizability volume,
+which is related by $4*\pi*\epsilon_0$ where $\epsilon_0$ is the permittivity of free space.
+Rather than mess around with conversions, I suggest we just use "Volume" as the units for 
+what we call 'polarizability'. Chemkin expects it in Angstrom^3. We'll store it in m^3.
+"""
 
 # RateCoefficient is handled as a special case since it can take various
 # units depending on the reaction order

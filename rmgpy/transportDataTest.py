@@ -38,7 +38,7 @@ import os
 import rmgpy.constants as constants
 from rmgpy.species import Species
 from rmgpy.molecule.molecule import Molecule
-from rmgpy.quantity import DipoleMoment, Length, Polarizability, Energy
+from rmgpy.quantity import DipoleMoment, Length, Volume, Energy
 from rmgpy.transport import TransportData
 from rmgpy.data.transport import CriticalPointGroupContribution, TransportDatabase
 #################################################################################
@@ -56,7 +56,7 @@ class TestTransportData(unittest.TestCase):
         self.epsilon = Energy(2.104, 'kJ/mol')
         self.sigma = Length(3.402,'angstroms')
         self.dipoleMoment = DipoleMoment(1.000, 'C*m')
-        self.polarizability = Polarizability(0.134, 'C*m^2*V^-1')
+        self.polarizability = Volume(0.134, 'angstroms^3')
         self.rotrelaxcollnum = 0.000
         self.comment = 'test'
         

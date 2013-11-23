@@ -4,25 +4,25 @@ Created on Feb 26, 2013
 @author: Jake
 '''
 
-from rmgpy.quantity import DipoleMoment, Energy, Length, Polarizability
+from rmgpy.quantity import DipoleMoment, Energy, Length, Volume
 import rmgpy.constants as constants
 import numpy
 
 class TransportData:
     """
-    A heat capacity model based on a set of discrete heat capacity data points.
-    The attributes are:
+    A set of transport properties.
     
-    =============== ============================================================
-    Attribute       Description
-    =============== ============================================================
-    `shapeIndex`         
-    `epsilon`        
-    `sigma`          
-    `dipoleMoment`          
-    `polarizability`           
-    `rotrelaxcollnum`         
-    =============== ============================================================
+    The attributes are:
+    =================  ============================================================
+    Attribute          Description
+    =================  ============================================================
+    `shapeIndex`        0 for monoatomic, 1 for linear, 2 for nonlinear
+    `epsilon`           Lennard-Jones well depth
+    `sigma`             Lennard-Jones collision diameter
+    `dipoleMoment`      Dipole Moment
+    `polarizability`    Polarizability Volume
+    `rotrelaxcollnum`   Rotational relaxation number
+    =================  ============================================================
     
     """
 
@@ -31,7 +31,7 @@ class TransportData:
         self.epsilon = Energy(epsilon)
         self.sigma = Length(sigma)
         self.dipoleMoment = DipoleMoment(dipoleMoment)
-        self.polarizability = Polarizability(polarizability)
+        self.polarizability = Volume(polarizability)
         self.rotrelaxcollnum = rotrelaxcollnum
         self.comment = comment
     
