@@ -840,8 +840,10 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
 
 {% if not rxn2.duplicate %}
 <P><b>Fitted Reverse Kinetics:</b>
+{% if not rxn2.kinetics.isPressureDependent() %}
 {{rxn2.generateReverseRateCoefficient().toHTML() }}
-
+{% else %} Pressure dependent
+{% endif %}
 {% endif %}
 
 <P><b>Original Kinetics:</b>
