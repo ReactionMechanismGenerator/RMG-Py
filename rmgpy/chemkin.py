@@ -1459,12 +1459,15 @@ def saveTransportFile(path, species):
     (from the chemkin TRANSPORT manual)
     """
     with open(path, 'w') as f:
+        f.write("! {:15} {:8} {:9} {:9} {:9} {:9} {:9} {:9}\n".format('Species','Shape', 'LJ-depth', 'LJ-diam', 'DiplMom', 'Polzblty', 'RotRelaxNum','Data'))
+        f.write("! {:15} {:8} {:9} {:9} {:9} {:9} {:9} {:9}\n".format('Name','Index', 'epsilon/k_B', 'sigma', 'mu', 'alpha', 'Zrot','Source'))
         for spec in species:
             print spec.transportData
-            if (not spec.transportData or not spec.dipoleMoment or
-                not spec.polarizability or not spec.Zrot or 
+            if (not spec.transportData or
                 len(spec.molecule) == 0):
-                continue
+                missingData = True
+            else:
+                missingData = False
             
             label = getSpeciesIdentifier(spec)
             
@@ -1476,15 +1479,19 @@ def saveTransportFile(path, species):
             else:
                 shapeIndex = 2
             
-            f.write('{0:19} {1:d} {2:9.3f} {3:9.3f} {4:9.3f} {5:9.3f} {6:9.3f}\n'.format(
-                label,
-                shapeIndex,
-                spec.transportData.epsilon.value_si / constants.R,
-                spec.transportData.sigma.value_si * 1e10,
-                spec.dipoleMoment.value_si * constants.c * 1e21,
-                spec.polarizability.value_si * 1e30,
-                spec.Zrot.value_si,
-            ))
+            if missingData:
+                f.write('! {:19s} {!r}\n'.format(label, spec.transportData))
+            else:
+                f.write('{0:19} {1:d}   {2:9.3f} {3:9.3f} {4:9.3f} {5:9.3f} {6:9.3f}    ! {7:s}\n'.format(
+                    label,
+                    shapeIndex,
+                    spec.transportData.epsilon.value_si / constants.R,
+                    spec.transportData.sigma.value_si * 1e10,
+                    spec.transportData.dipoleMoment.value_si * constants.c * 1e21,
+                    spec.transportData.polarizability.value_si * 1e30,
+                    (spec.Zrot.value_si if spec.Zrot else 0),
+                    spec.transportData.comment,
+                ))
 
 def saveChemkinFile(path, species, reactions, verbose = True, checkForDuplicates=True):
     """
