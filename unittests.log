@@ -24,7 +24,7 @@ Test the value of the proton rest mass. ... ok
 Test the value of the reduced Planck constant. ... ok
 Test the value of the speed of light in a vacuum. ... ok
 Test that the new ThermoDatabase generates appropriate thermo data. ... ERROR
-Test that the old ThermoDatabase generates relatively accurate thermo data. ... ERROR
+Test that the old ThermoDatabase generates relatively accurate thermo data. ... FAIL
 Test that the Arrhenius A property was properly set. ... ok
 Test that the Arrhenius Ea property was properly set. ... ok
 Test that the Arrhenius T0 property was properly set. ... ok
@@ -187,17 +187,17 @@ Test the AtomType.isSpecificCaseOf() method. ... ok
 Test that we can reconstruct an AtomType object from its repr() ... ok
 Test that an AtomType object can be successfully pickled and ... ok
 Test the AtomType.setActions() method. ... ok
-Test that getAtomType() returns appropriate carbon atom types. ... [20:44:04] Explicit valence for atom # 2 O, 3, is greater than permitted
+Test that getAtomType() returns appropriate carbon atom types. ... [HH:MM:SS] Explicit valence for atom # 2 O, 3, is greater than permitted
 ERROR
-Test that getAtomType() returns the hydrogen atom type. ... [20:44:04] Explicit valence for atom # 2 O, 3, is greater than permitted
+Test that getAtomType() returns the hydrogen atom type. ... [HH:MM:SS] Explicit valence for atom # 2 O, 3, is greater than permitted
 ERROR
-Test that getAtomType() returns appropriate NoneTypes. ... [20:44:04] Explicit valence for atom # 2 O, 3, is greater than permitted
+Test that getAtomType() returns appropriate NoneTypes. ... [HH:MM:SS] Explicit valence for atom # 2 O, 3, is greater than permitted
 ERROR
-Test that getAtomType() returns appropriate oxygen atom types. ... [20:44:04] Explicit valence for atom # 2 O, 3, is greater than permitted
+Test that getAtomType() returns appropriate oxygen atom types. ... [HH:MM:SS] Explicit valence for atom # 2 O, 3, is greater than permitted
 ERROR
-Test that getAtomType() returns appropriate silicon atom types. ... [20:44:04] Explicit valence for atom # 2 O, 3, is greater than permitted
+Test that getAtomType() returns appropriate silicon atom types. ... [HH:MM:SS] Explicit valence for atom # 2 O, 3, is greater than permitted
 ERROR
-Test that getAtomType() returns appropriate sulfur atom types. ... [20:44:04] Explicit valence for atom # 2 O, 3, is greater than permitted
+Test that getAtomType() returns appropriate sulfur atom types. ... [HH:MM:SS] Explicit valence for atom # 2 O, 3, is greater than permitted
 ERROR
 Test the rmgpy.elements.getElement() method. ... ok
 Test that we can reconstruct an Element object from its repr() ... ok
@@ -315,7 +315,7 @@ Test the Molecule.getLabeledAtoms() method. ... ok
 Test the Molecule.getLabeledAtom() method. ... ok
 Test the Molecule.getLabeledAtoms() method. ... ok
 Test the Molecule.getMolecularWeight() method. ... ok
-Test that InChI Key generation is working properly. ... [20:44:04] WARNING: Omitted undefined stereo
+Test that InChI Key generation is working properly. ... [HH:MM:SS] WARNING: Omitted undefined stereo
 ok
 Test the Molecule.isInCycle() method with ethane. ... ok
 Test the Molecule.isInCycle() method with ethane. ... ok
@@ -723,29 +723,19 @@ testJoback (rmgpy.transportDataTest.TestTransportDatabase) ... ERROR
 ERROR: Test that the new ThermoDatabase generates appropriate thermo data.
 ----------------------------------------------------------------------
 Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermoTest.py", line 25, in setUp
-    self.database.load(os.path.join(settings['database.directory'], 'thermo'))
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermo.py", line 365, in load
-    self.loadDepository(os.path.join(path, 'depository'))
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermo.py", line 377, in loadDepository
-    self.depository['stable']  = ThermoDepository().load(os.path.join(path, 'stable.py'), self.local_context, self.global_context)
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/base.py", line 208, in load
-    f = open(path, 'r')
-IOError: [Errno 2] No such file or directory: '/export/thishost/comocheng/build/RMG-database/input/thermo/depository/stable.py'
-
-======================================================================
-ERROR: Test that the old ThermoDatabase generates relatively accurate thermo data.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermoTest.py", line 25, in setUp
-    self.database.load(os.path.join(settings['database.directory'], 'thermo'))
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermo.py", line 365, in load
-    self.loadDepository(os.path.join(path, 'depository'))
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermo.py", line 377, in loadDepository
-    self.depository['stable']  = ThermoDepository().load(os.path.join(path, 'stable.py'), self.local_context, self.global_context)
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/base.py", line 208, in load
-    f = open(path, 'r')
-IOError: [Errno 2] No such file or directory: '/export/thishost/comocheng/build/RMG-database/input/thermo/depository/stable.py'
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermoTest.py", line 68, in testNewThermoGeneration
+    thermoData = self.database.getThermoDataFromGroups(Species(molecule=[species.molecule[0]]))[0]
+TypeError: 'rmgpy.thermo.thermodata.ThermoData' object does not support indexing
+-------------------- >> begin captured logging << --------------------
+root: INFO: Loading thermodynamics library from USC-Mech-ii.py in /export/thishost/comocheng/build/RMG-database/input/thermo/libraries...
+root: INFO: Loading thermodynamics library from DFT_QCI_thermo.py in /export/thishost/comocheng/build/RMG-database/input/thermo/libraries...
+root: INFO: Loading thermodynamics library from primaryThermoLibrary.py in /export/thishost/comocheng/build/RMG-database/input/thermo/libraries...
+root: INFO: Loading thermodynamics library from SulfurLibrary.py in /export/thishost/comocheng/build/RMG-database/input/thermo/libraries...
+root: INFO: Loading thermodynamics library from KlippensteinH2O2.py in /export/thishost/comocheng/build/RMG-database/input/thermo/libraries...
+root: INFO: Loading thermodynamics library from CBS_QB3_1dHR.py in /export/thishost/comocheng/build/RMG-database/input/thermo/libraries...
+root: INFO: Loading thermodynamics library from GRI-Mech3.0.py in /export/thishost/comocheng/build/RMG-database/input/thermo/libraries...
+root: INFO: Loading thermodynamics group database from /export/thishost/comocheng/build/RMG-database/input/thermo/groups...
+--------------------- >> end captured logging << ---------------------
 
 ======================================================================
 ERROR: Failure: ImportError (cannot import name LennardJones)
@@ -903,16 +893,16 @@ ImportError: cannot import name LennardJones
 ERROR: testJoback (rmgpy.transportDataTest.TestTransportDatabase)
 ----------------------------------------------------------------------
 Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/transportDataTest.py", line 245, in setUp
-    self.transportdb.load(path,self.libraries)
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/transport.py", line 230, in load
-    self.loadGroups(os.path.join(path, 'groups'))
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/transport.py", line 258, in loadGroups
-    self.groups['ring'] = TransportGroups(label='ring').load(os.path.join(path, 'ring.py'), self.local_context, self.global_context)
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/base.py", line 208, in load
-    f = open(path, 'r')
-IOError: [Errno 2] No such file or directory: '/export/thishost/comocheng/build/RMG-database/input/transport/groups/ring.py'
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/transportDataTest.py", line 257, in testJoback
+    print self.assertTrue(transportData.comment == comment)
+AttributeError: 'tuple' object has no attribute 'comment'
+-------------------- >> begin captured stdout << ---------------------
+acetone (TransportData(shapeIndex=2, epsilon=(3204.45,'J/mol'), sigma=(5.36421,'angstroms'), dipoleMoment=(0,'C*m'), polarizability=(0,'angstroms^3'), rotrelaxcollnum=0, comment="""Epsilon & sigma estimated with Tc=500.53 K, Pc=47.11 bar (from Joback method)"""), None, None)
+
+--------------------- >> end captured stdout << ----------------------
 -------------------- >> begin captured logging << --------------------
+root: INFO: Loading transport library from GRI-Mech.py in /export/thishost/comocheng/build/RMG-database/input/transport/libraries...
+root: INFO: Loading transport library from PrimaryTransportLibrary.py in /export/thishost/comocheng/build/RMG-database/input/transport/libraries...
 root: INFO: Loading transport group database from /export/thishost/comocheng/build/RMG-database/input/transport/groups...
 --------------------- >> end captured logging << ---------------------
 
@@ -931,6 +921,24 @@ Traceback (most recent call last):
   File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/cantherm/gaussianTest.py", line 98, in testLoadEthyleneFromGaussianLog_G3
     self.assertAlmostEqual(E0 / constants.Na / constants.E_h, -78.562189, 4)
 AssertionError: -78.55632 != -78.562189 within 4 places
+
+======================================================================
+FAIL: Test that the old ThermoDatabase generates relatively accurate thermo data.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermoTest.py", line 105, in testOldThermoGeneration
+    self.assertEqual(molecule.calculateSymmetryNumber(), symm)
+AssertionError: 3 != 12
+-------------------- >> begin captured logging << --------------------
+root: INFO: Loading thermodynamics library from USC-Mech-ii.py in /export/thishost/comocheng/build/RMG-database/input/thermo/libraries...
+root: INFO: Loading thermodynamics library from DFT_QCI_thermo.py in /export/thishost/comocheng/build/RMG-database/input/thermo/libraries...
+root: INFO: Loading thermodynamics library from primaryThermoLibrary.py in /export/thishost/comocheng/build/RMG-database/input/thermo/libraries...
+root: INFO: Loading thermodynamics library from SulfurLibrary.py in /export/thishost/comocheng/build/RMG-database/input/thermo/libraries...
+root: INFO: Loading thermodynamics library from KlippensteinH2O2.py in /export/thishost/comocheng/build/RMG-database/input/thermo/libraries...
+root: INFO: Loading thermodynamics library from CBS_QB3_1dHR.py in /export/thishost/comocheng/build/RMG-database/input/thermo/libraries...
+root: INFO: Loading thermodynamics library from GRI-Mech3.0.py in /export/thishost/comocheng/build/RMG-database/input/thermo/libraries...
+root: INFO: Loading thermodynamics group database from /export/thishost/comocheng/build/RMG-database/input/thermo/groups...
+--------------------- >> end captured logging << ---------------------
 
 ======================================================================
 FAIL: Test the GroupAtom.applyAction() method for a GAIN_RADICAL action.
@@ -1061,7 +1069,7 @@ rmgpy.cantherm.statmech            396    368    164    164     5%   82, 89-120,
 rmgpy.cantherm.thermo              155    140     32     32     8%   55-56, 63-67, 75-122, 129-205, 217-269
 rmgpy.chemkin                      889    847    454    453     3%   71-126, 137-409, 419-568, 579-599, 605-618, 625-640, 648-786, 798-840, 854-880, 890-1031, 1039-1049, 1061-1103, 1114-1178, 1186-1222, 1239-1389, 1399-1415, 1425-1428, 1436-1439, 1461-1485, 1504-1550, 1558-1589
 rmgpy.data                           3      1      0      0    67%   34
-rmgpy.data.base                    654    567    295    293     9%   99-110, 113, 209-223, 230-251, 259-282, 293-311, 324-380, 388-446, 454-464, 471-501, 510-565, 572-580, 588-681, 688-694, 701-713, 720-754, 764, 770-776, 782-787, 801-840, 853-905, 917-940, 952-959, 962-966, 981-988, 995-1004, 1015-1022, 1038-1075, 1086-1089, 1098-1102, 1114-1118, 1140-1149, 1155-1156, 1162, 1170-1183, 1198-1225
+rmgpy.data.base                    654    354    295    191    43%   113, 211-213, 230-251, 259-282, 295-297, 301-303, 307-309, 354-359, 377-380, 389, 401, 408, 418-419, 422, 444, 459-460, 472, 480, 483-484, 491, 500-501, 523, 532-533, 539-540, 554-561, 572-580, 588-681, 688-694, 701-713, 720-754, 770-776, 782-787, 801-840, 864-865, 871, 879-888, 897-899, 904, 924, 935, 939-940, 955, 962-966, 983, 988, 995-1004, 1015-1022, 1040, 1050, 1058, 1060, 1072-1075, 1098-1102, 1114-1118, 1140-1149, 1155-1156, 1162, 1170-1183, 1198-1225
 rmgpy.data.kinetics                269    235    135    135     8%   62-78, 84-89, 95-97, 104-105, 112-139, 149-174, 181-184, 191-195, 202-208, 215-232, 239-273, 281-284, 292-295, 303-318, 331-340, 361-459, 472-518
 rmgpy.data.kinetics.common         109     97     50     50     8%   100-101, 110-220
 rmgpy.data.kinetics.depository      31     18      0      0    42%   64-77, 83, 102, 115, 141-164, 170
@@ -1069,12 +1077,12 @@ rmgpy.data.kinetics.family         901    833    496    496     5%   95-108, 114
 rmgpy.data.kinetics.groups         295    271    180    180     5%   78-79, 85-89, 109-173, 183-209, 218-270, 283-551
 rmgpy.data.kinetics.library        273    247    153    153     6%   71-84, 90, 108, 118, 128-149, 156-163, 171-184, 191-246, 250-260, 282-315, 321, 327-360, 370-374, 384-545
 rmgpy.data.kinetics.rules          313    283    135    135     7%   64, 88-128, 134, 142-190, 197-223, 231-279, 287-354, 361-368, 375, 382, 389-402, 409-425, 431-490, 501-527, 534-588
-rmgpy.data.reference               138    119     48     48    10%   66-70, 89-95, 102-108, 114-132, 158-162, 169-183, 190-200, 226-231, 238-251, 258-269, 292-294, 301-311, 318-326
+rmgpy.data.reference               138    114     48     48    13%   89-95, 102-108, 114-132, 158-162, 169-183, 190-200, 226-231, 238-251, 258-269, 292-294, 301-311, 318-326
 rmgpy.data.rmg                      72     53      6      6    24%   55-64, 84-93, 100-101, 108-109, 116-117, 130-142, 153-154, 161-170, 176-181, 187-192
 rmgpy.data.statmech                295    244    103    103    13%   48-91, 98-101, 108-116, 127, 140, 156, 166, 179, 195, 202, 209, 220, 233-241, 257, 264, 271, 278-285, 294-309, 319-355, 364-445, 455-467, 473-479, 485-488, 495-500, 507, 514-526, 533-534, 541-545, 552-553, 560-562, 569-570, 578-594, 611-624, 637-645, 652-656, 664-667, 676, 689-690, 698-705
 rmgpy.data.statmechfit             248    213     70     70    11%   95-137, 151-193, 207-244, 260-307, 316-319, 327-330, 338-343, 352-355, 364-366, 378-381, 384-407, 419-422, 425-457, 469-472, 475-506
-rmgpy.data.thermo                  436    369    134    133    12%   56-123, 130-148, 168, 187-199, 205, 215, 228, 244, 251, 258, 268, 281-285, 301, 309, 316, 342-348, 354-357, 367-369, 378, 385-397, 404-412, 419-423, 430-432, 439-441, 448-455, 463-530, 545-556, 566-609, 626-641, 652-660, 668-674, 687-703, 713-724, 737-743, 757-771, 780-847, 860-939, 946-959, 968-1000
-rmgpy.data.transport               212    149     56     54    24%   54-69, 91, 104, 119, 126, 133, 154-158, 174, 181, 188, 209-214, 220-222, 239-247, 259, 269-281, 289-301, 312-316, 326-358, 371-456, 465-495, 502-506
+rmgpy.data.thermo                  436    185    134     66    56%   56-123, 130-148, 187-199, 205, 244, 251, 301, 309, 342-348, 354-357, 367, 397, 419-423, 430-432, 439-441, 448-455, 545-556, 566-609, 628-629, 655-659, 669-670, 692-696, 715-718, 720-723, 737-743, 810-811, 833-837, 881-885, 895, 907-913, 924-928, 947, 977, 979
+rmgpy.data.transport               212     80     56     38    56%   54-69, 119, 126, 133, 155, 174, 181, 188, 209-214, 220-222, 269-281, 289-301, 312-316, 343, 376-415, 434, 437-441, 468, 476, 478, 482-486
 rmgpy.display                       11      3      0      0    73%   37, 41-43
 rmgpy.kinetics                       6      0      0      0   100%   
 rmgpy.measure                        0      0      0      0   100%   
@@ -1084,7 +1092,7 @@ rmgpy.measure.output               164    146     82     82     7%   53-60, 71-1
 rmgpy.measure.settings               2      0      0      0   100%   
 rmgpy.measure.simulate              67     54     30     30    13%   46, 49, 66-128, 144-169, 178-179, 182, 185
 rmgpy.molecule                       5      0      0      0   100%   
-rmgpy.molecule.adjlist             196     39    110     33    76%   65, 69-71, 80, 125, 133-143, 167, 180, 182, 184, 202, 214-215, 229-231, 248-257, 270-271, 298
+rmgpy.molecule.adjlist             196     25    110     20    85%   65, 71, 80, 167, 180, 182, 184, 202, 214-215, 229-231, 248-257, 270-271, 298
 rmgpy.molecule.draw                569    545    270    270     3%   71-83, 101-109, 112-123, 139-249, 258-273, 280-311, 321-347, 358-425, 432-445, 453-485, 495-766, 784-788, 802-922
 rmgpy.pdep                           5      0      0      0   100%   
 rmgpy.pdep.draw                    291    277     86     86     4%   57-70, 73-79, 87-107, 116-125, 131-142, 148-159, 165-181, 185-213, 222-479
@@ -1100,7 +1108,7 @@ rmgpy.qm.symmetry                   80     51     20     16    33%   128-130, 13
 rmgpy.rmg                            2      0      0      0   100%   
 rmgpy.rmg.input                    248    218     52     52    10%   67-90, 93-97, 100, 103, 106, 109, 120-144, 147-148, 151-154, 163-169, 182-216, 219-224, 227-241, 253-304, 316-355, 365-471
 rmgpy.rmg.main                     650    603    230    230     5%   46-47, 112-116, 122-157, 164-180, 187-195, 201-207, 215-217, 221-242, 251-342, 350-517, 528-547, 554-555, 558-565, 572-587, 594-598, 605-671, 677-679, 685-694, 703-716, 729-776, 787-820, 831-980, 987-996, 1007-1049, 1060, 1062-1063, 1066-1081, 1091-1122
-rmgpy.rmg.model                    889    828    472    472     4%   72-73, 79, 96-157, 167-204, 212-220, 227-231, 257, 272-273, 297-323, 333-353, 361-404, 414-479, 496-550, 568-579, 585-597, 609-761, 770-830, 837-925, 934-970, 980-1006, 1012, 1020-1102, 1110-1157, 1166-1169, 1179-1180, 1188-1192, 1199-1205, 1213-1223, 1230-1235, 1247-1280, 1295-1321, 1335-1360, 1373-1424, 1439-1520, 1528-1614, 1624-1626, 1634-1642
+rmgpy.rmg.model                    889    828    472    472     4%   72-73, 79, 96-157, 167-204, 212-220, 227-231, 257, 272-273, 297-323, 333-353, 361-404, 414-479, 496-550, 568-579, 585-597, 609-761, 770-830, 837-925, 934-970, 980-1006, 1012, 1020-1102, 1110-1157, 1166-1169, 1179-1180, 1188-1192, 1199-1205, 1213-1223, 1230-1235, 1247-1280, 1295-1321, 1335-1360, 1373-1424, 1439-1520, 1528-1614, 1624-1627, 1635-1643
 rmgpy.rmg.output                   154    146     60     60     4%   62-354, 362-945
 rmgpy.rmg.pdep                     316    287    182    182     6%   73-85, 91, 108, 130-133, 136, 142, 145, 152, 158-178, 187-208, 217-239, 246-265, 273-297, 305-315, 322-377, 387-448, 455-635
 rmgpy.solver                         2      0      0      0   100%   
@@ -1108,9 +1116,9 @@ rmgpy.statmech                       5      0      0      0   100%
 rmgpy.thermo                         3      0      0      0   100%   
 rmgpy.transport                     25      3      0      0    88%   52-53, 59
 ----------------------------------------------------------------------------
-TOTAL                            12913  11231   5422   5255    10%   
+TOTAL                            12913  10746   5422   5057    14%   
 ----------------------------------------------------------------------
 Ran 712 tests.
 
-FAILED (errors=19, failures=15)
+FAILED (errors=18, failures=16)
 make: *** [test] Error 1
