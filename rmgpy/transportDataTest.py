@@ -33,9 +33,9 @@ This script contains unit test of the :mod: 'rmgpy.transport' module and :mod: '
 """
 
 import unittest
-import numpy
 import os
 import rmgpy.constants as constants
+from rmgpy import settings
 from rmgpy.species import Species
 from rmgpy.molecule.molecule import Molecule
 from rmgpy.quantity import DipoleMoment, Length, Volume, Energy
@@ -240,7 +240,7 @@ class TestTransportDatabase(unittest.TestCase):
         self.groups = ['ring', 'nonring']
         self.libraryOrder = []
         
-        path = os.path.normpath(os.path.join( os.path.dirname(os.path.abspath(__file__)), '../../RMG-database/input/transport'))
+        path = os.path.join(settings['database.directory'], 'transport')
         self.transportdb = TransportDatabase()
         self.transportdb.load(path,self.libraries)
 
