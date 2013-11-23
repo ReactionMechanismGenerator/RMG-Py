@@ -65,7 +65,7 @@
 <h1>rmgpy.rmg.model.Species<a class="headerlink" href="#rmgpy-rmg-model-species" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="rmgpy.rmg.model.Species">
-<em class="property">class </em><tt class="descclassname">rmgpy.rmg.model.</tt><tt class="descname">Species</tt><big>(</big><em>index=-1</em>, <em>label=''</em>, <em>thermo=None</em>, <em>conformer=None</em>, <em>molecule=None</em>, <em>lennardJones=None</em>, <em>molecularWeight=None</em>, <em>dipoleMoment=None</em>, <em>polarizability=None</em>, <em>Zrot=None</em>, <em>energyTransferModel=None</em>, <em>reactive=True</em>, <em>coreSizeAtCreation=0</em><big>)</big><a class="headerlink" href="#rmgpy.rmg.model.Species" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">rmgpy.rmg.model.</tt><tt class="descname">Species</tt><big>(</big><em>index=-1</em>, <em>label=''</em>, <em>thermo=None</em>, <em>conformer=None</em>, <em>molecule=None</em>, <em>transportData=None</em>, <em>molecularWeight=None</em>, <em>dipoleMoment=None</em>, <em>polarizability=None</em>, <em>Zrot=None</em>, <em>energyTransferModel=None</em>, <em>reactive=True</em>, <em>coreSizeAtCreation=0</em><big>)</big><a class="headerlink" href="#rmgpy.rmg.model.Species" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="method">
 <dt id="rmgpy.rmg.model.Species.calculateCp0">
 <tt class="descname">calculateCp0</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.rmg.model.Species.calculateCp0" title="Permalink to this definition">¶</a></dt>
@@ -104,13 +104,6 @@ species. This &#8220;algorithm&#8221; is <em>very</em> much in need of improveme
 </dd></dl>
 
 <dl class="method">
-<dt id="rmgpy.rmg.model.Species.generateLennardJonesParameters">
-<tt class="descname">generateLennardJonesParameters</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.rmg.model.Species.generateLennardJonesParameters" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generate the Lennard-Jones parameters for the species. This &#8220;algorithm&#8221;
-is <em>very</em> much in need of improvement.</p>
-</dd></dl>
-
-<dl class="method">
 <dt id="rmgpy.rmg.model.Species.generateResonanceIsomers">
 <tt class="descname">generateResonanceIsomers</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.rmg.model.Species.generateResonanceIsomers" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate all of the resonance isomers of this species. The isomers are
@@ -138,6 +131,12 @@ picks that with lowest H298 value.</p>
 <p>It then calls <tt class="xref py py-meth docutils literal"><span class="pre">processThermoData()</span></tt>, to convert (via Wilhoit) to NASA
 and set the E0.</p>
 <p>Result stored in <cite>self.thermo</cite> and returned.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.rmg.model.Species.generateTransportData">
+<tt class="descname">generateTransportData</tt><big>(</big><em>database</em><big>)</big><a class="headerlink" href="#rmgpy.rmg.model.Species.generateTransportData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate the transportData parameters for the species.</p>
 </dd></dl>
 
 <dl class="method">
