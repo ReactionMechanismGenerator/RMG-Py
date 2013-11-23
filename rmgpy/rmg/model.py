@@ -747,7 +747,7 @@ class CoreEdgeReactionModel:
         checkedCoreReactions = self.core.reactions[:numOldCoreReactions]
         from rmgpy.chemkin import markDuplicateReaction
         for rxn in newCoreReactions:
-            markDuplicateReaction(rxn, itertools.chain(checkedCoreReactions,self.outputReactionList) )
+            markDuplicateReaction(rxn,checkedCoreReactions)
             checkedCoreReactions.append(rxn)
         
         self.printEnlargeSummary(
@@ -1622,6 +1622,7 @@ class CoreEdgeReactionModel:
         Anything added via the :meth:`expand` method should already be detected.
         """
         from rmgpy.chemkin import markDuplicateReactions
+        
         rxnList = self.core.reactions + self.outputReactionList
         markDuplicateReactions(rxnList)
         
