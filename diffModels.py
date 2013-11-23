@@ -11,6 +11,7 @@ import numpy
 from matplotlib import pylab
 import os.path
 #import matplotlib.pyplot
+import logging
 
 from rmgpy.chemkin import loadChemkinFile
 from rmgpy.reaction import ReactionModel
@@ -93,14 +94,23 @@ def compareModelSpecies(model1, model2):
     uniqueSpecies2 = []
     
     for spec2 in model2.species:
-        for spec1 in uniqueSpecies1:
+        for spec1 in uniqueSpecies1[:]: # make a copy so you don't remove from the list you are iterating over
             if spec1.isIsomorphic(spec2):
                 commonSpecies.append([spec1, spec2])
                 uniqueSpecies1.remove(spec1)
                 break
         else:
             uniqueSpecies2.append(spec2)
-
+    # Remove species in the mechanism that aren't identified (includes those called out as species
+    # but not used)        
+    for spec in uniqueSpecies1[:]: # make a copy so you don't remove from the list you are iterating over
+        if not len(spec.molecule):
+            uniqueSpecies1.remove(spec)
+            logging.warning("Removing species {!r} from model 1 because it has no molecule info".format(spec))
+    for spec in uniqueSpecies2[:]: # make a copy so you don't remove from the list you are iterating over
+        if not spec.molecule:
+            uniqueSpecies2.remove(spec)
+            logging.warning("Removing species {!r} from model 2 because it has no molecule info".format(spec))
     return commonSpecies, uniqueSpecies1, uniqueSpecies2
 
 def compareModelReactions(model1, model2):
@@ -111,14 +121,27 @@ def compareModelReactions(model1, model2):
     reactionList1 = model1.reactions[:]
     reactionList2 = model2.reactions[:]
     
+    # remove reactions that have an unidentified species
+    to_remove = []
+    for reactionList in (reactionList1, reactionList2):
+        for reaction in reactionList:
+            for side in (reaction.products, reaction.reactants):
+                for species in side:
+                    if not species.molecule:
+                        to_remove.append((reactionList,reaction))
+                        logging.warning("Removing reaction {!r} that had unidentified species {!r}".format(reaction, species))
+                        break
+    for reactionList, reaction in to_remove:
+        reactionList.remove(reaction)
+    
     commonReactions = []; uniqueReactions1 = []; uniqueReactions2 = []
     for rxn1 in reactionList1:
-        for rxn2 in reactionList2:
+        for rxn2 in reactionList2[:]: # make a copy so you don't remove from the list you are iterating over
             if rxn1.isIsomorphic(rxn2):
                 commonReactions.append([rxn1, rxn2])
-                # Remove species 2 from being chosen a second time.
-                # Let each species only appear only once in the diff comparison.
-                # Otherwise this miscounts number of species in model 2.
+                # Remove reaction 2 from being chosen a second time.
+                # Let each reaction only appear only once in the diff comparison.
+                # Otherwise this miscounts number of reactions in model 2.
                 reactionList2.remove(rxn2)
                 break
     for rxn1 in reactionList1:
