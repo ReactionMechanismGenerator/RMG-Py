@@ -46,8 +46,8 @@ from quantity import Quantity
 from data.base import Entry
 from data.kinetics import TemplateReaction, LibraryReaction
 from rmg.pdep import PDepReaction
-from rmgpy.pdep import LennardJones
 from rmgpy.molecule import Molecule
+from rmgpy.transport import TransportData
 
 __chemkin_reaction_count = None
     
@@ -631,7 +631,7 @@ def loadTransportFile(path, speciesDict):
                 label = line[0:16].strip()
                 data = line[16:].split()
                 species = speciesDict[label]
-                species.lennardJones = LennardJones(
+                species.transportData = TransportData(
                     sigma = (float(data[2]),'angstrom'),
                     epsilon = (float(data[1]),'K'),
                 )
@@ -1223,6 +1223,13 @@ def writeReactionString(reaction, javaLibrary = False):
 
 ################################################################################
 
+def writeTransportEntry(species, verbose = True):
+    """
+    Return a string representation of the reaction as used in a Chemkin file. Lists the 
+    """
+    
+################################################################################
+
 def writeKineticsEntry(reaction, speciesList, verbose = True, javaLibrary = False):
     """
     Return a string representation of the reaction as used in a Chemkin
@@ -1435,14 +1442,32 @@ def saveTransportFile(path, species):
     """
     Save a Chemkin transport properties file to `path` on disk containing the
     transport properties of the given list of `species`.
+    
+    The first 16 columns in each line of the database are reserved for the species name
+     (Presently CHEMKIN is programmed to allow no more than 16-character names.) 
+     Columns 17 through 80 are free-format, and they contain the molecular parameters for each species. They are, in order:
+    1. An index indicating whether the molecule has a monatomic, linear or nonlinear geometrical configuration.
+       If the index is 0, the molecule is a single atom. 
+       If the index is 1 the molecule is linear, and 
+       if it is 2, the molecule is nonlinear.
+    2. The Lennard-Jones potential well depth  $\epsilon / k_B$ in Kelvins.
+    3. The Lennard-Jones collision diameter $\sigma$in Angstroms.
+    4. The dipole moment $\mu$ in Debye. Note: a Debye is $10^{-18} cm^{3/2}erg^{1/2}$.
+    5. The polarizability $\alpha$ in cubic Angstroms.
+    6. The rotational relaxation collision number $Z_rot$ at 298K.
+    7. After the last number, a comment field can be enclosed in parenthesis.
+    (from the chemkin TRANSPORT manual)
     """
     with open(path, 'w') as f:
+        f.write("! {:15} {:8} {:9} {:9} {:9} {:9} {:9} {:9}\n".format('Species','Shape', 'LJ-depth', 'LJ-diam', 'DiplMom', 'Polzblty', 'RotRelaxNum','Data'))
+        f.write("! {:15} {:8} {:9} {:9} {:9} {:9} {:9} {:9}\n".format('Name','Index', 'epsilon/k_B', 'sigma', 'mu', 'alpha', 'Zrot','Source'))
         for spec in species:
-            print spec.lennardJones
-            if (not spec.lennardJones or not spec.dipoleMoment or
-                not spec.polarizability or not spec.Zrot or 
+            print spec.transportData
+            if (not spec.transportData or
                 len(spec.molecule) == 0):
-                continue
+                missingData = True
+            else:
+                missingData = False
             
             label = getSpeciesIdentifier(spec)
             
@@ -1454,15 +1479,19 @@ def saveTransportFile(path, species):
             else:
                 shapeIndex = 2
             
-            f.write('{0:19} {1:d} {2:9.3f} {3:9.3f} {4:9.3f} {5:9.3f} {6:9.3f}\n'.format(
-                label,
-                shapeIndex,
-                spec.lennardJones.epsilon.value_si / constants.R,
-                spec.lennardJones.sigma.value_si * 1e10,
-                spec.dipoleMoment.value_si * constants.c * 1e21,
-                spec.polarizability.value_si * 1e30,
-                spec.Zrot.value_si,
-            ))
+            if missingData:
+                f.write('! {:19s} {!r}\n'.format(label, spec.transportData))
+            else:
+                f.write('{0:19} {1:d}   {2:9.3f} {3:9.3f} {4:9.3f} {5:9.3f} {6:9.3f}    ! {7:s}\n'.format(
+                    label,
+                    shapeIndex,
+                    spec.transportData.epsilon.value_si / constants.R,
+                    spec.transportData.sigma.value_si * 1e10,
+                    spec.transportData.dipoleMoment.value_si * constants.c * 1e21,
+                    spec.transportData.polarizability.value_si * 1e30,
+                    (spec.Zrot.value_si if spec.Zrot else 0),
+                    spec.transportData.comment,
+                ))
 
 def saveChemkinFile(path, species, reactions, verbose = True, checkForDuplicates=True):
     """
@@ -1502,6 +1531,9 @@ def saveChemkinFile(path, species, reactions, verbose = True, checkForDuplicates
 
     ## Transport section would go here
     #f.write('TRANSPORT\n')
+    #for spec in sorted_species:
+        #f.write(writeTransportEntry(spec)
+        #f.write('\n')
     #f.write('END\n\n')
 
     # Reactions section

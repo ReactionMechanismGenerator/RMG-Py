@@ -44,13 +44,14 @@ import rmgpy.constants as constants
 from rmgpy.quantity import Quantity
 import rmgpy.species
 from rmgpy.thermo import Wilhoit, NASA, ThermoData
-from rmgpy.pdep import LennardJones, SingleExponentialDown
+from rmgpy.pdep import SingleExponentialDown
 from rmgpy.statmech import  Conformer
 
 from rmgpy.data.base import Entry
 from rmgpy.data.thermo import *
 from rmgpy.data.kinetics import *
 from rmgpy.data.statmech import *
+from rmgpy.transport import TransportData
 import rmgpy.data.rmg
 
 #needed to call the generate3dTS method in Reaction class
@@ -65,17 +66,17 @@ from pdep import PDepReaction, PDepNetwork, PressureDependenceError
 class Species(rmgpy.species.Species):
 
     def __init__(self, index=-1, label='', thermo=None, conformer=None, 
-                 molecule=None, lennardJones=None, molecularWeight=None, 
+                 molecule=None, transportData=None, molecularWeight=None, 
                  dipoleMoment=None, polarizability=None, Zrot=None, 
                  energyTransferModel=None, reactive=True, coreSizeAtCreation=0):
-        rmgpy.species.Species.__init__(self, index, label, thermo, conformer, molecule, lennardJones, molecularWeight, dipoleMoment, polarizability, Zrot, energyTransferModel, reactive)
+        rmgpy.species.Species.__init__(self, index, label, thermo, conformer, molecule, transportData, molecularWeight, dipoleMoment, polarizability, Zrot, energyTransferModel, reactive)
         self.coreSizeAtCreation = coreSizeAtCreation
 
     def __reduce__(self):
         """
         A helper function used when pickling an object.
         """
-        return (Species, (self.index, self.label, self.thermo, self.conformer, self.molecule, self.lennardJones, self.molecularWeight, self.dipoleMoment, self.polarizability, self.Zrot, self.energyTransferModel, self.reactive, self.coreSizeAtCreation),)
+        return (Species, (self.index, self.label, self.thermo, self.conformer, self.molecule, self.transportData, self.molecularWeight, self.dipoleMoment, self.polarizability, self.Zrot, self.energyTransferModel, self.reactive, self.coreSizeAtCreation),)
 
     def generateThermoData(self, database, thermoClass=NASA, quantumMechanics=None):
         """
@@ -218,32 +219,35 @@ class Species(rmgpy.species.Species):
         self.conformer.modes = conformer.modes
         self.conformer.spinMultiplicity = conformer.spinMultiplicity
             
-    def generateLennardJonesParameters(self):
+    def generateTransportData(self, database):
         """
-        Generate the Lennard-Jones parameters for the species. This "algorithm"
-        is *very* much in need of improvement.
+        Generate the transportData parameters for the species.
         """
-        count = sum([1 for atom in self.molecule[0].vertices if atom.isNonHydrogen()])
-        self.lennardJones = LennardJones()
+        #count = sum([1 for atom in self.molecule[0].vertices if atom.isNonHydrogen()])
+        self.transportData = database.transport.getTransportProperties(self)[0]
+        
 
+        #previous method for calculating transport properties
+        '''
         if count == 1:
-            self.lennardJones.sigma = (3.758e-10,"m")
-            self.lennardJones.epsilon = (148.6,"K")
+            self.transportData.sigma = (3.758e-10,"m")
+            self.transportData.epsilon = (148.6,"K")
         elif count == 2:
-            self.lennardJones.sigma = (4.443e-10,"m")
-            self.lennardJones.epsilon = (110.7,"K")
+            self.transportData.sigma = (4.443e-10,"m")
+            self.transportData.epsilon = (110.7,"K")
         elif count == 3:
-            self.lennardJones.sigma = (5.118e-10,"m")
-            self.lennardJones.epsilon = (237.1,"K")
+            self.transportData.sigma = (5.118e-10,"m")
+            self.transportData.epsilon = (237.1,"K")
         elif count == 4:
-            self.lennardJones.sigma = (4.687e-10,"m")
-            self.lennardJones.epsilon = (531.4,"K")
+            self.transportData.sigma = (4.687e-10,"m")
+            self.transportData.epsilon = (531.4,"K")
         elif count == 5:
-            self.lennardJones.sigma = (5.784e-10,"m")
-            self.lennardJones.epsilon = (341.1,"K")
+            self.transportData.sigma = (5.784e-10,"m")
+            self.transportData.epsilon = (341.1,"K")
         else:
-            self.lennardJones.sigma = (5.949e-10,"m")
-            self.lennardJones.epsilon = (399.3,"K")
+            self.transportData.sigma = (5.949e-10,"m")
+            self.transportData.epsilon = (399.3,"K")
+        '''
     
     def generateEnergyTransferModel(self):
         """
@@ -384,7 +388,7 @@ class CoreEdgeReactionModel:
         spec.coreSizeAtCreation = len(self.core.species)
         spec.generateResonanceIsomers()
         spec.molecularWeight = Quantity(spec.molecule[0].getMolecularWeight()*1000.,"amu")
-        spec.generateLennardJonesParameters()
+        # spec.generateTransportData(database)
         spec.generateEnergyTransferModel()
         formula = molecule.getFormula()
         if formula in self.speciesDict:
@@ -696,6 +700,7 @@ class CoreEdgeReactionModel:
         logging.info('Generating thermodynamics for new species...')
         for spec in newSpeciesList:
             spec.generateThermoData(database, quantumMechanics=self.quantumMechanics)
+            spec.generateTransportData(database)
         
         # Generate kinetics of new reactions
         logging.info('Generating kinetics for new reactions...')
@@ -1621,15 +1626,17 @@ class CoreEdgeReactionModel:
         markDuplicateReactions(rxnList)
         
         
-    def saveChemkinFile(self, path, verbose_path, dictionaryPath=None):
+    def saveChemkinFile(self, path, verbose_path, dictionaryPath=None, transportPath=None):
         """
         Save a Chemkin file for the current model core as well as any desired output
         species and reactions to `path`.
         """
-        from rmgpy.chemkin import saveChemkinFile, saveSpeciesDictionary
+        from rmgpy.chemkin import saveChemkinFile, saveSpeciesDictionary, saveTransportFile
         speciesList = self.core.species + self.outputSpeciesList
         rxnList = self.core.reactions + self.outputReactionList
         saveChemkinFile(path, speciesList, rxnList, verbose = False, checkForDuplicates=False) # We should already have marked everything as duplicates by now
         saveChemkinFile(verbose_path, speciesList, rxnList, verbose = True, checkForDuplicates=False)
         if dictionaryPath:
             saveSpeciesDictionary(dictionaryPath, speciesList)
+        if transportPath:
+            saveTransportFile(transportPath, speciesList)
