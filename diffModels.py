@@ -293,7 +293,7 @@ if __name__ == '__main__':
         print '    {0!s}'.format(rxn)
     
     commonSpecies.sort(key = enthalpyDiff)
-    commonReactions.sort(key = kineticsDiff)
+    #commonReactions.sort(key = kineticsDiff)
 
     print "Saving output in diff.html"
     outputPath = 'diff.html'
