@@ -187,18 +187,12 @@ Test the AtomType.isSpecificCaseOf() method. ... ok
 Test that we can reconstruct an AtomType object from its repr() ... ok
 Test that an AtomType object can be successfully pickled and ... ok
 Test the AtomType.setActions() method. ... ok
-Test that getAtomType() returns appropriate carbon atom types. ... [HH:MM:SS] Explicit valence for atom # 2 O, 3, is greater than permitted
-ERROR
-Test that getAtomType() returns the hydrogen atom type. ... [HH:MM:SS] Explicit valence for atom # 2 O, 3, is greater than permitted
-ERROR
-Test that getAtomType() returns appropriate NoneTypes. ... [HH:MM:SS] Explicit valence for atom # 2 O, 3, is greater than permitted
-ERROR
-Test that getAtomType() returns appropriate oxygen atom types. ... [HH:MM:SS] Explicit valence for atom # 2 O, 3, is greater than permitted
-ERROR
-Test that getAtomType() returns appropriate silicon atom types. ... [HH:MM:SS] Explicit valence for atom # 2 O, 3, is greater than permitted
-ERROR
-Test that getAtomType() returns appropriate sulfur atom types. ... [HH:MM:SS] Explicit valence for atom # 2 O, 3, is greater than permitted
-ERROR
+Test that getAtomType() returns appropriate carbon atom types. ... ok
+Test that getAtomType() returns the hydrogen atom type. ... ok
+Test that getAtomType() returns appropriate NoneTypes. ... ok
+Test that getAtomType() returns appropriate oxygen atom types. ... ok
+Test that getAtomType() returns appropriate silicon atom types. ... ok
+Test that getAtomType() returns appropriate sulfur atom types. ... ok
 Test the rmgpy.elements.getElement() method. ... ok
 Test that we can reconstruct an Element object from its repr() ... ok
 Test that an Element object can be successfully pickled and ... ok
@@ -717,7 +711,7 @@ Test that a TransportData object can be reconstructed from its repr() output wit
 Test that the TransportData rotrelaxcollnum property was properly set. ... ok
 Test that the TransportData shapeIndex property was properly set. ... ok
 Test that the TransportData sigma property was properly set. ... ok
-testJoback (rmgpy.transportDataTest.TestTransportDatabase) ... FAIL
+testJoback (rmgpy.transportDataTest.TestTransportDatabase) ... ok
 
 ======================================================================
 ERROR: Test that the new ThermoDatabase generates appropriate thermo data.
@@ -750,66 +744,6 @@ Traceback (most recent call last):
   File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/measure/input.py", line 41, in <module>
     from rmgpy.species import Species, TransitionState, LennardJones
 ImportError: cannot import name LennardJones
-
-======================================================================
-ERROR: Test that getAtomType() returns appropriate carbon atom types.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/atomtypeTest.py", line 110, in setUp
-    self.mol1 = Molecule().fromSMILES('COO=CC=C=CC#C')
-  File "molecule.py", line 932, in rmgpy.molecule.molecule.Molecule.fromSMILES (build/pyrex/rmgpy/molecule/molecule.c:15075)
-  File "molecule.py", line 947, in rmgpy.molecule.molecule.Molecule.fromSMILES (build/pyrex/rmgpy/molecule/molecule.c:14996)
-ValueError: Could not interpret the SMILES string 'COO=CC=C=CC#C'
-
-======================================================================
-ERROR: Test that getAtomType() returns the hydrogen atom type.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/atomtypeTest.py", line 110, in setUp
-    self.mol1 = Molecule().fromSMILES('COO=CC=C=CC#C')
-  File "molecule.py", line 932, in rmgpy.molecule.molecule.Molecule.fromSMILES (build/pyrex/rmgpy/molecule/molecule.c:15075)
-  File "molecule.py", line 947, in rmgpy.molecule.molecule.Molecule.fromSMILES (build/pyrex/rmgpy/molecule/molecule.c:14996)
-ValueError: Could not interpret the SMILES string 'COO=CC=C=CC#C'
-
-======================================================================
-ERROR: Test that getAtomType() returns appropriate NoneTypes.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/atomtypeTest.py", line 110, in setUp
-    self.mol1 = Molecule().fromSMILES('COO=CC=C=CC#C')
-  File "molecule.py", line 932, in rmgpy.molecule.molecule.Molecule.fromSMILES (build/pyrex/rmgpy/molecule/molecule.c:15075)
-  File "molecule.py", line 947, in rmgpy.molecule.molecule.Molecule.fromSMILES (build/pyrex/rmgpy/molecule/molecule.c:14996)
-ValueError: Could not interpret the SMILES string 'COO=CC=C=CC#C'
-
-======================================================================
-ERROR: Test that getAtomType() returns appropriate oxygen atom types.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/atomtypeTest.py", line 110, in setUp
-    self.mol1 = Molecule().fromSMILES('COO=CC=C=CC#C')
-  File "molecule.py", line 932, in rmgpy.molecule.molecule.Molecule.fromSMILES (build/pyrex/rmgpy/molecule/molecule.c:15075)
-  File "molecule.py", line 947, in rmgpy.molecule.molecule.Molecule.fromSMILES (build/pyrex/rmgpy/molecule/molecule.c:14996)
-ValueError: Could not interpret the SMILES string 'COO=CC=C=CC#C'
-
-======================================================================
-ERROR: Test that getAtomType() returns appropriate silicon atom types.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/atomtypeTest.py", line 110, in setUp
-    self.mol1 = Molecule().fromSMILES('COO=CC=C=CC#C')
-  File "molecule.py", line 932, in rmgpy.molecule.molecule.Molecule.fromSMILES (build/pyrex/rmgpy/molecule/molecule.c:15075)
-  File "molecule.py", line 947, in rmgpy.molecule.molecule.Molecule.fromSMILES (build/pyrex/rmgpy/molecule/molecule.c:14996)
-ValueError: Could not interpret the SMILES string 'COO=CC=C=CC#C'
-
-======================================================================
-ERROR: Test that getAtomType() returns appropriate sulfur atom types.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/atomtypeTest.py", line 110, in setUp
-    self.mol1 = Molecule().fromSMILES('COO=CC=C=CC#C')
-  File "molecule.py", line 932, in rmgpy.molecule.molecule.Molecule.fromSMILES (build/pyrex/rmgpy/molecule/molecule.c:15075)
-  File "molecule.py", line 947, in rmgpy.molecule.molecule.Molecule.fromSMILES (build/pyrex/rmgpy/molecule/molecule.c:14996)
-ValueError: Could not interpret the SMILES string 'COO=CC=C=CC#C'
 
 ======================================================================
 ERROR: Test that the network `bathGas` property was properly set.
@@ -1036,23 +970,6 @@ Traceback (most recent call last):
     self.assertAlmostEqual(omega / 3.13010e10, 1.0, 4)
 AssertionError: 0.37614562878388352 != 1.0 within 4 places
 
-======================================================================
-FAIL: testJoback (rmgpy.transportDataTest.TestTransportDatabase)
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/transportDataTest.py", line 258, in testJoback
-    print self.assertTrue(transportData.comment == comment)
-AssertionError: False is not true
--------------------- >> begin captured stdout << ---------------------
-acetone TransportData(shapeIndex=2, epsilon=(3204.45,'J/mol'), sigma=(5.36421,'angstroms'), dipoleMoment=(0,'C*m'), polarizability=(0,'angstroms^3'), rotrelaxcollnum=0, comment="""Epsilon & sigma estimated with Tc=500.53 K, Pc=47.11 bar (from Joback method)""")
-
---------------------- >> end captured stdout << ----------------------
--------------------- >> begin captured logging << --------------------
-root: INFO: Loading transport library from GRI-Mech.py in /export/thishost/comocheng/build/RMG-database/input/transport/libraries...
-root: INFO: Loading transport library from PrimaryTransportLibrary.py in /export/thishost/comocheng/build/RMG-database/input/transport/libraries...
-root: INFO: Loading transport group database from /export/thishost/comocheng/build/RMG-database/input/transport/groups...
---------------------- >> end captured logging << ---------------------
-
 Name                             Stmts   Miss Branch BrMiss  Cover   Missing
 ----------------------------------------------------------------------------
 rmgpy                               55     17     18     10    63%   71, 79-82, 104-107, 113, 115, 119, 131-135, 155
@@ -1082,7 +999,7 @@ rmgpy.data.rmg                      72     53      6      6    24%   55-64, 84-9
 rmgpy.data.statmech                295    244    103    103    13%   48-91, 98-101, 108-116, 127, 140, 156, 166, 179, 195, 202, 209, 220, 233-241, 257, 264, 271, 278-285, 294-309, 319-355, 364-445, 455-467, 473-479, 485-488, 495-500, 507, 514-526, 533-534, 541-545, 552-553, 560-562, 569-570, 578-594, 611-624, 637-645, 652-656, 664-667, 676, 689-690, 698-705
 rmgpy.data.statmechfit             248    213     70     70    11%   95-137, 151-193, 207-244, 260-307, 316-319, 327-330, 338-343, 352-355, 364-366, 378-381, 384-407, 419-422, 425-457, 469-472, 475-506
 rmgpy.data.thermo                  436    185    134     66    56%   56-123, 130-148, 187-199, 205, 244, 251, 301, 309, 342-348, 354-357, 367, 397, 419-423, 430-432, 439-441, 448-455, 545-556, 566-609, 628-629, 655-659, 669-670, 692-696, 715-718, 720-723, 737-743, 810-811, 833-837, 881-885, 895, 907-913, 924-928, 947, 977, 979
-rmgpy.data.transport               212     80     56     38    56%   54-69, 119, 126, 133, 155, 174, 181, 188, 209-214, 220-222, 269-281, 289-301, 312-316, 343, 376-415, 434, 437-441, 468, 476, 478, 482-486
+rmgpy.data.transport               212     79     56     37    57%   54-69, 119, 126, 133, 155, 174, 181, 188, 209-214, 220-222, 269-281, 289-301, 312-316, 343, 376-415, 437-441, 468, 476, 478, 482-486
 rmgpy.display                       11      3      0      0    73%   37, 41-43
 rmgpy.kinetics                       6      0      0      0   100%   
 rmgpy.measure                        0      0      0      0   100%   
@@ -1116,9 +1033,9 @@ rmgpy.statmech                       5      0      0      0   100%
 rmgpy.thermo                         3      0      0      0   100%   
 rmgpy.transport                     25      3      0      0    88%   52-53, 59
 ----------------------------------------------------------------------------
-TOTAL                            12922  10751   5424   5059    14%   
+TOTAL                            12922  10750   5424   5058    14%   
 ----------------------------------------------------------------------
 Ran 712 tests.
 
-FAILED (errors=17, failures=17)
+FAILED (errors=11, failures=16)
 make: *** [test] Error 1
