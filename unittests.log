@@ -1,4 +1,4 @@
-nosetests --all-modules --verbose --with-coverage --cover-inclusive --cover-package=rmgpy --cover-erase --cover-html --cover-html-dir=testing/coverage rmgpy
+nosetests --nocapture --nologcapture --all-modules --verbose --with-coverage --cover-inclusive --cover-package=rmgpy --cover-erase --cover-html --cover-html-dir=testing/coverage rmgpy
 Uses a Gaussian03 log file for ethylene (C2H4) to test that its ... FAIL
 Uses a Gaussian03 log file for ethylene (C2H4) to test that its ... FAIL
 Uses a Gaussian03 log file for oxygen (O2) to test that its ... ok
@@ -309,7 +309,11 @@ Test the Molecule.getLabeledAtoms() method. ... ok
 Test the Molecule.getLabeledAtom() method. ... ok
 Test the Molecule.getLabeledAtoms() method. ... ok
 Test the Molecule.getMolecularWeight() method. ... ok
-Test that InChI Key generation is working properly. ... [HH:MM:SS] WARNING: Omitted undefined stereo
+Test that InChI Key generation is working properly. ... Cd
+Cs
+Cd
+Cd
+[HH:MM:SS] WARNING: Omitted undefined stereo
 ok
 Test the Molecule.isInCycle() method with ethane. ... ok
 Test the Molecule.isInCycle() method with ethane. ... ok
@@ -720,16 +724,6 @@ Traceback (most recent call last):
   File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermoTest.py", line 68, in testNewThermoGeneration
     thermoData = self.database.getThermoDataFromGroups(Species(molecule=[species.molecule[0]]))[0]
 TypeError: 'rmgpy.thermo.thermodata.ThermoData' object does not support indexing
--------------------- >> begin captured logging << --------------------
-root: INFO: Loading thermodynamics library from USC-Mech-ii.py in /export/thishost/comocheng/build/RMG-database/input/thermo/libraries...
-root: INFO: Loading thermodynamics library from DFT_QCI_thermo.py in /export/thishost/comocheng/build/RMG-database/input/thermo/libraries...
-root: INFO: Loading thermodynamics library from primaryThermoLibrary.py in /export/thishost/comocheng/build/RMG-database/input/thermo/libraries...
-root: INFO: Loading thermodynamics library from SulfurLibrary.py in /export/thishost/comocheng/build/RMG-database/input/thermo/libraries...
-root: INFO: Loading thermodynamics library from KlippensteinH2O2.py in /export/thishost/comocheng/build/RMG-database/input/thermo/libraries...
-root: INFO: Loading thermodynamics library from CBS_QB3_1dHR.py in /export/thishost/comocheng/build/RMG-database/input/thermo/libraries...
-root: INFO: Loading thermodynamics library from GRI-Mech3.0.py in /export/thishost/comocheng/build/RMG-database/input/thermo/libraries...
-root: INFO: Loading thermodynamics group database from /export/thishost/comocheng/build/RMG-database/input/thermo/groups...
---------------------- >> end captured logging << ---------------------
 
 ======================================================================
 ERROR: Failure: ImportError (cannot import name LennardJones)
@@ -782,16 +776,6 @@ Traceback (most recent call last):
   File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermoTest.py", line 105, in testOldThermoGeneration
     self.assertEqual(molecule.calculateSymmetryNumber(), symm)
 AssertionError: 3 != 12
--------------------- >> begin captured logging << --------------------
-root: INFO: Loading thermodynamics library from USC-Mech-ii.py in /export/thishost/comocheng/build/RMG-database/input/thermo/libraries...
-root: INFO: Loading thermodynamics library from DFT_QCI_thermo.py in /export/thishost/comocheng/build/RMG-database/input/thermo/libraries...
-root: INFO: Loading thermodynamics library from primaryThermoLibrary.py in /export/thishost/comocheng/build/RMG-database/input/thermo/libraries...
-root: INFO: Loading thermodynamics library from SulfurLibrary.py in /export/thishost/comocheng/build/RMG-database/input/thermo/libraries...
-root: INFO: Loading thermodynamics library from KlippensteinH2O2.py in /export/thishost/comocheng/build/RMG-database/input/thermo/libraries...
-root: INFO: Loading thermodynamics library from CBS_QB3_1dHR.py in /export/thishost/comocheng/build/RMG-database/input/thermo/libraries...
-root: INFO: Loading thermodynamics library from GRI-Mech3.0.py in /export/thishost/comocheng/build/RMG-database/input/thermo/libraries...
-root: INFO: Loading thermodynamics group database from /export/thishost/comocheng/build/RMG-database/input/thermo/groups...
---------------------- >> end captured logging << ---------------------
 
 ======================================================================
 FAIL: Test the GroupAtom.applyAction() method for a GAIN_RADICAL action.
@@ -816,10 +800,6 @@ Traceback (most recent call last):
   File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/moleculeTest.py", line 890, in testAromaticBenzene
     self.assertTrue(Molecule().fromSMILES('C1=CC=CC=C1').isAromatic())
 AssertionError: False is not true
--------------------- >> begin captured stdout << ---------------------
-Cd
-
---------------------- >> end captured stdout << ----------------------
 
 ======================================================================
 FAIL: Test the Molecule.isAromatic() method.
@@ -828,11 +808,6 @@ Traceback (most recent call last):
   File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/moleculeTest.py", line 896, in testAromaticNaphthalene
     self.assertTrue(Molecule().fromSMILES('C12C(C=CC=C1)=CC=CC=2').isAromatic())
 AssertionError: False is not true
--------------------- >> begin captured stdout << ---------------------
-Cd
-Cd
-
---------------------- >> end captured stdout << ----------------------
 
 ======================================================================
 FAIL: Test the Molecule.countInternalRotors() method for dimethylacetylene.
@@ -974,4 +949,31 @@ TOTAL                            12928  10658   5424   5037    14%
 Ran 712 tests.
 
 FAILED (errors=3, failures=16)
+Solver jacobian
+[[ -4.85410044 -12.94297143   3.2392154   -7.55039077   3.23477055]
+ [ -4.85410044 -12.94297143   3.2392154   -7.55039077   3.23477055]
+ [  9.70820089  25.88594287  -6.47843081  15.10078155  -6.46954109]
+ [ -4.85410044 -12.94297143   3.2392154   -7.55039077   3.23477055]
+ [ -0.          -0.          -0.          -0.          -0.        ]]
+Numerical jacobian
+[[ -4.85408912 -12.94294393   3.23921055  -7.55037406   3.23476569]
+ [ -4.85408912 -12.94294393   3.23921055  -7.55037406   3.23476569]
+ [  9.70817824  25.88588786  -6.47842111  15.10074811  -6.46953139]
+ [ -4.85408912 -12.94294393   3.23921055  -7.55037406   3.23476569]
+ [  0.           0.           0.           0.           0.        ]]
+Solver d(dy/dt)/dk
+[[  0.00000000e+00  -2.07721126e+04   0.00000000e+00]
+ [  6.70497152e-01   2.07721126e+04   2.58805545e+13]
+ [ -3.35248576e-01   2.07721126e+04   1.29402773e+13]
+ [  0.00000000e+00  -2.07721126e+04  -2.58805545e+13]
+ [  0.00000000e+00   0.00000000e+00  -1.29402773e+13]]
+Numerical d(dy/dt)/dk
+[[  0.00000000e+00  -2.07721126e+04   0.00000000e+00]
+ [  6.70497092e-01   2.07736042e+04   2.58805545e+13]
+ [ -3.35248546e-01   2.07727004e+04   1.29402773e+13]
+ [  0.00000000e+00  -2.07717967e+04  -2.58805545e+13]
+ [  0.00000000e+00   0.00000000e+00  -1.29402773e+13]]
+[[ 0.49713952 -0.61011423 -0.61693835]
+ [ 0.78735968  0.01845445  0.61621763]
+ [ 0.36457789  0.79209851 -0.48955379]]
 make: *** [test] Error 1
