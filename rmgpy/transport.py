@@ -3,7 +3,7 @@ Created on Feb 26, 2013
 
 @author: Jake
 '''
-
+from rmgpy import quantity
 from rmgpy.quantity import DipoleMoment, Energy, Length, Volume
 import rmgpy.constants as constants
 import numpy
@@ -28,12 +28,18 @@ class TransportData:
 
     def __init__(self, shapeIndex=None, epsilon=None, sigma=None, dipoleMoment=None, polarizability=None, rotrelaxcollnum=None, comment = ''):
         self.shapeIndex = shapeIndex
-        self.epsilon = Energy(epsilon)
+        try:
+            self.epsilon = Energy(epsilon)
+        except quantity.QuantityError:
+                self.epsilon = quantity.Temperature(epsilon)
+                self.epsilon.value_si *= constants.R
+                self.epsilon.units = 'kJ/mol'
         self.sigma = Length(sigma)
         self.dipoleMoment = DipoleMoment(dipoleMoment)
         self.polarizability = Volume(polarizability)
         self.rotrelaxcollnum = rotrelaxcollnum
         self.comment = comment
+
     
     def __repr__(self):
         """
