@@ -717,7 +717,7 @@ Test that a TransportData object can be reconstructed from its repr() output wit
 Test that the TransportData rotrelaxcollnum property was properly set. ... ok
 Test that the TransportData shapeIndex property was properly set. ... ok
 Test that the TransportData sigma property was properly set. ... ok
-testJoback (rmgpy.transportDataTest.TestTransportDatabase) ... ERROR
+testJoback (rmgpy.transportDataTest.TestTransportDatabase) ... FAIL
 
 ======================================================================
 ERROR: Test that the new ThermoDatabase generates appropriate thermo data.
@@ -890,23 +890,6 @@ Traceback (most recent call last):
 ImportError: cannot import name LennardJones
 
 ======================================================================
-ERROR: testJoback (rmgpy.transportDataTest.TestTransportDatabase)
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/transportDataTest.py", line 257, in testJoback
-    print self.assertTrue(transportData.comment == comment)
-AttributeError: 'tuple' object has no attribute 'comment'
--------------------- >> begin captured stdout << ---------------------
-acetone (TransportData(shapeIndex=2, epsilon=(3204.45,'J/mol'), sigma=(5.36421,'angstroms'), dipoleMoment=(0,'C*m'), polarizability=(0,'angstroms^3'), rotrelaxcollnum=0, comment="""Epsilon & sigma estimated with Tc=500.53 K, Pc=47.11 bar (from Joback method)"""), None, None)
-
---------------------- >> end captured stdout << ----------------------
--------------------- >> begin captured logging << --------------------
-root: INFO: Loading transport library from GRI-Mech.py in /export/thishost/comocheng/build/RMG-database/input/transport/libraries...
-root: INFO: Loading transport library from PrimaryTransportLibrary.py in /export/thishost/comocheng/build/RMG-database/input/transport/libraries...
-root: INFO: Loading transport group database from /export/thishost/comocheng/build/RMG-database/input/transport/groups...
---------------------- >> end captured logging << ---------------------
-
-======================================================================
 FAIL: Uses a Gaussian03 log file for ethylene (C2H4) to test that its
 ----------------------------------------------------------------------
 Traceback (most recent call last):
@@ -1053,9 +1036,26 @@ Traceback (most recent call last):
     self.assertAlmostEqual(omega / 3.13010e10, 1.0, 4)
 AssertionError: 0.37614562878388352 != 1.0 within 4 places
 
+======================================================================
+FAIL: testJoback (rmgpy.transportDataTest.TestTransportDatabase)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/transportDataTest.py", line 258, in testJoback
+    print self.assertTrue(transportData.comment == comment)
+AssertionError: False is not true
+-------------------- >> begin captured stdout << ---------------------
+acetone TransportData(shapeIndex=2, epsilon=(3204.45,'J/mol'), sigma=(5.36421,'angstroms'), dipoleMoment=(0,'C*m'), polarizability=(0,'angstroms^3'), rotrelaxcollnum=0, comment="""Epsilon & sigma estimated with Tc=500.53 K, Pc=47.11 bar (from Joback method)""")
+
+--------------------- >> end captured stdout << ----------------------
+-------------------- >> begin captured logging << --------------------
+root: INFO: Loading transport library from GRI-Mech.py in /export/thishost/comocheng/build/RMG-database/input/transport/libraries...
+root: INFO: Loading transport library from PrimaryTransportLibrary.py in /export/thishost/comocheng/build/RMG-database/input/transport/libraries...
+root: INFO: Loading transport group database from /export/thishost/comocheng/build/RMG-database/input/transport/groups...
+--------------------- >> end captured logging << ---------------------
+
 Name                             Stmts   Miss Branch BrMiss  Cover   Missing
 ----------------------------------------------------------------------------
-rmgpy                               46     12     16      8    68%   70, 93-96, 102, 104, 108, 119-122, 141
+rmgpy                               55     17     18     10    63%   71, 79-82, 104-107, 113, 115, 119, 131-135, 155
 rmgpy.cantherm                       5      0      0      0   100%   
 rmgpy.cantherm.gaussian            217    123    112     68    42%   57-72, 85-111, 120-162, 299, 303, 310-337, 345-396, 404-420
 rmgpy.cantherm.geometry             74     25     14      4    67%   93, 102-103, 130-148, 156-159, 191, 193
@@ -1116,9 +1116,9 @@ rmgpy.statmech                       5      0      0      0   100%
 rmgpy.thermo                         3      0      0      0   100%   
 rmgpy.transport                     25      3      0      0    88%   52-53, 59
 ----------------------------------------------------------------------------
-TOTAL                            12913  10746   5422   5057    14%   
+TOTAL                            12922  10751   5424   5059    14%   
 ----------------------------------------------------------------------
 Ran 712 tests.
 
-FAILED (errors=18, failures=16)
+FAILED (errors=17, failures=17)
 make: *** [test] Error 1
