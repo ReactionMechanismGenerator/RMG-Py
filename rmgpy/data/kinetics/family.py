@@ -1081,11 +1081,10 @@ class KineticsFamily(Database):
         reactants are stored in the reaction family template. The `maps`
         parameter is a list of mappings of the top-level tree node of each
         *template* reactant to the corresponding *structure*. This function
-        returns the product structures.
+        returns a list of the product structures.
         """
-
-        if not forward: template = self.reverseTemplate
-        else:           template = self.forwardTemplate
+        
+        productStructuresList = []
 
         # Clear any previous atom labeling from all reactant structures
         for struct in reactantStructures: struct.clearLabeledAtoms()
@@ -1098,7 +1097,8 @@ class KineticsFamily(Database):
         # Check that reactant structures are allowed in this family
         # If not, then stop
         for struct in reactantStructures:
-            if self.isMoleculeForbidden(struct): raise ForbiddenStructureException()
+            if self.isMoleculeForbidden(struct) and forward:
+                raise ForbiddenStructureException()
 
         # Generate the product structures by applying the forward reaction recipe
         try:
@@ -1146,14 +1146,49 @@ class KineticsFamily(Database):
                     raise ForbiddenStructureException()
                 if (struct.getNumberOfRadicalElectrons() > maxRadicals) and (len(struct.atoms) - H < 1):
                     raise ForbiddenStructureException()
-
+        
+        # Generate other possible electronic states
+        electronicStrucutresList1 = []
+        electronicStrucutresList2 = []
+        struct01 = productStructures[0]
+        atoms01 = struct01.getLabeledAtoms()
+        for label01 in atoms01:
+            spin1 = struct01.getLabeledAtom(label01).spinMultiplicity
+            while spin1 > 0.1:
+                struct1 = deepcopy(productStructures[0])
+                struct1.getLabeledAtom(label01).setSpinMultiplicity(spin1)
+                struct1.updateAtomTypes()
+                electronicStrucutresList1.append(struct1)
+                spin1 = spin1 - 2
+        
+        if len(productStructures) == 2:
+            struct02 = productStructures[1]
+            atoms02 = struct02.getLabeledAtoms()
+            for label02 in atoms02:
+                spin2 = struct02.getLabeledAtom(label02).spinMultiplicity
+                while spin2 > 0.1:
+                    struct2 = deepcopy(productStructures[1])
+                    struct2.getLabeledAtom(label02).setSpinMultiplicity(spin2)
+                    struct2.updateAtomTypes()
+                    electronicStrucutresList2.append(struct2)
+                    spin2 = spin2 - 2
+        
         # Check that product structures are allowed in this family
         # If not, then stop
+        forbiddenStructure = False
         for struct in productStructures:
-            struct.updateAtomTypes()
-            if self.isMoleculeForbidden(struct): raise ForbiddenStructureException()
-
-        return productStructures
+            if self.isMoleculeForbidden(struct):
+                forbiddenStructure = True
+        
+        if not forbiddenStructure:
+            productStructuresList.append(productStructures)
+            
+        for struct1 in electronicStrucutresList1:
+            for struct2 in electronicStrucutresList2:
+                if not self.isMoleculeForbidden(struct1) and not self.isMoleculeForbidden(struct2):
+                    productStructuresList.append([struct1,struct2])
+                    
+        return productStructuresList
 
     def isMoleculeForbidden(self, molecule):
         """
@@ -1179,9 +1214,9 @@ class KineticsFamily(Database):
             if reactants[0].isIsomorphic(products[0]):
                 return None
         elif len(reactants) == len(products) == 2:
-            if reactants[0].isIsomorphic(products[0]) and reactants[1].isIsomorphic(products[1]) and reactants[0].getFormula() != ('CH2' or 'CH') and reactants[1].getFormula() != ('CH2' or 'CH'):
+            if reactants[0].isIsomorphic(products[0]) and reactants[1].isIsomorphic(products[1]):
                 return None
-            elif reactants[0].isIsomorphic(products[1]) and reactants[1].isIsomorphic(products[0]) and reactants[0].getFormula() != ('CH2' or 'CH') and reactants[1].getFormula() != ('CH2' or 'CH'):
+            elif reactants[0].isIsomorphic(products[1]) and reactants[1].isIsomorphic(products[0]):
                 return None
 
         # Create and return template reaction object
@@ -1313,13 +1348,14 @@ class KineticsFamily(Database):
                 for map in mappings:
                     reactantStructures = [molecule]
                     try:
-                        productStructures = self.__generateProductStructures(reactantStructures, [map], forward, **options)
+                        productStructuresList = self.__generateProductStructures(reactantStructures, [map], forward, **options)
                     except ForbiddenStructureException:
                         pass
                     else:
-                        if productStructures is not None:
-                            rxn = self.__createReaction(reactantStructures, productStructures, forward)
-                            if rxn: rxnList.append(rxn)
+                        if productStructuresList is not None:
+                            for productStructures in productStructuresList:
+                                rxn = self.__createReaction(reactantStructures, productStructures, forward)
+                                if rxn: rxnList.append(rxn)
 
         # Bimolecular reactants: A + B --> products
         elif len(reactants) == 2 and len(template.reactants) == 2:
@@ -1340,13 +1376,14 @@ class KineticsFamily(Database):
                         for mapB in mappingsB:
                             reactantStructures = [moleculeA, moleculeB]
                             try:
-                                productStructures = self.__generateProductStructures(reactantStructures, [mapA, mapB], forward, **options)
+                                productStructuresList = self.__generateProductStructures(reactantStructures, [mapA, mapB], forward, **options)
                             except ForbiddenStructureException:
                                 pass
                             else:
-                                if productStructures is not None:
-                                    rxn = self.__createReaction(reactantStructures, productStructures, forward)
-                                    if rxn: rxnList.append(rxn)
+                                if productStructuresList is not None:
+                                    for productStructures in productStructuresList:
+                                        rxn = self.__createReaction(reactantStructures, productStructures, forward)
+                                        if rxn: rxnList.append(rxn)
 
                     # Only check for swapped reactants if they are different
                     if reactants[0] is not reactants[1]:
@@ -1360,13 +1397,14 @@ class KineticsFamily(Database):
                             for mapB in mappingsB:
                                 reactantStructures = [moleculeA, moleculeB]
                                 try:
-                                    productStructures = self.__generateProductStructures(reactantStructures, [mapA, mapB], forward, **options)
+                                    productStructuresList = self.__generateProductStructures(reactantStructures, [mapA, mapB], forward, **options)
                                 except ForbiddenStructureException:
                                     pass
                                 else:
-                                    if productStructures is not None:
-                                        rxn = self.__createReaction(reactantStructures, productStructures, forward)
-                                        if rxn: rxnList.append(rxn)
+                                    if productStructuresList is not None:
+                                        for productStructures in productStructuresList:
+                                            rxn = self.__createReaction(reactantStructures, productStructures, forward)
+                                            if rxn: rxnList.append(rxn)
   
         # If products is given, remove reactions from the reaction list that
         # don't generate the given products
@@ -1380,14 +1418,6 @@ class KineticsFamily(Database):
             for reaction in rxnList0:
             
                 products0 = reaction.products if forward else reaction.reactants
-                
-                # If the forward reaction contains CH(S) as reactant then correct product of reverse reaction from CH2(T) to CH2(S)
-                for product in products:
-                    for molecule in product:
-                        if molecule.isBiradicalSinglet() and (molecule.getFormula() == 'CH2' or molecule.getFormula() == 'NH'):
-                            for product0 in products0:
-                                if product0.isBiradicalTriplet() and (product0.getFormula() == 'CH2' or product0.getFormula() == 'NH'):
-                                    product0.changeTripletSinglet()
                     
                 # Skip reactions that don't match the given products
                 match = False
@@ -1408,7 +1438,7 @@ class KineticsFamily(Database):
                                 break
                     
                 if match: 
-                    rxnList.append(reaction) 
+                    rxnList.append(reaction)
             
         # The reaction list may contain duplicates of the same reaction
         # These duplicates should be combined (by increasing the degeneracy of
