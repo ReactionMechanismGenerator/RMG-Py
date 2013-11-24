@@ -47,71 +47,71 @@ class TestTransportData(unittest.TestCase):
     """
     Contains unit test of the :class: 'transportData' class
     """
-    
+
     def setUp(self):
         """
         A function run before each unit test in this class.
         """
         self.shapeIndex = 1
         self.epsilon = Energy(2.104, 'kJ/mol')
-        self.sigma = Length(3.402,'angstroms')
+        self.sigma = Length(3.402, 'angstroms')
         self.dipoleMoment = DipoleMoment(1.000, 'C*m')
         self.polarizability = Volume(0.134, 'angstroms^3')
         self.rotrelaxcollnum = 0.000
         self.comment = 'test'
-        
+
         self.transport = TransportData(
-            shapeIndex = self.shapeIndex,
-            epsilon = self.epsilon,
-            sigma = self.sigma,
-            dipoleMoment = self.dipoleMoment,
-            polarizability = self.polarizability,
-            rotrelaxcollnum = self.rotrelaxcollnum,
-            comment = self.comment,
+            shapeIndex=self.shapeIndex,
+            epsilon=self.epsilon,
+            sigma=self.sigma,
+            dipoleMoment=self.dipoleMoment,
+            polarizability=self.polarizability,
+            rotrelaxcollnum=self.rotrelaxcollnum,
+            comment=self.comment,
         )
-        
+
     def test_shapeIndex(self):
         """
         Test that the TransportData shapeIndex property was properly set.
         """
         self.assertAlmostEqual(self.transport.shapeIndex, self.shapeIndex, 6)
-    
+
     def test_epsilon(self):
         """
         Test that the TransportData epsilon property was properly set.
         """
         self.assertAlmostEqual(self.transport.epsilon.value_si, self.epsilon.value_si, 6)
-        
+
     def test_sigma(self):
         """
         Test that the TransportData sigma property was properly set.
         """
-        self.assertAlmostEqual(self.transport.sigma.value_si*1e10, self.sigma.value_si*1e10, 6)
-        
+        self.assertAlmostEqual(self.transport.sigma.value_si * 1e10, self.sigma.value_si * 1e10, 6)
+
     def test_dipoleMoment(self):
         """
         Test that the TransportData dipoleMoment property was properly set.
         """
         self.assertAlmostEqual(self.transport.dipoleMoment.value_si, self.dipoleMoment.value_si, 6)
-    
+
     def test_polarizability(self):
         """
         Test that the TransportData polarizability property was properly set.
         """
         self.assertAlmostEqual(self.transport.polarizability.value_si, self.polarizability.value_si, 6)
-    
+
     def test_rotrelaxcollnum(self):
         """
         Test that the TransportData rotrelaxcollnum property was properly set.
         """
         self.assertAlmostEqual(self.transport.rotrelaxcollnum, self.rotrelaxcollnum, 6)
-    
+
     def test_comment(self):
         """
         Test that the TransportData comment property was properly set.
         """
         self.assertEqual(self.transport.comment, self.comment)
-        
+
     def test_getCollisionFrequency(self):
         """
         Test the LennardJones.getCollisionFrequency() method.
@@ -121,7 +121,7 @@ class TestTransportData(unittest.TestCase):
         mu = 1.0
         omega = self.transport.getCollisionFrequency(T, M, mu)
         self.assertAlmostEqual(omega / 3.13010e10, 1.0, 4)
-    
+
     def test_pickle(self):
         """
         Test that a TransportData object can be pickled and unpickled with no loss of information.
@@ -135,7 +135,7 @@ class TestTransportData(unittest.TestCase):
         self.assertAlmostEqual(self.transport.polarizability.value_si, transport.polarizability.value_si, 4)
         self.assertAlmostEqual(self.transport.rotrelaxcollnum, transport.rotrelaxcollnum, 4)
         self.assertEqual(self.transport.comment, transport.comment)
-    
+
     def test_repr(self):
         """
         Test that a TransportData object can be reconstructed from its repr() output with no loss of information
@@ -149,12 +149,12 @@ class TestTransportData(unittest.TestCase):
         self.assertAlmostEqual(self.transport.polarizability.value_si, transport.polarizability.value_si, 4)
         self.assertAlmostEqual(self.transport.rotrelaxcollnum, transport.rotrelaxcollnum, 4)
         self.assertEqual(self.transport.comment, transport.comment)
-        
+
 class TestCriticalPointGroupContribution(unittest.TestCase):
     """
     Contains unit test of the :class: 'criticalPointGroupContribution' class
     """
-    
+
     def setUp(self):
         """
         A function run before each unit test in this class.
@@ -164,45 +164,45 @@ class TestCriticalPointGroupContribution(unittest.TestCase):
         self.Vc = 65
         self.Tb = 23.58
         self.structureIndex = 1
-        
+
         self.criticalPointContribution = CriticalPointGroupContribution(
-            Tc = self.Tc,
-            Pc = self.Pc,
-            Vc = self.Vc,
-            Tb = self.Tb,
-            structureIndex = self.structureIndex,
+            Tc=self.Tc,
+            Pc=self.Pc,
+            Vc=self.Vc,
+            Tb=self.Tb,
+            structureIndex=self.structureIndex,
         )
-        
+
     def test_Tc(self):
         """
         Test that the CriticalPointGroupContribution Tc property was properly set.
         """
         self.assertAlmostEqual(self.criticalPointContribution.Tc, self.Tc, 6)
-    
+
     def test_Pc(self):
         """
         Test that the CriticalPointGroupContribution Pc property was properly set.
         """
         self.assertAlmostEqual(self.criticalPointContribution.Pc, self.Pc, 6)
-        
+
     def test_Vc(self):
         """
         Test that the CriticalPointGroupContribution Vc property was properly set.
         """
         self.assertAlmostEqual(self.criticalPointContribution.Vc, self.Vc, 6)
-        
+
     def test_Tb(self):
         """
         Test that the CriticalPointGroupContribution Tb property was properly set.
         """
-        self.assertAlmostEqual(self.criticalPointContribution.Tb, self.Tb, 6)    
-    
+        self.assertAlmostEqual(self.criticalPointContribution.Tb, self.Tb, 6)
+
     def test_structureIndex(self):
         """
         Test that the CriticalPointGroupContribution structureIndex property was properly set.
         """
         self.assertAlmostEqual(self.criticalPointContribution.structureIndex, self.structureIndex, 6)
-    
+
     def test_pickle(self):
         """
         Test that a CriticalPointGroupContribution object can be pickled and unpickled with no loss of information.
@@ -214,7 +214,7 @@ class TestCriticalPointGroupContribution(unittest.TestCase):
         self.assertAlmostEqual(self.criticalPointContribution.Vc, criticalPointContribution.Vc, 4)
         self.assertAlmostEqual(self.criticalPointContribution.Tb, criticalPointContribution.Tb, 4)
         self.assertAlmostEqual(self.criticalPointContribution.structureIndex, criticalPointContribution.structureIndex, 4)
-    
+
     def test_repr(self):
         """
         Test that a CriticalPointGroupContribution object can be reconstructed from its repr() output with no loss of information
@@ -226,39 +226,42 @@ class TestCriticalPointGroupContribution(unittest.TestCase):
         self.assertAlmostEqual(self.criticalPointContribution.Vc, criticalPointContribution.Vc, 4)
         self.assertAlmostEqual(self.criticalPointContribution.Tb, criticalPointContribution.Tb, 4)
         self.assertAlmostEqual(self.criticalPointContribution.structureIndex, criticalPointContribution.structureIndex, 4)
-    
+
 class TestTransportDatabase(unittest.TestCase):
     """
     Contains unit test of the :class: 'TransportDatabase' class
     """
-    
+
     def setUp(self):
         """
         a function run before each unit test in this class
-        """ 
+        """
         self.libraries = ['GRI-Mech', 'PrimaryTransportLibrary']
         self.groups = ['ring', 'nonring']
         self.libraryOrder = []
-        
+
         path = os.path.join(settings['database.directory'], 'transport')
         self.transportdb = TransportDatabase()
-        self.transportdb.load(path,self.libraries)
+        self.transportdb.load(path, self.libraries)
 
-    def testJoback(self):    
+    def testJoback(self):
         #values calculate from joback's estimations
         self.testCases = [
-            ['acetone', 'CC(=O)C', Length(5.36421, 'angstroms'), Energy(3.20446, 'kJ/mol'), "Estimated with Tc=500.53 K, Pc=47.11 bar (from Joback method)"],
-            ['cyclopenta-1,2-diene', 'C1=C=CCC1', None, None, "unknown"],
+            ['acetone', 'CC(=O)C', Length(5.36421, 'angstroms'), Energy(3.20446, 'kJ/mol'), "Epsilon & sigma estimated with Tc=500.53 K, Pc=47.11 bar (from Joback method)"],
+            ['cyclopenta-1,2-diene', 'C1=C=CCC1', None, None, None],  # not sure what to expect, we just want to make sure it doesn't crash
             ]
         for name, smiles, sigma, epsilon, comment in self.testCases:
             species = Species(molecule=[Molecule(SMILES=smiles)])
             transportData, blank, blank2 = self.transportdb.getTransportPropertiesViaGroupEstimates(species)
-            print name, transportData
-            # check Joback worked
-            print self.assertTrue(transportData.comment == comment)
-            print self.assertAlmostEqual(transportData.sigma.value_si*1e10, sigma.value_si*1e10,4)
-            print self.assertAlmostEqual(transportData.epsilon.value_si, epsilon.value_si,1)
-            
+            # check Joback worked.
+            # If we don't know what to expect, don't check (just make sure we didn't crash)
+            if comment:
+                self.assertTrue(transportData.comment == comment)
+            if sigma:
+                self.assertAlmostEqual(transportData.sigma.value_si * 1e10, sigma.value_si * 1e10, 4)
+            if epsilon:
+                self.assertAlmostEqual(transportData.epsilon.value_si, epsilon.value_si, 1)
+
 
 if __name__ == '__main__':
     unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))
