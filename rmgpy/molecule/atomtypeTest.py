@@ -107,8 +107,15 @@ class TestGetAtomType(unittest.TestCase):
         """
         A function run before each unit test in this class.
         """
-        self.mol1 = Molecule().fromSMILES('COO=CC=C=CC#C')
-        self.mol2 = Molecule().fromSMILES('c1ccccc1')
+        self.mol1 = Molecule().fromSMILES('COC(=O)CC=C=CC#C')
+        # self.mol2 = Molecule().fromSMILES('c1ccccc1')
+        ## the fromSMILES method currently Kekulizes, so to test Benzene we use fromAdjacencyList
+        self.mol2 = Molecule().fromAdjacencyList('''1 C 0 {2,B} {6,B}
+                                                    2 C 0 {1,B} {3,B}
+                                                    3 C 0 {2,B} {4,B}
+                                                    4 C 0 {3,B} {5,B}
+                                                    5 C 0 {4,B} {6,B}
+                                                    6 C 0 {1,B} {5,B}''')
         self.mol3 = Molecule().fromSMILES('[H]')
         self.mol4 = Molecule().fromSMILES(
                                 'O=[Si][Si][Si]=[Si]=[Si][Si]#[Si]SS=S')
@@ -129,12 +136,11 @@ class TestGetAtomType(unittest.TestCase):
         """
         Test that getAtomType() returns appropriate carbon atom types.
         """
-
         self.assertEqual(self.atomType(self.mol1, 0), 'Cs')
-        self.assertEqual(self.atomType(self.mol1, 4), 'Cd')
-        self.assertEqual(self.atomType(self.mol1, 5), 'Cdd')
-        self.assertEqual(self.atomType(self.mol1, 7), 'Ct')
-        self.assertEqual(self.atomType(self.mol1, 3), 'CO')
+        self.assertEqual(self.atomType(self.mol1, 5), 'Cd')
+        self.assertEqual(self.atomType(self.mol1, 6), 'Cdd')
+        self.assertEqual(self.atomType(self.mol1, 8), 'Ct')
+        self.assertEqual(self.atomType(self.mol1, 2), 'CO')
         self.assertEqual(self.atomType(self.mol2, 0), 'Cb')
     
     def testHydrogenType(self):
@@ -148,7 +154,7 @@ class TestGetAtomType(unittest.TestCase):
         Test that getAtomType() returns appropriate oxygen atom types.
         """
         self.assertEqual(self.atomType(self.mol1, 1), 'Os')
-        self.assertEqual(self.atomType(self.mol1, 2), 'Od')
+        self.assertEqual(self.atomType(self.mol1, 3), 'Od')
     
     def testSiliconTypes(self):
         """
