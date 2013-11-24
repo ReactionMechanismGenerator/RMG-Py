@@ -69,6 +69,9 @@ class TransportData:
         Return the value of the Lennard-Jones collision frequency in Hz at the
         given temperature `T` in K for colliders with the given concentration
         `M` in mol/m^3 and reduced mass `mu` in amu.
+        
+        This seems to also exist in rmgpy.pdep.configuration.calculateCollisionFrequency
+        Why the redundancy?
         """
         sigma = self.sigma.value_si
         epsilon = self.epsilon.value_si
