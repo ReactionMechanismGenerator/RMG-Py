@@ -34,7 +34,7 @@ cdef class AtomType:
     cdef public list decrementBond
     cdef public list formBond
     cdef public list breakBond
-    cdef public list _incrementRadical
+    cdef public list incrementRadical
     cdef public list decrementRadical
 
     cpdef bint isSpecificCaseOf(self, AtomType other)

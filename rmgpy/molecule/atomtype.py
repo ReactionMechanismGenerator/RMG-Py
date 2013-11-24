@@ -39,7 +39,7 @@ represent, this should be the only module you need to change to do so.
 """
 
 import cython
-import logging
+
 ################################################################################
 
 class AtomTypeError(Exception):
@@ -85,16 +85,8 @@ class AtomType:
         self.decrementBond = []
         self.formBond = []
         self.breakBond = []
-        self._incrementRadical = []
+        self.incrementRadical = []
         self.decrementRadical = []
-
-
-    def get_incrementRadical(self):
-        return self._incrementRadical
-    def set_incrementRadical(self, value):
-        logging.warning("Setting incrementRadical property for {0} to {1}".format(self.label, value))
-        self._incrementRadical = value
-    incrementRadical = property(get_incrementRadical, set_incrementRadical)
 
     def __repr__(self):
         return '<AtomType "%s">' % self.label
