@@ -32,7 +32,7 @@ def runThermoEstimator(inputFile):
     rmg.loadThermoInput(inputFile)
     
     # initialize and load the database as well as any QM settings
-    rmg.loadDatabase()
+    rmg.loadThermoDatabase()
     if rmg.quantumMechanics:
         logging.debug("Initialize QM")
         rmg.quantumMechanics.initialize()
@@ -60,9 +60,10 @@ def runThermoEstimator(inputFile):
             )
             output.write(writeThermoEntry(species))
             output.write('\n')
+        library.save(os.path.join(rmg.outputDirectory,'ThermoLibrary.py'))
     
     output.close()
-    library.save(os.path.join(rmg.outputDirectory,'ThermoLibrary.py'))
+    
 
 
 ################################################################################
@@ -87,6 +88,8 @@ if __name__ == '__main__':
     group = parser.add_mutually_exclusive_group()
     group.add_argument('-d', '--debug', action='store_true', help='print debug information')
     group.add_argument('-q', '--quiet', action='store_true', help='only print warnings and errors')
+    
+    
     args = parser.parse_args()
     
     inputFile = os.path.abspath(args.input[0])
