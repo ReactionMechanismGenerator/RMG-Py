@@ -500,7 +500,9 @@ test1to2 (rmgpy.reactionTest.TestReactionIsomorphism) ... ok
 test2to2 (rmgpy.reactionTest.TestReactionIsomorphism) ... ok
 test2to3 (rmgpy.reactionTest.TestReactionIsomorphism) ... ok
 Test the simple batch reactor with a simple kinetic model. Here we ... ok
-Failure: ImportError (cannot import name LennardJones) ... ERROR
+Test that a Species object can be reconstructed from its repr(). ... ok
+Test that a Species object can be pickled and unpickled. ... ok
+Test that toAdjacencyList() works as expected. ... ok
 Test the Conformer.getCenterOfMass() method. ... ok
 Test the StatMech.getDensityOfStates() method for ethylene. ... ok
 Test the StatMech.getDensityOfStates() method for oxygen. ... ok
@@ -740,20 +742,6 @@ Traceback (most recent call last):
 ImportError: cannot import name LennardJones
 
 ======================================================================
-ERROR: Failure: ImportError (cannot import name LennardJones)
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/virtualenvs/rmgweb/local/lib/python2.7/site-packages/nose/loader.py", line 390, in loadTestsFromName
-    addr.filename, addr.module)
-  File "/export/thishost/comocheng/virtualenvs/rmgweb/local/lib/python2.7/site-packages/nose/importer.py", line 39, in importFromPath
-    return self.importFromDir(dir_path, fqname)
-  File "/export/thishost/comocheng/virtualenvs/rmgweb/local/lib/python2.7/site-packages/nose/importer.py", line 86, in importFromDir
-    mod = load_module(part_fqname, fh, filename, desc)
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/speciesTest.py", line 10, in <module>
-    from rmgpy.species import Species, LennardJones
-ImportError: cannot import name LennardJones
-
-======================================================================
 FAIL: Uses a Gaussian03 log file for ethylene (C2H4) to test that its
 ----------------------------------------------------------------------
 Traceback (most recent call last):
@@ -930,9 +918,9 @@ rmgpy.transport                     31      3      0      0    90%   58-59, 65
 ----------------------------------------------------------------------------
 TOTAL                            12928  10658   5424   5037    14%   
 ----------------------------------------------------------------------
-Ran 712 tests.
+Ran 714 tests.
 
-FAILED (errors=3, failures=14)
+FAILED (errors=2, failures=14)
 Solver jacobian
 [[ -4.85410044 -12.94297143   3.2392154   -7.55039077   3.23477055]
  [ -4.85410044 -12.94297143   3.2392154   -7.55039077   3.23477055]
