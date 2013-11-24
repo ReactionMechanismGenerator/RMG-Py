@@ -50,7 +50,7 @@ decython:
 	find . -name *.pyc -exec rm -f '{}' \;
 
 test:
-	nosetests --all-modules --verbose --with-coverage --cover-inclusive --cover-package=rmgpy --cover-erase --cover-html --cover-html-dir=testing/coverage rmgpy
+	nosetests --nocapture --nologcapture --all-modules --verbose --with-coverage --cover-inclusive --cover-package=rmgpy --cover-erase --cover-html --cover-html-dir=testing/coverage rmgpy
 
 eg1: all
 	mkdir -p testing/minimal
