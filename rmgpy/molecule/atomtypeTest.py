@@ -82,7 +82,7 @@ class TestAtomType(unittest.TestCase):
         """
         Test the AtomType.setActions() method.
         """
-        other = rmgpy.molecule.atomtype.atomTypes['R']
+        other = rmgpy.molecule.atomtype.AtomType('Test', generic=['R'], specific=[])
         other.setActions(self.atomType.incrementBond,
                                self.atomType.decrementBond,
                                self.atomType.formBond,
