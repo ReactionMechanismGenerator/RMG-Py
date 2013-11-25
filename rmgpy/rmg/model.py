@@ -63,15 +63,14 @@ from pdep import PDepReaction, PDepNetwork, PressureDependenceError
 # generateThermoDataFromQM under the Species class imports the qm package
 
 __database = None
+qmValue = None
 
 def makeThermoForSpecies(spec):
     """
     Make thermo for a species.
     """
-    import logging
-    qmValue=shared.getConst('qmValue')
-    if qmValue: logging.debug("qmValue fine @ makeThermoForSpecies")
-    global __database
+    global __database, qmValue
+    if qmValue == None: qmValue = scoop.shared.getConst('qmValue')
     if __database == None:
         """Load the database from some pickle file"""
         import cPickle
