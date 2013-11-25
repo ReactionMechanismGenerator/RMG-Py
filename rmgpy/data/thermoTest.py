@@ -15,18 +15,21 @@ class TestThermoDatabase(unittest.TestCase):
     """
     Contains unit tests of the ThermoDatabase class.
     """
+    # Only load these once to save time
+    database = ThermoDatabase()
+    database.load(os.path.join(settings['database.directory'], 'thermo'))
+    oldDatabase = ThermoDatabase()
+    oldDatabase.loadOld(os.path.join(settings['database.directory'], '../output/RMG_database'))
+    
     
     def setUp(self):
         """
         A function run before each unit test in this class.
         """
         
-        self.database = ThermoDatabase()
-        self.database.load(os.path.join(settings['database.directory'], 'thermo'))
-        
-        self.oldDatabase = ThermoDatabase()
-        self.oldDatabase.loadOld(os.path.join(settings['database.directory'], '../output/RMG_database'))
-        
+        self.database = self.__class__.database
+        self.oldDatabase = self.__class__.oldDatabase
+
         self.Tlist = [300, 400, 500, 600, 800, 1000, 1500]
         
         self.testCases = [
@@ -73,18 +76,38 @@ class TestThermoDatabase(unittest.TestCase):
                 if thermoData0.getEnthalpy(298) < thermoData.getEnthalpy(298):
                     thermoData = thermoData0
                     molecule = mol
-            
-            #self.assertEqual(molecule.calculateSymmetryNumber(), symm)
-            self.assertAlmostEqual(H298, thermoData.getEnthalpy(298) / 4184, places=1)
-            self.assertAlmostEqual(S298, thermoData.getEntropy(298) / 4.184, places=1)
+            self.assertAlmostEqual(H298, thermoData.getEnthalpy(298) / 4184, places=1, msg="H298 error for {0}".format(smiles))
+            self.assertAlmostEqual(S298, thermoData.getEntropy(298) / 4.184, places=1, msg="S298 error for {0}".format(smiles))
             for T, Cp in zip(self.Tlist, Cplist):
-                self.assertAlmostEqual(Cp, thermoData.getHeatCapacity(T) / 4.184, places=1)
+                self.assertAlmostEqual(Cp, thermoData.getHeatCapacity(T) / 4.184, places=1, msg="Cp{1} error for {0}".format(smiles,T))
+
+    def testSymmetryNumberGeneration(self):
+        """
+        Test we generate symmetry numbers correctly.
+        
+        This uses the new thermo database to generate the H298, used 
+        to select the stablest resonance isomer.
+        """
+        for smiles, symm, H298, S298, Cp300, Cp400, Cp500, Cp600, Cp800, Cp1000, Cp1500 in self.testCases:
+            species = Species(molecule=[Molecule(SMILES=smiles)])
+            species.generateResonanceIsomers()
+            thermoData = self.database.getThermoDataFromGroups(Species(molecule=[species.molecule[0]]))
+            # pick the molecule with lowest H298
+            molecule = species.molecule[0]
+            for mol in species.molecule[1:]:
+                thermoData0 = self.database.getAllThermoData(Species(molecule=[mol]))[0][0]
+                for data in self.database.getAllThermoData(Species(molecule=[mol]))[1:]:
+                    if data.getEnthalpy(298) < thermoData0.getEnthalpy(298):
+                        thermoData0 = data
+                if thermoData0.getEnthalpy(298) < thermoData.getEnthalpy(298):
+                    thermoData = thermoData0
+                    molecule = mol
+            self.assertEqual(molecule.calculateSymmetryNumber(), symm, msg="Symmetry number error for {0}".format(smiles))
 
     def testOldThermoGeneration(self):
         """
         Test that the old ThermoDatabase generates relatively accurate thermo data.
         """
-        
         for smiles, symm, H298, S298, Cp300, Cp400, Cp500, Cp600, Cp800, Cp1000, Cp1500 in self.testCases:
             Cplist = [Cp300, Cp400, Cp500, Cp600, Cp800, Cp1000, Cp1500]
             species = Species(molecule=[Molecule(SMILES=smiles)])
@@ -100,11 +123,10 @@ class TestThermoDatabase(unittest.TestCase):
                     thermoData = thermoData0
                     molecule = mol
             
-            #self.assertEqual(molecule.calculateSymmetryNumber(), symm)
-            self.assertAlmostEqual(H298, thermoData.getEnthalpy(298) / 4184, places=1)
-            self.assertAlmostEqual(S298, thermoData.getEntropy(298) / 4.184, places=1)
+            self.assertAlmostEqual(H298, thermoData.getEnthalpy(298) / 4184, places=1, msg="H298 error for {0}".format(smiles))
+            self.assertAlmostEqual(S298, thermoData.getEntropy(298) / 4.184, places=1, msg="S298 error for {0}".format(smiles))
             for T, Cp in zip(self.Tlist, Cplist):
-                self.assertAlmostEqual(Cp, thermoData.getHeatCapacity(T) / 4.184,  places=1)
+                self.assertAlmostEqual(Cp, thermoData.getHeatCapacity(T) / 4.184, places=1, msg="Cp{1} error for {0}".format(smiles, T))
 
 class TestThermoDatabaseAromatics(TestThermoDatabase):
     """
@@ -119,8 +141,12 @@ class TestThermoDatabaseAromatics(TestThermoDatabase):
             ['c1ccccc1', 12, 19.80, 64.24, 19.44, 26.64, 32.76, 37.80, 45.24, 50.46, 58.38],
             ['c1ccc2ccccc2c1', 4, 36.0, 79.49, 31.94, 42.88, 52.08, 59.62, 70.72, 78.68, 90.24],
         ]
+    def __init__(self, *args, **kwargs):
+        super(TestThermoDatabaseAromatics, self).__init__(*args, **kwargs)
+        self._testMethodDoc = self._testMethodDoc.strip().split('\n')[0] + " for Aromatics.\n"
 
 ################################################################################
 
 if __name__ == '__main__':
     unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))
+
