@@ -23,7 +23,9 @@ Test the value of the Planck constant. ... ok
 Test the value of the proton rest mass. ... ok
 Test the value of the reduced Planck constant. ... ok
 Test the value of the speed of light in a vacuum. ... ok
-Test that the new ThermoDatabase generates appropriate thermo data. ... ERROR
+Test that the new ThermoDatabase generates appropriate thermo data. ... FAIL
+Test that the old ThermoDatabase generates relatively accurate thermo data. ... FAIL
+Test that the new ThermoDatabase generates appropriate thermo data. ... FAIL
 Test that the old ThermoDatabase generates relatively accurate thermo data. ... FAIL
 Test that the Arrhenius A property was properly set. ... ok
 Test that the Arrhenius Ea property was properly set. ... ok
@@ -720,14 +722,6 @@ Test that the TransportData sigma property was properly set. ... ok
 testJoback (rmgpy.transportDataTest.TestTransportDatabase) ... ok
 
 ======================================================================
-ERROR: Test that the new ThermoDatabase generates appropriate thermo data.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermoTest.py", line 68, in testNewThermoGeneration
-    thermoData = self.database.getThermoDataFromGroups(Species(molecule=[species.molecule[0]]))[0]
-TypeError: 'rmgpy.thermo.thermodata.ThermoData' object does not support indexing
-
-======================================================================
 ERROR: Failure: ImportError (cannot import name LennardJones)
 ----------------------------------------------------------------------
 Traceback (most recent call last):
@@ -758,12 +752,36 @@ Traceback (most recent call last):
 AssertionError: -78.55632 != -78.562189 within 4 places
 
 ======================================================================
+FAIL: Test that the new ThermoDatabase generates appropriate thermo data.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermoTest.py", line 78, in testNewThermoGeneration
+    self.assertAlmostEqual(H298, thermoData.getEnthalpy(298) / 4184, places=1)
+AssertionError: 32.5 != 32.75 within 1 places
+
+======================================================================
 FAIL: Test that the old ThermoDatabase generates relatively accurate thermo data.
 ----------------------------------------------------------------------
 Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermoTest.py", line 105, in testOldThermoGeneration
-    self.assertEqual(molecule.calculateSymmetryNumber(), symm)
-AssertionError: 3 != 12
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermoTest.py", line 104, in testOldThermoGeneration
+    self.assertAlmostEqual(H298, thermoData.getEnthalpy(298) / 4184, places=1)
+AssertionError: 32.5 != 32.75 within 1 places
+
+======================================================================
+FAIL: Test that the new ThermoDatabase generates appropriate thermo data.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermoTest.py", line 78, in testNewThermoGeneration
+    self.assertAlmostEqual(H298, thermoData.getEnthalpy(298) / 4184, places=1)
+AssertionError: 19.8 != 40.76 within 1 places
+
+======================================================================
+FAIL: Test that the old ThermoDatabase generates relatively accurate thermo data.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermoTest.py", line 104, in testOldThermoGeneration
+    self.assertAlmostEqual(H298, thermoData.getEnthalpy(298) / 4184, places=1)
+AssertionError: 19.8 != 40.76 within 1 places
 
 ======================================================================
 FAIL: Test the Molecule.isAromatic() method.
@@ -881,7 +899,7 @@ rmgpy.data.reference               138    114     48     48    13%   89-95, 102-
 rmgpy.data.rmg                      72     53      6      6    24%   55-64, 84-93, 100-101, 108-109, 116-117, 130-142, 153-154, 161-170, 176-181, 187-192
 rmgpy.data.statmech                295    244    103    103    13%   48-91, 98-101, 108-116, 127, 140, 156, 166, 179, 195, 202, 209, 220, 233-241, 257, 264, 271, 278-285, 294-309, 319-355, 364-445, 455-467, 473-479, 485-488, 495-500, 507, 514-526, 533-534, 541-545, 552-553, 560-562, 569-570, 578-594, 611-624, 637-645, 652-656, 664-667, 676, 689-690, 698-705
 rmgpy.data.statmechfit             248    213     70     70    11%   95-137, 151-193, 207-244, 260-307, 316-319, 327-330, 338-343, 352-355, 364-366, 378-381, 384-407, 419-422, 425-457, 469-472, 475-506
-rmgpy.data.thermo                  436    185    134     66    56%   56-123, 130-148, 187-199, 205, 244, 251, 301, 309, 342-348, 354-357, 367, 397, 419-423, 430-432, 439-441, 448-455, 545-556, 566-609, 628-629, 655-659, 669-670, 692-696, 715-718, 720-723, 737-743, 810-811, 833-837, 881-885, 895, 907-913, 924-928, 947, 977, 979
+rmgpy.data.thermo                  436    179    134     59    58%   56-123, 130-148, 187-199, 205, 244, 251, 301, 309, 342-348, 354-357, 367, 397, 419-423, 430-432, 439-441, 448-455, 545-556, 566-609, 628-629, 655-659, 669-670, 694-696, 715-718, 720-723, 740-742, 810-811, 833-837, 881-885, 895, 907-913, 924-928, 947, 977, 979
 rmgpy.data.transport               212     79     56     37    57%   54-69, 119, 126, 133, 155, 174, 181, 188, 209-214, 220-222, 269-281, 289-301, 312-316, 343, 376-415, 437-441, 468, 476, 478, 482-486
 rmgpy.display                       11      3      0      0    73%   37, 41-43
 rmgpy.kinetics                       6      0      0      0   100%   
@@ -916,11 +934,11 @@ rmgpy.statmech                       5      0      0      0   100%
 rmgpy.thermo                         3      0      0      0   100%   
 rmgpy.transport                     31      3      0      0    90%   58-59, 65
 ----------------------------------------------------------------------------
-TOTAL                            12928  10658   5424   5037    14%   
+TOTAL                            12928  10652   5424   5030    15%   
 ----------------------------------------------------------------------
-Ran 714 tests.
+Ran 716 tests.
 
-FAILED (errors=2, failures=14)
+FAILED (errors=1, failures=17)
 Solver jacobian
 [[ -4.85410044 -12.94297143   3.2392154   -7.55039077   3.23477055]
  [ -4.85410044 -12.94297143   3.2392154   -7.55039077   3.23477055]
