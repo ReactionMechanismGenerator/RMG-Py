@@ -686,7 +686,7 @@ def loadTransportFile(path, speciesDict):
                 species.polarizability = (float(data[4]),'angstrom^3')
                 species.Zrot = (float(data[5]),'')
 
-def loadChemkinFile(path, dictionaryPath=None, transportPath=None, readComments = True):
+def loadChemkinFile(path, dictionaryPath=None, transportPath=None, readComments = True, thermoPath = None):
     """
     Load a Chemkin input file to `path` on disk, returning lists of the species
     and reactions in the Chemkin file.
@@ -731,7 +731,8 @@ def loadChemkinFile(path, dictionaryPath=None, transportPath=None, readComments 
                         speciesList.append(species)
                         speciesDict[label.upper()] = species                            
                 
-            elif 'THERM' in line.upper():
+            elif 'THERM' in line.upper() and thermoPath is None:
+                # Skip this if a thermo file is specified
                 # Unread the line (we'll re-read it in readThermoBlock())
                 f.seek(-len(line0), 1)
                 readThermoBlock(f, speciesDict)
@@ -744,6 +745,18 @@ def loadChemkinFile(path, dictionaryPath=None, transportPath=None, readComments 
                     
             line0 = f.readline()
             
+    # Read in the thermo data from the thermo file        
+    if thermoPath:
+        with open(thermoPath, 'r') as f:
+            line0 = f.readline()
+            while line0 != '':
+                line = removeCommentFromLine(line0)[0]
+                line = line.strip()
+                if 'THERM' in line.upper():
+                    f.seek(-len(line0), 1)
+                    readThermoBlock(f, speciesDict)  
+                    break
+                line0 = f.readline()
     # Index the reactions now to have identical numbering as in Chemkin 
     index = 0
     for reaction in reactionList:

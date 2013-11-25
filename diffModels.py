@@ -208,21 +208,27 @@ if __name__ == '__main__':
         help='the Chemkin file of the first model')
     parser.add_argument('speciesDict1', metavar='SPECIESDICT1', type=str, nargs=1,
         help='the species dictionary file of the first model')
+    parser.add_argument('thermo1', metavar = 'THERMO1', type=str, nargs = 1,
+        help = 'the thermo file of the first model')
     parser.add_argument('chemkin2', metavar='CHEMKIN2', type=str, nargs=1,
         help='the Chemkin file of the second model')
     parser.add_argument('speciesDict2', metavar='SPECIESDICT2', type=str, nargs=1,
         help='the species dictionary file of the second model')
+    parser.add_argument('thermo2', metavar = 'THERMO2', type=str, nargs = 1,
+        help = 'the thermo file of the second model')
     
     args = parser.parse_args()
     chemkin1 = args.chemkin1[0]
     speciesDict1 = args.speciesDict1[0]
+    thermo1 = args.thermo1[0]
     chemkin2 = args.chemkin2[0]
     speciesDict2 = args.speciesDict2[0]
+    thermo2 = args.thermo2[0]
     
     model1 = ReactionModel()
-    model1.species, model1.reactions = loadChemkinFile(chemkin1, speciesDict1)
+    model1.species, model1.reactions = loadChemkinFile(chemkin1, speciesDict1, thermoPath = thermo1)
     model2 = ReactionModel()
-    model2.species, model2.reactions = loadChemkinFile(chemkin2, speciesDict2)
+    model2.species, model2.reactions = loadChemkinFile(chemkin2, speciesDict2, thermoPath = thermo2)
     
     commonSpecies, uniqueSpecies1, uniqueSpecies2 = compareModelSpecies(model1, model2)
     commonReactions, uniqueReactions1, uniqueReactions2 = compareModelReactions(model1, model2)
