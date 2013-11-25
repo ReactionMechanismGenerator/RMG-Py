@@ -298,7 +298,7 @@ if __name__ == '__main__':
     for rxn in uniqueReactions2:
         print '    {0!s}'.format(rxn)
     
-    commonSpecies.sort(key = enthalpyDiff)
+    #commonSpecies.sort(key = enthalpyDiff)
     #commonReactions.sort(key = kineticsDiff)
 
     print "Saving output in diff.html"
