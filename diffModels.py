@@ -239,8 +239,8 @@ if __name__ == '__main__':
         if spec1.thermo and spec2.thermo:
             spec1.molecule[0].calculateSymmetryNumber()
             print '        {0:7.2f} {1:7.2f} {2:7.2f} {3:7.2f} {4:7.2f} {5:7.2f} {6:7.2f} {7:7.2f} {8:7.2f}'.format( 
-                spec1.thermo.getEnthalpy(298) / 4184.,
-                spec1.thermo.getEntropy(298) / 4.184,
+                spec1.thermo.getEnthalpy(300) / 4184.,
+                spec1.thermo.getEntropy(300) / 4.184,
                 spec1.thermo.getHeatCapacity(300) / 4.184,
                 spec1.thermo.getHeatCapacity(400) / 4.184,
                 spec1.thermo.getHeatCapacity(500) / 4.184,
@@ -250,8 +250,8 @@ if __name__ == '__main__':
                 spec1.thermo.getHeatCapacity(1500) / 4.184,
             )
             print '        {0:7.2f} {1:7.2f} {2:7.2f} {3:7.2f} {4:7.2f} {5:7.2f} {6:7.2f} {7:7.2f} {8:7.2f}'.format( 
-                spec2.thermo.getEnthalpy(298) / 4184.,
-                spec2.thermo.getEntropy(298) / 4.184,
+                spec2.thermo.getEnthalpy(300) / 4184.,
+                spec2.thermo.getEntropy(300) / 4.184,
                 spec2.thermo.getHeatCapacity(300) / 4.184,
                 spec2.thermo.getHeatCapacity(400) / 4.184,
                 spec2.thermo.getHeatCapacity(500) / 4.184,
