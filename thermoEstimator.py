@@ -15,6 +15,7 @@ from rmgpy.data.thermo import ThermoLibrary
 from rmgpy.chemkin import writeThermoEntry
 from rmgpy.rmg.model import makeThermoForSpecies
 from scoop import futures,shared
+import resource # to see memory usage
 ################################################################################
 def chunks(l, n):
     """ 
@@ -23,31 +24,43 @@ def chunks(l, n):
     for i in range(0, len(l), n):
         yield l[i:i+n]
         
-def runThermoEstimator(inputFile):
+def runThermoEstimator(inputFile,chunkSize):
     """
     Estimate thermo for a list of species using RMG and the settings chosen inside a thermo input file.
     """
-    
+    logging.debug("Maximum memory usage:{0} MBs.".format(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1000))
     rmg = RMG()
+
+    logging.debug("RMG object created...")
+    logging.debug("Maximum memory usage:{0} MBs.".format(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1000))
     rmg.loadThermoInput(inputFile)
+    logging.debug("Input file loaded...")
+    logging.debug("Maximum memory usage:{0} MBs.".format(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1000))
     
     # initialize and load the database as well as any QM settings
     rmg.loadThermoDatabase()
+    logging.debug("Thermo database loaded...")
+    logging.debug("Maximum memory usage:{0} MBs.".format(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1000))
     if rmg.quantumMechanics:
-        logging.debug("Initialize QM")
         rmg.quantumMechanics.initialize()
+        logging.debug("QM module initialized...")
+        logging.debug("Maximum memory usage:{0} MBs.".format(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1000))
     
     # Generate the thermo for all the species and write them to chemkin format as well as
     # ThermoLibrary format with values for H, S, and Cp's.
     output = open(os.path.join(rmg.outputDirectory, 'output.txt'),'wb')
-    library = ThermoLibrary(name='Thermo Estimation Library')
     listOfSpecies=rmg.initialSpecies
-    chunksize=1000
-    if rmg.reactionModel.quantumMechanics: logging.debug("qmValue fine @ runThermoEstimator")
+    logging.debug("Initial species loaded...")
+    logging.debug("Maximum memory usage:{0} MBs.".format(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1000))
+
+    chunkIndex=0
     shared.setConst(qmValue=rmg.reactionModel.quantumMechanics)
-    for chunk in list(chunks(listOfSpecies,chunksize)):
+    for chunk in list(chunks(listOfSpecies,chunkSize)):
         # There will be no stdout from workers except the main one.
         outputList = futures.map(makeThermoForSpecies, chunk)
+        if chunkIndex == 0: libraryName = 'ThermoLibrary'
+        else: libraryName = 'ThermoLibrary'+ str(chunkIndex)
+        library = ThermoLibrary(name=libraryName)
         for species, thermo in zip(chunk, outputList):
             logging.debug("Species {0}".format(species.label))
             species.thermo = thermo   
@@ -60,16 +73,19 @@ def runThermoEstimator(inputFile):
             )
             output.write(writeThermoEntry(species))
             output.write('\n')
-        library.save(os.path.join(rmg.outputDirectory,'ThermoLibrary.py'))
-    
+        logging.debug("Thermo library created...")
+        logging.debug("Maximum memory usage:{0} MBs.".format(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1000))
+        library.save(os.path.join(rmg.outputDirectory, libraryName + '.py'))
+        del library
+        chunkIndex += 1
     output.close()
+    logging.debug("runThermoEstimator is done.")
     
 
 
 ################################################################################
 
 if __name__ == '__main__':
-
     import argparse
     
     parser = argparse.ArgumentParser(description=
@@ -83,6 +99,8 @@ if __name__ == '__main__':
      """)
     parser.add_argument('input', metavar='FILE', type=str, nargs=1,
         help='Thermo input file')
+    parser.add_argument('CHUNKSIZE', type=int, default=10000,nargs='?', help='''chunk size that determines number of species passed to 
+         workers at once, should be larger than the number of processors. (default value is 10000)''')
     parser.add_argument('-p', '--profile', action='store_true', help='run under cProfile to gather profiling statistics, and postprocess them if job completes')
     parser.add_argument('-P', '--postprocess', action='store_true', help='postprocess profiling statistics from previous [failed] run; does not run the simulation')
     group = parser.add_mutually_exclusive_group()
@@ -94,10 +112,10 @@ if __name__ == '__main__':
     
     inputFile = os.path.abspath(args.input[0])
     inputDirectory = os.path.abspath(os.path.dirname(args.input[0]))
-    
+    chunkSize = args.CHUNKSIZE
     if args.postprocess:
         print "Postprocessing the profiler statistics (will be appended to thermo.log)"
-        print  "Use `dot -Tpdf thermo_profile.dot -o thermo_profile.pdf`"
+        print  "Use `dot -Tpdf RMG.profile.dot -o RMG.profile.pdf`"
         args.profile = True
     
     if args.profile:
@@ -105,7 +123,7 @@ if __name__ == '__main__':
         global_vars = {}
         local_vars = {'inputFile': inputFile,'runThermoEstimator':runThermoEstimator}
         command = """runThermoEstimator(inputFile)"""
-        stats_file = 'thermo.profile'
+        stats_file = 'RMG.profile'
         print("Running under cProfile")
         if not args.postprocess:
         # actually run the program!
@@ -122,4 +140,4 @@ if __name__ == '__main__':
         else: level = logging.INFO
         initializeLog(level, 'RMG.log')
         logging.debug("runThermoEstimator starts...")
-        runThermoEstimator(inputFile)
+        runThermoEstimator(inputFile,chunkSize)
