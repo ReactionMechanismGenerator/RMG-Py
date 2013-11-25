@@ -73,9 +73,10 @@ def runThermoEstimator(inputFile,chunkSize):
             )
             output.write(writeThermoEntry(species))
             output.write('\n')
-        logging.debug("Thermo library created...")
         logging.debug("Maximum memory usage:{0} MBs.".format(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1000))
-        library.save(os.path.join(rmg.outputDirectory, libraryName + '.py'))
+        libraryFile = libraryName + '.py'
+        library.save(os.path.join(rmg.outputDirectory, libraryFile))
+        logging.debug("{0} created.".format(libraryFile))
         del library
         chunkIndex += 1
     output.close()
