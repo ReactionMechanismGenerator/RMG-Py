@@ -25,8 +25,10 @@ Test the value of the reduced Planck constant. ... ok
 Test the value of the speed of light in a vacuum. ... ok
 Test that the new ThermoDatabase generates appropriate thermo data. ... FAIL
 Test that the old ThermoDatabase generates relatively accurate thermo data. ... FAIL
-Test that the new ThermoDatabase generates appropriate thermo data. ... FAIL
-Test that the old ThermoDatabase generates relatively accurate thermo data. ... FAIL
+Test we generate symmetry numbers correctly. ... FAIL
+Test that the new ThermoDatabase generates appropriate thermo data. for Aromatics. ... FAIL
+Test that the old ThermoDatabase generates relatively accurate thermo data. for Aromatics. ... FAIL
+Test we generate symmetry numbers correctly. for Aromatics. ... FAIL
 Test that the Arrhenius A property was properly set. ... ok
 Test that the Arrhenius Ea property was properly set. ... ok
 Test that the Arrhenius T0 property was properly set. ... ok
@@ -755,33 +757,49 @@ AssertionError: -78.55632 != -78.562189 within 4 places
 FAIL: Test that the new ThermoDatabase generates appropriate thermo data.
 ----------------------------------------------------------------------
 Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermoTest.py", line 78, in testNewThermoGeneration
-    self.assertAlmostEqual(H298, thermoData.getEnthalpy(298) / 4184, places=1)
-AssertionError: 32.5 != 32.75 within 1 places
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermoTest.py", line 79, in testNewThermoGeneration
+    self.assertAlmostEqual(H298, thermoData.getEnthalpy(298) / 4184, places=1, msg="H298 error for {0}".format(smiles))
+AssertionError: H298 error for C1C=CC=C1
 
 ======================================================================
 FAIL: Test that the old ThermoDatabase generates relatively accurate thermo data.
 ----------------------------------------------------------------------
 Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermoTest.py", line 104, in testOldThermoGeneration
-    self.assertAlmostEqual(H298, thermoData.getEnthalpy(298) / 4184, places=1)
-AssertionError: 32.5 != 32.75 within 1 places
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermoTest.py", line 126, in testOldThermoGeneration
+    self.assertAlmostEqual(H298, thermoData.getEnthalpy(298) / 4184, places=1, msg="H298 error for {0}".format(smiles))
+AssertionError: H298 error for C1C=CC=C1
 
 ======================================================================
-FAIL: Test that the new ThermoDatabase generates appropriate thermo data.
+FAIL: Test we generate symmetry numbers correctly.
 ----------------------------------------------------------------------
 Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermoTest.py", line 78, in testNewThermoGeneration
-    self.assertAlmostEqual(H298, thermoData.getEnthalpy(298) / 4184, places=1)
-AssertionError: 19.8 != 40.76 within 1 places
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermoTest.py", line 105, in testSymmetryNumberGeneration
+    self.assertEqual(molecule.calculateSymmetryNumber(), symm, msg="Symmetry number error for {0}".format(smiles))
+AssertionError: Symmetry number error for C1C=CC=C1
 
 ======================================================================
-FAIL: Test that the old ThermoDatabase generates relatively accurate thermo data.
+FAIL: Test that the new ThermoDatabase generates appropriate thermo data. for Aromatics.
 ----------------------------------------------------------------------
 Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermoTest.py", line 104, in testOldThermoGeneration
-    self.assertAlmostEqual(H298, thermoData.getEnthalpy(298) / 4184, places=1)
-AssertionError: 19.8 != 40.76 within 1 places
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermoTest.py", line 79, in testNewThermoGeneration
+    self.assertAlmostEqual(H298, thermoData.getEnthalpy(298) / 4184, places=1, msg="H298 error for {0}".format(smiles))
+AssertionError: H298 error for c1ccccc1
+
+======================================================================
+FAIL: Test that the old ThermoDatabase generates relatively accurate thermo data. for Aromatics.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermoTest.py", line 126, in testOldThermoGeneration
+    self.assertAlmostEqual(H298, thermoData.getEnthalpy(298) / 4184, places=1, msg="H298 error for {0}".format(smiles))
+AssertionError: H298 error for c1ccccc1
+
+======================================================================
+FAIL: Test we generate symmetry numbers correctly. for Aromatics.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermoTest.py", line 105, in testSymmetryNumberGeneration
+    self.assertEqual(molecule.calculateSymmetryNumber(), symm, msg="Symmetry number error for {0}".format(smiles))
+AssertionError: Symmetry number error for c1ccccc1
 
 ======================================================================
 FAIL: Test the Molecule.isAromatic() method.
@@ -936,9 +954,9 @@ rmgpy.transport                     31      3      0      0    90%   58-59, 65
 ----------------------------------------------------------------------------
 TOTAL                            12928  10652   5424   5030    15%   
 ----------------------------------------------------------------------
-Ran 716 tests.
+Ran 718 tests.
 
-FAILED (errors=1, failures=17)
+FAILED (errors=1, failures=19)
 Solver jacobian
 [[ -4.85410044 -12.94297143   3.2392154   -7.55039077   3.23477055]
  [ -4.85410044 -12.94297143   3.2392154   -7.55039077   3.23477055]
