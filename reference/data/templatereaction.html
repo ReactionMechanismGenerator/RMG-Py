@@ -144,6 +144,13 @@ are forced to have a non-negative barrier.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.data.kinetics.TemplateReaction.fixDiffusionLimitedA">
+<tt class="descname">fixDiffusionLimitedA</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.TemplateReaction.fixDiffusionLimitedA" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decrease the pre-exponential factor (A) by a factor of getDiffusionFactor
+to account for the diffusion limit.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.data.kinetics.TemplateReaction.generate3dTS">
 <tt class="descname">generate3dTS</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.TemplateReaction.generate3dTS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate the 3D structure of the transition state. Called from 
@@ -282,6 +289,9 @@ concentration.</p>
 <dd><p>Return the overall rate coefficient for the forward reaction at
 temperature <cite>T</cite> in K and pressure <cite>P</cite> in Pa, including any reaction
 path degeneracies.</p>
+<p>If diffusionLimiter is enabled, the reaction is in the liquid phase and we use
+a diffusion limitation to correct the rate. If not, then use the intrinsic rate
+coefficient.</p>
 </dd></dl>
 
 <dl class="method">
