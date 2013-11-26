@@ -17,6 +17,7 @@ class TestSoluteDatabase(TestCase):
         pass
 
     def testSoluteGeneration(self):
+        "Test we can estimate Abraham solute paramaters correctly"
         
         self.database = SolvationDatabase()
         self.database.load(os.path.join(settings['database.directory'], 'solvation'))
@@ -55,6 +56,7 @@ class TestSoluteDatabase(TestCase):
             print self.assertAlmostEqual(soluteData.A, A)
 
     def testCorrectionGeneration(self):
+        "Test we can estimate solvation thermochemistry."
         self.database = SolvationDatabase()
         self.database.load(os.path.join(settings['database.directory'], 'solvation'))
         self.testCases = [
@@ -98,8 +100,8 @@ class TestSoluteDatabase(TestCase):
             solvationCorrection = self.database.getSolvationCorrection(soluteData, solventData)
             #print("Enthalpy of solvation for {0} in {1} is {2} J/mol".format(soluteName, solventName, solvationCorrection.enthalpy))
             #print("Enthalpy: {0} {1} {2}".format(soluteName, H, solvationCorrection.enthalpy))
-            print("Gibbs: {0} {1} {2}".format(soluteName, G, solvationCorrection.gibbs))
-            #self.assertAlmostEqual(solvationCorrection.enthalpy/10000., H/10000.,0) #0 decimal place, in 10kJ.
+            #print("Gibbs: {0} {1} {2}".format(soluteName, G, solvationCorrection.gibbs))
+            self.assertAlmostEqual(solvationCorrection.enthalpy / 10000., H / 10000., 0, msg="Solvation enthalpy discrepancy ({2:.0f}!={3:.0f}) for {0} in {1}".format(soluteName, solventName, solvationCorrection.enthalpy, H))  #0 decimal place, in 10kJ.
 
 #####################################################
 
