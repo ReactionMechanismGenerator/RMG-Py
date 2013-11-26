@@ -1778,4 +1778,14 @@ class Molecule(Graph):
             if atom.radicalElectrons == 2:
                 if atom.spinMultiplicity == 3:
                     atom.spinMultiplicity = 1
+                    
+    def getRadicalAtoms(self):
+        """
+        Return the atoms in the molecule that have unpaired electrons.
+        """
+        radicalAtomsList = []
+        for atom in self.vertices:
+            if atom.radicalElectrons > 0:
+                radicalAtomsList.append(atom)
+        return radicalAtomsList
 
