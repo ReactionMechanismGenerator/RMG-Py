@@ -220,7 +220,7 @@ class QMReaction:
                 else:
                     converged, internalCoord = self.verifyOutputFile()
                 
-                if internalCoord:
+                if internalCoord and not converged:
                     self.writeInputFile(2)
                     converged = self.run()
                 

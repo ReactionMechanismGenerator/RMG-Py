@@ -375,7 +375,7 @@ class GaussianTS(QMReaction, Gaussian):
         obConversion.SetOptions('k', openbabel.OBConversion.OUTOPTIONS)
         input_string = obConversion.WriteString(mol)
         numProc = '%nprocshared=' + '4' # could be something that could be set in the qmSettings
-        top_keys = self.keywords[0]
+        top_keys = self.keywords[attempt - 1]
         title = ' ' + self.uniqueID
         with open(self.inputFilePath, 'w') as gaussianFile:
             gaussianFile.write(numProc)
@@ -567,7 +567,7 @@ class GaussianTS(QMReaction, Gaussian):
                                     reactants = mol1.split(),
                                     products = mol2.split(),                     
                                     )
-
+                                    
             if targetReaction.isIsomorphic(testReaction):
                 return True
             else:
