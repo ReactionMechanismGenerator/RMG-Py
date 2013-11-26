@@ -1097,7 +1097,7 @@ class KineticsFamily(Database):
         # Check that reactant structures are allowed in this family
         # If not, then stop
         for struct in reactantStructures:
-            if self.isMoleculeForbidden(struct) and forward:
+            if self.isMoleculeForbidden(struct):
                 raise ForbiddenStructureException()
 
         # Generate the product structures by applying the forward reaction recipe
@@ -1150,43 +1150,170 @@ class KineticsFamily(Database):
         # Generate other possible electronic states
         electronicStrucutresList1 = []
         electronicStrucutresList2 = []
-        struct01 = productStructures[0]
-        atoms01 = struct01.getLabeledAtoms()
-        for label01 in atoms01:
-            spin1 = struct01.getLabeledAtom(label01).spinMultiplicity
-            while spin1 > 0.1:
-                struct1 = deepcopy(productStructures[0])
-                struct1.getLabeledAtom(label01).setSpinMultiplicity(spin1)
-                struct1.updateAtomTypes()
-                electronicStrucutresList1.append(struct1)
-                spin1 = spin1 - 2
+        
+        struct1 = productStructures[0]
+        struct1a = struct1.copy(True)
+        struct1a.updateAtomTypes()
+        electronicStrucutresList1.append(struct1a)
+        atoms1 = struct1.getRadicalAtoms()
+        
+        for atom1 in atoms1:
+            
+            radical1 = atom1.radicalElectrons
+            spin1 = atom1.spinMultiplicity
+            
+            if radical1 > 1 and radical1 < 4:
+                
+                if radical1 == 2 and spin1 == 3:
+                    atom1.setSpinMultiplicity(1)
+                    struct1a = struct1.copy(True)
+                    struct1a.updateAtomTypes()
+                elif radical1 == 2 and spin1 == 1:
+                    atom1.setSpinMultiplicity(3)
+                    struct1a = struct1.copy(True)
+                    struct1a.updateAtomTypes()
+                elif radical1 == 3 and spin1 == 4:
+                    atom1.setSpinMultiplicity(2)
+                    struct1a = struct1.copy(True)
+                    struct1a.updateAtomTypes()
+                elif radical1 == 3 and spin1 == 2:
+                    atom1.setSpinMultiplicity(4)
+                    struct1a = struct1.copy(True)
+                    struct1a.updateAtomTypes()
+                
+                for electronicStrucutres in electronicStrucutresList1:
+                    if electronicStrucutres.isIsomorphic(struct1a):
+                        break
+                else:
+                    electronicStrucutresList1.append(struct1a)
+            
+            elif radical1 == 4:
+                
+                if spin1 == 5:
+                    atom1.setSpinMultiplicity(3)
+                    struct1a = struct1.copy(True)
+                    struct1a.updateAtomTypes()
+                
+                    atom1.setSpinMultiplicity(1)
+                    struct1b = struct1.copy(True)
+                    struct1b.updateAtomTypes()
+                elif spin1 == 3:
+                    atom1.setSpinMultiplicity(5)
+                    struct1a = struct1.copy(True)
+                    struct1a.updateAtomTypes()
+                
+                    atom1.setSpinMultiplicity(1)
+                    struct1b = struct1.copy(True)
+                    struct1b.updateAtomTypes()
+                elif spin1 == 1:
+                    atom1.setSpinMultiplicity(5)
+                    struct1a = struct1.copy(True)
+                    struct1a.updateAtomTypes()
+                
+                    atom1.setSpinMultiplicity(3)
+                    struct1b = struct1.copy(True)
+                    struct1b.updateAtomTypes()
+                    
+                for electronicStrucutres in electronicStrucutresList1:
+                    if electronicStrucutres.isIsomorphic(struct1a):
+                        break
+                else:
+                    electronicStrucutresList1.append(struct1a)
+                    
+                for electronicStrucutres in electronicStrucutresList1:
+                    if electronicStrucutres.isIsomorphic(struct1b):
+                        break
+                else:
+                    electronicStrucutresList1.append(struct1b)
+                            
+        if len(productStructures) == 2:
+        
+            struct2 = productStructures[1]
+            struct2a = struct2.copy(True)
+            struct2a.updateAtomTypes()
+            electronicStrucutresList2.append(struct2a)
+            atoms2 = struct2.getRadicalAtoms()
+        
+            for atom2 in atoms2:
+            
+                radical2 = atom2.radicalElectrons
+                spin2 = atom2.spinMultiplicity
+            
+                if radical2 > 1 and radical2 < 4:
+                    
+                    if radical2 == 2 and spin2 == 3:
+                        atom2.setSpinMultiplicity(1)
+                        struct2a = struct2.copy(True)
+                        struct2a.updateAtomTypes()
+                    elif radical2 == 2 and spin2 == 1:
+                        atom2.setSpinMultiplicity(3)
+                        struct2a = struct2.copy(True)
+                        struct2a.updateAtomTypes()
+                    elif radical2 == 3 and spin2 == 4:
+                        atom2.setSpinMultiplicity(2)
+                        struct2a = struct2.copy(True)
+                        struct2a.updateAtomTypes()
+                    elif radical2 == 3 and spin2 == 2:
+                        atom2.setSpinMultiplicity(4)
+                        struct2a = struct2.copy(True)
+                        struct2a.updateAtomTypes()
+                
+                    for electronicStrucutres in electronicStrucutresList2:
+                        if electronicStrucutres.isIsomorphic(struct2a):
+                            break
+                    else:
+                        electronicStrucutresList2.append(struct2a)
+            
+                elif radical2 == 4:
+                
+                    if spin2 == 5:
+                        atom2.setSpinMultiplicity(3)
+                        struct2a = struct2.copy(True)
+                        struct2a.updateAtomTypes()
+                
+                        atom2.setSpinMultiplicity(1)
+                        struct2b = struct2.copy(True)
+                        struct2b.updateAtomTypes()
+                    elif spin2 == 3:
+                        atom2.setSpinMultiplicity(5)
+                        struct2a = struct2.copy(True)
+                        struct2a.updateAtomTypes()
+                
+                        atom2.setSpinMultiplicity(1)
+                        struct2b = struct2.copy(True)
+                        struct2b.updateAtomTypes()
+                    elif spin2 == 1:
+                        atom2.setSpinMultiplicity(5)
+                        struct2a = struct2.copy(True)
+                        struct2a.updateAtomTypes()
+                
+                        atom2.setSpinMultiplicity(3)
+                        struct2b = struct2.copy(True)
+                        struct2b.updateAtomTypes()
+                    
+                    for electronicStrucutres in electronicStrucutresList2:
+                        if electronicStrucutres.isIsomorphic(struct2a):
+                            break
+                    else:
+                        electronicStrucutresList2.append(struct2a)
+                    
+                    for electronicStrucutres in electronicStrucutresList2:
+                        if electronicStrucutres.isIsomorphic(struct2b):
+                            break
+                    else:
+                        electronicStrucutresList2.append(struct2b)
         
         if len(productStructures) == 2:
-            struct02 = productStructures[1]
-            atoms02 = struct02.getLabeledAtoms()
-            for label02 in atoms02:
-                spin2 = struct02.getLabeledAtom(label02).spinMultiplicity
-                while spin2 > 0.1:
-                    struct2 = deepcopy(productStructures[1])
-                    struct2.getLabeledAtom(label02).setSpinMultiplicity(spin2)
-                    struct2.updateAtomTypes()
-                    electronicStrucutresList2.append(struct2)
-                    spin2 = spin2 - 2
-        
-        # Check that product structures are allowed in this family
-        # If not, then stop
-        forbiddenStructure = False
-        for struct in productStructures:
-            if self.isMoleculeForbidden(struct):
-                forbiddenStructure = True
-        
-        if not forbiddenStructure:
-            productStructuresList.append(productStructures)
             
-        for struct1 in electronicStrucutresList1:
-            for struct2 in electronicStrucutresList2:
-                if not self.isMoleculeForbidden(struct1) and not self.isMoleculeForbidden(struct2):
-                    productStructuresList.append([struct1,struct2])
+            for structa in electronicStrucutresList1:
+                for structb in electronicStrucutresList2:
+                    if not (self.isMoleculeForbidden(structa) or self.isMoleculeForbidden(structb)):
+                        productStructuresList.append([structa,structb])
+        elif len(productStructures) == 1:
+            
+            for structa in electronicStrucutresList1:
+                if not (self.isMoleculeForbidden(structa)):
+                    productStructuresList.append([structa])
                     
         return productStructuresList
 
