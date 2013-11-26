@@ -49,6 +49,7 @@ from rmgpy.statmech import  Conformer
 
 from rmgpy.data.base import Entry
 from rmgpy.data.thermo import *
+from rmgpy.data.solvation import *
 from rmgpy.data.kinetics import *
 from rmgpy.data.statmech import *
 from rmgpy.transport import TransportData
@@ -64,6 +65,10 @@ from pdep import PDepReaction, PDepNetwork, PressureDependenceError
 ################################################################################
 
 class Species(rmgpy.species.Species):
+    solventName = None
+    solventData = None
+    solventViscosity = None
+    diffusionTemp = None
 
     def __init__(self, index=-1, label='', thermo=None, conformer=None, 
                  molecule=None, transportData=None, molecularWeight=None, 
@@ -154,9 +159,9 @@ class Species(rmgpy.species.Species):
         if thermo0 is None:
             thermo0 = database.thermo.getThermoData(self)
 
-        return self.processThermoData(thermo0, thermoClass)
+        return self.processThermoData(database, thermo0, thermoClass)
 
-    def processThermoData(self, thermo0, thermoClass=NASA):
+    def processThermoData(self, database, thermo0, thermoClass=NASA):
         """
         Converts via Wilhoit into required `thermoClass` and sets `E0`.
         
@@ -180,6 +185,20 @@ class Species(rmgpy.species.Species):
             wilhoit = thermo0.toWilhoit(Cp0=Cp0, CpInf=CpInf)
             
         wilhoit.comment = thermo0.comment
+    
+        # Add on solvation correction
+        if Species.solventData:
+        	logging.info("Making solvent correction for {0}".format(Species.solventName))
+        	soluteData = database.solvation.getSoluteData(self)
+        	solvation_correction =  database.solvation.getSolvationCorrection(soluteData, Species.solventData)
+        	# correction is added to the entropy and enthalpy
+        	wilhoit.S0.value_si = (wilhoit.S0.value_si + solvation_correction.entropy)
+        	wilhoit.H0.value_si = (wilhoit.H0.value_si + solvation_correction.enthalpy)
+            
+        # Compute E0 by extrapolation to 0 K
+        if self.conformer is None:
+            self.conformer = Conformer()
+        self.conformer.E0 = (wilhoit.getEnthalpy(1.0)*1e-3,"kJ/mol")
         
         # Convert to desired thermo class
         if isinstance(thermo0, thermoClass):

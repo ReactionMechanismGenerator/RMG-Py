@@ -39,7 +39,7 @@ from copy import copy, deepcopy
 
 from rmgpy.data.base import Database, Entry, LogicNode, LogicOr, ForbiddenStructures,\
                             ForbiddenStructureException, getAllCombinations
-from rmgpy.reaction import Reaction, ReactionError
+from rmgpy.reaction import Reaction
 from rmgpy.kinetics import Arrhenius, ArrheniusEP, ThirdBody, Lindemann, Troe, \
                            PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, \
                            Chebyshev, KineticsData, PDepKineticsModel
