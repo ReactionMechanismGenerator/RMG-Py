@@ -69,7 +69,7 @@ def Ffloat(string):
     """
     Parse a Fortran-ish string into a float, like "1.00D 03"
     """
-    return float(string.replace("D", "E").replace("E ", "E+"))
+    return float(string.replace("D", "E").replace("E ", "E+").replace("e ", "E+"))
     
 def readThermoEntry(entry, Tmin=0, Tint=0, Tmax=0):
     """
