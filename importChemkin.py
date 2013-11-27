@@ -412,9 +412,12 @@ class ModelMatcher():
         logging.info("Loaded database.")
 
         # Should probably look elsewhere, but this is where they tend to be for now...
-        dir = os.path.abspath(os.path.join(os.path.split(os.path.abspath(args.thermo))[0], '..'))
+        directory = os.path.abspath(os.path.join(os.path.split(os.path.abspath(args.thermo))[0], '..'))
+        # if that's some subfolder of RMG-models, move up to RMG-models level
+        if directory.find('RMG-models'):
+            directory = directory[:directory.find('RMG-models')]+'RMG-models'
         logging.info("Looking in {dir} for additional thermo libraries to import".format(dir=dir))
-        for root, dirs, files in os.walk(dir):
+        for root, dirs, files in os.walk(directory):
             for filename in files:
                 if not filename.endswith(".thermo.py"):
                     continue
