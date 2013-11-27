@@ -45,3 +45,5 @@ cdef class HeatCapacityModel:
     cpdef bint isSimilarTo(self, HeatCapacityModel other) except -2
 
     cpdef bint isIdenticalTo(self, HeatCapacityModel other) except -2
+    
+    cpdef double discrepancy(self, HeatCapacityModel other) except -2

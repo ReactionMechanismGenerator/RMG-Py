@@ -62,54 +62,84 @@ class ChemkinError(Exception):
 
 ################################################################################
 
-def readThermoEntry(entry):
+def Ffloat(string):
+    """
+    Parse a Fortran-ish string into a float, like "1.00D 03"
+    """
+    return float(string.replace("D", "E").replace("E ", "E+"))
+    
+def readThermoEntry(entry, Tmin=0, Tint=0, Tmax=0):
     """
     Read a thermodynamics `entry` for one species in a Chemkin file. Returns
     the label of the species and the thermodynamics model as a :class:`NASA`
     object.
+    
+    Format specification at http://www2.galcit.caltech.edu/EDL/public/formats/chemkin.html
     """
     lines = entry.splitlines()
-    species = str(lines[0][0:24].split()[0].strip())
+    species = str(lines[0][0:18].split()[0].strip())
     
     comment = lines[0][len(species):24].strip()
     formula = {}
-    for i in range(24,40,5):
+    for i in [24, 29, 34, 39, 74]:
         element,count = lines[0][i:i+2].strip(), lines[0][i+2:i+5].strip()
         if element:
             try:
-                formula[element]=int(count)
+                count = int(count)
             except ValueError:
                 # Chemkin allows float values for the number of atoms, so try this next.
-                formula[element]=int(float(count))
-            
+                try:
+                    count = int(float(count))
+                except ValueError:
+                    logging.info("Trouble reading line '{0}' element segment '{1}'".format(lines[0].strip(),lines[0][i:i+5]))
+                    if count == '' and re.match('\.?0*', element):
+                        if i == 74: logging.info("Assuming it's spillover from Tint, and ignoring.")
+                        else: logging.warning("Assuming it's not meant to be there, although it would be good to fix the chemkin file.")
+                        count = 0
+                    else:
+                        raise
+            if count != 0: # Some people put garbage elements in, with zero count. Ignore these. Allow negative counts though (eg. negative one electron)
+                formula[element] = count
     phase = lines[0][44]
-    assert phase.upper() == 'G', "Was expecting gas phase thermo data for {0}".format(species)
+    if phase.upper() != 'G':
+        logging.warning("Was expecting gas phase thermo data for {0}. Skipping thermo data.".format(species))
+        return species, None, None
     
     # Extract the NASA polynomial coefficients
     # Remember that the high-T polynomial comes first!
     try:
-        Tmin = float(lines[0][45:55].strip())
-        Tmax = float(lines[0][55:65].strip())
-        Tint = float(lines[0][65:75].strip())
+        try:
+            Tmin = float(lines[0][45:55].strip())
+        except ValueError:
+            pass
+        try:
+            Tmax = float(lines[0][55:65].strip())
+        except ValueError:
+            pass
+        try:
+            Tint = float(lines[0][65:73].strip())
+        except ValueError:
+            pass
+        a0_high = Ffloat(lines[1][0:15].strip())
+        a1_high = Ffloat(lines[1][15:30].strip())
+        a2_high = Ffloat(lines[1][30:45].strip())
+        a3_high = Ffloat(lines[1][45:60].strip())
+        a4_high = Ffloat(lines[1][60:75].strip())
     
-        a0_high = float(lines[1][0:15].strip())
-        a1_high = float(lines[1][15:30].strip())
-        a2_high = float(lines[1][30:45].strip())
-        a3_high = float(lines[1][45:60].strip())
-        a4_high = float(lines[1][60:75].strip())
+        a5_high = Ffloat(lines[2][0:15].strip())
+        a6_high = Ffloat(lines[2][15:30].strip())
+        a0_low = Ffloat(lines[2][30:45].strip())
+        a1_low = Ffloat(lines[2][45:60].strip())
+        a2_low = Ffloat(lines[2][60:75].strip())
     
-        a5_high = float(lines[2][0:15].strip())
-        a6_high = float(lines[2][15:30].strip())
-        a0_low = float(lines[2][30:45].strip())
-        a1_low = float(lines[2][45:60].strip())
-        a2_low = float(lines[2][60:75].strip())
-    
-        a3_low = float(lines[3][0:15].strip())
-        a4_low = float(lines[3][15:30].strip())
-        a5_low = float(lines[3][30:45].strip())
-        a6_low = float(lines[3][45:60].strip())
-    except (IndexError, ValueError):
-        raise ChemkinError('Error while reading thermo entry for species {0}'.format(species))
+        a3_low = Ffloat(lines[3][0:15].strip())
+        a4_low = Ffloat(lines[3][15:30].strip())
+        a5_low = Ffloat(lines[3][30:45].strip())
+        a6_low = Ffloat(lines[3][45:60].strip())
+    except (IndexError, ValueError), e:
+        logging.warning('Error while reading thermo entry for species {0}'.format(species))
+        logging.warning(e.message)
+        return species, None, None
     
     # Construct and return the thermodynamics model
     thermo = NASA(
@@ -218,6 +248,9 @@ def readKineticsEntry(entry, speciesDict, Aunits, Eunits):
         if product.upper() == 'M':
             pass
         elif product not in speciesDict:
+            if re.match('[0-9.]+',product):
+                logging.warning("Looks like reaction {0!r} has fractional stoichiometry, which RMG cannot handle. Ignoring".format(lines[0]))
+                raise ChemkinError('Skip reaction!')
             raise ChemkinError('Unexpected product "{0}" in reaction {1}.'.format(product, reaction))
         else:
             for i in range(stoichiometry):
@@ -304,6 +337,14 @@ def readKineticsEntry(entry, speciesDict, Aunits, Eunits):
                     T1 = (T1,"K"),
                     T2 = (T2,"K") if T2 is not None else None,
                 )
+            elif line.strip().startswith('SRI'):
+                pass
+                """To define an SRI pressure-dependent reaction, in addition to the LOW or HIGH parameters, the 
+                keyword SRI followed by three or five parameters must be included in the following order: a, b,
+                c, d, and e [Eq. (74)]. The fourth and fifth parameters are options. If only the first three are 
+                stated, then by default d = 1 and e = 0. 
+                """
+                # see eg. http://www.dipic.unipd.it/faculty/canu/files/Comb/Docs/chemkinCK.pdf
             
             elif 'CHEB' in line:
                 # Chebyshev parameters
@@ -356,10 +397,16 @@ def readKineticsEntry(entry, speciesDict, Aunits, Eunits):
                 # Assume a list of collider efficiencies
                 try:
                     for collider, efficiency in zip(case_preserved_tokens[0::2], case_preserved_tokens[1::2]):
+                        try:
+                            efficiency = float(efficiency.strip())
+                        except ValueError:
+                            error_msg = "{0!r} doesn't look like a collision efficiency for species {1} in line {2!r}".format(efficiency,collider.strip(),line)
+                            logging.error(error_msg)
+                            raise ChemkinError(error_msg)
                         if collider.strip() in speciesDict:
-                            efficiencies[speciesDict[collider.strip()].molecule[0]] = float(efficiency.strip())
-                        else:
-                            efficiencies[speciesDict[collider.strip().upper()].molecule[0]] = float(efficiency.strip())
+                            efficiencies[speciesDict[collider.strip()].molecule[0]] = efficiency
+                        else: # try it with capital letters? Not sure whose malformed chemkin files this is needed for.
+                            efficiencies[speciesDict[collider.strip().upper()].molecule[0]] = efficiency
                 except IndexError:
                     error_msg = 'Could not read collider efficiencies for reaction: {0}.\n'.format(reaction)
                     error_msg += 'The following line was parsed incorrectly:\n{0}'.format(line)
@@ -639,7 +686,7 @@ def loadTransportFile(path, speciesDict):
                 species.polarizability = (float(data[4]),'angstrom^3')
                 species.Zrot = (float(data[5]),'')
 
-def loadChemkinFile(path, dictionaryPath=None, transportPath=None, readComments = True):
+def loadChemkinFile(path, dictionaryPath=None, transportPath=None, readComments = True, thermoPath = None):
     """
     Load a Chemkin input file to `path` on disk, returning lists of the species
     and reactions in the Chemkin file.
@@ -684,7 +731,8 @@ def loadChemkinFile(path, dictionaryPath=None, transportPath=None, readComments 
                         speciesList.append(species)
                         speciesDict[label.upper()] = species                            
                 
-            elif 'THERM' in line.upper():
+            elif 'THERM' in line.upper() and thermoPath is None:
+                # Skip this if a thermo file is specified
                 # Unread the line (we'll re-read it in readThermoBlock())
                 f.seek(-len(line0), 1)
                 readThermoBlock(f, speciesDict)
@@ -697,6 +745,18 @@ def loadChemkinFile(path, dictionaryPath=None, transportPath=None, readComments 
                     
             line0 = f.readline()
             
+    # Read in the thermo data from the thermo file        
+    if thermoPath:
+        with open(thermoPath, 'r') as f:
+            line0 = f.readline()
+            while line0 != '':
+                line = removeCommentFromLine(line0)[0]
+                line = line.strip()
+                if 'THERM' in line.upper():
+                    f.seek(-len(line0), 1)
+                    readThermoBlock(f, speciesDict)  
+                    break
+                line0 = f.readline()
     # Index the reactions now to have identical numbering as in Chemkin 
     index = 0
     for reaction in reactionList:
@@ -855,27 +915,59 @@ def readThermoBlock(f, speciesDict):
     line = f.readline()
     assert line.upper().strip().startswith('THER'), "'{0}' doesn't begin with THERM statement.".format(line)
     line = f.readline()
-    thermo = ''
+    
+    # In case there are commented lines immediately after THER
+    meaningfulline, comment = removeCommentFromLine(line)
+    while not meaningfulline.strip():
+        line = f.readline()
+        meaningfulline, comment = removeCommentFromLine(line)
+    Tmin = Tint = Tmax = None
+    try:
+        Tmin = float(meaningfulline[0:9].strip())
+        Tint = float(meaningfulline[10:19].strip())
+        Tmax = float(meaningfulline[20:29].strip())
+        logging.info("Thermo file has default temperature range {0} to {1} and {1} to {2}".format(Tmin, Tint, Tmax))
+        line = f.readline()
+    except:
+        logging.info("Thermo file has no default temperature ranges")
+    
+    thermoBlock = ''
     comments = ''
-    while line != '' and 'END' not in line.upper():
+    while line != '' and not line.upper().strip().startswith('END'):
         line, comment = removeCommentFromLine(line)
         if comment: comments += comment.strip().replace('\t',', ') + '\n'
         if len(line) >= 80:
             if line[79] in ['1', '2', '3', '4']:
-                thermo += line
+                thermoBlock += line
                 if line[79] == '4':
-                    label, thermo, formula = readThermoEntry(thermo)
+                    label, thermo, formula = readThermoEntry(thermoBlock, Tmin=Tmin, Tint=Tint, Tmax=Tmax)
+                    if label not in speciesDict:
+                        logging.info("Ignoring thermo data for {0} because it's not in the requested list of species.".format(label))
+                        thermoBlock = ''
+                        line = f.readline()
+                        continue
+                    else:
+                        if thermo is None:
+                            logging.error("Problematic thermo block:\n{0}".format(thermoBlock))
+                            raise ChemkinError('Error while reading thermo entry for required species {0}'.format(label))
                     try:
                         formulaDict[label] = formula
                         speciesDict[label].thermo = thermo
-                        speciesDict[label].thermo.comment = getattr(speciesDict[label].thermo,'comment') + comments.strip()
+                        speciesDict[label].thermo.comment = getattr(speciesDict[label].thermo,'comment','') 
+                        if comments:
+                            speciesDict[label].thermo.comment += '\n{0}'.format(comments)
                         comments = ''
                     except KeyError:
                         if label.upper() in ['AR', 'N2', 'HE', 'NE']:
-                            pass
+                            logging.info('Skipping species"{0}" while reading thermodynamics entry.'.format(label))
                         else:
                             logging.warning('Skipping unexpected species "{0}" while reading thermodynamics entry.'.format(label))
-                    thermo = ''
+                    thermoBlock = ''
+                assert len(thermoBlock.split('/n'))<=4, "Should only have 4 lines in a thermo block:\n{0}".format(thermoBlock)
+            else:
+                logging.info("Ignoring line without 1,2,3 or 4 in 80th column: {0!r}".format(line))
+        else:
+            logging.info("Ignoring short line: {0!r}".format(line))
         line = f.readline()
     return formulaDict
 
@@ -1024,8 +1116,15 @@ def readReactionsBlock(f, speciesDict, readComments = True):
         
     reactionList = []
     for kinetics, comments in zip(kineticsList, commentsList):
-        reaction = readKineticsEntry(kinetics, speciesDict, Aunits, Eunits)
-        reaction = readReactionComments(reaction, comments, read = readComments)
+        try:
+            reaction = readKineticsEntry(kinetics, speciesDict, Aunits, Eunits)
+            reaction = readReactionComments(reaction, comments, read = readComments)
+        except ChemkinError, e:
+            if e.message == "Skip reaction!":
+                logging.warning("Skipping the reaction {0!r}".format(kinetics))
+                continue
+            else:
+                raise e
         reactionList.append(reaction)
         
     return reactionList

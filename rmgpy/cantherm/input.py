@@ -160,6 +160,7 @@ def transitionState(label, *args, **kwargs):
 
 def reaction(label, reactants, products, transitionState, kinetics=None, tunneling=''):
     global reactionDict, speciesDict, transitionStateDict
+    label = 'reaction'+transitionState
     if label in reactionDict:
         raise ValueError('Multiple occurrences of reaction with label {0!r}.'.format(label))
     logging.info('Loading reaction {0}...'.format(label))

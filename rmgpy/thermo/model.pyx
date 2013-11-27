@@ -173,3 +173,23 @@ cdef class HeatCapacityModel:
                 return False
 
         return True
+    
+    cpdef double discrepancy(self, HeatCapacityModel other) except -2:
+        """
+        Return some measure of how dissimilar `self` is from `other`.
+        
+        The measure is arbitrary, but hopefully useful for sorting purposes.
+        Discrepancy of 0 means they are identical
+        """
+        cdef double T
+        cdef double discrepancy
+        cdef list Tdata
+        
+        Tdata = [300,400,500,600,800,1000,1500,2000]
+        discrepancy = 0.0
+        for T in Tdata:
+            #discrepancy += abs(self.getHeatCapacity(T) / other.getHeatCapacity(T) - 1.0)
+            #discrepancy += abs(self.getEnthalpy(T) - other.getEnthalpy(T) )/1000
+            #discrepancy += abs(self.getEntropy(T) - other.getEntropy(T) )
+            discrepancy += abs(self.getFreeEnergy(T) - other.getFreeEnergy(T) )/1000
+        return discrepancy
