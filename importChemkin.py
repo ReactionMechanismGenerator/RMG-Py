@@ -402,11 +402,29 @@ class ModelMatcher():
             )
         rmgpy.rmg.input.quantumMechanics(
             software='mopac',
-            fileStore=os.path.join(rmgpy.getPath(), 'QMfiles'),
+            fileStore=os.path.join(os.path.normpath(os.path.join(rmgpy.getPath(), '..')), 'QMfiles'),
             scratchDirectory=None,  # not currently used
             onlyCyclics=True,
             maxRadicalNumber=0,
         )
+
+        """
+        An earlier version had the QMfiles path in the wrong place, so we see if there
+        are files there and move them if so. This block should be removed once it has been 
+        run once on all the computers used to run the old version of the importer...
+        """
+        oldQMpath = os.path.join(rmgpy.getPath(), 'QMfiles')
+        newQMpath = os.path.join(os.path.normpath(os.path.join(rmgpy.getPath(), '..')), 'QMfiles')
+        if os.path.exists(oldQMpath):
+            logging.warning("Moving old QM files from {0} to {1}".format(oldQMpath, newQMpath))
+            import shutil
+            for f in os.listdir(oldQMpath):
+                newFile = os.path.join(newQMpath, f)
+                if os.path.exists(newFile):
+                    os.remove(newFile)
+                shutil.move(os.path.join(oldQMpath, f), newFile)
+            os.rmdir(oldQMpath)
+        """ END of the block that should be removed"""
 
         rmg.loadDatabase()
         logging.info("Loaded database.")
