@@ -115,6 +115,7 @@ def parseCommandLineArguments():
     parser.add_argument('-s', '--scratch-directory', type=str, nargs=1, default='',
         metavar='DIR', help='use DIR as scratch directory')
     parser.add_argument('--pdep', action='store_true', help='run pressure-dependence calculations')
+    parser.add_argument('--noqm', action='store_true', help='do NOT run QM thermo calculations')
 
     # Options for controlling the amount of information printed to the console
     # By default a moderate level of information is printed; you can either
@@ -400,13 +401,14 @@ class ModelMatcher():
                 pressures=(0.01, 100, 'atm', 3),
                 interpolation=('pdeparrhenius',),
             )
-        rmgpy.rmg.input.quantumMechanics(
-            software='mopac',
-            fileStore=os.path.join(os.path.normpath(os.path.join(rmgpy.getPath(), '..')), 'QMfiles'),
-            scratchDirectory=None,  # not currently used
-            onlyCyclics=True,
-            maxRadicalNumber=0,
-        )
+        if not args.noqm:
+            rmgpy.rmg.input.quantumMechanics(
+                software='mopac',
+                fileStore=os.path.join(os.path.normpath(os.path.join(rmgpy.getPath(), '..')), 'QMfiles'),
+                scratchDirectory=None,  # not currently used
+                onlyCyclics=True,
+                maxRadicalNumber=0,
+            )
 
         """
         An earlier version had the QMfiles path in the wrong place, so we see if there
