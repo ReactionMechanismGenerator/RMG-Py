@@ -1662,7 +1662,7 @@ class Molecule(Graph):
         paths = []
         for atom2, bond12 in atom1.edges.items():
             # Vinyl bond must be capable of gaining an order
-            if bond12.isSingle() or bond12.isDouble():
+            if (bond12.isSingle() or bond12.isDouble()) and atom1.radicalElectrons == 1:
                 for atom3, bond23 in atom2.edges.items():
                     # Allyl bond must be capable of losing an order without breaking
                     if atom1 is not atom3 and (bond23.isDouble() or bond23.isTriple()):
