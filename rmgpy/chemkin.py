@@ -709,9 +709,12 @@ def loadSpeciesDictionary(path):
 
     return speciesDict
 
-def removeCommentFromLine(line, unicodeComment=False):
+def removeCommentFromLine(line):
     """
     Remove a comment from a line of a Chemkin file or species dictionary file.
+    
+    Returns the line and the comment.
+    If the comment is encoded with latin-1, it is converted to utf-8.
     """
     try:
         index1 = line.index('!')
@@ -730,11 +733,14 @@ def removeCommentFromLine(line, unicodeComment=False):
     try:
         ucomment = comment.decode('utf-8')
     except UnicodeDecodeError:
-        ucomment = comment.decode('latin-1')
-    if  unicodeComment:
-        comment = ucomment
-    else:
-        comment = ucomment.encode('ascii', 'replace')
+        try:
+            ucomment = comment.decode('latin-1')
+        except UnicodeDecodeError:
+            ucomment = comment.decode('windows-1252', errors='replace')
+    # Convert back to utf-8.
+    # Other parts of RMG-Py expect a string object not a unicode object,
+    # but at least this way we know what the encoding is.
+    comment = ucomment.encode('utf-8', 'replace')
     return line, comment
 
 def loadTransportFile(path, speciesDict):
