@@ -709,7 +709,7 @@ def loadSpeciesDictionary(path):
 
     return speciesDict
 
-def removeCommentFromLine(line):
+def removeCommentFromLine(line, unicodeComment=False):
     """
     Remove a comment from a line of a Chemkin file or species dictionary file.
     """
@@ -726,6 +726,15 @@ def removeCommentFromLine(line):
     comment = line[index+1:-1]
     if index < len(line):
         line = line[0:index] + '\n'
+
+    try:
+        ucomment = comment.decode('utf-8')
+    except UnicodeDecodeError:
+        ucomment = comment.decode('latin-1')
+    if  unicodeComment:
+        comment = ucomment
+    else:
+        comment = ucomment.encode('ascii', 'replace')
     return line, comment
 
 def loadTransportFile(path, speciesDict):
