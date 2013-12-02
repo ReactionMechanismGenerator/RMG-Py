@@ -696,7 +696,7 @@ class RMG:
         Save the current reaction edge to a Chemkin file.
         """        
         logging.info('Saving current edge to Chemkin file...')
-        this_chemkin_path = os.path.join(self.outputDirectory, 'chemkin', 'chem_edge%04i.inp' % len(self.reactionModel.edge.species))
+        this_chemkin_path = os.path.join(self.outputDirectory, 'chemkin', 'chem_edge%04i.inp' % len(self.reactionModel.core.species))
         latest_chemkin_path = os.path.join(self.outputDirectory, 'chemkin','chem_edge.inp')
         latest_chemkin_verbose_path = os.path.join(self.outputDirectory, 'chemkin', 'chem_edge_annotated.inp')
         latest_dictionary_path = os.path.join(self.outputDirectory, 'chemkin','species_edge_dictionary.txt')
