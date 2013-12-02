@@ -82,7 +82,7 @@ class TestAtomType(unittest.TestCase):
         """
         Test the AtomType.setActions() method.
         """
-        other = rmgpy.molecule.atomtype.atomTypes['R']
+        other = rmgpy.molecule.atomtype.AtomType('Test', generic=['R'], specific=[])
         other.setActions(self.atomType.incrementBond,
                                self.atomType.decrementBond,
                                self.atomType.formBond,
@@ -109,8 +109,15 @@ class TestGetAtomType(unittest.TestCase):
         """
         A function run before each unit test in this class.
         """
-        self.mol1 = Molecule().fromSMILES('COO=CC=C=CC#C')
-        self.mol2 = Molecule().fromSMILES('c1ccccc1')
+        self.mol1 = Molecule().fromSMILES('COC(=O)CC=C=CC#C')
+        # self.mol2 = Molecule().fromSMILES('c1ccccc1')
+        ## the fromSMILES method currently Kekulizes, so to test Benzene we use fromAdjacencyList
+        self.mol2 = Molecule().fromAdjacencyList('''1 C 0 {2,B} {6,B}
+                                                    2 C 0 {1,B} {3,B}
+                                                    3 C 0 {2,B} {4,B}
+                                                    4 C 0 {3,B} {5,B}
+                                                    5 C 0 {4,B} {6,B}
+                                                    6 C 0 {1,B} {5,B}''')
         self.mol3 = Molecule().fromSMILES('[H]')
         self.mol4 = Molecule().fromSMILES(
                                 'O=[Si][Si][Si]=[Si]=[Si][Si]#[Si]SS=S')
@@ -119,75 +126,63 @@ class TestGetAtomType(unittest.TestCase):
         self.mol7 = Molecule().fromSMILES('[He]')
         self.mol8 = Molecule().fromSMILES('[Ne]')
     
+    def atomType(self, mol, atomID):
+        atom = mol.atoms[atomID]
+        type = getAtomType(atom, mol.getBonds(atom))
+        if type is None:
+            return type
+        else:
+            return type.label
+
     def testCarbonTypes(self):
         """
         Test that getAtomType() returns appropriate carbon atom types.
         """
-        self.assertEqual(getAtomType(self.mol1.atoms[0],
-            self.mol1.getBonds(self.mol1.atoms[0])).label, 'Cs')
-        self.assertEqual(getAtomType(self.mol1.atoms[4],
-            self.mol1.getBonds(self.mol1.atoms[4])).label, 'Cd')
-        self.assertEqual(getAtomType(self.mol1.atoms[5],
-            self.mol1.getBonds(self.mol1.atoms[5])).label, 'Cdd')
-        self.assertEqual(getAtomType(self.mol1.atoms[7],
-            self.mol1.getBonds(self.mol1.atoms[7])).label, 'Ct')
-        self.assertEqual(getAtomType(self.mol1.atoms[3],
-            self.mol1.getBonds(self.mol1.atoms[3])).label, 'CO')
-        self.assertEqual(getAtomType(self.mol2.atoms[0],
-            self.mol2.getBonds(self.mol2.atoms[0])).label, 'Cb')
+        self.assertEqual(self.atomType(self.mol1, 0), 'Cs')
+        self.assertEqual(self.atomType(self.mol1, 5), 'Cd')
+        self.assertEqual(self.atomType(self.mol1, 6), 'Cdd')
+        self.assertEqual(self.atomType(self.mol1, 8), 'Ct')
+        self.assertEqual(self.atomType(self.mol1, 2), 'CO')
+        self.assertEqual(self.atomType(self.mol2, 0), 'Cb')
     
     def testHydrogenType(self):
         """
         Test that getAtomType() returns the hydrogen atom type.
         """
-        self.assertEqual(getAtomType(self.mol3.atoms[0],
-            self.mol3.getBonds(self.mol3.atoms[0])).label, 'H')
+        self.assertEqual(self.atomType(self.mol3, 0), 'H')
     
     def testOxygenTypes(self):
         """
         Test that getAtomType() returns appropriate oxygen atom types.
         """
-        self.assertEqual(getAtomType(self.mol1.atoms[1],
-            self.mol1.getBonds(self.mol1.atoms[1])).label, 'Os')
-        self.assertEqual(getAtomType(self.mol1.atoms[2],
-            self.mol1.getBonds(self.mol1.atoms[2])).label, 'Od')
+        self.assertEqual(self.atomType(self.mol1, 1), 'Os')
+        self.assertEqual(self.atomType(self.mol1, 3), 'Od')
     
     def testSiliconTypes(self):
         """
         Test that getAtomType() returns appropriate silicon atom types.
         """
-        self.assertEqual(getAtomType(self.mol4.atoms[2],
-            self.mol4.getBonds(self.mol4.atoms[2])).label, 'Sis')
-        self.assertEqual(getAtomType(self.mol4.atoms[3],
-            self.mol4.getBonds(self.mol4.atoms[3])).label, 'Sid')
-        self.assertEqual(getAtomType(self.mol4.atoms[4],
-            self.mol4.getBonds(self.mol4.atoms[4])).label, 'Sidd')
-        self.assertEqual(getAtomType(self.mol4.atoms[6],
-            self.mol4.getBonds(self.mol4.atoms[6])).label, 'Sit')
-        self.assertEqual(getAtomType(self.mol4.atoms[1],
-            self.mol4.getBonds(self.mol4.atoms[1])).label, 'SiO')
+        self.assertEqual(self.atomType(self.mol4, 2), 'Sis')
+        self.assertEqual(self.atomType(self.mol4, 3), 'Sid')
+        self.assertEqual(self.atomType(self.mol4, 4), 'Sidd')
+        self.assertEqual(self.atomType(self.mol4, 6), 'Sit')
+        self.assertEqual(self.atomType(self.mol4, 1), 'SiO')
     
     def testSulfurTypes(self):
         """
         Test that getAtomType() returns appropriate sulfur atom types.
         """
-        self.assertEqual(getAtomType(self.mol4.atoms[8],
-            self.mol4.getBonds(self.mol4.atoms[8])).label, 'Ss')
-        self.assertEqual(getAtomType(self.mol4.atoms[9],
-            self.mol4.getBonds(self.mol4.atoms[9])).label, 'Sd')
+        self.assertEqual(self.atomType(self.mol4, 8), 'Ss')
+        self.assertEqual(self.atomType(self.mol4, 9), 'Sd')
     
     def testNoneTypes(self):
         """
         Test that getAtomType() returns appropriate NoneTypes.
         """
-        self.assertIsNone(getAtomType(self.mol5.atoms[0],
-            self.mol5.getBonds(self.mol5.atoms[0])))
-        self.assertIsNone(getAtomType(self.mol6.atoms[0],
-            self.mol6.getBonds(self.mol6.atoms[0])))
-        self.assertIsNone(getAtomType(self.mol7.atoms[0],
-            self.mol7.getBonds(self.mol7.atoms[0])))
-        self.assertIsNone(getAtomType(self.mol8.atoms[0],
-            self.mol8.getBonds(self.mol8.atoms[0])))
+        self.assertIsNone(self.atomType(self.mol5, 0))
+        self.assertIsNone(self.atomType(self.mol6, 0))
+        self.assertIsNone(self.atomType(self.mol7, 0))
+        self.assertIsNone(self.atomType(self.mol8, 0))
 
 ################################################################################
 

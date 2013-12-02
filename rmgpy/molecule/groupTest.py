@@ -111,7 +111,7 @@ class TestGroupAtom(unittest.TestCase):
                 atom.applyAction(action)
                 self.assertEqual(len(atom.atomType), len(atomType.incrementRadical))
                 for a in atomType.incrementRadical:
-                    self.assertTrue(a in atom.atomType)
+                    self.assertTrue(a in atom.atomType, "GAIN_RADICAL on {0} gave {1} not {2}".format(atomType, atom.atomType, atomType.incrementRadical))
                 self.assertEqual(atom0.radicalElectrons, [r - 1 for r in atom.radicalElectrons])
                 self.assertEqual(atom0.spinMultiplicity, [s - 1 for s in atom.spinMultiplicity])
                 self.assertEqual(atom0.charge, atom.charge)
@@ -129,15 +129,15 @@ class TestGroupAtom(unittest.TestCase):
             atom = atom0.copy()
             try:
                 atom.applyAction(action)
-                self.assertEqual(len(atom.atomType), len(atomType.incrementRadical))
+                self.assertEqual(len(atom.atomType), len(atomType.decrementRadical))
                 for a in atomType.incrementRadical:
-                    self.assertTrue(a in atom.atomType)
+                    self.assertTrue(a in atom.atomType, "LOSE_RADICAL on {0} gave {1} not {2}".format(atomType, atom.atomType, atomType.decrementRadical))
                 self.assertEqual(atom0.radicalElectrons, [r + 1 for r in atom.radicalElectrons])
                 self.assertEqual(atom0.spinMultiplicity, [s + 1 for s in atom.spinMultiplicity])
                 self.assertEqual(atom0.charge, atom.charge)
                 self.assertEqual(atom0.label, atom.label)
             except ActionError:
-                self.assertEqual(len(atomType.incrementRadical), 0)
+                self.assertEqual(len(atomType.decrementRadical), 0)
     
     def testEquivalent(self):
         """

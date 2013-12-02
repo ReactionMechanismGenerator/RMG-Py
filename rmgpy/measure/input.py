@@ -38,7 +38,8 @@ input file is unsuccessful, an :class:`InputError` will be raised.
 import logging
 
 from rmgpy.quantity import Quantity
-from rmgpy.species import Species, TransitionState, LennardJones
+from rmgpy.species import Species, TransitionState
+from rmgpy.transport import TransportData
 from rmgpy.reaction import Reaction
 from rmgpy.molecule import Molecule
 from rmgpy.statmech import *
@@ -71,10 +72,10 @@ class InputError(Exception):
 
 ################################################################################
 
-def species(label='', E0=None, states=None, thermo=None, lennardJones=None, molecularWeight=0.0, collisionModel=None, SMILES='', InChI=''):
+def species(label='', E0=None, states=None, thermo=None, transportData=None, molecularWeight=0.0, collisionModel=None, SMILES='', InChI=''):
     global speciesDict
     if label == '': raise InputError('Missing "label" attribute in species() block.')
-    spec = Species(label=label, states=states, thermo=thermo, E0=E0, molecularWeight=molecularWeight, lennardJones=lennardJones, collisionModel=collisionModel)
+    spec = Species(label=label, states=states, thermo=thermo, E0=E0, molecularWeight=molecularWeight, transportData=transportData, collisionModel=collisionModel)
     if InChI != '':
         spec.molecule = [Molecule(InChI=InChI)]
     elif SMILES != '':
@@ -356,7 +357,7 @@ def readFile(path, measure0):
         'RigidRotor': RigidRotor,
         'HarmonicOscillator': HarmonicOscillator,
         'HinderedRotor': HinderedRotor,
-        'LennardJones': LennardJones,
+        'TransportData': TransportData,
         'isomer': addIsomer,
         'reactants': addReactants,
         'reaction': reaction,
@@ -491,7 +492,7 @@ def readFile(path, measure0):
             if isomer.states is None:
                 errorString0 += '* Required molecular degree of freedom data was not provided.\n'
             # All isomers must have collision parameters
-            if isomer.lennardJones is None:
+            if isomer.transportData is None:
                 errorString0 += '* Required Lennard-Jones parameters were not provided.\n'
             if isomer.molecularWeight == 0:
                 errorString0 += '* Required molecular weight was not provided.\n'

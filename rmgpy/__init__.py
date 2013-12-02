@@ -38,7 +38,7 @@ import logging
 
 ################################################################################
 
-class SettingsError:
+class SettingsError(Exception):
     """
     An exception raised when dealing with settings.
     """
@@ -61,15 +61,26 @@ class Settings(dict):
     def __init__(self):
         super(Settings, self).__init__()
         self.filename = None
+        self.sources = dict()
         self.load()
     
     def __setitem__(self, key, value):
         if key == 'database.directory':
             value = os.path.abspath(os.path.expandvars(value))
         else:
-            logging.warning('Unexpecting setting "{0}" encountered.'.format(key))
+            print('Unexpecting setting "{0}" encountered.'.format(key))
+        self.sources[key] = '-'
         super(Settings, self).__setitem__(key, value)
     
+    def report(self):
+        """
+        Returns a string saying what is set and where things came from, suitable for logging
+        """
+        lines = ['Global RMG Settings:']
+        for key in self.keys():
+            lines.append("   {0:20s} = {1:20s} ({2})".format(key, self[key], self.sources[key]))
+        return '\n'.join(lines)
+
     def load(self, path=None):
         """
         Load settings from a file on disk. If an explicit file is not specified,
@@ -109,6 +120,7 @@ class Settings(dict):
         
         # From here on we assume that we have identified the appropriate
         # settings file to load
+
         with open(self.filename, 'r') as f:
             for line in f:
                 # Remove any comments from the line
@@ -120,6 +132,7 @@ class Settings(dict):
                     key = key.strip()
                     value = value.strip()
                     self[key] = value
+                    self.sources[key] = "from {0}".format(self.filename)
     
     def reset(self):
         """
@@ -128,6 +141,7 @@ class Settings(dict):
         self.filename = None
         working_dir = os.path.abspath(os.path.dirname(__file__))
         self['database.directory'] = os.path.realpath(os.path.join(working_dir, '..', '..', 'RMG-database', 'input'))
+        self.sources['database.directory'] = 'Default, relative to RMG-Py source code'
 
 # The global settings object
 settings = Settings()

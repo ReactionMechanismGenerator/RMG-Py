@@ -36,6 +36,7 @@ import os.path
 import sys
 import argparse
 import logging
+import rmgpy
 
 from rmgpy.rmg.main import RMG, initializeLog, processProfileStats, makeProfileGraph
 
@@ -122,7 +123,9 @@ if __name__ == '__main__':
         if args.debug: level = 0
         elif args.verbose: level = logging.DEBUG
         elif args.quiet: level = logging.WARNING
-        initializeLog(level, os.path.join(args.output_directory,'RMG.log'))
+        initializeLog(level, os.path.join(args.output_directory, 'RMG.log'))
+
+    logging.info(rmgpy.settings.report())
 
     if args.profile:
         import cProfile, sys, pstats, os

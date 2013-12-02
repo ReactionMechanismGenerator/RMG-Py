@@ -38,6 +38,7 @@ import numpy
 
 from rmgpy.pdep.network import Network
 from rmgpy.pdep.configuration import Configuration
+from rmgpy.transport import TransportData
 from rmgpy.statmech import *
 from rmgpy.species import Species, TransitionState
 from rmgpy.reaction import Reaction
@@ -71,7 +72,7 @@ class TestNetwork(unittest.TestCase):
                 opticalIsomers = 1,
             ),
             molecularWeight = (74.07,"g/mol"),
-            lennardJones = LennardJones(sigma=(5.94,'angstrom'), epsilon=(559,'K')),
+            transportData=TransportData(sigma=(5.94, 'angstrom'), epsilon=(559, 'K')),
             energyTransferModel = SingleExponentialDown(alpha0=(447.5*0.011962,"kJ/mol"), T0=(300,"K"), n=0.85),
         )
         
@@ -108,7 +109,7 @@ class TestNetwork(unittest.TestCase):
         self.N2 = Species(
             label = 'N2',
             molecularWeight = (28.04,"g/mol"),
-            lennardJones = LennardJones(sigma=(3.41,"angstrom"), epsilon=(124,"K")),
+            transportData=TransportData(sigma=(3.41, "angstrom"), epsilon=(124, "K")),
             energyTransferModel = None,
         )
         

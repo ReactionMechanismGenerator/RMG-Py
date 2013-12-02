@@ -67,7 +67,7 @@ def saveOutputHTML(path, reactionModel):
     try:
         import jinja2
     except ImportError:
-        logging.warning("jinja package not found; HTML output will not be saved.")
+        logging.warning("jinja2 package not found; HTML output will not be saved.")
         return
 
     path = os.path.abspath(path)
@@ -652,20 +652,20 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
         <td width="40%">
             <table width="100%">
                 <tr>
-                    <th>H298</th>
-                    <th>S298</th>
+                    <th>H300</th>
+                    <th>S300</th>
                     <th>Cp300</th>
                     <th>Cp500</th>
                     <th>Cp1000</th>
                     <th>Cp1500</th>
                 </tr>
                 <tr>
-                    <td>{% if spec1.thermo.Tmin.value_si <= 298 %}
-                    {{ "%.2f"|format(spec1.thermo.getEnthalpy(298) / 4184) }}
+                    <td>{% if spec1.thermo.Tmin.value_si <= 300 %}
+                    {{ "%.2f"|format(spec1.thermo.getEnthalpy(300) / 4184) }}
                     {% endif %}</td>
                     <td>
-                    {% if spec1.thermo.Tmin.value_si <= 298 %}
-                    {{ "%.2f"|format(spec1.thermo.getEntropy(298) / 4.184) }}
+                    {% if spec1.thermo.Tmin.value_si <= 300 %}
+                    {{ "%.2f"|format(spec1.thermo.getEntropy(300) / 4.184) }}
                     {% endif %}</td>
                     <td>{{ "%.2f"|format(spec1.thermo.getHeatCapacity(300) / 4.184) }}</td>
                     <td>{{ "%.2f"|format(spec1.thermo.getHeatCapacity(500) / 4.184) }}</td>
@@ -678,19 +678,19 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
         <td width="40%">
             <table width="100%">
                 <tr>
-                    <th>H298</th>
-                    <th>S298</th>
+                    <th>H300</th>
+                    <th>S300</th>
                     <th>Cp300</th>
                     <th>Cp500</th>
                     <th>Cp1000</th>
                     <th>Cp1500</th>
                 </tr>
                 <tr>
-                    <td>{% if spec2.thermo.Tmin.value_si <= 298 %}
-                    {{ "%.2f"|format(spec2.thermo.getEnthalpy(298) / 4184) }}
+                    <td>{% if spec2.thermo.Tmin.value_si <= 300 %}
+                    {{ "%.2f"|format(spec2.thermo.getEnthalpy(300) / 4184) }}
                     {% endif %}</td>
-                    <td>{% if spec2.thermo.Tmin.value_si <= 298 %}
-                    {{ "%.2f"|format(spec2.thermo.getEntropy(298) / 4.184) }}
+                    <td>{% if spec2.thermo.Tmin.value_si <= 300 %}
+                    {{ "%.2f"|format(spec2.thermo.getEntropy(300) / 4.184) }}
                     {% endif %}</td>
                     <td>{{ "%.2f"|format(spec2.thermo.getHeatCapacity(300) / 4.184) }}</td>
                     <td>{{ "%.2f"|format(spec2.thermo.getHeatCapacity(500) / 4.184) }}</td>
@@ -840,8 +840,10 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
 
 {% if not rxn2.duplicate %}
 <P><b>Fitted Reverse Kinetics:</b>
+{% if not rxn2.kinetics.isPressureDependent() %}
 {{rxn2.generateReverseRateCoefficient().toHTML() }}
-
+{% else %} Pressure dependent
+{% endif %}
 {% endif %}
 
 <P><b>Original Kinetics:</b>

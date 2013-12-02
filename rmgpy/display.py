@@ -43,7 +43,8 @@ except ImportError:
     display = do_nothing
 else:
     try:
-        display = IPython.core.display.display
+        displayer = IPython.core.display.display
+        display = lambda obj: displayer(obj, include='png')
     except (NameError,AttributeError):
         display = do_nothing #not runing in IPython --pylab mode.
 

@@ -242,6 +242,22 @@ cdef class KineticsModel:
             return False
 
         return True
+        
+    cpdef double discrepancy(self, KineticsModel otherKinetics) except -2:
+        """
+        Returns some measure of the discrepancy based on two different reaction models.
+        """
+        cdef double T
+        cdef double discrepancy
+        
+        discrepancy = 0.0
+        if otherKinetics.isPressureDependent():
+            return 9999999
+        
+        for T in [500,1000,1500,2000]:
+            discrepancy += abs(log10(self.getRateCoefficient(T)) - log10(otherKinetics.getRateCoefficient(T)))
+                
+        return discrepancy
     
 ################################################################################
 

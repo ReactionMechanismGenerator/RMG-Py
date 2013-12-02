@@ -33,6 +33,7 @@ from libc.math cimport sqrt, log
 
 cimport rmgpy.constants as constants
 import rmgpy.quantity as quantity
+import scipy.linalg
 
 ################################################################################
 
@@ -770,7 +771,6 @@ cpdef Wilhoit_to_NASA(Wilhoit wilhoit, double Tmin, double Tmax, double Tint, bi
     # solve A*x=b for x (note that factor of 2 in b vector and 10*10 submatrix of A
     # matrix is not required; not including it should give same result, except
     # Lagrange multipliers will differ by a factor of two)
-    import scipy.linalg
     x = scipy.linalg.solve(A,b,overwrite_a=1,overwrite_b=1)
 
     nasa_low = NASAPolynomial(
