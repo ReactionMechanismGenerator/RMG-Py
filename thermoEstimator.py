@@ -98,21 +98,22 @@ if __name__ == '__main__':
      output.txt: Contains string representations of the NASA model for each species, readable by Chemkin.
      ThermoLibrary.py: Thermo library that can be used in RMG simulations. Can be uploaded to RMG-database.
      """)
-    parser.add_argument('input', metavar='FILE', type=str, nargs=1,
-        help='Thermo input file')
+    parser.add_argument('input', metavar='FILE', type=str, default='input.py', nargs='?',
+        help='Thermo input file. (Default file is input.py)')
     parser.add_argument('CHUNKSIZE', type=int, default=10000,nargs='?', help='''chunk size that determines number of species passed to 
          workers at once, should be larger than the number of processors. (default value is 10000)''')
-    parser.add_argument('-p', '--profile', action='store_true', help='run under cProfile to gather profiling statistics, and postprocess them if job completes')
-    parser.add_argument('-P', '--postprocess', action='store_true', help='postprocess profiling statistics from previous [failed] run; does not run the simulation')
-    group = parser.add_mutually_exclusive_group()
-    group.add_argument('-d', '--debug', action='store_true', help='print debug information')
-    group.add_argument('-q', '--quiet', action='store_true', help='only print warnings and errors')
+    group1 = parser.add_mutually_exclusive_group()
+    group1.add_argument('-p', '--profile', action='store_true', help='run under cProfile to gather profiling statistics, and postprocess them if job completes')
+    group1.add_argument('-P', '--postprocess', action='store_true', help='postprocess profiling statistics from previous [failed] run; does not run the simulation')
+    group2 = parser.add_mutually_exclusive_group()
+    group2.add_argument('-d', '--debug', action='store_true', help='print debug information')
+    group2.add_argument('-q', '--quiet', action='store_true', help='only print warnings and errors')
     
     
     args = parser.parse_args()
     
-    inputFile = os.path.abspath(args.input[0])
-    inputDirectory = os.path.abspath(os.path.dirname(args.input[0]))
+    inputFile = os.path.abspath(args.input)
+    inputDirectory = os.path.abspath(os.path.dirname(args.input))
     chunkSize = args.CHUNKSIZE
     if args.postprocess:
         print "Postprocessing the profiler statistics (will be appended to thermo.log)"
@@ -122,8 +123,8 @@ if __name__ == '__main__':
     if args.profile:
         import cProfile, sys, pstats, os
         global_vars = {}
-        local_vars = {'inputFile': inputFile,'runThermoEstimator':runThermoEstimator}
-        command = """runThermoEstimator(inputFile)"""
+        local_vars = {'inputFile': inputFile,'chunkSize':chunkSize,'runThermoEstimator':runThermoEstimator}
+        command = """runThermoEstimator(inputFile,chunkSize)"""
         stats_file = 'RMG.profile'
         print("Running under cProfile")
         if not args.postprocess:
