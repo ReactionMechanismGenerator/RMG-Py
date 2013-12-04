@@ -746,6 +746,7 @@ class ModelMatcher():
             species.molecule = [Molecule(SMILES=smiles)]
             species.generateResonanceIsomers()
             identified_labels.append(species_label)
+            self.saveMatchToFile(species_label, species)
 
         logging.info("Identified {0} species:".format(len(identified_labels)))
         for species_label in identified_labels:
@@ -933,6 +934,22 @@ class ModelMatcher():
                             rmg_species.generateThermoData(self.rmg_object.database)
                             logging.info("Thermo match found for chemkin species {0} in thermo library {1}".format(ck_label, library_name))
                             self.setThermoMatch(ck_label, rmg_species, library_name, entry.label)
+
+    def saveMatchToFile(self, ckLabel, rmgSpecies):
+        """
+        Save the match to the known_species_file
+        """
+        with open(self.known_species_file) as f:
+            for line in f.readlines():
+                if not line.strip():
+                    continue
+                label, smiles = line.split()
+                if label == ckLabel:
+                    logging.info("Already matched {!s}".format(label))
+                    return False
+        with open(self.known_species_file, 'a') as f:
+            f.write("{0}\t{1}\n".format(ckLabel, rmgSpecies.molecule[0].toSMILES()))
+        return True
 
     def setThermoMatch(self, chemkinLabel, rmgSpecies, libraryName, librarySpeciesName):
         """
@@ -1868,9 +1885,8 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
                 break
         else:
             return "Trying to confirm something that wasn't a tentative match!"
-
-        with open(self.known_species_file, 'a') as f:
-            f.write("{0}\t{1}\n".format(ckLabel, rmgSpecies.molecule[0].toSMILES()))
+        self.saveMatchToFile(ckLabel, rmgSpecies)
+        
         referer = cherrypy.request.headers.get("Referer", "/tentative.html")
         raise cherrypy.HTTPRedirect(referer)
 
