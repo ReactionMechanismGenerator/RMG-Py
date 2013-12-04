@@ -7,6 +7,7 @@ from subprocess import Popen, PIPE
 
 from qmdata import CCLibData
 from molecule import QMMolecule
+from reaction import QMReaction
 
 class Gaussian:
     """

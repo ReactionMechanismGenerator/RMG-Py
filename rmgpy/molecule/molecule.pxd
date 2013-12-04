@@ -175,8 +175,6 @@ cdef class Molecule(Graph):
 
     cpdef str toSMILES(self)
 
-    cpdef toRDKitMol(self)
-
     cpdef toAdjacencyList(self, str label=?, bint removeH=?)
 
     cpdef bint isLinear(self) except -2

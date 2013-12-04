@@ -470,9 +470,6 @@ class Bond(Edge):
             raise ActionError('Unable to update GroupBond: Invalid action {0}.'.format(action))
 
 ################################################################################
-SMILEwriter = openbabel.OBConversion()
-SMILEwriter.SetOutFormat('smi')
-SMILEwriter.SetOptions("i",SMILEwriter.OUTOPTIONS) # turn off isomer and stereochemistry information (the @ signs!)
 
 def distanceSquared(atom1, atom2):
     """

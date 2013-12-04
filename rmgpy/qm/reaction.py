@@ -225,8 +225,8 @@ class QMReaction:
                     converged = self.run()
                 
                 if converged:
-                    self.inputFilePath = self.inputFilePath.split('.')[0] + 'IRC.gjf'
-                    self.outputFilePath = self.outputFilePath.split('.')[0] + 'IRC.log'
+                    self.inputFilePath = self.inputFilePath.split('.')[0] + 'IRC' + self.inputFileExtension
+                    self.outputFilePath = self.outputFilePath.split('.')[0] + 'IRC' + self.outputFileExtension
                     if not os.path.exists(self.outputFilePath):
                         self.writeIRCFile()
                         rightTS = self.runIRC()
