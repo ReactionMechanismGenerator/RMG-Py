@@ -6,7 +6,7 @@ import numpy
 
 try:
     from rdkit import Chem
-    from rdkit.Chem import AllChem
+    from rdkit.Chem import AllChem, Pharm3D
 except ImportError:
     logging.debug("To use QM calculations you must correctly install rdkit.")
     
@@ -18,6 +18,10 @@ import rmgpy.molecule
 import symmetry
 import qmdata
 
+class RDKitFailedError(Exception):
+    """For when RDkit failed. try the next reaction """
+    pass
+    
 class Geometry:
     """
     A geometry, used for quantum calculations.
@@ -53,7 +57,7 @@ class Geometry:
         "Returns the path the the refined mol file."
         return self.getFilePath('.refined.mol')
 
-    def generateRDKitGeometries(self, boundsMatrix=None):
+    def generateRDKitGeometries(self, boundsMatrix=None, atomMatch=None):
         """
         Use RDKit to guess geometry.
 
@@ -63,12 +67,12 @@ class Geometry:
         rdmol, rdAtIdx = self.rd_build()
         
         atoms = len(self.molecule.atoms)
-        distGeomAttempts=1
+        distGeomAttempts=15
         if atoms > 3:#this check prevents the number of attempts from being negative
-            distGeomAttempts = 5*(atoms-3) #number of conformer attempts is just a linear scaling with molecule size, due to time considerations in practice, it is probably more like 3^(n-3) or something like that
+            distGeomAttempts = 15*(atoms-3) #number of conformer attempts is just a linear scaling with molecule size, due to time considerations in practice, it is probably more like 3^(n-3) or something like that
         
-        rdmol, minEid = self.rd_embed(rdmol, distGeomAttempts, boundsMatrix)
-        self.save_coordinates(rdmol, minEid, rdAtIdx)
+        rdmol, minEid = self.rd_embed(rdmol, distGeomAttempts, bm=boundsMatrix, match=atomMatch)
+        self.saveCoordinatesFromRDMol(rdmol, minEid, rdAtIdx)
         
     def rd_build(self):
         """
@@ -81,34 +85,86 @@ class Geometry:
         """
         Embed the RDKit molecule and create the crude molecule file.
         """
-        AllChem.EmbedMultipleConfs(rdmol, numConfAttempts,randomSeed=1)
+        if bm == None:
+            AllChem.EmbedMultipleConfs(rdmol, numConfAttempts,randomSeed=1)
+            crude = Chem.Mol(rdmol.ToBinary())
+            rdmol, minEid = self.optimize(rdmol)
+        else:
+            # # For the double-ended method I had to comment out the changes. (lines between #########)
+            # # Need to work out a stable way to keep this to accomodate both methods
+            #########
+            rdmol.RemoveAllConformers()
+            for i in range(0,numConfAttempts):
+                try:
+                    Pharm3D.EmbedLib.EmbedMol(rdmol, bm, atomMatch=match)
+                    break
+                except ValueError:
+                    print("RDKit failed to embed on attemt {0} of {1}".format(i+1, numConfAttempts))
+                    # What do I do next!!!!! what if they all fail?
+                except RuntimeError:
+                    raise RDKitFailedError()
+            else:
+                print("RDKit failed all attempts to embed")
+                return None, None
+            #########
+            """
+            Embed the molecule according to the bounds matrix. Built to handle possible failures
+            of some of the embedding attempts.
+            """
+            #########
+            # while True:
+            #########
+            """
+            RDKit currently embeds the conformers and sets the id as 0, so even though multiple
+            conformers have been generated, only 1 can be called. Below the id's are resolved.
+            """
+            #########
+            for i in range(len(rdmol.GetConformers())):
+                rdmol.GetConformers()[i].SetId(i)
+            #########
+            crude = Chem.Mol(rdmol.ToBinary())
+            rdmol, minEid = self.optimize(rdmol, boundsMatrix=bm, atomMatch=match)
+        
+        self.writeMolFile(crude, self.getCrudeMolFilePath(), minEid)
+        self.writeMolFile(rdmol, self.getRefinedMolFilePath(), minEid)
+        
+        return rdmol, minEid
+    
+    def optimize(self, rdmol, boundsMatrix=None, atomMatch=None):
         
         energy=0.0
         minEid=0;
         lowestE=9.999999e99;#start with a very high number, which would never be reached
-
-        crude = Chem.Mol(rdmol.ToBinary())
         
-        for i in range(rdmol.GetNumConformers()):
-            AllChem.UFFOptimizeMolecule(rdmol,confId=i)
-            energy=AllChem.UFFGetMoleculeForceField(rdmol,confId=i).CalcEnergy()
+        for conf in rdmol.GetConformers():
+            if boundsMatrix == None:    
+                AllChem.UFFOptimizeMolecule(rdmol,confId=conf.GetId())
+                energy=AllChem.UFFGetMoleculeForceField(rdmol,confId=conf.GetId()).CalcEnergy()
+            else:
+                eBefore, energy = Pharm3D.EmbedLib.OptimizeMol(rdmol, boundsMatrix, atomMatches=atomMatch)
+            
             if energy < lowestE:
-                minEid = i
-                lowestE = energy 
-        
-        with open(self.getCrudeMolFilePath(), 'w') as out3Dcrude:
-            out3Dcrude.write(Chem.MolToMolBlock(crude,confId=minEid))
-        
-        with open(self.getRefinedMolFilePath(), 'w') as out3D:
-            out3D.write(Chem.MolToMolBlock(rdmol,confId=minEid))
-
+                minEid = conf.GetId()
+                lowestE = energy
+                
         return rdmol, minEid
-
-    def save_coordinates(self, rdmol, minEid, rdAtIdx):
+        
+    def writeMolFile(self, mol, path, minEid):
+        with open(path, 'w') as out3Dcrude:
+            out3Dcrude.write(Chem.MolToMolBlock(mol,confId=minEid))
+    
+    def saveCoordinatesFromRDMol(self, rdmol, minEid, rdAtIdx):
         # Save xyz coordinates on each atom in molecule ****
         for atom in self.molecule.atoms:
             point = rdmol.GetConformer(minEid).GetAtomPosition(atom.sortingLabel)
-            atom.coords = [point.x, point.y, point.z]
+            atom.coords = numpy.array([point.x, point.y, point.z])
+    
+    def saveCoordinatesFromQMData(self, qmdata):
+        """
+        Save geometry info from QMData (eg CCLibData)
+        """
+        raise NotImplementedError
+        
 
 def loadThermoDataFile(filePath):
     """
@@ -191,13 +247,13 @@ class QMMolecule:
         """Get the input file name."""
         return self.getFilePath(self.inputFileExtension)
         
-    def createGeometry(self):
+    def createGeometry(self, boundsMatrix=None, atomMatch=None):
         """
         Creates self.geometry with RDKit geometries
         """
         multiplicity = sum([i.radicalElectrons for i in self.molecule.atoms]) + 1
         self.geometry = Geometry(self.settings, self.uniqueID, self.molecule, multiplicity, uniqueIDlong=self.uniqueIDlong)
-        self.geometry.generateRDKitGeometries()
+        self.geometry.generateRDKitGeometries(boundsMatrix, atomMatch)
         return self.geometry
     
     def generateQMData(self):

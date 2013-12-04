@@ -168,3 +168,4 @@ class KineticsDepository(Database):
         Write the given `entry` in the kinetics database to the file object `f`.
         """
         return saveEntry(f, entry)
+

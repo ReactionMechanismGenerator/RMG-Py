@@ -26,6 +26,7 @@
 
 from .graph cimport Vertex, Edge, Graph
 from .atomtype cimport AtomType
+cimport numpy
 
 ################################################################################
 
@@ -36,6 +37,7 @@ cdef class GroupAtom(Vertex):
     cdef public list spinMultiplicity
     cdef public list charge
     cdef public str label
+    cdef public numpy.ndarray coords
 
     cpdef Vertex copy(self)
 
@@ -111,6 +113,8 @@ cdef class Group(Graph):
     cpdef dict getLabeledAtoms(self)
 
     cpdef fromAdjacencyList(self, str adjlist)
+    
+    cpdef fromXYZ(self, numpy.ndarray atomicNums, numpy.ndarray coordinates)
 
     cpdef toAdjacencyList(self, str label=?)
     

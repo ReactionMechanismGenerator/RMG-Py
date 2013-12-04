@@ -30,5 +30,6 @@ cdef class Element:
     cdef public str name
     cdef public str symbol
     cdef public float mass
+    cdef public float covRadius
 
 cpdef Element getElement(value)
