@@ -20,7 +20,7 @@ from rmgpy.cantherm.pdep import PressureDependenceJob
 from rmgpy.pdep import Network, Configuration, SingleExponentialDown
 from rmgpy.species import Species, TransitionState
 from rmgpy.reaction import Reaction
-from rmgpy.species import LennardJones
+from rmgpy.transport import TransportData
 from rmgpy.statmech import HarmonicOscillator, HinderedRotor, Conformer
 from rmgpy.thermo import ThermoData
 from rmgpy.kinetics import Arrhenius
@@ -146,7 +146,7 @@ def loadFAMEInput(path, moleculeDict=None):
     sigmaLJunits, sigmaLJ = readMeaningfulLine(f).split()
     epsilonLJunits, epsilonLJ = readMeaningfulLine(f).split()
     assert epsilonLJunits == 'J'
-    bathGas.lennardJones = LennardJones(
+    bathGas.transportData = TransportData(
         sigma = Quantity(float(sigmaLJ), sigmaLJunits),
         epsilon = Quantity(float(epsilonLJ) / constants.kB, 'K'),
     )
@@ -195,7 +195,7 @@ def loadFAMEInput(path, moleculeDict=None):
         sigmaLJunits, sigmaLJ = readMeaningfulLine(f).split()
         epsilonLJunits, epsilonLJ = readMeaningfulLine(f).split()
         assert epsilonLJunits == 'J'
-        species.lennardJones = LennardJones(
+        species.transportData = TransportData(
             sigma = Quantity(float(sigmaLJ), sigmaLJunits),
             epsilon = Quantity(float(epsilonLJ) / constants.kB, 'K'),
         )

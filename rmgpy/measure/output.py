@@ -148,8 +148,8 @@ def writeSpecies(f, spec):
         writeStates(f, spec.states, prefix='    ')
     if spec.thermo is not None:
         f.write('    thermo={0!r},\n'.format(spec.thermo))
-    if spec.lennardJones is not None:
-        f.write('    lennardJones={0!r},\n'.format(spec.lennardJones))
+    if spec.transportData is not None:
+        f.write('    TransportData={0!r},\n'.format(spec.transportData))
     if spec.molecularWeight is not None:
         f.write('    molecularWeight={0!r},\n'.format(spec.molecularWeight))
     if spec.collisionModel is not None:

@@ -43,6 +43,7 @@ from rmgpy.kinetics import *
 from rmgpy.pdep import *
 from rmgpy.pdep.collision import *
 from rmgpy.molecule import Molecule
+from rmgpy.transport import TransportData
 
 from rmgpy.cantherm.gaussian import GaussianLog
 from rmgpy.cantherm.molepro import MoleProLog
@@ -112,7 +113,7 @@ def species(label, *args, **kwargs):
         if structure: spec.molecule = [structure]
         spec.conformer = Conformer(E0=E0, modes=modes, spinMultiplicity=spinMultiplicity, opticalIsomers=opticalIsomers)  
         spec.molecularWeight = molecularWeight
-        spec.lennardJones = collisionModel
+        spec.transportData = collisionModel
         spec.energyTransferModel = energyTransferModel
         spec.thermo = thermo
         
@@ -325,7 +326,7 @@ def loadInputFile(path):
         'False': False,
         'range': range,
         # Collision
-        'LennardJones': LennardJones,
+        'TransportData': TransportData,
         'SingleExponentialDown': SingleExponentialDown,
         # Kinetics
         'Arrhenius': Arrhenius,
