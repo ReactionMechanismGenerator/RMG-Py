@@ -166,8 +166,6 @@ class QMReaction:
 
         # elif self.reaction.label.lower() == 'disproportionation':
         
-            print "before my vdv fix"
-            print bm
             for i in range(sect,len(bm)):
                 for j in range(0,sect):
                     for k in range(len(bm)):
@@ -179,9 +177,7 @@ class QMReaction:
                         if bm[i,j] >  maxLij:
                             print "CHANGING {0} to {1}".format(bm[i,j], maxLij)
                             bm[i,j] = maxLij
-            print "after my vdw fix"
-            print bm
-        
+            
         return bm, labels, atomMatch
         
     def generateGeometry(self):
