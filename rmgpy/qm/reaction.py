@@ -134,30 +134,6 @@ class QMReaction:
             
             sect = len(reactant.split()[1].atoms)
             
-            # if lbl1 > lbl3:
-            #     vdwDiff = bm[lbl1][lbl3] - distanceData.distances['d13']
-            # else:
-            #     vdwDiff = bm[lbl3][lbl1] - distanceData.distances['d13']
-            # 
-            # print vdwDiff
-            bm[sect:,:sect] = 2.0#bm[sect:,:sect]//2
-            
-            if distanceData.uncertainties:
-                bm = self.setLimits(bm, lbl1, lbl2, distanceData.distances['d12'], distanceData.uncertainties['d12'])
-                bm = self.setLimits(bm, lbl2, lbl3, distanceData.distances['d23'], distanceData.uncertainties['d23'])
-                bm = self.setLimits(bm, lbl1, lbl3, distanceData.distances['d13'], distanceData.uncertainties['d13'])
-            else:
-                vdwDiff = bm[lbl3][lbl1] - distanceData.distances['d13']
-            """
-            storeVDWDist = bm[sect:,:sect]
-            Could I store the vdw radii minimum distances, and if the BM doesn't embed,
-            I reedit these distances by a little more, reset the TS distances, and retry
-            the embed? 
-            """
-            # bm[sect:,:sect] = bm[sect:,:sect] - vdwDiff
-            
-
-            
             uncertainties = distanceData.uncertainties or {'d12':0.1, 'd13':0.1, 'd23':0.1 } # default if uncertainty is None
             
             bm = self.setLimits(bm, lbl1, lbl2, distanceData.distances['d12'], uncertainties['d12'])
