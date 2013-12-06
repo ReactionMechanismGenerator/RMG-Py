@@ -1,13 +1,21 @@
 import os
 
-import openbabel
+import re
 import external.cclib as cclib
 import logging
+import time
+import math
+import numpy
 from subprocess import Popen, PIPE
 
+from rmgpy.molecule import Molecule, Atom, getElement
+from rmgpy.reaction import Reaction
 from qmdata import CCLibData
 from molecule import QMMolecule
 from reaction import QMReaction
+from rmgpy.data.base import Entry
+from rmgpy.data.kinetics import saveEntry
+from rmgpy.data.kinetics.transitionstates import DistanceData
 
 class Gaussian:
     """
@@ -371,24 +379,31 @@ class GaussianTS(QMReaction, Gaussian):
         Using the :class:`Geometry` object, write the input file
         for the `attmept`th attempt.
         """
-        chk_file = '%chk=' + os.path.join(self.settings.fileStore, self.uniqueID)
-        obConversion = openbabel.OBConversion()
-        obConversion.SetInAndOutFormats("mol", "gjf")
-        mol = openbabel.OBMol()
+        numProc = '%nprocshared=' + '4' + '\n' # could be something that is set in the qmSettings
+        chk_file = '%chk=' + os.path.join(self.settings.fileStore, self.uniqueID) + '\n'
         
-        obConversion.ReadFile(mol, self.geometry.getRefinedMolFilePath() )
+        molfile = self.geometry.getRefinedMolFilePath()
+        atomline = re.compile('\s*([\- ][0-9.]+\s+[\-0-9.]+\s+[\-0-9.]+)\s+([A-Za-z]+)')
         
-        mol.SetTitle(self.uniqueID)
-        obConversion.SetOptions('k', openbabel.OBConversion.OUTOPTIONS)
-        input_string = obConversion.WriteString(mol)
-        numProc = '%nprocshared=' + '4' # could be something that could be set in the qmSettings
+        output = ['', self.geometry.uniqueID, '' ]
+        output.append("{charge}   {mult}".format(charge=0, mult=(self.geometry.molecule.getRadicalCount() + 1) ))
+        
+        atomCount = 0
+        with open(molfile) as molinput:
+            for line in molinput:
+                match = atomline.match(line)
+                if match:
+                    output.append("{0:8s} {1}".format(match.group(2), match.group(1)))
+                    atomCount += 1
+        assert atomCount == len(self.geometry.molecule.atoms)
+        
+        output.append('')
+        input_string = '\n'.join(output) + '\n'
+        
         top_keys = self.keywords[attempt - 1]
-        title = ' ' + self.uniqueID
         with open(self.inputFilePath, 'w') as gaussianFile:
             gaussianFile.write(numProc)
-            gaussianFile.write('\n')
             gaussianFile.write(chk_file)
-            gaussianFile.write('\n')
             gaussianFile.write(top_keys)
             if attempt == 1:
                 gaussianFile.write(input_string)
@@ -401,18 +416,16 @@ class GaussianTS(QMReaction, Gaussian):
         IRC calculation on the transition state. The geometry is taken 
         from the checkpoint file created during the geometry search.
         """
-        chk_file = '%chk=' + os.path.join(self.settings.fileStore, self.uniqueID)
-        numProc = '%nprocshared=' + '4' # could be something that could be set in the qmSettings
-        top_keys = self.keywords[4]
-        chrgMult = '1 2'
+        
+        numProc = '%nprocshared=' + '4' + '\n' # could be something that is set in the qmSettings
+        chk_file = '%chk=' + os.path.join(self.settings.fileStore, self.uniqueID) + '\n'
+        top_keys = self.keywords[4] + '\n\n'
+        output = "{charge}   {mult}".format(charge=0, mult=(self.geometry.molecule.getRadicalCount() + 1) )
         with open(self.inputFilePath, 'w') as gaussianFile:
             gaussianFile.write(numProc)
-            gaussianFile.write('\n')
             gaussianFile.write(chk_file)
-            gaussianFile.write('\n')
             gaussianFile.write(top_keys)
-            gaussianFile.write('\n\n')
-            gaussianFile.write(chrgMult)
+            gaussianFile.write(output)
             gaussianFile.write('\n\n')
             
     def inputFileKeywords(self, attempt):
@@ -456,7 +469,7 @@ class GaussianTS(QMReaction, Gaussian):
         Check's that an output file exists and was successful.
         
         Returns a boolean flag that states whether a successful GAUSSIAN simulation already exists for the molecule with the 
-        given (augmented) InChI Key.
+        given file name.
         
         The definition of finding a successful simulation is based on these criteria:
         1) finding an output file with the file name equal to the the reaction unique ID
@@ -464,7 +477,8 @@ class GaussianTS(QMReaction, Gaussian):
         3) finding all the keywords that denote a calculation success.
         
         If any of the above criteria is not matched, False will be returned and the procedures to start a new calculation 
-        will be initiated.
+        will be initiated. The second boolean flag indicates if there was a failure in the internal coordinate system.
+        This will initiate a subsequent calculation in cartesian coordinates.
         """
         if not os.path.exists(self.outputFilePath):
             logging.info("Output file {0} does not exist.".format(self.outputFilePath))
@@ -574,40 +588,36 @@ class GaussianTS(QMReaction, Gaussian):
                                     reactants = mol1.split(),
                                     products = mol2.split(),                     
                                     )
-                                    
+                                                            
             if targetReaction.isIsomorphic(testReaction):
                 return True
             else:
                 return False
     
     def parseTS(self, labels):
-    
-        tsParse = cclib.parser.Gaussian(os.path.join(self.file_store_path, self.uniqueID + '.log'))
-        tsParse = tsParse.parse()
-    
-        atom1 = openbabel.OBAtom()
-        atom2 = openbabel.OBAtom()
-        atom3 = openbabel.OBAtom()
-    
-        atom1.SetAtomicNum(int(tsParse.atomnos[labels[0]]))
-        atom2.SetAtomicNum(int(tsParse.atomnos[labels[1]]))
-        atom3.SetAtomicNum(int(tsParse.atomnos[labels[2]]))
-    
-        atom1coords = tsParse.atomcoords[-1][labels[0]].tolist()
-        atom2coords = tsParse.atomcoords[-1][labels[1]].tolist()
-        atom3coords = tsParse.atomcoords[-1][labels[2]].tolist()
-    
-        atom1.SetVector(*atom1coords)
-        atom2.SetVector(*atom2coords)
-        atom3.SetVector(*atom3coords)
         
-        # from rmgpy.molecule.element import getElement
-        # at1 = getElement(atom1.GetAtomicNum()).symbol
-        # at2 = getElement(atom2.GetAtomicNum()).symbol
-        # at3 = getElement(atom3.GetAtomicNum()).symbol
-    
-        atomDist = [str(atom1.GetDistance(atom2)), str(atom2.GetDistance(atom3)), str(atom1.GetDistance(atom3))]
-    
+        def getDistance(coordinates1, coordinates2):
+            """
+            Return the square of the distance (in Angstrom) between the two atoms.
+            """
+            diff = (coordinates1.coords - coordinates2.coords)
+            return math.sqrt(sum(diff * diff))
+        
+        tsParse = cclib.parser.Gaussian(os.path.join(self.file_store_path, self.uniqueID + self.outputFileExtension))
+        tsParse = tsParse.parse()
+        geom = tsParse.atomcoords[-1]
+        atomNums = tsParse.atomnos
+        
+        atom1 = Atom(element=getElement(int(atomNums[labels[0]])), coords=geom[labels[0]])
+        atom2 = Atom(element=getElement(int(atomNums[labels[1]])), coords=geom[labels[1]])
+        atom3 = Atom(element=getElement(int(atomNums[labels[2]])), coords=geom[labels[2]])
+        
+        at12 = getDistance(atom1, atom2)
+        at23 = getDistance(atom2, atom3)
+        at13 = getDistance(atom1, atom3)
+        
+        atomDist = [at12, at23, at13]
+        
         return atomDist
     
     def writeRxnOutputFile(self, labels):
@@ -647,27 +657,6 @@ class GaussianTSM062X(GaussianTS):
     This needs some work, to determine options that are best used. Commented out the
     methods for now.
     """
-    
-    # @property
-    # def scriptAttempts(self):
-    #     "The number of attempts with different script keywords"
-    #     return len(self.keywords)
-    # 
-    # @property
-    # def maxAttempts(self):
-    #     "The total number of attempts to try"
-    #     return 2 * len(self.keywords)
-    # 
-    # def inputFileKeywords(self, attempt):
-    #     """
-    #     Return the top keywords for attempt number `attempt`.
-    # 
-    #     NB. `attempt`s begin at 1, not 0.
-    #     """
-    #     assert attempt <= self.maxAttempts
-    #     if attempt > self.scriptAttempts:
-    #         attempt -= self.scriptAttempts
-    #     return self.keywords[attempt-1]
 
 class GaussianTSB3LYP(GaussianTS):
 
@@ -683,24 +672,3 @@ class GaussianTSB3LYP(GaussianTS):
     This needs some work, to determine options that are best used. Commented out the
     methods for now.
     """
-
-    # @property
-    # def scriptAttempts(self):
-    #     "The number of attempts with different script keywords"
-    #     return len(self.keywords)
-    # 
-    # @property
-    # def maxAttempts(self):
-    #     "The total number of attempts to try"
-    #     return 2 * len(self.keywords)
-    # 
-    # def inputFileKeywords(self, attempt):
-    #     """
-    #     Return the top keywords for attempt number `attempt`.
-    # 
-    #     NB. `attempt`s begin at 1, not 0.
-    #     """
-    #     assert attempt <= self.maxAttempts
-    #     if attempt > self.scriptAttempts:
-    #         attempt -= self.scriptAttempts
-    #     return self.keywords[attempt-1]

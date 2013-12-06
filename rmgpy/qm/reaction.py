@@ -1,7 +1,6 @@
 import os
 import logging
 import external.cclib.parser
-import openbabel
 import time
 from subprocess import Popen
 from copy import deepcopy
@@ -122,7 +121,6 @@ class QMReaction:
             """
             Reduce the minimum distance between atoms on the two reactants. 
             """
-            
             lbl1 = reactant.getLabeledAtom('*1').sortingLabel
             lbl2 = reactant.getLabeledAtom('*2').sortingLabel
             lbl3 = reactant.getLabeledAtom('*3').sortingLabel
@@ -139,7 +137,7 @@ class QMReaction:
             bm = self.setLimits(bm, lbl1, lbl2, distanceData.distances['d12'], uncertainties['d12'])
             bm = self.setLimits(bm, lbl2, lbl3, distanceData.distances['d23'], uncertainties['d23'])
             bm = self.setLimits(bm, lbl1, lbl3, distanceData.distances['d13'], uncertainties['d13'])
-
+        
         # elif self.reaction.label.lower() == 'disproportionation':
         
             for i in range(sect,len(bm)):
@@ -160,30 +158,30 @@ class QMReaction:
         """
         
         """
-        if len(self.reaction.reactants)==2:
-            reactant = self.reaction.reactants[0].merge(self.reaction.reactants[1])
-        if len(self.reaction.products)==2:
-            product = self.reaction.products[0].merge(self.reaction.products[1])
-        
-        reactant = self.fixSortLabel(reactant)
-        product = self.fixSortLabel(product)
-        tsRDMol, tsBM, tsMult = self.generateBoundsMatrix(reactant)
-        
-        self.geometry.uniqueID = self.uniqueID
-        
         if not os.path.exists(os.path.join(self.file_store_path, self.uniqueID + '.data')):
+            if len(self.reaction.reactants)==2:
+                reactant = self.reaction.reactants[0].merge(self.reaction.reactants[1])
+            if len(self.reaction.products)==2:
+                product = self.reaction.products[0].merge(self.reaction.products[1])
+            
+            reactant = self.fixSortLabel(reactant)
+            product = self.fixSortLabel(product)
+            tsRDMol, tsBM, tsMult = self.generateBoundsMatrix(reactant)
+            
+            self.geometry.uniqueID = self.uniqueID
+        
             tsBM, labels, atomMatch = self.editMatrix(reactant, tsBM)
             atoms = len(reactant.atoms)
             distGeomAttempts = 15*(atoms-3) # number of conformers embedded from the bounds matrix
             
             setBM = rdkit.DistanceGeometry.DoTriangleSmoothing(tsBM)
-
+        
             if setBM:
                 for i in range(len(tsBM)):
                     for j in range(i,len(tsBM)):
                         if tsBM[j,i] > tsBM[i,j]:
                                 print "BOUNDS MATRIX FLAWED {0}>{1}".format(tsBM[j,i], tsBM[i,j])
-
+        
                 self.geometry.rd_embed(tsRDMol, distGeomAttempts, bm=tsBM, match=atomMatch)
                 
                 if not os.path.exists(self.outputFilePath):
@@ -206,4 +204,3 @@ class QMReaction:
                         rightTS = self.verifyIRCOutputFile()
                     if rightTS:
                         self.writeRxnOutputFile(labels)
-
