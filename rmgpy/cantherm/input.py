@@ -161,9 +161,11 @@ def transitionState(label, *args, **kwargs):
 
 def reaction(label, reactants, products, transitionState, kinetics=None, tunneling=''):
     global reactionDict, speciesDict, transitionStateDict
-    label = 'reaction'+transitionState
+    #label = 'reaction'+transitionState
     if label in reactionDict:
-        raise ValueError('Multiple occurrences of reaction with label {0!r}.'.format(label))
+        label = label+transitionState
+        if label in reactionDict:
+            raise ValueError('Multiple occurrences of reaction with label {0!r}.'.format(label))
     logging.info('Loading reaction {0}...'.format(label))
     reactants = sorted([speciesDict[spec] for spec in reactants])
     products = sorted([speciesDict[spec] for spec in products])
@@ -178,6 +180,9 @@ def reaction(label, reactants, products, transitionState, kinetics=None, tunneli
         raise ValueError('Unknown tunneling model {0!r}.'.format(tunneling))
     rxn = Reaction(label=label, reactants=reactants, products=products, transitionState=transitionState, kinetics=kinetics)
     reactionDict[label] = rxn
+    
+    print rxn
+    
     return rxn
 
 def network(label, isomers=None, reactants=None, products=None, pathReactions=None, bathGas=None):
