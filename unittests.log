@@ -729,6 +729,36 @@ Test that the TransportData rotrelaxcollnum property was properly set. ... ok
 Test that the TransportData shapeIndex property was properly set. ... ok
 Test that the TransportData sigma property was properly set. ... ok
 testJoback (rmgpy.transportDataTest.TestTransportDatabase) ... ok
+Test Joback doesn't crash on Cb desription of beneze ... ERROR:root:Couldn't find in any transport database:
+ERROR:root:<Molecule "c1ccccc1">
+ERROR:root:1  C 0 {2,B} {6,B} {7,S}
+2  C 0 {1,B} {3,B} {8,S}
+3  C 0 {2,B} {4,B} {9,S}
+4  C 0 {3,B} {5,B} {10,S}
+5  C 0 {4,B} {6,B} {11,S}
+6  C 0 {1,B} {5,B} {12,S}
+7  H 0 {1,S}
+8  H 0 {2,S}
+9  H 0 {3,S}
+10 H 0 {4,S}
+11 H 0 {5,S}
+12 H 0 {6,S}
+
+ERROR
+
+======================================================================
+ERROR: Test Joback doesn't crash on Cb desription of beneze
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/transportDataTest.py", line 278, in testJobackOnBenzeneBonds
+    transportData, blank, blank2 = self.transportdb.getTransportPropertiesViaGroupEstimates(species)
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/transport.py", line 337, in getTransportPropertiesViaGroupEstimates
+    criticalPoint = self.estimateCriticalPropertiesViaGroupAdditivity(molecule)
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/transport.py", line 434, in estimateCriticalPropertiesViaGroupAdditivity
+    self.__addCriticalPointContribution(groupData, self.groups['ring'], molecule, {'*':atom})
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/transport.py", line 478, in __addCriticalPointContribution
+    raise KeyError('Node {!r} has no parent with data in the transport database.'.format(node0))
+KeyError: 'Node <Entry index=0 label="C_centered_ring"> has no parent with data in the transport database.'
 
 ======================================================================
 FAIL: Uses a Gaussian03 log file for ethylene (C2H4) to test that its
@@ -920,7 +950,7 @@ rmgpy.data.solvation                290    109     60     45    56%   108, 115, 
 rmgpy.data.statmech                 295    244    103    103    13%   48-91, 98-101, 108-116, 127, 140, 156, 166, 179, 195, 202, 209, 220, 233-241, 257, 264, 271, 278-285, 294-309, 319-355, 364-445, 455-467, 473-479, 485-488, 495-500, 507, 514-526, 533-534, 541-545, 552-553, 560-562, 569-570, 578-594, 611-624, 637-645, 652-656, 664-667, 676, 689-690, 698-705
 rmgpy.data.statmechfit              248    213     70     70    11%   95-137, 151-193, 207-244, 260-307, 316-319, 327-330, 338-343, 352-355, 364-366, 378-381, 384-407, 419-422, 425-457, 469-472, 475-506
 rmgpy.data.thermo                   436    179    134     59    58%   56-123, 130-148, 187-199, 205, 244, 251, 301, 309, 342-348, 354-357, 367, 397, 419-423, 430-432, 439-441, 448-455, 545-556, 566-609, 628-629, 655-659, 669-670, 694-696, 715-718, 720-723, 740-742, 810-811, 833-837, 881-885, 895, 907-913, 924-928, 947, 977, 979
-rmgpy.data.transport                212     79     56     37    57%   54-69, 119, 126, 133, 155, 174, 181, 188, 209-214, 220-222, 269-281, 289-301, 312-316, 343, 376-415, 437-441, 468, 476, 478, 482-486
+rmgpy.data.transport                212     72     56     35    60%   54-69, 119, 126, 133, 155, 174, 181, 188, 209-214, 220-222, 269-281, 289-301, 312-316, 343, 376-415, 468, 482-486
 rmgpy.display                        12      4      2      2    57%   37, 41-43, 47
 rmgpy.kinetics                        6      0      0      0   100%   
 rmgpy.kinetics.diffusionLimited      56     43     12     12    19%   16-19, 22, 34-61, 70-86
@@ -956,11 +986,11 @@ rmgpy.statmech                        5      0      0      0   100%
 rmgpy.thermo                          3      0      0      0   100%   
 rmgpy.transport                      31      3      0      0    90%   58-59, 65
 -----------------------------------------------------------------------------
-TOTAL                             13671  11153   5694   5281    15%   
+TOTAL                             13671  11146   5694   5279    15%   
 ----------------------------------------------------------------------
-Ran 719 tests.
+Ran 720 tests.
 
-FAILED (failures=20)
+FAILED (errors=1, failures=20)
 Solver jacobian
 [[ -4.85410044 -12.94297143   3.2392154   -7.55039077   3.23477055]
  [ -4.85410044 -12.94297143   3.2392154   -7.55039077   3.23477055]
