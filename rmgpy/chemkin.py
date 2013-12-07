@@ -1534,7 +1534,25 @@ def saveSpeciesDictionary(path, species):
     """
     with open(path, 'w') as f:
         for spec in species:
-            f.write(spec.molecule[0].toAdjacencyList(label=getSpeciesIdentifier(spec), removeH=True))
+            f.write(spec.molecule[0].toAdjacencyList(label=getSpeciesIdentifier(spec), removeH=False))
+            f.write('\n')
+            
+def saveSpeciesDictionaryEdge(path, species):
+    """
+    Save the given list of `species` as adjacency lists in a text file `path` 
+    on disk.
+    """
+    with open(path, 'w') as f:
+        for spec in species:
+            f.write(spec.molecule[0].toAdjacencyList(label=getSpeciesIdentifier(spec), removeH=False))
+            f.write('HF298: '+str(spec.getEnthalpy(298)/4.184/1000.0))
+            f.write('\n')
+            f.write('S298: '+str(spec.getEntropy(298)/4.184))
+            f.write('\n')
+            f.write('Cp300: '+str(spec.getHeatCapacity(300)/4.184))
+            f.write('\n')
+            f.write('Cp1500: '+str(spec.getHeatCapacity(1500)/4.184))
+            f.write('\n')
             f.write('\n')
 
 def saveTransportFile(path, species):

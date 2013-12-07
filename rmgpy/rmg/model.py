@@ -144,7 +144,7 @@ class Species(rmgpy.species.Species):
                     with open('thermoHBIcheck.txt','a') as f:
                         f.write('// {0!r}\n'.format(thermo0).replace('),','),\n//           '))
                         f.write('{0}\n'.format(molecule.toSMILES()))
-                        f.write('{0}\n\n'.format(molecule.toAdjacencyList(removeH=True)))
+                        f.write('{0}\n\n'.format(molecule.toAdjacencyList(removeH=False)))
                 else: # Not too many radicals: do a direct calculation.
                     thermo0 = quantumMechanics.getThermoData(molecule) # returns None if it fails
                 
@@ -1659,3 +1659,16 @@ class CoreEdgeReactionModel:
             saveSpeciesDictionary(dictionaryPath, speciesList)
         if transportPath:
             saveTransportFile(transportPath, speciesList)
+            
+    def saveChemkinFileEdge(self, path, verbose_path, dictionaryPath=None):
+        """
+        Save a Chemkin file for the current model edge as well as any desired output
+        species and reactions to `path`.
+        """
+        from rmgpy.chemkin import saveChemkinFile, saveSpeciesDictionaryEdge
+        speciesList = self.edge.species + self.outputSpeciesList
+        rxnList = self.edge.reactions + self.outputReactionList
+        saveChemkinFile(path, speciesList, rxnList, verbose = False)
+        saveChemkinFile(verbose_path, speciesList, rxnList, verbose = True)
+        if dictionaryPath:
+            saveSpeciesDictionaryEdge(dictionaryPath, speciesList)

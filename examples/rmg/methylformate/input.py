@@ -4,7 +4,7 @@ database(
     reactionLibraries = [('Methylformate',False),('Glarborg/highP',False)],
     seedMechanisms = ['Glarborg/C2'],
     kineticsDepositories = ['training'],
-    kineticsFamilies = ['!Intra_Disproportionation'],
+    kineticsFamilies = ['!Intra_Disproportionation','!Substitution_O'],
     kineticsEstimator = 'rate rules',
 )
 
