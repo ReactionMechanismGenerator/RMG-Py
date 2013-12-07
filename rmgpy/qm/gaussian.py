@@ -379,7 +379,7 @@ class GaussianTS(QMReaction, Gaussian):
         Using the :class:`Geometry` object, write the input file
         for the `attmept`th attempt.
         """
-        numProc = '%nprocshared=' + '4' + '\n' # could be something that is set in the qmSettings
+        numProc = '%nprocshared=' + '15' + '\n' # could be something that is set in the qmSettings
         chk_file = '%chk=' + os.path.join(self.settings.fileStore, self.uniqueID) + '\n'
         
         molfile = self.geometry.getRefinedMolFilePath()
@@ -400,7 +400,7 @@ class GaussianTS(QMReaction, Gaussian):
         output.append('')
         input_string = '\n'.join(output) + '\n'
         
-        top_keys = self.keywords[attempt - 1]
+        top_keys = self.keywords[attempt - 1] + '\n'
         with open(self.inputFilePath, 'w') as gaussianFile:
             gaussianFile.write(numProc)
             gaussianFile.write(chk_file)
@@ -417,7 +417,7 @@ class GaussianTS(QMReaction, Gaussian):
         from the checkpoint file created during the geometry search.
         """
         
-        numProc = '%nprocshared=' + '4' + '\n' # could be something that is set in the qmSettings
+        numProc = '%nprocshared=' + '15' + '\n' # could be something that is set in the qmSettings
         chk_file = '%chk=' + os.path.join(self.settings.fileStore, self.uniqueID) + '\n'
         top_keys = self.keywords[4] + '\n\n'
         output = "{charge}   {mult}".format(charge=0, mult=(self.geometry.molecule.getRadicalCount() + 1) )
