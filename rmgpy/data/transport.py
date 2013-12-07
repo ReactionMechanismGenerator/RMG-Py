@@ -274,10 +274,12 @@ class TransportDatabase(object):
                 transport[0].comment = label
                 break
         else:
-            #Transport not found in any loaded libraries, so estimate
-            transport = self.getTransportPropertiesViaGroupEstimates(species)
-        #data, library, entry = transport
-        #return data
+            try:                
+                #Transport not found in any loaded libraries, so estimate
+                transport = self.getTransportPropertiesViaGroupEstimates(species)
+            except:
+                transport = self.getTransportPropertiesViaLennardJonesParameters(species)
+
         return transport
     
     def getAllTransportProperties(self, species):
@@ -368,7 +370,6 @@ class TransportDatabase(object):
         # For transport estimation we need the atoms to already be sorted because we
         # iterate over them; if the order changes during the iteration then we
         # will probably not visit the right atoms, and so will get the transport wrong
-        molecule.sortVertices()
 
         if sum([atom.radicalElectrons for atom in molecule.atoms]) > 0: # radical species
 
@@ -433,12 +434,9 @@ class TransportDatabase(object):
                         if molecule.isVertexInCycle(atom):
                             self.__addCriticalPointContribution(groupData, self.groups['ring'], molecule, {'*':atom})
                         else:
-                            self.__addCriticalPointContribution(groupData, self.groups['nonring'], molecule, {'*':atom})                      
+                            self.__addCriticalPointContribution(groupData, self.groups['nonring'], molecule, {'*':atom})
                     except KeyError:
-                        logging.error("Couldn't find in any transport database:")
-                        logging.error(molecule)
-                        logging.error(molecule.toAdjacencyList())
-                        raise
+                        raise           
                     
         Tb = 198.18 + groupData.Tb
         Vc = 17.5 + groupData.Vc
@@ -493,6 +491,47 @@ class TransportDatabase(object):
         groupData.structureIndex += data.structureIndex
         
         return groupData
+    
+    def getTransportPropertiesViaLennardJonesParameters(self,species):
+        """
+        Serves as last resort if every other method to estimate Transport Properties fails.
+        
+        Generate the Lennard-Jones parameters for the species.
+        """
+        count = sum([1 for atom in species.molecule[0].vertices if atom.isNonHydrogen()])
+
+        if count == 1:
+            sigma = (3.758e-10,"m")
+            epsilon = (148.6,"K")
+        elif count == 2:
+            sigma = (4.443e-10,"m")
+            epsilon = (110.7,"K")
+        elif count == 3:
+            sigma = (5.118e-10,"m")
+            epsilon = (237.1,"K")
+        elif count == 4:
+            sigma = (4.687e-10,"m")
+            epsilon = (531.4,"K")
+        elif count == 5:
+            sigma = (5.784e-10,"m")
+            epsilon = (341.1,"K")
+        else:
+            sigma = (5.949e-10,"m")
+            epsilon = (399.3,"K")
+        
+        shapeIndex = 1 if species.molecule[0].isLinear() else 2
+            
+        transport = TransportData(
+            shapeIndex = shapeIndex,  # 1 if linear, else 2
+            epsilon = epsilon,
+            sigma = sigma,
+            dipoleMoment = (0, 'C*m'),
+            polarizability = (0, 'angstroms^3'),
+            rotrelaxcollnum = 0,  # rotational relaxation collision number at 298 K
+            comment = 'Epsilon & sigma estimated with fixed Lennard Jones Parameters. This is the fallback method! Try improving transport databases!'
+            )
+        
+        return (transport, None, None)
 
 class CriticalPoint:
     """
