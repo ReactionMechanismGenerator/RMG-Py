@@ -194,7 +194,7 @@ Test that an AtomType object can be successfully pickled and ... ok
 Test the AtomType.setActions() method. ... ok
 Test that getAtomType() returns appropriate carbon atom types. ... ok
 Test that getAtomType() returns the hydrogen atom type. ... ok
-Test that getAtomType() returns appropriate NoneTypes. ... ok
+Test that getAtomType() returns appropriate NoneTypes. ... FAIL
 Test that getAtomType() returns appropriate oxygen atom types. ... ok
 Test that getAtomType() returns appropriate silicon atom types. ... ok
 Test that getAtomType() returns appropriate sulfur atom types. ... ok
@@ -346,7 +346,7 @@ Test the Molecule.getRadicalCount() method. ... ok
 Test the Molecule.getSmallestSetOfSmallestRings() method with a complex ... ok
 Check the graph isomorphism functions. ... ok
 testSubgraphIsomorphismAgain (rmgpy.molecule.moleculeTest.TestMolecule) ... ok
-testSubgraphIsomorphismManyLabels (rmgpy.molecule.moleculeTest.TestMolecule) ... FAIL
+testSubgraphIsomorphismManyLabels (rmgpy.molecule.moleculeTest.TestMolecule) ... ok
 Test the Molecule.toAdjacencyList() method. ... ok
 Test the Molecule.calculateAtomSymmetryNumber() method. ... ok
 Test the Molecule.calculateAtomSymmetryNumber() method. ... ok
@@ -360,7 +360,7 @@ Test the Molecule.calculateAxisSymmetryNumber() method. ... ok
 Test the Molecule.calculateAxisSymmetryNumber() method. ... FAIL
 Test the Molecule.calculateAxisSymmetryNumber() method. ... ok
 Test the Molecule.calculateAxisSymmetryNumber() method. ... ok
-Test the Molecule.calculateAxisSymmetryNumber() method. ... FAIL
+Test the Molecule.calculateAxisSymmetryNumber() method. ... ok
 Test the Molecule.calculateAxisSymmetryNumber() method. ... ok
 Test the Molecule.calculateAxisSymmetryNumber() method. ... ok
 Test the Molecule.calculateAxisSymmetryNumber() method. ... ok
@@ -729,22 +729,7 @@ Test that the TransportData rotrelaxcollnum property was properly set. ... ok
 Test that the TransportData shapeIndex property was properly set. ... ok
 Test that the TransportData sigma property was properly set. ... ok
 testJoback (rmgpy.transportDataTest.TestTransportDatabase) ... ok
-Test Joback doesn't crash on Cb desription of beneze ... ERROR:root:Couldn't find in any transport database:
-ERROR:root:<Molecule "c1ccccc1">
-ERROR:root:1  C 0 {2,B} {6,B} {7,S}
-2  C 0 {1,B} {3,B} {8,S}
-3  C 0 {2,B} {4,B} {9,S}
-4  C 0 {3,B} {5,B} {10,S}
-5  C 0 {4,B} {6,B} {11,S}
-6  C 0 {1,B} {5,B} {12,S}
-7  H 0 {1,S}
-8  H 0 {2,S}
-9  H 0 {3,S}
-10 H 0 {4,S}
-11 H 0 {5,S}
-12 H 0 {6,S}
-
-ERROR
+Test Joback doesn't crash on Cb desription of beneze ... ERROR
 
 ======================================================================
 ERROR: Test Joback doesn't crash on Cb desription of beneze
@@ -752,11 +737,11 @@ ERROR: Test Joback doesn't crash on Cb desription of beneze
 Traceback (most recent call last):
   File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/transportDataTest.py", line 278, in testJobackOnBenzeneBonds
     transportData, blank, blank2 = self.transportdb.getTransportPropertiesViaGroupEstimates(species)
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/transport.py", line 337, in getTransportPropertiesViaGroupEstimates
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/transport.py", line 339, in getTransportPropertiesViaGroupEstimates
     criticalPoint = self.estimateCriticalPropertiesViaGroupAdditivity(molecule)
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/transport.py", line 434, in estimateCriticalPropertiesViaGroupAdditivity
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/transport.py", line 435, in estimateCriticalPropertiesViaGroupAdditivity
     self.__addCriticalPointContribution(groupData, self.groups['ring'], molecule, {'*':atom})
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/transport.py", line 478, in __addCriticalPointContribution
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/transport.py", line 476, in __addCriticalPointContribution
     raise KeyError('Node {!r} has no parent with data in the transport database.'.format(node0))
 KeyError: 'Node <Entry index=0 label="C_centered_ring"> has no parent with data in the transport database.'
 
@@ -833,10 +818,18 @@ Traceback (most recent call last):
 AssertionError: Symmetry number error for c1ccccc1
 
 ======================================================================
+FAIL: Test that getAtomType() returns appropriate NoneTypes.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/atomtypeTest.py", line 182, in testNoneTypes
+    self.assertIsNone(self.atomType(self.mol5, 0))
+AssertionError: 'N3s' is not None
+
+======================================================================
 FAIL: Test the Molecule.isAromatic() method.
 ----------------------------------------------------------------------
 Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/moleculeTest.py", line 890, in testAromaticBenzene
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/moleculeTest.py", line 908, in testAromaticBenzene
     self.assertTrue(Molecule().fromSMILES('C1=CC=CC=C1').isAromatic())
 AssertionError: False is not true
 
@@ -844,7 +837,7 @@ AssertionError: False is not true
 FAIL: Test the Molecule.isAromatic() method.
 ----------------------------------------------------------------------
 Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/moleculeTest.py", line 896, in testAromaticNaphthalene
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/moleculeTest.py", line 914, in testAromaticNaphthalene
     self.assertTrue(Molecule().fromSMILES('C12C(C=CC=C1)=CC=CC=2').isAromatic())
 AssertionError: False is not true
 
@@ -852,17 +845,9 @@ AssertionError: False is not true
 FAIL: Test the Molecule.countInternalRotors() method for dimethylacetylene.
 ----------------------------------------------------------------------
 Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/moleculeTest.py", line 945, in testCountInternalRotorsDimethylAcetylene
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/moleculeTest.py", line 963, in testCountInternalRotorsDimethylAcetylene
     self.assertEqual(Molecule().fromSMILES('CC#CC').countInternalRotors(), 1)
 AssertionError: 2 != 1
-
-======================================================================
-FAIL: testSubgraphIsomorphismManyLabels (rmgpy.molecule.moleculeTest.TestMolecule)
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/moleculeTest.py", line 677, in testSubgraphIsomorphismManyLabels
-    self.assertEqual(len(mapping), 1)
-AssertionError: 6 != 1
 
 ======================================================================
 FAIL: Test the Molecule.calculateAxisSymmetryNumber() method.
@@ -871,14 +856,6 @@ Traceback (most recent call last):
   File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 200, in testAxisSymmetryNumber3
     self.assertEqual(calculateAxisSymmetryNumber(molecule), 4)
 AssertionError: 1 != 4
-
-======================================================================
-FAIL: Test the Molecule.calculateAxisSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 221, in testAxisSymmetryNumber6
-    self.assertEqual(calculateAxisSymmetryNumber(molecule), 1)
-AssertionError: 2 != 1
 
 ======================================================================
 FAIL: Test the Molecule.calculateCyclicSymmetryNumber() method.
@@ -920,77 +897,121 @@ Traceback (most recent call last):
     self.assertAlmostEqual(omega / 3.13010e10, 1.0, 4)
 AssertionError: 0.37614562878388352 != 1.0 within 4 places
 
-Name                              Stmts   Miss Branch BrMiss  Cover   Missing
------------------------------------------------------------------------------
-rmgpy                                55     17     18     10    63%   71, 79-82, 104-107, 113, 115, 119, 131-135, 155
-rmgpy.cantherm                        5      0      0      0   100%   
-rmgpy.cantherm.gaussian             217    123    112     68    42%   57-72, 85-111, 120-162, 299, 303, 310-337, 345-396, 404-420
-rmgpy.cantherm.geometry              74     25     14      4    67%   93, 102-103, 130-148, 156-159, 191, 193
-rmgpy.cantherm.input                221    188     98     98    10%   66-119, 123-159, 163-180, 184-249, 253-258, 262-269, 273-278, 287-297, 300, 303, 315-384
-rmgpy.cantherm.kinetics              84     73     16     16    11%   47-48, 55-59, 66-89, 96-140, 150-171
-rmgpy.cantherm.main                  94     75     10     10    18%   45-46, 77-80, 89-130, 139-168, 174-187, 193-194, 201-204, 214-238
-rmgpy.cantherm.molepro               33      2     18      4    88%   64, 87
-rmgpy.cantherm.output                77     66     23     23    11%   47-49, 56-75, 81-94, 101-121, 127-141, 147-149, 155-157, 167-172
-rmgpy.cantherm.pdep                 403    365    156    156     7%   106-142, 147, 150, 155, 158, 163, 166, 171, 174, 179, 182, 187, 190, 195, 198, 204, 224-238, 250-267, 270-297, 309-326, 330-362, 366-382, 386-483, 488-552, 562-571, 578-691
-rmgpy.cantherm.statmech             396    368    164    164     5%   82, 89-120, 128-145, 150, 160-165, 172-174, 183-389, 397-428, 436-466, 483-624, 635-694
-rmgpy.cantherm.thermo               155    140     32     32     8%   55-56, 63-67, 75-122, 129-205, 217-269
-rmgpy.chemkin                       968    925    482    481     3%   69, 79-156, 167-456, 466-615, 626-646, 652-665, 672-687, 695-846, 858-900, 914-972, 982-1130, 1138-1148, 1160-1202, 1213-1277, 1285-1321, 1338-1488, 1498-1514, 1524-1527, 1535-1538, 1560-1584, 1603-1649, 1657-1688
-rmgpy.data                            3      1      0      0    67%   34
-rmgpy.data.base                     654    352    295    187    43%   113, 211-213, 230-251, 259-282, 295-297, 301-303, 307-309, 354-359, 377-380, 389, 401, 408, 418-419, 422, 459-460, 472, 480, 483-484, 491, 500-501, 523, 532-533, 539-540, 554-561, 572-580, 588-681, 688-694, 701-713, 720-754, 770-776, 782-787, 801-840, 864-865, 871, 879-888, 897-899, 904, 924, 935, 939-940, 955, 962-966, 983, 995-1004, 1015-1022, 1040, 1050, 1058, 1060, 1072-1075, 1098-1102, 1114-1118, 1140-1149, 1155-1156, 1162, 1170-1183, 1198-1225
-rmgpy.data.kinetics                 269    235    135    135     8%   62-78, 84-89, 95-97, 104-105, 112-139, 149-174, 181-184, 191-195, 202-208, 215-232, 239-273, 281-284, 292-295, 303-318, 331-340, 361-459, 472-518
-rmgpy.data.kinetics.common          109     97     50     50     8%   100-101, 110-220
-rmgpy.data.kinetics.depository       31     18      0      0    42%   64-77, 83, 102, 115, 141-164, 170
-rmgpy.data.kinetics.family          901    833    496    496     5%   95-108, 114, 133, 159, 167, 175-187, 198-261, 268, 275, 321-332, 342-403, 410-445, 451-462, 468-491, 504-577, 583-584, 591-595, 601-603, 609, 617-620, 627, 635-682, 693-767, 774, 781-784, 791-894, 903-906, 913-916, 924-935, 948-1051, 1064-1133, 1140-1145, 1155-1181, 1190-1199, 1211-1238, 1245-1248, 1260-1460, 1468-1547, 1555, 1564-1569, 1579-1587, 1597-1611, 1619-1622, 1635-1689, 1697-1705, 1712-1720, 1728-1733
-rmgpy.data.kinetics.groups          295    271    180    180     5%   78-79, 85-89, 109-173, 183-209, 218-270, 283-551
-rmgpy.data.kinetics.library         273    247    153    153     6%   71-84, 90, 108, 118, 128-149, 156-163, 171-184, 191-246, 250-260, 282-315, 321, 327-360, 370-374, 384-545
-rmgpy.data.kinetics.rules           313    283    135    135     7%   64, 88-128, 134, 142-190, 197-223, 231-279, 287-354, 361-368, 375, 382, 389-402, 409-425, 431-490, 501-527, 534-588
-rmgpy.data.reference                138    114     48     48    13%   89-95, 102-108, 114-132, 158-162, 169-183, 190-200, 226-231, 238-251, 258-269, 292-294, 301-311, 318-326
-rmgpy.data.rmg                       79     58      8      8    24%   56-66, 87-99, 106-107, 114-115, 122-123, 136-148, 159-160, 167-168, 175-184, 190-195, 201-206
-rmgpy.data.solvation                290    109     60     45    56%   108, 115, 146-149, 162-209, 254, 281, 300, 307, 314, 357, 365, 372, 395-400, 406-408, 445-448, 455-457, 464-466, 474-489, 505-518, 531-543, 563-567, 629-668, 679-683, 702, 716-720
-rmgpy.data.statmech                 295    244    103    103    13%   48-91, 98-101, 108-116, 127, 140, 156, 166, 179, 195, 202, 209, 220, 233-241, 257, 264, 271, 278-285, 294-309, 319-355, 364-445, 455-467, 473-479, 485-488, 495-500, 507, 514-526, 533-534, 541-545, 552-553, 560-562, 569-570, 578-594, 611-624, 637-645, 652-656, 664-667, 676, 689-690, 698-705
-rmgpy.data.statmechfit              248    213     70     70    11%   95-137, 151-193, 207-244, 260-307, 316-319, 327-330, 338-343, 352-355, 364-366, 378-381, 384-407, 419-422, 425-457, 469-472, 475-506
-rmgpy.data.thermo                   436    179    134     59    58%   56-123, 130-148, 187-199, 205, 244, 251, 301, 309, 342-348, 354-357, 367, 397, 419-423, 430-432, 439-441, 448-455, 545-556, 566-609, 628-629, 655-659, 669-670, 694-696, 715-718, 720-723, 740-742, 810-811, 833-837, 881-885, 895, 907-913, 924-928, 947, 977, 979
-rmgpy.data.transport                212     72     56     35    60%   54-69, 119, 126, 133, 155, 174, 181, 188, 209-214, 220-222, 269-281, 289-301, 312-316, 343, 376-415, 468, 482-486
-rmgpy.display                        12      4      2      2    57%   37, 41-43, 47
-rmgpy.kinetics                        6      0      0      0   100%   
-rmgpy.kinetics.diffusionLimited      56     43     12     12    19%   16-19, 22, 34-61, 70-86
-rmgpy.measure                         0      0      0      0   100%   
-rmgpy.measure.input                 266    234    150    150     8%   77-88, 91-115, 119, 123, 127-138, 142-152, 156-169, 173-186, 190-199, 203-205, 209-210, 223-244, 256-266, 278-288, 329-562
-rmgpy.measure.main                  408    384    140    140     4%   81-85, 91-108, 114-140, 147-165, 172-182, 189-195, 202-208, 215-216, 225-274, 288-534, 543-636, 649-679, 688-694, 705-747
-rmgpy.measure.network               779    732    332    332     4%   109-122, 125-128, 134-161, 168, 174-177, 184-189, 196-207, 215-248, 255, 269-286, 297-318, 336-370, 379-454, 461-472, 478-486, 495-506, 518-624, 634-649, 660-672, 680-700, 711-723, 734-773, 780-787, 794-801, 808-815, 827-921, 932-991, 994-1007, 1022-1228, 1236-1254, 1265-1313
-rmgpy.measure.output                164    146     82     82     7%   53-60, 71-110, 120-124, 135-136, 142-157, 168-169, 175-186, 197-198, 206-231, 241-303
-rmgpy.measure.settings                2      0      0      0   100%   
-rmgpy.measure.simulate               67     54     30     30    13%   46, 49, 66-128, 144-169, 178-179, 182, 185
-rmgpy.molecule                        5      0      0      0   100%   
-rmgpy.molecule.adjlist              196     25    110     20    85%   65, 71, 80, 167, 180, 182, 184, 202, 214-215, 229-231, 248-257, 270-271, 298
-rmgpy.molecule.draw                 569    545    270    270     3%   71-83, 101-109, 112-123, 139-249, 258-273, 280-311, 321-347, 358-425, 432-445, 453-485, 495-766, 784-788, 802-922
-rmgpy.pdep                            5      0      0      0   100%   
-rmgpy.pdep.draw                     291    277     86     86     4%   57-70, 73-79, 87-107, 116-125, 131-142, 148-159, 165-181, 185-213, 222-479
-rmgpy.pdep.network                  532    408    230    209    19%   51-53, 60, 130, 137-149, 161, 181, 194-261, 272-345, 358, 361, 364, 396, 460-464, 473, 495-515, 529-688, 699-716, 724-738, 745-748, 755-758, 768-771, 774-775, 789-860, 871-925, 938-954
-rmgpy.qm                              0      0      0      0   100%   
-rmgpy.qm.gaussian                   126     96     46     44    19%   23, 25, 45-46, 50-55, 73-126, 132-137, 153-179, 191-206, 237, 242, 250-253
-rmgpy.qm.main                        61     46     16     16    19%   51-58, 64-71, 92-95, 101-106, 112, 118-119, 125-135, 145-153
-rmgpy.qm.molecule                   184    145     38     38    18%   10-11, 28-38, 46, 50, 54, 63-71, 77, 84-105, 109-111, 121-154, 169-173, 182, 187, 192, 198-201, 208, 217-239, 245-253, 259-277, 284, 293-296, 304-306, 312-315, 324-367
-rmgpy.qm.mopac                      130     99     44     42    19%   22, 24, 58-59, 62-67, 86-135, 142-147, 162-188, 200-218, 235, 240, 249-269
-rmgpy.qm.qmdata                      35     27      2      2    22%   23-38, 41, 75-101
-rmgpy.qm.qmverifier                  26     20      6      6    19%   18-24, 40-61, 71
-rmgpy.qm.symmetry                    80     51     20     16    33%   128-130, 133, 163-173, 179, 185-194, 200-205, 211-223, 232-256
-rmgpy.rmg                             2      0      0      0   100%   
-rmgpy.rmg.input                     267    234     62     62    10%   68-91, 94-98, 101, 104, 107, 110, 121-145, 150-166, 169-170, 174-175, 178-181, 190-196, 209-243, 246-251, 254-268, 280-331, 343-382, 392-500
-rmgpy.rmg.main                      660    610    232    232     6%   46-47, 117-121, 127-164, 171-187, 194-202, 208-214, 222-224, 228-249, 258-356, 364-531, 542-561, 568-569, 572-579, 586-601, 608-612, 619-685, 691-693, 699-708, 717-730, 743-790, 801-834, 845-994, 1001-1010, 1021-1063, 1074, 1076-1077, 1080-1095, 1105-1136
-rmgpy.rmg.model                     903    837    476    476     5%   77-78, 84, 101-162, 172-222, 230-238, 245-249, 275, 290-291, 315-341, 351-371, 379-422, 432-497, 514-568, 586-597, 603-615, 627-779, 788-848, 855-943, 952-988, 998-1024, 1030, 1038-1120, 1128-1175, 1184-1187, 1197-1198, 1206-1210, 1217-1223, 1231-1241, 1248-1253, 1265-1298, 1313-1339, 1353-1378, 1391-1442, 1457-1538, 1546-1632, 1642-1645, 1653-1661
-rmgpy.rmg.output                    154    146     60     60     4%   62-354, 362-947
-rmgpy.rmg.pdep                      316    287    182    182     6%   73-85, 91, 108, 130-133, 136, 142, 145, 152, 158-178, 187-208, 217-239, 246-265, 273-297, 305-315, 322-377, 387-448, 455-635
-rmgpy.solver                          2      0      0      0   100%   
-rmgpy.statmech                        5      0      0      0   100%   
-rmgpy.thermo                          3      0      0      0   100%   
-rmgpy.transport                      31      3      0      0    90%   58-59, 65
------------------------------------------------------------------------------
-TOTAL                             13671  11146   5694   5279    15%   
+Name                              Stmts   Miss  Cover   Missing
+---------------------------------------------------------------
+rmgpy                                55     17    69%   71, 79-82, 104-107, 113, 115, 119, 131-135, 155
+rmgpy.cantherm                        5      0   100%   
+rmgpy.cantherm.gaussian             217    123    43%   57-72, 85-111, 120-162, 299, 303, 310-337, 345-396, 404-420
+rmgpy.cantherm.gaussianTest          63      5    92%   44-45, 99-100, 103
+rmgpy.cantherm.geometry              83     25    70%   93, 102-103, 130-148, 156-159, 191, 193
+rmgpy.cantherm.geometryTest         103      1    99%   169
+rmgpy.cantherm.input                221    188    15%   66-119, 123-159, 163-180, 184-249, 253-258, 262-269, 273-278, 287-297, 300, 303, 315-384
+rmgpy.cantherm.kinetics              84     73    13%   47-48, 55-59, 66-89, 96-140, 150-171
+rmgpy.cantherm.main                  94     75    20%   45-46, 77-80, 89-130, 139-168, 174-187, 193-194, 201-204, 214-238
+rmgpy.cantherm.molepro               33      2    94%   64, 87
+rmgpy.cantherm.moleproTest           18      0   100%   
+rmgpy.cantherm.output                77     66    14%   47-49, 56-75, 81-94, 101-121, 127-141, 147-149, 155-157, 167-172
+rmgpy.cantherm.pdep                 403    365     9%   106-142, 147, 150, 155, 158, 163, 166, 171, 174, 179, 182, 187, 190, 195, 198, 204, 224-238, 250-267, 270-297, 309-326, 330-362, 366-382, 386-483, 488-552, 562-571, 578-691
+rmgpy.cantherm.statmech             400    373     7%   81, 88-119, 127-144, 149, 159-164, 171-173, 182-382, 390-421, 429-459, 476-633, 644-703
+rmgpy.cantherm.thermo               155    140    10%   55-56, 63-67, 75-122, 129-205, 217-269
+rmgpy.chemkin                       981    937     4%   69, 79-156, 167-456, 466-615, 626-646, 652-665, 672-687, 695-846, 858-900, 914-972, 982-1130, 1138-1148, 1160-1202, 1213-1277, 1285-1321, 1338-1488, 1498-1514, 1524-1527, 1535-1538, 1545-1556, 1578-1602, 1621-1667, 1675-1706
+rmgpy.constantsTest                  48      1    98%   148
+rmgpy.data                            3      1    67%   34
+rmgpy.data.base                     663    358    46%   113, 211-213, 230-251, 259-282, 295-297, 301-303, 307-309, 354-359, 377-380, 389, 401, 408, 418-419, 422, 459-460, 472, 480, 483-484, 491, 500-501, 523, 532-533, 539-540, 554-561, 572-580, 588-681, 688-694, 701-713, 720-754, 770-776, 782-787, 801-840, 864-865, 871, 880-889, 898-900, 905, 925, 936, 940-941, 956, 963-967, 984, 995-1005, 1016-1023, 1041, 1051, 1059, 1061, 1073-1076, 1099-1103, 1115-1119, 1141-1158, 1164-1165, 1171, 1179-1192, 1207-1234
+rmgpy.data.kinetics                 269    235    13%   62-78, 84-89, 95-97, 104-105, 112-139, 149-174, 181-184, 191-195, 202-208, 215-232, 239-273, 281-284, 292-295, 303-318, 331-340, 361-459, 472-518
+rmgpy.data.kinetics.common          109     97    11%   102-103, 112-222
+rmgpy.data.kinetics.depository       33     19    42%   64-77, 83, 102, 115, 118, 141-164, 170
+rmgpy.data.kinetics.family         1048    979     7%   95-108, 114, 133, 161, 169, 177-193, 204-284, 291, 298, 344-355, 358, 365-426, 433-468, 474-485, 491-514, 527-600, 606-607, 614-618, 624-626, 632, 640-643, 650, 658-705, 716-790, 797, 804-807, 814-917, 926-929, 936-939, 947-958, 971-1074, 1087-1318, 1325-1330, 1340-1366, 1375-1384, 1396-1423, 1430-1433, 1445-1649, 1657-1736, 1744, 1753-1758, 1768-1776, 1786-1800, 1808-1811, 1824-1878, 1886-1894, 1901-1909, 1917-1922
+rmgpy.data.kinetics.groups          297    272     8%   78-79, 82, 85-89, 109-173, 183-209, 218-270, 283-551
+rmgpy.data.kinetics.library         275    248    10%   71-84, 90, 108, 118, 121, 128-149, 156-163, 171-184, 191-246, 250-260, 282-315, 321, 327-360, 370-374, 384-545
+rmgpy.data.kinetics.rules           315    284    10%   64, 67, 88-128, 134, 142-190, 197-223, 231-279, 287-354, 361-368, 375, 382, 389-402, 409-425, 431-490, 501-527, 534-588
+rmgpy.data.reference                145    120    17%   77-82, 89-95, 102-108, 114-132, 158-162, 169-183, 190-200, 226-231, 238-251, 258-269, 292-294, 301-311, 318-326
+rmgpy.data.rmg                       79     58    27%   56-66, 87-99, 106-107, 114-115, 122-123, 136-148, 159-160, 167-168, 175-184, 190-195, 201-206
+rmgpy.data.solvation                296    113    62%   55, 62, 69, 108, 115, 146-149, 162-209, 254, 281, 300, 307, 314, 357, 365, 372, 395-400, 406-408, 445-448, 455-457, 464-466, 474-489, 505-518, 531-543, 552, 563-567, 629-668, 679-683, 702, 716-720
+rmgpy.data.solvationTest             35      3    91%   17, 109-111
+rmgpy.data.statmech                 295    244    17%   48-91, 98-101, 108-116, 127, 140, 156, 166, 179, 195, 202, 209, 220, 233-241, 257, 264, 271, 278-285, 294-309, 319-355, 364-445, 455-467, 473-479, 485-488, 495-500, 507, 514-526, 533-534, 541-545, 552-553, 560-562, 569-570, 578-594, 611-624, 637-645, 652-656, 664-667, 676, 689-690, 698-705
+rmgpy.data.statmechfit              248    213    14%   95-137, 151-193, 207-244, 260-307, 316-319, 327-330, 338-343, 352-355, 364-366, 378-381, 384-407, 419-422, 425-457, 469-472, 475-506
+rmgpy.data.thermo                   436    179    59%   56-123, 130-148, 187-199, 205, 244, 251, 301, 309, 342-348, 354-357, 367, 397, 419-423, 430-432, 439-441, 448-455, 545-556, 566-609, 628-629, 655-659, 669-670, 694-696, 715-718, 720-723, 740-742, 810-811, 833-837, 881-885, 895, 907-913, 924-928, 947, 976, 978
+rmgpy.data.thermoTest                79      7    91%   74-75, 100-101, 120-121, 151
+rmgpy.data.transport                243    101    58%   54-69, 76, 83, 119, 126, 133, 155, 174, 181, 188, 209-214, 220-222, 269-283, 291-303, 314-318, 345, 377-416, 466, 480-484, 501-534, 552-554
+rmgpy.display                        12      4    67%   37, 41-43, 47
+rmgpy.kinetics                        6      0   100%   
+rmgpy.kinetics.arrheniusTest        456      0   100%   
+rmgpy.kinetics.chebyshevTest        101      1    99%   219
+rmgpy.kinetics.diffusionLimited      56     43    23%   16-19, 22, 34-61, 70-86
+rmgpy.kinetics.falloffTest          329      1    99%   634
+rmgpy.kinetics.kineticsdataTest     175      0   100%   
+rmgpy.kinetics.modelTest             30      0   100%   
+rmgpy.kinetics.tunnelingTest         69      0   100%   
+rmgpy.measure                         0      0   100%   
+rmgpy.measure.input                 266    234    12%   77-88, 91-115, 119, 123, 127-138, 142-152, 156-169, 173-186, 190-199, 203-205, 209-210, 223-244, 256-266, 278-288, 329-562
+rmgpy.measure.main                  409    385     6%   81-85, 91-108, 114-140, 147-165, 172-182, 189-195, 202-208, 215-216, 225-274, 288-534, 543-636, 649-679, 688-694, 705-747
+rmgpy.measure.network               779    732     6%   109-122, 125-128, 134-161, 168, 174-177, 184-189, 196-207, 215-248, 255, 269-286, 297-318, 336-370, 379-454, 461-472, 478-486, 495-506, 518-624, 634-649, 660-672, 680-700, 711-723, 734-773, 780-787, 794-801, 808-815, 827-921, 932-991, 994-1007, 1022-1228, 1236-1254, 1265-1313
+rmgpy.measure.output                164    146    11%   53-60, 71-110, 120-124, 135-136, 142-157, 168-169, 175-186, 197-198, 206-231, 241-303
+rmgpy.measure.settings                2      0   100%   
+rmgpy.measure.simulate               67     54    19%   46, 49, 66-128, 144-169, 178-179, 182, 185
+rmgpy.molecule                        5      0   100%   
+rmgpy.molecule.adjlist              242     33    86%   65, 71, 80, 152-153, 198, 211, 213, 215, 233, 245-246, 269-271, 288-303, 316-317, 345
+rmgpy.molecule.atomtypeTest          96      6    94%   40, 133, 183-185, 190
+rmgpy.molecule.draw                 923    892     3%   71-83, 101-109, 112-123, 139-249, 258-273, 280-375, 382-387, 396-427, 435-445, 452-577, 584-638, 645-717, 730-824, 834-860, 871-938, 945-958, 966-998, 1008-1319, 1337-1341, 1355-1475
+rmgpy.molecule.elementTest           25      1    96%   59
+rmgpy.molecule.graphTest            295      3    99%   51, 72, 518
+rmgpy.molecule.groupTest            327      6    98%   220, 234, 274, 288, 382, 515
+rmgpy.molecule.moleculeTest         515      6    99%   347, 361, 401, 415, 510, 968
+rmgpy.molecule.symmetryTest         174      1    99%   368
+rmgpy.pdep                            5      0   100%   
+rmgpy.pdep.collisionTest             37      0   100%   
+rmgpy.pdep.draw                     291    277     5%   57-70, 73-79, 87-107, 116-125, 131-142, 148-159, 165-181, 185-213, 222-479
+rmgpy.pdep.network                  532    408    23%   51-53, 60, 130, 137-149, 161, 181, 194-261, 272-345, 358, 361, 364, 396, 460-464, 473, 495-515, 529-688, 699-716, 724-738, 745-748, 755-758, 768-771, 774-775, 789-860, 871-925, 938-954
+rmgpy.pdep.networkTest               42      1    98%   204
+rmgpy.qm                              0      0   100%   
+rmgpy.qm.gaussian                   127     97    24%   23, 25, 45-46, 50-55, 73-126, 132-137, 153-179, 185, 191-206, 237, 242, 250-253
+rmgpy.qm.main                        61     46    25%   51-58, 64-71, 92-95, 101-106, 112, 118-119, 125-135, 145-153
+rmgpy.qm.molecule                   185    146    21%   10-11, 28-38, 46, 50, 54, 63-71, 77, 84-105, 109-111, 121-154, 169-173, 182, 187, 192, 198-201, 207-208, 217-239, 245-253, 259-277, 284, 293-296, 304-306, 312-315, 324-367
+rmgpy.qm.mopac                      134    103    23%   22, 24, 58-59, 62-67, 86-135, 142-147, 162-188, 194, 200-222, 239, 244, 253-273
+rmgpy.qm.qmdata                      42     33    21%   23-38, 41, 44-59, 75-101
+rmgpy.qm.qmverifier                  26     20    23%   18-24, 40-61, 71
+rmgpy.qm.symmetry                    82     52    37%   37, 128-130, 133, 163-173, 179, 185-194, 200-205, 211-223, 232-256
+rmgpy.quantityTest                  451     10    98%   105, 140, 159, 178, 197, 248, 380, 399, 418, 437
+rmgpy.reactionTest                  231      3    99%   30, 32, 483
+rmgpy.rmg                             2      0   100%   
+rmgpy.rmg.input                     267    234    12%   68-91, 94-98, 101, 104, 107, 110, 121-145, 150-166, 169-170, 174-175, 178-181, 190-196, 209-243, 246-251, 254-268, 280-331, 343-382, 392-500
+rmgpy.rmg.main                      672    621     8%   46-47, 117-121, 127-164, 171-187, 194-202, 208-214, 222-224, 228-249, 258-359, 367-534, 545-564, 571-572, 575-582, 589-604, 611-615, 622-688, 694-696, 702-711, 717-725, 734-747, 760-807, 818-851, 862-1011, 1018-1027, 1038-1080, 1091, 1093-1094, 1097-1112, 1122-1153
+rmgpy.rmg.model                     912    845     7%   77-78, 84, 101-162, 172-222, 230-238, 245-249, 275, 290-291, 315-341, 351-371, 379-422, 432-497, 514-568, 586-597, 603-615, 627-779, 788-848, 855-943, 952-988, 998-1024, 1030, 1038-1120, 1128-1175, 1184-1187, 1197-1198, 1206-1210, 1217-1223, 1231-1241, 1248-1253, 1264-1298, 1313-1339, 1353-1378, 1391-1442, 1457-1538, 1546-1632, 1642-1645, 1653-1661, 1668-1674
+rmgpy.rmg.output                    154    146     5%   62-354, 362-947
+rmgpy.rmg.pdep                      316    287     9%   73-85, 91, 108, 130-133, 136, 142, 145, 152, 158-178, 187-208, 217-239, 246-265, 273-297, 305-315, 322-377, 387-448, 455-635
+rmgpy.solver                          2      0   100%   
+rmgpy.solver.simpleTest             115      0   100%   
+rmgpy.speciesTest                    54      1    98%   115
+rmgpy.statmech                        5      0   100%   
+rmgpy.statmech.conformerTest        126      0   100%   
+rmgpy.statmech.rotationTest         483      0   100%   
+rmgpy.statmech.schrodingerTest       45      1    98%   125
+rmgpy.statmech.torsionTest          248      3    99%   326, 378, 448
+rmgpy.statmech.translationTest       60      0   100%   
+rmgpy.statmech.vibrationTest        120      2    98%   180, 242
+rmgpy.thermo                          3      0   100%   
+rmgpy.thermo.convertTest            139      1    99%   252
+rmgpy.thermo.nasaTest               118      0   100%   
+rmgpy.thermo.thermodataTest         125      0   100%   
+rmgpy.thermo.wilhoitTest            154      0   100%   
+rmgpy.transport                      36      3    92%   58-59, 65
+rmgpy.transportDataTest             121      2    98%   279, 282
+---------------------------------------------------------------
+TOTAL                             19954  11812    41%   
 ----------------------------------------------------------------------
 Ran 720 tests.
 
-FAILED (errors=1, failures=20)
+FAILED (errors=1, failures=19)
+1 *1 C 1 0 {2,S} {3,S} {4,S}
+2    C 0 0 {1,S} {3,S} {5,S} {6,S}
+3    C 0 0 {1,S} {2,S} {7,S} {8,S}
+4    H 0 0 {1,S}
+5    H 0 0 {2,S}
+6    H 0 0 {2,S}
+7    H 0 0 {3,S}
+8    H 0 0 {3,S}
+
 Solver jacobian
 [[ -4.85410044 -12.94297143   3.2392154   -7.55039077   3.23477055]
  [ -4.85410044 -12.94297143   3.2392154   -7.55039077   3.23477055]
@@ -1015,6 +1036,14 @@ Numerical d(dy/dt)/dk
  [ -3.35248546e-01   2.07727004e+04   1.29402773e+13]
  [  0.00000000e+00  -2.07717967e+04  -2.58805545e+13]
  [  0.00000000e+00   0.00000000e+00  -1.29402773e+13]]
+C2H4
+1 C 0 0 {2,D} {3,S} {4,S}
+2 C 0 0 {1,D} {5,S} {6,S}
+3 H 0 0 {1,S}
+4 H 0 0 {1,S}
+5 H 0 0 {2,S}
+6 H 0 0 {2,S}
+
 [[ 0.49713952 -0.61011423 -0.61693835]
  [ 0.78735968  0.01845445  0.61621763]
  [ 0.36457789  0.79209851 -0.48955379]]

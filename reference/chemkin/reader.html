@@ -67,7 +67,7 @@
 <h2>Main functions<a class="headerlink" href="#main-functions" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="rmgpy.chemkin.loadChemkinFile">
-<tt class="descclassname">rmgpy.chemkin.</tt><tt class="descname">loadChemkinFile</tt><big>(</big><em>path</em>, <em>dictionaryPath=None</em>, <em>transportPath=None</em>, <em>readComments=True</em><big>)</big><a class="headerlink" href="#rmgpy.chemkin.loadChemkinFile" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">rmgpy.chemkin.</tt><tt class="descname">loadChemkinFile</tt><big>(</big><em>path</em>, <em>dictionaryPath=None</em>, <em>transportPath=None</em>, <em>readComments=True</em>, <em>thermoPath=None</em><big>)</big><a class="headerlink" href="#rmgpy.chemkin.loadChemkinFile" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load a Chemkin input file to <cite>path</cite> on disk, returning lists of the species
 and reactions in the Chemkin file.</p>
 </dd></dl>
@@ -120,10 +120,11 @@ files from RMG-Java kinetics libraries, which have a similar syntax.</p>
 
 <dl class="function">
 <dt id="rmgpy.chemkin.readThermoEntry">
-<tt class="descclassname">rmgpy.chemkin.</tt><tt class="descname">readThermoEntry</tt><big>(</big><em>entry</em><big>)</big><a class="headerlink" href="#rmgpy.chemkin.readThermoEntry" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">rmgpy.chemkin.</tt><tt class="descname">readThermoEntry</tt><big>(</big><em>entry</em>, <em>Tmin=0</em>, <em>Tint=0</em>, <em>Tmax=0</em><big>)</big><a class="headerlink" href="#rmgpy.chemkin.readThermoEntry" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read a thermodynamics <cite>entry</cite> for one species in a Chemkin file. Returns
 the label of the species and the thermodynamics model as a <tt class="xref py py-class docutils literal"><span class="pre">NASA</span></tt>
 object.</p>
+<p>Format specification at <a class="reference external" href="http://www2.galcit.caltech.edu/EDL/public/formats/chemkin.html">http://www2.galcit.caltech.edu/EDL/public/formats/chemkin.html</a></p>
 </dd></dl>
 
 <dl class="function">

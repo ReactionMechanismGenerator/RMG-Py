@@ -143,6 +143,13 @@ are forced to have a non-negative barrier.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.data.kinetics.LibraryReaction.fixDiffusionLimitedA">
+<tt class="descname">fixDiffusionLimitedA</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.fixDiffusionLimitedA" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decrease the pre-exponential factor (A) by a factor of getDiffusionFactor
+to account for the diffusion limit.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.data.kinetics.LibraryReaction.generate3dTS">
 <tt class="descname">generate3dTS</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.generate3dTS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate the 3D structure of the transition state. Called from 
@@ -281,6 +288,9 @@ concentration.</p>
 <dd><p>Return the overall rate coefficient for the forward reaction at
 temperature <cite>T</cite> in K and pressure <cite>P</cite> in Pa, including any reaction
 path degeneracies.</p>
+<p>If diffusionLimiter is enabled, the reaction is in the liquid phase and we use
+a diffusion limitation to correct the rate. If not, then use the intrinsic rate
+coefficient.</p>
 </dd></dl>
 
 <dl class="method">
@@ -369,7 +379,9 @@ The reactants should be <tt class="xref py py-class docutils literal"><span clas
 <dt id="rmgpy.data.kinetics.LibraryReaction.toChemkin">
 <tt class="descname">toChemkin</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.toChemkin" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the chemkin-formatted string for this reaction.</p>
-<p>Requires the <cite>speciesList</cite> to figure out third body colliders.</p>
+<p>If <cite>kinetics</cite> is set to True, the chemkin format kinetics will also
+be returned (requires the <cite>speciesList</cite> to figure out third body colliders.)
+Otherwise, only the reaction string will be returned.</p>
 </dd></dl>
 
 </dd></dl>
