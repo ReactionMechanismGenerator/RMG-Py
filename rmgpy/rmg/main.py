@@ -335,6 +335,9 @@ class RMG:
             # DON'T generate any more reactions for the seed species at this time
             for seedMechanism in self.seedMechanisms:
                 self.reactionModel.addSeedMechanismToCore(seedMechanism, react=False)
+            
+            for spec in self.reactionModel.core.species:
+                spec.generateTransportData(self.database)
 
             # Reaction libraries: add species and reactions from reaction library to the edge so
             # that RMG can find them if their rates are large enough
@@ -703,6 +706,20 @@ class RMG:
         latest_dictionary_path = os.path.join(self.outputDirectory, 'chemkin','species_dictionary.txt')
         latest_transport_path = os.path.join(self.outputDirectory, 'chemkin', 'tran.dat')
         self.reactionModel.saveChemkinFile(this_chemkin_path, latest_chemkin_verbose_path, latest_dictionary_path, latest_transport_path)
+        if os.path.exists(latest_chemkin_path):
+            os.unlink(latest_chemkin_path)
+        shutil.copy2(this_chemkin_path,latest_chemkin_path)
+        
+    def saveChemkinFileEdge(self):
+        """
+        Save the current reaction edge to a Chemkin file.
+        """        
+        logging.info('Saving current edge to Chemkin file...')
+        this_chemkin_path = os.path.join(self.outputDirectory, 'chemkin', 'chem_edge%04i.inp' % len(self.reactionModel.core.species))
+        latest_chemkin_path = os.path.join(self.outputDirectory, 'chemkin','chem_edge.inp')
+        latest_chemkin_verbose_path = os.path.join(self.outputDirectory, 'chemkin', 'chem_edge_annotated.inp')
+        latest_dictionary_path = os.path.join(self.outputDirectory, 'chemkin','species_edge_dictionary.txt')
+        self.reactionModel.saveChemkinFileEdge(this_chemkin_path, latest_chemkin_verbose_path, latest_dictionary_path)
         if os.path.exists(latest_chemkin_path):
             os.unlink(latest_chemkin_path)
         shutil.copy2(this_chemkin_path,latest_chemkin_path)

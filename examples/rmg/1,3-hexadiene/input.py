@@ -4,7 +4,7 @@ database(
     reactionLibraries = [],
     seedMechanisms = [],
     kineticsDepositories = ['training'], #  'all', 'default'==['training'], [], 
-    kineticsFamilies = ['!Intra_Disproportionation'],
+    kineticsFamilies = ['!Intra_Disproportionation','!Substitution_O'],
     kineticsEstimator = 'rate rules',
 )
 
