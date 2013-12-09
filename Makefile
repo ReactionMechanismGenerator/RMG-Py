@@ -6,7 +6,9 @@
 
 .PHONY : all minimal main measure solver cantherm clean decython documentation QM
 
-all: main measure solver
+all: main measure solver QM
+	
+noQM: main measure solver
 
 minimal:
 	python setup.py build_ext minimal --build-lib . --build-temp build --pyrex-c-in-temp
@@ -52,7 +54,7 @@ decython:
 test:
 	nosetests --nocapture --nologcapture --all-modules --verbose --with-coverage --cover-inclusive --cover-package=rmgpy --cover-erase --cover-html --cover-html-dir=testing/coverage rmgpy
 
-eg1: all
+eg1: noQM
 	mkdir -p testing/minimal
 	rm -rf testing/minimal/*
 	cp examples/rmg/minimal/input.py testing/minimal/input.py
@@ -61,7 +63,7 @@ eg1: all
 	coverage run rmg.py -p testing/minimal/input.py
 	coverage report
 	coverage html
-eg2: all QM
+eg2: all
 	mkdir -p testing/hexadiene
 	rm -rf testing/hexadiene/*
 	cp examples/rmg/1,3-hexadiene/input.py testing/hexadiene/input.py
