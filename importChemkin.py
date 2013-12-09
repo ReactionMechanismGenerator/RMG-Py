@@ -451,7 +451,8 @@ class ModelMatcher():
                 library.load(path, rmg.database.thermo.local_context, rmg.database.thermo.global_context)
                 library.label = root.split('/')[-1]
                 rmg.database.thermo.libraries[library.label] = library
-                rmg.database.thermo.libraryOrder.append(library.label)
+                # Load them (for the checkThermoLibraries method) but don't trust them
+                # rmg.database.thermo.libraryOrder.append(library.label)
 
         rmg.reactionModel = rmgpy.rmg.model.CoreEdgeReactionModel()
         rmg.reactionModel.kineticsEstimator = 'rate rules'
