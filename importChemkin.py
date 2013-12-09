@@ -733,6 +733,8 @@ class ModelMatcher():
 
         # use speciesList if it is not None or empty, else the formulaDict keys.
         for species_label in [s.label for s in self.speciesList or []] or self.formulaDict.keys():
+            if species_label in self.identified_labels:
+                continue
             formula = self.formulaDict[species_label]
             if formula in known_formulas:
                 known_smiles = known_formulas[formula]
