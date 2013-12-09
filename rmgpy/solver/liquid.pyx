@@ -53,6 +53,8 @@ cdef class LiquidReactor(ReactionSystem):
     cdef public ScalarQuantity P
     
     cdef public dict initialConcentrations
+    cdef public list sensitivity
+    cdef public double sensitivityThreshold
 
     cdef public numpy.ndarray reactantIndices
     cdef public numpy.ndarray productIndices
@@ -62,12 +64,16 @@ cdef class LiquidReactor(ReactionSystem):
     cdef public numpy.ndarray networkLeakCoefficients
     cdef public numpy.ndarray jacobianMatrix
 
-    def __init__(self, T, initialConcentrations, termination):
+    def __init__(self, T, initialConcentrations, termination, sensitivity=None, sensitivityThreshold=1e-3):
         ReactionSystem.__init__(self, termination)
         self.T = Quantity(T)
         self.P = Quantity(100000.,'kPa') # Arbitrary high pressure (1000 Bar) to get reactions in the high-pressure limit!
         self.initialConcentrations = initialConcentrations # should be passed in SI
         self.V = None # will be set from initialConcentrations in initializeModel
+        # Sensitivity is not yet implemented in the liquid reactor, but these variables can be set later 
+        # similar to in the SimpleReactor.
+        self.sensitivity = sensitivity
+        self.sensitivityThreshold = sensitivityThreshold
         
         # These are helper variables used within the solver
         self.reactantIndices = None
