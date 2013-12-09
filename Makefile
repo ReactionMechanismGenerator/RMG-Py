@@ -30,9 +30,9 @@ bin/symmetry:
 
 QM: bin/symmetry
 	echo "Checking you have rdkit..."
-	python -c 'import rdkit; print rdkit.__file__'
+	@ python -c 'import rdkit; print rdkit.__file__'
 	echo "Checking rdkit has InChI support..."
-	python -c 'from rdkit import Chem; assert Chem.inchi.INCHI_AVAILABLE, "RDKit installed without InChI Support"'
+	@ python -c 'from rdkit import Chem; assert Chem.inchi.INCHI_AVAILABLE, "RDKit installed without InChI Support"'
 
 documentation:
 	$(MAKE) -C documentation html
@@ -59,7 +59,7 @@ eg1: noQM
 	rm -rf testing/minimal/*
 	cp examples/rmg/minimal/input.py testing/minimal/input.py
 	coverage erase
-	echo "Running with coverage tracking AND profiling"
+	echo "Running minimal example with coverage tracking AND profiling"
 	coverage run rmg.py -p testing/minimal/input.py
 	coverage report
 	coverage html
@@ -68,7 +68,16 @@ eg2: all
 	rm -rf testing/hexadiene/*
 	cp examples/rmg/1,3-hexadiene/input.py testing/hexadiene/input.py
 	coverage erase
-	echo "Running with coverage tracking AND profiling"
+	echo "Running 1,3-hexadiene example with coverage tracking AND profiling"
 	coverage run rmg.py -p testing/hexadiene/input.py
+	coverage report
+	coverage html
+eg3: all
+	mkdir -p testing/liquid_phase
+	rm -rf testing/liquid_phase/*
+	cp examples/rmg/liquid_phase/input.py testing/liquid_phase/input.py
+	coverage erase
+	echo "Running liquid_phase example with coverage tracking AND profiling"
+	coverage run rmg.py -p testing/liquid_phase/input.py
 	coverage report
 	coverage html
