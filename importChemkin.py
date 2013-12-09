@@ -1007,6 +1007,8 @@ class ModelMatcher():
         enthalpyDiscrepancy = self.getEnthalpyDiscrepancy(chemkinLabel, rmgSpecies)
         logging.info("Storing match: {0} = {1!s}".format(chemkinLabel, rmgSpecies))
         logging.info("  On match, Enthalpies at 298K differ by {0:.1f} kJ/mol".format(enthalpyDiscrepancy))
+        if abs(enthalpyDiscrepancy) > 300:
+            logging.warning("Very large thermo difference for identified species {0}".format(chemkinLabel))
         display(rmgSpecies)
         self.moveSpeciesDrawing(rmgSpecies)
 
