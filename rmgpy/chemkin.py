@@ -998,6 +998,8 @@ def readThermoBlock(f, speciesDict):
     
     Returns a dictionary of molecular formulae for each species, in the form
     `{'methane': {'C':1, 'H':4}}
+    
+    If duplicate entries are found, the FIRST is used, and a warning is printed.
     """
     # List of thermodynamics (hopefully one per species!)
     formulaDict = {}
@@ -1032,6 +1034,11 @@ def readThermoBlock(f, speciesDict):
                     label, thermo, formula = readThermoEntry(thermoBlock, Tmin=Tmin, Tint=Tint, Tmax=Tmax)
                     if label not in speciesDict:
                         logging.info("Ignoring thermo data for {0} because it's not in the requested list of species.".format(label))
+                        thermoBlock = ''
+                        line = f.readline()
+                        continue
+                    elif speciesDict[label].thermo:
+                        logging.warning('Skipping duplicate thermo for the species {0}'.format(label))
                         thermoBlock = ''
                         line = f.readline()
                         continue
