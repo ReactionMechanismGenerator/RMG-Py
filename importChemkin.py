@@ -419,6 +419,7 @@ class ModelMatcher():
         newQMpath = os.path.join(os.path.normpath(os.path.join(rmgpy.getPath(), '..')), 'QMfiles')
         if os.path.exists(oldQMpath):
             logging.warning("Moving old QM files from {0} to {1}".format(oldQMpath, newQMpath))
+            os.makedirs(newQMpath)
             import shutil
             for f in os.listdir(oldQMpath):
                 newFile = os.path.join(newQMpath, f)
