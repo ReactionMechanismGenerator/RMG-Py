@@ -1578,8 +1578,7 @@ def saveTransportFile(path, species):
     with open(path, 'w') as f:
         f.write("! {:15} {:8} {:9} {:9} {:9} {:9} {:9} {:9}\n".format('Species','Shape', 'LJ-depth', 'LJ-diam', 'DiplMom', 'Polzblty', 'RotRelaxNum','Data'))
         f.write("! {:15} {:8} {:9} {:9} {:9} {:9} {:9} {:9}\n".format('Name','Index', 'epsilon/k_B', 'sigma', 'mu', 'alpha', 'Zrot','Source'))
-        for spec in species:
-            print spec.transportData
+        for spec in species:            
             if (not spec.transportData or
                 len(spec.molecule) == 0):
                 missingData = True
