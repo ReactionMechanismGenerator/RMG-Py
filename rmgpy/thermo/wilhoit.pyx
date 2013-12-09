@@ -816,7 +816,7 @@ cpdef double Wilhoit_to_NASA_TintOpt_objFun(double Tint, Wilhoit wilhoit, double
     # this is unphysical (it's the integral of a *squared* error) so we
     # set it to zero to avoid later problems when we try find the square root.
     if result < 0:
-        print("Negative ISE of {0:g} reset to zero.".format(result))
+        #print("Negative ISE of {0:g} reset to zero.".format(result))
         result = 0
 
     return result
