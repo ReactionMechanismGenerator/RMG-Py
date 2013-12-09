@@ -187,7 +187,7 @@ class Species(rmgpy.species.Species):
 
         # Add on solvation correction
         if Species.solventData:
-            logging.info("Making solvent correction for {0}".format(Species.solventName))
+            #logging.info("Making solvent correction for {0}".format(Species.solventName))
             soluteData = database.solvation.getSoluteData(self)
             solvation_correction = database.solvation.getSolvationCorrection(soluteData, Species.solventData)
             # correction is added to the entropy and enthalpy
