@@ -186,6 +186,8 @@ class Atom(Vertex):
         elif isinstance(other, GroupAtom):
             cython.declare(atom=GroupAtom, a=AtomType, radical=cython.short, spin=cython.short, charge=cython.short, index=cython.int)
             atom = other
+            if self.atomType is None:
+                return False
             for a in atom.atomType: 
                 if self.atomType.isSpecificCaseOf(a): break
             else:
@@ -324,7 +326,7 @@ class Atom(Vertex):
         self.updateCharge()
         
     def updateCharge(self):
-        valences = {'H': 1, 'C': 4, 'O': 2, 'N': 3, 'S': 2, 'Si': 4, 'He': 0, 'Ne': 0, 'Ar': 0}
+        valences = {'H': 1, 'C': 4, 'O': 2, 'N': 3, 'S': 2, 'Si': 4, 'He': 0, 'Ne': 0, 'Ar': 0, 'Cl': 1}
         orders = {'S': 1, 'D': 2, 'T': 3, 'B': 1.5}
         valence = valences[self.symbol]
         order = 0
