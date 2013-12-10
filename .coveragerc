@@ -1,0 +1,22 @@
+# .coveragerc to control coverage.py
+[run]
+branch = True
+source =
+    rmgpy
+    rmg.py
+omit = *Test.py
+
+[report]
+show_missing = False
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    if self.debug:
+    if settings.DEBUG
+    raise AssertionError
+    raise NotImplementedError
+    if 0:
+    if __name__ == .__main__.:
+
+[html]
+directory = testing/coverage
