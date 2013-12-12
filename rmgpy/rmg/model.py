@@ -1278,6 +1278,7 @@ class CoreEdgeReactionModel:
             r, isNew = self.makeNewReaction(rxn) # updates self.newSpeciesList and self.newReactionlist
         for spec in self.newSpeciesList:
             if spec.reactive: spec.generateThermoData(database, quantumMechanics=self.quantumMechanics)
+            spec.generateTransportData(database)
         for spec in self.newSpeciesList:
             self.addSpeciesToCore(spec)
 
@@ -1327,6 +1328,7 @@ class CoreEdgeReactionModel:
             if not isNew: logging.info("This library reaction was not new: {0}".format(rxn))
         for spec in self.newSpeciesList:
             if spec.reactive: spec.generateThermoData(database, quantumMechanics=self.quantumMechanics)
+            spec.generateTransportData(database)
         for spec in self.newSpeciesList:
             self.addSpeciesToEdge(spec)
 
