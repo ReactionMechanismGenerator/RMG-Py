@@ -37,6 +37,8 @@ from rmgpy.chemkin import loadChemkinFile, readSpeciesBlock, readThermoBlock, re
 from rmgpy.reaction import ReactionModel
 
 from rmgpy.data.thermo import Entry, saveEntry
+from rmgpy.data.base import Entry as kinEntry
+from rmgpy.data.kinetics.common import saveEntry as kinSaveEntry
 from rmgpy.molecule import Molecule
 from rmgpy.rmg.model import Species  # you need this one, not the one in rmgpy.species!
 
@@ -1109,6 +1111,25 @@ class ModelMatcher():
                         else:  # didn't break outer loop, so all species have been identified
                             # remove it from the list of useful reactions.
                             chemkinReactionsUnmatched.remove(chemkinReaction)
+                            
+                            # Output to the kinetics.py library file
+                            entry = kinEntry()
+                            source = self.args.reactions
+                            entry.index = len(self.chemkinReactions) - len(self.chemkinReactionsUnmatched)
+                            entry.item = edgeReaction
+                            entry.data = chemkinReaction.kinetics
+                            comment = getattr(chemkinReaction, 'comment', '') # This should ideally return the chemkin file comment but currently does not
+                            if comment:
+                                entry.longDesc = comment + '.\n'
+                            else:
+                                entry.longDesc = ''
+                            entry.shortDesc = 'The chemkin file reaction is {0}'.format(str(chemkinReaction))
+                            user = getUsername()
+                            event = [time.asctime(), user, 'action', '{user} imported this entry from {source}'.format(user=user, source=source)]
+                            entry.history = [event]
+                            with open(self.outputKineticsFile, 'a') as f:
+                                kinSaveEntry(f, entry)
+                            
                     for chemkinLabel, rmgSpecies in self.suggestedMatches.iteritems():
                         if chemkinLabel not in votes:
                             votes[chemkinLabel] = {rmgSpecies: set([(chemkinReaction, edgeReaction)])}
@@ -1344,6 +1365,7 @@ class ModelMatcher():
         self.known_species_file = known_species_file
 
         self.outputThermoFile = os.path.splitext(thermo_file)[0] + '.thermo.py'
+        self.outputKineticsFile = os.path.splitext(reactions_file)[0] + '.kinetics.py'
 
         self.loadSpecies(species_file)
         self.loadThermo(thermo_file)
@@ -1381,6 +1403,24 @@ recommended = False
 
 """.format(name=thermo_file.replace('"', ''),
            shortDesc=os.path.abspath(thermo_file).replace('"', ''),
+           longDesc=source.strip())
+          )
+
+        with open(self.outputKineticsFile, 'w') as f:
+            f.write("""#!/usr/bin/env python
+# encoding: utf-8
+
+name = "{name}"
+
+shortDesc = u"{shortDesc}"
+
+longDesc = u"\""
+{longDesc}
+"\""
+recommended = False
+
+""".format(name=reactions_file.replace('"', ''),
+           shortDesc=os.path.abspath(reactions_file).replace('"', ''),
            longDesc=source.strip())
           )
 
