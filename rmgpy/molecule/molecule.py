@@ -1048,7 +1048,7 @@ class Molecule(Graph):
         """
         # Below are the declared variables for cythonizing the module
         cython.declare(i=cython.int)
-        cython.declare(radicalElectrons=cython.int, spinMultiplicity=cython.int, charge=cython.int)
+        cython.declare(radicalElectrons=cython.int, spinMultiplicity=cython.int, charge=cython.int, lonePairs=cython.int)
         cython.declare(atom=Atom, atom1=Atom, atom2=Atom, bond=Bond)
         
         self.vertices = []
@@ -1076,7 +1076,7 @@ class Molecule(Graph):
             # Process charge
             charge = rdkitatom.GetFormalCharge()
             
-            atom = Atom(element, radicalElectrons, spinMultiplicity, charge)
+            atom = Atom(element, radicalElectrons, spinMultiplicity, charge, '', 0)
             self.vertices.append(atom)
             
             # Add bonds by iterating again through atoms
@@ -1098,6 +1098,7 @@ class Molecule(Graph):
         
         # Set atom types and connectivity values
         self.updateConnectivityValues()
+        self.updateLonePairs()
         self.updateAtomTypes()
         
         return self
@@ -1790,4 +1791,25 @@ class Molecule(Graph):
             if atom.radicalElectrons > 0:
                 radicalAtomsList.append(atom)
         return radicalAtomsList
+    
+    def updateLonePairs(self):
+        """
+        Iterate through the atoms in the structure and calcualte the
+        number of lone electron pairs, assumin a neutral molecule.
+        """
+        for atom1 in self.vertices:
+            order = 0
+            if not atom1.isHydrogen():
+                for atom2, bond12 in atom1.edges.items():
+                    if bond12.isSingle():
+                        order = order + 1
+                    if bond12.isDouble():
+                        order = order + 2
+                    if bond12.isTriple():
+                        order = order + 3
+                        
+                atom1.lonePairs = 4 - atom1.radicalElectrons - order
+        
+            else:
+                atom1.lonePairs = 0
 

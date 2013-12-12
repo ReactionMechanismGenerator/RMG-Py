@@ -335,9 +335,6 @@ class RMG:
             # DON'T generate any more reactions for the seed species at this time
             for seedMechanism in self.seedMechanisms:
                 self.reactionModel.addSeedMechanismToCore(seedMechanism, react=False)
-            
-            for spec in self.reactionModel.core.species:
-                spec.generateTransportData(self.database)
 
             # Reaction libraries: add species and reactions from reaction library to the edge so
             # that RMG can find them if their rates are large enough
