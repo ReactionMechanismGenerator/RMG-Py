@@ -116,41 +116,46 @@ class QMReaction:
     
     def editMatrix(self, reactant, bm):
         
-        # edit bounds distances to align reacting atoms
+        """
+        For bimolecular reactions, reduce the minimum distance between atoms
+        of the two reactants. 
+        """
         if self.reaction.label.lower() == 'h_abstraction':
-            """
-            Reduce the minimum distance between atoms on the two reactants. 
-            """
+            
             lbl1 = reactant.getLabeledAtom('*1').sortingLabel
             lbl2 = reactant.getLabeledAtom('*2').sortingLabel
             lbl3 = reactant.getLabeledAtom('*3').sortingLabel
-            
-            labels = [lbl1, lbl2, lbl3]
-            atomMatch = ((lbl1,),(lbl2,),(lbl3,))
-            
-            distanceData = transitionStates.estimateDistances(self.reaction)
-            
-            sect = len(reactant.split()[1].atoms)
-            
-            uncertainties = distanceData.uncertainties or {'d12':0.1, 'd13':0.1, 'd23':0.1 } # default if uncertainty is None
-            
-            bm = self.setLimits(bm, lbl1, lbl2, distanceData.distances['d12'], uncertainties['d12'])
-            bm = self.setLimits(bm, lbl2, lbl3, distanceData.distances['d23'], uncertainties['d23'])
-            bm = self.setLimits(bm, lbl1, lbl3, distanceData.distances['d13'], uncertainties['d13'])
         
-        # elif self.reaction.label.lower() == 'disproportionation':
+        elif self.reaction.label.lower() == 'disproportionation':
+            
+            lbl1 = reactant.getLabeledAtom('*2').sortingLabel
+            lbl2 = reactant.getLabeledAtom('*4').sortingLabel
+            lbl3 = reactant.getLabeledAtom('*1').sortingLabel
+            
+        labels = [lbl1, lbl2, lbl3]
+        atomMatch = ((lbl1,),(lbl2,),(lbl3,))
         
-            for i in range(sect,len(bm)):
-                for j in range(0,sect):
-                    for k in range(len(bm)):
-                        if k==i or k==j: continue
-                        Uik = bm[i,k] if k>i else bm[k,i]
-                        Ukj = bm[j,k] if k>j else bm[k,j]
-                        
-                        maxLij = Uik + Ukj - 0.15
-                        if bm[i,j] >  maxLij:
-                            print "CHANGING {0} to {1}".format(bm[i,j], maxLij)
-                            bm[i,j] = maxLij
+        distanceData = transitionStates.estimateDistances(self.reaction)
+        
+        sect = len(reactant.split()[1].atoms)
+        
+        uncertainties = distanceData.uncertainties or {'d12':0.1, 'd13':0.1, 'd23':0.1 } # default if uncertainty is None
+        
+        bm = self.setLimits(bm, lbl1, lbl2, distanceData.distances['d12'], uncertainties['d12'])
+        bm = self.setLimits(bm, lbl2, lbl3, distanceData.distances['d23'], uncertainties['d23'])
+        bm = self.setLimits(bm, lbl1, lbl3, distanceData.distances['d13'], uncertainties['d13'])
+        
+        for i in range(sect,len(bm)):
+            for j in range(0,sect):
+                for k in range(len(bm)):
+                    if k==i or k==j: continue
+                    Uik = bm[i,k] if k>i else bm[k,i]
+                    Ukj = bm[j,k] if k>j else bm[k,j]
+                    
+                    maxLij = Uik + Ukj - 0.15
+                    if bm[i,j] >  maxLij:
+                        print "CHANGING {0} to {1}".format(bm[i,j], maxLij)
+                        bm[i,j] = maxLij
             
         return bm, labels, atomMatch
         
