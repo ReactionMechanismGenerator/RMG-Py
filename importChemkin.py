@@ -1116,7 +1116,7 @@ class ModelMatcher():
                             entry = kinEntry()
                             source = self.args.reactions
                             entry.index = len(self.chemkinReactions) - len(self.chemkinReactionsUnmatched)
-                            entry.item = edgeReaction
+                            entry.item = chemkinReaction
                             entry.data = chemkinReaction.kinetics
                             comment = getattr(chemkinReaction, 'comment', '') # This should ideally return the chemkin file comment but currently does not
                             if comment:
