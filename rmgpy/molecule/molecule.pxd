@@ -167,7 +167,7 @@ cdef class Molecule(Graph):
 
     cpdef fromRDKitMol(self, rdkitmol)
 
-    cpdef fromAdjacencyList(self, str adjlist)
+    cpdef fromAdjacencyList(self, str adjlist, bint saturateH=?)
 
     cpdef str toInChI(self)
 
