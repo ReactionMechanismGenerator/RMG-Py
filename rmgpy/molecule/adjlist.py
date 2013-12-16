@@ -48,7 +48,7 @@ class InvalidAdjacencyListError(Exception):
 
 ################################################################################
 
-def fromAdjacencyList(adjlist, group=False):
+def fromAdjacencyList(adjlist, group=False, saturateH=False):
     """
     Convert a string adjacency list `adjlist` into a set of :class:`Atom` and
     :class:`Bond` objects.
@@ -233,6 +233,30 @@ def fromAdjacencyList(adjlist, group=False):
                         raise InvalidAdjacencyListError('Multiple bond orders specified for an atom in a Molecule.')
                     atom1.edges[atom2] = bond
                     atom2.edges[atom1] = bond
+        
+        if saturateH:
+            # Add explicit hydrogen atoms to complete structure if desired
+            if not group:
+                valences = {'H': 1, 'C': 4, 'O': 2, 'N': 3, 'S': 2, 'Si': 4, 'He': 0, 'Ne': 0, 'Ar': 0}
+                orders = {'S': 1, 'D': 2, 'T': 3, 'B': 1.5}
+                newAtoms = []
+                for atom in atoms:
+                    try:
+                        valence = valences[atom.symbol]
+                    except KeyError:
+                        raise InvalidAdjacencyListError('Cannot add hydrogens to adjacency list: Unknown valence for atom "{0}".'.format(atom.symbol))
+                    radical = atom.radicalElectrons
+                    order = 0
+                    for atom2, bond in atom.bonds.items():
+                        order += orders[bond.order]
+                    count = valence - radical - int(order)
+                    for i in range(count):
+                        a = Atom('H', 0, 1, 0, '')
+                        b = Bond(atom, a, 'S')
+                        newAtoms.append(a)
+                        atom.bonds[a] = b
+                        a.bonds[atom] = b
+                atoms.extend(newAtoms)
         
         # Calculate the number of lone pair electrons requiring molecule with all hydrogen atoms present
         if not group and lonePairElectrons == -1:
