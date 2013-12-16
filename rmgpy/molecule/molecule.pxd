@@ -181,7 +181,7 @@ cdef class Molecule(Graph):
 
 #    cpdef tRDKitMol(self)
 
-    cpdef toAdjacencyList(self, str label=?, bint removeH=?)
+    cpdef toAdjacencyList(self, str label=?, bint removeH=?, bint removeLonePairs=?)
 
     cpdef bint isLinear(self) except -2
 

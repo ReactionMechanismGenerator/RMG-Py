@@ -303,7 +303,7 @@ def getElectronState(radicalElectrons, spinMultiplicity):
         raise ValueError('Unable to determine electron state for {0:d} radical electrons with spin multiplicity of {1:d}.'.format(radicalElectrons, spinMultiplicity))
     return electronState
 
-def toAdjacencyList(atoms, label=None, group=False, removeH=False):
+def toAdjacencyList(atoms, label=None, group=False, removeH=False, removeLonePairs=False):
     """
     Convert a chemical graph defined by a list of `atoms` into a string
     adjacency list.
@@ -349,8 +349,9 @@ def toAdjacencyList(atoms, label=None, group=False, removeH=False):
             atomTypes[atom] = '{0}'.format(atom.element.symbol)
             # Electron state(s)
             atomElectronStates[atom] = '{0}'.format(getElectronState(atom.radicalElectrons, atom.spinMultiplicity))    
-            # Lone Pair(s)
-            atomLonePairs[atom] = atom.lonePairs
+            if not removeLonePairs:
+                # Lone Pair(s)
+                atomLonePairs[atom] = atom.lonePairs
     
     # Determine field widths
     atomNumberWidth = max([len(s) for s in atomNumbers.values()]) + 1
@@ -372,7 +373,7 @@ def toAdjacencyList(atoms, label=None, group=False, removeH=False):
         adjlist += '{0:<{1:d}}'.format(atomTypes[atom], atomTypeWidth)
         # Electron state(s)
         adjlist += '{0:<{1:d}}'.format(atomElectronStates[atom], atomElectronStateWidth)
-        if group == False:
+        if group == False and not removeLonePairs:
             # Lone Pair(s)
             adjlist += '{0:>{1:d}}'.format(atomLonePairs[atom], atomLonePairWidth)
         

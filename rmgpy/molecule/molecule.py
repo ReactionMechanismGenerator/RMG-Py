@@ -1311,12 +1311,12 @@ class Molecule(Graph):
             return rdkitmol, rdAtomIndices
         return rdkitmol
 
-    def toAdjacencyList(self, label='', removeH=False):
+    def toAdjacencyList(self, label='', removeH=False, removeLonePairs=False):
         """
         Convert the molecular structure to a string adjacency list.
         """
         from .adjlist import toAdjacencyList
-        result = toAdjacencyList(self.vertices, label=label, group=False, removeH=removeH)
+        result = toAdjacencyList(self.vertices, label=label, group=False, removeH=removeH, removeLonePairs=removeLonePairs)
         return result
 
     def isLinear(self):
