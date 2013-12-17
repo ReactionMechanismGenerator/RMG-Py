@@ -1091,11 +1091,14 @@ def readReactionsBlock(f, speciesDict, readComments = True):
         if len(tokens) > 0 and tokens[0].upper() == 'REACTIONS':
             # Regular Chemkin file
             found = True
-            try:
-                energyUnits = tokens[1].lower()
-                moleculeUnits = tokens[2].lower()
-            except IndexError:
-                pass
+            for token in tokens[1:]:
+                unit = token.lower()
+                if unit in ['molecules', 'moles', 'mole', 'mol', 'molecule']:
+                    moleculeUnits = unit
+                elif unit in ['kcal/mole', 'kcal/mol', 'cal/mole', 'cal/mol', 'kj/mole', 'kj/mol', 'j/mole', 'j/mol', 'kelvins']:
+                    energyUnits = unit
+                else:
+                    raise ChemkinError('Unknown unit type "{0}"'.format(unit))
 
         elif len(tokens) > 0 and tokens[0].lower() == 'unit:':
             # RMG-Java kinetics library file
@@ -1121,7 +1124,7 @@ def readReactionsBlock(f, speciesDict, readComments = True):
     assert moleculeUnits in ['molecules', 'moles', 'mole', 'mol', 'molecule']
     assert volumeUnits in ['cm3', 'm3']
     assert timeUnits in ['s']
-    assert energyUnits in ['kcal/mole', 'kcal/mol', 'cal/mole', 'cal/mol', 'kj/mole', 'kj/mol', 'j/mole', 'j/mol']
+    assert energyUnits in ['kcal/mole', 'kcal/mol', 'cal/mole', 'cal/mol', 'kj/mole', 'kj/mol', 'j/mole', 'j/mol', 'kelvins']
     
     # Homogenize units
     if moleculeUnits == 'molecules':
@@ -1137,6 +1140,8 @@ def readReactionsBlock(f, speciesDict, readComments = True):
         energyUnits = 'kj/mol'
     elif energyUnits == 'j/mole':
         energyUnits = 'j/mol'
+    elif energyUnits == 'kelvins':
+        energyUnits = 'K'
     energyUnits = energyUnits.replace('j/mol', 'J/mol')
     
     # Set up kinetics units
