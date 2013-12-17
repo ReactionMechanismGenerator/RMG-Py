@@ -1111,7 +1111,7 @@ class ModelMatcher():
                         else:  # didn't break outer loop, so all species have been identified
                             # remove it from the list of useful reactions.
                             chemkinReactionsUnmatched.remove(chemkinReaction)
-                            self.saveReactionToKineticsFile(chemkinReaction)
+                            #self.saveReactionToKineticsFile(chemkinReaction)
                     for chemkinLabel, rmgSpecies in self.suggestedMatches.iteritems():
                         if chemkinLabel not in votes:
                             votes[chemkinLabel] = {rmgSpecies: set([(chemkinReaction, edgeReaction)])}
