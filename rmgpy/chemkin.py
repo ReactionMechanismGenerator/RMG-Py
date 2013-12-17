@@ -67,9 +67,9 @@ class ChemkinError(Exception):
 
 def Ffloat(string):
     """
-    Parse a Fortran-ish string into a float, like "1.00D 03"
+    Parse a Fortran-ish string into a float, like "1.00D 03" or "1.00d+03"
     """
-    return float(string.replace("D", "E").replace("E ", "E+").replace("e ", "E+"))
+    return float(string.replace("e", "E").replace("d", "D").replace("D", "E").replace("E ", "E+"))
     
 def readThermoEntry(entry, Tmin=0, Tint=0, Tmax=0):
     """
