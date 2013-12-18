@@ -40,6 +40,8 @@ cdef class ThirdBody(PDepKineticsModel):
     cpdef double getRateCoefficient(self, double T, double P=?) except -1
 
     cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2
+    
+    cpdef changeRate(self, double factor)
 
 ################################################################################
 
@@ -51,6 +53,8 @@ cdef class Lindemann(PDepKineticsModel):
     cpdef double getRateCoefficient(self, double T, double P=?) except -1
 
     cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2
+    
+    cpdef changeRate(self, double factor)
 
 ################################################################################
 
@@ -64,3 +68,5 @@ cdef class Troe(PDepKineticsModel):
     cpdef double getRateCoefficient(self, double T, double P=?) except -1
 
     cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2
+    
+    cpdef changeRate(self, double factor)

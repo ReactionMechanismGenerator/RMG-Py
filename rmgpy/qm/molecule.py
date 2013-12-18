@@ -273,7 +273,7 @@ class QMMolecule:
             resultFile.write("thermoData = {0!r}\n".format(self.thermo))
             resultFile.write("pointGroup = {0!r}\n".format(self.pointGroup))
             resultFile.write("qmData = {0!r}\n".format(self.qmData))
-            resultFile.write('adjacencyList = """\n{0!s}"""\n'.format(self.molecule.toAdjacencyList(removeH=True)))
+            resultFile.write('adjacencyList = """\n{0!s}"""\n'.format(self.molecule.toAdjacencyList(removeH=False)))
 
     def loadThermoData(self):
         """

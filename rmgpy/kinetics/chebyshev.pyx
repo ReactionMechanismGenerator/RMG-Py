@@ -235,3 +235,9 @@ cdef class Chebyshev(PDepKineticsModel):
             return False
 
         return True
+
+    cpdef changeRate(self, double factor):
+        """ 
+        Changes kinetics rates by a multiple ``factor``.
+        """
+        self.coeffs.value_si[0,0] += log10(factor)

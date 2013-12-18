@@ -197,6 +197,13 @@ cdef class Arrhenius(KineticsModel):
                 
         return True
     
+    cpdef changeRate(self, double factor):
+        """
+        Changes A factor in Arrhenius expression by multiplying it by a ``factor``.
+        """
+        self._A.value_si *= factor
+        
+    
 ################################################################################
 
 cdef class ArrheniusEP(KineticsModel):
@@ -332,6 +339,12 @@ cdef class ArrheniusEP(KineticsModel):
             return False
                 
         return True
+    
+    cpdef changeRate(self, double factor):
+        """
+        Changes A factor by multiplying it by a ``factor``.
+        """
+        self._A.value_si *= factor
 
 ################################################################################
 
@@ -437,7 +450,7 @@ cdef class PDepArrhenius(PDepKineticsModel):
         Fit the pressure-dependent Arrhenius model to a matrix of rate
         coefficient data `K` with units of `kunits` corresponding to a set of 
         temperatures `Tlist` in K and pressures `Plist` in Pa. An Arrhenius 
-        model is fit at each pressure.
+        model is fit cpdef changeRate(self, double factor)at each pressure.
         """
         cdef int i
         self.pressures = (Plist*1e-5,"bar")
@@ -468,7 +481,16 @@ cdef class PDepArrhenius(PDepKineticsModel):
             return False
         
         return True
-
+    
+    cpdef changeRate(self, double factor):
+        """
+        Changes kinetics rate by a multiple ``factor``.
+        """
+        for kin in self.arrhenius:
+            kin.changeRate(factor)
+        if self.highPlimit is not None:
+            self.highPlimit.changeRate(factor)
+            
 ################################################################################
 
 cdef class MultiArrhenius(KineticsModel):
@@ -567,6 +589,15 @@ cdef class MultiArrhenius(KineticsModel):
         arrh = Arrhenius().fitToData(Tlist, klist, kunits)
         arrh.comment = "Fitted to Multiple Arrhenius kinetics over range {Tmin}-{Tmax} K. {comment}".format(Tmin=Tmin, Tmax=Tmax, comment=self.comment)
         return arrh
+    
+    cpdef changeRate(self, double factor):
+        """
+        Change kinetics rate by a multiple ``factor``.
+        """
+        for kin in self.arrhenius:
+            kin.changeRate(factor)
+    
+    
 ################################################################################
 
 cdef class MultiPDepArrhenius(PDepKineticsModel):
@@ -666,3 +697,10 @@ cdef class MultiPDepArrhenius(PDepKineticsModel):
                 return False
         
         return True
+    
+    cpdef changeRate(self, double factor):
+        """
+        Change kinetic rate by a multiple ``factor``.
+        """
+        for kin in self.arrhenius:
+            kin.changeRate(factor)

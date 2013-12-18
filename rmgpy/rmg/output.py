@@ -62,11 +62,12 @@ def saveOutputHTML(path, reactionModel):
     from model import PDepReaction
     
     from rmgpy.molecule.draw import MoleculeDrawer
+    from rmgpy.chemkin import getSpeciesIdentifier
 
     try:
         import jinja2
     except ImportError:
-        logging.warning("jinja package not found; HTML output will not be saved.")
+        logging.warning("jinja2 package not found; HTML output will not be saved.")
         return
 
     path = os.path.abspath(path)
@@ -92,8 +93,11 @@ def saveOutputHTML(path, reactionModel):
         # Draw molecules if necessary
         fstr = os.path.join(dirname, 'species', '{0}.png'.format(spec))
         if not os.path.exists(fstr):
-            MoleculeDrawer().draw(spec.molecule[0], 'png', fstr)
-
+            try:
+                MoleculeDrawer().draw(spec.molecule[0], 'png', fstr)
+            except:
+                raise OutputError("{0} species could not be drawn because it did not contain a molecular structure. Please recheck your files.".format(getSpeciesIdentifier(spec)))
+                
     # We want to keep species sorted in the original order in which they were added to the RMG core.
     # Rather than ordered by index
 #    species.sort(key=lambda x: x.index)
@@ -398,11 +402,19 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
         # Draw molecules if necessary
         fstr = os.path.join(dirname, 'species1', '{0}.png'.format(spec1))
         if not os.path.exists(fstr):
-            MoleculeDrawer().draw(spec1.molecule[0], 'png', fstr)
+            try:
+                MoleculeDrawer().draw(spec1.molecule[0], 'png', fstr)
+            except IndexError:
+                raise OutputError('{0} species could not be drawn because it did not contain a molecular structure. Please recheck your files.'.format(getSpeciesIdentifier(spec1)))
+
             
         fstr = os.path.join(dirname, 'species2', '{0}.png'.format(spec2))
         if not os.path.exists(fstr):
-            MoleculeDrawer().draw(spec2.molecule[0], 'png', fstr)
+            try:
+                MoleculeDrawer().draw(spec2.molecule[0], 'png', fstr)
+            except IndexError:
+                raise OutputError('{0} species could not be drawn because it did not contain a molecular structure. Please recheck your files.'.format(getSpeciesIdentifier(spec2)))
+    
                 
     for spec in speciesList1:
         match = re_index.search(spec.label)
@@ -412,8 +424,11 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
         # Draw molecules if necessary
         fstr = os.path.join(dirname, 'species1', '{0}.png'.format(spec))
         if not os.path.exists(fstr):
-            MoleculeDrawer().draw(spec.molecule[0], 'png', fstr)
-            
+            try:
+                MoleculeDrawer().draw(spec.molecule[0], 'png', fstr)
+            except IndexError:
+                raise OutputError('{0} species could not be drawn because it did not contain a molecular structure. Please recheck your files.'.format(getSpeciesIdentifier(spec)))
+    
     for spec in speciesList2:
         match = re_index.search(spec.label)
         if match:
@@ -422,7 +437,10 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
         # Draw molecules if necessary
         fstr = os.path.join(dirname, 'species2', '{0}.png'.format(spec))
         if not os.path.exists(fstr):
-            MoleculeDrawer().draw(spec.molecule[0], 'png', fstr)
+            try:
+                MoleculeDrawer().draw(spec.molecule[0], 'png', fstr)
+            except IndexError:
+                raise OutputError('{0} species could not be drawn because it did not contain a molecular structure. Please recheck your files.'.format(getSpeciesIdentifier(spec)))
     
 
 
@@ -634,20 +652,20 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
         <td width="40%">
             <table width="100%">
                 <tr>
-                    <th>H298</th>
-                    <th>S298</th>
+                    <th>H300</th>
+                    <th>S300</th>
                     <th>Cp300</th>
                     <th>Cp500</th>
                     <th>Cp1000</th>
                     <th>Cp1500</th>
                 </tr>
                 <tr>
-                    <td>{% if spec1.thermo.Tmin.value_si <= 298 %}
-                    {{ "%.2f"|format(spec1.thermo.getEnthalpy(298) / 4184) }}
+                    <td>{% if spec1.thermo.Tmin.value_si <= 300 %}
+                    {{ "%.2f"|format(spec1.thermo.getEnthalpy(300) / 4184) }}
                     {% endif %}</td>
                     <td>
-                    {% if spec1.thermo.Tmin.value_si <= 298 %}
-                    {{ "%.2f"|format(spec1.thermo.getEntropy(298) / 4.184) }}
+                    {% if spec1.thermo.Tmin.value_si <= 300 %}
+                    {{ "%.2f"|format(spec1.thermo.getEntropy(300) / 4.184) }}
                     {% endif %}</td>
                     <td>{{ "%.2f"|format(spec1.thermo.getHeatCapacity(300) / 4.184) }}</td>
                     <td>{{ "%.2f"|format(spec1.thermo.getHeatCapacity(500) / 4.184) }}</td>
@@ -660,19 +678,19 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
         <td width="40%">
             <table width="100%">
                 <tr>
-                    <th>H298</th>
-                    <th>S298</th>
+                    <th>H300</th>
+                    <th>S300</th>
                     <th>Cp300</th>
                     <th>Cp500</th>
                     <th>Cp1000</th>
                     <th>Cp1500</th>
                 </tr>
                 <tr>
-                    <td>{% if spec2.thermo.Tmin.value_si <= 298 %}
-                    {{ "%.2f"|format(spec2.thermo.getEnthalpy(298) / 4184) }}
+                    <td>{% if spec2.thermo.Tmin.value_si <= 300 %}
+                    {{ "%.2f"|format(spec2.thermo.getEnthalpy(300) / 4184) }}
                     {% endif %}</td>
-                    <td>{% if spec2.thermo.Tmin.value_si <= 298 %}
-                    {{ "%.2f"|format(spec2.thermo.getEntropy(298) / 4.184) }}
+                    <td>{% if spec2.thermo.Tmin.value_si <= 300 %}
+                    {{ "%.2f"|format(spec2.thermo.getEntropy(300) / 4.184) }}
                     {% endif %}</td>
                     <td>{{ "%.2f"|format(spec2.thermo.getHeatCapacity(300) / 4.184) }}</td>
                     <td>{{ "%.2f"|format(spec2.thermo.getHeatCapacity(500) / 4.184) }}</td>
@@ -822,8 +840,10 @@ def saveDiffHTML(path, commonSpeciesList, speciesList1, speciesList2, commonReac
 
 {% if not rxn2.duplicate %}
 <P><b>Fitted Reverse Kinetics:</b>
+{% if not rxn2.kinetics.isPressureDependent() %}
 {{rxn2.generateReverseRateCoefficient().toHTML() }}
-
+{% else %} Pressure dependent
+{% endif %}
 {% endif %}
 
 <P><b>Original Kinetics:</b>

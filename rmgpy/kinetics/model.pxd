@@ -54,6 +54,8 @@ cdef class KineticsModel:
     cpdef bint isSimilarTo(self, KineticsModel otherKinetics) except -2
 
     cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2
+    
+    cpdef double discrepancy(self, KineticsModel otherKinetics) except -2
 
 cdef class PDepKineticsModel(KineticsModel):
     

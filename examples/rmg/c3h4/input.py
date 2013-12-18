@@ -1,10 +1,10 @@
 # Data sources
 database(
-	thermoLibraries = ['primaryThermoLibrary', 'GRI-Mech3.0'],
+	thermoLibraries = ['primaryThermoLibrary', 'GRI-Mech3.0-N'],
 	reactionLibraries = [],
-	seedMechanisms = [],
+	seedMechanisms = ['GRI-Mech3.0-N'],
 	kineticsDepositories = ['training'], #  'all', 'default'==['training'], [], 
-	kineticsFamilies = ['!Intra_Disproportionation'],
+	kineticsFamilies = ['!Intra_Disproportionation','!Substitution_O'],
 	kineticsEstimator = 'rate rules',
 )
 

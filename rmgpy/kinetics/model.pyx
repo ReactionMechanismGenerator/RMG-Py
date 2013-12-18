@@ -191,13 +191,16 @@ cdef class KineticsModel:
         Tdata = [500,1000,1500,2000]
           
         string = '<table class="KineticsData">\n<tr class="KineticsData_Tdata"><th>T/[K]</th>\n'
-        
-        for T in Tdata:
-            string += '<td>{0:.0f}</td>'.format(T)
+        try:
+            for T in Tdata:
+                string += '<td>{0:.0f}</td>'.format(T)
+    
+            string += '\n</tr><tr class="KineticsData_kdata"><th>log<sub>10</sub>(k/[mole,m,s])\n    '
 
-        string += '\n</tr><tr class="KineticsData_kdata"><th>log<sub>10</sub>(k/[mole,m,s])\n    '
-        for T in Tdata:
-            string += '<td>{0:+.1f}</td>'.format(log10(self.getRateCoefficient(T)))
+            for T in Tdata:
+                string += '<td>{0:+.1f}</td>'.format(log10(self.getRateCoefficient(T)))
+        except:
+            string += '<td>An error occurred in processing kinetics</td>'
         string += '\n</tr></table>'
             
         string += "<span class='KineticsData_repr'>{0!r}</span>".format(self)
@@ -239,6 +242,22 @@ cdef class KineticsModel:
             return False
 
         return True
+        
+    cpdef double discrepancy(self, KineticsModel otherKinetics) except -2:
+        """
+        Returns some measure of the discrepancy based on two different reaction models.
+        """
+        cdef double T
+        cdef double discrepancy
+        
+        discrepancy = 0.0
+        if otherKinetics.isPressureDependent():
+            return 9999999
+        
+        for T in [500,1000,1500,2000]:
+            discrepancy += abs(log10(self.getRateCoefficient(T)) - log10(otherKinetics.getRateCoefficient(T)))
+                
+        return discrepancy
     
 ################################################################################
 
@@ -360,13 +379,17 @@ cdef class PDepKineticsModel(KineticsModel):
           
         string = '<table class="KineticsData">\n<tr class="KineticsData_Tdata"><th>T/[K]</th>\n'
         
-        for T in Tdata:
-            string += '<td>{0:.0f}</td>'.format(T)
-
-        for P in Pdata:
-            string += '\n</tr><tr class="KineticsData_kdata"><th>log<sub>10</sub>(k({0:g} bar)/[mole,m,s])\n    '.format(P*1e-5)
+        try:
             for T in Tdata:
-                string += '<td>{0:+.1f}</td>'.format(log10(self.getRateCoefficient(T,P)))
+                string += '<td>{0:.0f}</td>'.format(T)
+                
+            for P in Pdata:
+                string += '\n</tr><tr class="KineticsData_kdata"><th>log<sub>10</sub>(k({0:g} bar)/[mole,m,s])\n    '.format(P*1e-5)
+                for T in Tdata:
+                    string += '<td>{0:+.1f}</td>'.format(log10(self.getRateCoefficient(T,P)))
+        except:
+            string += '<td>An error occurred in processing kinetics</td>'
+                    
         string += '\n</tr></table>'
             
         string += "<span class='KineticsData_repr'>{0!r}</span>".format(self)

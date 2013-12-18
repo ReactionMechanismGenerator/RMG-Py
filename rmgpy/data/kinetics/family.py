@@ -39,7 +39,7 @@ from copy import copy, deepcopy
 
 from rmgpy.data.base import Database, Entry, LogicNode, LogicOr, ForbiddenStructures,\
                             ForbiddenStructureException, getAllCombinations
-from rmgpy.reaction import Reaction, ReactionError
+from rmgpy.reaction import Reaction
 from rmgpy.kinetics import Arrhenius, ArrheniusEP, ThirdBody, Lindemann, Troe, \
                            PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, \
                            Chebyshev, KineticsData, PDepKineticsModel
@@ -148,6 +148,8 @@ class ReactionRecipe:
     BREAK_BOND    `center1`, `order`, `center2` break the bond between `center1` and `center2`, which should be of type `order`
     GAIN_RADICAL  `center`, `radical`           increase the number of free electrons on `center` by `radical`
     LOSE_RADICAL  `center`, `radical`           decrease the number of free electrons on `center` by `radical`
+    GAIN_PAIR     `center`, `pair`              increase the number of lone electron pairs on `center` by `pair`
+    LOSE_PAIR     `center`, `pair`              decrease the number of lone electron pairs on `center` by `pair`
     ============= ============================= ================================
 
     The actions are stored as a list in the `actions` attribute. Each action is
@@ -184,6 +186,10 @@ class ReactionRecipe:
                 other.addAction(['GAIN_RADICAL', action[1], action[2]])
             elif action[0] == 'GAIN_RADICAL':
                 other.addAction(['LOSE_RADICAL', action[1], action[2]])
+            elif action[0] == 'LOSE_PAIR':
+                other.addAction(['GAIN_PAIR', action[1], action[2]])
+            elif action[0] == 'GAIN_PAIR':
+                other.addAction(['LOSE_PAIR', action[1], action[2]])
         return other
 
     def __apply(self, struct, doForward, unique):
@@ -254,6 +260,23 @@ class ReactionRecipe:
                         atom.applyAction(['GAIN_RADICAL', label, 1])
                     elif (action[0] == 'LOSE_RADICAL' and doForward) or (action[0] == 'GAIN_RADICAL' and not doForward):
                         atom.applyAction(['LOSE_RADICAL', label, 1])
+                        
+            elif action[0] in ['LOSE_PAIR', 'GAIN_PAIR']:
+
+                label, change = action[1:]
+                change = int(change)
+
+                # Find associated atom
+                atom = struct.getLabeledAtom(label)
+                if atom is None:
+                    raise InvalidActionError('Unable to find atom with label "{0}" while applying reaction recipe.'.format(label))
+
+                # Apply the action
+                for i in range(change):
+                    if (action[0] == 'GAIN_PAIR' and doForward) or (action[0] == 'LOSE_PAIR' and not doForward):
+                        atom.applyAction(['GAIN_PAIR', label, 1])
+                    elif (action[0] == 'LOSE_PAIR' and doForward) or (action[0] == 'GAIN_PAIR' and not doForward):
+                        atom.applyAction(['LOSE_PAIR', label, 1])
 
             else:
                 raise InvalidActionError('Unknown action "' + action[0] + '" encountered.')
@@ -591,7 +614,7 @@ class KineticsFamily(Database):
         self.forwardRecipe = ReactionRecipe()
         for action in actions:
             action[0] = action[0].upper()
-            assert action[0] in ['CHANGE_BOND','FORM_BOND','BREAK_BOND','GAIN_RADICAL','LOSE_RADICAL']
+            assert action[0] in ['CHANGE_BOND','FORM_BOND','BREAK_BOND','GAIN_RADICAL','LOSE_RADICAL','GAIN_PAIR','LOSE_PAIR']
             self.forwardRecipe.addAction(action)
 
     def loadForbidden(self, label, group, shortDesc='', longDesc='', history=None):
@@ -803,8 +826,8 @@ class KineticsFamily(Database):
         entries.sort(key=lambda x: x.index)
         reverse_entries = []
         for entry in entries:
-            try:
-                template = self.getReactionTemplate(entry.item)
+            try:        
+                template = self.getReactionTemplate(deepcopy(entry.item))
             except UndeterminableKineticsError:
                 # Some entries might be stored in the reverse direction for
                 # this family; save them so we can try this
@@ -863,7 +886,7 @@ class KineticsFamily(Database):
             item.kinetics = data
             data = item.generateReverseRateCoefficient()
             
-            item = Reaction(reactants=entry.item.products, products=entry.item.reactants)
+            item = Reaction(reactants=[m.copy(deep=True) for m in entry.item.products], products=[m.copy(deep=True) for m in entry.item.reactants])
             template = self.getReactionTemplate(item)
             item.degeneracy = self.calculateDegeneracy(item)
             
@@ -1058,11 +1081,10 @@ class KineticsFamily(Database):
         reactants are stored in the reaction family template. The `maps`
         parameter is a list of mappings of the top-level tree node of each
         *template* reactant to the corresponding *structure*. This function
-        returns the product structures.
+        returns a list of the product structures.
         """
-
-        if not forward: template = self.reverseTemplate
-        else:           template = self.forwardTemplate
+        
+        productStructuresList = []
 
         # Clear any previous atom labeling from all reactant structures
         for struct in reactantStructures: struct.clearLabeledAtoms()
@@ -1075,7 +1097,8 @@ class KineticsFamily(Database):
         # Check that reactant structures are allowed in this family
         # If not, then stop
         for struct in reactantStructures:
-            if self.isMoleculeForbidden(struct): raise ForbiddenStructureException()
+            if self.isMoleculeForbidden(struct):
+                raise ForbiddenStructureException()
 
         # Generate the product structures by applying the forward reaction recipe
         try:
@@ -1121,16 +1144,178 @@ class KineticsFamily(Database):
                     raise ForbiddenStructureException()
                 if len(struct.atoms) - H > maxHeavyAtoms:
                     raise ForbiddenStructureException()
-                if struct.getNumberOfRadicalElectrons() > maxRadicals:
+                if (struct.getNumberOfRadicalElectrons() > maxRadicals) and (len(struct.atoms) - H > 1):
                     raise ForbiddenStructureException()
-
-        # Check that product structures are allowed in this family
-        # If not, then stop
-        for struct in productStructures:
-            struct.updateAtomTypes()
-            if self.isMoleculeForbidden(struct): raise ForbiddenStructureException()
-
-        return productStructures
+        
+        # Generate other possible electronic states
+        electronicStrucutresList1 = []
+        electronicStrucutresList2 = []
+        
+        struct1 = productStructures[0]
+        struct1a = struct1.copy(True)
+        struct1a.updateAtomTypes()
+        electronicStrucutresList1.append(struct1a)
+        atoms1 = struct1.getRadicalAtoms()
+        
+        for atom1 in atoms1:
+            
+            radical1 = atom1.radicalElectrons
+            spin1 = atom1.spinMultiplicity
+            
+            if radical1 > 1 and radical1 < 4:
+                
+                if radical1 == 2 and spin1 == 3:
+                    atom1.setSpinMultiplicity(1)
+                    struct1a = struct1.copy(True)
+                    struct1a.updateAtomTypes()
+                elif radical1 == 2 and spin1 == 1:
+                    atom1.setSpinMultiplicity(3)
+                    struct1a = struct1.copy(True)
+                    struct1a.updateAtomTypes()
+                elif radical1 == 3 and spin1 == 4:
+                    atom1.setSpinMultiplicity(2)
+                    struct1a = struct1.copy(True)
+                    struct1a.updateAtomTypes()
+                elif radical1 == 3 and spin1 == 2:
+                    atom1.setSpinMultiplicity(4)
+                    struct1a = struct1.copy(True)
+                    struct1a.updateAtomTypes()
+                
+                for electronicStrucutres in electronicStrucutresList1:
+                    if electronicStrucutres.isIsomorphic(struct1a):
+                        break
+                else:
+                    electronicStrucutresList1.append(struct1a)
+            
+            elif radical1 == 4:
+                
+                if spin1 == 5:
+                    atom1.setSpinMultiplicity(3)
+                    struct1a = struct1.copy(True)
+                    struct1a.updateAtomTypes()
+                
+                    atom1.setSpinMultiplicity(1)
+                    struct1b = struct1.copy(True)
+                    struct1b.updateAtomTypes()
+                elif spin1 == 3:
+                    atom1.setSpinMultiplicity(5)
+                    struct1a = struct1.copy(True)
+                    struct1a.updateAtomTypes()
+                
+                    atom1.setSpinMultiplicity(1)
+                    struct1b = struct1.copy(True)
+                    struct1b.updateAtomTypes()
+                elif spin1 == 1:
+                    atom1.setSpinMultiplicity(5)
+                    struct1a = struct1.copy(True)
+                    struct1a.updateAtomTypes()
+                
+                    atom1.setSpinMultiplicity(3)
+                    struct1b = struct1.copy(True)
+                    struct1b.updateAtomTypes()
+                    
+                for electronicStrucutres in electronicStrucutresList1:
+                    if electronicStrucutres.isIsomorphic(struct1a):
+                        break
+                else:
+                    electronicStrucutresList1.append(struct1a)
+                    
+                for electronicStrucutres in electronicStrucutresList1:
+                    if electronicStrucutres.isIsomorphic(struct1b):
+                        break
+                else:
+                    electronicStrucutresList1.append(struct1b)
+                            
+        if len(productStructures) == 2:
+        
+            struct2 = productStructures[1]
+            struct2a = struct2.copy(True)
+            struct2a.updateAtomTypes()
+            electronicStrucutresList2.append(struct2a)
+            atoms2 = struct2.getRadicalAtoms()
+        
+            for atom2 in atoms2:
+            
+                radical2 = atom2.radicalElectrons
+                spin2 = atom2.spinMultiplicity
+            
+                if radical2 > 1 and radical2 < 4:
+                    
+                    if radical2 == 2 and spin2 == 3:
+                        atom2.setSpinMultiplicity(1)
+                        struct2a = struct2.copy(True)
+                        struct2a.updateAtomTypes()
+                    elif radical2 == 2 and spin2 == 1:
+                        atom2.setSpinMultiplicity(3)
+                        struct2a = struct2.copy(True)
+                        struct2a.updateAtomTypes()
+                    elif radical2 == 3 and spin2 == 4:
+                        atom2.setSpinMultiplicity(2)
+                        struct2a = struct2.copy(True)
+                        struct2a.updateAtomTypes()
+                    elif radical2 == 3 and spin2 == 2:
+                        atom2.setSpinMultiplicity(4)
+                        struct2a = struct2.copy(True)
+                        struct2a.updateAtomTypes()
+                
+                    for electronicStrucutres in electronicStrucutresList2:
+                        if electronicStrucutres.isIsomorphic(struct2a):
+                            break
+                    else:
+                        electronicStrucutresList2.append(struct2a)
+            
+                elif radical2 == 4:
+                
+                    if spin2 == 5:
+                        atom2.setSpinMultiplicity(3)
+                        struct2a = struct2.copy(True)
+                        struct2a.updateAtomTypes()
+                
+                        atom2.setSpinMultiplicity(1)
+                        struct2b = struct2.copy(True)
+                        struct2b.updateAtomTypes()
+                    elif spin2 == 3:
+                        atom2.setSpinMultiplicity(5)
+                        struct2a = struct2.copy(True)
+                        struct2a.updateAtomTypes()
+                
+                        atom2.setSpinMultiplicity(1)
+                        struct2b = struct2.copy(True)
+                        struct2b.updateAtomTypes()
+                    elif spin2 == 1:
+                        atom2.setSpinMultiplicity(5)
+                        struct2a = struct2.copy(True)
+                        struct2a.updateAtomTypes()
+                
+                        atom2.setSpinMultiplicity(3)
+                        struct2b = struct2.copy(True)
+                        struct2b.updateAtomTypes()
+                    
+                    for electronicStrucutres in electronicStrucutresList2:
+                        if electronicStrucutres.isIsomorphic(struct2a):
+                            break
+                    else:
+                        electronicStrucutresList2.append(struct2a)
+                    
+                    for electronicStrucutres in electronicStrucutresList2:
+                        if electronicStrucutres.isIsomorphic(struct2b):
+                            break
+                    else:
+                        electronicStrucutresList2.append(struct2b)
+        
+        if len(productStructures) == 2:
+            
+            for structa in electronicStrucutresList1:
+                for structb in electronicStrucutresList2:
+                    if not (self.isMoleculeForbidden(structa) or self.isMoleculeForbidden(structb)):
+                        productStructuresList.append([structa,structb])
+        elif len(productStructures) == 1:
+            
+            for structa in electronicStrucutresList1:
+                if not (self.isMoleculeForbidden(structa)):
+                    productStructuresList.append([structa])
+                    
+        return productStructuresList
 
     def isMoleculeForbidden(self, molecule):
         """
@@ -1290,13 +1475,14 @@ class KineticsFamily(Database):
                 for map in mappings:
                     reactantStructures = [molecule]
                     try:
-                        productStructures = self.__generateProductStructures(reactantStructures, [map], forward, **options)
+                        productStructuresList = self.__generateProductStructures(reactantStructures, [map], forward, **options)
                     except ForbiddenStructureException:
                         pass
                     else:
-                        if productStructures is not None:
-                            rxn = self.__createReaction(reactantStructures, productStructures, forward)
-                            if rxn: rxnList.append(rxn)
+                        if productStructuresList is not None:
+                            for productStructures in productStructuresList:
+                                rxn = self.__createReaction(reactantStructures, productStructures, forward)
+                                if rxn: rxnList.append(rxn)
 
         # Bimolecular reactants: A + B --> products
         elif len(reactants) == 2 and len(template.reactants) == 2:
@@ -1317,13 +1503,14 @@ class KineticsFamily(Database):
                         for mapB in mappingsB:
                             reactantStructures = [moleculeA, moleculeB]
                             try:
-                                productStructures = self.__generateProductStructures(reactantStructures, [mapA, mapB], forward, **options)
+                                productStructuresList = self.__generateProductStructures(reactantStructures, [mapA, mapB], forward, **options)
                             except ForbiddenStructureException:
                                 pass
                             else:
-                                if productStructures is not None:
-                                    rxn = self.__createReaction(reactantStructures, productStructures, forward)
-                                    if rxn: rxnList.append(rxn)
+                                if productStructuresList is not None:
+                                    for productStructures in productStructuresList:
+                                        rxn = self.__createReaction(reactantStructures, productStructures, forward)
+                                        if rxn: rxnList.append(rxn)
 
                     # Only check for swapped reactants if they are different
                     if reactants[0] is not reactants[1]:
@@ -1337,13 +1524,14 @@ class KineticsFamily(Database):
                             for mapB in mappingsB:
                                 reactantStructures = [moleculeA, moleculeB]
                                 try:
-                                    productStructures = self.__generateProductStructures(reactantStructures, [mapA, mapB], forward, **options)
+                                    productStructuresList = self.__generateProductStructures(reactantStructures, [mapA, mapB], forward, **options)
                                 except ForbiddenStructureException:
                                     pass
                                 else:
-                                    if productStructures is not None:
-                                        rxn = self.__createReaction(reactantStructures, productStructures, forward)
-                                        if rxn: rxnList.append(rxn)
+                                    if productStructuresList is not None:
+                                        for productStructures in productStructuresList:
+                                            rxn = self.__createReaction(reactantStructures, productStructures, forward)
+                                            if rxn: rxnList.append(rxn)
   
         # If products is given, remove reactions from the reaction list that
         # don't generate the given products
@@ -1360,6 +1548,7 @@ class KineticsFamily(Database):
                     
                 # Skip reactions that don't match the given products
                 match = False
+
                 if len(products) == len(products0) == 1:
                     for product in products[0]:
                         if products0[0].isIsomorphic(product):
@@ -1376,7 +1565,7 @@ class KineticsFamily(Database):
                                 break
                     
                 if match: 
-                    rxnList.append(reaction) 
+                    rxnList.append(reaction)
             
         # The reaction list may contain duplicates of the same reaction
         # These duplicates should be combined (by increasing the degeneracy of

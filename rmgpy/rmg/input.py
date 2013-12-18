@@ -40,6 +40,7 @@ from rmgpy.data.rmg import RMGDatabase
 from rmgpy.quantity import Quantity
 from rmgpy.solver.base import TerminationTime, TerminationConversion
 from rmgpy.solver.simple import SimpleReactor
+from rmgpy.solver.liquid import LiquidReactor
 
 from model import CoreEdgeReactionModel
 
@@ -146,9 +147,35 @@ def simpleReactor(temperature,
     system = SimpleReactor(T, P, initialMoleFractions, termination, sensitivitySpecies, sensitivityThreshold)
     rmg.reactionSystems.append(system)
 
+
+# Reaction systems
+def liquidReactor(temperature, initialConcentrations, terminationConversion=None, terminationTime=None):
+    logging.debug('Found LiquidReactor reaction system')
+    T = Quantity(temperature)
+    for spec,conc in initialConcentrations.iteritems():
+        concentration = Quantity(conc)
+        # check the dimensions are ok
+        # convert to mol/m^3 (or something numerically nice? or must it be SI)
+        initialConcentrations[spec] = concentration.value_si
+    termination = []
+    if terminationConversion is not None:
+        for spec, conv in terminationConversion.iteritems():
+            termination.append(TerminationConversion(speciesDict[spec], conv))
+    if terminationTime is not None:
+        termination.append(TerminationTime(Quantity(terminationTime)))
+    if len(termination) == 0:
+        raise InputError('No termination conditions specified for reaction system #{0}.'.format(len(rmg.reactionSystems)+2))
+    system = LiquidReactor(T, initialConcentrations, termination)
+    rmg.reactionSystems.append(system)
+    
 def simulator(atol, rtol):
     rmg.absoluteTolerance = atol
     rmg.relativeTolerance = rtol
+    
+def solvation(solvent):
+    # If solvation module in input file, set the RMG solvent variable
+	assert isinstance(solvent,str), "solvent should be a string like 'water'"
+	rmg.solvent = solvent
 
 def model(toleranceMoveToCore, toleranceKeepInEdge=0.0, toleranceInterruptSimulation=1.0, maximumEdgeSpecies=None):
     rmg.fluxToleranceKeepInEdge = toleranceKeepInEdge
@@ -281,7 +308,9 @@ def readInputFile(path, rmg0):
         'InChI': InChI,
         'adjacencyList': adjacencyList,
         'simpleReactor': simpleReactor,
+        'liquidReactor': liquidReactor,
         'simulator': simulator,
+        'solvation': solvation,
         'model': model,
         'quantumMechanics': quantumMechanics,
         'pressureDependence': pressureDependence,
@@ -298,11 +327,9 @@ def readInputFile(path, rmg0):
     finally:
         f.close()
 
+    # convert keys from species names into species objects.
     for reactionSystem in rmg.reactionSystems:
-        initialMoleFractions = {}
-        for label, moleFrac in reactionSystem.initialMoleFractions.iteritems():
-            initialMoleFractions[speciesDict[label]] = moleFrac
-        reactionSystem.initialMoleFractions = initialMoleFractions
+        reactionSystem.convertInitalKeysToSpeciesObjects(speciesDict)
 
     logging.info('')
     
@@ -421,7 +448,9 @@ def saveInputFile(path, rmg):
             f.write('    sensitivityThreshold = {0},\n'.format(system.sensitivity))      
         
         f.write(')\n\n')
-        
+    
+    if rmg.solvent:
+    	f.write("solvation(\n    solvent = '{0!s}'\n)\n\n".format(solvent))
         
     # Simulator tolerances
     f.write('simulator(\n')

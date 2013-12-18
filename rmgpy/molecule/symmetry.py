@@ -84,6 +84,12 @@ def calculateAtomSymmetryNumber(molecule, atom):
             elif count == [2, 2]: symmetryNumber *= 2
             elif count == [2, 1, 1]: symmetryNumber *= 1
             elif count == [1, 1, 1, 1]: symmetryNumber *= 1
+        elif single == 3:
+            # Three single bonds
+            if count == [3]: symmetryNumber *= 3
+            elif count == [2, 1]: symmetryNumber *= 1
+            elif count == [1, 1, 1]: symmetryNumber *= 1
+
         elif single == 2:
             # Two single bonds
             if count == [2]: symmetryNumber *= 2
@@ -99,8 +105,14 @@ def calculateAtomSymmetryNumber(molecule, atom):
     elif atom.radicalElectrons == 2:
         if single == 2:
             # Two single bonds
-            if count == [2]: symmetryNumber *= 2
-
+            if count == [2]:
+                symmetryNumber *= 2
+    
+    if atom.isNitrogen():
+        for groupN in groups:
+            if groupN.toSMILES() == "[N+](=O)[O-]":
+                symmetryNumber *= 2
+    
     return symmetryNumber
 
 ################################################################################
@@ -276,7 +288,6 @@ def calculateAxisSymmetryNumber(molecule):
         symmetry_broken=False
         end_fragments_to_remove = []
         for fragment in end_fragments: # a fragment is one end of the axis
-            
             # remove the atom that was at the end of the axis and split what's left into groups
             terminalAtom = None
             for atom in terminalAtoms:
@@ -298,8 +309,11 @@ def calculateAxisSymmetryNumber(molecule):
                 end_fragments_to_remove.append(fragment)
                 continue # next end fragment
             elif len(groups)==1 and terminalAtom.radicalElectrons == 0:
-                end_fragments_to_remove.append(fragment)
-                continue # next end fragment
+                if terminalAtom.atomType.label == 'N3d':
+                    symmetry_broken = True
+                else:
+                    end_fragments_to_remove.append(fragment)
+                    continue # next end fragment
             elif len(groups)==1 and terminalAtom.radicalElectrons != 0:
                 symmetry_broken = True
             elif len(groups)==2:

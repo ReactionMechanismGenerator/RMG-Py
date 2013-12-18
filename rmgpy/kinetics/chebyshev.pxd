@@ -51,3 +51,5 @@ cdef class Chebyshev(PDepKineticsModel):
         int degreeT, int degreeP, double Tmin, double Tmax, double Pmin, double Pmax)
 
     cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2
+    
+    cpdef changeRate(self, double factor)

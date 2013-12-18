@@ -77,6 +77,16 @@ cdef class SimpleReactor(ReactionSystem):
         self.forwardRateCoefficients = None
         self.reverseRateCoefficients = None
         self.jacobianMatrix = None
+        
+    def convertInitalKeysToSpeciesObjects(self, speciesDict):
+        """
+        Convert the initialMoleFractions dictionary from species names into species objects,
+        using the given dictionary of species.
+        """
+        initialMoleFractions = {}
+        for label, moleFrac in self.initialMoleFractions.iteritems():
+            initialMoleFractions[speciesDict[label]] = moleFrac
+        self.initialMoleFractions = initialMoleFractions
 
     cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions, list pdepNetworks=None, atol=1e-16, rtol=1e-8):
         """

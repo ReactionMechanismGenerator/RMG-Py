@@ -54,6 +54,8 @@ from rmgpy.kinetics.arrhenius import Arrhenius #PyDev: @UnresolvedImport
 from rmgpy.kinetics import KineticsData, ArrheniusEP, ThirdBody, Lindemann, Troe, Chebyshev, PDepArrhenius, MultiArrhenius, MultiPDepArrhenius #PyDev: @UnresolvedImport
 from rmgpy.pdep.reaction import calculateMicrocanonicalRateCoefficient
 
+from rmgpy.kinetics.diffusionLimited import diffusionLimiter
+
 ################################################################################
 
 class ReactionError(Exception):
@@ -109,6 +111,9 @@ class Reaction:
         self.duplicate = duplicate
         self.degeneracy = degeneracy
         self.pairs = pairs
+        
+        if diffusionLimiter.enabled:
+            self.__k_effective_cache = {}
 
     def __repr__(self):
         """
@@ -153,14 +158,19 @@ class Reaction:
                            self.pairs
                            ))
 
-    def toChemkin(self, speciesList):
+    def toChemkin(self, speciesList=None, kinetics=True):
         """
         Return the chemkin-formatted string for this reaction.
         
-        Requires the `speciesList` to figure out third body colliders.
+        If `kinetics` is set to True, the chemkin format kinetics will also
+        be returned (requires the `speciesList` to figure out third body colliders.)
+        Otherwise, only the reaction string will be returned.
         """
         import rmgpy.chemkin
-        return rmgpy.chemkin.writeKineticsEntry(self, speciesList)
+        if kinetics:
+            return rmgpy.chemkin.writeKineticsEntry(self, speciesList)
+        else:
+            return rmgpy.chemkin.writeReactionString(self)
         
     def getURL(self):
         """
@@ -170,10 +180,10 @@ class Reaction:
 
         url = "http://rmg.mit.edu/database/kinetics/reaction/"
         for i,species in enumerate(self.reactants):
-            adjlist = species.molecule[0].toAdjacencyList(removeH=True)
+            adjlist = species.molecule[0].toAdjacencyList(removeH=False)
             url += "reactant{0}={1}__".format(i+1, re.sub('\s+', '%20', adjlist.replace('\n', ';')))
         for i,species in enumerate(self.products):
-            adjlist = species.molecule[0].toAdjacencyList(removeH=True)
+            adjlist = species.molecule[0].toAdjacencyList(removeH=False)
             url += "product{0}={1}__".format(i+1, re.sub('\s+', '%20', adjlist.replace('\n', ';')))
         return url.strip('_')
         
@@ -477,6 +487,8 @@ class Reaction:
             K *= P0 ** (len(self.products) - len(self.reactants))
         elif type != 'Ka' and type != '':
             raise ReactionError('Invalid type "%s" passed to Reaction.getEquilibriumConstant(); should be "Ka", "Kc", or "Kp".')
+        if K == 0:
+            raise ReactionError('Got equilibrium constant of 0')
         return K
 
     def getEnthalpiesOfReaction(self, Tlist):
@@ -530,8 +542,20 @@ class Reaction:
         Return the overall rate coefficient for the forward reaction at
         temperature `T` in K and pressure `P` in Pa, including any reaction
         path degeneracies.
+        
+        If diffusionLimiter is enabled, the reaction is in the liquid phase and we use
+        a diffusion limitation to correct the rate. If not, then use the intrinsic rate
+        coefficient.
         """
-        return self.kinetics.getRateCoefficient(T, P)
+        if diffusionLimiter.enabled:
+            try:
+                k = self.__k_effective_cache[T]
+            except KeyError:
+                k = diffusionLimiter.getEffectiveRate(self, T)
+                self.__k_effective_cache[T] = k
+            return k
+        else:
+            return  self.kinetics.getRateCoefficient(T, P)
     
     def getRate(self, T, P, conc, totalConc=-1.0):
         """
@@ -581,6 +605,16 @@ class Reaction:
         # Return rate
         return rateConstant * (forward - reverse / equilibriumConstant)
 
+    def fixDiffusionLimitedA(self, T):
+        """
+        Decrease the pre-exponential factor (A) by a factor of getDiffusionFactor
+        to account for the diffusion limit.
+        """
+        # Decrease self.kinetics.A (if Arrhenius or ArrheniusEP)
+        self.kinetics.A = self.kinetics.A * self.getDiffusionFactor(T)
+        # Add a comment to self.kinetics.comment
+        self.kinetics.comment.append("Pre-exponential factor A has been decreased by the diffusion factor.")
+    
     def fixBarrierHeight(self, forcePositive=False):
         """
         Turns the kinetics into Arrhenius (if they were ArrheniusEP)

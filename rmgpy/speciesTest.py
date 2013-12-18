@@ -7,11 +7,11 @@ This module contains unit tests of the rmgpy.species module.
 
 import unittest
 
-from rmgpy.species import Species, LennardJones
+from rmgpy.species import Species
+from rmgpy.transport import TransportData
 from rmgpy.molecule import Molecule
 from rmgpy.thermo import ThermoData
 from rmgpy.statmech import Conformer, IdealGasTranslation, NonlinearRotor, HarmonicOscillator
-import rmgpy.constants as constants
 
 ################################################################################
 
@@ -46,15 +46,16 @@ class TestSpecies(unittest.TestCase):
                 opticalIsomers=1,
             ),
             molecule=[Molecule().fromSMILES('C=C')],
-            lennardJones=LennardJones(sigma=(1,'angstrom'), epsilon=(100,'K')),
+            transportData=TransportData(sigma=(1, 'angstrom'), epsilon=(100, 'K')),
             molecularWeight=(28.03,'amu'),
             reactive=True,
         )
         
     def testPickle(self):
         """
-        Test that a Species object can be successfully pickled and
-        unpickled with no loss of information.
+        Test that a Species object can be pickled and unpickled.
+        
+        ...with no loss of information.
         """
         import cPickle
         species = cPickle.loads(cPickle.dumps(self.species))
@@ -67,19 +68,21 @@ class TestSpecies(unittest.TestCase):
         self.assertTrue(self.species.molecule[0].isIsomorphic(species.molecule[0]))
         self.assertEqual(self.species.conformer.E0.value_si, species.conformer.E0.value_si)
         self.assertEqual(self.species.conformer.E0.units, species.conformer.E0.units)
-        self.assertEqual(self.species.lennardJones.sigma.value_si, species.lennardJones.sigma.value_si)
-        self.assertEqual(self.species.lennardJones.sigma.units, species.lennardJones.sigma.units)
-        self.assertAlmostEqual(self.species.lennardJones.epsilon.value_si / 1.381e-23, species.lennardJones.epsilon.value_si / 1.381e-23, 4)
-        self.assertEqual(self.species.lennardJones.epsilon.units, species.lennardJones.epsilon.units)
+        self.assertEqual(self.species.transportData.sigma.value_si, species.transportData.sigma.value_si)
+        self.assertEqual(self.species.transportData.sigma.units, species.transportData.sigma.units)
+        self.assertAlmostEqual(self.species.transportData.epsilon.value_si / 1.381e-23, species.transportData.epsilon.value_si / 1.381e-23, 4)
+        self.assertEqual(self.species.transportData.epsilon.units, species.transportData.epsilon.units)
         self.assertEqual(self.species.molecularWeight.value_si, species.molecularWeight.value_si)
         self.assertEqual(self.species.molecularWeight.units, species.molecularWeight.units)
         self.assertEqual(self.species.reactive, species.reactive)
 
     def testOutput(self):
         """
-        Test that a Species object can be successfully reconstructed
-        from its repr() output with no loss of information.
+        Test that a Species object can be reconstructed from its repr().
+        
+        ...with no loss of information.
         """
+        species = None
         exec('species = {0!r}'.format(self.species))
         self.assertEqual(self.species.index, species.index)
         self.assertEqual(self.species.label, species.label)
@@ -90,10 +93,10 @@ class TestSpecies(unittest.TestCase):
         self.assertTrue(self.species.molecule[0].isIsomorphic(species.molecule[0]))
         self.assertEqual(self.species.conformer.E0.value_si, species.conformer.E0.value_si)
         self.assertEqual(self.species.conformer.E0.units, species.conformer.E0.units)
-        self.assertEqual(self.species.lennardJones.sigma.value_si, species.lennardJones.sigma.value_si)
-        self.assertEqual(self.species.lennardJones.sigma.units, species.lennardJones.sigma.units)
-        self.assertAlmostEqual(self.species.lennardJones.epsilon.value_si, species.lennardJones.epsilon.value_si, 3)
-        self.assertEqual(self.species.lennardJones.epsilon.units, species.lennardJones.epsilon.units)
+        self.assertEqual(self.species.transportData.sigma.value_si, species.transportData.sigma.value_si)
+        self.assertEqual(self.species.transportData.sigma.units, species.transportData.sigma.units)
+        self.assertAlmostEqual(self.species.transportData.epsilon.value_si, species.transportData.epsilon.value_si, 3)
+        self.assertEqual(self.species.transportData.epsilon.units, species.transportData.epsilon.units)
         self.assertEqual(self.species.molecularWeight.value_si, species.molecularWeight.value_si)
         self.assertEqual(self.species.molecularWeight.units, species.molecularWeight.units)
         self.assertEqual(self.species.reactive, species.reactive)
@@ -102,8 +105,9 @@ class TestSpecies(unittest.TestCase):
         """
         Test that toAdjacencyList() works as expected.
         """
+        print self.species.toAdjacencyList()
         string = self.species.toAdjacencyList()
-        self.assertTrue(string.startswith(self.species.molecule[0].toAdjacencyList(label=self.species.label,removeH=True)))
+        self.assertTrue(string.startswith(self.species.molecule[0].toAdjacencyList(label=self.species.label,removeH=False)))
 
 ################################################################################
 

@@ -202,6 +202,17 @@ class TestThirdBody(unittest.TestCase):
         self.assertEqual(self.thirdBody.Pmax.units, thirdBody.Pmax.units)
         self.assertEqual(self.thirdBody.efficiencies, thirdBody.efficiencies)
         self.assertEqual(self.thirdBody.comment, thirdBody.comment)
+        
+    def test_changeRate(self):
+        """
+        Test the ThirdBody.changeRate() method.
+        """
+        Tlist = numpy.array([300,400,500,600,700,800,900,1000,1100,1200,1300,1400,1500])
+        k0list = numpy.array([self.thirdBody.getRateCoefficient(T,1e5) for T in Tlist])
+        self.thirdBody.changeRate(2)
+        for T, kexp in zip(Tlist, k0list):
+            kact = self.thirdBody.getRateCoefficient(T,1e5)
+            self.assertAlmostEqual(2*kexp, kact, delta=1e-6*kexp)
 
 ################################################################################
 
@@ -375,6 +386,17 @@ class TestLindemann(unittest.TestCase):
         self.assertEqual(self.lindemann.Pmax.units, lindemann.Pmax.units)
         self.assertEqual(self.lindemann.efficiencies, lindemann.efficiencies)
         self.assertEqual(self.lindemann.comment, lindemann.comment)
+        
+    def test_changeRate(self):
+        """
+        Test the Lindemann.changeRate() method.
+        """
+        Tlist = numpy.array([300,400,500,600,700,800,900,1000,1100,1200,1300,1400,1500])
+        k0list = numpy.array([self.lindemann.getRateCoefficient(T,1e5) for T in Tlist])
+        self.lindemann.changeRate(2)
+        for T, kexp in zip(Tlist, k0list):
+            kact = self.lindemann.getRateCoefficient(T,1e5)
+            self.assertAlmostEqual(2*kexp, kact, delta=1e-6*kexp)
 
 ################################################################################
 
@@ -594,6 +616,17 @@ class TestTroe(unittest.TestCase):
         self.assertEqual(self.troe.Pmax.units, troe.Pmax.units)
         self.assertEqual(self.troe.efficiencies, troe.efficiencies)
         self.assertEqual(self.troe.comment, troe.comment)
+        
+    def test_changeRate(self):
+        """
+        Test the Troe.changeRate() method.
+        """
+        Tlist = numpy.array([300,400,500,600,700,800,900,1000,1100,1200,1300,1400,1500])
+        k0list = numpy.array([self.troe.getRateCoefficient(T,1e5) for T in Tlist])
+        self.troe.changeRate(2)
+        for T, kexp in zip(Tlist, k0list):
+            kact = self.troe.getRateCoefficient(T,1e5)
+            self.assertAlmostEqual(2*kexp, kact, delta=1e-6*kexp)
 
 ################################################################################
 

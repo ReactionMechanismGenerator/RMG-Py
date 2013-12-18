@@ -195,6 +195,17 @@ class TestArrhenius(unittest.TestCase):
         self.assertAlmostEqual(self.arrhenius.Tmax.value, arrhenius.Tmax.value, 4)
         self.assertEqual(self.arrhenius.Tmax.units, arrhenius.Tmax.units)
         self.assertEqual(self.arrhenius.comment, arrhenius.comment)
+        
+    def test_changeRate(self):
+        """
+        Test the Arrhenius.changeRate() method.
+        """
+        Tlist = numpy.array([300,400,500,600,700,800,900,1000,1100,1200,1300,1400,1500])
+        k0list = numpy.array([self.arrhenius.getRateCoefficient(T) for T in Tlist])
+        self.arrhenius.changeRate(2)
+        for T, kexp in zip(Tlist, k0list):
+            kact = self.arrhenius.getRateCoefficient(T)
+            self.assertAlmostEqual(2*kexp, kact, delta=1e-6*kexp)
 
 ################################################################################
 
@@ -323,6 +334,17 @@ class TestArrheniusEP(unittest.TestCase):
         self.assertAlmostEqual(self.arrhenius.Tmax.value, arrhenius.Tmax.value, 4)
         self.assertEqual(self.arrhenius.Tmax.units, arrhenius.Tmax.units)
         self.assertEqual(self.arrhenius.comment, arrhenius.comment)
+        
+    def test_changeRate(self):
+        """
+        Test the ArrheniusEP.changeRate() method.
+        """
+        Tlist = numpy.array([300,400,500,600,700,800,900,1000,1100,1200,1300,1400,1500])
+        k0list = numpy.array([self.arrhenius.getRateCoefficient(T) for T in Tlist])
+        self.arrhenius.changeRate(2)
+        for T, kexp in zip(Tlist, k0list):
+            kact = self.arrhenius.getRateCoefficient(T)
+            self.assertAlmostEqual(2*kexp, kact, delta=1e-6*kexp)
 
 ################################################################################
 
@@ -530,6 +552,17 @@ class TestPDepArrhenius(unittest.TestCase):
         self.assertEqual(self.kinetics.Pmax.units, kinetics.Pmax.units)
         self.assertEqual(self.kinetics.comment, kinetics.comment)
         
+    def test_changeRate(self):
+        """
+        Test the PDepArrhenius.changeRate() method.
+        """
+        Tlist = numpy.array([300,400,500,600,700,800,900,1000,1100,1200,1300,1400,1500])
+        k0list = numpy.array([self.kinetics.getRateCoefficient(T, 1e5) for T in Tlist])
+        self.kinetics.changeRate(2)
+        for T, kexp in zip(Tlist, k0list):
+            kact = self.kinetics.getRateCoefficient(T, 1e5)
+            self.assertAlmostEqual(2*kexp, kact, delta=1e-6*kexp)
+        
 ################################################################################
 
 class TestMultiArrhenius(unittest.TestCase):
@@ -698,6 +731,17 @@ class TestMultiArrhenius(unittest.TestCase):
         self.assertAlmostEqual(fitted.Tmax.value_si, 1200.0)
         for T in [800,1000,1200]:
             self.assertAlmostEqual(fitted.getRateCoefficient(T) / answer.getRateCoefficient(T), 1.0, delta=0.05)
+  
+    def test_changeRate(self):
+        """
+        Test the MultiArrhenius.changeRate() method.
+        """
+        Tlist = numpy.array([300,400,500,600,700,800,900,1000,1100,1200,1300,1400,1500])
+        k0list = numpy.array([self.kinetics.getRateCoefficient(T) for T in Tlist])
+        self.kinetics.changeRate(2)
+        for T, kexp in zip(Tlist, k0list):
+            kact = self.kinetics.getRateCoefficient(T)
+            self.assertAlmostEqual(2*kexp, kact, delta=1e-6*kexp)
             
 ################################################################################
 
@@ -883,3 +927,14 @@ class TestMultiPDepArrhenius(unittest.TestCase):
         self.assertAlmostEqual(self.kinetics.Tmax.value, kinetics.Tmax.value, 4)
         self.assertEqual(self.kinetics.Tmax.units, kinetics.Tmax.units)
         self.assertEqual(self.kinetics.comment, kinetics.comment)
+        
+    def test_changeRate(self):
+        """
+        Test the PDepMultiArrhenius.changeRate() method.
+        """
+        Tlist = numpy.array([300,400,500,600,700,800,900,1000,1100,1200,1300,1400,1500])
+        k0list = numpy.array([self.kinetics.getRateCoefficient(T,1e5) for T in Tlist])
+        self.kinetics.changeRate(2)
+        for T, kexp in zip(Tlist, k0list):
+            kact = self.kinetics.getRateCoefficient(T,1e5)
+            self.assertAlmostEqual(2*kexp, kact, delta=1e-6*kexp)
