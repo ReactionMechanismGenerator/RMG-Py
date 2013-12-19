@@ -1249,25 +1249,27 @@ class MoleculeDrawer:
                 cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
                 cr.show_text(text)
                 
-            # Draw lone electron pairs
-            for i in range (atom.lonePairs):
-                cr.new_sub_path()
-                if i == 0:
-                    x1lp = x-2
-                    y1lp = y-8
-                    x2lp = x+2
-                    y2lp = y-12
-                elif i == 1:
-                    x1lp = x+12
-                    y1lp = y-8
-                    x2lp = x+8
-                    y2lp = y-12
-                elif i == 2:
-                    x1lp = x-2
-                    y1lp = y-1
-                    x2lp = x+2
-                    y2lp = y+3
-                self.__drawLine(cr, x1lp, y1lp, x2lp, y2lp)
+            # Draw lone electron pairs            
+            # Draw them for nitrogen atoms only
+            if atom.symbol == 'N':
+                for i in range (atom.lonePairs):
+                    cr.new_sub_path()
+                    if i == 0:
+                        x1lp = x-2
+                        y1lp = y-8
+                        x2lp = x+2
+                        y2lp = y-12
+                    elif i == 1:
+                        x1lp = x+12
+                        y1lp = y-8
+                        x2lp = x+8
+                        y2lp = y-12
+                    elif i == 2:
+                        x1lp = x-2
+                        y1lp = y-1
+                        x2lp = x+2
+                        y2lp = y+3
+                    self.__drawLine(cr, x1lp, y1lp, x2lp, y2lp)
                 
         elif orientation[0] == 'l' or orientation[0] == 'r':
             # Draw charges first
@@ -1289,24 +1291,26 @@ class MoleculeDrawer:
                 cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
                 cr.fill()
             # Draw lone electron pairs
-            for i in range (atom.lonePairs):
-                cr.new_sub_path()
-                if i == 0:
-                    x1lp = x-2
-                    y1lp = y-8
-                    x2lp = x+2
-                    y2lp = y-12
-                elif i == 1:
-                    x1lp = x+12
-                    y1lp = y-8
-                    x2lp = x+8
-                    y2lp = y-12
-                elif i == 2:
-                    x1lp = x-2
-                    y1lp = y-1
-                    x2lp = x+2
-                    y2lp = y+3
-                self.__drawLine(cr, x1lp, y1lp, x2lp, y2lp)
+            # Draw them for nitrogen atoms only
+            if atom.symbol == 'N':
+                for i in range (atom.lonePairs):
+                    cr.new_sub_path()
+                    if i == 0:
+                        x1lp = x-2
+                        y1lp = y-8
+                        x2lp = x+2
+                        y2lp = y-12
+                    elif i == 1:
+                        x1lp = x+12
+                        y1lp = y-8
+                        x2lp = x+8
+                        y2lp = y-12
+                    elif i == 2:
+                        x1lp = x-2
+                        y1lp = y-1
+                        x2lp = x+2
+                        y2lp = y+3
+                    self.__drawLine(cr, x1lp, y1lp, x2lp, y2lp)
                 
         # Update bounding rect to ensure atoms are included
         if boundingRect[0] < self.left:
