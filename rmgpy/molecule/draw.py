@@ -873,6 +873,12 @@ class MoleculeDrawer:
         coordinates = self.coordinates
         atoms = self.molecule.atoms
         symbols = self.symbols
+        
+        drawLonePairs = False
+        
+        for atom in atoms:
+            if atom.isNitrogen():
+                drawLonePairs = True
     
         left = 0.0
         top = 0.0
@@ -931,7 +937,7 @@ class MoleculeDrawer:
                 heavyFirst = False
                 cr.set_font_size(self.options['fontSizeNormal'])
                 x0 += cr.text_extents(symbols[0])[2] / 2.0
-            atomBoundingRect = self.__renderAtom(symbol, atom, x0, y0, cr, heavyFirst)
+            atomBoundingRect = self.__renderAtom(symbol, atom, x0, y0, cr, heavyFirst, drawLonePairs)
         
         # Add a small amount of whitespace on all sides
         padding = self.options['padding']
@@ -997,7 +1003,7 @@ class MoleculeDrawer:
                 self.__drawLine(cr, x1 - du + dx, y1 - dv + dy, x2 - du - dx, y2 - dv - dy)
                 self.__drawLine(cr, x1 + du + dx, y1 + dv + dy, x2 + du - dx, y2 + dv - dy)
         
-    def __renderAtom(self, symbol, atom, x0, y0, cr, heavyFirst=True):
+    def __renderAtom(self, symbol, atom, x0, y0, cr, heavyFirst=True, drawLonePairs=False):
         """
         Render the `label` for an atom centered around the coordinates (`x0`, `y0`)
         onto the Cairo context `cr`. If `heavyFirst` is ``False``, then the order
@@ -1250,8 +1256,8 @@ class MoleculeDrawer:
                 cr.show_text(text)
                 
             # Draw lone electron pairs            
-            # Draw them for nitrogen atoms only
-            if atom.symbol == 'N':
+            # Draw them for nitrogen containing molecules only
+            if drawLonePairs:
                 for i in range (atom.lonePairs):
                     cr.new_sub_path()
                     if i == 0:
@@ -1292,7 +1298,7 @@ class MoleculeDrawer:
                 cr.fill()
             # Draw lone electron pairs
             # Draw them for nitrogen atoms only
-            if atom.symbol == 'N':
+            if drawLonePairs:
                 for i in range (atom.lonePairs):
                     cr.new_sub_path()
                     if i == 0:
