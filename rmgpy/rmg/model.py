@@ -746,13 +746,9 @@ class CoreEdgeReactionModel:
             
         # Generate thermodynamics of new species
         logging.info('Generating thermodynamics for new species...')
-<<<<<<< HEAD
         self.generateThermoDataForListOfSpecies(newSpeciesList)
-=======
         for spec in newSpeciesList:
-            spec.generateThermoData(database, quantumMechanics=self.quantumMechanics)
             spec.generateTransportData(database)
->>>>>>> c31e9d05281c7a1f1a16d0236c2a90ae816090eb
         
         # Generate kinetics of new reactions
         logging.info('Generating kinetics for new reactions...')
