@@ -76,7 +76,7 @@ class RMGDatabase:
              kineticsDepositories=None,
              statmechLibraries=None,
              depository=True,
-             solvation=True,
+             solvation=False,
              ):
         """
         Load the RMG database from the given `path` on disk, where `path`
