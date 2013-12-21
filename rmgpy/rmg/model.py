@@ -36,72 +36,167 @@ import logging
 import math
 import numpy
 import os.path
+import itertools
 
 import scoop
-from scoop import futures
+from scoop import futures,shared
 
 from rmgpy.display import display
-
+#import rmgpy.chemkin
 import rmgpy.constants as constants
 from rmgpy.quantity import Quantity
 import rmgpy.species
 from rmgpy.thermo import Wilhoit, NASA, ThermoData
-from rmgpy.pdep import LennardJones, SingleExponentialDown
+from rmgpy.pdep import SingleExponentialDown
 from rmgpy.statmech import  Conformer
 
+from rmgpy.data.base import Entry
 from rmgpy.data.thermo import *
+from rmgpy.data.solvation import *
 from rmgpy.data.kinetics import *
 from rmgpy.data.statmech import *
+from rmgpy.transport import TransportData
 import rmgpy.data.rmg
 
+#needed to call the generate3dTS method in Reaction class
+from rmgpy.reaction import Reaction
+
 from pdep import PDepReaction, PDepNetwork, PressureDependenceError
+# generateThermoDataFromQM under the Species class imports the qm package
 
 __database = None
+qmValue = None
 
 def makeThermoForSpecies(spec):
     """
     Make thermo for a species.
     """
-    global __database
+    global __database, qmValue
+    if qmValue == None: qmValue = scoop.shared.getConst('qmValue')
     if __database == None:
         """Load the database from some pickle file"""
-        import cPickle, logging
+        import cPickle
         filename = scoop.shared.getConst('databaseFile')
         database_hash = scoop.shared.getConst('databaseHash')
-        logging.info('Loading database pickle file from {0!r} on worker {1}'.format(filename, scoop.WORKER_NAME.decode() ))
+        logging.debug('Loading database pickle2 file'.format(filename))
+        #logging.info('Loading database pickle2 file from {0!r} on worker {1}'.format(filename, scoop.WORKER_NAME.decode() ))
         f = open(filename, 'rb')
         __database = cPickle.load(f)
         f.close()
         assert __database.hash == database_hash, "Database loaded from {0!r} doesn't match expected hash!".format(filename)
-    spec.generateThermoData(__database)
+    logging.debug("Generate thermo data in makeThermoForSpecies")
+    spec.generateThermoData(__database,quantumMechanics=qmValue)
+    logging.debug("Thermo generated for {0}".format(spec.label))
     return spec.thermo
 
 ################################################################################
 
 class Species(rmgpy.species.Species):
+    solventName = None
+    solventData = None
+    solventViscosity = None
+    diffusionTemp = None
 
     def __init__(self, index=-1, label='', thermo=None, conformer=None, 
-                 molecule=None, lennardJones=None, molecularWeight=None, 
+                 molecule=None, transportData=None, molecularWeight=None, 
                  dipoleMoment=None, polarizability=None, Zrot=None, 
                  energyTransferModel=None, reactive=True, coreSizeAtCreation=0):
-        rmgpy.species.Species.__init__(self, index, label, thermo, conformer, molecule, lennardJones, molecularWeight, dipoleMoment, polarizability, Zrot, energyTransferModel, reactive)
+        rmgpy.species.Species.__init__(self, index, label, thermo, conformer, molecule, transportData, molecularWeight, dipoleMoment, polarizability, Zrot, energyTransferModel, reactive)
         self.coreSizeAtCreation = coreSizeAtCreation
 
     def __reduce__(self):
         """
         A helper function used when pickling an object.
         """
-        return (Species, (self.index, self.label, self.thermo, self.conformer, self.molecule, self.lennardJones, self.molecularWeight, self.dipoleMoment, self.polarizability, self.Zrot, self.energyTransferModel, self.reactive, self.coreSizeAtCreation),)
+        return (Species, (self.index, self.label, self.thermo, self.conformer, self.molecule, self.transportData, self.molecularWeight, self.dipoleMoment, self.polarizability, self.Zrot, self.energyTransferModel, self.reactive, self.coreSizeAtCreation),)
 
-    def generateThermoData(self, database, thermoClass=NASA):
+    def generateThermoData(self, database, thermoClass=NASA, quantumMechanics=None):
         """
-        Generate thermodynamic data for the species using the thermo database.
+        Generates thermo data, first checking Libraries, then using either QM or Database.
+        
+        If quantumMechanics is not None, it is asked to calculate the thermo.
+        Failing that, the database is used.
+        
+        The database generates the thermo data for each structure (resonance isomer),
+        picks that with lowest H298 value.
+        
+        It then calls :meth:`processThermoData`, to convert (via Wilhoit) to NASA
+        and set the E0.
+        
+        Result stored in `self.thermo` and returned.
+        """
+        from rmgpy.data.thermo import saveEntry
 
-        Generates the thermo data for each structure (resonance isomer),
-        picks that with lowest H298 value, and saves it to `self.thermoData`.
+        thermo0 = None
+        thermo0 = database.thermo.getThermoDataFromLibraries(self)
+        if quantumMechanics is None : logging.debug("qmValue is None at generateThermoData in model.py")
+        if thermo0 is not None:
+            logging.debug("Found thermo for {0} in thermo library".format(self.label))
+            assert len(thermo0) == 3, "thermo0 should be a tuple at this point: (thermoData, library, entry)"
+            thermo0 = thermo0[0]
+            
+        elif quantumMechanics:
+            logging.debug("Generate thermo data with QM")
+            molecule = self.molecule[0]
+            if quantumMechanics.settings.onlyCyclics and not molecule.isCyclic():
+                logging.debug("Bypassing QM for ".format(self.label))
+                pass
+            else: # try a QM calculation
+                if molecule.getRadicalCount() > quantumMechanics.settings.maxRadicalNumber:
+                    # Too many radicals for direct calculation: use HBI.
+                    logging.info("{0} radicals on {1} exceeds limit of {2}. Using HBI method.".format(
+                        self.molecule[0].getRadicalCount(),
+                        self.label,
+                        quantumMechanics.settings.maxRadicalNumber,
+                        ))
+                    
+                    # Need to estimate thermo via each resonance isomer
+                    thermo = []
+                    for molecule in self.molecule:
+                        molecule.clearLabeledAtoms()
+                        molecule.updateAtomTypes()
+                        tdata = database.thermo.estimateRadicalThermoViaHBI(molecule, quantumMechanics.getThermoData)
+                        if tdata is not None:
+                            thermo.append(tdata)
+                    if thermo:
+                        H298 = numpy.array([t.getEnthalpy(298.) for t in thermo])
+                        indices = H298.argsort()
+                        for i, ind in enumerate(indices):
+                            logging.info("Resonance isomer {0} {1} gives H298={2:.0f} J/mol".format(i, self.molecule[ind].toSMILES(), H298[ind]))
+                        self.molecule = [self.molecule[ind] for ind in indices]
+                        molecule = self.molecule[0]
+                        thermo0 = thermo[indices[0]]
+                    else:
+                        pass
+                    
+                    with open('thermoHBIcheck.txt','a') as f:
+                        f.write('// {0!r}\n'.format(thermo0).replace('),','),\n//           '))
+                        f.write('{0}\n'.format(molecule.toSMILES()))
+                        f.write('{0}\n\n'.format(molecule.toAdjacencyList(removeH=False)))
+                else: # Not too many radicals: do a direct calculation.
+                    logging.debug("Generate thermo for {0} with QM".format(self.label))
+                    thermo0 = quantumMechanics.getThermoData(molecule) # returns None if it fails
+                    if thermo0 is None: logging.debug("QM for {0} failed.".format(self.label))
+                if thermo0 is not None:
+                    # Write the QM molecule thermo to a library so that can be used in future RMG jobs.
+                    logging.debug("QM for {0} is successful.".format(self.label))
+                    quantumMechanics.database.loadEntry(index = len(quantumMechanics.database.entries) + 1,
+                                                        label = molecule.toSMILES(),
+                                                        molecule = molecule.toAdjacencyList(),
+                                                        thermo = thermo0,
+                                                        shortDesc = thermo0.comment
+                                                        )                    
+        if thermo0 is None:
+            thermo0 = database.thermo.getThermoData(self)
+
+        return self.processThermoData(database, thermo0, thermoClass)
+
+    def processThermoData(self, database, thermo0, thermoClass=NASA):
         """
-        # Get the thermo data for the species from the database
-        thermo0 = database.thermo.getThermoData(self)
+        Converts via Wilhoit into required `thermoClass` and sets `E0`.
+        
+        Resulting thermo is stored (`self.thermo`) and returned.
+        """
 
         # Always convert to Wilhoit so we can compute E0
         if isinstance(thermo0, Wilhoit):
@@ -118,8 +213,21 @@ class Species(rmgpy.species.Species):
             Cp0 = self.calculateCp0()
             CpInf = self.calculateCpInf()
             wilhoit = thermo0.toWilhoit(Cp0=Cp0, CpInf=CpInf)
-            
         wilhoit.comment = thermo0.comment
+
+        # Add on solvation correction
+        if Species.solventData:
+            #logging.info("Making solvent correction for {0}".format(Species.solventName))
+            soluteData = database.solvation.getSoluteData(self)
+            solvation_correction = database.solvation.getSolvationCorrection(soluteData, Species.solventData)
+            # correction is added to the entropy and enthalpy
+            wilhoit.S0.value_si = (wilhoit.S0.value_si + solvation_correction.entropy)
+            wilhoit.H0.value_si = (wilhoit.H0.value_si + solvation_correction.enthalpy)
+            
+        # Compute E0 by extrapolation to 0 K
+        if self.conformer is None:
+            self.conformer = Conformer()
+        self.conformer.E0 = (wilhoit.getEnthalpy(1.0)*1e-3,"kJ/mol")
         
         # Convert to desired thermo class
         if isinstance(thermo0, thermoClass):
@@ -159,32 +267,35 @@ class Species(rmgpy.species.Species):
         self.conformer.modes = conformer.modes
         self.conformer.spinMultiplicity = conformer.spinMultiplicity
             
-    def generateLennardJonesParameters(self):
+    def generateTransportData(self, database):
         """
-        Generate the Lennard-Jones parameters for the species. This "algorithm"
-        is *very* much in need of improvement.
+        Generate the transportData parameters for the species.
         """
-        count = sum([1 for atom in self.molecule[0].vertices if atom.isNonHydrogen()])
-        self.lennardJones = LennardJones()
+        #count = sum([1 for atom in self.molecule[0].vertices if atom.isNonHydrogen()])
+        self.transportData = database.transport.getTransportProperties(self)[0]
+        
 
+        #previous method for calculating transport properties
+        '''
         if count == 1:
-            self.lennardJones.sigma = (3.758e-10,"m")
-            self.lennardJones.epsilon = (148.6,"K")
+            self.transportData.sigma = (3.758e-10,"m")
+            self.transportData.epsilon = (148.6,"K")
         elif count == 2:
-            self.lennardJones.sigma = (4.443e-10,"m")
-            self.lennardJones.epsilon = (110.7,"K")
+            self.transportData.sigma = (4.443e-10,"m")
+            self.transportData.epsilon = (110.7,"K")
         elif count == 3:
-            self.lennardJones.sigma = (5.118e-10,"m")
-            self.lennardJones.epsilon = (237.1,"K")
+            self.transportData.sigma = (5.118e-10,"m")
+            self.transportData.epsilon = (237.1,"K")
         elif count == 4:
-            self.lennardJones.sigma = (4.687e-10,"m")
-            self.lennardJones.epsilon = (531.4,"K")
+            self.transportData.sigma = (4.687e-10,"m")
+            self.transportData.epsilon = (531.4,"K")
         elif count == 5:
-            self.lennardJones.sigma = (5.784e-10,"m")
-            self.lennardJones.epsilon = (341.1,"K")
+            self.transportData.sigma = (5.784e-10,"m")
+            self.transportData.epsilon = (341.1,"K")
         else:
-            self.lennardJones.sigma = (5.949e-10,"m")
-            self.lennardJones.epsilon = (399.3,"K")
+            self.transportData.sigma = (5.949e-10,"m")
+            self.transportData.epsilon = (399.3,"K")
+        '''
     
     def generateEnergyTransferModel(self):
         """
@@ -254,6 +365,7 @@ class CoreEdgeReactionModel:
         self.outputSpeciesList = []
         self.outputReactionList = []
         self.pressureDependence = None
+        self.quantumMechanics = None
         self.verboseComments = False
         self.kineticsEstimator = 'group additivity'
         self.reactionGenerationOptions = {}
@@ -277,7 +389,7 @@ class CoreEdgeReactionModel:
         # Return an existing species if a match is found
         formula = molecule.getFormula()
         try:
-             speciesList = self.speciesDict[formula]
+            speciesList = self.speciesDict[formula]
         except KeyError:
             return False, None
         for spec in speciesList:
@@ -294,7 +406,6 @@ class CoreEdgeReactionModel:
         either a :class:`Molecule` object or an :class:`rmgpy.species.Species`
         object.
         """
-
         if isinstance(object, rmgpy.species.Species):
             molecule = object.molecule[0]
             label = label if label != '' else object.label
@@ -325,7 +436,7 @@ class CoreEdgeReactionModel:
         spec.coreSizeAtCreation = len(self.core.species)
         spec.generateResonanceIsomers()
         spec.molecularWeight = Quantity(spec.molecule[0].getMolecularWeight()*1000.,"amu")
-        spec.generateLennardJonesParameters()
+        # spec.generateTransportData(database)
         spec.generateEnergyTransferModel()
         formula = molecule.getFormula()
         if formula in self.speciesDict:
@@ -357,10 +468,10 @@ class CoreEdgeReactionModel:
         else: r2 = rxn.reactants[1]
         family = rxn.family
         try:
-            my_reactionList = self.reactionDict[family][r1][r2]
+            my_reactionList = self.reactionDict[family][r1][r2][:]
         except KeyError: # no such short-list: must be new, unless in seed.
             my_reactionList = []
-        
+                   
         # if the family is its own reverse (H-Abstraction) then check the other direction
         if isinstance(family,KineticsFamily) and family.ownReverse: # (family may be a KineticsLibrary)
             # Get the short-list of reactions with the same family, product1 and product2
@@ -535,7 +646,8 @@ class CoreEdgeReactionModel:
 
     def enlarge(self, newObject):
         """
-        Enlarge a reaction model by processing `newObject`. If `newObject` is a
+        Enlarge a reaction model by processing the objects in the list `newObject`. 
+        If `newObject` is a
         :class:`rmg.species.Species` object, then the species is moved from
         the edge to the core and reactions generated for that species, reacting
         with itself and with all other species in the model core. If `newObject`
@@ -586,8 +698,9 @@ class CoreEdgeReactionModel:
     
                 # Add new species
                 reactionsMovedFromEdge = self.addSpeciesToCore(newSpecies)
-    
+                
                 # Process the new reactions
+                # While adding to core/edge/pdep network, this clears atom labels:
                 self.processNewReactions(newReactions, newSpecies, pdepNetwork)
     
             elif isinstance(obj, tuple) and isinstance(obj[0], PDepNetwork) and self.pressureDependence:
@@ -597,7 +710,7 @@ class CoreEdgeReactionModel:
                 self.processNewReactions(newReactions, newSpecies, pdepNetwork)
     
             else:
-                raise TypeError('Unable to use object {0} to enlarge reaction model; expecting an object of class rmg.model.Species or rmg.model.PDepNetwork.'.format(obj))
+                raise TypeError('Unable to use object {0} to enlarge reaction model; expecting an object of class rmg.model.Species or rmg.model.PDepNetwork, not {1}'.format(obj, obj.__class__))
 
             # If there are any core species among the unimolecular product channels
             # of any existing network, they need to be made included
@@ -634,6 +747,8 @@ class CoreEdgeReactionModel:
         # Generate thermodynamics of new species
         logging.info('Generating thermodynamics for new species...')
         self.generateThermoDataForListOfSpecies(newSpeciesList)
+        for spec in newSpeciesList:
+            spec.generateTransportData(database)
         
         # Generate kinetics of new reactions
         logging.info('Generating kinetics for new reactions...')
@@ -663,12 +778,25 @@ class CoreEdgeReactionModel:
             #  correct barrier heights of estimated kinetics
             if isinstance(reaction,TemplateReaction) or isinstance(reaction,DepositoryReaction): # i.e. not LibraryReaction
                 reaction.fixBarrierHeight() # also converts ArrheniusEP to Arrhenius.
+                
+            if self.pressureDependence and reaction.isUnimolecular():
+                # If this is going to be run through pressure dependence code,
+                # we need to make sure the barrier is positive.
+                reaction.fixBarrierHeight(forcePositive=True)
             
         # Update unimolecular (pressure dependent) reaction networks
         if self.pressureDependence:
             # Recalculate k(T,P) values for modified networks
             self.updateUnimolecularReactionNetworks(database)
             logging.info('')
+            
+        # Check new core reactions for Chemkin duplicates
+        newCoreReactions = self.core.reactions[numOldCoreReactions:]
+        checkedCoreReactions = self.core.reactions[:numOldCoreReactions]
+        from rmgpy.chemkin import markDuplicateReaction
+        for rxn in newCoreReactions:
+            markDuplicateReaction(rxn,checkedCoreReactions)
+            checkedCoreReactions.append(rxn)
         
         self.printEnlargeSummary(
             newCoreSpecies=self.core.species[numOldCoreSpecies:],
@@ -689,7 +817,7 @@ class CoreEdgeReactionModel:
         # this works without scoop:
         #outputs = map(makeThermoForSpecies, listOfSpecies)
         # this tried so do it via scoop's map:
-        outputs = futures.map(makeThermoForSpecies, listOfSpecies)
+        outputs = futures.map(makeThermoForSpecies, listOfSpecies,qmValue=self.quantumMechanics)
         for spec, thermo in zip(listOfSpecies, outputs):
             spec.thermo = thermo
 
@@ -834,23 +962,27 @@ class CoreEdgeReactionModel:
                 isForward = not rev_isForward
                 H298 = -H298
                 G298 = -G298
-                
-            kinetics.comment += "\nKinetics were estimated in this direction instead of the reverse because:\n{0}".format(reason)
-            kinetics.comment += "\ndHrxn(298 K) = {0:.2f} kJ/mol, dGrxn(298 K) = {1:.2f} kJ/mol".format(H298 / 1000., G298 / 1000.)
-        
+            
+            if self.verboseComments:
+                kinetics.comment += "\nKinetics were estimated in this direction instead of the reverse because:\n{0}".format(reason)
+                kinetics.comment += "\ndHrxn(298 K) = {0:.2f} kJ/mol, dGrxn(298 K) = {1:.2f} kJ/mol".format(H298 / 1000., G298 / 1000.)
+            
         # The comments generated by the database for estimated kinetics can
         # be quite long, and therefore not very useful
         # We don't want to waste lots of memory storing these long, 
         # uninformative strings, so here we replace them with much shorter ones
         if not self.verboseComments:
             # Only keep a short comment (to save memory)
-            if 'Exact' in kinetics.comment:
+            if 'Exact' in kinetics.comment or 'Matched rule' in kinetics.comment:
                 # Exact match of rate rule
-                kinetics.comment = '{0} exact: [{1}]'.format(reaction.family.label, ','.join([g.label for g in reaction.template])) 
+                kinetics.comment = 'Exact match found for rate rule ({0})'.format(','.join([g.label for g in reaction.template])) 
+            elif 'Matched reaction' in kinetics.comment:
+                # Stems from matching a reaction from a depository
+                pass
             else:
                 # Estimated (averaged) rate rule
-                kinetics.comment = '{0} estimate: [{1}]'.format(reaction.family.label, ','.join([g.label for g in reaction.template])) 
-        
+                kinetics.comment =  kinetics.comment[kinetics.comment.find('Estimated'):]
+                
         return kinetics, source, entry, isForward
     
     def printEnlargeSummary(self, newCoreSpecies, newCoreReactions, newEdgeSpecies, newEdgeReactions, reactionsMovedFromEdge=None):
@@ -1188,13 +1320,25 @@ class CoreEdgeReactionModel:
             rxn = LibraryReaction(reactants=entry.item.reactants[:], products=entry.item.products[:], library=seedMechanism, kinetics=entry.data)
             r, isNew = self.makeNewReaction(rxn) # updates self.newSpeciesList and self.newReactionlist
         for spec in self.newSpeciesList:
-            if spec.reactive: spec.generateThermoData(database)
+            if spec.reactive: spec.generateThermoData(database, quantumMechanics=self.quantumMechanics)
+            spec.generateTransportData(database)
         for spec in self.newSpeciesList:
             self.addSpeciesToCore(spec)
 
         for rxn in self.newReactionList:
+            if self.pressureDependence and rxn.isUnimolecular():
+                # If this is going to be run through pressure dependence code,
+                # we need to make sure the barrier is positive.
+                # ...but are Seed Mechanisms run through PDep? Perhaps not.
+                for spec in itertools.chain(rxn.reactants, rxn.products):
+                    if spec.thermo is None:
+                        spec.generateThermoData(database, quantumMechanics=self.quantumMechanics)
+                rxn.fixBarrierHeight(forcePositive=True)
             self.addReactionToCore(rxn)
-
+        
+        # Check we didn't introduce unmarked duplicates
+        self.markChemkinDuplicates()
+        
         self.printEnlargeSummary(
             newCoreSpecies=self.core.species[numOldCoreSpecies:],
             newCoreReactions=self.core.reactions[numOldCoreReactions:],
@@ -1212,7 +1356,8 @@ class CoreEdgeReactionModel:
 
         database = rmgpy.data.rmg.database
 
-        self.newReactionList = []; self.newSpeciesList = []
+        self.newReactionList = []
+        self.newSpeciesList = []
 
         numOldEdgeSpecies = len(self.edge.species)
         numOldEdgeReactions = len(self.edge.reactions)
@@ -1223,8 +1368,10 @@ class CoreEdgeReactionModel:
         for entry in reactionLibrary.entries.values():
             rxn = LibraryReaction(reactants=entry.item.reactants[:], products=entry.item.products[:], library=reactionLibrary, kinetics=entry.data)
             r, isNew = self.makeNewReaction(rxn) # updates self.newSpeciesList and self.newReactionlist
+            if not isNew: logging.info("This library reaction was not new: {0}".format(rxn))
         for spec in self.newSpeciesList:
-            if spec.reactive: spec.generateThermoData(database)
+            if spec.reactive: spec.generateThermoData(database, quantumMechanics=self.quantumMechanics)
+            spec.generateTransportData(database)
         for spec in self.newSpeciesList:
             self.addSpeciesToEdge(spec)
 
@@ -1273,6 +1420,7 @@ class CoreEdgeReactionModel:
             else:
                 rxn.kinetics.comment = ("RMG did not find reaction rate to be high enough to be included in model core.")
                 self.outputReactionList.append(rxn)
+        self.markChemkinDuplicates()
 
 
     def addReactionToUnimolecularNetworks(self, newReaction, newSpecies, network=None):
@@ -1528,15 +1676,46 @@ class CoreEdgeReactionModel:
         for rxn in seedReactionList:
             self.addReactionToCore(rxn)
 
-    def saveChemkinFile(self, path, verbose_path, dictionaryPath=None):
+    def markChemkinDuplicates(self):
+        """
+        Check that all reactions that will appear the chemkin output have been checked as duplicates.
+        
+        Call this if you've done something that may have introduced undetected duplicate reactions,
+        like add a reaction library or seed mechanism.
+        Anything added via the :meth:`expand` method should already be detected.
+        """
+        from rmgpy.chemkin import markDuplicateReactions
+        
+        rxnList = self.core.reactions + self.outputReactionList
+        markDuplicateReactions(rxnList)
+        
+        
+    def saveChemkinFile(self, path, verbose_path, dictionaryPath=None, transportPath=None):
         """
         Save a Chemkin file for the current model core as well as any desired output
         species and reactions to `path`.
         """
-        from rmgpy.chemkin import saveChemkinFile, saveSpeciesDictionary
+        from rmgpy.chemkin import saveChemkinFile, saveSpeciesDictionary, saveTransportFile
         speciesList = self.core.species + self.outputSpeciesList
         rxnList = self.core.reactions + self.outputReactionList
-        saveChemkinFile(path, speciesList, rxnList, verbose = False)
-        saveChemkinFile(verbose_path, speciesList, rxnList, verbose = True)
+        saveChemkinFile(path, speciesList, rxnList, verbose = False, checkForDuplicates=False) # We should already have marked everything as duplicates by now        
+        logging.info('Saving current model to verbose Chemkin file...')
+        saveChemkinFile(verbose_path, speciesList, rxnList, verbose = True, checkForDuplicates=False)
         if dictionaryPath:
             saveSpeciesDictionary(dictionaryPath, speciesList)
+        if transportPath:
+            saveTransportFile(transportPath, speciesList)
+            
+    def saveChemkinFileEdge(self, path, verbose_path, dictionaryPath=None):
+        """
+        Save a Chemkin file for the current model edge as well as any desired output
+        species and reactions to `path`.
+        """
+        from rmgpy.chemkin import saveChemkinFile, saveSpeciesDictionaryEdge
+        speciesList = self.edge.species + self.outputSpeciesList
+        rxnList = self.edge.reactions + self.outputReactionList
+        saveChemkinFile(path, speciesList, rxnList, verbose = False)        
+        logging.info('Saving current edge to verbose Chemkin file...')
+        saveChemkinFile(verbose_path, speciesList, rxnList, verbose = True)
+        if dictionaryPath:
+            saveSpeciesDictionaryEdge(dictionaryPath, speciesList)

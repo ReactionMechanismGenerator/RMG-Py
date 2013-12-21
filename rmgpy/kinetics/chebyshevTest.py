@@ -201,6 +201,17 @@ class TestChebyshev(unittest.TestCase):
         self.assertAlmostEqual(self.chebyshev.Pmax.value, chebyshev.Pmax.value, 4)
         self.assertEqual(self.chebyshev.Pmax.units, chebyshev.Pmax.units)
         self.assertEqual(self.chebyshev.comment, chebyshev.comment)
+        
+    def test_changeRate(self):
+        """
+        Test the Chebyshev.changeRate() method.
+        """
+        Tlist = numpy.array([300,400,500,600,700,800,900,1000,1100,1200,1300,1400,1500])
+        k0list = numpy.array([self.chebyshev.getRateCoefficient(T,1e5) for T in Tlist])
+        self.chebyshev.changeRate(2)
+        for T, kexp in zip(Tlist, k0list):
+            kact = self.chebyshev.getRateCoefficient(T,1e5)
+            self.assertAlmostEqual(2*kexp, kact, delta=1e-6*kexp)
 
 ################################################################################
 

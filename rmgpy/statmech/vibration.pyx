@@ -144,8 +144,12 @@ cdef class HarmonicOscillator(Vibration):
             for i in range(frequencies.shape[0]):
                 freq = frequencies[i] * constants.c * 100.
                 x = beta * constants.h * freq
-                exp_x = exp(x)
-                Cv += x * x * exp_x / (1 - exp_x) / (1 - exp_x)
+                if x > 500.0:
+                    # exp(x) approaches infinity, thus x^2 exp(x)/(1-exp(x))^2 tends to zero
+                    Cv += 0.0
+                else:
+                    exp_x = exp(x)
+                    Cv += x * x * exp_x / (1 - exp_x) / (1 - exp_x)
         else:
             Cv = frequencies.shape[0]
         return Cv * constants.R

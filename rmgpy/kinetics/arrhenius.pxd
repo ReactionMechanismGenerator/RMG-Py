@@ -46,6 +46,8 @@ cdef class Arrhenius(KineticsModel):
     cpdef fitToData(self, numpy.ndarray Tlist, numpy.ndarray klist, str kunits, double T0=?, numpy.ndarray weights=?, bint threeParams=?)
 
     cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2
+    
+    cpdef changeRate(self, double factor)
 
 ################################################################################
 
@@ -64,6 +66,8 @@ cdef class ArrheniusEP(KineticsModel):
 
     cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2
     
+    cpdef changeRate(self, double factor)
+    
 ################################################################################
 
 cdef class PDepArrhenius(PDepKineticsModel):
@@ -78,6 +82,8 @@ cdef class PDepArrhenius(PDepKineticsModel):
     cpdef fitToData(self, numpy.ndarray Tlist, numpy.ndarray Plist, numpy.ndarray K, str kunits, double T0=?)
 
     cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2
+    
+    cpdef changeRate(self, double factor)
 
 ################################################################################
 
@@ -88,6 +94,10 @@ cdef class MultiArrhenius(KineticsModel):
     cpdef double getRateCoefficient(self, double T, double P=?) except -1
 
     cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2
+    
+    cpdef Arrhenius toArrhenius(self, double Tmin=?, double Tmax=?)
+    
+    cpdef changeRate(self, double factor)
 
 ################################################################################
 
@@ -99,3 +109,4 @@ cdef class MultiPDepArrhenius(PDepKineticsModel):
 
     cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2
     
+    cpdef changeRate(self, double factor)

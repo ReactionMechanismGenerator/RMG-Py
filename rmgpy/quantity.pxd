@@ -41,8 +41,11 @@ cdef class Units(object):
 cdef class ScalarQuantity(Units):
 
     cdef public double value_si
-    cdef public str uncertaintyType
-    cdef public double uncertainty
+    cdef        str _uncertaintyType
+    cdef public double uncertainty_si
+    
+    cpdef str getUncertaintyType(self)
+    cpdef     setUncertaintyType(self, str v)
     
     cpdef bint isUncertaintyAdditive(self) except -2
 

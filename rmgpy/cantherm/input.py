@@ -45,6 +45,7 @@ from rmgpy.pdep.collision import *
 from rmgpy.molecule import Molecule
 
 from rmgpy.cantherm.gaussian import GaussianLog
+from rmgpy.cantherm.molepro import MoleProLog
 from rmgpy.cantherm.kinetics import KineticsJob
 from rmgpy.cantherm.statmech import StatMechJob
 from rmgpy.cantherm.thermo import ThermoJob
@@ -159,6 +160,7 @@ def transitionState(label, *args, **kwargs):
 
 def reaction(label, reactants, products, transitionState, kinetics=None, tunneling=''):
     global reactionDict, speciesDict, transitionStateDict
+    label = 'reaction'+transitionState
     if label in reactionDict:
         raise ValueError('Multiple occurrences of reaction with label {0!r}.'.format(label))
     logging.info('Loading reaction {0}...'.format(label))

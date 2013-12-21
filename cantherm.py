@@ -36,7 +36,7 @@ various methodologies and theories. To run CanTherm, use the command ::
     $ python cantherm.py FILE
 
 where ``FILE`` is the path to a CanTherm input file describing the job to
-execute. CanTherm will run the specified job, writing the output to 
+execute. CanTherm will run the specified job, writing the output to
 ``output.py`` and a log to both the console and to ``cantherm.log``, with both
 files appearing in the same directory as the input file. Some additional
 command-line arguments are available; run the command ::
@@ -55,7 +55,12 @@ from rmgpy.cantherm.main import *
 cantherm = CanTherm()
 
 # Parse and validate the command-line arguments
-cantherm.parseCommandLineArguments()   
+cantherm.parseCommandLineArguments()
 
 # Execute the job
 cantherm.execute()
+
+import psutil
+process = psutil.Process(os.getpid())
+rss, vms = process.get_memory_info()
+logging.info('Memory used: %.2f MB' % (rss / 1024.0 / 1024.0))

@@ -18,6 +18,7 @@ Contents
     users/index
     developers/index
     theory/index
+    reference/index
     
 Indices and tables
 ==================

@@ -29,16 +29,18 @@
 ################################################################################
 
 import logging
+import quantities
 import os
 
 from rmgpy import settings
 
 from rmgpy.molecule import Molecule
-
+from rmgpy.quantity import Quantity
 from rmgpy.data.rmg import RMGDatabase
 from rmgpy.quantity import Quantity
 from rmgpy.solver.base import TerminationTime, TerminationConversion
 from rmgpy.solver.simple import SimpleReactor
+from rmgpy.solver.liquid import LiquidReactor
 
 from model import CoreEdgeReactionModel
 
@@ -51,7 +53,15 @@ class InputError(Exception): pass
 rmg = None
 speciesDict = {}
 
-def database(thermoLibraries=None, reactionLibraries=None, frequenciesLibraries=None, seedMechanisms=None, kineticsFamilies='default', kineticsDepositories='default', kineticsEstimator='group additivity'):
+def database(
+             thermoLibraries = None,
+             reactionLibraries = None,
+             frequenciesLibraries = None,
+             seedMechanisms = None,
+             kineticsFamilies = 'default',
+             kineticsDepositories = 'default',
+             kineticsEstimator = 'group additivity',
+             ):
     # This function just stores the information about the database to be loaded
     # We don't actually load the database until after we're finished reading
     # the input file
@@ -83,12 +93,15 @@ def database(thermoLibraries=None, reactionLibraries=None, frequenciesLibraries=
 def species(label, structure, reactive=True):
     logging.debug('Found {0} species "{1}" ({2})'.format('reactive' if reactive else 'nonreactive', label, structure.toSMILES()))
     spec, isNew = rmg.reactionModel.makeNewSpecies(structure, label=label, reactive=reactive)
-    assert isNew, "Species {0} is a duplicate of {1}. Species in input file must be unique".format(label,spec.label)
-    rmg.initialSpecies.append(spec)
-    speciesDict[label] = spec
+    #assert isNew, "Species {0} is a duplicate of {1}. Species in input file must be unique".format(label,spec.label)
+    if isNew:
+    	rmg.initialSpecies.append(spec)
+    	speciesDict[label] = spec
+    else:
+	logging.info("Species {0} is a duplicate of {1}. Avoid it and continue calculation ...".format(label,spec.label))
     
-def CML(string):
-    return Molecule().fromCML(string)
+def SMARTS(string):
+    return Molecule().fromSMARTS(string)
 
 def SMILES(string):
     return Molecule().fromSMILES(string)
@@ -100,7 +113,14 @@ def adjacencyList(string):
     return Molecule().fromAdjacencyList(string)
 
 # Reaction systems
-def simpleReactor(temperature, pressure, initialMoleFractions, terminationConversion=None, terminationTime=None):
+def simpleReactor(temperature,
+                  pressure,
+                  initialMoleFractions,
+                  terminationConversion=None,
+                  terminationTime=None,
+                  sensitivity=None,
+                  sensitivityThreshold=1e-3
+                  ):
     logging.debug('Found SimpleReactor reaction system')
 
     if sum(initialMoleFractions.values()) != 1:
@@ -120,12 +140,42 @@ def simpleReactor(temperature, pressure, initialMoleFractions, terminationConver
     if len(termination) == 0:
         raise InputError('No termination conditions specified for reaction system #{0}.'.format(len(rmg.reactionSystems)+2))
     
-    system = SimpleReactor(T, P, initialMoleFractions, termination)
+    sensitivitySpecies = []
+    if sensitivity:
+        for spec in sensitivity:
+            sensitivitySpecies.append(speciesDict[spec])
+    system = SimpleReactor(T, P, initialMoleFractions, termination, sensitivitySpecies, sensitivityThreshold)
     rmg.reactionSystems.append(system)
 
+
+# Reaction systems
+def liquidReactor(temperature, initialConcentrations, terminationConversion=None, terminationTime=None):
+    logging.debug('Found LiquidReactor reaction system')
+    T = Quantity(temperature)
+    for spec,conc in initialConcentrations.iteritems():
+        concentration = Quantity(conc)
+        # check the dimensions are ok
+        # convert to mol/m^3 (or something numerically nice? or must it be SI)
+        initialConcentrations[spec] = concentration.value_si
+    termination = []
+    if terminationConversion is not None:
+        for spec, conv in terminationConversion.iteritems():
+            termination.append(TerminationConversion(speciesDict[spec], conv))
+    if terminationTime is not None:
+        termination.append(TerminationTime(Quantity(terminationTime)))
+    if len(termination) == 0:
+        raise InputError('No termination conditions specified for reaction system #{0}.'.format(len(rmg.reactionSystems)+2))
+    system = LiquidReactor(T, initialConcentrations, termination)
+    rmg.reactionSystems.append(system)
+    
 def simulator(atol, rtol):
     rmg.absoluteTolerance = atol
     rmg.relativeTolerance = rtol
+    
+def solvation(solvent):
+    # If solvation module in input file, set the RMG solvent variable
+	assert isinstance(solvent,str), "solvent should be a string like 'water'"
+	rmg.solvent = solvent
 
 def model(toleranceMoveToCore, toleranceKeepInEdge=0.0, toleranceInterruptSimulation=1.0, maximumEdgeSpecies=None):
     rmg.fluxToleranceKeepInEdge = toleranceKeepInEdge
@@ -133,7 +183,31 @@ def model(toleranceMoveToCore, toleranceKeepInEdge=0.0, toleranceInterruptSimula
     rmg.fluxToleranceInterrupt = toleranceInterruptSimulation
     rmg.maximumEdgeSpecies = maximumEdgeSpecies
 
-def pressureDependence(method, temperatures, pressures, maximumGrainSize=0.0, minimumNumberOfGrains=0, interpolation=None, maximumAtoms=None):
+def quantumMechanics(
+                    software,
+                    fileStore = None,
+                    scratchDirectory = None,
+                    onlyCyclics = False,
+                    maxRadicalNumber = 0,
+                    ):
+    from rmgpy.qm.main import QMCalculator
+    rmg.quantumMechanics = QMCalculator()
+    rmg.quantumMechanics.settings.software = software
+    rmg.quantumMechanics.settings.fileStore = fileStore
+    rmg.quantumMechanics.settings.scratchDirectory = scratchDirectory
+    rmg.quantumMechanics.settings.onlyCyclics = onlyCyclics
+    rmg.quantumMechanics.settings.maxRadicalNumber = maxRadicalNumber
+                    
+
+def pressureDependence(
+                       method,
+                       temperatures,
+                       pressures,
+                       maximumGrainSize = 0.0,
+                       minimumNumberOfGrains = 0,
+                       interpolation = None,
+                       maximumAtoms=None,
+                       ):
 
     from rmgpy.cantherm.pdep import PressureDependenceJob
     
@@ -229,13 +303,16 @@ def readInputFile(path, rmg0):
         'False': False,
         'database': database,
         'species': species,
-        'CML': CML,
+        'SMARTS': SMARTS,
         'SMILES': SMILES,
         'InChI': InChI,
         'adjacencyList': adjacencyList,
         'simpleReactor': simpleReactor,
+        'liquidReactor': liquidReactor,
         'simulator': simulator,
+        'solvation': solvation,
         'model': model,
+        'quantumMechanics': quantumMechanics,
         'pressureDependence': pressureDependence,
         'options': options,
         'generatedSpeciesConstraints': generatedSpeciesConstraints,
@@ -250,13 +327,62 @@ def readInputFile(path, rmg0):
     finally:
         f.close()
 
+    # convert keys from species names into species objects.
     for reactionSystem in rmg.reactionSystems:
-        initialMoleFractions = {}
-        for label, moleFrac in reactionSystem.initialMoleFractions.iteritems():
-            initialMoleFractions[speciesDict[label]] = moleFrac
-        reactionSystem.initialMoleFractions = initialMoleFractions
+        reactionSystem.convertInitalKeysToSpeciesObjects(speciesDict)
 
     logging.info('')
+    
+################################################################################
+
+def readThermoInputFile(path, rmg0):
+    """
+    Read an thermo estimation input file at `path` on disk into the :class:`RMG` object 
+    `rmg`.
+    """
+
+    global rmg, speciesDict
+    
+    full_path = os.path.abspath(os.path.expandvars(path))
+    try:
+        f = open(full_path)
+    except IOError, e:
+        logging.error('The input file "{0}" could not be opened.'.format(full_path))
+        logging.info('Check that the file exists and that you have read access.')
+        raise e
+
+    logging.info('Reading input file "{0}"...'.format(full_path))
+
+    rmg = rmg0
+    rmg.reactionModel = CoreEdgeReactionModel()
+    rmg.initialSpecies = []
+    rmg.reactionSystems = []
+    speciesDict = {}
+    
+    global_context = { '__builtins__': None }
+    local_context = {
+        '__builtins__': None,
+        'True': True,
+        'False': False,
+        'database': database,
+        'species': species,
+        'SMARTS': SMARTS,
+        'SMILES': SMILES,
+        'InChI': InChI,
+        'adjacencyList': adjacencyList,
+        'quantumMechanics': quantumMechanics,
+    }
+
+    try:
+        exec f in global_context, local_context
+    except (NameError, TypeError, SyntaxError), e:
+        logging.error('The input file "{0}" was invalid:'.format(full_path))
+        logging.exception(e)
+        raise
+    finally:
+        f.close()
+
+    logging.info('')    
 
 ################################################################################
 
@@ -315,8 +441,16 @@ def saveInputFile(path, rmg):
             f.write(conversions)
             f.write('    },\n')
         
-        f.write(')\n\n')
+        # Sensitivity analysis
+        if system.sensitivity:
+            f.write('    sensitivity = {0},\n'.format(system.sensitivity))       
+        if system.sensitivityThreshold:
+            f.write('    sensitivityThreshold = {0},\n'.format(system.sensitivity))      
         
+        f.write(')\n\n')
+    
+    if rmg.solvent:
+    	f.write("solvation(\n    solvent = '{0!s}'\n)\n\n".format(solvent))
         
     # Simulator tolerances
     f.write('simulator(\n')

@@ -46,6 +46,8 @@ import rmgpy.quantity as quantity
 cimport rmgpy.statmech.schrodinger as schrodinger 
 import rmgpy.statmech.schrodinger as schrodinger 
 
+import logging
+
 ################################################################################
 
 cdef class Torsion(Mode):
@@ -84,6 +86,14 @@ cdef class Torsion(Mode):
         A helper function used when pickling a Rotation object.
         """
         return (Torsion, (self.symmetry, self.quantum))
+
+################################################################################
+
+class NegativeBarrierException(Exception):
+    """This Exception occurs when the energy barrier for a hindered Rotor is negative.
+    This can occur if the scan or fourier fit is poor. """
+    
+    pass
 
 ################################################################################
 
@@ -200,9 +210,14 @@ cdef class HinderedRotor(Torsion):
             for k in range(fourier.shape[1]):
                 V0 -= fourier[0,k] * (k+1) * (k+1)
             V0 /= constants.Na
+            if V0 < 0:
+                raise NegativeBarrierException(" Hindered rotor barrier height is less than 0 \n     Try running cantherm in verbose mode, -v,  to identify which hindered rotor \n    Try changing the Hindered rotor fit to 'cosine'")
+#                 raise Exception("Hindered rotor barrier height is less than 0 \nTry running cantherm in verbose mode, -v,  to identify which hindered rotor \nTry changing the Hindered rotor fit to 'cosine'")
             frequency = 1.0 / (2. * constants.pi) * sqrt(V0 / I)
         else:
             V0 = self._barrier.value_si / constants.Na
+            if V0 < 0:
+                raise Exception('V0 barrier height is less than 0')
             frequency = self.symmetry / (2. * constants.pi) * sqrt(V0 / (2. * I))
         self.frequency = frequency / (constants.c * 100.)
         return self.frequency

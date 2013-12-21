@@ -6,16 +6,27 @@
 numpy
 
 scipy
-nose
-coverage
 matplotlib
+cython>=0.19
 quantities
-cython
 guppy
-sphinx
-pydot
 psutil
 xlwt
+MarkupSafe # this makes Jinja2 faster
+Jinja2 # this is for rendering the HTML output files
+
+# For postprocessing the profiling data
+argparse
+gprof2dot
+pyparsing==1.5.7 # default pyparsing only works with Python3, 1.5.7 works on Python2.7. Pydot needs it.
+pydot
+
+# For running the unit tests
+nose
+coverage
+
+# for generating the documentation
+Sphinx
 
 # Oasa was required for drawing molecules:
 -f http://bkchem.zirael.org/ oasa==0.13.1

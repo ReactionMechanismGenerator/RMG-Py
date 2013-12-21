@@ -13,8 +13,8 @@ Briefly, RMG depends on the following packages:
 * **NumPy:** fast matrix operations
 * **SciPy:** fast mathematical toolkit
 * **matplotlib:** generating plots
+* **rdkit:** open-source cheminformatics toolkit
 * **guppy:** memory profiling tools
-* **OpenBabel:** species format conversion
 * **Cython:** compiling Python modules to C
 * **quantities:** unit conversion
 * **nose:** advanced unit test controls
@@ -36,3 +36,10 @@ Refer to these platform-specific instructions for details on the best ways to in
     windows
     linux
     macos
+
+See also the instructions for installing these optional components:
+
+.. toctree::
+    :maxdepth: 1
+
+    QMthermo

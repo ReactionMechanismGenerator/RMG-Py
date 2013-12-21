@@ -40,48 +40,8 @@ The `Cairo <http://cairographics.org/>`_ 2D graphics library is used to create
 the drawings. The :class:`MoleculeDrawer` class module will fail gracefully if
 Cairo is not installed.
 
-The general procedure for creating drawings of skeletal formula is as follows:
-
-1.  **Find the molecular backbone.** If the molecule contains no cycles, the
-    longest straight chain of heavy atoms is used as the backbone. If the 
-    molecule contains cycles, the largest independent cycle group is used as the
-    backbone. The :meth:`findBackbone()` method is used for this purpose.
-
-2.  **Generate coordinates for the backbone atoms.** Straight-chain backbones
-    are laid out in a horizontal seesaw pattern. Cyclic backbones are laid out
-    as regular polygons (or as close to this as is possible). The
-    :meth:`generateStraightChainCoordinates()` and 
-    :meth:`generateRingSystemCoordinates()` methods are used for this purpose.
-
-3.  **Generate coordinates for immediate neighbors to backbone.** Each neighbor
-    atom represents the start of a functional group attached to the backbone.
-    Generating coordinates for these means that we have determined the bonds
-    for all backbone atoms. The :meth:`generateNeighborCoordinates()` method is
-    used for this purpose.
-
-4.  **Continue generating coordinates for atoms in functional groups.** Moving
-    away from the molecular backbone and its immediate neighbors, the
-    coordinates for each atom in each functional group are determined such that
-    the functional groups tend to radiate away from the center of the backbone
-    (to reduce chances of overlap). If cycles are encountered in the functional
-    groups, their coordinates are processed as a unit. This continues until
-    the coordinates of all atoms in the molecule have been assigned. The
-    :meth:`generateFunctionalGroupCoordinates()` recursive method is used for
-    this.
-
-5.  **Use the generated coordinates and the atom and bond types to render the
-    skeletal formula.** The :meth:`render()`,  and :meth:`renderBond()`, and
-    :meth:`renderAtom()` methods are used for this.
-
-The developed procedure seems to be rather robust, but occasionally it will
-encounter a molecule that it renders incorrectly. In particular, features which
-have not yet been implemented by this drawing algorithm include:
-
-* cis-trans isomerism
-
-* stereoisomerism
-
-* bridging atoms in fused rings
+The implementation uses the 2D coordinate generation of rdKit to find coordinates,
+then uses Cairo to render the atom.
 
 """
 
@@ -90,6 +50,9 @@ import numpy
 import os.path
 import re
 import logging
+
+from rmgpy.qm.molecule import Geometry
+from rdkit.Chem import AllChem
 
 from numpy.linalg import LinAlgError
 
@@ -201,7 +164,7 @@ class MoleculeDrawer:
         # Generate information about any cycles present in the molecule, as
         # they will need special attention
         self.__findRingGroups()
-    
+        
         # Generate the coordinates to use to draw the molecule
         try:
             self.__generateCoordinates()
@@ -214,7 +177,7 @@ class MoleculeDrawer:
 
         self.coordinates[:,1] *= -1
         self.coordinates *= self.options['bondLength']
-
+        
         # Generate labels to use
         self.__generateAtomLabels()
         
@@ -312,73 +275,105 @@ class MoleculeDrawer:
     def __generateCoordinates(self):
         """
         Generate the 2D coordinates to be used when drawing the current 
-        molecule. The vertices are arranged based on a standard bond length of
-        unity, and can be scaled later for longer bond lengths. The coordinates
-        are arranged such that the "center" of the molecule is at the origin.
-        This function ignores any previously-existing coordinate information.
+        molecule. The function uses rdKits 2D coordinate generation.
         """
         atoms = self.molecule.atoms
         Natoms = len(atoms)
+        flag_nitrogen = 0
+        
+        for atom in self.molecule.atoms:
+            if atom.isNitrogen():
+                flag_nitrogen = 1
         
         # Initialize array of coordinates
         self.coordinates = coordinates = numpy.zeros((Natoms, 2))
-    
-        # If there are only one or two atoms to draw, then determining the
-        # coordinates is trivial
-        if Natoms == 1:
-            self.coordinates[0,:] = [0.0, 0.0]
-            return self.coordinates
-        elif Natoms == 2:
-            self.coordinates[0,:] = [-0.5, 0.0]
-            self.coordinates[1,:] = [0.5, 0.0]
-            return self.coordinates
-    
-        if len(self.cycles) > 0:
-            # Cyclic molecule
-            backbone = self.__findCyclicBackbone()
-            self.__generateRingSystemCoordinates(backbone)
-            # Flatten backbone so that it contains a list of the atoms in the
-            # backbone, rather than a list of the cycles in the backbone
-            backbone = list(set([atom for cycle in backbone for atom in cycle]))
-        else:
-            # Straight chain molecule
-            backbone = self.__findStraightChainBackbone()
-            self.__generateStraightChainCoordinates(backbone)
-            
-            # If backbone is linear, then rotate so that the bond is parallel to the
-            # horizontal axis
-            vector0 = coordinates[atoms.index(backbone[1]),:] - coordinates[atoms.index(backbone[0]),:]
-            for i in range(2, len(backbone)):
-                vector = coordinates[atoms.index(backbone[i]),:] - coordinates[atoms.index(backbone[i-1]),:]
-                if numpy.linalg.norm(vector - vector0) > 1e-4:
-                    break
-            else:
-                angle = math.atan2(vector0[0], vector0[1]) - math.pi / 2
-                rot = numpy.array([[math.cos(angle), math.sin(angle)], [-math.sin(angle), math.cos(angle)]], numpy.float64)
-                coordinates = numpy.dot(coordinates, rot)
-            
-        # Center backbone at origin
-        xmin = numpy.min(coordinates[:,0])
-        xmax = numpy.max(coordinates[:,0])
-        ymin = numpy.min(coordinates[:,1])
-        ymax = numpy.max(coordinates[:,1])
-        xmid = 0.5 * (xmax + xmin)
-        ymid = 0.5 * (ymax + ymin)
-        for atom in backbone:
-            index = atoms.index(atom)
-            coordinates[index,0] -= xmid
-            coordinates[index,1] -= ymid
         
-        # We now proceed by calculating the coordinates of the functional groups
-        # attached to the backbone
-        # Each functional group is independent, although they may contain further
-        # branching and cycles
-        # In general substituents should try to grow away from the origin to
-        # minimize likelihood of overlap
-        self.__generateNeighborCoordinates(backbone)
+        if flag_nitrogen == 1:
+            # If there are only one or two atoms to draw, then determining the
+            # coordinates is trivial
+            if Natoms == 1:
+                self.coordinates[0,:] = [0.0, 0.0]
+                return self.coordinates
+            elif Natoms == 2:
+                self.coordinates[0,:] = [-0.5, 0.0]
+                self.coordinates[1,:] = [0.5, 0.0]
+                return self.coordinates
+        
+            if len(self.cycles) > 0:
+                # Cyclic molecule
+                backbone = self.__findCyclicBackbone()
+                self.__generateRingSystemCoordinates(backbone)
+                # Flatten backbone so that it contains a list of the atoms in the
+                # backbone, rather than a list of the cycles in the backbone
+                backbone = list(set([atom for cycle in backbone for atom in cycle]))
+            else:
+                # Straight chain molecule
+                backbone = self.__findStraightChainBackbone()
+                self.__generateStraightChainCoordinates(backbone)
+                
+                # If backbone is linear, then rotate so that the bond is parallel to the
+                # horizontal axis
+                vector0 = coordinates[atoms.index(backbone[1]),:] - coordinates[atoms.index(backbone[0]),:]
+                for i in range(2, len(backbone)):
+                    vector = coordinates[atoms.index(backbone[i]),:] - coordinates[atoms.index(backbone[i-1]),:]
+                    if numpy.linalg.norm(vector - vector0) > 1e-4:
+                        break
+                else:
+                    angle = math.atan2(vector0[0], vector0[1]) - math.pi / 2
+                    rot = numpy.array([[math.cos(angle), math.sin(angle)], [-math.sin(angle), math.cos(angle)]], numpy.float64)
+                    coordinates = numpy.dot(coordinates, rot)
+                
+            # Center backbone at origin
+            xmin = numpy.min(coordinates[:,0])
+            xmax = numpy.max(coordinates[:,0])
+            ymin = numpy.min(coordinates[:,1])
+            ymax = numpy.max(coordinates[:,1])
+            xmid = 0.5 * (xmax + xmin)
+            ymid = 0.5 * (ymax + ymin)
+            for atom in backbone:
+                index = atoms.index(atom)
+                coordinates[index,0] -= xmid
+                coordinates[index,1] -= ymid
+            
+            # We now proceed by calculating the coordinates of the functional groups
+            # attached to the backbone
+            # Each functional group is independent, although they may contain further
+            # branching and cycles
+            # In general substituents should try to grow away from the origin to
+            # minimize likelihood of overlap
+            self.__generateNeighborCoordinates(backbone)
+            
+            return coordinates
+            
+        else:
+            
+            # Use rdkit 2D coordinate generation:
+            
+            # Generate the RDkit molecule from the RDkit molecule, use geometry
+            # in order to match the atoms in the rdmol with the atoms in the
+            # RMG molecule (which is required to extract coordinates).
+            self.geometry = Geometry(None, None, self.molecule, None)
+            
+            rdmol, rdAtomIdx = self.geometry.rd_build()
+            AllChem.Compute2DCoords(rdmol)
+            
+            # Extract the coordinates from each atom.
+            for atom in atoms:
+                index = rdAtomIdx[atom]
+                point = rdmol.GetConformer(0).GetAtomPosition(index)
+                coordinates[index,:]= [point.x*0.6, point.y*0.6]
+            
+            # RDKit generates some molecules more vertically than horizontally,
+            # Especially linear ones. This will reflect any molecule taller than
+            # it is wide across the line y=x
+            ranges = numpy.ptp(coordinates, axis = 0)
+            if ranges[1] > ranges[0]:
+                temp = numpy.copy(coordinates)
+                coordinates[:,0] = temp[:,1]
+                coordinates[:,1] = temp[:,0]
+            
+            return coordinates
     
-        return coordinates
-
     def __findCyclicBackbone(self):
         """
         Return a set of atoms to use as the "backbone" of the molecule. For
@@ -878,6 +873,12 @@ class MoleculeDrawer:
         coordinates = self.coordinates
         atoms = self.molecule.atoms
         symbols = self.symbols
+        
+        drawLonePairs = False
+        
+        for atom in atoms:
+            if atom.isNitrogen():
+                drawLonePairs = True
     
         left = 0.0
         top = 0.0
@@ -936,7 +937,7 @@ class MoleculeDrawer:
                 heavyFirst = False
                 cr.set_font_size(self.options['fontSizeNormal'])
                 x0 += cr.text_extents(symbols[0])[2] / 2.0
-            atomBoundingRect = self.__renderAtom(symbol, atom, x0, y0, cr, heavyFirst)
+            atomBoundingRect = self.__renderAtom(symbol, atom, x0, y0, cr, heavyFirst, drawLonePairs)
         
         # Add a small amount of whitespace on all sides
         padding = self.options['padding']
@@ -1002,7 +1003,7 @@ class MoleculeDrawer:
                 self.__drawLine(cr, x1 - du + dx, y1 - dv + dy, x2 - du - dx, y2 - dv - dy)
                 self.__drawLine(cr, x1 + du + dx, y1 + dv + dy, x2 + du - dx, y2 + dv - dy)
         
-    def __renderAtom(self, symbol, atom, x0, y0, cr, heavyFirst=True):
+    def __renderAtom(self, symbol, atom, x0, y0, cr, heavyFirst=True, drawLonePairs=False):
         """
         Render the `label` for an atom centered around the coordinates (`x0`, `y0`)
         onto the Cairo context `cr`. If `heavyFirst` is ``False``, then the order
@@ -1084,7 +1085,7 @@ class MoleculeDrawer:
             boundingRect = [x1, y1, x2, y2]
     
             # Set color for text
-            if heavyAtom == 'C':    cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
+            if   heavyAtom == 'C':  cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
             elif heavyAtom == 'N':  cr.set_source_rgba(0.0, 0.0, 1.0, 1.0)
             elif heavyAtom == 'O':  cr.set_source_rgba(1.0, 0.0, 0.0, 1.0)
             elif heavyAtom == 'F':  cr.set_source_rgba(0.5, 0.75, 1.0, 1.0)
@@ -1253,6 +1254,29 @@ class MoleculeDrawer:
                 cr.move_to(xi, yi - extents[1])
                 cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
                 cr.show_text(text)
+                
+            # Draw lone electron pairs            
+            # Draw them for nitrogen containing molecules only
+            if drawLonePairs:
+                for i in range (atom.lonePairs):
+                    cr.new_sub_path()
+                    if i == 0:
+                        x1lp = x-2
+                        y1lp = y-8
+                        x2lp = x+2
+                        y2lp = y-12
+                    elif i == 1:
+                        x1lp = x+12
+                        y1lp = y-8
+                        x2lp = x+8
+                        y2lp = y-12
+                    elif i == 2:
+                        x1lp = x-2
+                        y1lp = y-1
+                        x2lp = x+2
+                        y2lp = y+3
+                    self.__drawLine(cr, x1lp, y1lp, x2lp, y2lp)
+                
         elif orientation[0] == 'l' or orientation[0] == 'r':
             # Draw charges first
             text = ''
@@ -1272,6 +1296,27 @@ class MoleculeDrawer:
                 cr.arc(xi + width/2, yi + 3 * i + 1, 1, 0, 2 * math.pi)
                 cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
                 cr.fill()
+            # Draw lone electron pairs
+            # Draw them for nitrogen atoms only
+            if drawLonePairs:
+                for i in range (atom.lonePairs):
+                    cr.new_sub_path()
+                    if i == 0:
+                        x1lp = x-2
+                        y1lp = y-8
+                        x2lp = x+2
+                        y2lp = y-12
+                    elif i == 1:
+                        x1lp = x+12
+                        y1lp = y-8
+                        x2lp = x+8
+                        y2lp = y-12
+                    elif i == 2:
+                        x1lp = x-2
+                        y1lp = y-1
+                        x2lp = x+2
+                        y2lp = y+3
+                    self.__drawLine(cr, x1lp, y1lp, x2lp, y2lp)
                 
         # Update bounding rect to ensure atoms are included
         if boundingRect[0] < self.left:

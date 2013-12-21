@@ -9,4 +9,22 @@ RMG User's Guide
     :numbered:
 
     introduction
+    features
     installation/index
+    input
+    examples
+    running    
+    output
+    species
+    group
+    database/index
+    thermo
+    kinetics 
+    guidelines
+    modules/index
+    faq
+    credits
+    
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`

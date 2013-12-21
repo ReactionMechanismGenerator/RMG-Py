@@ -44,6 +44,7 @@ import rmgpy.constants as constants
 from rmgpy.pdep.collision import *
 from rmgpy.statmech import *
 from rmgpy.statmech.conformer import getDensityOfStatesForst
+from rmgpy.transport import TransportData
 
 from rmgpy.species import Species, TransitionState
 from rmgpy.reaction import Reaction
@@ -167,18 +168,18 @@ cdef class Configuration:
         cdef double sigma, epsilon, mu, gasConc, frac, Tred, omega22
         
         assert self.isUnimolecular()
-        assert isinstance(self.species[0].lennardJones, LennardJones)
+        assert isinstance(self.species[0].transportData, TransportData)
         for spec, frac in bathGas.items():
-            assert isinstance(spec.lennardJones, LennardJones)
+            assert isinstance(spec.transportData, TransportData)
         
         bathGasSigma = 0.0; bathGasEpsilon = 1.0; bathGasMW = 0.0
         for spec, frac in bathGas.iteritems():
-            bathGasSigma += spec.lennardJones._sigma.value_si * frac
-            bathGasEpsilon *= spec.lennardJones._epsilon.value_si ** frac
+            bathGasSigma += spec.transportData.sigma.value_si * frac
+            bathGasEpsilon *= spec.transportData.epsilon.value_si ** frac
             bathGasMW += spec._molecularWeight.value_si * frac
         
-        sigma = 0.5 * (self.species[0].lennardJones._sigma.value_si + bathGasSigma)
-        epsilon = sqrt((self.species[0].lennardJones._epsilon.value_si * bathGasEpsilon))
+        sigma = 0.5 * (self.species[0].transportData.sigma.value_si + bathGasSigma)
+        epsilon = sqrt((self.species[0].transportData.epsilon.value_si * bathGasEpsilon))
         mu = 1.0 / (1.0/self.species[0]._molecularWeight.value_si + 1.0/bathGasMW)
         gasConc = P / constants.kB / T
         

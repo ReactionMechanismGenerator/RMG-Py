@@ -30,6 +30,7 @@
 
 import math
 import numpy
+import os.path
 
 import rmgpy.constants as constants
 from rmgpy.statmech import IdealGasTranslation, NonlinearRotor, LinearRotor, HarmonicOscillator, Conformer
@@ -153,6 +154,8 @@ class GaussianLog:
                 mass[i] = 30.97376163
             elif number[i] == 16:
                 mass[i] = 31.97207100
+            elif number[i] == 17:
+                mass[i] = 35.4527
             else:
                 print 'Atomic number {0:d} not yet supported in loadGeometry().'.format(number[i])
         
@@ -248,7 +251,7 @@ class GaussianLog:
 
         return Conformer(E0=(E0*0.001,"kJ/mol"), modes=modes, spinMultiplicity=spinMultiplicity, opticalIsomers=opticalIsomers)
 
-    def loadEnergy(self):
+    def loadEnergy(self,frequencyScaleFactor=1.):
         """
         Load the energy in J/mol from a Gaussian log file. The file is checked 
         for a complete basis set extrapolation; if found, that value is 
@@ -258,7 +261,7 @@ class GaussianLog:
         """
 
         modes = []
-        E0 = None; E0_cbs = None; ZPE = None
+        E0 = None; E0_cbs = None; scaledZPE = None
         spinMultiplicity = 1
 
         f = open(self.path, 'r')
@@ -267,15 +270,24 @@ class GaussianLog:
 
             if 'SCF Done:' in line:
                 E0 = float(line.split()[4]) * constants.E_h * constants.Na
-            elif 'CBS-QB3 (0 K)' in line or 'G3 (O K)' in line:
+            elif 'CBS-QB3 (0 K)' in line:
                 E0_cbs = float(line.split()[3]) * constants.E_h * constants.Na
-            elif 'Zero-point correction=' in line:
-                ZPE = float(line.split()[2]) * constants.E_h * constants.Na
+            elif 'G3(0 K)' in line:
+                E0_cbs = float(line.split()[2]) * constants.E_h * constants.Na
+            
+            # Read the ZPE from the "E(ZPE)=" line, as this is the scaled version.
+            # Gaussian defines the following as
+            # E (0 K) = Elec + E(ZPE), 
+            # The ZPE is the scaled ZPE given by E(ZPE) in the log file, 
+            # hence to get the correct Elec from E (0 K) we need to subtract the scaled ZPE
+            
+            elif 'E(ZPE)' in line:
+                scaledZPE = float(line.split()[1]) * constants.E_h * constants.Na
             elif '\\ZeroPoint=' in line:
                 line = line.strip() + f.readline().strip()
                 start = line.find('\\ZeroPoint=') + 11
                 end = line.find('\\', start)
-                ZPE = float(line[start:end]) * constants.E_h * constants.Na
+                scaledZPE = float(line[start:end]) * constants.E_h * constants.Na * frequencyScaleFactor
             # Read the next line in the file
             line = f.readline()
 
@@ -283,16 +295,16 @@ class GaussianLog:
         f.close()
         
         if E0_cbs is not None:
-            if ZPE is None:
+            if scaledZPE is None:
                 raise Exception('Unable to find zero-point energy in Gaussian log file.')
-            return E0_cbs - ZPE
+            return E0_cbs - scaledZPE
         elif E0 is not None:
             return E0
         else: raise Exception('Unable to find energy in Gaussian log file.')
     
     def loadZeroPointEnergy(self):
         """
-        Load the zero-point energy in J/mol from a Gaussian log file.
+        Load the unscaled zero-point energy in J/mol from a Gaussian log file.
         """
 
         modes = []
@@ -303,6 +315,9 @@ class GaussianLog:
         line = f.readline()
         while line != '':
 
+            # Do NOT read the ZPE from the "E(ZPE)=" line, as this is the scaled version!
+            # We will read in the unscaled ZPE and later multiply the scaling factor
+            # from the input file
             if 'Zero-point correction=' in line:
                 ZPE = float(line.split()[2]) * constants.E_h * constants.Na
             elif '\\ZeroPoint=' in line:
@@ -328,6 +343,7 @@ class GaussianLog:
         """
 
         optfreq = False
+        rigidScan=False
 
         # The array of potentials at each scan angle
         Vlist = []
@@ -340,10 +356,17 @@ class GaussianLog:
             # If the job contains a "freq" then we want to ignore the last energy
             if ' freq ' in line:
                 optfreq = True
+            #if # scan is keyword instead of # opt, then this is a rigid scan job
+            #and parsing the energies is done a little differently
+            if '# scan' in line:
+                rigidScan=True
             # The lines containing "SCF Done" give the energy at each
             # iteration (even the intermediate ones)
             if 'SCF Done:' in line:
                 E = float(line.split()[4])
+                #rigid scans will only not optimize, so just append every time it finds an energy.
+                if rigidScan:
+                    Vlist.append(E)
             # We want to keep the values of E that come most recently before
             # the line containing "Optimization completed", since it refers
             # to the optimized geometry
@@ -352,6 +375,10 @@ class GaussianLog:
             line = f.readline()
         # Close file when finished
         f.close()
+        
+        #give warning in case this assumption is not true
+        if rigidScan==True:
+            print '   Assuming', os.path.basename(self.path), 'is the output from a rigid scan...'
         
         # Adjust energies to be relative to minimum energy conformer
         # Also convert units from Hartree/particle to kJ/mol

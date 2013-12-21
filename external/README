@@ -33,3 +33,23 @@ jquery.min.js
 from http://ajax.googleapis.com/ajax/libs/jquery/1.4.1/jquery.min.js
 Used by the HTML output of RMG. Useful to have it locally if you do not have
 internet access when you want to look at your results.
+
+
+symmetry
+Brute force symmetry determination program and the associated test set.
+(C) 1996, 2003 S. Patchkovskii, Serguei.Patchkovskii@sympatico.ca
+Published under GNU General Public License
+http://www.cobalt.chem.ucalgary.ca/ps/symmetry/
+This is based on Revision 1.16  2003/04/04
+
+cclib
+An open source library, written in Python, for parsing and interpreting
+the results of computational chemistry packages.
+N. M. O'Boyle, A. L. Tenderholt, K. M. Langner,
+"cclib: a library for package-independent computational chemistry algorithms",
+J. Comp. Chem. 29 (5), pp. 839-845, 2008
+cclib is licensed under the LGPL
+http://cclib.sourceforge.net
+This is based on version 1.0 but with some modifications,
+probably made in the RMG-Java project.
+We should endeavor to get the modifications merged upstream and use the main cclib.

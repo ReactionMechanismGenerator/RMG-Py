@@ -29,13 +29,6 @@ cimport numpy
 
 from rmgpy.quantity cimport ScalarQuantity, ArrayQuantity
 
-################################################################################
-
-cdef class LennardJones:
-
-    cdef public ScalarQuantity _sigma, _epsilon
-    
-    cpdef double getCollisionFrequency(self, double T, double M, double mu) except -1
 
 ################################################################################
 

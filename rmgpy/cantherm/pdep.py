@@ -435,7 +435,7 @@ class PressureDependenceJob(object):
         
         f.close()
         
-        f = open(os.path.join(os.path.dirname(outputFile), 'chem.inp'), 'w')
+        f = open(os.path.join(os.path.dirname(outputFile), 'chem.inp'), 'a')
         
         count = 0
         for prod in range(Nprod):
@@ -445,7 +445,7 @@ class PressureDependenceJob(object):
                 kinetics = reaction.kinetics
                 count += 1
                 
-                string = '{0!s}    1.0 0.0 0.0    0.0 0.0 0.0\n'.format(reaction)
+                string = '{0!s:51} 1.0 0.0 0.0\n'.format(reaction)
                 
                 if isinstance(kinetics, PDepArrhenius):
                     for P, arrhenius in zip(kinetics.pressures.value_si, kinetics.arrhenius):
@@ -608,8 +608,8 @@ class PressureDependenceJob(object):
                     f.write('    opticalIsomers = {0:d},\n'.format(spec.conformer.opticalIsomers))
                 if spec.molecularWeight is not None:
                     f.write('    molecularWeight = {0!r},\n'.format(spec.molecularWeight))
-                if spec.lennardJones is not None:
-                    f.write('    collisionModel = {0!r},\n'.format(spec.lennardJones))
+                if spec.transportData is not None:
+                    f.write('    collisionModel = {0!r},\n'.format(spec.transportData.getLennardJones()))
                 if spec.energyTransferModel is not None:
                     f.write('    energyTransferModel = {0!r},\n'.format(spec.energyTransferModel))                    
                 if spec.thermo is not None:

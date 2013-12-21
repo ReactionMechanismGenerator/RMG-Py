@@ -33,6 +33,7 @@ from libc.math cimport sqrt, log
 
 cimport rmgpy.constants as constants
 import rmgpy.quantity as quantity
+import scipy.linalg
 
 ################################################################################
 
@@ -565,9 +566,7 @@ cdef class Wilhoit(HeatCapacityModel):
         nasa_high.c4 *= 1.0e-12
         
         # output comment
-        comment = 'NASA function fitted to Wilhoit function with B = {0:g} K. {1}\n{2}'.format(self.B.value_si, rmsStr, self.comment)
-        nasa_low.comment = 'Low temperature range polynomial'
-        nasa_high.comment = 'High temperature range polynomial'
+        # comment = 'NASA function fitted to Wilhoit function with B = {0:g} K. {1}\n{2}'.format(self.B.value_si, rmsStr, self.comment)
     
         # For the low polynomial, we want the results to match the Wilhoit value at 298 K
         nasa_low.c5 = (self.getEnthalpy(298) - nasa_low.getEnthalpy(298)) / constants.R
@@ -582,7 +581,7 @@ cdef class Wilhoit(HeatCapacityModel):
             Tmin = nasa_low.Tmin,
             Tmax = nasa_high.Tmax,
             E0 = self.E0,
-            comment = comment,
+            comment = self.comment,
         )
     
         return nasa
@@ -772,7 +771,6 @@ cpdef Wilhoit_to_NASA(Wilhoit wilhoit, double Tmin, double Tmax, double Tint, bi
     # solve A*x=b for x (note that factor of 2 in b vector and 10*10 submatrix of A
     # matrix is not required; not including it should give same result, except
     # Lagrange multipliers will differ by a factor of two)
-    import scipy.linalg
     x = scipy.linalg.solve(A,b,overwrite_a=1,overwrite_b=1)
 
     nasa_low = NASAPolynomial(
@@ -818,7 +816,7 @@ cpdef double Wilhoit_to_NASA_TintOpt_objFun(double Tint, Wilhoit wilhoit, double
     # this is unphysical (it's the integral of a *squared* error) so we
     # set it to zero to avoid later problems when we try find the square root.
     if result < 0:
-        print("Negative ISE of {0:g} reset to zero.".format(result))
+        #print("Negative ISE of {0:g} reset to zero.".format(result))
         result = 0
 
     return result

@@ -48,7 +48,6 @@ import cython
 import rmgpy.constants as constants
 import rmgpy.quantity as quantity
 from rmgpy.molecule import Molecule
-from rmgpy.pdep.collision import LennardJones
 
 ################################################################################
 
@@ -75,7 +74,7 @@ class Species(object):
     `thermo`                The heat capacity model for the species
     `conformer`             The molecular conformer for the species
     `molecule`              A list of the :class:`Molecule` objects describing the molecular structure
-    `lennardJones`          A set of Lennard-Jones collision parameters
+    `transportData`          A set of transport collision parameters
     `molecularWeight`       The molecular weight of the species
     `dipoleMoment`          The molecular dipole moment
     `polarizability`        The polarizability alpha
@@ -83,11 +82,14 @@ class Species(object):
     `energyTransferModel`   The collisional energy transfer model to use
     `reactive`              ``True`` if the species participates in reactions, ``False`` if not
     ======================= ====================================================
+
+    note::
     
+        :class:`rmg.model.Species` inherits from this class, and adds some extra methods.
     """
 
     def __init__(self, index=-1, label='', thermo=None, conformer=None, 
-                 molecule=None, lennardJones=None, molecularWeight=None, 
+                 molecule=None, transportData=None, molecularWeight=None, 
                  dipoleMoment=None, polarizability=None, Zrot=None, 
                  energyTransferModel=None, reactive=True):
         self.index = index
@@ -95,7 +97,7 @@ class Species(object):
         self.thermo = thermo
         self.conformer = conformer
         self.molecule = molecule or []
-        self.lennardJones = lennardJones
+        self.transportData = transportData
         self.reactive = reactive
         self.molecularWeight = molecularWeight
         self.dipoleMoment = dipoleMoment
@@ -114,7 +116,7 @@ class Species(object):
         if self.thermo is not None: string += 'thermo={0!r}, '.format(self.thermo)
         if self.conformer is not None: string += 'conformer={0!r}, '.format(self.conformer)
         if len(self.molecule) > 0: string += 'molecule=[{0!r}], '.format(self.molecule[0])
-        if self.lennardJones is not None: string += 'lennardJones={0!r}, '.format(self.lennardJones)
+        if self.transportData is not None: string += 'transportData={0!r}, '.format(self.transportData)
         if not self.reactive: string += 'reactive={0}, '.format(self.reactive)
         if self.molecularWeight is not None: string += 'molecularWeight={0!r}, '.format(self.molecularWeight)
         if self.dipoleMoment is not None: string += 'dipoleMoment={0!r}, '.format(self.dipoleMoment)
@@ -141,7 +143,7 @@ class Species(object):
         """
         A helper function used when pickling an object.
         """
-        return (Species, (self.index, self.label, self.thermo, self.conformer, self.molecule, self.lennardJones, self.molecularWeight, self.dipoleMoment, self.polarizability, self.Zrot, self.energyTransferModel, self.reactive))
+        return (Species, (self.index, self.label, self.thermo, self.conformer, self.molecule, self.transportData, self.molecularWeight, self.dipoleMoment, self.polarizability, self.Zrot, self.energyTransferModel, self.reactive))
 
     def getMolecularWeight(self):
         return self._molecularWeight
@@ -229,7 +231,7 @@ class Species(object):
         """
         Return a string containing each of the molecules' adjacency lists.
         """
-        output = '\n\n'.join([m.toAdjacencyList(label=self.label, removeH=True) for m in self.molecule])
+        output = '\n\n'.join([m.toAdjacencyList(label=self.label, removeH=False) for m in self.molecule])
         return output
 
     def hasStatMech(self):
@@ -352,7 +354,7 @@ class Species(object):
 
 ################################################################################
 
-class TransitionState:
+class TransitionState():
     """
     A chemical transition state, representing a first-order saddle point on a
     potential energy surface. The attributes are:
@@ -366,7 +368,6 @@ class TransitionState:
     `tunneling`     The type of tunneling model to use for tunneling through the reaction barrier
     `degeneracy`    The reaction path degeneracy
     =============== ============================================================
-
     """
 
     def __init__(self, label='', conformer=None, frequency=None, tunneling=None, degeneracy=1):

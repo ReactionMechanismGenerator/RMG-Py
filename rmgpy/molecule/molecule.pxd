@@ -40,7 +40,9 @@ cdef class Atom(Vertex):
     cdef public short charge
     cdef public str label
     cdef public AtomType atomType
-
+    cdef public list coords
+    cdef public short lonePairs
+    
     cpdef bint equivalent(self, Vertex other) except -2
 
     cpdef bint isSpecificCaseOf(self, Vertex other) except -2
@@ -58,6 +60,16 @@ cdef class Atom(Vertex):
     cpdef incrementRadical(self)
 
     cpdef decrementRadical(self)
+    
+    cpdef setLonePairs(self, int lonePairs)
+    
+    cpdef incrementLonePairs(self)
+    
+    cpdef decrementLonePairs(self)
+    
+    cpdef updateCharge(self)
+    
+    cpdef setSpinMultiplicity(self, int spinMultiplicity)
     
 ################################################################################
 
@@ -89,6 +101,8 @@ cdef class Molecule(Graph):
 
     cdef public bint implicitHydrogens
     cdef public int symmetryNumber
+    cdef public object rdMol
+    cdef public int rdMolConfId
     cdef str _fingerprint
     
     cpdef str getFingerprint(self)
@@ -112,6 +126,8 @@ cdef class Molecule(Graph):
     cpdef sortAtoms(self)
 
     cpdef str getFormula(self)
+
+    cpdef short getRadicalCount(self)
 
     cpdef double getMolecularWeight(self)
 
@@ -145,17 +161,13 @@ cdef class Molecule(Graph):
 
     cpdef draw(self, str path)
 
-    cpdef fromCML(self, str cmlstr)
-
     cpdef fromInChI(self, str inchistr)
 
     cpdef fromSMILES(self, str smilesstr)
 
-    cpdef fromOBMol(self, obmol)
+    cpdef fromRDKitMol(self, rdkitmol)
 
-    cpdef fromAdjacencyList(self, str adjlist)
-
-    cpdef str toCML(self)
+    cpdef fromAdjacencyList(self, str adjlist, bint saturateH=?)
 
     cpdef str toInChI(self)
 
@@ -167,9 +179,9 @@ cdef class Molecule(Graph):
 
     cpdef str toSMILES(self)
 
-    cpdef toOBMol(self)
+#    cpdef tRDKitMol(self)
 
-    cpdef toAdjacencyList(self, str label=?, bint removeH=?)
+    cpdef toAdjacencyList(self, str label=?, bint removeH=?, bint removeLonePairs=?)
 
     cpdef bint isLinear(self) except -2
 
@@ -186,7 +198,15 @@ cdef class Molecule(Graph):
     cpdef list generateResonanceIsomers(self)
     
     cpdef list getAdjacentResonanceIsomers(self)
+    
+    cpdef list getLonePairRadicalResonanceIsomers(self)
+    
+    cpdef list getN5dd_N5tsResonanceIsomers(self)
 
     cpdef findAllDelocalizationPaths(self, Atom atom1)
+    
+    cpdef findAllDelocalizationPathsLonePairRadical(self, Atom atom1)
+    
+    cpdef findAllDelocalizationPathsN5dd_N5ts(self, Atom atom1)
 
     cpdef int calculateSymmetryNumber(self) except -1

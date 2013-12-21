@@ -52,7 +52,7 @@ def saveEntry(f, entry):
     if isinstance(entry.item, Molecule):
         f.write('    molecule = \n')
         f.write('"""\n')
-        f.write(entry.item.toAdjacencyList(removeH=True))
+        f.write(entry.item.toAdjacencyList(removeH=False))
         f.write('""",\n')
     elif isinstance(entry.item, Group):
         f.write('    group = \n')
@@ -367,7 +367,7 @@ class StatmechGroups(Database):
         # For closed-shell molecule the spin multiplicity is 1
         # For monoradicals the spin multiplicity is 2
         # For higher-order radicals the highest allowed spin multiplicity is assumed
-        conformer.spinMultiplicity = sum([atom.radicalElectrons for atom in molecule.atoms]) + 1
+        conformer.spinMultiplicity = molecule.getRadicalCount() + 1
         
         # No need to determine rotational and vibrational modes for single atoms
         if len(molecule.atoms) < 2:
@@ -431,8 +431,11 @@ class StatmechGroups(Database):
         modes = fitStatmechToHeatCapacity(Tlist, Cv, numVibrations - len(frequencies), numRotors, molecule)
         for mode in modes:
             if isinstance(mode, HarmonicOscillator):
+                uncertainties = [0 for f in frequencies] # probably shouldn't be zero
                 frequencies.extend(mode.frequencies.value_si)
+                uncertainties.extend(mode.frequencies.uncertainty)
                 mode.frequencies.value_si = numpy.array(frequencies, numpy.float)
+                mode.frequencies.uncertainty = numpy.array(uncertainties, numpy.float)
                 break
         else:
             modes.insert(0, HarmonicOscillator(frequencies=(frequencies,"cm^-1")))

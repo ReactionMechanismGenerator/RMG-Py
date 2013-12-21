@@ -60,6 +60,7 @@ BIMOLECULAR_KINETICS_FAMILIES = [
     'SubstitutionS',
     'R_Addition_CSm',
     '1,3_Insertion_RSR',
+    'lone_electron_pair_bond',
 ]
 
 # The names of all of the RMG reaction families that are unimolecular
@@ -81,6 +82,7 @@ UNIMOLECULAR_KINETICS_FAMILIES = [
     'intra_substitutionCS_isomerization',
     'intra_substitutionS_cyclization',
     'intra_substitutionS_isomerization',
+    'intra_NO2_ONO_conversion',
 ]
 
 ################################################################################
@@ -112,7 +114,12 @@ def saveEntry(f, entry):
     def sortEfficiencies(efficiencies0):
         efficiencies = {}
         for mol, eff in efficiencies0.iteritems():
-            smiles = mol.toSMILES()
+            if isinstance(mol, str):
+                # already in SMILES string format
+                smiles = mol
+            else:
+                smiles = mol.toSMILES()
+                
             efficiencies[smiles] = eff
         keys = efficiencies.keys()
         keys.sort()
@@ -128,12 +135,12 @@ def saveEntry(f, entry):
             if isinstance(reactant, Molecule):
                 f.write('    reactant{0:d} = \n'.format(i+1))
                 f.write('"""\n')
-                f.write(reactant.toAdjacencyList(removeH=True))
+                f.write(reactant.toAdjacencyList(removeH=False))
                 f.write('""",\n')
             elif isinstance(reactant, Species):
                 f.write('    reactant{0:d} = \n'.format(i+1))
                 f.write('"""\n')
-                f.write(reactant.molecule[0].toAdjacencyList(label=reactant.label, removeH=True))
+                f.write(reactant.molecule[0].toAdjacencyList(label=reactant.label, removeH=False))
                 f.write('""",\n')
             elif isinstance(reactant, Group):
                 f.write('    group{0:d} = \n'.format(i+1))
@@ -146,12 +153,12 @@ def saveEntry(f, entry):
             if isinstance(product, Molecule):
                 f.write('    product{0:d} = \n'.format(i+1))
                 f.write('"""\n')
-                f.write(product.toAdjacencyList(removeH=True))
+                f.write(product.toAdjacencyList(removeH=False))
                 f.write('""",\n')
             elif isinstance(reactant, Species):
                 f.write('    product{0:d} = \n'.format(i+1))
                 f.write('"""\n')
-                f.write(product.molecule[0].toAdjacencyList(label=product.label, removeH=True))
+                f.write(product.molecule[0].toAdjacencyList(label=product.label, removeH=False))
                 f.write('""",\n')
         if not isinstance(entry.item.reactants[0], Group) and not isinstance(entry.item.reactants[0], LogicNode):
             f.write('    degeneracy = {0:d},\n'.format(entry.item.degeneracy))

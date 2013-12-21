@@ -127,7 +127,7 @@ if __name__ == '__main__':
     # Save the current state of the model core to a pretty HTML file
     rmg.saveOutputHTML()
     # Save a Chemkin file containing the current model core
-    rmg.saveChemkinFile()
+    rmg.saveChemkinFiles()
 
     rmg.finish()
     

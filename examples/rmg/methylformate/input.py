@@ -4,7 +4,7 @@ database(
     reactionLibraries = [('Methylformate',False),('Glarborg/highP',False)],
     seedMechanisms = ['Glarborg/C2'],
     kineticsDepositories = ['training'],
-    kineticsFamilies = ['!Intra_Disproportionation'],
+    kineticsFamilies = ['!Intra_Disproportionation','!Substitution_O'],
     kineticsEstimator = 'rate rules',
 )
 
@@ -148,11 +148,12 @@ pressureDependence(
     temperatures=(290,3500,'K',8),
     pressures=(0.02,100,'bar',5),
     interpolation=('Chebyshev', 6, 4),
+    maximumAtoms=16,
 )
 
 options(
     units='si',
-    saveRestartPeriod=None,
+    saveRestartPeriod=(1,'hour'),
     drawMolecules=False,
     generatePlots=False,
     saveConcentrationProfiles=False,

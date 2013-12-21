@@ -128,6 +128,12 @@ cdef class NASAPolynomial(HeatCapacityModel):
         in K.
         """
         return self.getEnthalpy(T) - T * self.getEntropy(T)
+    
+    cpdef changeBaseEnthalpy(self, double deltaH):
+        """
+        Add deltaH in J/mol to the base enthalpy of formation H298.
+        """
+        self.c5 += deltaH / constants.R
 
     cdef double integral2_T0(self, double T):
         """
@@ -328,3 +334,12 @@ cdef class NASA(HeatCapacityModel):
         S298 = self.getEntropy(298)
         
         return Wilhoit().fitToData(Tdata, Cpdata, Cp0, CpInf, H298, S298)
+    
+    cpdef NASA changeBaseEnthalpy(self, double deltaH):
+        """
+        Add deltaH in J/mol to the base enthalpy of formation H298 and return the
+        modified NASA object.  
+        """
+        for poly in self.polynomials:
+            poly.changeBaseEnthalpy(deltaH)
+        return self

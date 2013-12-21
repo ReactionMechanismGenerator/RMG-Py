@@ -327,7 +327,7 @@ class KineticsLibrary(Database):
         path = os.path.abspath(path)
 
         self.loadOldDictionary(os.path.join(path,'species.txt'), pattern=False)
-        species = dict([(label.upper(), Species(label=label, molecule=[entry.item])) for label, entry in self.entries.iteritems()])
+        species = dict([(label, Species(label=label, molecule=[entry.item])) for label, entry in self.entries.iteritems()])
         
         # Add common bath gases (Ar, Ne, He, N2) if not already present
         for label, smiles in [('AR','[Ar]'), ('HE','[He]'), ('NE','[Ne]'), ('N2','N#N')]:
@@ -424,7 +424,7 @@ class KineticsLibrary(Database):
         speciesList.sort(key=lambda x: x.label)
         f = open(os.path.join(path, 'species.txt'), 'w')
         for species in speciesList:
-            f.write(species.molecule[0].toAdjacencyList(label=species.label, removeH=True) + "\n")
+            f.write(species.molecule[0].toAdjacencyList(label=species.label, removeH=False) + "\n")
         f.close()
         
         # Save the high-pressure limit reactions

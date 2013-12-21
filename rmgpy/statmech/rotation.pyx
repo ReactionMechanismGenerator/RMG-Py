@@ -159,7 +159,7 @@ cdef class LinearRotor(Rotation):
         def __set__(self, B):
             cdef double I
             B = quantity.Frequency(B)
-            I = constants.h / (8 * constants.pi * constants.pi * (B.value_si * constants.c * 100.))
+            I = constants.h / (8 * constants.pi * constants.pi * (max(B.value_si) * constants.c * 100.))
             self._inertia = quantity.ScalarQuantity(I / (constants.amu * 1e-20), "amu*angstrom^2")
 
     cpdef double getLevelEnergy(self, int J) except -1:
