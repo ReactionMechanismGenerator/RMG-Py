@@ -38,6 +38,9 @@ import numpy
 import os.path
 import itertools
 
+import scoop
+from scoop import futures,shared
+
 from rmgpy.display import display
 #import rmgpy.chemkin
 import rmgpy.constants as constants
@@ -61,6 +64,30 @@ from rmgpy.reaction import Reaction
 from pdep import PDepReaction, PDepNetwork, PressureDependenceError
 # generateThermoDataFromQM under the Species class imports the qm package
 
+__database = None
+qmValue = None
+
+def makeThermoForSpecies(spec):
+    """
+    Make thermo for a species.
+    """
+    global __database, qmValue
+    if qmValue == None: qmValue = scoop.shared.getConst('qmValue')
+    if __database == None:
+        """Load the database from some pickle file"""
+        import cPickle
+        filename = scoop.shared.getConst('databaseFile')
+        database_hash = scoop.shared.getConst('databaseHash')
+        logging.debug('Loading database pickle2 file'.format(filename))
+        #logging.info('Loading database pickle2 file from {0!r} on worker {1}'.format(filename, scoop.WORKER_NAME.decode() ))
+        f = open(filename, 'rb')
+        __database = cPickle.load(f)
+        f.close()
+        assert __database.hash == database_hash, "Database loaded from {0!r} doesn't match expected hash!".format(filename)
+    logging.debug("Generate thermo data in makeThermoForSpecies")
+    spec.generateThermoData(__database,quantumMechanics=qmValue)
+    logging.debug("Thermo generated for {0}".format(spec.label))
+    return spec.thermo
 
 ################################################################################
 
@@ -101,17 +128,18 @@ class Species(rmgpy.species.Species):
         from rmgpy.data.thermo import saveEntry
 
         thermo0 = None
-        
         thermo0 = database.thermo.getThermoDataFromLibraries(self)
-        
+        if quantumMechanics is None : logging.debug("qmValue is None at generateThermoData in model.py")
         if thermo0 is not None:
-            logging.info("Found thermo for {0} in thermo library".format(self.label))
+            logging.debug("Found thermo for {0} in thermo library".format(self.label))
             assert len(thermo0) == 3, "thermo0 should be a tuple at this point: (thermoData, library, entry)"
             thermo0 = thermo0[0]
             
         elif quantumMechanics:
+            logging.debug("Generate thermo data with QM")
             molecule = self.molecule[0]
             if quantumMechanics.settings.onlyCyclics and not molecule.isCyclic():
+                logging.debug("Bypassing QM for ".format(self.label))
                 pass
             else: # try a QM calculation
                 if molecule.getRadicalCount() > quantumMechanics.settings.maxRadicalNumber:
@@ -146,10 +174,12 @@ class Species(rmgpy.species.Species):
                         f.write('{0}\n'.format(molecule.toSMILES()))
                         f.write('{0}\n\n'.format(molecule.toAdjacencyList(removeH=False)))
                 else: # Not too many radicals: do a direct calculation.
+                    logging.debug("Generate thermo for {0} with QM".format(self.label))
                     thermo0 = quantumMechanics.getThermoData(molecule) # returns None if it fails
-                
+                    if thermo0 is None: logging.debug("QM for {0} failed.".format(self.label))
                 if thermo0 is not None:
                     # Write the QM molecule thermo to a library so that can be used in future RMG jobs.
+                    logging.debug("QM for {0} is successful.".format(self.label))
                     quantumMechanics.database.loadEntry(index = len(quantumMechanics.database.entries) + 1,
                                                         label = molecule.toSMILES(),
                                                         molecule = molecule.toAdjacencyList(),
@@ -359,7 +389,7 @@ class CoreEdgeReactionModel:
         # Return an existing species if a match is found
         formula = molecule.getFormula()
         try:
-             speciesList = self.speciesDict[formula]
+            speciesList = self.speciesDict[formula]
         except KeyError:
             return False, None
         for spec in speciesList:
@@ -716,8 +746,8 @@ class CoreEdgeReactionModel:
             
         # Generate thermodynamics of new species
         logging.info('Generating thermodynamics for new species...')
+        self.generateThermoDataForListOfSpecies(newSpeciesList)
         for spec in newSpeciesList:
-            spec.generateThermoData(database, quantumMechanics=self.quantumMechanics)
             spec.generateTransportData(database)
         
         # Generate kinetics of new reactions
@@ -777,6 +807,19 @@ class CoreEdgeReactionModel:
         )
 
         logging.info('')
+    
+    def generateThermoDataForListOfSpecies(self, listOfSpecies):
+        """
+        Generates the thermo data for a list of species.
+        
+        Results are stored in the species objects themselves.
+        """
+        # this works without scoop:
+        #outputs = map(makeThermoForSpecies, listOfSpecies)
+        # this tried so do it via scoop's map:
+        outputs = futures.map(makeThermoForSpecies, listOfSpecies,qmValue=self.quantumMechanics)
+        for spec, thermo in zip(listOfSpecies, outputs):
+            spec.thermo = thermo
 
     def processNewReactions(self, newReactions, newSpecies, pdepNetwork=None):
         """

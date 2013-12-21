@@ -69,6 +69,7 @@ class QMSettings():
         assert type(self.onlyCyclics) is BooleanType
         assert self.maxRadicalNumber is not None # but it can be 0
         assert type(self.maxRadicalNumber) is IntType
+        logging.debug("QM settings are ok.")
 
 class QMCalculator():
     """
@@ -96,7 +97,7 @@ class QMCalculator():
         
     def setDefaultOutputDirectory(self, outputDirectory):
         """
-        IF the fileStore or scratchDirectory are not already set, put them in here.
+        If the fileStore or scratchDirectory are not already set, put them in here.
         """
         if not self.settings.fileStore:
             self.settings.fileStore = os.path.join(outputDirectory, 'QMfiles')
@@ -124,7 +125,8 @@ class QMCalculator():
         """
         self.settings.fileStore = os.path.expandvars(self.settings.fileStore) # to allow things like $HOME or $RMGpy
         self.settings.scratchDirectory = os.path.expandvars(self.settings.scratchDirectory)
-        for path in [self.settings.fileStore, self.settings.scratchDirectory]:
+#        for path in [self.settings.fileStore, self.settings.scratchDirectory]:
+        for path in [self.settings.fileStore]:
             if not os.path.exists(path):
                 logging.info("Creating directory %s for QM files."%os.path.abspath(path))
                 os.makedirs(path)
@@ -133,6 +135,7 @@ class QMCalculator():
             raise Exception("RMG-Py 'bin' directory {0} does not exist.".format(self.settings.RMG_bin_path))
         if not os.path.isdir(self.settings.RMG_bin_path):
             raise Exception("RMG-Py 'bin' directory {0} is not a directory.".format(self.settings.RMG_bin_path))
+        logging.debug("QM paths are ok.")
             
         
     def getThermoData(self, molecule):
@@ -141,11 +144,28 @@ class QMCalculator():
         
         Ignores the settings onlyCyclics and maxRadicalNumber and does the calculation anyway if asked.
         (I.e. the code that chooses whether to call this method should consider those settings).
+        Options for QM calculations are:
+        mopac: Default calculation with Mopac is PM3 semiempirical method, should be changed to PM6 or PM7
+        mopacPM3: PM3, Same as mopac option.
+        mopacPM6: PM6, better than PM3 (Journal of Molecular Modeling 13, 1173–1213, 2007.)
+        mopacPM7: PM7, excludes computational results from training set, might be better or slightly worse compared to PM6
+        gaussian: Only PM3 is available. 
         """
-        if self.settings.software == 'mopac':
+        if self.settings.software == 'mopac' or self.settings.software == 'mopacPM3':
+            logging.debug("Attempting for a {0} calculation.".format(self.settings.software))
             qm_molecule_calculator = rmgpy.qm.mopac.MopacMolPM3(molecule, self.settings)
             thermo0 = qm_molecule_calculator.generateThermoData()
+            logging.debug("{0} calculation attempted.".format(self.settings.software))
+        elif self.settings.software == 'mopacPM6':
+            logging.debug("Attempting for a {0} calculation.".format(self.settings.software))
+            qm_molecule_calculator = rmgpy.qm.mopac.MopacMolPM6(molecule, self.settings)
+            thermo0 = qm_molecule_calculator.generateThermoData()
+        elif self.settings.software == 'mopacPM7':
+            logging.debug("Attempting for a {0} calculation.".format(self.settings.software))
+            qm_molecule_calculator = rmgpy.qm.mopac.MopacMolPM7(molecule, self.settings)
+            thermo0 = qm_molecule_calculator.generateThermoData()
         elif self.settings.software == 'gaussian':
+            logging.debug("Attempting for a {0} calculation.".format(self.settings.software))
             qm_molecule_calculator = rmgpy.qm.gaussian.GaussianMolPM3(molecule, self.settings)
             thermo0 = qm_molecule_calculator.generateThermoData()
         else:

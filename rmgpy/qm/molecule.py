@@ -204,8 +204,26 @@ class QMMolecule:
         """
         Calculate the QM data somehow and return a CCLibData object, or None if it fails.
         """
-        raise NotImplementedError("This should be defined in a subclass that inherits from QMMolecule")
-        return qmdata.QMData() or None
+        logging.debug("{0} calculation".format(self.__class__.__name__))
+        if self.verifyOutputFile():
+            logging.info("Found a successful output file already; using that.")
+            source = "QM {0} result file found from previous run.".format(self.__class__.__name__)
+        else:
+            self.createGeometry()
+            success = False
+            for attempt in range(1, self.maxAttempts+1):
+                self.writeInputFile(attempt)
+                logging.info('Trying {3} attempt {0} of {1} on molecule {2}.'.format(attempt, self.maxAttempts, self.molecule.toSMILES(), self.__class__.__name__))
+                success = self.run()
+                if success:
+                    source = "QM {0} calculation attempt {1}".format(self.__class__.__name__, attempt )
+                    break
+            else:
+                logging.error('QM thermo calculation failed for {0}.'.format(self.molecule.toAugmentedInChI()))
+                return None
+        result = self.parse() # parsed in cclib
+        result.source = source
+        return result # a CCLibData object
     
     def generateThermoData(self):
         """
@@ -215,6 +233,7 @@ class QMMolecule:
         """
         # First, see if we already have it.
         if self.loadThermoData():
+            logging.debug("Already have thermo data")
             return self.thermo
         
         # If not, generate the QM data
@@ -222,20 +241,24 @@ class QMMolecule:
         
         # If that fails, give up and return None.
         if self.qmData  is None:
+            logging.debug("QM data is not found")
             return None
             
         self.determinePointGroup()
         
         # If that fails, give up and return None.
         if self.pointGroup is None:
+            logging.debug("No point group found")
             return None
             
         self.calculateThermoData()
+        logging.debug("Thermo data calculated")
         Cp0 = self.molecule.calculateCp0()
         CpInf = self.molecule.calculateCpInf()
         self.thermo.Cp0 = (Cp0,"J/(mol*K)")
         self.thermo.CpInf = (CpInf,"J/(mol*K)")
         self.saveThermoData()
+        logging.debug("Thermo data saved")
         return self.thermo
         
     def saveThermoData(self):
@@ -326,6 +349,7 @@ class QMMolecule:
         
         trans = rmgpy.statmech.IdealGasTranslation( mass=self.qmData.molecularMass )
         if self.pointGroup.linear:
+            logging.debug("Linear molecule")
             rot = rmgpy.statmech.LinearRotor(
                                          rotationalConstant = self.qmData.rotationalConstants,
                                          symmetry = self.pointGroup.symmetryNumber,

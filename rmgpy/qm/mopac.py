@@ -20,10 +20,13 @@ class Mopac:
     mopacEnv = os.getenv('MOPAC_DIR', default="/opt/mopac")
     if os.path.exists(os.path.join(mopacEnv , 'MOPAC2012.exe')):
         executablePath = os.path.join(mopacEnv , 'MOPAC2012.exe')
+        logging.debug("{0} is found.".format(executablePath))
     elif os.path.exists(os.path.join(mopacEnv , 'MOPAC2009.exe')):
         executablePath = os.path.join(mopacEnv , 'MOPAC2009.exe')
+        logging.debug("{0} is found.".format(executablePath))
     else:
         executablePath = os.path.join(mopacEnv , '(MOPAC 2009 or 2012)')
+        logging.debug("{0} is found.".format(executablePath))
     
     usePolar = False #use polar keyword in MOPAC
     
@@ -56,6 +59,7 @@ class Mopac:
 
     def testReady(self):
         if not os.path.exists(self.executablePath):
+            logging.debug("{0} is not found.").format(self.executablePath)
             raise Exception("Couldn't find MOPAC executable at {0}. Try setting your MOPAC_DIR environment variable.".format(self.executablePath))
 
     def run(self):
@@ -193,35 +197,6 @@ class MopacMol(QMMolecule, Mopac):
         """
         raise NotImplementedError("Should be defined by subclass, eg. MopacMolPM3")
         
-    def generateQMData(self):
-        """
-        Calculate the QM data and return a QMData object, or None if it fails.
-        """
-        for atom in self.molecule.vertices:
-            if atom.atomType.label == 'N5s' or atom.atomType.label == 'N5d' or atom.atomType.label =='N5dd' or atom.atomType.label == 'N5t' or atom.atomType.label == 'N5b':
-                return None
-
-        if self.verifyOutputFile():
-            logging.info("Found a successful output file already; using that.")
-            source = "QM MOPAC result file found from previous run."
-        else:
-            self.createGeometry()
-            success = False
-            for attempt in range(1, self.maxAttempts+1):
-                self.writeInputFile(attempt)
-                logging.info('Trying {3} attempt {0} of {1} on molecule {2}.'.format(attempt, self.maxAttempts, self.molecule.toSMILES(), self.__class__.__name__))
-                success = self.run()
-                if success:
-                    source = "QM {0} calculation attempt {1}".format(self.__class__.__name__, attempt )
-                    break
-            else:
-                logging.error('QM thermo calculation failed for {0}.'.format(self.molecule.toAugmentedInChI()))
-                return None
-        result = self.parse() # parsed in cclib
-        result.source = source
-        return result # a CCLibData object
-
-
 class MopacMolPM3(MopacMol):
 
     #: Keywords that will be added at the top and bottom of the qm input file
@@ -271,3 +246,103 @@ class MopacMolPM3(MopacMol):
                 )
 
         return top_keys, bottom_keys, polar_keys
+    
+class MopacMolPM6(MopacMol):
+
+    #: Keywords that will be added at the top and bottom of the qm input file
+    keywords = [
+                {'top':"precise nosym", 'bottom':"oldgeo thermo nosym precise "},
+                {'top':"precise nosym gnorm=0.0 nonr", 'bottom':"oldgeo thermo nosym precise "},
+                {'top':"precise nosym gnorm=0.0", 'bottom':"oldgeo thermo nosym precise "},
+                {'top':"precise nosym gnorm=0.0 bfgs", 'bottom':"oldgeo thermo nosym precise "},
+                {'top':"precise nosym recalc=10 dmax=0.10 nonr cycles=2000 t=2000", 'bottom':"oldgeo thermo nosym precise "},
+                ]
+
+    @property
+    def scriptAttempts(self):
+        "The number of attempts with different script keywords"
+        return len(self.keywords)
+        
+    @property
+    def maxAttempts(self):
+        "The total number of attempts to try"
+        return 2 * len(self.keywords)
+
+
+    def inputFileKeywords(self, attempt):
+        """
+        Return the top, bottom, and polar keywords for attempt number `attempt`.
+        
+        NB. `attempt`s begin at 1, not 0.
+        """
+        assert attempt <= self.maxAttempts
+        
+        if attempt > self.scriptAttempts:
+            attempt -= self.scriptAttempts
+        
+        multiplicity_keys = self.multiplicityKeywords[self.geometry.multiplicity]
+
+        top_keys = "pm6 {0} {1}".format(
+                multiplicity_keys,
+                self.keywords[attempt-1]['top'],
+                )
+        bottom_keys = "{0} pm6 {1}".format(
+                self.keywords[attempt-1]['bottom'],
+                multiplicity_keys,
+                )
+        polar_keys = "oldgeo {0} nosym precise pm6 {1}".format(
+                'polar' if self.geometry.multiplicity == 1 else 'static',
+                multiplicity_keys,
+                )
+
+        return top_keys, bottom_keys, polar_keys
+
+class MopacMolPM7(MopacMol):
+
+    #: Keywords that will be added at the top and bottom of the qm input file
+    keywords = [
+                {'top':"precise nosym", 'bottom':"oldgeo thermo nosym precise "},
+                {'top':"precise nosym gnorm=0.0 nonr", 'bottom':"oldgeo thermo nosym precise "},
+                {'top':"precise nosym gnorm=0.0", 'bottom':"oldgeo thermo nosym precise "},
+                {'top':"precise nosym gnorm=0.0 bfgs", 'bottom':"oldgeo thermo nosym precise "},
+                {'top':"precise nosym recalc=10 dmax=0.10 nonr cycles=2000 t=2000", 'bottom':"oldgeo thermo nosym precise "},
+                ]
+
+    @property
+    def scriptAttempts(self):
+        "The number of attempts with different script keywords"
+        return len(self.keywords)
+        
+    @property
+    def maxAttempts(self):
+        "The total number of attempts to try"
+        return 2 * len(self.keywords)
+
+
+    def inputFileKeywords(self, attempt):
+        """
+        Return the top, bottom, and polar keywords for attempt number `attempt`.
+        
+        NB. `attempt`s begin at 1, not 0.
+        """
+        assert attempt <= self.maxAttempts
+        
+        if attempt > self.scriptAttempts:
+            attempt -= self.scriptAttempts
+        
+        multiplicity_keys = self.multiplicityKeywords[self.geometry.multiplicity]
+
+        top_keys = "pm7 {0} {1}".format(
+                multiplicity_keys,
+                self.keywords[attempt-1]['top'],
+                )
+        bottom_keys = "{0} pm7 {1}".format(
+                self.keywords[attempt-1]['bottom'],
+                multiplicity_keys,
+                )
+        polar_keys = "oldgeo {0} nosym precise pm7 {1}".format(
+                'polar' if self.geometry.multiplicity == 1 else 'static',
+                multiplicity_keys,
+                )
+
+        return top_keys, bottom_keys, polar_keys    

@@ -224,7 +224,68 @@ class RMG:
         saveInputFile(path, self)
         
     def loadDatabase(self):
+        """
+        Load the RMG Database.
         
+        The data is loaded from self.databaseDirectory, according to settings in:
+        
+        * self.thermoLibraries
+        * self.reactionLibraries
+        * self.seedMechanisms
+        * self.kineticsFamilies
+        * self.kineticsDepositories
+         
+        If `self.kineticsEstimator == 'rate rules'` then the training set values are 
+        added and the blanks are filled in by averaging.
+        
+        If self.outputDirectory contains :file:`database.pkl` and :file:`database.hash` files then
+        these are checked for validity and used as a cache. Once loaded (and averages filled 
+        in if necessary) then a cache (pickle and hash) is saved.
+        """
+        import inspect, hashlib, cPickle, rmgpy.utilities, scoop.shared
+        
+        # Make a hash of everything that could alter the contents of the database once it is fully loaded.
+        # Then we can compare this hash to the cached file to see if the cache is valid.
+        database_metadata = {
+            'path': self.databaseDirectory,
+            'database hash': rmgpy.utilities.path_checksum([self.databaseDirectory]),
+            'thermoLibraries': self.thermoLibraries,
+            'reactionLibraries': [library for library, option in self.reactionLibraries],
+            'seedMechanisms': self.seedMechanisms,
+            'kineticsFamilies': self.kineticsFamilies,
+            'kineticsDepositories': self.kineticsDepositories,
+            #'frequenciesLibraries': self.statmechLibraries,
+            'kineticsEstimator': self.kineticsEstimator,
+            'rmgpy.data source hash': rmgpy.data.getSourceHash(),
+            'this source hash': hashlib.sha1(inspect.getsource(self.__class__)).hexdigest(),
+            }
+        database_hash = hashlib.sha1(cPickle.dumps(database_metadata)).hexdigest()
+        cache_hash_file = os.path.join(self.outputDirectory,'database.hash')
+        cache_pickle_file = os.path.join(self.outputDirectory,'database.pkl')
+        scoop.shared.setConst(databaseFile=cache_pickle_file, databaseHash=database_hash)
+        if not os.path.exists(cache_pickle_file):
+            logging.info("Couldn't find a database cache file {0!r} so will reload from source.".format(cache_pickle_file))
+        elif not os.path.exists(cache_hash_file):
+            logging.info("Couldn't find database cache hash file {0!r} to validate cache so will reload from source.".format(cache_hash_file))
+        else:
+            if database_hash != open(cache_hash_file,'r').read():
+                logging.info("According to hash file, it looks like database cache is not valid. Will clear it and reload.")
+                os.unlink(cache_hash_file)
+                os.unlink(cache_pickle_file)
+            else:
+                logging.info("According to hash file, it looks like database cache is valid.")
+                database = cPickle.load(open(cache_pickle_file, 'rb'))
+                # Check the database from the pickle really does have the hash in the database.hash file.
+                if database.hash == database_hash:
+                    logging.info("Database loaded from {0} has correct hash. Will use this cache.".format(cache_pickle_file))
+                    self.database = database
+                    rmgpy.data.rmg.database = database # we need to store it in this module level variable too!
+                    return
+                else:
+                    logging.info("Database loaded from {0} has INCORRECT hash. Will clear the cache and reload.".format(cache_pickle_file))
+                    os.unlink(cache_hash_file)
+                    os.unlink(cache_pickle_file)
+
         self.database = RMGDatabase()
         self.database.load(
             path = self.databaseDirectory,
@@ -247,6 +308,84 @@ class RMG:
             logging.info('Filling in rate rules in kinetics families by averaging...')
             for family in self.database.kinetics.families.values():
                 family.fillKineticsRulesByAveragingUp()
+                
+        self.database.hash = database_hash # store the hash in the database so we can check it when it is next pickled.
+        logging.info("Saving database cache in {0!r}".format(cache_pickle_file))
+        self.database.saveToPickle(cache_pickle_file)
+        with open(cache_hash_file,'w') as f:
+            f.write(database_hash)
+        
+    def loadThermoDatabase(self):
+        """
+        Load the RMG Database.
+        
+        The data is loaded from self.databaseDirectory, according to settings in:
+        
+        * self.thermoLibraries
+        * self.reactionLibraries
+        * self.seedMechanisms
+        * self.kineticsFamilies
+        * self.kineticsDepositories
+         
+        If `self.kineticsEstimator == 'rate rules'` then the training set values are 
+        added and the blanks are filled in by averaging.
+        
+        If self.outputDirectory contains :file:`database.pkl` and :file:`database.hash` files then
+        these are checked for validity and used as a cache. Once loaded (and averages filled 
+        in if necessary) then a cache (pickle and hash) is saved.
+        """
+        import inspect, hashlib, cPickle, rmgpy.utilities, scoop.shared
+        
+        # Make a hash of everything that could alter the contents of the database once it is fully loaded.
+        # Then we can compare this hash to the cached file to see if the cache is valid.
+        database_metadata = {
+            'path': self.databaseDirectory,
+            'database hash': rmgpy.utilities.path_checksum([self.databaseDirectory]),
+            'thermoLibraries': self.thermoLibraries,
+            'rmgpy.data source hash': rmgpy.data.getSourceHash(),
+            'this source hash': hashlib.sha1(inspect.getsource(self.__class__)).hexdigest(),
+            }
+        database_hash = hashlib.sha1(cPickle.dumps(database_metadata)).hexdigest()
+        cache_hash_file = os.path.join(self.outputDirectory,'database.hash')
+        cache_pickle_file = os.path.join(self.outputDirectory,'database.pkl')
+        scoop.shared.setConst(databaseFile=cache_pickle_file, databaseHash=database_hash)
+        if not os.path.exists(cache_pickle_file):
+            logging.info("Couldn't find a database cache file {0!r} so will reload from source.".format(cache_pickle_file))
+        elif not os.path.exists(cache_hash_file):
+            logging.info("Couldn't find database cache hash file {0!r} to validate cache so will reload from source.".format(cache_hash_file))
+        else:
+            if database_hash != open(cache_hash_file,'r').read():
+                logging.info("According to hash file, it looks like database cache is not valid. Will clear it and reload.")
+                os.unlink(cache_hash_file)
+                os.unlink(cache_pickle_file)
+            else:
+                logging.info("According to hash file, it looks like database cache is valid.")
+                database = cPickle.load(open(cache_pickle_file, 'rb'))
+                # Check the database from the pickle really does have the hash in the database.hash file.
+                if database.hash == database_hash:
+                    logging.info("Database loaded from {0} has correct hash. Will use this cache.".format(cache_pickle_file))
+                    self.database = database
+                    rmgpy.data.rmg.database = database # we need to store it in this module level variable too!
+                    return
+                else:
+                    logging.info("Database loaded from {0} has INCORRECT hash. Will clear the cache and reload.".format(cache_pickle_file))
+                    os.unlink(cache_hash_file)
+                    os.unlink(cache_pickle_file)
+
+        self.database = RMGDatabase()
+        self.database.loadThermo(
+            path = os.path.join(self.databaseDirectory, 'thermo'),
+            thermoLibraries = self.thermoLibraries,
+            depository = False, # Don't bother loading the depository information, as we don't use it
+        )
+                
+        self.database.hash = database_hash # store the hash in the database so we can check it when it is next pickled.
+        logging.info("Saving database cache in {0!r}".format(cache_pickle_file))
+        self.database.saveToPickle(cache_pickle_file)
+        with open(cache_hash_file,'w') as f:
+            f.write(database_hash)
+        
+    
     
     def initialize(self, args):
         """
@@ -1044,7 +1183,7 @@ def initializeLog(verbose, log_file_name):
     logging.addLevelName(logging.ERROR, 'Error: ')
     logging.addLevelName(logging.WARNING, 'Warning: ')
     logging.addLevelName(logging.INFO, '')
-    logging.addLevelName(logging.DEBUG, '')
+    logging.addLevelName(logging.DEBUG, 'Debug:')
     logging.addLevelName(0, '')
 
     # Create formatter and add to console handler
