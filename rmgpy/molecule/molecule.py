@@ -74,7 +74,7 @@ class Atom(Vertex):
     e.g. ``atom.symbol`` instead of ``atom.element.symbol``.
     """
 
-    def __init__(self, element=None, radicalElectrons=0, spinMultiplicity=1, charge=0, label='', lonePairs=0):
+    def __init__(self, element=None, radicalElectrons=0, spinMultiplicity=1, charge=0, label='', lonePairs=0, coords=None):
         Vertex.__init__(self)
         if isinstance(element, str):
             self.element = elements.__dict__[element]
@@ -86,7 +86,7 @@ class Atom(Vertex):
         self.label = label
         self.atomType = None
         self.lonePairs = lonePairs
-        self.coords = list()
+        self.coords = coords
 
     def __str__(self):
         """
@@ -222,7 +222,8 @@ class Atom(Vertex):
         a.label = self.label
         a.atomType = self.atomType
         a.lonePairs = self.lonePairs
-        a.coords = self.coords[:]
+        if self.coords is not None:
+            a.coords = self.coords[:]
         return a
 
     def isHydrogen(self):
