@@ -134,6 +134,16 @@ class Mopac:
             cclibData = parser.parse()
             cclibMol = Molecule()
             cclibMol.fromXYZ(cclibData.atomnos, cclibData.atomcoords[-1])
+            testMol = self.molecule.toSingleBonds()
+            
+            if cclibMol.isIsomorphic(testMol):
+                logging.info("Successful MOPAC quantum result found in {0}".format(self.outputFilePath))
+                # " + self.molfile.name + " ("+self.molfile.InChIAug+") has been found. This log file will be used.")
+                return True
+            else:
+                logging.info("Incorrect connectivity for optimized geometry in file {0}".format(self.outputFilePath))
+                # " + self.molfile.name + " ("+self.molfile.InChIAug+") has been found. This log file will be used.")
+                return False
         
         #InChIs do not match (most likely due to limited name length mirrored in log file (240 characters), but possibly due to a collision)
         return self.checkForInChiKeyCollision(logFileInChI) # Not yet implemented!

@@ -1176,6 +1176,29 @@ class Molecule(Graph):
             atom.coords = coordinates[i]
             self.addAtom(atom)
         return self.connectTheDots()
+    
+    def toSingleBonds(self):
+        """
+        Returns a copy of the current molecule, consisting of only single bonds.
+        
+        This is useful for isomorphism comparison against something that was made
+        via fromXYZ, which does not attempt to perceive bond orders
+        """
+        cython.declare(atom1=Atom, atom2=Atom, bond=Bond, newMol=Molecule, atoms=list)
+    
+        newMol = Molecule()
+        atoms = self.atoms
+        mapping = {}
+        for atom1 in atoms:
+            atom2 = newMol.addAtom(Atom(atom1.element))
+            mapping[atom1] = atom2
+    
+        for atom1 in atoms:
+            for atom2 in atom1.bonds:
+                bond = Bond(mapping[atom1], mapping[atom2], 'S')
+                newMol.addBond(bond)
+        newMol.updateAtomTypes()
+        return newMol
 
     def toInChI(self):
         """
