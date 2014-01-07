@@ -249,6 +249,7 @@ class TestTransportDatabase(unittest.TestCase):
         self.testCases = [
             ['acetone', 'CC(=O)C', Length(5.36421, 'angstroms'), Energy(3.20446, 'kJ/mol'), "Epsilon & sigma estimated with Tc=500.53 K, Pc=47.11 bar (from Joback method)"],
             ['cyclopenta-1,2-diene', 'C1=C=CCC1', None, None, None],  # not sure what to expect, we just want to make sure it doesn't crash
+            ['benzene', 'c1ccccc1', None, None, None],
             ]
         for name, smiles, sigma, epsilon, comment in self.testCases:
             species = Species(molecule=[Molecule(SMILES=smiles)])
@@ -262,6 +263,20 @@ class TestTransportDatabase(unittest.TestCase):
             if epsilon:
                 self.assertAlmostEqual(transportData.epsilon.value_si, epsilon.value_si, 1)
 
+    def testJobackOnBenzeneBonds(self):
+        "Test Joback doesn't crash on Cb desription of beneze"
+        adjlist = """
+                    1 C 0 {2,B} {6,B}
+                    2 C 0 {1,B} {3,B}
+                    3 C 0 {2,B} {4,B}
+                    4 C 0 {3,B} {5,B}
+                    5 C 0 {4,B} {6,B}
+                    6 C 0 {1,B} {5,B}
+                    """
+        m = Molecule().fromAdjacencyList(adjlist)
+        species = Species(molecule=[m])
+        transportData, blank, blank2 = self.transportdb.getTransportPropertiesViaGroupEstimates(species)
+        self.assertIsNotNone(transportData)
 
 if __name__ == '__main__':
     unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))

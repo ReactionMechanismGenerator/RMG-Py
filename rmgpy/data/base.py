@@ -644,7 +644,7 @@ class Database:
             for entry in entries:
                 f.write(entry.label + '\n')
                 if isinstance(entry.item, Molecule):
-                    f.write(entry.item.toAdjacencyList(removeH=True) + '\n')
+                    f.write(entry.item.toAdjacencyList(removeH=False) + '\n')
                 elif isinstance(entry.item, Group):
                     f.write(entry.item.toAdjacencyList().replace('{2S,2T}','2') + '\n')
                 elif isinstance(entry.item, LogicOr):
@@ -663,7 +663,7 @@ class Database:
             for entry in entriesNotInTree:
                 f.write(comment(entry.label + '\n'))
                 if isinstance(entry.item, Molecule):
-                    f.write(comment(entry.item.toAdjacencyList(removeH=True) + '\n'))
+                    f.write(comment(entry.item.toAdjacencyList(removeH=False) + '\n'))
                 elif isinstance(entry.item, Group):
                     f.write(comment(entry.item.toAdjacencyList().replace('{2S,2T}','2') + '\n'))
                 elif isinstance(entry.item, LogicOr):
@@ -869,7 +869,8 @@ class Database:
                 # Make sure labels actually point to atoms.
                 if center is None or atom is None:
                     return False
-                if isinstance(center, list): center = center[0]
+                if isinstance(center, list):
+                    center = center[0]
                 # Semantic check #1: atoms with same label are equivalent
                 elif not atom.isSpecificCaseOf(center):
                     return False
@@ -922,7 +923,7 @@ class Database:
                 return None
         elif not self.matchNodeToStructure(root, structure, atoms):
             return None
-
+        
         next = []
         for child in root.children:
             if self.matchNodeToStructure(child, structure, atoms):
@@ -1146,6 +1147,14 @@ class ForbiddenStructures(Database):
                 initialMap[moleculeLabeledAtoms[label]] = entryLabeledAtoms[label]
             if molecule.isMappingValid(entry.item, initialMap) and molecule.isSubgraphIsomorphic(entry.item, initialMap):
                 return True
+            
+        # Until we have more thermodynamic data of molecular ions we will forbid them
+        molecule_charge = 0
+        for atom in molecule.atoms:
+            molecule_charge += atom.charge
+        if molecule_charge != 0:
+            return True
+        
         return False
     
     def loadOld(self, path):
@@ -1201,7 +1210,7 @@ class ForbiddenStructures(Database):
         if isinstance(entry.item, Molecule):
             f.write('    molecule = \n')
             f.write('"""\n')
-            f.write(entry.item.toAdjacencyList(removeH=True))
+            f.write(entry.item.toAdjacencyList(removeH=False))
             f.write('""",\n')
         elif isinstance(entry.item, Group):
             f.write('    group = \n')

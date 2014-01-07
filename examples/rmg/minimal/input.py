@@ -4,7 +4,7 @@ database(
     reactionLibraries = [],
     seedMechanisms = [],
     kineticsDepositories = ['training'],
-    kineticsFamilies = ['!Intra_Disproportionation'],
+    kineticsFamilies = ['!Intra_Disproportionation','!Substitution_O'],
     kineticsEstimator = 'rate rules',
 )
 
@@ -26,10 +26,6 @@ simpleReactor(
         'ethane': 0.9,
     },
     terminationTime=(1e6,'s'),
-)
-
-solvation(
-	solvent='water'
 )
 
 simulator(

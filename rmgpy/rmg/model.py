@@ -144,7 +144,7 @@ class Species(rmgpy.species.Species):
                     with open('thermoHBIcheck.txt','a') as f:
                         f.write('// {0!r}\n'.format(thermo0).replace('),','),\n//           '))
                         f.write('{0}\n'.format(molecule.toSMILES()))
-                        f.write('{0}\n\n'.format(molecule.toAdjacencyList(removeH=True)))
+                        f.write('{0}\n\n'.format(molecule.toAdjacencyList(removeH=False)))
                 else: # Not too many radicals: do a direct calculation.
                     thermo0 = quantumMechanics.getThermoData(molecule) # returns None if it fails
                 
@@ -187,7 +187,7 @@ class Species(rmgpy.species.Species):
 
         # Add on solvation correction
         if Species.solventData:
-            logging.info("Making solvent correction for {0}".format(Species.solventName))
+            #logging.info("Making solvent correction for {0}".format(Species.solventName))
             soluteData = database.solvation.getSoluteData(self)
             solvation_correction = database.solvation.getSolvationCorrection(soluteData, Species.solventData)
             # correction is added to the entropy and enthalpy
@@ -1285,6 +1285,7 @@ class CoreEdgeReactionModel:
             r, isNew = self.makeNewReaction(rxn) # updates self.newSpeciesList and self.newReactionlist
         for spec in self.newSpeciesList:
             if spec.reactive: spec.generateThermoData(database, quantumMechanics=self.quantumMechanics)
+            spec.generateTransportData(database)
         for spec in self.newSpeciesList:
             self.addSpeciesToCore(spec)
 
@@ -1334,6 +1335,7 @@ class CoreEdgeReactionModel:
             if not isNew: logging.info("This library reaction was not new: {0}".format(rxn))
         for spec in self.newSpeciesList:
             if spec.reactive: spec.generateThermoData(database, quantumMechanics=self.quantumMechanics)
+            spec.generateTransportData(database)
         for spec in self.newSpeciesList:
             self.addSpeciesToEdge(spec)
 
@@ -1660,9 +1662,24 @@ class CoreEdgeReactionModel:
         from rmgpy.chemkin import saveChemkinFile, saveSpeciesDictionary, saveTransportFile
         speciesList = self.core.species + self.outputSpeciesList
         rxnList = self.core.reactions + self.outputReactionList
-        saveChemkinFile(path, speciesList, rxnList, verbose = False, checkForDuplicates=False) # We should already have marked everything as duplicates by now
+        saveChemkinFile(path, speciesList, rxnList, verbose = False, checkForDuplicates=False) # We should already have marked everything as duplicates by now        
+        logging.info('Saving current model to verbose Chemkin file...')
         saveChemkinFile(verbose_path, speciesList, rxnList, verbose = True, checkForDuplicates=False)
         if dictionaryPath:
             saveSpeciesDictionary(dictionaryPath, speciesList)
         if transportPath:
             saveTransportFile(transportPath, speciesList)
+            
+    def saveChemkinFileEdge(self, path, verbose_path, dictionaryPath=None):
+        """
+        Save a Chemkin file for the current model edge as well as any desired output
+        species and reactions to `path`.
+        """
+        from rmgpy.chemkin import saveChemkinFile, saveSpeciesDictionaryEdge
+        speciesList = self.edge.species + self.outputSpeciesList
+        rxnList = self.edge.reactions + self.outputReactionList
+        saveChemkinFile(path, speciesList, rxnList, verbose = False)        
+        logging.info('Saving current edge to verbose Chemkin file...')
+        saveChemkinFile(verbose_path, speciesList, rxnList, verbose = True)
+        if dictionaryPath:
+            saveSpeciesDictionaryEdge(dictionaryPath, speciesList)

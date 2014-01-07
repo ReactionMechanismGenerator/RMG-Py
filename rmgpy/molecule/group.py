@@ -66,6 +66,7 @@ class GroupAtom(Vertex):
     `charge`            ``list``            The allowed formal charges (as short integers)
     `label`             ``str``             A string label that can be used to tag individual atoms
     `coords`            ``numpy array``     The (x,y,z) coordinates in Angstrom
+    `lonePairs`         ``list``            The number of lone electron pairs
     =================== =================== ====================================
 
     Each list represents a logical OR construct, i.e. an atom will match the
@@ -75,7 +76,7 @@ class GroupAtom(Vertex):
     order to match.
     """
 
-    def __init__(self, atomType=None, radicalElectrons=None, spinMultiplicity=None, charge=None, label='', coords=None):
+    def __init__(self, atomType=None, radicalElectrons=None, spinMultiplicity=None, charge=None, label='', lonePairs=None, coords=None):
         Vertex.__init__(self)
         self.atomType = atomType or []
         for index in range(len(self.atomType)):
@@ -85,6 +86,7 @@ class GroupAtom(Vertex):
         self.spinMultiplicity = spinMultiplicity or []
         self.charge = charge or []
         self.label = label
+        self.lonePairs = lonePairs or []
         self.coords = coords
 
     def __reduce__(self):
@@ -101,7 +103,7 @@ class GroupAtom(Vertex):
         atomType = self.atomType
         if atomType is not None:
             atomType = [a.label for a in atomType]
-        return (GroupAtom, (atomType, self.radicalElectrons, self.spinMultiplicity, self.charge, self.label), d)
+        return (GroupAtom, (atomType, self.radicalElectrons, self.spinMultiplicity, self.charge, self.label, self.lonePairs), d)
 
     def __setstate__(self, d):
         """
@@ -230,6 +232,34 @@ class GroupAtom(Vertex):
         # Set the new radical electron counts and spin multiplicities
         self.radicalElectrons = radicalElectrons
         self.spinMultiplicity = spinMultiplicity
+        
+    def __gainPair(self, pair):
+        """
+        Update the atom group as a result of applying a GAIN_PAIR action,
+        where `pair` specifies the number of lone electron pairs to add.
+        """
+        lonePairs = []
+        if any([len(atomType.incrementLonePair) == 0 for atomType in self.atomType]):
+            raise ActionError('Unable to update GroupAtom due to GAIN_PAIR action: Unknown atom type produced from set "{0}".'.format(self.atomType))
+        for lonePairs in zip(self.lonePairs):
+            lonePairs.append(lonePairs + pair)
+        # Set the new lone electron pair count
+        self.lonePairs = lonePairs
+        
+    def __losePair(self, pair):
+        """
+        Update the atom group as a result of applying a LOSE_PAIR action,
+        where `pair` specifies the number of lone electron pairs to remove.
+        """
+        lonePairs = []
+        if any([len(atomType.decrementLonePair) == 0 for atomType in self.atomType]):
+            raise ActionError('Unable to update GroupAtom due to LOSE_PAIR action: Unknown atom type produced from set "{0}".'.format(self.atomType))
+        for lonePairs in zip(self.lonePairs):
+            if lonePairs - pair < 0:
+                raise ActionError('Unable to update GroupAtom due to LOSE_PAIR action: Invalid lone electron pairs set "{0}".'.format(self.lonePairs))
+            lonePairs.append(lonePairs - pair)
+        # Set the new lone electron pair count
+        self.lonePairs = lonePairs
 
     def applyAction(self, action):
         """
@@ -249,6 +279,10 @@ class GroupAtom(Vertex):
             self.__gainRadical(action[2])
         elif act == 'LOSE_RADICAL':
             self.__loseRadical(action[2])
+        elif action[0].upper() == 'GAIN_PAIR':
+            self.__gainPair(action[2])
+        elif action[0].upper() == 'LOSE_PAIR':
+            self.__losePair(action[2])
         else:
             raise ActionError('Unable to update GroupAtom: Invalid action {0}".'.format(action))
 
@@ -700,28 +734,33 @@ class Group(Graph):
         isomorphism checks.
         """
         cython.declare(atom=GroupAtom, atomType=AtomType)
-        cython.declare(carbon=AtomType, oxygen=AtomType, sulfur=AtomType)
-        cython.declare(isCarbon=cython.bint, isOxygen=cython.bint, isSulfur=cython.bint, radical=cython.int)
+        cython.declare(carbon=AtomType, nitrogen=AtomType, oxygen=AtomType, sulfur=AtomType)
+        cython.declare(isCarbon=cython.bint, isNitrogen=cython.bint, isOxygen=cython.bint, isSulfur=cython.bint, radical=cython.int)
         
-        carbon = atomTypes['C']
-        oxygen = atomTypes['O']
-        sulfur = atomTypes['S']
+        carbon   = atomTypes['C']
+        nitrogen = atomTypes['N']
+        oxygen   = atomTypes['O']
+        sulfur   = atomTypes['S']
         
-        self.carbonCount = 0
-        self.oxygenCount = 0
-        self.sulfurCount = 0
-        self.radicalCount = 0
+        self.carbonCount   = 0
+        self.nitrogenCount = 0
+        self.oxygenCount   = 0
+        self.sulfurCount   = 0
+        self.radicalCount  = 0
         for atom in self.vertices:
             if len(atom.atomType) == 1:
-                atomType = atom.atomType[0]
-                isCarbon = atomType.equivalent(carbon)
-                isOxygen = atomType.equivalent(oxygen)
-                isSulfur = atomType.equivalent(sulfur)
-                if isCarbon and not isOxygen and not isSulfur:
+                atomType   = atom.atomType[0]
+                isCarbon   = atomType.equivalent(carbon)
+                isNitrogen = atomType.equivalent(nitrogen)
+                isOxygen   = atomType.equivalent(oxygen)
+                isSulfur   = atomType.equivalent(sulfur)
+                if isCarbon and not isNitrogen and not isOxygen and not isSulfur:
                     self.carbonCount += 1
-                elif isOxygen and not isCarbon and not isSulfur:
+                elif isNitrogen and not isCarbon and not isOxygen and not isSulfur:
+                    self.nitrogenCount += 1
+                elif isOxygen and not isCarbon and not isNitrogen and not isSulfur:
                     self.oxygenCount += 1
-                elif isSulfur and not isCarbon and not isOxygen:
+                elif isSulfur and not isCarbon and not isNitrogen and not isOxygen:
                     self.sulfurCount += 1
             if len(atom.radicalElectrons) == 1:
                 radical = atom.radicalElectrons[0]

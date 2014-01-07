@@ -185,9 +185,22 @@ class MopacMol(QMMolecule, Mopac):
             return False
         
         if InChIMatch:
-            logging.info("Successful MOPAC quantum result found in {0}".format(self.outputFilePath))
-            # " + self.molfile.name + " ("+self.molfile.InChIAug+") has been found. This log file will be used.")
-            return True
+            # Compare the optimized geometry to the original molecule
+            parser = cclib.parser.Mopac(self.outputFilePath)
+            parser.logger.setLevel(logging.ERROR) #cf. http://cclib.sourceforge.net/wiki/index.php/Using_cclib#Additional_information
+            cclibData = parser.parse()
+            cclibMol = Molecule()
+            cclibMol.fromXYZ(cclibData.atomnos, cclibData.atomcoords[-1])
+            testMol = self.molecule.toSingleBonds()
+            
+            if cclibMol.isIsomorphic(testMol):
+                logging.info("Successful MOPAC quantum result found in {0}".format(self.outputFilePath))
+                # " + self.molfile.name + " ("+self.molfile.InChIAug+") has been found. This log file will be used.")
+                return True
+            else:
+                logging.info("Incorrect connectivity for optimized geometry in file {0}".format(self.outputFilePath))
+                # " + self.molfile.name + " ("+self.molfile.InChIAug+") has been found. This log file will be used.")
+                return False
         
         #InChIs do not match (most likely due to limited name length mirrored in log file (240 characters), but possibly due to a collision)
         return self.checkForInChiKeyCollision(logFileInChI) # Not yet implemented!
@@ -207,6 +220,10 @@ class MopacMol(QMMolecule, Mopac):
         """
         Calculate the QM data and return a QMData object, or None if it fails.
         """
+        for atom in self.molecule.vertices:
+            if atom.atomType.label == 'N5s' or atom.atomType.label == 'N5d' or atom.atomType.label =='N5dd' or atom.atomType.label == 'N5t' or atom.atomType.label == 'N5b':
+                return None
+
         if self.verifyOutputFile():
             logging.info("Found a successful output file already; using that.")
             source = "QM MOPAC result file found from previous run."

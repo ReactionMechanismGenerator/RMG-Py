@@ -707,6 +707,20 @@ class RMG:
             os.unlink(latest_chemkin_path)
         shutil.copy2(this_chemkin_path,latest_chemkin_path)
         
+    def saveChemkinFileEdge(self):
+        """
+        Save the current reaction edge to a Chemkin file.
+        """        
+        logging.info('Saving current edge to Chemkin file...')
+        this_chemkin_path = os.path.join(self.outputDirectory, 'chemkin', 'chem_edge%04i.inp' % len(self.reactionModel.core.species))
+        latest_chemkin_path = os.path.join(self.outputDirectory, 'chemkin','chem_edge.inp')
+        latest_chemkin_verbose_path = os.path.join(self.outputDirectory, 'chemkin', 'chem_edge_annotated.inp')
+        latest_dictionary_path = os.path.join(self.outputDirectory, 'chemkin','species_edge_dictionary.txt')
+        self.reactionModel.saveChemkinFileEdge(this_chemkin_path, latest_chemkin_verbose_path, latest_dictionary_path)
+        if os.path.exists(latest_chemkin_path):
+            os.unlink(latest_chemkin_path)
+        shutil.copy2(this_chemkin_path,latest_chemkin_path)
+        
     def saveRestartFile(self, path, reactionModel, delay=0):
         """
         Save a restart file to `path` on disk containing the contents of the

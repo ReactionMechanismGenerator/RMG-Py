@@ -289,7 +289,7 @@ class MEASURE:
         from collision import SingleExponentialDown
         from rmgpy.species import Species, TransitionState
         from rmgpy.reaction import Reaction
-        from rmgpy.species import LennardJones
+        from rmgpy.transport import TransportData
         from rmgpy.statmech import HarmonicOscillator, HinderedRotor, StatesModel
         from rmgpy.thermo import ThermoData
         from rmgpy.kinetics import Arrhenius
@@ -377,7 +377,7 @@ class MEASURE:
         bathGas.molecularWeight = Quantity(float(molWt), molWtunits)
         sigmaLJunits, sigmaLJ = readMeaningfulLine(f).split()
         epsilonLJunits, epsilonLJ = readMeaningfulLine(f).split()
-        bathGas.lennardJones = LennardJones(
+        bathGas.transportData = TransportData(
             sigma = Quantity(float(sigmaLJ), sigmaLJunits),
             epsilon = Quantity(float(epsilonLJ), epsilonLJunits),
         )
@@ -418,7 +418,7 @@ class MEASURE:
             species.molecularWeight = Quantity(float(molWt), molWtunits)
             sigmaLJunits, sigmaLJ = readMeaningfulLine(f).split()
             epsilonLJunits, epsilonLJ = readMeaningfulLine(f).split()
-            species.lennardJones = LennardJones(
+            species.transportData = TransportData(
                 sigma = Quantity(float(sigmaLJ), sigmaLJunits),
                 epsilon = Quantity(float(epsilonLJ), epsilonLJunits),
             )

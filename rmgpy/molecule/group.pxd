@@ -38,6 +38,7 @@ cdef class GroupAtom(Vertex):
     cdef public list charge
     cdef public str label
     cdef public numpy.ndarray coords
+    cdef public list lonePairs
 
     cpdef Vertex copy(self)
 
@@ -50,6 +51,10 @@ cdef class GroupAtom(Vertex):
     cpdef __gainRadical(self, short radical)
 
     cpdef __loseRadical(self, short radical)
+    
+    cpdef __gainPair(self, short radical)
+
+    cpdef __losePair(self, short radical)
 
     cpdef applyAction(self, list action)
 
@@ -80,6 +85,7 @@ cdef class Group(Graph):
     # These read-only attribues act as a "fingerprint" for accelerating
     # subgraph isomorphism checks
     cdef public short carbonCount
+    cdef public short nitrogenCount
     cdef public short oxygenCount
     cdef public short sulfurCount
     cdef public short radicalCount

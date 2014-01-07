@@ -522,9 +522,12 @@ class TestMolecule(unittest.TestCase):
     
     def setUp(self):
         self.adjlist = """
-1 *2 C 1 {2,D} {3,S}
-2 *1 O 0 {1,D}
-3    C 0 {1,S}
+1 *2 C 1 0 {2,D} {3,S}
+2 *1 O 0 2 {1,D}
+3    C 0 0 {1,S} {4,S} {5,S} {6,S}
+4    H 0 0 {3,S}
+5    H 0 0 {3,S}
+6    H 0 0 {3,S}
             """
         self.molecule = Molecule().fromAdjacencyList(self.adjlist)
         
@@ -629,7 +632,7 @@ class TestMolecule(unittest.TestCase):
         """
         Test the Molecule.toAdjacencyList() method.
         """
-        adjlist = self.molecule.toAdjacencyList(removeH=True)
+        adjlist = self.molecule.toAdjacencyList(removeH=False)
         self.assertEqual(adjlist.strip(), self.adjlist.strip())
         
     def testToSingleBonds(self):
@@ -718,16 +721,22 @@ class TestMolecule(unittest.TestCase):
     def testSubgraphIsomorphismManyLabels(self):
         molecule = Molecule() # specific case (species)
         molecule.fromAdjacencyList("""
-1 *1 C  1 {2,S} {3,S}
-2    C  0 {1,S} {3,S}
-3    C  0 {1,S} {2,S}
+1 *1 C  1 {2,S} {3,S} {4,S}
+2    C  0 {1,S} {3,S} {5,S} {6,S}
+3    C  0 {1,S} {2,S} {7,S} {8,S}
+4    H  0 {1,S}
+5    H  0 {2,S}
+6    H  0 {2,S}
+7    H  0 {3,S}
+8    H  0 {3,S}
         """)
+        print molecule.toAdjacencyList()
 
         group = Group() # general case (functional group)
         group.fromAdjacencyList("""
-1 *1 C 1 {2,S}, {3,S}
-2    R 0 {1,S}
-3    R 0 {1,S}
+1 *1 C   1 {2,S}, {3,S}
+2    R!H 0 {1,S}
+3    R!H 0 {1,S}
         """)
 
         labeled1 = molecule.getLabeledAtoms()
@@ -738,7 +747,7 @@ class TestMolecule(unittest.TestCase):
         self.assertTrue(molecule.isSubgraphIsomorphic(group, initialMap))
 
         mapping = molecule.findSubgraphIsomorphisms(group, initialMap)
-        self.assertEqual(len(mapping), 1)
+        self.assertEqual(len(mapping), 2)
         for map in mapping:
             self.assertTrue(len(map) == min(len(molecule.atoms), len(group.atoms)))
             for key, value in map.iteritems():
@@ -750,12 +759,21 @@ class TestMolecule(unittest.TestCase):
         Check the adjacency list read/write functions for a full molecule.
         """
         molecule1 = Molecule().fromAdjacencyList("""
-        1 C 0       {2,D}
-        2 C 0 {1,D} {3,S}
-        3 C 0 {2,S} {4,D}
-        4 C 0 {3,D} {5,S}
-        5 C 1 {4,S} {6,S}
-        6 C 0 {5,S}
+        1 C 0       {2,D} {7,S} {8,S}
+        2 C 0 {1,D} {3,S} {9,S}
+        3 C 0 {2,S} {4,D} {10,S}
+        4 C 0 {3,D} {5,S} {11,S}
+        5 C 1 {4,S} {6,S} {12,S}
+        6 C 0 {5,S} {13,S} {14,S} {15,S}
+        7 H 0 {1,S}
+        8 H 0 {1,S}
+        9 H 0 {2,S}
+        10 H 0 {3,S}
+        11 H 0 {4,S}
+        12 H 0 {5,S}
+        13 H 0 {6,S}
+        14 H 0 {6,S}
+        15 H 0 {6,S}
         """)
         molecule2 = Molecule().fromSMILES('C=CC=C[CH]C')
         self.assertTrue(molecule1.isIsomorphic(molecule2))

@@ -42,7 +42,8 @@ cdef class Atom(Vertex):
     cdef public str label
     cdef public AtomType atomType
     cdef public numpy.ndarray coords
-
+    cdef public short lonePairs
+    
     cpdef bint equivalent(self, Vertex other) except -2
 
     cpdef bint isSpecificCaseOf(self, Vertex other) except -2
@@ -60,6 +61,16 @@ cdef class Atom(Vertex):
     cpdef incrementRadical(self)
 
     cpdef decrementRadical(self)
+    
+    cpdef setLonePairs(self, int lonePairs)
+    
+    cpdef incrementLonePairs(self)
+    
+    cpdef decrementLonePairs(self)
+    
+    cpdef updateCharge(self)
+    
+    cpdef setSpinMultiplicity(self, int spinMultiplicity)
     
 ################################################################################
 
@@ -159,11 +170,9 @@ cdef class Molecule(Graph):
 
     cpdef fromRDKitMol(self, rdkitmol)
 
-    cpdef fromAdjacencyList(self, str adjlist)
+    cpdef fromAdjacencyList(self, str adjlist, bint saturateH=?)
     
     cpdef fromXYZ(self, numpy.ndarray atomicNums, numpy.ndarray coordinates)
-    
-    cpdef str toCML(self)
 
     cpdef str toInChI(self)
 
@@ -174,6 +183,8 @@ cdef class Molecule(Graph):
     cpdef str toAugmentedInChIKey(self)
 
     cpdef str toSMILES(self)
+
+#    cpdef tRDKitMol(self)
 
     cpdef toAdjacencyList(self, str label=?, bint removeH=?)
 
@@ -192,7 +203,15 @@ cdef class Molecule(Graph):
     cpdef list generateResonanceIsomers(self)
     
     cpdef list getAdjacentResonanceIsomers(self)
+    
+    cpdef list getLonePairRadicalResonanceIsomers(self)
+    
+    cpdef list getN5dd_N5tsResonanceIsomers(self)
 
     cpdef findAllDelocalizationPaths(self, Atom atom1)
+    
+    cpdef findAllDelocalizationPathsLonePairRadical(self, Atom atom1)
+    
+    cpdef findAllDelocalizationPathsN5dd_N5ts(self, Atom atom1)
 
     cpdef int calculateSymmetryNumber(self) except -1

@@ -1534,7 +1534,25 @@ def saveSpeciesDictionary(path, species):
     """
     with open(path, 'w') as f:
         for spec in species:
-            f.write(spec.molecule[0].toAdjacencyList(label=getSpeciesIdentifier(spec), removeH=True))
+            f.write(spec.molecule[0].toAdjacencyList(label=getSpeciesIdentifier(spec), removeH=False))
+            f.write('\n')
+            
+def saveSpeciesDictionaryEdge(path, species):
+    """
+    Save the given list of `species` as adjacency lists in a text file `path` 
+    on disk.
+    """
+    with open(path, 'w') as f:
+        for spec in species:
+            f.write(spec.molecule[0].toAdjacencyList(label=getSpeciesIdentifier(spec), removeH=False))
+            f.write('HF298: '+str(spec.getEnthalpy(298)/4.184/1000.0))
+            f.write('\n')
+            f.write('S298: '+str(spec.getEntropy(298)/4.184))
+            f.write('\n')
+            f.write('Cp300: '+str(spec.getHeatCapacity(300)/4.184))
+            f.write('\n')
+            f.write('Cp1500: '+str(spec.getHeatCapacity(1500)/4.184))
+            f.write('\n')
             f.write('\n')
 
 def saveTransportFile(path, species):
@@ -1558,10 +1576,9 @@ def saveTransportFile(path, species):
     (from the chemkin TRANSPORT manual)
     """
     with open(path, 'w') as f:
-        f.write("! {:15} {:8} {:9} {:9} {:9} {:9} {:9} {:9}\n".format('Species','Shape', 'LJ-depth', 'LJ-diam', 'DiplMom', 'Polzblty', 'RotRelaxNum','Data'))
-        f.write("! {:15} {:8} {:9} {:9} {:9} {:9} {:9} {:9}\n".format('Name','Index', 'epsilon/k_B', 'sigma', 'mu', 'alpha', 'Zrot','Source'))
-        for spec in species:
-            print spec.transportData
+        f.write("! {0:15} {1:8} {2:9} {3:9} {4:9} {5:9} {6:9} {7:9}\n".format('Species','Shape', 'LJ-depth', 'LJ-diam', 'DiplMom', 'Polzblty', 'RotRelaxNum','Data'))
+        f.write("! {0:15} {1:8} {2:9} {3:9} {4:9} {5:9} {6:9} {7:9}\n".format('Name','Index', 'epsilon/k_B', 'sigma', 'mu', 'alpha', 'Zrot','Source'))
+        for spec in species:            
             if (not spec.transportData or
                 len(spec.molecule) == 0):
                 missingData = True
@@ -1579,7 +1596,7 @@ def saveTransportFile(path, species):
                 shapeIndex = 2
             
             if missingData:
-                f.write('! {:19s} {!r}\n'.format(label, spec.transportData))
+                f.write('! {0:19s} {1!r}\n'.format(label, spec.transportData))
             else:
                 f.write('{0:19} {1:d}   {2:9.3f} {3:9.3f} {4:9.3f} {5:9.3f} {6:9.3f}    ! {7:s}\n'.format(
                     label,

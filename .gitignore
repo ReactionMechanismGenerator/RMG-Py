@@ -4,6 +4,9 @@
 #
 ################################################################################
 
+# MacOS files
+.DS_Store
+
 # Compiled Python modules
 *.pyc
 *.so
@@ -34,3 +37,7 @@ nbproject/*
 # Unit test files
 .coverage
 testing/*
+htmlcov/*
+
+# Quantum Mechanics temporary, cache, and result files
+QMfiles/*
