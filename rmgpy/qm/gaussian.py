@@ -193,15 +193,21 @@ class GaussianMol(QMMolecule, Gaussian):
     
     def generateQMData(self):
         """
-        Calculate the QM data and return a QMData object.
+        Calculate the QM data and return a QMData object, or None if it fails.
         """
-        self.createGeometry()
+        for atom in self.molecule.vertices:
+            if atom.atomType.label == 'N5s' or atom.atomType.label == 'N5d' or atom.atomType.label =='N5dd' or atom.atomType.label == 'N5t' or atom.atomType.label == 'N5b':
+                return None
+                
         if self.verifyOutputFile():
             logging.info("Found a successful output file already; using that.")
+            source = "QM Gaussian result file found from previous run."
         else:
+            self.createGeometry()
             success = False
             for attempt in range(1, self.maxAttempts+1):
                 self.writeInputFile(attempt)
+                logging.info('Trying {3} attempt {0} of {1} on molecule {2}.'.format(attempt, self.maxAttempts, self.molecule.toSMILES(), self.__class__.__name__))
                 success = self.run()
                 if success:
                     logging.info('Attempt {0} of {1} on species {2} succeeded.'.format(attempt, self.maxAttempts, self.molecule.toAugmentedInChI()))
@@ -210,7 +216,8 @@ class GaussianMol(QMMolecule, Gaussian):
                 logging.error('QM thermo calculation failed for {0}.'.format(self.molecule.toAugmentedInChI()))
                 return None
         result = self.parse() # parsed in cclib
-        return result
+        result.source = source
+        return result # a CCLibData object
     
 
 
@@ -328,6 +335,56 @@ class GaussianMolMP2(GaussianMol):
                "# mp2 opt=(verytight,gdiis,calcall,small,maxcyc=200) IOP(2/16=3) IOP(4/21=2) nosymm",
                "# mp2 opt=(verytight,gdiis,calcall,small) IOP(2/16=3) nosymm",
                "# mp2 opt=(calcall,small,maxcyc=100) IOP(2/16=3)",
+               ]
+
+    @property
+    def scriptAttempts(self):
+        "The number of attempts with different script keywords"
+        return len(self.keywords)
+
+    @property
+    def maxAttempts(self):
+        "The total number of attempts to try"
+        return 2 * len(self.keywords)
+
+    def inputFileKeywords(self, attempt):
+        """
+        Return the top keywords for attempt number `attempt`.
+
+        NB. `attempt`s begin at 1, not 0.
+        """
+        assert attempt <= self.maxAttempts
+        if attempt > self.scriptAttempts:
+            attempt -= self.scriptAttempts
+        return self.keywords[attempt-1]
+
+class GaussianMolB3LYP(GaussianMol):
+    """
+    For use with the automated transition state estimator. This will find the
+    stable species geomtries when required for TST rate calculation.
+    """
+
+    #: Keywords that will be added at the top of the qm input file
+    # removed 'gdiis' from the keywords; http://www.gaussian.com/g_tech/g_ur/d_obsolete.htm
+    keywords = [
+               "# b3lyp/6-31+g(d,p) opt=(verytight) freq IOP(2/16=3)",
+               "# b3lyp/6-31+g(d,p) opt=(verytight) freq IOP(2/16=3) IOP(4/21=2)",
+               "# b3lyp/6-31+g(d,p) opt=(verytight,calcfc,maxcyc=200) freq IOP(2/16=3) nosymm" ,
+               "# b3lyp/6-31+g(d,p) opt=(verytight,calcfc,maxcyc=200) freq=numerical IOP(2/16=3) nosymm",
+               "# b3lyp/6-31+g(d,p) opt=(verytight,small) freq IOP(2/16=3)",
+               "# b3lyp/6-31+g(d,p) opt=(verytight,nolinear,calcfc,small) freq IOP(2/16=3)",
+               "# b3lyp/6-31+g(d,p) opt=(verytight,maxcyc=200) freq=numerical IOP(2/16=3)",
+               "# b3lyp/6-31+g(d,p) opt=tight freq IOP(2/16=3)",
+               "# b3lyp/6-31+g(d,p) opt=tight freq=numerical IOP(2/16=3)",
+               "# b3lyp/6-31+g(d,p) opt=(tight,nolinear,calcfc,small,maxcyc=200) freq IOP(2/16=3)",
+               "# b3lyp/6-31+g(d,p) opt freq IOP(2/16=3)",
+               "# b3lyp/6-31+g(d,p) opt=(verytight,gdiis) freq=numerical IOP(2/16=3) IOP(4/21=200)",
+               "# b3lyp/6-31+g(d,p) opt=(calcfc,verytight,newton,notrustupdate,small,maxcyc=100,maxstep=100) freq=(numerical,step=10) IOP(2/16=3) nosymm",
+               "# b3lyp/6-31+g(d,p) opt=(tight,small,maxcyc=200,maxstep=100) freq=numerical IOP(2/16=3) nosymm",
+               "# b3lyp/6-31+g(d,p) opt=(tight,small,maxcyc=200,maxstep=100) freq=numerical IOP(2/16=3) nosymm",
+               "# b3lyp/6-31+g(d,p) opt=(verytight,gdiis,calcall,small,maxcyc=200) IOP(2/16=3) IOP(4/21=2) nosymm",
+               "# b3lyp/6-31+g(d,p) opt=(verytight,gdiis,calcall,small) IOP(2/16=3) nosymm",
+               "# b3lyp/6-31+g(d,p) opt=(calcall,small,maxcyc=100) IOP(2/16=3)",
                ]
 
     @property
@@ -723,3 +780,13 @@ class GaussianTSB3LYP(GaussianTS):
     This needs some work, to determine options that are best used. Commented out the
     methods for now.
     """
+    
+    def getQMMolecule(self, molecule):
+        """
+        The TST calculation must use the same electronic structure and basis set for the
+        reactant species as the transition state. This method will ensure this by creating
+        and returning the corresponding QMMolecule from the child class GaussianMolB3LYP.
+        """
+        
+        qmMolecule = GaussianMolB3LYP(molecule, self.settings)
+        return qmMolecule

@@ -7,12 +7,12 @@ from copy import deepcopy
 import numpy
 
 from rmgpy.molecule import Molecule
-from rmgpy.species import TransitionState
+from rmgpy.species import Species, TransitionState
+from rmgpy.kinetics import Wigner
 from molecule import QMMolecule, Geometry
-from collections import defaultdict
-from rmgpy.data.base import Entry
-from rmgpy.data.kinetics import KineticsFamily, ReactionRecipe, saveEntry
-from rmgpy.data.kinetics.transitionstates import TransitionStates, DistanceData
+from rmgpy.cantherm.gaussian import GaussianLog
+from rmgpy.cantherm.kinetics import KineticsJob
+from rmgpy.data.kinetics.transitionstates import TransitionStates
 
 try:
     import rdkit
@@ -159,7 +159,7 @@ class QMReaction:
             
         return bm, labels, atomMatch
         
-    def generateGeometry(self):
+    def generateTSGeometry(self):
         """
         
         """
@@ -200,6 +200,7 @@ class QMReaction:
                     converged = self.run()
                 
                 if converged:
+                    
                     self.inputFilePath = self.inputFilePath.split('.')[0] + 'IRC' + self.inputFileExtension
                     self.outputFilePath = self.outputFilePath.split('.')[0] + 'IRC' + self.outputFileExtension
                     if not os.path.exists(self.outputFilePath):
@@ -208,4 +209,50 @@ class QMReaction:
                     else:
                         rightTS = self.verifyIRCOutputFile()
                     if rightTS:
+                        self.inputFilePath = self.inputFilePath.split('IRC')[0] + self.inputFileExtension
+                        self.outputFilePath = self.outputFilePath.split('IRC')[0]+ self.outputFileExtension
                         self.writeRxnOutputFile(labels)
+                        return True
+                    else:
+                        return False
+    
+    def calculateKinetics(self):
+        # provides transitionstate geometry
+        tsFound = self.generateTSGeometry()
+        if tsFound:
+            reactants = []
+            products = []
+            for reactant in self.reaction.reactants:
+                qmMolecule = self.getQMMolecule(reactant)
+                result = qmMolecule.generateQMData()
+                if result:
+                    spec = GaussianLog(qmMolecule.outputFilePath())
+                    species = Species(label=qmMolecule.uniqueID, conformer=spec.loadConformer())
+                    reactants.append(species)
+            for product in self.reaction.products:
+                qmMolecule = self.getQMMolecule(product)
+                result = qmMolecule.generateQMData()
+                if result:
+                    spec = GaussianLog(qmMolecule.outputFilePath())
+                    species = Species(label=qmMolecule.uniqueID, conformer=spec.loadConformer())
+                    products.append(species)
+            
+            if len(reactants)==len(self.reaction.reactants) and len(products)==len(self.reaction.products):
+                spec = GaussianLog(self.outputFilePath())
+                ts = TransitionState(label=self.uniqueID + 'TS')
+                ts.conformer = spec.loadConformer()
+                ts.frequency = (spec.loadNegativeFrequency(), 'cm^-1')
+                ts.tunneling = Wigner(frequency=None)
+                
+                self.reaction = Reaction(label=self.label, reactants=reactants, products=products, transitionState=ts)
+                
+                kineticsJob = KineticsJob(self.reaction)
+                kineticsJob.generateKinetics()
+                
+                # This might already be set
+                self.reaction.kinetics = kineticsJob.reaction.kinetics
+            
+            # find the reactant and product geometries via QMTP
+        else:
+            # fall back on group additivity
+            return None
