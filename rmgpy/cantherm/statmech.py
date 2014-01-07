@@ -42,6 +42,7 @@ import logging
 import rmgpy.constants as constants
 from rmgpy.cantherm.output import prettify
 from rmgpy.cantherm.gaussian import GaussianLog
+from rmgpy.cantherm.molepro import MoleProLog 
 from rmgpy.species import TransitionState
 from rmgpy.statmech import *
 
@@ -195,6 +196,7 @@ class StatMechJob:
             'HinderedRotor': hinderedRotor,
             # File formats
             'GaussianLog': GaussianLog,
+            'MoleProLog': MoleProLog,
             'ScanLog': ScanLog,
         }
     
