@@ -379,7 +379,8 @@ class GaussianTS(QMReaction, Gaussian):
         Using the :class:`Geometry` object, write the input file
         for the `attmept`th attempt.
         """
-        numProc = '%nprocshared=' + '5' + '\n' # could be something that is set in the qmSettings
+        numProc = '%nprocshared=' + '11' + '\n' # could be something that is set in the qmSettings
+        mem = '%mem=' + '1GB' + '\n' # could be something that is set in the qmSettings
         chk_file = '%chk=' + os.path.join(self.settings.fileStore, self.uniqueID) + '\n'
         
         molfile = self.geometry.getRefinedMolFilePath()
@@ -408,14 +409,15 @@ class GaussianTS(QMReaction, Gaussian):
         
         with open(self.inputFilePath, 'w') as gaussianFile:
             gaussianFile.write(numProc)
+            gaussianFile.write(mem)
             gaussianFile.write(chk_file)
             gaussianFile.write(top_keys)
             if attempt == 1:
                 gaussianFile.write(input_string)
             else:
                 gaussianFile.write('\n')
-            for atom in atomTypes:
-                gaussianFile.write(self.mg3s[atom])
+            # for atom in atomTypes:
+            #     gaussianFile.write(self.mg3s[atom])
             gaussianFile.write('\n')
     
     def writeIRCFile(self):
@@ -425,7 +427,8 @@ class GaussianTS(QMReaction, Gaussian):
         from the checkpoint file created during the geometry search.
         """
         
-        numProc = '%nprocshared=' + '5' + '\n' # could be something that is set in the qmSettings
+        numProc = '%nprocshared=' + '11' + '\n' # could be something that is set in the qmSettings
+        mem = '%mem=' + '1GB' + '\n' # could be something that is set in the qmSettings
         chk_file = '%chk=' + os.path.join(self.settings.fileStore, self.uniqueID) + '\n'
         top_keys = self.keywords[4] + '\n\n'
         output = "{charge}   {mult}".format(charge=0, mult=(self.geometry.molecule.getRadicalCount() + 1) )
@@ -437,12 +440,13 @@ class GaussianTS(QMReaction, Gaussian):
         
         with open(self.inputFilePath, 'w') as gaussianFile:
             gaussianFile.write(numProc)
+            gaussianFile.write(mem)
             gaussianFile.write(chk_file)
             gaussianFile.write(top_keys)
             gaussianFile.write(output)
             gaussianFile.write('\n')
-            for atom in atomTypes:
-                gaussianFile.write(self.mg3s[atom]) 
+            # for atom in atomTypes:
+            #     gaussianFile.write(self.mg3s[atom]) 
             gaussianFile.write('\n')
             
     def inputFileKeywords(self, attempt):
@@ -653,8 +657,8 @@ class GaussianTS(QMReaction, Gaussian):
         entry = Entry(
             index = 1,
             item = self.reaction,
-            data = DistanceData(distances=distances, method='M06-2X/MG3S'),
-            shortDesc = "M06-2X/MG3S calculation via group additive TS generator.",
+            data = DistanceData(distances=distances, method='B3LYP/6-31+G(d,p)'),
+            shortDesc = "B3LYP/6-31+G(d,p) calculation via group additive TS generator.",
             history = [(time.asctime(), user, 'action', description)]
         )
         
