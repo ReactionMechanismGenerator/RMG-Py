@@ -1069,6 +1069,8 @@ class KineticsFamily(Database):
         returns a list of the product structures.
         """
         
+        getTS = options.get('getTS', False)
+        
         productStructuresList = []
 
         # Clear any previous atom labeling from all reactant structures
