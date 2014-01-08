@@ -64,6 +64,16 @@ class QMReaction:
     def inputFilePath(self):
         """Get the input file name."""
         return self.getFilePath(self.inputFileExtension)
+    
+    @property
+    def ircOutputFilePath(self):
+        """Get the irc output file name."""
+        return self.getFilePath('IRC' + self.outputFileExtension)
+    
+    @property
+    def ircInputFilePath(self):
+        """Get the irc input file name."""
+        return self.getFilePath('IRC' + self.inputFileExtension)
         
     def fixSortLabel(self, molecule):
         """
@@ -202,17 +212,12 @@ class QMReaction:
                     converged = self.run()
                 
                 if converged:
-                    
-                    self.inputFilePath = self.inputFilePath.split('.')[0] + 'IRC' + self.inputFileExtension
-                    self.outputFilePath = self.outputFilePath.split('.')[0] + 'IRC' + self.outputFileExtension
-                    if not os.path.exists(self.outputFilePath):
+                    if not os.path.exists(self.ircOutputFilePath):
                         self.writeIRCFile()
                         rightTS = self.runIRC()
                     else:
                         rightTS = self.verifyIRCOutputFile()
                     if rightTS:
-                        self.inputFilePath = self.inputFilePath.split('IRC')[0] + self.inputFileExtension
-                        self.outputFilePath = self.outputFilePath.split('IRC')[0]+ self.outputFileExtension
                         self.writeRxnOutputFile(labels)
                         return True
                     else:
@@ -263,7 +268,7 @@ class QMReaction:
                 This is just a crude calculation, calculating the partition functions
                 from the molecular properties and plugging them through the equation. 
                 """
-                kineticsJob.save(self.outputFilePath.split('.')[0] + '.py')
+                kineticsJob.save(self.getFilePath('.kinetics'))
                 # return self.reaction.kinetics
         else:
             # fall back on group additivity
