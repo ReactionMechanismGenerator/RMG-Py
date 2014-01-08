@@ -163,7 +163,9 @@ class QMReaction:
         """
         
         """
-        if not os.path.exists(os.path.join(self.file_store_path, self.uniqueID + '.data')):
+        if os.path.exists(os.path.join(self.file_store_path, self.uniqueID + '.data')):
+            return True
+        else:
             if len(self.reaction.reactants)==2:
                 reactant = self.reaction.reactants[0].merge(self.reaction.reactants[1])
             if len(self.reaction.products)==2:
@@ -215,44 +217,54 @@ class QMReaction:
                         return True
                     else:
                         return False
+                else:
+                    return False
+    
+    def calculateQMData(self, moleculeList):
+        """
+        If the transition state is found, optimize reactant and product geometries for use in
+        TST calculations.
+        """
+        molecules = []
+        
+        for molecule in moleculeList:
+            qmMolecule = self.getQMMolecule(molecule)
+            result = qmMolecule.generateQMData()
+            if result:
+                log = GaussianLog(qmMolecule.outputFilePath)
+                species = Species(label=qmMolecule.molecule.toSMILES(), conformer=log.loadConformer(), molecule=[molecule])
+                molecules.append(species)
+        return molecules
     
     def calculateKinetics(self):
         # provides transitionstate geometry
         tsFound = self.generateTSGeometry()
+        
         if tsFound:
-            reactants = []
-            products = []
-            for reactant in self.reaction.reactants:
-                qmMolecule = self.getQMMolecule(reactant)
-                result = qmMolecule.generateQMData()
-                if result:
-                    spec = GaussianLog(qmMolecule.outputFilePath())
-                    species = Species(label=qmMolecule.uniqueID, conformer=spec.loadConformer())
-                    reactants.append(species)
-            for product in self.reaction.products:
-                qmMolecule = self.getQMMolecule(product)
-                result = qmMolecule.generateQMData()
-                if result:
-                    spec = GaussianLog(qmMolecule.outputFilePath())
-                    species = Species(label=qmMolecule.uniqueID, conformer=spec.loadConformer())
-                    products.append(species)
+            reactants = self.calculateQMData(self.reaction.reactants)
+            products = self.calculateQMData(self.reaction.products)
             
             if len(reactants)==len(self.reaction.reactants) and len(products)==len(self.reaction.products):
-                spec = GaussianLog(self.outputFilePath())
+                spec = GaussianLog(self.outputFilePath)
                 ts = TransitionState(label=self.uniqueID + 'TS')
                 ts.conformer = spec.loadConformer()
                 ts.frequency = (spec.loadNegativeFrequency(), 'cm^-1')
                 ts.tunneling = Wigner(frequency=None)
                 
-                self.reaction = Reaction(label=self.label, reactants=reactants, products=products, transitionState=ts)
-                
+                self.reaction.transitionState = ts
+                self.reaction.reactants = reactants
+                self.reaction.products = products
                 kineticsJob = KineticsJob(self.reaction)
                 kineticsJob.generateKinetics()
                 
-                # This might already be set
-                self.reaction.kinetics = kineticsJob.reaction.kinetics
-            
-            # find the reactant and product geometries via QMTP
+                """
+                What do I do with it? For now just save it.
+                Various parameters are not considered in the calculations so far e.g. symmetry.
+                This is just a crude calculation, calculating the partition functions
+                from the molecular properties and plugging them through the equation. 
+                """
+                kineticsJob.save(self.outputFilePath.split('.')[0] + '.py')
+                # return self.reaction.kinetics
         else:
             # fall back on group additivity
             return None
