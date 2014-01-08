@@ -131,18 +131,6 @@ class Gaussian:
         
         #InChIs do not match (most likely due to limited name length mirrored in log file (240 characters), but possibly due to a collision)
         return self.checkForInChiKeyCollision(logFileInChI) # Not yet implemented!
-        
-    def parse(self):
-        """
-        Parses the results of the Gaussian calculation, and returns a CCLibData object.
-        """
-        parser = cclib.parser.Gaussian(self.outputFilePath)
-        parser.logger.setLevel(logging.ERROR) #cf. http://cclib.sourceforge.net/wiki/index.php/Using_cclib#Additional_information
-        cclibData = parser.parse()
-        radicalNumber = sum([i.radicalElectrons for i in self.molecule.atoms])
-        qmData = CCLibData(cclibData, radicalNumber+1)
-        return qmData
-    
     
     
 class GaussianMol(QMMolecule, Gaussian):
@@ -211,6 +199,7 @@ class GaussianMol(QMMolecule, Gaussian):
                 success = self.run()
                 if success:
                     logging.info('Attempt {0} of {1} on species {2} succeeded.'.format(attempt, self.maxAttempts, self.molecule.toAugmentedInChI()))
+                    source = "QM Gaussian result created during this run."
                     break
             else:
                 logging.error('QM thermo calculation failed for {0}.'.format(self.molecule.toAugmentedInChI()))
@@ -219,6 +208,16 @@ class GaussianMol(QMMolecule, Gaussian):
         result.source = source
         return result # a CCLibData object
     
+    def parse(self):
+        """
+        Parses the results of the Gaussian calculation, and returns a CCLibData object.
+        """
+        parser = cclib.parser.Gaussian(self.outputFilePath)
+        parser.logger.setLevel(logging.ERROR) #cf. http://cclib.sourceforge.net/wiki/index.php/Using_cclib#Additional_information
+        cclibData = parser.parse()
+        radicalNumber = sum([i.radicalElectrons for i in self.molecule.atoms])
+        qmData = CCLibData(cclibData, radicalNumber+1)
+        return qmData
 
 
 class GaussianMolPM3(GaussianMol):
@@ -645,6 +644,7 @@ class GaussianTS(QMReaction, Gaussian):
             pth1End = sum(steps[:pth1[-1]])		
             # Compare the reactants and products
             ircParse = cclib.parser.Gaussian(self.ircOutputFilePath)
+            ircParse.logger.setLevel(logging.ERROR) #cf. http://cclib.sourceforge.net/wiki/index.php/Using_cclib#Additional_information
             ircParse = ircParse.parse()
         
             atomnos = ircParse.atomnos
@@ -672,6 +672,19 @@ class GaussianTS(QMReaction, Gaussian):
             else:
                 return False
     
+    def parse(self):
+        """
+        Parses the results of the Gaussian calculation, and returns a CCLibData object.
+        """
+        parser = cclib.parser.Gaussian(self.outputFilePath)
+        parser.logger.setLevel(logging.ERROR) #cf. http://cclib.sourceforge.net/wiki/index.php/Using_cclib#Additional_information
+        cclibData = parser.parse()
+        radicalNumber = 0
+        for molecule in self.reaction.reactants:
+            radicalNumber += sum([i.radicalElectrons for i in molecule.atoms])
+        self.qmData = CCLibData(cclibData, radicalNumber+1)
+        return self.qmData
+    
     def parseTS(self, labels):
         
         def getDistance(coordinates1, coordinates2):
@@ -681,14 +694,13 @@ class GaussianTS(QMReaction, Gaussian):
             diff = (coordinates1.coords - coordinates2.coords)
             return math.sqrt(sum(diff * diff))
         
-        tsParse = cclib.parser.Gaussian(os.path.join(self.file_store_path, self.uniqueID + self.outputFileExtension))
-        tsParse = tsParse.parse()
-        geom = tsParse.atomcoords[-1]
-        atomNums = tsParse.atomnos
+        self.parse()
+        atomCoords = self.qmData.atomCoords.getValue()
+        atomNums = self.qmData.atomicNumbers
         
-        atom1 = Atom(element=getElement(int(atomNums[labels[0]])), coords=geom[labels[0]])
-        atom2 = Atom(element=getElement(int(atomNums[labels[1]])), coords=geom[labels[1]])
-        atom3 = Atom(element=getElement(int(atomNums[labels[2]])), coords=geom[labels[2]])
+        atom1 = Atom(element=getElement(int(atomNums[labels[0]])), coords=atomCoords[labels[0]])
+        atom2 = Atom(element=getElement(int(atomNums[labels[1]])), coords=atomCoords[labels[1]])
+        atom3 = Atom(element=getElement(int(atomNums[labels[2]])), coords=atomCoords[labels[2]])
         
         at12 = getDistance(atom1, atom2)
         at23 = getDistance(atom2, atom3)

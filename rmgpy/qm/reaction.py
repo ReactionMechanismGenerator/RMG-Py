@@ -13,6 +13,7 @@ from molecule import QMMolecule, Geometry
 from rmgpy.cantherm.gaussian import GaussianLog
 from rmgpy.cantherm.kinetics import KineticsJob
 from rmgpy.data.kinetics.transitionstates import TransitionStates
+import symmetry
 
 try:
     import rdkit
@@ -186,19 +187,19 @@ class QMReaction:
             tsRDMol, tsBM, tsMult = self.generateBoundsMatrix(reactant)
             
             self.geometry.uniqueID = self.uniqueID
-        
+            
             tsBM, labels, atomMatch = self.editMatrix(reactant, tsBM)
             atoms = len(reactant.atoms)
             distGeomAttempts = 15*(atoms-3) # number of conformers embedded from the bounds matrix
             
             setBM = rdkit.DistanceGeometry.DoTriangleSmoothing(tsBM)
-        
+            
             if setBM:
                 for i in range(len(tsBM)):
                     for j in range(i,len(tsBM)):
                         if tsBM[j,i] > tsBM[i,j]:
                                 print "BOUNDS MATRIX FLAWED {0}>{1}".format(tsBM[j,i], tsBM[i,j])
-        
+            
                 self.geometry.rd_embed(tsRDMol, distGeomAttempts, bm=tsBM, match=atomMatch)
                 
                 if not os.path.exists(self.outputFilePath):
@@ -233,6 +234,7 @@ class QMReaction:
         molecules = []
         
         for molecule in moleculeList:
+            molecule = self.fixSortLabel(molecule)
             qmMolecule = self.getQMMolecule(molecule)
             result = qmMolecule.generateQMData()
             if result:
@@ -250,15 +252,14 @@ class QMReaction:
             products = self.calculateQMData(self.reaction.products)
             
             if len(reactants)==len(self.reaction.reactants) and len(products)==len(self.reaction.products):
-                spec = GaussianLog(self.outputFilePath)
-                ts = TransitionState(label=self.uniqueID + 'TS')
-                ts.conformer = spec.loadConformer()
-                ts.frequency = (spec.loadNegativeFrequency(), 'cm^-1')
-                ts.tunneling = Wigner(frequency=None)
-                
-                self.reaction.transitionState = ts
+                #self.determinePointGroup()
+                tsLog = GaussianLog(self.outputFilePath)
+                self.reaction.transitionState = TransitionState(label=self.uniqueID + 'TS', conformer=tsLog.loadConformer(), frequency=(tsLog.loadNegativeFrequency(), 'cm^-1'), tunneling=Wigner(frequency=None))
+                                
                 self.reaction.reactants = reactants
                 self.reaction.products = products
+
+                
                 kineticsJob = KineticsJob(self.reaction)
                 kineticsJob.generateKinetics()
                 
@@ -273,3 +274,13 @@ class QMReaction:
         else:
             # fall back on group additivity
             return None
+    
+    def determinePointGroup(self):
+        """
+        Determine point group using the SYMMETRY Program
+        
+        Stores the resulting :class:`PointGroup` in self.pointGroup
+        """
+        assert self.qmData, "Need QM Data first in order to calculate point group."
+        pgc = symmetry.PointGroupCalculator(self.settings, self.uniqueID, self.qmData)
+        self.pointGroup = pgc.calculate()
