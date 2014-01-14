@@ -115,7 +115,7 @@ class Gaussian:
         
         # Check that ALL 'success' keywords were found in the file.
         if not all( successKeysFound.values() ):
-            logging.error('Not all of the required keywords for sucess were found in the output file!')
+            logging.error('Not all of the required keywords for success were found in the output file!')
             return False
         
         if not InChIFound:
