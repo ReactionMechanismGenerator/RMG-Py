@@ -165,7 +165,7 @@ cdef class ReactionSystem(DASSL):
         
         if worksheet:
             row = ['Time (s)']
-            worksheet.writerow(['Time (s)','Concentrations (mol/m^3)'])
+            worksheet.writerow(['Time (s)','Mole fraction'])
             row = ['']
             for i in range(numCoreSpecies):
                 row.append(str(coreSpecies[i]))
@@ -211,8 +211,7 @@ cdef class ReactionSystem(DASSL):
                 
             if worksheet:
                 row = [self.t]
-                for i in range(numCoreSpecies):
-                    row.append(self.coreSpeciesConcentrations[i])
+                row.extend(self.y/numpy.sum(self.y))
                 worksheet.writerow(row)
 
             # Get the characteristic flux
