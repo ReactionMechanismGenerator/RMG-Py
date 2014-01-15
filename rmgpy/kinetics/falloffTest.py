@@ -157,7 +157,7 @@ class TestThirdBody(unittest.TestCase):
         unpickled with no loss of information.
         """
         import cPickle
-        thirdBody = cPickle.loads(cPickle.dumps(self.thirdBody))
+        thirdBody = cPickle.loads(cPickle.dumps(self.thirdBody,-1))
         self.assertAlmostEqual(self.thirdBody.arrheniusLow.A.value, thirdBody.arrheniusLow.A.value, delta=1e0)
         self.assertEqual(self.thirdBody.arrheniusLow.A.units, thirdBody.arrheniusLow.A.units)
         self.assertAlmostEqual(self.thirdBody.arrheniusLow.n.value, thirdBody.arrheniusLow.n.value, 4)
@@ -325,7 +325,7 @@ class TestLindemann(unittest.TestCase):
         of information.
         """
         import cPickle
-        lindemann = cPickle.loads(cPickle.dumps(self.lindemann))
+        lindemann = cPickle.loads(cPickle.dumps(self.lindemann,-1))
         self.assertAlmostEqual(self.lindemann.arrheniusHigh.A.value, lindemann.arrheniusHigh.A.value, delta=1e0)
         self.assertEqual(self.lindemann.arrheniusHigh.A.units, lindemann.arrheniusHigh.A.units)
         self.assertAlmostEqual(self.lindemann.arrheniusHigh.n.value, lindemann.arrheniusHigh.n.value, 4)
@@ -541,7 +541,7 @@ class TestTroe(unittest.TestCase):
         information.
         """
         import cPickle
-        troe = cPickle.loads(cPickle.dumps(self.troe))
+        troe = cPickle.loads(cPickle.dumps(self.troe,-1))
         self.assertAlmostEqual(self.troe.arrheniusHigh.A.value, troe.arrheniusHigh.A.value, delta=1e0)
         self.assertEqual(self.troe.arrheniusHigh.A.units, troe.arrheniusHigh.A.units)
         self.assertAlmostEqual(self.troe.arrheniusHigh.n.value, troe.arrheniusHigh.n.value, 4)

@@ -123,7 +123,7 @@ class TestKineticsData(unittest.TestCase):
         loss of information.
         """
         import cPickle
-        kinetics = cPickle.loads(cPickle.dumps(self.kinetics))
+        kinetics = cPickle.loads(cPickle.dumps(self.kinetics,-1))
         self.assertEqual(self.kinetics.Tdata.value.shape, kinetics.Tdata.value.shape)
         for T, T0 in zip(self.kinetics.Tdata.value, kinetics.Tdata.value):
             self.assertAlmostEqual(T, T0, 4)
@@ -293,7 +293,7 @@ class TestPDepKineticsData(unittest.TestCase):
         loss of information.
         """
         import cPickle
-        kinetics = cPickle.loads(cPickle.dumps(self.kinetics))
+        kinetics = cPickle.loads(cPickle.dumps(self.kinetics,-1))
         self.assertEqual(self.kinetics.Tdata.value.shape, kinetics.Tdata.value.shape)
         for T, T0 in zip(self.kinetics.Tdata.value, kinetics.Tdata.value):
             self.assertAlmostEqual(T, T0, 4)

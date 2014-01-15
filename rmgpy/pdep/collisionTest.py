@@ -88,7 +88,7 @@ class TestSingleExponentialDown(unittest.TestCase):
         and unpickled with no loss of information.
         """
         import cPickle
-        singleExponentialDown = cPickle.loads(cPickle.dumps(self.singleExponentialDown))
+        singleExponentialDown = cPickle.loads(cPickle.dumps(self.singleExponentialDown,-1))
         self.assertAlmostEqual(self.singleExponentialDown.alpha0.value, singleExponentialDown.alpha0.value, 6)
         self.assertEqual(self.singleExponentialDown.alpha0.units, singleExponentialDown.alpha0.units)
         self.assertAlmostEqual(self.singleExponentialDown.T0.value, singleExponentialDown.T0.value, 6)

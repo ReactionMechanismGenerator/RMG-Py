@@ -229,7 +229,7 @@ class TestHarmonicOscillator(unittest.TestCase):
         with no loss of information.
         """
         import cPickle
-        mode = cPickle.loads(cPickle.dumps(self.mode))
+        mode = cPickle.loads(cPickle.dumps(self.mode,-1))
         self.assertEqual(self.mode.frequencies.value.shape, mode.frequencies.value.shape)
         for freq0, freq in zip(self.mode.frequencies.value, mode.frequencies.value):
             self.assertAlmostEqual(freq0, freq, 6)

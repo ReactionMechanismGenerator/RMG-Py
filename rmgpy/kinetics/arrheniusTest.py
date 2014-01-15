@@ -162,7 +162,7 @@ class TestArrhenius(unittest.TestCase):
         of information.
         """
         import cPickle
-        arrhenius = cPickle.loads(cPickle.dumps(self.arrhenius))
+        arrhenius = cPickle.loads(cPickle.dumps(self.arrhenius,-1))
         self.assertAlmostEqual(self.arrhenius.A.value, arrhenius.A.value, delta=1e0)
         self.assertEqual(self.arrhenius.A.units, arrhenius.A.units)
         self.assertAlmostEqual(self.arrhenius.n.value, arrhenius.n.value, 4)
@@ -303,7 +303,7 @@ class TestArrheniusEP(unittest.TestCase):
         of information.
         """
         import cPickle
-        arrhenius = cPickle.loads(cPickle.dumps(self.arrhenius))
+        arrhenius = cPickle.loads(cPickle.dumps(self.arrhenius,-1,-1))
         self.assertAlmostEqual(self.arrhenius.A.value, arrhenius.A.value, delta=1e0)
         self.assertEqual(self.arrhenius.A.units, arrhenius.A.units)
         self.assertAlmostEqual(self.arrhenius.n.value, arrhenius.n.value, 4)
@@ -496,7 +496,7 @@ class TestPDepArrhenius(unittest.TestCase):
         unpickled with no loss of information.
         """
         import cPickle
-        kinetics = cPickle.loads(cPickle.dumps(self.kinetics))
+        kinetics = cPickle.loads(cPickle.dumps(self.kinetics,-1))
         Narrh = 2
         self.assertEqual(len(self.kinetics.pressures.value), Narrh)
         self.assertEqual(len(kinetics.pressures.value), Narrh)
@@ -660,7 +660,7 @@ class TestMultiArrhenius(unittest.TestCase):
         of information.
         """
         import cPickle
-        kinetics = cPickle.loads(cPickle.dumps(self.kinetics))
+        kinetics = cPickle.loads(cPickle.dumps(self.kinetics,-1))
         self.assertEqual(len(self.kinetics.arrhenius), len(kinetics.arrhenius))
         for arrh0, arrh in zip(self.kinetics.arrhenius, kinetics.arrhenius):
             self.assertAlmostEqual(arrh0.A.value, arrh.A.value, delta=1e-18)
@@ -906,7 +906,7 @@ class TestMultiPDepArrhenius(unittest.TestCase):
         no loss of information.
         """
         import cPickle
-        kinetics = cPickle.loads(cPickle.dumps(self.kinetics))
+        kinetics = cPickle.loads(cPickle.dumps(self.kinetics,-1))
         self.assertEqual(len(self.kinetics.arrhenius), len(kinetics.arrhenius))
         self.assertAlmostEqual(self.kinetics.Tmin.value, kinetics.Tmin.value, 4)
         self.assertEqual(self.kinetics.Tmin.units, kinetics.Tmin.units)
