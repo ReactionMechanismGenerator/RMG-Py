@@ -83,7 +83,7 @@ cdef class LiquidReactor(ReactionSystem):
         self.reverseRateCoefficients = None
         self.jacobianMatrix = None
         
-    def convertInitalKeysToSpeciesObjects(self, speciesDict):
+    def convertInitialKeysToSpeciesObjects(self, speciesDict):
         """
         Convert the initialConcentrations dictionary from species names into species objects,
         using the given dictionary of species.

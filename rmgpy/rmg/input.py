@@ -326,7 +326,7 @@ def readInputFile(path, rmg0):
 
     # convert keys from species names into species objects.
     for reactionSystem in rmg.reactionSystems:
-        reactionSystem.convertInitalKeysToSpeciesObjects(speciesDict)
+        reactionSystem.convertInitialKeysToSpeciesObjects(speciesDict)
 
     logging.info('')
     
