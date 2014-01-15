@@ -141,7 +141,8 @@ cdef class LiquidReactor(ReactionSystem):
             for rxn in rxnList:
                 j = reactionIndex[rxn]
                 forwardRateCoefficients[j] = rxn.getRateCoefficient(self.T.value_si, self.P.value_si)
-                reverseRateCoefficients[j] = forwardRateCoefficients[j] / rxn.getEquilibriumConstant(self.T.value_si)
+                if rxn.reversible:
+                    reverseRateCoefficients[j] = forwardRateCoefficients[j] / rxn.getEquilibriumConstant(self.T.value_si)
                 for l, spec in enumerate(rxn.reactants):
                     i = speciesIndex[spec]
                     reactantIndices[j,l] = i
