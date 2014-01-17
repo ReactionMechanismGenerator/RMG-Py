@@ -714,18 +714,17 @@ class KineticsFamily(Database):
         # First, generate a list of reactant structures that are actual
         # structures, rather than unions
         reactantStructures = []
-
-        logging.log(0, "Generating template for products.")
+        logging.log(1, "Generating template for products.")
         for reactant in reactants0:
             if isinstance(reactant, list):  reactants = [reactant[0]]
             else:                           reactants = [reactant]
 
-            logging.log(0, "Reactants: {0}".format(reactants))
-            for s in reactants: #
+            logging.log(1, "Reactants: {0}".format(reactants))
+            for s in reactants:
                 struct = s.item
                 if isinstance(struct, LogicNode):
                     all_structures = struct.getPossibleStructures(self.groups.entries)
-                    logging.log(0, 'Expanding node {0} to {1}'.format(s, all_structures))
+                    logging.log(1, 'Expanding logic node {0} to {1}'.format(s, all_structures))
                     reactantStructures.append(all_structures)
                 else:
                     reactantStructures.append([struct])

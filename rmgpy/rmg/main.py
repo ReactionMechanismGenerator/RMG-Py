@@ -1045,7 +1045,7 @@ def initializeLog(verbose, log_file_name):
     logging.addLevelName(logging.WARNING, 'Warning: ')
     logging.addLevelName(logging.INFO, '')
     logging.addLevelName(logging.DEBUG, '')
-    logging.addLevelName(0, '')
+    logging.addLevelName(1, '')
 
     # Create formatter and add to console handler
     #formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s', '%Y-%m-%d %H:%M:%S')
