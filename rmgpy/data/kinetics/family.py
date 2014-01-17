@@ -721,13 +721,17 @@ class KineticsFamily(Database):
 
             logging.log(1, "Reactants: {0}".format(reactants))
             for s in reactants:
+                logging.log(1, "Reactant {0}".format(s))
                 struct = s.item
                 if isinstance(struct, LogicNode):
                     all_structures = struct.getPossibleStructures(self.groups.entries)
                     logging.log(1, 'Expanding logic node {0} to {1}'.format(s, all_structures))
                     reactantStructures.append(all_structures)
+                    for p in all_structures:
+                       logging.log(1, p.toAdjacencyList() )
                 else:
                     reactantStructures.append([struct])
+                    logging.log(1, struct.toAdjacencyList() )
 
         # Second, get all possible combinations of reactant structures
         reactantStructures = getAllCombinations(reactantStructures)
@@ -753,7 +757,10 @@ class KineticsFamily(Database):
                         raise
                 else:
                     productStructureList[i].append(struct)
-
+                    
+        logging.log(1, "Unique generated product structures:")
+        logging.log(1, "\n".join([p[0].toAdjacencyList() for p in productStructures]))
+        
         # Fifth, associate structures with product template
         productSet = []
         for index, products in enumerate(productStructureList):
