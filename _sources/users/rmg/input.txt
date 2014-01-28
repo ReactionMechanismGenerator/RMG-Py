@@ -71,7 +71,7 @@ are to be used in addition to the Glarborg C3 library::
 	Location: Glarborg/C3
 	END 	
 
-The reaction libraries are stored in :file:`$RMG/databases/RMG_database/kinetics_libraries/`
+The reaction libraries are stored in :file:`RMG-database/input/kinetics/libraries/`
 and the `Location:` should be specified relative to this path.
 
 Please note that the keyword ``END`` must be placed at the end of the Reaction Library

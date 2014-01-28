@@ -55,7 +55,7 @@ Test that the ArrheniusEP comment property was properly set. ... ok
 Test the ArrheniusEP.getRateCoefficient() method. ... ok
 Test the ArrheniusEP.isTemperatureValid() method. ... ok
 Test that the ArrheniusEP n property was properly set. ... ok
-Test that an ArrheniusEP object can be pickled and unpickled with no loss ... ok
+Test that an ArrheniusEP object can be pickled and unpickled with no loss ... ERROR
 Test that an ArrheniusEP object can be reconstructed from its repr() ... ok
 Test that the MultiArrhenius Tmax property was properly set. ... ok
 Test that the MultiArrhenius Tmin property was properly set. ... ok
@@ -198,6 +198,10 @@ Test that getAtomType() returns appropriate NoneTypes. ... FAIL
 Test that getAtomType() returns appropriate oxygen atom types. ... ok
 Test that getAtomType() returns appropriate silicon atom types. ... ok
 Test that getAtomType() returns appropriate sulfur atom types. ... ok
+Test we can create PDF files from molecules. ... ok
+Test we can create PDF surface without a temporary file (newer versions of PyCairo?) ... ok
+Test we can create PNG files from molecules. ... ok
+Test we can draw a polycyclic molecule ... ok
 Test the rmgpy.elements.getElement() method. ... ok
 Test that we can reconstruct an Element object from its repr() ... ok
 Test that an Element object can be successfully pickled and ... ok
@@ -732,6 +736,14 @@ testJoback (rmgpy.transportDataTest.TestTransportDatabase) ... ok
 Test Joback doesn't crash on Cb desription of beneze ... ERROR
 
 ======================================================================
+ERROR: Test that an ArrheniusEP object can be pickled and unpickled with no loss
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/kinetics/arrheniusTest.py", line 306, in test_pickle
+    arrhenius = cPickle.loads(cPickle.dumps(self.arrhenius,-1,-1))
+TypeError: dumps() takes at most 2 arguments (3 given)
+
+======================================================================
 ERROR: Test Joback doesn't crash on Cb desription of beneze
 ----------------------------------------------------------------------
 Traceback (most recent call last):
@@ -909,7 +921,7 @@ rmgpy.cantherm.main                  94     75     10     10    18%   45-46, 77-
 rmgpy.cantherm.molepro               33      2     18      4    88%   64, 87
 rmgpy.cantherm.output                77     66     23     23    11%   47-49, 56-75, 81-94, 101-121, 127-141, 147-149, 155-157, 167-172
 rmgpy.cantherm.pdep                 403    365    156    156     7%   106-142, 147, 150, 155, 158, 163, 166, 171, 174, 179, 182, 187, 190, 195, 198, 204, 224-238, 250-267, 270-297, 309-326, 330-362, 366-382, 386-483, 488-552, 562-571, 578-691
-rmgpy.cantherm.statmech             400    373    170    170     5%   81, 88-119, 127-144, 149, 159-164, 171-173, 182-382, 390-421, 429-459, 476-633, 644-703
+rmgpy.cantherm.statmech             401    373    170    170     5%   82, 89-120, 128-145, 150, 160-165, 172-174, 183-384, 392-423, 431-461, 478-635, 646-705
 rmgpy.cantherm.thermo               155    140     32     32     8%   55-56, 63-67, 75-122, 129-205, 217-269
 rmgpy.chemkin                       980    936    484    483     3%   69, 79-156, 167-456, 466-615, 626-646, 652-665, 672-687, 695-846, 858-900, 914-972, 982-1130, 1138-1148, 1160-1202, 1213-1277, 1285-1321, 1338-1488, 1498-1514, 1524-1527, 1535-1538, 1545-1556, 1578-1601, 1620-1666, 1674-1705
 rmgpy.data                            3      1      0      0    67%   34
@@ -917,8 +929,8 @@ rmgpy.data.base                     660    357    299    191    43%   113, 211-2
 rmgpy.data.kinetics                 269    235    135    135     8%   62-78, 84-89, 95-97, 104-105, 112-139, 149-174, 181-184, 191-195, 202-208, 215-232, 239-273, 281-284, 292-295, 303-318, 331-340, 361-459, 472-518
 rmgpy.data.kinetics.common          109     97     50     50     8%   102-103, 112-222
 rmgpy.data.kinetics.depository       31     18      0      0    42%   64-77, 83, 102, 115, 141-164, 170
-rmgpy.data.kinetics.family         1046    978    594    594     4%   95-108, 114, 133, 161, 169, 177-193, 204-284, 291, 298, 344-355, 365-426, 433-468, 474-485, 491-514, 527-600, 606-607, 614-618, 624-626, 632, 640-643, 650, 658-705, 716-790, 797, 804-807, 814-917, 926-929, 936-939, 947-958, 971-1074, 1087-1318, 1325-1330, 1340-1366, 1375-1384, 1396-1423, 1430-1433, 1445-1649, 1657-1736, 1744, 1753-1758, 1768-1776, 1786-1800, 1808-1811, 1824-1878, 1886-1894, 1901-1909, 1917-1922
-rmgpy.data.kinetics.groups          295    271    180    180     5%   78-79, 85-89, 109-173, 183-209, 218-270, 283-551
+rmgpy.data.kinetics.family         1052    984    596    596     4%   95-108, 114, 133, 161, 169, 177-193, 204-284, 291, 298, 344-355, 365-426, 433-468, 474-485, 491-514, 527-600, 606-607, 614-618, 624-626, 632, 640-643, 650, 658-705, 716-796, 803, 810-813, 820-923, 932-935, 942-945, 953-964, 977-1080, 1093-1324, 1331-1336, 1346-1372, 1381-1390, 1402-1429, 1436-1439, 1451-1655, 1663-1742, 1750, 1759-1764, 1774-1782, 1792-1806, 1814-1817, 1830-1884, 1892-1900, 1907-1915, 1923-1928
+rmgpy.data.kinetics.groups          302    278    184    184     5%   78-79, 85-89, 109-173, 183-209, 218-270, 283-551
 rmgpy.data.kinetics.library         273    247    153    153     6%   71-84, 90, 108, 118, 128-149, 156-163, 171-184, 191-246, 250-260, 282-315, 321, 327-360, 370-374, 384-545
 rmgpy.data.kinetics.rules           313    283    135    135     7%   64, 88-128, 134, 142-190, 197-223, 231-279, 287-354, 361-368, 375, 382, 389-402, 409-425, 431-490, 501-527, 534-588
 rmgpy.data.reference                138    114     48     48    13%   89-95, 102-108, 114-132, 158-162, 169-183, 190-200, 226-231, 238-251, 258-269, 292-294, 301-311, 318-326
@@ -940,14 +952,14 @@ rmgpy.measure.settings                2      0      0      0   100%
 rmgpy.measure.simulate               67     54     30     30    13%   46, 49, 66-128, 144-169, 178-179, 182, 185
 rmgpy.molecule                        5      0      0      0   100%   
 rmgpy.molecule.adjlist              265     54    160     41    78%   65, 71, 80, 152-153, 198, 211, 213, 215, 233, 239-259, 269-270, 293-295, 312-327, 340-341, 369
-rmgpy.molecule.draw                 929    898    448    448     2%   71-83, 101-109, 112-123, 139-249, 258-273, 280-375, 382-387, 396-427, 435-445, 452-577, 584-638, 645-717, 730-824, 834-860, 871-944, 951-964, 972-1004, 1014-1329, 1347-1351, 1365-1485
+rmgpy.molecule.draw                 929    574    448    303    36%   76, 79-82, 141-143, 171-176, 187-189, 192-195, 198-200, 203-205, 208-210, 213-216, 265-273, 286, 294-346, 371-373, 382-387, 396-427, 435-445, 452-577, 584-638, 645-717, 730-824, 848-849, 857-858, 881, 903-924, 937-939, 990-993, 999-1000, 1002-1004, 1043-1044, 1091-1099, 1121-1122, 1135-1138, 1157-1162, 1168-1169, 1198-1199, 1207-1209, 1212-1213, 1221-1223, 1229-1236, 1241-1244, 1253-1256, 1261-1278, 1288-1291, 1295-1298, 1302-1319, 1347-1351, 1365-1485
 rmgpy.pdep                            5      0      0      0   100%   
 rmgpy.pdep.draw                     291    277     86     86     4%   57-70, 73-79, 87-107, 116-125, 131-142, 148-159, 165-181, 185-213, 222-479
 rmgpy.pdep.network                  532    408    230    209    19%   51-53, 60, 130, 137-149, 161, 181, 194-261, 272-345, 358, 361, 364, 396, 460-464, 473, 495-515, 529-688, 699-716, 724-738, 745-748, 755-758, 768-771, 774-775, 789-860, 871-925, 938-954
 rmgpy.qm                              0      0      0      0   100%   
 rmgpy.qm.gaussian                   126     96     46     44    19%   23, 25, 45-46, 50-55, 73-126, 132-137, 153-179, 191-206, 237, 242, 250-253
 rmgpy.qm.main                        61     46     16     16    19%   51-58, 64-71, 92-95, 101-106, 112, 118-119, 125-135, 145-153
-rmgpy.qm.molecule                   184    145     38     38    18%   10-11, 28-38, 46, 50, 54, 63-71, 77, 84-105, 109-111, 121-154, 169-173, 182, 187, 192, 198-201, 208, 217-239, 245-253, 259-277, 284, 293-296, 304-306, 312-315, 324-367
+rmgpy.qm.molecule                   184    138     38     37    21%   10-11, 38, 46, 50, 54, 63-71, 84-105, 109-111, 121-154, 169-173, 182, 187, 192, 198-201, 208, 217-239, 245-253, 259-277, 284, 293-296, 304-306, 312-315, 324-367
 rmgpy.qm.mopac                      133    102     48     46    18%   22, 24, 58-59, 62-67, 86-135, 142-147, 162-188, 200-222, 239, 244, 253-273
 rmgpy.qm.qmdata                      35     27      2      2    22%   23-38, 41, 75-101
 rmgpy.qm.qmverifier                  26     20      6      6    19%   18-24, 40-61, 71
@@ -963,11 +975,11 @@ rmgpy.statmech                        5      0      0      0   100%
 rmgpy.thermo                          3      0      0      0   100%   
 rmgpy.transport                      31      3      0      0    90%   58-59, 65
 -----------------------------------------------------------------------------
-TOTAL                             14315  11742   6052   5608    15%   
+TOTAL                             14329  11424   6058   5468    17%   
 ----------------------------------------------------------------------
-Ran 720 tests.
+Ran 724 tests.
 
-FAILED (errors=1, failures=19)
+FAILED (errors=2, failures=19)
 1 *1 C 1 0 {2,S} {3,S} {4,S}
 2    C 0 0 {1,S} {3,S} {5,S} {6,S}
 3    C 0 0 {1,S} {2,S} {7,S} {8,S}
