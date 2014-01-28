@@ -78,7 +78,7 @@ def saveOutputHTML(path, reactionModel):
 
     species = reactionModel.core.species[:] + reactionModel.outputSpeciesList
 
-    re_index = re.compile(r'\((\d+)\)$')
+    re_index_search = re.compile(r'\((\d+)\)$').search
 
     if not os.path.isdir(os.path.join(dirname,'species')):
         os.makedirs(os.path.join(dirname,'species'))
@@ -86,7 +86,7 @@ def saveOutputHTML(path, reactionModel):
         # if the species dictionary came from an RMG-Java job, make them prettier
         # We use the presence of a trailing index on the label to discern this
         # (A single open parenthesis is not enough (e.g. when using SMILES strings as labels!)
-        match = re_index.search(spec.label)
+        match = re_index_search(spec.label)
         if match:
             spec.index = int(match.group(0)[1:-1])
             spec.label = spec.label[0:match.start()]
@@ -95,7 +95,7 @@ def saveOutputHTML(path, reactionModel):
         if not os.path.exists(fstr):
             try:
                 MoleculeDrawer().draw(spec.molecule[0], 'png', fstr)
-            except:
+            except IndexError:
                 raise OutputError("{0} species could not be drawn because it did not contain a molecular structure. Please recheck your files.".format(getSpeciesIdentifier(spec)))
                 
     # We want to keep species sorted in the original order in which they were added to the RMG core.
