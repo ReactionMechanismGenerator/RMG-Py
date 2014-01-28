@@ -303,7 +303,7 @@ class TestArrheniusEP(unittest.TestCase):
         of information.
         """
         import cPickle
-        arrhenius = cPickle.loads(cPickle.dumps(self.arrhenius,-1,-1))
+        arrhenius = cPickle.loads(cPickle.dumps(self.arrhenius, -1))
         self.assertAlmostEqual(self.arrhenius.A.value, arrhenius.A.value, delta=1e0)
         self.assertEqual(self.arrhenius.A.units, arrhenius.A.units)
         self.assertAlmostEqual(self.arrhenius.n.value, arrhenius.n.value, 4)
