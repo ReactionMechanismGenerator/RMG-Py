@@ -473,7 +473,7 @@ def getDensityOfStatesForst(numpy.ndarray[numpy.float64_t,ndim=1] Elist, logQ, i
         
         # Find minimum of phi  func x0  arg     xtol  ftol maxi  maxf fullout  disp retall  callback
         try:
-            x = scipy.optimize.fmin(phi, x, [k, E, logQ], 1e-8, 1e-8, 100, 1000, False, False, False, None)
+            x = scipy.optimize.fmin(phi, x, (k, E, logQ), 1e-8, 1e-8, 100, 1000, False, False, False, None)
         except ValueError:
             break
         x = float(x)
