@@ -75,7 +75,7 @@ class TestWigner(unittest.TestCase):
         with no loss of information.
         """
         import cPickle
-        tunneling = cPickle.loads(cPickle.dumps(self.tunneling))
+        tunneling = cPickle.loads(cPickle.dumps(self.tunneling,-1))
         self.assertAlmostEqual(self.tunneling.frequency.value, tunneling.frequency.value, 2)
         self.assertEqual(self.tunneling.frequency.units, tunneling.frequency.units)
 
@@ -151,7 +151,7 @@ class TestEckart(unittest.TestCase):
         unpickled with no loss of information.
         """
         import cPickle
-        tunneling = cPickle.loads(cPickle.dumps(self.tunneling))
+        tunneling = cPickle.loads(cPickle.dumps(self.tunneling,-1))
         self.assertAlmostEqual(self.tunneling.frequency.value, tunneling.frequency.value, 2)
         self.assertEqual(self.tunneling.frequency.units, tunneling.frequency.units)
         self.assertAlmostEqual(self.tunneling.E0_reac.value, tunneling.E0_reac.value, 3)

@@ -258,7 +258,7 @@ class TestLinearRotor(unittest.TestCase):
         loss of information.
         """
         import cPickle
-        mode = cPickle.loads(cPickle.dumps(self.mode))
+        mode = cPickle.loads(cPickle.dumps(self.mode,-1))
         self.assertAlmostEqual(self.mode.inertia.value, mode.inertia.value, 6)
         self.assertEqual(self.mode.inertia.units, mode.inertia.units)
         self.assertEqual(self.mode.symmetry, mode.symmetry)
@@ -395,7 +395,7 @@ class TestNonlinearRotor(unittest.TestCase):
         no loss of information.
         """
         import cPickle
-        mode = cPickle.loads(cPickle.dumps(self.mode))
+        mode = cPickle.loads(cPickle.dumps(self.mode,-1))
         self.assertEqual(self.mode.inertia.value.shape, mode.inertia.value.shape)
         for I0, I in zip(self.mode.inertia.value, mode.inertia.value):
             self.assertAlmostEqual(I0, I, 6)
@@ -620,7 +620,7 @@ class TestKRotor(unittest.TestCase):
         of information.
         """
         import cPickle
-        mode = cPickle.loads(cPickle.dumps(self.mode))
+        mode = cPickle.loads(cPickle.dumps(self.mode,-1))
         self.assertAlmostEqual(self.mode.inertia.value, mode.inertia.value, 6)
         self.assertEqual(self.mode.inertia.units, mode.inertia.units)
         self.assertEqual(self.mode.symmetry, mode.symmetry)
@@ -845,7 +845,7 @@ class TestSphericalTopRotor(unittest.TestCase):
         with no loss of information.
         """
         import cPickle
-        mode = cPickle.loads(cPickle.dumps(self.mode))
+        mode = cPickle.loads(cPickle.dumps(self.mode,-1))
         self.assertAlmostEqual(self.mode.inertia.value, mode.inertia.value, 6)
         self.assertEqual(self.mode.inertia.units, mode.inertia.units)
         self.assertEqual(self.mode.symmetry, mode.symmetry)

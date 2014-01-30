@@ -141,7 +141,7 @@ class TestIdealGasTranslation(unittest.TestCase):
         with no loss of information.
         """
         import cPickle
-        mode = cPickle.loads(cPickle.dumps(self.mode))
+        mode = cPickle.loads(cPickle.dumps(self.mode,-1))
         self.assertAlmostEqual(self.mode.mass.value, mode.mass.value, 6)
         self.assertEqual(self.mode.mass.units, mode.mass.units)
         self.assertEqual(self.mode.quantum, mode.quantum)

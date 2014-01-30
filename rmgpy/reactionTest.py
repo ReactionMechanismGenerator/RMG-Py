@@ -424,7 +424,7 @@ class TestReaction(unittest.TestCase):
         unpickled with no loss of information.
         """
         import cPickle
-        reaction = cPickle.loads(cPickle.dumps(self.reaction))
+        reaction = cPickle.loads(cPickle.dumps(self.reaction,-1))
 
         self.assertEqual(len(self.reaction.reactants), len(reaction.reactants))
         self.assertEqual(len(self.reaction.products), len(reaction.products))

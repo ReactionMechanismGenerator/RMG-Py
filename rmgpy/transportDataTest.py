@@ -127,7 +127,7 @@ class TestTransportData(unittest.TestCase):
         Test that a TransportData object can be pickled and unpickled with no loss of information.
         """
         import cPickle
-        transport = cPickle.loads(cPickle.dumps(self.transport))
+        transport = cPickle.loads(cPickle.dumps(self.transport,-1))
         self.assertAlmostEqual(self.transport.shapeIndex, transport.shapeIndex, 4)
         self.assertAlmostEqual(self.transport.epsilon.value_si, transport.epsilon.value_si, 4)
         self.assertAlmostEqual(self.transport.sigma.value_si, transport.sigma.value_si, 4)
@@ -208,7 +208,7 @@ class TestCriticalPointGroupContribution(unittest.TestCase):
         Test that a CriticalPointGroupContribution object can be pickled and unpickled with no loss of information.
         """
         import cPickle
-        criticalPointContribution = cPickle.loads(cPickle.dumps(self.criticalPointContribution))
+        criticalPointContribution = cPickle.loads(cPickle.dumps(self.criticalPointContribution,-1))
         self.assertAlmostEqual(self.criticalPointContribution.Tc, criticalPointContribution.Tc, 4)
         self.assertAlmostEqual(self.criticalPointContribution.Pc, criticalPointContribution.Pc, 4)
         self.assertAlmostEqual(self.criticalPointContribution.Vc, criticalPointContribution.Vc, 4)

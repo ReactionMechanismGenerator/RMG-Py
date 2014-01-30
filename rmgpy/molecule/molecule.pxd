@@ -31,6 +31,7 @@ from .element cimport Element
 cimport rmgpy.constants as constants
 
 ################################################################################
+cdef public dict _known_smiles
 
 cdef class Atom(Vertex):
 
@@ -104,7 +105,7 @@ cdef class Molecule(Graph):
     cdef public object rdMol
     cdef public int rdMolConfId
     cdef str _fingerprint
-    
+        
     cpdef str getFingerprint(self)
     
     cpdef addAtom(self, Atom atom)

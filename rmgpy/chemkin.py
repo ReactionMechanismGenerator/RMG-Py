@@ -1576,8 +1576,8 @@ def saveTransportFile(path, species):
     (from the chemkin TRANSPORT manual)
     """
     with open(path, 'w') as f:
-        f.write("! {:15} {:8} {:9} {:9} {:9} {:9} {:9} {:9}\n".format('Species','Shape', 'LJ-depth', 'LJ-diam', 'DiplMom', 'Polzblty', 'RotRelaxNum','Data'))
-        f.write("! {:15} {:8} {:9} {:9} {:9} {:9} {:9} {:9}\n".format('Name','Index', 'epsilon/k_B', 'sigma', 'mu', 'alpha', 'Zrot','Source'))
+        f.write("! {0:15} {1:8} {2:9} {3:9} {4:9} {5:9} {6:9} {7:9}\n".format('Species','Shape', 'LJ-depth', 'LJ-diam', 'DiplMom', 'Polzblty', 'RotRelaxNum','Data'))
+        f.write("! {0:15} {1:8} {2:9} {3:9} {4:9} {5:9} {6:9} {7:9}\n".format('Name','Index', 'epsilon/k_B', 'sigma', 'mu', 'alpha', 'Zrot','Source'))
         for spec in species:            
             if (not spec.transportData or
                 len(spec.molecule) == 0):
@@ -1596,7 +1596,7 @@ def saveTransportFile(path, species):
                 shapeIndex = 2
             
             if missingData:
-                f.write('! {:19s} {!r}\n'.format(label, spec.transportData))
+                f.write('! {0:19s} {1!r}\n'.format(label, spec.transportData))
             else:
                 f.write('{0:19} {1:d}   {2:9.3f} {3:9.3f} {4:9.3f} {5:9.3f} {6:9.3f}    ! {7:s}\n'.format(
                     label,

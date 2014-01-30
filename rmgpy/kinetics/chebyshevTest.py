@@ -160,7 +160,7 @@ class TestChebyshev(unittest.TestCase):
         of information.
         """
         import cPickle
-        chebyshev = cPickle.loads(cPickle.dumps(self.chebyshev))
+        chebyshev = cPickle.loads(cPickle.dumps(self.chebyshev,-1))
         self.assertEqual(self.chebyshev.coeffs.value.shape[0], chebyshev.coeffs.value.shape[0])
         self.assertEqual(self.chebyshev.coeffs.value.shape[1], chebyshev.coeffs.value.shape[1])
         for i in range(self.chebyshev.coeffs.value.shape[0]):

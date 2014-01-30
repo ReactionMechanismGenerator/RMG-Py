@@ -50,6 +50,32 @@ from .group import GroupAtom, GroupBond, Group, ActionError
 from .atomtype import AtomType, atomTypes, getAtomType
 import rmgpy.constants as constants
 
+#: This dictionary is used to shortcut lookups of a molecule's SMILES string from its chemical formula.
+_known_smiles = {
+                 'N2': 'N#N',
+                 'CH4': 'C',
+                 'CH3': '[CH3]',
+                 'H2O': 'O',
+                 'HO': '[OH]',
+                 'C2H6': 'CC',
+                 'C2H5': 'C[CH2]',
+                 'H2': '[H][H]',
+                 'H2O2': 'OO',
+                 'O': '[O]',
+                 'HO2': '[O]O',
+                 'C3H8': 'CCC',
+                 'CH': '[CH]',
+                 'Ar': '[Ar]',
+                 'He': '[He]',
+                 'H': '[H]',
+                 'CH4O': 'CO',
+                 'C': '[C]',
+                 #'CO2': 'O=C=O', although unlikely, it could technically be [O][C][O] or O=[C][O]
+                 #'CO': '[C]=O', could also be [C][O]
+                 #'C2H4': 'C=C', could also be [CH3][CH] or [CH2][CH2]
+                 #'O2': '[O][O]', could also be O=O
+             }
+
 ################################################################################
 
 class Atom(Vertex):
@@ -1212,29 +1238,36 @@ class Molecule(Graph):
         
         return Chem.MolToSmarts(rdkitmol)
     
+    
     def toSMILES(self):
         """
-        Convert a molecular structure to an SMILES string. Uses
-        `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
+        Convert a molecular structure to an SMILES string. 
         
-        or
+        If there is a Nitrogen atom present it uses
+        `OpenBabel <http://openbabel.org/>`_ to perform the conversion,
+        and the SMILES may or may not be canonical.
         
-        Convert a molecular structure to a canonical SMILES string. Uses
-        `RDKit <http://rdkit.org/>`_ to perform the conversion.
-        Perceives aromaticity and removes Hydrogen atoms.
+        Otherwise, it uses `RDKit <http://rdkit.org/>`_ to perform the 
+        conversion, so it will be canonical SMILES.
+        While converting to an RDMolecule it will perceive aromaticity
+        and removes Hydrogen atoms.
         """
         
+        # If we're going to have to check the formula anyway,
+        # we may as well shortcut a few small known molecules.
+        # Dictionary lookups are O(1) so this should be fast:
+        # The dictionary is defined at the top of this file.
+        try:
+            return _known_smiles[self.getFormula()]
+        except KeyError:
+            # It wasn't in the above list.
+            pass
         for atom in self.vertices:
             if atom.isNitrogen():
                 mol = self.toOBMol()
-                if self.getFormula() == 'H2':
-                    return '[H][H]'
-                elif self.getFormula() == 'H':
-                    return '[H]'
                 return SMILEwriter.WriteString(mol).strip()
-            
+
         rdkitmol = self.toRDKitMol()
-        
         return Chem.MolToSmiles(rdkitmol)
 
     def toOBMol(self):

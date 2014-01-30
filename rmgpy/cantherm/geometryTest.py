@@ -121,7 +121,7 @@ class GeometryTest(unittest.TestCase):
         g0 = Geometry(position, number, mass)
 
         import cPickle
-        g = cPickle.loads(cPickle.dumps(g0))
+        g = cPickle.loads(cPickle.dumps(g0,-1))
 
         Natoms = len(g.number)
         self.assertEqual(len(g0.number), len(g.number))

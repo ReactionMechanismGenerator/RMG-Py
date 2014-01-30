@@ -430,7 +430,7 @@ class TestHinderedRotor(unittest.TestCase):
         loss of information.
         """
         import cPickle
-        mode = cPickle.loads(cPickle.dumps(self.mode))
+        mode = cPickle.loads(cPickle.dumps(self.mode,-1))
         self.assertAlmostEqual(self.mode.inertia.value, mode.inertia.value, 6)
         self.assertEqual(self.mode.inertia.units, mode.inertia.units, 6)
         self.assertEqual(self.mode.fourier.value.shape, mode.fourier.value.shape)
