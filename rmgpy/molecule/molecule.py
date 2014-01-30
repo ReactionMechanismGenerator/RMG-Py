@@ -1223,14 +1223,9 @@ class Molecule(Graph):
         `RDKit <http://rdkit.org/>`_ to perform the conversion.
         Perceives aromaticity and removes Hydrogen atoms.
         """
-        
         for atom in self.vertices:
-            if atom.isNitrogen():
+            if atom.isNitrogen() and self.getFormula() != 'N2':
                 mol = self.toOBMol()
-                if self.getFormula() == 'H2':
-                    return '[H][H]'
-                elif self.getFormula() == 'H':
-                    return '[H]'
                 return SMILEwriter.WriteString(mol).strip()
             
         rdkitmol = self.toRDKitMol()
