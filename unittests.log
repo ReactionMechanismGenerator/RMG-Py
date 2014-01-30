@@ -347,6 +347,7 @@ Test that the species [CH] has three radical electrons and a spin multiplicity o
 Test that the species [CH2] has two radical electrons and a spin multiplicity of 3. ... ok
 Test radical count on [CH2]C[CH2] ... ok
 Test the Molecule.getRadicalCount() method. ... ok
+Test that we can generate a few SMILES strings as expected ... ok
 Test the Molecule.getSmallestSetOfSmallestRings() method with a complex ... ok
 Check the graph isomorphism functions. ... ok
 testSubgraphIsomorphismAgain (rmgpy.molecule.moleculeTest.TestMolecule) ... ok
@@ -833,7 +834,7 @@ AssertionError: 'N3s' is not None
 FAIL: Test the Molecule.isAromatic() method.
 ----------------------------------------------------------------------
 Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/moleculeTest.py", line 908, in testAromaticBenzene
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/moleculeTest.py", line 918, in testAromaticBenzene
     self.assertTrue(Molecule().fromSMILES('C1=CC=CC=C1').isAromatic())
 AssertionError: False is not true
 
@@ -841,7 +842,7 @@ AssertionError: False is not true
 FAIL: Test the Molecule.isAromatic() method.
 ----------------------------------------------------------------------
 Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/moleculeTest.py", line 914, in testAromaticNaphthalene
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/moleculeTest.py", line 924, in testAromaticNaphthalene
     self.assertTrue(Molecule().fromSMILES('C12C(C=CC=C1)=CC=CC=2').isAromatic())
 AssertionError: False is not true
 
@@ -849,7 +850,7 @@ AssertionError: False is not true
 FAIL: Test the Molecule.countInternalRotors() method for dimethylacetylene.
 ----------------------------------------------------------------------
 Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/moleculeTest.py", line 963, in testCountInternalRotorsDimethylAcetylene
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/moleculeTest.py", line 973, in testCountInternalRotorsDimethylAcetylene
     self.assertEqual(Molecule().fromSMILES('CC#CC').countInternalRotors(), 1)
 AssertionError: 2 != 1
 
@@ -969,7 +970,7 @@ rmgpy.transport                      31      3      0      0    90%   58-59, 65
 -----------------------------------------------------------------------------
 TOTAL                             14328  11423   6058   5468    17%   
 ----------------------------------------------------------------------
-Ran 724 tests.
+Ran 725 tests.
 
 FAILED (errors=1, failures=19)
 1 *1 C 1 0 {2,S} {3,S} {4,S}
