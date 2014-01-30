@@ -119,13 +119,13 @@ class TransitionStates(Database):
         
         fpath = os.path.join(path,'TS_training.py')
         logging.debug("Loading transitions state family training set from {0}".format(fpath))
-        depository = TransitionStateDepository(label='H_Abstraction/TS_training')
+        depository = TransitionStateDepository(label='R_Addition_MultipleBond/TS_training')
         depository.load(fpath, local_context, global_context )
         self.depository = depository
         
         fpath = os.path.join(path,'TS_groups.py')
         logging.debug("Loading transitions state family groups from {0}".format(fpath))
-        groups = TSGroups(label="H_Abstraction/TS_groups")
+        groups = TSGroups(label="R_Addition_MultipleBond/TS_groups")
         groups.load(fpath , local_context, global_context )
         self.groups = groups
     
@@ -221,13 +221,13 @@ class TransitionStates(Database):
                 elif species[0].isIsomorphic(molecules[1]) and species[1].isIsomorphic(molecules[0]):
                     return True
             return False
-    
+        
         reaction = None; template = None
         
         # Get the indicated reaction family
         if groups == None:
             raise ValueError('Invalid value "{0}" for family parameter.'.format(family))
-        
+            
         if all([(isinstance(reactant, Group) or isinstance(reactant, LogicNode)) for reactant in entry.item.reactants]):
             # The entry is a rate rule, containing functional groups only
             # By convention, these are always given in the forward direction and
@@ -255,7 +255,7 @@ class TransitionStates(Database):
                 product = Species(molecule=[molecule])
                 product.generateResonanceIsomers()
                 reaction.products.append(product)
-            
+            import ipdb; ipdb.set_trace()
             # Generate all possible reactions involving the reactant species
             generatedReactions = self.generateReactionsFromFamilies([reactant.molecule for reactant in reaction.reactants], [], only_families=[family], families=rxnFamily)
             
