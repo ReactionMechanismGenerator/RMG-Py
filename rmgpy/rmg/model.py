@@ -1056,7 +1056,7 @@ class CoreEdgeReactionModel:
                 rate = reactionSystem.maxEdgeSpeciesRates[i]
                 if maxEdgeSpeciesRates[i] < rate:
                     maxEdgeSpeciesRates[i] = rate
-            i = 0
+            i = -1
             for source, networks in self.networkDict.items():
                 for network in networks:
                     i += 1
@@ -1064,18 +1064,18 @@ class CoreEdgeReactionModel:
                     if maxNetworkLeakRates[i] < rate:
                         maxNetworkLeakRates[i] = rate
 
-                # Add the fraction of the network leak rate contributed by
-                # each unexplored species to that species' rate
-                # This is to ensure we have an overestimate of that species flux
-                ratios = network.getLeakBranchingRatios(reactionSystem.T.value_si,reactionSystem.P.value_si)
-                for spec, frac in ratios.iteritems():
-                    index = self.edge.species.index(spec)
-                    maxEdgeSpeciesRates[index] += frac * rate
-
-                # Mark any species that is explored in any partial network as ineligible for pruning
-                for spec in network.explored:
-                    if spec not in ineligibleSpecies:
-                        ineligibleSpecies.append(spec)
+                    # Add the fraction of the network leak rate contributed by
+                    # each unexplored species to that species' rate
+                    # This is to ensure we have an overestimate of that species flux
+                    ratios = network.getLeakBranchingRatios(reactionSystem.T.value_si,reactionSystem.P.value_si)
+                    for spec, frac in ratios.iteritems():
+                        index = self.edge.species.index(spec)
+                        maxEdgeSpeciesRates[index] += frac * rate
+    
+                    # Mark any species that is explored in any partial network as ineligible for pruning
+                    for spec in network.explored:
+                        if spec not in ineligibleSpecies:
+                            ineligibleSpecies.append(spec)
 
         # Sort the edge species rates by index
         indices = numpy.argsort(maxEdgeSpeciesRates)
