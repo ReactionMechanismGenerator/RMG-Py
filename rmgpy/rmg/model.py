@@ -304,8 +304,9 @@ class CoreEdgeReactionModel:
     =========================  ==============================================================
     `core`                     The species and reactions of the current model core
     `edge`                     The species and reactions of the current model edge
-    `networkDict`              A list of pressure-dependent reaction networks (:class:`Network` objects)
-    `networkCount`             A counter for the number of unirxn networks created
+    `networkDict`              A dictionary of pressure-dependent reaction networks (:class:`Network` objects) indexed by source.
+    `networkList`              A list of pressure-dependent reaction networks (:class:`Network` objects)
+    `networkCount`             A counter for the number of pressure-dependent networks created
     =========================  ==============================================================
 
 
@@ -324,6 +325,7 @@ class CoreEdgeReactionModel:
         # pruning takes place, and the simulation is interrupted as soon as
         # a species flux higher than the validity
         self.networkDict = {}
+        self.networkList = []
         self.networkCount = 0
         self.speciesDict = {}
         self.reactionDict = {}
@@ -684,26 +686,25 @@ class CoreEdgeReactionModel:
 
             # If there are any core species among the unimolecular product channels
             # of any existing network, they need to be made included
-            for source, networks in self.networkDict.items():
-                for network in networks:
-                    network.updateConfigurations(self)
-                    index = 0
-                    while index < len(self.core.species):
-                        species = self.core.species[index]
-                        isomers = [isomer.species[0] for isomer in network.isomers]
-                        if species in isomers and species not in network.explored:
-                            network.explored.append(species)
-                            continue
-                        for products in network.products:
-                            products = products.species
-                            if len(products) == 1 and products[0] == species:
-                                newReactions = network.exploreIsomer(species, self, database)
-                                self.processNewReactions(newReactions, species, network)
-                                network.updateConfigurations(self)
-                                index = 0
-                                break
-                        else:
-                            index += 1
+            for network in self.networkList:
+                network.updateConfigurations(self)
+                index = 0
+                while index < len(self.core.species):
+                    species = self.core.species[index]
+                    isomers = [isomer.species[0] for isomer in network.isomers]
+                    if species in isomers and species not in network.explored:
+                        network.explored.append(species)
+                        continue
+                    for products in network.products:
+                        products = products.species
+                        if len(products) == 1 and products[0] == species:
+                            newReactions = network.exploreIsomer(species, self, database)
+                            self.processNewReactions(newReactions, species, network)
+                            network.updateConfigurations(self)
+                            index = 0
+                            break
+                    else:
+                        index += 1
             
             if isinstance(obj, Species) and objectWasInEdge:
                 # moved one species from edge to core
@@ -1050,32 +1051,26 @@ class CoreEdgeReactionModel:
         # Get the maximum species rates (and network leak rates)
         # across all reaction systems
         maxEdgeSpeciesRates = numpy.zeros((numEdgeSpecies), numpy.float64)
-        maxNetworkLeakRates = numpy.zeros((numPdepNetworks), numpy.float64)
         for reactionSystem in reactionSystems:
             for i in range(numEdgeSpecies):
                 rate = reactionSystem.maxEdgeSpeciesRates[i]
                 if maxEdgeSpeciesRates[i] < rate:
                     maxEdgeSpeciesRates[i] = rate
-            i = -1
-            for source, networks in self.networkDict.items():
-                for network in networks:
-                    i += 1
-                    rate = reactionSystem.maxNetworkLeakRates[i]
-                    if maxNetworkLeakRates[i] < rate:
-                        maxNetworkLeakRates[i] = rate
 
-                    # Add the fraction of the network leak rate contributed by
-                    # each unexplored species to that species' rate
-                    # This is to ensure we have an overestimate of that species flux
-                    ratios = network.getLeakBranchingRatios(reactionSystem.T.value_si,reactionSystem.P.value_si)
-                    for spec, frac in ratios.iteritems():
-                        index = self.edge.species.index(spec)
-                        maxEdgeSpeciesRates[index] += frac * rate
-    
-                    # Mark any species that is explored in any partial network as ineligible for pruning
-                    for spec in network.explored:
-                        if spec not in ineligibleSpecies:
-                            ineligibleSpecies.append(spec)
+            for i in range(numPdepNetworks):
+                network = self.networkList[i]
+                rate = reactionSystem.maxNetworkLeakRates[i]
+                # Add the fraction of the network leak rate contributed by
+                # each unexplored species to that species' rate
+                # This is to ensure we have an overestimate of that species flux
+                ratios = network.getLeakBranchingRatios(reactionSystem.T.value_si,reactionSystem.P.value_si)
+                for spec, frac in ratios.iteritems():
+                    index = self.edge.species.index(spec)
+                    maxEdgeSpeciesRates[index] += frac * rate
+                # Mark any species that is explored in any partial network as ineligible for pruning
+                for spec in network.explored:
+                    if spec not in ineligibleSpecies:
+                        ineligibleSpecies.append(spec)
 
         # Sort the edge species rates by index
         indices = numpy.argsort(maxEdgeSpeciesRates)
@@ -1115,7 +1110,12 @@ class CoreEdgeReactionModel:
                 logging.info('Deleting {0:d} empty pressure-dependent reaction networks'.format(len(networksToDelete)))
                 for network in networksToDelete:
                     logging.debug('    Deleting empty pressure dependent reaction network #{0:d}'.format(network.index))
-                    self.networkDict.remove(network)
+                    source = network.source
+                    nets_with_this_source = self.networkDict[source]
+                    nets_with_this_source.remove(network)
+                    if not nets_with_this_source:
+                        del(self.networkDict[source])
+                    self.networkList.remove(network)
 
         logging.info('')
 
@@ -1137,26 +1137,25 @@ class CoreEdgeReactionModel:
         
         # Remove the species from any unirxn networks it is in
         if self.pressureDependence:
-            for source, networks in self.networkDict.items():
-                for network in networks:
-                    # Delete all path reactions involving the species
+            for network in self.networkList:
+                # Delete all path reactions involving the species
+                rxnList = []
+                for rxn in network.pathReactions:
+                    if spec in rxn.reactants or spec in rxn.products:
+                        rxnList.append(rxn)
+                if len(rxnList) > 0:
+                    for rxn in rxnList:
+                        network.pathReactions.remove(rxn)
+                    # Delete all net reactions involving the species
                     rxnList = []
-                    for rxn in network.pathReactions:
+                    for rxn in network.netReactions:
                         if spec in rxn.reactants or spec in rxn.products:
                             rxnList.append(rxn)
-                    if len(rxnList) > 0:
-                        for rxn in rxnList:
-                            network.pathReactions.remove(rxn)
-                        # Delete all net reactions involving the species
-                        rxnList = []
-                        for rxn in network.netReactions:
-                            if spec in rxn.reactants or spec in rxn.products:
-                                rxnList.append(rxn)
-                        for rxn in rxnList:
-                            network.netReactions.remove(rxn)
-                            
-                        # Recompute the isomers, reactants, and products for this network
-                        network.updateConfigurations()
+                    for rxn in rxnList:
+                        network.netReactions.remove(rxn)
+                        
+                    # Recompute the isomers, reactants, and products for this network
+                    network.updateConfigurations()
 
         # Remove from the global list of reactions
         # also remove it from the global list of reactions
@@ -1432,11 +1431,13 @@ class CoreEdgeReactionModel:
             if network is None:
                 self.networkCount += 1
                 network = PDepNetwork(index=self.networkCount, source=reactants[:])
+                        # should the source passed to PDepNetwork constuctor be a tuple not a list? that's what is used in networkDict
                 try:
                     self.networkDict[source].append(network)
                 except KeyError:
                     self.networkDict[source] = [network]
-                    
+                self.networkList.append(network)
+
         # Add the path reaction to that network
         network.addPathReaction(newReaction, newSpecies)
         
@@ -1456,7 +1457,7 @@ class CoreEdgeReactionModel:
         # Two partial networks having the same source and containing one or
         # more explored isomers in common must be merged together to avoid
         # double-counting of rates
-        for source, networks in self.networkDict.items():
+        for source, networks in self.networkDict.iteritems():
             networkCount = len(networks)
             for index0, network0 in enumerate(networks):
                 index = index0 + 1
@@ -1476,23 +1477,21 @@ class CoreEdgeReactionModel:
                         logging.info('Merging PDepNetwork #{0:d} and PDepNetwork #{1:d}'.format(network0.index, network.index))
                         network0.merge(network)
                         networks.remove(network)
+                        self.networkList.remove(network)
                         networkCount -= 1
                     else:
                         index += 1
 
-        count = 0
-        for source, networks in self.networkDict.items():
-            count += sum([1 for network in networks if not network.valid and not (len(network.explored) == 0 and len(network.source) > 1)])
+        count = sum([1 for network in self.networkList if not network.valid and not (len(network.explored) == 0 and len(network.source) > 1)])
         logging.info('Updating {0:d} modified unimolecular reaction networks...'.format(count))
         
         # Iterate over all the networks, updating the invalid ones as necessary
         # self = reactionModel object
         updatedNetworks = []
-        for source, networks in self.networkDict.items():
-            for network in networks:
-                if not network.valid:
-                    network.update(self, database, self.pressureDependence)
-                    updatedNetworks.append(network)
+        for network in self.networkList:
+            if not network.valid:
+                network.update(self, database, self.pressureDependence)
+                updatedNetworks.append(network)
             
         # PDepReaction objects generated from partial networks are irreversible
         # However, it makes more sense to have reversible reactions in the core
@@ -1509,7 +1508,6 @@ class CoreEdgeReactionModel:
                 for index2, reaction2 in enumerate(self.core.reactions):
                     if isinstance(reaction2, PDepReaction) and reaction.reactants == reaction2.products and reaction.products == reaction2.reactants:
                         # We've found the PDepReaction for the reverse direction
-                        dHrxn = reaction.getEnthalpyOfReaction(300.)
                         dGrxn = reaction.getFreeEnergyOfReaction(300.)
                         kf = reaction.getRateCoefficient(1000,1e5)
                         kr = reaction.getRateCoefficient(1000,1e5) / reaction.getEquilibriumConstant(1000)
