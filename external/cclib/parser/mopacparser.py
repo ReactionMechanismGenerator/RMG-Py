@@ -137,7 +137,7 @@ class Mopac(logfileparser.Logfile):
             atomcoords = []
             line = inputfile.next()
            # while line != blankline:
-            while len(line.split()) > 0:
+            while len(line.split()) > 6: # MOPAC Version 14.019L 64BITS suddenly appends this block with  "CARTESIAN COORDINATES" block with no blank line.
                 broken = line.split()
                 self.inputatoms.append(symbol2int(broken[1]))
                 xc = float(broken[2])
