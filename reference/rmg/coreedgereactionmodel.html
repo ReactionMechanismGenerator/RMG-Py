@@ -72,8 +72,8 @@ algorithm. The species and reactions in the model itself are called the
 the model are called the <em>edge</em>. The attributes are:</p>
 <table border="1" class="docutils">
 <colgroup>
-<col width="26%" />
-<col width="74%" />
+<col width="20%" />
+<col width="80%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Attribute</th>
@@ -88,10 +88,13 @@ the model are called the <em>edge</em>. The attributes are:</p>
 <td>The species and reactions of the current model edge</td>
 </tr>
 <tr class="row-even"><td><cite>networkDict</cite></td>
+<td>A dictionary of pressure-dependent reaction networks (<tt class="xref py py-class docutils literal"><span class="pre">Network</span></tt> objects) indexed by source.</td>
+</tr>
+<tr class="row-odd"><td><cite>networkList</cite></td>
 <td>A list of pressure-dependent reaction networks (<tt class="xref py py-class docutils literal"><span class="pre">Network</span></tt> objects)</td>
 </tr>
-<tr class="row-odd"><td><cite>networkCount</cite></td>
-<td>A counter for the number of unirxn networks created</td>
+<tr class="row-even"><td><cite>networkCount</cite></td>
+<td>A counter for the number of pressure-dependent networks created</td>
 </tr>
 </tbody>
 </table>
