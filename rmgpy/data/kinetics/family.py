@@ -1168,7 +1168,7 @@ class KineticsFamily(Database):
             radical1 = atom1.radicalElectrons
             spin1 = atom1.spinMultiplicity
             
-            if radical1 > 1 and radical1 < 4:
+            if atom1.label != '' and radical1 > 1 and radical1 < 4:
                 
                 if radical1 == 2 and spin1 == 3:
                     atom1.setSpinMultiplicity(1)
@@ -1245,7 +1245,7 @@ class KineticsFamily(Database):
                 radical2 = atom2.radicalElectrons
                 spin2 = atom2.spinMultiplicity
             
-                if radical2 > 1 and radical2 < 4:
+                if atom2.label != '' and radical2 > 1 and radical2 < 4:
                     
                     if radical2 == 2 and spin2 == 3:
                         atom2.setSpinMultiplicity(1)
