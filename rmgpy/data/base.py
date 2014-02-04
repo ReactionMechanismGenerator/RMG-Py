@@ -371,9 +371,9 @@ class Database:
                     self.entries[label].item = makeLogicNode(' '.join(lines[1:]) )
                 # Otherwise convert adjacency list to molecule or pattern
                 elif pattern:
-                    self.entries[label].item = Group().fromAdjacencyList(record)
+                    self.entries[label].item = Group().fromAdjacencyList(record,saturateH=True)
                 else:
-                    self.entries[label].item = Molecule().fromAdjacencyList(record)
+                    self.entries[label].item = Molecule().fromAdjacencyList(record,saturateH=True)
         except InvalidAdjacencyListError, e:
             logging.error('Error while loading old-style dictionary "{0}"'.format(path))
             logging.error('Error occurred while parsing adjacency list "{0}"'.format(label))

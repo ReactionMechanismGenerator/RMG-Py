@@ -1040,7 +1040,6 @@ class CoreEdgeReactionModel:
 
         numCoreSpecies = len(self.core.species)
         numEdgeSpecies = len(self.edge.species)
-        numPdepNetworks = self.networkCount
 
         # All edge species that have not existed for more than two enlarge
         # iterations are ineligible for pruning
@@ -1057,7 +1056,7 @@ class CoreEdgeReactionModel:
                 if maxEdgeSpeciesRates[i] < rate:
                     maxEdgeSpeciesRates[i] = rate
 
-            for i in range(numPdepNetworks):
+            for i in range(len(self.networkList)):
                 network = self.networkList[i]
                 rate = reactionSystem.maxNetworkLeakRates[i]
                 # Add the fraction of the network leak rate contributed by
