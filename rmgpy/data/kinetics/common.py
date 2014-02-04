@@ -83,6 +83,9 @@ UNIMOLECULAR_KINETICS_FAMILIES = [
     'intra_substitutionS_cyclization',
     'intra_substitutionS_isomerization',
     'intra_NO2_ONO_conversion',
+    '1,4_Cyclic_birad_scission',
+    '1,4_Linear_birad_scission',
+    'Intra_Diels_alder'
 ]
 
 ################################################################################

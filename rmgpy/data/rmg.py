@@ -190,7 +190,7 @@ class RMGDatabase:
         if not os.path.exists(path): os.makedirs(path)
         self.forbiddenStructures.save(os.path.join(path, 'forbiddenStructures.py'))
         self.thermo.save(os.path.join(path, 'thermo'))
-        self.transport.save(os.path.join(path, 'transport'))
+#         self.transport.save(os.path.join(path, 'transport')) #Currently no function for saving transport groups
         self.kinetics.save(os.path.join(path, 'kinetics'))
         self.statmech.save(os.path.join(path, 'statmech'))
 
