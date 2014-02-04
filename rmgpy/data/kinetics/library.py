@@ -353,7 +353,7 @@ class KineticsLibrary(Database):
             )
             entry.longDesc = reaction.kinetics.comment
             reaction.kinetics.comment = ''
-            self.entries[index+1] = entry
+            self.entries['{0:d}:'.format(index+1)] = entry
             reaction.kinetics = None
         
         self.checkForDuplicates()
