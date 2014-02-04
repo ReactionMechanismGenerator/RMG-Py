@@ -160,15 +160,13 @@ class KineticsGroups(Database):
         # template is a list of the actual matched nodes
         # forwardTemplate is a list of the top level nodes that should be matched
         if len(template) != len(forwardTemplate):
-            logging.warning('Unable to find matching template for reaction {0} in reaction family {1}'.format(str(reaction), str(self)) )
-            logging.warning(" Trying to match " + str(forwardTemplate))
-            logging.warning(" Matched "+str(template))
-            #print str(self), template, forwardTemplate
-            for reactant in reaction.reactants:
-                print reactant.toAdjacencyList() + '\n'
-            for product in reaction.products:
-                print product.toAdjacencyList() + '\n'
-            raise UndeterminableKineticsError(reaction)
+            msg = 'Unable to find matching template for reaction {0} in reaction family {1}.'.format(str(reaction), str(self)) 
+            msg += 'Trying to match {0} but matched {1}'.format(str(forwardTemplate),str(template))
+#            for reactant in reaction.reactants:
+#                print reactant.toAdjacencyList() + '\n'
+#            for product in reaction.products:
+#                print product.toAdjacencyList() + '\n'
+            raise UndeterminableKineticsError(reaction, message=msg)
 
         return template
 
