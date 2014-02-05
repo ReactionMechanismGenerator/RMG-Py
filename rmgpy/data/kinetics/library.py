@@ -294,7 +294,8 @@ class KineticsLibrary(Database):
             comment += str(re.sub('\s*\n\s*','\n',longDesc))
         kinetics.comment = comment.strip()
         
-        self.entries['{0:d}:{1}'.format(index,label)] = Entry(
+        assert index not in self.entries, "Reaction with index {0} already present!".format(index)
+        self.entries[index] = Entry(
             index = index,
             label = label,
             item = Reaction(reactants=reactants, products=products, degeneracy=degeneracy, duplicate=duplicate, reversible=reversible),
@@ -353,7 +354,7 @@ class KineticsLibrary(Database):
             )
             entry.longDesc = reaction.kinetics.comment
             reaction.kinetics.comment = ''
-            self.entries['{0:d}:'.format(index+1)] = entry
+            self.entries[index+1] = entry
             reaction.kinetics = None
         
         self.checkForDuplicates()
