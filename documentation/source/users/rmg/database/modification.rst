@@ -265,3 +265,11 @@ why do you trust the kinetics?
 
 After you are done always check via populate reactions or the website, that your
 modifications are behaving the way you expect.
+
+Caveat regarding how rate rules are used by RMG and the rate parameters you input: because tunneling is
+important for many chemical reactions, the rate of a reaction may not be easily represented by
+a bi-Arrhenius fit. 3-parameter fits are more common. However, the resulting fit may report an
+'activation energy' that is much different (possibly by 10+ kcals) than the the true barrier height. 
+When RMG is assembling pressure-dependent networks, it will use barrier heights from rate rules. This can 
+lead to very inaccurate rate calculations. To avoid this issue, try to ensure that your fitted arrhenius 
+activation energy truly does reflect the reaction barrier height. 
