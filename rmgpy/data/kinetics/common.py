@@ -70,7 +70,6 @@ UNIMOLECULAR_KINETICS_FAMILIES = [
     'intra_OH_migration',
     'HO2_Elimination_from_PeroxyRadical',
     'Cyclic_Ether_Formation',
-    'Enol_keto_tautomerism',
     'Intra_R_Add_Exocyclic',
     'Intra_R_Add_Endocyclic',
     '1,2-Birad_to_alkene',
@@ -85,7 +84,8 @@ UNIMOLECULAR_KINETICS_FAMILIES = [
     'intra_NO2_ONO_conversion',
     '1,4_Cyclic_birad_scission',
     '1,4_Linear_birad_scission',
-    'Intra_Diels_alder'
+    'Intra_Diels_alder',
+    'ketoenol'
 ]
 
 ################################################################################
