@@ -370,6 +370,13 @@ class StatMechJob:
             logging.debug('    Determining frequencies from reduced force constant matrix...')
             frequencies = numpy.array(projectRotors(conformer, F, rotors, linear, TS))
             
+            # The frequencies have changed after projection, hence we need to recompute the ZPE
+            # We might need to multiply the scaling factor to the frequencies 
+            ZPE = self.getZPEfromfrequencies(frequencies)
+            E0_withZPE = E0 + ZPE
+            # Reset the E0 of the conformer
+            conformer.E0 = (E0_withZPE*0.001,"kJ/mol")
+
         elif len(conformer.modes) > 2:
             frequencies = conformer.modes[2].frequencies.value_si
             rotors = numpy.array([])
@@ -382,6 +389,17 @@ class StatMechJob:
                 mode.frequencies = (frequencies * self.frequencyScaleFactor,"cm^-1")
                 
         self.species.conformer = conformer
+        
+    def getZPEfromfrequencies(self, frequencies):
+                
+        ZPE = 0.0
+        
+        for freq in frequencies:
+            if freq > 0.0:
+                ZPE += 0.5 * constants.h * freq * 100.0 * constants.c * constants.Na
+                
+        return ZPE
+        
     
     def save(self, outputFile):
         """
@@ -647,7 +665,7 @@ def projectRotors(conformer, F, rotors, linear, TS):
     Natoms = len(conformer.mass.value)
     Nvib = 3 * Natoms - (5 if linear else 6) - Nrotors - (1 if (TS) else 0)
     mass = conformer.mass.value_si
-    coordinates = conformer.coordinates 
+    coordinates = conformer.coordinates.getValue() 
 
 
     # Put origin in center of mass
@@ -842,56 +860,6 @@ def projectRotors(conformer, F, rotors, linear, TS):
     logging.debug('Frequencies from projected Hessian')
     for i in range(3*Natoms):
         logging.debug(numpy.sqrt(eig[i])/(2 * math.pi * constants.c * 100))
-
+        
     return numpy.sqrt(eig[-Nvib:]) / (2 * math.pi * constants.c * 100)
 
-
-#     for i in range(Natoms):
-#         # Projection vectors for translation
-#         D[3*i+0,0] = 1.0
-#         D[3*i+1,1] = 1.0
-#         D[3*i+2,2] = 1.0
-#         # Projection vectors for [external] rotation
-#         D[3*i:3*i+3,3] = numpy.array([0, -coordinates[i,2], coordinates[i,1]], numpy.float64)
-#         D[3*i:3*i+3,4] = numpy.array([coordinates[i,2], 0, -coordinates[i,0]], numpy.float64)
-#         if not linear:
-#             D[3*i:3*i+3,5] = numpy.array([-coordinates[i,1], coordinates[i,0], 0], numpy.float64)
-#     for i, rotor in enumerate(rotors):
-#         scanLog, pivots, top, symmetry, fit = rotor
-#         # Determine pivot atom
-#         if pivots[0] in top: pivot = pivots[0]
-#         elif pivots[1] in top: pivot = pivots[1]
-#         else: raise Exception('Could not determine pivot atom.')
-#         # Projection vectors for internal rotation
-#         e12 = coordinates[pivots[0]-1,:] - coordinates[pivots[1]-1,:]
-#         e12 /= numpy.linalg.norm(e12)
-#         for atom in top:
-#             e31 = coordinates[atom-1,:] - coordinates[pivot-1,:]
-#             D[3*(atom-1):3*(atom-1)+3,-Nrotors+i] = numpy.cross(e31, e12)
-# 
-#     # Make sure projection matrix is orthonormal
-#     import scipy.linalg
-#     D = scipy.linalg.orth(D)
-# 
-#     # Project out the non-vibrational modes from the force constant matrix
-#     P = numpy.dot(D, D.transpose())
-#     I = numpy.identity(Natoms*3, numpy.float64)
-#     F = numpy.dot(I - P, numpy.dot(F, I - P))
-# 
-#     # Generate mass-weighted force constant matrix
-#     # This converts the axes to mass-weighted Cartesian axes
-#     # Units of Fm are J/m^2*kg = 1/s^2
-#     Fm = F.copy()
-#     for i in range(Natoms):
-#         for j in range(Natoms):
-#             for u in range(3):
-#                 for v in range(3):
-#                     Fm[3*i+u,3*j+v] /= math.sqrt(mass[i] * mass[j])
-# 
-#     # Get eigenvalues of mass-weighted force constant matrix
-#     eig, V = numpy.linalg.eigh(Fm)
-#     eig.sort()
-# 
-#     # Convert eigenvalues to vibrational frequencies in cm^-1
-#     # Only keep the modes that don't correspond to translation, rotation, or internal rotation
-#     return numpy.sqrt(eig[-Nvib:]) / (2 * math.pi * constants.c * 100)
