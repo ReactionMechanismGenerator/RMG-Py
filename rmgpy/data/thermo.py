@@ -108,11 +108,17 @@ def saveEntry(f, entry):
     if entry.reference is not None: f.write('    reference = {0!r},\n'.format(entry.reference))
     if entry.referenceType != "": f.write('    referenceType = "{0}",\n'.format(entry.referenceType))
     f.write('    shortDesc = u"""')
-    f.write(entry.shortDesc)
+    try:
+        f.write(entry.shortDesc.encode('utf-8'))
+    except:
+        f.write(entry.shortDesc.strip().encode('ascii', 'ignore')+ "\n")
     f.write('""",\n')
     f.write('    longDesc = \n')
     f.write('u"""\n')
-    f.write(entry.longDesc.strip() + "\n")
+    try:
+        f.write(entry.longDesc.strip().encode('utf-8') + "\n")    
+    except:
+        f.write(entry.longDesc.strip().encode('ascii', 'ignore')+ "\n")
     f.write('""",\n')
 
     f.write('    history = [\n')
