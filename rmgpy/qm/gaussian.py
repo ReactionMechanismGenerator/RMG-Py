@@ -430,28 +430,44 @@ class GaussianTS(QMReaction, Gaussian):
                    'Error in internal coordinate system.',
                    ]
     
-    def writeInputFile(self, attempt):
+    def writeInputFile(self, attempt, fromDbl=False):
         """
         Using the :class:`Geometry` object, write the input file
         for the `attmept`th attempt.
         """
         numProc = '%nprocshared=' + '11' + '\n' # could be something that is set in the qmSettings
-        mem = '%mem=' + '1GB' + '\n' # could be something that is set in the qmSettings
+        mem = '%mem=' + '800MB' + '\n' # could be something that is set in the qmSettings
         chk_file = '%chk=' + os.path.join(self.settings.fileStore, self.uniqueID) + '\n'
         
-        molfile = self.geometry.getRefinedMolFilePath()
-        atomline = re.compile('\s*([\- ][0-9.]+\s+[\-0-9.]+\s+[\-0-9.]+)\s+([A-Za-z]+)')
+        if fromDbl:
+            molfile = self.getFilePath('.arc')
+            atomline = re.compile('\s*([A-Za-z]+)\s+([\- ][0-9.]+)\s+([\+ ][0-9.]+)\s+([\- ][0-9.]+)\s+([\+ ][0-9.]+)\s+([\- ][0-9.]+)')
+            
+            output = ['', self.geometry.uniqueID, '' ]
+            output.append("{charge}   {mult}".format(charge=0, mult=(fromDbl + 1) ))
+            
+            atomCount = 0
+            with open(molfile) as molinput:
+                for line in molinput:
+                    match = atomline.match(line)
+                    if match:
+                        output.append("{0:8s} {1}  {2}  {3}".format(match.group(1), match.group(2), match.group(4), match.group(6)))
+                        atomCount += 1
+        else:
+            molfile = self.geometry.getRefinedMolFilePath()
+            atomline = re.compile('\s*([\- ][0-9.]+\s+[\-0-9.]+\s+[\-0-9.]+)\s+([A-Za-z]+)')
+            
+            output = ['', self.geometry.uniqueID, '' ]
+            output.append("{charge}   {mult}".format(charge=0, mult=(self.geometry.molecule.getRadicalCount() + 1) ))
+            
+            atomCount = 0
+            with open(molfile) as molinput:
+                for line in molinput:
+                    match = atomline.match(line)
+                    if match:
+                        output.append("{0:8s} {1}".format(match.group(2), match.group(1)))
+                        atomCount += 1
         
-        output = ['', self.geometry.uniqueID, '' ]
-        output.append("{charge}   {mult}".format(charge=0, mult=(self.geometry.molecule.getRadicalCount() + 1) ))
-        
-        atomCount = 0
-        with open(molfile) as molinput:
-            for line in molinput:
-                match = atomline.match(line)
-                if match:
-                    output.append("{0:8s} {1}".format(match.group(2), match.group(1)))
-                    atomCount += 1
         assert atomCount == len(self.geometry.molecule.atoms)
         
         output.append('')
@@ -472,8 +488,6 @@ class GaussianTS(QMReaction, Gaussian):
                 gaussianFile.write(input_string)
             else:
                 gaussianFile.write('\n')
-            # for atom in atomTypes:
-            #     gaussianFile.write(self.mg3s[atom])
             gaussianFile.write('\n')
     
     def writeIRCFile(self):
@@ -782,12 +796,18 @@ class GaussianTSB3LYP(GaussianTS):
 
     #: Keywords that will be added at the top of the qm input file
     keywords = [
-               "# b3lyp/6-31+g(d,p) opt=(ts,calcall,tight,noeigentest) int=ultrafine nosymm",
-               "# b3lyp/6-31+g(d,p) opt=(ts,calcall,tight,noeigentest,cartesian) int=ultrafine geom=allcheck guess=check nosymm",
-               "# b3lyp/6-31+g(d,p) opt=(ts,calcall,noeigentest) nosymm",
-               "# b3lyp/6-31+g(d,p) opt=(ts,calcall,noeigentest,cartesian) nosymm geom=allcheck guess=check nosymm",
-               "# b3lyp/6-31+g(d,p) irc=(calcall,report=read) geom=allcheck guess=check nosymm",
-               ]
+                "# b3lyp/6-31+g(d,p) opt=(ts,calcfc,noeigentest) freq nosymm",
+                "# b3lyp/6-31+g(d,p) opt=(ts,calcfc,noeigentest,cartesian) freq nosymm geom=allcheck guess=check nosymm",
+                "# b3lyp/6-31+g(d,p) opt=(ts,calcall,tight,noeigentest) freq int=ultrafine nosymm",
+                "# b3lyp/6-31+g(d,p) opt=(ts,calcall,tight,noeigentest,cartesian) freq int=ultrafine geom=allcheck guess=check nosymm",
+                "# b3lyp/6-31+g(d,p) irc=(calcall,report=read) freq geom=allcheck guess=check nosymm",
+                ]
+               # "# b3lyp/6-31+g(d,p) opt=(ts,calcall,tight,noeigentest) int=ultrafine nosymm",
+               # "# b3lyp/6-31+g(d,p) opt=(ts,calcall,tight,noeigentest,cartesian) int=ultrafine geom=allcheck guess=check nosymm",
+               # "# b3lyp/6-31+g(d,p) opt=(ts,calcall,noeigentest) nosymm",
+               # "# b3lyp/6-31+g(d,p) opt=(ts,calcall,noeigentest,cartesian) nosymm geom=allcheck guess=check nosymm",
+               # "# b3lyp/6-31+g(d,p) irc=(calcall,report=read) geom=allcheck guess=check nosymm",
+               # ]
     """
     This needs some work, to determine options that are best used. Commented out the
     methods for now.

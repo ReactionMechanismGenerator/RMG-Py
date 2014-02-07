@@ -265,6 +265,14 @@ class QMReaction:
                 rRDMol, rBM, rMult, self.geometry = self.generateBoundsMatrix(reactant)
                 pRDMol, pBM, pMult, pGeom = self.generateBoundsMatrix(product)
                 
+                print "Original reactant bounds matrix"
+                for line in rBM:
+                    print line
+                
+                print "Original product bounds matrix"
+                for line in pBM:
+                    print line
+                
                 self.geometry.uniqueID = self.uniqueID
                 rBM, pBM, labels, atomMatch = self.editDoubMatrix(reactant, rBM, pBM)
                 
@@ -272,44 +280,76 @@ class QMReaction:
                 setPBM = rdkit.DistanceGeometry.DoTriangleSmoothing(pBM)
                 
                 if setRBM and setPBM:
-                    atoms = len(reactant.atoms)
-                    distGeomAttempts = 15*(atoms-3) # number of conformers embedded from the bounds matrix
+                    print self.uniqueID
+                    print "Worked!!"
+                    # atoms = len(reactant.atoms)
+                    # distGeomAttempts = 15*(atoms-3) # number of conformers embedded from the bounds matrix
+                    # 
+                    # self.geometry.rd_embed(rRDMol, distGeomAttempts, bm=rBM, match=atomMatch)
+                    # rRDMol = rdkit.Chem.MolFromMolFile(self.geometry.getCrudeMolFilePath(), removeHs=False)
+                    # for atom in reactant.atoms:
+                    #     i = atom.sortingLabel
+                    #     pRDMol.GetConformer(0).SetAtomPosition(i, rRDMol.GetConformer(0).GetAtomPosition(i))
+                    # pGeom.rd_embed(pRDMol, distGeomAttempts, bm=pBM, match=atomMatch)
+                    # 
+                    # if not os.path.exists(self.outputFilePath):
+                    #     # Product that references the reactant geometry
+                    #     if self.settings.software.lower() == 'mopac':
+                    #         self.writeReferenceFile()#inputFilePath, molFilePathForCalc, geometry, attempt, outputFile=None)
+                    #         self.writeGeoRefInputFile(pGeom, otherSide=True)#inputFilePath, molFilePathForCalc, refFilePath, geometry)
+                    #         self.runDouble(pGeom.getFilePath(self.inputFileExtension))
+                    #         
+                    #         if os.path.exists(pGeom.getFilePath('.arc')):
+                    #             # Reactant that references the product geometry
+                    #             self.writeReferenceFile(otherGeom=pGeom)
+                    #             self.writeGeoRefInputFile(pGeom)
+                    #             self.runDouble(self.inputFilePath)
+                    #         
+                    #         if os.path.exists(self.getFilePath('.arc')) and os.path.exists(pGeom.getFilePath('.arc')):
+                    #             # Write saddle calculation file using the outputs of the reference calculations
+                    #             self.writeSaddleInputFile(pGeom)
+                    #             self.runDouble(self.inputFilePath)
+                    #             
+                    #             self.writeTSInputFile(doubleEnd=True)
+                    #             converged, cartesian = self.run()
+                    #             
+                    #             if converged:
+                    #                 self.writeIRCFile()
+                    #                 rightTS = self.runIRC()
+                    #                 if rightTS:
+                    #                     return True, self.geometry, labels
+                    #                 else:
+                    #                     return False, None, None
+                    #             else:
+                    #                 return False, None, None
+                    #         else:
+                    #             return False, None, None
+                    #     else:
+                    #         return False, None, None
+                    # else:
+                    #     rightTS = self.verifyIRCOutputFile()
+                    #     
+                    #     if rightTS:
+                    #         return True, self.geometry, labels
+                    #     else:
+                    #         return False, None, None
+                else:
+                    print self.uniqueID
                     
-                    self.geometry.rd_embed(rRDMol, distGeomAttempts, bm=rBM, match=atomMatch)
-                    rRDMol = rdkit.Chem.MolFromMolFile(self.geometry.getCrudeMolFilePath(), removeHs=False)
+                    print "*1 " + str(labels[0])
+                    print "*2 " + str(labels[1])
+                    print "*3 " + str(labels[2])
                     
-                    for atom in reactant.atoms:
-                        i = atom.sortingLabel
-                        pRDMol.GetConformer(0).SetAtomPosition(i, rRDMol.GetConformer(0).GetAtomPosition(i))
-                    pGeom.rd_embed(pRDMol, distGeomAttempts, bm=pBM, match=atomMatch)
+                    print "Edited reactant bounds matrix"
+                    for line in rBM:
+                        print line
                     
-                    if not os.path.exists(self.outputFilePath):
-                        # Product that references the reactant geometry
-                        if self.settings.software.lower() == 'mopac':
-                            self.writeReferenceFile()#inputFilePath, molFilePathForCalc, geometry, attempt, outputFile=None)
-                            self.writeGeoRefInputFile(pGeom, otherSide=True)#inputFilePath, molFilePathForCalc, refFilePath, geometry)
-                            self.runDouble(pGeom.getFilePath(self.inputFileExtension))
-                            
-                            # Reactant that references the product geometry
-                            self.writeReferenceFile(otherGeom=pGeom)
-                            self.writeGeoRefInputFile(pGeom)
-                            self.runDouble(self.inputFilePath)
-                            
-                            # Write saddle calculation file using the outputs of the reference calculations
-                            self.writeSaddleInputFile(pGeom)
-                            self.runDouble(self.inputFilePath)
-                            
-                            self.writeTSInputFile(doubleEnd=True)
-                            converged, cartesian = self.run()
-                            
-                            if converged:
-                                self.writeIRCFile()
-                                rightTS = self.runIRC()
-                                
-                                if rightTS:
-                                    return True
-                                else:
-                                    return False
+                    print "Edited product bounds matrix"
+                    for line in pBM:
+                        print line
+                        
+                    
+                    # return False, None, None
             else:
                 if len(self.reaction.reactants)==2:
                     reactant = self.reaction.reactants[0].merge(self.reaction.reactants[1])

@@ -423,11 +423,11 @@ class MopacTS(QMReaction, Mopac):
     failureKeys = ['GRADIENT IS TOO LARGE', 
                    'EXCESS NUMBER OF OPTIMIZATION CYCLES', 
                    'NOT ENOUGH TIME FOR ANOTHER CYCLE',
-                   '6 IMAGINARY FREQUENCIES',
-                   '5 IMAGINARY FREQUENCIES',
-                   '4 IMAGINARY FREQUENCIES',
-                   '3 IMAGINARY FREQUENCIES',
-                   '2 IMAGINARY FREQUENCIES'
+                   # '6 IMAGINARY FREQUENCIES',
+                   # '5 IMAGINARY FREQUENCIES',
+                   # '4 IMAGINARY FREQUENCIES',
+                   # '3 IMAGINARY FREQUENCIES',
+                   # '2 IMAGINARY FREQUENCIES'
                    ]
     
     def runDouble(self, inputFilePath):
@@ -608,6 +608,9 @@ class MopacTS(QMReaction, Mopac):
             mopacFile.write('\n')
     
     def parseArc(outputFile):
+        """
+        This can be reworked with regex to be more general
+        """
         arcFile = outputFile.split('.')[0] + '.arc'
         geomLines = list()
         readFile = file(arcFile)
@@ -627,13 +630,22 @@ class MopacTS(QMReaction, Mopac):
         atomCount = 0
         
         if doubleEnd:
-            molfile = self.getFilePath('.arc')
-            atomline = re.compile('\s*([A-Za-z]+)\s+([\- ][0-9.]+)\s+([\+ ][0-9.]+)\s+([\- ][0-9.]+)\s+([\+ ][0-9.]+)\s+([\- ][0-9.]+)')
+            molfile = self.outputFilePath
+            atomline = re.compile('\s*([0-9]+)\s+([A-Za-z]+)\s+([\- ][0-9.]+)\s+([*])\s+([\- ][0-9.]+)\s+([*])\s+([\- ][0-9.]+)')
             with open(molfile) as molinput:
+                total = len(self.geometry.molecule.atoms)
+                matchLines = []
                 for line in molinput:
                     match = atomline.match(line)
                     if match:
-                        output.append("{0:4s} {1} 1 {2} 1 {3} 1".format(match.group(1), match.group(2), match.group(4), match.group(6)))
+                        matchLines.append("{0:4s} {1} 1 {2} 1 {3} 1".format(match.group(2), match.group(3), match.group(5), match.group(7)))
+                if len(matchLines) == total:
+                    for line in matchLines:
+                        output.append(line)
+                        atomCount += 1
+                else:
+                    for line in matchLines[total*-1:]:
+                        output.append(line)
                         atomCount += 1
         else:
             molfile = self.geometry.getRefinedMolFilePath()
