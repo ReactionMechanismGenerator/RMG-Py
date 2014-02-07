@@ -231,10 +231,21 @@ class ThermoLibrary(Database):
                   longDesc='',
                   history=None
                   ):
+        
+        molecule = Molecule().fromAdjacencyList(molecule)
+        
+        # Internal checks for adding entry to the thermo library
+        if label in self.entries.keys():
+            raise DatabaseError('Found a duplicate molecule with label {0} in the thermo library.  Please correct your library.'.format(label))
+        
+        for entry in self.entries.values():
+            if molecule.isIsomorphic(entry.item):
+                raise DatabaseError('Adjacency list of {0} matches that of existing molecule {1} in thermo library.  Please correct your library.'.format(label, entry.label))
+        
         self.entries[label] = Entry(
             index = index,
             label = label,
-            item = Molecule().fromAdjacencyList(molecule),
+            item = molecule,
             data = thermo,
             reference = reference,
             referenceType = referenceType,
