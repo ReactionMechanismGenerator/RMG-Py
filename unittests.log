@@ -1,4 +1,5 @@
 nosetests --nocapture --nologcapture --all-modules --verbose --with-coverage --cover-inclusive --cover-package=rmgpy --cover-erase --cover-html --cover-html-dir=testing/coverage rmgpy
+ERROR:root:Error while reading database '/export/thishost/comocheng/build/RMG-database/input/thermo/libraries/DFT_QCI_thermo.py'.
 Uses a Gaussian03 log file for ethylene (C2H4) to test that its ... FAIL
 Uses a Gaussian03 log file for ethylene (C2H4) to test that its ... FAIL
 Uses a Gaussian03 log file for oxygen (O2) to test that its ... ok
@@ -25,12 +26,7 @@ Test the value of the reduced Planck constant. ... ok
 Test the value of the speed of light in a vacuum. ... ok
 Test we can estimate solvation thermochemistry. ... FAIL
 Test we can estimate Abraham solute paramaters correctly ... ok
-Test that the new ThermoDatabase generates appropriate thermo data. ... FAIL
-Test that the old ThermoDatabase generates relatively accurate thermo data. ... FAIL
-Test we generate symmetry numbers correctly. ... FAIL
-Test that the new ThermoDatabase generates appropriate thermo data. for Aromatics. ... FAIL
-Test that the old ThermoDatabase generates relatively accurate thermo data. for Aromatics. ... FAIL
-Test we generate symmetry numbers correctly. for Aromatics. ... FAIL
+Failure: DatabaseError (Adjacency list of CH3OCH2O matches that of existing molecule HOCH2CHOH in thermo library.  Please correct your library.) ... ERROR
 Test that the Arrhenius A property was properly set. ... ok
 Test that the Arrhenius Ea property was properly set. ... ok
 Test that the Arrhenius T0 property was properly set. ... ok
@@ -737,6 +733,32 @@ testJoback (rmgpy.transportDataTest.TestTransportDatabase) ... ok
 Test Joback doesn't crash on Cb desription of beneze ... ERROR
 
 ======================================================================
+ERROR: Failure: DatabaseError (Adjacency list of CH3OCH2O matches that of existing molecule HOCH2CHOH in thermo library.  Please correct your library.)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/virtualenvs/rmgweb/local/lib/python2.7/site-packages/nose/loader.py", line 390, in loadTestsFromName
+    addr.filename, addr.module)
+  File "/export/thishost/comocheng/virtualenvs/rmgweb/local/lib/python2.7/site-packages/nose/importer.py", line 39, in importFromPath
+    return self.importFromDir(dir_path, fqname)
+  File "/export/thishost/comocheng/virtualenvs/rmgweb/local/lib/python2.7/site-packages/nose/importer.py", line 86, in importFromDir
+    mod = load_module(part_fqname, fh, filename, desc)
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermoTest.py", line 14, in <module>
+    class TestThermoDatabase(unittest.TestCase):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermoTest.py", line 20, in TestThermoDatabase
+    database.load(os.path.join(settings['database.directory'], 'thermo'))
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermo.py", line 385, in load
+    self.loadLibraries(os.path.join(path, 'libraries'), libraries)
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermo.py", line 409, in loadLibraries
+    library.load(os.path.join(root, f), self.local_context, self.global_context)
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/base.py", line 210, in load
+    exec f in global_context, local_context
+  File "/export/thishost/comocheng/build/RMG-database/input/thermo/libraries/DFT_QCI_thermo.py", line 2611, in <module>
+    ("Thu Nov 15 12:27:50 2012","Josh Allen <jwallen@mit.edu>","action","""Josh Allen <jwallen@mit.edu> imported this entry from the old RMG database."""),
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermo.py", line 243, in loadEntry
+    raise DatabaseError('Adjacency list of {0} matches that of existing molecule {1} in thermo library.  Please correct your library.'.format(label, entry.label))
+DatabaseError: Adjacency list of CH3OCH2O matches that of existing molecule HOCH2CHOH in thermo library.  Please correct your library.
+
+======================================================================
 ERROR: Test Joback doesn't crash on Cb desription of beneze
 ----------------------------------------------------------------------
 Traceback (most recent call last):
@@ -773,54 +795,6 @@ Traceback (most recent call last):
   File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/solvationTest.py", line 104, in testCorrectionGeneration
     self.assertAlmostEqual(solvationCorrection.enthalpy / 10000., H / 10000., 0, msg="Solvation enthalpy discrepancy ({2:.0f}!={3:.0f}) for {0} in {1}".format(soluteName, solventName, solvationCorrection.enthalpy, H))  #0 decimal place, in 10kJ.
 AssertionError: Solvation enthalpy discrepancy (-17533!=-12000) for methane in water
-
-======================================================================
-FAIL: Test that the new ThermoDatabase generates appropriate thermo data.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermoTest.py", line 79, in testNewThermoGeneration
-    self.assertAlmostEqual(H298, thermoData.getEnthalpy(298) / 4184, places=1, msg="H298 error for {0}".format(smiles))
-AssertionError: H298 error for C1C=CC=C1
-
-======================================================================
-FAIL: Test that the old ThermoDatabase generates relatively accurate thermo data.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermoTest.py", line 126, in testOldThermoGeneration
-    self.assertAlmostEqual(H298, thermoData.getEnthalpy(298) / 4184, places=1, msg="H298 error for {0}".format(smiles))
-AssertionError: H298 error for C1C=CC=C1
-
-======================================================================
-FAIL: Test we generate symmetry numbers correctly.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermoTest.py", line 105, in testSymmetryNumberGeneration
-    self.assertEqual(molecule.calculateSymmetryNumber(), symm, msg="Symmetry number error for {0}".format(smiles))
-AssertionError: Symmetry number error for C1C=CC=C1
-
-======================================================================
-FAIL: Test that the new ThermoDatabase generates appropriate thermo data. for Aromatics.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermoTest.py", line 79, in testNewThermoGeneration
-    self.assertAlmostEqual(H298, thermoData.getEnthalpy(298) / 4184, places=1, msg="H298 error for {0}".format(smiles))
-AssertionError: H298 error for c1ccccc1
-
-======================================================================
-FAIL: Test that the old ThermoDatabase generates relatively accurate thermo data. for Aromatics.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermoTest.py", line 126, in testOldThermoGeneration
-    self.assertAlmostEqual(H298, thermoData.getEnthalpy(298) / 4184, places=1, msg="H298 error for {0}".format(smiles))
-AssertionError: H298 error for c1ccccc1
-
-======================================================================
-FAIL: Test we generate symmetry numbers correctly. for Aromatics.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermoTest.py", line 105, in testSymmetryNumberGeneration
-    self.assertEqual(molecule.calculateSymmetryNumber(), symm, msg="Symmetry number error for {0}".format(smiles))
-AssertionError: Symmetry number error for c1ccccc1
 
 ======================================================================
 FAIL: Test that getAtomType() returns appropriate NoneTypes.
@@ -918,20 +892,20 @@ rmgpy.cantherm.statmech             509    480    226    226     4%   82, 89-120
 rmgpy.cantherm.thermo               155    140     32     32     8%   55-56, 63-67, 75-122, 129-205, 217-269
 rmgpy.chemkin                       980    936    484    483     3%   69, 79-156, 167-456, 466-615, 626-646, 652-665, 672-687, 695-846, 858-900, 914-972, 982-1130, 1138-1148, 1160-1202, 1213-1277, 1285-1321, 1338-1488, 1498-1514, 1524-1527, 1535-1538, 1545-1556, 1578-1601, 1620-1666, 1674-1705
 rmgpy.data                            3      1      0      0    67%   34
-rmgpy.data.base                     660    357    299    191    43%   113, 211-213, 230-251, 259-282, 295-297, 301-303, 307-309, 354-359, 377-380, 389, 401, 408, 418-419, 422, 459-460, 472, 480, 483-484, 491, 500-501, 523, 532-533, 539-540, 554-561, 572-580, 588-681, 688-694, 701-713, 720-754, 770-776, 782-787, 801-840, 864-865, 871, 880-889, 898-900, 905, 925, 936, 940-941, 956, 963-967, 984, 996-1005, 1016-1023, 1041, 1051, 1059, 1061, 1073-1076, 1099-1103, 1115-1119, 1141-1158, 1164-1165, 1171, 1179-1192, 1207-1234
+rmgpy.data.base                     660    443    299    226    30%   113, 230-251, 259-282, 293-311, 324-380, 389, 401, 408, 418-419, 422, 454-464, 471-501, 510-565, 572-580, 588-681, 688-694, 701-713, 720-754, 764, 770-776, 782-787, 801-840, 864-865, 871, 873, 880-889, 898-900, 905, 923, 925, 936, 940-941, 956, 963-967, 984, 988, 996-1005, 1016-1023, 1041, 1051, 1059, 1061, 1073-1076, 1099-1103, 1115-1119, 1141-1158, 1164-1165, 1171, 1179-1192, 1207-1234
 rmgpy.data.kinetics                 271    237    135    135     8%   62-78, 84-89, 95-97, 104-105, 112-139, 149-174, 181-184, 191-195, 202-208, 215-234, 241-275, 283-286, 294-297, 305-320, 333-342, 363-461, 474-520
-rmgpy.data.kinetics.common          109     97     50     50     8%   105-106, 115-225
+rmgpy.data.kinetics.common          115    103     50     50     7%   105-106, 115-231
 rmgpy.data.kinetics.depository       31     18      0      0    42%   64-77, 83, 102, 115, 141-164, 170
 rmgpy.data.kinetics.family         1052    984    596    596     4%   95-108, 114, 133, 161, 169, 177-193, 204-284, 291, 298, 344-355, 365-426, 433-468, 474-485, 491-514, 527-600, 606-607, 614-618, 624-626, 632, 640-643, 650, 658-705, 716-796, 803, 810-813, 820-923, 932-935, 942-945, 953-964, 977-1080, 1093-1324, 1331-1336, 1346-1372, 1381-1390, 1402-1429, 1436-1439, 1451-1655, 1663-1742, 1750, 1759-1764, 1774-1782, 1792-1806, 1814-1817, 1830-1884, 1892-1900, 1907-1915, 1923-1928
 rmgpy.data.kinetics.groups          297    273    180    180     5%   78-79, 85-89, 109-171, 181-207, 216-268, 281-549
 rmgpy.data.kinetics.library         274    248    153    153     6%   71-84, 90, 108, 118, 128-149, 156-163, 171-184, 191-246, 250-260, 282-316, 322, 328-361, 371-375, 385-546
 rmgpy.data.kinetics.rules           313    283    135    135     7%   64, 88-128, 134, 142-190, 197-223, 231-279, 287-354, 361-368, 375, 382, 389-402, 409-425, 431-490, 501-527, 534-588
-rmgpy.data.reference                138    114     48     48    13%   89-95, 102-108, 114-132, 158-162, 169-183, 190-200, 226-231, 238-251, 258-269, 292-294, 301-311, 318-326
+rmgpy.data.reference                138    119     48     48    10%   66-70, 89-95, 102-108, 114-132, 158-162, 169-183, 190-200, 226-231, 238-251, 258-269, 292-294, 301-311, 318-326
 rmgpy.data.rmg                       80     59     10     10    23%   56-71, 92-104, 111-112, 119-120, 127-128, 141-153, 164-165, 172-173, 180-189, 195-200, 206-211
 rmgpy.data.solvation                290    109     60     45    56%   108, 115, 146-149, 162-209, 254, 281, 300, 307, 314, 357, 365, 372, 395-400, 406-408, 445-448, 455-457, 464-466, 474-489, 505-518, 531-543, 563-567, 629-668, 679-683, 702, 716-720
 rmgpy.data.statmech                 295    244    103    103    13%   48-91, 98-101, 108-116, 127, 140, 156, 166, 179, 195, 202, 209, 220, 233-241, 257, 264, 271, 278-285, 294-309, 319-355, 364-445, 455-467, 473-479, 485-488, 495-500, 507, 514-526, 533-534, 541-545, 552-553, 560-562, 569-570, 578-594, 611-624, 637-645, 652-656, 664-667, 676, 689-690, 698-705
 rmgpy.data.statmechfit              248    213     70     70    11%   95-137, 151-193, 207-244, 260-307, 316-319, 327-330, 338-343, 352-355, 364-366, 378-381, 384-407, 419-422, 425-457, 469-472, 475-506
-rmgpy.data.thermo                   436    179    134     59    58%   56-123, 130-148, 187-199, 205, 244, 251, 301, 309, 342-348, 354-357, 367, 397, 419-423, 430-432, 439-441, 448-455, 545-556, 566-609, 628-629, 655-659, 669-670, 694-696, 715-718, 720-723, 740-742, 810-811, 833-837, 881-885, 895, 907-913, 924-928, 947, 976, 978
+rmgpy.data.thermo                   448    361    140    131    16%   56-129, 136-154, 174, 193-205, 211, 239, 261, 268, 275, 285, 298-302, 318, 326, 333, 359-365, 371-374, 384, 386, 413-414, 421-429, 436-440, 447-449, 456-458, 465-472, 480-547, 562-573, 583-626, 643-658, 669-677, 685-691, 704-720, 730-741, 754-760, 774-788, 797-864, 877-956, 963-976, 984-1016
 rmgpy.data.transport                233     96     66     45    53%   54-69, 119, 126, 133, 155, 174, 181, 188, 209-214, 220-222, 269-283, 291-303, 314-318, 345, 377-416, 466, 480-484, 501-534
 rmgpy.display                        12      4      2      2    57%   37, 41-43, 47
 rmgpy.kinetics                        6      0      0      0   100%   
@@ -944,7 +918,7 @@ rmgpy.measure.output                164    146     82     82     7%   53-60, 71-
 rmgpy.measure.settings                2      0      0      0   100%   
 rmgpy.measure.simulate               67     54     30     30    13%   46, 49, 66-128, 144-169, 178-179, 182, 185
 rmgpy.molecule                        5      0      0      0   100%   
-rmgpy.molecule.adjlist              268     38    162     35    83%   65, 71, 80, 152-156, 201, 214, 216, 218, 236, 249-250, 272-273, 296-298, 315-330, 343-344, 372
+rmgpy.molecule.adjlist              268     60    162     46    75%   65, 69-71, 80, 147, 152-156, 201, 214, 216, 218, 236, 242-262, 272-273, 296-298, 315-330, 343-344, 372
 rmgpy.molecule.draw                 929    574    448    303    36%   76, 79-82, 141-143, 171-176, 187-189, 192-195, 198-200, 203-205, 208-210, 213-216, 265-273, 286, 294-346, 371-373, 382-387, 396-427, 435-445, 452-577, 584-638, 645-717, 730-824, 848-849, 857-858, 881, 903-924, 937-939, 990-993, 999-1000, 1002-1004, 1043-1044, 1091-1099, 1121-1122, 1135-1138, 1157-1162, 1168-1169, 1198-1199, 1207-1209, 1212-1213, 1221-1223, 1229-1236, 1241-1244, 1253-1256, 1261-1278, 1288-1291, 1295-1298, 1302-1319, 1347-1351, 1365-1485
 rmgpy.pdep                            5      0      0      0   100%   
 rmgpy.pdep.draw                     291    277     86     86     4%   57-70, 73-79, 87-107, 116-125, 131-142, 148-159, 165-181, 185-213, 222-479
@@ -968,11 +942,11 @@ rmgpy.statmech                        5      0      0      0   100%
 rmgpy.thermo                          3      0      0      0   100%   
 rmgpy.transport                      31      3      0      0    90%   58-59, 65
 -----------------------------------------------------------------------------
-TOTAL                             14432  11507   6102   5504    17%   
+TOTAL                             14450  11808   6108   5622    15%   
 ----------------------------------------------------------------------
-Ran 725 tests.
+Ran 720 tests.
 
-FAILED (errors=1, failures=19)
+FAILED (errors=2, failures=13)
 1 *1 C 1 0 {2,S} {3,S} {4,S}
 2    C 0 0 {1,S} {3,S} {5,S} {6,S}
 3    C 0 0 {1,S} {2,S} {7,S} {8,S}
