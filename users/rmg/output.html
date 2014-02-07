@@ -63,6 +63,14 @@
             
   <div class="section" id="analyzing-the-output-files">
 <span id="output"></span><h1>7. Analyzing the Output Files<a class="headerlink" href="#analyzing-the-output-files" title="Permalink to this headline">¶</a></h1>
+<dl class="docutils">
+<dt>You will see that RMG has created multiple output files and folders: ::</dt>
+<dd>:<a class="reference external" href="file:'/chemkin">file:&#8217;/chemkin</a>  input.py output.html  /pdep  /plot  restart.pkl  RMG.log  /solver  /species&#8217;</dd>
+</dl>
+<p>The :<a class="reference external" href="file:'/chemkin">file:&#8217;/chemkin</a>&#8216; folder will likely have a large number of chemkin formatted files. In general, these can be disregarded, as you will be mainly interested in :<a class="reference external" href="file:'chem.inp">file:&#8217;chem.inp</a>&#8216;, the chemkin formatted input file with a species list, thermochemical database, and a kinetic mechanism. The file :<a class="reference external" href="file:'chem_annotated.inp">file:&#8217;chem_annotated.inp</a>&#8216; is provided as a means to help make sense of species syntax and information sources. In addition, a species dictionary,:<a class="reference external" href="file:'species_dictionary.txt">file:&#8217;species_dictionary.txt</a>&#8216;, is generated. Either chemkin file, in addition to the dictionary, may be used as inputs in the tools section of this website to better visualize the species and reactions: <a class="reference external" href="http://rmg.mit.edu/simulate/chemkin">http://rmg.mit.edu/simulate/chemkin</a>
+(alternatively, you can open :<a class="reference external" href="file:'output.html">file:&#8217;output.html</a>&#8216;)</p>
+<p>The :<a class="reference external" href="file:'/pdep">file:&#8217;/pdep</a>&#8216; folder will contain files associated with the pressure-dependent reactions that RMG has generated. These files are formatted as input files for CanTherm.</p>
+<p>RMG currently includes a solver for isothermal batch reactors. This is in fact a critical part of the model enlargement algorithm. If you have included simulations in your input file, the solutions will be located in :<a class="reference external" href="file:'/solver">file:&#8217;/solver</a>&#8216;. You will probably only be interested in the files with the largest number tags.</p>
 </div>
 
 
