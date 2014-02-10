@@ -99,8 +99,7 @@ class QMReaction:
         Check there is no RDKit mol file already made. If so, use rdkit to make a rdmol from
         a mol file. If not, make rdmol from geometry.
         """ 
-        if not os.path.exists(geometry.getCrudeMolFilePath()):
-            geometry.generateRDKitGeometries()
+        geometry.generateRDKitGeometries()
         rdKitMol = rdkit.Chem.MolFromMolFile(geometry.getCrudeMolFilePath(), removeHs=False)      
         
         return rdKitMol
@@ -131,8 +130,11 @@ class QMReaction:
         This ensures any edits made do not lead to unsolvable scenarios for the molecular
         embedding algorithm.
         """
-        for i in range(sect,len(bm)):
-            for j in range(0,sect):
+        others = range(len(bm))
+        for idx in sect: others.remove(idx)
+        
+        for i in sect:
+            for j in others:
                 for k in range(len(bm)):
                     if k==i or k==j: continue
                     Uik = bm[i,k] if k>i else bm[k,i]
@@ -144,7 +146,7 @@ class QMReaction:
                         bm[i,j] = maxLij
         return bm
     
-    def editDoubMatrix(self, reactant, bm1, bm2):
+    def editDoubMatrix(self, reactant, product, bm1, bm2):
         """
         For bimolecular reactions, reduce the minimum distance between atoms
         of the two reactanting species, in preparation for a double-ended search.
@@ -153,11 +155,11 @@ class QMReaction:
         """
         def fixMatrix(bm, lbl1, lbl2, lbl3, num, diff):
             if lbl2 > lbl1:
-                upDiff = bm[lbl1][lbl2]
-                dnDiff = bm[lbl2][lbl1]
-            else:
-                upDiff = bm[lbl2][lbl1]
                 dnDiff = bm[lbl1][lbl2]
+                upDiff = bm[lbl2][lbl1]
+            else:
+                dnDiff = bm[lbl2][lbl1]
+                upDiff = bm[lbl1][lbl2]
             
             if lbl1 > lbl3:
                 bm[lbl3][lbl1] = num + diff/2.
@@ -207,10 +209,15 @@ class QMReaction:
             bm1 = fixMatrix(bm1, lbl1, lbl2, lbl3, 2.5, 0.1)
             bm2 = fixMatrix(bm2, lbl3, lbl2, lbl1, 2.5, 0.1)
         
-        sect = len(reactant.split()[1].atoms)
+        # sect = len(reactant.split()[1].atoms)
+        rSect = []
+        for atom in reactant.split()[0].atoms: rSect.append(atom.sortingLabel)
         
-        bm1 = self.bmPreEdit(bm1, sect)
-        bm2 = self.bmPreEdit(bm2, sect)
+        pSect = []
+        for atom in product.split()[0].atoms: pSect.append(atom.sortingLabel)
+        
+        bm1 = self.bmPreEdit(bm1, rSect)
+        bm2 = self.bmPreEdit(bm2, pSect)
         
         return bm1, bm2, labels, atomMatch
     
@@ -262,6 +269,7 @@ class QMReaction:
                 """
                 Double-ended search
                 """
+                
                 rRDMol, rBM, rMult, self.geometry = self.generateBoundsMatrix(reactant)
                 pRDMol, pBM, pMult, pGeom = self.generateBoundsMatrix(product)
                 
@@ -274,82 +282,65 @@ class QMReaction:
                     print line
                 
                 self.geometry.uniqueID = self.uniqueID
-                rBM, pBM, labels, atomMatch = self.editDoubMatrix(reactant, rBM, pBM)
+                rBM, pBM, labels, atomMatch = self.editDoubMatrix(reactant, product, rBM, pBM)
                 
                 setRBM = rdkit.DistanceGeometry.DoTriangleSmoothing(rBM)
                 setPBM = rdkit.DistanceGeometry.DoTriangleSmoothing(pBM)
                 
                 if setRBM and setPBM:
-                    print self.uniqueID
-                    print "Worked!!"
-                    # atoms = len(reactant.atoms)
-                    # distGeomAttempts = 15*(atoms-3) # number of conformers embedded from the bounds matrix
-                    # 
-                    # self.geometry.rd_embed(rRDMol, distGeomAttempts, bm=rBM, match=atomMatch)
-                    # rRDMol = rdkit.Chem.MolFromMolFile(self.geometry.getCrudeMolFilePath(), removeHs=False)
-                    # for atom in reactant.atoms:
-                    #     i = atom.sortingLabel
-                    #     pRDMol.GetConformer(0).SetAtomPosition(i, rRDMol.GetConformer(0).GetAtomPosition(i))
-                    # pGeom.rd_embed(pRDMol, distGeomAttempts, bm=pBM, match=atomMatch)
-                    # 
-                    # if not os.path.exists(self.outputFilePath):
-                    #     # Product that references the reactant geometry
-                    #     if self.settings.software.lower() == 'mopac':
-                    #         self.writeReferenceFile()#inputFilePath, molFilePathForCalc, geometry, attempt, outputFile=None)
-                    #         self.writeGeoRefInputFile(pGeom, otherSide=True)#inputFilePath, molFilePathForCalc, refFilePath, geometry)
-                    #         self.runDouble(pGeom.getFilePath(self.inputFileExtension))
-                    #         
-                    #         if os.path.exists(pGeom.getFilePath('.arc')):
-                    #             # Reactant that references the product geometry
-                    #             self.writeReferenceFile(otherGeom=pGeom)
-                    #             self.writeGeoRefInputFile(pGeom)
-                    #             self.runDouble(self.inputFilePath)
-                    #         
-                    #         if os.path.exists(self.getFilePath('.arc')) and os.path.exists(pGeom.getFilePath('.arc')):
-                    #             # Write saddle calculation file using the outputs of the reference calculations
-                    #             self.writeSaddleInputFile(pGeom)
-                    #             self.runDouble(self.inputFilePath)
-                    #             
-                    #             self.writeTSInputFile(doubleEnd=True)
-                    #             converged, cartesian = self.run()
-                    #             
-                    #             if converged:
-                    #                 self.writeIRCFile()
-                    #                 rightTS = self.runIRC()
-                    #                 if rightTS:
-                    #                     return True, self.geometry, labels
-                    #                 else:
-                    #                     return False, None, None
-                    #             else:
-                    #                 return False, None, None
-                    #         else:
-                    #             return False, None, None
-                    #     else:
-                    #         return False, None, None
-                    # else:
-                    #     rightTS = self.verifyIRCOutputFile()
-                    #     
-                    #     if rightTS:
-                    #         return True, self.geometry, labels
-                    #     else:
-                    #         return False, None, None
-                else:
-                    print self.uniqueID
+                    atoms = len(reactant.atoms)
+                    distGeomAttempts = 15*(atoms-3) # number of conformers embedded from the bounds matrix
                     
-                    print "*1 " + str(labels[0])
-                    print "*2 " + str(labels[1])
-                    print "*3 " + str(labels[2])
+                    self.geometry.rd_embed(rRDMol, distGeomAttempts, bm=rBM, match=atomMatch)
+                    rRDMol = rdkit.Chem.MolFromMolFile(self.geometry.getCrudeMolFilePath(), removeHs=False)
+                    for atom in reactant.atoms:
+                        i = atom.sortingLabel
+                        pRDMol.GetConformer(0).SetAtomPosition(i, rRDMol.GetConformer(0).GetAtomPosition(i))
+                    pGeom.rd_embed(pRDMol, distGeomAttempts, bm=pBM, match=atomMatch)
                     
-                    print "Edited reactant bounds matrix"
-                    for line in rBM:
-                        print line
-                    
-                    print "Edited product bounds matrix"
-                    for line in pBM:
-                        print line
+                    if not os.path.exists(self.outputFilePath):
+                        # Product that references the reactant geometry
+                        if self.settings.software.lower() == 'mopac':
+                            self.writeReferenceFile()#inputFilePath, molFilePathForCalc, geometry, attempt, outputFile=None)
+                            self.writeGeoRefInputFile(pGeom, otherSide=True)#inputFilePath, molFilePathForCalc, refFilePath, geometry)
+                            self.runDouble(pGeom.getFilePath(self.inputFileExtension))
+                            
+                            if os.path.exists(pGeom.getFilePath('.arc')):
+                                # Reactant that references the product geometry
+                                self.writeReferenceFile(otherGeom=pGeom)
+                                self.writeGeoRefInputFile(pGeom)
+                                self.runDouble(self.inputFilePath)
+                            
+                            if os.path.exists(self.getFilePath('.arc')) and os.path.exists(pGeom.getFilePath('.arc')):
+                                # Write saddle calculation file using the outputs of the reference calculations
+                                self.writeSaddleInputFile(pGeom)
+                                self.runDouble(self.inputFilePath)
+                                
+                                self.writeTSInputFile(doubleEnd=True)
+                                converged, cartesian = self.run()
+                                
+                                if converged:
+                                    self.writeIRCFile()
+                                    rightTS = self.runIRC()
+                                    if rightTS:
+                                        return True, self.geometry, labels
+                                    else:
+                                        return False, None, None
+                                else:
+                                    return False, None, None
+                            else:
+                                return False, None, None
+                        else:
+                            return False, None, None
+                    else:
+                        rightTS = self.verifyIRCOutputFile()
                         
-                    
-                    # return False, None, None
+                        if rightTS:
+                            return True, self.geometry, labels
+                        else:
+                            return False, None, None
+                else:
+                    return False, None, None
             else:
                 if len(self.reaction.reactants)==2:
                     reactant = self.reaction.reactants[0].merge(self.reaction.reactants[1])
