@@ -175,13 +175,9 @@ class KineticsLibrary(Database):
                 # This means that if we find any duplicate reactions, it is an error
                 for entry in self.entries.values():
                     reaction = entry.item
-                    if (reaction0 is not reaction and
-                        reaction0.reactants == reaction.reactants and
-                        reaction0.products == reaction.products and
-                        reaction0.reversible == reaction.reversible
-                        ):
+                    if reaction0 is not reaction and reaction0.isIsomorphic(reaction): 
                         # We found a duplicate reaction that wasn't marked!
-                        raise DatabaseError('Unexpected duplicate reaction {0} in kinetics library {1}.'.format(reaction0, self.label))                   
+                        raise DatabaseError('Unexpected duplicate reaction {0} in kinetics library {1}.'.format(reaction0, self.label))        
 
     def convertDuplicatesToMulti(self):
         """
@@ -294,7 +290,8 @@ class KineticsLibrary(Database):
             comment += str(re.sub('\s*\n\s*','\n',longDesc))
         kinetics.comment = comment.strip()
         
-        self.entries['{0:d}:{1}'.format(index,label)] = Entry(
+        assert index not in self.entries, "Reaction with index {0} already present!".format(index)
+        self.entries[index] = Entry(
             index = index,
             label = label,
             item = Reaction(reactants=reactants, products=products, degeneracy=degeneracy, duplicate=duplicate, reversible=reversible),

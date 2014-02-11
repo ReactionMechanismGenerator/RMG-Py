@@ -728,7 +728,7 @@ class KineticsFamily(Database):
                     logging.log(1, 'Expanding logic node {0} to {1}'.format(s, all_structures))
                     reactantStructures.append(all_structures)
                     for p in all_structures:
-                       logging.log(1, p.toAdjacencyList() )
+                        logging.log(1, p.toAdjacencyList() )
                 else:
                     reactantStructures.append([struct])
                     logging.log(1, struct.toAdjacencyList() )

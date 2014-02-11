@@ -62,8 +62,13 @@ class RMGDatabase:
         
         # Store the newly created database in the module.
         global database
-        assert database is None, "Should only make one instance of RMGDatabase because it's stored as a module-level variable."
-        database = self
+#        assert database is None, "Should only make one instance of RMGDatabase because it's stored as a module-level variable."
+        if database is None:
+            database = self
+        else:
+            import logging
+            logging.warning("Should only make one instance of RMGDatabase because it's stored as a module-level variable!")
+            logging.warning("Unexpected behaviour may result!")
 
     def load(self,
              path,
@@ -190,7 +195,7 @@ class RMGDatabase:
         if not os.path.exists(path): os.makedirs(path)
         self.forbiddenStructures.save(os.path.join(path, 'forbiddenStructures.py'))
         self.thermo.save(os.path.join(path, 'thermo'))
-        self.transport.save(os.path.join(path, 'transport'))
+#         self.transport.save(os.path.join(path, 'transport')) #Currently no function for saving transport groups
         self.kinetics.save(os.path.join(path, 'kinetics'))
         self.statmech.save(os.path.join(path, 'statmech'))
 

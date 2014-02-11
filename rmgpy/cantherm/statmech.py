@@ -370,6 +370,13 @@ class StatMechJob:
             logging.debug('    Determining frequencies from reduced force constant matrix...')
             frequencies = numpy.array(projectRotors(conformer, F, rotors, linear, TS))
             
+            # The frequencies have changed after projection, hence we need to recompute the ZPE
+            # We might need to multiply the scaling factor to the frequencies 
+            ZPE = self.getZPEfromfrequencies(frequencies)
+            E0_withZPE = E0 + ZPE
+            # Reset the E0 of the conformer
+            conformer.E0 = (E0_withZPE*0.001,"kJ/mol")
+
         elif len(conformer.modes) > 2:
             frequencies = conformer.modes[2].frequencies.value_si
             rotors = numpy.array([])
@@ -382,6 +389,17 @@ class StatMechJob:
                 mode.frequencies = (frequencies * self.frequencyScaleFactor,"cm^-1")
                 
         self.species.conformer = conformer
+        
+    def getZPEfromfrequencies(self, frequencies):
+                
+        ZPE = 0.0
+        
+        for freq in frequencies:
+            if freq > 0.0:
+                ZPE += 0.5 * constants.h * freq * 100.0 * constants.c * constants.Na
+                
+        return ZPE
+        
     
     def save(self, outputFile):
         """
@@ -647,44 +665,106 @@ def projectRotors(conformer, F, rotors, linear, TS):
     Natoms = len(conformer.mass.value)
     Nvib = 3 * Natoms - (5 if linear else 6) - Nrotors - (1 if (TS) else 0)
     mass = conformer.mass.value_si
-    coordinates = conformer.coordinates.value_si
-    
+    coordinates = conformer.coordinates.getValue() 
+
+
+    # Put origin in center of mass
+    xm=0.0
+    ym=0.0
+    zm=0.0
+    totmass=0.0
+    for i in range(Natoms):
+        xm+=mass[i]*coordinates[i,0]
+        ym+=mass[i]*coordinates[i,1]
+        zm+=mass[i]*coordinates[i,2]
+        totmass+=mass[i]
+          
+    xm/=totmass
+    ym/=totmass
+    zm/=totmass
+
+    for i in range(Natoms):
+        coordinates[i,0]-=xm
+        coordinates[i,1]-=ym 
+        coordinates[i,2]-=zm
+    # Make vector with the root of the mass in amu for each atom
+    amass=numpy.sqrt(mass/constants.amu)
+
+    # Rotation matrix
+    I=conformer.getMomentOfInertiaTensor()
+    PMoI, Ixyz = numpy.linalg.eigh(I)
+ 
+    external=6
     if linear:
-        D = numpy.zeros((Natoms*3,5+Nrotors), numpy.float64)
-    else:
-        D = numpy.zeros((Natoms*3,6+Nrotors), numpy.float64)
+        external=5
+    
+    D = numpy.zeros((Natoms*3,external), numpy.float64)
+
+    P = numpy.zeros((Natoms,3), numpy.float64)
+
+    # Transform the coordinates to the principal axes
+    P = numpy.dot(coordinates,Ixyz)
 
     for i in range(Natoms):
         # Projection vectors for translation
-        D[3*i+0,0] = 1.0
-        D[3*i+1,1] = 1.0
-        D[3*i+2,2] = 1.0
-        # Projection vectors for [external] rotation
-        D[3*i:3*i+3,3] = numpy.array([0, -coordinates[i,2], coordinates[i,1]], numpy.float64)
-        D[3*i:3*i+3,4] = numpy.array([coordinates[i,2], 0, -coordinates[i,0]], numpy.float64)
+        D[3*i+0,0] = amass[i]
+        D[3*i+1,1] = amass[i]
+        D[3*i+2,2] = amass[i]
+
+    # Construction of the projection vectors for external rotation
+    for i in range(Natoms):
+        D[3*i,3] = (P[i,1]*Ixyz[0,2]-P[i,2]*Ixyz[0,1])*amass[i]
+        D[3*i+1,3] = (P[i,1]*Ixyz[1,2]-P[i,2]*Ixyz[1,1])*amass[i]
+        D[3*i+2,3] = (P[i,1]*Ixyz[2,2]-P[i,2]*Ixyz[2,1])*amass[i]
+        D[3*i,4] = (P[i,2]*Ixyz[0,0]-P[i,0]*Ixyz[0,2])*amass[i]
+        D[3*i+1,4] = (P[i,2]*Ixyz[1,0]-P[i,0]*Ixyz[1,2])*amass[i]
+        D[3*i+2,4] = (P[i,2]*Ixyz[2,0]-P[i,0]*Ixyz[2,2])*amass[i]
         if not linear:
-            D[3*i:3*i+3,5] = numpy.array([-coordinates[i,1], coordinates[i,0], 0], numpy.float64)
-    for i, rotor in enumerate(rotors):
-        scanLog, pivots, top, symmetry, fit = rotor
-        # Determine pivot atom
-        if pivots[0] in top: pivot = pivots[0]
-        elif pivots[1] in top: pivot = pivots[1]
-        else: raise Exception('Could not determine pivot atom.')
-        # Projection vectors for internal rotation
-        e12 = coordinates[pivots[0]-1,:] - coordinates[pivots[1]-1,:]
-        e12 /= numpy.linalg.norm(e12)
-        for atom in top:
-            e31 = coordinates[atom-1,:] - coordinates[pivot-1,:]
-            D[3*(atom-1):3*(atom-1)+3,-Nrotors+i] = numpy.cross(e31, e12)
+            D[3*i,5] = (P[i,0]*Ixyz[0,1]-P[i,1]*Ixyz[0,0])*amass[i]
+            D[3*i+1,5] = (P[i,0]*Ixyz[1,1]-P[i,1]*Ixyz[1,0])*amass[i]
+            D[3*i+2,5] = (P[i,0]*Ixyz[2,1]-P[i,1]*Ixyz[2,0])*amass[i]
 
     # Make sure projection matrix is orthonormal
     import scipy.linalg
-    D = scipy.linalg.orth(D)
 
-    # Project out the non-vibrational modes from the force constant matrix
-    P = numpy.dot(D, D.transpose())
     I = numpy.identity(Natoms*3, numpy.float64)
-    F = numpy.dot(I - P, numpy.dot(F, I - P))
+
+    P = numpy.zeros((Natoms*3,3*Natoms+external), numpy.float64)
+
+    P[:,0:external] = D[:,0:external]
+    P[:,external:external+3*Natoms] = I[:,0:3*Natoms]
+
+    for i in range(3*Natoms+external):
+        norm=0.0
+        for j in range(3*Natoms):
+            norm+=P[j,i]*P[j,i]
+        for j in range(3*Natoms):
+            if (norm>1E-15):
+                P[j,i]/=numpy.sqrt(norm)
+            else:
+                P[j,i]=0.0
+        for j in range(i+1,3*Natoms+external):
+            proj=0.0
+            for k in range(3*Natoms):
+                proj+=P[k,i]*P[k,j]
+            for k in range(3*Natoms):
+                P[k,j]-=proj*P[k,i]
+
+    # Order D, there will be vectors that are 0.0  
+    i=0
+    while i < 3*Natoms:
+        norm=0.0
+        for j in range(3*Natoms):
+            norm+=P[j,i]*P[j,i]
+        if (norm<0.5):
+            P[:,i:3*Natoms+external-1] = P[:,i+1:3*Natoms+external]
+        else:
+            i+=1
+
+    # T is the transformation vector from cartesian to internal coordinates
+    T = numpy.zeros((Natoms*3,3*Natoms-external), numpy.float64)
+
+    T[:,0:3*Natoms-external] = P[:,external:3*Natoms]
 
     # Generate mass-weighted force constant matrix
     # This converts the axes to mass-weighted Cartesian axes
@@ -696,10 +776,90 @@ def projectRotors(conformer, F, rotors, linear, TS):
                 for v in range(3):
                     Fm[3*i+u,3*j+v] /= math.sqrt(mass[i] * mass[j])
 
+    Fint = numpy.dot(T.T, numpy.dot(Fm,T))
+
+    # Get eigenvalues of internal force constant matrix, V = 3N-6 * 3N-6
+    eig, V = numpy.linalg.eigh(Fint)
+
+    logging.debug('Frequencies from internal Hessian')  
+    for i in range(3*Natoms-external):
+        logging.debug(numpy.sqrt(eig[i])/(2 * math.pi * constants.c * 100))
+
+    # Now we can start thinking about projecting out the internal rotations
+    Dint=numpy.zeros((3*Natoms,Nrotors), numpy.float64)
+
+    counter=0
+    for i, rotor in enumerate(rotors):
+        scanLog, pivots, top, symmetry, fit = rotor
+        # Determine pivot atom
+        if pivots[0] in top:
+            pivot1 = pivots[0]
+            pivot2 = pivots[1]
+        elif pivots[1] in top:
+            pivot1 = pivots[1]
+            pivot2 = pivots[0]
+        else: raise Exception('Could not determine pivot atom.')
+        # Projection vectors for internal rotation
+        e12 = coordinates[pivot1-1,:] - coordinates[pivot2-1,:]
+        for j in range(Natoms):
+            atom=j+1
+            if atom in top:
+                e31 = coordinates[atom-1,:] - coordinates[pivot1-1,:]
+                Dint[3*(atom-1):3*(atom-1)+3,counter] = numpy.cross(e31, e12)*amass[atom-1]
+            else:
+                e31 = coordinates[atom-1,:] - coordinates[pivot2-1,:]
+                Dint[3*(atom-1):3*(atom-1)+3,counter] = numpy.cross(e31, -e12)*amass[atom-1]
+        counter+=1
+
+    # Normal modes in mass weighted cartesian coordinates
+    Vmw = numpy.dot(T,V)
+    eigM = numpy.zeros((3*Natoms-external,3*Natoms-external), numpy.float64)
+
+    for i in range(3*Natoms-external):
+        eigM[i,i]=eig[i]
+ 
+    Fm=numpy.dot(Vmw,numpy.dot(eigM,Vmw.T))
+
+    # Internal rotations are not normal modes => project them on the normal modes and orthogonalize
+    # Dintproj =  (3N-6) x (3N) x (3N) x (Nrotors)
+    Dintproj=numpy.dot(Vmw.T,Dint)    
+
+    # Reconstruct Dint
+    for i in range(Nrotors):
+        for j in range (3*Natoms):
+            Dint[j,i]=0
+            for k in range(3*Natoms-external):
+                Dint[j,i]+=Dintproj[k,i]*Vmw[j,k]
+
+    # Ortho normalize
+    for i in range(Nrotors):
+        norm=0.0
+        for j in range(3*Natoms):
+            norm+=Dint[j,i]*Dint[j,i]
+        for j in range(3*Natoms):
+            Dint[j,i]/=numpy.sqrt(norm)
+        for j in range(i+1,Nrotors):
+            proj=0.0
+            for k in range (3*Natoms):
+                proj+=Dint[k,i]*Dint[k,j]
+            for k in range(3*Natoms):
+                Dint[k,j]-=proj*Dint[k,i]
+
+    Dintproj=numpy.dot(Vmw.T,Dint)
+    Proj = numpy.dot(Dint, Dint.T)
+    I = numpy.identity(Natoms*3, numpy.float64)
+    Proj = I - Proj 
+    Fm=numpy.dot(Proj, numpy.dot(Fm,Proj))
     # Get eigenvalues of mass-weighted force constant matrix
     eig, V = numpy.linalg.eigh(Fm)
     eig.sort()
 
     # Convert eigenvalues to vibrational frequencies in cm^-1
     # Only keep the modes that don't correspond to translation, rotation, or internal rotation
+
+    logging.debug('Frequencies from projected Hessian')
+    for i in range(3*Natoms):
+        logging.debug(numpy.sqrt(eig[i])/(2 * math.pi * constants.c * 100))
+        
     return numpy.sqrt(eig[-Nvib:]) / (2 * math.pi * constants.c * 100)
+

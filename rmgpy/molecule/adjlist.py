@@ -151,6 +151,9 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
                     radicalElectrons.append(4); spinMultiplicity.append(3)
                 elif e == '4V':
                     radicalElectrons.append(4); spinMultiplicity.append(5)
+                elif e == 'X':
+                    radicalElectrons.extend([0,1,2,2])
+                    spinMultiplicity.extend([1,2,1,3])
             index += 1
             
             # Next number defines the number of lone electron pairs (if provided)

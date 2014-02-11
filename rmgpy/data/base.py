@@ -511,7 +511,7 @@ class Database:
         
         flib = None
         try:
-            flib = codecs.open(path, 'r', 'utf-8')
+            flib = codecs.open(path, 'r', 'utf-8', errors='replace')
             for line in flib:
                 line = removeCommentFromLine(line).strip()
                 if len(line) > 0:

@@ -23,7 +23,7 @@ The instructions listed below have been confirmed on a fresh Ubuntu 12.04 instal
 
 	sudo pip install numpy		# install NumPy before other packages
 	
-	sudo pip install scipy cython nose matplotlib quantities guppy sphinx psutil xlwt
+	sudo pip install scipy cython nose matplotlib quantities guppy sphinx psutil xlwt freetype2 libpng-dev
 	
 	cd ~
 	git clone git@github.com:jwallen/PyDAS.git

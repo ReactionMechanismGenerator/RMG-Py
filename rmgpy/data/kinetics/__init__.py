@@ -219,6 +219,7 @@ class KineticsDatabase(object):
         for (root, dirs, files) in os.walk(os.path.join(path, 'kinetics_libraries')):
             if os.path.exists(os.path.join(root, 'species.txt')) and os.path.exists(os.path.join(root, 'reactions.txt')):
                 library = KineticsLibrary(label=root[len(librariesPath)+1:], name=root[len(librariesPath)+1:])
+                logging.warning("Loading {0}".format(root))
                 library.loadOld(root)
                 self.libraries[library.label] = library
                 
@@ -226,6 +227,7 @@ class KineticsDatabase(object):
             if os.path.exists(os.path.join(root, 'dictionary.txt')) and os.path.exists(os.path.join(root, 'rateLibrary.txt')):
                 label = os.path.split(root)[1]
                 family = KineticsFamily(label=label)
+                logging.warning("Loading {0}".format(root))
                 family.loadOld(root)
                 self.families[family.label] = family
 

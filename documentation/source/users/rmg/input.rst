@@ -337,6 +337,17 @@ Miscellaneous options::
 		generatePlots=False,
 	)
 
+	generatedSpeciesConstraints(
+        maximumCarbonAtoms=10,
+        maximumHydrogenAtoms=10,
+        maximumOxygenAtoms=10,
+        maximumNitrogenAtoms=10,
+        maximumSiliconAtoms=10,
+        maximumSulfurAtoms=10,
+        maximumHeavyAtoms=10,
+        maximumRadicalElectrons=10,
+	)
+
 Examples
 ========
 

@@ -108,11 +108,17 @@ def saveEntry(f, entry):
     if entry.reference is not None: f.write('    reference = {0!r},\n'.format(entry.reference))
     if entry.referenceType != "": f.write('    referenceType = "{0}",\n'.format(entry.referenceType))
     f.write('    shortDesc = u"""')
-    f.write(entry.shortDesc)
+    try:
+        f.write(entry.shortDesc.encode('utf-8'))
+    except:
+        f.write(entry.shortDesc.strip().encode('ascii', 'ignore')+ "\n")
     f.write('""",\n')
     f.write('    longDesc = \n')
     f.write('u"""\n')
-    f.write(entry.longDesc.strip() + "\n")
+    try:
+        f.write(entry.longDesc.strip().encode('utf-8') + "\n")    
+    except:
+        f.write(entry.longDesc.strip().encode('ascii', 'ignore')+ "\n")
     f.write('""",\n')
 
     f.write('    history = [\n')
@@ -225,10 +231,21 @@ class ThermoLibrary(Database):
                   longDesc='',
                   history=None
                   ):
+        
+        molecule = Molecule().fromAdjacencyList(molecule)
+        
+        # Internal checks for adding entry to the thermo library
+        if label in self.entries.keys():
+            raise DatabaseError('Found a duplicate molecule with label {0} in the thermo library.  Please correct your library.'.format(label))
+        
+        for entry in self.entries.values():
+            if molecule.isIsomorphic(entry.item):
+                raise DatabaseError('Adjacency list of {0} matches that of existing molecule {1} in thermo library.  Please correct your library.'.format(label, entry.label))
+        
         self.entries[label] = Entry(
             index = index,
             label = label,
-            item = Molecule().fromAdjacencyList(molecule),
+            item = molecule,
             data = thermo,
             reference = reference,
             referenceType = referenceType,

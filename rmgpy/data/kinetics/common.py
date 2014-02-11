@@ -70,7 +70,6 @@ UNIMOLECULAR_KINETICS_FAMILIES = [
     'intra_OH_migration',
     'HO2_Elimination_from_PeroxyRadical',
     'Cyclic_Ether_Formation',
-    'Enol_keto_tautomerism',
     'Intra_R_Add_Exocyclic',
     'Intra_R_Add_Endocyclic',
     '1,2-Birad_to_alkene',
@@ -83,6 +82,10 @@ UNIMOLECULAR_KINETICS_FAMILIES = [
     'intra_substitutionS_cyclization',
     'intra_substitutionS_isomerization',
     'intra_NO2_ONO_conversion',
+    '1,4_Cyclic_birad_scission',
+    '1,4_Linear_birad_scission',
+    'Intra_Diels_alder',
+    'ketoenol'
 ]
 
 ################################################################################
@@ -207,11 +210,17 @@ def saveEntry(f, entry):
     if entry.rank is not None:
         f.write('    rank = {0},\n'.format(entry.rank))
     f.write('    shortDesc = u"""')
-    f.write(entry.shortDesc)
+    try:
+        f.write(entry.shortDesc.encode('utf-8'))
+    except:
+        f.write(entry.shortDesc.strip().encode('ascii', 'ignore')+ "\n")
     f.write('""",\n')
     f.write('    longDesc = \n')
     f.write('u"""\n')
-    f.write(entry.longDesc.strip() + "\n")
+    try:
+        f.write(entry.longDesc.strip().encode('utf-8') + "\n")
+    except:
+        f.write(entry.longDesc.strip().encode('ascii', 'ignore')+ "\n")
     f.write('""",\n')
 
     f.write('    history = [\n')
