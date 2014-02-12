@@ -255,7 +255,7 @@ class TransitionStates(Database):
                 product = Species(molecule=[molecule])
                 product.generateResonanceIsomers()
                 reaction.products.append(product)
-            import ipdb; ipdb.set_trace()
+            
             # Generate all possible reactions involving the reactant species
             generatedReactions = self.generateReactionsFromFamilies([reactant.molecule for reactant in reaction.reactants], [], only_families=[family], families=rxnFamily)
             
