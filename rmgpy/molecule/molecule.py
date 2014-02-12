@@ -1046,7 +1046,7 @@ class Molecule(Graph):
         # Special handling of helium
         if smilesstr == '[He]':
             # RDKit improperly handles helium and returns it in a triplet state
-            self.fromAdjacencyList('1 He 0')
+            self.fromAdjacencyList('1 He 0') # this is broken with the new AdjList syntax
             return self
         
         else:
@@ -1129,6 +1129,7 @@ class Molecule(Graph):
         
         return self
 
+    newStyleAdjMatcher = re.compile('\s*\d+\s+(\*\d*\s+)?[A-Za-z]+\s+\S+\s+\d').match
     def fromAdjacencyList(self, adjlist, saturateH=False):
         """
         Convert a string adjacency list `adjlist` to a molecular structure.
@@ -1136,6 +1137,11 @@ class Molecule(Graph):
         ``False``.
         """
         from .adjlist import fromAdjacencyList
+        if not self.newStyleAdjMatcher(adjlist):
+            "It is an old-style adjacancey list, so assume implicit Hydrogens!"
+            saturateH = True
+            # Feel free to silence the following warning. It is here to see how often we need to make the assumption.
+            logging.warning("Assuming implicit hydrogens on an old-style adjacency list.")
         self.vertices = fromAdjacencyList(adjlist, False, saturateH=saturateH)
         self.updateConnectivityValues()
         self.updateAtomTypes()
