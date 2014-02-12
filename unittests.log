@@ -1,5 +1,133 @@
 nosetests --nocapture --nologcapture --all-modules --verbose --with-coverage --cover-inclusive --cover-package=rmgpy --cover-erase --cover-html --cover-html-dir=testing/coverage rmgpy
-ERROR:root:Error while reading database '/export/thishost/comocheng/build/RMG-database/input/thermo/libraries/SulfurLibrary.py'.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+ERROR:root:Error while reading database '/export/thishost/comocheng/build/RMG-database/input/thermo/libraries/primaryThermoLibrary.py'.
 Uses a Gaussian03 log file for ethylene (C2H4) to test that its ... FAIL
 Uses a Gaussian03 log file for ethylene (C2H4) to test that its ... FAIL
 Uses a Gaussian03 log file for oxygen (O2) to test that its ... ok
@@ -26,7 +154,7 @@ Test the value of the reduced Planck constant. ... ok
 Test the value of the speed of light in a vacuum. ... ok
 Test we can estimate solvation thermochemistry. ... FAIL
 Test we can estimate Abraham solute paramaters correctly ... ok
-Failure: DatabaseError (Adjacency list of CH3CHJSC2H5 matches that of existing molecule C2H5SCHjCH3 in thermo library.  Please correct your library.) ... ERROR
+Failure: InvalidAdjacencyListError (Cannot add hydrogens to adjacency list: Unknown valence for atom "Cl".) ... ERROR
 Test that the Arrhenius A property was properly set. ... ok
 Test that the Arrhenius Ea property was properly set. ... ok
 Test that the Arrhenius T0 property was properly set. ... ok
@@ -188,12 +316,24 @@ Test the AtomType.isSpecificCaseOf() method. ... ok
 Test that we can reconstruct an AtomType object from its repr() ... ok
 Test that an AtomType object can be successfully pickled and ... ok
 Test the AtomType.setActions() method. ... ok
-Test that getAtomType() returns appropriate carbon atom types. ... ok
-Test that getAtomType() returns the hydrogen atom type. ... ok
-Test that getAtomType() returns appropriate NoneTypes. ... FAIL
-Test that getAtomType() returns appropriate oxygen atom types. ... ok
-Test that getAtomType() returns appropriate silicon atom types. ... ok
-Test that getAtomType() returns appropriate sulfur atom types. ... ok
+Test that getAtomType() returns appropriate carbon atom types. ... WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+ok
+Test that getAtomType() returns the hydrogen atom type. ... WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+ok
+Test that getAtomType() returns appropriate NoneTypes. ... WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+FAIL
+Test that getAtomType() returns appropriate oxygen atom types. ... WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+ok
+Test that getAtomType() returns appropriate silicon atom types. ... WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+ok
+Test that getAtomType() returns appropriate sulfur atom types. ... WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+ok
 Test we can create PDF files from molecules. ... ok
 Test we can create PDF surface without a temporary file (newer versions of PyCairo?) ... ok
 Test we can create PNG files from molecules. ... ok
@@ -292,12 +432,15 @@ Test the Bond.isSingle() method. ... ok
 Test the Bond.isSpecificCaseOf() method. ... ok
 Test the Bond.isTriple() method. ... ok
 Test that a Bond object can be successfully pickled and ... ok
-Check the adjacency list read/write functions for a full molecule. ... ok
+Check the adjacency list read/write functions for a full molecule. ... WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+ok
 Test the Molecule.isAromatic() method. ... FAIL
 Test the Molecule.isAromatic() method. ... ok
 Test the Molecule.isAromatic() method. ... FAIL
-Test that Augmented InChI generation is printing the /mult layer ... ok
-Test that Augmented InChI Key generation is printing the mult layer ... ok
+Test that Augmented InChI generation is printing the /mult layer ... WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+ok
+Test that Augmented InChI Key generation is printing the mult layer ... WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+ok
 Test the Molecule.clearLabeledAtoms() method. ... ok
 Test the Molecule.containsLabeledAtom() method. ... ok
 Test the Molecule.countInternalRotors() method. ... ok
@@ -309,13 +452,16 @@ Test the Molecule.countInternalRotors() method. ... ok
 Test the Molecule.countInternalRotors() method. ... ok
 Test the Molecule.fromAdjacencyList() method. ... ok
 Make sure that H radical is produced properly from its InChI ... ok
-Test we can read things with implicit hydrogens. ... FAIL
+Test we can read things with implicit hydrogens. ... WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+ok
 Make sure that H radical is produced properly from its SMILES ... ok
 Test the Molecule.getLabeledAtoms() method. ... ok
 Test the Molecule.getLabeledAtom() method. ... ok
 Test the Molecule.getLabeledAtoms() method. ... ok
 Test the Molecule.getMolecularWeight() method. ... ok
-Test that InChI Key generation is working properly. ... 1,2-ethanediol SoluteData(S=0.823,B=0.685,E=0.327,L=2.572,A=0.693,comment='Average of abraham(CssH2)+nonacentered(Cs(OssH)Cs(OssH))+abraham(CssH2)+nonacentered(Cs(OssH)Cs(OssH))+abraham(OssH)+nonacentered(OssH)+abraham(OssH)+nonacentered(OssH)+')
+Test that InChI Key generation is working properly. ... 1     Cl    0 {2,S}
+2     Cl    0 {1,S}
+1,2-ethanediol SoluteData(S=0.823,B=0.685,E=0.327,L=2.572,A=0.693,comment='Average of abraham(CssH2)+nonacentered(Cs(OssH)Cs(OssH))+abraham(CssH2)+nonacentered(Cs(OssH)Cs(OssH))+abraham(OssH)+nonacentered(OssH)+abraham(OssH)+nonacentered(OssH)+')
 None
 None
 None
@@ -344,11 +490,14 @@ Test that the species [CH] has three radical electrons and a spin multiplicity o
 Test that the species [CH2] has two radical electrons and a spin multiplicity of 3. ... ok
 Test radical count on [CH2]C[CH2] ... ok
 Test the Molecule.getRadicalCount() method. ... ok
-Test that we can generate a few SMILES strings as expected ... ok
+Test that we can generate a few SMILES strings as expected ... WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+ok
 Test the Molecule.getSmallestSetOfSmallestRings() method with a complex ... ok
 Check the graph isomorphism functions. ... ok
-testSubgraphIsomorphismAgain (rmgpy.molecule.moleculeTest.TestMolecule) ... ok
-testSubgraphIsomorphismManyLabels (rmgpy.molecule.moleculeTest.TestMolecule) ... ok
+testSubgraphIsomorphismAgain (rmgpy.molecule.moleculeTest.TestMolecule) ... WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+ok
+testSubgraphIsomorphismManyLabels (rmgpy.molecule.moleculeTest.TestMolecule) ... WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+ok
 Test the Molecule.toAdjacencyList() method. ... ok
 Test the Molecule.calculateAtomSymmetryNumber() method. ... ok
 Test the Molecule.calculateAtomSymmetryNumber() method. ... ok
@@ -730,11 +879,194 @@ Test that a TransportData object can be reconstructed from its repr() output wit
 Test that the TransportData rotrelaxcollnum property was properly set. ... ok
 Test that the TransportData shapeIndex property was properly set. ... ok
 Test that the TransportData sigma property was properly set. ... ok
-testJoback (rmgpy.transportDataTest.TestTransportDatabase) ... ok
-Test Joback doesn't crash on Cb desription of beneze ... ERROR
+testJoback (rmgpy.transportDataTest.TestTransportDatabase) ... WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+ok
+Test Joback doesn't crash on Cb desription of beneze ... WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+ERROR
 
 ======================================================================
-ERROR: Failure: DatabaseError (Adjacency list of CH3CHJSC2H5 matches that of existing molecule C2H5SCHjCH3 in thermo library.  Please correct your library.)
+ERROR: Failure: InvalidAdjacencyListError (Cannot add hydrogens to adjacency list: Unknown valence for atom "Cl".)
 ----------------------------------------------------------------------
 Traceback (most recent call last):
   File "/export/thishost/comocheng/virtualenvs/rmgweb/local/lib/python2.7/site-packages/nose/loader.py", line 390, in loadTestsFromName
@@ -753,11 +1085,15 @@ Traceback (most recent call last):
     library.load(os.path.join(root, f), self.local_context, self.global_context)
   File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/base.py", line 210, in load
     exec f in global_context, local_context
-  File "/export/thishost/comocheng/build/RMG-database/input/thermo/libraries/SulfurLibrary.py", line 3988, in <module>
-    ("Thu Nov 15 12:27:50 2012","Josh Allen <jwallen@mit.edu>","action","""Josh Allen <jwallen@mit.edu> imported this entry from the old RMG database."""),
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermo.py", line 243, in loadEntry
-    raise DatabaseError('Adjacency list of {0} matches that of existing molecule {1} in thermo library.  Please correct your library.'.format(label, entry.label))
-DatabaseError: Adjacency list of CH3CHJSC2H5 matches that of existing molecule C2H5SCHjCH3 in thermo library.  Please correct your library.
+  File "/export/thishost/comocheng/build/RMG-database/input/thermo/libraries/primaryThermoLibrary.py", line 829, in <module>
+    ("Tue Sep 17 12:44:29 2013","Connie Gao <connieg@mit.edu>","action","""connieg added this entry to the database."""),
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermo.py", line 235, in loadEntry
+    molecule = Molecule().fromAdjacencyList(molecule)
+  File "molecule.py", line 1133, in rmgpy.molecule.molecule.Molecule.fromAdjacencyList (build/pyrex/rmgpy/molecule/molecule.c:17810)
+  File "molecule.py", line 1145, in rmgpy.molecule.molecule.Molecule.fromAdjacencyList (build/pyrex/rmgpy/molecule/molecule.c:17657)
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/adjlist.py", line 250, in fromAdjacencyList
+    raise InvalidAdjacencyListError('Cannot add hydrogens to adjacency list: Unknown valence for atom "{0}".'.format(atom.symbol))
+InvalidAdjacencyListError: Cannot add hydrogens to adjacency list: Unknown valence for atom "Cl".
 
 ======================================================================
 ERROR: Test Joback doesn't crash on Cb desription of beneze
@@ -828,14 +1164,6 @@ Traceback (most recent call last):
   File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/moleculeTest.py", line 981, in testCountInternalRotorsDimethylAcetylene
     self.assertEqual(Molecule().fromSMILES('CC#CC').countInternalRotors(), 1)
 AssertionError: 2 != 1
-
-======================================================================
-FAIL: Test we can read things with implicit hydrogens.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/moleculeTest.py", line 591, in testFromOldAdjacencyList
-    self.assertEqual(molecule.getFormula(),'H2O')
-AssertionError: 'O' != 'H2O'
 
 ======================================================================
 FAIL: Test the Molecule.calculateAxisSymmetryNumber() method.
@@ -914,7 +1242,7 @@ rmgpy.data.rmg                       80     59     10     10    23%   56-71, 92-
 rmgpy.data.solvation                290    109     60     45    56%   108, 115, 146-149, 162-209, 254, 281, 300, 307, 314, 357, 365, 372, 395-400, 406-408, 445-448, 455-457, 464-466, 474-489, 505-518, 531-543, 563-567, 629-668, 679-683, 702, 716-720
 rmgpy.data.statmech                 295    244    103    103    13%   48-91, 98-101, 108-116, 127, 140, 156, 166, 179, 195, 202, 209, 220, 233-241, 257, 264, 271, 278-285, 294-309, 319-355, 364-445, 455-467, 473-479, 485-488, 495-500, 507, 514-526, 533-534, 541-545, 552-553, 560-562, 569-570, 578-594, 611-624, 637-645, 652-656, 664-667, 676, 689-690, 698-705
 rmgpy.data.statmechfit              248    213     70     70    11%   95-137, 151-193, 207-244, 260-307, 316-319, 327-330, 338-343, 352-355, 364-366, 378-381, 384-407, 419-422, 425-457, 469-472, 475-506
-rmgpy.data.thermo                   448    361    140    131    16%   56-129, 136-154, 174, 193-205, 211, 239, 261, 268, 275, 285, 298-302, 318, 326, 333, 359-365, 371-374, 384, 386, 413-414, 421-429, 436-440, 447-449, 456-458, 465-472, 480-547, 562-573, 583-626, 643-658, 669-677, 685-691, 704-720, 730-741, 754-760, 774-788, 797-864, 877-956, 963-976, 984-1016
+rmgpy.data.thermo                   448    362    140    132    16%   56-129, 136-154, 174, 193-205, 211, 239, 243, 261, 268, 275, 285, 298-302, 318, 326, 333, 359-365, 371-374, 384, 386, 413-414, 421-429, 436-440, 447-449, 456-458, 465-472, 480-547, 562-573, 583-626, 643-658, 669-677, 685-691, 704-720, 730-741, 754-760, 774-788, 797-864, 877-956, 963-976, 984-1016
 rmgpy.data.transport                233     96     66     45    53%   54-69, 119, 126, 133, 155, 174, 181, 188, 209-214, 220-222, 269-283, 291-303, 314-318, 345, 377-416, 466, 480-484, 501-534
 rmgpy.display                        12      4      2      2    57%   37, 41-43, 47
 rmgpy.kinetics                        6      0      0      0   100%   
@@ -927,7 +1255,7 @@ rmgpy.measure.output                164    146     82     82     7%   53-60, 71-
 rmgpy.measure.settings                2      0      0      0   100%   
 rmgpy.measure.simulate               67     54     30     30    13%   46, 49, 66-128, 144-169, 178-179, 182, 185
 rmgpy.molecule                        5      0      0      0   100%   
-rmgpy.molecule.adjlist              268     60    162     46    75%   65, 69-71, 80, 147, 152-156, 201, 214, 216, 218, 236, 242-262, 272-273, 296-298, 315-330, 343-344, 372
+rmgpy.molecule.adjlist              268     36    162     38    83%   65, 69-71, 80, 147, 152-156, 201, 214, 216, 218, 236, 272-273, 315-330, 343-344, 372
 rmgpy.molecule.draw                 929    574    448    303    36%   76, 79-82, 141-143, 171-176, 187-189, 192-195, 198-200, 203-205, 208-210, 213-216, 265-273, 286, 294-346, 371-373, 382-387, 396-427, 435-445, 452-577, 584-638, 645-717, 730-824, 848-849, 857-858, 881, 903-924, 937-939, 990-993, 999-1000, 1002-1004, 1043-1044, 1091-1099, 1121-1122, 1135-1138, 1157-1162, 1168-1169, 1198-1199, 1207-1209, 1212-1213, 1221-1223, 1229-1236, 1241-1244, 1253-1256, 1261-1278, 1288-1291, 1295-1298, 1302-1319, 1347-1351, 1365-1485
 rmgpy.pdep                            5      0      0      0   100%   
 rmgpy.pdep.draw                     291    277     86     86     4%   57-70, 73-79, 87-107, 116-125, 131-142, 148-159, 165-181, 185-213, 222-479
@@ -951,11 +1279,11 @@ rmgpy.statmech                        5      0      0      0   100%
 rmgpy.thermo                          3      0      0      0   100%   
 rmgpy.transport                      31      3      0      0    90%   58-59, 65
 -----------------------------------------------------------------------------
-TOTAL                             14450  11803   6105   5619    15%   
+TOTAL                             14450  11780   6105   5612    15%   
 ----------------------------------------------------------------------
 Ran 721 tests.
 
-FAILED (errors=2, failures=14)
+FAILED (errors=2, failures=13)
 1 *1 C 1 0 {2,S} {3,S} {4,S}
 2    C 0 0 {1,S} {3,S} {5,S} {6,S}
 3    C 0 0 {1,S} {2,S} {7,S} {8,S}
