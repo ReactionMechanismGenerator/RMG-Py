@@ -1,5 +1,5 @@
 nosetests --nocapture --nologcapture --all-modules --verbose --with-coverage --cover-inclusive --cover-package=rmgpy --cover-erase --cover-html --cover-html-dir=testing/coverage rmgpy
-ERROR:root:Error while reading database '/export/thishost/comocheng/build/RMG-database/input/thermo/libraries/DFT_QCI_thermo.py'.
+ERROR:root:Error while reading database '/export/thishost/comocheng/build/RMG-database/input/thermo/libraries/SulfurLibrary.py'.
 Uses a Gaussian03 log file for ethylene (C2H4) to test that its ... FAIL
 Uses a Gaussian03 log file for ethylene (C2H4) to test that its ... FAIL
 Uses a Gaussian03 log file for oxygen (O2) to test that its ... ok
@@ -26,7 +26,7 @@ Test the value of the reduced Planck constant. ... ok
 Test the value of the speed of light in a vacuum. ... ok
 Test we can estimate solvation thermochemistry. ... FAIL
 Test we can estimate Abraham solute paramaters correctly ... ok
-Failure: DatabaseError (Adjacency list of CH3OCH2O matches that of existing molecule HOCH2CHOH in thermo library.  Please correct your library.) ... ERROR
+Failure: DatabaseError (Adjacency list of CH3CHJSC2H5 matches that of existing molecule C2H5SCHjCH3 in thermo library.  Please correct your library.) ... ERROR
 Test that the Arrhenius A property was properly set. ... ok
 Test that the Arrhenius Ea property was properly set. ... ok
 Test that the Arrhenius T0 property was properly set. ... ok
@@ -309,6 +309,7 @@ Test the Molecule.countInternalRotors() method. ... ok
 Test the Molecule.countInternalRotors() method. ... ok
 Test the Molecule.fromAdjacencyList() method. ... ok
 Make sure that H radical is produced properly from its InChI ... ok
+Test we can read things with implicit hydrogens. ... FAIL
 Make sure that H radical is produced properly from its SMILES ... ok
 Test the Molecule.getLabeledAtoms() method. ... ok
 Test the Molecule.getLabeledAtom() method. ... ok
@@ -733,7 +734,7 @@ testJoback (rmgpy.transportDataTest.TestTransportDatabase) ... ok
 Test Joback doesn't crash on Cb desription of beneze ... ERROR
 
 ======================================================================
-ERROR: Failure: DatabaseError (Adjacency list of CH3OCH2O matches that of existing molecule HOCH2CHOH in thermo library.  Please correct your library.)
+ERROR: Failure: DatabaseError (Adjacency list of CH3CHJSC2H5 matches that of existing molecule C2H5SCHjCH3 in thermo library.  Please correct your library.)
 ----------------------------------------------------------------------
 Traceback (most recent call last):
   File "/export/thishost/comocheng/virtualenvs/rmgweb/local/lib/python2.7/site-packages/nose/loader.py", line 390, in loadTestsFromName
@@ -752,11 +753,11 @@ Traceback (most recent call last):
     library.load(os.path.join(root, f), self.local_context, self.global_context)
   File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/base.py", line 210, in load
     exec f in global_context, local_context
-  File "/export/thishost/comocheng/build/RMG-database/input/thermo/libraries/DFT_QCI_thermo.py", line 2611, in <module>
+  File "/export/thishost/comocheng/build/RMG-database/input/thermo/libraries/SulfurLibrary.py", line 3988, in <module>
     ("Thu Nov 15 12:27:50 2012","Josh Allen <jwallen@mit.edu>","action","""Josh Allen <jwallen@mit.edu> imported this entry from the old RMG database."""),
   File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermo.py", line 243, in loadEntry
     raise DatabaseError('Adjacency list of {0} matches that of existing molecule {1} in thermo library.  Please correct your library.'.format(label, entry.label))
-DatabaseError: Adjacency list of CH3OCH2O matches that of existing molecule HOCH2CHOH in thermo library.  Please correct your library.
+DatabaseError: Adjacency list of CH3CHJSC2H5 matches that of existing molecule C2H5SCHjCH3 in thermo library.  Please correct your library.
 
 ======================================================================
 ERROR: Test Joback doesn't crash on Cb desription of beneze
@@ -808,7 +809,7 @@ AssertionError: 'N3s' is not None
 FAIL: Test the Molecule.isAromatic() method.
 ----------------------------------------------------------------------
 Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/moleculeTest.py", line 918, in testAromaticBenzene
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/moleculeTest.py", line 926, in testAromaticBenzene
     self.assertTrue(Molecule().fromSMILES('C1=CC=CC=C1').isAromatic())
 AssertionError: False is not true
 
@@ -816,7 +817,7 @@ AssertionError: False is not true
 FAIL: Test the Molecule.isAromatic() method.
 ----------------------------------------------------------------------
 Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/moleculeTest.py", line 924, in testAromaticNaphthalene
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/moleculeTest.py", line 932, in testAromaticNaphthalene
     self.assertTrue(Molecule().fromSMILES('C12C(C=CC=C1)=CC=CC=2').isAromatic())
 AssertionError: False is not true
 
@@ -824,9 +825,17 @@ AssertionError: False is not true
 FAIL: Test the Molecule.countInternalRotors() method for dimethylacetylene.
 ----------------------------------------------------------------------
 Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/moleculeTest.py", line 973, in testCountInternalRotorsDimethylAcetylene
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/moleculeTest.py", line 981, in testCountInternalRotorsDimethylAcetylene
     self.assertEqual(Molecule().fromSMILES('CC#CC').countInternalRotors(), 1)
 AssertionError: 2 != 1
+
+======================================================================
+FAIL: Test we can read things with implicit hydrogens.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/moleculeTest.py", line 591, in testFromOldAdjacencyList
+    self.assertEqual(molecule.getFormula(),'H2O')
+AssertionError: 'O' != 'H2O'
 
 ======================================================================
 FAIL: Test the Molecule.calculateAxisSymmetryNumber() method.
@@ -900,7 +909,7 @@ rmgpy.data.kinetics.family         1052    984    596    596     4%   95-108, 11
 rmgpy.data.kinetics.groups          297    273    180    180     5%   78-79, 85-89, 109-171, 181-207, 216-268, 281-549
 rmgpy.data.kinetics.library         274    248    150    150     6%   71-84, 90, 108, 118, 128-149, 156-163, 171-180, 187-242, 246-256, 278-312, 318, 324-357, 367-371, 381-542
 rmgpy.data.kinetics.rules           313    283    135    135     7%   64, 88-128, 134, 142-190, 197-223, 231-279, 287-354, 361-368, 375, 382, 389-402, 409-425, 431-490, 501-527, 534-588
-rmgpy.data.reference                138    119     48     48    10%   66-70, 89-95, 102-108, 114-132, 158-162, 169-183, 190-200, 226-231, 238-251, 258-269, 292-294, 301-311, 318-326
+rmgpy.data.reference                138    114     48     48    13%   89-95, 102-108, 114-132, 158-162, 169-183, 190-200, 226-231, 238-251, 258-269, 292-294, 301-311, 318-326
 rmgpy.data.rmg                       80     59     10     10    23%   56-71, 92-104, 111-112, 119-120, 127-128, 141-153, 164-165, 172-173, 180-189, 195-200, 206-211
 rmgpy.data.solvation                290    109     60     45    56%   108, 115, 146-149, 162-209, 254, 281, 300, 307, 314, 357, 365, 372, 395-400, 406-408, 445-448, 455-457, 464-466, 474-489, 505-518, 531-543, 563-567, 629-668, 679-683, 702, 716-720
 rmgpy.data.statmech                 295    244    103    103    13%   48-91, 98-101, 108-116, 127, 140, 156, 166, 179, 195, 202, 209, 220, 233-241, 257, 264, 271, 278-285, 294-309, 319-355, 364-445, 455-467, 473-479, 485-488, 495-500, 507, 514-526, 533-534, 541-545, 552-553, 560-562, 569-570, 578-594, 611-624, 637-645, 652-656, 664-667, 676, 689-690, 698-705
@@ -942,11 +951,11 @@ rmgpy.statmech                        5      0      0      0   100%
 rmgpy.thermo                          3      0      0      0   100%   
 rmgpy.transport                      31      3      0      0    90%   58-59, 65
 -----------------------------------------------------------------------------
-TOTAL                             14450  11808   6105   5619    15%   
+TOTAL                             14450  11803   6105   5619    15%   
 ----------------------------------------------------------------------
-Ran 720 tests.
+Ran 721 tests.
 
-FAILED (errors=2, failures=13)
+FAILED (errors=2, failures=14)
 1 *1 C 1 0 {2,S} {3,S} {4,S}
 2    C 0 0 {1,S} {3,S} {5,S} {6,S}
 3    C 0 0 {1,S} {2,S} {7,S} {8,S}
