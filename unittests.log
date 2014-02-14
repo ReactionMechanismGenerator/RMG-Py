@@ -1,821 +1,821 @@
 nosetests --nocapture --nologcapture --all-modules --verbose --with-coverage --cover-inclusive --cover-package=rmgpy --cover-erase --cover-html --cover-html-dir=testing/coverage rmgpy
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
 ERROR:root:Error while reading database '/export/thishost/comocheng/build/RMG-database/input/thermo/libraries/SulfurLibrary.py'.
 Uses a Gaussian03 log file for ethylene (C2H4) to test that its ... FAIL
 Uses a Gaussian03 log file for ethylene (C2H4) to test that its ... FAIL
@@ -1005,23 +1005,23 @@ Test the AtomType.isSpecificCaseOf() method. ... ok
 Test that we can reconstruct an AtomType object from its repr() ... ok
 Test that an AtomType object can be successfully pickled and ... ok
 Test the AtomType.setActions() method. ... ok
-Test that getAtomType() returns appropriate carbon atom types. ... WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+Test that getAtomType() returns appropriate carbon atom types. ... WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
 ok
-Test that getAtomType() returns the hydrogen atom type. ... WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+Test that getAtomType() returns the hydrogen atom type. ... WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
 ok
-Test that getAtomType() returns appropriate NoneTypes. ... WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+Test that getAtomType() returns appropriate NoneTypes. ... WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
 FAIL
-Test that getAtomType() returns appropriate oxygen atom types. ... WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+Test that getAtomType() returns appropriate oxygen atom types. ... WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
 ok
-Test that getAtomType() returns appropriate silicon atom types. ... WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+Test that getAtomType() returns appropriate silicon atom types. ... WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
 ok
-Test that getAtomType() returns appropriate sulfur atom types. ... WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+Test that getAtomType() returns appropriate sulfur atom types. ... WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
 ok
 Test we can create PDF files from molecules. ... ok
 Test we can create PDF surface without a temporary file (newer versions of PyCairo?) ... ok
@@ -1121,14 +1121,14 @@ Test the Bond.isSingle() method. ... ok
 Test the Bond.isSpecificCaseOf() method. ... ok
 Test the Bond.isTriple() method. ... ok
 Test that a Bond object can be successfully pickled and ... ok
-Check the adjacency list read/write functions for a full molecule. ... WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+Check the adjacency list read/write functions for a full molecule. ... WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
 ok
 Test the Molecule.isAromatic() method. ... FAIL
 Test the Molecule.isAromatic() method. ... ok
 Test the Molecule.isAromatic() method. ... FAIL
-Test that Augmented InChI generation is printing the /mult layer ... WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+Test that Augmented InChI generation is printing the /mult layer ... WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
 ok
-Test that Augmented InChI Key generation is printing the mult layer ... WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+Test that Augmented InChI Key generation is printing the mult layer ... WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
 ok
 Test the Molecule.clearLabeledAtoms() method. ... ok
 Test the Molecule.containsLabeledAtom() method. ... ok
@@ -1141,8 +1141,8 @@ Test the Molecule.countInternalRotors() method. ... ok
 Test the Molecule.countInternalRotors() method. ... ok
 Test the Molecule.fromAdjacencyList() method. ... ok
 Make sure that H radical is produced properly from its InChI ... ok
-Test we can read things with implicit hydrogens. ... WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-ok
+Test we can read things with implicit hydrogens. ... WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+FAIL
 Make sure that H radical is produced properly from its SMILES ... ok
 Test the Molecule.getLabeledAtoms() method. ... ok
 Test the Molecule.getLabeledAtom() method. ... ok
@@ -1177,13 +1177,13 @@ Test that the species [CH] has three radical electrons and a spin multiplicity o
 Test that the species [CH2] has two radical electrons and a spin multiplicity of 3. ... ok
 Test radical count on [CH2]C[CH2] ... ok
 Test the Molecule.getRadicalCount() method. ... ok
-Test that we can generate a few SMILES strings as expected ... WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+Test that we can generate a few SMILES strings as expected ... WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
 ok
 Test the Molecule.getSmallestSetOfSmallestRings() method with a complex ... ok
 Check the graph isomorphism functions. ... ok
-testSubgraphIsomorphismAgain (rmgpy.molecule.moleculeTest.TestMolecule) ... WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+testSubgraphIsomorphismAgain (rmgpy.molecule.moleculeTest.TestMolecule) ... WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
 ok
-testSubgraphIsomorphismManyLabels (rmgpy.molecule.moleculeTest.TestMolecule) ... WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+testSubgraphIsomorphismManyLabels (rmgpy.molecule.moleculeTest.TestMolecule) ... WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
 ok
 Test the Molecule.toAdjacencyList() method. ... ok
 Test the Molecule.calculateAtomSymmetryNumber() method. ... ok
@@ -1566,190 +1566,190 @@ Test that a TransportData object can be reconstructed from its repr() output wit
 Test that the TransportData rotrelaxcollnum property was properly set. ... ok
 Test that the TransportData shapeIndex property was properly set. ... ok
 Test that the TransportData sigma property was properly set. ... ok
-testJoback (rmgpy.transportDataTest.TestTransportDatabase) ... WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+testJoback (rmgpy.transportDataTest.TestTransportDatabase) ... WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
 ok
-Test Joback doesn't crash on Cb desription of beneze ... WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
-WARNING:root:Assuming implicit hydrogens on an old-style adjacency list.
+Test Joback doesn't crash on Cb desription of beneze ... WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
+WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
 ERROR
 
 ======================================================================
@@ -1849,6 +1849,14 @@ Traceback (most recent call last):
 AssertionError: 2 != 1
 
 ======================================================================
+FAIL: Test we can read things with implicit hydrogens.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/moleculeTest.py", line 591, in testFromOldAdjacencyList
+    self.assertEqual(molecule.getFormula(),'H2O')
+AssertionError: 'O' != 'H2O'
+
+======================================================================
 FAIL: Test the Molecule.calculateAxisSymmetryNumber() method.
 ----------------------------------------------------------------------
 Traceback (most recent call last):
@@ -1910,7 +1918,7 @@ rmgpy.cantherm.output                77     66     23     23    11%   47-49, 56-
 rmgpy.cantherm.pdep                 403    365    156    156     7%   106-142, 147, 150, 155, 158, 163, 166, 171, 174, 179, 182, 187, 190, 195, 198, 204, 224-238, 250-267, 270-297, 309-326, 330-362, 366-382, 386-483, 488-552, 562-571, 578-691
 rmgpy.cantherm.statmech             509    480    226    226     4%   82, 89-120, 128-145, 150, 160-165, 172-174, 183-391, 395-401, 410-441, 449-479, 496-653, 664-864
 rmgpy.cantherm.thermo               155    140     32     32     8%   55-56, 63-67, 75-122, 129-205, 217-269
-rmgpy.chemkin                       990    946    492    491     3%   69, 79-156, 167-456, 466-615, 626-646, 652-665, 672-687, 695-846, 858-900, 914-972, 982-1130, 1138-1148, 1160-1202, 1213-1277, 1285-1327, 1344-1501, 1511-1527, 1537-1540, 1548-1551, 1558-1569, 1591-1614, 1633-1679, 1687-1718
+rmgpy.chemkin                       985    941    486    485     3%   69, 79-156, 167-456, 466-615, 626-646, 652-665, 672-687, 695-846, 858-900, 914-972, 982-1130, 1138-1148, 1160-1202, 1213-1277, 1285-1327, 1344-1494, 1504-1520, 1530-1533, 1541-1544, 1551-1562, 1584-1607, 1626-1672, 1680-1711
 rmgpy.data                            3      1      0      0    67%   34
 rmgpy.data.base                     660    443    299    226    30%   113, 230-251, 259-282, 293-311, 324-380, 389, 401, 408, 418-419, 422, 454-464, 471-501, 510-565, 572-580, 588-681, 688-694, 701-713, 720-754, 764, 770-776, 782-787, 801-840, 864-865, 871, 873, 880-889, 898-900, 905, 923, 925, 936, 940-941, 956, 963-967, 984, 988, 996-1005, 1016-1023, 1041, 1051, 1059, 1061, 1073-1076, 1099-1103, 1115-1119, 1141-1158, 1164-1165, 1171, 1179-1192, 1207-1234
 rmgpy.data.kinetics                 271    237    135    135     8%   62-78, 84-89, 95-97, 104-105, 112-139, 149-174, 181-184, 191-195, 202-208, 215-234, 241-275, 283-286, 294-297, 305-320, 333-342, 363-461, 474-520
@@ -1938,7 +1946,7 @@ rmgpy.measure.output                164    146     82     82     7%   53-60, 71-
 rmgpy.measure.settings                2      0      0      0   100%   
 rmgpy.measure.simulate               67     54     30     30    13%   46, 49, 66-128, 144-169, 178-179, 182, 185
 rmgpy.molecule                        5      0      0      0   100%   
-rmgpy.molecule.adjlist              268     41    162     38    82%   65, 69-71, 80, 147, 152-156, 201, 214, 216, 218, 236, 249-250, 272-273, 296-298, 315-330, 343-344, 372
+rmgpy.molecule.adjlist              268     60    162     46    75%   65, 69-71, 80, 147, 152-156, 201, 214, 216, 218, 236, 242-262, 272-273, 296-298, 315-330, 343-344, 372
 rmgpy.molecule.draw                 929    574    448    303    36%   76, 79-82, 141-143, 171-176, 187-189, 192-195, 198-200, 203-205, 208-210, 213-216, 265-273, 286, 294-346, 371-373, 382-387, 396-427, 435-445, 452-577, 584-638, 645-717, 730-824, 848-849, 857-858, 881, 903-924, 937-939, 990-993, 999-1000, 1002-1004, 1043-1044, 1091-1099, 1121-1122, 1135-1138, 1157-1162, 1168-1169, 1198-1199, 1207-1209, 1212-1213, 1221-1223, 1229-1236, 1241-1244, 1253-1256, 1261-1278, 1288-1291, 1295-1298, 1302-1319, 1347-1351, 1365-1485
 rmgpy.pdep                            5      0      0      0   100%   
 rmgpy.pdep.draw                     291    277     86     86     4%   57-70, 73-79, 87-107, 116-125, 131-142, 148-159, 165-181, 185-213, 222-479
@@ -1962,11 +1970,11 @@ rmgpy.statmech                        5      0      0      0   100%
 rmgpy.thermo                          3      0      0      0   100%   
 rmgpy.transport                      31      3      0      0    90%   58-59, 65
 -----------------------------------------------------------------------------
-TOTAL                             14477  11811   6127   5633    15%   
+TOTAL                             14472  11825   6121   5635    15%   
 ----------------------------------------------------------------------
 Ran 721 tests.
 
-FAILED (errors=2, failures=13)
+FAILED (errors=2, failures=14)
 1 *1 C 1 0 {2,S} {3,S} {4,S}
 2    C 0 0 {1,S} {3,S} {5,S} {6,S}
 3    C 0 0 {1,S} {2,S} {7,S} {8,S}
