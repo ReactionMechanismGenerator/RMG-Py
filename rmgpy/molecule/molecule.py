@@ -1138,13 +1138,12 @@ class Molecule(Graph):
         """
         from .adjlist import fromAdjacencyList
         if not self.newStyleAdjMatcher(adjlist):
-            "It is an old-style adjacancey list, so assume implicit Hydrogens!"
-            saturateH = True
-            # Feel free to silence the following warning. It is here to see how often we need to make the assumption.
-            logging.warning("Assuming implicit hydrogens on an old-style adjacency list.")
+            logging.warning("There could be an old-style adjacency list. Please check library and input before proceeding!")
+            
         self.vertices = fromAdjacencyList(adjlist, False, saturateH=saturateH)
         self.updateConnectivityValues()
         self.updateAtomTypes()
+        
         return self
 
     def toInChI(self):
