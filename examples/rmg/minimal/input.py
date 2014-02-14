@@ -45,4 +45,6 @@ options(
     saveRestartPeriod=None,
     drawMolecules=False,
     generatePlots=False,
+    saveEdgeSpecies=True,
+    saveConcentrationProfiles=True,
 )
