@@ -169,19 +169,22 @@ attributes are:</p>
 <tr class="row-odd"><td><cite>verboseComments</cite></td>
 <td><tt class="docutils literal"><span class="pre">True</span></tt> to keep the verbose comments for database estimates, <tt class="docutils literal"><span class="pre">False</span></tt> otherwise</td>
 </tr>
-<tr class="row-even"><td><cite>pressureDependence</cite></td>
+<tr class="row-even"><td><cite>saveEdgeSpecies</cite></td>
+<td><tt class="docutils literal"><span class="pre">True</span></tt> to save chemkin and HTML files of the edge species, <tt class="docutils literal"><span class="pre">False</span></tt> otherwise</td>
+</tr>
+<tr class="row-odd"><td><cite>pressureDependence</cite></td>
 <td>Whether to process unimolecular (pressure-dependent) reaction networks</td>
 </tr>
-<tr class="row-odd"><td><cite>quantumMechanics</cite></td>
+<tr class="row-even"><td><cite>quantumMechanics</cite></td>
 <td>Whether to apply quantum mechanical calculations instead of group additivity to certain molecular types.</td>
 </tr>
-<tr class="row-even"><td><cite>wallTime</cite></td>
+<tr class="row-odd"><td><cite>wallTime</cite></td>
 <td>The maximum amount of CPU time in seconds to expend on this job; used to stop gracefully so we can still get profiling information</td>
 </tr>
-<tr class="row-odd"><td><cite>initializationTime</cite></td>
+<tr class="row-even"><td><cite>initializationTime</cite></td>
 <td>The time at which the job was initiated, in seconds since the epoch (i.e. from time.time())</td>
 </tr>
-<tr class="row-even"><td><cite>done</cite></td>
+<tr class="row-odd"><td><cite>done</cite></td>
 <td>Whether the job has completed (there is nothing new to add)</td>
 </tr>
 </tbody>
@@ -272,12 +275,6 @@ already exists (e.g. from a previous job) its contents are deleted.</p>
 <tt class="descname">readMeaningfulLineJava</tt><big>(</big><em>f</em><big>)</big><a class="headerlink" href="#rmgpy.rmg.main.RMG.readMeaningfulLineJava" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read a meaningful line from an RMG-Java condition file object <cite>f</cite>,
 returning the line with any comments removed.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.rmg.main.RMG.saveChemkinFileEdge">
-<tt class="descname">saveChemkinFileEdge</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.rmg.main.RMG.saveChemkinFileEdge" title="Permalink to this definition">¶</a></dt>
-<dd><p>Save the current reaction edge to a Chemkin file.</p>
 </dd></dl>
 
 <dl class="method">
