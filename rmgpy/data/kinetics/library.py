@@ -290,11 +290,16 @@ class KineticsLibrary(Database):
             comment += str(re.sub('\s*\n\s*','\n',longDesc))
         kinetics.comment = comment.strip()
         
+        # Perform mass balance check on the reaction
+        rxn = Reaction(reactants=reactants, products=products, degeneracy=degeneracy, duplicate=duplicate, reversible=reversible)
+        if not rxn.isBalanced():
+            raise DatabaseError('Reaction {0} in kinetics library {1} was not balanced! Please reformulate.'.format(rxn, self.label))        
+
         assert index not in self.entries, "Reaction with index {0} already present!".format(index)
         self.entries[index] = Entry(
             index = index,
             label = label,
-            item = Reaction(reactants=reactants, products=products, degeneracy=degeneracy, duplicate=duplicate, reversible=reversible),
+            item = rxn,
             data = kinetics,
             reference = reference,
             referenceType = referenceType,
