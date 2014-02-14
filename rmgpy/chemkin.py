@@ -1385,7 +1385,14 @@ def writeKineticsEntry(reaction, speciesList, verbose = True, javaLibrary = Fals
         elif isinstance(reaction, LibraryReaction):
             string += '! Library reaction: {0!s}\n'.format(reaction.library.label)
         elif isinstance(reaction, PDepReaction):
-            string += '! PDep reaction: {0!s}\n'.format(reaction.network)                         
+            string += '! PDep reaction: {0!s}\n'.format(reaction.network)          
+            if logging.getLogger().getEffectiveLevel() == logging.DEBUG:
+                # Print additional information about the pdep network's high-P limit reactions if in debug mode.
+                for rxn in reaction.network.pathReactions:
+                    if isinstance(rxn, LibraryReaction):
+                        string += '! High-P limit: {0} (Library reaction: {1!s})\n'.format(rxn, rxn.library.label)
+                    else:
+                        string += '! High-P limit: {0} (Template reaction: {1!s})\n'.format(rxn, rxn.family.label)   
     
         # Remaining lines of comments taken from reaction kinetics
         if reaction.kinetics.comment:
