@@ -49,10 +49,10 @@ class OutputError(Exception):
 
 ################################################################################
 
-def saveOutputHTML(path, reactionModel):
+def saveOutputHTML(path, reactionModel, partCoreEdge):
     """
-    Save the current set of core species and reactions of `reactionModel` to
-    an HTML file `path` on disk. As part of this process, drawings of all core
+    Save the current set of  species and reactions of `reactionModel` to
+    an HTML file `path` on disk. As part of this process, drawings of all 
     species are created in the species folder (if they don't already exist)
     using the :mod:`rmgpy.molecule.draw` module. The :mod:`jinja`
     package is used to generate the HTML; if this package is not found, no
@@ -75,13 +75,18 @@ def saveOutputHTML(path, reactionModel):
 
     # Prepare parameters to pass to jinja template
     title = 'RMG Output'
-
-    species = reactionModel.core.species[:] + reactionModel.outputSpeciesList
+    
+    if partCoreEdge == 'core':
+        species = reactionModel.core.species[:] + reactionModel.outputSpeciesList
+        if not os.path.isdir(os.path.join(dirname,'species')):
+            os.makedirs(os.path.join(dirname,'species'))
+    elif partCoreEdge == 'edge':
+        species = reactionModel.edge.species[:] + reactionModel.outputSpeciesList
+        if not os.path.isdir(os.path.join(dirname,'species_edge')):
+            os.makedirs(os.path.join(dirname,'species_edge'))
 
     re_index_search = re.compile(r'\((\d+)\)$').search
-
-    if not os.path.isdir(os.path.join(dirname,'species')):
-        os.makedirs(os.path.join(dirname,'species'))
+    
     for spec in species:
         # if the species dictionary came from an RMG-Java job, make them prettier
         # We use the presence of a trailing index on the label to discern this
@@ -101,8 +106,11 @@ def saveOutputHTML(path, reactionModel):
     # We want to keep species sorted in the original order in which they were added to the RMG core.
     # Rather than ordered by index
 #    species.sort(key=lambda x: x.index)
-
-    reactions = [rxn for rxn in reactionModel.core.reactions ] + reactionModel.outputReactionList
+    
+    if partCoreEdge == 'core': 
+        reactions = [rxn for rxn in reactionModel.core.reactions ] + reactionModel.outputReactionList
+    elif partCoreEdge == 'edge':
+        reactions = [rxn for rxn in reactionModel.edge.reactions ] + reactionModel.outputReactionList
 
     # We want to keep reactions sorted in original order in which they were added to core
     # rather than ordered by index
