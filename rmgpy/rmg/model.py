@@ -1652,9 +1652,9 @@ class CoreEdgeReactionModel:
         markDuplicateReactions(rxnList)
         
         
-    def saveChemkinFile(self, path, verbose_path, dictionaryPath=None, transportPath=None):
+    def saveChemkinFile(self, path, verbose_path, dictionaryPath=None, transportPath=None, saveEdgeSpecies=False):
         """
-        Save a Chemkin file for the current model core as well as any desired output
+        Save a Chemkin file for the current model as well as any desired output
         species and reactions to `path`.
         """
         from rmgpy.chemkin import saveChemkinFile, saveSpeciesDictionary, saveTransportFile
@@ -1668,16 +1668,11 @@ class CoreEdgeReactionModel:
         if transportPath:
             saveTransportFile(transportPath, speciesList)
             
-    def saveChemkinFileEdge(self, path, verbose_path, dictionaryPath=None):
-        """
-        Save a Chemkin file for the current model edge as well as any desired output
-        species and reactions to `path`.
-        """
-        from rmgpy.chemkin import saveChemkinFile, saveSpeciesDictionaryEdge
-        speciesList = self.edge.species + self.outputSpeciesList
-        rxnList = self.edge.reactions + self.outputReactionList
-        saveChemkinFile(path, speciesList, rxnList, verbose = False)        
-        logging.info('Saving current edge to verbose Chemkin file...')
-        saveChemkinFile(verbose_path, speciesList, rxnList, verbose = True)
-        if dictionaryPath:
-            saveSpeciesDictionaryEdge(dictionaryPath, speciesList)
+        if saveEdgeSpecies == True:
+            speciesList = self.edge.species + self.outputSpeciesList
+            rxnList = self.edge.reactions + self.outputReactionList
+            saveChemkinFile(path, speciesList, rxnList, verbose = False, checkForDuplicates=False)        
+            logging.info('Saving current edge to verbose Chemkin file...')
+            saveChemkinFile(verbose_path, speciesList, rxnList, verbose = True, checkForDuplicates=False)
+            if dictionaryPath:
+                saveSpeciesDictionary(dictionaryPath, speciesList)
