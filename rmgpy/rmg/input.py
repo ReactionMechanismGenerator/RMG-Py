@@ -242,13 +242,14 @@ def pressureDependence(
     rmg.pressureDependence.activeKRotor = True
     rmg.pressureDependence.rmgmode = True
 
-def options(units='si', saveRestartPeriod=None, drawMolecules=False, generatePlots=False, saveConcentrationProfiles=False, verboseComments=False):
+def options(units='si', saveRestartPeriod=None, drawMolecules=False, generatePlots=False, saveConcentrationProfiles=False, verboseComments=False, saveEdgeSpecies=False):
     rmg.units = units
     rmg.saveRestartPeriod = Quantity(saveRestartPeriod) if saveRestartPeriod else None
     rmg.drawMolecules = drawMolecules
     rmg.generatePlots = generatePlots
     rmg.saveConcentrationProfiles = saveConcentrationProfiles
     rmg.verboseComments = verboseComments
+    rmg.saveEdgeSpecies = saveEdgeSpecies
 
 def generatedSpeciesConstraints(**kwargs):
     validConstraints = [
