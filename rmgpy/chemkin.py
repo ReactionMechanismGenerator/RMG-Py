@@ -1284,6 +1284,12 @@ def writeReactionString(reaction, javaLibrary = False):
     """
     kinetics = reaction.kinetics
     
+    if kinetics is None:
+        reaction_string = ' + '.join([getSpeciesIdentifier(reactant) for reactant in reaction.reactants])
+        reaction_string += ' => ' if not reaction.reversible else ' = '
+        reaction_string += ' + '.join([getSpeciesIdentifier(product) for product in reaction.products])
+        return reaction_string
+    
     if javaLibrary:
         thirdBody = ''
         if kinetics.isPressureDependent():
