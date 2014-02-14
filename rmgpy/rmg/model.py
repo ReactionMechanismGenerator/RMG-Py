@@ -786,6 +786,7 @@ class CoreEdgeReactionModel:
         
         Makes a reaction and decides where to put it: core, edge, or PDepNetwork.
         """
+        from rmgpy.data.kinetics.library import LibraryReaction
         for rxn in newReactions:
             rxn, isNew = self.makeNewReaction(rxn)
             if isNew:
@@ -847,6 +848,13 @@ class CoreEdgeReactionModel:
                 # Since PDepReactions are created as irreversible, not doing so
                 # would cause you to miss the reverse reactions!
                 net = self.addReactionToUnimolecularNetworks(rxn, newSpecies=newSpecies, network=pdepNetwork)
+                if isinstance(rxn, LibraryReaction):
+                    # If reaction came from a reaction library, omit it from the core and edge so that it does 
+                    # not get double-counted with the pdep network
+                    if rxn in self.core.reactions:
+                        self.core.reactions.remove(rxn)
+                    if rxn in self.edge.reactions:
+                        self.edge.reactions.remove(rxn)
 
     def generateKinetics(self, reaction):
         """
