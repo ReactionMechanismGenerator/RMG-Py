@@ -103,6 +103,7 @@ class RMG:
     `drawMolecules`             ``True`` to draw pictures of the species in the core, ``False`` otherwise
     `generatePlots`             ``True`` to generate plots of the job execution statistics after each iteration, ``False`` otherwise
     `verboseComments`           ``True`` to keep the verbose comments for database estimates, ``False`` otherwise
+    `saveEdgeSpecies`           ``True`` to save chemkin and HTML files of the edge species, ``False`` otherwise
     `pressureDependence`        Whether to process unimolecular (pressure-dependent) reaction networks
     `quantumMechanics`          Whether to apply quantum mechanical calculations instead of group additivity to certain molecular types.
     `wallTime`                  The maximum amount of CPU time in seconds to expend on this job; used to stop gracefully so we can still get profiling information
@@ -157,6 +158,7 @@ class RMG:
         self.generatePlots = None
         self.saveConcentrationProfiles = None
         self.verboseComments = None
+        self.saveEdgeSpecies = None
         self.pressureDependence = None
         self.quantumMechanics = None
         self.reactionGenerationOptions = {}
@@ -324,7 +326,7 @@ class RMG:
     
         # Delete previous HTML file
         from rmgpy.rmg.output import saveOutputHTML
-        saveOutputHTML(os.path.join(self.outputDirectory, 'output.html'), self.reactionModel)
+        saveOutputHTML(os.path.join(self.outputDirectory, 'output.html'), self.reactionModel, 'core')
         
         # Initialize reaction model
         if args.restart:
@@ -542,9 +544,9 @@ class RMG:
             if option:
                 self.reactionModel.addReactionLibraryToOutput(library)
                 
-        # Save the current state of the model core to a pretty HTML file
+        # Save the current state of the model to HTML files
         self.saveOutputHTML()
-        # Save a Chemkin file containing the current model core
+        # Save a Chemkin filew containing the current model
         self.saveChemkinFiles()
         # Save the restart file if desired
         if self.saveRestartPeriod or self.done:
@@ -685,38 +687,41 @@ class RMG:
         """
         Save the current reaction model to a pretty HTML file.
         """
-        logging.info('Saving current model to HTML file...')
+        logging.info('Saving current model core to HTML file...')
         from rmgpy.rmg.output import saveOutputHTML
-        saveOutputHTML(os.path.join(self.outputDirectory, 'output.html'), self.reactionModel)
+        saveOutputHTML(os.path.join(self.outputDirectory, 'output.html'), self.reactionModel, 'core')
+        
+        if self.saveEdgeSpecies ==True:
+            logging.info('Saving current model edge to HTML file...')
+            from rmgpy.rmg.output import saveOutputHTML
+            saveOutputHTML(os.path.join(self.outputDirectory, 'output_edge.html'), self.reactionModel, 'edge')
         
     def saveChemkinFiles(self):
         """
         Save the current reaction model to a set of Chemkin files.
         """        
-        logging.info('Saving current model to Chemkin file...')
+        logging.info('Saving current model core to Chemkin file...')
         this_chemkin_path = os.path.join(self.outputDirectory, 'chemkin', 'chem{0:04d}.inp'.format(len(self.reactionModel.core.species)))
         latest_chemkin_path = os.path.join(self.outputDirectory, 'chemkin','chem.inp')
         latest_chemkin_verbose_path = os.path.join(self.outputDirectory, 'chemkin', 'chem_annotated.inp')
         latest_dictionary_path = os.path.join(self.outputDirectory, 'chemkin','species_dictionary.txt')
         latest_transport_path = os.path.join(self.outputDirectory, 'chemkin', 'tran.dat')
-        self.reactionModel.saveChemkinFile(this_chemkin_path, latest_chemkin_verbose_path, latest_dictionary_path, latest_transport_path)
+        self.reactionModel.saveChemkinFile(this_chemkin_path, latest_chemkin_verbose_path, latest_dictionary_path, latest_transport_path, False)
         if os.path.exists(latest_chemkin_path):
             os.unlink(latest_chemkin_path)
         shutil.copy2(this_chemkin_path,latest_chemkin_path)
         
-    def saveChemkinFileEdge(self):
-        """
-        Save the current reaction edge to a Chemkin file.
-        """        
-        logging.info('Saving current edge to Chemkin file...')
-        this_chemkin_path = os.path.join(self.outputDirectory, 'chemkin', 'chem_edge%04i.inp' % len(self.reactionModel.core.species))
-        latest_chemkin_path = os.path.join(self.outputDirectory, 'chemkin','chem_edge.inp')
-        latest_chemkin_verbose_path = os.path.join(self.outputDirectory, 'chemkin', 'chem_edge_annotated.inp')
-        latest_dictionary_path = os.path.join(self.outputDirectory, 'chemkin','species_edge_dictionary.txt')
-        self.reactionModel.saveChemkinFileEdge(this_chemkin_path, latest_chemkin_verbose_path, latest_dictionary_path)
-        if os.path.exists(latest_chemkin_path):
-            os.unlink(latest_chemkin_path)
-        shutil.copy2(this_chemkin_path,latest_chemkin_path)
+        if self.saveEdgeSpecies ==True:
+            logging.info('Saving current model edge to Chemkin file...')
+            this_chemkin_path = os.path.join(self.outputDirectory, 'chemkin', 'chem_edge%04i.inp' % len(self.reactionModel.core.species)) # len() needs to be core to have unambiguous index
+            latest_chemkin_path = os.path.join(self.outputDirectory, 'chemkin','chem_edge.inp')
+            latest_chemkin_verbose_path = os.path.join(self.outputDirectory, 'chemkin', 'chem_edge_annotated.inp')
+            latest_dictionary_path = os.path.join(self.outputDirectory, 'chemkin','species_edge_dictionary.txt')
+            latest_transport_path = None
+            self.reactionModel.saveChemkinFile(this_chemkin_path, latest_chemkin_verbose_path, latest_dictionary_path, latest_dictionary_path, self.saveEdgeSpecies)
+            if os.path.exists(latest_chemkin_path):
+                os.unlink(latest_chemkin_path)
+            shutil.copy2(this_chemkin_path,latest_chemkin_path)
         
     def saveRestartFile(self, path, reactionModel, delay=0):
         """
