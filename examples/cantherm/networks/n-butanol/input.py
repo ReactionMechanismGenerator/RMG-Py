@@ -29,7 +29,7 @@ species(
     spinMultiplicity = 1,
     opticalIsomers = 1,
     molecularWeight = (74.07,"g/mol"),
-    collisionModel = LennardJones(sigma=(5.94,'angstrom'), epsilon=(559,'K')),
+    collisionModel = TransportData(sigma=(5.94,'angstrom'), epsilon=(559,'K')),
     energyTransferModel = SingleExponentialDown(alpha0=(447.5*0.011962,"kJ/mol"), T0=(300,"K"), n=0.85),
 )
 
@@ -65,7 +65,7 @@ species(
     label = "bath_gas",
     E0 = (0,'kJ/mol'),
     molecularWeight = (28.04,"g/mol"),
-    collisionModel = LennardJones(sigma=(3.41,"angstrom"), epsilon=(124,"K")),
+    collisionModel = TransportData(sigma=(3.41,"angstrom"), epsilon=(124,"K")),
     energyTransferModel = None,
 )
 

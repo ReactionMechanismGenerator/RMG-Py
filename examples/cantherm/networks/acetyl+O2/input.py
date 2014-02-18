@@ -28,7 +28,7 @@ species(
     spinMultiplicity = 2,
     opticalIsomers = 1,
     molecularWeight = (75.04,"g/mol"),
-    collisionModel = LennardJones(sigma=(5.09,'angstrom'), epsilon=(473,'K')),
+    collisionModel = TransportData(sigma=(5.09,'angstrom'), epsilon=(473,'K')),
     energyTransferModel = SingleExponentialDown(
         alpha0 = (0.5718,'kcal/mol'),
         T0 = (300,'K'),
@@ -51,7 +51,7 @@ species(
     spinMultiplicity = 2,
     opticalIsomers = 1,
     molecularWeight = (75.04,"g/mol"),
-    collisionModel = LennardJones(sigma=(5.09,'angstrom'), epsilon=(473,'K')),
+    collisionModel = TransportData(sigma=(5.09,'angstrom'), epsilon=(473,'K')),
     energyTransferModel = SingleExponentialDown(
         alpha0 = (0.5718,'kcal/mol'),
         T0 = (300,'K'),
@@ -144,7 +144,7 @@ species(
     label = 'nitrogen',
     structure = SMILES('N#N'),
     molecularWeight = (28.04,"g/mol"),
-    collisionModel = LennardJones(sigma=(3.70,'angstrom'), epsilon=(94.9,'K')),
+    collisionModel = TransportData(sigma=(3.70,'angstrom'), epsilon=(94.9,'K')),
 )
 
 ################################################################################
