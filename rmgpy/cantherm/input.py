@@ -113,7 +113,7 @@ def species(label, *args, **kwargs):
         if structure: spec.molecule = [structure]
         spec.conformer = Conformer(E0=E0, modes=modes, spinMultiplicity=spinMultiplicity, opticalIsomers=opticalIsomers)  
         spec.molecularWeight = molecularWeight
-        spec.transportData = collisionModel
+        spec.TransportData = collisionModel
         spec.energyTransferModel = energyTransferModel
         spec.thermo = thermo
         
