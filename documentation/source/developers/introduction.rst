@@ -4,6 +4,16 @@ Introduction
 
 The :mod:`rmgpy` package contains all of the functionality of RMG.
 
+RMG-Py naming conventions in brief:
+
+* module names are in lowercase 
+* Class and Exception names start with capital letters (e.g., CamelCase)
+* all instances of Classes are mixed-case and begin with lower-case letters (e.g., camelCase)
+
+
+ `Python style guide <http://www.python.org/dev/peps/pep-0008/>`_. In general, refer to this for guidance.
+
+
 Dependencies
 ============
 
