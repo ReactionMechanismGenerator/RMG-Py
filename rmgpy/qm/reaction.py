@@ -273,14 +273,6 @@ class QMReaction:
                 rRDMol, rBM, rMult, self.geometry = self.generateBoundsMatrix(reactant)
                 pRDMol, pBM, pMult, pGeom = self.generateBoundsMatrix(product)
                 
-                print "Original reactant bounds matrix"
-                for line in rBM:
-                    print line
-                
-                print "Original product bounds matrix"
-                for line in pBM:
-                    print line
-                
                 self.geometry.uniqueID = self.uniqueID
                 rBM, pBM, labels, atomMatch = self.editDoubMatrix(reactant, product, rBM, pBM)
                 
@@ -288,6 +280,7 @@ class QMReaction:
                 setPBM = rdkit.DistanceGeometry.DoTriangleSmoothing(pBM)
                 
                 if setRBM and setPBM:
+                    notes = 'Bounds matrix editing worked\n'
                     atoms = len(reactant.atoms)
                     distGeomAttempts = 15*(atoms-3) # number of conformers embedded from the bounds matrix
                     
@@ -310,8 +303,12 @@ class QMReaction:
                                 self.writeReferenceFile(otherGeom=pGeom)
                                 self.writeGeoRefInputFile(pGeom)
                                 self.runDouble(self.inputFilePath)
+                            else:
+                                notes = notes + 'product .arc file does not exits\n'
+                                return False, None, None, notes
                             
-                            if os.path.exists(self.getFilePath('.arc')) and os.path.exists(pGeom.getFilePath('.arc')):
+                            if os.path.exists(self.getFilePath('.arc')):
+                                notes = notes + 'reactant .arc file does not exits\n'
                                 # Write saddle calculation file using the outputs of the reference calculations
                                 self.writeSaddleInputFile(pGeom)
                                 self.runDouble(self.inputFilePath)
@@ -320,18 +317,22 @@ class QMReaction:
                                 converged, cartesian = self.run()
                                 
                                 if converged:
+                                    notes = notes + 'Transition state converged\n'
                                     self.writeIRCFile()
                                     rightTS = self.runIRC()
                                     if rightTS:
-                                        return True, self.geometry, labels
+                                        notes = notes + 'Correct geometry found\n'
+                                        return True, self.geometry, labels, notes
                                     else:
-                                        return False, None, None
+                                        notes = notes + 'Failure at IRC\n'
+                                        return False, None, None, notes
                                 else:
-                                    return False, None, None
+                                    notes = notes + 'Transition state not converged\n'
+                                    return False, None, None, notes
                             else:
-                                return False, None, None
+                                return False, None, None, notes
                         else:
-                            return False, None, None
+                            return False, None, None, notes
                     else:
                         rightTS = self.verifyIRCOutputFile()
                         
@@ -340,6 +341,7 @@ class QMReaction:
                         else:
                             return False, None, None
                 else:
+                    notes = 'Bounds matrix editing failed\n'
                     return False, None, None
             else:
                 if len(self.reaction.reactants)==2:
@@ -359,6 +361,7 @@ class QMReaction:
                 setBM = rdkit.DistanceGeometry.DoTriangleSmoothing(tsBM)
                 
                 if setBM:
+                    notes = 'Bounds matrix editing worked\n'
                     for i in range(len(tsBM)):
                         for j in range(i,len(tsBM)):
                             if tsBM[j,i] > tsBM[i,j]:
@@ -384,11 +387,14 @@ class QMReaction:
                             rightTS = self.verifyIRCOutputFile()
                         if rightTS:
                             self.writeRxnOutputFile(labels)
-                            return True
+                            return True, notes
                         else:
-                            return False
+                            return False, notes
                     else:
-                        return False
+                        return False, notes
+                else:
+                    notes = 'Bounds matrix editing failed\n'
+                    return False, notes
     
     def calculateQMData(self, moleculeList):
         """

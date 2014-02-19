@@ -663,7 +663,7 @@ class MopacTS(QMReaction, Mopac):
         input_string = '\n'.join(output)
     
         top_keys = 'ts recalc=5\n'
-        bottom_keys = 'oldgeo force\n'
+        bottom_keys = 'oldgeo force let\n'
         with open(self.inputFilePath, 'w') as mopacFile:
             mopacFile.write(top_keys)
             mopacFile.write(input_string)
