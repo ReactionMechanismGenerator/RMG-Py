@@ -28,10 +28,14 @@ class Gaussian:
     outputFileExtension = '.log'
     
     gaussEnv = os.getenv('GAUSS_EXEDIR') or os.getenv('g09root') or os.getenv('g03root') or ""
-    if os.path.exists(os.path.join(gaussEnv , 'g09')):
-        executablePath = os.path.join(gaussEnv , 'g09')
-    elif os.path.exists(os.path.join(gaussEnv , 'g03')):
-        executablePath = os.path.join(gaussEnv , 'g03')
+    # GAUSS_EXEDIR may be a list like "path1:path2:path3"
+    for possibleDir in gaussEnv.split(':'):
+        if os.path.exists(os.path.join(possibleDir , 'g09')):
+            executablePath = os.path.join(possibleDir , 'g09')
+            break
+        elif os.path.exists(os.path.join(possibleDir , 'g03')):
+            executablePath = os.path.join(possibleDir , 'g03')
+            break
     else:
         executablePath = os.path.join(gaussEnv , '(g03 or g09)')
 
@@ -435,7 +439,7 @@ class GaussianTS(QMReaction, Gaussian):
         Using the :class:`Geometry` object, write the input file
         for the `attmept`th attempt.
         """
-        numProc = '%nprocshared=' + '11' + '\n' # could be something that is set in the qmSettings
+        numProc = '%nprocshared=' + '4' + '\n' # could be something that is set in the qmSettings
         mem = '%mem=' + '800MB' + '\n' # could be something that is set in the qmSettings
         chk_file = '%chk=' + os.path.join(self.settings.fileStore, self.uniqueID) + '\n'
         
@@ -497,8 +501,8 @@ class GaussianTS(QMReaction, Gaussian):
         from the checkpoint file created during the geometry search.
         """
         
-        numProc = '%nprocshared=' + '11' + '\n' # could be something that is set in the qmSettings
-        mem = '%mem=' + '1GB' + '\n' # could be something that is set in the qmSettings
+        numProc = '%nprocshared=' + '4' + '\n' # could be something that is set in the qmSettings
+        mem = '%mem=' + '800MB' + '\n' # could be something that is set in the qmSettings
         chk_file = '%chk=' + os.path.join(self.settings.fileStore, self.uniqueID) + '\n'
         top_keys = self.keywords[4] + '\n\n'
         output = "{charge}   {mult}".format(charge=0, mult=(self.geometry.molecule.getRadicalCount() + 1) )
