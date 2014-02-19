@@ -23,7 +23,7 @@ except ImportError:
     logging.info("To use transition state searches, you must correctly install rdkit")
 
 transitionStates = TransitionStates()
-transitionStates.load(os.path.join(os.getenv('HOME'), 'Code/RMG-database/input/kinetics/families/H_Abstraction'), None, None)
+transitionStates.load(os.path.join(os.getenv('HOME'), 'Code/RMG-database/input/kinetics/families/R_Addition_MultipleBond'), None, None)
 
 class QMReaction:
     
@@ -220,7 +220,7 @@ class QMReaction:
         For bimolecular reactions, reduce the minimum distance between atoms
         of the two reactants. 
         """
-        if self.reaction.label.lower() == 'h_abstraction':
+        if self.reaction.label.lower() == 'h_abstraction' or self.reaction.label.lower() == 'r_addition_multiplebond':
             
             lbl1 = reactant.getLabeledAtom('*1').sortingLabel
             lbl2 = reactant.getLabeledAtom('*2').sortingLabel
@@ -313,10 +313,10 @@ class QMReaction:
             else:
                 if len(self.reaction.reactants)==2:
                     reactant = self.reaction.reactants[0].merge(self.reaction.reactants[1])
-                if len(self.reaction.products)==2:
-                    product = self.reaction.products[0].merge(self.reaction.products[1])
+                else:
+                    # Are there reaction families with 3 reactants?
+                    reactant = self.reaction.reactants[0]
                 reactant = self.fixSortLabel(reactant)
-                product = self.fixSortLabel(product)
                 tsRDMol, tsBM, tsMult, self.geometry = self.generateBoundsMatrix(reactant)
                 
                 self.geometry.uniqueID = self.uniqueID
