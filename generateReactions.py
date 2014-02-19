@@ -88,16 +88,6 @@ def parseCommandLineArguments():
 
 if __name__ == '__main__':
 
-    # Initialize the memory profiler
-    # It works best if we do this as the very first thing
-    # If the memory profiler package is not installed then carry on
-    try:
-        from guppy import hpy
-        hp = hpy()
-        hp.heap()
-    except ImportError:
-        pass
-
     # Parse the command-line arguments (requires the argparse module)
     args = parseCommandLineArguments()
     
