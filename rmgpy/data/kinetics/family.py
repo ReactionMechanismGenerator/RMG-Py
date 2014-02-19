@@ -232,6 +232,8 @@ class ReactionRecipe:
                         atom2.applyAction(['CHANGE_BOND', label1, -info, label2])
                         bond.applyAction(['CHANGE_BOND', label1, -info, label2])
                 elif (action[0] == 'FORM_BOND' and doForward) or (action[0] == 'BREAK_BOND' and not doForward):
+                    if struct.hasBond(atom1, atom2):
+                        raise InvalidActionError('Attempted to create an existing bond.')
                     bond = GroupBond(atom1, atom2, order=['S']) if pattern else Bond(atom1, atom2, order='S')
                     struct.addBond(bond)
                     atom1.applyAction(['FORM_BOND', label1, info, label2])
@@ -1110,13 +1112,14 @@ class KineticsFamily(Database):
         try:
             productStructures = self.applyRecipe(reactantStructures, forward=forward)
             if not productStructures: return None
-        except InvalidActionError, e:
-            logging.error('Unable to apply reaction recipe!')
-            logging.error('Reaction family is {0} in {1} direction'.format(self.label, 'forward' if forward else 'reverse'))
-            logging.error('Reactant structures are:')
-            for struct in reactantStructures:
-                logging.error(struct.toAdjacencyList())
-            raise
+        except InvalidActionError:
+#            logging.error('Unable to apply reaction recipe!')
+#            logging.error('Reaction family is {0} in {1} direction'.format(self.label, 'forward' if forward else 'reverse'))
+#            logging.error('Reactant structures are:')
+#            for struct in reactantStructures:
+#                logging.error(struct.toAdjacencyList())
+            # If unable to apply the reaction recipe, then return no product structures
+            return None
 
         # If there are two product structures, place the one containing '*1' first
         if len(productStructures) == 2:
@@ -1443,6 +1446,10 @@ class KineticsFamily(Database):
         """
         reactions = self.__generateReactions(reaction.reactants, products=reaction.products, forward=True)
         if len(reactions) != 1:
+            for reactant in reaction.reactants:
+                logging.error(reactant)
+            for product in reaction.products:
+                logging.error(product)
             raise Exception('Unable to calculate degeneracy for reaction {0} in reaction family {1}.'.format(reaction, self.label))
         return reactions[0].degeneracy
         
