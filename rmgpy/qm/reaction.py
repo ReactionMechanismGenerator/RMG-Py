@@ -266,9 +266,7 @@ class QMReaction:
             if doubleEnd:
                 reactant = doubleEnd[0]
                 product = doubleEnd[1]
-                """
-                Double-ended search
-                """
+                # Double-ended search
                 
                 rRDMol, rBM, rMult, self.geometry = self.generateBoundsMatrix(reactant)
                 pRDMol, pBM, pMult, pGeom = self.generateBoundsMatrix(product)
@@ -313,7 +311,7 @@ class QMReaction:
                                 self.writeSaddleInputFile(pGeom)
                                 self.runDouble(self.inputFilePath)
                                 
-                                self.writeTSInputFile(doubleEnd=True)
+                                self.writeInputFile(1, fromQST2=True)
                                 converged, cartesian = self.run()
                                 
                                 if converged:
@@ -330,6 +328,34 @@ class QMReaction:
                                     notes = notes + 'Transition state not converged\n'
                                     return False, None, None, notes
                             else:
+                                return False, None, None, notes
+                        elif self.settings.software.lower() == 'gaussian':
+                            # all below needs to change
+                            self.writeQST2InputFile(pGeom)
+                            self.run()
+                            
+                            self.writeInputFile(3, fromQST2=True)
+                            converged, internalCoord = self.run()
+                            
+                            if internalCoord and not converged:
+                                self.writeInputFile(2)
+                                converged, internalCoord = self.run()
+                            
+                            if converged:
+                                notes = notes + 'Transition state converged\n'
+                                if not os.path.exists(self.ircOutputFilePath):
+                                    self.writeIRCFile()
+                                    rightTS = self.runIRC()
+                                else:
+                                    rightTS = self.verifyIRCOutputFile()
+                                if rightTS:
+                                    self.writeRxnOutputFile(labels)
+                                    return True, None, None, notes
+                                else:
+                                    notes = notes + 'IRC failed\n'
+                                    return False, None, None, notes
+                            else:
+                                notes = notes + 'Transition state failed\n'
                                 return False, None, None, notes
                         else:
                             return False, None, None, notes

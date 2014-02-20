@@ -434,7 +434,7 @@ class GaussianTS(QMReaction, Gaussian):
                    'Error in internal coordinate system.',
                    ]
     
-    def writeInputFile(self, attempt, fromDbl=False):
+    def writeInputFile(self, attempt, fromDbl=False, fromQST2=False):
         """
         Using the :class:`Geometry` object, write the input file
         for the `attmept`th attempt.
@@ -457,6 +457,9 @@ class GaussianTS(QMReaction, Gaussian):
                     if match:
                         output.append("{0:8s} {1}  {2}  {3}".format(match.group(1), match.group(2), match.group(4), match.group(6)))
                         atomCount += 1
+        elif fromQST2:
+            output = []
+            atomCount = len(self.geometry.molecule.atoms)
         else:
             molfile = self.geometry.getRefinedMolFilePath()
             atomline = re.compile('\s*([\- ][0-9.]+\s+[\-0-9.]+\s+[\-0-9.]+)\s+([A-Za-z]+)')
@@ -478,10 +481,11 @@ class GaussianTS(QMReaction, Gaussian):
         input_string = '\n'.join(output) + '\n'
         top_keys = self.keywords[attempt - 1] + '\n'
         
-        atomTypes = []
-        for atom in self.geometry.molecule.atoms:
-            if not atom.element.symbol in atomTypes:
-                atomTypes.append(atom.element.symbol)
+        # This is for the MG3S
+        # atomTypes = []
+        # for atom in self.geometry.molecule.atoms:
+        #     if not atom.element.symbol in atomTypes:
+        #         atomTypes.append(atom.element.symbol)
         
         with open(self.inputFilePath, 'w') as gaussianFile:
             gaussianFile.write(numProc)
@@ -492,6 +496,56 @@ class GaussianTS(QMReaction, Gaussian):
                 gaussianFile.write(input_string)
             else:
                 gaussianFile.write('\n')
+            gaussianFile.write('\n')
+    
+    def writeQST2InputFile(self, pGeom):
+        # numProc = '%nprocshared=' + '4' + '\n' # could be something that is set in the qmSettings
+        # mem = '%mem=' + '800MB' + '\n' # could be something that is set in the qmSettings
+        chk_file = '%chk=' + os.path.join(self.settings.fileStore, self.uniqueID) + '\n'
+        
+        output = [ '', self.geometry.uniqueIDlong, '', "{charge}   {mult}".format(charge=0, mult=(self.geometry.molecule.getRadicalCount() + 1) ) ]
+        
+        atomline = re.compile('\s*([\- ][0-9.]+\s+[\-0-9.]+\s+[\-0-9.]+)\s+([A-Za-z]+)')
+        
+        molfile = self.geometry.getRefinedMolFilePath() # Get the reactant geometry
+        
+        atomCount = 0
+        with open(molfile) as molinput:
+            for line in molinput:
+                match = atomline.match(line)
+                if match:
+                    output.append("{0:8s} {1}".format(match.group(2), match.group(1)))
+                    atomCount += 1
+        
+        assert atomCount == len(self.geometry.molecule.atoms)
+        
+        output.append('')
+        output.append(pGeom.uniqueIDlong)
+        output.append('')
+        output.append("{charge}   {mult}".format(charge=0, mult=(pGeom.molecule.getRadicalCount() + 1) ))
+        
+        molfile = pGeom.getRefinedMolFilePath() # Now get the product geometry
+        
+        atomCount = 0
+        with open(molfile) as molinput:
+            for line in molinput:
+                match = atomline.match(line)
+                if match:
+                    output.append("{0:8s} {1}".format(match.group(2), match.group(1)))
+                    atomCount += 1
+        
+        assert atomCount == len(self.geometry.molecule.atoms)
+        
+        output.append('')
+        input_string = '\n'.join(output) + '\n'
+        top_keys = "# pm6 opt=(qst2,calcall,noeigentest) nosymm\n"
+        
+        with open(self.inputFilePath, 'w') as gaussianFile:
+            # gaussianFile.write(numProc)
+            # gaussianFile.write(mem)
+            gaussianFile.write(chk_file)
+            gaussianFile.write(top_keys)
+            gaussianFile.write(input_string)
             gaussianFile.write('\n')
     
     def writeIRCFile(self):
@@ -507,10 +561,10 @@ class GaussianTS(QMReaction, Gaussian):
         top_keys = self.keywords[4] + '\n\n'
         output = "{charge}   {mult}".format(charge=0, mult=(self.geometry.molecule.getRadicalCount() + 1) )
         
-        atomTypes = []
-        for atom in self.geometry.molecule.atoms:
-            if not atom.element.symbol in atomTypes:
-                atomTypes.append(atom.element.symbol)
+        # atomTypes = []
+        # for atom in self.geometry.molecule.atoms:
+        #     if not atom.element.symbol in atomTypes:
+        #         atomTypes.append(atom.element.symbol)
         
         with open(self.ircInputFilePath, 'w') as gaussianFile:
             gaussianFile.write(numProc)
@@ -740,7 +794,7 @@ class GaussianTS(QMReaction, Gaussian):
         
         distances = {'d12':float(atomDist[0]), 'd23':float(atomDist[1]), 'd13':float(atomDist[2])}
         user = "Pierre Bhoorasingh <bhoorasingh.p@husky.neu.edu>"
-        description = "Found via group estimation strategy using automatic transition state generator"
+        description = "Found via double-ended QST2 strategy using automatic transition state generator"
         entry = Entry(
             index = 1,
             item = self.reaction,
@@ -801,10 +855,13 @@ class GaussianTSB3LYP(GaussianTS):
     #: Keywords that will be added at the top of the qm input file
     keywords = [
                 "# b3lyp/6-31+g(d,p) opt=(ts,calcfc,noeigentest) freq nosymm",
-                "# b3lyp/6-31+g(d,p) opt=(ts,calcfc,noeigentest,cartesian) freq nosymm geom=allcheck guess=check nosymm",
+                "# b3lyp/6-31+g(d,p) opt=(ts,calcfc,noeigentest,cartesian) freq nosymm geom=allcheck guess=check",
+                "# b3lyp/6-31+g(d,p) opt=(ts,calcfc,noeigentest) freq nosymm geom=allcheck guess=check",
+                "# b3lyp/6-31+g(d,p) opt=(ts,calcfc,noeigentest,cartesian) freq nosymm geom=allcheck guess=check",
+                "# b3lyp/6-31+g(d,p) irc=(calcall,report=read) freq geom=allcheck guess=check nosymm",
                 "# b3lyp/6-31+g(d,p) opt=(ts,calcall,tight,noeigentest) freq int=ultrafine nosymm",
                 "# b3lyp/6-31+g(d,p) opt=(ts,calcall,tight,noeigentest,cartesian) freq int=ultrafine geom=allcheck guess=check nosymm",
-                "# b3lyp/6-31+g(d,p) irc=(calcall,report=read) freq geom=allcheck guess=check nosymm",
+                
                 ]
                # "# b3lyp/6-31+g(d,p) opt=(ts,calcall,tight,noeigentest) int=ultrafine nosymm",
                # "# b3lyp/6-31+g(d,p) opt=(ts,calcall,tight,noeigentest,cartesian) int=ultrafine geom=allcheck guess=check nosymm",
