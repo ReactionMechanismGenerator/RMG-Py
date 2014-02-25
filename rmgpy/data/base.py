@@ -1138,6 +1138,7 @@ class ForbiddenStructures(Database):
         contains forbidden functionality, or ``False`` if not. Labeled atoms
         on the forbidden structures and the molecule are honored.
         """
+        
         for entry in self.entries.values():
             entryLabeledAtoms = entry.item.getLabeledAtoms()
             moleculeLabeledAtoms = molecule.getLabeledAtoms()

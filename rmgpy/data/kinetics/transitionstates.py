@@ -387,13 +387,13 @@ class TransitionStateDepository(Database):
                   history=None
                   ):
 
-        reactants = [Molecule().fromAdjacencyList(reactant1)]
-        if reactant2 is not None: reactants.append(Molecule().fromAdjacencyList(reactant2))
-        if reactant3 is not None: reactants.append(Molecule().fromAdjacencyList(reactant3))
+        reactants = [Molecule().fromAdjacencyList(reactant1, saturateH=True)]
+        if reactant2 is not None: reactants.append(Molecule().fromAdjacencyList(reactant2, saturateH=True))
+        if reactant3 is not None: reactants.append(Molecule().fromAdjacencyList(reactant3, saturateH=True))
 
-        products = [Molecule().fromAdjacencyList(product1)]
-        if product2 is not None: products.append(Molecule().fromAdjacencyList(product2))
-        if product3 is not None: products.append(Molecule().fromAdjacencyList(product3))
+        products = [Molecule().fromAdjacencyList(product1, saturateH=True)]
+        if product2 is not None: products.append(Molecule().fromAdjacencyList(product2, saturateH=True))
+        if product3 is not None: products.append(Molecule().fromAdjacencyList(product3, saturateH=True))
 
         reaction = Reaction(reactants=reactants, products=products)
 
