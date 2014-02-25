@@ -321,7 +321,7 @@ class KineticsFamily(Database):
     ------------------- ------------------------------- ------------------------
     `groups`            :class:`KineticsGroups`         The set of kinetics group additivity values
     `rules`             :class:`KineticsRules`          The set of kinetics rate rules from RMG-Java
-    `depositories`      ``dict``                        A set of additional depositories used to store kinetics data from various sources
+    `depositories`      ``list``                        A set of additional depositories used to store kinetics data from various sources
     =================== =============================== ========================
 
     There are a few reaction families that are their own reverse (hydrogen
@@ -641,8 +641,8 @@ class KineticsFamily(Database):
         """
         self.saveGroups(os.path.join(path, 'groups.py'), entryName=entryName)
         self.rules.save(os.path.join(path, 'rules.py'))
-        for label, depository in self.depositories.iteritems():
-            self.saveDepository(depository, os.path.join(path, '{0}.py'.format(label[len(self.label)+1:])))
+        for depository in self.depositories:
+            self.saveDepository(depository, os.path.join(path, '{0}.py'.format(depository.label[len(self.label)+1:])))
     
     def saveDepository(self, depository, path):
         """
