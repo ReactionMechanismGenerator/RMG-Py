@@ -1137,8 +1137,9 @@ class Molecule(Graph):
         ``False``.
         """
         from .adjlist import fromAdjacencyList
-        if not self.newStyleAdjMatcher(adjlist):
+        if not self.newStyleAdjMatcher(adjlist[adjlist.find('1 '):]):
             logging.warning("There could be an old-style adjacency list. Please check library and input before proceeding!")
+            print adjlist
             
         self.vertices = fromAdjacencyList(adjlist, False, saturateH=saturateH)
         self.updateConnectivityValues()
