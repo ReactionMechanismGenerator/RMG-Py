@@ -28,10 +28,14 @@ class Gaussian:
     outputFileExtension = '.log'
     
     gaussEnv = os.getenv('GAUSS_EXEDIR') or os.getenv('g09root') or os.getenv('g03root') or ""
-    if os.path.exists(os.path.join(gaussEnv , 'g09')):
-        executablePath = os.path.join(gaussEnv , 'g09')
-    elif os.path.exists(os.path.join(gaussEnv , 'g03')):
-        executablePath = os.path.join(gaussEnv , 'g03')
+    # GAUSS_EXEDIR may be a list like "path1:path2:path3"
+    for possibleDir in gaussEnv.split(':'):
+        if os.path.exists(os.path.join(possibleDir , 'g09')):
+            executablePath = os.path.join(possibleDir , 'g09')
+            break
+        elif os.path.exists(os.path.join(possibleDir , 'g03')):
+            executablePath = os.path.join(possibleDir , 'g03')
+            break
     else:
         executablePath = os.path.join(gaussEnv , '(g03 or g09)')
 
@@ -435,23 +439,48 @@ class GaussianTS(QMReaction, Gaussian):
         Using the :class:`Geometry` object, write the input file
         for the `attmept`th attempt.
         """
-        numProc = '%nprocshared=' + '11' + '\n' # could be something that is set in the qmSettings
-        mem = '%mem=' + '1GB' + '\n' # could be something that is set in the qmSettings
+        numProc = '%nprocshared=' + '4' + '\n' # could be something that is set in the qmSettings
+        mem = '%mem=' + '800MB' + '\n' # could be something that is set in the qmSettings
         chk_file = '%chk=' + os.path.join(self.settings.fileStore, self.uniqueID) + '\n'
         
-        molfile = self.geometry.getRefinedMolFilePath()
-        atomline = re.compile('\s*([\- ][0-9.]+\s+[\-0-9.]+\s+[\-0-9.]+)\s+([A-Za-z]+)')
-        
-        output = ['', self.geometry.uniqueID, '' ]
-        output.append("{charge}   {mult}".format(charge=0, mult=(self.geometry.molecule.getRadicalCount() + 1) ))
-        
-        atomCount = 0
-        with open(molfile) as molinput:
-            for line in molinput:
-                match = atomline.match(line)
-                if match:
-                    output.append("{0:8s} {1}".format(match.group(2), match.group(1)))
-                    atomCount += 1
+        if attempt > 1:
+            # Until checkpointing is fixed, do the following
+            output = ['', self.geometry.uniqueID, '' ]
+            output.append("{charge}   {mult}".format(charge=0, mult=(self.geometry.molecule.getRadicalCount() + 1) ))
+            
+            parser = cclib.parser.Gaussian(self.outputFilePath)
+            parser.logger.setLevel(logging.ERROR)
+            parser = parser.parse()
+            
+            lines = []
+            for line in parser.atomcoords[-1]:
+                lineList = ''
+                for item in line:
+                    if item > 0:
+                        lineList = lineList + ' ' + str(format(item, '.6f')) + ' '
+                    else:
+                        lineList = lineList + str(format(item, '.6f')) + ' '
+                lines.append(lineList)
+                
+            atomCount = 0
+            atomnos = parser.atomnos
+            for i, line in enumerate(lines):
+                output.append("{0:8s} {1}".format(getElement(int(atomnos[i])).symbol, line))
+                atomCount += 1
+        else:
+            molfile = self.geometry.getRefinedMolFilePath()
+            atomline = re.compile('\s*([\- ][0-9.]+\s+[\-0-9.]+\s+[\-0-9.]+)\s+([A-Za-z]+)')
+            
+            output = ['', self.geometry.uniqueID, '' ]
+            output.append("{charge}   {mult}".format(charge=0, mult=(self.geometry.molecule.getRadicalCount() + 1) ))
+            
+            atomCount = 0
+            with open(molfile) as molinput:
+                for line in molinput:
+                    match = atomline.match(line)
+                    if match:
+                        output.append("{0:8s} {1}".format(match.group(2), match.group(1)))
+                        atomCount += 1
         assert atomCount == len(self.geometry.molecule.atoms)
         
         output.append('')
@@ -468,13 +497,12 @@ class GaussianTS(QMReaction, Gaussian):
             gaussianFile.write(mem)
             gaussianFile.write(chk_file)
             gaussianFile.write(top_keys)
-            if attempt == 1:
-                gaussianFile.write(input_string)
-            else:
-                gaussianFile.write('\n')
+            # if attempt == 1:
+            gaussianFile.write(input_string)
+            # else:
+            #     gaussianFile.write('\n')
             # for atom in atomTypes:
             #     gaussianFile.write(self.mg3s[atom])
-            gaussianFile.write('\n')
     
     def writeIRCFile(self):
         """
@@ -482,17 +510,18 @@ class GaussianTS(QMReaction, Gaussian):
         IRC calculation on the transition state. The geometry is taken 
         from the checkpoint file created during the geometry search.
         """
-        
-        numProc = '%nprocshared=' + '11' + '\n' # could be something that is set in the qmSettings
-        mem = '%mem=' + '1GB' + '\n' # could be something that is set in the qmSettings
+        # Should be unaffected by bad checkpoint files since this should only run if Normal termination of previous runs
+        numProc = '%nprocshared=' + '4' + '\n' # could be something that is set in the qmSettings
+        mem = '%mem=' + '800MB' + '\n' # could be something that is set in the qmSettings
         chk_file = '%chk=' + os.path.join(self.settings.fileStore, self.uniqueID) + '\n'
+        
         top_keys = self.keywords[4] + '\n\n'
         output = "{charge}   {mult}".format(charge=0, mult=(self.geometry.molecule.getRadicalCount() + 1) )
         
-        atomTypes = []
-        for atom in self.geometry.molecule.atoms:
-            if not atom.element.symbol in atomTypes:
-                atomTypes.append(atom.element.symbol)
+        # atomTypes = []
+        # for atom in self.geometry.molecule.atoms:
+        #     if not atom.element.symbol in atomTypes:
+        #         atomTypes.append(atom.element.symbol)
         
         with open(self.ircInputFilePath, 'w') as gaussianFile:
             gaussianFile.write(numProc)
@@ -782,11 +811,11 @@ class GaussianTSB3LYP(GaussianTS):
 
     #: Keywords that will be added at the top of the qm input file
     keywords = [
-               "# b3lyp/6-31+g(d,p) opt=(ts,calcall,tight,noeigentest) int=ultrafine nosymm",
-               "# b3lyp/6-31+g(d,p) opt=(ts,calcall,tight,noeigentest,cartesian) int=ultrafine geom=allcheck guess=check nosymm",
-               "# b3lyp/6-31+g(d,p) opt=(ts,calcall,noeigentest) nosymm",
-               "# b3lyp/6-31+g(d,p) opt=(ts,calcall,noeigentest,cartesian) nosymm geom=allcheck guess=check nosymm",
-               "# b3lyp/6-31+g(d,p) irc=(calcall,report=read) geom=allcheck guess=check nosymm",
+               "# b3lyp/6-31+g(d,p) opt=(ts,calcfc,tight,noeigentest) freq int=ultrafine",
+               "# b3lyp/6-31+g(d,p) opt=(ts,calcfc,tight,noeigentest,cartesian) freq int=ultrafine", # geom=allcheck guess=check nosymm",
+               "# b3lyp/6-31+g(d,p) opt=(ts,calcfc,noeigentest) nosymm",
+               "# b3lyp/6-31+g(d,p) opt=(ts,calcfc,noeigentest,cartesian) nosymm geom=allcheck guess=check nosymm",
+               "# b3lyp/6-31+g(d,p) irc=(calcfc,report=read) geom=allcheck guess=check nosymm",
                ]
     """
     This needs some work, to determine options that are best used. Commented out the

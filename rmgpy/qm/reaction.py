@@ -23,7 +23,7 @@ except ImportError:
     logging.info("To use transition state searches, you must correctly install rdkit")
 
 transitionStates = TransitionStates()
-transitionStates.load(os.path.join(os.getenv('HOME'), 'Code/RMG-database/input/kinetics/families/R_Addition_MultipleBond'), None, None)
+transitionStates.load(os.path.join(os.getenv('HOME'), 'Code/RMG-database/input/kinetics/families/H_Abstraction'), None, None)
 
 class QMReaction:
     
@@ -131,8 +131,11 @@ class QMReaction:
         This ensures any edits made do not lead to unsolvable scenarios for the molecular
         embedding algorithm.
         """
-        for i in range(sect,len(bm)):
-            for j in range(0,sect):
+        others = range(len(bm))
+        for idx in sect: others.remove(idx)
+        
+        for i in sect:
+            for j in others:
                 for k in range(len(bm)):
                     if k==i or k==j: continue
                     Uik = bm[i,k] if k>i else bm[k,i]
@@ -237,10 +240,10 @@ class QMReaction:
         
         distanceData = transitionStates.estimateDistances(self.reaction)
         
-        sect = len(reactant.split()[1].atoms)
+        sect = []
+        for atom in reactant.split()[0].atoms: sect.append(atom.sortingLabel)
         
-        uncertainties = distanceData.uncertainties or {'d12':0.1, 'd13':0.1, 'd23':0.1 } # default if uncertainty is None
-        
+        uncertainties = {'d12':0.1, 'd13':0.1, 'd23':0.1 }#distanceData.uncertainties or {'d12':0.1, 'd13':0.1, 'd23':0.1 } # default if uncertainty is None
         bm = self.setLimits(bm, lbl1, lbl2, distanceData.distances['d12'], uncertainties['d12'])
         bm = self.setLimits(bm, lbl2, lbl3, distanceData.distances['d23'], uncertainties['d23'])
         bm = self.setLimits(bm, lbl1, lbl3, distanceData.distances['d13'], uncertainties['d13'])
@@ -343,7 +346,7 @@ class QMReaction:
                     
                     if internalCoord and not converged:
                         self.writeInputFile(2)
-                        converged = self.run()
+                        converged, internalCoord = self.run()
                     
                     if converged:
                         if not os.path.exists(self.ircOutputFilePath):
