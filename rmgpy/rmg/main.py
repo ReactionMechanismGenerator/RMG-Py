@@ -293,6 +293,8 @@ class RMG:
         self.makeOutputSubdirectory('pdep')
         self.makeOutputSubdirectory('chemkin')
         self.makeOutputSubdirectory('solver')
+        if self.saveEdgeSpecies:
+            self.makeOutputSubdirectory('species_edge')
         
         # Do any necessary quantum mechanics startup
         if self.quantumMechanics:
