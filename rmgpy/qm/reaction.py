@@ -290,7 +290,9 @@ class QMReaction:
                     for atom in reactant.atoms:
                         i = atom.sortingLabel
                         pRDMol.GetConformer(0).SetAtomPosition(i, rRDMol.GetConformer(0).GetAtomPosition(i))
-                    pGeom.rd_embed(pRDMol, distGeomAttempts, bm=pBM, match=atomMatch)
+                    # don't re-embed the product, just optimize at UFF
+                    pRDMol, minEid = pGeom.optimize(pRDMol, boundsMatrix=pBM, atomMatch=atomMatch)
+                    pGeom.writeMolFile(rdmol, pGeom.getRefinedMolFilePath(), minEid)
                     
                     if not os.path.exists(self.outputFilePath):
                         # Product that references the reactant geometry
