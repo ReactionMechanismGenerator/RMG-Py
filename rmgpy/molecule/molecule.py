@@ -51,29 +51,36 @@ from .atomtype import AtomType, atomTypes, getAtomType
 import rmgpy.constants as constants
 
 #: This dictionary is used to shortcut lookups of a molecule's SMILES string from its chemical formula.
-_known_smiles = {
+_known_smiles_molecules = {
                  'N2': 'N#N',
                  'CH4': 'C',
-                 'CH3': '[CH3]',
                  'H2O': 'O',
-                 'HO': '[OH]',
                  'C2H6': 'CC',
-                 'C2H5': 'C[CH2]',
                  'H2': '[H][H]',
                  'H2O2': 'OO',
-                 'O': '[O]',
-                 'HO2': '[O]O',
                  'C3H8': 'CCC',
-                 'CH': '[CH]',
                  'Ar': '[Ar]',
                  'He': '[He]',
-                 'H': '[H]',
                  'CH4O': 'CO',
+                 'CO2': 'O=C=O',
+                 'CO': 'C#O',
+                 'C2H4': 'C=C',
+                 'O2': 'O=O'
+             }
+
+_known_smiles_radicals = {
+                 'CH3': '[CH3]',
+                 'HO': '[OH]',
+                 'C2H5': 'C[CH2]',
+                 'O': '[O]',
+                 'HO2': '[O]O',
+                 'CH': '[CH]',
+                 'H': '[H]',
                  'C': '[C]',
-                 #'CO2': 'O=C=O', although unlikely, it could technically be [O][C][O] or O=[C][O]
+                 #'CO2': it could be [O][C][O] or O=[C][O]
                  #'CO': '[C]=O', could also be [C][O]
-                 #'C2H4': 'C=C', could also be [CH3][CH] or [CH2][CH2]
-                 #'O2': '[O][O]', could also be O=O
+                 #'C2H4': could  be [CH3][CH] or [CH2][CH2]
+                 'O2': '[O][O]',
              }
 
 ################################################################################
@@ -1264,7 +1271,10 @@ class Molecule(Graph):
         # Dictionary lookups are O(1) so this should be fast:
         # The dictionary is defined at the top of this file.
         try:
-            return _known_smiles[self.getFormula()]
+            if self.isRadical():
+                return _known_smiles_radicals[self.getFormula()]
+            else:
+                return _known_smiles_molecules[self.getFormula()]
         except KeyError:
             # It wasn't in the above list.
             pass
