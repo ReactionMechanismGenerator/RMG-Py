@@ -196,15 +196,18 @@ class QMReaction:
         labels = [lbl1, lbl2, lbl3]
         atomMatch = ((lbl1,),(lbl2,),(lbl3,))
         
+        # bm1 = fixMatrix(bm1, lbl1, lbl2, lbl3, 2.5, 0.1)
+        # bm2 = fixMatrix(bm2, lbl3, lbl2, lbl1, 2.5, 0.1)
+        # 
         if (reactant.atoms[lbl1].symbol == 'H' and reactant.atoms[lbl3].symbol == 'C') or (reactant.atoms[lbl1].symbol == 'C' and reactant.atoms[lbl3].symbol == 'H'):
             bm1 = fixMatrix(bm1, lbl1, lbl2, lbl3, 2.2, 0.1)
             bm2 = fixMatrix(bm2, lbl3, lbl2, lbl1, 2.2, 0.1)
         elif (reactant.atoms[lbl1].symbol == 'H' and reactant.atoms[lbl3].symbol == 'O') or (reactant.atoms[lbl1].symbol == 'O' and reactant.atoms[lbl3].symbol == 'H'):
             bm1 = fixMatrix(bm1, lbl1, lbl2, lbl3, 2.1, 0.1)
             bm2 = fixMatrix(bm2, lbl3, lbl2, lbl1, 2.1, 0.1)
-        elif reactant.atoms[lbl1].symbol == 'O' and reactant.atoms[lbl3].symbol == 'O':
-            bm1 = fixMatrix(bm1, lbl1, lbl2, lbl3, 2.2, 0.1)
-            bm2 = fixMatrix(bm2, lbl3, lbl2, lbl1, 2.2, 0.1)
+        # elif reactant.atoms[lbl1].symbol == 'O' and reactant.atoms[lbl3].symbol == 'O':
+        #     bm1 = fixMatrix(bm1, lbl1, lbl2, lbl3, 2.2, 0.1)
+        #     bm2 = fixMatrix(bm2, lbl3, lbl2, lbl1, 2.2, 0.1)
         else:
             bm1 = fixMatrix(bm1, lbl1, lbl2, lbl3, 2.5, 0.1)
             bm2 = fixMatrix(bm2, lbl3, lbl2, lbl1, 2.5, 0.1)
@@ -292,53 +295,61 @@ class QMReaction:
                     if not os.path.exists(self.outputFilePath):
                         # Product that references the reactant geometry
                         if self.settings.software.lower() == 'mopac':
-                            self.writeReferenceFile()#inputFilePath, molFilePathForCalc, geometry, attempt, outputFile=None)
-                            self.writeGeoRefInputFile(pGeom, otherSide=True)#inputFilePath, molFilePathForCalc, refFilePath, geometry)
-                            self.runDouble(pGeom.getFilePath(self.inputFileExtension))
-                            
-                            if os.path.exists(pGeom.getFilePath('.arc')):
-                                # Reactant that references the product geometry
-                                self.writeReferenceFile(otherGeom=pGeom)
-                                self.writeGeoRefInputFile(pGeom)
-                                self.runDouble(self.inputFilePath)
-                            else:
-                                notes = notes + 'product .arc file does not exits\n'
-                                return False, None, None, notes
-                            
-                            if os.path.exists(self.getFilePath('.arc')):
-                                notes = notes + 'reactant .arc file does not exits\n'
-                                # Write saddle calculation file using the outputs of the reference calculations
-                                self.writeSaddleInputFile(pGeom)
-                                self.runDouble(self.inputFilePath)
-                                
-                                self.writeInputFile(1, fromQST2=True)
-                                converged, cartesian = self.run()
-                                
-                                if converged:
-                                    notes = notes + 'Transition state converged\n'
-                                    self.writeIRCFile()
-                                    rightTS = self.runIRC()
-                                    if rightTS:
-                                        notes = notes + 'Correct geometry found\n'
-                                        return True, self.geometry, labels, notes
-                                    else:
-                                        notes = notes + 'Failure at IRC\n'
-                                        return False, None, None, notes
-                                else:
-                                    notes = notes + 'Transition state not converged\n'
-                                    return False, None, None, notes
-                            else:
-                                return False, None, None, notes
+                            self.writeSaddleInputFile(pGeom)
+                            self.runDouble(self.inputFilePath)
+                            return True, self.geometry, labels, notes
+                            # self.writeReferenceFile()#inputFilePath, molFilePathForCalc, geometry, attempt, outputFile=None)
+                            # self.writeGeoRefInputFile(pGeom, otherSide=True)#inputFilePath, molFilePathForCalc, refFilePath, geometry)
+                            # self.runDouble(pGeom.getFilePath(self.inputFileExtension))
+                            # 
+                            # if os.path.exists(pGeom.getFilePath('.arc')):
+                            #     # Reactant that references the product geometry
+                            #     self.writeReferenceFile(otherGeom=pGeom)
+                            #     self.writeGeoRefInputFile(pGeom)
+                            #     self.runDouble(self.inputFilePath)
+                            # else:
+                            #     notes = notes + 'product .arc file does not exits\n'
+                            #     return False, None, None, notes
+                            # 
+                            # if os.path.exists(self.getFilePath('.arc')):
+                            #     # Write saddle calculation file using the outputs of the reference calculations
+                            #     self.writeSaddleInputFile(pGeom)
+                            #     self.runDouble(self.inputFilePath)
+                            #     return True, self.geometry, labels, notes
+                                # 
+                                # self.writeInputFile(1, fromQST2=True)
+                                # converged, cartesian = self.run()
+                                # 
+                                # if converged:
+                                #     notes = notes + 'Transition state converged\n'
+                                #     self.writeIRCFile()
+                                #     rightTS = self.runIRC()
+                                #     if rightTS:
+                                #         notes = notes + 'Correct geometry found\n'
+                                #         return True, self.geometry, labels, notes
+                                #     else:
+                                #         notes = notes + 'Failure at IRC\n'
+                                #         return False, None, None, notes
+                                # else:
+                                #     notes = notes + 'Transition state not converged\n'
+                                #     return False, None, None, notes
+                            # else:
+                            #     notes = notes + 'reactant .arc file does not exits\n'
+                            #     return False, None, None, notes
                         elif self.settings.software.lower() == 'gaussian':
                             # all below needs to change
+                            self.writeGeomInputFile(labels)
+                            self.runDouble(self.inputFilePath)
+                            self.writeGeomInputFile(labels, otherGeom=pGeom)
+                            self.runDouble(pGeom.getFilePath(self.inputFileExtension))
                             self.writeQST2InputFile(pGeom)
-                            self.run()
+                            self.runDouble(self.inputFilePath)
                             
-                            self.writeInputFile(3, fromQST2=True)
+                            self.writeInputFile(1, fromQST2=True)
                             converged, internalCoord = self.run()
                             
                             if internalCoord and not converged:
-                                self.writeInputFile(2)
+                                self.writeInputFile(2, fromQST2=True)
                                 converged, internalCoord = self.run()
                             
                             if converged:

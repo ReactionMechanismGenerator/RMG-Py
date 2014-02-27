@@ -458,8 +458,34 @@ class GaussianTS(QMReaction, Gaussian):
                         output.append("{0:8s} {1}  {2}  {3}".format(match.group(1), match.group(2), match.group(4), match.group(6)))
                         atomCount += 1
         elif fromQST2:
-            output = []
-            atomCount = len(self.geometry.molecule.atoms)
+            # output = []
+            # atomCount = len(self.geometry.molecule.atoms)
+            # Really should be using above as we take advantage of gaussian's checkpoint files
+            # However with the seg faults on the Discovery cluster, we use below as a temporary workaround.
+            # Also see the keywords that we have changed to use the workaround.
+            
+            output = ['', self.geometry.uniqueID, '' ]
+            output.append("{charge}   {mult}".format(charge=0, mult=(self.geometry.molecule.getRadicalCount() + 1) ))
+            
+            parser = cclib.parser.Gaussian(self.outputFilePath)
+            parser.logger.setLevel(logging.ERROR)
+            parser = parser.parse()
+            
+            lines = []
+            for line in parser.atomcoords[-1]:
+                lineList = ''
+                for item in line:
+                    if item > 0:
+                        lineList = lineList + ' ' + str(format(item, '.6f')) + ' '
+                    else:
+                        lineList = lineList + str(format(item, '.6f')) + ' '
+                lines.append(lineList)
+                
+            atomCount = 0
+            atomnos = parser.atomnos
+            for i, line in enumerate(lines):
+                output.append("{0:8s} {1}".format(getElement(int(atomnos[i])).symbol, line))
+                atomCount += 1
         else:
             molfile = self.geometry.getRefinedMolFilePath()
             atomline = re.compile('\s*([\- ][0-9.]+\s+[\-0-9.]+\s+[\-0-9.]+)\s+([A-Za-z]+)')
@@ -492,30 +518,85 @@ class GaussianTS(QMReaction, Gaussian):
             gaussianFile.write(mem)
             gaussianFile.write(chk_file)
             gaussianFile.write(top_keys)
-            if attempt == 1:
+            if attempt == 1 or attempt == 2:
                 gaussianFile.write(input_string)
             else:
                 gaussianFile.write('\n')
             gaussianFile.write('\n')
     
-    def writeQST2InputFile(self, pGeom):
-        # numProc = '%nprocshared=' + '4' + '\n' # could be something that is set in the qmSettings
-        # mem = '%mem=' + '800MB' + '\n' # could be something that is set in the qmSettings
-        chk_file = '%chk=' + os.path.join(self.settings.fileStore, self.uniqueID) + '\n'
+    def writeGeomInputFile(self, freezeAtoms, otherGeom=None):
         
         output = [ '', self.geometry.uniqueIDlong, '', "{charge}   {mult}".format(charge=0, mult=(self.geometry.molecule.getRadicalCount() + 1) ) ]
         
         atomline = re.compile('\s*([\- ][0-9.]+\s+[\-0-9.]+\s+[\-0-9.]+)\s+([A-Za-z]+)')
         
-        molfile = self.geometry.getRefinedMolFilePath() # Get the reactant geometry
+        if otherGeom:
+            molfile = otherGeom.getRefinedMolFilePath() # Now get the product geometry
+            
+            atomCount = 0
+            with open(molfile) as molinput:
+                for line in molinput:
+                    match = atomline.match(line)
+                    if match:
+                        output.append("{0:8s} {1}".format(match.group(2), match.group(1)))
+                        atomCount += 1
+            inputFilePath = otherGeom.getFilePath(self.inputFileExtension)
+            bottom_keys = "{atom1} {atom3} F\n{atom1} {atom2} F\n".format(atom1=freezeAtoms[0] + 1, atom2=freezeAtoms[1] + 1, atom3=freezeAtoms[2] + 1)
+        else:
+            molfile = self.geometry.getRefinedMolFilePath() # Get the reactant geometry
+            
+            atomCount = 0
+            with open(molfile) as molinput:
+                for line in molinput:
+                    match = atomline.match(line)
+                    if match:
+                        output.append("{0:8s} {1}".format(match.group(2), match.group(1)))
+                        atomCount += 1
+            inputFilePath = self.inputFilePath
+            bottom_keys = "{atom1} {atom3} F\n{atom2} {atom3} F\n".format(atom1=freezeAtoms[0] + 1, atom2=freezeAtoms[1] + 1, atom3=freezeAtoms[2] + 1)
         
+        assert atomCount == len(self.geometry.molecule.atoms)
+        
+        output.append('')
+        input_string = '\n'.join(output) + '\n'
+        top_keys = "# pm6 opt=(modredundant) nosymm\n"
+        
+        with open(inputFilePath, 'w') as gaussianFile:
+            # gaussianFile.write(numProc)
+            # gaussianFile.write(mem)
+            # gaussianFile.write(chk_file)
+            gaussianFile.write(top_keys)
+            gaussianFile.write(input_string)
+            gaussianFile.write(bottom_keys)
+            gaussianFile.write('\n')
+    
+    def writeQST2InputFile(self, pGeom):
+        # numProc = '%nprocshared=' + '4' + '\n' # could be something that is set in the qmSettings
+        # mem = '%mem=' + '800MB' + '\n' # could be something that is set in the qmSettings
+        # For now we don't do this, until seg faults are fixed on Discovery.
+        # chk_file = '%chk=' + os.path.join(self.settings.fileStore, self.uniqueID) + '\n'
+        output = ['', self.geometry.uniqueID, '' ]
+        output.append("{charge}   {mult}".format(charge=0, mult=(self.geometry.molecule.getRadicalCount() + 1) ))
+        
+        parser = cclib.parser.Gaussian(self.outputFilePath)
+        parser.logger.setLevel(logging.ERROR)
+        parser = parser.parse()
+        
+        lines = []
+        for line in parser.atomcoords[-1]:
+            lineList = ''
+            for item in line:
+                if item > 0:
+                    lineList = lineList + ' ' + str(format(item, '.6f')) + ' '
+                else:
+                    lineList = lineList + str(format(item, '.6f')) + ' '
+            lines.append(lineList)
+            
         atomCount = 0
-        with open(molfile) as molinput:
-            for line in molinput:
-                match = atomline.match(line)
-                if match:
-                    output.append("{0:8s} {1}".format(match.group(2), match.group(1)))
-                    atomCount += 1
+        atomnos = parser.atomnos
+        for i, line in enumerate(lines):
+            output.append("{0:8s} {1}".format(getElement(int(atomnos[i])).symbol, line))
+            atomCount += 1
         
         assert atomCount == len(self.geometry.molecule.atoms)
         
@@ -524,17 +605,56 @@ class GaussianTS(QMReaction, Gaussian):
         output.append('')
         output.append("{charge}   {mult}".format(charge=0, mult=(pGeom.molecule.getRadicalCount() + 1) ))
         
-        molfile = pGeom.getRefinedMolFilePath() # Now get the product geometry
+        parser = cclib.parser.Gaussian(pGeom.getFilePath(self.outputFileExtension))
+        parser.logger.setLevel(logging.ERROR)
+        parser = parser.parse()
         
+        lines = []
+        for line in parser.atomcoords[-1]:
+            lineList = ''
+            for item in line:
+                if item > 0:
+                    lineList = lineList + ' ' + str(format(item, '.6f')) + ' '
+                else:
+                    lineList = lineList + str(format(item, '.6f')) + ' '
+            lines.append(lineList)
+            
         atomCount = 0
-        with open(molfile) as molinput:
-            for line in molinput:
-                match = atomline.match(line)
-                if match:
-                    output.append("{0:8s} {1}".format(match.group(2), match.group(1)))
-                    atomCount += 1
+        atomnos = parser.atomnos
+        for i, line in enumerate(lines):
+            output.append("{0:8s} {1}".format(getElement(int(atomnos[i])).symbol, line))
+            atomCount += 1
         
         assert atomCount == len(self.geometry.molecule.atoms)
+        # 
+        # #####################
+        # 
+        # atomCount = 0
+        # with open(molfile) as molinput:
+        #     for line in molinput:
+        #         match = atomline.match(line)
+        #         if match:
+        #             output.append("{0:8s} {1}".format(match.group(2), match.group(1)))
+        #             atomCount += 1
+        # 
+        # assert atomCount == len(self.geometry.molecule.atoms)
+        # 
+        # output.append('')
+        # output.append(pGeom.uniqueIDlong)
+        # output.append('')
+        # output.append("{charge}   {mult}".format(charge=0, mult=(pGeom.molecule.getRadicalCount() + 1) ))
+        # 
+        # molfile = pGeom.getRefinedMolFilePath() # Now get the product geometry
+        # 
+        # atomCount = 0
+        # with open(molfile) as molinput:
+        #     for line in molinput:
+        #         match = atomline.match(line)
+        #         if match:
+        #             output.append("{0:8s} {1}".format(match.group(2), match.group(1)))
+        #             atomCount += 1
+        # 
+        # assert atomCount == len(self.geometry.molecule.atoms)
         
         output.append('')
         input_string = '\n'.join(output) + '\n'
@@ -543,7 +663,7 @@ class GaussianTS(QMReaction, Gaussian):
         with open(self.inputFilePath, 'w') as gaussianFile:
             # gaussianFile.write(numProc)
             # gaussianFile.write(mem)
-            gaussianFile.write(chk_file)
+            # gaussianFile.write(chk_file)
             gaussianFile.write(top_keys)
             gaussianFile.write(input_string)
             gaussianFile.write('\n')
@@ -605,6 +725,12 @@ class GaussianTS(QMReaction, Gaussian):
         result = self.parse() # parsed in cclib
         return result
     
+    def runDouble(self, inputFilePath):
+        self.testReady()
+        # submits the input file to Gaussian
+        process = Popen([self.executablePath, inputFilePath])
+        process.communicate()# necessary to wait for executable termination!
+        
     def runIRC(self):
         self.testReady()
         # submits the input file to Gaussian
@@ -854,8 +980,8 @@ class GaussianTSB3LYP(GaussianTS):
 
     #: Keywords that will be added at the top of the qm input file
     keywords = [
-                "# b3lyp/6-31+g(d,p) opt=(ts,calcfc,noeigentest) freq nosymm",
-                "# b3lyp/6-31+g(d,p) opt=(ts,calcfc,noeigentest,cartesian) freq nosymm geom=allcheck guess=check",
+                "# b3lyp/6-31+g(d,p) opt=(ts,calcfc,noeigentest) freq", # nosymm
+                "# b3lyp/6-31+g(d,p) opt=(ts,calcfc,noeigentest,cartesian) freq", # nosymm geom=allcheck guess=check
                 "# b3lyp/6-31+g(d,p) opt=(ts,calcfc,noeigentest) freq nosymm geom=allcheck guess=read",
                 "# b3lyp/6-31+g(d,p) opt=(ts,calcfc,noeigentest,cartesian) freq nosymm geom=allcheck guess=check",
                 "# b3lyp/6-31+g(d,p) irc=(calcall,report=read) freq geom=allcheck guess=check nosymm",
