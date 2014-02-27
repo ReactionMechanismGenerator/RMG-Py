@@ -108,14 +108,6 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
                 atomType = atomType[1:-1].split(',')
             else:
                 atomType = [atomType]
-
-            # Next is the element or atom type
-            # A list can be specified with the {,} syntax
-            atomType = data[index]
-            if atomType[0] == '{':
-                atomType = atomType[1:-1].split(',')
-            else:
-                atomType = [atomType]
             index += 1
             
             # Next is the electron state
@@ -158,7 +150,8 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
             
             # Next number defines the number of lone electron pairs (if provided)
             lonePairElectrons = -1
-            if not group and len(data) > index:
+         #   if not group and len(data) > index:
+            if len(data) > index:
                 lpState = data[index]
                 if lpState[0] != '{':
                     if lpState == '0':
@@ -179,7 +172,7 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
             
             # Create a new atom based on the above information
             if group:
-                atom = GroupAtom(atomType, radicalElectrons, spinMultiplicity, [0 for e in radicalElectrons], label)
+                atom = GroupAtom(atomType, radicalElectrons, spinMultiplicity, [0 for e in radicalElectrons], label, [lonePairElectrons])
             else:
                 atom = Atom(atomType[0], radicalElectrons[0], spinMultiplicity[0], 0, label, lonePairElectrons)
 
