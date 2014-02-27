@@ -240,24 +240,24 @@ class GaussianMolPM3(GaussianMol):
 
     #: Keywords that will be added at the top of the qm input file
     keywords = [
-               "# pm3 opt=(verytight,gdiis) freq IOP(2/16=3)",
-               "# pm3 opt=(verytight,gdiis) freq IOP(2/16=3) IOP(4/21=2)",
-               "# pm3 opt=(verytight,calcfc,maxcyc=200) freq IOP(2/16=3) nosymm" ,
-               "# pm3 opt=(verytight,calcfc,maxcyc=200) freq=numerical IOP(2/16=3) nosymm",
-               "# pm3 opt=(verytight,gdiis,small) freq IOP(2/16=3)",
-               "# pm3 opt=(verytight,nolinear,calcfc,small) freq IOP(2/16=3)",
-               "# pm3 opt=(verytight,gdiis,maxcyc=200) freq=numerical IOP(2/16=3)",
-               "# pm3 opt=tight freq IOP(2/16=3)",
-               "# pm3 opt=tight freq=numerical IOP(2/16=3)",
-               "# pm3 opt=(tight,nolinear,calcfc,small,maxcyc=200) freq IOP(2/16=3)",
-               "# pm3 opt freq IOP(2/16=3)",
-               "# pm3 opt=(verytight,gdiis) freq=numerical IOP(2/16=3) IOP(4/21=200)",
-               "# pm3 opt=(calcfc,verytight,newton,notrustupdate,small,maxcyc=100,maxstep=100) freq=(numerical,step=10) IOP(2/16=3) nosymm",
-               "# pm3 opt=(tight,gdiis,small,maxcyc=200,maxstep=100) freq=numerical IOP(2/16=3) nosymm",
-               "# pm3 opt=(tight,gdiis,small,maxcyc=200,maxstep=100) freq=numerical IOP(2/16=3) nosymm",
-               "# pm3 opt=(verytight,gdiis,calcall,small,maxcyc=200) IOP(2/16=3) IOP(4/21=2) nosymm",
-               "# pm3 opt=(verytight,gdiis,calcall,small) IOP(2/16=3) nosymm",
-               "# pm3 opt=(calcall,small,maxcyc=100) IOP(2/16=3)",
+               "#p pm3 opt=(verytight,gdiis) freq IOP(2/16=3)",
+               "#p pm3 opt=(verytight,gdiis) freq IOP(2/16=3) IOP(4/21=2)",
+               "#p pm3 opt=(verytight,calcfc,maxcyc=200) freq IOP(2/16=3) nosymm" ,
+               "#p pm3 opt=(verytight,calcfc,maxcyc=200) freq=numerical IOP(2/16=3) nosymm",
+               "#p pm3 opt=(verytight,gdiis,small) freq IOP(2/16=3)",
+               "#p pm3 opt=(verytight,nolinear,calcfc,small) freq IOP(2/16=3)",
+               "#p pm3 opt=(verytight,gdiis,maxcyc=200) freq=numerical IOP(2/16=3)",
+               "#p pm3 opt=tight freq IOP(2/16=3)",
+               "#p pm3 opt=tight freq=numerical IOP(2/16=3)",
+               "#p pm3 opt=(tight,nolinear,calcfc,small,maxcyc=200) freq IOP(2/16=3)",
+               "#p pm3 opt freq IOP(2/16=3)",
+               "#p pm3 opt=(verytight,gdiis) freq=numerical IOP(2/16=3) IOP(4/21=200)",
+               "#p pm3 opt=(calcfc,verytight,newton,notrustupdate,small,maxcyc=100,maxstep=100) freq=(numerical,step=10) IOP(2/16=3) nosymm",
+               "#p pm3 opt=(tight,gdiis,small,maxcyc=200,maxstep=100) freq=numerical IOP(2/16=3) nosymm",
+               "#p pm3 opt=(tight,gdiis,small,maxcyc=200,maxstep=100) freq=numerical IOP(2/16=3) nosymm",
+               "#p pm3 opt=(verytight,gdiis,calcall,small,maxcyc=200) IOP(2/16=3) IOP(4/21=2) nosymm",
+               "#p pm3 opt=(verytight,gdiis,calcall,small) IOP(2/16=3) nosymm",
+               "#p pm3 opt=(calcall,small,maxcyc=100) IOP(2/16=3)",
                ]
 
     @property
@@ -571,7 +571,7 @@ class GaussianTS(QMReaction, Gaussian):
         
         output.append('')
         input_string = '\n'.join(output) + '\n'
-        top_keys = "# pm6 opt=(modredundant) nosymm\n"
+        top_keys = "#p pm6 opt=(modredundant,MaxCycles={N}) nosymm\n".format(N=max(100,atomCount*10))
         
         with open(inputFilePath, 'w') as gaussianFile:
             # gaussianFile.write(numProc)
@@ -670,7 +670,7 @@ class GaussianTS(QMReaction, Gaussian):
         
         output.append('')
         input_string = '\n'.join(output) + '\n'
-        top_keys = "# pm6 opt=(qst2,calcall,noeigentest,MaxCycles={N}) nosymm\n".format(N=max(100,atomCount*10))
+        top_keys = "#p pm6 opt=(qst2,calcall,noeigentest,MaxCycles={N}) nosymm\n".format(N=max(100,atomCount*10))
         
         with open(self.inputFilePath, 'w') as gaussianFile:
             # gaussianFile.write(numProc)
@@ -966,11 +966,11 @@ class GaussianTSM062X(GaussianTS):
 
     #: Keywords that will be added at the top of the qm input file
     keywords = [
-                "# m062x/gen opt=(ts,calcall,tight,noeigentest)  int=ultrafine nosymm",
-                "# m062x/gen opt=(ts,calcall,tight,noeigentest,cartesian) int=ultrafine geom=allcheck guess=check nosymm",
-                "# m062x/gen opt=(ts,calcall,noeigentest,cartesian) nosymm geom=allcheck guess=check nosymm",
-                "# m062x/gen opt=(ts,calcall,noeigentest) nosymm",
-                "# m062x/gen irc=(calcall,report=read) geom=allcheck guess=check nosymm",
+                "#p m062x/gen opt=(ts,calcall,tight,noeigentest)  int=ultrafine nosymm",
+                "#p m062x/gen opt=(ts,calcall,tight,noeigentest,cartesian) int=ultrafine geom=allcheck guess=check nosymm",
+                "#p m062x/gen opt=(ts,calcall,noeigentest,cartesian) nosymm geom=allcheck guess=check nosymm",
+                "#p m062x/gen opt=(ts,calcall,noeigentest) nosymm",
+                "#p m062x/gen irc=(calcall,report=read) geom=allcheck guess=check nosymm",
                ]
     """
     This needs some work, to determine options that are best used. Commented out the
@@ -1003,13 +1003,13 @@ class GaussianTSB3LYP(GaussianTS):
 
     #: Keywords that will be added at the top of the qm input file
     keywords = [
-                "# b3lyp/6-31+g(d,p) opt=(ts,calcfc,noeigentest) freq", # nosymm
-                "# b3lyp/6-31+g(d,p) opt=(ts,calcfc,noeigentest,cartesian) freq", # nosymm geom=allcheck guess=check
-                "# b3lyp/6-31+g(d,p) opt=(ts,calcfc,noeigentest) freq nosymm geom=allcheck guess=read",
-                "# b3lyp/6-31+g(d,p) opt=(ts,calcfc,noeigentest,cartesian) freq nosymm geom=allcheck guess=check",
-                "# b3lyp/6-31+g(d,p) irc=(calcall,report=read) freq geom=allcheck guess=check nosymm",
-                "# b3lyp/6-31+g(d,p) opt=(ts,calcall,tight,noeigentest) freq int=ultrafine nosymm",
-                "# b3lyp/6-31+g(d,p) opt=(ts,calcall,tight,noeigentest,cartesian) freq int=ultrafine geom=allcheck guess=check nosymm",
+                "#p b3lyp/6-31+g(d,p) opt=(ts,calcfc,noeigentest) freq", # nosymm
+                "#p b3lyp/6-31+g(d,p) opt=(ts,calcfc,noeigentest,cartesian) freq", # nosymm geom=allcheck guess=check
+                "#p b3lyp/6-31+g(d,p) opt=(ts,calcfc,noeigentest) freq nosymm geom=allcheck guess=read",
+                "#p b3lyp/6-31+g(d,p) opt=(ts,calcfc,noeigentest,cartesian) freq nosymm geom=allcheck guess=check",
+                "#p b3lyp/6-31+g(d,p) irc=(calcall,report=read) freq geom=allcheck guess=check nosymm",
+                "#p b3lyp/6-31+g(d,p) opt=(ts,calcall,tight,noeigentest) freq int=ultrafine nosymm",
+                "#p b3lyp/6-31+g(d,p) opt=(ts,calcall,tight,noeigentest,cartesian) freq int=ultrafine geom=allcheck guess=check nosymm",
                 
                 ]
                # "# b3lyp/6-31+g(d,p) opt=(ts,calcall,tight,noeigentest) int=ultrafine nosymm",
