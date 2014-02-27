@@ -162,14 +162,14 @@ atomTypes['R']    = AtomType(label='R', generic=[], specific=[
     'R!H',
     'H',
     'C','Cs','Cd','Cdd','Ct','CO','Cb','Cbf', 'CS',
-    'N','N2d','N3s','N3d','N3t','N3b','N5s','N5d','N5dd','N5t','N5b',
+    'N','N1d','N3s','N3d','N3t','N3b','N5s','N5d','N5dd','N5t','N5b',
     'O','Os','Od','Oa','Ot',
     'Si','Sis','Sid','Sidd','Sit','SiO','Sib','Sibf',
     'S','Ss','Sd','Sa']
 )
 atomTypes['R!H']  = AtomType(label='R!H', generic=['R'], specific=[
     'C','Cs','Cd','Cdd','Ct','CO','Cb','Cbf', 'CS',
-    'N','N2d','N3s','N3d','N3t','N3b','N5s','N5d','N5dd','N5t','N5b',
+    'N','N1d','N3s','N3d','N3t','N3b','N5s','N5d','N5dd','N5t','N5b',
     'O','Os','Od','Oa','Ot',
     'Si','Sis','Sid','Sidd','Sit','SiO','Sib','Sibf',
     'S','Ss','Sd','Sa']
@@ -186,7 +186,8 @@ atomTypes['Cb'  ] = AtomType('Cb',   generic=['R','R!H','C'],  specific=[])
 atomTypes['Cbf' ] = AtomType('Cbf',  generic=['R','R!H','C'],  specific=[])
 atomTypes['CS'  ] = AtomType('CS',   generic=['R','R!H','C'],  specific=[])
 
-atomTypes['N'   ] = AtomType('N',    generic=['R','R!H'],      specific=['N2d','N3s','N3d','N3t','N3b','N5s','N5d','N5dd','N5t','N5b'])
+atomTypes['N'   ] = AtomType('N',    generic=['R','R!H'],      specific=['N1d','N2d','N3s','N3d','N3t','N3b','N5s','N5d','N5dd','N5t','N5b'])
+atomTypes['N1d' ] = AtomType('N1d',  generic=['R','R!H','N'],  specific=[])
 atomTypes['N2d' ] = AtomType('N2d',  generic=['R','R!H','N'],  specific=[])
 atomTypes['N3s' ] = AtomType('N3s',  generic=['R','R!H','N'],  specific=[])
 atomTypes['N3d' ] = AtomType('N3d',  generic=['R','R!H','N'],  specific=[])
@@ -234,7 +235,7 @@ atomTypes['Cb'  ].setActions(incrementBond=[],               decrementBond=[],  
 atomTypes['Cbf' ].setActions(incrementBond=[],               decrementBond=[],               formBond=[],            breakBond=[],            incrementRadical=[],       decrementRadical=[],       incrementLonePair=[],      decrementLonePair=[])
 
 atomTypes['N'   ].setActions(incrementBond=['N'],            decrementBond=['N'],            formBond=['N'],         breakBond=['N'],         incrementRadical=['N'],    decrementRadical=['N'],    incrementLonePair=['N'],   decrementLonePair=['N'])
-atomTypes['N2d' ].setActions(incrementBond=[],               decrementBond=[],               formBond=[],            breakBond=[],            incrementRadical=[],       decrementRadical=[],       incrementLonePair=[],      decrementLonePair=[])
+atomTypes['N1d' ].setActions(incrementBond=[],               decrementBond=['N3s'],          formBond=[],            breakBond=['N3s'],       incrementRadical=['N1d'],  decrementRadical=['N1d'],  incrementLonePair=['N1d'], decrementLonePair=['N1d'])
 atomTypes['N3s' ].setActions(incrementBond=['N3d','N3s'],    decrementBond=[],               formBond=['N3s','N5s'], breakBond=['N3s'],       incrementRadical=['N3s'],  decrementRadical=['N3s'],  incrementLonePair=['N3s'], decrementLonePair=['N3s'])
 atomTypes['N3d' ].setActions(incrementBond=['N3t'],          decrementBond=['N3s'],          formBond=['N3d','N5d'], breakBond=['N3d'],       incrementRadical=['N3d'],  decrementRadical=['N3d'],  incrementLonePair=['N3d'], decrementLonePair=['N3d'])
 atomTypes['N3t' ].setActions(incrementBond=[],               decrementBond=['N3d'],          formBond=['N5t'],       breakBond=[],            incrementRadical=['N3t'],  decrementRadical=['N3t'],  incrementLonePair=['N3t'], decrementLonePair=['N3t'])
@@ -307,7 +308,7 @@ def getAtomType(atom, bonds):
         atomType = 'H'
     elif atom.symbol == 'N':
         if   double == 0 and doubleO == 0 and triple == 0 and benzene == 0 and single == 0: atomType = 'N3s'
-        elif double == 1 and doubleO == 0 and triple == 0 and benzene == 0 and single == 0: atomType = 'N2d'
+        elif double == 1 and doubleO == 0 and triple == 0 and benzene == 0 and single == 0 and atom.lonePairs == 2: atomType = 'N1d'
         elif double == 0 and doubleO == 0 and triple == 0 and benzene == 0 and single == 1: atomType = 'N3s'
         elif double == 0 and doubleO == 0 and triple == 0 and benzene == 0 and single == 2: atomType = 'N3s'
         elif double == 0 and doubleO == 0 and triple == 0 and benzene == 0 and single == 3: atomType = 'N3s'
