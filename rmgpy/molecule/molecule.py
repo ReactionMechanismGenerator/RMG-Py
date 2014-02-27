@@ -1053,7 +1053,7 @@ class Molecule(Graph):
         # Special handling of helium
         if smilesstr == '[He]':
             # RDKit improperly handles helium and returns it in a triplet state
-            self.fromAdjacencyList('1 He 0') # this is broken with the new AdjList syntax
+            self.fromAdjacencyList('1 He 0 1')
             return self
         
         else:
