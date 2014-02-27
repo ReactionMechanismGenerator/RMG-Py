@@ -61,12 +61,22 @@ class Gaussian:
    
     def run(self):
         self.testReady()
+        
+        with open(self.inputFilePath) as infile:
+            print "Running GAUSSIAN input file {0!s}:".format(self.inputFilePath)
+            for line in infile:
+                print line.rstrip()
+
         # submits the input file to Gaussian
         process = Popen([self.executablePath, self.inputFilePath, self.outputFilePath])
         process.communicate()# necessary to wait for executable termination!
-        
         return self.verifyOutputFile()
         
+        with open(self.outputFilePath) as outfile:
+            print "Gaussian output file {0!s}:".format(self.outputFilePath)
+            for line in outfile:
+                print line.rstrip()
+
     def verifyOutputFile(self):
         """
         Check's that an output file exists and was successful.
@@ -541,7 +551,7 @@ class GaussianTS(QMReaction, Gaussian):
                         output.append("{0:8s} {1}".format(match.group(2), match.group(1)))
                         atomCount += 1
             inputFilePath = otherGeom.getFilePath(self.inputFileExtension)
-            bottom_keys = "{atom1} {atom3} F\n{atom1} {atom2} F\n".format(atom1=freezeAtoms[0] + 1, atom2=freezeAtoms[1] + 1, atom3=freezeAtoms[2] + 1)
+            bottom_keys = "{atom1} {atom2} F\n".format(atom1=freezeAtoms[0] + 1, atom2=freezeAtoms[1] + 1, atom3=freezeAtoms[2] + 1)
         else:
             molfile = self.geometry.getRefinedMolFilePath() # Get the reactant geometry
             
@@ -553,7 +563,7 @@ class GaussianTS(QMReaction, Gaussian):
                         output.append("{0:8s} {1}".format(match.group(2), match.group(1)))
                         atomCount += 1
             inputFilePath = self.inputFilePath
-            bottom_keys = "{atom1} {atom3} F\n{atom2} {atom3} F\n".format(atom1=freezeAtoms[0] + 1, atom2=freezeAtoms[1] + 1, atom3=freezeAtoms[2] + 1)
+            bottom_keys = "{atom2} {atom3} F\n".format(atom1=freezeAtoms[0] + 1, atom2=freezeAtoms[1] + 1, atom3=freezeAtoms[2] + 1)
         
         assert atomCount == len(self.geometry.molecule.atoms)
         
@@ -727,9 +737,19 @@ class GaussianTS(QMReaction, Gaussian):
     
     def runDouble(self, inputFilePath):
         self.testReady()
+        with open(inputFilePath) as infile:
+            print "Running GAUSSIAN input file {0!s}:".format(inputFilePath)
+            for line in infile:
+                print line.rstrip()
         # submits the input file to Gaussian
         process = Popen([self.executablePath, inputFilePath])
         process.communicate()# necessary to wait for executable termination!
+        
+        logFilePath = os.path.splitext(inputFilePath)[0]+self.outputFileExtension
+        with open(logFilePath) as outfile:
+            print "Gaussian output file {0!s}:".format(logFilePath)
+            for line in outfile:
+                print line.rstrip()
         
     def runIRC(self):
         self.testReady()

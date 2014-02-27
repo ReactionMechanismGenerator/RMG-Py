@@ -292,7 +292,7 @@ class QMReaction:
                         pRDMol.GetConformer(0).SetAtomPosition(i, rRDMol.GetConformer(0).GetAtomPosition(i))
                     # don't re-embed the product, just optimize at UFF
                     pRDMol, minEid = pGeom.optimize(pRDMol, boundsMatrix=pBM, atomMatch=atomMatch)
-                    pGeom.writeMolFile(rdmol, pGeom.getRefinedMolFilePath(), minEid)
+                    pGeom.writeMolFile(pRDMol, pGeom.getRefinedMolFilePath(), minEid)
                     
                     if not os.path.exists(self.outputFilePath):
                         # Product that references the reactant geometry
@@ -340,17 +340,22 @@ class QMReaction:
                             #     return False, None, None, notes
                         elif self.settings.software.lower() == 'gaussian':
                             # all below needs to change
-                            self.writeGeomInputFile(labels)
+                            print "Optimizing reactant geometry"
+                            self.writeGeomInputFile(freezeAtoms=labels)
                             self.runDouble(self.inputFilePath)
-                            self.writeGeomInputFile(labels, otherGeom=pGeom)
+                            print "Optimizing product geometry"
+                            self.writeGeomInputFile(freezeAtoms=labels, otherGeom=pGeom)
                             self.runDouble(pGeom.getFilePath(self.inputFileExtension))
+                            print "Running QST2 from optimized geometries"
                             self.writeQST2InputFile(pGeom)
                             self.runDouble(self.inputFilePath)
                             
+                            print "Optimizing TS once"
                             self.writeInputFile(1, fromQST2=True)
                             converged, internalCoord = self.run()
                             
                             if internalCoord and not converged:
+                                print "Internal coordinate error, trying in cartesian"
                                 self.writeInputFile(2, fromQST2=True)
                                 converged, internalCoord = self.run()
                             
