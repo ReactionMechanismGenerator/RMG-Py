@@ -339,20 +339,24 @@ class QMReaction:
                             #     notes = notes + 'reactant .arc file does not exits\n'
                             #     return False, None, None, notes
                         elif self.settings.software.lower() == 'gaussian':
+                            import shutil
                             # all below needs to change
                             print "Optimizing reactant geometry"
                             self.writeGeomInputFile(freezeAtoms=labels)
-                            self.runDouble(self.inputFilePath)
+                            logFilePath = self.runDouble(self.inputFilePath)
+                            shutil.copy(logFilePath, logFilePath+'.reactant.log')
                             print "Optimizing product geometry"
                             self.writeGeomInputFile(freezeAtoms=labels, otherGeom=pGeom)
-                            self.runDouble(pGeom.getFilePath(self.inputFileExtension))
+                            logFilePath = self.runDouble(pGeom.getFilePath(self.inputFileExtension))
+                            shutil.copy(logFilePath, logFilePath+'.product.log')
                             print "Running QST2 from optimized geometries"
                             self.writeQST2InputFile(pGeom)
-                            self.runDouble(self.inputFilePath)
-                            
+                            logFilePath = self.runDouble(self.inputFilePath)
+                            shutil.copy(logFilePath, logFilePath+'.QST2.log')
                             print "Optimizing TS once"
                             self.writeInputFile(1, fromQST2=True)
                             converged, internalCoord = self.run()
+                            shutil.copy(self.outputFilePath, self.outputFilePath+'.TS1.log')
                             
                             if internalCoord and not converged:
                                 print "Internal coordinate error, trying in cartesian"

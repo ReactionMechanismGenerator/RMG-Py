@@ -70,12 +70,14 @@ class Gaussian:
         # submits the input file to Gaussian
         process = Popen([self.executablePath, self.inputFilePath, self.outputFilePath])
         process.communicate()# necessary to wait for executable termination!
-        return self.verifyOutputFile()
-        
+            
         with open(self.outputFilePath) as outfile:
             print "Gaussian output file {0!s}:".format(self.outputFilePath)
             for line in outfile:
                 print line.rstrip()
+
+        return self.verifyOutputFile()
+
 
     def verifyOutputFile(self):
         """
@@ -668,7 +670,7 @@ class GaussianTS(QMReaction, Gaussian):
         
         output.append('')
         input_string = '\n'.join(output) + '\n'
-        top_keys = "# pm6 opt=(qst2,calcall,noeigentest) nosymm\n"
+        top_keys = "# pm6 opt=(qst2,calcall,noeigentest,MaxCycles={N}) nosymm\n".format(N=max(100,atomCount*10))
         
         with open(self.inputFilePath, 'w') as gaussianFile:
             # gaussianFile.write(numProc)
@@ -750,6 +752,7 @@ class GaussianTS(QMReaction, Gaussian):
             print "Gaussian output file {0!s}:".format(logFilePath)
             for line in outfile:
                 print line.rstrip()
+        return logFilePath
         
     def runIRC(self):
         self.testReady()
