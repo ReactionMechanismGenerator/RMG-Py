@@ -165,22 +165,10 @@ class MoleculeDrawer:
         # they will need special attention
         self.__findRingGroups()
         
-        # Generate the coordinates to use to draw the molecule
-        try:
-            self.__generateCoordinates()
-        except (ValueError, numpy.linalg.LinAlgError), e:
-            logging.error('Error while drawing molecule {0}: {1}'.format(molecule.toSMILES(), e))
-            import sys, traceback
-            exc_type, exc_value, exc_traceback = sys.exc_info()
-            traceback.print_exc()
-            return None, None, None
-
-        self.coordinates[:,1] *= -1
-        self.coordinates *= self.options['bondLength']
-        
         # Generate labels to use
         self.__generateAtomLabels()
         
+        # Generate the coordinates to use to draw the molecule
         # Handle some special cases
         if self.symbols == ['H','H']:
             # Render as H2 instead of H-H
@@ -214,6 +202,18 @@ class MoleculeDrawer:
             self.molecule.removeAtom(self.molecule.atoms[-1])
             self.symbols = ['CO2']
             self.coordinates = numpy.array([[0,0]], numpy.float64)
+        else:
+            try:
+                self.__generateCoordinates()
+            except (ValueError, numpy.linalg.LinAlgError), e:
+                logging.error('Error while drawing molecule {0}: {1}'.format(molecule.toSMILES(), e))
+                import sys, traceback
+                exc_type, exc_value, exc_traceback = sys.exc_info()
+                traceback.print_exc()
+                return None, None, None
+
+            self.coordinates[:,1] *= -1
+            self.coordinates *= self.options['bondLength']
         
         # Create a dummy surface to draw to, since we don't know the bounding rect
         # We will copy this to another surface with the correct bounding rect
