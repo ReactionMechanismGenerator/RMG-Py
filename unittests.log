@@ -3403,18 +3403,13 @@ Test the AtomType.isSpecificCaseOf() method. ... ok
 Test that we can reconstruct an AtomType object from its repr() ... ok
 Test that an AtomType object can be successfully pickled and ... ok
 Test the AtomType.setActions() method. ... ok
-Test that getAtomType() returns appropriate carbon atom types. ... WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-ok
-Test that getAtomType() returns the hydrogen atom type. ... WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-ok
-Test that getAtomType() returns appropriate NoneTypes. ... WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-FAIL
-Test that getAtomType() returns appropriate oxygen atom types. ... WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-ok
-Test that getAtomType() returns appropriate silicon atom types. ... WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-ok
-Test that getAtomType() returns appropriate sulfur atom types. ... WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-ok
+Test that getAtomType() returns appropriate carbon atom types. ... ok
+Test that getAtomType() returns the hydrogen atom type. ... ok
+Test that getAtomType() returns appropriate nitrogen atom types. ... ok
+Test that getAtomType() returns appropriate NoneTypes. ... ok
+Test that getAtomType() returns appropriate oxygen atom types. ... ok
+Test that getAtomType() returns appropriate silicon atom types. ... ok
+Test that getAtomType() returns appropriate sulfur atom types. ... ok
 Test we can create PDF files from molecules. ... ok
 Test we can create PDF surface without a temporary file (newer versions of PyCairo?) ... ok
 Test we can create PNG files from molecules. ... ok
@@ -3465,8 +3460,8 @@ Test the GroupAtom.applyAction() method for a GAIN_RADICAL action. ... ok
 Test the GroupAtom.applyAction() method for a CHANGE_BOND action. ... ok
 Test the GroupAtom.applyAction() method for a LOSE_RADICAL action. ... ok
 Test the GroupAtom.copy() method. ... ok
-Test the GroupAtom.equivalent() method. ... FAIL
-Test the GroupAtom.isSpecificCaseOf() method. ... FAIL
+Test the GroupAtom.equivalent() method. ... ok
+Test the GroupAtom.isSpecificCaseOf() method. ... ok
 Test that a GroupAtom object can be successfully pickled and ... ok
 Test the GroupBond.applyAction() method for a BREAK_BOND action. ... ok
 Test the GroupBond.applyAction() method for a CHANGE_BOND action. ... ok
@@ -3534,7 +3529,7 @@ Test the Molecule.countInternalRotors() method. ... ok
 Test the Molecule.fromAdjacencyList() method. ... ok
 Make sure that H radical is produced properly from its InChI ... ok
 Test we can read things with implicit hydrogens. ... WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-FAIL
+ok
 Make sure that H radical is produced properly from its SMILES ... ok
 Test the Molecule.getLabeledAtoms() method. ... ok
 Test the Molecule.getLabeledAtom() method. ... ok
@@ -3560,42 +3555,6 @@ None
 None
 None
 None
-1 C 0 {2,B} {6,B}
-                                                    2 C 0 {1,B} {3,B}
-                                                    3 C 0 {2,B} {4,B}
-                                                    4 C 0 {3,B} {5,B}
-                                                    5 C 0 {4,B} {6,B}
-                                                    6 C 0 {1,B} {5,B}
-1 C 0 {2,B} {6,B}
-                                                    2 C 0 {1,B} {3,B}
-                                                    3 C 0 {2,B} {4,B}
-                                                    4 C 0 {3,B} {5,B}
-                                                    5 C 0 {4,B} {6,B}
-                                                    6 C 0 {1,B} {5,B}
-1 C 0 {2,B} {6,B}
-                                                    2 C 0 {1,B} {3,B}
-                                                    3 C 0 {2,B} {4,B}
-                                                    4 C 0 {3,B} {5,B}
-                                                    5 C 0 {4,B} {6,B}
-                                                    6 C 0 {1,B} {5,B}
-1 C 0 {2,B} {6,B}
-                                                    2 C 0 {1,B} {3,B}
-                                                    3 C 0 {2,B} {4,B}
-                                                    4 C 0 {3,B} {5,B}
-                                                    5 C 0 {4,B} {6,B}
-                                                    6 C 0 {1,B} {5,B}
-1 C 0 {2,B} {6,B}
-                                                    2 C 0 {1,B} {3,B}
-                                                    3 C 0 {2,B} {4,B}
-                                                    4 C 0 {3,B} {5,B}
-                                                    5 C 0 {4,B} {6,B}
-                                                    6 C 0 {1,B} {5,B}
-1 C 0 {2,B} {6,B}
-                                                    2 C 0 {1,B} {3,B}
-                                                    3 C 0 {2,B} {4,B}
-                                                    4 C 0 {3,B} {5,B}
-                                                    5 C 0 {4,B} {6,B}
-                                                    6 C 0 {1,B} {5,B}
 
         1 C 0       {2,D} {7,S} {8,S}
         2 C 0 {1,D} {3,S} {9,S}
@@ -4056,7 +4015,7 @@ Traceback (most recent call last):
   File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/base.py", line 294, in loadOld
     self.loadOldDictionary(dictstr, pattern)
   File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/base.py", line 374, in loadOldDictionary
-    self.entries[label].item = Group().fromAdjacencyList(record,saturateH=True)
+    self.entries[label].item = Group().fromAdjacencyList(record,saturateH=False)
 TypeError: fromAdjacencyList() takes no keyword arguments
 
 ======================================================================
@@ -4098,30 +4057,6 @@ Traceback (most recent call last):
 AssertionError: Solvation enthalpy discrepancy (-17533!=-12000) for methane in water
 
 ======================================================================
-FAIL: Test that getAtomType() returns appropriate NoneTypes.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/atomtypeTest.py", line 182, in testNoneTypes
-    self.assertIsNone(self.atomType(self.mol5, 0))
-AssertionError: 'N3s' is not None
-
-======================================================================
-FAIL: Test the GroupAtom.equivalent() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/groupTest.py", line 151, in testEquivalent
-    self.assertTrue(atom1.equivalent(atom2), '{0!s} is not equivalent to {1!s}'.format(atom1, atom2))
-AssertionError: ['R!H'] is not equivalent to ['N2d']
-
-======================================================================
-FAIL: Test the GroupAtom.isSpecificCaseOf() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/groupTest.py", line 166, in testIsSpecificCaseOf
-    self.assertTrue(atom1.isSpecificCaseOf(atom2), '{0!s} is not a specific case of {1!s}'.format(atom1, atom2))
-AssertionError: ['N2d'] is not a specific case of ['R!H']
-
-======================================================================
 FAIL: Test the Molecule.isAromatic() method.
 ----------------------------------------------------------------------
 Traceback (most recent call last):
@@ -4144,14 +4079,6 @@ Traceback (most recent call last):
   File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/moleculeTest.py", line 981, in testCountInternalRotorsDimethylAcetylene
     self.assertEqual(Molecule().fromSMILES('CC#CC').countInternalRotors(), 1)
 AssertionError: 2 != 1
-
-======================================================================
-FAIL: Test we can read things with implicit hydrogens.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/moleculeTest.py", line 591, in testFromOldAdjacencyList
-    self.assertEqual(molecule.getFormula(),'H2O')
-AssertionError: 'O' != 'H2O'
 
 ======================================================================
 FAIL: Test the Molecule.calculateAxisSymmetryNumber() method.
@@ -4269,9 +4196,9 @@ rmgpy.transport                      31      3      0      0    90%   58-59, 65
 -----------------------------------------------------------------------------
 TOTAL                             14483  11712   6153   5618    16%   
 ----------------------------------------------------------------------
-Ran 721 tests.
+Ran 722 tests.
 
-FAILED (errors=2, failures=16)
+FAILED (errors=2, failures=12)
 
         1 * C 0 {2,D} {7,S} {8,S}
         2 C 0 {1,D} {3,S} {9,S}
