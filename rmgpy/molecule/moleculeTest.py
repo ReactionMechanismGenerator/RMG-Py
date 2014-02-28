@@ -587,7 +587,7 @@ class TestMolecule(unittest.TestCase):
         Test we can read things with implicit hydrogens.
         """
         adjList = "1 O 0" # should be Water
-        molecule = Molecule().fromAdjacencyList(adjList) # only works with saturateH=True
+        molecule = Molecule().fromAdjacencyList(adjList, saturateH=True) # only works with saturateH=True
         self.assertEqual(molecule.getFormula(),'H2O')
 
     def testIsomorphism(self):
