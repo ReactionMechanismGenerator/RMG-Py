@@ -266,12 +266,18 @@ class TestTransportDatabase(unittest.TestCase):
     def testJobackOnBenzeneBonds(self):
         "Test Joback doesn't crash on Cb desription of beneze"
         adjlist = """
-                    1 C 0 {2,B} {6,B}
-                    2 C 0 {1,B} {3,B}
-                    3 C 0 {2,B} {4,B}
-                    4 C 0 {3,B} {5,B}
-                    5 C 0 {4,B} {6,B}
-                    6 C 0 {1,B} {5,B}
+                    1  C 0 0 {2,D} {6,S} {7,S}
+                    2  C 0 0 {1,D} {3,S} {8,S}
+                    3  C 0 0 {2,S} {4,D} {9,S}
+                    4  C 0 0 {3,D} {5,S} {10,S}
+                    5  C 0 0 {4,S} {6,D} {11,S}
+                    6  C 0 0 {1,S} {5,D} {12,S}
+                    7  H 0 0 {1,S}
+                    8  H 0 0 {2,S}
+                    9  H 0 0 {3,S}
+                    10 H 0 0 {4,S}
+                    11 H 0 0 {5,S}
+                    12 H 0 0 {6,S}
                     """
         m = Molecule().fromAdjacencyList(adjlist)
         species = Species(molecule=[m])
