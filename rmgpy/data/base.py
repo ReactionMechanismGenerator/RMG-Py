@@ -371,7 +371,7 @@ class Database:
                     self.entries[label].item = makeLogicNode(' '.join(lines[1:]) )
                 # Otherwise convert adjacency list to molecule or pattern
                 elif pattern:
-                    self.entries[label].item = Group().fromAdjacencyList(record,saturateH=False)
+                    self.entries[label].item = Group().fromAdjacencyList(record)
                 else:
                     self.entries[label].item = Molecule().fromAdjacencyList(record,saturateH=True)
         except InvalidAdjacencyListError, e:
