@@ -168,7 +168,10 @@ class SymmetryJob:
         self.attemptNumber = 1
         self.pointGroupFound = False
 
-        self.executable_path = os.path.join(settings.RMG_bin_path, 'symmetry')
+        if os.sys.platform == 'win32':
+            self.executable_path = os.path.join(settings.RMG_bin_path, 'symmetry.exe')
+        else:
+            self.executable_path = os.path.join(settings.RMG_bin_path, 'symmetry')
         if not os.path.exists(self.executable_path):
             raise Exception("Symmetry program not found at {0}.".format(self.executable_path))
         
