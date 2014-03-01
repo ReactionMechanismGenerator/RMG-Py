@@ -165,10 +165,30 @@ class MoleculeDrawer:
         # they will need special attention
         self.__findRingGroups()
         
-        # Generate labels to use
-        self.__generateAtomLabels()
+        # Handle carbon monoxide special case
+        if self.molecule.toSMILES() == 'C#O':
+            # RDKit does not accept atom type Ot
+            self.molecule.removeAtom(self.molecule.atoms[-1])
+            self.symbols = ['CO']
+            self.coordinates = numpy.array([[0,0]], numpy.float64)
+        else:
+            # Generate the coordinates to use to draw the molecule
+            try:
+                self.__generateCoordinates()
+                
+                # Generate labels to use
+                self.__generateAtomLabels()
         
-        # Generate the coordinates to use to draw the molecule
+            except (ValueError, numpy.linalg.LinAlgError), e:
+                logging.error('Error while drawing molecule {0}: {1}'.format(molecule.toSMILES(), e))
+                import sys, traceback
+                exc_type, exc_value, exc_traceback = sys.exc_info()
+                traceback.print_exc()
+                return None, None, None
+
+        self.coordinates[:,1] *= -1
+        self.coordinates *= self.options['bondLength']
+        
         # Handle some special cases
         if self.symbols == ['H','H']:
             # Render as H2 instead of H-H
@@ -191,30 +211,13 @@ class MoleculeDrawer:
             self.molecule.removeAtom(self.molecule.atoms[-1])
             self.symbols = ['O2H2']
             self.coordinates = numpy.array([[0,0]], numpy.float64)
-        elif self.symbols == ['C', 'O'] or self.symbols == ['O', 'C']:
-            # Render as CO instead of C=O
-            self.molecule.removeAtom(self.molecule.atoms[-1])
-            self.symbols = ['CO']
-            self.coordinates = numpy.array([[0,0]], numpy.float64)
         elif self.symbols == ['O', 'C', 'O']:
             # Render as CO2 instead of O=C=O
             self.molecule.removeAtom(self.molecule.atoms[0])
             self.molecule.removeAtom(self.molecule.atoms[-1])
             self.symbols = ['CO2']
             self.coordinates = numpy.array([[0,0]], numpy.float64)
-        else:
-            try:
-                self.__generateCoordinates()
-            except (ValueError, numpy.linalg.LinAlgError), e:
-                logging.error('Error while drawing molecule {0}: {1}'.format(molecule.toSMILES(), e))
-                import sys, traceback
-                exc_type, exc_value, exc_traceback = sys.exc_info()
-                traceback.print_exc()
-                return None, None, None
-
-            self.coordinates[:,1] *= -1
-            self.coordinates *= self.options['bondLength']
-        
+  
         # Create a dummy surface to draw to, since we don't know the bounding rect
         # We will copy this to another surface with the correct bounding rect
         surface0 = createNewSurface(format=format, path=None)
@@ -282,8 +285,8 @@ class MoleculeDrawer:
         flag_nitrogen = 0
         
         for atom in self.molecule.atoms:
-            if atom.isNitrogen():
-                flag_nitrogen = 1
+             if atom.atomType.label in ['N5s','N5d','N5dd','N5t','N5b']:
+                 flag_nitrogen = 1
         
         # Initialize array of coordinates
         self.coordinates = coordinates = numpy.zeros((Natoms, 2))
@@ -1258,7 +1261,7 @@ class MoleculeDrawer:
             # Draw lone electron pairs            
             # Draw them for nitrogen containing molecules only
             if drawLonePairs:
-                for i in range (atom.lonePairs):
+                for i in range(atom.lonePairs):
                     cr.new_sub_path()
                     if i == 0:
                         x1lp = x-2
@@ -1297,7 +1300,7 @@ class MoleculeDrawer:
                 cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
                 cr.fill()
             # Draw lone electron pairs
-            # Draw them for nitrogen atoms only
+            # Draw them for nitrogen species only
             if drawLonePairs:
                 for i in range (atom.lonePairs):
                     cr.new_sub_path()
