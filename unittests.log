@@ -3410,7 +3410,7 @@ Test the AtomType.setActions() method. ... ok
 Test that getAtomType() returns appropriate carbon atom types. ... ok
 Test that getAtomType() returns the hydrogen atom type. ... ok
 Test that getAtomType() returns appropriate nitrogen atom types. ... ok
-Test that getAtomType() returns appropriate NoneTypes. ... ok
+Test that getAtomType() returns appropriate NoneTypes. ... FAIL
 Test that getAtomType() returns appropriate oxygen atom types. ... ok
 Test that getAtomType() returns appropriate silicon atom types. ... ok
 Test that getAtomType() returns appropriate sulfur atom types. ... ok
@@ -4072,6 +4072,14 @@ Traceback (most recent call last):
 AssertionError: Symmetry number error for c1ccccc1
 
 ======================================================================
+FAIL: Test that getAtomType() returns appropriate NoneTypes.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/atomtypeTest.py", line 257, in testNoneTypes
+    self.assertIsNone(self.atomType(self.mol6, 0))
+AssertionError: 'Ar' is not None
+
+======================================================================
 FAIL: Test the Molecule.isAromatic() method.
 ----------------------------------------------------------------------
 Traceback (most recent call last):
@@ -4186,7 +4194,7 @@ rmgpy.measure.settings                2      0      0      0   100%
 rmgpy.measure.simulate               67     54     30     30    13%   46, 49, 66-128, 144-169, 178-179, 182, 185
 rmgpy.molecule                        5      0      0      0   100%   
 rmgpy.molecule.adjlist              264     38    160     35    83%   65, 71, 80, 144-148, 194, 207, 209, 211, 229, 242-243, 265-266, 289-291, 308-323, 336-337, 365
-rmgpy.molecule.draw                 929    578    448    305    36%   76, 79-82, 141-143, 175-177, 180-183, 186-188, 191-193, 196-198, 201-204, 208-213, 265-273, 286, 294-346, 371-373, 382-387, 396-427, 435-445, 452-577, 584-638, 645-717, 730-824, 848-849, 857-858, 881, 903-924, 937-939, 985-987, 990-993, 1002-1004, 1043-1044, 1062-1064, 1091-1099, 1121-1122, 1135-1138, 1157-1162, 1168-1169, 1198-1199, 1207-1209, 1212-1213, 1221-1223, 1229-1236, 1241-1244, 1253-1256, 1261-1278, 1288-1291, 1295-1298, 1302-1319, 1347-1351, 1365-1485
+rmgpy.molecule.draw                 929    574    448    303    36%   76, 79-82, 141-143, 171-173, 182-187, 195-197, 200-203, 206-208, 211-213, 216-219, 268-276, 289, 297-349, 374-376, 385-390, 399-430, 438-448, 455-580, 587-641, 648-720, 733-827, 851-852, 860-861, 884, 906-927, 940-942, 993-996, 1002-1003, 1005-1007, 1046-1047, 1094-1102, 1124-1125, 1138-1141, 1160-1165, 1171-1172, 1201-1202, 1210-1212, 1215-1216, 1224-1226, 1232-1239, 1244-1247, 1256-1259, 1264-1281, 1291-1294, 1298-1301, 1305-1322, 1350-1354, 1368-1488
 rmgpy.pdep                            5      0      0      0   100%   
 rmgpy.pdep.draw                     291    277     86     86     4%   57-70, 73-79, 87-107, 116-125, 131-142, 148-159, 165-181, 185-213, 222-479
 rmgpy.pdep.network                  532    408    230    209    19%   51-53, 60, 130, 137-149, 161, 181, 194-261, 272-345, 358, 361, 364, 396, 460-464, 473, 495-515, 529-688, 699-716, 724-738, 745-748, 755-758, 768-771, 774-775, 789-860, 871-925, 938-954
@@ -4209,11 +4217,11 @@ rmgpy.statmech                        5      0      0      0   100%
 rmgpy.thermo                          3      0      0      0   100%   
 rmgpy.transport                      31      3      0      0    90%   58-59, 65
 -----------------------------------------------------------------------------
-TOTAL                             14485  11565   6155   5556    17%   
+TOTAL                             14485  11561   6155   5554    17%   
 ----------------------------------------------------------------------
 Ran 727 tests.
 
-FAILED (failures=18)
+FAILED (failures=19)
 
         1 * C 0 {2,D} {7,S} {8,S}
         2 C 0 {1,D} {3,S} {9,S}
