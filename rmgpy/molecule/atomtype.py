@@ -160,21 +160,28 @@ class AtomType:
 atomTypes = {}
 atomTypes['R']    = AtomType(label='R', generic=[], specific=[
     'R!H',
-    'H',
-    'C','Cs','Cd','Cdd','Ct','CO','Cb','Cbf', 'CS',
+    'H','He',
+    'C','Cs','Cd','Cdd','Ct','CO','Cb','Cbf','CS',
     'N','N1d','N3s','N3d','N3t','N3b','N5s','N5d','N5dd','N5t','N5b',
     'O','Os','Od','Oa','Ot',
+    'Ne',
     'Si','Sis','Sid','Sidd','Sit','SiO','Sib','Sibf',
-    'S','Ss','Sd','Sa']
+    'S','Ss','Sd','Sa',
+    'Cl','Ar']
 )
 atomTypes['R!H']  = AtomType(label='R!H', generic=['R'], specific=[
-    'C','Cs','Cd','Cdd','Ct','CO','Cb','Cbf', 'CS',
+    'He',
+    'C','Cs','Cd','Cdd','Ct','CO','Cb','Cbf','CS',
     'N','N1d','N3s','N3d','N3t','N3b','N5s','N5d','N5dd','N5t','N5b',
     'O','Os','Od','Oa','Ot',
+    'Ne',
     'Si','Sis','Sid','Sidd','Sit','SiO','Sib','Sibf',
-    'S','Ss','Sd','Sa']
+    'S','Ss','Sd','Sa',
+    'Cl','Ar']
 )
 atomTypes['H'   ] = AtomType('H',    generic=['R'],            specific=[])
+
+atomTypes['He'   ] = AtomType('He',  generic=['R','R!H'],      specific=[])
 
 atomTypes['C'   ] = AtomType('C',    generic=['R','R!H'],      specific=['Cs','Cd','Cdd','Ct','CO','Cb','Cbf','CS'])
 atomTypes['Cs'  ] = AtomType('Cs',   generic=['R','R!H','C'],  specific=[])
@@ -204,6 +211,8 @@ atomTypes['Od'  ] = AtomType('Od',   generic=['R','R!H','O'],  specific=[])
 atomTypes['Oa'  ] = AtomType('Oa',   generic=['R','R!H','O'],  specific=[])
 atomTypes['Ot'  ] = AtomType('Ot',   generic=['R','R!H','O'],  specific=[])
 
+atomTypes['Ne'  ] = AtomType('Ne',   generic=['R','R!H'],      specific=[])
+
 atomTypes['Si'  ] = AtomType('Si',   generic=['R','R!H'],      specific=['Sis','Sid','Sidd','Sit','SiO','Sib','Sibf'])
 atomTypes['Sis' ] = AtomType('Sis',  generic=['R','R!H','Si'], specific=[])
 atomTypes['Sid' ] = AtomType('Sid',  generic=['R','R!H','Si'], specific=[])
@@ -218,10 +227,16 @@ atomTypes['Ss'  ] = AtomType('Ss',   generic=['R','R!H','S'],  specific=[])
 atomTypes['Sd'  ] = AtomType('Sd',   generic=['R','R!H','S'],  specific=[])
 atomTypes['Sa'  ] = AtomType('Sa',   generic=['R','R!H','S'],  specific=[])
 
+atomTypes['Cl'  ] = AtomType('Cl',   generic=['R','R!H'],      specific=[])
+
+atomTypes['Ar'  ] = AtomType('Ar',   generic=['R','R!H'],      specific=[])
+
 atomTypes['R'   ].setActions(incrementBond=['R'],            decrementBond=['R'],            formBond=['R'],         breakBond=['R'],         incrementRadical=['R'],    decrementRadical=['R'],    incrementLonePair=['R'],   decrementLonePair=['R'])
 atomTypes['R!H' ].setActions(incrementBond=['R!H'],          decrementBond=['R!H'],          formBond=['R!H'],       breakBond=['R!H'],       incrementRadical=['R!H'],  decrementRadical=['R!H'],  incrementLonePair=['R!H'], decrementLonePair=['R!H'])
 
 atomTypes['H'   ].setActions(incrementBond=[],               decrementBond=[],               formBond=['H'],         breakBond=['H'],         incrementRadical=['H'],    decrementRadical=['H'],    incrementLonePair=[],      decrementLonePair=[])
+
+atomTypes['He'  ].setActions(incrementBond=[],               decrementBond=[],               formBond=[],            breakBond=[],            incrementRadical=['He'],   decrementRadical=['He'],   incrementLonePair=[],      decrementLonePair=[])
 
 atomTypes['C'   ].setActions(incrementBond=['C'],            decrementBond=['C'],            formBond=['C'],         breakBond=['C'],         incrementRadical=['C'],    decrementRadical=['C'],    incrementLonePair=[],      decrementLonePair=[])
 atomTypes['Cs'  ].setActions(incrementBond=['Cd','CO','Cs'], decrementBond=[],               formBond=['Cs'],        breakBond=['Cs'],        incrementRadical=['Cs'],   decrementRadical=['Cs'],   incrementLonePair=[],      decrementLonePair=[])
@@ -251,6 +266,8 @@ atomTypes['Od'  ].setActions(incrementBond=[],               decrementBond=['Os'
 atomTypes['Oa'  ].setActions(incrementBond=[],               decrementBond=[],               formBond=[],            breakBond=[],            incrementRadical=[],       decrementRadical=[],       incrementLonePair=[],      decrementLonePair=[])
 atomTypes['Ot'  ].setActions(incrementBond=[],               decrementBond=['Od'],           formBond=[],            breakBond=[],            incrementRadical=[],       decrementRadical=[],       incrementLonePair=['Ot'],  decrementLonePair=['Ot'])
 
+atomTypes['Ne'  ].setActions(incrementBond=[],               decrementBond=[],               formBond=[],            breakBond=[],            incrementRadical=['Ne'],   decrementRadical=['Ne'],   incrementLonePair=[],    decrementLonePair=[])
+
 atomTypes['Si'  ].setActions(incrementBond=['Si'],           decrementBond=['Si'],           formBond=['Si'],        breakBond=['Si'],        incrementRadical=['Si'],   decrementRadical=['Si'],   incrementLonePair=[],      decrementLonePair=[])
 atomTypes['Sis' ].setActions(incrementBond=['Sid','SiO'],    decrementBond=[],               formBond=['Sis'],       breakBond=['Sis'],       incrementRadical=['Sis'],  decrementRadical=['Sis'],  incrementLonePair=[],      decrementLonePair=[])
 atomTypes['Sid' ].setActions(incrementBond=['Sidd','Sit'],   decrementBond=['Sis'],          formBond=['Sid'],       breakBond=['Sid'],       incrementRadical=['Sid'],  decrementRadical=['Sid'],  incrementLonePair=[],      decrementLonePair=[])
@@ -264,6 +281,10 @@ atomTypes['S'   ].setActions(incrementBond=['S'],            decrementBond=['S']
 atomTypes['Ss'  ].setActions(incrementBond=['Sd'],           decrementBond=[],               formBond=['Ss'],        breakBond=['Ss'],        incrementRadical=['Ss'],   decrementRadical=['Ss'],   incrementLonePair=[],      decrementLonePair=[])
 atomTypes['Sd'  ].setActions(incrementBond=[],               decrementBond=['Ss'],           formBond=[],            breakBond=[],            incrementRadical=[],       decrementRadical=[],       incrementLonePair=[],      decrementLonePair=[])
 atomTypes['Sa'  ].setActions(incrementBond=[],               decrementBond=[],               formBond=[],            breakBond=[],            incrementRadical=[],       decrementRadical=[],       incrementLonePair=[],      decrementLonePair=[])
+
+atomTypes['Cl'  ].setActions(incrementBond=[],               decrementBond=['Cl'],           formBond=['Cl'],        breakBond=['Cl'],        incrementRadical=['Cl'],   decrementRadical=['Cl'],   incrementLonePair=[],      decrementLonePair=[])
+
+atomTypes['Ar'  ].setActions(incrementBond=[],               decrementBond=[],               formBond=[],            breakBond=[],            incrementRadical=[],       decrementRadical=[],       incrementLonePair=[],      decrementLonePair=[])
 
 for atomType in atomTypes.values():
     for items in [atomType.generic, atomType.specific,
@@ -295,7 +316,11 @@ def getAtomType(atom, bonds):
         elif bond12.isBenzene(): benzene += 1
 
     # Use element and counts to determine proper atom type
-    if atom.symbol == 'C':
+    if atom.symbol == 'H':
+        atomType = 'H'
+    elif atom.symbol == 'He':
+        atomType = 'He'
+    elif atom.symbol == 'C':
         if   double == 0 and doubleO == 0 and triple == 0 and benzene == 0: atomType = 'Cs'
         elif double == 1 and doubleO == 0 and triple == 0 and benzene == 0: atomType = 'Cd'
         elif double + doubleO == 2        and triple == 0 and benzene == 0: atomType = 'Cdd'
@@ -303,8 +328,6 @@ def getAtomType(atom, bonds):
         elif double == 0 and doubleO == 1 and triple == 0 and benzene == 0: atomType = 'CO'
         elif double == 0 and doubleO == 0 and triple == 0 and benzene == 2: atomType = 'Cb'
         elif double == 0 and doubleO == 0 and triple == 0 and benzene == 3: atomType = 'Cbf'
-    elif atom.symbol == 'H':
-        atomType = 'H'
     elif atom.symbol == 'N':
         if   double == 0 and doubleO == 0 and triple == 0 and benzene == 0 and single == 0: atomType = 'N3s'
         elif double == 1 and doubleO == 0 and triple == 0 and benzene == 0 and single == 0 and atom.lonePairs == 2: atomType = 'N1d'
@@ -330,6 +353,8 @@ def getAtomType(atom, bonds):
         elif double + doubleO == 1 and triple == 0 and benzene == 0: atomType = 'Od'
         elif len(bonds) == 0:                                        atomType = 'Oa'
         elif double + doubleO == 0 and triple == 1 and benzene == 0: atomType = 'Ot'
+    elif atom.symbol == 'Ne':
+        atomType = 'Ne'
     elif atom.symbol == 'Si':
         if   double == 0 and doubleO == 0 and triple == 0 and benzene == 0: atomType = 'Sis'
         elif double == 1 and doubleO == 0 and triple == 0 and benzene == 0: atomType = 'Sid'
@@ -342,8 +367,10 @@ def getAtomType(atom, bonds):
         if   double + doubleO == 0 and triple == 0 and benzene == 0: atomType = 'Ss'
         elif double + doubleO == 1 and triple == 0 and benzene == 0: atomType = 'Sd'
         elif len(bonds) == 0:                                        atomType = 'Sa'
-    elif atom.symbol == 'Ar' or atom.symbol == 'He' or atom.symbol == 'Ne' or atom.symbol == 'Cl':
-        return None
+    elif atom.symbol == 'Cl':
+        atomType = 'Cl'
+    elif atom.symbol == 'Ar':
+        atomType = 'Ar'
 
     # Raise exception if we could not identify the proper atom type
     if atomType == '':
