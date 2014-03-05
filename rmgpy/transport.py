@@ -46,16 +46,22 @@ class TransportData:
         Return a string representation that can be used to reconstruct the
         TransportData object.
         """
-        string = 'TransportData(shapeIndex={0!r}, epsilon={1!r}, sigma={2!r}, dipoleMoment={3!r}, polarizability={4!r}, rotrelaxcollnum={5!r}'.format(self.shapeIndex, self.epsilon, self.sigma, self.dipoleMoment, self.polarizability, self.rotrelaxcollnum)
-        if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
-        string += ')'
-        return string
-    
-    def getLennardJones(self):
-        """
-        Return a string representation that can be used for collision Frequencies
-        """
-        string = 'sigma={0!r}, epsilon={1!r}'.format(self.sigma, self.epsilon)
+        attributes=[]
+        if self.shapeIndex is not None:
+            attributes.append('shapeIndex={0!r}'.format(self.shapeIndex))
+        if self.epsilon is not None:
+            attributes.append('epsilon={0!r}'.format(self.epsilon))
+        if self.sigma is not None:
+            attributes.append('sigma={0!r}'.format(self.sigma))
+        if self.dipoleMoment is not None:
+            attributes.append('dipoleMoment={0!r}'.format(self.dipoleMoment))
+        if self.polarizability is not None:
+            attributes.append('polarizability={0!r}'.format(self.polarizability))
+        if self.rotrelaxcollnum is not None:
+            attributes.append('rotrelaxcollnum={0!r}'.format(self.rotrelaxcollnum))
+        if self.comment:
+            attributes.append('comment="""{0!r}"""'.format(self.comment))
+        string = 'TransportData({0!s})'.format(', '.join(attributes))
         return string
 
     def __reduce__(self):

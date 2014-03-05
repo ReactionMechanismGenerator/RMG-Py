@@ -609,7 +609,7 @@ class PressureDependenceJob(object):
                 if spec.molecularWeight is not None:
                     f.write('    molecularWeight = {0!r},\n'.format(spec.molecularWeight))
                 if spec.transportData is not None:
-                    f.write('    collisionModel = {0!r},\n'.format(spec.transportData.getLennardJones()))
+                    f.write('    collisionModel = {0!r},\n'.format(spec.transportData))
                 if spec.energyTransferModel is not None:
                     f.write('    energyTransferModel = {0!r},\n'.format(spec.energyTransferModel))                    
                 if spec.thermo is not None:
