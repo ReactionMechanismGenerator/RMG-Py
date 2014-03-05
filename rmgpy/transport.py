@@ -60,7 +60,7 @@ class TransportData:
         if self.rotrelaxcollnum is not None:
             attributes.append('rotrelaxcollnum={0!r}'.format(self.rotrelaxcollnum))
         if self.comment:
-            attributes.append('comment="""{0!r}"""'.format(self.comment))
+            attributes.append('comment="""{0!s}"""'.format(self.comment))
         string = 'TransportData({0!s})'.format(', '.join(attributes))
         return string
 
