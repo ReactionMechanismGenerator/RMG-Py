@@ -3992,7 +3992,7 @@ Test that the TransportData epsilon property was properly set. ... ok
 Test the LennardJones.getCollisionFrequency() method. ... FAIL
 Test that a TransportData object can be pickled and unpickled with no loss of information. ... ok
 Test that the TransportData polarizability property was properly set. ... ok
-Test that a TransportData object can be reconstructed from its repr() output with no loss of information ... FAIL
+Test that a TransportData object can be reconstructed from its repr() output with no loss of information ... ok
 Test that the TransportData rotrelaxcollnum property was properly set. ... ok
 Test that the TransportData shapeIndex property was properly set. ... ok
 Test that the TransportData sigma property was properly set. ... ok
@@ -4151,14 +4151,6 @@ Traceback (most recent call last):
     self.assertAlmostEqual(omega / 3.13010e10, 1.0, 4)
 AssertionError: 0.37614562878388352 != 1.0 within 4 places
 
-======================================================================
-FAIL: Test that a TransportData object can be reconstructed from its repr() output with no loss of information
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/transportDataTest.py", line 151, in test_repr
-    self.assertEqual(self.transport.comment, transport.comment)
-AssertionError: 'test' != "'test'"
-
 Name                              Stmts   Miss Branch BrMiss  Cover   Missing
 -----------------------------------------------------------------------------
 rmgpy                                55     17     18     10    63%   71, 79-82, 104-107, 113, 115, 119, 131-135, 155
@@ -4229,7 +4221,7 @@ TOTAL                             14482  11559   6155   5554    17%
 ----------------------------------------------------------------------
 Ran 727 tests.
 
-FAILED (failures=20)
+FAILED (failures=19)
 
         1 * C 0 {2,D} {7,S} {8,S}
         2 C 0 {1,D} {3,S} {9,S}
