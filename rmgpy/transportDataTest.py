@@ -120,8 +120,8 @@ class TestTransportData(unittest.TestCase):
         M = P / constants.R / T
         mu = 1.0
         omega = self.transport.getCollisionFrequency(T, M, mu)
-        self.assertAlmostEqual(omega / 3.13010e10, 1.0, 4)
-
+        self.assertAlmostEqual(omega / 1.17737e10, 1.0, 4)
+ 
     def test_pickle(self):
         """
         Test that a TransportData object can be pickled and unpickled with no loss of information.
