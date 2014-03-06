@@ -49,7 +49,7 @@ class OutputError(Exception):
 
 ################################################################################
 
-def saveOutputHTML(path, reactionModel, partCoreEdge):
+def saveOutputHTML(path, reactionModel, partCoreEdge='core'):
     """
     Save the current set of  species and reactions of `reactionModel` to
     an HTML file `path` on disk. As part of this process, drawings of all 
