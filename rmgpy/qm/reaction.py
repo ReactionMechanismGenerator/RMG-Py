@@ -132,15 +132,9 @@ class QMReaction:
         """
         others = range(len(bm))
         for idx in sect: others.remove(idx)
-        
-        for line in bm:
-            fullLine = ''
-            for item in line:
-                fullLine = fullLine + str(round(item, 1)) + ' '
-            print fullLine
             
-        for i in range(len(bm)):#sect:
-            for j in range(len(bm)):#others:
+        for i in sect:
+            for j in others:
                 for k in range(len(bm)):
                     if k==i or k==j or i==j: continue
                     Uik = bm[i,k] if k>i else bm[k,i]
@@ -150,11 +144,6 @@ class QMReaction:
                     if bm[i,j] >  maxLij:
                         print "CHANGING {0} to {1}".format(bm[i,j], maxLij)
                         bm[i,j] = maxLij
-        for line in bm:
-            fullLine = ''
-            for item in line:
-                fullLine = fullLine + str(round(item, 1)) + ' '
-            print fullLine
         
         return bm
     
@@ -286,6 +275,21 @@ class QMReaction:
                 # Double-ended search
                 rRDMol, rBM, rMult, self.geometry = self.generateBoundsMatrix(reactant)
                 pRDMol, pBM, pMult, pGeom = self.generateBoundsMatrix(product)
+                
+                for line in pBM:
+                    fullLine = ''
+                    for item in line:
+                        fullLine = fullLine + str(round(item, 1)) + ' '
+                    print fullLine
+                    
+                setRBM = rdkit.DistanceGeometry.DoTriangleSmoothing(rBM)
+                setPBM = rdkit.DistanceGeometry.DoTriangleSmoothing(pBM)    
+                
+                for line in pBM:
+                    fullLine = ''
+                    for item in line:
+                        fullLine = fullLine + str(round(item, 1)) + ' '
+                    print fullLine
                 
                 self.geometry.uniqueID = self.uniqueID
                 rBM, pBM, labels, atomMatch = self.editDoubMatrix(reactant, product, rBM, pBM)
