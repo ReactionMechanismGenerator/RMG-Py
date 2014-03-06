@@ -1550,8 +1550,11 @@ def saveSpeciesDictionary(path, species):
     """
     with open(path, 'w') as f:
         for spec in species:
-            f.write(spec.molecule[0].toAdjacencyList(label=getSpeciesIdentifier(spec), removeH=False))
-            f.write('\n')
+            try:
+                f.write(spec.molecule[0].toAdjacencyList(label=getSpeciesIdentifier(spec), removeH=False))
+                f.write('\n')
+            except:
+                raise ChemkinError('Ran into error saving dictionary for species {0}. Please check your files.'.format(getSpeciesIdentifier(spec)))
 
 def saveTransportFile(path, species):
     """
