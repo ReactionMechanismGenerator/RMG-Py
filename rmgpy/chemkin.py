@@ -1172,6 +1172,9 @@ def getSpeciesIdentifier(species):
             elif len(species.label) <= 15:
                 logging.warning('Species label is longer than 10 characters and may exceed chemkin string limit')
                 return species.label            
+            else:
+                logging.warning('Species label is longer than 15 characters and will break CHEMKIN 2.0')
+                return species.label
     else:
         
         # Index present - the index will be included in the identifier
