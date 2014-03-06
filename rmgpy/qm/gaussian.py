@@ -943,7 +943,7 @@ class GaussianTS(QMReaction, Gaussian):
         """
         Takes an output file, and extracts the geometry from it to ensure it has the same structure as the molecule provided.
         """
-        parser = cclib.parser.Gaussian(self.outputFilePath)
+        parser = cclib.parser.Gaussian(outputFilePath)
         parser.logger.setLevel(logging.ERROR) #cf. http://cclib.sourceforge.net/wiki/index.php/Using_cclib#Additional_information
         cclibData = parser.parse()
         
@@ -971,11 +971,10 @@ class GaussianTS(QMReaction, Gaussian):
         atomnos = numpy.array(atomnos)
         cclibData.atomnos = atomnos
         #####
-        
         mol = Molecule()
         mol.fromXYZ(cclibData.atomnos, cclibData.atomcoords[-1])
                                                         
-        if mol.isIsomorphic(molecule):
+        if mol.isIsomorphic(molecule.toSingleBonds()):
             return True
         else:
             return False

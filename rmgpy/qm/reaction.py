@@ -133,10 +133,16 @@ class QMReaction:
         others = range(len(bm))
         for idx in sect: others.remove(idx)
         
-        for i in sect:
-            for j in others:
+        for line in bm:
+            fullLine = ''
+            for item in line:
+                fullLine = fullLine + str(round(item, 1)) + ' '
+            print fullLine
+            
+        for i in range(len(bm)):#sect:
+            for j in range(len(bm)):#others:
                 for k in range(len(bm)):
-                    if k==i or k==j: continue
+                    if k==i or k==j or i==j: continue
                     Uik = bm[i,k] if k>i else bm[k,i]
                     Ukj = bm[j,k] if k>j else bm[k,j]
                     
@@ -144,6 +150,12 @@ class QMReaction:
                     if bm[i,j] >  maxLij:
                         print "CHANGING {0} to {1}".format(bm[i,j], maxLij)
                         bm[i,j] = maxLij
+        for line in bm:
+            fullLine = ''
+            for item in line:
+                fullLine = fullLine + str(round(item, 1)) + ' '
+            print fullLine
+        
         return bm
     
     def editDoubMatrix(self, reactant, product, bm1, bm2):
@@ -359,47 +371,49 @@ class QMReaction:
                             rightReactant = self.checkGeometry(logFilePath, self.geometry.molecule)
                             shutil.copy(logFilePath, logFilePath+'.reactant.log')
                             if rightReactant:
+                                print "Reactant geometry success"
                                 print "Optimizing product geometry"
                                 self.writeGeomInputFile(freezeAtoms=labels, otherGeom=pGeom)
-                                rightProduct = self.checkGeometry(logFilePath, pGeom.molecule)
                                 logFilePath = self.runDouble(pGeom.getFilePath(self.inputFileExtension))
+                                rightProduct = self.checkGeometry(logFilePath, pGeom.molecule)
                                 shutil.copy(logFilePath, logFilePath+'.product.log')
                                 if rightProduct:
-                                    print "Running QST2 from optimized geometries"
-                                    self.writeQST2InputFile(pGeom)
-                                    logFilePath = self.runDouble(self.inputFilePath)
-                                    shutil.copy(logFilePath, logFilePath+'.QST2.log')
-                                    print "Optimizing TS once"
-                                    self.writeInputFile(1, fromQST2=True)
-                                    converged, internalCoord = self.run()
-                                    shutil.copy(self.outputFilePath, self.outputFilePath+'.TS1.log')
-                                
-                                    if internalCoord and not converged:
-                                        print "Internal coordinate error, trying in cartesian"
-                                        self.writeInputFile(2, fromQST2=True)
-                                        converged, internalCoord = self.run()
-                                    
-                                    if converged:
-                                        if not os.path.exists(self.ircOutputFilePath):
-                                            self.writeIRCFile()
-                                            rightTS = self.runIRC()
-                                        else:
-                                            rightTS = self.verifyIRCOutputFile()
-                                        if rightTS:
-                                            self.writeRxnOutputFile(labels)
-                                            return True, None, None, notes
-                                        else:
-                                            notes = notes + 'IRC failed\n'
-                                            return False, None, None, notes
-                                    else:
-                                        notes = notes + 'Transition state failed\n'
-                                        return False, None, None, notes
+                                    print "Product geometry success"
+                                    # print "Running QST2 from optimized geometries"
+                                    # self.writeQST2InputFile(pGeom)
+                                    # logFilePath = self.runDouble(self.inputFilePath)
+                                    # shutil.copy(logFilePath, logFilePath+'.QST2.log')
+                                    # print "Optimizing TS once"
+                                    # self.writeInputFile(1, fromQST2=True)
+                                    # converged, internalCoord = self.run()
+                                    # shutil.copy(self.outputFilePath, self.outputFilePath+'.TS1.log')
+                                    # 
+                                    # if internalCoord and not converged:
+                                    #     print "Internal coordinate error, trying in cartesian"
+                                    #     self.writeInputFile(2, fromQST2=True)
+                                    #     converged, internalCoord = self.run()
+                                    # 
+                                    # if converged:
+                                    #     if not os.path.exists(self.ircOutputFilePath):
+                                    #         self.writeIRCFile()
+                                    #         rightTS = self.runIRC()
+                                    #     else:
+                                    #         rightTS = self.verifyIRCOutputFile()
+                                    #     if rightTS:
+                                    #         self.writeRxnOutputFile(labels)
+                                    #         return True, None, None, notes
+                                    #     else:
+                                    #         notes = notes + 'IRC failed\n'
+                                    #         return False, None, None, notes
+                                    # else:
+                                    #     notes = notes + 'Transition state failed\n'
+                                    #     return False, None, None, notes
                                 else:
-                                    print "Product geometry failure"
+                                    print "Product geometry failure, see:" + self.settings.fileStore
                                     notes = notes + 'Product geometry failure'
                                     return False, None, None, notes
                             else:
-                                print "Reactant geometry failure"
+                                print "Reactant geometry failure, see:" + self.settings.fileStore
                                 notes = notes + 'Reactant geometry failure'
                                 return False, None, None, notes
                         else:
