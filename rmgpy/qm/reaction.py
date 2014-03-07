@@ -25,6 +25,12 @@ except ImportError:
 transitionStates = TransitionStates()
 transitionStates.load(os.path.join(os.getenv('HOME'), 'Code/RMG-database/input/kinetics/families/H_Abstraction'), None, None)
 
+def matrixToString(matrix):
+    """Returns a string representation of a matrix, for printing to the console"""
+    text = '\n'.join([ ' '.join([str(round(item, 1)) for item in line]) for line in matrix ])
+    return text.replace('1000.0', '1e3')
+
+                
 class QMReaction:
     
     file_store_path = 'QMfiles'
@@ -308,61 +314,39 @@ class QMReaction:
         pRDMol, pBM, pMult, pGeom = self.generateBoundsMatrix(product)
         
         # # Smooth the inital matrix derived in rdkit
-        # setRBM = rdkit.DistanceGeometry.DoTriangleSmoothing(rBM)
-        # setPBM = rdkit.DistanceGeometry.DoTriangleSmoothing(pBM)    
+        # reactantSmoothingSuccessful = rdkit.DistanceGeometry.DoTriangleSmoothing(rBM)
+        # productSmoothingSuccessful = rdkit.DistanceGeometry.DoTriangleSmoothing(pBM)
         
         print "Reactant original matrix (smoothed)"
-        for line in rBM:
-            fullLine = ''
-            for item in line:
-                fullLine = fullLine + str(round(item, 1)) + ' '
-            print fullLine
+        print matrixToString(rBM)
         print "Product original matrix (smoothed)"
-        for line in pBM:
-            fullLine = ''
-            for item in line:
-                fullLine = fullLine + str(round(item, 1)) + ' '
-            print fullLine
+        print matrixToString(pBM)
         
         self.geometry.uniqueID = self.uniqueID
         rBM, pBM, labels, atomMatch = self.editDoubMatrix(reactant, product, rBM, pBM)
         
         print "Reactant edited matrix"
-        for line in rBM:
-            fullLine = ''
-            for item in line:
-                fullLine = fullLine + str(round(item, 1)) + ' '
-            print fullLine
+        print matrixToString(rBM)
         print "Product edited matrix"
-        for line in pBM:
-            fullLine = ''
-            for item in line:
-                fullLine = fullLine + str(round(item, 1)) + ' '
-            print fullLine
+        print matrixToString(pBM)
         
-        setRBM = rdkit.DistanceGeometry.DoTriangleSmoothing(rBM)
-        setPBM = rdkit.DistanceGeometry.DoTriangleSmoothing(pBM)
+        reactantSmoothingSuccessful = rdkit.DistanceGeometry.DoTriangleSmoothing(rBM)
+        productSmoothingSuccessful  = rdkit.DistanceGeometry.DoTriangleSmoothing(pBM)
         
-        if setRBM:
+        if reactantSmoothingSuccessful:
             print "Reactant matrix is embeddable"
-            for line in rBM:
-                fullLine = ''
-                for item in line:
-                    fullLine = fullLine + str(round(item, 1)) + ' '
-                print fullLine
+            print "Smoothed reactant matrix"
+            print matrixToString(rBM)
         else:
             print "Reactant matrix is NOT embeddable"
-        if setPBM:
+        if productSmoothingSuccessful:
             print "Product matrix is embeddable"
-            for line in pBM:
-                fullLine = ''
-                for item in line:
-                    fullLine = fullLine + str(round(item, 1)) + ' '
-                print fullLine
+            print "Smoothed product matrix"
+            print matrixToString(pBM)
         else:
             print "Product matrix is NOT embeddable"
 
-        if not (setRBM and setPBM):
+        if not (reactantSmoothingSuccessful and productSmoothingSuccessful):
             notes = 'Bounds matrix editing failed\n'
             return False, None, None, notes
         
