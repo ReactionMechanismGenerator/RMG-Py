@@ -133,14 +133,14 @@ class QMReaction:
         others = range(len(bm))
         for idx in sect: others.remove(idx)
             
-        for i in sect:
-            for j in others:
+        for i in range(len(bm)-1):#sect:
+            for j in range(i+1, len(bm)):#others:
                 for k in range(len(bm)):
                     if k==i or k==j or i==j: continue
                     Uik = bm[i,k] if k>i else bm[k,i]
                     Ukj = bm[j,k] if k>j else bm[k,j]
                     
-                    maxLij = Uik + Ukj - 0.15
+                    maxLij = Uik + Ukj - 0.1
                     if bm[i,j] >  maxLij:
                         print "CHANGING {0} to {1}".format(bm[i,j], maxLij)
                         bm[i,j] = maxLij
@@ -276,15 +276,17 @@ class QMReaction:
                 rRDMol, rBM, rMult, self.geometry = self.generateBoundsMatrix(reactant)
                 pRDMol, pBM, pMult, pGeom = self.generateBoundsMatrix(product)
                 
-                for line in pBM:
+                # Smooth the inital matrix derived in rdkit
+                setRBM = rdkit.DistanceGeometry.DoTriangleSmoothing(rBM)
+                setPBM = rdkit.DistanceGeometry.DoTriangleSmoothing(pBM)    
+                
+                print "Reactant original matrix (smoothed)"
+                for line in rBM:
                     fullLine = ''
                     for item in line:
                         fullLine = fullLine + str(round(item, 1)) + ' '
                     print fullLine
-                    
-                setRBM = rdkit.DistanceGeometry.DoTriangleSmoothing(rBM)
-                setPBM = rdkit.DistanceGeometry.DoTriangleSmoothing(pBM)    
-                
+                print "Product original matrix (smoothed)"
                 for line in pBM:
                     fullLine = ''
                     for item in line:
@@ -294,8 +296,40 @@ class QMReaction:
                 self.geometry.uniqueID = self.uniqueID
                 rBM, pBM, labels, atomMatch = self.editDoubMatrix(reactant, product, rBM, pBM)
                 
+                print "Reactant edited matrix"
+                for line in rBM:
+                    fullLine = ''
+                    for item in line:
+                        fullLine = fullLine + str(round(item, 1)) + ' '
+                    print fullLine
+                print "Product edited matrix"
+                for line in pBM:
+                    fullLine = ''
+                    for item in line:
+                        fullLine = fullLine + str(round(item, 1)) + ' '
+                    print fullLine
+                
                 setRBM = rdkit.DistanceGeometry.DoTriangleSmoothing(rBM)
                 setPBM = rdkit.DistanceGeometry.DoTriangleSmoothing(pBM)
+                
+                if setRBM:
+                    print "Reactant matrix is embeddable"
+                    for line in rBM:
+                        fullLine = ''
+                        for item in line:
+                            fullLine = fullLine + str(round(item, 1)) + ' '
+                        print fullLine
+                else:
+                    print "Reactant matrix is NOT embeddable"
+                if setPBM:
+                    print "Product matrix is embeddable"
+                    for line in pBM:
+                        fullLine = ''
+                        for item in line:
+                            fullLine = fullLine + str(round(item, 1)) + ' '
+                        print fullLine
+                else:
+                    print "Product matrix is NOT embeddable"
                 
                 if setRBM and setPBM:
                     atoms = len(reactant.atoms)
