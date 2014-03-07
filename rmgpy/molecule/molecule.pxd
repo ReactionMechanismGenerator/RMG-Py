@@ -29,6 +29,7 @@ from .atomtype cimport AtomType
 from .group cimport GroupAtom, GroupBond, Group
 from .element cimport Element
 cimport rmgpy.constants as constants
+cimport numpy
 
 ################################################################################
 cdef public dict _known_smiles
@@ -41,7 +42,7 @@ cdef class Atom(Vertex):
     cdef public short charge
     cdef public str label
     cdef public AtomType atomType
-    cdef public list coords
+    cdef public numpy.ndarray coords
     cdef public short lonePairs
     
     cpdef bint equivalent(self, Vertex other) except -2
@@ -169,6 +170,8 @@ cdef class Molecule(Graph):
     cpdef fromRDKitMol(self, rdkitmol)
 
     cpdef fromAdjacencyList(self, str adjlist, bint saturateH=?)
+    
+    cpdef fromXYZ(self, numpy.ndarray atomicNums, numpy.ndarray coordinates)
 
     cpdef str toInChI(self)
 

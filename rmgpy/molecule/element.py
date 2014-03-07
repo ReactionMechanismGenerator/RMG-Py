@@ -41,6 +41,7 @@ comparisons.
 """
 
 import cython
+from rdkit.Chem import GetPeriodicTable
 
 ################################################################################
 
@@ -53,7 +54,7 @@ class ElementError(Exception):
     pass
 
 ################################################################################
-
+_rdkit_periodic_table = GetPeriodicTable()
 class Element:
     """
     A chemical element. The attributes are:
@@ -76,6 +77,7 @@ class Element:
         self.symbol = intern(symbol)
         self.name = name
         self.mass = mass
+        self.covRadius = _rdkit_periodic_table.GetRcovalent(symbol)
     
     def __str__(self):
         """
