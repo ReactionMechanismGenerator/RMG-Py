@@ -129,12 +129,15 @@ class QMReaction:
         Clean up some of the atom distance limits before attempting triangle smoothing.
         This ensures any edits made do not lead to unsolvable scenarios for the molecular
         embedding algorithm.
+        
+        sect is the list of atom indices belonging to one species.
         """
         others = range(len(bm))
         for idx in sect: others.remove(idx)
             
-        for i in range(len(bm)-1):#sect:
-            for j in range(i+1, len(bm)):#others:
+        for i in range(len(bm)):#sect:
+            for j in range(i):#others:
+                if i<j: continue
                 for k in range(len(bm)):
                     if k==i or k==j or i==j: continue
                     Uik = bm[i,k] if k>i else bm[k,i]
@@ -142,7 +145,7 @@ class QMReaction:
                     
                     maxLij = Uik + Ukj - 0.1
                     if bm[i,j] >  maxLij:
-                        print "CHANGING {0} to {1}".format(bm[i,j], maxLij)
+                        print "CHANGING Lower limit {0} to {1}".format(bm[i,j], maxLij)
                         bm[i,j] = maxLij
         
         return bm
