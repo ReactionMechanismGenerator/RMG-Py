@@ -493,17 +493,21 @@ class MopacTS(QMReaction, Mopac):
         
         atomline = re.compile('\s*([\- ][0-9.]+)\s+([\- ][0-9.]+)+\s+([\- ][0-9.]+)\s+([A-Za-z]+)')
         
-        output = [ self.geometry.uniqueID ]
         
-        if otherGeom:
+        geometry = otherGeom or self.geometry
+        
+        output = [ geometry.uniqueID ]
+        
+        if geometry.uniqueID.startswith('product'):
             freezeAtoms = [freezeAtoms[0], freezeAtoms[1]]
-            molfile = otherGeom.getRefinedMolFilePath() # Now get the product geometry
-            inputFilePath = otherGeom.getFilePath(self.inputFileExtension)
-        else:
+        elif geometry.uniqueID.startswith('reactant'):
             freezeAtoms = [freezeAtoms[1], freezeAtoms[2]]
-            molfile = self.geometry.getRefinedMolFilePath() # Get the reactant geometry
-            inputFilePath = self.inputFilePath
+        else:
+            raise Exception("Can't decide which atoms to freeze")
         
+        molfile = geometry.getRefinedMolFilePath() # Now get the product geometry
+        inputFilePath = geometry.getFilePath(self.inputFileExtension)
+            
         atomCount = 0
         with open(molfile) as molinput:
             for line in molinput:
@@ -515,12 +519,12 @@ class MopacTS(QMReaction, Mopac):
                         output.append("{0:4s} {1} 1 {2} 1 {3} 1".format(match.group(4), match.group(1), match.group(2), match.group(3)))
                     atomCount += 1
         
-        assert atomCount == len(self.geometry.molecule.atoms)
+        assert atomCount == len(geometry.molecule.atoms)
         
         output.append('')
         input_string = '\n'.join(output)
         
-        top_keys = "precise nosym {spin}\n".format(spin=self.multiplicityKeywords[self.geometry.multiplicity])
+        top_keys = "precise nosym {spin}\n".format(spin=self.multiplicityKeywords[geometry.multiplicity])
         
         with open(inputFilePath, 'w') as mopacFile:
             mopacFile.write(top_keys)
@@ -554,16 +558,13 @@ class MopacTS(QMReaction, Mopac):
         Using the :class:`Geometry` object, write the input file
         for the `attmept`th attempt.
         """
+        geometry = otherGeom or self.geometry
         
-        output = [ '', self.geometry.uniqueIDlong, '' ]
+        output = [ '', geometry.uniqueIDlong, '' ]
         atomline = re.compile('\s*([A-Za-z]+)\s+([\- ][0-9.]+)\s+([\+ ][0-9.]+)\s+([\- ][0-9.]+)\s+([\+ ][0-9.]+)\s+([\- ][0-9.]+)')
         
-        if otherGeom:
-            inputFilePath = otherGeom.getFilePath(self.inputFileExtension)
-            molfile = otherGeom.getFilePath('.arc')
-        else:
-            inputFilePath = self.inputFilePath
-            molfile = self.getFilePath('.arc')
+        inputFilePath = geometry.getFilePath(self.inputFileExtension)
+        molfile = geometry.getFilePath('.arc')
             
         # freezeAtoms = [freezeAtoms[0], freezeAtoms[2]]
         atomCount = 0
@@ -578,7 +579,7 @@ class MopacTS(QMReaction, Mopac):
                     #     output.append("{0:4s} {1} 1 {2} 1 {3} 1".format(match.group(1), match.group(2), match.group(4), match.group(6)))
                     atomCount += 1
         
-        assert atomCount == len(self.geometry.molecule.atoms)
+        assert atomCount == len(geometry.molecule.atoms)
         
         output.append('')
         input_string = '\n'.join(output)
@@ -600,7 +601,7 @@ class MopacTS(QMReaction, Mopac):
         freezeAtoms = [freezeAtoms[0], freezeAtoms[2]]
         atomline = re.compile('\s*([A-Za-z]+)\s+([\- ][0-9.]+)\s+([\+ ][0-9.]+)\s+([\- ][0-9.]+)\s+([\+ ][0-9.]+)\s+([\- ][0-9.]+)')
         
-        output = [ 'geo_ref="{0}"'.format(refFile), self.geometry.uniqueIDlong, '' ]
+        output = [ 'geo_ref="{0}"'.format(refFile), otherGeom.uniqueIDlong, '' ]
         
         atomCount = 0
         with open(molfile) as molinput:
@@ -613,7 +614,7 @@ class MopacTS(QMReaction, Mopac):
                     # else:
                     #     output.append("{0:4s} {1} 1 {2} 1 {3} 1".format(match.group(1), match.group(2), match.group(4), match.group(6)))
                     atomCount += 1
-        assert atomCount == len(self.geometry.molecule.atoms)
+        assert atomCount == len(otherGeom.molecule.atoms)
         
         output.append('')
         input_string = '\n'.join(output)

@@ -380,8 +380,8 @@ class QMReaction:
         if self.settings.software.lower() == 'mopac':
             # all below needs to change
             print "Optimizing reactant geometry"
-            self.writeGeomInputFile(freezeAtoms=labels)
-            logFilePath = self.runDouble(self.inputFilePath)
+            self.writeGeomInputFile(freezeAtoms=labels, otherGeom=rGeom)
+            logFilePath = self.runDouble(rGeom.getFilePath(self.inputFileExtension))
             shutil.copy(logFilePath, logFilePath+'.reactant.out')
             print "Optimizing product geometry"
             self.writeGeomInputFile(freezeAtoms=labels, otherGeom=pGeom)
@@ -389,7 +389,7 @@ class QMReaction:
             shutil.copy(logFilePath, logFilePath+'.product.out')
                 
             print "Product geometry referencing reactant"
-            self.writeReferenceFile(freezeAtoms=labels)#inputFilePath, molFilePathForCalc, geometry, attempt, outputFile=None)
+            self.writeReferenceFile(freezeAtoms=labels, otherGeom=rGeom)#inputFilePath, molFilePathForCalc, geometry, attempt, outputFile=None)
             self.writeGeoRefInputFile(pGeom, freezeAtoms=labels, otherSide=True)#inputFilePath, molFilePathForCalc, refFilePath, geometry)
             logFilePath = self.runDouble(pGeom.getFilePath(self.inputFileExtension))
             shutil.copy(logFilePath, logFilePath+'.ref1.out')
@@ -432,7 +432,6 @@ class QMReaction:
                 notes = notes + 'reactant .arc file does not exits\n'
                 return False, None, None, notes
         elif self.settings.software.lower() == 'gaussian':
-            import shutil
             # all below needs to change
             print "Optimizing reactant geometry"
             self.writeGeomInputFile(freezeAtoms=labels)
