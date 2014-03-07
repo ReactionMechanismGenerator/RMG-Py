@@ -5,7 +5,7 @@ import time
 from subprocess import Popen
 from copy import deepcopy
 import numpy
-
+import shutil
 from rmgpy.molecule import Molecule
 from rmgpy.species import Species, TransitionState
 from rmgpy.kinetics import Wigner
@@ -366,127 +366,128 @@ class QMReaction:
         pRDMol, minEid = pGeom.optimize(pRDMol, boundsMatrix=pBM, atomMatch=atomMatch)
         pGeom.writeMolFile(pRDMol, pGeom.getRefinedMolFilePath(), minEid)
              
-#         if not os.path.exists(self.outputFilePath):
-#               if self.settings.software.lower() == 'mopac':
-#                   import shutil
-#                   # all below needs to change
-#                   print "Optimizing reactant geometry"
-#                   self.writeGeomInputFile(freezeAtoms=labels)
-#                   logFilePath = self.runDouble(self.inputFilePath)
-#                   shutil.copy(logFilePath, logFilePath+'.reactant.out')
-#                   print "Optimizing product geometry"
-#                   self.writeGeomInputFile(freezeAtoms=labels, otherGeom=pGeom)
-#                   logFilePath = self.runDouble(pGeom.getFilePath(self.inputFileExtension))
-#                   shutil.copy(logFilePath, logFilePath+'.product.out')
-#                      
-#                   print "Product geometry referencing reactant"
-#                   self.writeReferenceFile(freezeAtoms=labels)#inputFilePath, molFilePathForCalc, geometry, attempt, outputFile=None)
-#                   self.writeGeoRefInputFile(pGeom, freezeAtoms=labels, otherSide=True)#inputFilePath, molFilePathForCalc, refFilePath, geometry)
-#                   logFilePath = self.runDouble(pGeom.getFilePath(self.inputFileExtension))
-#                   shutil.copy(logFilePath, logFilePath+'.ref1.out')
-#                      
-#                   if os.path.exists(pGeom.getFilePath('.arc')):
-#                       # Reactant that references the product geometry
-#                       print "Reactant referencing product on slope"
-#                       self.writeReferenceFile(freezeAtoms=labels, otherGeom=pGeom)
-#                       self.writeGeoRefInputFile(pGeom, freezeAtoms=labels)
-#                       logFilePath = self.runDouble(self.inputFilePath)
-#                       shutil.copy(logFilePath, logFilePath+'.ref2.out')
-#                   else:
-#                       notes = notes + 'product .arc file does not exits\n'
-#                       return False, None, None, notes
-#                      
-#                   if os.path.exists(self.getFilePath('.arc')):
-#                       # Write saddle calculation file using the outputs of the reference calculations
-#                       print "Running Saddle from optimized geometries"
-#                       self.writeSaddleInputFile(pGeom)
-#                       self.runDouble(self.inputFilePath)
-#                       return True, rGeom, labels, notes
-#                       # # Optimize the transition state using the TS protocol
-#                       # self.writeInputFile(1, fromQST2=True)
-#                       # converged, cartesian = self.run()
-#                       # 
-#                       # if converged:
-#                       #     notes = notes + 'Transition state converged\n'
-#                       #     self.writeIRCFile()
-#                       #     rightTS = self.runIRC()
-#                       #     if rightTS:
-#                       #         notes = notes + 'Correct geometry found\n'
-#                       #         return True, rGeom, labels, notes
-#                       #     else:
-#                       #         notes = notes + 'Failure at IRC\n'
-#                       #         return False, None, None, notes
-#                       # else:
-#                       #     notes = notes + 'Transition state not converged\n'
-#                       #     return False, None, None, notes
-#                   else:
-#                       notes = notes + 'reactant .arc file does not exits\n'
-#                       return False, None, None, notes
-#               elif self.settings.software.lower() == 'gaussian':
-#                   import shutil
-#                   # all below needs to change
-#                   print "Optimizing reactant geometry"
-#                   self.writeGeomInputFile(freezeAtoms=labels)
-#                   logFilePath = self.runDouble(self.inputFilePath)
-#                   rightReactant = self.checkGeometry(logFilePath, rGeom.molecule)
-#                   shutil.copy(logFilePath, logFilePath+'.reactant.log')
-#                   if rightReactant:
-#                       print "Reactant geometry success"
-#                       print "Optimizing product geometry"
-#                       self.writeGeomInputFile(freezeAtoms=labels, otherGeom=pGeom)
-#                       logFilePath = self.runDouble(pGeom.getFilePath(self.inputFileExtension))
-#                       rightProduct = self.checkGeometry(logFilePath, pGeom.molecule)
-#                       shutil.copy(logFilePath, logFilePath+'.product.log')
-#                       if rightProduct:
-#                           print "Product geometry success"
-#                           # print "Running QST2 from optimized geometries"
-#                           # self.writeQST2InputFile(pGeom)
-#                           # logFilePath = self.runDouble(self.inputFilePath)
-#                           # shutil.copy(logFilePath, logFilePath+'.QST2.log')
-#                           # print "Optimizing TS once"
-#                           # self.writeInputFile(1, fromQST2=True)
-#                           # converged, internalCoord = self.run()
-#                           # shutil.copy(self.outputFilePath, self.outputFilePath+'.TS1.log')
-#                           # 
-#                           # if internalCoord and not converged:
-#                           #     print "Internal coordinate error, trying in cartesian"
-#                           #     self.writeInputFile(2, fromQST2=True)
-#                           #     converged, internalCoord = self.run()
-#                           # 
-#                           # if converged:
-#                           #     if not os.path.exists(self.ircOutputFilePath):
-#                           #         self.writeIRCFile()
-#                           #         rightTS = self.runIRC()
-#                           #     else:
-#                           #         rightTS = self.verifyIRCOutputFile()
-#                           #     if rightTS:
-#                           #         self.writeRxnOutputFile(labels)
-#                           #         return True, None, None, notes
-#                           #     else:
-#                           #         notes = notes + 'IRC failed\n'
-#                           #         return False, None, None, notes
-#                           # else:
-#                           #     notes = notes + 'Transition state failed\n'
-#                           #     return False, None, None, notes
-#                       else:
-#                           print "Product geometry failure, see:" + self.settings.fileStore
-#                           notes = notes + 'Product geometry failure'
-#                           return False, None, None, notes
-#                   else:
-#                       print "Reactant geometry failure, see:" + self.settings.fileStore
-#                       notes = notes + 'Reactant geometry failure'
-#                       return False, None, None, notes
-#               else:
-#                   return False, None, None, notes
-#           else:
-#               notes = notes + 'Already have an output, check the IRC\n'
-#               rightTS = self.verifyIRCOutputFile()
-#                  
-#               if rightTS:
-#                   self.writeRxnOutputFile(labels)
-#                   return True, rGeom, labels, notes
-#               else:
-#                   return False, None, None, notes
+        if os.path.exists(self.outputFilePath):
+            logging.info("File {0} already exists.".format(self.outputFilePath))
+            # I'm not sure why that should be a problem, but we used to do nothin in this case
+            notes = notes + 'Already have an output, check the IRC\n'
+            rightTS = self.verifyIRCOutputFile()
+            if rightTS:
+                self.writeRxnOutputFile(labels)
+                return True, rGeom, labels, notes
+            else:
+                return False, None, None, notes
+
+        if self.settings.software.lower() == 'mopac':
+            # all below needs to change
+            print "Optimizing reactant geometry"
+            self.writeGeomInputFile(freezeAtoms=labels)
+            logFilePath = self.runDouble(self.inputFilePath)
+            shutil.copy(logFilePath, logFilePath+'.reactant.out')
+            print "Optimizing product geometry"
+            self.writeGeomInputFile(freezeAtoms=labels, otherGeom=pGeom)
+            logFilePath = self.runDouble(pGeom.getFilePath(self.inputFileExtension))
+            shutil.copy(logFilePath, logFilePath+'.product.out')
+                
+            print "Product geometry referencing reactant"
+            self.writeReferenceFile(freezeAtoms=labels)#inputFilePath, molFilePathForCalc, geometry, attempt, outputFile=None)
+            self.writeGeoRefInputFile(pGeom, freezeAtoms=labels, otherSide=True)#inputFilePath, molFilePathForCalc, refFilePath, geometry)
+            logFilePath = self.runDouble(pGeom.getFilePath(self.inputFileExtension))
+            shutil.copy(logFilePath, logFilePath+'.ref1.out')
+                
+            if os.path.exists(pGeom.getFilePath('.arc')):
+                # Reactant that references the product geometry
+                print "Reactant referencing product on slope"
+                self.writeReferenceFile(freezeAtoms=labels, otherGeom=pGeom)
+                self.writeGeoRefInputFile(pGeom, freezeAtoms=labels)
+                logFilePath = self.runDouble(self.inputFilePath)
+                shutil.copy(logFilePath, logFilePath+'.ref2.out')
+            else:
+                notes = notes + 'product .arc file does not exits\n'
+                return False, None, None, notes
+                
+            if os.path.exists(self.getFilePath('.arc')):
+                # Write saddle calculation file using the outputs of the reference calculations
+                print "Running Saddle from optimized geometries"
+                self.writeSaddleInputFile(pGeom)
+                self.runDouble(self.inputFilePath)
+                return True, rGeom, labels, notes
+                # # Optimize the transition state using the TS protocol
+                # self.writeInputFile(1, fromQST2=True)
+                # converged, cartesian = self.run()
+                # 
+                # if converged:
+                #     notes = notes + 'Transition state converged\n'
+                #     self.writeIRCFile()
+                #     rightTS = self.runIRC()
+                #     if rightTS:
+                #         notes = notes + 'Correct geometry found\n'
+                #         return True, rGeom, labels, notes
+                #     else:
+                #         notes = notes + 'Failure at IRC\n'
+                #         return False, None, None, notes
+                # else:
+                #     notes = notes + 'Transition state not converged\n'
+                #     return False, None, None, notes
+            else:
+                notes = notes + 'reactant .arc file does not exits\n'
+                return False, None, None, notes
+        elif self.settings.software.lower() == 'gaussian':
+            import shutil
+            # all below needs to change
+            print "Optimizing reactant geometry"
+            self.writeGeomInputFile(freezeAtoms=labels)
+            logFilePath = self.runDouble(self.inputFilePath)
+            rightReactant = self.checkGeometry(logFilePath, rGeom.molecule)
+            shutil.copy(logFilePath, logFilePath+'.reactant.log')
+            if rightReactant:
+                print "Reactant geometry success"
+                print "Optimizing product geometry"
+                self.writeGeomInputFile(freezeAtoms=labels, otherGeom=pGeom)
+                logFilePath = self.runDouble(pGeom.getFilePath(self.inputFileExtension))
+                rightProduct = self.checkGeometry(logFilePath, pGeom.molecule)
+                shutil.copy(logFilePath, logFilePath+'.product.log')
+                if rightProduct:
+                    print "Product geometry success"
+                    # print "Running QST2 from optimized geometries"
+                    # self.writeQST2InputFile(pGeom)
+                    # logFilePath = self.runDouble(self.inputFilePath)
+                    # shutil.copy(logFilePath, logFilePath+'.QST2.log')
+                    # print "Optimizing TS once"
+                    # self.writeInputFile(1, fromQST2=True)
+                    # converged, internalCoord = self.run()
+                    # shutil.copy(self.outputFilePath, self.outputFilePath+'.TS1.log')
+                    # 
+                    # if internalCoord and not converged:
+                    #     print "Internal coordinate error, trying in cartesian"
+                    #     self.writeInputFile(2, fromQST2=True)
+                    #     converged, internalCoord = self.run()
+                    # 
+                    # if converged:
+                    #     if not os.path.exists(self.ircOutputFilePath):
+                    #         self.writeIRCFile()
+                    #         rightTS = self.runIRC()
+                    #     else:
+                    #         rightTS = self.verifyIRCOutputFile()
+                    #     if rightTS:
+                    #         self.writeRxnOutputFile(labels)
+                    #         return True, None, None, notes
+                    #     else:
+                    #         notes = notes + 'IRC failed\n'
+                    #         return False, None, None, notes
+                    # else:
+                    #     notes = notes + 'Transition state failed\n'
+                    #     return False, None, None, notes
+                else:
+                    print "Product geometry failure, see:" + self.settings.fileStore
+                    notes = notes + 'Product geometry failure'
+                    return False, None, None, notes
+            else:
+                print "Reactant geometry failure, see:" + self.settings.fileStore
+                notes = notes + 'Reactant geometry failure'
+                return False, None, None, notes
+        else:
+            raise NotImplementedError("self.settings.software.lower() should be gaussian or mopac")
+            return False, None, None, notes
 
 
     def generateTSGeometryDirectGuess(self):
