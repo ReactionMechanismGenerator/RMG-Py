@@ -310,7 +310,7 @@ class QMReaction:
         reactant = doubleEnd[0]
         product = doubleEnd[1]
 
-        rRDMol, rBM, rMult, self.geometry = self.generateBoundsMatrix(reactant)
+        rRDMol, rBM, rMult, rGeom = self.generateBoundsMatrix(reactant)
         pRDMol, pBM, pMult, pGeom = self.generateBoundsMatrix(product)
         
         # # Smooth the inital matrix derived in rdkit
@@ -322,7 +322,8 @@ class QMReaction:
         print "Product original matrix (smoothed)"
         print matrixToString(pBM)
         
-        self.geometry.uniqueID = self.uniqueID
+        rGeom.uniqueID = "reactant" + self.uniqueID
+        pGeom.uniqueID = "product" + self.uniqueID
         rBM, pBM, labels, atomMatch = self.editDoubMatrix(reactant, product, rBM, pBM)
         
         print "Reactant edited matrix"
@@ -353,8 +354,9 @@ class QMReaction:
         atoms = len(reactant.atoms)
         distGeomAttempts = 15*(atoms-3) # number of conformers embedded from the bounds matrix
          
-        self.geometry.rd_embed(rRDMol, distGeomAttempts, bm=rBM, match=atomMatch)
-        rRDMol = rdkit.Chem.MolFromMolFile(self.geometry.getCrudeMolFilePath(), removeHs=False)
+
+        rGeom.rd_embed(rRDMol, distGeomAttempts, bm=rBM, match=atomMatch)
+        rRDMol = rdkit.Chem.MolFromMolFile(rGeom.getCrudeMolFilePath(), removeHs=False)
         # Make product pRDMol a copy of the reactant rRDMol geometry
         for atom in reactant.atoms:
             i = atom.sortingLabel
@@ -399,7 +401,7 @@ class QMReaction:
 #                       print "Running Saddle from optimized geometries"
 #                       self.writeSaddleInputFile(pGeom)
 #                       self.runDouble(self.inputFilePath)
-#                       return True, self.geometry, labels, notes
+#                       return True, rGeom, labels, notes
 #                       # # Optimize the transition state using the TS protocol
 #                       # self.writeInputFile(1, fromQST2=True)
 #                       # converged, cartesian = self.run()
@@ -410,7 +412,7 @@ class QMReaction:
 #                       #     rightTS = self.runIRC()
 #                       #     if rightTS:
 #                       #         notes = notes + 'Correct geometry found\n'
-#                       #         return True, self.geometry, labels, notes
+#                       #         return True, rGeom, labels, notes
 #                       #     else:
 #                       #         notes = notes + 'Failure at IRC\n'
 #                       #         return False, None, None, notes
@@ -426,7 +428,7 @@ class QMReaction:
 #                   print "Optimizing reactant geometry"
 #                   self.writeGeomInputFile(freezeAtoms=labels)
 #                   logFilePath = self.runDouble(self.inputFilePath)
-#                   rightReactant = self.checkGeometry(logFilePath, self.geometry.molecule)
+#                   rightReactant = self.checkGeometry(logFilePath, rGeom.molecule)
 #                   shutil.copy(logFilePath, logFilePath+'.reactant.log')
 #                   if rightReactant:
 #                       print "Reactant geometry success"
@@ -482,7 +484,7 @@ class QMReaction:
 #                  
 #               if rightTS:
 #                   self.writeRxnOutputFile(labels)
-#                   return True, self.geometry, labels, notes
+#                   return True, rGeom, labels, notes
 #               else:
 #                   return False, None, None, notes
 
