@@ -147,6 +147,30 @@ class QMReaction:
         
         return bm
     
+    def bmTest(self, bm):
+        """
+        Test to show why a bounds matrix is not valid
+        """
+        for k in range(len(bm)):
+            for i in range(len(bm)-1):
+                if i==k: continue
+                Uik = bm[i,k] if k>i else bm[k,i]
+                Lik = bm[i,k] if i>k else bm[k,i]
+                for j in range(i+1, len(bm)):
+                    if j==k: continue
+                    Ujk = bm[j,k] if k>j else bm[k,j]
+                    Ljk = bm[j,k] if j>k else bm[j,k]
+                    Uij = bm[i,j] if j>i else bm[j,i]
+                    Lij = bm[i,j] if i>j else bm[j,i]
+                    sumUikUjk = Uik + Ujk
+                    if Uij > sumUikUjk:
+                        print "Upper limit for {i} and {j} is too high".format(i=i, j=j)
+                    
+                    diffLikUjk = Lik - Ujk
+                    diffLjkUik = Ljk - Uik
+                    if Uij < diffLikUjk or Uik < diffLjkUik:
+                        print "Lower limit for {i} and {j} is too low".format(i=i, j=j)
+    
     def editDoubMatrix(self, reactant, product, bm1, bm2):
         """
         For bimolecular reactions, reduce the minimum distance between atoms
