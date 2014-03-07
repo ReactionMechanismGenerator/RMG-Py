@@ -98,8 +98,8 @@ def calculate(TS):
 	reaction = Reaction(label='H_Abstraction', reactants=reactant.split(), products=product.split(), reversible=True)
 
 	qmReaction = MopacTSPM7(reaction, quantumMechanics.settings)
-	qmReaction.generateTSGeometry(doubleEnd=TS)
-	# mopac, fromDbl, labels, notes = qmReaction.generateTSGeometry(doubleEnd=TS)
+	qmReaction.generateTSGeometryDoubleEnded(doubleEnd=TS)
+	# mopac, fromDbl, labels, notes = qmReaction.generateTSGeometryDoubleEnded(doubleEnd=TS)
 
 	# if mopac:
 	# 	import shutil
