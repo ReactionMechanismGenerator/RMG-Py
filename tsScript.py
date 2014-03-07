@@ -149,6 +149,8 @@ def calculate(TS):
 # calculate(TS)
 
 for i, TS in enumerate(tsStructures):
+	print "*"*70
+	print "Reaction number {0} of {1}".format(i, len(tsStructures))
 	quantumMechanics.settings.fileStore = os.path.join('QMfiles',str(i))
 	if not os.path.exists(quantumMechanics.settings.fileStore):
 		os.makedirs(quantumMechanics.settings.fileStore)
