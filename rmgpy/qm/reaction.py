@@ -357,21 +357,26 @@ class QMReaction:
                         print fullLine
                 else:
                     print "Product matrix is NOT embeddable"
+
+                if not (setRBM and setPBM):
+                    notes = 'Bounds matrix editing failed\n'
+                    return False, None, None, notes
                 
-                # if setRBM and setPBM:
-                #     atoms = len(reactant.atoms)
-                #     distGeomAttempts = 15*(atoms-3) # number of conformers embedded from the bounds matrix
-                #     
-                #     self.geometry.rd_embed(rRDMol, distGeomAttempts, bm=rBM, match=atomMatch)
-                #     rRDMol = rdkit.Chem.MolFromMolFile(self.geometry.getCrudeMolFilePath(), removeHs=False)
-                #     for atom in reactant.atoms:
-                #         i = atom.sortingLabel
-                #         pRDMol.GetConformer(0).SetAtomPosition(i, rRDMol.GetConformer(0).GetAtomPosition(i))
-                #     # don't re-embed the product, just optimize at UFF
-                #     pRDMol, minEid = pGeom.optimize(pRDMol, boundsMatrix=pBM, atomMatch=atomMatch)
-                #     pGeom.writeMolFile(pRDMol, pGeom.getRefinedMolFilePath(), minEid)
-                #     
-                #     if not os.path.exists(self.outputFilePath):
+                atoms = len(reactant.atoms)
+                distGeomAttempts = 15*(atoms-3) # number of conformers embedded from the bounds matrix
+                 
+                self.geometry.rd_embed(rRDMol, distGeomAttempts, bm=rBM, match=atomMatch)
+                rRDMol = rdkit.Chem.MolFromMolFile(self.geometry.getCrudeMolFilePath(), removeHs=False)
+                # Make product pRDMol a copy of the reactant rRDMol geometry
+                for atom in reactant.atoms:
+                    i = atom.sortingLabel
+                    pRDMol.GetConformer(0).SetAtomPosition(i, rRDMol.GetConformer(0).GetAtomPosition(i))
+
+                # don't re-embed the product, just optimize at UFF, constrained with the correct bounds matrix
+                pRDMol, minEid = pGeom.optimize(pRDMol, boundsMatrix=pBM, atomMatch=atomMatch)
+                pGeom.writeMolFile(pRDMol, pGeom.getRefinedMolFilePath(), minEid)
+                     
+                #   if not os.path.exists(self.outputFilePath):
                 #         if self.settings.software.lower() == 'mopac':
                 #             import shutil
                 #             # all below needs to change
@@ -492,9 +497,7 @@ class QMReaction:
                 #             return True, self.geometry, labels, notes
                 #         else:
                 #             return False, None, None, notes
-                # else:
-                #     notes = 'Bounds matrix editing failed\n'
-                #     return False, None, None, notes
+
             else:
                 if len(self.reaction.reactants)==2:
                     reactant = self.reaction.reactants[0].merge(self.reaction.reactants[1])
