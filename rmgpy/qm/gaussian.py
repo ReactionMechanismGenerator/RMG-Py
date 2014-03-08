@@ -567,7 +567,7 @@ class GaussianTS(QMReaction, Gaussian):
                         output.append("{0:8s} {1}".format(match.group(2), match.group(1)))
                         atomCount += 1
             inputFilePath = otherGeom.getFilePath(self.inputFileExtension)
-            bottom_keys = "{atom1} {atom2} F\n".format(atom1=freezeAtoms[0] + 1, atom2=freezeAtoms[1] + 1, atom3=freezeAtoms[2] + 1)
+            bottom_keys = "{atom1} {atom3} F\n{atom1} {atom2} F\n".format(atom1=freezeAtoms[0] + 1, atom2=freezeAtoms[1] + 1, atom3=freezeAtoms[2] + 1)
         else:
             molfile = self.geometry.getRefinedMolFilePath() # Get the reactant geometry
             
@@ -579,7 +579,7 @@ class GaussianTS(QMReaction, Gaussian):
                         output.append("{0:8s} {1}".format(match.group(2), match.group(1)))
                         atomCount += 1
             inputFilePath = self.inputFilePath
-            bottom_keys = "{atom2} {atom3} F\n".format(atom1=freezeAtoms[0] + 1, atom2=freezeAtoms[1] + 1, atom3=freezeAtoms[2] + 1)
+            bottom_keys = "{atom1} {atom3} F\n{atom2} {atom3} F\n".format(atom1=freezeAtoms[0] + 1, atom2=freezeAtoms[1] + 1, atom3=freezeAtoms[2] + 1)
         
         assert atomCount == len(self.geometry.molecule.atoms)
         
