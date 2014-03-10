@@ -436,53 +436,57 @@ class QMReaction:
             logFilePath = self.runDouble(self.inputFilePath)
             rightReactant = self.checkGeometry(logFilePath, self.geometry.molecule)
             shutil.copy(logFilePath, logFilePath+'.reactant.log')
-            if not rightReactant:
-                print "Reactant geometry failure, see:" + self.settings.fileStore
-                notes = notes + 'Reactant geometry failure'
-                return False, None, None, notes
-                
-            print "Reactant geometry success"
+            
             print "Optimizing product geometry"
             self.writeGeomInputFile(freezeAtoms=labels, otherGeom=pGeom)
             logFilePath = self.runDouble(pGeom.getFilePath(self.inputFileExtension))
             rightProduct = self.checkGeometry(logFilePath, pGeom.molecule)
             shutil.copy(logFilePath, logFilePath+'.product.log')
-            if not rightProduct:
-                print "Product geometry failure, see:" + self.settings.fileStore
-                notes = notes + 'Product geometry failure'
+            
+            if not (rightReactant and rightProduct):
+                if not rightReactant:
+                    print "Reactant geometry failure, see:" + self.settings.fileStore
+                    notes = notes + 'Reactant geometry failure\n'
+                else:
+                    print "Reactant geometry success"
+                
+                if not rightProduct:
+                    print "Product geometry failure, see:" + self.settings.fileStore
+                    notes = notes + 'Product geometry failure\n'
+                else:
+                    print "Product geometry success"
+                # Don't run if the geometries have optimized to another geometry
                 return False, None, None, notes
                 
-            print "Product geometry success"
-            return False, None, None, notes
-            # print "Running QST2 from optimized geometries"
-            # self.writeQST2InputFile(pGeom)
-            # logFilePath = self.runDouble(self.inputFilePath)
-            # shutil.copy(logFilePath, logFilePath+'.QST2.log')
-            # print "Optimizing TS once"
-            # self.writeInputFile(1, fromQST2=True)
-            # converged, internalCoord = self.run()
-            # shutil.copy(self.outputFilePath, self.outputFilePath+'.TS1.log')
-            # 
-            # if internalCoord and not converged:
-            #     print "Internal coordinate error, trying in cartesian"
-            #     self.writeInputFile(2, fromQST2=True)
-            #     converged, internalCoord = self.run()
-            # 
-            # if converged:
-            #     if not os.path.exists(self.ircOutputFilePath):
-            #         self.writeIRCFile()
-            #         rightTS = self.runIRC()
-            #     else:
-            #         rightTS = self.verifyIRCOutputFile()
-            #     if rightTS:
-            #         self.writeRxnOutputFile(labels)
-            #         return True, None, None, notes
-            #     else:
-            #         notes = notes + 'IRC failed\n'
-            #         return False, None, None, notes
-            # else:
-            #     notes = notes + 'Transition state failed\n'
-            #     return False, None, None, notes
+            print "Running QST2 from optimized geometries"
+            self.writeQST2InputFile(pGeom)
+            logFilePath = self.runDouble(self.inputFilePath)
+            shutil.copy(logFilePath, logFilePath+'.QST2.log')
+            print "Optimizing TS once"
+            self.writeInputFile(1, fromQST2=True)
+            converged, internalCoord = self.run()
+            shutil.copy(self.outputFilePath, self.outputFilePath+'.TS1.log')
+            
+            if internalCoord and not converged:
+                print "Internal coordinate error, trying in cartesian"
+                self.writeInputFile(2, fromQST2=True)
+                converged, internalCoord = self.run()
+            
+            if converged:
+                if not os.path.exists(self.ircOutputFilePath):
+                    self.writeIRCFile()
+                    rightTS = self.runIRC()
+                else:
+                    rightTS = self.verifyIRCOutputFile()
+                if rightTS:
+                    self.writeRxnOutputFile(labels)
+                    return True, None, None, notes
+                else:
+                    notes = notes + 'IRC failed\n'
+                    return False, None, None, notes
+            else:
+                notes = notes + 'Transition state failed\n'
+                return False, None, None, notes
         else:
             raise NotImplementedError("self.settings.software.lower() should be gaussian or mopac")
             return False, None, None, notes
