@@ -231,8 +231,8 @@ class QMReaction:
         atomMatch = ((lbl1,),(lbl2,),(lbl3,))
         
         
-        bm1 = fixMatrix(bm1, lbl1, lbl2, lbl3, 2.8, 0.1)
-        bm2 = fixMatrix(bm2, lbl3, lbl2, lbl1, 2.8, 0.1) 
+        bm1 = fixMatrix(bm1, lbl1, lbl2, lbl3, 2.7, 0.1)
+        bm2 = fixMatrix(bm2, lbl3, lbl2, lbl1, 2.7, 0.1) 
             
         # if (reactant.atoms[lbl1].symbol == 'H' and reactant.atoms[lbl3].symbol == 'C') or (reactant.atoms[lbl1].symbol == 'C' and reactant.atoms[lbl3].symbol == 'H'):
         #     bm1 = fixMatrix(bm1, lbl1, lbl2, lbl3, 2.3, 0.1)
