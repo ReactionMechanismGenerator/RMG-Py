@@ -781,6 +781,23 @@ class GaussianTS(QMReaction, Gaussian):
                 print line.rstrip()
         return logFilePath
         
+    def runQST2(self):
+        self.testReady()
+        with open(self.inputFilePath) as infile:
+            print "Running GAUSSIAN input file {0!s}:".format(self.inputFilePath)
+            for line in infile:
+                print line.rstrip()
+        # submits the input file to Gaussian
+        process = Popen([self.executablePath, self.inputFilePath])
+        process.communicate()# necessary to wait for executable termination!
+        
+        logFilePath = self.outputFilePath
+        with open(logFilePath) as outfile:
+            print "Gaussian output file {0!s}:".format(logFilePath)
+            for line in outfile:
+                print line.rstrip()
+        return self.verifyQST2OutputFile(), logFilePath
+        
     def runIRC(self):
         self.testReady()
         # submits the input file to Gaussian
@@ -838,6 +855,44 @@ class GaussianTS(QMReaction, Gaussian):
             return False, False
         else:
             return True, False
+            
+    def verifyQST2OutputFile(self):
+        """
+        Check's that a qst2 output file exists and was successful.
+        
+        Returns a boolean flag that states whether a QST2 GAUSSIAN simulation that hasn't failed already exists for the molecule with the 
+        given file name.
+        
+        This checks that the calculation was attempted, only checking that a QST3 calculation is not required.
+        
+        If QST3 is required, False will be returned and the double-ended procedure has failed for the reaction.
+        """
+        
+        failureKeys = [
+                       '***** Convergence failure in GTrans *****',
+                       'Try using 3 structures as input for',
+                       ]
+        
+        if not os.path.exists(self.outputFilePath):
+            logging.info("Output file {0} does not exist.".format(self.outputFilePath))
+            return False
+        
+        # Initialize dictionary with "False"s 
+        failureKeysFound = dict([(key, False) for key in failureKeys])
+        
+        with open(self.outputFilePath) as outputFile:
+            for line in outputFile:
+                line = line.strip()
+                
+                for element in failureKeys: #search for failure keywords
+                    if element in line:
+                        logging.error("Gaussian output file contains the following error: {0}".format(element) )
+                        failureKeysFound[element] = True
+        
+        if any(failureKeysFound.values()):
+            return False
+        else:
+            return True
     
     def verifyIRCOutputFile(self):
         """
