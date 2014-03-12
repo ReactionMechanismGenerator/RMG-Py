@@ -98,8 +98,14 @@ def calculate(TS):
 	reaction = Reaction(label='H_Abstraction', reactants=reactant.split(), products=product.split(), reversible=True)
 
 	qmReaction = MopacTSPM7(reaction, quantumMechanics.settings)
-	qmReaction.generateTSGeometryDoubleEnded(doubleEnd=TS)
-	# mopac, fromDbl, labels, notes = qmReaction.generateTSGeometryDoubleEnded(doubleEnd=TS)
+	mopac, fromDbl, labels, notes = qmReaction.generateTSGeometryDoubleEnded(doubleEnd=TS)
+	
+	with open(os.path.join(quantumMechanics.settings.fileStore, qmReaction.uniqueID + '.error'), 'w') as errorFile:
+		errorFile.write(notes)
+	
+	for files in os.listdir('./'):
+		if files.startswith('core'):
+			os.remove(files)
 
 	# if mopac:
 	# 	import shutil
