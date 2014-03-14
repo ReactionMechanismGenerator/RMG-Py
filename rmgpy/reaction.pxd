@@ -100,6 +100,8 @@ cdef class Reaction:
     
     cpdef generatePairs(self)
     
+    cpdef copy(self)
+    
 ################################################################################
 
 cdef class ReactionModel:
