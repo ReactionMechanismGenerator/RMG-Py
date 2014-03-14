@@ -49,6 +49,9 @@ import rmgpy.constants as constants
 import rmgpy.quantity as quantity
 from rmgpy.molecule import Molecule
 
+#: This dictionary is used to add multiplicity to species label
+_multiplicity_labels = {1:'S',2:'D',3:'T',4:'Q',5:'V',}
+                           
 ################################################################################
 
 class SpeciesError(Exception):
@@ -71,6 +74,7 @@ class Species(object):
     ======================= ====================================================
     `index`                 A unique nonnegative integer index
     `label`                 A descriptive string label
+    `multiplicity`          The multiplicity of this species, integer multiplicity = 2*total_spin+1
     `thermo`                The heat capacity model for the species
     `conformer`             The molecular conformer for the species
     `molecule`              A list of the :class:`Molecule` objects describing the molecular structure
@@ -88,12 +92,15 @@ class Species(object):
         :class:`rmg.model.Species` inherits from this class, and adds some extra methods.
     """
 
-    def __init__(self, index=-1, label='', thermo=None, conformer=None, 
+    def __init__(self, index=-1, label='', multiplicity=102, thermo=None, conformer=None, 
                  molecule=None, transportData=None, molecularWeight=None, 
                  dipoleMoment=None, polarizability=None, Zrot=None, 
                  energyTransferModel=None, reactive=True):
         self.index = index
+        if label != '' and molecule[0].getRadicalCount()>1:
+            if '_' not in label: label += '_({0})' .format(_multiplicity_labels[multiplicity])
         self.label = label
+        self.multiplicity = multiplicity
         self.thermo = thermo
         self.conformer = conformer
         self.molecule = molecule or []
@@ -104,6 +111,12 @@ class Species(object):
         self.polarizability = polarizability
         self.Zrot = Zrot
         self.energyTransferModel = energyTransferModel
+        
+        # Check if multiplicity is possible
+        n_rad = molecule[0].getRadicalCount() 
+        if not (n_rad + 1 == multiplicity or n_rad - 1 == multiplicity or n_rad - 3 == multiplicity or n_rad - 5 == multiplicity):
+            print molecule[0].toAdjacencyList()
+            raise SpeciesError('Impossible multiplicity for {0}: multiplicity = {1} and number of unpaired electrons = {2}'.format(label,multiplicity,n_rad))
 
     def __repr__(self):
         """
@@ -189,10 +202,11 @@ class Species(object):
                 if molecule.isIsomorphic(other):
                     return True
         elif isinstance(other, Species):
-            for molecule1 in self.molecule:
-                for molecule2 in other.molecule:
-                    if molecule1.isIsomorphic(molecule2):
-                        return True
+            if self.multiplicity == other.multiplicity:
+                for molecule1 in self.molecule:
+                    for molecule2 in other.molecule:
+                        if molecule1.isIsomorphic(molecule2):
+                            return True
         else:
             raise ValueError('Unexpected value "{0!r}" for other parameter; should be a Molecule or Species object.'.format(other))
         return False
