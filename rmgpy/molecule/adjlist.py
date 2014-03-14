@@ -56,6 +56,7 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
     atoms = []
     atomdict = {}
     bonds = {}
+    multiplicity = -1
     
     try:
         
@@ -67,6 +68,12 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
         # Skip the first line if it contains a label
         if len(lines[0].split()) == 1:
             label = lines.pop(0)
+            if len(lines) == 0:
+                raise InvalidAdjacencyListError('No atoms specified in adjacency list.')
+            
+        # Skip the second line if it contains a multiplicity
+        if len(lines[0].split()) == 1:
+            multiplicity = int(lines.pop(0))
             if len(lines) == 0:
                 raise InvalidAdjacencyListError('No atoms specified in adjacency list.')
         
@@ -111,7 +118,7 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
             index += 1
             
             # Next is the electron state
-            radicalElectrons = []; spinMultiplicity = []
+            radicalElectrons = []
             elecState = data[index].upper()
             if elecState[0] == '{':
                 elecState = elecState[1:-1].split(',')
@@ -119,33 +126,19 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
                 elecState = [elecState]
             for e in elecState:
                 if e == '0':
-                    radicalElectrons.append(0); spinMultiplicity.append(1)
+                    radicalElectrons.append(0)
                 elif e == '1':
-                    radicalElectrons.append(1); spinMultiplicity.append(2)
+                    radicalElectrons.append(1)
                 elif e == '2':
-                    radicalElectrons.append(2); spinMultiplicity.append(1)
-                    radicalElectrons.append(2); spinMultiplicity.append(3)
-                elif e == '2S':
-                    radicalElectrons.append(2); spinMultiplicity.append(1)
-                elif e == '2T':
-                    radicalElectrons.append(2); spinMultiplicity.append(3)
+                    radicalElectrons.append(2)
                 elif e == '3':
-                    radicalElectrons.append(3); spinMultiplicity.append(4)
-                elif e == '3D':
-                    radicalElectrons.append(3); spinMultiplicity.append(2)
-                elif e == '3Q':
-                    radicalElectrons.append(3); spinMultiplicity.append(4)
+                    radicalElectrons.append(3)
                 elif e == '4':
-                    radicalElectrons.append(4); spinMultiplicity.append(5)
-                elif e == '4S':
-                    radicalElectrons.append(4); spinMultiplicity.append(1)
-                elif e == '4T':
-                    radicalElectrons.append(4); spinMultiplicity.append(3)
-                elif e == '4V':
-                    radicalElectrons.append(4); spinMultiplicity.append(5)
+                    radicalElectrons.append(4)
                 elif e == 'X':
                     radicalElectrons.extend([0,1,2,2])
-                    spinMultiplicity.extend([1,2,1,3])
+                else:
+                    raise InvalidAdjacencyListError('Invalid number of radicals.')
             index += 1
             
             # Next number defines the number of lone electron pairs (if provided)
@@ -156,14 +149,16 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
                 if lpState[0] != '{':
                     if lpState == '0':
                         lonePairElectrons = 0
-                    if lpState == '1':
+                    elif lpState == '1':
                         lonePairElectrons = 1
-                    if lpState == '2':
+                    elif lpState == '2':
                         lonePairElectrons = 2
-                    if lpState == '3':
+                    elif lpState == '3':
                         lonePairElectrons = 3
-                    if lpState == '4':
+                    elif lpState == '4':
                         lonePairElectrons = 4
+                    else:
+                        raise InvalidAdjacencyListError('Invalid number of lone electron pairs.')
                     index += 1
                 else:
                     lonePairElectrons = -1
@@ -172,9 +167,9 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
             
             # Create a new atom based on the above information
             if group:
-                atom = GroupAtom(atomType, radicalElectrons, spinMultiplicity, [0 for e in radicalElectrons], label, [lonePairElectrons])
+                atom = GroupAtom(atomType, radicalElectrons, [0 for e in radicalElectrons], label, [lonePairElectrons])
             else:
-                atom = Atom(atomType[0], radicalElectrons[0], spinMultiplicity[0], 0, label, lonePairElectrons)
+                atom = Atom(atomType[0], radicalElectrons[0], 0, label, lonePairElectrons)
 
             # Add the atom to the list
             atoms.append(atom)
@@ -290,7 +285,18 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
         print adjlist
         raise
     
-    return atoms
+    if not group:
+        if multiplicity == -1:
+            nRad = 0
+            for atom in atoms:
+                nRad += atom.radicalElectrons
+            multiplicity = nRad + 1
+            
+        return atoms, multiplicity
+    
+    else:
+        
+        return atoms
 
 ################################################################################
 
@@ -323,7 +329,7 @@ def getElectronState(radicalElectrons, spinMultiplicity):
         raise ValueError('Unable to determine electron state for {0:d} radical electrons with spin multiplicity of {1:d}.'.format(radicalElectrons, spinMultiplicity))
     return electronState
 
-def toAdjacencyList(atoms, label=None, group=False, removeH=False, removeLonePairs=False):
+def toAdjacencyList(atoms, multiplicity=0, label=None, group=False, removeH=False, removeLonePairs=False, printMultiplicity=False):
     """
     Convert a chemical graph defined by a list of `atoms` into a string
     adjacency list.
@@ -337,6 +343,8 @@ def toAdjacencyList(atoms, label=None, group=False, removeH=False, removeLonePai
         pass
 
     if label: adjlist += label + '\n'
+    
+    if printMultiplicity: adjlist += str(multiplicity) + '\n'
 
     # Determine the numbers to use for each atom
     atomNumbers = {}
@@ -360,15 +368,15 @@ def toAdjacencyList(atoms, label=None, group=False, removeH=False, removeLonePai
                 atomTypes[atom] = '{{{0}}}'.format(','.join([a.label for a in atom.atomType]))
             # Electron state(s)
             if len(atom.radicalElectrons) == 1: 
-                atomElectronStates[atom] = getElectronState(atom.radicalElectrons[0], atom.spinMultiplicity[0])
+                atomElectronStates[atom] = str(atom.radicalElectrons[0])
             else:
-                atomElectronStates[atom] = '{{{0}}}'.format(','.join([getElectronState(radical, spin) for radical, spin in zip(atom.radicalElectrons, atom.spinMultiplicity)]))  
+                atomElectronStates[atom] = '{{{0}}}'.format(','.join([str(radical) for radical in atom.radicalElectrons]))  
     else:
         for atom in atomNumbers:
             # Atom type
             atomTypes[atom] = '{0}'.format(atom.element.symbol)
             # Electron state(s)
-            atomElectronStates[atom] = '{0}'.format(getElectronState(atom.radicalElectrons, atom.spinMultiplicity))    
+            atomElectronStates[atom] = '{0}'.format(str(atom.radicalElectrons))    
             if not removeLonePairs:
                 # Lone Pair(s)
                 atomLonePairs[atom] = atom.lonePairs
