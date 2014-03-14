@@ -11,43 +11,51 @@ database(
 # List of species
 species(
     label='n-decylbz',
+    multiplicity = 1,
     reactive=True,
     structure=SMILES("CCCCCCCCCCc1ccccc1"),
 )
 species(
     label='n-C11',
+    multiplicity = 1,
     reactive=True,
     structure=SMILES("CCCCCCCCCCC"),
 )
 species(
     label='n-C13',
+    multiplicity = 1,
     reactive=True,
     structure=SMILES("CCCCCCCCCCCCC"),
 )
 species(
     label='n-C16',
+    multiplicity = 1,
     reactive=True,
     structure=SMILES("CCCCCCCCCCCCCCCC"),
 )
 species(
     label='n-C19',
+    multiplicity = 1,
     reactive=True,
     structure=SMILES("CCCCCCCCCCCCCCCCCCC"),
 )
 species(
     label='n-C21',
+    multiplicity = 1,
     reactive=True,
     structure=SMILES("CCCCCCCCCCCCCCCCCCCCC"),
 )
 species(
     label='1M-napthalene',
+    multiplicity = 1,
     reactive=True,
     structure=SMILES("Cc1cccc2ccccc12"),
 )
 species(
     label='O2',
+    multiplicity = 3,
     reactive=True,
-    structure=SMILES("O=O"),
+    structure=SMILES("[O][O]"),
 )
 
 # Reaction systems
