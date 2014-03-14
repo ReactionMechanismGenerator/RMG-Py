@@ -23,6 +23,7 @@ generatedSpeciesConstraints(
 # List of species
 species(
     label='CH3NO2',
+    multiplicity = 1,
     reactive=True,
         structure=adjacencyList(
         """
@@ -38,6 +39,7 @@ species(
 
 species(
     label='O2',
+    multiplicity = 3,
     reactive=True,
         structure=adjacencyList(
         """
@@ -48,11 +50,12 @@ species(
 
 species(
     label='N2',
+    multiplicity = 1,
     reactive=True,
         structure=adjacencyList(
         """
-        1 N 1 1 {2,T}
-        2 N 1 1 {1,T}
+        1 N 0 1 {2,T}
+        2 N 0 1 {1,T}
         """),
 )
 
