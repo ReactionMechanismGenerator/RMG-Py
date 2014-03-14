@@ -8,28 +8,37 @@ database(
     kineticsEstimator = 'rate rules',
 )
 
+# Constraints on generated species
+generatedSpeciesConstraints(
+    maximumRadicalElectrons = 2,
+)
+
 # List of species
 species(
     label='HXD13',
+    multiplicity = 1,  
     reactive=True,
     structure=SMILES("C=CC=CCC"),
 )
 species(
     label='CH4',
+    multiplicity = 1, 
     reactive=True,
     structure=SMILES("C"),
 )
 species(
     label='H2',
+    multiplicity = 1, 
     reactive=True,
     structure=adjacencyList(
         """
-        1 H 0 {2,S}
-        2 H 0 {1,S}
+        1 H 0 0 {2,S}
+        2 H 0 0 {1,S}
         """),
 )
 species(
     label='N2',
+    multiplicity = 1, 
     reactive=False,
     structure=InChI("InChI=1/N2/c1-2"),
 )
