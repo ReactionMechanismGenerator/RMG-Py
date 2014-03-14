@@ -618,13 +618,17 @@ class KineticsFamily(Database):
             assert action[0] in ['CHANGE_BOND','FORM_BOND','BREAK_BOND','GAIN_RADICAL','LOSE_RADICAL','GAIN_PAIR','LOSE_PAIR']
             self.forwardRecipe.addAction(action)
 
-    def loadForbidden(self, label, group, shortDesc='', longDesc=''):
+    def loadForbidden(self, label, group, multiplicity = [1,2,3,4,5], shortDesc='', longDesc=''):
         """
         Load information about a forbidden structure.
         """
         if not self.forbidden:
             self.forbidden = ForbiddenStructures()
+<<<<<<< HEAD
         self.forbidden.loadEntry(label=label, group=group, shortDesc=shortDesc, longDesc=longDesc)
+=======
+        self.forbidden.loadEntry(label=label, group=group, multiplicity = multiplicity, shortDesc=shortDesc, longDesc=longDesc, history=history)
+>>>>>>> Update family.py for new species multiplicity and search for spin
 
     def saveEntry(self, f, entry):
         """
@@ -834,7 +838,7 @@ class KineticsFamily(Database):
         reverse_entries = []
         for entry in entries:
             try:        
-                template = self.getReactionTemplate(deepcopy(entry.item))
+                template = self.getReactionTemplate(entry.item.copy())
             except UndeterminableKineticsError:
                 # Some entries might be stored in the reverse direction for
                 # this family; save them so we can try this
@@ -880,11 +884,11 @@ class KineticsFamily(Database):
             
             # Estimate the thermo for the reactants and products
             item = Reaction(reactants=[m.copy(deep=True) for m in entry.item.reactants], products=[m.copy(deep=True) for m in entry.item.products])
-            item.reactants = [Species(molecule=[m]) for m in item.reactants]
+            item.reactants = [Species(multiplicity=m.multiplicity,molecule=[m]) for m in item.reactants]
             for reactant in item.reactants:
                 reactant.generateResonanceIsomers()
                 reactant.thermo = thermoDatabase.getThermoData(reactant)
-            item.products = [Species(molecule=[m]) for m in item.products]
+            item.products = [Species(multiplicity=m.multiplicity,molecule=[m]) for m in item.products]
             for product in item.products:
                 product.generateResonanceIsomers()
                 product.thermo = thermoDatabase.getThermoData(product)
@@ -1134,6 +1138,7 @@ class KineticsFamily(Database):
 
         
         # Generate other possible electronic states
+<<<<<<< HEAD
         electronicStructuresList1 = []
         electronicStructuresList2 = []
         
@@ -1142,12 +1147,17 @@ class KineticsFamily(Database):
         struct1a.updateAtomTypes()
         electronicStructuresList1.append(struct1a)
         atoms1 = struct1.getRadicalAtoms()
+=======
+        productStructuresList = []
+        totalSpin = [] # total spin times 2
+>>>>>>> Update family.py for new species multiplicity and search for spin
         
-        for atom1 in atoms1:
+        # implement Angular Momentum Addition Theorem
+        if len(reactantStructures) == 1:
             
-            radical1 = atom1.radicalElectrons
-            spin1 = atom1.spinMultiplicity
+            totalSpin = [(reactantStructures[0].multiplicity-1.0)/2.0]
             
+<<<<<<< HEAD
             if atom1.label != '' and radical1 > 1 and radical1 < 4:
                 
                 if radical1 == 2 and spin1 == 3:
@@ -1172,34 +1182,36 @@ class KineticsFamily(Database):
                         break
                 else:
                     electronicStructuresList1.append(struct1a)
+=======
+        elif len(reactantStructures) == 2:
+>>>>>>> Update family.py for new species multiplicity and search for spin
             
-            elif radical1 == 4:
+            spin1 = (reactantStructures[0].multiplicity-1.0)/2.0
+            spin2 = (reactantStructures[1].multiplicity-1.0)/2.0
+            
+            count = 0.0
+            
+            while (spin1+spin2-count) >= abs(spin1-spin2):
                 
-                if spin1 == 5:
-                    atom1.setSpinMultiplicity(3)
-                    struct1a = struct1.copy(True)
-                    struct1a.updateAtomTypes()
+                totalSpin.append(spin1+spin2-count)
+                                
+                count += 1
+            
+        if len(productStructures) == 1:
+            
+            maxSpin1 = productStructures[0].getRadicalCount()/2.0
+            
+            count = 0.0
+            
+            while (maxSpin1-count) >= 0.0:
                 
-                    atom1.setSpinMultiplicity(1)
-                    struct1b = struct1.copy(True)
-                    struct1b.updateAtomTypes()
-                elif spin1 == 3:
-                    atom1.setSpinMultiplicity(5)
-                    struct1a = struct1.copy(True)
-                    struct1a.updateAtomTypes()
+                if (maxSpin1-count) in totalSpin:
                 
-                    atom1.setSpinMultiplicity(1)
-                    struct1b = struct1.copy(True)
-                    struct1b.updateAtomTypes()
-                elif spin1 == 1:
-                    atom1.setSpinMultiplicity(5)
-                    struct1a = struct1.copy(True)
-                    struct1a.updateAtomTypes()
+                    struct = productStructures[0].copy(deep=True)
                 
-                    atom1.setSpinMultiplicity(3)
-                    struct1b = struct1.copy(True)
-                    struct1b.updateAtomTypes()
+                    struct.multiplicity = int((maxSpin1-count)*2.0+1.0)
                     
+<<<<<<< HEAD
                 for electronicStructures in electronicStructuresList1:
                     if electronicStructures.isIsomorphic(struct1a):
                         break
@@ -1221,10 +1233,19 @@ class KineticsFamily(Database):
             atoms2 = struct2.getRadicalAtoms()
         
             for atom2 in atoms2:
+=======
+                    if not self.isMoleculeForbidden(struct):
+                        productStructuresList.append([struct])
+                    
+                count += 1.0
+                    
+        elif len(productStructures) == 2:
+>>>>>>> Update family.py for new species multiplicity and search for spin
             
-                radical2 = atom2.radicalElectrons
-                spin2 = atom2.spinMultiplicity
+            maxSpin1 = productStructures[0].getRadicalCount()/2.0
+            maxSpin2 = productStructures[1].getRadicalCount()/2.0
             
+<<<<<<< HEAD
                 if atom2.label != '' and radical2 > 1 and radical2 < 4:
                     
                     if radical2 == 2 and spin2 == 3:
@@ -1249,30 +1270,23 @@ class KineticsFamily(Database):
                             break
                     else:
                         electronicStructuresList2.append(struct2a)
+=======
+            count1 = 0.0
+>>>>>>> Update family.py for new species multiplicity and search for spin
             
-                elif radical2 == 4:
+            while (maxSpin1-count1) >= 0.0:
                 
-                    if spin2 == 5:
-                        atom2.setSpinMultiplicity(3)
-                        struct2a = struct2.copy(True)
-                        struct2a.updateAtomTypes()
+                count2 = 0.0
                 
-                        atom2.setSpinMultiplicity(1)
-                        struct2b = struct2.copy(True)
-                        struct2b.updateAtomTypes()
-                    elif spin2 == 3:
-                        atom2.setSpinMultiplicity(5)
-                        struct2a = struct2.copy(True)
-                        struct2a.updateAtomTypes()
+                while (maxSpin2-count2) >= 0.0:
+                    
+                    count = 0.0
                 
-                        atom2.setSpinMultiplicity(1)
-                        struct2b = struct2.copy(True)
-                        struct2b.updateAtomTypes()
-                    elif spin2 == 1:
-                        atom2.setSpinMultiplicity(5)
-                        struct2a = struct2.copy(True)
-                        struct2a.updateAtomTypes()
+                    while (maxSpin1-count1+maxSpin2-count2-count) >= abs((maxSpin1-count1)-(maxSpin2-count2)):
+                        
+                        if (maxSpin1-count1+maxSpin2-count2-count) in totalSpin:
                 
+<<<<<<< HEAD
                         atom2.setSpinMultiplicity(3)
                         struct2b = struct2.copy(True)
                         struct2b.updateAtomTypes()
@@ -1300,6 +1314,22 @@ class KineticsFamily(Database):
             for structa in electronicStructuresList1:
                 if not (self.isMoleculeForbidden(structa)):
                     productStructuresList.append([structa])
+=======
+                            struct1 = productStructures[0].copy(deep=True)
+                            struct2 = productStructures[1].copy(deep=True)
+                
+                            struct1.multiplicity = int((maxSpin1-count1)*2.0+1.0)
+                            struct2.multiplicity = int((maxSpin2-count2)*2.0+1.0)
+                                
+                            if not self.isMoleculeForbidden(struct1) and not self.isMoleculeForbidden(struct2):
+                                productStructuresList.append([struct1,struct2])
+                        
+                        count += 1.0
+                        
+                    count2 += 1.0
+                    
+                count1 += 1.0
+>>>>>>> Update family.py for new species multiplicity and search for spin
                     
         return productStructuresList
 
@@ -1407,9 +1437,9 @@ class KineticsFamily(Database):
         for reaction in reactionList:
             moleculeDict = {}
             for molecule in reaction.reactants:
-                moleculeDict[molecule] = Species(molecule=[molecule])
+                moleculeDict[molecule] = Species(multiplicity=molecule.multiplicity,molecule=[molecule])
             for molecule in reaction.products:
-                moleculeDict[molecule] = Species(molecule=[molecule])
+                moleculeDict[molecule] = Species(multiplicity=molecule.multiplicity,molecule=[molecule])
             reaction.reactants = [moleculeDict[molecule] for molecule in reaction.reactants]
             reaction.products = [moleculeDict[molecule] for molecule in reaction.products]
             reaction.pairs = [(moleculeDict[reactant],moleculeDict[product]) for reactant, product in reaction.pairs]
