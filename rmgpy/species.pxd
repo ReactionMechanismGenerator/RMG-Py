@@ -38,6 +38,7 @@ cdef class Species:
     
     cdef public int index
     cdef public str label
+    cdef public int multiplicity
     cdef public HeatCapacityModel thermo
     cdef public Conformer conformer
     cdef public object transportData
