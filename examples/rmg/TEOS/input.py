@@ -11,16 +11,19 @@ database(
 # List of species
 species(
 	label='TEOS',
+	multiplicity = 1,
 	reactive=True,
 	structure=InChI("InChI=1/C8H20O4Si/c1-5-9-13(10-6-2,11-7-3)12-8-4/h5-8H2,1-4H3"),
 )
 species(
 	label='EtOH',
+	multiplicity = 1,
 	reactive=True,
 	structure=InChI("InChI=1/C2H6O/c1-2-3/h3H,2H2,1H3"),
 )
 species(
 	label='Ar',
+	multiplicity = 1,
 	reactive=False,
 	structure=InChI("InChI=1/Ar"),
 )
