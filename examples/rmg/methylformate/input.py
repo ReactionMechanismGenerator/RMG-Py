@@ -11,80 +11,95 @@ database(
 # List of species
 species(
     label='Mfmt',
+    multiplicity = 1,
     reactive=True,
     structure=SMILES("COC=O"),
 )
 species(
     label='O2',
+    multiplicity = 3,
     reactive=True,
     structure=SMILES("[O][O]"),
 )
 species(
     label='C2H',
+    multiplicity = 2,
     reactive=True,
     structure=SMILES("C#[C]"),
 )
 species(
     label='CH',
+    multiplicity = 4,
     reactive=True,
     structure=adjacencyList(
         """
-        1     C     3 {2,S}
-        2     H     0 {1,S}
+        1 C 3 0 {2,S}
+        2 H 0 0 {1,S}
         """),
 )
 species(
     label='H2O',
+    multiplicity = 1,
     reactive=True,
     structure=SMILES("O"),
 )
 species(
     label='H2',
+    multiplicity = 1,
     reactive=True,
     structure=SMILES("[H][H]"),
 )
 species(
     label='CO',
+    multiplicity = 1,
     reactive=True,
-    structure=SMILES("[C]=O"),
+    structure=SMILES("C#O"),
 )
 species(
     label='CO2',
+    multiplicity = 1,
     reactive=True,
     structure=SMILES("C(=O)=O"),
 )
 species(
     label='CH4',
+    multiplicity = 1,
     reactive=True,
     structure=SMILES("C"),
 )
 species(
     label='CH3',
+    multiplicity = 2,
     reactive=True,
     structure=SMILES("[CH3]"),
 )
 species(
     label='CH3OH',
+    multiplicity = 1,
     reactive=True,
     structure=SMILES("CO"),
 )
 species(
     label='C2H4',
+    multiplicity = 1,
     reactive=True,
     structure=SMILES("C=C"),
 )
 species(
     label='C2H2',
+    multiplicity = 1,
     reactive=True,
     structure=SMILES("C#C"),
 )
 species(
     label='CH2O',
+    multiplicity = 1,
     reactive=True,
     structure=SMILES("C=O"),
 )
 species(
     label='CH3CHO',
+    multiplicity = 1,
     reactive=True,
     structure=SMILES("CC=O"),
 )
@@ -93,6 +108,7 @@ species(
 # Bath gas
 species(
     label='Ar',
+    multiplicity = 1,
     reactive=False,
     structure=InChI("InChI=1S/Ar"),
 )
@@ -157,4 +173,5 @@ options(
     drawMolecules=False,
     generatePlots=False,
     saveConcentrationProfiles=False,
+    saveEdgeSpecies=True,
 )
