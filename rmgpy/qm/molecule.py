@@ -42,7 +42,7 @@ class Geometry:
         #: A short unique ID such as an augmented InChI Key.
         self.uniqueID = uniqueID
         self.molecule = molecule
-        #: The multiplicity, eg. the number of free radicals plus one.
+        #: The multiplicity
         self.multiplicity = multiplicity
         if uniqueIDlong is None:
             self.uniqueIDlong = uniqueID
@@ -236,7 +236,7 @@ class QMMolecule:
         """
         Creates self.geometry with RDKit geometries
         """
-        multiplicity = sum([i.radicalElectrons for i in self.molecule.atoms]) + 1
+        multiplicity = self.molecule.multiplicity
         self.geometry = Geometry(self.settings, self.uniqueID, self.molecule, multiplicity, uniqueIDlong=self.uniqueIDlong)
         self.geometry.generateRDKitGeometries()
         return self.geometry
