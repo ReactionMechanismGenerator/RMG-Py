@@ -8,34 +8,45 @@ database(
     kineticsEstimator = 'rate rules',
 )
 
+# Constraints on generated species
+generatedSpeciesConstraints(
+    maximumRadicalElectrons = 2,
+)
+
 # List of species
 species(
     label='O2',     # oxygen
+    multiplicity = 3,
     reactive=True,
-    structure=SMILES("O=O"),
+    structure=SMILES("[O][O]"),
 )
 species(
     label='C8H18i', # isooctane
+    multiplicity = 1,
     reactive=True,
     structure=SMILES("CC(C)CC(C)(C)C"),
 )
 species(
     label='C2H6On', # ethanol
+    multiplicity = 1,
     reactive=True,
     structure=SMILES("CCO"),
 )
 species(
     label='C7H8t',  # toluene
+    multiplicity = 1,
     reactive=True,
     structure=SMILES("Cc1ccccc1"),
 )
 species(
     label='C6H12n', # hex-1-ene
+    multiplicity = 1,
     reactive=True,
     structure=SMILES("CCCCC=C"),
 )
 species(
     label='Ar',    # argon
+    multiplicity = 1,
     reactive=False,
     structure=SMILES("[Ar]"),
 )
