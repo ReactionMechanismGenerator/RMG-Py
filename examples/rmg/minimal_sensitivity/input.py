@@ -8,9 +8,15 @@ database(
     kineticsEstimator = 'rate rules',
 )
 
+# Constraints on generated species
+generatedSpeciesConstraints(
+    maximumRadicalElectrons = 2,
+)
+
 # List of species
 species(
     label='ethane',
+    multiplicity = 1,
     reactive=True,
     structure=SMILES("CC"),
 )
