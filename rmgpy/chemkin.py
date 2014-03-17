@@ -1175,6 +1175,11 @@ def getSpeciesIdentifier(species):
             else:
                 logging.warning('Species label is longer than 15 characters and will break CHEMKIN 2.0')
                 return species.label
+        else:
+            # try the chemical formula if the species label is not present
+            if len(species.molecule) > 0:
+                # Try the chemical formula
+                return '{0}'.format(species.molecule[0].getFormula())
     else:
         
         # Index present - the index will be included in the identifier
