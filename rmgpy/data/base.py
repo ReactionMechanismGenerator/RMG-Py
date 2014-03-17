@@ -786,7 +786,7 @@ class Database:
             descendants.extend(self.descendants(child))
         return descendants
 
-    def isWellFormed(self):
+    def checkWellFormed(self):
         """
         Return :data:`True` if the database is well-formed. A well-formed
         database has an entry in the dictionary for every entry in the tree, and
@@ -797,47 +797,123 @@ class Database:
         nodes in the tree, if the tree is present; this is for databases with
         multiple trees, e.g. the kinetics databases.
         """
-
-        wellFormed = True
+        
+        
+        from rmgpy.data.kinetics.family import KineticsFamily
+        
+        #list of nodes that are not wellFormed
+        noGroup=[]
+        noMatchingGroup={}
+        notInTree=[]
+        notSubgroup=[]
+        probablyProduct=[]
+        
+        # Give correct arguments for each type of database
+        if isinstance(self, KineticsFamily):
+            library=self.rules.entries
+            groups=self.groups.entries
+            treeIsPresent=True
+            topNodes=self.getRootTemplate()
 
         # Make list of all nodes in library
-        libraryNodes = []
-        for nodes in self.library:
-            libraryNodes.extend(nodes.split(';'))
-        libraryNodes = list(set(libraryNodes))
+        libraryNodes=[]
+        libraryNodesSplit = []
+        for nodes in library:
+            libraryNodes.append(nodes)
+            libraryNodesSplit.extend(nodes.split(';'))
+        libraryNodesSplit = list(set(libraryNodesSplit))
 
+        
 
-        for node in libraryNodes:
+        try:
+            for node in libraryNodesSplit:
 
             # All nodes in library must be in dictionary
-            try:
-                if node not in self.entries:
-                    raise DatabaseError('Node "{0}" in library is not present in dictionary.'.format(node))
-            except DatabaseError, e:
-                wellFormed = False
-                logging.error(str(e))
+                if node not in groups:
+                    noGroup.append(node)
+                    
+                #no point checking in tree if it doesn't even exist in groups
+                for libraryNode in libraryNodes:
+                    nodes=libraryNode.split(';')
+                    for libraryEntry in library[libraryNode]:
+                        for node in nodes:
+                            for libraryGroup in libraryEntry.item.reactants:
+                                try:
+                                    if groups[node].item.isIsomorphic(libraryGroup):
+                                        break
+                                except AttributeError:
+                                    if isinstance(groups[node].item, LogicOr) and isinstance(libraryGroup, LogicOr):
+                                        if groups[node].item==libraryGroup:
+                                            break
+                                except TypeError:
+                                    print libraryGroup, type(libraryGroup)
+                                except KeyError:
+                                    noGroup.append(node)
+                            else:
+                                noMatchingGroup[node]=libraryNode
+                
+            if treeIsPresent:
+                # All nodes need to be in the tree
+                # This is true when ascending through parents leads to a top node
+                for nodeName in groups:
+                    ascendParent=self.groups.entries[nodeName]
 
-            # If a tree is present, all nodes in library should be in tree
-            # (Technically the database is still well-formed, but let's warn
-            # the user anyway
-            if len(self.tree.parent) > 0:
-                try:
-                    if node not in self.tree.parent:
-                        raise DatabaseError('Node "{0}" in library is not present in tree.'.format(node))
-                except DatabaseError, e:
-                    logging.warning(str(e))
+                    while ascendParent not in topNodes:
+                        child=ascendParent
+                        ascendParent=ascendParent.parent
+                        if ascendParent is None or child not in ascendParent.children:
+                            if child.index==-1:
+                                probablyProduct.append(child.label)
+                                break
+                            else:
+                            # If a group is not in a tree, we want to save the uppermost parent, not necessarily the original node
+                                notInTree.append(child.label)
+                                break
+                    #check if child is actually subgroup of parent
+                    ascendParent=self.groups.entries[nodeName].parent
+                    if ascendParent is not None:
+                        try:
+                            if not ascendParent.item.isSubgraphIsomorphic(self.groups.entries[nodeName].item):
+                                notSubgroup.append(nodeName)
+                        except AttributeError:
+                            if isinstance(groups[node].item, LogicOr) and isinstance(libraryGroup, LogicOr):
+                                if groups[node].item==libraryGroup:
+                                    break
+                        except TypeError:
+                            print libraryGroup, type(libraryGroup)
+            # The adj list of each node actually needs to be subset of its parent's adjlist
+            #More to come later -nyee
+        except DatabaseError, e:
+            logging.error(str(e))
 
-        # If a tree is present, all nodes in tree must be in dictionary
-        if self.tree is not None:
-            for node in self.tree.parent:
-                try:
-                    if node not in self.entries:
-                        raise DatabaseError('Node "{0}" in tree is not present in dictionary.'.format(node))
-                except DatabaseError, e:
-                    wellFormed = False
-                    logging.error(str(e))
-
-        return wellFormed
+#             # If a tree is present, all nodes in library should be in tree
+#             # (Technically the database is still well-formed, but let's warn
+#             # the user anyway
+#             if len(self.tree.parent) > 0:
+#                 try:
+#                     if node not in self.tree.parent:
+#                         raise DatabaseError('Node "{0}" in library is not present in tree.'.format(node))
+#                 except DatabaseError, e:
+#                     logging.warning(str(e))
+# 
+#         # If a tree is present, all nodes in tree must be in dictionary
+#         if self.tree is not None:
+#             for node in self.tree.parent:
+#                 try:
+#                     if node not in self.entries:
+#                         raise DatabaseError('Node "{0}" in tree is not present in dictionary.'.format(node))
+#                 except DatabaseError, e:
+#                     wellFormed = False
+#                     logging.error(str(e))
+        
+#         for libraryRule in library:
+            #check the groups
+        
+        #eliminate duplicates
+        noGroup=list(set(noGroup))
+        notInTree=list(set(notInTree))
+        
+        return (noGroup, noMatchingGroup, notInTree, notSubgroup, probablyProduct)
 
     def matchNodeToStructure(self, node, structure, atoms):
         """

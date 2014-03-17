@@ -352,6 +352,44 @@ class GroupAtom(Vertex):
         # Otherwise self is in fact a specific case of other
         return True
 
+
+    def isChildOf(self, parent):
+        """
+        Returns ``True`` if `parent` is the same as `self` or a
+        parent of `self`. Returns ``False`` if some of `parent` is not
+        included in `self` or they are mutually exclusive.
+        """
+        
+        if not isinstance(parent, GroupAtom):
+#             # Let the isSpecificCaseOf method of other handle it
+#             # We expect self to be an Atom object, but can't test for it here
+#             # because that would create an import cycle
+            raise TypeError('Expects both parent and self to be a GroupAtom object')
+
+        # Compare two atom groups for equivalence
+        # Each atom type in self must have an equivalent in other (and vice versa)
+        for atomType1 in self.atomType: # all these must match
+            for atomType2 in parent.atomType: # can match any of these
+                if atomType1.isSpecificCaseOf(atomType2): break
+            else:
+                return False
+        # Each free radical electron state in self must have an equivalent in other (and vice versa)
+        for radical1, spin1 in zip(self.radicalElectrons, self.spinMultiplicity): # all these must match
+            for radical2, spin2 in zip(parent.radicalElectrons, parent.spinMultiplicity): # can match any of these
+                if radical1 == radical2 and spin1 == spin2: break
+            else:
+                return False
+        
+        #check that the label is the same
+        if not self.label==parent.label: return False
+        
+        #all bonds in the parent must also be in self, but not necessarily vice versa. 
+        pass
+        
+        # Otherwise self is in fact a specific case of other
+        return True
+        
+        
 ################################################################################
 
 class GroupBond(Edge):
