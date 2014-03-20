@@ -46,6 +46,12 @@ class TestMopacMolPM3(unittest.TestCase):
 		"""
 		Test that generateQMData() works correctly.
 		"""
+		try:
+			# Remove the output file so we can test the mopac script
+			os.remove(self.qmmol1.outputFilePath)
+		except OSError:
+			pass
+			
 		result = self.qmmol1.generateQMData()
 		self.assertTrue(os.path.exists(self.qmmol1.inputFilePath))
 		self.assertTrue(os.path.exists(self.qmmol1.outputFilePath))
@@ -57,7 +63,9 @@ class TestMopacMolPM3(unittest.TestCase):
 		
 	def testGenerateThermoData(self):
 		"""
-		Test that generateThermoData() works correctly.
+		Test that generateThermoData() works correctly. The testGenerateQMData should
+		have tested the running of MOPAC to generate a `.thermo` file, so this will now test
+		the loading reading of an existing `.thermo` file.
 		"""
 		self.qmmol1.generateThermoData()
 		self.assertIsNotNone(self.qmmol1.thermo)
