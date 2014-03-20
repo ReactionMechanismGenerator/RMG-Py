@@ -829,6 +829,51 @@ class Molecule(Graph):
         for atom in hydrogens:
             self.removeAtom(atom)
 
+    def connectTheDots(self):
+        """
+        Delete all bonds, and set them again based on the Atoms' coords.
+        Does not detect bond type.
+        """
+        cython.declare(criticalDistance=float, i=int, atom1=Atom, atom2=Atom,
+                       bond=Bond, atoms=list, zBoundary=float)
+                       # groupBond=GroupBond, 
+        self._fingerprint = None
+        
+        atoms = self.vertices
+        
+        # Ensure there are coordinates to work with
+        for atom in atoms:
+            assert atom.coords != None
+        
+        # If there are any bonds, remove them
+        for atom1 in atoms:
+            for bond in self.getBonds(atom1):
+                self.removeEdge(bond)
+        
+        # Sort atoms by distance on the z-axis
+        sortedAtoms = sorted(atoms, key=lambda x: x.coords[2])
+        
+        for i, atom1 in enumerate(sortedAtoms):
+            for atom2 in sortedAtoms[i+1:]:
+                # Set upper limit for bond distance
+                criticalDistance = (atom1.element.covRadius + atom2.element.covRadius + 0.45)**2
+                
+                # First atom that is more than 4.0 Anstroms away in the z-axis, break the loop
+                # Atoms are sorted along the z-axis, so all following atoms should be even further
+                zBoundary = (atom1.coords[2] - atom2.coords[2])**2
+                if zBoundary > 16.0:
+                    break
+                
+                distanceSquared = sum((atom1.coords - atom2.coords)**2)
+                
+                if distanceSquared > criticalDistance or distanceSquared < 0.40:
+                    continue
+                else:
+                    # groupBond = GroupBond(atom1, atom2, ['S','D','T','B'])
+                    bond = Bond(atom1, atom2, 'S')
+                    self.addBond(bond)
+        self.updateAtomTypes()
+        
     def updateAtomTypes(self):
         """
         Iterate through the atoms in the structure, checking their atom types
@@ -1153,6 +1198,21 @@ class Molecule(Graph):
         self.updateAtomTypes()
         
         return self
+        
+    def fromXYZ(self, atomicNums, coordinates):
+        """
+        Create an RMG molecule from a list of coordinates and a corresponding
+        list of atomic numbers. These are typically received from CCLib and the
+        molecule is sent to `ConnectTheDots` so will only contain single bonds.
+        """
+        
+        _rdkit_periodic_table = elements.GetPeriodicTable()
+        
+        for i, atNum in enumerate(atomicNums):
+            atom = Atom(_rdkit_periodic_table.GetElementSymbol(int(atNum)))
+            atom.coords = coordinates[i]
+            self.addAtom(atom)
+        return self.connectTheDots()
 
     def toInChI(self):
         """

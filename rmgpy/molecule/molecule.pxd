@@ -29,6 +29,7 @@ from .atomtype cimport AtomType
 from .group cimport GroupAtom, GroupBond, Group
 from .element cimport Element
 cimport rmgpy.constants as constants
+cimport numpy
 
 ################################################################################
 cdef public dict _known_smiles
@@ -170,6 +171,8 @@ cdef class Molecule(Graph):
 
     cpdef fromAdjacencyList(self, str adjlist, bint saturateH=?)
 
+    cpdef fromXYZ(self, numpy.ndarray atomicNums, numpy.ndarray coordinates)
+    
     cpdef str toInChI(self)
 
     cpdef str toAugmentedInChI(self)
