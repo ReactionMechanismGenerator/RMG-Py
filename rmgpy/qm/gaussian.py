@@ -5,6 +5,7 @@ import logging
 from subprocess import Popen, PIPE
 import re
 
+from rmgpy.molecule import Molecule
 from qmdata import CCLibData
 from molecule import QMMolecule
 
@@ -116,9 +117,19 @@ class Gaussian:
             return False
         
         if InChIMatch:
-            logging.info("Successful Gaussian quantum result found in {0}".format(self.outputFilePath))
-            # " + self.molfile.name + " ("+self.molfile.InChIAug+") has been found. This log file will be used.")
-            return True
+            # Compare the optimized geometry to the original molecule
+            qmData = self.parse()
+            
+            cclibMol = Molecule()
+            cclibMol.fromXYZ(qmData.atomicNumbers, qmData.atomCoords.value)
+            testMol = self.molecule.toSingleBonds()
+            
+            if cclibMol.isIsomorphic(testMol):
+                logging.info("Successful MOPAC quantum result found in {0}".format(self.outputFilePath))
+                return True
+            else:
+                logging.info("Incorrect connectivity for optimized geometry in file {0}".format(self.outputFilePath))
+                return False
         else:
             return False # until the next line works
         
