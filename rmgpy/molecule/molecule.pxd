@@ -41,7 +41,7 @@ cdef class Atom(Vertex):
     cdef public short charge
     cdef public str label
     cdef public AtomType atomType
-    cdef public list coords
+    cdef public numpy.ndarray coords
     cdef public short lonePairs
     
     cpdef bint equivalent(self, Vertex other) except -2
