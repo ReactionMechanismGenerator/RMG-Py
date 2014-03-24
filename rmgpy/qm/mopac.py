@@ -4,6 +4,7 @@ import external.cclib as cclib
 import logging
 from subprocess import Popen, PIPE
 
+from rmgpy.molecule import Molecule
 from qmdata import CCLibData
 from molecule import QMMolecule
 
@@ -128,11 +129,10 @@ class Mopac:
         
         if InChIMatch:
             # Compare the optimized geometry to the original molecule
-            parser = cclib.parser.Mopac(self.outputFilePath)
-            parser.logger.setLevel(logging.ERROR) #cf. http://cclib.sourceforge.net/wiki/index.php/Using_cclib#Additional_information
-            cclibData = parser.parse()
+            qmData = self.parse()
+            
             cclibMol = Molecule()
-            cclibMol.fromXYZ(cclibData.atomnos, cclibData.atomcoords[-1])
+            cclibMol.fromXYZ(qmData.atomicNumbers, qmData.atomCoords.value)
             testMol = self.molecule.toSingleBonds()
             
             if cclibMol.isIsomorphic(testMol):
