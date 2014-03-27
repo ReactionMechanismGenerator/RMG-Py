@@ -550,163 +550,6 @@ class GaussianTS(QMReaction, Gaussian):
                 gaussianFile.write('\n')
             gaussianFile.write('\n')
     
-    def writeGeomInputFile(self, freezeAtoms, otherGeom=None):
-        
-        output = [ '', self.geometry.uniqueIDlong, '', "{charge}   {mult}".format(charge=0, mult=(self.geometry.molecule.getRadicalCount() + 1) ) ]
-        
-        atomline = re.compile('\s*([\- ][0-9.]+\s+[\-0-9.]+\s+[\-0-9.]+)\s+([A-Za-z]+)')
-        
-        if otherGeom:
-            molfile = otherGeom.getRefinedMolFilePath() # Now get the product geometry
-            
-            atomCount = 0
-            with open(molfile) as molinput:
-                for line in molinput:
-                    match = atomline.match(line)
-                    if match:
-                        output.append("{0:8s} {1}".format(match.group(2), match.group(1)))
-                        atomCount += 1
-            inputFilePath = otherGeom.getFilePath(self.inputFileExtension)
-            bottom_keys = "{atom1} {atom3} F\n{atom1} {atom2} F\n".format(atom1=freezeAtoms[0] + 1, atom2=freezeAtoms[1] + 1, atom3=freezeAtoms[2] + 1)
-        else:
-            molfile = self.geometry.getRefinedMolFilePath() # Get the reactant geometry
-            
-            atomCount = 0
-            with open(molfile) as molinput:
-                for line in molinput:
-                    match = atomline.match(line)
-                    if match:
-                        output.append("{0:8s} {1}".format(match.group(2), match.group(1)))
-                        atomCount += 1
-            inputFilePath = self.inputFilePath
-            bottom_keys = "{atom1} {atom3} F\n{atom2} {atom3} F\n".format(atom1=freezeAtoms[0] + 1, atom2=freezeAtoms[1] + 1, atom3=freezeAtoms[2] + 1)
-        
-        assert atomCount == len(self.geometry.molecule.atoms)
-        
-        output.append('')
-        input_string = '\n'.join(output) + '\n'
-        top_keys = "#p pm6 opt=(modredundant,MaxCycles={N}) nosymm\n".format(N=max(100,atomCount*10))
-        
-        with open(inputFilePath, 'w') as gaussianFile:
-            # gaussianFile.write(numProc)
-            # gaussianFile.write(mem)
-            # gaussianFile.write(chk_file)
-            gaussianFile.write(top_keys)
-            gaussianFile.write(input_string)
-            gaussianFile.write(bottom_keys)
-            gaussianFile.write('\n')
-    
-    def writeQST2InputFile(self, pGeom):
-        # numProc = '%nprocshared=' + '4' + '\n' # could be something that is set in the qmSettings
-        # mem = '%mem=' + '800MB' + '\n' # could be something that is set in the qmSettings
-        # For now we don't do this, until seg faults are fixed on Discovery.
-        # chk_file = '%chk=' + os.path.join(self.settings.fileStore, self.uniqueID) + '\n'
-        output = ['', self.geometry.uniqueID, '' ]
-        output.append("{charge}   {mult}".format(charge=0, mult=(self.geometry.molecule.getRadicalCount() + 1) ))
-        
-        molfile = self.geometry.getRefinedMolFilePath()
-        atomline = re.compile('\s*([\- ][0-9.]+\s+[\-0-9.]+\s+[\-0-9.]+)\s+([A-Za-z]+)')
-        
-        atomCount = 0
-        atomnos = []
-        with open(molfile) as molinput:
-            for line in molinput:
-                match = atomline.match(line)
-                if match:
-                    atomnos.append(match.group(2))
-                    atomCount += 1
-        
-        assert atomCount == len(self.geometry.molecule.atoms)
-        
-        parser = cclib.parser.Gaussian(self.outputFilePath)
-        parser.logger.setLevel(logging.ERROR)
-        parser = parser.parse()
-        
-        lines = []
-        for line in parser.atomcoords[-1]:
-            lineList = ''
-            for item in line:
-                if item > 0:
-                    lineList = lineList + ' ' + str(format(item, '.6f')) + ' '
-                else:
-                    lineList = lineList + str(format(item, '.6f')) + ' '
-            lines.append(lineList)
-            
-        atomCount = 0
-        
-        for i, line in enumerate(lines):
-            output.append("{0:8s} {1}".format(atomnos[i], line))
-            atomCount += 1
-        
-        assert atomCount == len(self.geometry.molecule.atoms)
-        
-        output.append('')
-        output.append(pGeom.uniqueIDlong)
-        output.append('')
-        output.append("{charge}   {mult}".format(charge=0, mult=(pGeom.molecule.getRadicalCount() + 1) ))
-        
-        parser = cclib.parser.Gaussian(pGeom.getFilePath(self.outputFileExtension))
-        parser.logger.setLevel(logging.ERROR)
-        parser = parser.parse()
-        
-        lines = []
-        for line in parser.atomcoords[-1]:
-            lineList = ''
-            for item in line:
-                if item > 0:
-                    lineList = lineList + ' ' + str(format(item, '.6f')) + ' '
-                else:
-                    lineList = lineList + str(format(item, '.6f')) + ' '
-            lines.append(lineList)
-            
-        atomCount = 0
-        for i, line in enumerate(lines):
-            output.append("{0:8s} {1}".format(atomnos[i], line))
-            atomCount += 1
-        
-        assert atomCount == len(self.geometry.molecule.atoms)
-        # 
-        # #####################
-        # 
-        # atomCount = 0
-        # with open(molfile) as molinput:
-        #     for line in molinput:
-        #         match = atomline.match(line)
-        #         if match:
-        #             output.append("{0:8s} {1}".format(match.group(2), match.group(1)))
-        #             atomCount += 1
-        # 
-        # assert atomCount == len(self.geometry.molecule.atoms)
-        # 
-        # output.append('')
-        # output.append(pGeom.uniqueIDlong)
-        # output.append('')
-        # output.append("{charge}   {mult}".format(charge=0, mult=(pGeom.molecule.getRadicalCount() + 1) ))
-        # 
-        # molfile = pGeom.getRefinedMolFilePath() # Now get the product geometry
-        # 
-        # atomCount = 0
-        # with open(molfile) as molinput:
-        #     for line in molinput:
-        #         match = atomline.match(line)
-        #         if match:
-        #             output.append("{0:8s} {1}".format(match.group(2), match.group(1)))
-        #             atomCount += 1
-        # 
-        # assert atomCount == len(self.geometry.molecule.atoms)
-        
-        output.append('')
-        input_string = '\n'.join(output) + '\n'
-        top_keys = "#p pm6 opt=(qst2,calcall,noeigentest,MaxCycles={N}) nosymm\n".format(N=max(100,atomCount*10))
-        
-        with open(self.inputFilePath, 'w') as gaussianFile:
-            # gaussianFile.write(numProc)
-            # gaussianFile.write(mem)
-            # gaussianFile.write(chk_file)
-            gaussianFile.write(top_keys)
-            gaussianFile.write(input_string)
-            gaussianFile.write('\n')
-    
     def writeIRCFile(self):
         """
         Using the :class:`Geometry` object, write the input file for the 
@@ -1200,6 +1043,163 @@ class GaussianTSB3LYP(GaussianTS):
         
         qmMolecule = GaussianMolB3LYP(molecule, self.settings)
         return qmMolecule
+    
+    def writeGeomInputFile(self, freezeAtoms, otherGeom=None):
+        
+        output = [ '', self.geometry.uniqueIDlong, '', "{charge}   {mult}".format(charge=0, mult=(self.geometry.molecule.getRadicalCount() + 1) ) ]
+        
+        atomline = re.compile('\s*([\- ][0-9.]+\s+[\-0-9.]+\s+[\-0-9.]+)\s+([A-Za-z]+)')
+        
+        if otherGeom:
+            molfile = otherGeom.getRefinedMolFilePath() # Now get the product geometry
+            
+            atomCount = 0
+            with open(molfile) as molinput:
+                for line in molinput:
+                    match = atomline.match(line)
+                    if match:
+                        output.append("{0:8s} {1}".format(match.group(2), match.group(1)))
+                        atomCount += 1
+            inputFilePath = otherGeom.getFilePath(self.inputFileExtension)
+            bottom_keys = "{atom1} {atom3} F\n{atom1} {atom2} F\n".format(atom1=freezeAtoms[0] + 1, atom2=freezeAtoms[1] + 1, atom3=freezeAtoms[2] + 1)
+        else:
+            molfile = self.geometry.getRefinedMolFilePath() # Get the reactant geometry
+            
+            atomCount = 0
+            with open(molfile) as molinput:
+                for line in molinput:
+                    match = atomline.match(line)
+                    if match:
+                        output.append("{0:8s} {1}".format(match.group(2), match.group(1)))
+                        atomCount += 1
+            inputFilePath = self.inputFilePath
+            bottom_keys = "{atom1} {atom3} F\n{atom2} {atom3} F\n".format(atom1=freezeAtoms[0] + 1, atom2=freezeAtoms[1] + 1, atom3=freezeAtoms[2] + 1)
+        
+        assert atomCount == len(self.geometry.molecule.atoms)
+        
+        output.append('')
+        input_string = '\n'.join(output) + '\n'
+        top_keys = "#p b3lyp/6-31+g(d,p) opt=(modredundant,MaxCycles={N}) nosymm\n".format(N=max(100,atomCount*10))
+        
+        with open(inputFilePath, 'w') as gaussianFile:
+            # gaussianFile.write(numProc)
+            # gaussianFile.write(mem)
+            # gaussianFile.write(chk_file)
+            gaussianFile.write(top_keys)
+            gaussianFile.write(input_string)
+            gaussianFile.write(bottom_keys)
+            gaussianFile.write('\n')
+    
+    def writeQST2InputFile(self, pGeom):
+        # numProc = '%nprocshared=' + '4' + '\n' # could be something that is set in the qmSettings
+        # mem = '%mem=' + '800MB' + '\n' # could be something that is set in the qmSettings
+        # For now we don't do this, until seg faults are fixed on Discovery.
+        # chk_file = '%chk=' + os.path.join(self.settings.fileStore, self.uniqueID) + '\n'
+        output = ['', self.geometry.uniqueID, '' ]
+        output.append("{charge}   {mult}".format(charge=0, mult=(self.geometry.molecule.getRadicalCount() + 1) ))
+        
+        molfile = self.geometry.getRefinedMolFilePath()
+        atomline = re.compile('\s*([\- ][0-9.]+\s+[\-0-9.]+\s+[\-0-9.]+)\s+([A-Za-z]+)')
+        
+        atomCount = 0
+        atomnos = []
+        with open(molfile) as molinput:
+            for line in molinput:
+                match = atomline.match(line)
+                if match:
+                    atomnos.append(match.group(2))
+                    atomCount += 1
+        
+        assert atomCount == len(self.geometry.molecule.atoms)
+        
+        parser = cclib.parser.Gaussian(self.outputFilePath)
+        parser.logger.setLevel(logging.ERROR)
+        parser = parser.parse()
+        
+        lines = []
+        for line in parser.atomcoords[-1]:
+            lineList = ''
+            for item in line:
+                if item > 0:
+                    lineList = lineList + ' ' + str(format(item, '.6f')) + ' '
+                else:
+                    lineList = lineList + str(format(item, '.6f')) + ' '
+            lines.append(lineList)
+            
+        atomCount = 0
+        
+        for i, line in enumerate(lines):
+            output.append("{0:8s} {1}".format(atomnos[i], line))
+            atomCount += 1
+        
+        assert atomCount == len(self.geometry.molecule.atoms)
+        
+        output.append('')
+        output.append(pGeom.uniqueIDlong)
+        output.append('')
+        output.append("{charge}   {mult}".format(charge=0, mult=(pGeom.molecule.getRadicalCount() + 1) ))
+        
+        parser = cclib.parser.Gaussian(pGeom.getFilePath(self.outputFileExtension))
+        parser.logger.setLevel(logging.ERROR)
+        parser = parser.parse()
+        
+        lines = []
+        for line in parser.atomcoords[-1]:
+            lineList = ''
+            for item in line:
+                if item > 0:
+                    lineList = lineList + ' ' + str(format(item, '.6f')) + ' '
+                else:
+                    lineList = lineList + str(format(item, '.6f')) + ' '
+            lines.append(lineList)
+            
+        atomCount = 0
+        for i, line in enumerate(lines):
+            output.append("{0:8s} {1}".format(atomnos[i], line))
+            atomCount += 1
+        
+        assert atomCount == len(self.geometry.molecule.atoms)
+        # 
+        # #####################
+        # 
+        # atomCount = 0
+        # with open(molfile) as molinput:
+        #     for line in molinput:
+        #         match = atomline.match(line)
+        #         if match:
+        #             output.append("{0:8s} {1}".format(match.group(2), match.group(1)))
+        #             atomCount += 1
+        # 
+        # assert atomCount == len(self.geometry.molecule.atoms)
+        # 
+        # output.append('')
+        # output.append(pGeom.uniqueIDlong)
+        # output.append('')
+        # output.append("{charge}   {mult}".format(charge=0, mult=(pGeom.molecule.getRadicalCount() + 1) ))
+        # 
+        # molfile = pGeom.getRefinedMolFilePath() # Now get the product geometry
+        # 
+        # atomCount = 0
+        # with open(molfile) as molinput:
+        #     for line in molinput:
+        #         match = atomline.match(line)
+        #         if match:
+        #             output.append("{0:8s} {1}".format(match.group(2), match.group(1)))
+        #             atomCount += 1
+        # 
+        # assert atomCount == len(self.geometry.molecule.atoms)
+        
+        output.append('')
+        input_string = '\n'.join(output) + '\n'
+        top_keys = "#p b3lyp/6-31+g(d,p) opt=(qst2,calcall,noeigentest,MaxCycles={N}) nosymm\n".format(N=max(100,atomCount*10))
+        
+        with open(self.inputFilePath, 'w') as gaussianFile:
+            # gaussianFile.write(numProc)
+            # gaussianFile.write(mem)
+            # gaussianFile.write(chk_file)
+            gaussianFile.write(top_keys)
+            gaussianFile.write(input_string)
+            gaussianFile.write('\n')
 
 class GaussianTSPM6(GaussianTS):
 
@@ -1234,3 +1234,160 @@ class GaussianTSPM6(GaussianTS):
 
         qmMolecule = GaussianMolB3LYP(molecule, self.settings)
         return qmMolecule
+    
+    def writeGeomInputFile(self, freezeAtoms, otherGeom=None):
+        
+        output = [ '', self.geometry.uniqueIDlong, '', "{charge}   {mult}".format(charge=0, mult=(self.geometry.molecule.getRadicalCount() + 1) ) ]
+        
+        atomline = re.compile('\s*([\- ][0-9.]+\s+[\-0-9.]+\s+[\-0-9.]+)\s+([A-Za-z]+)')
+        
+        if otherGeom:
+            molfile = otherGeom.getRefinedMolFilePath() # Now get the product geometry
+            
+            atomCount = 0
+            with open(molfile) as molinput:
+                for line in molinput:
+                    match = atomline.match(line)
+                    if match:
+                        output.append("{0:8s} {1}".format(match.group(2), match.group(1)))
+                        atomCount += 1
+            inputFilePath = otherGeom.getFilePath(self.inputFileExtension)
+            bottom_keys = "{atom1} {atom3} F\n{atom1} {atom2} F\n".format(atom1=freezeAtoms[0] + 1, atom2=freezeAtoms[1] + 1, atom3=freezeAtoms[2] + 1)
+        else:
+            molfile = self.geometry.getRefinedMolFilePath() # Get the reactant geometry
+            
+            atomCount = 0
+            with open(molfile) as molinput:
+                for line in molinput:
+                    match = atomline.match(line)
+                    if match:
+                        output.append("{0:8s} {1}".format(match.group(2), match.group(1)))
+                        atomCount += 1
+            inputFilePath = self.inputFilePath
+            bottom_keys = "{atom1} {atom3} F\n{atom2} {atom3} F\n".format(atom1=freezeAtoms[0] + 1, atom2=freezeAtoms[1] + 1, atom3=freezeAtoms[2] + 1)
+        
+        assert atomCount == len(self.geometry.molecule.atoms)
+        
+        output.append('')
+        input_string = '\n'.join(output) + '\n'
+        top_keys = "#p pm6 opt=(modredundant,MaxCycles={N}) nosymm\n".format(N=max(100,atomCount*10))
+        
+        with open(inputFilePath, 'w') as gaussianFile:
+            # gaussianFile.write(numProc)
+            # gaussianFile.write(mem)
+            # gaussianFile.write(chk_file)
+            gaussianFile.write(top_keys)
+            gaussianFile.write(input_string)
+            gaussianFile.write(bottom_keys)
+            gaussianFile.write('\n')
+    
+    def writeQST2InputFile(self, pGeom):
+        # numProc = '%nprocshared=' + '4' + '\n' # could be something that is set in the qmSettings
+        # mem = '%mem=' + '800MB' + '\n' # could be something that is set in the qmSettings
+        # For now we don't do this, until seg faults are fixed on Discovery.
+        # chk_file = '%chk=' + os.path.join(self.settings.fileStore, self.uniqueID) + '\n'
+        output = ['', self.geometry.uniqueID, '' ]
+        output.append("{charge}   {mult}".format(charge=0, mult=(self.geometry.molecule.getRadicalCount() + 1) ))
+        
+        molfile = self.geometry.getRefinedMolFilePath()
+        atomline = re.compile('\s*([\- ][0-9.]+\s+[\-0-9.]+\s+[\-0-9.]+)\s+([A-Za-z]+)')
+        
+        atomCount = 0
+        atomnos = []
+        with open(molfile) as molinput:
+            for line in molinput:
+                match = atomline.match(line)
+                if match:
+                    atomnos.append(match.group(2))
+                    atomCount += 1
+        
+        assert atomCount == len(self.geometry.molecule.atoms)
+        
+        parser = cclib.parser.Gaussian(self.outputFilePath)
+        parser.logger.setLevel(logging.ERROR)
+        parser = parser.parse()
+        
+        lines = []
+        for line in parser.atomcoords[-1]:
+            lineList = ''
+            for item in line:
+                if item > 0:
+                    lineList = lineList + ' ' + str(format(item, '.6f')) + ' '
+                else:
+                    lineList = lineList + str(format(item, '.6f')) + ' '
+            lines.append(lineList)
+            
+        atomCount = 0
+        
+        for i, line in enumerate(lines):
+            output.append("{0:8s} {1}".format(atomnos[i], line))
+            atomCount += 1
+        
+        assert atomCount == len(self.geometry.molecule.atoms)
+        
+        output.append('')
+        output.append(pGeom.uniqueIDlong)
+        output.append('')
+        output.append("{charge}   {mult}".format(charge=0, mult=(pGeom.molecule.getRadicalCount() + 1) ))
+        
+        parser = cclib.parser.Gaussian(pGeom.getFilePath(self.outputFileExtension))
+        parser.logger.setLevel(logging.ERROR)
+        parser = parser.parse()
+        
+        lines = []
+        for line in parser.atomcoords[-1]:
+            lineList = ''
+            for item in line:
+                if item > 0:
+                    lineList = lineList + ' ' + str(format(item, '.6f')) + ' '
+                else:
+                    lineList = lineList + str(format(item, '.6f')) + ' '
+            lines.append(lineList)
+            
+        atomCount = 0
+        for i, line in enumerate(lines):
+            output.append("{0:8s} {1}".format(atomnos[i], line))
+            atomCount += 1
+        
+        assert atomCount == len(self.geometry.molecule.atoms)
+        # 
+        # #####################
+        # 
+        # atomCount = 0
+        # with open(molfile) as molinput:
+        #     for line in molinput:
+        #         match = atomline.match(line)
+        #         if match:
+        #             output.append("{0:8s} {1}".format(match.group(2), match.group(1)))
+        #             atomCount += 1
+        # 
+        # assert atomCount == len(self.geometry.molecule.atoms)
+        # 
+        # output.append('')
+        # output.append(pGeom.uniqueIDlong)
+        # output.append('')
+        # output.append("{charge}   {mult}".format(charge=0, mult=(pGeom.molecule.getRadicalCount() + 1) ))
+        # 
+        # molfile = pGeom.getRefinedMolFilePath() # Now get the product geometry
+        # 
+        # atomCount = 0
+        # with open(molfile) as molinput:
+        #     for line in molinput:
+        #         match = atomline.match(line)
+        #         if match:
+        #             output.append("{0:8s} {1}".format(match.group(2), match.group(1)))
+        #             atomCount += 1
+        # 
+        # assert atomCount == len(self.geometry.molecule.atoms)
+        
+        output.append('')
+        input_string = '\n'.join(output) + '\n'
+        top_keys = "#p pm6 opt=(qst2,calcall,noeigentest,MaxCycles={N}) nosymm\n".format(N=max(100,atomCount*10))
+        
+        with open(self.inputFilePath, 'w') as gaussianFile:
+            # gaussianFile.write(numProc)
+            # gaussianFile.write(mem)
+            # gaussianFile.write(chk_file)
+            gaussianFile.write(top_keys)
+            gaussianFile.write(input_string)
+            gaussianFile.write('\n')
