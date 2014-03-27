@@ -392,43 +392,43 @@ class QMReaction:
             logFilePath = self.runDouble(pGeom.getFilePath(self.inputFileExtension))
             shutil.copy(logFilePath, logFilePath+'.ref1.out')
                 
-            if os.path.exists(pGeom.getFilePath('.arc')):
-                # Reactant that references the product geometry
-                print "Reactant referencing product on slope"
-                self.writeReferenceFile(freezeAtoms=labels, otherGeom=pGeom)
-                self.writeGeoRefInputFile(pGeom, freezeAtoms=labels)
-                logFilePath = self.runDouble(self.inputFilePath)
-                shutil.copy(logFilePath, logFilePath+'.ref2.out')
-            else:
+            if not os.path.exists(pGeom.getFilePath('.arc')):
                 notes = notes + 'product .arc file does not exits\n'
                 return False, None, None, notes
-                
-            if os.path.exists(self.getFilePath('.arc')):
-                # Write saddle calculation file using the outputs of the reference calculations
-                print "Running Saddle from optimized geometries"
-                self.writeSaddleInputFile(pGeom)
-                self.runDouble(self.inputFilePath)
-                return True, self.geometry, labels, notes
-                # # Optimize the transition state using the TS protocol
-                # self.writeInputFile(1, fromQST2=True)
-                # converged, cartesian = self.run()
-                # 
-                # if converged:
-                #     notes = notes + 'Transition state converged\n'
-                #     self.writeIRCFile()
-                #     rightTS = self.runIRC()
-                #     if rightTS:
-                #         notes = notes + 'Correct geometry found\n'
-                #         return True, self.geometry, labels, notes
-                #     else:
-                #         notes = notes + 'Failure at IRC\n'
-                #         return False, None, None, notes
-                # else:
-                #     notes = notes + 'Transition state not converged\n'
-                #     return False, None, None, notes
-            else:
+            
+            # Reactant that references the product geometry
+            print "Reactant referencing product on slope"
+            self.writeReferenceFile(freezeAtoms=labels, otherGeom=pGeom)
+            self.writeGeoRefInputFile(pGeom, freezeAtoms=labels)
+            logFilePath = self.runDouble(self.inputFilePath)
+            shutil.copy(logFilePath, logFilePath+'.ref2.out')
+            
+            if not os.path.exists(self.getFilePath('.arc')):
                 notes = notes + 'reactant .arc file does not exits\n'
                 return False, None, None, notes
+            
+            # Write saddle calculation file using the outputs of the reference calculations
+            print "Running Saddle from optimized geometries"
+            self.writeSaddleInputFile(pGeom)
+            self.runDouble(self.inputFilePath)
+            return True, self.geometry, labels, notes
+            # # Optimize the transition state using the TS protocol
+            # self.writeInputFile(1, fromQST2=True)
+            # converged, cartesian = self.run()
+            # 
+            # if converged:
+            #     notes = notes + 'Transition state converged\n'
+            #     self.writeIRCFile()
+            #     rightTS = self.runIRC()
+            #     if rightTS:
+            #         notes = notes + 'Correct geometry found\n'
+            #         return True, self.geometry, labels, notes
+            #     else:
+            #         notes = notes + 'Failure at IRC\n'
+            #         return False, None, None, notes
+            # else:
+            #     notes = notes + 'Transition state not converged\n'
+            #     return False, None, None, notes
         elif self.settings.software.lower() == 'gaussian':
             # all below needs to change
             print "Optimizing reactant geometry"
@@ -478,21 +478,22 @@ class QMReaction:
                 self.writeInputFile(2, fromQST2=True)
                 converged, internalCoord = self.run()
             
-            if converged:
-                if not os.path.exists(self.ircOutputFilePath):
-                    self.writeIRCFile()
-                    rightTS = self.runIRC()
-                else:
-                    rightTS = self.verifyIRCOutputFile()
-                if rightTS:
-                    self.writeRxnOutputFile(labels)
-                    return True, None, None, notes
-                else:
-                    notes = notes + 'IRC failed\n'
-                    return False, None, None, notes
-            else:
+            if not converged:
                 notes = notes + 'Transition state failed\n'
                 return False, None, None, notes
+            
+            if os.path.exists(self.ircOutputFilePath):
+                rightTS = self.verifyIRCOutputFile()
+            else:
+                self.writeIRCFile()
+                rightTS = self.runIRC()
+            
+            if not rightTS:
+                notes = notes + 'IRC failed\n'
+                return False, None, None, notes
+            
+            self.writeRxnOutputFile(labels)
+            return True, None, None, notes
         else:
             raise NotImplementedError("self.settings.software.lower() should be gaussian or mopac")
             return False, None, None, notes
@@ -582,33 +583,33 @@ class QMReaction:
         # provides transitionstate geometry
         tsFound = self.generateTSGeometryDirectGuess()
         
-        if tsFound:
-            reactants = self.calculateQMData(self.reaction.reactants)
-            products = self.calculateQMData(self.reaction.products)
-            
-            if len(reactants)==len(self.reaction.reactants) and len(products)==len(self.reaction.products):
-                #self.determinePointGroup()
-                tsLog = GaussianLog(self.outputFilePath)
-                self.reaction.transitionState = TransitionState(label=self.uniqueID + 'TS', conformer=tsLog.loadConformer(), frequency=(tsLog.loadNegativeFrequency(), 'cm^-1'), tunneling=Wigner(frequency=None))
-                                
-                self.reaction.reactants = reactants
-                self.reaction.products = products
-
-                
-                kineticsJob = KineticsJob(self.reaction)
-                kineticsJob.generateKinetics()
-                
-                """
-                What do I do with it? For now just save it.
-                Various parameters are not considered in the calculations so far e.g. symmetry.
-                This is just a crude calculation, calculating the partition functions
-                from the molecular properties and plugging them through the equation. 
-                """
-                kineticsJob.save(self.getFilePath('.kinetics'))
-                # return self.reaction.kinetics
-        else:
+        if not tsFound:
             # fall back on group additivity
             return None
+            
+        reactants = self.calculateQMData(self.reaction.reactants)
+        products = self.calculateQMData(self.reaction.products)
+        
+        if len(reactants)==len(self.reaction.reactants) and len(products)==len(self.reaction.products):
+            #self.determinePointGroup()
+            tsLog = GaussianLog(self.outputFilePath)
+            self.reaction.transitionState = TransitionState(label=self.uniqueID + 'TS', conformer=tsLog.loadConformer(), frequency=(tsLog.loadNegativeFrequency(), 'cm^-1'), tunneling=Wigner(frequency=None))
+                            
+            self.reaction.reactants = reactants
+            self.reaction.products = products
+
+            
+            kineticsJob = KineticsJob(self.reaction)
+            kineticsJob.generateKinetics()
+            
+            """
+            What do I do with it? For now just save it.
+            Various parameters are not considered in the calculations so far e.g. symmetry.
+            This is just a crude calculation, calculating the partition functions
+            from the molecular properties and plugging them through the equation. 
+            """
+            kineticsJob.save(self.getFilePath('.kinetics'))
+            # return self.reaction.kinetics     
     
     def determinePointGroup(self):
         """
