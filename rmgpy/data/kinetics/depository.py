@@ -135,7 +135,6 @@ class KineticsDepository(Database):
                   shortDesc='',
                   longDesc='',
                   rank=None,
-                  history=None
                   ):
         
         reactants = [Molecule().fromAdjacencyList(reactant1)]
@@ -158,7 +157,6 @@ class KineticsDepository(Database):
             shortDesc = shortDesc,
             longDesc = longDesc.strip(),
             rank = rank,
-            history = history or [],
         )
         self.entries['{0:d}:{1}'.format(index,label)] = entry
         return entry

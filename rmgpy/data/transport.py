@@ -99,7 +99,6 @@ class TransportLibrary(Database):
                   referenceType='',
                   shortDesc='',
                   longDesc='',
-                  history=None
                   ):
         self.entries[label] = Entry(
             index = index,
@@ -110,7 +109,6 @@ class TransportLibrary(Database):
             referenceType = referenceType,
             shortDesc = shortDesc,
             longDesc = longDesc.strip(),
-            history = history or [],
         )
     def saveEntry(self, f, entry):
         """
@@ -149,7 +147,6 @@ class TransportGroups(Database):
                   referenceType='',
                   shortDesc='',
                   longDesc='',
-                  history=None
                   ):
         if group[0:3].upper() == 'OR{' or group[0:4].upper() == 'AND{' or group[0:7].upper() == 'NOT OR{' or group[0:8].upper() == 'NOT AND{':
             item = makeLogicNode(group)
@@ -164,7 +161,6 @@ class TransportGroups(Database):
             referenceType = referenceType,
             shortDesc = shortDesc,
             longDesc = longDesc.strip(),
-            history = history or [],
         )
     
     def saveEntry(self, f, entry):

@@ -121,11 +121,6 @@ def saveEntry(f, entry):
         f.write(entry.longDesc.strip().encode('ascii', 'ignore')+ "\n")
     f.write('""",\n')
 
-    f.write('    history = [\n')
-    for time, user, action, description in entry.history:
-        f.write('        ("{0}","{1}","{2}","""{3}"""),\n'.format(time, user, action, description))
-    f.write('    ],\n')
-
     f.write(')\n\n')
 
 def generateOldLibraryEntry(data):
@@ -189,7 +184,7 @@ class ThermoDepository(Database):
     def __init__(self, label='', name='', shortDesc='', longDesc=''):
         Database.__init__(self, label=label, name=name, shortDesc=shortDesc, longDesc=longDesc)
 
-    def loadEntry(self, index, label, molecule, thermo, reference=None, referenceType='', shortDesc='', longDesc='', history=None):
+    def loadEntry(self, index, label, molecule, thermo, reference=None, referenceType='', shortDesc='', longDesc=''):
         entry = Entry(
             index = index,
             label = label,
@@ -199,7 +194,6 @@ class ThermoDepository(Database):
             referenceType = referenceType,
             shortDesc = shortDesc,
             longDesc = longDesc.strip(),
-            history = history or [],
         )
         self.entries[label] = entry
         return entry
@@ -229,7 +223,6 @@ class ThermoLibrary(Database):
                   referenceType='',
                   shortDesc='',
                   longDesc='',
-                  history=None
                   ):
         
         molecule = Molecule().fromAdjacencyList(molecule)
@@ -251,7 +244,6 @@ class ThermoLibrary(Database):
             referenceType = referenceType,
             shortDesc = shortDesc,
             longDesc = longDesc.strip(),
-            history = history or [],
         )
 
     def saveEntry(self, f, entry):
@@ -293,7 +285,6 @@ class ThermoGroups(Database):
                   referenceType='',
                   shortDesc='',
                   longDesc='',
-                  history=None
                   ):
         if group[0:3].upper() == 'OR{' or group[0:4].upper() == 'AND{' or group[0:7].upper() == 'NOT OR{' or group[0:8].upper() == 'NOT AND{':
             item = makeLogicNode(group)
@@ -308,7 +299,6 @@ class ThermoGroups(Database):
             referenceType = referenceType,
             shortDesc = shortDesc,
             longDesc = longDesc.strip(),
-            history = history or [],
         )
     
     def saveEntry(self, f, entry):

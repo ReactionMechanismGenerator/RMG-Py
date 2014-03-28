@@ -83,11 +83,6 @@ def saveEntry(f, entry):
     f.write(entry.longDesc.strip() + "\n")
     f.write('\n""",\n')
 
-    f.write('    history = [\n')
-    for time, user, action, description in entry.history:
-        f.write('        ("{0}","{1}","{2}","""{3}"""),\n'.format(time, user, action, description))
-    f.write('    ],\n')
-
     f.write(')\n\n')
 
 def generateOldLibraryEntry(data):
@@ -135,7 +130,6 @@ class StatmechDepository(Database):
                   referenceType='',
                   shortDesc='',
                   longDesc='',
-                  history=None
                   ):
         self.entries[label] = Entry(
             index = index,
@@ -146,7 +140,6 @@ class StatmechDepository(Database):
             referenceType = referenceType,
             shortDesc = shortDesc,
             longDesc = longDesc.strip(),
-            history = history or [],
         )
 
     def saveEntry(self, f, entry):
@@ -174,7 +167,6 @@ class StatmechLibrary(Database):
                   referenceType='',
                   shortDesc='',
                   longDesc='',
-                  history=None
                   ):
         self.entries[label] = Entry(
             index = index,
@@ -185,7 +177,6 @@ class StatmechLibrary(Database):
             referenceType = referenceType,
             shortDesc = shortDesc,
             longDesc = longDesc.strip(),
-            history = history or [],
         )
 
     def saveEntry(self, f, entry):
@@ -228,7 +219,6 @@ class StatmechGroups(Database):
                   referenceType='',
                   shortDesc='',
                   longDesc='',
-                  history=None
                   ):
         if ( group[0:3].upper() == 'OR{' or
              group[0:4].upper() == 'AND{' or
@@ -247,7 +237,6 @@ class StatmechGroups(Database):
             referenceType = referenceType,
             shortDesc = shortDesc,
             longDesc = longDesc.strip(),
-            history = history or [],
         )
 
     def saveEntry(self, f, entry):

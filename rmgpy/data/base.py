@@ -77,7 +77,6 @@ class Entry:
     `shortDesc`         A brief (one-line) description of the data
     `longDesc`          A long, verbose description of the data
     `rank`              An integer indicating the degree of confidence in the entry data, or ``None`` if not used
-    `history`           A list of tuples containing the date/time of change, author, type of change, and a brief description of the change
     =================== ========================================================
 
     """
@@ -94,7 +93,6 @@ class Entry:
                  shortDesc='',
                  longDesc='',
                  rank=None,
-                 history=None
                  ):
         self.index = index
         self.label = label
@@ -107,7 +105,6 @@ class Entry:
         self.shortDesc = shortDesc
         self.longDesc = longDesc
         self.rank = rank
-        self.history = history or []
 
     def __str__(self):
         return self.label
@@ -1258,7 +1255,7 @@ class ForbiddenStructures(Database):
         """
         self.saveOldDictionary(path)
 
-    def loadEntry(self, label, molecule=None, group=None, shortDesc='', longDesc='', history=None):
+    def loadEntry(self, label, molecule=None, group=None, shortDesc='', longDesc=''):
         """
         Load an entry from the forbidden structures database. This method is
         automatically called during loading of the forbidden structures 
@@ -1282,7 +1279,6 @@ class ForbiddenStructures(Database):
             item = item,
             shortDesc = shortDesc,
             longDesc = longDesc.strip(),
-            history = history or [],
         )
     
     def saveEntry(self, f, entry, name='entry'):
@@ -1313,10 +1309,5 @@ class ForbiddenStructures(Database):
         f.write('u"""\n')
         f.write(entry.longDesc.strip() + "\n")
         f.write('""",\n')
-
-        f.write('    history = [\n')
-        for time, user, action, description in entry.history:
-            f.write('        ("{0}","{1}","{2}","""{3}"""),\n'.format(time, user, action, description))
-        f.write('    ],\n')
 
         f.write(')\n\n')
