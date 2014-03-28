@@ -68,7 +68,7 @@ class Geometry:
             distGeomAttempts = 5*(atoms-3) #number of conformer attempts is just a linear scaling with molecule size, due to time considerations in practice, it is probably more like 3^(n-3) or something like that
         
         rdmol, minEid = self.rd_embed(rdmol, distGeomAttempts, boundsMatrix)
-        self.save_coordinates(rdmol, minEid, rdAtIdx)
+        self.saveCoordinatesFromRDMol(rdmol, minEid, rdAtIdx)
         
     def rd_build(self):
         """
@@ -104,11 +104,17 @@ class Geometry:
 
         return rdmol, minEid
 
-    def save_coordinates(self, rdmol, minEid, rdAtIdx):
+    def saveCoordinatesFromRDMol(self, rdmol, minEid, rdAtIdx):
         # Save xyz coordinates on each atom in molecule ****
         for atom in self.molecule.atoms:
             point = rdmol.GetConformer(minEid).GetAtomPosition(atom.sortingLabel)
-            atom.coords = [point.x, point.y, point.z]
+            atom.coords = numpy.array([point.x, point.y, point.z])
+    
+    def saveCoordinatesFromQMData(self, qmdata):
+        """
+        Save geometry info from QMData (eg CCLibData)
+        """
+        raise NotImplementedError
 
 def loadThermoDataFile(filePath):
     """

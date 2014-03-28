@@ -4,6 +4,7 @@ import external.cclib as cclib
 import logging
 from subprocess import Popen, PIPE
 
+from rmgpy.molecule import Molecule
 from qmdata import CCLibData
 from molecule import QMMolecule
 
@@ -127,9 +128,19 @@ class Mopac:
             return False
         
         if InChIMatch:
-            logging.info("Successful MOPAC quantum result found in {0}".format(self.outputFilePath))
-            # " + self.molfile.name + " ("+self.molfile.InChIAug+") has been found. This log file will be used.")
-            return True
+            # Compare the optimized geometry to the original molecule
+            qmData = self.parse()
+            
+            cclibMol = Molecule()
+            cclibMol.fromXYZ(qmData.atomicNumbers, qmData.atomCoords.value)
+            testMol = self.molecule.toSingleBonds()
+            
+            if cclibMol.isIsomorphic(testMol):
+                logging.info("Successful MOPAC quantum result found in {0}".format(self.outputFilePath))
+                return True
+            else:
+                logging.info("Incorrect connectivity for optimized geometry in file {0}".format(self.outputFilePath))
+                return False
         
         #InChIs do not match (most likely due to limited name length mirrored in log file (240 characters), but possibly due to a collision)
         return self.checkForInChiKeyCollision(logFileInChI) # Not yet implemented!
