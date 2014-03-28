@@ -50,6 +50,8 @@ from .group import GroupAtom, GroupBond, Group, ActionError
 from .atomtype import AtomType, atomTypes, getAtomType
 import rmgpy.constants as constants
 
+import numpy
+
 #: This dictionary is used to shortcut lookups of a molecule's SMILES string from its chemical formula.
 _known_smiles_molecules = {
                  'N2': 'N#N',
@@ -107,7 +109,7 @@ class Atom(Vertex):
     e.g. ``atom.symbol`` instead of ``atom.element.symbol``.
     """
 
-    def __init__(self, element=None, radicalElectrons=0, spinMultiplicity=1, charge=0, label='', lonePairs=0, coords=None):
+    def __init__(self, element=None, radicalElectrons=0, spinMultiplicity=1, charge=0, label='', lonePairs=0, coords=numpy.array([])):
         Vertex.__init__(self)
         if isinstance(element, str):
             self.element = elements.__dict__[element]
