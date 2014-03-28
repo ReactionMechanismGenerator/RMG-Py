@@ -7,7 +7,7 @@ before_install:
   - sudo apt-get update -qq
   - sudo apt-get install git build-essential gfortran python-dev liblapack-dev python-openbabel python-setuptools python-pip
   - sudo apt-get install python-rdkit librdkit-dev librdkit1 rdkit-data
-  - sudo apt-get install -qq python-numpy python-scipy
+  - sudo apt-get install -qq python-numpy python-scipy python-matplotlib
   - git clone https://github.com/GreenGroup/RMG-database.git
 install:
   - pip install numpy
