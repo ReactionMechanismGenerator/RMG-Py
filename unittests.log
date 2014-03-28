@@ -3240,12 +3240,12 @@ Test the value of the reduced Planck constant. ... ok
 Test the value of the speed of light in a vacuum. ... ok
 Test we can estimate solvation thermochemistry. ... FAIL
 Test we can estimate Abraham solute paramaters correctly ... ok
-Test that the new ThermoDatabase generates appropriate thermo data. ... ERROR
-Test that the old ThermoDatabase generates relatively accurate thermo data. ... ERROR
-Test we generate symmetry numbers correctly. ... ERROR
-Test that the new ThermoDatabase generates appropriate thermo data. for Aromatics. ... ERROR
-Test that the old ThermoDatabase generates relatively accurate thermo data. for Aromatics. ... ERROR
-Test we generate symmetry numbers correctly. for Aromatics. ... ERROR
+Test that the new ThermoDatabase generates appropriate thermo data. ... FAIL
+Test that the old ThermoDatabase generates relatively accurate thermo data. ... FAIL
+Test we generate symmetry numbers correctly. ... FAIL
+Test that the new ThermoDatabase generates appropriate thermo data. for Aromatics. ... FAIL
+Test that the old ThermoDatabase generates relatively accurate thermo data. for Aromatics. ... FAIL
+Test we generate symmetry numbers correctly. for Aromatics. ... FAIL
 Test that the Arrhenius A property was properly set. ... ok
 Test that the Arrhenius Ea property was properly set. ... ok
 Test that the Arrhenius T0 property was properly set. ... ok
@@ -3414,10 +3414,10 @@ Test that getAtomType() returns appropriate NoneTypes. ... FAIL
 Test that getAtomType() returns appropriate oxygen atom types. ... ok
 Test that getAtomType() returns appropriate silicon atom types. ... ok
 Test that getAtomType() returns appropriate sulfur atom types. ... ok
-Test we can create PDF files from molecules. ... ERROR
-Test we can create PDF surface without a temporary file (newer versions of PyCairo?) ... ERROR
-Test we can create PNG files from molecules. ... ERROR
-Test we can draw a polycyclic molecule ... ERROR
+Test we can create PDF files from molecules. ... ok
+Test we can create PDF surface without a temporary file (newer versions of PyCairo?) ... ok
+Test we can create PNG files from molecules. ... ok
+Test we can draw a polycyclic molecule ... ok
 Test the rmgpy.elements.getElement() method. ... ok
 Test that we can reconstruct an Element object from its repr() ... ok
 Test that an Element object can be successfully pickled and ... ok
@@ -3477,13 +3477,13 @@ Test the GroupBond.copy() method. ... ok
 Test the GroupBond.equivalent() method. ... ok
 Test the GroupBond.isSpecificCaseOf() method. ... ok
 Test that a GroupBond object can be successfully pickled and ... ok
-Test the Atom.applyAction() method for a BREAK_BOND action. ... ERROR
-Test the Atom.applyAction() method for a CHANGE_BOND action. ... ERROR
-Test the Atom.applyAction() method for a FORM_BOND action. ... ERROR
-Test the Atom.applyAction() method for a GAIN_RADICAL action. ... ERROR
-Test the Atom.applyAction() method for a CHANGE_BOND action. ... ERROR
-Test the Atom.applyAction() method for a LOSE_RADICAL action. ... ERROR
-Test the Atom.copy() method. ... ERROR
+Test the Atom.applyAction() method for a BREAK_BOND action. ... ok
+Test the Atom.applyAction() method for a CHANGE_BOND action. ... ok
+Test the Atom.applyAction() method for a FORM_BOND action. ... ok
+Test the Atom.applyAction() method for a GAIN_RADICAL action. ... ok
+Test the Atom.applyAction() method for a CHANGE_BOND action. ... ok
+Test the Atom.applyAction() method for a LOSE_RADICAL action. ... ok
+Test the Atom.copy() method. ... ok
 Test the Atom.decrementRadical() method. ... ok
 Test the Atom.equivalent() method. ... ok
 Test the Atom.incrementRadical() method. ... ok
@@ -3514,9 +3514,9 @@ Test the Bond.isTriple() method. ... ok
 Test that a Bond object can be successfully pickled and ... ok
 Check the adjacency list read/write functions for a full molecule. ... WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
 ok
-Test the Molecule.isAromatic() method. ... ERROR
-Test the Molecule.isAromatic() method. ... ERROR
-Test the Molecule.isAromatic() method. ... ERROR
+Test the Molecule.isAromatic() method. ... FAIL
+Test the Molecule.isAromatic() method. ... ok
+Test the Molecule.isAromatic() method. ... FAIL
 Test that Augmented InChI generation is printing the /mult layer ... WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
 ok
 Test that Augmented InChI Key generation is printing the mult layer ... WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
@@ -3576,6 +3576,10 @@ None
         14 H 0 {6,S}
         15 H 0 {6,S}
         
+Cd
+Cs
+Cd
+Cd
 
             1     C     1 {2,S}
             2     C     1 {1,S}
@@ -3605,58 +3609,58 @@ Test that the species [CH2] has two radical electrons and a spin multiplicity of
 Test radical count on [CH2]C[CH2] ... ok
 Test the Molecule.getRadicalCount() method. ... ok
 Test that we can generate a few SMILES strings as expected ... ok
-Test the Molecule.getSmallestSetOfSmallestRings() method with a complex ... ERROR
+Test the Molecule.getSmallestSetOfSmallestRings() method with a complex ... ok
 Check the graph isomorphism functions. ... ok
 testSubgraphIsomorphismAgain (rmgpy.molecule.moleculeTest.TestMolecule) ... WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
 ok
 testSubgraphIsomorphismManyLabels (rmgpy.molecule.moleculeTest.TestMolecule) ... WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
 ok
 Test the Molecule.toAdjacencyList() method. ... ok
-Test the Molecule.calculateAtomSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateAtomSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateAtomSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateAtomSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateAtomSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateAxisSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateAxisSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateAxisSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateAxisSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateAxisSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateAxisSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateAxisSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateAxisSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateAxisSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateAxisSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateAxisSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateAxisSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateAxisSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateAxisSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateAxisSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateBondSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateBondSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateBondSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateBondSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateBondSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateCyclicSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateCyclicSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateCyclicSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateCyclicSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateSymmetryNumber() method. ... ok
-Test the Molecule.calculateSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateAtomSymmetryNumber() method. ... ok
+Test the Molecule.calculateAtomSymmetryNumber() method. ... ok
+Test the Molecule.calculateAtomSymmetryNumber() method. ... ok
+Test the Molecule.calculateAtomSymmetryNumber() method. ... ok
+Test the Molecule.calculateAtomSymmetryNumber() method. ... ok
+Test the Molecule.calculateAxisSymmetryNumber() method. ... ok
+Test the Molecule.calculateAxisSymmetryNumber() method. ... ok
+Test the Molecule.calculateAxisSymmetryNumber() method. ... ok
+Test the Molecule.calculateAxisSymmetryNumber() method. ... ok
+Test the Molecule.calculateAxisSymmetryNumber() method. ... FAIL
+Test the Molecule.calculateAxisSymmetryNumber() method. ... ok
+Test the Molecule.calculateAxisSymmetryNumber() method. ... ok
+Test the Molecule.calculateAxisSymmetryNumber() method. ... ok
+Test the Molecule.calculateAxisSymmetryNumber() method. ... ok
+Test the Molecule.calculateAxisSymmetryNumber() method. ... ok
+Test the Molecule.calculateAxisSymmetryNumber() method. ... ok
+Test the Molecule.calculateAxisSymmetryNumber() method. ... ok
+Test the Molecule.calculateAxisSymmetryNumber() method. ... ok
+Test the Molecule.calculateAxisSymmetryNumber() method. ... ok
+Test the Molecule.calculateAxisSymmetryNumber() method. ... ok
+Test the Molecule.calculateBondSymmetryNumber() method. ... ok
+Test the Molecule.calculateBondSymmetryNumber() method. ... ok
+Test the Molecule.calculateBondSymmetryNumber() method. ... ok
+Test the Molecule.calculateBondSymmetryNumber() method. ... ok
+Test the Molecule.calculateBondSymmetryNumber() method. ... ok
+Test the Molecule.calculateCyclicSymmetryNumber() method. ... FAIL
+Test the Molecule.calculateCyclicSymmetryNumber() method. ... ok
+Test the Molecule.calculateCyclicSymmetryNumber() method. ... ok
+Test the Molecule.calculateCyclicSymmetryNumber() method. ... ok
 Test the Molecule.calculateSymmetryNumber() method. ... ok
 Test the Molecule.calculateSymmetryNumber() method. ... ok
-Test the Molecule.calculateSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateSymmetryNumber() method. ... ERROR
-Test the Molecule.calculateSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateSymmetryNumber() method. ... FAIL
+Test the Molecule.calculateSymmetryNumber() method. ... ok
+Test the Molecule.calculateSymmetryNumber() method. ... ok
+Test the Molecule.calculateSymmetryNumber() method. ... ok
+Test the Molecule.calculateSymmetryNumber() method. ... ok
+Test the Molecule.calculateSymmetryNumber() method. ... ok
+Test the Molecule.calculateSymmetryNumber() method. ... ok
+Test the Molecule.calculateSymmetryNumber() method. ... ok
+Test the Molecule.calculateSymmetryNumber() method. ... ok
+Test the Molecule.calculateSymmetryNumber() method. ... ok
+Test the Molecule.calculateSymmetryNumber() method. ... ok
+Test the Molecule.calculateSymmetryNumber() method. ... FAIL
+Test the Molecule.calculateSymmetryNumber() method. ... FAIL
+Test the Molecule.calculateSymmetryNumber() method. ... ok
 Test the SingleExponentialDown.T0 attribute. ... ok
 Test the SingleExponentialDown.sigma attribute. ... ok
 Test the SingleExponentialDown.getAlpha() method. ... ok
@@ -3996,904 +4000,6 @@ testJoback (rmgpy.transportDataTest.TestTransportDatabase) ... ok
 Test Joback doesn't crash on Cb desription of beneze ... ok
 
 ======================================================================
-ERROR: Test that the new ThermoDatabase generates appropriate thermo data.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermoTest.py", line 69, in testNewThermoGeneration
-    thermoData = self.database.getThermoDataFromGroups(Species(molecule=[species.molecule[0]]))
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermo.py", line 778, in getThermoDataFromGroups
-    tdata = self.estimateThermoViaGroupAdditivity(molecule)
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermo.py", line 953, in estimateThermoViaGroupAdditivity
-    molecule.calculateSymmetryNumber()
-  File "molecule.py", line 1564, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24176)
-  File "molecule.py", line 1570, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24116)
-  File "symmetry.py", line 430, in rmgpy.molecule.symmetry.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:8430)
-  File "symmetry.py", line 439, in rmgpy.molecule.symmetry.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:8161)
-  File "symmetry.py", line 56, in rmgpy.molecule.symmetry.calculateAtomSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:2236)
-  File "molecule.py", line 785, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13157)
-  File "graph.pyx", line 307, in rmgpy.molecule.graph.Graph.copy (build/pyrex/rmgpy/molecule/graph.c:5297)
-  File "molecule.py", line 258, in rmgpy.molecule.molecule.Atom.copy (build/pyrex/rmgpy/molecule/molecule.c:4772)
-TypeError: 'NoneType' object is unsliceable
-
-======================================================================
-ERROR: Test that the old ThermoDatabase generates relatively accurate thermo data.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermoTest.py", line 115, in testOldThermoGeneration
-    thermoData = self.oldDatabase.getThermoData(Species(molecule=[species.molecule[0]]))
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermo.py", line 649, in getThermoData
-    thermoData = self.getThermoDataFromGroups(species)
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermo.py", line 778, in getThermoDataFromGroups
-    tdata = self.estimateThermoViaGroupAdditivity(molecule)
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermo.py", line 953, in estimateThermoViaGroupAdditivity
-    molecule.calculateSymmetryNumber()
-  File "molecule.py", line 1564, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24176)
-  File "molecule.py", line 1570, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24116)
-  File "symmetry.py", line 430, in rmgpy.molecule.symmetry.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:8430)
-  File "symmetry.py", line 439, in rmgpy.molecule.symmetry.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:8161)
-  File "symmetry.py", line 56, in rmgpy.molecule.symmetry.calculateAtomSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:2236)
-  File "molecule.py", line 785, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13157)
-  File "graph.pyx", line 307, in rmgpy.molecule.graph.Graph.copy (build/pyrex/rmgpy/molecule/graph.c:5297)
-  File "molecule.py", line 258, in rmgpy.molecule.molecule.Atom.copy (build/pyrex/rmgpy/molecule/molecule.c:4772)
-TypeError: 'NoneType' object is unsliceable
-
-======================================================================
-ERROR: Test we generate symmetry numbers correctly.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermoTest.py", line 94, in testSymmetryNumberGeneration
-    thermoData = self.database.getThermoDataFromGroups(Species(molecule=[species.molecule[0]]))
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermo.py", line 778, in getThermoDataFromGroups
-    tdata = self.estimateThermoViaGroupAdditivity(molecule)
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermo.py", line 953, in estimateThermoViaGroupAdditivity
-    molecule.calculateSymmetryNumber()
-  File "molecule.py", line 1564, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24176)
-  File "molecule.py", line 1570, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24116)
-  File "symmetry.py", line 430, in rmgpy.molecule.symmetry.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:8430)
-  File "symmetry.py", line 439, in rmgpy.molecule.symmetry.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:8161)
-  File "symmetry.py", line 56, in rmgpy.molecule.symmetry.calculateAtomSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:2236)
-  File "molecule.py", line 785, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13157)
-  File "graph.pyx", line 307, in rmgpy.molecule.graph.Graph.copy (build/pyrex/rmgpy/molecule/graph.c:5297)
-  File "molecule.py", line 258, in rmgpy.molecule.molecule.Atom.copy (build/pyrex/rmgpy/molecule/molecule.c:4772)
-TypeError: 'NoneType' object is unsliceable
-
-======================================================================
-ERROR: Test that the new ThermoDatabase generates appropriate thermo data. for Aromatics.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermoTest.py", line 69, in testNewThermoGeneration
-    thermoData = self.database.getThermoDataFromGroups(Species(molecule=[species.molecule[0]]))
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermo.py", line 778, in getThermoDataFromGroups
-    tdata = self.estimateThermoViaGroupAdditivity(molecule)
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermo.py", line 918, in estimateThermoViaGroupAdditivity
-    if molecule.getAllPolycyclicVertices():
-  File "graph.pyx", line 531, in rmgpy.molecule.graph.Graph.getAllPolycyclicVertices (build/pyrex/rmgpy/molecule/graph.c:8842)
-  File "graph.pyx", line 536, in rmgpy.molecule.graph.Graph.getAllPolycyclicVertices (build/pyrex/rmgpy/molecule/graph.c:8635)
-  File "graph.pyx", line 597, in rmgpy.molecule.graph.Graph.getSmallestSetOfSmallestRings (build/pyrex/rmgpy/molecule/graph.c:9385)
-  File "molecule.py", line 777, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13288)
-  File "molecule.py", line 785, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13157)
-  File "graph.pyx", line 307, in rmgpy.molecule.graph.Graph.copy (build/pyrex/rmgpy/molecule/graph.c:5297)
-  File "molecule.py", line 258, in rmgpy.molecule.molecule.Atom.copy (build/pyrex/rmgpy/molecule/molecule.c:4772)
-TypeError: 'NoneType' object is unsliceable
-
-======================================================================
-ERROR: Test that the old ThermoDatabase generates relatively accurate thermo data. for Aromatics.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermoTest.py", line 115, in testOldThermoGeneration
-    thermoData = self.oldDatabase.getThermoData(Species(molecule=[species.molecule[0]]))
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermo.py", line 649, in getThermoData
-    thermoData = self.getThermoDataFromGroups(species)
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermo.py", line 778, in getThermoDataFromGroups
-    tdata = self.estimateThermoViaGroupAdditivity(molecule)
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermo.py", line 918, in estimateThermoViaGroupAdditivity
-    if molecule.getAllPolycyclicVertices():
-  File "graph.pyx", line 531, in rmgpy.molecule.graph.Graph.getAllPolycyclicVertices (build/pyrex/rmgpy/molecule/graph.c:8842)
-  File "graph.pyx", line 536, in rmgpy.molecule.graph.Graph.getAllPolycyclicVertices (build/pyrex/rmgpy/molecule/graph.c:8635)
-  File "graph.pyx", line 597, in rmgpy.molecule.graph.Graph.getSmallestSetOfSmallestRings (build/pyrex/rmgpy/molecule/graph.c:9385)
-  File "molecule.py", line 777, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13288)
-  File "molecule.py", line 785, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13157)
-  File "graph.pyx", line 307, in rmgpy.molecule.graph.Graph.copy (build/pyrex/rmgpy/molecule/graph.c:5297)
-  File "molecule.py", line 258, in rmgpy.molecule.molecule.Atom.copy (build/pyrex/rmgpy/molecule/molecule.c:4772)
-TypeError: 'NoneType' object is unsliceable
-
-======================================================================
-ERROR: Test we generate symmetry numbers correctly. for Aromatics.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermoTest.py", line 94, in testSymmetryNumberGeneration
-    thermoData = self.database.getThermoDataFromGroups(Species(molecule=[species.molecule[0]]))
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermo.py", line 778, in getThermoDataFromGroups
-    tdata = self.estimateThermoViaGroupAdditivity(molecule)
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermo.py", line 918, in estimateThermoViaGroupAdditivity
-    if molecule.getAllPolycyclicVertices():
-  File "graph.pyx", line 531, in rmgpy.molecule.graph.Graph.getAllPolycyclicVertices (build/pyrex/rmgpy/molecule/graph.c:8842)
-  File "graph.pyx", line 536, in rmgpy.molecule.graph.Graph.getAllPolycyclicVertices (build/pyrex/rmgpy/molecule/graph.c:8635)
-  File "graph.pyx", line 597, in rmgpy.molecule.graph.Graph.getSmallestSetOfSmallestRings (build/pyrex/rmgpy/molecule/graph.c:9385)
-  File "molecule.py", line 777, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13288)
-  File "molecule.py", line 785, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13157)
-  File "graph.pyx", line 307, in rmgpy.molecule.graph.Graph.copy (build/pyrex/rmgpy/molecule/graph.c:5297)
-  File "molecule.py", line 258, in rmgpy.molecule.molecule.Atom.copy (build/pyrex/rmgpy/molecule/molecule.c:4772)
-TypeError: 'NoneType' object is unsliceable
-
-======================================================================
-ERROR: Test we can create PDF files from molecules.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/drawTest.py", line 51, in testDrawPDF
-    surface, cr, (xoff, yoff, width, height) = self.drawer.draw(self.molecule, format='pdf', path=path)
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/draw.py", line 146, in draw
-    self.molecule = molecule.copy(deep=True)
-  File "molecule.py", line 777, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13288)
-  File "molecule.py", line 785, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13157)
-  File "graph.pyx", line 307, in rmgpy.molecule.graph.Graph.copy (build/pyrex/rmgpy/molecule/graph.c:5297)
-  File "molecule.py", line 258, in rmgpy.molecule.molecule.Atom.copy (build/pyrex/rmgpy/molecule/molecule.c:4772)
-TypeError: 'NoneType' object is unsliceable
-
-======================================================================
-ERROR: Test we can create PDF surface without a temporary file (newer versions of PyCairo?)
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/drawTest.py", line 75, in testDrawPDFwithoutFile
-    surface, cr, (xoff, yoff, width, height) = self.drawer.draw(self.molecule, format='pdf')
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/draw.py", line 146, in draw
-    self.molecule = molecule.copy(deep=True)
-  File "molecule.py", line 777, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13288)
-  File "molecule.py", line 785, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13157)
-  File "graph.pyx", line 307, in rmgpy.molecule.graph.Graph.copy (build/pyrex/rmgpy/molecule/graph.c:5297)
-  File "molecule.py", line 258, in rmgpy.molecule.molecule.Atom.copy (build/pyrex/rmgpy/molecule/molecule.c:4772)
-TypeError: 'NoneType' object is unsliceable
-
-======================================================================
-ERROR: Test we can create PNG files from molecules.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/drawTest.py", line 38, in testDrawPNG
-    surface, cr, (xoff, yoff, width, height) = self.drawer.draw(self.molecule, format='png', path=path)
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/draw.py", line 146, in draw
-    self.molecule = molecule.copy(deep=True)
-  File "molecule.py", line 777, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13288)
-  File "molecule.py", line 785, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13157)
-  File "graph.pyx", line 307, in rmgpy.molecule.graph.Graph.copy (build/pyrex/rmgpy/molecule/graph.c:5297)
-  File "molecule.py", line 258, in rmgpy.molecule.molecule.Atom.copy (build/pyrex/rmgpy/molecule/molecule.c:4772)
-TypeError: 'NoneType' object is unsliceable
-
-======================================================================
-ERROR: Test we can draw a polycyclic molecule
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/drawTest.py", line 65, in testDrawPolycycle
-    surface, cr, (xoff, yoff, width, height) = self.drawer.draw(self.molecule, format='pdf', path=path)
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/draw.py", line 146, in draw
-    self.molecule = molecule.copy(deep=True)
-  File "molecule.py", line 777, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13288)
-  File "molecule.py", line 785, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13157)
-  File "graph.pyx", line 307, in rmgpy.molecule.graph.Graph.copy (build/pyrex/rmgpy/molecule/graph.c:5297)
-  File "molecule.py", line 258, in rmgpy.molecule.molecule.Atom.copy (build/pyrex/rmgpy/molecule/molecule.c:4772)
-TypeError: 'NoneType' object is unsliceable
-
-======================================================================
-ERROR: Test the Atom.applyAction() method for a BREAK_BOND action.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/moleculeTest.py", line 112, in testApplyActionBreakBond
-    atom = atom0.copy()
-  File "molecule.py", line 241, in rmgpy.molecule.molecule.Atom.copy (build/pyrex/rmgpy/molecule/molecule.c:4836)
-  File "molecule.py", line 258, in rmgpy.molecule.molecule.Atom.copy (build/pyrex/rmgpy/molecule/molecule.c:4772)
-TypeError: 'NoneType' object is unsliceable
-
-======================================================================
-ERROR: Test the Atom.applyAction() method for a CHANGE_BOND action.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/moleculeTest.py", line 157, in testApplyActionDecrementBond
-    atom = atom0.copy()
-  File "molecule.py", line 241, in rmgpy.molecule.molecule.Atom.copy (build/pyrex/rmgpy/molecule/molecule.c:4836)
-  File "molecule.py", line 258, in rmgpy.molecule.molecule.Atom.copy (build/pyrex/rmgpy/molecule/molecule.c:4772)
-TypeError: 'NoneType' object is unsliceable
-
-======================================================================
-ERROR: Test the Atom.applyAction() method for a FORM_BOND action.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/moleculeTest.py", line 127, in testApplyActionFormBond
-    atom = atom0.copy()
-  File "molecule.py", line 241, in rmgpy.molecule.molecule.Atom.copy (build/pyrex/rmgpy/molecule/molecule.c:4836)
-  File "molecule.py", line 258, in rmgpy.molecule.molecule.Atom.copy (build/pyrex/rmgpy/molecule/molecule.c:4772)
-TypeError: 'NoneType' object is unsliceable
-
-======================================================================
-ERROR: Test the Atom.applyAction() method for a GAIN_RADICAL action.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/moleculeTest.py", line 172, in testApplyActionGainRadical
-    atom = atom0.copy()
-  File "molecule.py", line 241, in rmgpy.molecule.molecule.Atom.copy (build/pyrex/rmgpy/molecule/molecule.c:4836)
-  File "molecule.py", line 258, in rmgpy.molecule.molecule.Atom.copy (build/pyrex/rmgpy/molecule/molecule.c:4772)
-TypeError: 'NoneType' object is unsliceable
-
-======================================================================
-ERROR: Test the Atom.applyAction() method for a CHANGE_BOND action.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/moleculeTest.py", line 142, in testApplyActionIncrementBond
-    atom = atom0.copy()
-  File "molecule.py", line 241, in rmgpy.molecule.molecule.Atom.copy (build/pyrex/rmgpy/molecule/molecule.c:4836)
-  File "molecule.py", line 258, in rmgpy.molecule.molecule.Atom.copy (build/pyrex/rmgpy/molecule/molecule.c:4772)
-TypeError: 'NoneType' object is unsliceable
-
-======================================================================
-ERROR: Test the Atom.applyAction() method for a LOSE_RADICAL action.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/moleculeTest.py", line 187, in testApplyActionLoseRadical
-    atom = atom0.copy()
-  File "molecule.py", line 241, in rmgpy.molecule.molecule.Atom.copy (build/pyrex/rmgpy/molecule/molecule.c:4836)
-  File "molecule.py", line 258, in rmgpy.molecule.molecule.Atom.copy (build/pyrex/rmgpy/molecule/molecule.c:4772)
-TypeError: 'NoneType' object is unsliceable
-
-======================================================================
-ERROR: Test the Atom.copy() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/moleculeTest.py", line 227, in testCopy
-    atom = self.atom.copy()
-  File "molecule.py", line 241, in rmgpy.molecule.molecule.Atom.copy (build/pyrex/rmgpy/molecule/molecule.c:4836)
-  File "molecule.py", line 258, in rmgpy.molecule.molecule.Atom.copy (build/pyrex/rmgpy/molecule/molecule.c:4772)
-TypeError: 'NoneType' object is unsliceable
-
-======================================================================
-ERROR: Test the Molecule.isAromatic() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/moleculeTest.py", line 926, in testAromaticBenzene
-    self.assertTrue(Molecule().fromSMILES('C1=CC=CC=C1').isAromatic())
-  File "molecule.py", line 1509, in rmgpy.molecule.molecule.Molecule.isAromatic (build/pyrex/rmgpy/molecule/molecule.c:23129)
-  File "graph.pyx", line 597, in rmgpy.molecule.graph.Graph.getSmallestSetOfSmallestRings (build/pyrex/rmgpy/molecule/graph.c:9385)
-  File "molecule.py", line 777, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13288)
-  File "molecule.py", line 785, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13157)
-  File "graph.pyx", line 307, in rmgpy.molecule.graph.Graph.copy (build/pyrex/rmgpy/molecule/graph.c:5297)
-  File "molecule.py", line 258, in rmgpy.molecule.molecule.Atom.copy (build/pyrex/rmgpy/molecule/molecule.c:4772)
-TypeError: 'NoneType' object is unsliceable
-
-======================================================================
-ERROR: Test the Molecule.isAromatic() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/moleculeTest.py", line 938, in testAromaticCyclohexane
-    self.assertFalse(Molecule().fromSMILES('C1CCCCC1').isAromatic())
-  File "molecule.py", line 1509, in rmgpy.molecule.molecule.Molecule.isAromatic (build/pyrex/rmgpy/molecule/molecule.c:23129)
-  File "graph.pyx", line 597, in rmgpy.molecule.graph.Graph.getSmallestSetOfSmallestRings (build/pyrex/rmgpy/molecule/graph.c:9385)
-  File "molecule.py", line 777, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13288)
-  File "molecule.py", line 785, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13157)
-  File "graph.pyx", line 307, in rmgpy.molecule.graph.Graph.copy (build/pyrex/rmgpy/molecule/graph.c:5297)
-  File "molecule.py", line 258, in rmgpy.molecule.molecule.Atom.copy (build/pyrex/rmgpy/molecule/molecule.c:4772)
-TypeError: 'NoneType' object is unsliceable
-
-======================================================================
-ERROR: Test the Molecule.isAromatic() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/moleculeTest.py", line 932, in testAromaticNaphthalene
-    self.assertTrue(Molecule().fromSMILES('C12C(C=CC=C1)=CC=CC=2').isAromatic())
-  File "molecule.py", line 1509, in rmgpy.molecule.molecule.Molecule.isAromatic (build/pyrex/rmgpy/molecule/molecule.c:23129)
-  File "graph.pyx", line 597, in rmgpy.molecule.graph.Graph.getSmallestSetOfSmallestRings (build/pyrex/rmgpy/molecule/graph.c:9385)
-  File "molecule.py", line 777, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13288)
-  File "molecule.py", line 785, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13157)
-  File "graph.pyx", line 307, in rmgpy.molecule.graph.Graph.copy (build/pyrex/rmgpy/molecule/graph.c:5297)
-  File "molecule.py", line 258, in rmgpy.molecule.molecule.Atom.copy (build/pyrex/rmgpy/molecule/molecule.c:4772)
-TypeError: 'NoneType' object is unsliceable
-
-======================================================================
-ERROR: Test the Molecule.getSmallestSetOfSmallestRings() method with a complex
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/moleculeTest.py", line 734, in testSSSR
-    sssr = molecule.getSmallestSetOfSmallestRings()
-  File "graph.pyx", line 580, in rmgpy.molecule.graph.Graph.getSmallestSetOfSmallestRings (build/pyrex/rmgpy/molecule/graph.c:10225)
-  File "graph.pyx", line 597, in rmgpy.molecule.graph.Graph.getSmallestSetOfSmallestRings (build/pyrex/rmgpy/molecule/graph.c:9385)
-  File "molecule.py", line 777, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13288)
-  File "molecule.py", line 785, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13157)
-  File "graph.pyx", line 307, in rmgpy.molecule.graph.Graph.copy (build/pyrex/rmgpy/molecule/graph.c:5297)
-  File "molecule.py", line 258, in rmgpy.molecule.molecule.Atom.copy (build/pyrex/rmgpy/molecule/molecule.c:4772)
-TypeError: 'NoneType' object is unsliceable
-
-======================================================================
-ERROR: Test the Molecule.calculateAtomSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 47, in testAtomSymmetryNumberEthane
-    symmetryNumber *= calculateAtomSymmetryNumber(molecule, atom)
-  File "symmetry.py", line 35, in rmgpy.molecule.symmetry.calculateAtomSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:3521)
-  File "symmetry.py", line 56, in rmgpy.molecule.symmetry.calculateAtomSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:2236)
-  File "molecule.py", line 785, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13157)
-  File "graph.pyx", line 307, in rmgpy.molecule.graph.Graph.copy (build/pyrex/rmgpy/molecule/graph.c:5297)
-  File "molecule.py", line 258, in rmgpy.molecule.molecule.Atom.copy (build/pyrex/rmgpy/molecule/molecule.c:4772)
-TypeError: 'NoneType' object is unsliceable
-
-======================================================================
-ERROR: Test the Molecule.calculateAtomSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 69, in testAtomSymmetryNumberIsobutane
-    symmetryNumber *= calculateAtomSymmetryNumber(molecule, atom)
-  File "symmetry.py", line 35, in rmgpy.molecule.symmetry.calculateAtomSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:3521)
-  File "symmetry.py", line 56, in rmgpy.molecule.symmetry.calculateAtomSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:2236)
-  File "molecule.py", line 785, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13157)
-  File "graph.pyx", line 307, in rmgpy.molecule.graph.Graph.copy (build/pyrex/rmgpy/molecule/graph.c:5297)
-  File "molecule.py", line 258, in rmgpy.molecule.molecule.Atom.copy (build/pyrex/rmgpy/molecule/molecule.c:4772)
-TypeError: 'NoneType' object is unsliceable
-
-======================================================================
-ERROR: Test the Molecule.calculateAtomSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 25, in testAtomSymmetryNumberMethane
-    symmetryNumber *= calculateAtomSymmetryNumber(molecule, atom)
-  File "symmetry.py", line 35, in rmgpy.molecule.symmetry.calculateAtomSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:3521)
-  File "symmetry.py", line 56, in rmgpy.molecule.symmetry.calculateAtomSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:2236)
-  File "molecule.py", line 785, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13157)
-  File "graph.pyx", line 307, in rmgpy.molecule.graph.Graph.copy (build/pyrex/rmgpy/molecule/graph.c:5297)
-  File "molecule.py", line 258, in rmgpy.molecule.molecule.Atom.copy (build/pyrex/rmgpy/molecule/molecule.c:4772)
-TypeError: 'NoneType' object is unsliceable
-
-======================================================================
-ERROR: Test the Molecule.calculateAtomSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 36, in testAtomSymmetryNumberMethyl
-    symmetryNumber *= calculateAtomSymmetryNumber(molecule, atom)
-  File "symmetry.py", line 35, in rmgpy.molecule.symmetry.calculateAtomSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:3521)
-  File "symmetry.py", line 56, in rmgpy.molecule.symmetry.calculateAtomSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:2236)
-  File "molecule.py", line 785, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13157)
-  File "graph.pyx", line 307, in rmgpy.molecule.graph.Graph.copy (build/pyrex/rmgpy/molecule/graph.c:5297)
-  File "molecule.py", line 258, in rmgpy.molecule.molecule.Atom.copy (build/pyrex/rmgpy/molecule/molecule.c:4772)
-TypeError: 'NoneType' object is unsliceable
-
-======================================================================
-ERROR: Test the Molecule.calculateAtomSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 58, in testAtomSymmetryNumberPropane
-    symmetryNumber *= calculateAtomSymmetryNumber(molecule, atom)
-  File "symmetry.py", line 35, in rmgpy.molecule.symmetry.calculateAtomSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:3521)
-  File "symmetry.py", line 56, in rmgpy.molecule.symmetry.calculateAtomSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:2236)
-  File "molecule.py", line 785, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13157)
-  File "graph.pyx", line 307, in rmgpy.molecule.graph.Graph.copy (build/pyrex/rmgpy/molecule/graph.c:5297)
-  File "molecule.py", line 258, in rmgpy.molecule.molecule.Atom.copy (build/pyrex/rmgpy/molecule/molecule.c:4772)
-TypeError: 'NoneType' object is unsliceable
-
-======================================================================
-ERROR: Test the Molecule.calculateAxisSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 186, in testAxisSymmetryNumber1
-    self.assertEqual(calculateAxisSymmetryNumber(molecule), 2)
-  File "symmetry.py", line 176, in rmgpy.molecule.symmetry.calculateAxisSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:6750)
-  File "symmetry.py", line 268, in rmgpy.molecule.symmetry.calculateAxisSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:6023)
-  File "molecule.py", line 785, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13157)
-  File "graph.pyx", line 307, in rmgpy.molecule.graph.Graph.copy (build/pyrex/rmgpy/molecule/graph.c:5297)
-  File "molecule.py", line 258, in rmgpy.molecule.molecule.Atom.copy (build/pyrex/rmgpy/molecule/molecule.c:4772)
-TypeError: 'NoneType' object is unsliceable
-
-======================================================================
-ERROR: Test the Molecule.calculateAxisSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 172, in testAxisSymmetryNumber12Butadienyl
-    self.assertEqual(calculateAxisSymmetryNumber(molecule), 1)
-  File "symmetry.py", line 176, in rmgpy.molecule.symmetry.calculateAxisSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:6750)
-  File "symmetry.py", line 268, in rmgpy.molecule.symmetry.calculateAxisSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:6023)
-  File "molecule.py", line 785, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13157)
-  File "graph.pyx", line 307, in rmgpy.molecule.graph.Graph.copy (build/pyrex/rmgpy/molecule/graph.c:5297)
-  File "molecule.py", line 258, in rmgpy.molecule.molecule.Atom.copy (build/pyrex/rmgpy/molecule/molecule.c:4772)
-TypeError: 'NoneType' object is unsliceable
-
-======================================================================
-ERROR: Test the Molecule.calculateAxisSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 179, in testAxisSymmetryNumber12Hexadienyl
-    self.assertEqual(calculateAxisSymmetryNumber(molecule), 1)
-  File "symmetry.py", line 176, in rmgpy.molecule.symmetry.calculateAxisSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:6750)
-  File "symmetry.py", line 268, in rmgpy.molecule.symmetry.calculateAxisSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:6023)
-  File "molecule.py", line 785, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13157)
-  File "graph.pyx", line 307, in rmgpy.molecule.graph.Graph.copy (build/pyrex/rmgpy/molecule/graph.c:5297)
-  File "molecule.py", line 258, in rmgpy.molecule.molecule.Atom.copy (build/pyrex/rmgpy/molecule/molecule.c:4772)
-TypeError: 'NoneType' object is unsliceable
-
-======================================================================
-ERROR: Test the Molecule.calculateAxisSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 193, in testAxisSymmetryNumber2
-    self.assertEqual(calculateAxisSymmetryNumber(molecule), 2)
-  File "symmetry.py", line 176, in rmgpy.molecule.symmetry.calculateAxisSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:6750)
-  File "symmetry.py", line 268, in rmgpy.molecule.symmetry.calculateAxisSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:6023)
-  File "molecule.py", line 785, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13157)
-  File "graph.pyx", line 307, in rmgpy.molecule.graph.Graph.copy (build/pyrex/rmgpy/molecule/graph.c:5297)
-  File "molecule.py", line 258, in rmgpy.molecule.molecule.Atom.copy (build/pyrex/rmgpy/molecule/molecule.c:4772)
-TypeError: 'NoneType' object is unsliceable
-
-======================================================================
-ERROR: Test the Molecule.calculateAxisSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 200, in testAxisSymmetryNumber3
-    self.assertEqual(calculateAxisSymmetryNumber(molecule), 4)
-  File "symmetry.py", line 176, in rmgpy.molecule.symmetry.calculateAxisSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:6750)
-  File "symmetry.py", line 268, in rmgpy.molecule.symmetry.calculateAxisSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:6023)
-  File "molecule.py", line 785, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13157)
-  File "graph.pyx", line 307, in rmgpy.molecule.graph.Graph.copy (build/pyrex/rmgpy/molecule/graph.c:5297)
-  File "molecule.py", line 258, in rmgpy.molecule.molecule.Atom.copy (build/pyrex/rmgpy/molecule/molecule.c:4772)
-TypeError: 'NoneType' object is unsliceable
-
-======================================================================
-ERROR: Test the Molecule.calculateAxisSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 207, in testAxisSymmetryNumber4
-    self.assertEqual(calculateAxisSymmetryNumber(molecule), 2)
-  File "symmetry.py", line 176, in rmgpy.molecule.symmetry.calculateAxisSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:6750)
-  File "symmetry.py", line 268, in rmgpy.molecule.symmetry.calculateAxisSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:6023)
-  File "molecule.py", line 785, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13157)
-  File "graph.pyx", line 307, in rmgpy.molecule.graph.Graph.copy (build/pyrex/rmgpy/molecule/graph.c:5297)
-  File "molecule.py", line 258, in rmgpy.molecule.molecule.Atom.copy (build/pyrex/rmgpy/molecule/molecule.c:4772)
-TypeError: 'NoneType' object is unsliceable
-
-======================================================================
-ERROR: Test the Molecule.calculateAxisSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 214, in testAxisSymmetryNumber5
-    self.assertEqual(calculateAxisSymmetryNumber(molecule), 1)
-  File "symmetry.py", line 176, in rmgpy.molecule.symmetry.calculateAxisSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:6750)
-  File "symmetry.py", line 268, in rmgpy.molecule.symmetry.calculateAxisSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:6023)
-  File "molecule.py", line 785, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13157)
-  File "graph.pyx", line 307, in rmgpy.molecule.graph.Graph.copy (build/pyrex/rmgpy/molecule/graph.c:5297)
-  File "molecule.py", line 258, in rmgpy.molecule.molecule.Atom.copy (build/pyrex/rmgpy/molecule/molecule.c:4772)
-TypeError: 'NoneType' object is unsliceable
-
-======================================================================
-ERROR: Test the Molecule.calculateAxisSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 221, in testAxisSymmetryNumber6
-    self.assertEqual(calculateAxisSymmetryNumber(molecule), 1)
-  File "symmetry.py", line 176, in rmgpy.molecule.symmetry.calculateAxisSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:6750)
-  File "symmetry.py", line 268, in rmgpy.molecule.symmetry.calculateAxisSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:6023)
-  File "molecule.py", line 785, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13157)
-  File "graph.pyx", line 307, in rmgpy.molecule.graph.Graph.copy (build/pyrex/rmgpy/molecule/graph.c:5297)
-  File "molecule.py", line 258, in rmgpy.molecule.molecule.Atom.copy (build/pyrex/rmgpy/molecule/molecule.c:4772)
-TypeError: 'NoneType' object is unsliceable
-
-======================================================================
-ERROR: Test the Molecule.calculateAxisSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 228, in testAxisSymmetryNumber7
-    self.assertEqual(calculateAxisSymmetryNumber(molecule), 2)
-  File "symmetry.py", line 176, in rmgpy.molecule.symmetry.calculateAxisSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:6750)
-  File "symmetry.py", line 268, in rmgpy.molecule.symmetry.calculateAxisSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:6023)
-  File "molecule.py", line 785, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13157)
-  File "graph.pyx", line 307, in rmgpy.molecule.graph.Graph.copy (build/pyrex/rmgpy/molecule/graph.c:5297)
-  File "molecule.py", line 258, in rmgpy.molecule.molecule.Atom.copy (build/pyrex/rmgpy/molecule/molecule.c:4772)
-TypeError: 'NoneType' object is unsliceable
-
-======================================================================
-ERROR: Test the Molecule.calculateAxisSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 151, in testAxisSymmetryNumberButatriene
-    self.assertEqual(calculateAxisSymmetryNumber(molecule), 2)
-  File "symmetry.py", line 176, in rmgpy.molecule.symmetry.calculateAxisSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:6750)
-  File "symmetry.py", line 268, in rmgpy.molecule.symmetry.calculateAxisSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:6023)
-  File "molecule.py", line 785, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13157)
-  File "graph.pyx", line 307, in rmgpy.molecule.graph.Graph.copy (build/pyrex/rmgpy/molecule/graph.c:5297)
-  File "molecule.py", line 258, in rmgpy.molecule.molecule.Atom.copy (build/pyrex/rmgpy/molecule/molecule.c:4772)
-TypeError: 'NoneType' object is unsliceable
-
-======================================================================
-ERROR: Test the Molecule.calculateAxisSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 158, in testAxisSymmetryNumberButatrienyl
-    self.assertEqual(calculateAxisSymmetryNumber(molecule), 1)
-  File "symmetry.py", line 176, in rmgpy.molecule.symmetry.calculateAxisSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:6750)
-  File "symmetry.py", line 268, in rmgpy.molecule.symmetry.calculateAxisSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:6023)
-  File "molecule.py", line 785, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13157)
-  File "graph.pyx", line 307, in rmgpy.molecule.graph.Graph.copy (build/pyrex/rmgpy/molecule/graph.c:5297)
-  File "molecule.py", line 258, in rmgpy.molecule.molecule.Atom.copy (build/pyrex/rmgpy/molecule/molecule.c:4772)
-TypeError: 'NoneType' object is unsliceable
-
-======================================================================
-ERROR: Test the Molecule.calculateAxisSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 137, in testAxisSymmetryNumberEthylene
-    self.assertEqual(calculateAxisSymmetryNumber(molecule), 2)
-  File "symmetry.py", line 176, in rmgpy.molecule.symmetry.calculateAxisSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:6750)
-  File "symmetry.py", line 268, in rmgpy.molecule.symmetry.calculateAxisSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:6023)
-  File "molecule.py", line 785, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13157)
-  File "graph.pyx", line 307, in rmgpy.molecule.graph.Graph.copy (build/pyrex/rmgpy/molecule/graph.c:5297)
-  File "molecule.py", line 258, in rmgpy.molecule.molecule.Atom.copy (build/pyrex/rmgpy/molecule/molecule.c:4772)
-TypeError: 'NoneType' object is unsliceable
-
-======================================================================
-ERROR: Test the Molecule.calculateAxisSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 144, in testAxisSymmetryNumberPropadiene
-    self.assertEqual(calculateAxisSymmetryNumber(molecule), 2)
-  File "symmetry.py", line 176, in rmgpy.molecule.symmetry.calculateAxisSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:6750)
-  File "symmetry.py", line 268, in rmgpy.molecule.symmetry.calculateAxisSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:6023)
-  File "molecule.py", line 785, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13157)
-  File "graph.pyx", line 307, in rmgpy.molecule.graph.Graph.copy (build/pyrex/rmgpy/molecule/graph.c:5297)
-  File "molecule.py", line 258, in rmgpy.molecule.molecule.Atom.copy (build/pyrex/rmgpy/molecule/molecule.c:4772)
-TypeError: 'NoneType' object is unsliceable
-
-======================================================================
-ERROR: Test the Molecule.calculateAxisSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 165, in testAxisSymmetryNumberPropadienyl
-    self.assertEqual(calculateAxisSymmetryNumber(molecule), 2)
-  File "symmetry.py", line 176, in rmgpy.molecule.symmetry.calculateAxisSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:6750)
-  File "symmetry.py", line 268, in rmgpy.molecule.symmetry.calculateAxisSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:6023)
-  File "molecule.py", line 785, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13157)
-  File "graph.pyx", line 307, in rmgpy.molecule.graph.Graph.copy (build/pyrex/rmgpy/molecule/graph.c:5297)
-  File "molecule.py", line 258, in rmgpy.molecule.molecule.Atom.copy (build/pyrex/rmgpy/molecule/molecule.c:4772)
-TypeError: 'NoneType' object is unsliceable
-
-======================================================================
-ERROR: Test the Molecule.calculateAxisSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 235, in testAxisSymmetryOxygenSinglet
-    self.assertEqual(calculateAxisSymmetryNumber(molecule), 1)
-  File "symmetry.py", line 176, in rmgpy.molecule.symmetry.calculateAxisSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:6750)
-  File "symmetry.py", line 268, in rmgpy.molecule.symmetry.calculateAxisSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:6023)
-  File "molecule.py", line 785, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13157)
-  File "graph.pyx", line 307, in rmgpy.molecule.graph.Graph.copy (build/pyrex/rmgpy/molecule/graph.c:5297)
-  File "molecule.py", line 258, in rmgpy.molecule.molecule.Atom.copy (build/pyrex/rmgpy/molecule/molecule.c:4772)
-TypeError: 'NoneType' object is unsliceable
-
-======================================================================
-ERROR: Test the Molecule.calculateBondSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 129, in testBondSymmetryNumberAcetylene
-    symmetryNumber *= calculateBondSymmetryNumber(molecule, atom1, atom2)
-  File "symmetry.py", line 120, in rmgpy.molecule.symmetry.calculateBondSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:4865)
-  File "symmetry.py", line 140, in rmgpy.molecule.symmetry.calculateBondSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:3744)
-  File "molecule.py", line 785, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13157)
-  File "graph.pyx", line 307, in rmgpy.molecule.graph.Graph.copy (build/pyrex/rmgpy/molecule/graph.c:5297)
-  File "molecule.py", line 258, in rmgpy.molecule.molecule.Atom.copy (build/pyrex/rmgpy/molecule/molecule.c:4772)
-TypeError: 'NoneType' object is unsliceable
-
-======================================================================
-ERROR: Test the Molecule.calculateBondSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 105, in testBondSymmetryNumberButane
-    symmetryNumber *= calculateBondSymmetryNumber(molecule, atom1, atom2)
-  File "symmetry.py", line 120, in rmgpy.molecule.symmetry.calculateBondSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:4865)
-  File "symmetry.py", line 140, in rmgpy.molecule.symmetry.calculateBondSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:3744)
-  File "molecule.py", line 785, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13157)
-  File "graph.pyx", line 307, in rmgpy.molecule.graph.Graph.copy (build/pyrex/rmgpy/molecule/graph.c:5297)
-  File "molecule.py", line 258, in rmgpy.molecule.molecule.Atom.copy (build/pyrex/rmgpy/molecule/molecule.c:4772)
-TypeError: 'NoneType' object is unsliceable
-
-======================================================================
-ERROR: Test the Molecule.calculateBondSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 81, in testBondSymmetryNumberEthane
-    symmetryNumber *= calculateBondSymmetryNumber(molecule, atom1, atom2)
-  File "symmetry.py", line 120, in rmgpy.molecule.symmetry.calculateBondSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:4865)
-  File "symmetry.py", line 140, in rmgpy.molecule.symmetry.calculateBondSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:3744)
-  File "molecule.py", line 785, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13157)
-  File "graph.pyx", line 307, in rmgpy.molecule.graph.Graph.copy (build/pyrex/rmgpy/molecule/graph.c:5297)
-  File "molecule.py", line 258, in rmgpy.molecule.molecule.Atom.copy (build/pyrex/rmgpy/molecule/molecule.c:4772)
-TypeError: 'NoneType' object is unsliceable
-
-======================================================================
-ERROR: Test the Molecule.calculateBondSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 117, in testBondSymmetryNumberEthylene
-    symmetryNumber *= calculateBondSymmetryNumber(molecule, atom1, atom2)
-  File "symmetry.py", line 120, in rmgpy.molecule.symmetry.calculateBondSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:4865)
-  File "symmetry.py", line 140, in rmgpy.molecule.symmetry.calculateBondSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:3744)
-  File "molecule.py", line 785, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13157)
-  File "graph.pyx", line 307, in rmgpy.molecule.graph.Graph.copy (build/pyrex/rmgpy/molecule/graph.c:5297)
-  File "molecule.py", line 258, in rmgpy.molecule.molecule.Atom.copy (build/pyrex/rmgpy/molecule/molecule.c:4772)
-TypeError: 'NoneType' object is unsliceable
-
-======================================================================
-ERROR: Test the Molecule.calculateBondSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 93, in testBondSymmetryNumberPropane
-    symmetryNumber *= calculateBondSymmetryNumber(molecule, atom1, atom2)
-  File "symmetry.py", line 120, in rmgpy.molecule.symmetry.calculateBondSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:4865)
-  File "symmetry.py", line 140, in rmgpy.molecule.symmetry.calculateBondSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:3744)
-  File "molecule.py", line 785, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13157)
-  File "graph.pyx", line 307, in rmgpy.molecule.graph.Graph.copy (build/pyrex/rmgpy/molecule/graph.c:5297)
-  File "molecule.py", line 258, in rmgpy.molecule.molecule.Atom.copy (build/pyrex/rmgpy/molecule/molecule.c:4772)
-TypeError: 'NoneType' object is unsliceable
-
-======================================================================
-ERROR: Test the Molecule.calculateCyclicSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 250, in testCyclicSymmetryNumberBenzene
-    symmetryNumber = calculateCyclicSymmetryNumber(molecule)
-  File "symmetry.py", line 341, in rmgpy.molecule.symmetry.calculateCyclicSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:8055)
-  File "symmetry.py", line 350, in rmgpy.molecule.symmetry.calculateCyclicSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:6854)
-  File "graph.pyx", line 597, in rmgpy.molecule.graph.Graph.getSmallestSetOfSmallestRings (build/pyrex/rmgpy/molecule/graph.c:9385)
-  File "molecule.py", line 777, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13288)
-  File "molecule.py", line 785, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13157)
-  File "graph.pyx", line 307, in rmgpy.molecule.graph.Graph.copy (build/pyrex/rmgpy/molecule/graph.c:5297)
-  File "molecule.py", line 258, in rmgpy.molecule.molecule.Atom.copy (build/pyrex/rmgpy/molecule/molecule.c:4772)
-TypeError: 'NoneType' object is unsliceable
-
-======================================================================
-ERROR: Test the Molecule.calculateCyclicSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 242, in testCyclicSymmetryNumberCyclohexane
-    symmetryNumber = calculateCyclicSymmetryNumber(molecule)
-  File "symmetry.py", line 341, in rmgpy.molecule.symmetry.calculateCyclicSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:8055)
-  File "symmetry.py", line 350, in rmgpy.molecule.symmetry.calculateCyclicSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:6854)
-  File "graph.pyx", line 597, in rmgpy.molecule.graph.Graph.getSmallestSetOfSmallestRings (build/pyrex/rmgpy/molecule/graph.c:9385)
-  File "molecule.py", line 777, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13288)
-  File "molecule.py", line 785, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13157)
-  File "graph.pyx", line 307, in rmgpy.molecule.graph.Graph.copy (build/pyrex/rmgpy/molecule/graph.c:5297)
-  File "molecule.py", line 258, in rmgpy.molecule.molecule.Atom.copy (build/pyrex/rmgpy/molecule/molecule.c:4772)
-TypeError: 'NoneType' object is unsliceable
-
-======================================================================
-ERROR: Test the Molecule.calculateCyclicSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 266, in testCyclicSymmetryNumberDimethylbenzene
-    symmetryNumber = calculateCyclicSymmetryNumber(molecule)
-  File "symmetry.py", line 341, in rmgpy.molecule.symmetry.calculateCyclicSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:8055)
-  File "symmetry.py", line 350, in rmgpy.molecule.symmetry.calculateCyclicSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:6854)
-  File "graph.pyx", line 597, in rmgpy.molecule.graph.Graph.getSmallestSetOfSmallestRings (build/pyrex/rmgpy/molecule/graph.c:9385)
-  File "molecule.py", line 777, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13288)
-  File "molecule.py", line 785, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13157)
-  File "graph.pyx", line 307, in rmgpy.molecule.graph.Graph.copy (build/pyrex/rmgpy/molecule/graph.c:5297)
-  File "molecule.py", line 258, in rmgpy.molecule.molecule.Atom.copy (build/pyrex/rmgpy/molecule/molecule.c:4772)
-TypeError: 'NoneType' object is unsliceable
-
-======================================================================
-ERROR: Test the Molecule.calculateCyclicSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 258, in testCyclicSymmetryNumberToluene
-    symmetryNumber = calculateCyclicSymmetryNumber(molecule)
-  File "symmetry.py", line 341, in rmgpy.molecule.symmetry.calculateCyclicSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:8055)
-  File "symmetry.py", line 350, in rmgpy.molecule.symmetry.calculateCyclicSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:6854)
-  File "graph.pyx", line 597, in rmgpy.molecule.graph.Graph.getSmallestSetOfSmallestRings (build/pyrex/rmgpy/molecule/graph.c:9385)
-  File "molecule.py", line 777, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13288)
-  File "molecule.py", line 785, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13157)
-  File "graph.pyx", line 307, in rmgpy.molecule.graph.Graph.copy (build/pyrex/rmgpy/molecule/graph.c:5297)
-  File "molecule.py", line 258, in rmgpy.molecule.molecule.Atom.copy (build/pyrex/rmgpy/molecule/molecule.c:4772)
-TypeError: 'NoneType' object is unsliceable
-
-======================================================================
-ERROR: Test the Molecule.calculateSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 315, in testSymmetryNumberAcetylene
-    self.assertEqual(Molecule().fromSMILES('C#C').calculateSymmetryNumber(), 2)
-  File "molecule.py", line 1564, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24176)
-  File "molecule.py", line 1570, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24116)
-  File "symmetry.py", line 430, in rmgpy.molecule.symmetry.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:8430)
-  File "symmetry.py", line 439, in rmgpy.molecule.symmetry.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:8161)
-  File "symmetry.py", line 56, in rmgpy.molecule.symmetry.calculateAtomSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:2236)
-  File "molecule.py", line 785, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13157)
-  File "graph.pyx", line 307, in rmgpy.molecule.graph.Graph.copy (build/pyrex/rmgpy/molecule/graph.c:5297)
-  File "molecule.py", line 258, in rmgpy.molecule.molecule.Atom.copy (build/pyrex/rmgpy/molecule/molecule.c:4772)
-TypeError: 'NoneType' object is unsliceable
-
-======================================================================
-ERROR: Test the Molecule.calculateSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 321, in testSymmetryNumberButadiyne
-    self.assertEqual(Molecule().fromSMILES('C#CC#C').calculateSymmetryNumber(), 2)
-  File "molecule.py", line 1564, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24176)
-  File "molecule.py", line 1570, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24116)
-  File "symmetry.py", line 430, in rmgpy.molecule.symmetry.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:8430)
-  File "symmetry.py", line 439, in rmgpy.molecule.symmetry.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:8161)
-  File "symmetry.py", line 56, in rmgpy.molecule.symmetry.calculateAtomSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:2236)
-  File "molecule.py", line 785, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13157)
-  File "graph.pyx", line 307, in rmgpy.molecule.graph.Graph.copy (build/pyrex/rmgpy/molecule/graph.c:5297)
-  File "molecule.py", line 258, in rmgpy.molecule.molecule.Atom.copy (build/pyrex/rmgpy/molecule/molecule.c:4772)
-TypeError: 'NoneType' object is unsliceable
-
-======================================================================
-ERROR: Test the Molecule.calculateSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 363, in testSymmetryNumberCyclic
-    self.assertEqual(Molecule().fromSMILES('C1=C=C=1').calculateSymmetryNumber(), '6?')
-  File "molecule.py", line 1564, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24176)
-  File "molecule.py", line 1570, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24116)
-  File "symmetry.py", line 430, in rmgpy.molecule.symmetry.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:8430)
-  File "symmetry.py", line 449, in rmgpy.molecule.symmetry.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:8352)
-  File "symmetry.py", line 350, in rmgpy.molecule.symmetry.calculateCyclicSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:6854)
-  File "graph.pyx", line 597, in rmgpy.molecule.graph.Graph.getSmallestSetOfSmallestRings (build/pyrex/rmgpy/molecule/graph.c:9385)
-  File "molecule.py", line 777, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13288)
-  File "molecule.py", line 785, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13157)
-  File "graph.pyx", line 307, in rmgpy.molecule.graph.Graph.copy (build/pyrex/rmgpy/molecule/graph.c:5297)
-  File "molecule.py", line 258, in rmgpy.molecule.molecule.Atom.copy (build/pyrex/rmgpy/molecule/molecule.c:4772)
-TypeError: 'NoneType' object is unsliceable
-
-======================================================================
-ERROR: Test the Molecule.calculateSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 357, in testSymmetryNumberEthenyl
-    self.assertEqual(Molecule().fromSMILES('C=[CH]').calculateSymmetryNumber(), 1)
-  File "molecule.py", line 1564, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24176)
-  File "molecule.py", line 1570, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24116)
-  File "symmetry.py", line 430, in rmgpy.molecule.symmetry.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:8430)
-  File "symmetry.py", line 439, in rmgpy.molecule.symmetry.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:8161)
-  File "symmetry.py", line 56, in rmgpy.molecule.symmetry.calculateAtomSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:2236)
-  File "molecule.py", line 785, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13157)
-  File "graph.pyx", line 307, in rmgpy.molecule.graph.Graph.copy (build/pyrex/rmgpy/molecule/graph.c:5297)
-  File "molecule.py", line 258, in rmgpy.molecule.molecule.Atom.copy (build/pyrex/rmgpy/molecule/molecule.c:4772)
-TypeError: 'NoneType' object is unsliceable
-
-======================================================================
-ERROR: Test the Molecule.calculateSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 351, in testSymmetryNumberEthylene
-    self.assertEqual(Molecule().fromSMILES('C=C').calculateSymmetryNumber(), 4)
-  File "molecule.py", line 1564, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24176)
-  File "molecule.py", line 1570, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24116)
-  File "symmetry.py", line 430, in rmgpy.molecule.symmetry.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:8430)
-  File "symmetry.py", line 439, in rmgpy.molecule.symmetry.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:8161)
-  File "symmetry.py", line 56, in rmgpy.molecule.symmetry.calculateAtomSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:2236)
-  File "molecule.py", line 785, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13157)
-  File "graph.pyx", line 307, in rmgpy.molecule.graph.Graph.copy (build/pyrex/rmgpy/molecule/graph.c:5297)
-  File "molecule.py", line 258, in rmgpy.molecule.molecule.Atom.copy (build/pyrex/rmgpy/molecule/molecule.c:4772)
-TypeError: 'NoneType' object is unsliceable
-
-======================================================================
-ERROR: Test the Molecule.calculateSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 333, in testSymmetryNumberFormaldehyde
-    self.assertEqual(Molecule().fromSMILES('C=O').calculateSymmetryNumber(), 2)
-  File "molecule.py", line 1564, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24176)
-  File "molecule.py", line 1570, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24116)
-  File "symmetry.py", line 430, in rmgpy.molecule.symmetry.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:8430)
-  File "symmetry.py", line 439, in rmgpy.molecule.symmetry.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:8161)
-  File "symmetry.py", line 56, in rmgpy.molecule.symmetry.calculateAtomSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:2236)
-  File "molecule.py", line 785, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13157)
-  File "graph.pyx", line 307, in rmgpy.molecule.graph.Graph.copy (build/pyrex/rmgpy/molecule/graph.c:5297)
-  File "molecule.py", line 258, in rmgpy.molecule.molecule.Atom.copy (build/pyrex/rmgpy/molecule/molecule.c:4772)
-TypeError: 'NoneType' object is unsliceable
-
-======================================================================
-ERROR: Test the Molecule.calculateSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 327, in testSymmetryNumberMethane
-    self.assertEqual(Molecule().fromSMILES('C').calculateSymmetryNumber(), 12)
-  File "molecule.py", line 1564, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24176)
-  File "molecule.py", line 1570, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24116)
-  File "symmetry.py", line 430, in rmgpy.molecule.symmetry.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:8430)
-  File "symmetry.py", line 439, in rmgpy.molecule.symmetry.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:8161)
-  File "symmetry.py", line 56, in rmgpy.molecule.symmetry.calculateAtomSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:2236)
-  File "molecule.py", line 785, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13157)
-  File "graph.pyx", line 307, in rmgpy.molecule.graph.Graph.copy (build/pyrex/rmgpy/molecule/graph.c:5297)
-  File "molecule.py", line 258, in rmgpy.molecule.molecule.Atom.copy (build/pyrex/rmgpy/molecule/molecule.c:4772)
-TypeError: 'NoneType' object is unsliceable
-
-======================================================================
-ERROR: Test the Molecule.calculateSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 339, in testSymmetryNumberMethyl
-    self.assertEqual(Molecule().fromSMILES('[CH3]').calculateSymmetryNumber(), 6)
-  File "molecule.py", line 1564, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24176)
-  File "molecule.py", line 1570, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24116)
-  File "symmetry.py", line 430, in rmgpy.molecule.symmetry.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:8430)
-  File "symmetry.py", line 439, in rmgpy.molecule.symmetry.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:8161)
-  File "symmetry.py", line 56, in rmgpy.molecule.symmetry.calculateAtomSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:2236)
-  File "molecule.py", line 785, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13157)
-  File "graph.pyx", line 307, in rmgpy.molecule.graph.Graph.copy (build/pyrex/rmgpy/molecule/graph.c:5297)
-  File "molecule.py", line 258, in rmgpy.molecule.molecule.Atom.copy (build/pyrex/rmgpy/molecule/molecule.c:4772)
-TypeError: 'NoneType' object is unsliceable
-
-======================================================================
-ERROR: Test the Molecule.calculateSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 297, in testSymmetryNumberOxygen
-    self.assertEqual(Molecule().fromSMILES('O=O').calculateSymmetryNumber(), 2)
-  File "molecule.py", line 1564, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24176)
-  File "molecule.py", line 1570, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24116)
-  File "symmetry.py", line 430, in rmgpy.molecule.symmetry.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:8430)
-  File "symmetry.py", line 446, in rmgpy.molecule.symmetry.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:8325)
-  File "symmetry.py", line 268, in rmgpy.molecule.symmetry.calculateAxisSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:6023)
-  File "molecule.py", line 785, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13157)
-  File "graph.pyx", line 307, in rmgpy.molecule.graph.Graph.copy (build/pyrex/rmgpy/molecule/graph.c:5297)
-  File "molecule.py", line 258, in rmgpy.molecule.molecule.Atom.copy (build/pyrex/rmgpy/molecule/molecule.c:4772)
-TypeError: 'NoneType' object is unsliceable
-
-======================================================================
-ERROR: Test the Molecule.calculateSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 345, in testSymmetryNumberWater
-    self.assertEqual(Molecule().fromSMILES('O').calculateSymmetryNumber(), 2)
-  File "molecule.py", line 1564, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24176)
-  File "molecule.py", line 1570, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24116)
-  File "symmetry.py", line 430, in rmgpy.molecule.symmetry.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:8430)
-  File "symmetry.py", line 439, in rmgpy.molecule.symmetry.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:8161)
-  File "symmetry.py", line 56, in rmgpy.molecule.symmetry.calculateAtomSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:2236)
-  File "molecule.py", line 785, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13157)
-  File "graph.pyx", line 307, in rmgpy.molecule.graph.Graph.copy (build/pyrex/rmgpy/molecule/graph.c:5297)
-  File "molecule.py", line 258, in rmgpy.molecule.molecule.Atom.copy (build/pyrex/rmgpy/molecule/molecule.c:4772)
-TypeError: 'NoneType' object is unsliceable
-
-======================================================================
-ERROR: Test the Molecule.calculateSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 279, in testTotalSymmetryNumber1
-    self.assertEqual(Molecule().fromSMILES('C=C=[C]C(C)(C)[C]=C=C').calculateSymmetryNumber(), '???')
-  File "molecule.py", line 1564, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24176)
-  File "molecule.py", line 1570, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24116)
-  File "symmetry.py", line 430, in rmgpy.molecule.symmetry.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:8430)
-  File "symmetry.py", line 439, in rmgpy.molecule.symmetry.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:8161)
-  File "symmetry.py", line 56, in rmgpy.molecule.symmetry.calculateAtomSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:2236)
-  File "molecule.py", line 785, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13157)
-  File "graph.pyx", line 307, in rmgpy.molecule.graph.Graph.copy (build/pyrex/rmgpy/molecule/graph.c:5297)
-  File "molecule.py", line 258, in rmgpy.molecule.molecule.Atom.copy (build/pyrex/rmgpy/molecule/molecule.c:4772)
-TypeError: 'NoneType' object is unsliceable
-
-======================================================================
-ERROR: Test the Molecule.calculateSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 285, in testTotalSymmetryNumber2
-    self.assertEqual(Molecule().fromSMILES('C(=CC(c1ccccc1)C([CH]CCCCCC)C=Cc1ccccc1)[CH]CCCCCC').calculateSymmetryNumber(), 1)
-  File "molecule.py", line 1564, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24176)
-  File "molecule.py", line 1570, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24116)
-  File "symmetry.py", line 430, in rmgpy.molecule.symmetry.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:8430)
-  File "symmetry.py", line 439, in rmgpy.molecule.symmetry.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:8161)
-  File "symmetry.py", line 56, in rmgpy.molecule.symmetry.calculateAtomSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:2236)
-  File "molecule.py", line 785, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13157)
-  File "graph.pyx", line 307, in rmgpy.molecule.graph.Graph.copy (build/pyrex/rmgpy/molecule/graph.c:5297)
-  File "molecule.py", line 258, in rmgpy.molecule.molecule.Atom.copy (build/pyrex/rmgpy/molecule/molecule.c:4772)
-TypeError: 'NoneType' object is unsliceable
-
-======================================================================
-ERROR: Test the Molecule.calculateSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 273, in testTotalSymmetryNumberEthane
-    self.assertEqual(Molecule().fromSMILES('CC').calculateSymmetryNumber(), 18)
-  File "molecule.py", line 1564, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24176)
-  File "molecule.py", line 1570, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24116)
-  File "symmetry.py", line 430, in rmgpy.molecule.symmetry.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:8430)
-  File "symmetry.py", line 439, in rmgpy.molecule.symmetry.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:8161)
-  File "symmetry.py", line 56, in rmgpy.molecule.symmetry.calculateAtomSymmetryNumber (build/pyrex/rmgpy/molecule/symmetry.c:2236)
-  File "molecule.py", line 785, in rmgpy.molecule.molecule.Molecule.copy (build/pyrex/rmgpy/molecule/molecule.c:13157)
-  File "graph.pyx", line 307, in rmgpy.molecule.graph.Graph.copy (build/pyrex/rmgpy/molecule/graph.c:5297)
-  File "molecule.py", line 258, in rmgpy.molecule.molecule.Atom.copy (build/pyrex/rmgpy/molecule/molecule.c:4772)
-TypeError: 'NoneType' object is unsliceable
-
-======================================================================
 FAIL: Uses a Gaussian03 log file for ethylene (C2H4) to test that its
 ----------------------------------------------------------------------
 Traceback (most recent call last):
@@ -4918,6 +4024,54 @@ Traceback (most recent call last):
 AssertionError: Solvation enthalpy discrepancy (-17533!=-12000) for methane in water
 
 ======================================================================
+FAIL: Test that the new ThermoDatabase generates appropriate thermo data.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermoTest.py", line 79, in testNewThermoGeneration
+    self.assertAlmostEqual(H298, thermoData.getEnthalpy(298) / 4184, places=1, msg="H298 error for {0}".format(smiles))
+AssertionError: H298 error for C1C=CC=C1
+
+======================================================================
+FAIL: Test that the old ThermoDatabase generates relatively accurate thermo data.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermoTest.py", line 126, in testOldThermoGeneration
+    self.assertAlmostEqual(H298, thermoData.getEnthalpy(298) / 4184, places=1, msg="H298 error for {0}".format(smiles))
+AssertionError: H298 error for C1C=CC=C1
+
+======================================================================
+FAIL: Test we generate symmetry numbers correctly.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermoTest.py", line 105, in testSymmetryNumberGeneration
+    self.assertEqual(molecule.calculateSymmetryNumber(), symm, msg="Symmetry number error for {0}".format(smiles))
+AssertionError: Symmetry number error for C1C=CC=C1
+
+======================================================================
+FAIL: Test that the new ThermoDatabase generates appropriate thermo data. for Aromatics.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermoTest.py", line 79, in testNewThermoGeneration
+    self.assertAlmostEqual(H298, thermoData.getEnthalpy(298) / 4184, places=1, msg="H298 error for {0}".format(smiles))
+AssertionError: H298 error for c1ccccc1
+
+======================================================================
+FAIL: Test that the old ThermoDatabase generates relatively accurate thermo data. for Aromatics.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermoTest.py", line 126, in testOldThermoGeneration
+    self.assertAlmostEqual(H298, thermoData.getEnthalpy(298) / 4184, places=1, msg="H298 error for {0}".format(smiles))
+AssertionError: H298 error for c1ccccc1
+
+======================================================================
+FAIL: Test we generate symmetry numbers correctly. for Aromatics.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermoTest.py", line 105, in testSymmetryNumberGeneration
+    self.assertEqual(molecule.calculateSymmetryNumber(), symm, msg="Symmetry number error for {0}".format(smiles))
+AssertionError: Symmetry number error for c1ccccc1
+
+======================================================================
 FAIL: Test that getAtomType() returns appropriate NoneTypes.
 ----------------------------------------------------------------------
 Traceback (most recent call last):
@@ -4926,12 +4080,68 @@ Traceback (most recent call last):
 AssertionError: 'Ar' is not None
 
 ======================================================================
+FAIL: Test the Molecule.isAromatic() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/moleculeTest.py", line 926, in testAromaticBenzene
+    self.assertTrue(Molecule().fromSMILES('C1=CC=CC=C1').isAromatic())
+AssertionError: False is not true
+
+======================================================================
+FAIL: Test the Molecule.isAromatic() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/moleculeTest.py", line 932, in testAromaticNaphthalene
+    self.assertTrue(Molecule().fromSMILES('C12C(C=CC=C1)=CC=CC=2').isAromatic())
+AssertionError: False is not true
+
+======================================================================
 FAIL: Test the Molecule.countInternalRotors() method for dimethylacetylene.
 ----------------------------------------------------------------------
 Traceback (most recent call last):
   File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/moleculeTest.py", line 981, in testCountInternalRotorsDimethylAcetylene
     self.assertEqual(Molecule().fromSMILES('CC#CC').countInternalRotors(), 1)
 AssertionError: 2 != 1
+
+======================================================================
+FAIL: Test the Molecule.calculateAxisSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 200, in testAxisSymmetryNumber3
+    self.assertEqual(calculateAxisSymmetryNumber(molecule), 4)
+AssertionError: 1 != 4
+
+======================================================================
+FAIL: Test the Molecule.calculateCyclicSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 251, in testCyclicSymmetryNumberBenzene
+    self.assertEqual(symmetryNumber, 12)
+AssertionError: 3 != 12
+
+======================================================================
+FAIL: Test the Molecule.calculateSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 363, in testSymmetryNumberCyclic
+    self.assertEqual(Molecule().fromSMILES('C1=C=C=1').calculateSymmetryNumber(), '6?')
+AssertionError: 6 != '6?'
+
+======================================================================
+FAIL: Test the Molecule.calculateSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 279, in testTotalSymmetryNumber1
+    self.assertEqual(Molecule().fromSMILES('C=C=[C]C(C)(C)[C]=C=C').calculateSymmetryNumber(), '???')
+AssertionError: 18 != '???'
+
+======================================================================
+FAIL: Test the Molecule.calculateSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 285, in testTotalSymmetryNumber2
+    self.assertEqual(Molecule().fromSMILES('C(=CC(c1ccccc1)C([CH]CCCCCC)C=Cc1ccccc1)[CH]CCCCCC').calculateSymmetryNumber(), 1)
+AssertionError: 9 != 1
 
 Name                              Stmts   Miss Branch BrMiss  Cover   Missing
 -----------------------------------------------------------------------------
@@ -4949,7 +4159,7 @@ rmgpy.cantherm.statmech             509    480    226    226     4%   82, 89-120
 rmgpy.cantherm.thermo               155    140     32     32     8%   55-56, 63-67, 75-122, 129-205, 217-269
 rmgpy.chemkin                       984    941    492    491     3%   69, 79-156, 167-456, 466-615, 626-646, 652-665, 672-687, 695-846, 858-900, 914-972, 982-1130, 1138-1148, 1160-1210, 1221-1285, 1293-1335, 1352-1509, 1519-1535, 1545-1548, 1556-1562, 1584-1607, 1626-1672, 1680-1711
 rmgpy.data                            3      1      0      0    67%   34
-rmgpy.data.base                     660    352    299    189    44%   113, 211-213, 230-251, 259-282, 295-297, 301-303, 307-309, 354-359, 377-380, 389, 401, 408, 418-419, 422, 459-460, 472, 480, 483-484, 491, 523, 539-540, 554-561, 572-580, 588-681, 688-694, 701-713, 720-754, 770-776, 782-787, 801-840, 864-865, 871, 880-889, 898-900, 905, 925, 936, 940-941, 956, 963-967, 984, 988, 996-1005, 1016-1023, 1041, 1051, 1073-1076, 1099-1103, 1115-1119, 1141-1158, 1164-1165, 1171, 1179-1192, 1207-1234
+rmgpy.data.base                     660    351    299    188    44%   113, 211-213, 230-251, 259-282, 295-297, 301-303, 307-309, 354-359, 377-380, 389, 401, 408, 418-419, 422, 459-460, 472, 480, 483-484, 491, 523, 539-540, 554-561, 572-580, 588-681, 688-694, 701-713, 720-754, 770-776, 782-787, 801-840, 864-865, 871, 880-889, 898-900, 905, 925, 936, 940-941, 956, 963-967, 984, 996-1005, 1016-1023, 1041, 1051, 1073-1076, 1099-1103, 1115-1119, 1141-1158, 1164-1165, 1171, 1179-1192, 1207-1234
 rmgpy.data.kinetics                 271    237    135    135     8%   62-78, 84-89, 95-97, 104-105, 112-139, 149-174, 181-184, 191-195, 202-208, 215-234, 241-275, 283-286, 294-297, 305-320, 333-342, 363-461, 474-520
 rmgpy.data.kinetics.common          115    103     50     50     7%   105-106, 115-231
 rmgpy.data.kinetics.depository       31     18      0      0    42%   64-77, 83, 102, 115, 141-164, 170
@@ -4962,7 +4172,7 @@ rmgpy.data.rmg                       80     59     10     10    23%   56-71, 92-
 rmgpy.data.solvation                290    109     60     45    56%   108, 115, 146-149, 162-209, 254, 281, 300, 307, 314, 357, 365, 372, 395-400, 406-408, 445-448, 455-457, 464-466, 474-489, 505-518, 531-543, 563-567, 629-668, 679-683, 702, 716-720
 rmgpy.data.statmech                 295    244    103    103    13%   48-91, 98-101, 108-116, 127, 140, 156, 166, 179, 195, 202, 209, 220, 233-241, 257, 264, 271, 278-285, 294-309, 319-355, 364-445, 455-467, 473-479, 485-488, 495-500, 507, 514-526, 533-534, 541-545, 552-553, 560-562, 569-570, 578-594, 611-624, 637-645, 652-656, 664-667, 676, 689-690, 698-705
 rmgpy.data.statmechfit              248    213     70     70    11%   95-137, 151-193, 207-244, 260-307, 316-319, 327-330, 338-343, 352-355, 364-366, 378-381, 384-407, 419-422, 425-457, 469-472, 475-506
-rmgpy.data.thermo                   448    278    140    101    36%   56-129, 136-154, 193-205, 211, 239, 243, 261, 268, 318, 326, 359-365, 371-374, 384, 414, 436-440, 447-449, 456-458, 465-472, 562-573, 583-626, 645-646, 652-658, 672-676, 685-691, 704-720, 730-741, 754-760, 779-788, 797-864, 888, 898-902, 906, 912, 924-950, 954-956, 964, 993, 995, 999-1003, 1014
+rmgpy.data.thermo                   448    187    140     61    58%   56-129, 136-154, 193-205, 211, 239, 243, 261, 268, 318, 326, 359-365, 371-374, 384, 414, 436-440, 447-449, 456-458, 465-472, 562-573, 583-626, 645-646, 672-676, 686-687, 711-713, 732-735, 737-740, 757-759, 827-828, 850-854, 898-902, 912, 924-930, 941-945, 964, 993, 995
 rmgpy.data.transport                233    100     66     47    51%   54-69, 119, 126, 133, 155, 174, 181, 188, 209-214, 220-222, 269-283, 291-303, 314-318, 345, 377-416, 438-439, 466, 474, 476, 480-484, 501-534
 rmgpy.display                        12      4      2      2    57%   37, 41-43, 47
 rmgpy.kinetics                        6      0      0      0   100%   
@@ -4976,14 +4186,14 @@ rmgpy.measure.settings                2      0      0      0   100%
 rmgpy.measure.simulate               67     54     30     30    13%   46, 49, 66-128, 144-169, 178-179, 182, 185
 rmgpy.molecule                        5      0      0      0   100%   
 rmgpy.molecule.adjlist              264     38    160     35    83%   65, 71, 80, 144-148, 194, 207, 209, 211, 229, 242-243, 265-266, 289-291, 308-323, 336-337, 365
-rmgpy.molecule.draw                 929    880    448    448     4%   71-83, 141-143, 151-252, 261-276, 283-378, 385-390, 399-430, 438-448, 455-580, 587-641, 648-720, 733-827, 837-863, 874-947, 954-967, 975-1007, 1017-1332, 1350-1354, 1368-1488
+rmgpy.molecule.draw                 929    574    448    303    36%   76, 79-82, 141-143, 171-173, 182-187, 195-197, 200-203, 206-208, 211-213, 216-219, 268-276, 289, 297-349, 374-376, 385-390, 399-430, 438-448, 455-580, 587-641, 648-720, 733-827, 851-852, 860-861, 884, 906-927, 940-942, 993-996, 1002-1003, 1005-1007, 1046-1047, 1094-1102, 1124-1125, 1138-1141, 1160-1165, 1171-1172, 1201-1202, 1210-1212, 1215-1216, 1224-1226, 1232-1239, 1244-1247, 1256-1259, 1264-1281, 1291-1294, 1298-1301, 1305-1322, 1350-1354, 1368-1488
 rmgpy.pdep                            5      0      0      0   100%   
 rmgpy.pdep.draw                     291    277     86     86     4%   57-70, 73-79, 87-107, 116-125, 131-142, 148-159, 165-181, 185-213, 222-479
 rmgpy.pdep.network                  532    408    230    209    19%   51-53, 60, 130, 137-149, 161, 181, 194-261, 272-345, 358, 361, 364, 396, 460-464, 473, 495-515, 529-688, 699-716, 724-738, 745-748, 755-758, 768-771, 774-775, 789-860, 871-925, 938-954
 rmgpy.qm                              0      0      0      0   100%   
 rmgpy.qm.gaussian                   134    103     48     46    18%   24, 26, 46-47, 51-56, 74-137, 143-148, 164-190, 202-217, 248, 253, 261-264
 rmgpy.qm.main                        61     46     16     16    19%   51-58, 64-71, 92-95, 101-106, 112, 118-119, 125-135, 145-153
-rmgpy.qm.molecule                   185    145     38     38    18%   10-11, 28-38, 46, 50, 54, 63-71, 77, 84-105, 109-111, 127-160, 175-179, 188, 193, 198, 204-207, 214, 223-245, 251-259, 265-283, 290, 299-302, 310-312, 318-321, 330-373
+rmgpy.qm.molecule                   185    138     38     37    22%   10-11, 38, 46, 50, 54, 63-71, 84-105, 109-111, 127-160, 175-179, 188, 193, 198, 204-207, 214, 223-245, 251-259, 265-283, 290, 299-302, 310-312, 318-321, 330-373
 rmgpy.qm.mopac                      141    109     50     48    18%   23, 25, 59-60, 63-68, 87-146, 153-158, 173-199, 211-233, 250, 255, 264-284
 rmgpy.qm.qmdata                      35     27      2      2    22%   23-38, 41, 75-101
 rmgpy.qm.qmverifier                  26     20      6      6    19%   18-24, 40-61, 71
@@ -4999,11 +4209,11 @@ rmgpy.statmech                        5      0      0      0   100%
 rmgpy.thermo                          3      0      0      0   100%   
 rmgpy.transport                      28      1      0      0    96%   71
 -----------------------------------------------------------------------------
-TOTAL                             14506  11985   6161   5747    14%   
+TOTAL                             14506  11580   6161   5560    17%   
 ----------------------------------------------------------------------
 Ran 727 tests.
 
-FAILED (errors=63, failures=5)
+FAILED (failures=18)
 
         1 * C 0 {2,D} {7,S} {8,S}
         2 C 0 {1,D} {3,S} {9,S}
