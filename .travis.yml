@@ -1,0 +1,15 @@
+language: python
+python:
+  - "2.6"
+  - "2.7"
+before_install:
+  - sudo apt-get update -qq
+  - sudo apt-get install git build-essential gfortran python-dev liblapack-dev python-openbabel python-setuptools python-pip
+  - sudo apt-get install python-rdkit librdkit-dev librdkit1 rdkit-data
+  - git clone git@github.com:GreenGroup/RMG-database.git
+install:
+  - pip install numpy --use-mirrors
+  - pip install -r requirements.txt --use-mirrors
+  - make
+  - pip install .
+script: make test
