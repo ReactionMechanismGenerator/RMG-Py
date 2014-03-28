@@ -1960,7 +1960,7 @@ class KineticsFamily(Database):
         true child of it's parent. The list of indexes corresponds to the
         child's adj list index, where the atom is not a true child. 
         
-        probablyProducts is a list of groups which do not apepar in the
+        probablyProduct is a list of groups which do not apepar in the
         tree, but are probably products (as opposed to reactants) which
         are created in the database loading. These are not necessarily
         malformations, but because I'm not certain where they came from,
@@ -1981,6 +1981,7 @@ class KineticsFamily(Database):
         noMatchingGroup={}
         tempNoMatchingGroup={}
         notInTree=[]
+        notUnique={}
         notSubgroup={}
         probablyProduct=[]
         
@@ -1988,6 +1989,7 @@ class KineticsFamily(Database):
 #         if isinstance(self, KineticsFamily):
         library=self.rules.entries
         groups=self.groups.entries
+        groupsCopy=copy(groups)
         topNodes=self.getRootTemplate()
 
         # Make list of all node names in library
@@ -2014,7 +2016,7 @@ class KineticsFamily(Database):
                                     break
                             #break if we find a match between two logic nodes
                             elif isinstance(groups[nodeName].item, LogicOr) and isinstance(libraryGroup, LogicOr):
-                                if groups[nodeName].item==libraryGroup:
+                                if groups[nodeName].item.matchToLogicOr(libraryGroup):
                                     break
                         #Otherwise no match is found, so we add it to the tempNoMatchingGroup
                         else:
@@ -2024,9 +2026,10 @@ class KineticsFamily(Database):
                 noMatchingGroup[key]=list(set(nodeList))
                 
             # Each group in groups.py should appear in the tree
-            # This is true when ascending through parents leads to a top node   
+            # This is true when ascending through parents leads to a top node
             for nodeName in groups:
                 nodeGroup=self.groups.entries[nodeName]
+                nodeGroupItem=nodeGroup.item
                 ascendParent=nodeGroup
                 while ascendParent not in topNodes:
                     child=ascendParent
@@ -2039,6 +2042,18 @@ class KineticsFamily(Database):
                         # If a group is not in a tree, we want to save the uppermost parent, not necessarily the original node
                             notInTree.append(child.label)
                             break
+                        
+                #each node should also be unique:
+                del groupsCopy[nodeName]
+                for nodeName2 in groupsCopy:
+                    nodeGroup2Item=self.groups.entries[nodeName2].item
+                    if isinstance(nodeGroup2Item, Group) and isinstance(nodeGroupItem, Group):
+                        if nodeGroupItem.isIdentical(nodeGroup2Item):
+                            notUnique=appendToDict(notUnique, nodeName, nodeName2)
+                    if isinstance(nodeGroup2Item, LogicOr) and isinstance(nodeGroupItem, LogicOr):
+                        if nodeGroupItem.matchToLogicOr(nodeGroup2Item):
+                            notUnique=appendToDict(notUnique, nodeName, nodeName2)
+                    
                 #For a correct child-parent relationship, each atom in the parent should have a corresponding child atom in the child.
                 nodeParent=nodeGroup.parent
                 #Atoms may be in a different order initially. Need to sort both child and parent first
@@ -2070,4 +2085,4 @@ class KineticsFamily(Database):
         noGroup=list(set(noGroup))
         notInTree=list(set(notInTree))
         
-        return (noGroup, noMatchingGroup, notInTree, notSubgroup, probablyProduct)
+        return (noGroup, noMatchingGroup, notInTree, notUnique, notSubgroup, probablyProduct)
