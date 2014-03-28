@@ -1064,6 +1064,18 @@ class LogicOr(LogicNode):
                 return True != self.invert
         return False != self.invert
 
+    def matchToLogicOr(self, other):
+        """
+        Is other the same LogicOr group as self?
+        """
+        if len(self.components)!=len(other.components):
+            return False
+        else:
+            for node in self.components:
+                if node not in other.components:
+                    return False
+        return True
+        
     def getPossibleStructures(self, entries):
         """
         Return a list of the possible structures below this node.
