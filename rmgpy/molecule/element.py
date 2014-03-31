@@ -41,6 +41,7 @@ comparisons.
 """
 
 import cython
+from rdkit.Chem import GetPeriodicTable
 
 ################################################################################
 
@@ -53,7 +54,7 @@ class ElementError(Exception):
     pass
 
 ################################################################################
-
+_rdkit_periodic_table = GetPeriodicTable()
 class Element:
     """
     A chemical element. The attributes are:
@@ -65,6 +66,7 @@ class Element:
     `symbol`    ``str``         The symbol used for the element
     `name`      ``str``         The IUPAC name of the element
     `mass`      ``float``       The mass of the element in kg/mol
+    `covRadius` ``float``       Covalent bond radius in Angstrom
     =========== =============== ================================================
     
     This class is specifically for properties that all atoms of the same element
@@ -76,6 +78,7 @@ class Element:
         self.symbol = intern(symbol)
         self.name = name
         self.mass = mass
+        self.covRadius = _rdkit_periodic_table.GetRcovalent(symbol)
     
     def __str__(self):
         """
