@@ -785,3 +785,26 @@ class Group(Graph):
             raise TypeError('Got a {0} object for parameter "other", when a Group object is required.'.format(other.__class__))
         # Do the isomorphism comparison
         return Graph.findSubgraphIsomorphisms(self, other, initialMap)
+    
+    def isIdentical(self, other):
+        """
+        Returns ``True`` if `other` is identical and ``False`` otherwise.
+        The function `isIsomorphic` respects wildcards, while this function
+        does not, make it more useful for checking groups to groups (as
+        opposed to molecules to groups)
+        
+        """
+        # It only makes sense to compare a Group to a Group for full
+        # isomorphism, so raise an exception if this is not what was requested
+        if not isinstance(other, Group):
+            raise TypeError('Got a {0} object for parameter "other", when a Group object is required.'.format(other.__class__))
+        # An identical group is always a child of itself and 
+        # is the only case where that is true. Therefore
+        # if we do both directions of isSubgraphIsmorphic, we need
+        # to get True twice for it to be identical
+        if not self.isSubgraphIsomorphic(other):
+            return False
+        elif not other.isSubgraphIsomorphic(self):
+            return False
+        else:
+            return True
