@@ -49,5 +49,6 @@ install:
   - cd ..
   - cd $TRAVIS_BUILD_DIR
   - make noQM
-script: make test
-
+script: 
+  - make test
+  - make eg1
