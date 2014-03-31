@@ -158,6 +158,27 @@ defined, compute the reaction-path degeneracy.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsFamily.checkWellFormed">
+<tt class="descname">checkWellFormed</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.checkWellFormed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a tuple of malformed database entries:</p>
+<p>noGroup is a list of nodes in the rules that has no corresponding group in
+groups.py</p>
+<p>noMatchingGroup is a dictionary with entry labels from the rules as a key
+and entry labels from groups as values. These are groups where rule.py&#8217;s
+adj list does not match group.py&#8217;s.</p>
+<p>notInTree is a list of groups that do not appear in the tree</p>
+<p>notSubgroup is a dictionary with group labels as keys and atom indexes 
+as values. Each key is a group where the child&#8217;s adj list is not a
+true child of it&#8217;s parent. The list of indexes corresponds to the
+child&#8217;s adj list index, where the atom is not a true child.</p>
+<p>probablyProduct is a list of groups which do not apepar in the
+tree, but are probably products (as opposed to reactants) which
+are created in the database loading. These are not necessarily
+malformations, but because I&#8217;m not certain where they came from,
+I decided to list them.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.descendTree">
 <tt class="descname">descendTree</tt><big>(</big><em>structure</em>, <em>atoms</em>, <em>root=None</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.descendTree" title="Permalink to this definition">¶</a></dt>
 <dd><p>Descend the tree in search of the functional group node that best
@@ -320,19 +341,6 @@ exists, or <tt class="docutils literal"><span class="pre">False</span></tt> othe
 <tt class="descname">isMoleculeForbidden</tt><big>(</big><em>molecule</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.isMoleculeForbidden" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if the molecule is forbidden in this family, or
 <tt class="docutils literal"><span class="pre">False</span></tt> otherwise.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.data.kinetics.KineticsFamily.isWellFormed">
-<tt class="descname">isWellFormed</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.isWellFormed" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return <tt class="xref py py-data docutils literal"><span class="pre">True</span></tt> if the database is well-formed. A well-formed
-database has an entry in the dictionary for every entry in the tree, and
-an entry in the tree for every entry in the library. If no tree is
-present (e.g. the primary libraries), then every entry in the library
-must have an entry in the dictionary. Finally, each entry in the
-library must have the same number of nodes as the number of top-level
-nodes in the tree, if the tree is present; this is for databases with
-multiple trees, e.g. the kinetics databases.</p>
 </dd></dl>
 
 <dl class="method">
