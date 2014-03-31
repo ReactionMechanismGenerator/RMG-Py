@@ -320,6 +320,14 @@ class GroupAtom(Vertex):
                 if radical1 == radical2 and spin1 == spin2: break
             else:
                 return False
+        #Each charge in self must have an equivalent in other
+        for charge1 in self.charge:
+            for charge2 in self.charge:
+                if charge1 == charge2: break
+            else:
+                return False
+        #The label must be the same
+        if not self.label==other.label: return False
         # Otherwise the two atom groups are equivalent
         return True
 
@@ -349,9 +357,17 @@ class GroupAtom(Vertex):
                 if radical1 == radical2 and spin1 == spin2: break
             else:
                 return False
+        #Each charge in self must have an equivalent in other
+        for charge1 in self.charge:
+            for charge2 in self.charge:
+                if charge1 == charge2: break
+            else:
+                return False
+        
+        #The label must be the same
+        if not self.label==other.label: return False
         # Otherwise self is in fact a specific case of other
         return True
-
 ################################################################################
 
 class GroupBond(Edge):
@@ -769,3 +785,26 @@ class Group(Graph):
             raise TypeError('Got a {0} object for parameter "other", when a Group object is required.'.format(other.__class__))
         # Do the isomorphism comparison
         return Graph.findSubgraphIsomorphisms(self, other, initialMap)
+    
+    def isIdentical(self, other):
+        """
+        Returns ``True`` if `other` is identical and ``False`` otherwise.
+        The function `isIsomorphic` respects wildcards, while this function
+        does not, make it more useful for checking groups to groups (as
+        opposed to molecules to groups)
+        
+        """
+        # It only makes sense to compare a Group to a Group for full
+        # isomorphism, so raise an exception if this is not what was requested
+        if not isinstance(other, Group):
+            raise TypeError('Got a {0} object for parameter "other", when a Group object is required.'.format(other.__class__))
+        # An identical group is always a child of itself and 
+        # is the only case where that is true. Therefore
+        # if we do both directions of isSubgraphIsmorphic, we need
+        # to get True twice for it to be identical
+        if not self.isSubgraphIsomorphic(other):
+            return False
+        elif not other.isSubgraphIsomorphic(self):
+            return False
+        else:
+            return True

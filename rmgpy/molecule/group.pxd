@@ -129,3 +129,5 @@ cdef class Group(Graph):
     cpdef bint isSubgraphIsomorphic(self, Graph other, dict initialMap=?) except -2
 
     cpdef list findSubgraphIsomorphisms(self, Graph other, dict initialMap=?)
+    
+    cpdef bint isIdentical(self, Graph other)
