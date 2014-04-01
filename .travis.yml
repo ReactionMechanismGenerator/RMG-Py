@@ -9,7 +9,8 @@ before_install:
 #  - sudo apt-get install python-rdkit librdkit-dev librdkit1 rdkit-data
   - sudo apt-get install -qq python-numpy python-scipy python-matplotlib
   - git clone https://github.com/GreenGroup/RMG-database.git
-  
+  - git clone https://github.com/GreenGroup/PyDAS.git
+  - git clone https://github.com/GreenGroup/PyDQED.git
   # RDKit, based on https://github.com/rdkit/rdkit/blob/master/.travis.yml
   - sudo apt-get install -qq flex bison build-essential python-numpy cmake python-dev sqlite3 libsqlite3-dev libboost-dev libboost-python-dev libboost-regex-dev python-imaging openjdk-7-jdk swig junit
   - export CXX=g++
@@ -35,6 +36,14 @@ before_install:
 install:
   - pip install numpy
   - pip install -r requirements.txt
+  - cd PyDAS
+  - make F77=gfortran
+  - make install
+  - cd ..
+  - cd PyDQED
+  - make F77=gfortran
+  - make install
+  - cd ..
   - make noQM
 script: make test
 
