@@ -8,6 +8,7 @@ before_install:
   - sudo apt-get install git build-essential gfortran python-dev liblapack-dev python-openbabel python-setuptools python-pip
 #  - sudo apt-get install python-rdkit librdkit-dev librdkit1 rdkit-data
   - sudo apt-get install -qq python-numpy python-scipy python-matplotlib
+  - cd ..
   - git clone https://github.com/GreenGroup/RMG-database.git
   - git clone https://github.com/GreenGroup/PyDAS.git
   - git clone https://github.com/GreenGroup/PyDQED.git
@@ -34,8 +35,10 @@ before_install:
   - cd ..
   - cd ..
 install:
+  - cd $TRAVIS_BUILD_DIR
   - pip install numpy
   - pip install -r requirements.txt
+  - cd ..
   - cd PyDAS
   - make F77=gfortran
   - make install
@@ -44,6 +47,7 @@ install:
   - make F77=gfortran
   - make install
   - cd ..
+  - cd $TRAVIS_BUILD_DIR
   - make noQM
 script: make test
 
