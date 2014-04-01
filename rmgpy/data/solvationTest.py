@@ -3,6 +3,7 @@
 
 import os
 from unittest import TestCase
+from external.wip import work_in_progress
 
 from rmgpy import settings
 from rmgpy.species import Species
@@ -55,6 +56,7 @@ class TestSoluteDatabase(TestCase):
             print self.assertAlmostEqual(soluteData.L, L)
             print self.assertAlmostEqual(soluteData.A, A)
 
+    @work_in_progress
     def testCorrectionGeneration(self):
         "Test we can estimate solvation thermochemistry."
         self.database = SolvationDatabase()

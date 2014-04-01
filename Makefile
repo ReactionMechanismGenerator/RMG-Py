@@ -14,12 +14,16 @@ minimal:
 	python setup.py build_ext minimal --build-lib . --build-temp build --pyrex-c-in-temp
 
 main:
+	echo "Checking you have PyDQED..."
+	@ python -c 'import pydqed; print pydqed.__file__'
 	python setup.py build_ext main --build-lib . --build-temp build --pyrex-c-in-temp
 
 measure:
 	python setup.py build_ext measure --build-lib . --build-temp build --pyrex-c-in-temp
 
 solver:
+	echo "Checking you have PyDAS..."
+	@ python -c 'import pydas; print pydas.__file__'
 	python setup.py build_ext solver --build-lib . --build-temp build --pyrex-c-in-temp
 
 cantherm:

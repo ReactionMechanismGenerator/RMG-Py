@@ -139,8 +139,8 @@ class Settings(dict):
         Reset all settings to their default values.
         """
         self.filename = None
-        working_dir = os.path.abspath(os.path.dirname(__file__))
-        self['database.directory'] = os.path.realpath(os.path.join(working_dir, '..', '..', 'RMG-database', 'input'))
+        rmgpy_module_dir = os.path.abspath(os.path.dirname(__file__))
+        self['database.directory'] = os.path.realpath(os.path.join(rmgpy_module_dir, '..', '..', 'RMG-database', 'input'))
         self.sources['database.directory'] = 'Default, relative to RMG-Py source code'
 
 # The global settings object

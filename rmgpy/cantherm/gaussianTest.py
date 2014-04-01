@@ -8,7 +8,7 @@ import os
 from rmgpy.cantherm.gaussian import GaussianLog
 from rmgpy.statmech import Conformer, IdealGasTranslation, LinearRotor, NonlinearRotor, HarmonicOscillator, HinderedRotor
 import rmgpy.constants as constants
-
+from external.wip import work_in_progress
 ################################################################################
 
 class GaussianTest(unittest.TestCase):
@@ -16,7 +16,7 @@ class GaussianTest(unittest.TestCase):
     Contains unit tests for the chempy.io.gaussian module, used for reading
     and writing Gaussian files.
     """
-    
+    @work_in_progress
     def testLoadEthyleneFromGaussianLog_CBSQB3(self):
         """
         Uses a Gaussian03 log file for ethylene (C2H4) to test that its
@@ -71,6 +71,7 @@ class GaussianTest(unittest.TestCase):
         self.assertEqual(conformer.spinMultiplicity, 3)
         self.assertEqual(conformer.opticalIsomers, 1)
 
+    @work_in_progress
     def testLoadEthyleneFromGaussianLog_G3(self):
         """
         Uses a Gaussian03 log file for ethylene (C2H4) to test that its
