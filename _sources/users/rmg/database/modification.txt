@@ -11,15 +11,15 @@ Modifying the Thermo Database
 =============================
 
 Creating Thermo Libraries
-----------------------------------
+-------------------------
 
 
 Adding Thermo Groups
-----------------------------------
+--------------------
 
 
 Adding Thermo to the Depository
-----------------------------------
+-------------------------------
 
 .. _kinetic-database-modification:
 
@@ -42,7 +42,7 @@ Put kinetic parameters into the training set when:
 * You wish for the reaction to be generalized to similar reactions in your mechanism
 
 Creating Kinetics Libraries
-----------------------------------
+---------------------------
 
 Adding New Kinetic Groups and Rate Rules
 ----------------------------------------
@@ -117,9 +117,6 @@ In the family's groups.py, you will need to add an entry of the format::
 		referenceType = "",
 		shortDesc = u"""""",
 		longDesc = u"""""",
-	history = [
-		("Wed Dec  5 10:25:25 2012","Josh Allen <jwallen@mit.edu>","action","""Josh Allen <jwallen@mit.edu> imported this entry from the old RMG database."""),
-	],
 	)
 
 * The index can be any number not already present in the set
@@ -142,7 +139,7 @@ example given in the previous section, the new group would be added under the C_
 .. _kinetic-rules:
 			
 Adding Kinetic Rules
----------------------------------------------------
+--------------------
 Rules give generalized kinetic parameters for a specific node template. In most
 cases, your kinetic parameters describe a specific reaction in which case you
 will want to add your reaction to the training set.
@@ -186,9 +183,6 @@ The rule must be added into rules.py in the form::
 	
 	Verified by Karma James
 	""",
-		history = [
-			("Wed Jan  9 11:01:40 2013","Josh Allen <jwallen@mit.edu>","action","""Josh Allen <jwallen@mit.edu> imported this entry from the old RMG database."""),
-		],
 	) 
 
 * The index can be any number not already used in rules.py.
@@ -203,8 +197,8 @@ The rule must be added into rules.py in the form::
 
 .. _kinetic-training-set:
 
-Adding Training Reactions 
-----------------------------------------
+Adding Training Reactions
+-------------------------
 
 If you know the kinetics of a specific reaction, rather than a rate rule for a template, you can
 add the kinetics to the database training set.  By default, RMG creates new rate rules from this 

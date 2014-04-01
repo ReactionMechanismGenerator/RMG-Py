@@ -75,6 +75,19 @@ database.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.data.statmech.StatmechGroups.checkWellFormed">
+<tt class="descname">checkWellFormed</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.data.statmech.StatmechGroups.checkWellFormed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <tt class="xref py py-data docutils literal"><span class="pre">True</span></tt> if the database is well-formed. A well-formed
+database has an entry in the dictionary for every entry in the tree, and
+an entry in the tree for every entry in the library. If no tree is
+present (e.g. the primary libraries), then every entry in the library
+must have an entry in the dictionary. Finally, each entry in the
+library must have the same number of nodes as the number of top-level
+nodes in the tree, if the tree is present; this is for databases with
+multiple trees, e.g. the kinetics databases.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.data.statmech.StatmechGroups.descendTree">
 <tt class="descname">descendTree</tt><big>(</big><em>structure</em>, <em>atoms</em>, <em>root=None</em><big>)</big><a class="headerlink" href="#rmgpy.data.statmech.StatmechGroups.descendTree" title="Permalink to this definition">¶</a></dt>
 <dd><p>Descend the tree in search of the functional group node that best
@@ -126,19 +139,6 @@ known, and using those frequencies.</p>
 characteristic group frequencies corresponding to the speficied
 <cite>molecule</cite>. The provided thermo data in <cite>thermoModel</cite> is used to fit
 some frequencies and all hindered rotors to heat capacity data.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.data.statmech.StatmechGroups.isWellFormed">
-<tt class="descname">isWellFormed</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.data.statmech.StatmechGroups.isWellFormed" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return <tt class="xref py py-data docutils literal"><span class="pre">True</span></tt> if the database is well-formed. A well-formed
-database has an entry in the dictionary for every entry in the tree, and
-an entry in the tree for every entry in the library. If no tree is
-present (e.g. the primary libraries), then every entry in the library
-must have an entry in the dictionary. Finally, each entry in the
-library must have the same number of nodes as the number of top-level
-nodes in the tree, if the tree is present; this is for databases with
-multiple trees, e.g. the kinetics databases.</p>
 </dd></dl>
 
 <dl class="method">

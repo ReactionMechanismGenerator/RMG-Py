@@ -75,6 +75,19 @@ depository.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.data.statmech.StatmechDepository.checkWellFormed">
+<tt class="descname">checkWellFormed</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.data.statmech.StatmechDepository.checkWellFormed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <tt class="xref py py-data docutils literal"><span class="pre">True</span></tt> if the database is well-formed. A well-formed
+database has an entry in the dictionary for every entry in the tree, and
+an entry in the tree for every entry in the library. If no tree is
+present (e.g. the primary libraries), then every entry in the library
+must have an entry in the dictionary. Finally, each entry in the
+library must have the same number of nodes as the number of top-level
+nodes in the tree, if the tree is present; this is for databases with
+multiple trees, e.g. the kinetics databases.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.data.statmech.StatmechDepository.descendTree">
 <tt class="descname">descendTree</tt><big>(</big><em>structure</em>, <em>atoms</em>, <em>root=None</em><big>)</big><a class="headerlink" href="#rmgpy.data.statmech.StatmechDepository.descendTree" title="Permalink to this definition">¶</a></dt>
 <dd><p>Descend the tree in search of the functional group node that best
@@ -101,19 +114,6 @@ the old-style syntax.</p>
 <tt class="descname">getEntriesToSave</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.data.statmech.StatmechDepository.getEntriesToSave" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a sorted list of the entries in this database that should be
 saved to the output file.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.data.statmech.StatmechDepository.isWellFormed">
-<tt class="descname">isWellFormed</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.data.statmech.StatmechDepository.isWellFormed" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return <tt class="xref py py-data docutils literal"><span class="pre">True</span></tt> if the database is well-formed. A well-formed
-database has an entry in the dictionary for every entry in the tree, and
-an entry in the tree for every entry in the library. If no tree is
-present (e.g. the primary libraries), then every entry in the library
-must have an entry in the dictionary. Finally, each entry in the
-library must have the same number of nodes as the number of top-level
-nodes in the tree, if the tree is present; this is for databases with
-multiple trees, e.g. the kinetics databases.</p>
 </dd></dl>
 
 <dl class="method">

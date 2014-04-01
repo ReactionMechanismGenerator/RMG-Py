@@ -65,7 +65,7 @@
 <h1>rmgpy.data.base.Entry<a class="headerlink" href="#rmgpy-data-base-entry" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="rmgpy.data.base.Entry">
-<em class="property">class </em><tt class="descclassname">rmgpy.data.base.</tt><tt class="descname">Entry</tt><big>(</big><em>index=-1</em>, <em>label=''</em>, <em>item=None</em>, <em>parent=None</em>, <em>children=None</em>, <em>data=None</em>, <em>reference=None</em>, <em>referenceType=''</em>, <em>shortDesc=''</em>, <em>longDesc=''</em>, <em>rank=None</em>, <em>history=None</em><big>)</big><a class="headerlink" href="#rmgpy.data.base.Entry" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">rmgpy.data.base.</tt><tt class="descname">Entry</tt><big>(</big><em>index=-1</em>, <em>label=''</em>, <em>item=None</em>, <em>parent=None</em>, <em>children=None</em>, <em>data=None</em>, <em>reference=None</em>, <em>referenceType=''</em>, <em>shortDesc=''</em>, <em>longDesc=''</em>, <em>rank=None</em><big>)</big><a class="headerlink" href="#rmgpy.data.base.Entry" title="Permalink to this definition">¶</a></dt>
 <dd><p>A class for representing individual records in an RMG database. Each entry
 in the database associates a chemical item (generally a species, functional
 group, or reaction) with a piece of data corresponding to that item. A
@@ -73,8 +73,8 @@ significant amount of metadata can also be stored with each entry.</p>
 <p>The attributes are:</p>
 <table border="1" class="docutils">
 <colgroup>
-<col width="14%" />
-<col width="86%" />
+<col width="16%" />
+<col width="84%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Attribute</th>
@@ -114,9 +114,6 @@ significant amount of metadata can also be stored with each entry.</p>
 </tr>
 <tr class="row-even"><td><cite>rank</cite></td>
 <td>An integer indicating the degree of confidence in the entry data, or <tt class="docutils literal"><span class="pre">None</span></tt> if not used</td>
-</tr>
-<tr class="row-odd"><td><cite>history</cite></td>
-<td>A list of tuples containing the date/time of change, author, type of change, and a brief description of the change</td>
 </tr>
 </tbody>
 </table>
