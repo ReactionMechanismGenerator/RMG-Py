@@ -60,8 +60,8 @@ class KineticsRules(Database):
     A class for working with a set of "rate rules" for a RMG kinetics family. 
     """
     
-    def __init__(self, label='', name='', shortDesc='', longDesc='', recommended=False):
-        Database.__init__(self, label=label, name=name, shortDesc=shortDesc, longDesc=longDesc, recommended=recommended)
+    def __init__(self, label='', name='', shortDesc='', longDesc=''):
+        Database.__init__(self, label=label, name=name, shortDesc=shortDesc, longDesc=longDesc)
 
     def __repr__(self):
         return '<KineticsRules "{0}">'.format(self.label)

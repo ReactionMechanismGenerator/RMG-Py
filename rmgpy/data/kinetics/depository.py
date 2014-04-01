@@ -111,8 +111,8 @@ class KineticsDepository(Database):
     real reactant and product species (as in a kinetics library).
     """
 
-    def __init__(self, label='', name='', shortDesc='', longDesc='', recommended=False):
-        Database.__init__(self, label=label, name=name, shortDesc=shortDesc, longDesc=longDesc, recommended=recommended)
+    def __init__(self, label='', name='', shortDesc='', longDesc=''):
+        Database.__init__(self, label=label, name=name, shortDesc=shortDesc, longDesc=longDesc)
 
     def __repr__(self):
         return '<KineticsDepository "{0}">'.format(self.label)

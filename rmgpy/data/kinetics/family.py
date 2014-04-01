@@ -415,8 +415,7 @@ class KineticsFamily(Database):
         for index, entry in enumerate(entries):
             entry.index = index + 1
             
-        self.rules = KineticsRules(label='{0}/rules'.format(self.label),
-                                        recommended=True)
+        self.rules = KineticsRules(label='{0}/rules'.format(self.label))
         self.rules.name = self.rules.label
         try:
             self.rules.loadOld(path, self.groups, numLabels=max(len(self.forwardTemplate.reactants), len(self.groups.top)))
