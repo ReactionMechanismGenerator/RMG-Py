@@ -10,8 +10,8 @@ before_install:
   - sudo apt-get install -qq python-numpy python-scipy
   - git clone https://github.com/GreenGroup/RMG-database.git
 install:
-  - pip install numpy --use-mirrors
-  - pip install -r requirements.txt --use-mirrors
+  - pip install numpy
+  - pip install -r requirements.txt
   - make noQM
-  - pip install .
 script: make test
+
