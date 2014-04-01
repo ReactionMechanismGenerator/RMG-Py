@@ -619,13 +619,13 @@ class KineticsFamily(Database):
             assert action[0] in ['CHANGE_BOND','FORM_BOND','BREAK_BOND','GAIN_RADICAL','LOSE_RADICAL','GAIN_PAIR','LOSE_PAIR']
             self.forwardRecipe.addAction(action)
 
-    def loadForbidden(self, label, group, shortDesc='', longDesc='', history=None):
+    def loadForbidden(self, label, group, shortDesc='', longDesc=''):
         """
         Load information about a forbidden structure.
         """
         if not self.forbidden:
             self.forbidden = ForbiddenStructures()
-        self.forbidden.loadEntry(label=label, group=group, shortDesc=shortDesc, longDesc=longDesc, history=history)
+        self.forbidden.loadEntry(label=label, group=group, shortDesc=shortDesc, longDesc=longDesc)
 
     def saveEntry(self, f, entry):
         """
@@ -863,7 +863,6 @@ class KineticsFamily(Database):
                 reference=entry.reference,
                 shortDesc="Rate rule generated from training reaction {0}. ".format(entry.index) + entry.shortDesc,
                 longDesc="Rate rule generated from training reaction {0}. ".format(entry.index) + entry.longDesc,
-                history=entry.history,
             )
             new_entry.data.A.value_si /= entry.item.degeneracy
             try:
@@ -915,7 +914,6 @@ class KineticsFamily(Database):
                 reference=entry.reference,
                 shortDesc="Rate rule generated from training reaction {0}. ".format(entry.index) + entry.shortDesc,
                 longDesc="Rate rule generated from training reaction {0}. ".format(entry.index) + entry.longDesc,
-                history=entry.history,
             )
             new_entry.data.A.value_si /= item.degeneracy
             try:

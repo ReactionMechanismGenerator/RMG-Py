@@ -81,7 +81,7 @@ class KineticsGroups(Database):
     def __repr__(self):
         return '<KineticsGroups "{0}">'.format(self.label)
 
-    def loadEntry(self, index, label, group, kinetics, reference=None, referenceType='', shortDesc='', longDesc='', history=None):
+    def loadEntry(self, index, label, group, kinetics, reference=None, referenceType='', shortDesc='', longDesc=''):
         if group[0:3].upper() == 'OR{' or group[0:4].upper() == 'AND{' or group[0:7].upper() == 'NOT OR{' or group[0:8].upper() == 'NOT AND{':
             item = makeLogicNode(group)
         else:
@@ -95,7 +95,6 @@ class KineticsGroups(Database):
             referenceType = referenceType,
             shortDesc = shortDesc,
             longDesc = longDesc.strip(),
-            history = history or [],
         )
 
     def getReactionTemplate(self, reaction):

@@ -203,10 +203,9 @@ def saveEntry(f, entry):
         for line in lines[1:-1]:
             f.write('    {0}\n'.format(line))
         f.write('    ),\n'.format(lines[0]))
-    else:
-        f.write('    reference = None,\n')
     
-    f.write('    referenceType = "{0}",\n'.format(entry.referenceType))
+    if entry.referenceType != "":
+        f.write('    referenceType = "{0}",\n'.format(entry.referenceType))
     if entry.rank is not None:
         f.write('    rank = {0},\n'.format(entry.rank))
     f.write('    shortDesc = u"""')
@@ -222,10 +221,5 @@ def saveEntry(f, entry):
     except:
         f.write(entry.longDesc.strip().encode('ascii', 'ignore')+ "\n")
     f.write('""",\n')
-
-    f.write('    history = [\n')
-    for time, user, action, description in entry.history:
-        f.write('        ("{0}","{1}","{2}","""{3}"""),\n'.format(time, user, action, description))
-    f.write('    ],\n')
 
     f.write(')\n\n')

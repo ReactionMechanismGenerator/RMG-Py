@@ -82,7 +82,6 @@ class KineticsRules(Database):
                   shortDesc='',
                   longDesc='',
                   rank=None,
-                  history=None
                   ):
         
         reactants = []
@@ -119,7 +118,6 @@ class KineticsRules(Database):
             shortDesc = shortDesc,
             longDesc = longDesc.strip(),
             rank = rank,
-            history = history or [],
         )
         try:
             self.entries[label].append(entry)
