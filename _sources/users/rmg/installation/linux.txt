@@ -26,10 +26,10 @@ The instructions listed below have been confirmed on a fresh Ubuntu 12.04 instal
 	sudo pip install scipy cython nose matplotlib quantities guppy sphinx psutil xlwt freetype2 libpng-dev
 	
 	cd ~
-	git clone git@github.com:jwallen/PyDAS.git
-	git clone git@github.com:jwallen/PyDQED.git
-	cd PyDAS; make F77=gfortran; sudo make install
-	cd ../PyDQED; make F77=gfortran; sudo make install
+	git clone https://github.com/GreenGroup/PyDAS.git
+	git clone https://github.com/GreenGroup/PyDQED.git
+	cd PyDAS; make F77=gfortran; sudo make install; cd ..
+	cd PyDQED; make F77=gfortran; sudo make install; cd ..
 
 * Install RDKit
 
@@ -61,10 +61,11 @@ The instructions listed below have been confirmed on a fresh Ubuntu 12.04 instal
 * Install RMG-Py: ::
 
 	cd ~
-	git clone git@github.com:GreenGroup/RMG-database.git
-	git clone git@github.com:GreenGroup/RMG-Py.git
+	git clone https://github.com/GreenGroup/RMG-database.git
+	git clone https://github.com/GreenGroup/RMG-Py.git
 	sudo pip install -r RMG-Py/requirements.txt
-	cd RMG-Py; make
+	cd RMG-Py
+    make
 
 * Run an example: ::
 
@@ -74,6 +75,6 @@ The instructions listed below have been confirmed on a fresh Ubuntu 12.04 instal
 
   You can also use the Makefile targets to test and run examples: ::
   
-  make test
-  make eg1
-  make eg2
+	make test
+	make eg1
+	make eg2

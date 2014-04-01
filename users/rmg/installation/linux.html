@@ -84,10 +84,10 @@ cat .ssh/id_rsa.pub</pre>
 sudo pip install scipy cython nose matplotlib quantities guppy sphinx psutil xlwt freetype2 libpng-dev
 
 cd ~
-git clone git@github.com:jwallen/PyDAS.git
-git clone git@github.com:jwallen/PyDQED.git
-cd PyDAS; make F77=gfortran; sudo make install
-cd ../PyDQED; make F77=gfortran; sudo make install</pre>
+git clone https://github.com/GreenGroup/PyDAS.git
+git clone https://github.com/GreenGroup/PyDQED.git
+cd PyDAS; make F77=gfortran; sudo make install; cd ..
+cd PyDQED; make F77=gfortran; sudo make install; cd ..</pre>
 </div>
 </li>
 <li><p class="first">Install RDKit</p>
@@ -116,11 +116,12 @@ export PYTHONPATH=$PYTHONPATH:$RDBASE  # (or some other way to make sure it's on
 </div>
 </li>
 <li><p class="first">Install RMG-Py:</p>
-<div class="highlight-python"><pre>cd ~
-git clone git@github.com:GreenGroup/RMG-database.git
-git clone git@github.com:GreenGroup/RMG-Py.git
-sudo pip install -r RMG-Py/requirements.txt
-cd RMG-Py; make</pre>
+<div class="highlight-python"><pre>    cd ~
+    git clone https://github.com/GreenGroup/RMG-database.git
+    git clone https://github.com/GreenGroup/RMG-Py.git
+    sudo pip install -r RMG-Py/requirements.txt
+    cd RMG-Py
+make</pre>
 </div>
 </li>
 <li><p class="first">Run an example:</p>
@@ -128,9 +129,10 @@ cd RMG-Py; make</pre>
 </div>
 <p>Verify your installation by opening the resulting output.html file under the &#8220;examples/rmg/minimal&#8221; directory.</p>
 <p>You can also use the Makefile targets to test and run examples:</p>
-<p>make test
+<div class="highlight-python"><pre>make test
 make eg1
-make eg2</p>
+make eg2</pre>
+</div>
 </li>
 </ul>
 </div>
