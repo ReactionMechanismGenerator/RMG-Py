@@ -1,15 +1,54 @@
 language: python
 python:
-  - "2.6"
   - "2.7"
+virtualenv:
+    system_site_packages: true
 before_install:
   - sudo apt-get update -qq
   - sudo apt-get install git build-essential gfortran python-dev liblapack-dev python-openbabel python-setuptools python-pip
-  - sudo apt-get install python-rdkit librdkit-dev librdkit1 rdkit-data
-  - git clone git@github.com:GreenGroup/RMG-database.git
+#  - sudo apt-get install python-rdkit librdkit-dev librdkit1 rdkit-data
+  - sudo apt-get install -qq python-numpy python-scipy python-matplotlib
+  - cd ..
+  - git clone https://github.com/GreenGroup/RMG-database.git
+  - git clone https://github.com/GreenGroup/PyDAS.git
+  - git clone https://github.com/GreenGroup/PyDQED.git
+  # RDKit, based on https://github.com/rdkit/rdkit/blob/master/.travis.yml
+  - sudo apt-get install -qq flex bison build-essential python-numpy cmake python-dev sqlite3 libsqlite3-dev libboost-dev libboost-python-dev libboost-regex-dev python-imaging openjdk-7-jdk swig junit
+  - export CXX=g++
+  - export CC=gcc
+  - git clone https://github.com/rdkit/rdkit.git
+  - cd rdkit
+  - export RDBASE=`pwd`
+  - export PYTHONPATH=${PYTHONPATH}:${RDBASE}
+  - export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${RDBASE}/lib
+  - cd External/INCHI-API
+  - ./download-inchi.sh
+  - cd ../../
+  - mkdir build
+  - cd build
+  - mkdir $RDBASE/External/java_lib
+  - cp /usr/share/java/junit.jar $RDBASE/External/java_lib
+  - ls -l $RDBASE/External/java_lib
+  - cmake .. -DRDK_BUILD_INCHI_SUPPORT=ON
+  - make -j2
+  - make install
+  - cd ..
+  - cd ..
 install:
-  - pip install numpy --use-mirrors
-  - pip install -r requirements.txt --use-mirrors
-  - make
-  - pip install .
-script: make test
+  - cd $TRAVIS_BUILD_DIR
+  - pip install numpy
+  - pip install -r requirements.txt
+  - cd ..
+  - cd PyDAS
+  - make F77=gfortran
+  - make install
+  - cd ..
+  - cd PyDQED
+  - make F77=gfortran
+  - make install
+  - cd ..
+  - cd $TRAVIS_BUILD_DIR
+  - make noQM
+script: 
+  - make test
+  - make eg1
