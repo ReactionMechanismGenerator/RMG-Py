@@ -1,22 +1,19 @@
+# <img align="top" src="https://raw.githubusercontent.com/GreenGroup/RMG-Py/master/documentation/source/_static/rmg-logo-small.png"> RMG Py - Reaction Mechanism Generator (Python Version) 
 
- RMG Py Reaction Mechanism Generator (Python Version)
-============================================================
-
-[RMG Logo](https://raw.githubusercontent.com/GreenGroup/RMG-Py/master/documentation/source/_static/rmg-logo-small.png)
-    
 This repository contains the Python version of Reaction Mechanism Generator 
 (RMG), a tool for automatically generating kinetic models of chemical reaction
 mechanisms, and related projects. RMG is developed primarily by researchers in 
-[Prof. Green's research group](http://web.mit.edu/greengp/) at the 
+[Prof. William Green's research group](http://web.mit.edu/greengp/) at the 
 [Massachusetts Institute of Technology](http://web.mit.edu/) 
-and [Prof. West's research group](http://www.northeastern.edu/comocheng/) at 
-[Northeastern University](http://www.northeastern.edu/)
+and [Prof. Richard West's research group](http://www.northeastern.edu/comocheng/) at 
+[Northeastern University](http://www.northeastern.edu/). 
 
+The most official repository is at https://github.com/GreenGroup/RMG-Py.
 There are some instructions at  http://greengroup.github.com/RMG-Py/ including
 details on [how to install RMG-Py](http://greengroup.github.com/RMG-Py/users/rmg/installation/index.html)
 and its numerous dependencies.
 
-We now have a continuous integration build test suite 
+We have a continuous integration build test suite 
 which you can access at https://travis-ci.org/GreenGroup/RMG-Py
 The current build status is
 [![Build Status](https://travis-ci.org/GreenGroup/RMG-Py.svg?branch=master)](https://travis-ci.org/GreenGroup/RMG-Py)
