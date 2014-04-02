@@ -149,7 +149,7 @@ class TestHinderedRotor(unittest.TestCase):
         Qexplist = numpy.array([1.39364, 1.94182, 3.29509, 4.45205, 5.44563])
         for T, Qexp in zip(Tlist, Qexplist):
             Qact = self.mode.getPartitionFunction(T)
-            self.assertAlmostEqual(Qexp, Qact, delta=1e-4*Qexp)
+            self.assertAlmostEqual(Qexp, Qact, delta=5e-4*Qexp)
 
     def test_getHeatCapacity_classical_cosine(self):
         """
