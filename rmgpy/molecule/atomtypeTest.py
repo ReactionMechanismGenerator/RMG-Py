@@ -250,13 +250,13 @@ class TestGetAtomType(unittest.TestCase):
         self.assertEqual(self.atomType(self.mol4, 8), 'Ss')
         self.assertEqual(self.atomType(self.mol4, 9), 'Sd')
     
-    def testNoneTypes(self):
+    def testOtherTypes(self):
         """
-        Test that getAtomType() returns appropriate NoneTypes.
+        Test that getAtomType() returns appropriate types for other misc inerts.
         """
-        self.assertIsNone(self.atomType(self.mol6, 0))
-        self.assertIsNone(self.atomType(self.mol7, 0))
-        self.assertIsNone(self.atomType(self.mol8, 0))
+        self.assertEqual(self.atomType(self.mol6, 0), 'Ar')
+        self.assertEqual(self.atomType(self.mol7, 0), 'He')
+        self.assertEqual(self.atomType(self.mol8, 0), 'Ne')
 
 ################################################################################
 
