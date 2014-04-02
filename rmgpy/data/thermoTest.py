@@ -3,6 +3,7 @@
 
 import os
 import unittest
+from external.wip import work_in_progress
 
 from rmgpy import settings
 from rmgpy.species import Species
@@ -56,6 +57,7 @@ class TestThermoDatabase(unittest.TestCase):
             ['C1C=CC=C1',       2,    32.5, 65.5, 18.16, 24.71, 30.25, 34.7, 41.25, 45.83, 52.61],
         ]
 
+    @work_in_progress
     def testNewThermoGeneration(self):
         """
         Test that the new ThermoDatabase generates appropriate thermo data.
@@ -81,6 +83,7 @@ class TestThermoDatabase(unittest.TestCase):
             for T, Cp in zip(self.Tlist, Cplist):
                 self.assertAlmostEqual(Cp, thermoData.getHeatCapacity(T) / 4.184, places=1, msg="Cp{1} error for {0}".format(smiles,T))
 
+    @work_in_progress
     def testSymmetryNumberGeneration(self):
         """
         Test we generate symmetry numbers correctly.
@@ -104,6 +107,7 @@ class TestThermoDatabase(unittest.TestCase):
                     molecule = mol
             self.assertEqual(molecule.calculateSymmetryNumber(), symm, msg="Symmetry number error for {0}".format(smiles))
 
+    @work_in_progress
     def testOldThermoGeneration(self):
         """
         Test that the old ThermoDatabase generates relatively accurate thermo data.
