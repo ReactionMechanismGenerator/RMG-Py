@@ -3240,12 +3240,12 @@ Test the value of the reduced Planck constant. ... ok
 Test the value of the speed of light in a vacuum. ... ok
 Test we can estimate solvation thermochemistry. ... SKIP: WIP test failed: Solvation enthalpy discrepancy (-17533!=-12000) for methane in water
 Test we can estimate Abraham solute paramaters correctly ... ok
-Test that the new ThermoDatabase generates appropriate thermo data. ... FAIL
-Test that the old ThermoDatabase generates relatively accurate thermo data. ... FAIL
-Test we generate symmetry numbers correctly. ... FAIL
-Test that the new ThermoDatabase generates appropriate thermo data. for Aromatics. ... FAIL
-Test that the old ThermoDatabase generates relatively accurate thermo data. for Aromatics. ... FAIL
-Test we generate symmetry numbers correctly. for Aromatics. ... FAIL
+Test that the new ThermoDatabase generates appropriate thermo data. ... SKIP: WIP test failed: H298 error for C1C=CC=C1
+Test that the old ThermoDatabase generates relatively accurate thermo data. ... SKIP: WIP test failed: H298 error for C1C=CC=C1
+Test we generate symmetry numbers correctly. ... SKIP: WIP test failed: Symmetry number error for C1C=CC=C1
+Test that the new ThermoDatabase generates appropriate thermo data. for Aromatics. ... SKIP: WIP test failed: H298 error for c1ccccc1
+Test that the old ThermoDatabase generates relatively accurate thermo data. for Aromatics. ... SKIP: WIP test failed: H298 error for c1ccccc1
+Test we generate symmetry numbers correctly. for Aromatics. ... SKIP: WIP test failed: Symmetry number error for c1ccccc1
 Test that the Arrhenius A property was properly set. ... ok
 Test that the Arrhenius Ea property was properly set. ... ok
 Test that the Arrhenius T0 property was properly set. ... ok
@@ -3410,7 +3410,7 @@ Test the AtomType.setActions() method. ... ok
 Test that getAtomType() returns appropriate carbon atom types. ... ok
 Test that getAtomType() returns the hydrogen atom type. ... ok
 Test that getAtomType() returns appropriate nitrogen atom types. ... ok
-Test that getAtomType() returns appropriate NoneTypes. ... FAIL
+Test that getAtomType() returns appropriate types for other misc inerts. ... ok
 Test that getAtomType() returns appropriate oxygen atom types. ... ok
 Test that getAtomType() returns appropriate silicon atom types. ... ok
 Test that getAtomType() returns appropriate sulfur atom types. ... ok
@@ -3449,12 +3449,12 @@ Tests the vertex connectivity values as introduced by Morgan (1965). ... ok
 Test the Group.clearLabeledAtoms() method. ... ok
 Test the Group.containsLabeledAtom() method. ... ok
 Test the Group.findIsomorphism() method. ... ok
-Test the Group.findSubgraphIsomorphisms() method. ... FAIL
+Test the Group.findSubgraphIsomorphisms() method. ... ok
 Test the Group.fromAdjacencyList() method. ... ok
 Test the Group.getLabeledAtom() method. ... ok
 Test the Group.getLabeledAtoms() method. ... ok
 Test the Group.isIsomorphic() method. ... ok
-Test the Group.isSubgraphIsomorphic() method. ... FAIL
+Test the Group.isSubgraphIsomorphic() method. ... ok
 Test that a Group object can be successfully pickled and ... ok
 Test the Group.toAdjacencyList() method. ... ok
 Test the GroupAtom.applyAction() method for a BREAK_BOND action. ... ok
@@ -3514,9 +3514,9 @@ Test the Bond.isTriple() method. ... ok
 Test that a Bond object can be successfully pickled and ... ok
 Check the adjacency list read/write functions for a full molecule. ... WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
 ok
-Test the Molecule.isAromatic() method. ... FAIL
+Test the Molecule.isAromatic() method. ... SKIP: WIP test failed: False is not true
 Test the Molecule.isAromatic() method. ... ok
-Test the Molecule.isAromatic() method. ... FAIL
+Test the Molecule.isAromatic() method. ... SKIP: WIP test failed: False is not true
 Test that Augmented InChI generation is printing the /mult layer ... WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
 ok
 Test that Augmented InChI Key generation is printing the mult layer ... WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
@@ -3524,7 +3524,7 @@ ok
 Test the Molecule.clearLabeledAtoms() method. ... ok
 Test the Molecule.containsLabeledAtom() method. ... ok
 Test the Molecule.countInternalRotors() method. ... ok
-Test the Molecule.countInternalRotors() method for dimethylacetylene. ... FAIL
+Test the Molecule.countInternalRotors() method for dimethylacetylene. ... SKIP: WIP test failed: 2 != 1
 Test the Molecule.countInternalRotors() method. ... ok
 Test the Molecule.countInternalRotors() method. ... ok
 Test the Molecule.countInternalRotors() method. ... ok
@@ -3625,7 +3625,7 @@ Test the Molecule.calculateAxisSymmetryNumber() method. ... ok
 Test the Molecule.calculateAxisSymmetryNumber() method. ... ok
 Test the Molecule.calculateAxisSymmetryNumber() method. ... ok
 Test the Molecule.calculateAxisSymmetryNumber() method. ... ok
-Test the Molecule.calculateAxisSymmetryNumber() method. ... FAIL
+Test the Molecule.calculateAxisSymmetryNumber() method. ... SKIP: WIP test failed: 1 != 4
 Test the Molecule.calculateAxisSymmetryNumber() method. ... ok
 Test the Molecule.calculateAxisSymmetryNumber() method. ... ok
 Test the Molecule.calculateAxisSymmetryNumber() method. ... ok
@@ -3641,13 +3641,13 @@ Test the Molecule.calculateBondSymmetryNumber() method. ... ok
 Test the Molecule.calculateBondSymmetryNumber() method. ... ok
 Test the Molecule.calculateBondSymmetryNumber() method. ... ok
 Test the Molecule.calculateBondSymmetryNumber() method. ... ok
-Test the Molecule.calculateCyclicSymmetryNumber() method. ... FAIL
+Test the Molecule.calculateCyclicSymmetryNumber() method. ... SKIP: WIP test failed: 3 != 12
 Test the Molecule.calculateCyclicSymmetryNumber() method. ... ok
 Test the Molecule.calculateCyclicSymmetryNumber() method. ... ok
 Test the Molecule.calculateCyclicSymmetryNumber() method. ... ok
 Test the Molecule.calculateSymmetryNumber() method. ... ok
 Test the Molecule.calculateSymmetryNumber() method. ... ok
-Test the Molecule.calculateSymmetryNumber() method. ... FAIL
+Test the Molecule.calculateSymmetryNumber() method. ... SKIP: WIP test failed: 6 != '6?'
 Test the Molecule.calculateSymmetryNumber() method. ... ok
 Test the Molecule.calculateSymmetryNumber() method. ... ok
 Test the Molecule.calculateSymmetryNumber() method. ... ok
@@ -3658,8 +3658,8 @@ Test the Molecule.calculateSymmetryNumber() method. ... ok
 Test the Molecule.calculateSymmetryNumber() method. ... ok
 Test the Molecule.calculateSymmetryNumber() method. ... ok
 Test the Molecule.calculateSymmetryNumber() method. ... ok
-Test the Molecule.calculateSymmetryNumber() method. ... FAIL
-Test the Molecule.calculateSymmetryNumber() method. ... FAIL
+Test the Molecule.calculateSymmetryNumber() method. ... SKIP: WIP test failed: 18 != '???'
+Test the Molecule.calculateSymmetryNumber() method. ... SKIP: WIP test failed: 9 != 1
 Test the Molecule.calculateSymmetryNumber() method. ... ok
 Test the SingleExponentialDown.T0 attribute. ... ok
 Test the SingleExponentialDown.sigma attribute. ... ok
@@ -3999,142 +3999,6 @@ Test that the TransportData sigma property was properly set. ... ok
 testJoback (rmgpy.transportDataTest.TestTransportDatabase) ... ok
 Test Joback doesn't crash on Cb desription of beneze ... ok
 
-======================================================================
-FAIL: Test that the new ThermoDatabase generates appropriate thermo data.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermoTest.py", line 79, in testNewThermoGeneration
-    self.assertAlmostEqual(H298, thermoData.getEnthalpy(298) / 4184, places=1, msg="H298 error for {0}".format(smiles))
-AssertionError: H298 error for C1C=CC=C1
-
-======================================================================
-FAIL: Test that the old ThermoDatabase generates relatively accurate thermo data.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermoTest.py", line 126, in testOldThermoGeneration
-    self.assertAlmostEqual(H298, thermoData.getEnthalpy(298) / 4184, places=1, msg="H298 error for {0}".format(smiles))
-AssertionError: H298 error for C1C=CC=C1
-
-======================================================================
-FAIL: Test we generate symmetry numbers correctly.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermoTest.py", line 105, in testSymmetryNumberGeneration
-    self.assertEqual(molecule.calculateSymmetryNumber(), symm, msg="Symmetry number error for {0}".format(smiles))
-AssertionError: Symmetry number error for C1C=CC=C1
-
-======================================================================
-FAIL: Test that the new ThermoDatabase generates appropriate thermo data. for Aromatics.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermoTest.py", line 79, in testNewThermoGeneration
-    self.assertAlmostEqual(H298, thermoData.getEnthalpy(298) / 4184, places=1, msg="H298 error for {0}".format(smiles))
-AssertionError: H298 error for c1ccccc1
-
-======================================================================
-FAIL: Test that the old ThermoDatabase generates relatively accurate thermo data. for Aromatics.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermoTest.py", line 126, in testOldThermoGeneration
-    self.assertAlmostEqual(H298, thermoData.getEnthalpy(298) / 4184, places=1, msg="H298 error for {0}".format(smiles))
-AssertionError: H298 error for c1ccccc1
-
-======================================================================
-FAIL: Test we generate symmetry numbers correctly. for Aromatics.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/data/thermoTest.py", line 105, in testSymmetryNumberGeneration
-    self.assertEqual(molecule.calculateSymmetryNumber(), symm, msg="Symmetry number error for {0}".format(smiles))
-AssertionError: Symmetry number error for c1ccccc1
-
-======================================================================
-FAIL: Test that getAtomType() returns appropriate NoneTypes.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/atomtypeTest.py", line 257, in testNoneTypes
-    self.assertIsNone(self.atomType(self.mol6, 0))
-AssertionError: 'Ar' is not None
-
-======================================================================
-FAIL: Test the Group.findSubgraphIsomorphisms() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/groupTest.py", line 491, in testFindSubgraphIsomorphisms
-    self.assertEqual(len(result), 1)
-AssertionError: 0 != 1
-
-======================================================================
-FAIL: Test the Group.isSubgraphIsomorphic() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/groupTest.py", line 479, in testIsSubgraphIsomorphic
-    self.assertTrue(self.group.isSubgraphIsomorphic(group))
-AssertionError: False is not true
-
-======================================================================
-FAIL: Test the Molecule.isAromatic() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/moleculeTest.py", line 926, in testAromaticBenzene
-    self.assertTrue(Molecule().fromSMILES('C1=CC=CC=C1').isAromatic())
-AssertionError: False is not true
-
-======================================================================
-FAIL: Test the Molecule.isAromatic() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/moleculeTest.py", line 932, in testAromaticNaphthalene
-    self.assertTrue(Molecule().fromSMILES('C12C(C=CC=C1)=CC=CC=2').isAromatic())
-AssertionError: False is not true
-
-======================================================================
-FAIL: Test the Molecule.countInternalRotors() method for dimethylacetylene.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/moleculeTest.py", line 981, in testCountInternalRotorsDimethylAcetylene
-    self.assertEqual(Molecule().fromSMILES('CC#CC').countInternalRotors(), 1)
-AssertionError: 2 != 1
-
-======================================================================
-FAIL: Test the Molecule.calculateAxisSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 200, in testAxisSymmetryNumber3
-    self.assertEqual(calculateAxisSymmetryNumber(molecule), 4)
-AssertionError: 1 != 4
-
-======================================================================
-FAIL: Test the Molecule.calculateCyclicSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 251, in testCyclicSymmetryNumberBenzene
-    self.assertEqual(symmetryNumber, 12)
-AssertionError: 3 != 12
-
-======================================================================
-FAIL: Test the Molecule.calculateSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 363, in testSymmetryNumberCyclic
-    self.assertEqual(Molecule().fromSMILES('C1=C=C=1').calculateSymmetryNumber(), '6?')
-AssertionError: 6 != '6?'
-
-======================================================================
-FAIL: Test the Molecule.calculateSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 279, in testTotalSymmetryNumber1
-    self.assertEqual(Molecule().fromSMILES('C=C=[C]C(C)(C)[C]=C=C').calculateSymmetryNumber(), '???')
-AssertionError: 18 != '???'
-
-======================================================================
-FAIL: Test the Molecule.calculateSymmetryNumber() method.
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 285, in testTotalSymmetryNumber2
-    self.assertEqual(Molecule().fromSMILES('C(=CC(c1ccccc1)C([CH]CCCCCC)C=Cc1ccccc1)[CH]CCCCCC').calculateSymmetryNumber(), 1)
-AssertionError: 9 != 1
-
 Name                              Stmts   Miss Branch BrMiss  Cover   Missing
 -----------------------------------------------------------------------------
 rmgpy                                55     17     18     10    63%   71, 79-82, 104-107, 113, 115, 119, 131-135, 155
@@ -4205,7 +4069,7 @@ TOTAL                             14611  11687   6243   5642    17%
 ----------------------------------------------------------------------
 Ran 727 tests.
 
-FAILED (SKIP=3, failures=17)
+OK (SKIP=17)
 
         1 * C 0 {2,D} {7,S} {8,S}
         2 C 0 {1,D} {3,S} {9,S}
@@ -4278,4 +4142,3 @@ C2H4
 [[ 0.49713952 -0.61011423 -0.61693835]
  [ 0.78735968  0.01845445  0.61621763]
  [ 0.36457789  0.79209851 -0.48955379]]
-make: *** [test] Error 1
