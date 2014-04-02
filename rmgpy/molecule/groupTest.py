@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import unittest
+from external.wip import work_in_progress
 
 from rmgpy.molecule.group import *
 from rmgpy.molecule.atomtype import atomTypes
@@ -153,7 +154,17 @@ class TestGroupAtom(unittest.TestCase):
                 else:
                     self.assertFalse(atom1.equivalent(atom2), '{0!s} is equivalent to {1!s}'.format(atom1, atom2))
                     self.assertFalse(atom2.equivalent(atom1), '{0!s} is equivalent to {1!s}'.format(atom2, atom1))
-    
+            # Now see if charge and radical count are checked properly
+            for charge in range(3):
+                for radicals in range(2):
+                    atom3 = GroupAtom(atomType=[atomType1], radicalElectrons=[radicals], spinMultiplicity=[radicals + 1], charge=[charge], label='*1')
+                    if radicals == 1 and charge == 0:
+                        self.assertTrue(atom1.equivalent(atom3), '{0!s} is not equivalent to {1!s}'.format(atom1, atom3))
+                        self.assertTrue(atom1.equivalent(atom3), '{0!s} is not equivalent to {1!s}'.format(atom3, atom1))
+                    else:
+                        self.assertFalse(atom1.equivalent(atom3), '{0!s} is equivalent to {1!s}'.format(atom1, atom3))
+                        self.assertFalse(atom1.equivalent(atom3), '{0!s} is equivalent to {1!s}'.format(atom3, atom1))
+
     def testIsSpecificCaseOf(self):
         """
         Test the GroupAtom.isSpecificCaseOf() method.
@@ -162,10 +173,17 @@ class TestGroupAtom(unittest.TestCase):
             for label2, atomType2 in atomTypes.iteritems():
                 atom1 = GroupAtom(atomType=[atomType1], radicalElectrons=[1], spinMultiplicity=[2], charge=[0], label='*1')
                 atom2 = GroupAtom(atomType=[atomType2], radicalElectrons=[1], spinMultiplicity=[2], charge=[0], label='*1')
+                # And make more generic types of these two atoms
+                atom1gen = GroupAtom(atomType=[atomType1], radicalElectrons=[0, 1], spinMultiplicity=[1, 2], charge=[0, 1], label='*1')
+                atom2gen = GroupAtom(atomType=[atomType2], radicalElectrons=[0, 1], spinMultiplicity=[1, 2], charge=[0, 1], label='*1')
                 if label1 == label2 or atomType2 in atomType1.generic:
                     self.assertTrue(atom1.isSpecificCaseOf(atom2), '{0!s} is not a specific case of {1!s}'.format(atom1, atom2))
+                    self.assertTrue(atom1.isSpecificCaseOf(atom2gen), '{0!s} is not a specific case of {1!s}'.format(atom1, atom2gen))
+                    self.assertFalse(atom1gen.isSpecificCaseOf(atom2), '{0!s} is a specific case of {1!s}'.format(atom1gen, atom2))
                 else:
-                    self.assertFalse(atom1.isSpecificCaseOf(atom2), '{0!s} is not a specific case of {1!s}'.format(atom1, atom2))
+                    self.assertFalse(atom1.isSpecificCaseOf(atom2), '{0!s} is a specific case of {1!s}'.format(atom1, atom2))
+                    self.assertFalse(atom1.isSpecificCaseOf(atom2gen), '{0!s} is a specific case of {1!s}'.format(atom1, atom2gen))
+                    self.assertFalse(atom1gen.isSpecificCaseOf(atom2), '{0!s} is a specific case of {1!s}'.format(atom1gen, atom2))
     
     def testCopy(self):
         """

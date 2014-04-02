@@ -320,14 +320,17 @@ class GroupAtom(Vertex):
                 if radical1 == radical2 and spin1 == spin2: break
             else:
                 return False
-        #Each charge in self must have an equivalent in other
+        #Each charge in self must have an equivalent in other (and vice versa)
         for charge1 in self.charge:
+            for charge2 in other.charge:
+                if charge1 == charge2: break
+            else:
+                return False
+        for charge1 in other.charge:
             for charge2 in self.charge:
                 if charge1 == charge2: break
             else:
                 return False
-        #The label must be the same
-        if not self.label==other.label: return False
         # Otherwise the two atom groups are equivalent
         return True
 
@@ -359,13 +362,10 @@ class GroupAtom(Vertex):
                 return False
         #Each charge in self must have an equivalent in other
         for charge1 in self.charge:
-            for charge2 in self.charge:
+            for charge2 in other.charge:
                 if charge1 == charge2: break
             else:
                 return False
-        
-        #The label must be the same
-        if not self.label==other.label: return False
         # Otherwise self is in fact a specific case of other
         return True
 ################################################################################
@@ -792,7 +792,6 @@ class Group(Graph):
         The function `isIsomorphic` respects wildcards, while this function
         does not, make it more useful for checking groups to groups (as
         opposed to molecules to groups)
-        
         """
         # It only makes sense to compare a Group to a Group for full
         # isomorphism, so raise an exception if this is not what was requested
