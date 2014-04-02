@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import unittest
-
+from external.wip import work_in_progress
 from rmgpy.molecule.molecule import *
 from rmgpy.molecule.group import Group
 from rmgpy.molecule.element import getElement, elementList
@@ -918,13 +918,15 @@ class TestMolecule(unittest.TestCase):
         Test the Molecule.isLinear() method.
         """
         self.assertTrue(Molecule().fromSMILES('C#CC#CC#C').isLinear())
-        
+
+    @work_in_progress
     def testAromaticBenzene(self):
         """
         Test the Molecule.isAromatic() method.
         """
         self.assertTrue(Molecule().fromSMILES('C1=CC=CC=C1').isAromatic())
-        
+
+    @work_in_progress
     def testAromaticNaphthalene(self):
         """
         Test the Molecule.isAromatic() method.
@@ -973,6 +975,7 @@ class TestMolecule(unittest.TestCase):
         """
         self.assertEqual(Molecule().fromSMILES('C#C').countInternalRotors(), 0)
     
+    @work_in_progress
     def testCountInternalRotorsDimethylAcetylene(self):
         """
         Test the Molecule.countInternalRotors() method for dimethylacetylene.
