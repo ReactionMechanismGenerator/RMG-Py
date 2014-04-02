@@ -326,8 +326,6 @@ class GroupAtom(Vertex):
                 if charge1 == charge2: break
             else:
                 return False
-        #The label must be the same
-        if not self.label==other.label: return False
         # Otherwise the two atom groups are equivalent
         return True
 
@@ -363,9 +361,6 @@ class GroupAtom(Vertex):
                 if charge1 == charge2: break
             else:
                 return False
-        
-        #The label must be the same
-        if not self.label==other.label: return False
         # Otherwise self is in fact a specific case of other
         return True
 ################################################################################
