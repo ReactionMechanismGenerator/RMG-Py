@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import unittest
+from external.wip import work_in_progress
 
 from rmgpy.molecule.molecule import *
 from rmgpy.molecule.symmetry import *
@@ -192,6 +193,7 @@ class TestMoleculeSymmetry(unittest.TestCase):
         molecule = Molecule().fromSMILES('C=C=C(C(C(C(C=C=C)=C=C)=C=C)=C=C)')
         self.assertEqual(calculateAxisSymmetryNumber(molecule), 2)
     
+    @work_in_progress
     def testAxisSymmetryNumber3(self):
         """
         Test the Molecule.calculateAxisSymmetryNumber() method.
@@ -242,6 +244,7 @@ class TestMoleculeSymmetry(unittest.TestCase):
         symmetryNumber = calculateCyclicSymmetryNumber(molecule)
         self.assertEqual(symmetryNumber, 12)
 
+    @work_in_progress
     def testCyclicSymmetryNumberBenzene(self):
         """
         Test the Molecule.calculateCyclicSymmetryNumber() method.
@@ -272,12 +275,14 @@ class TestMoleculeSymmetry(unittest.TestCase):
         """
         self.assertEqual(Molecule().fromSMILES('CC').calculateSymmetryNumber(), 18)
     
+    @work_in_progress
     def testTotalSymmetryNumber1(self):
         """
         Test the Molecule.calculateSymmetryNumber() method.
         """
         self.assertEqual(Molecule().fromSMILES('C=C=[C]C(C)(C)[C]=C=C').calculateSymmetryNumber(), '???')
     
+    @work_in_progress
     def testTotalSymmetryNumber2(self):
         """
         Test the Molecule.calculateSymmetryNumber() method.
@@ -356,6 +361,7 @@ class TestMoleculeSymmetry(unittest.TestCase):
         """
         self.assertEqual(Molecule().fromSMILES('C=[CH]').calculateSymmetryNumber(), 1)
     
+    @work_in_progress
     def testSymmetryNumberCyclic(self):
         """
         Test the Molecule.calculateSymmetryNumber() method.
