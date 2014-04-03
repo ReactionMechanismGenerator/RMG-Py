@@ -152,9 +152,8 @@ class KineticsDatabase(object):
                 if recommended:
                     familiesToLoad.append(d)
             for label, value in self.recommendedFamilies.iteritems():
-                if value is True:
-                    if label not in dirs:
-                        raise DatabaseError('Family {0} recommended (in {1}/recommended.py?) not found on disk.'.format(label, path))
+                if label not in dirs:
+                    raise DatabaseError('Family {0} found (in {1}/recommended.py) not found on disk.'.format(label, path))
 
         elif families == 'all':
             # All families are loaded
