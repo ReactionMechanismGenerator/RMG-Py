@@ -82,12 +82,10 @@ def database(
     else:
         assert isinstance(kineticsDepositories,list), "kineticsDepositories should be either 'default', 'all', or a list of names eg. ['training','PrIMe']."
         rmg.kineticsDepositories = kineticsDepositories
-    if kineticsFamilies == 'default':
-        pass
-    elif kineticsFamilies == 'all':
-        pass
+    if kineticsFamilies in ('default', 'all', 'none'):
+        rmg.kineticsFamilies = kineticsFamilies
     else:
-        assert isinstance(kineticsFamilies,list), "kineticsFamilies should be either 'default', 'all', or a list of names eg. ['H_Abstraction','!Intra_Disproportionation']."
+        assert isinstance(kineticsFamilies,list), "kineticsFamilies should be either 'default', 'all', 'none', or a list of names eg. ['H_Abstraction','R_Recombination'] or ['!Intra_Disproportionation']."
         rmg.kineticsFamilies = kineticsFamilies
 
 def species(label, structure, reactive=True):
