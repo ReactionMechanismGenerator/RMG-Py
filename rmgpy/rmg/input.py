@@ -82,16 +82,8 @@ def database(
     else:
         assert isinstance(kineticsDepositories,list), "kineticsDepositories should be either 'default', 'all', or a list of names eg. ['training','PrIMe']."
         rmg.kineticsDepositories = kineticsDepositories
-    if kineticsFamilies == 'default':
-        # This is loaded if the user specifies 'default', or if no kineticsFamilies field is used
+    if kineticsFamilies in ('default', 'all', 'none'):
         rmg.kineticsFamilies = kineticsFamilies
-        pass
-    elif kineticsFamilies == 'all':
-        rmg.kineticsFamilies = kineticsFamilies
-        pass
-    elif kineticsFamilies == 'none':
-        rmg.kineticsFamilies = kineticsFamilies
-        pass
     else:
         assert isinstance(kineticsFamilies,list), "kineticsFamilies should be either 'default', 'all', 'none', or a list of names eg. ['H_Abstraction','R_Recombination'] or ['!Intra_Disproportionation']."
         rmg.kineticsFamilies = kineticsFamilies
