@@ -59,6 +59,7 @@ class KineticsDatabase(object):
     """
 
     def __init__(self):
+        self.recommendedFamilies = {}
         self.families = {}
         self.libraries = {}
         self.libraryOrder = []
@@ -101,9 +102,35 @@ class KineticsDatabase(object):
         Load the kinetics database from the given `path` on disk, where `path`
         points to the top-level folder of the families database.
         """
+        self.loadRecommendedFamiliesList(os.path.join(path, 'families', 'recommended.py')),
         self.loadFamilies(os.path.join(path, 'families'), families, depositories)
         self.loadLibraries(os.path.join(path, 'libraries'), libraries)
+
+    def loadRecommendedFamiliesList(self, filepath):
+        """
+        Load the list of recommended families from the given file
         
+        The file is usually 'kinetics/families/recommended.py'.
+        This is stored as a dictionary of True or False values (checked here),
+        and should contain entries for every available family (checked in loadFamilies).
+        """
+        try:
+            global_context = {}
+            global_context['__builtins__'] = None
+            global_context['True'] = True
+            global_context['False'] = False
+            local_context = {}
+            local_context['__builtins__'] = None
+            f = open(filepath, 'r')
+            exec f in global_context, local_context
+            f.close()
+            self.recommendedFamilies = local_context['recommendedFamilies']
+        except:
+            raise DatabaseError('Error while reading list of recommended families from {0}/recommended.py.'.format(path))
+        for recommended in self.recommendedFamilies.values():
+            if not isinstance(recommended, bool):
+                raise DatabaseError("recommendedFamilies dictionary should contain only True or False values")
+
     def loadFamilies(self, path, families=None, depositories=None):
         """
         Load the kinetics families from the given `path` on disk, where `path`
@@ -117,34 +144,17 @@ class KineticsDatabase(object):
 
         if families == 'default':
             logging.info('Loading default kinetics families from {0}'.format(path))
-            try:
-                global_context = {}
-                global_context['__builtins__'] = None
-                global_context['True'] = True
-                global_context['False'] = False
-                local_context = {}
-                local_context['__builtins__'] = None
-                f = open(os.path.join(path, 'recommended.py'), 'r')
-                exec f in global_context, local_context
-                f.close()
-                recommendedFamilies = local_context['recommendedFamilies']
-                for recommended in recommendedFamilies.values():
-                    if not isinstance(recommended, bool):
-                        raise DatabaseError("recommendedFamilies dictionary should contain only True or False values")
-            except:
-                raise DatabaseError('Error while reading list of recommended families from {0}/recommended.py.'.format(path))
-
             for d in dirs:  # load them in directory listing order, like other methods (better than a random dict order)
                 try:
-                    recommended = recommendedFamilies[d]
+                    recommended = self.recommendedFamilies[d]
                 except KeyError:
-                    raise DatabaseError('Family {0} not found in recommendation list at {1}/recommended.py'.format(d, path))
+                    raise DatabaseError('Family {0} not found in recommendation list (probably at {1}/recommended.py)'.format(d, path))
                 if recommended:
                     familiesToLoad.append(d)
-            for label, value in recommendedFamilies.iteritems():
+            for label, value in self.recommendedFamilies.iteritems():
                 if value is True:
                     if label not in dirs:
-                        raise DatabaseError('Family {0} recommended in {1}/recommended.py not found on disk.'.format(label, path))
+                        raise DatabaseError('Family {0} recommended (in {1}/recommended.py?) not found on disk.'.format(label, path))
 
         elif families == 'all':
             # All families are loaded
@@ -172,7 +182,7 @@ class KineticsDatabase(object):
                         familiesToLoad.append(d)
                 for label in families:
                     if label not in dirs:
-                        raise DatabaseError('Family {0} recommended in {1}/recommended.py not found on disk.'.format(label, path))
+                        raise DatabaseError('Family {0} not found on disk.'.format(label))
         else:
             raise DatabaseError('Kinetics families was not specified properly.  Should be set to `default`,`all`,`none`, or a list.')
         
