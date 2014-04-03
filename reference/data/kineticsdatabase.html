@@ -151,6 +151,15 @@ and the libraries should be in files like <tt class="file docutils literal"><spa
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsDatabase.loadRecommendedFamiliesList">
+<tt class="descname">loadRecommendedFamiliesList</tt><big>(</big><em>filepath</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsDatabase.loadRecommendedFamiliesList" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the list of recommended families from the given file</p>
+<p>The file is usually &#8216;kinetics/families/recommended.py&#8217;.
+This is stored as a dictionary of True or False values (checked here),
+and should contain entries for every available family (checked in loadFamilies).</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.data.kinetics.KineticsDatabase.save">
 <tt class="descname">save</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsDatabase.save" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the kinetics database to the given <cite>path</cite> on disk, where <cite>path</cite>
