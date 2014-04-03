@@ -1154,13 +1154,13 @@ class KineticsFamily(Database):
                     raise ForbiddenStructureException()
         
         # Generate other possible electronic states
-        electronicStrucutresList1 = []
-        electronicStrucutresList2 = []
+        electronicStructuresList1 = []
+        electronicStructuresList2 = []
         
         struct1 = productStructures[0]
         struct1a = struct1.copy(True)
         struct1a.updateAtomTypes()
-        electronicStrucutresList1.append(struct1a)
+        electronicStructuresList1.append(struct1a)
         atoms1 = struct1.getRadicalAtoms()
         
         for atom1 in atoms1:
@@ -1187,11 +1187,11 @@ class KineticsFamily(Database):
                     struct1a = struct1.copy(True)
                     struct1a.updateAtomTypes()
                 
-                for electronicStrucutres in electronicStrucutresList1:
-                    if electronicStrucutres.isIsomorphic(struct1a):
+                for electronicStructures in electronicStructuresList1:
+                    if electronicStructures.isIsomorphic(struct1a):
                         break
                 else:
-                    electronicStrucutresList1.append(struct1a)
+                    electronicStructuresList1.append(struct1a)
             
             elif radical1 == 4:
                 
@@ -1220,24 +1220,24 @@ class KineticsFamily(Database):
                     struct1b = struct1.copy(True)
                     struct1b.updateAtomTypes()
                     
-                for electronicStrucutres in electronicStrucutresList1:
-                    if electronicStrucutres.isIsomorphic(struct1a):
+                for electronicStructures in electronicStructuresList1:
+                    if electronicStructures.isIsomorphic(struct1a):
                         break
                 else:
-                    electronicStrucutresList1.append(struct1a)
+                    electronicStructuresList1.append(struct1a)
                     
-                for electronicStrucutres in electronicStrucutresList1:
-                    if electronicStrucutres.isIsomorphic(struct1b):
+                for electronicStructures in electronicStructuresList1:
+                    if electronicStructures.isIsomorphic(struct1b):
                         break
                 else:
-                    electronicStrucutresList1.append(struct1b)
+                    electronicStructuresList1.append(struct1b)
                             
         if len(productStructures) == 2:
         
             struct2 = productStructures[1]
             struct2a = struct2.copy(True)
             struct2a.updateAtomTypes()
-            electronicStrucutresList2.append(struct2a)
+            electronicStructuresList2.append(struct2a)
             atoms2 = struct2.getRadicalAtoms()
         
             for atom2 in atoms2:
@@ -1264,11 +1264,11 @@ class KineticsFamily(Database):
                         struct2a = struct2.copy(True)
                         struct2a.updateAtomTypes()
                 
-                    for electronicStrucutres in electronicStrucutresList2:
-                        if electronicStrucutres.isIsomorphic(struct2a):
+                    for electronicStructures in electronicStructuresList2:
+                        if electronicStructures.isIsomorphic(struct2a):
                             break
                     else:
-                        electronicStrucutresList2.append(struct2a)
+                        electronicStructuresList2.append(struct2a)
             
                 elif radical2 == 4:
                 
@@ -1297,27 +1297,27 @@ class KineticsFamily(Database):
                         struct2b = struct2.copy(True)
                         struct2b.updateAtomTypes()
                     
-                    for electronicStrucutres in electronicStrucutresList2:
-                        if electronicStrucutres.isIsomorphic(struct2a):
+                    for electronicStructures in electronicStructuresList2:
+                        if electronicStructures.isIsomorphic(struct2a):
                             break
                     else:
-                        electronicStrucutresList2.append(struct2a)
+                        electronicStructuresList2.append(struct2a)
                     
-                    for electronicStrucutres in electronicStrucutresList2:
-                        if electronicStrucutres.isIsomorphic(struct2b):
+                    for electronicStructures in electronicStructuresList2:
+                        if electronicStructures.isIsomorphic(struct2b):
                             break
                     else:
-                        electronicStrucutresList2.append(struct2b)
+                        electronicStructuresList2.append(struct2b)
         
         if len(productStructures) == 2:
             
-            for structa in electronicStrucutresList1:
-                for structb in electronicStrucutresList2:
+            for structa in electronicStructuresList1:
+                for structb in electronicStructuresList2:
                     if not (self.isMoleculeForbidden(structa) or self.isMoleculeForbidden(structb)):
                         productStructuresList.append([structa,structb])
         elif len(productStructures) == 1:
             
-            for structa in electronicStrucutresList1:
+            for structa in electronicStructuresList1:
                 if not (self.isMoleculeForbidden(structa)):
                     productStructuresList.append([structa])
                     
