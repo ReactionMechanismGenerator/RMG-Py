@@ -110,12 +110,6 @@ class KineticsDatabase(object):
         points to the top-level folder of the kinetics families.
         """
         
-        def recommendedFamilies(families):
-            self.families = {}
-            for label, value in families.iteritems():
-                if value is True:
-                    self.families[label] = KineticsFamily(label=label)
-        
         familiesToLoad = []
         for (root, dirs, files) in os.walk(os.path.join(path)):
             if root == path:
@@ -128,42 +122,56 @@ class KineticsDatabase(object):
                         global_context['False'] = False
                         local_context = {}
                         local_context['__builtins__'] = None
-                        local_context['recommendedFamilies'] = recommendedFamilies
                         f = open(os.path.join(path, 'recommended.py'), 'r')
                         exec f in global_context, local_context
                         f.close()
+                        recommendedFamilies = local_context['recommendedFamilies']
+                        for recommended in recommendedFamilies.values():
+                            if not isinstance(recommended, bool):
+                                raise DatabaseError("recommendedFamilies dictionary should contain only True or False values")
                     except:
-                        raise DatabaseError('Error while reading list of recommended families from {0}/families/recommended.py.'.format(path))
-                    
-                    for label, family in self.families.iteritems():
-                        familyPath = os.path.join(path, label)
-                        family.load(familyPath, self.local_context, self.global_context, depositoryLabels=depositories)
-                    return
-                                        
+                        raise DatabaseError('Error while reading list of recommended families from {0}/recommended.py.'.format(path))
+
+                    for d in dirs:  # load them in directory listing order, like other methods (better than a random dict order)
+                        try:
+                            recommended = recommendedFamilies[d]
+                        except KeyError:
+                            raise DatabaseError('Family {0} not found in recommendation list at {1}/recommended.py'.format(d, path))
+                        if recommended:
+                            familiesToLoad.append(d)
+                    for label, value in recommendedFamilies.iteritems():
+                        if value is True:
+                            if label not in dirs:
+                                raise DatabaseError('Family {0} recommended in {1}/recommended.py not found on disk.'.format(label, path))
+
                 elif families == 'all':
-                    # All families are loaded by default
+                    # All families are loaded
                     logging.info('Loading all of the kinetics families from {0}'.format(path))
                     for d in dirs:
                         familiesToLoad.append(d)
                 elif families == 'none': 
                     logging.info('Not loading any of the kinetics families from {0}'.format(path))
                     # Don't load any of the families
-                    pass
+                    familiesToLoad = []
                 elif isinstance(families, list):
                     logging.info('Loading the user-specified kinetics families from {0}'.format(path))
                     # If all items in the list start with !, all families will be loaded except these
                     if len(families) == 0:
-                        # if the list or tuple has nothing in it, assume that we should load all the families by default
                         raise DatabaseError('Kinetics families should be a non-empty list, or set to `default`, `all`, or `none`.')
                     elif all([label.startswith('!') for label in families]):
                         for d in dirs:
                             if '!{0}'.format(d) not in families:
                                 familiesToLoad.append(d)
-                    # Otherwise only the families given will be loaded
-                    else:
+                    elif any([label.startswith('!') for label in families]):
+                        raise DatabaseError('Families list must either all or none have prefix "!", but not a mix.')
+                    else:  # only the families given will be loaded
                         for d in dirs:
                             if d in families:
                                 familiesToLoad.append(d)
+                        for label in families:
+                            if label not in dirs:
+                                raise DatabaseError('Family {0} recommended in {1}/recommended.py not found on disk.'.format(label, path))
+
                 else:
                     raise DatabaseError('Kinetics families was not specified properly.  Should be set to `default`,`all`,`none`, or a list.')
         
