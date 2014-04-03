@@ -41,7 +41,7 @@ from rmgpy.kinetics import Arrhenius, ArrheniusEP, ThirdBody, Lindemann, Troe, \
 from rmgpy.molecule import Molecule, Group
 from rmgpy.species import Species
 from rmgpy.reaction import Reaction
-from rmgpy.data.base import LogicNode
+from rmgpy.data.base import LogicNode, DatabaseError
 
 from .common import KineticsError, saveEntry
 from .depository import DepositoryReaction, KineticsDepository
@@ -109,18 +109,53 @@ class KineticsDatabase(object):
         Load the kinetics families from the given `path` on disk, where `path`
         points to the top-level folder of the kinetics families.
         """
-        logging.info('Loading kinetics families from {0}'.format(path))
+        
+        def recommendedFamilies(families):
+            self.families = {}
+            for label, value in families.iteritems():
+                if value is True:
+                    self.families[label] = KineticsFamily(label=label)
         
         familiesToLoad = []
         for (root, dirs, files) in os.walk(os.path.join(path)):
             if root == path:
-                if families is None or families == 'all':
+                if families == 'default':
+                    logging.info('Loading default kinetics families from {0}'.format(path))
+                    try:
+                        global_context ={}
+                        global_context['__builtins__'] = None
+                        global_context['True'] = True
+                        global_context['False'] = False
+                        local_context = {}
+                        local_context['__builtins__'] = None
+                        local_context['recommendedFamilies'] = recommendedFamilies
+                        f = open(os.path.join(path, 'recommended.py'), 'r')
+                        exec f in global_context, local_context
+                        f.close()
+                    except:
+                        raise DatabaseError('Error while reading list of recommended families from {0}/families/recommended.py.'.format(path))
+                    
+                    for label, family in self.families.iteritems():
+                        familyPath = os.path.join(path, label)
+                        family.load(familyPath, self.local_context, self.global_context, depositoryLabels=depositories)
+                    return
+                                        
+                elif families == 'all':
                     # All families are loaded by default
+                    logging.info('Loading all of the kinetics families from {0}'.format(path))
                     for d in dirs:
                         familiesToLoad.append(d)
-                elif isinstance(families, list) or isinstance(families, tuple):
+                elif families == 'none': 
+                    logging.info('Not loading any of the kinetics families from {0}'.format(path))
+                    # Don't load any of the families
+                    pass
+                elif isinstance(families, list):
+                    logging.info('Loading the user-specified kinetics families from {0}'.format(path))
                     # If all items in the list start with !, all families will be loaded except these
-                    if all([label.startswith('!') for label in families]):
+                    if len(families) == 0:
+                        # if the list or tuple has nothing in it, assume that we should load all the families by default
+                        raise DatabaseError('Kinetics families should be a non-empty list, or set to `default`, `all`, or `none`.')
+                    elif all([label.startswith('!') for label in families]):
                         for d in dirs:
                             if '!{0}'.format(d) not in families:
                                 familiesToLoad.append(d)
@@ -129,6 +164,8 @@ class KineticsDatabase(object):
                         for d in dirs:
                             if d in families:
                                 familiesToLoad.append(d)
+                else:
+                    raise DatabaseError('Kinetics families was not specified properly.  Should be set to `default`,`all`,`none`, or a list.')
         
         # Now we know what families to load, so let's load them
         self.families = {}
