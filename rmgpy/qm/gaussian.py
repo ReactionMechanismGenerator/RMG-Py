@@ -155,6 +155,27 @@ class GaussianMol(QMMolecule, Gaussian):
     
     Inherits from both :class:`QMMolecule` and :class:`Gaussian`.
     """
+
+    @property
+    def scriptAttempts(self):
+        "The number of attempts with different script keywords"
+        return len(self.keywords)
+    
+    @property
+    def maxAttempts(self):
+        "The total number of attempts to try"
+        return 2 * len(self.keywords)
+    
+    def inputFileKeywords(self, attempt):
+        """
+        Return the top keywords for attempt number `attempt`.
+    
+        NB. `attempt`s begin at 1, not 0.
+        """
+        assert attempt <= self.maxAttempts
+        if attempt > self.scriptAttempts:
+            attempt -= self.scriptAttempts
+        return self.keywords[attempt-1]
     
     def writeInputFile(self, attempt):
         """
@@ -241,24 +262,3 @@ class GaussianMolPM3(GaussianMol):
                "# pm3 opt=(verytight,gdiis,calcall,small) IOP(2/16=3) nosymm",
                "# pm3 opt=(calcall,small,maxcyc=100) IOP(2/16=3)",
                ]
-
-    @property
-    def scriptAttempts(self):
-        "The number of attempts with different script keywords"
-        return len(self.keywords)
-
-    @property
-    def maxAttempts(self):
-        "The total number of attempts to try"
-        return 2 * len(self.keywords)
-
-    def inputFileKeywords(self, attempt):
-        """
-        Return the top keywords for attempt number `attempt`.
-
-        NB. `attempt`s begin at 1, not 0.
-        """
-        assert attempt <= self.maxAttempts
-        if attempt > self.scriptAttempts:
-            attempt -= self.scriptAttempts
-        return self.keywords[attempt-1]

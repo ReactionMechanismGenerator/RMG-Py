@@ -164,6 +164,25 @@ class MopacMol(QMMolecule, Mopac):
     Inherits from both :class:`QMMolecule` and :class:`Mopac`.
     """
 
+    #: Keywords that will be added at the top and bottom of the qm input file
+    keywords = [
+                {'top':"precise nosym", 'bottom':"oldgeo thermo nosym precise "},
+                {'top':"precise nosym gnorm=0.0 nonr", 'bottom':"oldgeo thermo nosym precise "},
+                {'top':"precise nosym gnorm=0.0", 'bottom':"oldgeo thermo nosym precise "},
+                {'top':"precise nosym gnorm=0.0 bfgs", 'bottom':"oldgeo thermo nosym precise "},
+                {'top':"precise nosym recalc=10 dmax=0.10 nonr cycles=2000 t=2000", 'bottom':"oldgeo thermo nosym precise "},
+                ]
+    
+    @property
+    def scriptAttempts(self):
+        "The number of attempts with different script keywords"
+        return len(self.keywords)
+        
+    @property
+    def maxAttempts(self):
+        "The total number of attempts to try"
+        return 2 * len(self.keywords)
+
     def writeInputFile(self, attempt):
         """
         Using the :class:`Geometry` object, write the input file
@@ -235,26 +254,6 @@ class MopacMol(QMMolecule, Mopac):
 
 class MopacMolPM3(MopacMol):
 
-    #: Keywords that will be added at the top and bottom of the qm input file
-    keywords = [
-                {'top':"precise nosym", 'bottom':"oldgeo thermo nosym precise "},
-                {'top':"precise nosym gnorm=0.0 nonr", 'bottom':"oldgeo thermo nosym precise "},
-                {'top':"precise nosym gnorm=0.0", 'bottom':"oldgeo thermo nosym precise "},
-                {'top':"precise nosym gnorm=0.0 bfgs", 'bottom':"oldgeo thermo nosym precise "},
-                {'top':"precise nosym recalc=10 dmax=0.10 nonr cycles=2000 t=2000", 'bottom':"oldgeo thermo nosym precise "},
-                ]
-
-    @property
-    def scriptAttempts(self):
-        "The number of attempts with different script keywords"
-        return len(self.keywords)
-        
-    @property
-    def maxAttempts(self):
-        "The total number of attempts to try"
-        return 2 * len(self.keywords)
-
-
     def inputFileKeywords(self, attempt):
         """
         Return the top, bottom, and polar keywords for attempt number `attempt`.
@@ -282,3 +281,4 @@ class MopacMolPM3(MopacMol):
                 )
 
         return top_keys, bottom_keys, polar_keys
+        
