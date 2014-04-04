@@ -242,8 +242,15 @@ class MopacMol(QMMolecule, Mopac):
         return result # a CCLibData object
 
 
-class MopacMolPM3(MopacMol):
-
+class MopacMolPMn(MopacMol):
+    """
+    Mopac PMn calculations for molecules (n undefined here)
+    
+    This is a parent class for MOPAC PMn calculations.
+    Inherit it, and define the pm_method, then redefine 
+    anything you wish to do differently.
+    """
+    pm_method = '(should be defined by sub class)'
     def inputFileKeywords(self, attempt):
         """
         Return the top, bottom, and polar keywords for attempt number `attempt`.
@@ -257,48 +264,47 @@ class MopacMolPM3(MopacMol):
         
         multiplicity_keys = self.multiplicityKeywords[self.geometry.multiplicity]
 
-        top_keys = "pm3 {0} {1}".format(
-                multiplicity_keys,
-                self.keywords[attempt-1]['top'],
+        top_keys = "{method} {mult} {top}".format(
+                method = self.pm_method,
+                mult = multiplicity_keys,
+                top = self.keywords[attempt-1]['top'],
                 )
-        bottom_keys = "{0} pm3 {1}".format(
-                self.keywords[attempt-1]['bottom'],
-                multiplicity_keys,
+        bottom_keys = "{bottom} {method} {mult}".format(
+                method = self.pm_method,
+                bottom = self.keywords[attempt-1]['bottom'],
+                mult = multiplicity_keys,
                 )
-        polar_keys = "oldgeo {0} nosym precise pm3 {1}".format(
-                'polar' if self.geometry.multiplicity == 1 else 'static',
-                multiplicity_keys,
+        polar_keys = "oldgeo {polar} nosym precise {method} {mult}".format(
+                method = self.pm_method,
+                polar = ('polar' if self.geometry.multiplicity == 1 else 'static'),
+                mult = multiplicity_keys,
                 )
 
         return top_keys, bottom_keys, polar_keys
-        
+
+class MopacMolPM3(MopacMolPMn):
+    """
+    Mopac PM3 calculations for molecules
+    
+    This is a class of its own in case you wish to do anything differently,
+    but for now it's the same as all the MOPAC PMn calculations, only pm3
+    """
+    pm_method = 'pm3'
+
 class MopacMolPM6(MopacMol):
+    """
+    Mopac PM6 calculations for molecules
+    
+    This is a class of its own in case you wish to do anything differently,
+    but for now it's the same as all the MOPAC PMn calculations, only pm6
+    """
+    pm_method = 'pm6'
 
-    def inputFileKeywords(self, attempt):
-        """
-        Return the top, bottom, and polar keywords for attempt number `attempt`.
-
-        NB. `attempt`s begin at 1, not 0.
-        """
-        assert attempt <= self.maxAttempts
-
-        if attempt > self.scriptAttempts:
-            attempt -= self.scriptAttempts
-
-        multiplicity_keys = self.multiplicityKeywords[self.geometry.multiplicity]
-
-        top_keys = "pm6 {0} {1}".format(
-                multiplicity_keys,
-                self.keywords[attempt-1]['top'],
-                )
-        bottom_keys = "{0} pm6 {1}".format(
-                self.keywords[attempt-1]['bottom'],
-                multiplicity_keys,
-                )
-        polar_keys = "oldgeo {0} nosym precise pm6 {1}".format(
-                'polar' if self.geometry.multiplicity == 1 else 'static',
-                multiplicity_keys,
-                )
-
-        return top_keys, bottom_keys, polar_keys
-
+class MopacMolPM7(MopacMol):
+    """
+    Mopac PM7 calculations for molecules
+    
+    This is a class of its own in case you wish to do anything differently,
+    but for now it's the same as all the MOPAC PMn calculations, only pm7
+    """
+    pm_method = 'pm7'
