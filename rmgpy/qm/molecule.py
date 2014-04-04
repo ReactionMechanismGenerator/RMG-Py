@@ -196,6 +196,16 @@ class QMMolecule:
     def inputFilePath(self):
         """Get the input file name."""
         return self.getFilePath(self.inputFileExtension)
+    
+    @property
+    def scriptAttempts(self):
+        "The number of attempts with different script keywords"
+        return len(self.keywords)
+    
+    @property
+    def maxAttempts(self):
+        "The total number of attempts to try"
+        return 2 * len(self.keywords)
         
     def createGeometry(self):
         """

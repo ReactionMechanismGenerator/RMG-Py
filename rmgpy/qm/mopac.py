@@ -172,16 +172,6 @@ class MopacMol(QMMolecule, Mopac):
                 {'top':"precise nosym gnorm=0.0 bfgs", 'bottom':"oldgeo thermo nosym precise "},
                 {'top':"precise nosym recalc=10 dmax=0.10 nonr cycles=2000 t=2000", 'bottom':"oldgeo thermo nosym precise "},
                 ]
-    
-    @property
-    def scriptAttempts(self):
-        "The number of attempts with different script keywords"
-        return len(self.keywords)
-        
-    @property
-    def maxAttempts(self):
-        "The total number of attempts to try"
-        return 2 * len(self.keywords)
 
     def writeInputFile(self, attempt):
         """

@@ -155,16 +155,6 @@ class GaussianMol(QMMolecule, Gaussian):
     
     Inherits from both :class:`QMMolecule` and :class:`Gaussian`.
     """
-
-    @property
-    def scriptAttempts(self):
-        "The number of attempts with different script keywords"
-        return len(self.keywords)
-    
-    @property
-    def maxAttempts(self):
-        "The total number of attempts to try"
-        return 2 * len(self.keywords)
     
     def inputFileKeywords(self, attempt):
         """
