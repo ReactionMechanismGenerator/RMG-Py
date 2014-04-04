@@ -210,12 +210,6 @@ class GaussianMol(QMMolecule, Gaussian):
                 gaussianFile.write('\n\n\n')
                 gaussianFile.write(polar_keys)
     
-    def inputFileKeywords(self, attempt):
-        """
-        Return the top keywords.
-        """
-        raise NotImplementedError("Should be defined by subclass, eg. GaussianMolPM3")
-    
     def generateQMData(self):
         """
         Calculate the QM data and return a QMData object.
