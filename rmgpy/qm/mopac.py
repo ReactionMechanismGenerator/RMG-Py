@@ -79,11 +79,11 @@ class Mopac:
         2) NOT finding any of the keywords that are denote a calculation failure
         3) finding all the keywords that denote a calculation success.
         4) finding a match between the InChI of the given molecule and the InchI found in the calculation files
+        5) checking that the optimized geometry, when connected by single bonds, is isomorphic with self.molecule (converted to single bonds)
         
-        If any of the above criteria is not matched, False will be returned and the procedures to start a new calculation 
-        will be initiated.
+        If any of the above criteria is not matched, False will be returned.
+        If all succeed, then it will return True.
         """
-        
         if not os.path.exists(self.outputFilePath):
             logging.debug("Output file {0} does not (yet) exist.".format(self.outputFilePath))
             return False
@@ -97,16 +97,13 @@ class Mopac:
         with open(self.outputFilePath) as outputFile:
             for line in outputFile:
                 line = line.strip()
-                
                 for element in self.failureKeys: #search for failure keywords
                     if element in line:
                         logging.error("MOPAC output file contains the following error: {0}".format(element) )
                         return False
-                    
                 for element in self.successKeys: #search for success keywords
                     if element in line:
                         successKeysFound[element] = True
-               
                 if "InChI=" in line:
                     logFileInChI = line #output files should take up to 240 characters of the name in the input file
                     InChIFound = True
@@ -127,24 +124,21 @@ class Mopac:
             logging.error("No InChI was found in the MOPAC output file {0}".format(self.outputFilePath))
             return False
         
-        if InChIMatch:
-            # Compare the optimized geometry to the original molecule
-            qmData = self.parse()
-            
-            cclibMol = Molecule()
-            cclibMol.fromXYZ(qmData.atomicNumbers, qmData.atomCoords.value)
-            testMol = self.molecule.toSingleBonds()
-            
-            if cclibMol.isIsomorphic(testMol):
-                logging.info("Successful MOPAC quantum result found in {0}".format(self.outputFilePath))
-                return True
-            else:
-                logging.info("Incorrect connectivity for optimized geometry in file {0}".format(self.outputFilePath))
-                return False
+        if not InChIMatch:
+            #InChIs do not match (most likely due to limited name length mirrored in log file (240 characters), but possibly due to a collision)
+            return self.checkForInChiKeyCollision(logFileInChI) # Not yet implemented!
         
-        #InChIs do not match (most likely due to limited name length mirrored in log file (240 characters), but possibly due to a collision)
-        return self.checkForInChiKeyCollision(logFileInChI) # Not yet implemented!
+        # Compare the optimized geometry to the original molecule
+        qmData = self.parse()
+        cclibMol = Molecule()
+        cclibMol.fromXYZ(qmData.atomicNumbers, qmData.atomCoords.value)
+        testMol = self.molecule.toSingleBonds()
+        if not cclibMol.isIsomorphic(testMol):
+            logging.info("Incorrect connectivity for optimized geometry in file {0}".format(self.outputFilePath))
+            return False
 
+        logging.info("Successful MOPAC quantum result found in {0}".format(self.outputFilePath))
+        return True
 
     def parse(self):
         """
@@ -218,7 +212,7 @@ class MopacMol(QMMolecule, Mopac):
         Calculate the QM data and return a QMData object, or None if it fails.
         """
         for atom in self.molecule.vertices:
-            if atom.atomType.label == 'N5s' or atom.atomType.label == 'N5d' or atom.atomType.label =='N5dd' or atom.atomType.label == 'N5t' or atom.atomType.label == 'N5b':
+            if atom.atomType.label in ('N5s', 'N5d', 'N5dd', 'N5t', 'N5b'):
                 return None
 
         if self.verifyOutputFile():
