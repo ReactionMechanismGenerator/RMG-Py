@@ -65,7 +65,7 @@ model(
 quantumMechanics(
     software='mopac',
     method='pm3',
-    fileStore='QMfiles', # relative to where you run it? defaults to inside the output folder.
+    # fileStore='QMfiles', # relative to where you run it from. Defaults to inside the output folder if not defined.
     scratchDirectory = None, # not currently used
     onlyCyclics = True,
     maxRadicalNumber = 0,
