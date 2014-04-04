@@ -49,6 +49,7 @@ class QMSettings():
     """
     def __init__(self):
         self.software = None
+        self.method = None
         self.fileStore = None
         self.scratchDirectory = None
         self.onlyCyclics = None
@@ -65,6 +66,7 @@ class QMSettings():
         assert self.fileStore
         assert self.scratchDirectory
         assert self.software
+        assert self.method
         assert self.onlyCyclics is not None # but it can be False
         assert type(self.onlyCyclics) is BooleanType
         assert self.maxRadicalNumber is not None # but it can be 0
@@ -143,10 +145,16 @@ class QMCalculator():
         (I.e. the code that chooses whether to call this method should consider those settings).
         """
         if self.settings.software == 'mopac':
-            qm_molecule_calculator = rmgpy.qm.mopac.MopacMolPM3(molecule, self.settings)
+            if self.settings.method == 'pm3':
+                qm_molecule_calculator = rmgpy.qm.mopac.MopacMolPM3(molecule, self.settings)
+            elif self.settings.method == 'pm6':
+                qm_molecule_calculator = rmgpy.qm.mopac.MopacMolPM6(molecule, self.settings)
             thermo0 = qm_molecule_calculator.generateThermoData()
         elif self.settings.software == 'gaussian':
-            qm_molecule_calculator = rmgpy.qm.gaussian.GaussianMolPM3(molecule, self.settings)
+            if self.settings.method == 'pm3':
+                qm_molecule_calculator = rmgpy.qm.gaussian.GaussianMolPM3(molecule, self.settings)
+            elif self.settings.method == 'pm6':
+                qm_molecule_calculator = rmgpy.qm.gaussian.GaussianMolPM6(molecule, self.settings)
             thermo0 = qm_molecule_calculator.generateThermoData()
         else:
             raise Exception("Unknown QM software '{0}'".format(self.settings.software))
