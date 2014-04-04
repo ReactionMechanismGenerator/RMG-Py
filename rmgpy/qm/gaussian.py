@@ -262,3 +262,27 @@ class GaussianMolPM3(GaussianMol):
                "# pm3 opt=(verytight,gdiis,calcall,small) IOP(2/16=3) nosymm",
                "# pm3 opt=(calcall,small,maxcyc=100) IOP(2/16=3)",
                ]
+
+class GaussianMolPM6(GaussianMol):
+
+    #: Keywords that will be added at the top of the qm input file
+    keywords = [
+               "# pm6 opt=(verytight,gdiis) freq IOP(2/16=3)",
+               "# pm6 opt=(verytight,gdiis) freq IOP(2/16=3) IOP(4/21=2)",
+               "# pm6 opt=(verytight,calcfc,maxcyc=200) freq IOP(2/16=3) nosymm" ,
+               "# pm6 opt=(verytight,calcfc,maxcyc=200) freq=numerical IOP(2/16=3) nosymm",
+               "# pm6 opt=(verytight,gdiis,small) freq IOP(2/16=3)",
+               "# pm6 opt=(verytight,nolinear,calcfc,small) freq IOP(2/16=3)",
+               "# pm6 opt=(verytight,gdiis,maxcyc=200) freq=numerical IOP(2/16=3)",
+               "# pm6 opt=tight freq IOP(2/16=3)",
+               "# pm6 opt=tight freq=numerical IOP(2/16=3)",
+               "# pm6 opt=(tight,nolinear,calcfc,small,maxcyc=200) freq IOP(2/16=3)",
+               "# pm6 opt freq IOP(2/16=3)",
+               "# pm6 opt=(verytight,gdiis) freq=numerical IOP(2/16=3) IOP(4/21=200)",
+               "# pm6 opt=(calcfc,verytight,newton,notrustupdate,small,maxcyc=100,maxstep=100) freq=(numerical,step=10) IOP(2/16=3) nosymm",
+               "# pm6 opt=(tight,gdiis,small,maxcyc=200,maxstep=100) freq=numerical IOP(2/16=3) nosymm",
+               "# pm6 opt=(tight,gdiis,small,maxcyc=200,maxstep=100) freq=numerical IOP(2/16=3) nosymm",
+               "# pm6 opt=(verytight,gdiis,calcall,small,maxcyc=200) IOP(2/16=3) IOP(4/21=2) nosymm",
+               "# pm6 opt=(verytight,gdiis,calcall,small) IOP(2/16=3) nosymm",
+               "# pm6 opt=(calcall,small,maxcyc=100) IOP(2/16=3)",
+               ]
