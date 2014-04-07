@@ -81,8 +81,8 @@ class QMCalculator():
     =================== ======================= ====================================
     Attribute           Type                    Description
     =================== ======================= ====================================
-    `settings`          ``QMSettings``          Settings for QM calculations
-    `database`          ``ThermoLibrary``       Database containing QM calculations
+    `settings`          :class:`QMSettings`     Settings for QM calculations
+    `database`          :class:`ThermoLibrary`  Database containing QM calculations
     =================== ======================= ====================================
 
     """
