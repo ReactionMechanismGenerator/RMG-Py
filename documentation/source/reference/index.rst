@@ -18,6 +18,7 @@ Module                  Description
 :mod:`rmgpy.kinetics`   Kinetics models of chemical reaction rates
 :mod:`rmgpy.molecule`   Molecular representations using chemical graph theory
 :mod:`rmgpy.pdep`       Pressure-dependent kinetics from master equation models
+:mod:`rmgpy.qm`         On-the-fly quantum calculations
 :mod:`rmgpy.quantity`   Physical quantities and unit conversions
 :mod:`rmgpy.reaction`   Chemical reactions
 :mod:`rmgpy.rmg`        Automatic reaction mechanism generation
@@ -37,6 +38,7 @@ Module                  Description
     kinetics/index
     molecule/index
     pdep/index
+    qm/index
     quantity/index
     reaction/index
     rmg/index
