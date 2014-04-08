@@ -218,20 +218,20 @@ class TestQMCalculator(unittest.TestCase):
 		
 		mol = Molecule().fromSMILES('C1=CC=C2C=CC=CC2=C1')
 		
-		thermo1 = self.mop1.getThermoData(mol)
 		fileList = os.listdir(self.mop1.settings.fileStore)
 		for fileName in fileList:
 			os.remove(os.path.join(self.mop1.settings.fileStore, fileName))
+		thermo1 = self.mop1.getThermoData(mol)
 		
-		thermo2 = self.mop2.getThermoData(mol)
 		fileList = os.listdir(self.mop2.settings.fileStore)
 		for fileName in fileList:
 			os.remove(os.path.join(self.mop2.settings.fileStore, fileName))
+		thermo2 = self.mop2.getThermoData(mol)
 		
-		thermo3 = self.mop3.getThermoData(mol)
 		fileList = os.listdir(self.mop3.settings.fileStore)
 		for fileName in fileList:
 			os.remove(os.path.join(self.mop3.settings.fileStore, fileName))
+		thermo3 = self.mop3.getThermoData(mol)
 			
 		self.assertTrue(thermo1.comment.startswith('QM MopacMolPM3'))
 		self.assertTrue(thermo2.comment.startswith('QM MopacMolPM6'))
