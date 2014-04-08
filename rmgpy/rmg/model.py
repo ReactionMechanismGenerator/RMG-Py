@@ -340,7 +340,7 @@ class CoreEdgeReactionModel:
         self.quantumMechanics = None
         self.verboseComments = False
         self.kineticsEstimator = 'group additivity'
-        self.reactionGenerationOptions = {}
+        self.speciesConstraints = {}
 
     def checkForExistingSpecies(self, molecule):
         """
@@ -603,7 +603,7 @@ class CoreEdgeReactionModel:
         Generates reactions involving :class:`rmgpy.species.Species` speciesA and speciesB.
         """
         reactionList = []
-        options = self.reactionGenerationOptions
+        options = self.speciesConstraints
         if speciesB is None:
             for moleculeA in speciesA.molecule:
                 reactionList.extend(database.kinetics.generateReactions([moleculeA], **options))
