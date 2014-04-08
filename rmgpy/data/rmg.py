@@ -139,17 +139,20 @@ class RMGDatabase:
         `path` points to the top-level folder of the RMG kinetics database.
         """
         kineticsLibraries = []
-        if reactionLibraries is not None and seedMechanisms is not None:
-            kineticsLibraries.extend(seedMechanisms)
-            kineticsLibraries.extend(reactionLibraries)
-        elif reactionLibraries is not None and seedMechanisms is None:
-            kineticsLibraries.extend(reactionLibraries)
-        elif reactionLibraries is None and seedMechanisms is not None:
-            kineticsLibraries.extend(seedMechanisms)
-        else:
+        libraryOrder = []
+        if seedMechanisms is None and reactionLibraries is None:
             kineticsLibraries = None
-            
+        if seedMechanisms is not None:
+            for library in seedMechanisms:
+                kineticsLibraries.append(library)
+                libraryOrder.append((library,'Seed'))
+        if reactionLibraries is not None:
+            for library in reactionLibraries:
+                kineticsLibraries.append(library)
+                libraryOrder.append((library,'Reaction Library'))
+        
         self.kinetics = KineticsDatabase()
+        self.kinetics.libraryOrder = libraryOrder
         self.kinetics.load(path,
                            families=kineticsFamilies,
                            libraries=kineticsLibraries,
