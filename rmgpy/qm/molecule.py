@@ -23,6 +23,19 @@ class Geometry:
     A geometry, used for quantum calculations.
     
     Created from a molecule. Geometry estimated by RDKit.
+    
+    The attributes are:
+    
+    =================== ======================= ====================================
+    Attribute           Type                    Description
+    =================== ======================= ====================================
+    `settings`          :class:`QMSettings`     Settings for QM calculations
+    `uniqueID`          ``str``                 A short ID such as an augmented InChI Key
+    `molecule`          :class:`Molecule`       RMG Molecule object
+    `multiplicity`      ``int``                 The multiplicity of the molecule
+    `uniqueIDlong`      ``str``                 A long, truly unique ID such as an augmented InChI
+    =================== ======================= ====================================
+    
     """
     def __init__(self, settings, uniqueID, molecule, multiplicity, uniqueIDlong=None):
         self.settings = settings
@@ -169,6 +182,18 @@ class QMMolecule:
      * outputFileExtension
      * inputFileExtension
      * generateQMData() ...and whatever else is needed to make this method work.
+     
+    The attributes are:
+    
+    =================== ======================= ====================================
+    Attribute           Type                    Description
+    =================== ======================= ====================================
+    `molecule`          :class:`Molecule`       RMG Molecule object
+    `settings`          :class:`QMSettings`     Settings for QM calculations
+    `uniqueID`          ``str``                 A short ID such as an augmented InChI Key
+    `uniqueIDlong`      ``str``                 A long, truly unique ID such as an augmented InChI
+    =================== ======================= ====================================
+    
     """
     
     def __init__(self, molecule, settings):
@@ -196,6 +221,16 @@ class QMMolecule:
     def inputFilePath(self):
         """Get the input file name."""
         return self.getFilePath(self.inputFileExtension)
+    
+    @property
+    def scriptAttempts(self):
+        "The number of attempts with different script keywords"
+        return len(self.keywords)
+    
+    @property
+    def maxAttempts(self):
+        "The total number of attempts to try"
+        return 2 * len(self.keywords)
         
     def createGeometry(self):
         """

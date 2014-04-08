@@ -213,6 +213,36 @@ The following is an example of a simple reactor system::
 On the fly Quantum Calculations
 ===============================
 
+This block is used when quantum mechanical calculations are desired to determine thermodynamic parameters. 
+These calculations are only run if the molecule is not included in a specified thermo library.
+The ``onlyCyclics`` option, if ``True``, only runs these calculations for cyclic species.
+In this case, group additive estimates are used for all other species.
+
+Molecular geometries are estimated via RDKit [RDKit]_.
+Either MOPAC (2009 and 2012) or GAUSSIAN (2003 and 2009) can be used
+with the semi-empirical pm3, pm6, and pm7 (pm7 only available in MOPAC2012),
+specified in the software and method blocks.
+A folder can be specified to store the files used in these calculations,
+however if not specified this defaults to a `QMfiles` folder in the output folder.
+
+The calculations are also only run on species with a maximum radical number set by the user.
+If a molecule has a higher radical number, the molecule is saturated with hydrogen atoms, then 
+quantum mechanical calculations with subsequent hydrogen bond incrementation is used to determine the
+thermodynamic parameters.
+
+The following is an example of the quantum mechanics options ::
+
+	quantumMechanics(
+		software='mopac',
+		method='pm3',
+		fileStore='QMfiles',
+		scratchDirectory = None,
+		onlyCyclics = True,
+		maxRadicalNumber = 0,
+		)
+
+.. [RDKit] RDKit: Open-source cheminformatics; http://www.rdkit.org
+
 Pressure Dependence
 ===================
 

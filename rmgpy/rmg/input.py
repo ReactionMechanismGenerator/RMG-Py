@@ -180,6 +180,7 @@ def model(toleranceMoveToCore, toleranceKeepInEdge=0.0, toleranceInterruptSimula
 
 def quantumMechanics(
                     software,
+                    method,
                     fileStore = None,
                     scratchDirectory = None,
                     onlyCyclics = False,
@@ -188,6 +189,7 @@ def quantumMechanics(
     from rmgpy.qm.main import QMCalculator
     rmg.quantumMechanics = QMCalculator()
     rmg.quantumMechanics.settings.software = software
+    rmg.quantumMechanics.settings.method = method
     rmg.quantumMechanics.settings.fileStore = fileStore
     rmg.quantumMechanics.settings.scratchDirectory = scratchDirectory
     rmg.quantumMechanics.settings.onlyCyclics = onlyCyclics
