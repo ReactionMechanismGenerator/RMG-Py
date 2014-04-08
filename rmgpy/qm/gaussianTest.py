@@ -8,67 +8,141 @@ import numpy as np
 
 from rmgpy.qm.main import QMCalculator
 from rmgpy.molecule import Molecule
-from rmgpy.qm.gaussian import GaussianMolPM3
-import qmdata
+from rmgpy.qm.gaussian import GaussianMolPM3, GaussianMolPM6
+
+
+gaussEnv = os.getenv('GAUSS_EXEDIR') or os.getenv('g09root') or os.getenv('g03root') or ""
+if os.path.exists(os.path.join(gaussEnv , 'g09')):
+	executablePath = os.path.join(gaussEnv , 'g09')
+elif os.path.exists(os.path.join(gaussEnv , 'g03')):
+	executablePath = os.path.join(gaussEnv , 'g03')
+else:
+	executablePath = os.path.join(gaussEnv , '(g03 or g09)')
+
+qm = QMCalculator()
+qm.settings.software = 'gaussian'
+qm.settings.fileStore = os.path.join(os.getenv('RMGpy'), 'QMfiles')
+qm.settings.scratchDirectory = None
+qm.settings.onlyCyclics = False
+qm.settings.maxRadicalNumber = 0
+	
+mol1 = Molecule().fromSMILES('C1=CC=C2C=CC=CC2=C1')
 
 class TestGaussianMolPM3(unittest.TestCase):
 	"""
-	Contains unit tests for the GaussianMolPM3 class.
+	Contains unit tests for the Geometry class.
 	"""
-	gaussEnv = os.getenv('GAUSS_EXEDIR') or os.getenv('g09root') or os.getenv('g03root') or ""
-	if os.path.exists(os.path.join(gaussEnv , 'g09')):
-	    executablePath = os.path.join(gaussEnv , 'g09')
-	elif os.path.exists(os.path.join(gaussEnv , 'g03')):
-	    executablePath = os.path.join(gaussEnv , 'g03')
-	else:
-	    executablePath = os.path.join(gaussEnv , '(g03 or g09)')
-	
+
 	@unittest.skipIf(os.path.exists(executablePath)==False, "Gaussian not found. Try resetting your environment variables if you want to use it.")
-	
 	def setUp(self):
 		"""
 		A function run before each unit test in this class.
 		"""
-		qm = QMCalculator()
-		qm.settings.software = 'gaussian'
-		qm.settings.fileStore = os.path.join(os.getenv('RMGpy'), 'QMfiles')
-		qm.settings.scratchDirectory = None
-		qm.settings.onlyCyclics = False
-		qm.settings.maxRadicalNumber = 0
 
 		if not os.path.exists(qm.settings.fileStore):
 			os.mkdir(qm.settings.fileStore)
 
-		mol1 = Molecule().fromSMILES('C1=CC=C2C=CC=CC2=C1')
 		self.qmmol1 = GaussianMolPM3(mol1, qm.settings)
 
-	def testGenerateQMData(self):
+	def testGenerateThermoData(self):
 		"""
-		Test that generateQMData() works correctly.
+		Test that generateThermoData() works correctly.
 		"""
 		try:
-			# Remove the output file so we can test the gaussian script
-			os.remove(self.qmmol1.outputFilePath)
+			fileList = os.listdir(self.qmmol1.settings.fileStore)
+			for fileName in fileList:
+				os.remove(os.path.join(self.qmmol1.settings.fileStore, fileName))
 		except OSError:
 			pass
 
-		result = self.qmmol1.generateQMData()
-		self.assertTrue(os.path.exists(self.qmmol1.inputFilePath))
-		self.assertTrue(os.path.exists(self.qmmol1.outputFilePath))
+		self.qmmol1.generateThermoData()
+		result = self.qmmol1.qmData
+
+		self.assertTrue(self.qmmol1.thermo.comment.startswith('QM GaussianMolPM3 calculation'))
+		self.assertEqual(result.numberOfAtoms, 18)
+		self.assertIsInstance(result.atomicNumbers, np.ndarray)
+		if result.molecularMass.units=='amu':
+			self.assertEqual(result.molecularMass.value, 128.173)
+
+		self.assertAlmostEqual(self.qmmol1.thermo.H298.value_si, 169708.0608, 1) # to 1 decimal place
+		self.assertAlmostEqual(self.qmmol1.thermo.S298.value_si, 334.5007584, 1) # to 1 decimal place
+
+	def testLoadThermoData(self):
+		"""
+		Test that generateThermoData() can load thermo from a previous run.
+
+		Check that it loaded, and the values are the same as above.
+		"""
+
+		self.qmmol1.generateThermoData()
+		result = self.qmmol1.qmData
+
+		self.assertTrue(self.qmmol1.thermo.comment.startswith('QM GaussianMolPM3 calculation'))
 		self.assertEqual(result.numberOfAtoms, 18)
 		self.assertIsInstance(result.atomicNumbers, np.ndarray)
 		self.assertAlmostEqual(result.energy.value_si, 169708.01906637018, 1)
 		if result.molecularMass.units=='amu':
 			self.assertEqual(result.molecularMass.value, 128.173)
 
+		self.assertAlmostEqual(self.qmmol1.thermo.H298.value_si, 169708.0608, 1) # to 1 decimal place
+		self.assertAlmostEqual(self.qmmol1.thermo.S298.value_si, 334.5007584, 1) # to 1 decimal place
+		
+class TestGaussianMolPM6(unittest.TestCase):
+	"""
+	Contains unit tests for the Geometry class.
+	"""
+
+	@unittest.skipIf(os.path.exists(executablePath)==False, "Gaussian not found. Try resetting your environment variables if you want to use it.")
+	def setUp(self):
+		"""
+		A function run before each unit test in this class.
+		"""
+
+		if not os.path.exists(qm.settings.fileStore):
+			os.mkdir(qm.settings.fileStore)
+
+		self.qmmol1 = GaussianMolPM6(mol1, qm.settings)
+
 	def testGenerateThermoData(self):
 		"""
-		Test that generateThermoData() works correctly. The testGenerateQMData should
-		have tested the running of Gaussian to generate a `.thermo` file, so this will now test
-		the loading reading of an existing `.thermo` file.
+		Test that generateThermoData() works correctly.
 		"""
+		try:
+			fileList = os.listdir(self.qmmol1.settings.fileStore)
+			for fileName in fileList:
+				os.remove(os.path.join(self.qmmol1.settings.fileStore, fileName))
+		except OSError:
+			pass
+
 		self.qmmol1.generateThermoData()
-		self.assertIsNotNone(self.qmmol1.thermo)
+		result = self.qmmol1.qmData
+
+		self.assertTrue(self.qmmol1.thermo.comment.startswith('QM GaussianMolPM6 calculation'))
+		self.assertEqual(result.numberOfAtoms, 18)
+		self.assertIsInstance(result.atomicNumbers, np.ndarray)
+		if result.molecularMass.units=='amu':
+			self.assertEqual(result.molecularMass.value, 128.173)
+
+		self.assertAlmostEqual(self.qmmol1.thermo.H298.value_si, 169708.0608, 1) # to 1 decimal place
+		self.assertAlmostEqual(self.qmmol1.thermo.S298.value_si, 334.5007584, 1) # to 1 decimal place
+
+	def testLoadThermoData(self):
+		"""
+		Test that generateThermoData() can load thermo from a previous run.
+
+		Check that it loaded, and the values are the same as above.
+		"""
+
+		self.qmmol1.generateThermoData()
+		result = self.qmmol1.qmData
+
+		self.assertTrue(self.qmmol1.thermo.comment.startswith('QM GaussianMolPM6 calculation'))
+		self.assertEqual(result.numberOfAtoms, 18)
+		self.assertIsInstance(result.atomicNumbers, np.ndarray)
+		self.assertAlmostEqual(result.energy.value_si, 169708.01906637018, 1)
+		if result.molecularMass.units=='amu':
+			self.assertEqual(result.molecularMass.value, 128.173)
+
 		self.assertAlmostEqual(self.qmmol1.thermo.H298.value_si, 169708.0608, 1) # to 1 decimal place
 		self.assertAlmostEqual(self.qmmol1.thermo.S298.value_si, 334.5007584, 1) # to 1 decimal place
 
