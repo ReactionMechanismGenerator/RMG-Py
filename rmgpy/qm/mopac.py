@@ -285,7 +285,7 @@ class MopacMolPM3(MopacMolPMn):
     """
     pm_method = 'pm3'
 
-class MopacMolPM6(MopacMol):
+class MopacMolPM6(MopacMolPMn):
     """
     Mopac PM6 calculations for molecules
     
@@ -294,7 +294,7 @@ class MopacMolPM6(MopacMol):
     """
     pm_method = 'pm6'
 
-class MopacMolPM7(MopacMol):
+class MopacMolPM7(MopacMolPMn):
     """
     Mopac PM7 calculations for molecules
     
