@@ -1126,6 +1126,7 @@ class KineticsFamily(Database):
 
         # Apply the generated species constraints (if given)
         if options:
+            explicitlyAllowedMolecules = options.get('explicitlyAllowedMolecules')
             maxCarbonAtoms = options.get('maximumCarbonAtoms', 1000000)
             maxHydrogenAtoms = options.get('maximumHydrogenAtoms', 1000000)
             maxOxygenAtoms = options.get('maximumOxygenAtoms', 1000000)
@@ -1135,6 +1136,13 @@ class KineticsFamily(Database):
             maxHeavyAtoms = options.get('maximumHeavyAtoms', 1000000)
             maxRadicals = options.get('maximumRadicalElectrons', 1000000)
             for struct in productStructures:
+                allowed = False
+                for molecule in explicitlyAllowedMolecules:
+                    if struct.isIsomorphic(molecule):                        
+                        allowed = True
+                        break
+                if allowed:
+                    continue
                 H = struct.getNumAtoms('H')
                 if struct.getNumAtoms('C') > maxCarbonAtoms:
                     raise ForbiddenStructureException()

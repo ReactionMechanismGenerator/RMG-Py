@@ -50,6 +50,7 @@ from rmgpy.molecule import Molecule
 from rmgpy.solver.base import TerminationTime, TerminationConversion
 from rmgpy.solver.simple import SimpleReactor
 from rmgpy.data.rmg import RMGDatabase
+from rmgpy.data.base import ForbiddenStructureException
 from rmgpy.data.kinetics import KineticsLibrary, KineticsFamily, LibraryReaction, TemplateReaction
 
 from rmgpy.reaction import Reaction
@@ -174,6 +175,7 @@ class RMG:
         from input import readInputFile
         if path is None: path = self.inputFile
         readInputFile(path, self)
+        self.speciesConstraints['explicitlyAllowedMolecules'] = [] 
         self.reactionModel.kineticsEstimator = self.kineticsEstimator
         # If the output directory is not yet set, then set it to the same
         # directory as the input file by default
@@ -345,6 +347,20 @@ class RMG:
             # that RMG can find them if their rates are large enough
             for library, option in self.reactionLibraries:
                 self.reactionModel.addReactionLibraryToEdge(library)
+            
+            # Perform species constraints and forbidden species checks on input species
+            for spec in self.initialSpecies:
+                if self.database.forbiddenStructures.isMoleculeForbidden(spec.molecule[0]):
+                    if 'allowed' in self.speciesConstraints and 'input species' in self.speciesConstraints['allowed']:
+                        logging.warning('Input species {0} is globally forbidden.  It will behave as an inert unless found in a seed mechanism or reaction library.'.format(spec.label))
+                    else:
+                        raise ForbiddenStructureException("Input species {0} is globally forbidden. You may explicitly allow it, but it will remain inert unless found in a seed mechanism or reaction library.".format(spec.label))
+                if self.reactionModel.failsSpeciesConstraints(spec):
+                    if 'allowed' in self.speciesConstraints and 'input species' in self.speciesConstraints['allowed']:
+                        self.speciesConstraints['explicitlyAllowedMolecules'].append(spec.molecule[0])
+                        pass
+                    else:
+                        raise ForbiddenStructureException("Species constraints forbids input species {0}. Please reformulate constraints, remove the species, or explicitly allow it.".format(spec.label))
             
             # Add nonreactive species (e.g. bath gases) to core first
             # This is necessary so that the PDep algorithm can identify the bath gas

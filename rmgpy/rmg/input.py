@@ -253,6 +253,7 @@ def options(units='si', saveRestartPeriod=None, drawMolecules=False, generatePlo
 
 def generatedSpeciesConstraints(**kwargs):
     validConstraints = [
+        'allowed',
         'maximumCarbonAtoms',
         'maximumHydrogenAtoms',
         'maximumOxygenAtoms',
