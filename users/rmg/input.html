@@ -252,14 +252,45 @@ the model generation will stop when either of the termination criterion is satis
 </div>
 <div class="section" id="on-the-fly-quantum-calculations">
 <h2>4.5. On the fly Quantum Calculations<a class="headerlink" href="#on-the-fly-quantum-calculations" title="Permalink to this headline">¶</a></h2>
+<p>This block is used when quantum mechanical calculations are desired to determine thermodynamic parameters.
+These calculations are only run if the molecule is not included in a specified thermo library.
+The <tt class="docutils literal"><span class="pre">onlyCyclics</span></tt> option, if <tt class="docutils literal"><span class="pre">True</span></tt>, only runs these calculations for cyclic species.
+In this case, group additive estimates are used for all other species.</p>
+<p>Molecular geometries are estimated via RDKit <a class="reference internal" href="#rdkit" id="id2">[RDKit]</a>.
+Either MOPAC (2009 and 2012) or GAUSSIAN (2003 and 2009) can be used
+with the semi-empirical pm3, pm6, and pm7 (pm7 only available in MOPAC2012),
+specified in the software and method blocks.
+A folder can be specified to store the files used in these calculations,
+however if not specified this defaults to a <cite>QMfiles</cite> folder in the output folder.</p>
+<p>The calculations are also only run on species with a maximum radical number set by the user.
+If a molecule has a higher radical number, the molecule is saturated with hydrogen atoms, then
+quantum mechanical calculations with subsequent hydrogen bond incrementation is used to determine the
+thermodynamic parameters.</p>
+<p>The following is an example of the quantum mechanics options</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">quantumMechanics</span><span class="p">(</span>
+        <span class="n">software</span><span class="o">=</span><span class="s">&#39;mopac&#39;</span><span class="p">,</span>
+        <span class="n">method</span><span class="o">=</span><span class="s">&#39;pm3&#39;</span><span class="p">,</span>
+        <span class="n">fileStore</span><span class="o">=</span><span class="s">&#39;QMfiles&#39;</span><span class="p">,</span>
+        <span class="n">scratchDirectory</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span>
+        <span class="n">onlyCyclics</span> <span class="o">=</span> <span class="bp">True</span><span class="p">,</span>
+        <span class="n">maxRadicalNumber</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="p">)</span>
+</pre></div>
+</div>
+<table class="docutils citation" frame="void" id="rdkit" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id2">[RDKit]</a></td><td>RDKit: Open-source cheminformatics; <a class="reference external" href="http://www.rdkit.org">http://www.rdkit.org</a></td></tr>
+</tbody>
+</table>
 </div>
 <div class="section" id="pressure-dependence">
 <h2>4.6. Pressure Dependence<a class="headerlink" href="#pressure-dependence" title="Permalink to this headline">¶</a></h2>
 <p>This block is used when the model should account for pressure
 dependent rate coefficients. RMG can estimate pressure dependence kinetics based on : <tt class="docutils literal"><span class="pre">Modified</span> <span class="pre">Strong</span> <span class="pre">Collision</span></tt> and <tt class="docutils literal"><span class="pre">Reservoir</span> <span class="pre">State</span></tt>.
-The former utilizes the modified strong collision approach of Chang, Bozzelli, and Dean <a class="reference internal" href="#chang2000" id="id2">[Chang2000]</a>,
+The former utilizes the modified strong collision approach of Chang, Bozzelli, and Dean <a class="reference internal" href="#chang2000" id="id3">[Chang2000]</a>,
 and works reasonably well while running more rapidly. The latter
-utilizes the steady-state/reservoir-state approach of Green and Bhatti <a class="reference internal" href="#green2007" id="id3">[Green2007]</a>,
+utilizes the steady-state/reservoir-state approach of Green and Bhatti <a class="reference internal" href="#green2007" id="id4">[Green2007]</a>,
 and is more theoretically sound but more expensive.</p>
 <p>The pressure dependence block should specify the following</p>
 <div class="section" id="method-used-for-estimating-pressure-dependent-kinetics">
@@ -276,13 +307,13 @@ and is more theoretically sound but more expensive.</p>
 <table class="docutils citation" frame="void" id="chang2000" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id2">[Chang2000]</a></td><td>A.Y. Chang, J.W. Bozzelli, and A. M. Dean. &#8220;Kinetic Analysis of Complex Chemical Activation and Unimolecular Dissociation Reactions using QRRK Theory and the Modified Strong Collision Approximation.&#8221; <em>Z. Phys. Chem.</em> <strong>214</strong> (11), p. 1533-1568 (2000).</td></tr>
+<tr><td class="label"><a class="fn-backref" href="#id3">[Chang2000]</a></td><td>A.Y. Chang, J.W. Bozzelli, and A. M. Dean. &#8220;Kinetic Analysis of Complex Chemical Activation and Unimolecular Dissociation Reactions using QRRK Theory and the Modified Strong Collision Approximation.&#8221; <em>Z. Phys. Chem.</em> <strong>214</strong> (11), p. 1533-1568 (2000).</td></tr>
 </tbody>
 </table>
 <table class="docutils citation" frame="void" id="green2007" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id3">[Green2007]</a></td><td>N.J.B. Green and Z.A. Bhatti. &#8220;Steady-State Master Equation Methods.&#8221; <em>Phys. Chem. Chem. Phys.</em> <strong>9</strong>, p. 4275-4290 (2007).</td></tr>
+<tr><td class="label"><a class="fn-backref" href="#id4">[Green2007]</a></td><td>N.J.B. Green and Z.A. Bhatti. &#8220;Steady-State Master Equation Methods.&#8221; <em>Phys. Chem. Chem. Phys.</em> <strong>9</strong>, p. 4275-4290 (2007).</td></tr>
 </tbody>
 </table>
 </div>

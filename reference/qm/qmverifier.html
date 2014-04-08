@@ -1,0 +1,142 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>rmgpy.qm.qmverifier &mdash; RMG Py 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
+    <link rel="up" title="QMTP (rmgpy.qm)" href="index.html" />
+    <link rel="next" title="rmgpy.qm.symmetry" href="symmetry.html" />
+    <link rel="prev" title="rmgpy.qm.qmdata" href="qmdata.html" /> 
+  </head>
+  <body>
+<div class="header">
+&nbsp;
+</div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="symmetry.html" title="rmgpy.qm.symmetry"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="qmdata.html" title="rmgpy.qm.qmdata"
+             accesskey="P">previous</a> |</li>
+<li><a href="../../index.html">Documentation</a> &raquo;</li>
+
+          <li><a href="../index.html" >RMG API Reference</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QMTP (<tt class="docutils literal"><span class="pre">rmgpy.qm</span></tt>)</a> &raquo;</li> 
+      </ul>
+    </div>
+            
+  <div class="section" id="rmgpy-qm-qmverifier">
+<h1>rmgpy.qm.qmverifier<a class="headerlink" href="#rmgpy-qm-qmverifier" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="rmgpy.qm.qmverifier.QMVerifier">
+<em class="property">class </em><tt class="descclassname">rmgpy.qm.qmverifier.</tt><tt class="descname">QMVerifier</tt><big>(</big><em>molfile</em><big>)</big><a class="headerlink" href="#rmgpy.qm.qmverifier.QMVerifier" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Verifies whether a QM job (externalized) was succesfully completed by </dt>
+<dd><ul class="first last simple">
+<li>searching for specific keywords in the output files,</li>
+<li>located in a specific directory (e.g. &#8220;QMFiles&#8221;)</li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="rmgpy.qm.qmverifier.QMVerifier.checkForInChiKeyCollision">
+<tt class="descname">checkForInChiKeyCollision</tt><big>(</big><em>logFileInChI</em><big>)</big><a class="headerlink" href="#rmgpy.qm.qmverifier.QMVerifier.checkForInChiKeyCollision" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method is designed in the case a MOPAC output file was found but the InChI found in the file did not
+correspond to the InChI of the given molecule.</p>
+<p>This could mean two things:
+1) that the InChI Key hash does not correspond to the InChI it is hashed from. This is the rarest case of them all
+2) the complete InChI did not fit onto just one line in the MOPAC output file. Therefore it was continued on the
+second line and only a part of the InChI was actually taken as the &#8216;whole&#8217; InChI.</p>
+<p>This method reads in the MOPAC input file and compares the found InChI in there to the InChI of the given molecule.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.qm.qmverifier.QMVerifier.succesfulJobExists">
+<tt class="descname">succesfulJobExists</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.qm.qmverifier.QMVerifier.succesfulJobExists" title="Permalink to this definition">¶</a></dt>
+<dd><p>checks whether one of the flags is true.
+If so, it returns true.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div class="sidebarlogo">
+<a href="../../index.html"><img src="../../_static/rmg-logo-small.png" alt="RMG" /></a>
+</div>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="qmdata.html"
+                        title="previous chapter">rmgpy.qm.qmdata</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="symmetry.html"
+                        title="next chapter">rmgpy.qm.symmetry</a></p>
+  <h3>This Page </h3>
+  <ul class="this-page-menu">
+    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/reference/qm/qmverifier.rst"
+           rel="nofollow">Edit this page</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+    </div>
+  </body>
+</html>

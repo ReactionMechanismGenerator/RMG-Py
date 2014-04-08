@@ -1,0 +1,207 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>rmgpy.qm.main &mdash; RMG Py 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
+    <link rel="up" title="QMTP (rmgpy.qm)" href="index.html" />
+    <link rel="next" title="rmgpy.qm.molecule" href="molecule.html" />
+    <link rel="prev" title="QMTP (rmgpy.qm)" href="index.html" /> 
+  </head>
+  <body>
+<div class="header">
+&nbsp;
+</div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="molecule.html" title="rmgpy.qm.molecule"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="QMTP (rmgpy.qm)"
+             accesskey="P">previous</a> |</li>
+<li><a href="../../index.html">Documentation</a> &raquo;</li>
+
+          <li><a href="../index.html" >RMG API Reference</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QMTP (<tt class="docutils literal"><span class="pre">rmgpy.qm</span></tt>)</a> &raquo;</li> 
+      </ul>
+    </div>
+            
+  <div class="section" id="rmgpy-qm-main">
+<h1>rmgpy.qm.main<a class="headerlink" href="#rmgpy-qm-main" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="rmgpy.qm.main.QMSettings">
+<em class="property">class </em><tt class="descclassname">rmgpy.qm.main.</tt><tt class="descname">QMSettings</tt><a class="headerlink" href="#rmgpy.qm.main.QMSettings" title="Permalink to this definition">¶</a></dt>
+<dd><p>A minimal class to store settings related to quantum mechanics calculations.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="24%" />
+<col width="29%" />
+<col width="46%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Attribute</th>
+<th class="head">Type</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><cite>fileStore</cite></td>
+<td><tt class="docutils literal"><span class="pre">str</span></tt></td>
+<td>The path to the QMfiles directory</td>
+</tr>
+<tr class="row-odd"><td><cite>scratchDirectory</cite></td>
+<td><tt class="docutils literal"><span class="pre">str</span></tt></td>
+<td>The path to the scratch directory</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="rmgpy.qm.main.QMSettings.checkAllSet">
+<tt class="descname">checkAllSet</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.qm.main.QMSettings.checkAllSet" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check that all the required settings are set.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="rmgpy.qm.main.QMCalculator">
+<em class="property">class </em><tt class="descclassname">rmgpy.qm.main.</tt><tt class="descname">QMCalculator</tt><big>(</big><em>fileStore=None</em>, <em>scratchDirectory=None</em><big>)</big><a class="headerlink" href="#rmgpy.qm.main.QMCalculator" title="Permalink to this definition">¶</a></dt>
+<dd><p>A Quantum Mechanics calculator object, to store settings.</p>
+<p>The attributes are:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="24%" />
+<col width="29%" />
+<col width="46%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Attribute</th>
+<th class="head">Type</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><cite>settings</cite></td>
+<td><tt class="xref py py-class docutils literal"><span class="pre">QMSettings</span></tt></td>
+<td>Settings for QM calculations</td>
+</tr>
+<tr class="row-odd"><td><cite>database</cite></td>
+<td><tt class="xref py py-class docutils literal"><span class="pre">ThermoLibrary</span></tt></td>
+<td>Database containing QM calculations</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="rmgpy.qm.main.QMCalculator.checkPaths">
+<tt class="descname">checkPaths</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.qm.main.QMCalculator.checkPaths" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check the paths in the settings are OK. Make folders as necessary.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.qm.main.QMCalculator.checkReady">
+<tt class="descname">checkReady</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.qm.main.QMCalculator.checkReady" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check that it&#8217;s ready to run calculations.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.qm.main.QMCalculator.getThermoData">
+<tt class="descname">getThermoData</tt><big>(</big><em>molecule</em><big>)</big><a class="headerlink" href="#rmgpy.qm.main.QMCalculator.getThermoData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate thermo data for the given <tt class="xref py py-class docutils literal"><span class="pre">Molecule</span></tt> via a quantum mechanics calculation.</p>
+<p>Ignores the settings onlyCyclics and maxRadicalNumber and does the calculation anyway if asked.
+(I.e. the code that chooses whether to call this method should consider those settings).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.qm.main.QMCalculator.initialize">
+<tt class="descname">initialize</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.qm.main.QMCalculator.initialize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Do any startup tasks.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.qm.main.QMCalculator.setDefaultOutputDirectory">
+<tt class="descname">setDefaultOutputDirectory</tt><big>(</big><em>outputDirectory</em><big>)</big><a class="headerlink" href="#rmgpy.qm.main.QMCalculator.setDefaultOutputDirectory" title="Permalink to this definition">¶</a></dt>
+<dd><p>IF the fileStore or scratchDirectory are not already set, put them in here.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div class="sidebarlogo">
+<a href="../../index.html"><img src="../../_static/rmg-logo-small.png" alt="RMG" /></a>
+</div>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">QMTP (<tt class="docutils literal"><span class="pre">rmgpy.qm</span></tt>)</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="molecule.html"
+                        title="next chapter">rmgpy.qm.molecule</a></p>
+  <h3>This Page </h3>
+  <ul class="this-page-menu">
+    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/reference/qm/main.rst"
+           rel="nofollow">Edit this page</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+    </div>
+  </body>
+</html>

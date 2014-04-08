@@ -1,0 +1,725 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>rmgpy.qm.mopac &mdash; RMG Py 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
+    <link rel="up" title="QMTP (rmgpy.qm)" href="index.html" />
+    <link rel="next" title="Physical quantities (rmgpy.quantity)" href="../quantity/index.html" />
+    <link rel="prev" title="rmgpy.qm.gaussian" href="gaussian.html" /> 
+  </head>
+  <body>
+<div class="header">
+&nbsp;
+</div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../quantity/index.html" title="Physical quantities (rmgpy.quantity)"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="gaussian.html" title="rmgpy.qm.gaussian"
+             accesskey="P">previous</a> |</li>
+<li><a href="../../index.html">Documentation</a> &raquo;</li>
+
+          <li><a href="../index.html" >RMG API Reference</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QMTP (<tt class="docutils literal"><span class="pre">rmgpy.qm</span></tt>)</a> &raquo;</li> 
+      </ul>
+    </div>
+            
+  <div class="section" id="rmgpy-qm-mopac">
+<h1>rmgpy.qm.mopac<a class="headerlink" href="#rmgpy-qm-mopac" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="rmgpy.qm.mopac.Mopac">
+<em class="property">class </em><tt class="descclassname">rmgpy.qm.mopac.</tt><tt class="descname">Mopac</tt><a class="headerlink" href="#rmgpy.qm.mopac.Mopac" title="Permalink to this definition">¶</a></dt>
+<dd><p>A base class for all QM calculations that use MOPAC.</p>
+<p>Classes such as <tt class="xref py py-class docutils literal"><span class="pre">MopacMol</span></tt> will inherit from this class.</p>
+<dl class="attribute">
+<dt id="rmgpy.qm.mopac.Mopac.failureKeys">
+<tt class="descname">failureKeys</tt><em class="property"> = ['IMAGINARY FREQUENCIES', 'EXCESS NUMBER OF OPTIMIZATION CYCLES', 'NOT ENOUGH TIME FOR ANOTHER CYCLE']</em><a class="headerlink" href="#rmgpy.qm.mopac.Mopac.failureKeys" title="Permalink to this definition">¶</a></dt>
+<dd><p>List of phrases that indicate failure
+NONE of these must be present in a succesful job.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.qm.mopac.Mopac.parse">
+<tt class="descname">parse</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.qm.mopac.Mopac.parse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parses the results of the Mopac calculation, and returns a CCLibData object.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.qm.mopac.Mopac.successKeys">
+<tt class="descname">successKeys</tt><em class="property"> = ['DESCRIPTION OF VIBRATIONS', 'MOPAC DONE']</em><a class="headerlink" href="#rmgpy.qm.mopac.Mopac.successKeys" title="Permalink to this definition">¶</a></dt>
+<dd><p>List of phrases to indicate success.
+ALL of these must be present in a successful job.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.qm.mopac.Mopac.usePolar">
+<tt class="descname">usePolar</tt><em class="property"> = False</em><a class="headerlink" href="#rmgpy.qm.mopac.Mopac.usePolar" title="Permalink to this definition">¶</a></dt>
+<dd><p>Keywords for the multiplicity</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.qm.mopac.Mopac.verifyOutputFile">
+<tt class="descname">verifyOutputFile</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.qm.mopac.Mopac.verifyOutputFile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check&#8217;s that an output file exists and was successful.</p>
+<p>Returns a boolean flag that states whether a successful MOPAC simulation already exists for the molecule with the 
+given (augmented) InChI Key.</p>
+<p>The definition of finding a successful simulation is based on these criteria:
+1) finding an output file with the file name equal to the InChI Key
+2) NOT finding any of the keywords that are denote a calculation failure
+3) finding all the keywords that denote a calculation success.
+4) finding a match between the InChI of the given molecule and the InchI found in the calculation files
+5) checking that the optimized geometry, when connected by single bonds, is isomorphic with self.molecule (converted to single bonds)</p>
+<p>If any of the above criteria is not matched, False will be returned.
+If all succeed, then it will return True.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="rmgpy.qm.mopac.MopacMol">
+<em class="property">class </em><tt class="descclassname">rmgpy.qm.mopac.</tt><tt class="descname">MopacMol</tt><big>(</big><em>molecule</em>, <em>settings</em><big>)</big><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol" title="Permalink to this definition">¶</a></dt>
+<dd><p>A base Class for calculations of molecules using MOPAC.</p>
+<p>Inherits from both <tt class="xref py py-class docutils literal"><span class="pre">QMMolecule</span></tt> and <tt class="xref py py-class docutils literal"><span class="pre">Mopac</span></tt>.</p>
+<dl class="method">
+<dt id="rmgpy.qm.mopac.MopacMol.calculateChiralityCorrection">
+<tt class="descname">calculateChiralityCorrection</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol.calculateChiralityCorrection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the chirality correction to entropy (R*ln(2) if chiral) in J/mol/K.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.qm.mopac.MopacMol.calculateThermoData">
+<tt class="descname">calculateThermoData</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol.calculateThermoData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the thermodynamic properties.</p>
+<p>Stores and returns a ThermoData object as self.thermo.
+self.qmData and self.pointGroup need to be generated before this method is called.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.qm.mopac.MopacMol.createGeometry">
+<tt class="descname">createGeometry</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol.createGeometry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates self.geometry with RDKit geometries</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.qm.mopac.MopacMol.determinePointGroup">
+<tt class="descname">determinePointGroup</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol.determinePointGroup" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine point group using the SYMMETRY Program</p>
+<p>Stores the resulting <tt class="xref py py-class docutils literal"><span class="pre">PointGroup</span></tt> in self.pointGroup</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.qm.mopac.MopacMol.generateQMData">
+<tt class="descname">generateQMData</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol.generateQMData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the QM data and return a QMData object, or None if it fails.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.qm.mopac.MopacMol.generateThermoData">
+<tt class="descname">generateThermoData</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol.generateThermoData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate Thermo Data via a QM calc.</p>
+<p>Returns None if it fails.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.qm.mopac.MopacMol.getFilePath">
+<tt class="descname">getFilePath</tt><big>(</big><em>extension</em><big>)</big><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol.getFilePath" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the path to the file with the given extension.</p>
+<p>The provided extension should include the leading dot.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.qm.mopac.MopacMol.getInChiKeyAug">
+<tt class="descname">getInChiKeyAug</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol.getInChiKeyAug" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the augmented InChI from self.molecule</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.qm.mopac.MopacMol.getMolFilePathForCalculation">
+<tt class="descname">getMolFilePathForCalculation</tt><big>(</big><em>attempt</em><big>)</big><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol.getMolFilePathForCalculation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the path to the MOL file of the geometry to use for calculation <cite>attempt</cite>.</p>
+<p>If attempt &lt;= self.scriptAttempts then we use the refined coordinates,
+then we start to use the crude coordinates.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.qm.mopac.MopacMol.inputFileKeywords">
+<tt class="descname">inputFileKeywords</tt><big>(</big><em>attempt</em><big>)</big><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol.inputFileKeywords" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the top, bottom, and polar keywords.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.qm.mopac.MopacMol.inputFilePath">
+<tt class="descname">inputFilePath</tt><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol.inputFilePath" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the input file name.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.qm.mopac.MopacMol.keywords">
+<tt class="descname">keywords</tt><em class="property"> = [{'top': 'precise nosym', 'bottom': 'oldgeo thermo nosym precise '}, {'top': 'precise nosym gnorm=0.0 nonr', 'bottom': 'oldgeo thermo nosym precise '}, {'top': 'precise nosym gnorm=0.0', 'bottom': 'oldgeo thermo nosym precise '}, {'top': 'precise nosym gnorm=0.0 bfgs', 'bottom': 'oldgeo thermo nosym precise '}, {'top': 'precise nosym recalc=10 dmax=0.10 nonr cycles=2000 t=2000', 'bottom': 'oldgeo thermo nosym precise '}]</em><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol.keywords" title="Permalink to this definition">¶</a></dt>
+<dd><p>Keywords that will be added at the top and bottom of the qm input file</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.qm.mopac.MopacMol.loadThermoData">
+<tt class="descname">loadThermoData</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol.loadThermoData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Try loading a thermo data from a previous run.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.qm.mopac.MopacMol.maxAttempts">
+<tt class="descname">maxAttempts</tt><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol.maxAttempts" title="Permalink to this definition">¶</a></dt>
+<dd><p>The total number of attempts to try</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.qm.mopac.MopacMol.outputFilePath">
+<tt class="descname">outputFilePath</tt><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol.outputFilePath" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the output file name.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.qm.mopac.MopacMol.parse">
+<tt class="descname">parse</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol.parse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parses the results of the Mopac calculation, and returns a CCLibData object.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.qm.mopac.MopacMol.saveThermoData">
+<tt class="descname">saveThermoData</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol.saveThermoData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the generated thermo data.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.qm.mopac.MopacMol.scriptAttempts">
+<tt class="descname">scriptAttempts</tt><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol.scriptAttempts" title="Permalink to this definition">¶</a></dt>
+<dd><p>The number of attempts with different script keywords</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.qm.mopac.MopacMol.verifyOutputFile">
+<tt class="descname">verifyOutputFile</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol.verifyOutputFile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check&#8217;s that an output file exists and was successful.</p>
+<p>Returns a boolean flag that states whether a successful MOPAC simulation already exists for the molecule with the 
+given (augmented) InChI Key.</p>
+<p>The definition of finding a successful simulation is based on these criteria:
+1) finding an output file with the file name equal to the InChI Key
+2) NOT finding any of the keywords that are denote a calculation failure
+3) finding all the keywords that denote a calculation success.
+4) finding a match between the InChI of the given molecule and the InchI found in the calculation files
+5) checking that the optimized geometry, when connected by single bonds, is isomorphic with self.molecule (converted to single bonds)</p>
+<p>If any of the above criteria is not matched, False will be returned.
+If all succeed, then it will return True.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.qm.mopac.MopacMol.writeInputFile">
+<tt class="descname">writeInputFile</tt><big>(</big><em>attempt</em><big>)</big><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol.writeInputFile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Using the <tt class="xref py py-class docutils literal"><span class="pre">Geometry</span></tt> object, write the input file
+for the <a href="#id1"><span class="problematic" id="id2">`</span></a>attmept`th attempt.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="rmgpy.qm.mopac.MopacMolPM3">
+<em class="property">class </em><tt class="descclassname">rmgpy.qm.mopac.</tt><tt class="descname">MopacMolPM3</tt><big>(</big><em>molecule</em>, <em>settings</em><big>)</big><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3" title="Permalink to this definition">¶</a></dt>
+<dd><p>Mopac PM3 calculations for molecules</p>
+<p>This is a class of its own in case you wish to do anything differently,
+but for now it&#8217;s the same as all the MOPAC PMn calculations, only pm3</p>
+<dl class="method">
+<dt id="rmgpy.qm.mopac.MopacMolPM3.calculateChiralityCorrection">
+<tt class="descname">calculateChiralityCorrection</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3.calculateChiralityCorrection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the chirality correction to entropy (R*ln(2) if chiral) in J/mol/K.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.qm.mopac.MopacMolPM3.calculateThermoData">
+<tt class="descname">calculateThermoData</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3.calculateThermoData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the thermodynamic properties.</p>
+<p>Stores and returns a ThermoData object as self.thermo.
+self.qmData and self.pointGroup need to be generated before this method is called.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.qm.mopac.MopacMolPM3.createGeometry">
+<tt class="descname">createGeometry</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3.createGeometry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates self.geometry with RDKit geometries</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.qm.mopac.MopacMolPM3.determinePointGroup">
+<tt class="descname">determinePointGroup</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3.determinePointGroup" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine point group using the SYMMETRY Program</p>
+<p>Stores the resulting <tt class="xref py py-class docutils literal"><span class="pre">PointGroup</span></tt> in self.pointGroup</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.qm.mopac.MopacMolPM3.generateQMData">
+<tt class="descname">generateQMData</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3.generateQMData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the QM data and return a QMData object, or None if it fails.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.qm.mopac.MopacMolPM3.generateThermoData">
+<tt class="descname">generateThermoData</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3.generateThermoData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate Thermo Data via a QM calc.</p>
+<p>Returns None if it fails.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.qm.mopac.MopacMolPM3.getFilePath">
+<tt class="descname">getFilePath</tt><big>(</big><em>extension</em><big>)</big><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3.getFilePath" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the path to the file with the given extension.</p>
+<p>The provided extension should include the leading dot.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.qm.mopac.MopacMolPM3.getInChiKeyAug">
+<tt class="descname">getInChiKeyAug</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3.getInChiKeyAug" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the augmented InChI from self.molecule</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.qm.mopac.MopacMolPM3.getMolFilePathForCalculation">
+<tt class="descname">getMolFilePathForCalculation</tt><big>(</big><em>attempt</em><big>)</big><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3.getMolFilePathForCalculation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the path to the MOL file of the geometry to use for calculation <cite>attempt</cite>.</p>
+<p>If attempt &lt;= self.scriptAttempts then we use the refined coordinates,
+then we start to use the crude coordinates.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.qm.mopac.MopacMolPM3.inputFileKeywords">
+<tt class="descname">inputFileKeywords</tt><big>(</big><em>attempt</em><big>)</big><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3.inputFileKeywords" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the top, bottom, and polar keywords for attempt number <cite>attempt</cite>.</p>
+<p>NB. <a href="#id3"><span class="problematic" id="id4">`</span></a>attempt`s begin at 1, not 0.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.qm.mopac.MopacMolPM3.inputFilePath">
+<tt class="descname">inputFilePath</tt><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3.inputFilePath" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the input file name.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.qm.mopac.MopacMolPM3.loadThermoData">
+<tt class="descname">loadThermoData</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3.loadThermoData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Try loading a thermo data from a previous run.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.qm.mopac.MopacMolPM3.maxAttempts">
+<tt class="descname">maxAttempts</tt><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3.maxAttempts" title="Permalink to this definition">¶</a></dt>
+<dd><p>The total number of attempts to try</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.qm.mopac.MopacMolPM3.outputFilePath">
+<tt class="descname">outputFilePath</tt><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3.outputFilePath" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the output file name.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.qm.mopac.MopacMolPM3.parse">
+<tt class="descname">parse</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3.parse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parses the results of the Mopac calculation, and returns a CCLibData object.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.qm.mopac.MopacMolPM3.saveThermoData">
+<tt class="descname">saveThermoData</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3.saveThermoData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the generated thermo data.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.qm.mopac.MopacMolPM3.scriptAttempts">
+<tt class="descname">scriptAttempts</tt><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3.scriptAttempts" title="Permalink to this definition">¶</a></dt>
+<dd><p>The number of attempts with different script keywords</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.qm.mopac.MopacMolPM3.verifyOutputFile">
+<tt class="descname">verifyOutputFile</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3.verifyOutputFile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check&#8217;s that an output file exists and was successful.</p>
+<p>Returns a boolean flag that states whether a successful MOPAC simulation already exists for the molecule with the 
+given (augmented) InChI Key.</p>
+<p>The definition of finding a successful simulation is based on these criteria:
+1) finding an output file with the file name equal to the InChI Key
+2) NOT finding any of the keywords that are denote a calculation failure
+3) finding all the keywords that denote a calculation success.
+4) finding a match between the InChI of the given molecule and the InchI found in the calculation files
+5) checking that the optimized geometry, when connected by single bonds, is isomorphic with self.molecule (converted to single bonds)</p>
+<p>If any of the above criteria is not matched, False will be returned.
+If all succeed, then it will return True.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.qm.mopac.MopacMolPM3.writeInputFile">
+<tt class="descname">writeInputFile</tt><big>(</big><em>attempt</em><big>)</big><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3.writeInputFile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Using the <tt class="xref py py-class docutils literal"><span class="pre">Geometry</span></tt> object, write the input file
+for the <a href="#id5"><span class="problematic" id="id6">`</span></a>attmept`th attempt.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="rmgpy.qm.mopac.MopacMolPM6">
+<em class="property">class </em><tt class="descclassname">rmgpy.qm.mopac.</tt><tt class="descname">MopacMolPM6</tt><big>(</big><em>molecule</em>, <em>settings</em><big>)</big><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6" title="Permalink to this definition">¶</a></dt>
+<dd><p>Mopac PM6 calculations for molecules</p>
+<p>This is a class of its own in case you wish to do anything differently,
+but for now it&#8217;s the same as all the MOPAC PMn calculations, only pm6</p>
+<dl class="method">
+<dt id="rmgpy.qm.mopac.MopacMolPM6.calculateChiralityCorrection">
+<tt class="descname">calculateChiralityCorrection</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6.calculateChiralityCorrection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the chirality correction to entropy (R*ln(2) if chiral) in J/mol/K.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.qm.mopac.MopacMolPM6.calculateThermoData">
+<tt class="descname">calculateThermoData</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6.calculateThermoData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the thermodynamic properties.</p>
+<p>Stores and returns a ThermoData object as self.thermo.
+self.qmData and self.pointGroup need to be generated before this method is called.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.qm.mopac.MopacMolPM6.createGeometry">
+<tt class="descname">createGeometry</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6.createGeometry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates self.geometry with RDKit geometries</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.qm.mopac.MopacMolPM6.determinePointGroup">
+<tt class="descname">determinePointGroup</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6.determinePointGroup" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine point group using the SYMMETRY Program</p>
+<p>Stores the resulting <tt class="xref py py-class docutils literal"><span class="pre">PointGroup</span></tt> in self.pointGroup</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.qm.mopac.MopacMolPM6.generateQMData">
+<tt class="descname">generateQMData</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6.generateQMData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the QM data and return a QMData object, or None if it fails.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.qm.mopac.MopacMolPM6.generateThermoData">
+<tt class="descname">generateThermoData</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6.generateThermoData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate Thermo Data via a QM calc.</p>
+<p>Returns None if it fails.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.qm.mopac.MopacMolPM6.getFilePath">
+<tt class="descname">getFilePath</tt><big>(</big><em>extension</em><big>)</big><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6.getFilePath" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the path to the file with the given extension.</p>
+<p>The provided extension should include the leading dot.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.qm.mopac.MopacMolPM6.getInChiKeyAug">
+<tt class="descname">getInChiKeyAug</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6.getInChiKeyAug" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the augmented InChI from self.molecule</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.qm.mopac.MopacMolPM6.getMolFilePathForCalculation">
+<tt class="descname">getMolFilePathForCalculation</tt><big>(</big><em>attempt</em><big>)</big><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6.getMolFilePathForCalculation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the path to the MOL file of the geometry to use for calculation <cite>attempt</cite>.</p>
+<p>If attempt &lt;= self.scriptAttempts then we use the refined coordinates,
+then we start to use the crude coordinates.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.qm.mopac.MopacMolPM6.inputFileKeywords">
+<tt class="descname">inputFileKeywords</tt><big>(</big><em>attempt</em><big>)</big><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6.inputFileKeywords" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the top, bottom, and polar keywords.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.qm.mopac.MopacMolPM6.inputFilePath">
+<tt class="descname">inputFilePath</tt><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6.inputFilePath" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the input file name.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.qm.mopac.MopacMolPM6.loadThermoData">
+<tt class="descname">loadThermoData</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6.loadThermoData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Try loading a thermo data from a previous run.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.qm.mopac.MopacMolPM6.maxAttempts">
+<tt class="descname">maxAttempts</tt><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6.maxAttempts" title="Permalink to this definition">¶</a></dt>
+<dd><p>The total number of attempts to try</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.qm.mopac.MopacMolPM6.outputFilePath">
+<tt class="descname">outputFilePath</tt><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6.outputFilePath" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the output file name.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.qm.mopac.MopacMolPM6.parse">
+<tt class="descname">parse</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6.parse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parses the results of the Mopac calculation, and returns a CCLibData object.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.qm.mopac.MopacMolPM6.saveThermoData">
+<tt class="descname">saveThermoData</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6.saveThermoData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the generated thermo data.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.qm.mopac.MopacMolPM6.scriptAttempts">
+<tt class="descname">scriptAttempts</tt><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6.scriptAttempts" title="Permalink to this definition">¶</a></dt>
+<dd><p>The number of attempts with different script keywords</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.qm.mopac.MopacMolPM6.verifyOutputFile">
+<tt class="descname">verifyOutputFile</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6.verifyOutputFile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check&#8217;s that an output file exists and was successful.</p>
+<p>Returns a boolean flag that states whether a successful MOPAC simulation already exists for the molecule with the 
+given (augmented) InChI Key.</p>
+<p>The definition of finding a successful simulation is based on these criteria:
+1) finding an output file with the file name equal to the InChI Key
+2) NOT finding any of the keywords that are denote a calculation failure
+3) finding all the keywords that denote a calculation success.
+4) finding a match between the InChI of the given molecule and the InchI found in the calculation files
+5) checking that the optimized geometry, when connected by single bonds, is isomorphic with self.molecule (converted to single bonds)</p>
+<p>If any of the above criteria is not matched, False will be returned.
+If all succeed, then it will return True.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.qm.mopac.MopacMolPM6.writeInputFile">
+<tt class="descname">writeInputFile</tt><big>(</big><em>attempt</em><big>)</big><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6.writeInputFile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Using the <tt class="xref py py-class docutils literal"><span class="pre">Geometry</span></tt> object, write the input file
+for the <a href="#id7"><span class="problematic" id="id8">`</span></a>attmept`th attempt.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="rmgpy.qm.mopac.MopacMolPM7">
+<em class="property">class </em><tt class="descclassname">rmgpy.qm.mopac.</tt><tt class="descname">MopacMolPM7</tt><big>(</big><em>molecule</em>, <em>settings</em><big>)</big><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7" title="Permalink to this definition">¶</a></dt>
+<dd><p>Mopac PM7 calculations for molecules</p>
+<p>This is a class of its own in case you wish to do anything differently,
+but for now it&#8217;s the same as all the MOPAC PMn calculations, only pm7</p>
+<dl class="method">
+<dt id="rmgpy.qm.mopac.MopacMolPM7.calculateChiralityCorrection">
+<tt class="descname">calculateChiralityCorrection</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7.calculateChiralityCorrection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the chirality correction to entropy (R*ln(2) if chiral) in J/mol/K.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.qm.mopac.MopacMolPM7.calculateThermoData">
+<tt class="descname">calculateThermoData</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7.calculateThermoData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the thermodynamic properties.</p>
+<p>Stores and returns a ThermoData object as self.thermo.
+self.qmData and self.pointGroup need to be generated before this method is called.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.qm.mopac.MopacMolPM7.createGeometry">
+<tt class="descname">createGeometry</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7.createGeometry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates self.geometry with RDKit geometries</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.qm.mopac.MopacMolPM7.determinePointGroup">
+<tt class="descname">determinePointGroup</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7.determinePointGroup" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine point group using the SYMMETRY Program</p>
+<p>Stores the resulting <tt class="xref py py-class docutils literal"><span class="pre">PointGroup</span></tt> in self.pointGroup</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.qm.mopac.MopacMolPM7.generateQMData">
+<tt class="descname">generateQMData</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7.generateQMData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the QM data and return a QMData object, or None if it fails.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.qm.mopac.MopacMolPM7.generateThermoData">
+<tt class="descname">generateThermoData</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7.generateThermoData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate Thermo Data via a QM calc.</p>
+<p>Returns None if it fails.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.qm.mopac.MopacMolPM7.getFilePath">
+<tt class="descname">getFilePath</tt><big>(</big><em>extension</em><big>)</big><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7.getFilePath" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the path to the file with the given extension.</p>
+<p>The provided extension should include the leading dot.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.qm.mopac.MopacMolPM7.getInChiKeyAug">
+<tt class="descname">getInChiKeyAug</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7.getInChiKeyAug" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the augmented InChI from self.molecule</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.qm.mopac.MopacMolPM7.getMolFilePathForCalculation">
+<tt class="descname">getMolFilePathForCalculation</tt><big>(</big><em>attempt</em><big>)</big><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7.getMolFilePathForCalculation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the path to the MOL file of the geometry to use for calculation <cite>attempt</cite>.</p>
+<p>If attempt &lt;= self.scriptAttempts then we use the refined coordinates,
+then we start to use the crude coordinates.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.qm.mopac.MopacMolPM7.inputFileKeywords">
+<tt class="descname">inputFileKeywords</tt><big>(</big><em>attempt</em><big>)</big><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7.inputFileKeywords" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the top, bottom, and polar keywords.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.qm.mopac.MopacMolPM7.inputFilePath">
+<tt class="descname">inputFilePath</tt><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7.inputFilePath" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the input file name.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.qm.mopac.MopacMolPM7.loadThermoData">
+<tt class="descname">loadThermoData</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7.loadThermoData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Try loading a thermo data from a previous run.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.qm.mopac.MopacMolPM7.maxAttempts">
+<tt class="descname">maxAttempts</tt><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7.maxAttempts" title="Permalink to this definition">¶</a></dt>
+<dd><p>The total number of attempts to try</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.qm.mopac.MopacMolPM7.outputFilePath">
+<tt class="descname">outputFilePath</tt><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7.outputFilePath" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the output file name.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.qm.mopac.MopacMolPM7.parse">
+<tt class="descname">parse</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7.parse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parses the results of the Mopac calculation, and returns a CCLibData object.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.qm.mopac.MopacMolPM7.saveThermoData">
+<tt class="descname">saveThermoData</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7.saveThermoData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the generated thermo data.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.qm.mopac.MopacMolPM7.scriptAttempts">
+<tt class="descname">scriptAttempts</tt><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7.scriptAttempts" title="Permalink to this definition">¶</a></dt>
+<dd><p>The number of attempts with different script keywords</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.qm.mopac.MopacMolPM7.verifyOutputFile">
+<tt class="descname">verifyOutputFile</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7.verifyOutputFile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check&#8217;s that an output file exists and was successful.</p>
+<p>Returns a boolean flag that states whether a successful MOPAC simulation already exists for the molecule with the 
+given (augmented) InChI Key.</p>
+<p>The definition of finding a successful simulation is based on these criteria:
+1) finding an output file with the file name equal to the InChI Key
+2) NOT finding any of the keywords that are denote a calculation failure
+3) finding all the keywords that denote a calculation success.
+4) finding a match between the InChI of the given molecule and the InchI found in the calculation files
+5) checking that the optimized geometry, when connected by single bonds, is isomorphic with self.molecule (converted to single bonds)</p>
+<p>If any of the above criteria is not matched, False will be returned.
+If all succeed, then it will return True.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.qm.mopac.MopacMolPM7.writeInputFile">
+<tt class="descname">writeInputFile</tt><big>(</big><em>attempt</em><big>)</big><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7.writeInputFile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Using the <tt class="xref py py-class docutils literal"><span class="pre">Geometry</span></tt> object, write the input file
+for the <a href="#id9"><span class="problematic" id="id10">`</span></a>attmept`th attempt.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div class="sidebarlogo">
+<a href="../../index.html"><img src="../../_static/rmg-logo-small.png" alt="RMG" /></a>
+</div>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="gaussian.html"
+                        title="previous chapter">rmgpy.qm.gaussian</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../quantity/index.html"
+                        title="next chapter">Physical quantities (<tt class="docutils literal"><span class="pre">rmgpy.quantity</span></tt>)</a></p>
+  <h3>This Page </h3>
+  <ul class="this-page-menu">
+    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/reference/qm/mopac.rst"
+           rel="nofollow">Edit this page</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+    </div>
+  </body>
+</html>

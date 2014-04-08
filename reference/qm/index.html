@@ -1,0 +1,298 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>QMTP (rmgpy.qm) &mdash; RMG Py 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
+    <link rel="up" title="RMG API Reference" href="../index.html" />
+    <link rel="next" title="rmgpy.qm.main" href="main.html" />
+    <link rel="prev" title="Methods for estimating k(T,P) values" href="../pdep/methods.html" /> 
+  </head>
+  <body>
+<div class="header">
+&nbsp;
+</div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="main.html" title="rmgpy.qm.main"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../pdep/methods.html" title="Methods for estimating k(T,P) values"
+             accesskey="P">previous</a> |</li>
+<li><a href="../../index.html">Documentation</a> &raquo;</li>
+
+          <li><a href="../index.html" accesskey="U">RMG API Reference</a> &raquo;</li> 
+      </ul>
+    </div>
+            
+  <div class="section" id="module-rmgpy.qm">
+<span id="qmtp-rmgpy-qm"></span><h1>QMTP (<a class="reference internal" href="#module-rmgpy.qm" title="rmgpy.qm"><tt class="xref py py-mod docutils literal"><span class="pre">rmgpy.qm</span></tt></a>)<a class="headerlink" href="#module-rmgpy.qm" title="Permalink to this headline">¶</a></h1>
+<p>The <a class="reference internal" href="#module-rmgpy.qm" title="rmgpy.qm"><tt class="xref py py-mod docutils literal"><span class="pre">rmgpy.qm</span></tt></a> subpackage contains classes and functions for working
+with molecular geometries, and interfacing with quantum chemistry software.</p>
+<div class="section" id="main">
+<h2>Main<a class="headerlink" href="#main" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="26%" />
+<col width="74%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Class</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><a class="reference internal" href="main.html#rmgpy.qm.main.QMSettings" title="rmgpy.qm.main.QMSettings"><tt class="xref py py-class docutils literal"><span class="pre">QMSettings</span></tt></a></td>
+<td>A class to store settings related to quantum mechanics calculations</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="main.html#rmgpy.qm.main.QMCalculator" title="rmgpy.qm.main.QMCalculator"><tt class="xref py py-class docutils literal"><span class="pre">QMCalculator</span></tt></a></td>
+<td>An object to store settings and previous calculations</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="molecule">
+<h2>Molecule<a class="headerlink" href="#molecule" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="29%" />
+<col width="71%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Class</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><a class="reference internal" href="molecule.html#rmgpy.qm.molecule.Geometry" title="rmgpy.qm.molecule.Geometry"><tt class="xref py py-class docutils literal"><span class="pre">Geometry</span></tt></a></td>
+<td>A geometry, used for quantum calculations</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="molecule.html#rmgpy.qm.molecule.QMMolecule" title="rmgpy.qm.molecule.QMMolecule"><tt class="xref py py-class docutils literal"><span class="pre">QMMolecule</span></tt></a></td>
+<td>A base class for QM Molecule calculations</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="qm-data">
+<h2>QM Data<a class="headerlink" href="#qm-data" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="29%" />
+<col width="71%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Class/Function</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><a class="reference internal" href="qmdata.html#rmgpy.qm.qmdata.QMData" title="rmgpy.qm.qmdata.QMData"><tt class="xref py py-class docutils literal"><span class="pre">QMData</span></tt></a></td>
+<td>General class for data extracted from a QM calculation</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="qmdata.html#rmgpy.qm.qmdata.CCLibData" title="rmgpy.qm.qmdata.CCLibData"><tt class="xref py py-class docutils literal"><span class="pre">CCLibData</span></tt></a></td>
+<td>QM Data extracted from a cclib data object</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="qm-verifier">
+<h2>QM Verifier<a class="headerlink" href="#qm-verifier" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="29%" />
+<col width="71%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Class/Function</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><a class="reference internal" href="qmverifier.html#rmgpy.qm.qmverifier.QMVerifier" title="rmgpy.qm.qmverifier.QMVerifier"><tt class="xref py py-class docutils literal"><span class="pre">QMVerifier</span></tt></a></td>
+<td>Verifies whether a QM job was succesfully completed</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="symmetry">
+<h2>Symmetry<a class="headerlink" href="#symmetry" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="27%" />
+<col width="73%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Class/Function</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><a class="reference internal" href="symmetry.html#rmgpy.qm.symmetry.PointGroup" title="rmgpy.qm.symmetry.PointGroup"><tt class="xref py py-class docutils literal"><span class="pre">PointGroup</span></tt></a></td>
+<td>A symmetry Point Group</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="symmetry.html#rmgpy.qm.symmetry.PointGroupCalculator" title="rmgpy.qm.symmetry.PointGroupCalculator"><tt class="xref py py-class docutils literal"><span class="pre">PointGroupCalculator</span></tt></a></td>
+<td>Wrapper type to determine molecular symmetry point groups based on 3D coordinates</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="symmetry.html#rmgpy.qm.symmetry.SymmetryJob" title="rmgpy.qm.symmetry.SymmetryJob"><tt class="xref py py-class docutils literal"><span class="pre">SymmetryJob</span></tt></a></td>
+<td>Determine the point group using the SYMMETRY program</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="gaussian">
+<h2>Gaussian<a class="headerlink" href="#gaussian" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="26%" />
+<col width="74%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Class/Function</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><a class="reference internal" href="gaussian.html#rmgpy.qm.gaussian.Gaussian" title="rmgpy.qm.gaussian.Gaussian"><tt class="xref py py-class docutils literal"><span class="pre">Gaussian</span></tt></a></td>
+<td>A base class for all QM calculations that use Gaussian</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="gaussian.html#rmgpy.qm.gaussian.GaussianMol" title="rmgpy.qm.gaussian.GaussianMol"><tt class="xref py py-class docutils literal"><span class="pre">GaussianMol</span></tt></a></td>
+<td>A base Class for calculations of molecules using Gaussian.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="gaussian.html#rmgpy.qm.gaussian.GaussianMolPM3" title="rmgpy.qm.gaussian.GaussianMolPM3"><tt class="xref py py-class docutils literal"><span class="pre">GaussianMolPM3</span></tt></a></td>
+<td>A base Class for calculations of molecules using Gaussian at PM3.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="gaussian.html#rmgpy.qm.gaussian.GaussianMolPM6" title="rmgpy.qm.gaussian.GaussianMolPM6"><tt class="xref py py-class docutils literal"><span class="pre">GaussianMolPM6</span></tt></a></td>
+<td>A base Class for calculations of molecules using Gaussian at PM6.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="mopac">
+<h2>Mopac<a class="headerlink" href="#mopac" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="27%" />
+<col width="73%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Class/Function</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><a class="reference internal" href="mopac.html#rmgpy.qm.mopac.Mopac" title="rmgpy.qm.mopac.Mopac"><tt class="xref py py-class docutils literal"><span class="pre">Mopac</span></tt></a></td>
+<td>A base class for all QM calculations that use Mopac</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="mopac.html#rmgpy.qm.mopac.MopacMol" title="rmgpy.qm.mopac.MopacMol"><tt class="xref py py-class docutils literal"><span class="pre">MopacMol</span></tt></a></td>
+<td>A base Class for calculations of molecules using Mopac.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="mopac.html#rmgpy.qm.mopac.MopacMolPM3" title="rmgpy.qm.mopac.MopacMolPM3"><tt class="xref py py-class docutils literal"><span class="pre">MopacMolPM3</span></tt></a></td>
+<td>A base Class for calculations of molecules using Mopac at PM3.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="mopac.html#rmgpy.qm.mopac.MopacMolPM6" title="rmgpy.qm.mopac.MopacMolPM6"><tt class="xref py py-class docutils literal"><span class="pre">MopacMolPM6</span></tt></a></td>
+<td>A base Class for calculations of molecules using Mopac at PM6.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="mopac.html#rmgpy.qm.mopac.MopacMolPM7" title="rmgpy.qm.mopac.MopacMolPM7"><tt class="xref py py-class docutils literal"><span class="pre">MopacMolPM7</span></tt></a></td>
+<td>A base Class for calculations of molecules using Mopac at PM7.</td>
+</tr>
+</tbody>
+</table>
+<div class="toctree-wrapper compound">
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div class="sidebarlogo">
+<a href="../../index.html"><img src="../../_static/rmg-logo-small.png" alt="RMG" /></a>
+</div>
+  <h3><a href="../../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">QMTP (<tt class="docutils literal"><span class="pre">rmgpy.qm</span></tt>)</a><ul>
+<li><a class="reference internal" href="#main">Main</a></li>
+<li><a class="reference internal" href="#molecule">Molecule</a></li>
+<li><a class="reference internal" href="#qm-data">QM Data</a></li>
+<li><a class="reference internal" href="#qm-verifier">QM Verifier</a></li>
+<li><a class="reference internal" href="#symmetry">Symmetry</a></li>
+<li><a class="reference internal" href="#gaussian">Gaussian</a></li>
+<li><a class="reference internal" href="#mopac">Mopac</a><ul>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../pdep/methods.html"
+                        title="previous chapter">Methods for estimating k(T,P) values</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="main.html"
+                        title="next chapter">rmgpy.qm.main</a></p>
+  <h3>This Page </h3>
+  <ul class="this-page-menu">
+    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/reference/qm/index.rst"
+           rel="nofollow">Edit this page</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+    </div>
+  </body>
+</html>
