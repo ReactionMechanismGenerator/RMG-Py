@@ -35,6 +35,7 @@ This module contains functionality for working with kinetics libraries.
 import os.path
 import logging
 import codecs
+import re
 from copy import copy, deepcopy
 
 from rmgpy.data.base import Database, Entry, LogicNode, LogicOr, ForbiddenStructures,\
@@ -1956,7 +1957,7 @@ class KineticsFamily(Database):
             return dictionary
 
         #list of nodes that are not wellFormed
-        noGroup=[]
+        noGroup={}
         noMatchingGroup={}
         tempNoMatchingGroup={}
         notInTree=[]
@@ -1981,17 +1982,35 @@ class KineticsFamily(Database):
             #and each group must appear in groups.py
             for libraryNode in libraryNodes:
                 nodes=libraryNode.split(';')
-                for libraryEntry in library[libraryNode]:
+                for libraryIndex, libraryEntry in enumerate(library[libraryNode]):
                     for nodeName in nodes:
+                        #If it does not appear in groups.py, we can try to search for its match
                         if nodeName not in groups:
-                            noGroup.append(nodeName)
+                            matchedGroup='No match'
+                            #Unfortunately the order of the groups in the rules changes, so we have to check each group
+                            for missingGroup in libraryEntry.item.reactants:
+                                if isinstance(missingGroup, Group):
+                                    for group1 in groups:
+                                        if isinstance(groups[group1].item, Group) and groups[group1].item.isIdentical(missingGroup):
+                                            #If group1 is a name of a libraryNode, this is not the one we are looking for
+                                            if group1 not in libraryNode:
+                                                matchedGroup=group1
+                                                break
+                                elif isinstance(missingGroup, LogicOr):
+                                    for group1 in groups:
+                                        if isinstance(groups[group1].item, LogicOr) and groups[group1].item.matchToLogicOr(missingGroup):                                                                                        
+                                            #If group1 is a name of a libraryNode, this is not the one we are looking for
+                                            if group1 not in libraryNode:
+                                                matchedGroup=group1
+                                                break
+                            noGroup=appendToDict(noGroup, nodeName, matchedGroup)
                             #If the node is not in the dictionary, we can't do the rest of the check
                             continue
                         #Each adj list in rules.py should match the adj list in group's.py
                         for libraryGroup in libraryEntry.item.reactants:
                             #break if we find a match between two groups
                             if isinstance(groups[nodeName].item, Group) and isinstance(libraryGroup, Group):
-                                if groups[nodeName].item.isIsomorphic(libraryGroup):
+                                if groups[nodeName].item.isIdentical(libraryGroup):
                                     break
                             #break if we find a match between two logic nodes
                             elif isinstance(groups[nodeName].item, LogicOr) and isinstance(libraryGroup, LogicOr):
@@ -2014,8 +2033,14 @@ class KineticsFamily(Database):
                     child=ascendParent
                     ascendParent=ascendParent.parent
                     if ascendParent is None or child not in ascendParent.children:
+                        #These are typically products of the recipe
                         if child.index==-1:
-                            probablyProduct.append(child.label)
+                            for product in self.forwardTemplate.products:
+                                #If it is a product, ignore it
+                                if re.match(product.label+'[0-9]*', child.label):
+                                    break
+                            else:
+                                probablyProduct.append(child.label)
                             break
                         else:
                         # If a group is not in a tree, we want to save the uppermost parent, not necessarily the original node
@@ -2061,7 +2086,9 @@ class KineticsFamily(Database):
             logging.error(str(e))
         
         #eliminate duplicates
-        noGroup=list(set(noGroup))
+#         noGroup=list(set(noGroup))
+        for key, value in noGroup.iteritems():
+            noGroup[key]=list(set(value))
         notInTree=list(set(notInTree))
         
         return (noGroup, noMatchingGroup, notInTree, notUnique, notSubgroup, probablyProduct)
