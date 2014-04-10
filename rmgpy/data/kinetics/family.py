@@ -1980,45 +1980,56 @@ class KineticsFamily(Database):
         try:
             #Each label in rules.py should be be in the form group1;group2;group3 etc
             #and each group must appear in groups.py
-            for libraryNode in libraryNodes:
-                nodes=libraryNode.split(';')
-                for libraryIndex, libraryEntry in enumerate(library[libraryNode]):
-                    for nodeName in nodes:
-                        #If it does not appear in groups.py, we can try to search for its match
-                        if nodeName not in groups:
-                            matchedGroup='No match'
-                            #Unfortunately the order of the groups in the rules changes, so we have to check each group
-                            for missingGroup in libraryEntry.item.reactants:
-                                if isinstance(missingGroup, Group):
-                                    for group1 in groups:
-                                        if isinstance(groups[group1].item, Group) and groups[group1].item.isIdentical(missingGroup):
-                                            #If group1 is a name of a libraryNode, this is not the one we are looking for
-                                            if group1 not in libraryNode:
-                                                matchedGroup=group1
-                                                break
-                                elif isinstance(missingGroup, LogicOr):
-                                    for group1 in groups:
-                                        if isinstance(groups[group1].item, LogicOr) and groups[group1].item.matchToLogicOr(missingGroup):                                                                                        
-                                            #If group1 is a name of a libraryNode, this is not the one we are looking for
-                                            if group1 not in libraryNode:
-                                                matchedGroup=group1
-                                                break
-                            noGroup=appendToDict(noGroup, nodeName, matchedGroup)
-                            #If the node is not in the dictionary, we can't do the rest of the check
-                            continue
-                        #Each adj list in rules.py should match the adj list in group's.py
-                        for libraryGroup in libraryEntry.item.reactants:
-                            #break if we find a match between two groups
-                            if isinstance(groups[nodeName].item, Group) and isinstance(libraryGroup, Group):
-                                if groups[nodeName].item.isIdentical(libraryGroup):
-                                    break
-                            #break if we find a match between two logic nodes
-                            elif isinstance(groups[nodeName].item, LogicOr) and isinstance(libraryGroup, LogicOr):
-                                if groups[nodeName].item.matchToLogicOr(libraryGroup):
-                                    break
-                        #Otherwise no match is found, so we add it to the tempNoMatchingGroup
+            for label, libraryEntries in library.iteritems():
+                for entry in libraryEntries:
+                    assert label == entry.label
+                    # Check that the groups are what we expect based on the name.
+                    expectedNodeNames = label.split(';')
+                    try:
+                        if len(expectedNodeNames) != len(entry.item.reactants):
+                            raise DatabaseError("Wrong number of semicolons in label")
+                        for expectedNodeName, actualNode in zip(expectedNodeNames, entry.item.reactants):
+                            if expectedNodeName not in groups:
+                                raise DatabaseError("No group definition for label '{label}'".format(label=expectedNodeName))
+                            expectedNode = groups[expectedNodeName].item
+                            if isinstance(actualNode, Group):
+                                if not isinstance(expectedNode, Group):
+                                    raise DatabaseError("Group definition doesn't match label '{label}'".format(label=expectedNodeName))
+                                if not expectedNode.isIdentical(actualNode):
+                                    raise DatabaseError("Group definition doesn't match label '{label}'".format(label=expectedNodeName))
+                            elif isinstance(actualNode, LogicOr):
+                                if not isinstance(expectedNode, LogicOr):
+                                    raise DatabaseError("Group definition doesn't match label '{label}'".format(label=expectedNodeName))
+                                if not expectedNode.matchToLogicOr(actualNode):
+                                    raise DatabaseError("LogicNode definition doesn't match label '{label}'".format(label=expectedNodeName))
+                    except DatabaseError, e:
+                        "Didn't pass"
+                        logging.error("Label '{label}' appears to be wrong on entry {index}".format(label=label, index=entry.index))
+                        logging.error(e)
+                    else: 
+                        "Passed"
+                        continue # with next entry
+                    
+                    # We failed the name test. Find correct name, if possible
+                    correctNodeNames = []
+                    for actualGroup in entry.item.reactants:
+                        for groupName, groupEntry in groups.iteritems():
+                            potentialGroup = groupEntry.item
+                            if isinstance(actualGroup, Group) and isinstance(potentialGroup, Group) and potentialGroup.isIdentical(actualGroup):
+                                break
+                            elif isinstance(actualGroup, LogicOr) and isinstance(potentialGroup, LogicOr) and potentialGroup.matchToLogicOr(actualGroup):
+                                break
                         else:
-                            tempNoMatchingGroup=appendToDict(tempNoMatchingGroup, libraryNode, nodeName)
+                            "We didn't break, so we didn't find a match"
+                            groupName = 'UNKNOWN'
+                        correctNodeNames.append(groupName)
+                    correctName = ';'.join(correctNodeNames)
+                    logging.error("Entry {index} called '{label}' should probably be called '{correct}' or the group definitions changed.".format(label=label, index=entry.index, correct=correctName))
+                    
+                    # not sure what these do:        
+                    #noGroup=appendToDict(noGroup, nodeName, matchedGroup)
+                    #tempNoMatchingGroup=appendToDict(tempNoMatchingGroup, libraryNode, nodeName)
+
             #eliminate duplicates
             for key, nodeList in tempNoMatchingGroup.iteritems():
                 noMatchingGroup[key]=list(set(nodeList))
