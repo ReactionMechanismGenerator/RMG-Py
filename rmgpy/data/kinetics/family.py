@@ -1993,15 +1993,11 @@ class KineticsFamily(Database):
                                 raise DatabaseError("No group definition for label '{label}'".format(label=expectedNodeName))
                             expectedNode = groups[expectedNodeName].item
                             if isinstance(actualNode, Group):
-                                if not isinstance(expectedNode, Group):
-                                    raise DatabaseError("Group definition doesn't match label '{label}'".format(label=expectedNodeName))
-                                if not expectedNode.isIdentical(actualNode):
-                                    raise DatabaseError("Group definition doesn't match label '{label}'".format(label=expectedNodeName))
+                                if not (isinstance(expectedNode, Group) and expectedNode.isIdentical(actualNode)):
+                                    raise DatabaseError("Group definition doesn't match label '{label}' which is defined as \n{adj}".format(label=expectedNodeName, adj=expectedNode.toAdjacencyList().strip()))
                             elif isinstance(actualNode, LogicOr):
-                                if not isinstance(expectedNode, LogicOr):
-                                    raise DatabaseError("Group definition doesn't match label '{label}'".format(label=expectedNodeName))
-                                if not expectedNode.matchToLogicOr(actualNode):
-                                    raise DatabaseError("LogicNode definition doesn't match label '{label}'".format(label=expectedNodeName))
+                                if not (isinstance(expectedNode, LogicOr) and expectedNode.matchToLogicOr(actualNode)):
+                                    raise DatabaseError("Group definition doesn't match label '{label}' which is defined as \n{node!s}".format(label=expectedNodeName, node=expectedNode))
                     except DatabaseError, e:
                         "Didn't pass"
                         logging.error("Label '{label}' appears to be wrong on entry {index}".format(label=label, index=entry.index))
