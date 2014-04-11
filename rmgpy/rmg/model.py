@@ -1162,7 +1162,7 @@ class CoreEdgeReactionModel:
                         network.netReactions.remove(rxn)
                         
                     # Recompute the isomers, reactants, and products for this network
-                    network.updateConfigurations()
+                    network.updateConfigurations(self)
 
         # Remove from the global list of reactions
         # also remove it from the global list of reactions
