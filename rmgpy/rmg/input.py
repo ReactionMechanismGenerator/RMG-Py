@@ -417,10 +417,10 @@ def saveInputFile(path, rmg):
     # Reaction systems
     for system in rmg.reactionSystems:
         f.write('simpleReactor(\n')
-        f.write('    temperature = ({0:g},"{1!s}"),\n'.format(system.T.getValueInGivenUnits(),system.T.units))
+        f.write('    temperature = ({0:g},"{1!s}"),\n'.format(system.T.getValue(),system.T.units))
         # Convert the pressure from SI pascal units to bar here
         # Do something more fancy later for converting to user's desired units for both T and P..
-        f.write('    pressure = ({0:g},"{1!s}"),\n'.format(system.P.getValueInGivenUnits(),system.P.units))
+        f.write('    pressure = ({0:g},"{1!s}"),\n'.format(system.P.getValue(),system.P.units))
         f.write('    initialMoleFractions={\n')
         for species, molfrac in system.initialMoleFractions.iteritems():
             f.write('        "{0!s}": {1:g},\n'.format(species.label, molfrac))
@@ -430,7 +430,7 @@ def saveInputFile(path, rmg):
         conversions = ''
         for term in system.termination:
             if isinstance(term, TerminationTime):
-                f.write('    terminationTime = ({0:g},"{1!s}"),\n'.format(term.time.getValueInGivenUnits(),term.time.units))
+                f.write('    terminationTime = ({0:g},"{1!s}"),\n'.format(term.time.getValue(),term.time.units))
                 
             else:
                 conversions += '        "{0:s}": {1:g},\n'.format(term.species.label, term.conversion)
@@ -468,17 +468,17 @@ def saveInputFile(path, rmg):
     if rmg.pressureDependence:
         f.write('pressureDependence(\n')
         f.write('    method = "{0!s}",\n'.format(rmg.pressureDependence.method))
-        f.write('    maximumGrainSize = ({0:g},"{1!s}"),\n'.format(rmg.pressureDependence.grainSize.getValueInGivenUnits(),rmg.pressureDependence.grainSize.units))
+        f.write('    maximumGrainSize = ({0:g},"{1!s}"),\n'.format(rmg.pressureDependence.grainSize.getValue(),rmg.pressureDependence.grainSize.units))
         f.write('    minimumNumberOfGrains = {0},\n'.format(rmg.pressureDependence.grainCount))
         f.write('    temperatures = ({0:g},{1:g},"{2!s}",{3:d}),\n'.format(
-            rmg.pressureDependence.Tmin.getValueInGivenUnits(),
-            rmg.pressureDependence.Tmax.getValueInGivenUnits(),
+            rmg.pressureDependence.Tmin.getValue(),
+            rmg.pressureDependence.Tmax.getValue(),
             rmg.pressureDependence.Tmax.units,
             rmg.pressureDependence.Tcount,
         ))
         f.write('    pressures = ({0:g},{1:g},"{2!s}",{3:d}),\n'.format(
-            rmg.pressureDependence.Pmin.getValueInGivenUnits(),
-            rmg.pressureDependence.Pmax.getValueInGivenUnits(),
+            rmg.pressureDependence.Pmin.getValue(),
+            rmg.pressureDependence.Pmax.getValue(),
             rmg.pressureDependence.Pmax.units,
             rmg.pressureDependence.Pcount,
         ))
@@ -489,7 +489,7 @@ def saveInputFile(path, rmg):
     f.write('options(\n')
     f.write('    units = "{0}",\n'.format(rmg.units))
     if rmg.saveRestartPeriod:
-        f.write('    saveRestartPeriod = ({0},"{1}"),\n'.format(rmg.saveRestartPeriod.getValueInGivenUnits(), rmg.saveRestartPeriod.units))
+        f.write('    saveRestartPeriod = ({0},"{1}"),\n'.format(rmg.saveRestartPeriod.getValue(), rmg.saveRestartPeriod.units))
     else:
         f.write('    saveRestartPeriod = None,\n')
     f.write('    drawMolecules = {0},\n'.format(rmg.drawMolecules))
