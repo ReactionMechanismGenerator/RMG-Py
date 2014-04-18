@@ -878,6 +878,7 @@ class ThermoDatabase(object):
             return self.estimateRadicalThermoViaHBI(molecule, self.estimateThermoViaGroupAdditivity )
 
         else: # non-radical species
+            cyclic = molecule.isCyclic()
             # Generate estimate of thermodynamics
             for atom in molecule.atoms:
                 # Iterate over heavy (non-hydrogen) atoms
@@ -891,9 +892,10 @@ class ThermoDatabase(object):
                         logging.error(molecule.toAdjacencyList())
                         raise
                     # Correct for gauche and 1,5- interactions
-                    try:
-                        self.__addGroupThermoData(thermoData, self.groups['gauche'], molecule, {'*':atom})
-                    except KeyError: pass
+                    if not cyclic:
+                        try:
+                            self.__addGroupThermoData(thermoData, self.groups['gauche'], molecule, {'*':atom})
+                        except KeyError: pass
                     try:
                         self.__addGroupThermoData(thermoData, self.groups['int15'], molecule, {'*':atom})
                     except KeyError: pass
@@ -904,7 +906,7 @@ class ThermoDatabase(object):
             # Do ring corrections separately because we only want to match
             # each ring one time
             
-            if molecule.isCyclic():                
+            if cyclic:                
                 if molecule.getAllPolycyclicVertices():
                     # If the molecule has fused ring atoms, this implies that we are dealing
                     # with a polycyclic ring system, for which separate ring strain corrections may not
@@ -923,21 +925,14 @@ class ThermoDatabase(object):
                     for ring in rings:
                         # Make a temporary structure containing only the atoms in the ring
                         # NB. if any of the ring corrections depend on ligands not in the ring, they will not be found!
-                        ringCorrection = None
-                        for atom in ring:
+                        try:
+                            self.__addGroupThermoData(thermoData, self.groups['ring'], molecule, {})
+                        except KeyError:
+                            logging.error("Couldn't find in ring database:")
+                            logging.error(ring)
+                            logging.error(ring.toAdjacencyList())
+                            raise
                             
-                            try:
-                                correction = self.__addGroupThermoData(None, self.groups['ring'], molecule, {'*':atom})
-                            except KeyError:
-                                logging.error("Couldn't find in ring database:")
-                                logging.error(ring)
-                                logging.error(ring.toAdjacencyList())
-                                raise
-                        
-                            if ringCorrection is None or ringCorrection.H298.value_si < correction.H298.value_si:
-                                ringCorrection = correction
-                        
-                        self.__addThermoData(thermoData, ringCorrection)
                 
         # Correct entropy for symmetry number
         molecule.calculateSymmetryNumber()
@@ -994,12 +989,12 @@ class ThermoDatabase(object):
         data.comment = '{0}({1})'.format(database.label, comment)
 
         # This code prints the hierarchy of the found node; useful for debugging
-        #result = ''
-        #while node is not None:
-        #   result = ' -> ' + node + result
-        #   node = database.tree.parent[node]
-        #print result[4:]
-
+#        result = ''
+#        while node is not None:
+#           result = ' -> ' + node.label + result
+#           node = node.parent
+#        print result[4:]
+        
         if thermoData is None:
             return data
         else:
