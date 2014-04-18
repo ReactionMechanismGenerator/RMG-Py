@@ -1293,8 +1293,7 @@ class CoreEdgeReactionModel:
                     raise ForbiddenStructureException("Species {0} from seed mechanism {1} is globally forbidden. You may explicitly allow it, but it will remain inert unless found in a seed mechanism or reaction library.".format(spec.label, seedMechanism.label))
             if self.failsSpeciesConstraints(spec):
                 if 'allowed' in self.speciesConstraints and 'seed mechanisms' in self.speciesConstraints['allowed']:
-                    self.speciesConstraints['explicitlyAllowedMolecules'].append(spec.molecule[0])
-                    pass
+                    self.speciesConstraints['explicitlyAllowedMolecules'].extend(spec.molecule)
                 else:
                     raise ForbiddenStructureException("Species constraints forbids species {0} from seed mechanism {1}. Please reformulate constraints, remove the species, or explicitly allow it.".format(spec.label, seedMechanism.label))
 
@@ -1357,8 +1356,7 @@ class CoreEdgeReactionModel:
                     raise ForbiddenStructureException("Species {0} from reaction library {1} is globally forbidden. You may explicitly allow it, but it will remain inert unless found in a seed mechanism or reaction library.".format(spec.label, reactionLibrary.label))
             if self.failsSpeciesConstraints(spec):
                 if 'allowed' in self.speciesConstraints and 'reaction libraries' in self.speciesConstraints['allowed']:
-                    self.speciesConstraints['explicitlyAllowedMolecules'].append(spec.molecule[0])
-                    pass
+                    self.speciesConstraints['explicitlyAllowedMolecules'].extend(spec.molecule)
                 else:
                     raise ForbiddenStructureException("Species constraints forbids species {0} from reaction library {1}. Please reformulate constraints, remove the species, or explicitly allow it.".format(spec.label, reactionLibrary.label))
        
