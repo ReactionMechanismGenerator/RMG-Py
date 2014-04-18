@@ -989,12 +989,12 @@ class ThermoDatabase(object):
         data.comment = '{0}({1})'.format(database.label, comment)
 
         # This code prints the hierarchy of the found node; useful for debugging
-        #result = ''
-        #while node is not None:
-        #   result = ' -> ' + node + result
-        #   node = database.tree.parent[node]
-        #print result[4:]
-
+#        result = ''
+#        while node is not None:
+#           result = ' -> ' + node.label + result
+#           node = node.parent
+#        print result[4:]
+        
         if thermoData is None:
             return data
         else:
