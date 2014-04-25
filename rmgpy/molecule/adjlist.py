@@ -359,10 +359,11 @@ def toAdjacencyList(atoms, multiplicity=0, label=None, group=False, removeH=Fals
     atomTypes = {}
     atomElectronStates = {}
     atomLonePairs = {}
+    atomCharge = {}
     if group:
         for atom in atomNumbers:
             # Atom type(s)
-            if len(atom.atomType) == 1:
+            if len(atom.atomType) == 1: 
                 atomTypes[atom] = atom.atomType[0].label
             else:
                 atomTypes[atom] = '{{{0}}}'.format(','.join([a.label for a in atom.atomType]))
@@ -376,10 +377,11 @@ def toAdjacencyList(atoms, multiplicity=0, label=None, group=False, removeH=Fals
             # Atom type
             atomTypes[atom] = '{0}'.format(atom.element.symbol)
             # Electron state(s)
-            atomElectronStates[atom] = '{0}'.format(str(atom.radicalElectrons))    
-            if not removeLonePairs:
-                # Lone Pair(s)
-                atomLonePairs[atom] = atom.lonePairs
+            atomElectronStates[atom] = '{0}'.format(getElectronState(atom.radicalElectrons, atom.spinMultiplicity))    
+            # Lone Pair(s)
+            atomLonePairs[atom] = atom.lonePairs
+            # Lone Pair(s)
+            atomCharge[atom] = atom.charge
     
     # Determine field widths
     atomNumberWidth = max([len(s) for s in atomNumbers.values()]) + 1
@@ -387,7 +389,8 @@ def toAdjacencyList(atoms, multiplicity=0, label=None, group=False, removeH=Fals
     if atomLabelWidth > 0: atomLabelWidth += 1
     atomTypeWidth = max([len(s) for s in atomTypes.values()]) + 1
     atomElectronStateWidth = max([len(s) for s in atomElectronStates.values()])
-    atomLonePairWidth = 2
+    atomLonePairWidth = 1
+    atomChargeWidth = 1
     
     # Assemble the adjacency list
     for atom in atoms:
@@ -399,11 +402,12 @@ def toAdjacencyList(atoms, multiplicity=0, label=None, group=False, removeH=Fals
         adjlist += '{0:<{1:d}}'.format(atomLabels[atom], atomLabelWidth)
         # Atom type(s)
         adjlist += '{0:<{1:d}}'.format(atomTypes[atom], atomTypeWidth)
-        # Electron state(s)
-        adjlist += '{0:<{1:d}}'.format(atomElectronStates[atom], atomElectronStateWidth)
-        if group == False and not removeLonePairs:
-            # Lone Pair(s)
-            adjlist += '{0:>{1:d}}'.format(atomLonePairs[atom], atomLonePairWidth)
+        # Radical(s)
+        adjlist += 'R{0:<{1:d}}'.format(atomElectronStates[atom], atomElectronStateWidth)
+        # Lone Pair(s)
+        adjlist += ' L{0:>{1:d}}'.format(atomLonePairs[atom], atomLonePairWidth)
+        # Charge(s)
+        adjlist += ' C{0:>{1:d}}'.format(atomCharge[atom], atomChargeWidth)
         
         # Bonds list
         atoms2 = atom.bonds.keys()
