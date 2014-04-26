@@ -970,13 +970,20 @@ class GaussianTS(QMReaction, Gaussian):
     
     def writeRxnOutputFile(self, labels, doubleEnd=False):
         
-        if self.reaction.label.lower() == 'h_abstraction':
-            product = self.reaction.products[0].merge(self.reaction.products[1])
-            star3 = product.getLabeledAtom('*1').sortingLabel
-            star1 = product.getLabeledAtom('*3').sortingLabel
-            product.atoms[star1].label = '*1'
-            product.atoms[star3].label = '*3'
-        
+        if self.reaction.label.lower() in ['h_abstraction', 'intra_h_migration']:
+            if self.reaction.label.lower() in ['h_abstraction']:
+                product = self.reaction.products[0].merge(self.reaction.products[1])
+                star3 = product.getLabeledAtom('*1').sortingLabel
+                star1 = product.getLabeledAtom('*3').sortingLabel
+                product.atoms[star1].label = '*1'
+                product.atoms[star3].label = '*3'
+            elif self.reaction.label.lower() in ['intra_h_migration']:
+                product = self.reaction.products[0]
+                star2 = product.getLabeledAtom('*1').sortingLabel
+                star1 = product.getLabeledAtom('*2').sortingLabel
+                product.atoms[star1].label = '*1'
+                product.atoms[star2].label = '*2'
+                
         atomDist = self.parseTS(labels)
         
         distances = {'d12':float(atomDist[0]), 'd23':float(atomDist[1]), 'd13':float(atomDist[2])}
