@@ -24,6 +24,8 @@ except ImportError:
 
 transitionStates = TransitionStates()
 transitionStates.load(os.path.join(os.getenv('HOME'), 'Code/RMG-database/input/kinetics/families/H_Abstraction'), None, None)
+transitionStates.load(os.path.join(os.getenv('HOME'), 'Code/RMG-database/input/kinetics/families/R_Addition_MultipleBond'), None, None)
+transitionStates.load(os.path.join(os.getenv('HOME'), 'Code/RMG-database/input/kinetics/families/intra_H_Migration'), None, None)
 
 def matrixToString(matrix):
     """Returns a string representation of a matrix, for printing to the console"""
@@ -261,7 +263,7 @@ class QMReaction:
         For bimolecular reactions, reduce the minimum distance between atoms
         of the two reactants. 
         """
-        if self.reaction.label.lower() == 'h_abstraction' or self.reaction.label.lower() == 'r_addition_multiplebond':
+        if self.reaction.label.lower() in ['h_abstraction', 'r_addition_multiplebond']:
             
             lbl1 = reactant.getLabeledAtom('*1').sortingLabel
             lbl2 = reactant.getLabeledAtom('*2').sortingLabel
@@ -492,7 +494,7 @@ class QMReaction:
                 notes = notes + 'IRC failed\n'
                 return False, None, None, notes
             
-            self.writeRxnOutputFile(labels)
+            self.writeRxnOutputFile(labels, doubleEnd=True)
             return True, None, None, notes
         else:
             raise NotImplementedError("self.settings.software.lower() should be gaussian or mopac")
@@ -513,8 +515,12 @@ class QMReaction:
 
         if len(self.reaction.reactants)==2:
             reactant = self.reaction.reactants[0].merge(self.reaction.reactants[1])
+        else:
+            reactant = self.reaction.reactants[0]
         if len(self.reaction.products)==2:
             product = self.reaction.products[0].merge(self.reaction.products[1])
+        else:
+            product = self.reaction.products[0]
         reactant = self.fixSortLabel(reactant)
         product = self.fixSortLabel(product)
         tsRDMol, tsBM, tsMult, self.geometry = self.generateBoundsMatrix(reactant)
@@ -542,21 +548,26 @@ class QMReaction:
                 converged, internalCoord = self.verifyOutputFile()
             
             if internalCoord and not converged:
+                notes = 'Internal coordinate error, trying cartesian\n'
                 self.writeInputFile(2)
                 converged = self.run()
             
             if converged:
+                notes = 'TS converged, now for IRC\n'
                 if not os.path.exists(self.ircOutputFilePath):
                     self.writeIRCFile()
                     rightTS = self.runIRC()
                 else:
                     rightTS = self.verifyIRCOutputFile()
                 if rightTS:
+                    notes = 'Success\n'
                     self.writeRxnOutputFile(labels)
                     return True, notes
                 else:
+                    notes = 'IRC failed\n'
                     return False, notes
             else:
+                notes = 'TS not converged\n'
                 return False, notes
         else:
             notes = 'Bounds matrix editing failed\n'

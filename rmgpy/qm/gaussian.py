@@ -537,19 +537,19 @@ class GaussianTS(QMReaction, Gaussian):
                 output.append("{0:8s} {1}".format(getElement(int(atomnos[i])).symbol, line))
                 atomCount += 1
         else:
-        molfile = self.geometry.getRefinedMolFilePath()
-        atomline = re.compile('\s*([\- ][0-9.]+\s+[\-0-9.]+\s+[\-0-9.]+)\s+([A-Za-z]+)')
+            molfile = self.geometry.getRefinedMolFilePath()
+            atomline = re.compile('\s*([\- ][0-9.]+\s+[\-0-9.]+\s+[\-0-9.]+)\s+([A-Za-z]+)')
         
-        output = ['', self.geometry.uniqueID, '' ]
-        output.append("{charge}   {mult}".format(charge=0, mult=(self.geometry.molecule.getRadicalCount() + 1) ))
-        
-        atomCount = 0
-        with open(molfile) as molinput:
-            for line in molinput:
-                match = atomline.match(line)
-                if match:
-                    output.append("{0:8s} {1}".format(match.group(2), match.group(1)))
-                    atomCount += 1
+            output = ['', self.geometry.uniqueID, '' ]
+            output.append("{charge}   {mult}".format(charge=0, mult=(self.geometry.molecule.getRadicalCount() + 1) ))
+            
+            atomCount = 0
+            with open(molfile) as molinput:
+                for line in molinput:
+                    match = atomline.match(line)
+                    if match:
+                        output.append("{0:8s} {1}".format(match.group(2), match.group(1)))
+                        atomCount += 1
         assert atomCount == len(self.geometry.molecule.atoms)
         
         output.append('')
@@ -871,30 +871,30 @@ class GaussianTS(QMReaction, Gaussian):
         parser.logger.setLevel(logging.ERROR) #cf. http://cclib.sourceforge.net/wiki/index.php/Using_cclib#Additional_information
         cclibData = parser.parse()
         
-        # All between the ##### can be removed once we go back to # from #p in gaussian inputs
-        #####
-        molfile = outputFilePath.split('.')[0] + '.crude.mol'
-        atomline = re.compile('\s*([\- ][0-9.]+\s+[\-0-9.]+\s+[\-0-9.]+)\s+([A-Za-z]+)')
-        atomCount = 0
-        atomnosPrep = []
-        with open(molfile) as molinput:
-            for line in molinput:
-                match = atomline.match(line)
-                if match:
-                    atomnosPrep.append(match.group(2))
-                    atomCount += 1    
-        atomnos = []
-        for atom in atomnosPrep:
-            if atom == 'H':
-                atomnos.append(1)
-            elif atom == 'C':
-                atomnos.append(6)
-            elif atom == 'O':
-                atomnos.append(8)
-        
-        atomnos = numpy.array(atomnos)
-        cclibData.atomnos = atomnos
-        #####
+        # # All between the ##### can be removed once we go back to # from #p in gaussian inputs
+        # #####
+        # molfile = outputFilePath.split('.')[0] + '.crude.mol'
+        # atomline = re.compile('\s*([\- ][0-9.]+\s+[\-0-9.]+\s+[\-0-9.]+)\s+([A-Za-z]+)')
+        # atomCount = 0
+        # atomnosPrep = []
+        # with open(molfile) as molinput:
+        #     for line in molinput:
+        #         match = atomline.match(line)
+        #         if match:
+        #             atomnosPrep.append(match.group(2))
+        #             atomCount += 1    
+        # atomnos = []
+        # for atom in atomnosPrep:
+        #     if atom == 'H':
+        #         atomnos.append(1)
+        #     elif atom == 'C':
+        #         atomnos.append(6)
+        #     elif atom == 'O':
+        #         atomnos.append(8)
+        # 
+        # atomnos = numpy.array(atomnos)
+        # cclibData.atomnos = atomnos
+        # #####
         mol = Molecule()
         mol.fromXYZ(cclibData.atomnos, cclibData.atomcoords[-1])
                                                         
@@ -914,31 +914,31 @@ class GaussianTS(QMReaction, Gaussian):
         for molecule in self.reaction.reactants:
             radicalNumber += sum([i.radicalElectrons for i in molecule.atoms])
         
-        # All between the ##### can be removed once we go back to # from #p in gaussian inputs
-        #####
-        molfile = self.getFilePath('.crude.mol')
-        atomline = re.compile('\s*([\- ][0-9.]+\s+[\-0-9.]+\s+[\-0-9.]+)\s+([A-Za-z]+)')
-        atomCount = 0
-        atomnosPrep = []
-        with open(molfile) as molinput:
-            for line in molinput:
-                match = atomline.match(line)
-                if match:
-                    atomnosPrep.append(match.group(2))
-                    atomCount += 1    
-        atomnos = []
-        for atom in atomnosPrep:
-            if atom == 'H':
-                atomnos.append(1)
-            elif atom == 'C':
-                atomnos.append(6)
-            elif atom == 'O':
-                atomnos.append(8)
-        
-        atomnos = numpy.array(atomnos)
-        cclibData.atomnos = atomnos
-        
-        #####
+        # # All between the ##### can be removed once we go back to # from #p in gaussian inputs
+        # #####
+        # molfile = self.getFilePath('.crude.mol')
+        # atomline = re.compile('\s*([\- ][0-9.]+\s+[\-0-9.]+\s+[\-0-9.]+)\s+([A-Za-z]+)')
+        # atomCount = 0
+        # atomnosPrep = []
+        # with open(molfile) as molinput:
+        #     for line in molinput:
+        #         match = atomline.match(line)
+        #         if match:
+        #             atomnosPrep.append(match.group(2))
+        #             atomCount += 1    
+        # atomnos = []
+        # for atom in atomnosPrep:
+        #     if atom == 'H':
+        #         atomnos.append(1)
+        #     elif atom == 'C':
+        #         atomnos.append(6)
+        #     elif atom == 'O':
+        #         atomnos.append(8)
+        # 
+        # atomnos = numpy.array(atomnos)
+        # cclibData.atomnos = atomnos
+        # 
+        # #####
         
         self.qmData = CCLibData(cclibData, radicalNumber+1)
         return self.qmData
@@ -968,19 +968,23 @@ class GaussianTS(QMReaction, Gaussian):
         
         return atomDist
     
-    def writeRxnOutputFile(self, labels):
+    def writeRxnOutputFile(self, labels, doubleEnd=False):
         
-        product = self.reaction.products[0].merge(self.reaction.products[1])
-        star3 = product.getLabeledAtom('*1').sortingLabel
-        star1 = product.getLabeledAtom('*3').sortingLabel
-        product.atoms[star1].label = '*1'
-        product.atoms[star3].label = '*3'
+        if self.reaction.label.lower() == 'h_abstraction':
+            product = self.reaction.products[0].merge(self.reaction.products[1])
+            star3 = product.getLabeledAtom('*1').sortingLabel
+            star1 = product.getLabeledAtom('*3').sortingLabel
+            product.atoms[star1].label = '*1'
+            product.atoms[star3].label = '*3'
         
         atomDist = self.parseTS(labels)
         
         distances = {'d12':float(atomDist[0]), 'd23':float(atomDist[1]), 'd13':float(atomDist[2])}
         user = "Pierre Bhoorasingh <bhoorasingh.p@husky.neu.edu>"
-        description = "Found via double-ended QST2 strategy using automatic transition state generator"
+        if doubleEnd:
+            description = "Found via double-ended search by the automatic transition state generator"
+        else:
+            description = "Found via group additive estimation by the automatic transition state generator"
         entry = Entry(
             index = 1,
             item = self.reaction,
@@ -1040,13 +1044,13 @@ class GaussianTSB3LYP(GaussianTS):
 
     #: Keywords that will be added at the top of the qm input file
     keywords = [
-                "#p b3lyp/6-31+g(d,p) opt=(ts,calcfc,noeigentest) freq", # nosymm
-                "#p b3lyp/6-31+g(d,p) opt=(ts,calcfc,noeigentest,cartesian) freq", # nosymm geom=allcheck guess=check
-                "#p b3lyp/6-31+g(d,p) opt=(ts,calcfc,noeigentest) freq nosymm geom=allcheck guess=read",
-                "#p b3lyp/6-31+g(d,p) opt=(ts,calcfc,noeigentest,cartesian) freq nosymm geom=allcheck guess=check",
-                "#p b3lyp/6-31+g(d,p) irc=(calcall,report=read) freq geom=allcheck guess=check nosymm",
-                "#p b3lyp/6-31+g(d,p) opt=(ts,calcall,tight,noeigentest) freq int=ultrafine nosymm",
-                "#p b3lyp/6-31+g(d,p) opt=(ts,calcall,tight,noeigentest,cartesian) freq int=ultrafine geom=allcheck guess=check nosymm",
+                "# b3lyp/6-31+g(d,p) opt=(ts,calcfc,noeigentest) freq", # nosymm
+                "# b3lyp/6-31+g(d,p) opt=(ts,calcfc,noeigentest,cartesian) freq", # nosymm geom=allcheck guess=check
+                "# b3lyp/6-31+g(d,p) opt=(ts,calcfc,noeigentest) freq nosymm geom=allcheck guess=read",
+                "# b3lyp/6-31+g(d,p) opt=(ts,calcfc,noeigentest,cartesian) freq nosymm geom=allcheck guess=check",
+                "# b3lyp/6-31+g(d,p) irc=(calcall,report=read) freq geom=allcheck guess=check nosymm",
+                "# b3lyp/6-31+g(d,p) opt=(ts,calcall,tight,noeigentest) freq int=ultrafine nosymm",
+                "# b3lyp/6-31+g(d,p) opt=(ts,calcall,tight,noeigentest,cartesian) freq int=ultrafine geom=allcheck guess=check nosymm",
                 
                 ]
                # "# b3lyp/6-31+g(d,p) opt=(ts,calcall,tight,noeigentest) int=ultrafine nosymm",
@@ -1235,7 +1239,7 @@ class GaussianTSPM6(GaussianTS):
                 "#p pm6 opt=(ts,calcfc,noeigentest,cartesian) freq", # nosymm geom=allcheck guess=check
                 "#p pm6 opt=(ts,calcfc,noeigentest) freq nosymm geom=allcheck guess=read",
                 "#p pm6 opt=(ts,calcfc,noeigentest,cartesian) freq nosymm geom=allcheck guess=check",
-                "#p pm6 irc=(calcall,report=read) freq geom=allcheck guess=check nosymm",
+                "#p pm6 irc=(calcall,report=read) geom=allcheck guess=check nosymm",
                 "#p pm6 opt=(ts,calcall,tight,noeigentest) freq int=ultrafine nosymm",
                 "#p pm6 opt=(ts,calcall,tight,noeigentest,cartesian) freq int=ultrafine geom=allcheck guess=check nosymm",
 
