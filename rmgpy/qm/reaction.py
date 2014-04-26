@@ -25,7 +25,7 @@ except ImportError:
 transitionStates = TransitionStates()
 transitionStates.load(os.path.join(os.getenv('HOME'), 'Code/RMG-database/input/kinetics/families/H_Abstraction'), None, None)
 transitionStates.load(os.path.join(os.getenv('HOME'), 'Code/RMG-database/input/kinetics/families/R_Addition_MultipleBond'), None, None)
-transitionStates.load(os.path.join(os.getenv('HOME'), 'Code/RMG-database/input/kinetics/families/intra_H_Migration'), None, None)
+transitionStates.load(os.path.join(os.getenv('HOME'), 'Code/RMG-database/input/kinetics/families/intra_H_migration'), None, None)
 
 def matrixToString(matrix):
     """Returns a string representation of a matrix, for printing to the console"""
@@ -263,7 +263,7 @@ class QMReaction:
         For bimolecular reactions, reduce the minimum distance between atoms
         of the two reactants. 
         """
-        if self.reaction.label.lower() in ['h_abstraction', 'r_addition_multiplebond']:
+        if self.reaction.label.lower() in ['h_abstraction', 'r_addition_multiplebond', 'intra_h_migration']:
             
             lbl1 = reactant.getLabeledAtom('*1').sortingLabel
             lbl2 = reactant.getLabeledAtom('*2').sortingLabel
@@ -278,7 +278,22 @@ class QMReaction:
         labels = [lbl1, lbl2, lbl3]
         atomMatch = ((lbl1,),(lbl2,),(lbl3,))
         
+        # Atom ordering and labels get lost when calling the distance estimate (for the reactants). These 
+        # are no longer needed for the TS calculation but they are needed when outputting the distances 
+        # once the calculation is complete. So store the vertices, then reapply the labels to the reactants.
+        vertices = []
+        for reactant in self.reaction.reactants:
+            vertices.append(reactant.vertices[:])
+            
         distanceData = transitionStates.estimateDistances(self.reaction)
+        
+        for k, reactant in enumerate(self.reaction.reactants):
+            reactant.vertices = vertices[k]
+            
+        if self.reaction.label.lower() in ['h_abstraction', 'r_addition_multiplebond', 'intra_h_migration']:
+            reactant.atoms[lbl1].label = '*1'
+            reactant.atoms[lbl2].label = '*2'
+            reactant.atoms[lbl3].label = '*3'
         
         sect = []
         for atom in reactant.split()[0].atoms: sect.append(atom.sortingLabel)
@@ -512,7 +527,7 @@ class QMReaction:
         if os.path.exists(os.path.join(self.file_store_path, self.uniqueID + '.data')):
             logging.info("Not generating TS geometry because it's already done.")
             return True, "Already done!"
-
+        
         if len(self.reaction.reactants)==2:
             reactant = self.reaction.reactants[0].merge(self.reaction.reactants[1])
         else:
@@ -521,8 +536,10 @@ class QMReaction:
             product = self.reaction.products[0].merge(self.reaction.products[1])
         else:
             product = self.reaction.products[0]
+        
         reactant = self.fixSortLabel(reactant)
         product = self.fixSortLabel(product)
+        
         tsRDMol, tsBM, tsMult, self.geometry = self.generateBoundsMatrix(reactant)
         
         self.geometry.uniqueID = self.uniqueID
