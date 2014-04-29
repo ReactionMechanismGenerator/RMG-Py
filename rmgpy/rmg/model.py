@@ -603,15 +603,14 @@ class CoreEdgeReactionModel:
         Generates reactions involving :class:`rmgpy.species.Species` speciesA and speciesB.
         """
         reactionList = []
-        options = self.speciesConstraints
         if speciesB is None:
             for moleculeA in speciesA.molecule:
-                reactionList.extend(database.kinetics.generateReactions([moleculeA], **options))
+                reactionList.extend(database.kinetics.generateReactions([moleculeA], failsSpeciesConstraints=self.failsSpeciesConstraints))
                 moleculeA.clearLabeledAtoms()
         else:
             for moleculeA in speciesA.molecule:
                 for moleculeB in speciesB.molecule:
-                    reactionList.extend(database.kinetics.generateReactions([moleculeA, moleculeB], **options))
+                    reactionList.extend(database.kinetics.generateReactions([moleculeA, moleculeB], failsSpeciesConstraints=self.failsSpeciesConstraints))
                     moleculeA.clearLabeledAtoms()
                     moleculeB.clearLabeledAtoms()
         return reactionList
@@ -1706,10 +1705,10 @@ class CoreEdgeReactionModel:
                 
     def failsSpeciesConstraints(self, species):
         """
-        Checks whether the species passes the speciesConstraints set by the user.  If not,
-        returns `True` for failing speciesConstraints.
+        Pass in either a `Species` or `Molecule` object and checks whether it passes 
+        the speciesConstraints set by the user.  If not, returns `True` for failing speciesConstraints.
         """
-        explicitlyAllowedMolecules = self.speciesConstraints.get('explicitlyAllowedMolecules')
+        explicitlyAllowedMolecules = self.speciesConstraints.get('explicitlyAllowedMolecules', [])
         maxCarbonAtoms = self.speciesConstraints.get('maximumCarbonAtoms', 1000000)
         maxHydrogenAtoms = self.speciesConstraints.get('maximumHydrogenAtoms', 1000000)
         maxOxygenAtoms = self.speciesConstraints.get('maximumOxygenAtoms', 1000000)
@@ -1719,7 +1718,11 @@ class CoreEdgeReactionModel:
         maxHeavyAtoms = self.speciesConstraints.get('maximumHeavyAtoms', 1000000)
         maxRadicals = self.speciesConstraints.get('maximumRadicalElectrons', 1000000)
         
-        struct = species.molecule[0]
+        if isinstance(species, rmgpy.species.Species):
+            struct = species.molecule[0]
+        else:
+            # expects a molecule here
+            struct = species
         for molecule in explicitlyAllowedMolecules:
             if struct.isIsomorphic(molecule):
                 return False        
