@@ -1741,6 +1741,6 @@ class CoreEdgeReactionModel:
             return True
         if len(struct.atoms) - H > maxHeavyAtoms:
             return True
-        if (struct.getNumberOfRadicalElectrons() > maxRadicals) and (len(struct.atoms) - H > 1):
+        if (struct.getNumberOfRadicalElectrons() > maxRadicals):
             return True
         return False
