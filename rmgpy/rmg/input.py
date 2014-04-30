@@ -253,6 +253,7 @@ def options(units='si', saveRestartPeriod=None, drawMolecules=False, generatePlo
 
 def generatedSpeciesConstraints(**kwargs):
     validConstraints = [
+        'allowed',
         'maximumCarbonAtoms',
         'maximumHydrogenAtoms',
         'maximumOxygenAtoms',
@@ -266,7 +267,7 @@ def generatedSpeciesConstraints(**kwargs):
     for key, value in kwargs.items():
         if key not in validConstraints:
             raise InputError('Invalid generated species constraint {0!r}.'.format(key))
-        rmg.reactionGenerationOptions[key] = value
+        rmg.speciesConstraints[key] = value
 
 ################################################################################
 

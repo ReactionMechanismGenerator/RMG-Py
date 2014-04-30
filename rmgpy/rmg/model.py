@@ -47,7 +47,7 @@ from rmgpy.thermo import Wilhoit, NASA, ThermoData
 from rmgpy.pdep import SingleExponentialDown
 from rmgpy.statmech import  Conformer
 
-from rmgpy.data.base import Entry
+from rmgpy.data.base import Entry, ForbiddenStructureException
 from rmgpy.data.thermo import *
 from rmgpy.data.solvation import *
 from rmgpy.data.kinetics import *
@@ -340,7 +340,7 @@ class CoreEdgeReactionModel:
         self.quantumMechanics = None
         self.verboseComments = False
         self.kineticsEstimator = 'group additivity'
-        self.reactionGenerationOptions = {}
+        self.speciesConstraints = {}
 
     def checkForExistingSpecies(self, molecule):
         """
@@ -603,15 +603,14 @@ class CoreEdgeReactionModel:
         Generates reactions involving :class:`rmgpy.species.Species` speciesA and speciesB.
         """
         reactionList = []
-        options = self.reactionGenerationOptions
         if speciesB is None:
             for moleculeA in speciesA.molecule:
-                reactionList.extend(database.kinetics.generateReactions([moleculeA], **options))
+                reactionList.extend(database.kinetics.generateReactions([moleculeA], failsSpeciesConstraints=self.failsSpeciesConstraints))
                 moleculeA.clearLabeledAtoms()
         else:
             for moleculeA in speciesA.molecule:
                 for moleculeB in speciesB.molecule:
-                    reactionList.extend(database.kinetics.generateReactions([moleculeA, moleculeB], **options))
+                    reactionList.extend(database.kinetics.generateReactions([moleculeA, moleculeB], failsSpeciesConstraints=self.failsSpeciesConstraints))
                     moleculeA.clearLabeledAtoms()
                     moleculeB.clearLabeledAtoms()
         return reactionList
@@ -1282,10 +1281,24 @@ class CoreEdgeReactionModel:
         for entry in seedMechanism.entries.values():
             rxn = LibraryReaction(reactants=entry.item.reactants[:], products=entry.item.products[:], library=seedMechanism, kinetics=entry.data)
             r, isNew = self.makeNewReaction(rxn) # updates self.newSpeciesList and self.newReactionlist
+            
+        # Perform species constraints and forbidden species checks
+        
         for spec in self.newSpeciesList:
+            if database.forbiddenStructures.isMoleculeForbidden(spec.molecule[0]):
+                if 'allowed' in self.speciesConstraints and 'seed mechanisms' in self.speciesConstraints['allowed']:
+                    logging.warning("Species {0} from seed mechanism {1} is globally forbidden.  It will behave as an inert unless found in a seed mechanism or reaction library.".format(spec.label, seedMechanism.label))
+                else:
+                    raise ForbiddenStructureException("Species {0} from seed mechanism {1} is globally forbidden. You may explicitly allow it, but it will remain inert unless found in a seed mechanism or reaction library.".format(spec.label, seedMechanism.label))
+            if self.failsSpeciesConstraints(spec):
+                if 'allowed' in self.speciesConstraints and 'seed mechanisms' in self.speciesConstraints['allowed']:
+                    self.speciesConstraints['explicitlyAllowedMolecules'].extend(spec.molecule)
+                else:
+                    raise ForbiddenStructureException("Species constraints forbids species {0} from seed mechanism {1}. Please reformulate constraints, remove the species, or explicitly allow it.".format(spec.label, seedMechanism.label))
+
+        for spec in self.newSpeciesList:            
             if spec.reactive: spec.generateThermoData(database, quantumMechanics=self.quantumMechanics)
             spec.generateTransportData(database)
-        for spec in self.newSpeciesList:
             self.addSpeciesToCore(spec)
 
         for rxn in self.newReactionList:
@@ -1332,10 +1345,23 @@ class CoreEdgeReactionModel:
             rxn = LibraryReaction(reactants=entry.item.reactants[:], products=entry.item.products[:], library=reactionLibrary, kinetics=entry.data)
             r, isNew = self.makeNewReaction(rxn) # updates self.newSpeciesList and self.newReactionlist
             if not isNew: logging.info("This library reaction was not new: {0}".format(rxn))
+            
+        # Perform species constraints and forbidden species checks
+        for spec in self.newSpeciesList:
+            if database.forbiddenStructures.isMoleculeForbidden(spec.molecule[0]):
+                if 'allowed' in self.speciesConstraints and 'reaction libraries' in self.speciesConstraints['allowed']:
+                    logging.warning("Species {0} from reaction library {1} is globally forbidden.  It will behave as an inert unless found in a seed mechanism or reaction library.".format(spec.label, reactionLibrary.label))
+                else:
+                    raise ForbiddenStructureException("Species {0} from reaction library {1} is globally forbidden. You may explicitly allow it, but it will remain inert unless found in a seed mechanism or reaction library.".format(spec.label, reactionLibrary.label))
+            if self.failsSpeciesConstraints(spec):
+                if 'allowed' in self.speciesConstraints and 'reaction libraries' in self.speciesConstraints['allowed']:
+                    self.speciesConstraints['explicitlyAllowedMolecules'].extend(spec.molecule)
+                else:
+                    raise ForbiddenStructureException("Species constraints forbids species {0} from reaction library {1}. Please reformulate constraints, remove the species, or explicitly allow it.".format(spec.label, reactionLibrary.label))
+       
         for spec in self.newSpeciesList:
             if spec.reactive: spec.generateThermoData(database, quantumMechanics=self.quantumMechanics)
             spec.generateTransportData(database)
-        for spec in self.newSpeciesList:
             self.addSpeciesToEdge(spec)
 
         for rxn in self.newReactionList:
@@ -1676,3 +1702,45 @@ class CoreEdgeReactionModel:
             saveChemkinFile(verbose_path, speciesList, rxnList, verbose = True, checkForDuplicates=False)
             if dictionaryPath:
                 saveSpeciesDictionary(dictionaryPath, speciesList)
+                
+    def failsSpeciesConstraints(self, species):
+        """
+        Pass in either a `Species` or `Molecule` object and checks whether it passes 
+        the speciesConstraints set by the user.  If not, returns `True` for failing speciesConstraints.
+        """
+        explicitlyAllowedMolecules = self.speciesConstraints.get('explicitlyAllowedMolecules', [])
+        maxCarbonAtoms = self.speciesConstraints.get('maximumCarbonAtoms', 1000000)
+        maxHydrogenAtoms = self.speciesConstraints.get('maximumHydrogenAtoms', 1000000)
+        maxOxygenAtoms = self.speciesConstraints.get('maximumOxygenAtoms', 1000000)
+        maxNitrogenAtoms = self.speciesConstraints.get('maximumNitrogenAtoms', 1000000)
+        maxSiliconAtoms = self.speciesConstraints.get('maximumSiliconAtoms', 1000000)
+        maxSulfurAtoms = self.speciesConstraints.get('maximumSulfurAtoms', 1000000)
+        maxHeavyAtoms = self.speciesConstraints.get('maximumHeavyAtoms', 1000000)
+        maxRadicals = self.speciesConstraints.get('maximumRadicalElectrons', 1000000)
+        
+        if isinstance(species, rmgpy.species.Species):
+            struct = species.molecule[0]
+        else:
+            # expects a molecule here
+            struct = species
+        for molecule in explicitlyAllowedMolecules:
+            if struct.isIsomorphic(molecule):
+                return False        
+        H = struct.getNumAtoms('H')
+        if struct.getNumAtoms('C') > maxCarbonAtoms:
+            return True
+        if H > maxHydrogenAtoms:
+            return True
+        if struct.getNumAtoms('O') > maxOxygenAtoms:
+            return True
+        if struct.getNumAtoms('N') > maxNitrogenAtoms:
+            return True
+        if struct.getNumAtoms('Si') > maxSiliconAtoms:
+            return True
+        if struct.getNumAtoms('S') > maxSulfurAtoms:
+            return True
+        if len(struct.atoms) - H > maxHeavyAtoms:
+            return True
+        if (struct.getNumberOfRadicalElectrons() > maxRadicals):
+            return True
+        return False
