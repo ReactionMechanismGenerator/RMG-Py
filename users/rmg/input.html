@@ -402,27 +402,42 @@ of atoms (16 in the above example).</p>
 <h2>4.7. Miscellaneous Options<a class="headerlink" href="#miscellaneous-options" title="Permalink to this headline">¶</a></h2>
 <p>Miscellaneous options:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">options</span><span class="p">(</span>
-        <span class="n">units</span><span class="o">=</span><span class="s">&#39;si&#39;</span><span class="p">,</span>
-        <span class="n">saveRestartPeriod</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="s">&#39;hour&#39;</span><span class="p">),</span>
-        <span class="n">drawMolecules</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
-        <span class="n">generatePlots</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
-<span class="p">)</span>
-
-<span class="n">generatedSpeciesConstraints</span><span class="p">(</span>
-<span class="n">maximumCarbonAtoms</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
-<span class="n">maximumHydrogenAtoms</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
-<span class="n">maximumOxygenAtoms</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
-<span class="n">maximumNitrogenAtoms</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
-<span class="n">maximumSiliconAtoms</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
-<span class="n">maximumSulfurAtoms</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
-<span class="n">maximumHeavyAtoms</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
-<span class="n">maximumRadicalElectrons</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+    <span class="n">units</span><span class="o">=</span><span class="s">&#39;si&#39;</span><span class="p">,</span>
+    <span class="n">saveRestartPeriod</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="s">&#39;hour&#39;</span><span class="p">),</span>
+    <span class="n">drawMolecules</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+    <span class="n">generatePlots</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
 </div>
+<div class="section" id="species-constraints">
+<h2>4.8. Species Constraints<a class="headerlink" href="#species-constraints" title="Permalink to this headline">¶</a></h2>
+<p>RMG can generate mechanisms with a number of optional species constraints,
+such as total number of carbon atoms or electrons per species. These are applied to
+all of RMG&#8217;s reaction families.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">generatedSpeciesConstraints</span><span class="p">(</span>
+    <span class="n">allowed</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;input species&#39;</span><span class="p">,</span><span class="s">&#39;seed mechanisms&#39;</span><span class="p">,</span><span class="s">&#39;reaction libraries&#39;</span><span class="p">],</span>
+    <span class="n">maximumCarbonAtoms</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+    <span class="n">maximumHydrogenAtoms</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+    <span class="n">maximumOxygenAtoms</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+    <span class="n">maximumNitrogenAtoms</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+    <span class="n">maximumSiliconAtoms</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+    <span class="n">maximumSulfurAtoms</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+    <span class="n">maximumHeavyAtoms</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+    <span class="n">maximumRadicalElectrons</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>An additional flag <tt class="docutils literal"><span class="pre">allowed</span></tt> can be set to allow species
+from either the input file, seed mechanisms, or reaction libraries to bypass these constraints.
+Note that this should be done with caution, since the constraints will still apply to subsequent
+products that form.</p>
+<p>Note that under all circumstances all forbidden species will still be banned unless they are
+manually removed from the database.  See <a class="reference internal" href="database/kinetics.html#kineticsdatabase"><em>Kinetics Database</em></a> for more information on
+forbidden groups.</p>
+</div>
 <div class="section" id="examples">
-<h2>4.8. Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<h2>4.9. Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
 <p>Perhaps the best way to learn the input file syntax is by example. To that end,
 a number of example input files and their corresponding output have been given
 in the <tt class="docutils literal"><span class="pre">examples</span></tt> directory.</p>
@@ -463,7 +478,8 @@ in the <tt class="docutils literal"><span class="pre">examples</span></tt> direc
 </ul>
 </li>
 <li><a class="reference internal" href="#miscellaneous-options">4.7. Miscellaneous Options</a></li>
-<li><a class="reference internal" href="#examples">4.8. Examples</a></li>
+<li><a class="reference internal" href="#species-constraints">4.8. Species Constraints</a></li>
+<li><a class="reference internal" href="#examples">4.9. Examples</a></li>
 </ul>
 </li>
 </ul>

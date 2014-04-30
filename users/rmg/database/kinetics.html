@@ -280,8 +280,43 @@ table below shows all atoms types in RMG.</p>
 group=OR{X_H, Xrad_H},</pre>
 </div>
 </div>
+<div class="section" id="forbidden-groups">
+<h3>10.2.2.3. Forbidden Groups<a class="headerlink" href="#forbidden-groups" title="Permalink to this headline">¶</a></h3>
+<p>Forbidden groups can be defined to ban structures globally in RMG or to
+ban pathways in a specific kinetic family.</p>
+<p>Globally forbidden structures will ban all reactions containing either reactants
+or products that are forbidden.  These groups are stored in in the file located at
+<tt class="docutils literal"><span class="pre">RMG-database/input/forbiddenStructures.py</span></tt>.</p>
+<p>To ban certain specific pathways in the kinetics
+families, a <cite>forbidden</cite> group must be created, like the following group
+in the <tt class="docutils literal"><span class="pre">intra_H_migration</span></tt> family</p>
+<div class="highlight-python"><pre>forbidden(
+    label = "bridged56_1254",
+group =
+"""""""
+1 *1 C 1 {2,S} {6,S}
+2 *4 C 0 {1,S} {3,S} {7,S}
+3    C 0 {2,S} {4,S}
+4 *2 C 0 {3,S} {5,S} {8,S}
+5 *5 C 0 {4,S} {6,S} {7,S}
+6    C 0 {1,S} {5,S}
+7    C 0 {2,S} {5,S}
+8 *3 H 0 {4,S}
+""",
+    shortDesc = u"""""",
+    longDesc =
+u"""
+
+""",
+)</pre>
+</div>
+<p>Forbidden groups should be placed inside the groups.py file located inside the
+specific kinetics family&#8217;s folder <tt class="docutils literal"><span class="pre">RMG-database/input/kinetics/family_name/</span></tt>
+alongside normal group entries. The starred atoms in the forbidden group
+ban the specified reaction recipe from occurring in matched products and reactants.</p>
+</div>
 <div class="section" id="hierarchical-trees">
-<h3>10.2.2.3. Hierarchical Trees<a class="headerlink" href="#hierarchical-trees" title="Permalink to this headline">¶</a></h3>
+<h3>10.2.2.4. Hierarchical Trees<a class="headerlink" href="#hierarchical-trees" title="Permalink to this headline">¶</a></h3>
 <p>Kinetic groups are ordered into the nodes of a hierarchical trees which is written
 at the end of groups.py. The root node of each tree is the most general group with
 the reacting atoms required for the family. Descending from the root node are
@@ -295,7 +330,7 @@ we need one group from each tree, which we call <strong>node templates</strong> 
 Templates can be filled in with kinetic parameters from the training set or rules.</p>
 </div>
 <div class="section" id="training-set-vs-rules">
-<h3>10.2.2.4. Training Set vs Rules<a class="headerlink" href="#training-set-vs-rules" title="Permalink to this headline">¶</a></h3>
+<h3>10.2.2.5. Training Set vs Rules<a class="headerlink" href="#training-set-vs-rules" title="Permalink to this headline">¶</a></h3>
 <p>The training set and rules both contain trusted kinetics that are used to fill in
 templates in a family. The <strong>training set</strong> contains kinetics for specific reactions,
 which are then matched to a template. The kinetic <strong>rules</strong> contain kinetic
@@ -337,8 +372,9 @@ rules.py. For more information on modification see <a class="reference internal"
 <li><a class="reference internal" href="#families">10.2.2. Families</a><ul>
 <li><a class="reference internal" href="#recipe">10.2.2.1. Recipe</a></li>
 <li><a class="reference internal" href="#group-definitions">10.2.2.2. Group Definitions</a></li>
-<li><a class="reference internal" href="#hierarchical-trees">10.2.2.3. Hierarchical Trees</a></li>
-<li><a class="reference internal" href="#training-set-vs-rules">10.2.2.4. Training Set vs Rules</a></li>
+<li><a class="reference internal" href="#forbidden-groups">10.2.2.3. Forbidden Groups</a></li>
+<li><a class="reference internal" href="#hierarchical-trees">10.2.2.4. Hierarchical Trees</a></li>
+<li><a class="reference internal" href="#training-set-vs-rules">10.2.2.5. Training Set vs Rules</a></li>
 </ul>
 </li>
 </ul>

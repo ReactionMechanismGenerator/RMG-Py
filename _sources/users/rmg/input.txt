@@ -360,14 +360,22 @@ Miscellaneous Options
 
 Miscellaneous options:: 
 
-	options(
-		units='si',
-		saveRestartPeriod=(1,'hour'),
-		drawMolecules=False,
-		generatePlots=False,
-	)
+    options(
+        units='si',
+        saveRestartPeriod=(1,'hour'),
+        drawMolecules=False,
+        generatePlots=False,
+    )
+    
+Species Constraints
+===================== 
 
-	generatedSpeciesConstraints(
+RMG can generate mechanisms with a number of optional species constraints,
+such as total number of carbon atoms or electrons per species. These are applied to
+all of RMG's reaction families. ::
+
+    generatedSpeciesConstraints(
+        allowed=['input species','seed mechanisms','reaction libraries'],
         maximumCarbonAtoms=10,
         maximumHydrogenAtoms=10,
         maximumOxygenAtoms=10,
@@ -376,7 +384,18 @@ Miscellaneous options::
         maximumSulfurAtoms=10,
         maximumHeavyAtoms=10,
         maximumRadicalElectrons=10,
-	)
+    )
+
+An additional flag ``allowed`` can be set to allow species 
+from either the input file, seed mechanisms, or reaction libraries to bypass these constraints.
+Note that this should be done with caution, since the constraints will still apply to subsequent
+products that form.  
+
+Note that under all circumstances all forbidden species will still be banned unless they are 
+manually removed from the database.  See :ref:`kineticsDatabase` for more information on 
+forbidden groups.  
+
+
 
 Examples
 ========

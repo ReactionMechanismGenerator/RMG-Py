@@ -197,6 +197,13 @@ generated for the species in the network with the largest leak flux.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.failsSpeciesConstraints">
+<tt class="descname">failsSpeciesConstraints</tt><big>(</big><em>species</em><big>)</big><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.failsSpeciesConstraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pass in either a <cite>Species</cite> or <cite>Molecule</cite> object and checks whether it passes 
+the speciesConstraints set by the user.  If not, returns <cite>True</cite> for failing speciesConstraints.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.rmg.model.CoreEdgeReactionModel.generateKinetics">
 <tt class="descname">generateKinetics</tt><big>(</big><em>reaction</em><big>)</big><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.generateKinetics" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate best possible kinetics for the given <cite>reaction</cite> using the kinetics database.</p>

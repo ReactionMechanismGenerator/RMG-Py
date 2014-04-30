@@ -162,6 +162,46 @@ Additionally, groups can also be defined as unions of other groups. For example,
 
 	label="X_H_or_Xrad_H",
 	group=OR{X_H, Xrad_H}, 
+    
+
+Forbidden Groups
+----------------
+Forbidden groups can be defined to ban structures globally in RMG or to
+ban pathways in a specific kinetic family.
+
+Globally forbidden structures will ban all reactions containing either reactants
+or products that are forbidden.  These groups are stored in in the file located at
+``RMG-database/input/forbiddenStructures.py``. 
+
+
+To ban certain specific pathways in the kinetics 
+families, a `forbidden` group must be created, like the following group
+in the ``intra_H_migration`` family ::
+
+    forbidden(
+        label = "bridged56_1254",
+    group =
+    """""""
+    1 *1 C 1 {2,S} {6,S}
+    2 *4 C 0 {1,S} {3,S} {7,S}
+    3    C 0 {2,S} {4,S}
+    4 *2 C 0 {3,S} {5,S} {8,S}
+    5 *5 C 0 {4,S} {6,S} {7,S}
+    6    C 0 {1,S} {5,S}
+    7    C 0 {2,S} {5,S}
+    8 *3 H 0 {4,S}
+    """,
+        shortDesc = u"""""",
+        longDesc = 
+    u"""
+    
+    """,
+    )
+
+Forbidden groups should be placed inside the groups.py file located inside the
+specific kinetics family's folder ``RMG-database/input/kinetics/family_name/`` 
+alongside normal group entries. The starred atoms in the forbidden group
+ban the specified reaction recipe from occurring in matched products and reactants.
 
 Hierarchical Trees
 ------------------
