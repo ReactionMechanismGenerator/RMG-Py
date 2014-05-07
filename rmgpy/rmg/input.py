@@ -442,14 +442,13 @@ def saveInputFile(path, rmg):
         
         # Sensitivity analysis
         if system.sensitivity:
-            f.write('    sensitivity = {0},\n'.format(system.sensitivity))       
-        if system.sensitivityThreshold:
-            f.write('    sensitivityThreshold = {0},\n'.format(system.sensitivity))      
+            f.write('    sensitivity = {0},\n'.format(system.sensitivity))
+            f.write('    sensitivityThreshold = {0},\n'.format(system.sensitivityThreshold))      
         
         f.write(')\n\n')
     
     if rmg.solvent:
-    	f.write("solvation(\n    solvent = '{0!s}'\n)\n\n".format(solvent))
+        	f.write("solvation(\n    solvent = '{0!s}'\n)\n\n".format(solvent))
         
     # Simulator tolerances
     f.write('simulator(\n')
