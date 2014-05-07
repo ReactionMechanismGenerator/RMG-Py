@@ -484,6 +484,14 @@ def saveInputFile(path, rmg):
         ))
         f.write('    interpolation = {0},\n'.format(rmg.pressureDependence.model))
         f.write(')\n\n')
+    
+    if rmg.quantumMechanics:
+        f.write('quantumMechanics(\n')
+        f.write('    software="{0!s}",\n'.format(rmg.quantumMechanics.settings.software))
+        f.write('    method="{0!s}",\n'.format(rmg.quantumMechanics.settings.method))
+        f.write('    onlyCyclics="{0}",\n'.format(rmg.quantumMechanics.settings.onlyCyclics))
+        f.write('    maxRadicalNumber="{0!s}",\n'.format(rmg.quantumMechanics.settings.maxRadicalNumber))
+        f.write(')\n\n')
         
     # Options
     f.write('options(\n')
