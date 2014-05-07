@@ -448,7 +448,7 @@ def saveInputFile(path, rmg):
         f.write(')\n\n')
     
     if rmg.solvent:
-        	f.write("solvation(\n    solvent = '{0!s}'\n)\n\n".format(solvent))
+        	f.write("solvation(\n    solvent = '{0!s}'\n)\n\n".format(rmg.solvent))
         
     # Simulator tolerances
     f.write('simulator(\n')
