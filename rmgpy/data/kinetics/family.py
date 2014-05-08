@@ -1946,8 +1946,7 @@ class KineticsFamily(Database):
         malformations, but because I'm not certain where they came from,
         I decided to list them.
         """
-        
-        
+        logging.error("Checking for errors in {familyName}...".format(familyName=self.label))
         #A function to add to the not in Subgroup dictionary
         def appendToDict(dictionary, key, value):
             if key not in dictionary:
@@ -1994,7 +1993,7 @@ class KineticsFamily(Database):
                             expectedNode = groups[expectedNodeName].item
                             if isinstance(actualNode, Group):
                                 if not (isinstance(expectedNode, Group) and expectedNode.isIdentical(actualNode)):
-                                    raise DatabaseError("Group definition doesn't match label '{label}' which is defined as \n{adj}".format(label=expectedNodeName, adj=expectedNode.toAdjacencyList().strip()))
+                                    raise DatabaseError("Group definition doesn't match label '{label}".format(label=expectedNodeName))
                             elif isinstance(actualNode, LogicOr):
                                 if not (isinstance(expectedNode, LogicOr) and expectedNode.matchToLogicOr(actualNode)):
                                     raise DatabaseError("Group definition doesn't match label '{label}' which is defined as \n{node!s}".format(label=expectedNodeName, node=expectedNode))
