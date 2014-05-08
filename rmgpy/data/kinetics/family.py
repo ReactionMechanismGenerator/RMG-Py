@@ -1924,29 +1924,17 @@ class KineticsFamily(Database):
     
     def checkWellFormed(self):
         """
-        Returns a tuple of malformed database entries:
+        Finds and logs the following errors:
         
-        noGroup is a list of nodes in the rules that has no corresponding group in
-        groups.py
+        -Groups named in rules.py that do not exist in groups.py
+        -Groups named i rules.py that do not share the same definitions
+        as its corresponding entry in groups.py
+        -Groups (in groups.py) that do not exist in the tree
+        -Groups (in groups.py) which are not actually subgroups of their
+        stated parent. 
         
-        noMatchingGroup is a dictionary with entry labels from the rules as a key
-        and entry labels from groups as values. These are groups where rule.py's
-        adj list does not match group.py's.
-        
-        notInTree is a list of groups that do not appear in the tree
-        
-        notSubgroup is a dictionary with group labels as keys and atom indexes 
-        as values. Each key is a group where the child's adj list is not a
-        true child of it's parent. The list of indexes corresponds to the
-        child's adj list index, where the atom is not a true child. 
-        
-        probablyProduct is a list of groups which do not apepar in the
-        tree, but are probably products (as opposed to reactants) which
-        are created in the database loading. These are not necessarily
-        malformations, but because I'm not certain where they came from,
-        I decided to list them.
+        The errors are logged into a logger object with the handle 'databaseLog'
         """
-        logging.error("Checking for errors in {familyName}...".format(familyName=self.label))
         #A function to add to the not in Subgroup dictionary
         def appendToDict(dictionary, key, value):
             if key not in dictionary:
@@ -1954,15 +1942,10 @@ class KineticsFamily(Database):
             else:
                 dictionary[key].append(value) 
             return dictionary
-
+        
+        databaseLog=logging.getLogger('databaseLog')
         #list of nodes that are not wellFormed
-        noGroup={}
-        noMatchingGroup={}
-        tempNoMatchingGroup={}
         notInTree=[]
-        notUnique={}
-        notSubgroup={}
-        probablyProduct=[]
         
         # Give correct arguments for each type of database
 #         if isinstance(self, KineticsFamily):
@@ -1993,14 +1976,14 @@ class KineticsFamily(Database):
                             expectedNode = groups[expectedNodeName].item
                             if isinstance(actualNode, Group):
                                 if not (isinstance(expectedNode, Group) and expectedNode.isIdentical(actualNode)):
-                                    raise DatabaseError("Group definition doesn't match label '{label}".format(label=expectedNodeName))
+                                    raise DatabaseError("Group definition doesn't match label '{label}'".format(label=expectedNodeName))
                             elif isinstance(actualNode, LogicOr):
                                 if not (isinstance(expectedNode, LogicOr) and expectedNode.matchToLogicOr(actualNode)):
-                                    raise DatabaseError("Group definition doesn't match label '{label}' which is defined as \n{node!s}".format(label=expectedNodeName, node=expectedNode))
+                                    raise DatabaseError("Group definition doesn't match label '{label}'".format(label=expectedNodeName, node=expectedNode))
                     except DatabaseError, e:
                         "Didn't pass"
-                        logging.error("Label '{label}' appears to be wrong on entry {index}".format(label=label, index=entry.index))
-                        logging.error(e)
+                        databaseLog.error("Label '{label}' appears to be wrong on entry {index}".format(label=label, index=entry.index))
+                        databaseLog.error(e)
                     else: 
                         "Passed"
                         continue # with next entry
@@ -2019,15 +2002,7 @@ class KineticsFamily(Database):
                             groupName = 'UNKNOWN'
                         correctNodeNames.append(groupName)
                     correctName = ';'.join(correctNodeNames)
-                    logging.error("Entry {index} called '{label}' should probably be called '{correct}' or the group definitions changed.".format(label=label, index=entry.index, correct=correctName))
-                    
-                    # not sure what these do:        
-                    #noGroup=appendToDict(noGroup, nodeName, matchedGroup)
-                    #tempNoMatchingGroup=appendToDict(tempNoMatchingGroup, libraryNode, nodeName)
-
-            #eliminate duplicates
-            for key, nodeList in tempNoMatchingGroup.iteritems():
-                noMatchingGroup[key]=list(set(nodeList))
+                    databaseLog.error("Entry {index} called '{label}' should probably be called '{correct}' or the group definitions changed.".format(label=label, index=entry.index, correct=correctName))
                 
             # Each group in groups.py should appear in the tree
             # This is true when ascending through parents leads to a top node
@@ -2045,8 +2020,7 @@ class KineticsFamily(Database):
                                 #If it is a product, ignore it
                                 if re.match(product.label+'[0-9]*', child.label):
                                     break
-                            else:
-                                probablyProduct.append(child.label)
+                            else: notInTree.append(child.label)
                             break
                         else:
                         # If a group is not in a tree, we want to save the uppermost parent, not necessarily the original node
@@ -2059,10 +2033,10 @@ class KineticsFamily(Database):
                     nodeGroup2Item=self.groups.entries[nodeName2].item
                     if isinstance(nodeGroup2Item, Group) and isinstance(nodeGroupItem, Group):
                         if nodeGroupItem.isIdentical(nodeGroup2Item):
-                            notUnique=appendToDict(notUnique, nodeName, nodeName2)
+                            databaseLog.error("{0} is not unique. It shares its definition with {1}".format(nodeName, nodeName2))
                     if isinstance(nodeGroup2Item, LogicOr) and isinstance(nodeGroupItem, LogicOr):
                         if nodeGroupItem.matchToLogicOr(nodeGroup2Item):
-                            notUnique=appendToDict(notUnique, nodeName, nodeName2)
+                            databaseLog.error("{0} is not unique. It shares its definition with {1}".format(nodeName, nodeName2))
                     
                 #For a correct child-parent relationship, each atom in the parent should have a corresponding child atom in the child.
                 nodeParent=nodeGroup.parent
@@ -2072,7 +2046,7 @@ class KineticsFamily(Database):
                     if isinstance(nodeParent.item, LogicOr):
                         if not nodeGroup.label in nodeParent.item.components:
                             #-1 index means the child is not in the LogicOr
-                            notSubgroup[nodeName]=nodeParent.label
+                            databaseLog.error("{0} is not a true child of its stated parent, {1}".format(nodeName, nodeParent.label))
                             continue
                         else:
                             #if the parent is a LogicOr, we want to keep ascending until we get to a group or hit a discontinuity (could be
@@ -2083,18 +2057,17 @@ class KineticsFamily(Database):
                         if nodeParent == None: continue
 #                         nodeParent.item.sortAtoms()
                     elif isinstance(nodeGroup.item, LogicOr):
+                        databaseLog.error("{0} is an intermediate LogicOr. See if it can be replaced with a adj list.".format(nodeName))
                         print nodeGroup, ' is an intermediate LogicOr. See if it can be replaced with a adj list.'
                         continue
                     #If both the parent and child are graphs, we can use the function isSubgroupIsomorphic if it is actually a child
                     if not nodeGroup.item.isSubgraphIsomorphic(nodeParent.item):
-                        notSubgroup[nodeName]=nodeParent.label
+                        databaseLog.error("{0} is not a true child of its stated parent, {1}".format(nodeName, nodeParent.label))
         except DatabaseError, e:
-            logging.error(str(e))
+            databaseLog.error(str(e))
         
-        #eliminate duplicates
-#         noGroup=list(set(noGroup))
-        for key, value in noGroup.iteritems():
-            noGroup[key]=list(set(value))
+        #eliminate duplicates and print into logger
         notInTree=list(set(notInTree))
+        for groupName in notInTree:
+            databaseLog.error("The group '{0}' does not appear in tree'".format(groupName))
         
-        return (noGroup, noMatchingGroup, notInTree, notUnique, notSubgroup, probablyProduct)
