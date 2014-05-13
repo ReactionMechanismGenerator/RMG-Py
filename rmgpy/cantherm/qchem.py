@@ -1,0 +1,356 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+################################################################################
+#
+#   RMG - Reaction Mechanism Generator
+#
+#   Copyright (c) 2002-2009 Prof. William H. Green (whgreen@mit.edu) and the
+#   RMG Team (rmg_dev@mit.edu)
+#
+#   Permission is hereby granted, free of charge, to any person obtaining a
+#   copy of this software and associated documentation files (the "Software"),
+#   to deal in the Software without restriction, including without limitation
+#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
+#   and/or sell copies of the Software, and to permit persons to whom the
+#   Software is furnished to do so, subject to the following conditions:
+#
+#   The above copyright notice and this permission notice shall be included in
+#   all copies or substantial portions of the Software.
+#
+#   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+#   THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+#   DEALINGS IN THE SOFTWARE.
+#
+################################################################################
+
+import math
+import numpy
+import os.path
+import rmgpy.constants as constants
+from rmgpy.statmech import IdealGasTranslation, NonlinearRotor, LinearRotor, HarmonicOscillator, Conformer
+################################################################################
+class QchemLog:
+    """
+    Represent an output file from Qchem. The attribute `path` refers to the
+    location on disk of the Qchem output file of interest. Methods are provided
+    to extract a variety of information into CanTherm classes and/or NumPy
+    arrays.
+    """    
+
+    def __init__(self, path):
+        self.path = path
+
+    def loadConformer(self, symmetry=None, spinMultiplicity=None, opticalIsomers=1):
+        """
+        Load the molecular degree of freedom data from a log file created as
+        the result of a Qchem "Freq" quantum chemistry calculation. As
+        Qchem's guess of the external symmetry number is not always correct,
+        you can use the `symmetry` parameter to substitute your own value; if
+        not provided, the value in the Qchem output file will be adopted.
+        """
+
+        modes = []
+        E0 = 0.0
+
+        f = open(self.path, 'r')
+        line = f.readline()
+        while line != '':
+
+            # The data we want is in the Thermochemistry section of the output
+            if 'VIBRATIONAL ANALYSIS' in line:
+                modes = []
+                inPartitionFunctions = False
+                line = f.readline()
+                while line != '':
+
+                    # This marks the end of the thermochemistry section
+                    if 'Thank you very much for using Q-Chem.' in line:
+                        break
+
+                    # Read vibrational modes
+                    elif 'VIBRATIONAL FREQUENCIES (CM**-1)' in line:
+                        frequencies = []
+                        while 'STANDARD THERMODYNAMIC QUANTITIES AT' not in line:
+                            if ' Frequency:' in line:
+                                frequencies.extend([float(d) for d in line.split()[-3:]])
+                            line = f.readline()
+                        line = f.readline()
+                        vibration = HarmonicOscillator(frequencies=(frequencies,"cm^-1"))
+                        modes.append(vibration)
+                                            # Read molecular mass for external translational modes
+                    elif 'Molecular Mass:' in line:
+                        mass = float(line.split()[2])
+                        translation = IdealGasTranslation(mass=(mass,"amu"))
+                        modes.append(translation)
+
+                    # Read moments of inertia for external rotational modes, given in atomic units
+                    elif 'Eigenvalues --' in line:
+                        inertia = [float(d) for d in line.split()[-3:]]
+                        # If the first eigenvalue is 0, the rotor is linear
+                        if inertia[0] == 0.0:
+                            inertia.remove(0.0)
+                            for i in range(2):
+                                inertia[i] *= (constants.a0/1e-10)**2
+                                rotation = LinearRotor(inertia=(inertia,"amu*angstrom^2"), symmetry=symmetry)
+                                modes.append(rotation)                            
+                        else:
+                            for i in range(3):
+                                inertia[i] *= (constants.a0/1e-10)**2
+                                rotation = NonlinearRotor(inertia=(inertia,"amu*angstrom^2"), symmetry=symmetry)
+                                modes.append(rotation)
+
+                    # Read Qchem's estimate of the external rotational symmetry number, which may very well be incorrect
+                    elif 'Rotational Symmetry Number is' in line and symmetry is None:
+                        symmetry = int(float(line.split()[4]))
+
+                    # Read ZPE and add to ground-state energy 
+                    # NEED TO MULTIPLY ZPE BY scaling factor!
+                    elif 'Zero point vibrational energy:' in line:
+                        ZPE = float(line.split()[4]) * 1000 * 4.184 / constants.E_h / constants.Na 
+                        E0=E0+ZPE
+                    # Read spin multiplicity if not explicitly given
+                    elif 'Electronic' in line and inPartitionFunctions and spinMultiplicity is None:
+                        spinMultiplicity = int(float(line.split()[1].replace('D', 'E')))
+
+                    elif 'Log10(Q)' in line:
+                        inPartitionFunctions = True
+
+                    # Read the next line in the file
+                    line = f.readline()
+
+            # Read the next line in the file
+            line = f.readline()
+
+        # Close file when finished
+        f.close()
+
+        return Conformer(E0=(E0*0.001,"kJ/mol"), modes=modes, spinMultiplicity=spinMultiplicity, opticalIsomers=opticalIsomers)
+
+    def getNumberOfAtoms(self):
+        """
+        Return the number of atoms in the molecular configuration used in
+        the Qchem output file.
+        """
+
+        Natoms = 0
+        # Open Qchem log file for parsing
+        f = open(self.path, 'r')
+        line = f.readline()
+        while line != '' and Natoms == 0:
+            # Automatically determine the number of atoms
+            if 'Standard Nuclear Orientation' in line and Natoms == 0:
+                for i in range(3): line = f.readline()
+                while '----------------------------------------------------' not in line:
+                    Natoms += 1
+                    line = f.readline()
+            line = f.readline()
+        # Close file when finished
+        f.close()
+        # Return the result
+        return Natoms    
+    
+    def loadEnergy(self,frequencyScaleFactor=1.):
+        """
+        Load the energy in J/mol from a Qchem log file.  Only the last energy 
+        in the file is returned. The zero-point energy is *not* included in 
+        the returned value.
+        """
+        modes = []
+        E0 = None; scaledZPE = None; ZPE = None
+        spinMultiplicity = 1
+    
+        f = open(self.path, 'r')
+        line = f.readline()
+        while line != '':
+    
+            if 'Final energy is' in line:
+                E0 = float(line.split()[3]) * constants.E_h * constants.Na
+                print 'energy is' + str(E0)
+            
+            
+            elif 'Zero point vibrational energy' in line:
+                #Qchem's ZPE is in kcal/mol
+                ZPE = float(line.split()[4]) * constants.E_h * constants.Na
+                scaledZPE = ZPE * frequencyScaleFactor
+                print 'ZPE is' + str(ZPE)
+            # Read the next line in the file
+            line = f.readline()
+    
+        # Close file when finished
+        f.close()
+
+        if E0 is not None:
+            return E0
+        else:
+            raise Exception('Unable to find energy in Qchem output file.')
+        
+    def loadZeroPointEnergy(self,frequencyScaleFactor=1.):
+        """
+        Load the unscaled zero-point energy in J/mol from a Qchem output file.
+        """
+
+        modes = []
+        E0 = None; scaledZPE = None; ZPE = None
+        spinMultiplicity = 1
+    
+        f = open(self.path, 'r')
+        line = f.readline()
+        while line != '':
+    
+            if 'Final energy is' in line:
+                E0 = float(line.split()[3]) * constants.E_h * constants.Na
+                print 'energy is' + str(E0)
+            
+            
+            elif 'Zero point vibrational energy' in line:
+                #Qchem's ZPE is in kcal/mol
+                ZPE = float(line.split()[4]) * constants.E_h * constants.Na
+                scaledZPE = ZPE * frequencyScaleFactor
+                print 'ZPE is' + str(ZPE)
+            # Read the next line in the file
+            line = f.readline()
+    
+        # Close file when finished
+        f.close()
+        
+        if ZPE is not None:
+            return ZPE
+        else:
+            raise Exception('Unable to find zero-point energy in Qchem output file.')
+              
+    def loadGeometry(self):
+        
+        """
+        Return the optimum geometry of the molecular configuration from the
+        Qchem log file. If multiple such geometries are identified, only the
+        last is returned.
+        """
+        atom = []; coord = []; number = []; 
+        try:
+            f = open(self.path, 'r')
+        except IndexError:
+            print('File not found')
+        f = open(self.path, 'r')  
+        line = f.readline()
+        while line != '':
+            if 'Final energy is' in line:
+                print 'found a sucessfully completed Qchem Geometry Optimization Job'
+                line = f.readline()
+                atom = []; coord = []
+                break
+            line = f.readline()
+        found = 0           
+        while line != '':        
+            if 'Standard Nuclear Orientation' in line:
+                found += 1
+                for i in range(3): line = f.readline() # skip  lines
+                num = 0
+                while '----------------------------------------------------' not in line:
+                    data = line.split()
+                    atom.append((data[1]))
+                    coord.append([float(data[2]), float(data[3]), float(data[4])])
+                    num += 1
+                    number.append(num)
+                    line = f.readline()
+                # Read the next line in the file    
+                line = f.readline()
+            # Read the next line in the file
+            line = f.readline()
+            if found ==1: break
+        line = f.readline()
+        print coord
+        f.close()
+        coord = numpy.array(coord, numpy.float64)
+        number = numpy.array(number, numpy.int)
+        mass = numpy.array(coord, numpy.float64)
+        # Assign appropriate mass to each atom in molecule
+        # These values were taken from "Atomic Weights and Isotopic Compositions" v3.0 (July 2010) from NIST
+
+        mass = [0]*len(atom)  
+        
+        for i in range(len(atom)):  
+            if atom[i] == 'H':
+                mass[i] = 1.00782503207
+            elif atom[i] == 'C':
+                mass[i] = 12.0
+            elif atom[i] == 'N':
+                mass[i] = 14.0030740048
+            elif atom[i] == 'O':
+                mass[i] = 15.99491461956
+            elif atom[i] == 'P':
+                mass[i] = 30.97376163
+            elif atom[i] == 'S':
+                mass[i] = 31.97207100
+            elif atom[i] == 'Cl':
+                mass[i] = 35.4527
+            else:
+                print 'Atomic atom {0:d} not yet supported in loadGeometry().'.format(atom[i])
+               
+        return coord, number, mass
+    
+    def loadNegativeFrequency(self):
+        """
+        Return the imaginary frequency from a transition state frequency
+        calculation in cm^-1.
+        """
+        
+        f = open(self.path, 'r')
+        line = f.readline()
+        while line != '':
+            # Read imaginary frequency
+            if ' Frequency:' in line:
+                frequency = float((line.split()[1]))
+                break
+            line = f.readline()
+        # Close file when finished
+        f.close()
+        #Make sure the frequency is imaginary:
+        if frequency < 0:
+            return frequency
+        else:
+            raise Exception('Unable to find imaginary frequency in QChem output file.')    
+        
+
+    def loadScanEnergies(self):
+        """
+        Extract the optimized energies in J/mol from a Qchem log file, e.g. the 
+        result of a Qchem "PES Scan" quantum chemistry calculation.
+        """
+        Vlist = []
+        angle = []
+        f = open(self.path, 'r')
+        line = f.readline()
+        while line != '':
+            if 'Summary of potential scan:' in line:
+                line = f.readline()
+                print 'found a sucessfully completed Qchem Job'
+                while '-----------------' not in line:
+        #            print len(line.split())
+        #            Vlist.append(float(line.split()[1]))
+                    values = [float(item) for item in line.split()]
+                    angle.append(values[0])
+                    Vlist.append(values[1])
+            # Read the next line in the file
+                    line = f.readline()
+            line = f.readline()
+            if 'SCF failed to converge' in line:
+                print 'Qchem Job did not sucessfully complete: SCF failed to converge'
+                break
+        # Close file when finished   
+        print '   Assuming', os.path.basename(self.path), 'is the output from a Qchem PES scan...'
+        f.close()  
+                    
+        # Adjust energies to be relative to minimum energy conformer
+        # Also convert units from Hartree/particle to J/mol
+        Vlist = numpy.array(Vlist, numpy.float64)
+        Vlist -= numpy.min(Vlist)
+        Vlist *= constants.E_h * constants.Na      
+        angle = numpy.arange(0.0, 2*math.pi+0.00001, 2*math.pi/(len(Vlist)-1), numpy.float64)
+        return Vlist, angle
+
+     

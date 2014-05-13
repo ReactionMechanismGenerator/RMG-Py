@@ -43,6 +43,7 @@ import rmgpy.constants as constants
 from rmgpy.cantherm.output import prettify
 from rmgpy.cantherm.gaussian import GaussianLog
 from rmgpy.cantherm.molepro import MoleProLog 
+from rmgpy.cantherm.qchem import QchemLog 
 from rmgpy.species import TransitionState
 from rmgpy.statmech import *
 
@@ -196,6 +197,7 @@ class StatMechJob:
             'HinderedRotor': hinderedRotor,
             # File formats
             'GaussianLog': GaussianLog,
+            'QchemLog': QchemLog,
             'MoleProLog': MoleProLog,
             'ScanLog': ScanLog,
         }
@@ -249,6 +251,9 @@ class StatMechJob:
             except KeyError:
                 raise InputError('Model chemistry {0!r} not found in from dictionary of energy values in species file {1!r}.'.format(self.modelChemistry, path))
         if isinstance(energy, GaussianLog):
+            energyLog = energy; E0 = None
+            energyLog.path = os.path.join(directory, energyLog.path)
+        elif isinstance(energy, QchemLog):
             energyLog = energy; E0 = None
             energyLog.path = os.path.join(directory, energyLog.path)
         elif isinstance(energy, float):
@@ -321,6 +326,11 @@ class StatMechJob:
                 
                 # Load the hindered rotor scan energies
                 if isinstance(scanLog, GaussianLog):
+                    scanLog.path = os.path.join(directory, scanLog.path)
+                    Vlist, angle = scanLog.loadScanEnergies()
+                    scanLogOutput = ScanLog(os.path.join(directory, '{0}_rotor_{1}.txt'.format(self.species.label, rotorCount+1)))
+                    scanLogOutput.save(angle, Vlist)
+                elif isinstance(scanLog, QchemLog):
                     scanLog.path = os.path.join(directory, scanLog.path)
                     Vlist, angle = scanLog.loadScanEnergies()
                     scanLogOutput = ScanLog(os.path.join(directory, '{0}_rotor_{1}.txt'.format(self.species.label, rotorCount+1)))
