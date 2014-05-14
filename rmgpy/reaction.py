@@ -765,10 +765,10 @@ class Reaction:
         for spec in self.reactants:
             logging.debug('    Calculating Partition function for ' + spec.label)
             Qreac *= spec.getPartitionFunction(T) / (constants.R * T / 101325.)
-            E0 -= spec.conformer._E0.value_si
+            E0 -= spec.conformer.E0.value_si
         logging.debug('    Calculating Partition function for ' + self.transitionState.label)
         Qts = self.transitionState.getPartitionFunction(T) / (constants.R * T / 101325.)
-        E0 += self.transitionState.conformer._E0.value_si
+        E0 += self.transitionState.conformer.E0.value_si
         k = (constants.kB * T / constants.h * Qts / Qreac) * math.exp(-E0 / constants.R / T)
         
         # Apply tunneling correction
