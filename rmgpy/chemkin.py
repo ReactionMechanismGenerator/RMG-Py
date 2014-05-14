@@ -173,7 +173,86 @@ def readKineticsEntry(entry, speciesDict, Aunits, Eunits):
     
     lines = entry.strip().splitlines()
     
-    # The first line contains the reaction equation and a set of modified Arrhenius parameters
+    # The first line contains the reaction equation and a set of
+    # modified Arrhenius parameters
+    reaction, thirdBody, kinetics, kunits, klow_units = _readKineticsReaction(
+        line=lines[0], speciesDict=speciesDict, Aunits=Aunits, Eunits=Eunits)
+
+    if len(lines) == 1 and not thirdBody:
+        # If there's only one line then we know to use the high-P limit kinetics as-is
+        reaction.kinetics = kinetics['arrhenius high']
+    else:
+        # There's more kinetics information to be read
+        kinetics.update({
+            'chebyshev coefficients': [],
+            'efficiencies': {},
+        })
+
+        # Note that the subsequent lines could be in any order
+        for line in lines[1:]:
+            kinetics = _readKineticsLine(
+                line=line, reaction=reaction, Eunits=Eunits,
+                kunits=kunits, klow_units=klow_units,
+                kinetics=kinetics)
+
+        # Decide which kinetics to keep and store them on the reaction object
+        # Only one of these should be true at a time!
+        if 'chebyshev' in kinetics:
+            chebyshev = kinetics['chebyshev']
+            if chebyshev.Tmin is None or chebyshev.Tmax is None:
+                raise ChemkinError('Missing TCHEB line for reaction {0}'.format(reaction))
+            if chebyshev.Pmin is None or chebyshev.Pmax is None:
+                raise ChemkinError('Missing PCHEB line for reaction {0}'.format(reaction))
+            index = 0
+            for t in range(chebyshev.degreeT):
+                for p in range(chebyshev.degreeP):
+                    chebyshev.coeffs.value_si[t,p] = kinetics[
+                        'chebyshev coefficients'][index]
+                    index += 1
+            # Don't forget to convert the Chebyshev coefficients to SI units!
+            # This assumes that s^-1, cm^3/mol*s, etc. are compulsory
+            chebyshev.coeffs.value_si[0,0] -= (len(reaction.reactants) - 1) * math.log10(Afactor)
+            reaction.kinetics = chebyshev
+        elif 'pressure-dependent arrhenius' in kinetics:
+            pdepArrhenius = kinetics['pressure-dependent arrhenius']
+            reaction.kinetics = _kinetics.PDepArrhenius(
+                pressures = ([P for P, arrh in pdepArrhenius],"atm"),
+                arrhenius = [arrh for P, arrh in pdepArrhenius],
+            )
+        elif 'troe' in kinetics:
+            troe = kinetics['troe']
+            troe.arrheniusHigh = kinetics['arrhenius high']
+            troe.arrheniusLow = kinetics['arrhenius low']
+            troe.efficiencies = kinetics['efficiencies']
+            reaction.kinetics = troe
+        elif 'arrhenius low' in kinetics:
+            reaction.kinetics = _kinetics.Lindemann(
+                arrheniusHigh=kinetics['arrhenius high'],
+                arrheniusLow=kinetics['arrhenius low'])
+            reaction.kinetics.efficiencies = kinetics['efficiencies']
+        elif 'third body' in kinetics:
+            # what we had read first (and assumed High) is in fact the
+            # Low pressure rate.
+            reaction.kinetics = _kinetics.ThirdBody(
+                arrheniusLow=kinetics['arrhenius high'])
+            reaction.kinetics.efficiencies = kinetics['efficiencies']
+        elif reaction.duplicate:
+            reaction.kinetics = kinetics['arrhenius high']
+        elif 'explicit reverse' in kinetics:
+            reaction.kinetics = kinetics['arrhenius high']
+            reaction.kinetics.comment = (
+                "Chemkin file stated explicit reverse rate: {0}"
+                ).format(kinetics['explicit reverse'])
+        else:
+            raise ChemkinError('Unable to determine pressure-dependent kinetics for reaction {0}.'.format(reaction))
+
+    return reaction
+
+
+def _readKineticsReaction(line, speciesDict, Aunits, Eunits):
+    """
+    Parse the first line of of a Chemkin reaction entry.
+    """
     tokens = lines[0].split()
     
     rmg = True
@@ -268,197 +347,147 @@ def readKineticsEntry(entry, speciesDict, Aunits, Eunits):
     # The rest of the first line contains the high-P limit Arrhenius parameters (if available)
     #tokens = lines[0][52:].split()
     tokens = lines[0].split()[1:]
-    arrheniusHigh = _kinetics.Arrhenius(
-        A = (A,kunits,AuncertaintyType,dA),
-        n = (n,'','+|-',dn),
-        Ea = (Ea,Eunits,'+|-',dEa),
-        T0 = (1,"K"),
-    )
-    
-    if len(lines) == 1 and not thirdBody:
-        # If there's only one line then we know to use the high-P limit kinetics as-is
-        reaction.kinetics = arrheniusHigh
-    else:
-        # There's more kinetics information to be read
-        arrheniusLow = None
-        troe = None
-        lindemann = None
-        chebyshev = None
-        pdepArrhenius = None
-        efficiencies = {}
-        chebyshevCoeffs = []
-        explicitReverse = False
+    kinetics = {
+        'arrhenius high': _kinetics.Arrhenius(
+            A = (A,kunits,AuncertaintyType,dA),
+            n = (n,'','+|-',dn),
+            Ea = (Ea,Eunits,'+|-',dEa),
+            T0 = (1,"K"),
+        ),
+    }
+    return (reaction, thirdBody, kinetics, kunits, klow_units)
 
-        # Note that the subsequent lines could be in any order
-        for line in lines[1:]:
-            case_preserved_tokens = line.split('/')
-            line = line.upper()
-            tokens = line.split('/')
-            if 'DUP' in line:            
-                # Duplicate reaction
-                reaction.duplicate = True
-            
-            elif 'LOW' in line:
-                # Low-pressure-limit Arrhenius parameters
-                tokens = tokens[1].split()
-                arrheniusLow = _kinetics.Arrhenius(
-                    A = (float(tokens[0].strip()),klow_units),
-                    n = float(tokens[1].strip()),
-                    Ea = (float(tokens[2].strip()),Eunits),
-                    T0 = (1,"K"),
-                )
-            
-            elif 'HIGH' in line:
-                # High-pressure-limit Arrhenius parameters
-                tokens = tokens[1].split()
-                arrheniusLow = arrheniusHigh
-                arrheniusLow.A = (arrheniusLow.A.value,klow_units)
-                arrheniusHigh = _kinetics.Arrhenius(
-                    A = (float(tokens[0].strip()),kunits),
-                    n = float(tokens[1].strip()),
-                    Ea = (float(tokens[2].strip()),Eunits),
-                    T0 = (1,"K"),
-                )
 
-            elif 'TROE' in line:
-                # Troe falloff parameters
-                tokens = tokens[1].split()
-                alpha = float(tokens[0].strip())
-                T3 = float(tokens[1].strip())
-                T1 = float(tokens[2].strip())
-                try:
-                    T2 = float(tokens[3].strip())
-                except (IndexError, ValueError):
-                    T2 = None
-                
-                troe = _kinetics.Troe(
-                    alpha = alpha,
-                    T3 = (T3,"K"),
-                    T1 = (T1,"K"),
-                    T2 = (T2,"K") if T2 is not None else None,
-                )
-            elif line.strip().startswith('SRI'):
-                pass
-                """To define an SRI pressure-dependent reaction, in addition to the LOW or HIGH parameters, the 
-                keyword SRI followed by three or five parameters must be included in the following order: a, b,
-                c, d, and e [Eq. (74)]. The fourth and fifth parameters are options. If only the first three are 
-                stated, then by default d = 1 and e = 0. 
-                """
-                # see eg. http://www.dipic.unipd.it/faculty/canu/files/Comb/Docs/chemkinCK.pdf
-            
-            elif 'CHEB' in line:
-                # Chebyshev parameters
-                if chebyshev is None:
-                    chebyshev = _kinetics.Chebyshev()
-                    chebyshev.kunits = kunits
-                tokens = [t.strip() for t in tokens]
-                if 'TCHEB' in line:
-                    index = tokens.index('TCHEB')
-                    tokens2 = tokens[index+1].split()
-                    chebyshev.Tmin = Quantity(float(tokens2[0].strip()),"K")
-                    chebyshev.Tmax = Quantity(float(tokens2[1].strip()),"K")
-                if 'PCHEB' in line:
-                    index = tokens.index('PCHEB')
-                    tokens2 = tokens[index+1].split()
-                    chebyshev.Pmin = Quantity(float(tokens2[0].strip()),"atm")
-                    chebyshev.Pmax = Quantity(float(tokens2[1].strip()),"atm")
-                if 'TCHEB' in line or 'PCHEB' in line:
-                    pass
-                elif chebyshev.degreeT == 0 or chebyshev.degreeP == 0:
-                    tokens2 = tokens[1].split()
-                    chebyshev.degreeT = int(float(tokens2[0].strip()))
-                    chebyshev.degreeP = int(float(tokens2[1].strip()))
-                    chebyshev.coeffs = numpy.zeros((chebyshev.degreeT,chebyshev.degreeP), numpy.float64)
-                else:
-                    tokens2 = tokens[1].split()
-                    chebyshevCoeffs.extend([float(t.strip()) for t in tokens2])
-                    
-            elif 'PLOG' in line:
-                # Pressure-dependent Arrhenius parameters
-                if pdepArrhenius is None:
-                    pdepArrhenius = []
-                tokens = tokens[1].split()
-                pdepArrhenius.append([float(tokens[0].strip()),
-                    _kinetics.Arrhenius(
-                        A = (float(tokens[1].strip()),kunits),
-                        n = float(tokens[2].strip()),
-                        Ea = (float(tokens[3].strip()),Eunits),
-                        T0 = (1,"K"),
-                )])
-            elif tokens[0].startswith('REV'):
-                reverseA = float(tokens[1].split()[0])
-                explicitReverse = line.strip()
-                if reverseA == 0:
-                    logging.info("Reverse rate is 0 so making irreversible for reaction {0}".format(reaction))
-                    reaction.reversible = False
-                else:
-                    logging.info("Ignoring explicit reverse rate for reaction {0}".format(reaction))
+def _readKineticsLine(line, reaction, Eunits, kunits, klow_units, kinetics):
+    """
+    Parse the subsequent lines of of a Chemkin reaction entry.
+    """
+    case_preserved_tokens = line.split('/')
+    line = line.upper()
+    tokens = line.split('/')
 
-            else:
-                # Assume a list of collider efficiencies
-                try:
-                    for collider, efficiency in zip(case_preserved_tokens[0::2], case_preserved_tokens[1::2]):
-                        try:
-                            efficiency = float(efficiency.strip())
-                        except ValueError:
-                            error_msg = "{0!r} doesn't look like a collision efficiency for species {1} in line {2!r}".format(efficiency,collider.strip(),line)
-                            logging.error(error_msg)
-                            raise ChemkinError(error_msg)
-                        if collider.strip() in speciesDict:
-                            efficiencies[speciesDict[collider.strip()].molecule[0]] = efficiency
-                        else: # try it with capital letters? Not sure whose malformed chemkin files this is needed for.
-                            efficiencies[speciesDict[collider.strip().upper()].molecule[0]] = efficiency
-                except IndexError:
-                    error_msg = 'Could not read collider efficiencies for reaction: {0}.\n'.format(reaction)
-                    error_msg += 'The following line was parsed incorrectly:\n{0}'.format(line)
-                    error_msg += "\n(Case-preserved tokens: {0!r} )".format(case_preserved_tokens)
-                    raise ChemkinError(error_msg)
+    if 'DUP' in line:
+        # Duplicate reaction
+        reaction.duplicate = True
 
-        # Decide which kinetics to keep and store them on the reaction object
-        # Only one of these should be true at a time!
-        if chebyshev is not None:
-            if chebyshev.Tmin is None or chebyshev.Tmax is None:
-                raise ChemkinError('Missing TCHEB line for reaction {0}'.format(reaction))
-            if chebyshev.Pmin is None or chebyshev.Pmax is None:
-                raise ChemkinError('Missing PCHEB line for reaction {0}'.format(reaction))
-            index = 0
-            for t in range(chebyshev.degreeT):
-                for p in range(chebyshev.degreeP):
-                    chebyshev.coeffs.value_si[t,p] = chebyshevCoeffs[index]
-                    index += 1
-            # Don't forget to convert the Chebyshev coefficients to SI units!
-            # This assumes that s^-1, cm^3/mol*s, etc. are compulsory
-            chebyshev.coeffs.value_si[0,0] -= (len(reaction.reactants) - 1) * math.log10(Afactor)
-            reaction.kinetics = chebyshev
-        elif pdepArrhenius is not None:
-            reaction.kinetics = _kinetics.PDepArrhenius(
-                pressures = ([P for P, arrh in pdepArrhenius],"atm"),
-                arrhenius = [arrh for P, arrh in pdepArrhenius],
-            )
-        elif troe is not None:
-            troe.arrheniusHigh = arrheniusHigh
-            troe.arrheniusLow = arrheniusLow
-            troe.efficiencies = efficiencies
-            reaction.kinetics = troe
-        elif arrheniusLow is not None:
-            reaction.kinetics = _kinetics.Lindemann(
-                arrheniusHigh=arrheniusHigh, arrheniusLow=arrheniusLow)
-            reaction.kinetics.efficiencies = efficiencies
-        elif thirdBody:
-            # what we had read first (and assumed High) is in fact the
-            # Low pressure rate.
-            reaction.kinetics = _kinetics.ThirdBody(
-                arrheniusLow=arrheniusHigh)
-            reaction.kinetics.efficiencies = efficiencies
-        elif reaction.duplicate:
-            reaction.kinetics = arrheniusHigh
-        elif explicitReverse:
-            reaction.kinetics = arrheniusHigh
-            reaction.kinetics.comment = "Chemkin file stated explicit reverse rate: {0}".format(explicitReverse)
+    elif 'LOW' in line:
+        # Low-pressure-limit Arrhenius parameters
+        tokens = tokens[1].split()
+        kinetics['arrhenius low'] = _kinetics.Arrhenius(
+            A = (float(tokens[0].strip()),klow_units),
+            n = float(tokens[1].strip()),
+            Ea = (float(tokens[2].strip()),Eunits),
+            T0 = (1,"K"),
+        )
+
+    elif 'HIGH' in line:
+        # High-pressure-limit Arrhenius parameters
+        tokens = tokens[1].split()
+        kinetics['arrhenius low'] = kinetics['arrhenius high']
+        kinetics['arrhenius low'].A = (
+            kinetics['arrhenius low'].A.value, klow_units)
+        kinetics['arrhenius high'] = _kinetics.Arrhenius(
+            A = (float(tokens[0].strip()),kunits),
+            n = float(tokens[1].strip()),
+            Ea = (float(tokens[2].strip()),Eunits),
+            T0 = (1,"K"),
+        )
+
+    elif 'TROE' in line:
+        # Troe falloff parameters
+        tokens = tokens[1].split()
+        alpha = float(tokens[0].strip())
+        T3 = float(tokens[1].strip())
+        T1 = float(tokens[2].strip())
+        try:
+            T2 = float(tokens[3].strip())
+        except (IndexError, ValueError):
+            T2 = None
+
+        kinetics['troe'] = _kinetics.Troe(
+            alpha = alpha,
+            T3 = (T3,"K"),
+            T1 = (T1,"K"),
+            T2 = (T2,"K") if T2 is not None else None,
+        )
+    elif line.strip().startswith('SRI'):
+        pass
+        """To define an SRI pressure-dependent reaction, in addition to the LOW or HIGH parameters, the
+        keyword SRI followed by three or five parameters must be included in the following order: a, b,
+        c, d, and e [Eq. (74)]. The fourth and fifth parameters are options. If only the first three are
+        stated, then by default d = 1 and e = 0.
+        """
+        # see eg. http://www.dipic.unipd.it/faculty/canu/files/Comb/Docs/chemkinCK.pdf
+
+    elif 'CHEB' in line:
+        # Chebyshev parameters
+        chebyshev = kinetics.get(
+            'chebyshev', _kinetics.Chebyshev(kunits=kunits))
+        kinetics['chebyshev'] = chebyshev
+        tokens = [t.strip() for t in tokens]
+        if 'TCHEB' in line:
+            index = tokens.index('TCHEB')
+            tokens2 = tokens[index+1].split()
+            chebyshev.Tmin = Quantity(float(tokens2[0].strip()),"K")
+            chebyshev.Tmax = Quantity(float(tokens2[1].strip()),"K")
+        if 'PCHEB' in line:
+            index = tokens.index('PCHEB')
+            tokens2 = tokens[index+1].split()
+            chebyshev.Pmin = Quantity(float(tokens2[0].strip()),"atm")
+            chebyshev.Pmax = Quantity(float(tokens2[1].strip()),"atm")
+        if 'TCHEB' in line or 'PCHEB' in line:
+            pass
+        elif chebyshev.degreeT == 0 or chebyshev.degreeP == 0:
+            tokens2 = tokens[1].split()
+            chebyshev.degreeT = int(float(tokens2[0].strip()))
+            chebyshev.degreeP = int(float(tokens2[1].strip()))
+            chebyshev.coeffs = numpy.zeros((chebyshev.degreeT,chebyshev.degreeP), numpy.float64)
         else:
-            raise ChemkinError('Unable to determine pressure-dependent kinetics for reaction {0}.'.format(reaction))
-   
-    return reaction
+            tokens2 = tokens[1].split()
+            kinetics['chebyshev coefficients'].extend(
+                [float(t.strip()) for t in tokens2])
+
+    elif 'PLOG' in line:
+        pdepArrhenius = kinetics.get('pressure-dependent arrhenius', [])
+        kinetics['pressure-dependent arrhenius'] = pdepArrhenius
+        tokens = tokens[1].split()
+        pdepArrhenius.append([float(tokens[0].strip()),
+            _kinetics.Arrhenius(
+                A = (float(tokens[1].strip()),kunits),
+                n = float(tokens[2].strip()),
+                Ea = (float(tokens[3].strip()),Eunits),
+                T0 = (1,"K"),
+        )])
+    elif tokens[0].startswith('REV'):
+        reverseA = float(tokens[1].split()[0])
+        kinetics['explicit reverse'] = line.strip()
+        if reverseA == 0:
+            logging.info("Reverse rate is 0 so making irreversible for reaction {0}".format(reaction))
+            reaction.reversible = False
+        else:
+            logging.info("Ignoring explicit reverse rate for reaction {0}".format(reaction))
+
+    else:
+        # Assume a list of collider efficiencies
+        try:
+            for collider, efficiency in zip(case_preserved_tokens[0::2], case_preserved_tokens[1::2]):
+                try:
+                    efficiency = float(efficiency.strip())
+                except ValueError:
+                    error_msg = "{0!r} doesn't look like a collision efficiency for species {1} in line {2!r}".format(efficiency,collider.strip(),line)
+                    logging.error(error_msg)
+                    raise ChemkinError(error_msg)
+                if collider.strip() in speciesDict:
+                    kinetics['efficiencies'][speciesDict[collider.strip()].molecule[0]] = efficiency
+                else: # try it with capital letters? Not sure whose malformed chemkin files this is needed for.
+                    kinetics['efficiencies'][speciesDict[collider.strip().upper()].molecule[0]] = efficiency
+        except IndexError:
+            error_msg = 'Could not read collider efficiencies for reaction: {0}.\n'.format(reaction)
+            error_msg += 'The following line was parsed incorrectly:\n{0}'.format(line)
+            error_msg += "\n(Case-preserved tokens: {0!r} )".format(case_preserved_tokens)
+            raise ChemkinError(error_msg)
+    return kinetics
+
 
 def readReactionComments(reaction, comments, read = True):
     """
