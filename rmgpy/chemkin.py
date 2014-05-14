@@ -36,7 +36,7 @@ import re
 import logging
 import os.path
 import numpy
-from kinetics import *
+import kinetics as _kinetics
 from reaction import Reaction
 #from species import Species
 from rmg.model import Species
@@ -268,7 +268,7 @@ def readKineticsEntry(entry, speciesDict, Aunits, Eunits):
     # The rest of the first line contains the high-P limit Arrhenius parameters (if available)
     #tokens = lines[0][52:].split()
     tokens = lines[0].split()[1:]
-    arrheniusHigh = Arrhenius(
+    arrheniusHigh = _kinetics.Arrhenius(
         A = (A,kunits,AuncertaintyType,dA),
         n = (n,'','+|-',dn),
         Ea = (Ea,Eunits,'+|-',dEa),
@@ -301,7 +301,7 @@ def readKineticsEntry(entry, speciesDict, Aunits, Eunits):
             elif 'LOW' in line:
                 # Low-pressure-limit Arrhenius parameters
                 tokens = tokens[1].split()
-                arrheniusLow = Arrhenius(
+                arrheniusLow = _kinetics.Arrhenius(
                     A = (float(tokens[0].strip()),klow_units),
                     n = float(tokens[1].strip()),
                     Ea = (float(tokens[2].strip()),Eunits),
@@ -313,7 +313,7 @@ def readKineticsEntry(entry, speciesDict, Aunits, Eunits):
                 tokens = tokens[1].split()
                 arrheniusLow = arrheniusHigh
                 arrheniusLow.A = (arrheniusLow.A.value,klow_units)
-                arrheniusHigh = Arrhenius(
+                arrheniusHigh = _kinetics.Arrhenius(
                     A = (float(tokens[0].strip()),kunits),
                     n = float(tokens[1].strip()),
                     Ea = (float(tokens[2].strip()),Eunits),
@@ -331,7 +331,7 @@ def readKineticsEntry(entry, speciesDict, Aunits, Eunits):
                 except (IndexError, ValueError):
                     T2 = None
                 
-                troe = Troe(
+                troe = _kinetics.Troe(
                     alpha = alpha,
                     T3 = (T3,"K"),
                     T1 = (T1,"K"),
@@ -349,7 +349,7 @@ def readKineticsEntry(entry, speciesDict, Aunits, Eunits):
             elif 'CHEB' in line:
                 # Chebyshev parameters
                 if chebyshev is None:
-                    chebyshev = Chebyshev()
+                    chebyshev = _kinetics.Chebyshev()
                     chebyshev.kunits = kunits
                 tokens = [t.strip() for t in tokens]
                 if 'TCHEB' in line:
@@ -378,11 +378,12 @@ def readKineticsEntry(entry, speciesDict, Aunits, Eunits):
                 if pdepArrhenius is None:
                     pdepArrhenius = []
                 tokens = tokens[1].split()
-                pdepArrhenius.append([float(tokens[0].strip()), Arrhenius(
-                    A = (float(tokens[1].strip()),kunits),
-                    n = float(tokens[2].strip()),
-                    Ea = (float(tokens[3].strip()),Eunits),
-                    T0 = (1,"K"),
+                pdepArrhenius.append([float(tokens[0].strip()),
+                    _kinetics.Arrhenius(
+                        A = (float(tokens[1].strip()),kunits),
+                        n = float(tokens[2].strip()),
+                        Ea = (float(tokens[3].strip()),Eunits),
+                        T0 = (1,"K"),
                 )])
             elif tokens[0].startswith('REV'):
                 reverseA = float(tokens[1].split()[0])
@@ -430,7 +431,7 @@ def readKineticsEntry(entry, speciesDict, Aunits, Eunits):
             chebyshev.coeffs.value_si[0,0] -= (len(reaction.reactants) - 1) * math.log10(Afactor)
             reaction.kinetics = chebyshev
         elif pdepArrhenius is not None:
-            reaction.kinetics = PDepArrhenius(
+            reaction.kinetics = _kinetics.PDepArrhenius(
                 pressures = ([P for P, arrh in pdepArrhenius],"atm"),
                 arrhenius = [arrh for P, arrh in pdepArrhenius],
             )
@@ -440,10 +441,14 @@ def readKineticsEntry(entry, speciesDict, Aunits, Eunits):
             troe.efficiencies = efficiencies
             reaction.kinetics = troe
         elif arrheniusLow is not None:
-            reaction.kinetics = Lindemann(arrheniusHigh=arrheniusHigh, arrheniusLow=arrheniusLow)
+            reaction.kinetics = _kinetics.Lindemann(
+                arrheniusHigh=arrheniusHigh, arrheniusLow=arrheniusLow)
             reaction.kinetics.efficiencies = efficiencies
         elif thirdBody:
-            reaction.kinetics = ThirdBody(arrheniusLow=arrheniusHigh)  # what we had read first (and assumed High) is in fact the Low pressure rate.
+            # what we had read first (and assumed High) is in fact the
+            # Low pressure rate.
+            reaction.kinetics = _kinetics.ThirdBody(
+                arrheniusLow=arrheniusHigh)
             reaction.kinetics.efficiencies = efficiencies
         elif reaction.duplicate:
             reaction.kinetics = arrheniusHigh
@@ -782,10 +787,12 @@ def loadChemkinFile(path, dictionaryPath=None, transportPath=None, readComments 
                         assert reaction1.library.label == reaction2.library.label
                         if reaction1 not in duplicateReactionsToRemove:
                             # already created duplicate reaction, move on to appending any additional duplicate kinetics
-                            if isinstance(reaction1.kinetics, PDepArrhenius):
-                                kinetics = MultiPDepArrhenius()
-                            elif isinstance(reaction1.kinetics, Arrhenius):
-                                kinetics = MultiArrhenius()
+                            if isinstance(reaction1.kinetics,
+                                          _kinetics.PDepArrhenius):
+                                kinetics = _kinetics.MultiPDepArrhenius()
+                            elif isinstance(reaction1.kinetics,
+                                            _kinetics.Arrhenius):
+                                kinetics = _kinetics.MultiArrhenius()
                             else:
                                 raise ChemkinError('Unexpected kinetics type {0} for duplicate reaction {1}.'.format(reaction1.kinetics.__class__, reaction1))
                             reaction = LibraryReaction(
@@ -805,9 +812,15 @@ def loadChemkinFile(path, dictionaryPath=None, transportPath=None, readComments 
                         # Template reactions should be kept separate
                         continue
                     
-                    if isinstance(reaction.kinetics, MultiPDepArrhenius) and isinstance(reaction2.kinetics, PDepArrhenius):
+                    if (isinstance(reaction.kinetics,
+                                   _kinetics.MultiPDepArrhenius) and
+                            isinstance(reaction2.kinetics,
+                                       _kinetics.PDepArrhenius)):
                         reaction.kinetics.arrhenius.append(reaction2.kinetics)
-                    elif isinstance(reaction.kinetics, MultiArrhenius) and isinstance(reaction2.kinetics, Arrhenius):
+                    elif (isinstance(reaction.kinetics,
+                                     _kinetics.MultiArrhenius) and
+                              isinstance(reaction2.kinetics,
+                                         _kinetics.Arrhenius)):
                         reaction.kinetics.arrhenius.append(reaction2.kinetics)
                     else:
                         raise ChemkinError('Mixed kinetics for duplicate reaction {0}.'.format(reaction))
@@ -1301,11 +1314,13 @@ def writeReactionString(reaction, javaLibrary = False):
     if javaLibrary:
         thirdBody = ''
         if kinetics.isPressureDependent():
-            if isinstance(kinetics, ThirdBody) and not isinstance(kinetics, Lindemann) and not isinstance(kinetics, Troe):
+            if (isinstance(kinetics, _kinetics.ThirdBody) and
+                    not isinstance(kinetics, _kinetics.Lindemann) and
+                    not isinstance(kinetics, _kinetics.Troe)):
                 thirdBody = ' + M'
-            elif isinstance(kinetics, PDepArrhenius):
+            elif isinstance(kinetics, _kinetics.PDepArrhenius):
                 thirdBody = ''
-            elif isinstance(kinetics, Chebyshev):
+            elif isinstance(kinetics, _kinetics.Chebyshev):
                 thirdBody = ''
             else:
                 thirdBody = ' (+M)'
@@ -1319,9 +1334,11 @@ def writeReactionString(reaction, javaLibrary = False):
     else:
         thirdBody = ''
         if kinetics.isPressureDependent():
-            if isinstance(kinetics, ThirdBody) and not isinstance(kinetics, Lindemann) and not isinstance(kinetics, Troe):
+            if (isinstance(kinetics, _kinetics.ThirdBody) and
+                    not isinstance(kinetics,
+                                   (_kinetics.Lindemann, _kinetics.Troe))):
                 thirdBody = '+M'
-            elif isinstance(kinetics, PDepArrhenius):
+            elif isinstance(kinetics, _kinetics.PDepArrhenius):
                 thirdBody = ''
             else:
                 thirdBody = '(+M)'
@@ -1351,7 +1368,8 @@ def writeKineticsEntry(reaction, speciesList, verbose = True, javaLibrary = Fals
     """
     string = ""
     
-    if isinstance(reaction.kinetics, (MultiArrhenius, MultiPDepArrhenius)):
+    if isinstance(reaction.kinetics,
+                  (_kinetics.MultiArrhenius, _kinetics.MultiPDepArrhenius)):
         if verbose:
             if isinstance(reaction,LibraryReaction):
                 string += '! Library reaction: {0!s}\n'.format(reaction.library.label)
@@ -1413,20 +1431,20 @@ def writeKineticsEntry(reaction, speciesList, verbose = True, javaLibrary = Fals
     
     string += '{0!s:<51} '.format(reaction_string)
 
-    if isinstance(kinetics, Arrhenius):
+    if isinstance(kinetics, _kinetics.Arrhenius):
         string += '{0:<9.3e} {1:<9.3f} {2:<9.3f}'.format(
             kinetics.A.value_si/ (kinetics.T0.value_si ** kinetics.n.value_si) * 1.0e6 ** (numReactants - 1),
             kinetics.n.value_si,
             kinetics.Ea.value_si / 4184.
         )
-    elif isinstance(kinetics, (Lindemann,Troe)):
+    elif isinstance(kinetics, (_kinetics.Lindemann, _kinetics.Troe)):
         arrhenius = kinetics.arrheniusHigh
         string += '{0:<9.3e} {1:<9.3f} {2:<9.3f}'.format(
             arrhenius.A.value_si / (arrhenius.T0.value_si ** arrhenius.n.value_si) * 1.0e6 ** (numReactants - 1),
             arrhenius.n.value_si,
             arrhenius.Ea.value_si / 4184.
         )
-    elif isinstance(kinetics, ThirdBody):
+    elif isinstance(kinetics, _kinetics.ThirdBody):
         arrhenius = kinetics.arrheniusLow
         string += '{0:<9.3e} {1:<9.3f} {2:<9.3f}'.format(
             arrhenius.A.value_si / (arrhenius.T0.value_si ** arrhenius.n.value_si) * 1.0e6 ** (numReactants),
@@ -1450,7 +1468,8 @@ def writeKineticsEntry(reaction, speciesList, verbose = True, javaLibrary = Fals
 
     string += '\n'
 
-    if isinstance(kinetics, (ThirdBody, Lindemann, Troe)):
+    if isinstance(kinetics,
+                  (_kinetics.ThirdBody, _kinetics.Lindemann, _kinetics.Troe)):
         # Write collider efficiencies
         for collider, efficiency in sorted(kinetics.efficiencies.items()):
             for species in speciesList:
@@ -1459,7 +1478,7 @@ def writeKineticsEntry(reaction, speciesList, verbose = True, javaLibrary = Fals
                     break
         string += '\n'
         
-        if isinstance(kinetics, (Lindemann, Troe)):
+        if isinstance(kinetics, (_kinetics.Lindemann, _kinetics.Troe)):
             # Write low-P kinetics
             arrhenius = kinetics.arrheniusLow
             string += '    LOW/ {0:<9.3e} {1:<9.3f} {2:<9.3f}/\n'.format(
@@ -1467,20 +1486,20 @@ def writeKineticsEntry(reaction, speciesList, verbose = True, javaLibrary = Fals
                 arrhenius.n.value_si,
                 arrhenius.Ea.value_si / 4184.
             )
-            if isinstance(kinetics, Troe):
+            if isinstance(kinetics, _kinetics.Troe):
                 # Write Troe parameters
                 if kinetics.T2 is None:
                     string += '    TROE/ {0:<9.3e} {1:<9.3g} {2:<9.3g}/\n'.format(kinetics.alpha, kinetics.T3.value_si, kinetics.T1.value_si)
                 else:
                     string += '    TROE/ {0:<9.3e} {1:<9.3g} {2:<9.3g} {3:<9.3g}/\n'.format(kinetics.alpha, kinetics.T3.value_si, kinetics.T1.value_si, kinetics.T2.value_si)
-    elif isinstance(kinetics, PDepArrhenius):
+    elif isinstance(kinetics, _kinetics.PDepArrhenius):
         for P, arrhenius in zip(kinetics.pressures.value_si, kinetics.arrhenius):
             string += '    PLOG/ {0:<9.3f} {1:<9.3e} {2:<9.3f} {3:<9.3f}/\n'.format(P / 101325.,
                 arrhenius.A.value_si / (arrhenius.T0.value_si ** arrhenius.n.value_si) * 1.0e6 ** (numReactants - 1),
                 arrhenius.n.value_si,
                 arrhenius.Ea.value_si / 4184.
             )
-    elif isinstance(kinetics, Chebyshev):
+    elif isinstance(kinetics, _kinetics.Chebyshev):
         string += '    TCHEB/ {0:<9.3f} {1:<9.3f}/\n'.format(kinetics.Tmin.value_si, kinetics.Tmax.value_si)
         string += '    PCHEB/ {0:<9.3f} {1:<9.3f}/\n'.format(kinetics.Pmin.value_si / 101325., kinetics.Pmax.value_si / 101325.)
         string += '    CHEB/ {0:d} {1:d}/\n'.format(kinetics.degreeT, kinetics.degreeP)
