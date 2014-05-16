@@ -54,13 +54,14 @@ def saveEntry(f, entry):
     """
     
     f.write('entry(\n')
-    f.write('    index = {0:d},\n'.format(entry.index))
-    f.write('    label = "{0}",\n'.format(entry.label))
+    f.write('    index        = {0:d},\n'.format(entry.index))
+    f.write('    label        = "{0}",\n'.format(entry.label))
+    f.write('    multiplicity = {0},\n'.format(entry.multiplicity))
 
     if isinstance(entry.item, Molecule):
         f.write('    molecule = \n')
         f.write('"""\n')
-        f.write(entry.item.toAdjacencyList(removeH=False))
+        f.write(entry.item.toAdjacencyList(removeH=False,printMultiplicity=False))
         f.write('""",\n')
     elif isinstance(entry.item, Group):
         f.write('    group = \n')
