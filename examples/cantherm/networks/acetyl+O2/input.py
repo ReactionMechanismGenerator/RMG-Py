@@ -16,6 +16,7 @@ important in the ignition chemistry of ethanol.
 
 species(
     label = 'acetylperoxy',
+    multiplicity = 2,
     structure = SMILES('CC(=O)O[O]'),
     E0 = (-34.6,'kcal/mol'),
     modes = [
@@ -38,6 +39,7 @@ species(
 
 species(
     label = 'hydroperoxylvinoxy',
+    multiplicity = 2,
     structure = SMILES('[CH2]C(=O)OO'),
     E0 = (-32.4,'kcal/mol'),
     modes = [
@@ -61,6 +63,7 @@ species(
 
 species(
     label = 'acetyl',
+    multiplicity = 2,
     structure = SMILES('C[C]=O'),
     E0 = (0.0,'kcal/mol'),  #(-20.5205,"kJ/mol")
     modes = [
@@ -75,6 +78,7 @@ species(
 
 species(
     label = 'oxygen',
+    multiplicity = 3,
     structure = SMILES('[O][O]'),
     E0 = (0.0,'kcal/mol'),  #(-5.74557,"kJ/mol")
     modes = [
@@ -88,6 +92,7 @@ species(
 
 species(
     label = 'ketene',
+    multiplicity = 1,
     structure = SMILES('C=C=O'),
     E0 = (-6.6,'kcal/mol'),
     #modes = [
@@ -101,6 +106,7 @@ species(
 
 species(
     label = 'lactone',
+    multiplicity = 1,
     structure = SMILES('C1OC1(=O)'),
     E0 = (-30.8,'kcal/mol'),
     #modes = [
@@ -116,6 +122,7 @@ species(
 
 species(
     label = 'hydroxyl',
+    multiplicity = 2,
     structure = SMILES('[OH]'),
     E0 = (0.0,'kcal/mol'),
     #modes = [
@@ -129,6 +136,7 @@ species(
 
 species(
     label = 'hydroperoxyl',
+    multiplicity = 2,
     structure = SMILES('O[O]'),
     E0 = (0.0,'kcal/mol'),
     #modes = [
@@ -142,6 +150,7 @@ species(
 
 species(
     label = 'nitrogen',
+    multiplicity = 1,
     structure = SMILES('N#N'),
     molecularWeight = (28.04,"g/mol"),
     collisionModel = TransportData(sigma=(3.70,'angstrom'), epsilon=(94.9,'K')),
