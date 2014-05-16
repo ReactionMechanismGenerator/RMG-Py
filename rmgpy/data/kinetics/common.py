@@ -143,7 +143,7 @@ def saveEntry(f, entry):
             elif isinstance(reactant, Species):
                 f.write('    reactant{0:d} = \n'.format(i+1))
                 f.write('"""\n')
-                f.write(reactant.molecule[0].toAdjacencyList(label=reactant.label, removeH=False))
+                f.write(reactant.molecule[0].toAdjacencyList(label=reactant.label, removeH=False, printMultiplicity=True))
                 f.write('""",\n')
             elif isinstance(reactant, Group):
                 f.write('    group{0:d} = \n'.format(i+1))
