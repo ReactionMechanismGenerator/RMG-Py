@@ -32,8 +32,8 @@ species(
     reactive=True,
     structure=adjacencyList(
         """
-        1 H 0 0 {2,S}
-        2 H 0 0 {1,S}
+        1 H U0 L0 {2,S}
+        2 H U0 L0 {1,S}
         """),
 )
 species(
