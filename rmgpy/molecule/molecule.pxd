@@ -169,7 +169,7 @@ cdef class Molecule(Graph):
 
     cpdef fromRDKitMol(self, rdkitmol)
 
-    cpdef fromAdjacencyList(self, str adjlist, bint saturateH=?, maxMultiplicity=?)
+    cpdef fromAdjacencyList(self, str adjlist, bint saturateH=?, bint maxMultiplicity=?)
 
     cpdef fromXYZ(self, numpy.ndarray atomicNums, numpy.ndarray coordinates)
     
