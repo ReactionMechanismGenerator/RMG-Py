@@ -26,7 +26,7 @@
 #   DEALINGS IN THE SOFTWARE.
 #
 ################################################################################
-
+import rmgpy.molecule
 """
 This module provides functionality for estimating the symmetry number of a
 molecule from its chemical graph representation.
@@ -343,9 +343,12 @@ def calculateCyclicSymmetryNumber(molecule):
     Get the symmetry number correction for cyclic regions of a molecule.
     For complicated fused rings the smallest set of smallest rings is used.
     """
-
+    from rdkit.Chem.rdmolops import SanitizeMol
+    from rdkit.Chem.rdchem import Mol 
+    mcopy = molecule.toRDKitMol(removeHs=True, returnMapping=False)
+    SanitizeMol(mcopy)
     symmetryNumber = 1
-
+            
     # Get symmetry number for each ring in structure
     rings = molecule.getSmallestSetOfSmallestRings()
     for ring0 in rings:
@@ -353,7 +356,17 @@ def calculateCyclicSymmetryNumber(molecule):
         # Make copy of structure
         structure = molecule.copy(True)
         ring = [structure.atoms[molecule.atoms.index(atom)] for atom in ring0]
-
+        # Figure out which atoms and bonds are aromatic and reassign appropriately:
+        for i, atom1 in enumerate(ring0):
+            for atom2 in ring0[i+1:]:
+                if molecule.hasBond(atom1, atom2):
+                    if mcopy.GetBondBetweenAtoms(i,i+1) is not None:
+                        if str(mcopy.GetBondBetweenAtoms(i,i+1).GetBondType()) == 'AROMATIC':
+                            bond = molecule.getBond(atom1, atom2)
+                            bond.applyAction(['CHANGE_BOND', atom1, 'B', atom2])
+                            atom1.atomType = atom2.atomType = rmgpy.molecule.atomTypes['Cd']
+                    else:
+                        pass
         # Remove bonds of ring from structure
         for i, atom1 in enumerate(ring):
             for atom2 in ring[i+1:]:

@@ -244,7 +244,6 @@ class TestMoleculeSymmetry(unittest.TestCase):
         symmetryNumber = calculateCyclicSymmetryNumber(molecule)
         self.assertEqual(symmetryNumber, 12)
 
-    @work_in_progress
     def testCyclicSymmetryNumberBenzene(self):
         """
         Test the Molecule.calculateCyclicSymmetryNumber() method.
