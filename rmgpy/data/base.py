@@ -1337,6 +1337,7 @@ class ForbiddenStructures(Database):
         
         f.write('{0}(\n'.format(name))
         f.write('    label = "{0}",\n'.format(entry.label))
+        f.write('    multiplicity = {0},\n'.format(entry.multiplicity))
 
         if isinstance(entry.item, Molecule):
             f.write('    molecule = \n')
