@@ -11,18 +11,21 @@ database(
 # List of species
 species(
     label='ethane',
+    multiplicity = 1,
     reactive=True,
     structure=SMILES("CC"),
 )
 
 species(
     label='H',
+    multiplicity = 2,
     reactive=True,
     structure=SMILES("[H]"),
 )
 
 species(
 	label='butane',
+    multiplicity = 1,
 	reactive=True,
 	structure=SMILES("CCCC"),
 )

@@ -15,6 +15,7 @@ corrections.
 
 species(
     label = 'n-C4H10',
+    multiplicity = 1,
     structure = SMILES('CCCCO'),
     E0 = (-317.807,'kJ/mol'),
     modes = [
@@ -35,6 +36,7 @@ species(
 
 species(
     label = 'C4H8',
+    multiplicity = 1,
     structure = SMILES('C=CCC'),
     E0 = (-17.8832,'kJ/mol'),
     modes = [
@@ -50,6 +52,7 @@ species(
 
 species(
     label = 'H2O',
+    multiplicity = 1,
     structure = SMILES('O'),
     E0 = (-269.598,'kJ/mol'),
     modes = [
@@ -63,6 +66,7 @@ species(
 
 species(
     label = "bath_gas",
+    multiplicity = 1,
     E0 = (0,'kJ/mol'),
     molecularWeight = (28.04,"g/mol"),
     collisionModel = TransportData(sigma=(3.41,"angstrom"), epsilon=(124,"K")),
