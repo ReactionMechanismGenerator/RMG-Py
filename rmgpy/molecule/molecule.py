@@ -108,7 +108,7 @@ class Atom(Vertex):
     e.g. ``atom.symbol`` instead of ``atom.element.symbol``.
     """
 
-    def __init__(self, element=None, radicalElectrons=0, charge=0, label='', lonePairs=0, coords=numpy.array([])):
+    def __init__(self, element=None, radicalElectrons=0, charge=0, label='', lonePairs=None, coords=numpy.array([])):
         Vertex.__init__(self)
         if isinstance(element, str):
             self.element = elements.__dict__[element]
@@ -1090,16 +1090,21 @@ class Molecule(Graph):
         # Special handling of helium
         if smilesstr == '[He]':
             # RDKit improperly handles helium and returns it in a triplet state
-            self.fromAdjacencyList('1 He 0 1')
+            self.fromAdjacencyList(
+            """
+            He
+            multiplicity 1
+            1 He U0 L1
+            """)
             return self
         elif smilesstr == 'C#O':
             #  carbon monoxide
             self.fromAdjacencyList(
             """
             CO
-            1
-            1 C 0 1 {2,T}
-            2 O 0 1 {1,T}
+            multiplicity 1
+            1 C U0 L1 {2,T}
+            2 O U0 L1 {1,T}
             """)
             return self
         
@@ -1185,20 +1190,15 @@ class Molecule(Graph):
         
         return self
 
-    newStyleAdjMatcher = re.compile('\s*\d+\s+(\*\d*\s+)?[A-Za-z]+\s+\S+\s+\d').match
-    def fromAdjacencyList(self, adjlist, saturateH=False, maxMultiplicity=False):
+    def fromAdjacencyList(self, adjlist, saturateH=False):
         """
         Convert a string adjacency list `adjlist` to a molecular structure.
         Skips the first line (assuming it's a label) unless `withLabel` is
         ``False``.
         """
         from .adjlist import fromAdjacencyList
-        if not self.newStyleAdjMatcher(adjlist[adjlist.find('1 '):]):
-            logging.warning("There could be an old-style adjacency list. Please check library and input before proceeding!")
-            print adjlist
         
-        self.vertices, multiplicity = fromAdjacencyList(adjlist, False, saturateH=saturateH)
-        if maxMultiplicity: self.multiplicity=multiplicity
+        self.vertices, self.multiplicity = fromAdjacencyList(adjlist, group=False, saturateH=saturateH)
         self.updateConnectivityValues()
         self.updateAtomTypes()
         
@@ -1451,7 +1451,7 @@ class Molecule(Graph):
         Convert the molecular structure to a string adjacency list.
         """
         from .adjlist import toAdjacencyList
-        result = toAdjacencyList(self.vertices, self.multiplicity,  label=label, group=False, removeH=removeH, removeLonePairs=removeLonePairs, printMultiplicity=True)
+        result = toAdjacencyList(self.vertices, self.multiplicity,  label=label, group=False, removeH=removeH, removeLonePairs=removeLonePairs, printMultiplicity=printMultiplicity)
         return result
 
     def isLinear(self):
