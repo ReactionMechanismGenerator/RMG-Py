@@ -177,9 +177,15 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
                             raise InvalidAdjacencyListError('Number of lone electron pairs not recognized.')
                     index += 1
                 else:
-                    lonePairs.append(0)
+                    if group:
+                        lonePairs.append(None)
+                    else:
+                        lonePairs.append(0)
             else:
-                lonePairs.append(0)
+                if group:
+                    lonePairs.append(None)
+                else:
+                    lonePairs.append(0)
                 
             # Next the number of partial charges (if provided)
             partialCharges = []
