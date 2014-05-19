@@ -260,7 +260,7 @@ class TestMoleculeSymmetry(unittest.TestCase):
         symmetryNumber = calculateCyclicSymmetryNumber(molecule)
         self.assertEqual(symmetryNumber, 1)
 
-    def testCyclicSymmetryNumberDimethylbenzene(self):
+    def testCyclicSymmetryNumber12Dimethylbenzene(self):
         """
         Test the Molecule.calculateCyclicSymmetryNumber() method.
         """
@@ -268,6 +268,14 @@ class TestMoleculeSymmetry(unittest.TestCase):
         symmetryNumber = calculateCyclicSymmetryNumber(molecule)
         self.assertEqual(symmetryNumber, 2)
 
+    def testCyclicSymmetryNumber14Dimethylbenzene(self):
+        """
+        Test the Molecule.calculateCyclicSymmetryNumber() method.
+        """
+        molecule = Molecule().fromSMILES('Cc1ccc(C)cc1')
+        symmetryNumber = calculateCyclicSymmetryNumber(molecule)
+        self.assertEqual(symmetryNumber, 2)
+        
     def testTotalSymmetryNumberEthane(self):
         """
         Test the Molecule.calculateSymmetryNumber() method.
