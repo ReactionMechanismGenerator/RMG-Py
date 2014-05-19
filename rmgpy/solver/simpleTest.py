@@ -26,18 +26,22 @@ class SimpleReactorCheck(unittest.TestCase):
         CH4 + C2H5 <=> CH3 + C2H6.
         """
         CH4 = Species(
+            multiplicity=1,
             molecule=[Molecule().fromSMILES("C")],
             thermo=ThermoData(Tdata=([300,400,500,600,800,1000,1500],"K"), Cpdata=([ 8.615, 9.687,10.963,12.301,14.841,16.976,20.528],"cal/(mol*K)"), H298=(-17.714,"kcal/mol"), S298=(44.472,"cal/(mol*K)"))
             )
         CH3 = Species(
+            multiplicity=2,
             molecule=[Molecule().fromSMILES("[CH3]")],
             thermo=ThermoData(Tdata=([300,400,500,600,800,1000,1500],"K"), Cpdata=([ 9.397,10.123,10.856,11.571,12.899,14.055,16.195],"cal/(mol*K)"), H298=(  9.357,"kcal/mol"), S298=(45.174,"cal/(mol*K)"))
             )
         C2H6 = Species(
+            multiplicity=1,
             molecule=[Molecule().fromSMILES("CC")],
             thermo=ThermoData(Tdata=([300,400,500,600,800,1000,1500],"K"), Cpdata=([12.684,15.506,18.326,20.971,25.500,29.016,34.595],"cal/(mol*K)"), H298=(-19.521,"kcal/mol"), S298=(54.799,"cal/(mol*K)"))
             )
         C2H5 = Species(
+            multiplicity=2,
             molecule=[Molecule().fromSMILES("C[CH2]")],
             thermo=ThermoData(Tdata=([300,400,500,600,800,1000,1500],"K"), Cpdata=([11.635,13.744,16.085,18.246,21.885,24.676,29.107],"cal/(mol*K)"), H298=( 29.496,"kcal/mol"), S298=(56.687,"cal/(mol*K)"))
             )
@@ -90,6 +94,7 @@ class SimpleReactorCheck(unittest.TestCase):
         # Solve a reaction system and check if the analytical jacobian matches the finite difference jacobian
         
         H2 = Species(
+            multiplicity = 1,
             molecule=[Molecule().fromSMILES("[H][H]")],
             thermo=ThermoData(Tdata=([300,400,500,600,800,1000,1500],"K"), Cpdata=([6.89,6.97,6.99,7.01,7.08,7.22,7.72],"cal/(mol*K)"), H298=( 0,"kcal/mol"), S298=(31.23,"cal/(mol*K)"))
             )
