@@ -170,6 +170,7 @@ def saveEntry(f, entry):
         if not entry.item.reversible:
             f.write('    reversible = {0!r},\n'.format(entry.item.reversible))
     elif isinstance(entry.item, Group):
+        f.write('    multiplicity = {0},\n'.format(entry.multiplicity))
         f.write('    group = \n')
         f.write('"""\n')
         f.write(entry.item.toAdjacencyList())
