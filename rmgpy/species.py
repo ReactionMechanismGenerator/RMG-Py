@@ -97,8 +97,9 @@ class Species(object):
                  dipoleMoment=None, polarizability=None, Zrot=None, 
                  energyTransferModel=None, reactive=True):
         self.index = index
-        if label != '' and molecule[0].getRadicalCount()>1:
-            if '_' not in label: label += '_({0})' .format(_multiplicity_labels[multiplicity])
+        if label != '' and molecule is not None:
+            if molecule[0].getRadicalCount()>1:
+                if '_' not in label: label += '_({0})' .format(_multiplicity_labels[multiplicity])
         self.label = label
         self.multiplicity = multiplicity
         self.thermo = thermo
@@ -113,10 +114,11 @@ class Species(object):
         self.energyTransferModel = energyTransferModel
         
         # Check if multiplicity is possible
-        n_rad = molecule[0].getRadicalCount() 
-        if not (n_rad + 1 == multiplicity or n_rad - 1 == multiplicity or n_rad - 3 == multiplicity or n_rad - 5 == multiplicity):
-            print molecule[0].toAdjacencyList()
-            raise SpeciesError('Impossible multiplicity for {0}: multiplicity = {1} and number of unpaired electrons = {2}'.format(label,multiplicity,n_rad))
+        if molecule is not None:
+            n_rad = molecule[0].getRadicalCount() 
+            if not (n_rad + 1 == multiplicity or n_rad - 1 == multiplicity or n_rad - 3 == multiplicity or n_rad - 5 == multiplicity):
+                print molecule[0].toAdjacencyList()
+                raise SpeciesError('Impossible multiplicity for {0}: multiplicity = {1} and number of unpaired electrons = {2}'.format(label,multiplicity,n_rad))
 
     def __repr__(self):
         """
@@ -126,6 +128,7 @@ class Species(object):
         string = 'Species('
         if self.index != -1: string += 'index={0:d}, '.format(self.index)
         if self.label != -1: string += 'label="{0}", '.format(self.label)
+        if self.multiplicity != -1: string += 'multiplicity={0}, '.format(self.multiplicity)
         if self.thermo is not None: string += 'thermo={0!r}, '.format(self.thermo)
         if self.conformer is not None: string += 'conformer={0!r}, '.format(self.conformer)
         if len(self.molecule) > 0: string += 'molecule=[{0!r}], '.format(self.molecule[0])
