@@ -252,7 +252,8 @@ class TestTransportDatabase(unittest.TestCase):
             ['benzene', 'c1ccccc1', None, None, None],
             ]
         for name, smiles, sigma, epsilon, comment in self.testCases:
-            species = Species(molecule=[Molecule(SMILES=smiles)])
+            molecule=Molecule(SMILES=smiles)
+            species = Species(multiplicity=molecule.multiplicity,molecule=[molecule])
             transportData, blank, blank2 = self.transportdb.getTransportPropertiesViaGroupEstimates(species)
             # check Joback worked.
             # If we don't know what to expect, don't check (just make sure we didn't crash)
@@ -266,21 +267,21 @@ class TestTransportDatabase(unittest.TestCase):
     def testJobackOnBenzeneBonds(self):
         "Test Joback doesn't crash on Cb desription of beneze"
         adjlist = """
-                    1  C 0 0 {2,D} {6,S} {7,S}
-                    2  C 0 0 {1,D} {3,S} {8,S}
-                    3  C 0 0 {2,S} {4,D} {9,S}
-                    4  C 0 0 {3,D} {5,S} {10,S}
-                    5  C 0 0 {4,S} {6,D} {11,S}
-                    6  C 0 0 {1,S} {5,D} {12,S}
-                    7  H 0 0 {1,S}
-                    8  H 0 0 {2,S}
-                    9  H 0 0 {3,S}
-                    10 H 0 0 {4,S}
-                    11 H 0 0 {5,S}
-                    12 H 0 0 {6,S}
+                    1  C U0 L0 {2,D} {6,S} {7,S}
+                    2  C U0 L0 {1,D} {3,S} {8,S}
+                    3  C U0 L0 {2,S} {4,D} {9,S}
+                    4  C U0 L0 {3,D} {5,S} {10,S}
+                    5  C U0 L0 {4,S} {6,D} {11,S}
+                    6  C U0 L0 {1,S} {5,D} {12,S}
+                    7  H U0 L0 {1,S}
+                    8  H U0 L0 {2,S}
+                    9  H U0 L0 {3,S}
+                    10 H U0 L0 {4,S}
+                    11 H U0 L0 {5,S}
+                    12 H U0 L0 {6,S}
                     """
         m = Molecule().fromAdjacencyList(adjlist)
-        species = Species(molecule=[m])
+        species = Species(multiplicity=m.multiplicity, molecule=[m])
         transportData, blank, blank2 = self.transportdb.getTransportPropertiesViaGroupEstimates(species)
         self.assertIsNotNone(transportData)
 
