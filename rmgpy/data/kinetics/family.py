@@ -624,11 +624,7 @@ class KineticsFamily(Database):
         """
         if not self.forbidden:
             self.forbidden = ForbiddenStructures()
-<<<<<<< HEAD
-        self.forbidden.loadEntry(label=label, group=group, shortDesc=shortDesc, longDesc=longDesc)
-=======
-        self.forbidden.loadEntry(label=label, group=group, multiplicity = multiplicity, shortDesc=shortDesc, longDesc=longDesc, history=history)
->>>>>>> Update family.py for new species multiplicity and search for spin
+        self.forbidden.loadEntry(label=label, group=group, multiplicity = multiplicity, shortDesc=shortDesc, longDesc=longDesc)
 
     def saveEntry(self, f, entry):
         """
@@ -1138,53 +1134,15 @@ class KineticsFamily(Database):
 
         
         # Generate other possible electronic states
-<<<<<<< HEAD
-        electronicStructuresList1 = []
-        electronicStructuresList2 = []
-        
-        struct1 = productStructures[0]
-        struct1a = struct1.copy(True)
-        struct1a.updateAtomTypes()
-        electronicStructuresList1.append(struct1a)
-        atoms1 = struct1.getRadicalAtoms()
-=======
         productStructuresList = []
         totalSpin = [] # total spin times 2
->>>>>>> Update family.py for new species multiplicity and search for spin
         
         # implement Angular Momentum Addition Theorem
         if len(reactantStructures) == 1:
             
             totalSpin = [(reactantStructures[0].multiplicity-1.0)/2.0]
             
-<<<<<<< HEAD
-            if atom1.label != '' and radical1 > 1 and radical1 < 4:
-                
-                if radical1 == 2 and spin1 == 3:
-                    atom1.setSpinMultiplicity(1)
-                    struct1a = struct1.copy(True)
-                    struct1a.updateAtomTypes()
-                elif radical1 == 2 and spin1 == 1:
-                    atom1.setSpinMultiplicity(3)
-                    struct1a = struct1.copy(True)
-                    struct1a.updateAtomTypes()
-                elif radical1 == 3 and spin1 == 4:
-                    atom1.setSpinMultiplicity(2)
-                    struct1a = struct1.copy(True)
-                    struct1a.updateAtomTypes()
-                elif radical1 == 3 and spin1 == 2:
-                    atom1.setSpinMultiplicity(4)
-                    struct1a = struct1.copy(True)
-                    struct1a.updateAtomTypes()
-                
-                for electronicStructures in electronicStructuresList1:
-                    if electronicStructures.isIsomorphic(struct1a):
-                        break
-                else:
-                    electronicStructuresList1.append(struct1a)
-=======
         elif len(reactantStructures) == 2:
->>>>>>> Update family.py for new species multiplicity and search for spin
             
             spin1 = (reactantStructures[0].multiplicity-1.0)/2.0
             spin2 = (reactantStructures[1].multiplicity-1.0)/2.0
@@ -1211,68 +1169,17 @@ class KineticsFamily(Database):
                 
                     struct.multiplicity = int((maxSpin1-count)*2.0+1.0)
                     
-<<<<<<< HEAD
-                for electronicStructures in electronicStructuresList1:
-                    if electronicStructures.isIsomorphic(struct1a):
-                        break
-                else:
-                    electronicStructuresList1.append(struct1a)
-                    
-                for electronicStructures in electronicStructuresList1:
-                    if electronicStructures.isIsomorphic(struct1b):
-                        break
-                else:
-                    electronicStructuresList1.append(struct1b)
-                            
-        if len(productStructures) == 2:
-        
-            struct2 = productStructures[1]
-            struct2a = struct2.copy(True)
-            struct2a.updateAtomTypes()
-            electronicStructuresList2.append(struct2a)
-            atoms2 = struct2.getRadicalAtoms()
-        
-            for atom2 in atoms2:
-=======
                     if not self.isMoleculeForbidden(struct):
                         productStructuresList.append([struct])
                     
                 count += 1.0
                     
         elif len(productStructures) == 2:
->>>>>>> Update family.py for new species multiplicity and search for spin
             
             maxSpin1 = productStructures[0].getRadicalCount()/2.0
             maxSpin2 = productStructures[1].getRadicalCount()/2.0
             
-<<<<<<< HEAD
-                if atom2.label != '' and radical2 > 1 and radical2 < 4:
-                    
-                    if radical2 == 2 and spin2 == 3:
-                        atom2.setSpinMultiplicity(1)
-                        struct2a = struct2.copy(True)
-                        struct2a.updateAtomTypes()
-                    elif radical2 == 2 and spin2 == 1:
-                        atom2.setSpinMultiplicity(3)
-                        struct2a = struct2.copy(True)
-                        struct2a.updateAtomTypes()
-                    elif radical2 == 3 and spin2 == 4:
-                        atom2.setSpinMultiplicity(2)
-                        struct2a = struct2.copy(True)
-                        struct2a.updateAtomTypes()
-                    elif radical2 == 3 and spin2 == 2:
-                        atom2.setSpinMultiplicity(4)
-                        struct2a = struct2.copy(True)
-                        struct2a.updateAtomTypes()
-                
-                    for electronicStructures in electronicStructuresList2:
-                        if electronicStructures.isIsomorphic(struct2a):
-                            break
-                    else:
-                        electronicStructuresList2.append(struct2a)
-=======
             count1 = 0.0
->>>>>>> Update family.py for new species multiplicity and search for spin
             
             while (maxSpin1-count1) >= 0.0:
                 
@@ -1286,35 +1193,6 @@ class KineticsFamily(Database):
                         
                         if (maxSpin1-count1+maxSpin2-count2-count) in totalSpin:
                 
-<<<<<<< HEAD
-                        atom2.setSpinMultiplicity(3)
-                        struct2b = struct2.copy(True)
-                        struct2b.updateAtomTypes()
-                    
-                    for electronicStructures in electronicStructuresList2:
-                        if electronicStructures.isIsomorphic(struct2a):
-                            break
-                    else:
-                        electronicStructuresList2.append(struct2a)
-                    
-                    for electronicStructures in electronicStructuresList2:
-                        if electronicStructures.isIsomorphic(struct2b):
-                            break
-                    else:
-                        electronicStructuresList2.append(struct2b)
-        
-        if len(productStructures) == 2:
-            
-            for structa in electronicStructuresList1:
-                for structb in electronicStructuresList2:
-                    if not (self.isMoleculeForbidden(structa) or self.isMoleculeForbidden(structb)):
-                        productStructuresList.append([structa,structb])
-        elif len(productStructures) == 1:
-            
-            for structa in electronicStructuresList1:
-                if not (self.isMoleculeForbidden(structa)):
-                    productStructuresList.append([structa])
-=======
                             struct1 = productStructures[0].copy(deep=True)
                             struct2 = productStructures[1].copy(deep=True)
                 
@@ -1329,7 +1207,6 @@ class KineticsFamily(Database):
                     count2 += 1.0
                     
                 count1 += 1.0
->>>>>>> Update family.py for new species multiplicity and search for spin
                     
         return productStructuresList
 
