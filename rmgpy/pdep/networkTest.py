@@ -57,6 +57,7 @@ class TestNetwork(unittest.TestCase):
         """
         self.nC4H10O = Species(
             label = 'n-C4H10O',
+            multiplicity = 1,
             conformer = Conformer(
                 E0 = (-317.807,'kJ/mol'),
                 modes = [
@@ -78,6 +79,7 @@ class TestNetwork(unittest.TestCase):
         
         self.nC4H8 = Species(
             label = 'n-C4H8',
+            multiplicity = 1,
             conformer = Conformer(
                 E0 = (-17.8832,'kJ/mol'),
                 modes = [
@@ -94,6 +96,7 @@ class TestNetwork(unittest.TestCase):
         
         self.H2O = Species(
             label = 'H2O',
+            multiplicity = 1,
             conformer = Conformer(
                 E0 = (-269.598,'kJ/mol'),
                 modes = [
@@ -108,6 +111,7 @@ class TestNetwork(unittest.TestCase):
 
         self.N2 = Species(
             label = 'N2',
+            multiplicity = 1,
             molecularWeight = (28.04,"g/mol"),
             transportData=TransportData(sigma=(3.41, "angstrom"), epsilon=(124, "K")),
             energyTransferModel = None,

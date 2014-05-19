@@ -18,7 +18,7 @@ class TestGroupAtom(unittest.TestCase):
         """
         A method called before each unit test in this class.
         """
-        self.atom = GroupAtom(atomType=[atomTypes['Cd']], radicalElectrons=[1], spinMultiplicity=[2], charge=[0], label='*1')
+        self.atom = GroupAtom(atomType=[atomTypes['Cd']], radicalElectrons=[1], charge=[0], label='*1')
     
     def testApplyActionBreakBond(self):
         """
@@ -26,7 +26,7 @@ class TestGroupAtom(unittest.TestCase):
         """
         action = ['BREAK_BOND', '*1', 'S', '*2']
         for label, atomType in atomTypes.iteritems():
-            atom0 = GroupAtom(atomType=[atomType], radicalElectrons=[1], spinMultiplicity=[2], charge=[0], label='*1')
+            atom0 = GroupAtom(atomType=[atomType], radicalElectrons=[1], charge=[0], label='*1')
             atom = atom0.copy()
             try:
                 atom.applyAction(action)
@@ -34,7 +34,6 @@ class TestGroupAtom(unittest.TestCase):
                 for a in atomType.breakBond:
                     self.assertTrue(a in atom.atomType)
                 self.assertEqual(atom0.radicalElectrons, atom.radicalElectrons)
-                self.assertEqual(atom0.spinMultiplicity, atom.spinMultiplicity)
                 self.assertEqual(atom0.charge, atom.charge)
                 self.assertEqual(atom0.label, atom.label)
             except ActionError:
@@ -46,7 +45,7 @@ class TestGroupAtom(unittest.TestCase):
         """
         action = ['FORM_BOND', '*1', 'S', '*2']
         for label, atomType in atomTypes.iteritems():
-            atom0 = GroupAtom(atomType=[atomType], radicalElectrons=[1], spinMultiplicity=[2], charge=[0], label='*1')
+            atom0 = GroupAtom(atomType=[atomType], radicalElectrons=[1], charge=[0], label='*1')
             atom = atom0.copy()
             try:
                 atom.applyAction(action)
@@ -54,7 +53,6 @@ class TestGroupAtom(unittest.TestCase):
                 for a in atomType.formBond:
                     self.assertTrue(a in atom.atomType)
                 self.assertEqual(atom0.radicalElectrons, atom.radicalElectrons)
-                self.assertEqual(atom0.spinMultiplicity, atom.spinMultiplicity)
                 self.assertEqual(atom0.charge, atom.charge)
                 self.assertEqual(atom0.label, atom.label)
             except ActionError:
@@ -66,7 +64,7 @@ class TestGroupAtom(unittest.TestCase):
         """
         action = ['CHANGE_BOND', '*1', 1, '*2']
         for label, atomType in atomTypes.iteritems():
-            atom0 = GroupAtom(atomType=[atomType], radicalElectrons=[1], spinMultiplicity=[2], charge=[0], label='*1')
+            atom0 = GroupAtom(atomType=[atomType], radicalElectrons=[1], charge=[0], label='*1')
             atom = atom0.copy()
             try:
                 atom.applyAction(action)
@@ -74,7 +72,6 @@ class TestGroupAtom(unittest.TestCase):
                 for a in atomType.incrementBond:
                     self.assertTrue(a in atom.atomType)
                 self.assertEqual(atom0.radicalElectrons, atom.radicalElectrons)
-                self.assertEqual(atom0.spinMultiplicity, atom.spinMultiplicity)
                 self.assertEqual(atom0.charge, atom.charge)
                 self.assertEqual(atom0.label, atom.label)
             except ActionError:
@@ -86,7 +83,7 @@ class TestGroupAtom(unittest.TestCase):
         """
         action = ['CHANGE_BOND', '*1', -1, '*2']
         for label, atomType in atomTypes.iteritems():
-            atom0 = GroupAtom(atomType=[atomType], radicalElectrons=[1], spinMultiplicity=[2], charge=[0], label='*1')
+            atom0 = GroupAtom(atomType=[atomType], radicalElectrons=[1], charge=[0], label='*1')
             atom = atom0.copy()
             try:
                 atom.applyAction(action)
@@ -94,7 +91,6 @@ class TestGroupAtom(unittest.TestCase):
                 for a in atomType.decrementBond:
                     self.assertTrue(a in atom.atomType)
                 self.assertEqual(atom0.radicalElectrons, atom.radicalElectrons)
-                self.assertEqual(atom0.spinMultiplicity, atom.spinMultiplicity)
                 self.assertEqual(atom0.charge, atom.charge)
                 self.assertEqual(atom0.label, atom.label)
             except ActionError:
@@ -106,7 +102,7 @@ class TestGroupAtom(unittest.TestCase):
         """
         action = ['GAIN_RADICAL', '*1', 1]
         for label, atomType in atomTypes.iteritems():
-            atom0 = GroupAtom(atomType=[atomType], radicalElectrons=[1], spinMultiplicity=[2], charge=[0], label='*1')
+            atom0 = GroupAtom(atomType=[atomType], radicalElectrons=[1], charge=[0], label='*1')
             atom = atom0.copy()
             try:
                 atom.applyAction(action)
@@ -114,7 +110,6 @@ class TestGroupAtom(unittest.TestCase):
                 for a in atomType.incrementRadical:
                     self.assertTrue(a in atom.atomType, "GAIN_RADICAL on {0} gave {1} not {2}".format(atomType, atom.atomType, atomType.incrementRadical))
                 self.assertEqual(atom0.radicalElectrons, [r - 1 for r in atom.radicalElectrons])
-                self.assertEqual(atom0.spinMultiplicity, [s - 1 for s in atom.spinMultiplicity])
                 self.assertEqual(atom0.charge, atom.charge)
                 self.assertEqual(atom0.label, atom.label)
             except ActionError:
@@ -126,7 +121,7 @@ class TestGroupAtom(unittest.TestCase):
         """
         action = ['LOSE_RADICAL', '*1', 1]
         for label, atomType in atomTypes.iteritems():
-            atom0 = GroupAtom(atomType=[atomType], radicalElectrons=[1], spinMultiplicity=[2], charge=[0], label='*1')
+            atom0 = GroupAtom(atomType=[atomType], radicalElectrons=[1], charge=[0], label='*1')
             atom = atom0.copy()
             try:
                 atom.applyAction(action)
@@ -134,7 +129,6 @@ class TestGroupAtom(unittest.TestCase):
                 for a in atomType.incrementRadical:
                     self.assertTrue(a in atom.atomType, "LOSE_RADICAL on {0} gave {1} not {2}".format(atomType, atom.atomType, atomType.decrementRadical))
                 self.assertEqual(atom0.radicalElectrons, [r + 1 for r in atom.radicalElectrons])
-                self.assertEqual(atom0.spinMultiplicity, [s + 1 for s in atom.spinMultiplicity])
                 self.assertEqual(atom0.charge, atom.charge)
                 self.assertEqual(atom0.label, atom.label)
             except ActionError:
@@ -146,8 +140,8 @@ class TestGroupAtom(unittest.TestCase):
         """
         for label1, atomType1 in atomTypes.iteritems():
             for label2, atomType2 in atomTypes.iteritems():
-                atom1 = GroupAtom(atomType=[atomType1], radicalElectrons=[1], spinMultiplicity=[2], charge=[0], label='*1')
-                atom2 = GroupAtom(atomType=[atomType2], radicalElectrons=[1], spinMultiplicity=[2], charge=[0], label='*1')
+                atom1 = GroupAtom(atomType=[atomType1], radicalElectrons=[1], charge=[0], label='*1')
+                atom2 = GroupAtom(atomType=[atomType2], radicalElectrons=[1], charge=[0], label='*1')
                 if label1 == label2 or atomType2 in atomType1.generic or atomType1 in atomType2.generic:
                     self.assertTrue(atom1.equivalent(atom2), '{0!s} is not equivalent to {1!s}'.format(atom1, atom2))
                     self.assertTrue(atom2.equivalent(atom1), '{0!s} is not equivalent to {1!s}'.format(atom2, atom1))
@@ -157,7 +151,7 @@ class TestGroupAtom(unittest.TestCase):
             # Now see if charge and radical count are checked properly
             for charge in range(3):
                 for radicals in range(2):
-                    atom3 = GroupAtom(atomType=[atomType1], radicalElectrons=[radicals], spinMultiplicity=[radicals + 1], charge=[charge], label='*1')
+                    atom3 = GroupAtom(atomType=[atomType1], radicalElectrons=[radicals], charge=[charge], label='*1')
                     if radicals == 1 and charge == 0:
                         self.assertTrue(atom1.equivalent(atom3), '{0!s} is not equivalent to {1!s}'.format(atom1, atom3))
                         self.assertTrue(atom1.equivalent(atom3), '{0!s} is not equivalent to {1!s}'.format(atom3, atom1))
@@ -171,11 +165,11 @@ class TestGroupAtom(unittest.TestCase):
         """
         for label1, atomType1 in atomTypes.iteritems():
             for label2, atomType2 in atomTypes.iteritems():
-                atom1 = GroupAtom(atomType=[atomType1], radicalElectrons=[1], spinMultiplicity=[2], charge=[0], label='*1')
-                atom2 = GroupAtom(atomType=[atomType2], radicalElectrons=[1], spinMultiplicity=[2], charge=[0], label='*1')
+                atom1 = GroupAtom(atomType=[atomType1], radicalElectrons=[1], charge=[0], label='*1')
+                atom2 = GroupAtom(atomType=[atomType2], radicalElectrons=[1], charge=[0], label='*1')
                 # And make more generic types of these two atoms
-                atom1gen = GroupAtom(atomType=[atomType1], radicalElectrons=[0, 1], spinMultiplicity=[1, 2], charge=[0, 1], label='*1')
-                atom2gen = GroupAtom(atomType=[atomType2], radicalElectrons=[0, 1], spinMultiplicity=[1, 2], charge=[0, 1], label='*1')
+                atom1gen = GroupAtom(atomType=[atomType1], radicalElectrons=[0, 1], charge=[0, 1], label='*1')
+                atom2gen = GroupAtom(atomType=[atomType2], radicalElectrons=[0, 1], charge=[0, 1], label='*1')
                 if label1 == label2 or atomType2 in atomType1.generic:
                     self.assertTrue(atom1.isSpecificCaseOf(atom2), '{0!s} is not a specific case of {1!s}'.format(atom1, atom2))
                     self.assertTrue(atom1.isSpecificCaseOf(atom2gen), '{0!s} is not a specific case of {1!s}'.format(atom1, atom2gen))
@@ -193,7 +187,6 @@ class TestGroupAtom(unittest.TestCase):
         self.assertEqual(len(self.atom.atomType), len(atom.atomType))
         self.assertEqual(self.atom.atomType[0].label, atom.atomType[0].label)
         self.assertEqual(self.atom.radicalElectrons, atom.radicalElectrons)
-        self.assertEqual(self.atom.spinMultiplicity, atom.spinMultiplicity)
         self.assertEqual(self.atom.charge, atom.charge)
         self.assertEqual(self.atom.label, atom.label)
     
@@ -207,7 +200,6 @@ class TestGroupAtom(unittest.TestCase):
         self.assertEqual(len(self.atom.atomType), len(atom.atomType))
         self.assertEqual(self.atom.atomType[0].label, atom.atomType[0].label)
         self.assertEqual(self.atom.radicalElectrons, atom.radicalElectrons)
-        self.assertEqual(self.atom.spinMultiplicity, atom.spinMultiplicity)
         self.assertEqual(self.atom.charge, atom.charge)
         self.assertEqual(self.atom.label, atom.label)
 
@@ -362,9 +354,9 @@ class TestGroup(unittest.TestCase):
 
     def setUp(self):
         self.adjlist = """
-1 *2 {Cs,Cd} 0 {2,{S,D}} {3,S}
-2 *1 {Os,Od} 0 {1,{S,D}}
-3    R!H     0 {1,S}
+1 *2 {Cs,Cd} U0 {2,{S,D}} {3,S}
+2 *1 {Os,Od} U0 {1,{S,D}}
+3    R!H     U0 {1,S}
             """
         self.group = Group().fromAdjacencyList(self.adjlist)
         
@@ -454,9 +446,9 @@ class TestGroup(unittest.TestCase):
         Test the Group.isIsomorphic() method.
         """
         adjlist = """
-1  *1 {Os,Od} 0 {3,{S,D}}
-2     R!H 0 {3,S}
-3  *2 {Cs,Cd} 0 {1,{S,D}} {2,S}
+1  *1 {Os,Od} U0 {3,{S,D}}
+2     R!H     U0 {3,S}
+3  *2 {Cs,Cd} U0 {1,{S,D}} {2,S}
             """
         group = Group().fromAdjacencyList(adjlist)
         self.assertTrue(self.group.isIsomorphic(group))
@@ -467,9 +459,9 @@ class TestGroup(unittest.TestCase):
         Test the Group.findIsomorphism() method.
         """
         adjlist = """
-1  *1 {Os,Od} 0 {3,{S,D}}
-2     R!H 0 {3,S}
-3  *2 {Cs,Cd} 0 {1,{S,D}} {2,S}
+1  *1 {Os,Od} U0 {3,{S,D}}
+2     R!H     U0 {3,S}
+3  *2 {Cs,Cd} U0 {1,{S,D}} {2,S}
             """
         group = Group().fromAdjacencyList(adjlist)
         result = self.group.findIsomorphism(group)
@@ -491,7 +483,7 @@ class TestGroup(unittest.TestCase):
         Test the Group.isSubgraphIsomorphic() method.
         """
         adjlist = """
-1  *1 {Cs,Cd} 0
+1  *1 {Cs,Cd} U0
             """
         group = Group().fromAdjacencyList(adjlist)
         self.assertTrue(self.group.isSubgraphIsomorphic(group))
@@ -502,7 +494,7 @@ class TestGroup(unittest.TestCase):
         Test the Group.findSubgraphIsomorphisms() method.
         """
         adjlist = """
-1  *1 {Cs,Cd} 0
+1  *1 {Cs,Cd} U0
             """
         group = Group().fromAdjacencyList(adjlist)
         result = self.group.findSubgraphIsomorphisms(group)

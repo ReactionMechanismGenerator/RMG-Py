@@ -19,8 +19,8 @@ class TestThermoDatabase(unittest.TestCase):
     # Only load these once to save time
     database = ThermoDatabase()
     database.load(os.path.join(settings['database.directory'], 'thermo'))
-    oldDatabase = ThermoDatabase()
-    oldDatabase.loadOld(os.path.join(settings['database.directory'], '../output/RMG_database'))
+#    oldDatabase = ThermoDatabase()
+#    oldDatabase.loadOld(os.path.join(settings['database.directory'], '../output/RMG_database'))
     
     
     def setUp(self):
@@ -29,7 +29,7 @@ class TestThermoDatabase(unittest.TestCase):
         """
         
         self.database = self.__class__.database
-        self.oldDatabase = self.__class__.oldDatabase
+#        self.oldDatabase = self.__class__.oldDatabase
 
         self.Tlist = [300, 400, 500, 600, 800, 1000, 1500]
         
@@ -65,14 +65,15 @@ class TestThermoDatabase(unittest.TestCase):
         
         for smiles, symm, H298, S298, Cp300, Cp400, Cp500, Cp600, Cp800, Cp1000, Cp1500 in self.testCases:
             Cplist = [Cp300, Cp400, Cp500, Cp600, Cp800, Cp1000, Cp1500]
-            species = Species(molecule=[Molecule(SMILES=smiles)])
+            molecule=Molecule(SMILES=smiles)
+            species = Species(multiplicity=molecule.multiplicity, molecule=molecule)
             species.generateResonanceIsomers()
             species.molecule[0]
-            thermoData = self.database.getThermoDataFromGroups(Species(molecule=[species.molecule[0]]))
+            thermoData = self.database.getThermoDataFromGroups(species)
             molecule = species.molecule[0]
             for mol in species.molecule[1:]:
-                thermoData0 = self.database.getAllThermoData(Species(molecule=[mol]))[0][0]
-                for data in self.database.getAllThermoData(Species(molecule=[mol]))[1:]:
+                thermoData0 = self.database.getAllThermoData(Species(multiplicity=mol.multiplicity, molecule=[mol]))[0][0]
+                for data in self.database.getAllThermoData(Species(multiplicity=mol.multiplicity, molecule=[mol]))[1:]:
                     if data.getEnthalpy(298) < thermoData0.getEnthalpy(298):
                         thermoData0 = data
                 if thermoData0.getEnthalpy(298) < thermoData.getEnthalpy(298):
@@ -92,14 +93,15 @@ class TestThermoDatabase(unittest.TestCase):
         to select the stablest resonance isomer.
         """
         for smiles, symm, H298, S298, Cp300, Cp400, Cp500, Cp600, Cp800, Cp1000, Cp1500 in self.testCases:
-            species = Species(molecule=[Molecule(SMILES=smiles)])
+            molecule=Molecule(SMILES=smiles)
+            species = Species(multiplicity=molecule.multiplicity, molecule=molecule)
             species.generateResonanceIsomers()
-            thermoData = self.database.getThermoDataFromGroups(Species(molecule=[species.molecule[0]]))
+            thermoData = self.database.getThermoDataFromGroups(Species(multiplicity=species.molecule[0].multiplicity, molecule=[species.molecule[0]]))
             # pick the molecule with lowest H298
             molecule = species.molecule[0]
             for mol in species.molecule[1:]:
-                thermoData0 = self.database.getAllThermoData(Species(molecule=[mol]))[0][0]
-                for data in self.database.getAllThermoData(Species(molecule=[mol]))[1:]:
+                thermoData0 = self.database.getAllThermoData(Species(multiplicity=mol.multiplicity, molecule=[mol]))[0][0]
+                for data in self.database.getAllThermoData(Species(multiplicity=mol.multiplicity, molecule=[mol]))[1:]:
                     if data.getEnthalpy(298) < thermoData0.getEnthalpy(298):
                         thermoData0 = data
                 if thermoData0.getEnthalpy(298) < thermoData.getEnthalpy(298):
@@ -107,30 +109,30 @@ class TestThermoDatabase(unittest.TestCase):
                     molecule = mol
             self.assertEqual(molecule.calculateSymmetryNumber(), symm, msg="Symmetry number error for {0}".format(smiles))
 
-    @work_in_progress
-    def testOldThermoGeneration(self):
-        """
-        Test that the old ThermoDatabase generates relatively accurate thermo data.
-        """
-        for smiles, symm, H298, S298, Cp300, Cp400, Cp500, Cp600, Cp800, Cp1000, Cp1500 in self.testCases:
-            Cplist = [Cp300, Cp400, Cp500, Cp600, Cp800, Cp1000, Cp1500]
-            species = Species(molecule=[Molecule(SMILES=smiles)])
-            species.generateResonanceIsomers()
-            thermoData = self.oldDatabase.getThermoData(Species(molecule=[species.molecule[0]]))
-            molecule = species.molecule[0]
-            for mol in species.molecule[1:]:
-                thermoData0 = self.oldDatabase.getAllThermoData(Species(molecule=[mol]))[0][0]
-                for data in self.oldDatabase.getAllThermoData(Species(molecule=[mol]))[1:]:
-                    if data.getEnthalpy(298) < thermoData0.getEnthalpy(298):
-                        thermoData0 = data
-                if thermoData0.getEnthalpy(298) < thermoData.getEnthalpy(298):
-                    thermoData = thermoData0
-                    molecule = mol
-            
-            self.assertAlmostEqual(H298, thermoData.getEnthalpy(298) / 4184, places=1, msg="H298 error for {0}".format(smiles))
-            self.assertAlmostEqual(S298, thermoData.getEntropy(298) / 4.184, places=1, msg="S298 error for {0}".format(smiles))
-            for T, Cp in zip(self.Tlist, Cplist):
-                self.assertAlmostEqual(Cp, thermoData.getHeatCapacity(T) / 4.184, places=1, msg="Cp{1} error for {0}".format(smiles, T))
+#    @work_in_progress
+#    def testOldThermoGeneration(self):
+#        """
+#        Test that the old ThermoDatabase generates relatively accurate thermo data.
+#        """
+#        for smiles, symm, H298, S298, Cp300, Cp400, Cp500, Cp600, Cp800, Cp1000, Cp1500 in self.testCases:
+#            Cplist = [Cp300, Cp400, Cp500, Cp600, Cp800, Cp1000, Cp1500]
+#            species = Species(molecule=[Molecule(SMILES=smiles)])
+#            species.generateResonanceIsomers()
+#            thermoData = self.oldDatabase.getThermoData(Species(molecule=[species.molecule[0]]))
+#            molecule = species.molecule[0]
+#            for mol in species.molecule[1:]:
+#                thermoData0 = self.oldDatabase.getAllThermoData(Species(molecule=[mol]))[0][0]
+#                for data in self.oldDatabase.getAllThermoData(Species(molecule=[mol]))[1:]:
+#                    if data.getEnthalpy(298) < thermoData0.getEnthalpy(298):
+#                        thermoData0 = data
+#                if thermoData0.getEnthalpy(298) < thermoData.getEnthalpy(298):
+#                    thermoData = thermoData0
+#                    molecule = mol
+#            
+#            self.assertAlmostEqual(H298, thermoData.getEnthalpy(298) / 4184, places=1, msg="H298 error for {0}".format(smiles))
+#            self.assertAlmostEqual(S298, thermoData.getEntropy(298) / 4.184, places=1, msg="S298 error for {0}".format(smiles))
+#            for T, Cp in zip(self.Tlist, Cplist):
+#                self.assertAlmostEqual(Cp, thermoData.getHeatCapacity(T) / 4.184, places=1, msg="Cp{1} error for {0}".format(smiles, T))
 
 class TestThermoDatabaseAromatics(TestThermoDatabase):
     """
