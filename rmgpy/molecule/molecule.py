@@ -108,7 +108,7 @@ class Atom(Vertex):
     e.g. ``atom.symbol`` instead of ``atom.element.symbol``.
     """
 
-    def __init__(self, element=None, radicalElectrons=0, charge=0, label='', lonePairs=None, coords=numpy.array([])):
+    def __init__(self, element=None, radicalElectrons=0, charge=0, label='', lonePairs=-100, coords=numpy.array([])):
         Vertex.__init__(self)
         if isinstance(element, str):
             self.element = elements.__dict__[element]
@@ -1149,19 +1149,10 @@ class Molecule(Graph):
             # Use atomic number as key for element
             number = rdkitatom.GetAtomicNum()
             element = elements.getElement(number)
-            
-            # Process radicalElectrons
-            radicalElectrons = rdkitatom.GetNumRadicalElectrons()
-            
-            # Assume this is always true
-            # There are cases where 2 radicalElectrons is a singlet, but
-            # the triplet is often more stable, 
-            spinMultiplicity = radicalElectrons + 1
-            
-            self.multiplicity = spinMultiplicity
                 
             # Process charge
             charge = rdkitatom.GetFormalCharge()
+            radicalElectrons = rdkitatom.GetNumRadicalElectrons()
             
             atom = Atom(element, radicalElectrons, charge, '', 0)
             self.vertices.append(atom)
@@ -1187,6 +1178,11 @@ class Molecule(Graph):
         self.updateConnectivityValues()
         self.updateLonePairs()
         self.updateAtomTypes()
+        
+        # Assume this is always true
+        # There are cases where 2 radicalElectrons is a singlet, but
+        # the triplet is often more stable, 
+        self.multiplicity = self.getRadicalCount() + 1
         
         return self
 
