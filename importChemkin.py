@@ -183,6 +183,7 @@ class ModelMatcher():
         self.manualMatchesToProcess = []
         self.tentativeMatches = []
         self.thermoMatches = {}
+        self.thermo_libraries_to_check = []
 
     def loadSpecies(self, species_file):
         """
@@ -434,6 +435,8 @@ class ModelMatcher():
         rmg.loadDatabase()
         logging.info("Loaded database.")
 
+        self.thermo_libraries_to_check.extend(rmg.database.thermo.libraryOrder) # add the RMG libraries
+        
         # Should probably look elsewhere, but this is where they tend to be for now...
         directory = os.path.abspath(os.path.join(os.path.split(os.path.abspath(args.thermo))[0], '..'))
         # if that's some subfolder of RMG-models, move up to RMG-models level
@@ -445,7 +448,7 @@ class ModelMatcher():
                 if not filename.endswith(".thermo.py"):
                     continue
                 path = os.path.join(root, filename)
-                logging.info("I think I found one at {0}".format(path))
+                logging.info("I think I found a thermo library at {0}".format(path))
                 if os.path.split(path)[0] == os.path.split(os.path.abspath(args.thermo))[0]:
                     logging.info("But it's the model currently being imported, so not loading.")
                     break
@@ -454,6 +457,7 @@ class ModelMatcher():
                 library.label = root.split('/')[-1]
                 rmg.database.thermo.libraries[library.label] = library
                 # Load them (for the checkThermoLibraries method) but don't trust them
+                self.thermo_libraries_to_check.append(library.label)
                 # rmg.database.thermo.libraryOrder.append(library.label)
 
         rmg.reactionModel = rmgpy.rmg.model.CoreEdgeReactionModel()
@@ -914,7 +918,8 @@ class ModelMatcher():
             else:
                 formulaToLabelsDict[formula].append(label)
 
-        for library_name in self.rmg_object.thermoLibraries:
+        for library_name in self.thermo_libraries_to_check:
+            logging.info("Looking for matches in thermo library "+library_name)
             library = self.rmg_object.database.thermo.libraries[library_name]
             for __, entry in library.entries.iteritems():
                 formula = entry.item.getFormula()
