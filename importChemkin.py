@@ -1614,6 +1614,12 @@ recommended = False
     @cherrypy.expose
     def index(self):
         location = os.path.abspath(self.args.reactions or self.args.species)
+        name = os.path.split(location)[0]
+        try:
+            name = name[(name.index('RMG-models')+11):]
+        except ValueError:
+            pass
+        
         return self.html_head() + """
 <script>
 function alsoUpdate(json) {
@@ -1624,7 +1630,7 @@ $('#unconfirmedspecies_count').html("("+json.unconfirmed+")");
 $('#thermomatches_count').html("("+json.thermomatches+")");
 }
 </script>
-<h1>Mechanism importer</h1>
+<h1>Mechanism importer:"""+name+"""</h1>
 <ul>
 <li><a href="species.html">All species.</a> (Sorted by <a href="species.html?sort=name">name</a> or <a href="species.html?sort=formula">formula</a>.)</li>
 <li><a href="identified.html">Identified species.</a> <span id="identified_count"></span></li>
@@ -2011,6 +2017,12 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
     
         
     def html_head(self):
+        location = os.path.abspath(self.args.reactions or self.args.species)
+        name = os.path.split(location)[0]
+        try:
+            name = name[(name.index('RMG-models')+11):]
+        except ValueError:
+            pass
         return """
 <html>
 <head>
@@ -2031,7 +2043,7 @@ function updateStats() {
             $('#unidentified').html(total).width(100*json.unidentified/total+'%');
             alsoUpdate(json); // any other update scripts for specific pages
             if ((json.processed>lastAlert) && (json.unprocessed==0) && (progressUpdates > 0)) {
-                alert("Input needed! Please confirm a match.");
+                $("title").text("Input needed! Please confirm a match.");
                 lastAlert = json.processed;
             }
             repeater = setTimeout(updateStats, 10000); // do again in 10 seconds
@@ -2061,7 +2073,8 @@ td.tentative {border-left: 5px solid orange;}
 td.unknown {border-left: 5px solid red;}
 h1, h2 {font-family: Helvetica, sans-serif;}
 td.centered {text-align: center;}
-</style>    
+</style>
+<title>"""+name+"""</title>
 </head>
 
 <body>
