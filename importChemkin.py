@@ -1644,6 +1644,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
 <li><a href="unmatchedreactions.html">Unmatched reactions.</a> <span id="unmatchedreactions_count"></span></li>
 <li><a href="unconfirmedspecies.html">Unconfirmed species.</a> <span id="unconfirmedspecies_count"></span></li>
 <li><a href="thermomatches.html">Unconfirmed thermodynamics matches.</a> <span id="thermomatches_count"></span></li>
+<li><a href="thermolibraries.html">Loaded thermodynamics libraries.</a></li>
 <li><a href="thermo.py">Download thermo library.</a></li>
 </ul>
         """ + location + self.html_tail
@@ -1718,6 +1719,18 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
             output.append("<tr><td>{label}</td>".format(label=label))
             output.append("<td><a href='/propose.html?ckLabel={ckl}'>propose match</a></td></tr>".format(ckl=urllib2.quote(label),))
         output.extend(['</table>', self.html_tail])
+        return ('\n'.join(output))
+
+    @cherrypy.expose
+    def thermolibraries_html(self):
+        "Show a list of the loaded thermo libraries"
+        output = [self.html_head(), '<h1>Thermo libraries loaded</h1><ul>']
+
+        for library_name in self.thermo_libraries_to_check:
+            library = self.rmg_object.database.thermo.libraries[library_name]
+            library_length = len(library.entries)
+            output.append('<li>{name} ({num})</li>'.format(name=library_name, num=library_length))
+        output.append('</ul>'+self.html_tail)
         return ('\n'.join(output))
 
     @cherrypy.expose
