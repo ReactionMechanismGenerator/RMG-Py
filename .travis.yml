@@ -9,7 +9,8 @@ before_install:
 #  - sudo apt-get install python-rdkit librdkit-dev librdkit1 rdkit-data
   - sudo apt-get install -qq python-numpy python-scipy python-matplotlib
   - cd ..
-  - git clone https://github.com/GreenGroup/RMG-database.git
+  # the following line should not have "--branch new-style-adjacency-list" when it is on the master branch!
+  - git clone https://github.com/GreenGroup/RMG-database.git --branch new-style-adjacency-list
   - git clone https://github.com/GreenGroup/PyDAS.git
   - git clone https://github.com/GreenGroup/PyDQED.git
   # RDKit, based on https://github.com/rdkit/rdkit/blob/master/.travis.yml
