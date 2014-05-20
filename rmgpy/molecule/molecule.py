@@ -148,6 +148,7 @@ class Atom(Vertex):
             'connectivity3': self.connectivity3,
             'sortingLabel': self.sortingLabel,
             'atomType': self.atomType.label if self.atomType else None,
+            'lonePairs': self.lonePairs,
         }
         return (Atom, (self.element.symbol, self.radicalElectrons, self.charge, self.label), d)
 
@@ -161,6 +162,7 @@ class Atom(Vertex):
         self.connectivity3 = d['connectivity3']
         self.sortingLabel = d['sortingLabel']
         self.atomType = atomTypes[d['atomType']] if d['atomType'] else None
+        self.lonePairs = d['lonePairs']
     
     @property
     def mass(self): return self.element.mass
@@ -603,7 +605,7 @@ class Molecule(Graph):
         """
         A helper function used when pickling an object.
         """
-        return (Molecule, (self.vertices, self.symmetryNumber))
+        return (Molecule, (self.vertices, self.symmetryNumber, self.multiplicity))
 
     def __getAtoms(self): return self.vertices
     def __setAtoms(self, atoms): self.vertices = atoms
