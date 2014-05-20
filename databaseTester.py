@@ -4,6 +4,7 @@ This scripts runs tests on the database
 import os.path
 import logging
 
+from rmgpy import settings
 from rmgpy.data.rmg import RMGDatabase
 
 def checkFamilies(FullDatabase):
@@ -15,12 +16,9 @@ def checkFamilies(FullDatabase):
         familyStatus[family]=FullDatabase.kinetics.families[family].checkWellFormed()
     
 if __name__ == '__main__':
-    #set up paths for database and logger
-#     databaseProjectRootPath = os.path.dirname( os.path.abspath( __file__ ))
-    databaseProjectRootPath = "C:\RMG-database"
-    path = os.path.join(databaseProjectRootPath, 'input')
-    
-    logPath = os.path.join(databaseProjectRootPath, 'database.log')
+    # Set up paths for database and logger
+    databaseDirectory = settings['database.directory']    # RMG-database/input    
+    logPath = os.path.join(databaseDirectory, '..', 'database.log')
     #clear logger if it exists
     if os.path.exists(logPath):
         with open(logPath, 'w'): 
@@ -31,9 +29,8 @@ if __name__ == '__main__':
     databaseLog.addHandler(fh)
     databaseLog.propagate=False #prevents these logging messages to being sent to ancestors (so that it doesn't print on console)
 #     logging.basicConfig(filename=logpath, level=logging.ERROR)
-    #load rmg database
+
     FullDatabase=RMGDatabase()
-#     FullDatabase.load(thermoLibraries=)
-    FullDatabase.load(path, kineticsFamilies='all')
+    FullDatabase.load(databaseDirectory, kineticsFamilies='all')
     checkFamilies(FullDatabase)
 
