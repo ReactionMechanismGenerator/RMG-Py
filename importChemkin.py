@@ -1156,7 +1156,11 @@ class ModelMatcher():
         event = [time.asctime(), user, 'action', '{user} imported this entry from {source}'.format(user=user, source=source)]
         entry.history = [event]
         with open(self.outputKineticsFile, 'a') as f:
-            kinSaveEntry(f, entry)
+            try:
+                kinSaveEntry(f, entry)
+            except:
+                logging.error("Couldn't save reaction {0} to kinetics.py file".format(str(chemkinReaction)))
+                f.write("\n# COULD NOT SAVE THE REACTION \n # {0}\n".format(entry.shortDesc))
 
     def pruneVoting(self):
         """
