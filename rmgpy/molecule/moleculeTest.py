@@ -456,45 +456,73 @@ class TestMolecule(unittest.TestCase):
     """
     
     def setUp(self):
-        self.adjlist = """
-1 *2 C U1 L0 E0  {2,D} {3,S}
-2 *1 O U0 L2 E0  {1,D}
-3    C U0 L0 E0  {1,S} {4,S} {5,S} {6,S}
-4    H U0 L0 E0  {3,S}
-5    H U0 L0 E0  {3,S}
-6    H U0 L0 E0  {3,S}
+        self.adjlist_1 = """
+1 *1 C U1 L0 E0  {2,S} {3,S} {4,S}
+2    H U0 L0 E0  {1,S}
+3    H U0 L0 E0  {1,S}
+4 *2 N U0 L0 E+1 {1,S} {5,S} {6,D}
+5    O U0 L3 E-1 {4,S}
+6    O U0 L2 E0  {4,D}
             """
-        self.molecule = Molecule().fromAdjacencyList(self.adjlist)
+        self.molecule = [Molecule().fromAdjacencyList(self.adjlist_1)]
+        
+        self.adjlist_2 = """
+1 *1 C U1 L0 {2,S} {3,S} {4,S}
+2    H U0 L0 {1,S}
+3    H U0 L0 {1,S}
+4 *2 N U0 L0 {1,S} {5,S} {6,D}
+5    O U0 L3 {4,S}
+6    O U0 L2 {4,D}
+            """
+        self.molecule.append(Molecule().fromAdjacencyList(self.adjlist_2))
+        
+        self.adjlist_3 = """
+1 *1 C U1 {2,S} {3,S} {4,S}
+2    H U0 {1,S}
+3    H U0 {1,S}
+4 *2 N U0 {1,S} {5,S} {6,D}
+5    O U0 {4,S}
+6    O U0 {4,D}
+            """
+        self.molecule.append(Molecule().fromAdjacencyList(self.adjlist_3))
+        
+        self.adjlist_4 = """
+1 *1 C U1 L0 {2,S}
+2 *2 N U0 L0 {1,S} {3,S} {4,D}
+3    O U0 L3 {2,S}
+4    O U0 L2 {2,D}
+            """
+        self.molecule.append(Molecule().fromAdjacencyList(self.adjlist_4,saturateH=True))
         
     def testClearLabeledAtoms(self):
         """
         Test the Molecule.clearLabeledAtoms() method.
         """
-        self.molecule.clearLabeledAtoms()
-        for atom in self.molecule.atoms:
+        self.molecule[0].clearLabeledAtoms()
+        for atom in self.molecule[0].atoms:
             self.assertEqual(atom.label, '')
 
     def testContainsLabeledAtom(self):
         """
         Test the Molecule.containsLabeledAtom() method.
         """
-        for atom in self.molecule.atoms:
+        for atom in self.molecule[0].atoms:
             if atom.label != '':
-                self.assertTrue(self.molecule.containsLabeledAtom(atom.label))
-        self.assertFalse(self.molecule.containsLabeledAtom('*3'))
-        self.assertFalse(self.molecule.containsLabeledAtom('*4'))
-        self.assertFalse(self.molecule.containsLabeledAtom('*5'))
-        self.assertFalse(self.molecule.containsLabeledAtom('*6'))
+                self.assertTrue(self.molecule[0].containsLabeledAtom(atom.label))
+        self.assertFalse(self.molecule[0].containsLabeledAtom('*3'))
+        self.assertFalse(self.molecule[0].containsLabeledAtom('*4'))
+        self.assertFalse(self.molecule[0].containsLabeledAtom('*5'))
+        self.assertFalse(self.molecule[0].containsLabeledAtom('*6'))
         
     def testGetLabeledAtom(self):
         """
         Test the Molecule.getLabeledAtom() method.
         """
-        for atom in self.molecule.atoms:
+        for atom in self.molecule[0].atoms:
             if atom.label != '':
-                self.assertEqual(atom, self.molecule.getLabeledAtom(atom.label))
+                self.assertEqual(atom, self.molecule[0].getLabeledAtom(atom.label))
         try:
-            self.molecule.getLabeledAtom('*3')
+            self.molecule[0].getLabeledAtom('*3')
             self.fail('Unexpected successful return from Molecule.getLabeledAtom() with invalid atom label.')
         except ValueError:
             pass
@@ -503,8 +531,8 @@ class TestMolecule(unittest.TestCase):
         """
         Test the Molecule.getLabeledAtoms() method.
         """
-        labeled = self.molecule.getLabeledAtoms()
-        for atom in self.molecule.atoms:
+        labeled = self.molecule[0].getLabeledAtoms()
+        for atom in self.molecule[0].atoms:
             if atom.label != '':
                 self.assertTrue(atom.label in labeled)
                 self.assertTrue(atom in labeled.values())
@@ -516,68 +544,220 @@ class TestMolecule(unittest.TestCase):
         """
         Test the Molecule.getLabeledAtoms() method.
         """
-        self.assertEqual(self.molecule.getFormula(), 'C2H3O')
+        self.assertEqual(self.molecule[0].getFormula(), 'CH2NO2')
+        self.assertEqual(self.molecule[1].getFormula(), 'CH2NO2')
+        self.assertEqual(self.molecule[2].getFormula(), 'CH2NO2')
+        self.assertEqual(self.molecule[3].getFormula(), 'CH2NO2')
 
 
     def testRadicalCount(self):
         """
         Test the Molecule.getRadicalCount() method.
         """
-        self.assertEqual( self.molecule.getRadicalCount(), sum([atom.radicalElectrons for atom in self.molecule.atoms]) )
+        self.assertEqual( self.molecule[0].getRadicalCount(), sum([atom.radicalElectrons for atom in self.molecule[0].atoms]) )
+        self.assertEqual( self.molecule[1].getRadicalCount(), sum([atom.radicalElectrons for atom in self.molecule[1].atoms]) )
+        self.assertEqual( self.molecule[2].getRadicalCount(), sum([atom.radicalElectrons for atom in self.molecule[2].atoms]) )
+        self.assertEqual( self.molecule[3].getRadicalCount(), sum([atom.radicalElectrons for atom in self.molecule[3].atoms]) )
         
     def testGetMolecularWeight(self):
         """
         Test the Molecule.getMolecularWeight() method.
         """
-        self.assertAlmostEqual(self.molecule.getMolecularWeight() * 1000, 43.04, 2)
+        self.assertAlmostEqual(self.molecule[0].getMolecularWeight() * 1000, 60.03, 2)
+        self.assertAlmostEqual(self.molecule[1].getMolecularWeight() * 1000, 60.03, 2)
+        self.assertAlmostEqual(self.molecule[2].getMolecularWeight() * 1000, 60.03, 2)
+        self.assertAlmostEqual(self.molecule[3].getMolecularWeight() * 1000, 60.03, 2)
 
     def testFromAdjacencyList(self):
         """
         Test the Molecule.fromAdjacencyList() method.
         """
-        atom1, atom2, atom3 = self.molecule.atoms[0:3]
-        self.assertTrue(self.molecule.hasBond(atom1,atom2))
-        self.assertTrue(self.molecule.hasBond(atom1,atom3))
-        self.assertFalse(self.molecule.hasBond(atom2,atom3))
-        bond12 = atom1.bonds[atom2]
-        bond13 = atom1.bonds[atom3]
+        
+        # molecule 1
+        
+        self.assertTrue(self.molecule[0].multiplicity == 2)
+        
+        atom1 = self.molecule[0].atoms[0]
+        atom2 = self.molecule[0].atoms[3]
+        atom3 = self.molecule[0].atoms[4]
+        atom4 = self.molecule[0].atoms[5]
+        self.assertTrue(self.molecule[0].hasBond(atom2,atom1))
+        self.assertTrue(self.molecule[0].hasBond(atom2,atom3))
+        self.assertTrue(self.molecule[0].hasBond(atom2,atom4))
+        self.assertFalse(self.molecule[0].hasBond(atom1,atom3))
+        self.assertFalse(self.molecule[0].hasBond(atom1,atom4))
+        bond21 = atom2.bonds[atom1]
+        bond23 = atom2.bonds[atom3]
+        bond24 = atom2.bonds[atom4]
            
-        self.assertTrue(atom1.label == '*2')
+        self.assertTrue(atom1.label == '*1')
         self.assertTrue(atom1.element.symbol == 'C')
         self.assertTrue(atom1.radicalElectrons == 1)
         self.assertTrue(atom1.charge == 0)
         
-        self.assertTrue(atom2.label == '*1')
-        self.assertTrue(atom2.element.symbol == 'O')
+        self.assertTrue(atom2.label == '*2')
+        self.assertTrue(atom2.element.symbol == 'N')
         self.assertTrue(atom2.radicalElectrons == 0)
-        self.assertTrue(atom2.charge == 0)
+        self.assertTrue(atom2.charge == 1)
         
         self.assertTrue(atom3.label == '')
-        self.assertTrue(atom3.element.symbol == 'C')
+        self.assertTrue(atom3.element.symbol == 'O')
         self.assertTrue(atom3.radicalElectrons == 0)
-        self.assertTrue(atom3.charge == 0)
+        self.assertTrue(atom3.charge == -1)
+        
+        self.assertTrue(atom4.label == '')
+        self.assertTrue(atom4.element.symbol == 'O')
+        self.assertTrue(atom4.radicalElectrons == 0)
+        self.assertTrue(atom4.charge == 0)
 
-        self.assertTrue(bond12.isDouble())
-        self.assertTrue(bond13.isSingle())
+        self.assertTrue(bond21.isSingle())
+        self.assertTrue(bond23.isSingle())
+        self.assertTrue(bond24.isDouble())
+        
+        
+        # molecule 2
+        
+        self.assertTrue(self.molecule[1].multiplicity == 2)
+        
+        atom1 = self.molecule[1].atoms[0]
+        atom2 = self.molecule[1].atoms[3]
+        atom3 = self.molecule[1].atoms[4]
+        atom4 = self.molecule[1].atoms[5]
+        self.assertTrue(self.molecule[1].hasBond(atom2,atom1))
+        self.assertTrue(self.molecule[1].hasBond(atom2,atom3))
+        self.assertTrue(self.molecule[1].hasBond(atom2,atom4))
+        self.assertFalse(self.molecule[1].hasBond(atom1,atom3))
+        self.assertFalse(self.molecule[1].hasBond(atom1,atom4))
+        bond21 = atom2.bonds[atom1]
+        bond23 = atom2.bonds[atom3]
+        bond24 = atom2.bonds[atom4]
+           
+        self.assertTrue(atom1.label == '*1')
+        self.assertTrue(atom1.element.symbol == 'C')
+        self.assertTrue(atom1.radicalElectrons == 1)
+        self.assertTrue(atom1.charge == 0)
+        
+        self.assertTrue(atom2.label == '*2')
+        self.assertTrue(atom2.element.symbol == 'N')
+        self.assertTrue(atom2.radicalElectrons == 0)
+        self.assertTrue(atom2.charge == 1)
+        
+        self.assertTrue(atom3.label == '')
+        self.assertTrue(atom3.element.symbol == 'O')
+        self.assertTrue(atom3.radicalElectrons == 0)
+        self.assertTrue(atom3.charge == -1)
+        
+        self.assertTrue(atom4.label == '')
+        self.assertTrue(atom4.element.symbol == 'O')
+        self.assertTrue(atom4.radicalElectrons == 0)
+        self.assertTrue(atom4.charge == 0)
+
+        self.assertTrue(bond21.isSingle())
+        self.assertTrue(bond23.isSingle())
+        self.assertTrue(bond24.isDouble())
+        
+        
+        # molecule 3
+        
+        self.assertTrue(self.molecule[2].multiplicity == 2)
+        
+        atom1 = self.molecule[2].atoms[0]
+        atom2 = self.molecule[2].atoms[3]
+        atom3 = self.molecule[2].atoms[4]
+        atom4 = self.molecule[2].atoms[5]
+        self.assertTrue(self.molecule[2].hasBond(atom2,atom1))
+        self.assertTrue(self.molecule[2].hasBond(atom2,atom3))
+        self.assertTrue(self.molecule[2].hasBond(atom2,atom4))
+        self.assertFalse(self.molecule[2].hasBond(atom1,atom3))
+        self.assertFalse(self.molecule[2].hasBond(atom1,atom4))
+        bond21 = atom2.bonds[atom1]
+        bond23 = atom2.bonds[atom3]
+        bond24 = atom2.bonds[atom4]
+           
+        self.assertTrue(atom1.label == '*1')
+        self.assertTrue(atom1.element.symbol == 'C')
+        self.assertTrue(atom1.radicalElectrons == 1)
+        self.assertTrue(atom1.charge == 0)
+        
+        self.assertTrue(atom2.label == '*2')
+        self.assertTrue(atom2.element.symbol == 'N')
+        self.assertTrue(atom2.radicalElectrons == 0)
+        self.assertTrue(atom2.charge == 1)
+        
+        self.assertTrue(atom3.label == '')
+        self.assertTrue(atom3.element.symbol == 'O')
+        self.assertTrue(atom3.radicalElectrons == 0)
+        self.assertTrue(atom3.charge == -1)
+        
+        self.assertTrue(atom4.label == '')
+        self.assertTrue(atom4.element.symbol == 'O')
+        self.assertTrue(atom4.radicalElectrons == 0)
+        self.assertTrue(atom4.charge == 0)
+
+        self.assertTrue(bond21.isSingle())
+        self.assertTrue(bond23.isSingle())
+        self.assertTrue(bond24.isDouble())
+        
+        
+        # molecule 4
+        
+        self.assertTrue(self.molecule[3].multiplicity == 2)
+        
+        atom1 = self.molecule[3].atoms[0]
+        atom2 = self.molecule[3].atoms[1]
+        atom3 = self.molecule[3].atoms[2]
+        atom4 = self.molecule[3].atoms[3]
+        self.assertTrue(self.molecule[3].hasBond(atom2,atom1))
+        self.assertTrue(self.molecule[3].hasBond(atom2,atom3))
+        self.assertTrue(self.molecule[3].hasBond(atom2,atom4))
+        self.assertFalse(self.molecule[3].hasBond(atom1,atom3))
+        self.assertFalse(self.molecule[3].hasBond(atom1,atom4))
+        bond21 = atom2.bonds[atom1]
+        bond23 = atom2.bonds[atom3]
+        bond24 = atom2.bonds[atom4]
+           
+        self.assertTrue(atom1.label == '*1')
+        self.assertTrue(atom1.element.symbol == 'C')
+        self.assertTrue(atom1.radicalElectrons == 1)
+        self.assertTrue(atom1.charge == 0)
+        
+        self.assertTrue(atom2.label == '*2')
+        self.assertTrue(atom2.element.symbol == 'N')
+        self.assertTrue(atom2.radicalElectrons == 0)
+        self.assertTrue(atom2.charge == 1)
+        
+        self.assertTrue(atom3.label == '')
+        self.assertTrue(atom3.element.symbol == 'O')
+        self.assertTrue(atom3.radicalElectrons == 0)
+        self.assertTrue(atom3.charge == -1)
+        
+        self.assertTrue(atom4.label == '')
+        self.assertTrue(atom4.element.symbol == 'O')
+        self.assertTrue(atom4.radicalElectrons == 0)
+        self.assertTrue(atom4.charge == 0)
+
+        self.assertTrue(bond21.isSingle())
+        self.assertTrue(bond23.isSingle())
+        self.assertTrue(bond24.isDouble())
+        
+        
 
     def testToAdjacencyList(self):
         """
         Test the Molecule.toAdjacencyList() method.
         """
-        adjlist = self.molecule.toAdjacencyList(removeH=False,printMultiplicity=False)
-        self.assertEqual(adjlist.strip(), self.adjlist.strip())
+        adjlist_1 = self.molecule[0].toAdjacencyList(removeH=False,printMultiplicity=False)
+        self.assertEqual(adjlist_1.strip(), self.adjlist_1.strip())
         
-    def testFromOldAdjacencyList(self):
-        """
-        Test we can read things with implicit hydrogens.
-        """
-        adjList = """
-        1 O U0 L2 {2,S} {3,S}
-        2 H U0 L0 {1,S}
-        3 H U0 L0 {1,S}
-        """ # should be Water
-        molecule = Molecule().fromAdjacencyList(adjList, saturateH=True) # only works with saturateH=True
-        self.assertEqual(molecule.getFormula(),'H2O')
+#    def testFromOldAdjacencyList(self):
+#        """
+#        Test we can read things with implicit hydrogens.
+#        """
+#        adjList = """
+#        1 O 0 
+#        """ # should be Water
+#        molecule = Molecule().fromAdjacencyList(adjList, saturateH=True) # only works with saturateH=True
+#        self.assertEqual(molecule.getFormula(),'H2O')
 
     def testIsomorphism(self):
         """
@@ -818,7 +998,7 @@ class TestMolecule(unittest.TestCase):
         Test that we can generate a few SMILES strings as expected
         """
         import rmgpy.molecule
-        test_strings =['C#O', '[C]', '[CH]', 'OO', '[H][H]', '[H]', '[He]', '[O]', 'O', '[CH3]', 'C', '[OH]', 'CCC', 'CC', 'N#N', '[O]O', 'C[CH2]', '[Ar]', 'CCCC','O=C=O','CN']
+        test_strings =['C#O', '[C]', '[CH]', 'OO', '[H][H]', '[H]', '[He]', '[O]', 'O', '[CH3]', 'C', '[OH]', 'CCC', 'CC', 'N#N', '[O]O', 'C[CH2]', '[Ar]', 'CCCC','O=C=O','[C]#N']
         for s in test_strings:
             molecule = Molecule(SMILES=s)
             self.assertEqual(s,molecule.toSMILES())
