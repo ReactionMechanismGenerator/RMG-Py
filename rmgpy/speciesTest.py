@@ -27,6 +27,7 @@ class TestSpecies(unittest.TestCase):
         self.species = Species(
             index=1,
             label='C2H4',
+            multiplicity = 1,
             thermo=ThermoData(
                 Tdata=([300.0,400.0,500.0,600.0,800.0,1000.0,1500.0],'K'),
                 Cpdata=([3.0,4.0,5.0,6.0,8.0,10.0,15.0],'cal/(mol*K)'),
@@ -61,6 +62,7 @@ class TestSpecies(unittest.TestCase):
         species = cPickle.loads(cPickle.dumps(self.species,-1))
         self.assertEqual(self.species.index, species.index)
         self.assertEqual(self.species.label, species.label)
+        self.assertEqual(self.species.multiplicity, species.multiplicity)
         self.assertEqual(self.species.thermo.H298.value_si, species.thermo.H298.value_si)
         self.assertEqual(self.species.thermo.H298.units, species.thermo.H298.units)
         self.assertEqual(len(self.species.conformer.modes), len(species.conformer.modes))
@@ -86,6 +88,7 @@ class TestSpecies(unittest.TestCase):
         exec('species = {0!r}'.format(self.species))
         self.assertEqual(self.species.index, species.index)
         self.assertEqual(self.species.label, species.label)
+        self.assertEqual(self.species.multiplicity, species.multiplicity)
         self.assertEqual(self.species.thermo.H298.value_si, species.thermo.H298.value_si)
         self.assertEqual(self.species.thermo.H298.units, species.thermo.H298.units)
         self.assertEqual(len(self.species.conformer.modes), len(species.conformer.modes))

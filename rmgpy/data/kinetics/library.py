@@ -274,13 +274,14 @@ class KineticsLibrary(Database):
                   longDesc='',
                   ):
         
-        reactants = [Species(label=reactant1.strip().splitlines()[0].strip(), molecule=[Molecule().fromAdjacencyList(reactant1)])]
-        if reactant2 is not None: reactants.append(Species(label=reactant2.strip().splitlines()[0].strip(), molecule=[Molecule().fromAdjacencyList(reactant2)]))
-        if reactant3 is not None: reactants.append(Species(label=reactant3.strip().splitlines()[0].strip(), molecule=[Molecule().fromAdjacencyList(reactant3)]))
+        
+        reactants = [Species(label=reactant1.strip().splitlines()[0].strip(), multiplicity=int(reactant1.strip().splitlines()[1].split()[1]), molecule=[Molecule().fromAdjacencyList(reactant1)])]
+        if reactant2 is not None: reactants.append(Species(label=reactant2.strip().splitlines()[0].strip(), multiplicity=int(reactant2.strip().splitlines()[1].split()[1]), molecule=[Molecule().fromAdjacencyList(reactant2)]))
+        if reactant3 is not None: reactants.append(Species(label=reactant3.strip().splitlines()[0].strip(), multiplicity=int(reactant3.strip().splitlines()[1].split()[1]), molecule=[Molecule().fromAdjacencyList(reactant3)]))
 
-        products = [Species(label=product1.strip().splitlines()[0].strip(), molecule=[Molecule().fromAdjacencyList(product1)])]
-        if product2 is not None: products.append(Species(label=product2.strip().splitlines()[0].strip(), molecule=[Molecule().fromAdjacencyList(product2)]))
-        if product3 is not None: products.append(Species(label=product3.strip().splitlines()[0].strip(), molecule=[Molecule().fromAdjacencyList(product3)]))
+        products = [Species(label=product1.strip().splitlines()[0].strip(), multiplicity=int(product1.strip().splitlines()[1].split()[1]), molecule=[Molecule().fromAdjacencyList(product1)])]
+        if product2 is not None: products.append(Species(label=product2.strip().splitlines()[0].strip(), multiplicity=int(product2.strip().splitlines()[1].split()[1]), molecule=[Molecule().fromAdjacencyList(product2)]))
+        if product3 is not None: products.append(Species(label=product3.strip().splitlines()[0].strip(), multiplicity=int(product3.strip().splitlines()[1].split()[1]), molecule=[Molecule().fromAdjacencyList(product3)]))
         
         comment = "Reaction and kinetics from {0}.".format(self.label)
         if shortDesc.strip(): 

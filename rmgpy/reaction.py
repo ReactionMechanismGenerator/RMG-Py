@@ -45,6 +45,7 @@ import numpy
 import logging
 import re
 import os.path
+from copy import copy, deepcopy
 
 import rmgpy.constants as constants
 from rmgpy.molecule.molecule import Molecule, Atom
@@ -980,6 +981,31 @@ class Reaction:
                         zCoord[k] = dirVec[k].z*lenVec[k]
             reactionAxis = [sum(xCoord), sum(yCoord), sum(zCoord)]
             products[i].reactionAxis = reactionAxis
+            
+    def copy(self):
+        """
+        Create a deep copy of the current reaction.
+        """
+        
+        cython.declare(other=Reaction)
+
+        other = Reaction.__new__(Reaction)
+        other.index = self.index
+        other.label = self.label
+        other.reactants = []
+        for reactant in self.reactants:
+            other.reactants.append(reactant.copy(deep=True))
+        other.products = []
+        for product in self.products:
+            other.products.append(product.copy(deep=True))
+        other.kinetics = deepcopy(self.kinetics)
+        other.reversible = self.reversible
+        other.transitionState = deepcopy(self.transitionState)
+        other.duplicate = self.duplicate
+        other.degeneracy = self.degeneracy
+        other.pairs = deepcopy(self.pairs)
+        
+        return other
 
                 
 ################################################################################

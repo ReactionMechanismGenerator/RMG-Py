@@ -90,6 +90,7 @@ class TestReaction(unittest.TestCase):
         """
         ethylene = Species(
             label = 'C2H4',
+            multiplicity = 1,
             conformer = Conformer(
                 E0 = (44.7127, 'kJ/mol'),
                 modes = [
@@ -117,6 +118,7 @@ class TestReaction(unittest.TestCase):
         
         hydrogen = Species(          
             label = 'H',
+            multiplicity = 2,
             conformer = Conformer(
                 E0 = (211.794, 'kJ/mol'),
                 modes = [
@@ -131,6 +133,7 @@ class TestReaction(unittest.TestCase):
         
         ethyl = Species(
             label = 'C2H5',
+            multiplicity = 2,
             conformer = Conformer(
                 E0 = (111.603, 'kJ/mol'),
                 modes = [

@@ -52,8 +52,9 @@ def saveEntry(f, entry):
     database to the file object `f`.
     """
     f.write('entry(\n')
-    f.write('    index = {0:d},\n'.format(entry.index))
-    f.write('    label = "{0}",\n'.format(entry.label))
+    f.write('    index        = {0:d},\n'.format(entry.index))
+    f.write('    label        = "{0}",\n'.format(entry.label))
+    f.write('    multiplicity = {0},\n'.format(entry.multiplicity))
 
     if isinstance(entry.item, Molecule):
         f.write('    molecule = \n')
@@ -93,6 +94,7 @@ class TransportLibrary(Database):
     def loadEntry(self,
                   index,
                   label,
+                  multiplicity,
                   molecule,
                   transport,
                   reference=None,
@@ -100,10 +102,15 @@ class TransportLibrary(Database):
                   shortDesc='',
                   longDesc='',
                   ):
+        
+        item = Molecule().fromAdjacencyList(molecule)
+        item.multiplicity = multiplicity
+        
         self.entries[label] = Entry(
             index = index,
             label = label,
-            item = Molecule().fromAdjacencyList(molecule),
+            multiplicity =multiplicity,
+            item = item,
             data = transport,
             reference = reference,
             referenceType = referenceType,
