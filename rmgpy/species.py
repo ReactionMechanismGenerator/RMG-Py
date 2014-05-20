@@ -285,7 +285,7 @@ class Species(object):
         if self.hasThermo():
             H = self.thermo.getEnthalpy(T)
         elif self.hasStatMech():
-            H = self.conformer.getEnthalpy(T) + self.conformer._E0.value_si
+            H = self.conformer.getEnthalpy(T) + self.conformer.E0.value_si
         else:
             raise Exception('Unable to calculate enthalpy for species {0!r}: no thermo or statmech data available.'.format(self.label))
         return H
@@ -315,7 +315,7 @@ class Species(object):
         if self.hasThermo():
             G = self.thermo.getFreeEnergy(T)
         elif self.hasStatMech():
-            G = self.conformer.getFreeEnergy(T) + self.conformer._E0.value_si
+            G = self.conformer.getFreeEnergy(T) + self.conformer.E0.value_si
         else:
             raise Exception('Unable to calculate free energy for species {0!r}: no thermo or statmech data available.'.format(self.label))
         return G
