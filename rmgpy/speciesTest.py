@@ -62,6 +62,7 @@ class TestSpecies(unittest.TestCase):
         species = cPickle.loads(cPickle.dumps(self.species,-1))
         self.assertEqual(self.species.index, species.index)
         self.assertEqual(self.species.label, species.label)
+        self.assertEqual(self.species.multiplicity, species.multiplicity)
         self.assertEqual(self.species.thermo.H298.value_si, species.thermo.H298.value_si)
         self.assertEqual(self.species.thermo.H298.units, species.thermo.H298.units)
         self.assertEqual(len(self.species.conformer.modes), len(species.conformer.modes))
