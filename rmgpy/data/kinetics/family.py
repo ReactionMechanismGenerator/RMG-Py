@@ -2047,9 +2047,9 @@ class KineticsFamily(Database):
                         if not nodeGroup.label in nodeParent.item.components:
                             #-1 index means the child is not in the LogicOr
                             databaseLog.error("{0}'s definition is not a subgroup of its stated parent, {1}. The child definition is".format(nodeName, nodeParent.label))
-                            databaseLog.error("{0}".format(groups[nodeName].item))
+                            databaseLog.error("{0}".format(groups[nodeName].item.toAdjacencyList()))
                             databaseLog.error("The parent {0} definition is".format(nodeParent.label))
-                            databaseLog.error("{0}".format(groups[nodeParent.label]))
+                            databaseLog.error("{0}".format(nodeParent.item))
                             continue
                         else:
                             #if the parent is a LogicOr, we want to keep ascending until we get to a group or hit a discontinuity (could be
@@ -2066,9 +2066,9 @@ class KineticsFamily(Database):
                     #If both the parent and child are graphs, we can use the function isSubgroupIsomorphic if it is actually a child
                     if not nodeGroup.item.isSubgraphIsomorphic(nodeParent.item):
                         databaseLog.error("{0}'s definition is not a subgroup of its stated parent, {1}. The child definition is".format(nodeName, nodeParent.label))
-                        databaseLog.error("{0}".format(groups[nodeName].item))
+                        databaseLog.error("{0}".format(groups[nodeName].item.toAdjacencyList()))
                         databaseLog.error("The parent {0} definition is".format(nodeParent.label))
-                        databaseLog.error("{0}".format(groups[nodeParent.label]))
+                        databaseLog.error("{0}".format(nodeParent.item.toAdjacencyList()))
         except DatabaseError, e:
             databaseLog.error(str(e))
         
