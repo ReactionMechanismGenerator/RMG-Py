@@ -119,13 +119,13 @@ class TransitionStates(Database):
         
         fpath = os.path.join(path,'TS_training.py')
         logging.debug("Loading transitions state family training set from {0}".format(fpath))
-        depository = TransitionStateDepository(label='intra_H_migration/TS_training')
+        depository = TransitionStateDepository(label='H_Abstraction/TS_training')#'intra_H_migration/TS_training')
         depository.load(fpath, local_context, global_context )
         self.depository = depository
         
         fpath = os.path.join(path,'TS_groups.py')
         logging.debug("Loading transitions state family groups from {0}".format(fpath))
-        groups = TSGroups(label="intra_H_migration/TS_groups")
+        groups = TSGroups(label='H_Abstraction/TS_groups')#'intra_H_migration/TS_groups')
         groups.load(fpath , local_context, global_context )
         self.groups = groups
     
