@@ -819,6 +819,8 @@ class ThermoDatabase(object):
         saturatedStruct.updateConnectivityValues()
         saturatedStruct.sortVertices()
         saturatedStruct.updateAtomTypes()
+        saturatedStruct.updateLonePairs()
+        saturatedStruct.multiplicity = saturatedStruct.getRadicalCount() + 1
         
         # Get thermo estimate for saturated form of structure
         thermoData = stableThermoEstimator(saturatedStruct)
