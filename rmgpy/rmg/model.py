@@ -129,7 +129,6 @@ class Species(rmgpy.species.Species):
                     thermo = []
                     for molecule in self.molecule:
                         molecule.clearLabeledAtoms()
-                        molecule.updateAtomTypes()
                         tdata = database.thermo.estimateRadicalThermoViaHBI(molecule, quantumMechanics.getThermoData)
                         if tdata is not None:
                             thermo.append(tdata)
