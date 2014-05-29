@@ -225,13 +225,15 @@ class ModelMatcher():
             while line0 != '':
                 line = removeCommentFromLine(line0)[0]
                 tokens_upper = line.upper().split()
-                if tokens_upper and tokens_upper[0] in ('THERMO', 'THER'):
+                if tokens_upper and tokens_upper[0] in ('THERMO','THERM', 'THER'):
                     foundThermoBlock = True
                     # Unread the line (we'll re-read it in readThermoBlock())
                     f.seek(-len(line0), 1)
                     formulaDict = readThermoBlock(f, speciesDict)
                     assert formulaDict, "Didn't read any thermo data"
                 line0 = f.readline()
+        assert foundThermoBlock, "Couldn't find a line beginning with THERMO or THERM or THER in {0}".format(thermo_file)
+        assert formulaDict, "Didn't read any thermo data from {0}".format(thermo_file)
 
         # Save the formulaDict, converting from {'c':1,'h':4} into "CH4" in the process.
         #self.formulaDict = {label: convertFormula(formula) for label, formula in formulaDict.iteritems()}
