@@ -175,7 +175,7 @@ cdef class Eckart(TunnelingModel):
             raise ValueError('One or both of the barrier heights of {0:g} and {1:g} kJ/mol encountered in Eckart method are invalid.'.format(dV1 / 1000., dV2 / 1000.)) 
 
         # Ensure that dV1 is smaller than dV2
-        assert dV1 < dV2
+        assert dV1 <= dV2
 
         # Evaluate microcanonical tunneling function kappa(E)
         dE = 100.
@@ -218,7 +218,7 @@ cdef class Eckart(TunnelingModel):
             dV2 = E0_TS - E0_reac
         
         # Ensure that dV1 is smaller than dV2
-        assert dV1 < dV2
+        assert dV1 <= dV2
         
         alpha1 = 2 * constants.pi * dV1 / frequency
         alpha2 = 2 * constants.pi * dV2 / frequency
