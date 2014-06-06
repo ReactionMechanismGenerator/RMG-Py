@@ -106,9 +106,9 @@ def parseCommandLineArguments():
         help='the Chemkin file containing the list of species')
     parser.add_argument('--reactions', metavar='FILE', type=str, nargs='?', default=None,
         help='the Chemkin file containing the list of reactions')
-    parser.add_argument('--thermo', metavar='FILE', type=str,
+    parser.add_argument('--thermo', metavar='FILE', type=str, required=True,
         help='the Chemkin files containing the thermo')
-    parser.add_argument('--known', metavar='FILE', type=str, nargs='?', default=None,
+    parser.add_argument('--known', metavar='FILE', type=str, nargs='?', default='SMILES.txt',
         help='the file containing the list of already known species')
     parser.add_argument('--port', metavar='N', type=int, nargs='?', default=8080,
         help='the port to serve the web interface on')
@@ -128,6 +128,13 @@ def parseCommandLineArguments():
     group.add_argument('-d', '--debug', action='store_true', help='print debug information')
 
     args = parser.parse_args()
+    
+    if args.reactions is None:
+        logging.warning("Using thermo file for reactions, as no reactions file specified.")
+        args.reactions = args.thermo
+    if args.species is None:
+        logging.warning("Using thermo file for species, as no species file specified.")
+        args.species = args.thermo
 
     # add some args that RMG will want
 
@@ -225,7 +232,7 @@ class ModelMatcher():
             while line0 != '':
                 line = removeCommentFromLine(line0)[0]
                 tokens_upper = line.upper().split()
-                if tokens_upper and tokens_upper[0] in ('THERMO','THERM', 'THER'):
+                if tokens_upper and tokens_upper[0].startswith('THER'):
                     foundThermoBlock = True
                     # Unread the line (we'll re-read it in readThermoBlock())
                     f.seek(-len(line0), 1)
