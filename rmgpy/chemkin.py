@@ -1027,43 +1027,48 @@ def readThermoBlock(f, speciesDict):
     while line != '' and not line.upper().strip().startswith('END'):
         line, comment = removeCommentFromLine(line)
         if comment: comments += comment.strip().replace('\t',', ') + '\n'
-        if len(line) >= 80:
-            if line[79] in ['1', '2', '3', '4']:
-                thermoBlock += line
-                if line[79] == '4':
-                    label, thermo, formula = readThermoEntry(thermoBlock, Tmin=Tmin, Tint=Tint, Tmax=Tmax)
-                    if label not in speciesDict:
-                        logging.info("Ignoring thermo data for {0} because it's not in the requested list of species.".format(label))
-                        thermoBlock = ''
-                        line = f.readline()
-                        continue
-                    elif speciesDict[label].thermo:
-                        logging.warning('Skipping duplicate thermo for the species {0}'.format(label))
-                        thermoBlock = ''
-                        line = f.readline()
-                        continue
-                    else:
-                        if thermo is None:
-                            logging.error("Problematic thermo block:\n{0}".format(thermoBlock))
-                            raise ChemkinError('Error while reading thermo entry for required species {0}'.format(label))
-                    try:
-                        formulaDict[label] = formula
-                        speciesDict[label].thermo = thermo
-                        speciesDict[label].thermo.comment = getattr(speciesDict[label].thermo,'comment','') 
-                        if comments:
-                            speciesDict[label].thermo.comment += '\n{0}'.format(comments)
-                        comments = ''
-                    except KeyError:
-                        if label.upper() in ['AR', 'N2', 'HE', 'NE']:
-                            logging.info('Skipping species"{0}" while reading thermodynamics entry.'.format(label))
-                        else:
-                            logging.warning('Skipping unexpected species "{0}" while reading thermodynamics entry.'.format(label))
-                    thermoBlock = ''
-                assert len(thermoBlock.split('/n'))<=4, "Should only have 4 lines in a thermo block:\n{0}".format(thermoBlock)
-            else:
-                logging.info("Ignoring line without 1,2,3 or 4 in 80th column: {0!r}".format(line))
-        else:
+
+        if len(line) < 80:
             logging.info("Ignoring short line: {0!r}".format(line))
+            line = f.readline()
+            continue
+
+        if line[79] not in ['1', '2', '3', '4']:
+            logging.info("Ignoring line without 1,2,3 or 4 in 80th column: {0!r}".format(line))
+            line = f.readline()
+            continue
+
+        thermoBlock += line
+        if line[79] == '4':
+            label, thermo, formula = readThermoEntry(thermoBlock, Tmin=Tmin, Tint=Tint, Tmax=Tmax)
+            if label not in speciesDict:
+                logging.info("Ignoring thermo data for {0} because it's not in the requested list of species.".format(label))
+                thermoBlock = ''
+                line = f.readline()
+                continue
+            elif speciesDict[label].thermo:
+                logging.warning('Skipping duplicate thermo for the species {0}'.format(label))
+                thermoBlock = ''
+                line = f.readline()
+                continue
+            else:
+                if thermo is None:
+                    logging.error("Problematic thermo block:\n{0}".format(thermoBlock))
+                    raise ChemkinError('Error while reading thermo entry for required species {0}'.format(label))
+            try:
+                formulaDict[label] = formula
+                speciesDict[label].thermo = thermo
+                speciesDict[label].thermo.comment = getattr(speciesDict[label].thermo,'comment','') 
+                if comments:
+                    speciesDict[label].thermo.comment += '\n{0}'.format(comments)
+                comments = ''
+            except KeyError:
+                if label.upper() in ['AR', 'N2', 'HE', 'NE']:
+                    logging.info('Skipping species"{0}" while reading thermodynamics entry.'.format(label))
+                else:
+                    logging.warning('Skipping unexpected species "{0}" while reading thermodynamics entry.'.format(label))
+            thermoBlock = ''
+        assert len(thermoBlock.split('/n'))<=4, "Should only have 4 lines in a thermo block:\n{0}".format(thermoBlock)
         line = f.readline()
     return formulaDict
 
