@@ -1384,6 +1384,12 @@ class ModelMatcher():
         self.loadSpecies(species_file)
         self.loadThermo(thermo_file)
         self.loadKnownSpecies(known_species_file)
+        
+        for species in self.speciesList:
+            if species.label not in self.thermoDict or self.thermoDict[species.label] is None:
+                message="Species {sp} in the species file {spf} does not have a valid thermo entry in the thermo file {th}".format(sp=species.label, spf=species_file, th=thermo_file)
+                logging.error(message)
+                raise Exception(message)
 
         logging.info("Initializing RMG")
         self.initializeRMG(args)
