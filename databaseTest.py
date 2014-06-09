@@ -27,7 +27,6 @@ class TestDatabase(unittest.TestCase):
         """
         
         for family_name, family in self.database.kinetics.families.iteritems():
-            self.assertTrue(family_name in familyNumberNodes, "{family} family does not exist in test's dictionary of families. You may need to update the unit test.".format(family=family_name))
             expectedNumberNodes = len(family.getRootTemplate())
             for label, entries in family.rules.entries.iteritems():
                 for entry in entries:
@@ -44,8 +43,7 @@ class TestDatabase(unittest.TestCase):
                     nodes = label.split(';')
                     for node in nodes:
                         self.assertTrue(node in family.groups.entries, "In {family} family, no group definition found for label {label} in rule {entry}".format(family=family_name, label=node, entry=entry))
-                        
-    @work_in_progress                    
+                                        
     def test_kinetics_checkGroupsFoundInTree(self):
         """
         This test checks whether groups are found in the tree.
@@ -53,6 +51,7 @@ class TestDatabase(unittest.TestCase):
         for family_name, family in self.database.kinetics.families.iteritems():
             for nodeName, nodeGroup in family.groups.entries.iteritems():
                 ascendParent = nodeGroup
+                # Check whether the node has proper parents unless it is the top reactant or product node
                 while ascendParent not in family.groups.top and ascendParent not in family.forwardTemplate.products:
                     child = ascendParent
                     ascendParent = ascendParent.parent
