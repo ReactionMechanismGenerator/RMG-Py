@@ -775,23 +775,27 @@ class KineticsFamily(Database):
                 self.groups.entries[entry.label] = entry
                 productSet.append(entry)
             else:
-                item = []
+                children = []
                 counter = 0
                 for product in products:
                     entry = Entry(
                         label = '{0}{1:d}'.format(label,counter+1),
                         item = product,
-                    )
-                    item.append(entry.label)
+                    )                
+                    children.append(entry)
                     self.groups.entries[entry.label] = entry
                     counter += 1
-
-                item = LogicOr(item,invert=False)
+                
+                # Enter the parent of the groups as a logicOr of all the products
                 entry = Entry(
                     label = label,
-                    item = item,
+                    item = LogicOr([child.label for child in children],invert=False),
+                    children = children,
                 )
                 self.groups.entries[entry.label] = entry
+                # Make this entry the parent of all its children
+                for child in children:
+                    child.parent = entry
                 counter += 1
                 productSet.append(entry)
 
