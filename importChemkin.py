@@ -21,6 +21,7 @@ import argparse
 import logging
 import re
 import codecs
+import traceback
 
 import cherrypy
 from cherrypy.lib.static import serve_file
@@ -1168,8 +1169,9 @@ class ModelMatcher():
             try:
                 kinSaveEntry(f, entry)
             except:
-                logging.error("Couldn't save reaction {0} to kinetics.py file".format(str(chemkinReaction)))
+                logging.exception("Couldn't save reaction {0} to kinetics.py file".format(str(chemkinReaction)))
                 f.write("\n# COULD NOT SAVE THE REACTION \n # {0}\n".format(entry.shortDesc))
+                traceback.print_exc(file=f)
 
     def pruneVoting(self):
         """
