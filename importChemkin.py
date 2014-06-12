@@ -15,7 +15,7 @@ The resulting file is saved next to the thermo input file.
 
 If running in QTconsole, it draws pictures of the species.
 """
-
+import os
 import os.path
 import argparse
 import logging
@@ -102,7 +102,10 @@ def convertFormula(formulaDict):
     return formula
 
 def parseCommandLineArguments():
-    parser = argparse.ArgumentParser()
+
+    parser = argparse.ArgumentParser(description="""
+        Import a set of chemkin files, identifying the species therin.
+        """)
     parser.add_argument('--species', metavar='FILE', type=str, nargs='?', default=None,
         help='the Chemkin file containing the list of species')
     parser.add_argument('--reactions', metavar='FILE', type=str, nargs='?', default=None,
@@ -113,6 +116,8 @@ def parseCommandLineArguments():
         help='the file containing the list of already known species')
     parser.add_argument('--port', metavar='N', type=int, nargs='?', default=8080,
         help='the port to serve the web interface on')
+    parser.add_argument('--quit_when_exhausted', action='store_true',
+                        help="Don't wait for input from the web front end, but quit when exhausted all matches. Can also be enabled by setting the environment variable RMG_QUIT_WHEN_EXHAUSTED")
     parser.add_argument('-o', '--output-directory', type=str, nargs=1, default='',
         metavar='DIR', help='use DIR as output directory')
     parser.add_argument('-s', '--scratch-directory', type=str, nargs=1, default='',
@@ -147,6 +152,10 @@ def parseCommandLineArguments():
         args.output_directory = os.path.join(inputDirectory, 'RMG-Py-output')
     if args.scratch_directory == '':
         args.scratch_directory = args.output_directory
+        
+    if 'RMG_QUIT_WHEN_EXHAUSTED' in os.environ:
+        logging.warning("Setting --quit_when_exhausted option because RMG_QUIT_WHEN_EXHAUSTED environment variable detected.")
+        args.quit_when_exhausted = True
 
     return args
 
@@ -1597,9 +1606,13 @@ recommended = False
 
             while len(self.identified_unprocessed_labels) == 0:
                 if not self.manualMatchesToProcess :
+                    if self.args.quit_when_exhausted:
+                        logging.warning("--quit_when_exhausted option detected. Now exiting without waiting for input.")
+                        break
                     logging.info("Waiting for input from the web front end..")
                 while not self.manualMatchesToProcess:
                     time.sleep(1)
+
 
                 while self.manualMatchesToProcess:
                     chemkinLabel, matchingSpecies = self.manualMatchesToProcess.pop(0)
