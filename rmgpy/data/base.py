@@ -919,6 +919,36 @@ class Database:
         else:
             # Assume nonmatching
             return False
+        
+    def matchNodeToChild(self, parentNode, childNode):        
+        """ 
+        Return `True` if `parentNode` is a parent of `childNode`.  Otherwise, return `False`.
+        Both `parentNode` and `childNode` must be Entry types with items containing Group or LogicNode types.
+        If `parentNode` and `childNode` are identical, the function will also return `False`.
+        """
+        
+        if isinstance(parentNode.item, Group) and isinstance(childNode.item, Group):
+            if self.matchNodeToStructure(parentNode,childNode.item, atoms=childNode.item.getLabeledAtoms()) is True:
+                if self.matchNodeToStructure(childNode,parentNode.item, atoms=parentNode.item.getLabeledAtoms()) is False:
+                    return True                
+            return False
+        
+        elif isinstance(parentNode.item,LogicOr) and isinstance(childNode.item,Group):
+            if self.matchNodeToStructure(parentNode,childNode.item, atoms=childNode.item.getLabeledAtoms()) is True:
+                return True
+            else:
+                return False
+        elif isinstance(parentNode.item,LogicOr) and isinstance(childNode.item,LogicOr):
+            if parentNode.item.matchToLogicOr(childNode.item):
+                # the two LogicOrs are identical
+                return False 
+            else:
+                for group in parentNode.item.components:
+                    if group not in childNode.item.components:
+                        return False
+                return True
+        else:
+            return False
 
     def matchNodeToStructure(self, node, structure, atoms):
         """
