@@ -1254,17 +1254,16 @@ class Molecule(Graph):
             if not Chem.inchi.INCHI_AVAILABLE:
                 return "RDKitInstalledWithoutInChI"
             rdkitmol = self.toRDKitMol()
-            return Chem.inchi.MolToInchi(rdkitmol)
+            return Chem.inchi.MolToInchi(rdkitmol, options='-SNon')
         except:
             pass
-    
-        # This version does not write a warning to stderr if stereochemistry is undefined
+
         obmol = self.toOBMol()
         obConversion = openbabel.OBConversion()
         obConversion.SetOutFormat('inchi')
         obConversion.SetOptions('w', openbabel.OBConversion.OUTOPTIONS)
         return obConversion.WriteString(obmol).strip()
-    
+
     def toAugmentedInChI(self):
         """
         Adds an extra layer to the InChI denoting the number of unpaired electrons in case
@@ -1304,7 +1303,6 @@ class Molecule(Graph):
 
 #        for atom in self.vertices:
  #           if atom.isNitrogen():
-        # This version does not write a warning to stderr if stereochemistry is undefined
         obmol = self.toOBMol()
         obConversion = openbabel.OBConversion()
         obConversion.SetOutFormat('inchi')
