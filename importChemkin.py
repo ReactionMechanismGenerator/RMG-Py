@@ -342,8 +342,8 @@ class ModelMatcher():
                 except Exception as e:
                     logging.info("Error reading line '{0}'".format(line))
                     raise e
-        if not line or line != '\n':
-            logging.info("Ensuring known species file ends with a blank line!")
+        if not line.endswith('\n'):
+            logging.info("Ensuring known species file ends with a line break")
             with open(known_species_file, 'a') as f:
                 f.write('\n')
 
