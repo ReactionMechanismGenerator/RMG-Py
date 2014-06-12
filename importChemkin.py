@@ -1483,6 +1483,20 @@ recommended = False
         self.loadReactions(reactions_file)
         chemkinReactionsUnmatched = self.chemkinReactionsUnmatched
         votes = self.votes
+        
+        # Now would be a good time to print identified reactions?
+        for chemkinReaction in chemkinReactionsUnmatched:
+            for reagents in (chemkinReaction.reactants, chemkinReaction.products):
+                for reagent in reagents:
+                    if reagent.label not in self.identified_labels:
+                        break # if something hasn't been identified
+                else:  # didn't break inner loop so these reagents have all been identified
+                    continue # to the other side of the reaction
+                break  # did break inner loop, so break outer loop as there's an unidentified species
+            else:  # didn't break outer loop, so all species have been identified
+                # remove it from the list of useful reactions.
+                chemkinReactionsUnmatched.remove(chemkinReaction)
+                self.saveReactionToKineticsFile(chemkinReaction)
 
         self.pruneInertSpecies()
 
