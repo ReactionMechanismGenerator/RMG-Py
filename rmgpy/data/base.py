@@ -917,6 +917,15 @@ class Database:
         include extra labels, and so we only require that every labeled atom in
         the functional group represented by `node` has an equivalent labeled
         atom in `structure`.
+        
+        Matching to structure is more strict than to node.  All labels in structure must 
+        be found in node.  However the reverse is not true.
+        
+        Usage: node = either an Entry or a key in the self.entries dictionary which has
+                      a Group or LogicNode as its Entry.item
+               structure = a Group or a Molecule
+               atoms = dictionary of {label: atom} in the structure.  A possible dictionary
+                       is the one produced by structure.getLabeledAtoms()
         """
         if isinstance(node, str): node = self.entries[node]
         group = node.item
