@@ -906,6 +906,19 @@ class Database:
         notInTree=list(set(notInTree))
         
         return (noGroup, noMatchingGroup, notInTree, notSubgroup, probablyProduct)
+    
+    def matchNodeToNode(self, node, nodeOther):
+        """ 
+        Return `True` if `node` and `nodeOther` are identical.  Otherwise, return `False`.
+        Both `node` and `nodeOther` must be Entry types with items containing Group or LogicNode types.
+        """
+        if isinstance(node.item, Group) and isinstance(nodeOther.item, Group):
+            return self.matchNodeToStructure(node,nodeOther.item, atoms=nodeOther.item.getLabeledAtoms()) and self.matchNodeToStructure(nodeOther,node.item,atoms=node.item.getLabeledAtoms())
+        elif isinstance(node.item,LogicOr) and isinstance(nodeOther.item,LogicOr):
+            return node.item.matchToLogicOr(nodeOther.item)
+        else:
+            # Assume nonmatching
+            return False
 
     def matchNodeToStructure(self, node, structure, atoms):
         """
