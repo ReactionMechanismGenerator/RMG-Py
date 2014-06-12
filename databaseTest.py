@@ -7,6 +7,7 @@ import unittest
 from external.wip import work_in_progress
 from rmgpy import settings
 from rmgpy.data.rmg import RMGDatabase
+from copy import copy, deepcopy
 
 class TestDatabase(unittest.TestCase):
     """
@@ -57,7 +58,22 @@ class TestDatabase(unittest.TestCase):
                     ascendParent = ascendParent.parent
                     self.assertTrue(ascendParent is not None, "Group {group} in {family} family was found in the tree without a proper parent.".format(group=child,family=family_name))
                     self.assertTrue(child in ascendParent.children, "Group {group} in {family} family was found in the tree without a proper parent.".format(group=nodeName,family=family_name))
-
+                    
+    def test_kinetics_checkGroupsNonidentical(self):
+        """
+        This test checks that the groups are non-identical.
+        """
+        from rmgpy.data.base import Database
+        for family_name, originalFamily in self.database.kinetics.families.iteritems():
+            family = Database()
+            family.entries = originalFamily.groups.entries
+            entriesCopy = copy(family.entries)
+            for nodeName, nodeGroup in family.entries.iteritems():
+                del entriesCopy[nodeName]
+                for nodeNameOther, nodeGroupOther in entriesCopy.iteritems():
+                    self.assertFalse(family.matchNodeToNode(nodeGroup, nodeGroupOther), "Group {group} in {family} family was found to be identical to group {groupOther}".format(group=nodeName, family=family_name, groupOther=nodeNameOther))
+                        
+                
 
 if __name__ == '__main__':
     unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))
