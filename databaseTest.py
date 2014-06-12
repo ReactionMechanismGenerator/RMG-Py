@@ -72,8 +72,28 @@ class TestDatabase(unittest.TestCase):
                 del entriesCopy[nodeName]
                 for nodeNameOther, nodeGroupOther in entriesCopy.iteritems():
                     self.assertFalse(family.matchNodeToNode(nodeGroup, nodeGroupOther), "Group {group} in {family} family was found to be identical to group {groupOther}".format(group=nodeName, family=family_name, groupOther=nodeNameOther))
-                        
-                
+    
+    @work_in_progress
+    def test_kinetics_checkChildParentRelationships(self):
+        """
+        This test checks that groups' parent-child relationships are correct in the database.
+        """
+        from rmgpy.data.base import Database
+        for family_name, originalFamily in self.database.kinetics.families.iteritems():
+            family = Database()
+            family.entries = originalFamily.groups.entries
+            entriesCopy = copy(family.entries)
+            for nodeName, nodeGroup in family.entries.iteritems():
+                ascendParent = nodeGroup
+                # Check whether the node has proper parents unless it is the top reactant or product node
+                while ascendParent not in originalFamily.groups.top and ascendParent not in originalFamily.forwardTemplate.products:
+                    child = ascendParent
+                    ascendParent = ascendParent.parent
+                    # The parent should be more general than the child
+                    self.assertTrue(family.matchNodeToChild(ascendParent,child), 
+                                    "In {family} family, group {parent} is not a proper parent of its child {child}.".format(family=family_name, parent=ascendParent, child=child))
+                    
+                    
 
 if __name__ == '__main__':
     unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))
