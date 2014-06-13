@@ -384,6 +384,7 @@ class Atom(Vertex):
         """
         Set the spin multiplicity.
         """
+        raise NotImplementedError("I thought multiplicity was now a molecule attribute not atom?")
         # Set the spin multiplicity
         self.spinMultiplicity = spinMultiplicity
         if self.spinMultiplicity < 0:
@@ -582,7 +583,7 @@ class Molecule(Graph):
     `InChI` string representing the molecular structure.
     """
 
-    def __init__(self, atoms=None, symmetry=1, multiplicity=187, SMILES='', InChI='', SMARTS = ''):
+    def __init__(self, atoms=None, symmetry=1, multiplicity=-187, SMILES='', InChI='', SMARTS=''):
         Graph.__init__(self, atoms)
         self.symmetryNumber = symmetry
         self.multiplicity = multiplicity
@@ -932,6 +933,7 @@ class Molecule(Graph):
         mapping from `self` to `other` (i.e. the atoms of `self` are the keys,
         while the atoms of `other` are the values). The `other` parameter must
         be a :class:`Molecule` object, or a :class:`TypeError` is raised.
+        Also ensures multiplicities are also equal.
         """
         # It only makes sense to compare a Molecule to a Molecule for full
         # isomorphism, so raise an exception if this is not what was requested
@@ -1135,7 +1137,7 @@ class Molecule(Graph):
         """
         # Below are the declared variables for cythonizing the module
         cython.declare(i=cython.int)
-        cython.declare(radicalElectrons=cython.int, spinMultiplicity=cython.int, charge=cython.int, lonePairs=cython.int)
+        cython.declare(radicalElectrons=cython.int, charge=cython.int, lonePairs=cython.int)
         cython.declare(atom=Atom, atom1=Atom, atom2=Atom, bond=Bond)
         
         self.vertices = []
@@ -1200,6 +1202,12 @@ class Molecule(Graph):
         self.updateConnectivityValues()
         self.updateAtomTypes()
         
+        # Check if multiplicity is possible
+        n_rad = self.getRadicalCount() 
+        multiplicity = self.multiplicity
+        if not (n_rad + 1 == multiplicity or n_rad - 1 == multiplicity or n_rad - 3 == multiplicity or n_rad - 5 == multiplicity):
+            raise ValueError('Impossible multiplicity for molecule\n{0}\n multiplicity = {1} and number of unpaired electrons = {2}'.format(self.toAdjacencyList(),multiplicity,n_rad))
+
         return self
         
     def fromXYZ(self, atomicNums, coordinates):
@@ -1444,12 +1452,12 @@ class Molecule(Graph):
             return rdkitmol, rdAtomIndices
         return rdkitmol
 
-    def toAdjacencyList(self, label='', removeH=False, removeLonePairs=False, printMultiplicity=True):
+    def toAdjacencyList(self, label='', removeH=False, removeLonePairs=False):
         """
         Convert the molecular structure to a string adjacency list.
         """
         from .adjlist import toAdjacencyList
-        result = toAdjacencyList(self.vertices, self.multiplicity,  label=label, group=False, removeH=removeH, removeLonePairs=removeLonePairs, printMultiplicity=printMultiplicity)
+        result = toAdjacencyList(self.vertices, self.multiplicity,  label=label, group=False, removeH=removeH, removeLonePairs=removeLonePairs)
         return result
 
     def isLinear(self):
@@ -1882,38 +1890,38 @@ class Molecule(Graph):
     
     def isBiradicalSinglet(self):
         """
-        Return ``True`` if the molecule is a 1-centered biradical in singlet state,
+        Return ``True`` if the molecule is a 1-centered biradical, and the molecule is in singlet state,
         or ``False`` otherwise.
         """
         cython.declare(atom=Atom)
         for atom in self.vertices:
             if atom.radicalElectrons == 2:
-                if atom.spinMultiplicity == 1:
+                if self.multiplicity == 1:
                     return True
         return False
     
     def isBiradicalTriplet(self):
         """
-        Return ``True`` if the molecule is a 1-centered biradical in triplet state,
+        Return ``True`` if the molecule is a 1-centered biradical, and the molecule is in triplet state,
         or ``False`` otherwise.
         """
         cython.declare(atom=Atom)
         for atom in self.vertices:
             if atom.radicalElectrons == 2:
-                if atom.spinMultiplicity == 3:
+                if self.multiplicity == 3:
                     return True
         return False
     
     def changeTripletSinglet(self):
         """
-        If the molecule is a 1-centered biradical in triplet state,
+        If the molecule is a 1-centered biradical, and the molecule is in a triplet state,
         change it to singlet state.
         """
         cython.declare(atom=Atom)
         for atom in self.vertices:
             if atom.radicalElectrons == 2:
-                if atom.spinMultiplicity == 3:
-                    atom.spinMultiplicity = 1
+                if self.multiplicity == 3:
+                    self.multiplicity = 1
                     
     def getRadicalAtoms(self):
         """

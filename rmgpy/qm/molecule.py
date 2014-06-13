@@ -32,18 +32,15 @@ class Geometry:
     `settings`          :class:`QMSettings`     Settings for QM calculations
     `uniqueID`          ``str``                 A short ID such as an augmented InChI Key
     `molecule`          :class:`Molecule`       RMG Molecule object
-    `multiplicity`      ``int``                 The multiplicity of the molecule
     `uniqueIDlong`      ``str``                 A long, truly unique ID such as an augmented InChI
     =================== ======================= ====================================
     
     """
-    def __init__(self, settings, uniqueID, molecule, multiplicity, uniqueIDlong=None):
+    def __init__(self, settings, uniqueID, molecule, uniqueIDlong=None):
         self.settings = settings
         #: A short unique ID such as an augmented InChI Key.
         self.uniqueID = uniqueID
         self.molecule = molecule
-        #: The multiplicity
-        self.multiplicity = multiplicity
         if uniqueIDlong is None:
             self.uniqueIDlong = uniqueID
         else:
@@ -236,8 +233,7 @@ class QMMolecule:
         """
         Creates self.geometry with RDKit geometries
         """
-        multiplicity = self.molecule.multiplicity
-        self.geometry = Geometry(self.settings, self.uniqueID, self.molecule, multiplicity, uniqueIDlong=self.uniqueIDlong)
+        self.geometry = Geometry(self.settings, self.uniqueID, self.molecule, uniqueIDlong=self.uniqueIDlong)
         self.geometry.generateRDKitGeometries()
         return self.geometry
     

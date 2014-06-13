@@ -256,7 +256,7 @@ class MopacMolPMn(MopacMol):
         if attempt > self.scriptAttempts:
             attempt -= self.scriptAttempts
         
-        multiplicity_keys = self.multiplicityKeywords[self.geometry.multiplicity]
+        multiplicity_keys = self.multiplicityKeywords[self.geometry.molecule.multiplicity]
 
         top_keys = "{method} {mult} {top}".format(
                 method = self.pm_method,
@@ -270,7 +270,7 @@ class MopacMolPMn(MopacMol):
                 )
         polar_keys = "oldgeo {polar} nosym precise {method} {mult}".format(
                 method = self.pm_method,
-                polar = ('polar' if self.geometry.multiplicity == 1 else 'static'),
+                polar = ('polar' if self.geometry.molecule.multiplicity == 1 else 'static'),
                 mult = multiplicity_keys,
                 )
 

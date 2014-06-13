@@ -621,13 +621,13 @@ class KineticsFamily(Database):
             assert action[0] in ['CHANGE_BOND','FORM_BOND','BREAK_BOND','GAIN_RADICAL','LOSE_RADICAL','GAIN_PAIR','LOSE_PAIR']
             self.forwardRecipe.addAction(action)
 
-    def loadForbidden(self, label, group, multiplicity = [1,2,3,4,5], shortDesc='', longDesc=''):
+    def loadForbidden(self, label, group, shortDesc='', longDesc=''):
         """
         Load information about a forbidden structure.
         """
         if not self.forbidden:
             self.forbidden = ForbiddenStructures()
-        self.forbidden.loadEntry(label=label, group=group, multiplicity = multiplicity, shortDesc=shortDesc, longDesc=longDesc)
+        self.forbidden.loadEntry(label=label, group=group, shortDesc=shortDesc, longDesc=longDesc)
 
     def saveEntry(self, f, entry):
         """
@@ -887,11 +887,11 @@ class KineticsFamily(Database):
             
             # Estimate the thermo for the reactants and products
             item = Reaction(reactants=[m.copy(deep=True) for m in entry.item.reactants], products=[m.copy(deep=True) for m in entry.item.products])
-            item.reactants = [Species(multiplicity=m.multiplicity,molecule=[m]) for m in item.reactants]
+            item.reactants = [Species(molecule=[m]) for m in item.reactants]
             for reactant in item.reactants:
                 reactant.generateResonanceIsomers()
                 reactant.thermo = thermoDatabase.getThermoData(reactant)
-            item.products = [Species(multiplicity=m.multiplicity,molecule=[m]) for m in item.products]
+            item.products = [Species(molecule=[m]) for m in item.products]
             for product in item.products:
                 product.generateResonanceIsomers()
                 product.thermo = thermoDatabase.getThermoData(product)
@@ -1321,9 +1321,9 @@ class KineticsFamily(Database):
         for reaction in reactionList:
             moleculeDict = {}
             for molecule in reaction.reactants:
-                moleculeDict[molecule] = Species(multiplicity=molecule.multiplicity,molecule=[molecule])
+                moleculeDict[molecule] = Species(molecule=[molecule])
             for molecule in reaction.products:
-                moleculeDict[molecule] = Species(multiplicity=molecule.multiplicity,molecule=[molecule])
+                moleculeDict[molecule] = Species(molecule=[molecule])
             reaction.reactants = [moleculeDict[molecule] for molecule in reaction.reactants]
             reaction.products = [moleculeDict[molecule] for molecule in reaction.products]
             reaction.pairs = [(moleculeDict[reactant],moleculeDict[product]) for reactant, product in reaction.pairs]

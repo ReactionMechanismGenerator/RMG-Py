@@ -72,7 +72,6 @@ class Entry:
     =================== ========================================================
     `index`             A unique nonnegative integer index for the entry
     `label`             A unique string identifier for the entry (or '' if not used)
-    `multiplicity`      The multiplicity of this species, multiplicity = 2*total_spin+1
     `item`              The item that this entry represents
     `parent`            The parent of the entry in the hierarchy (or ``None`` if not used)
     `children`          A list of the children of the entry in the hierarchy (or ``None`` if not used)
@@ -89,7 +88,6 @@ class Entry:
     def __init__(self,
                  index=-1,
                  label='',
-                 multiplicity = 100,
                  item=None,
                  parent=None,
                  children=None,
@@ -102,7 +100,6 @@ class Entry:
                  ):
         self.index = index
         self.label = label
-        self.multiplicity = multiplicity
         self.item = item
         self.parent = parent
         self.children = children or []
@@ -1301,7 +1298,7 @@ class ForbiddenStructures(Database):
         """
         self.saveOldDictionary(path)
 
-    def loadEntry(self, label, multiplicity = 200, molecule=None, group=None, shortDesc='', longDesc=''):
+    def loadEntry(self, label, molecule=None, group=None, shortDesc='', longDesc=''):
         """
         Load an entry from the forbidden structures database. This method is
         automatically called during loading of the forbidden structures 
@@ -1322,7 +1319,6 @@ class ForbiddenStructures(Database):
                 item = Group().fromAdjacencyList(group)
         self.entries[label] = Entry(
             label = label,
-            multiplicity = multiplicity,
             item = item,
             shortDesc = shortDesc,
             longDesc = longDesc.strip(),
@@ -1337,8 +1333,6 @@ class ForbiddenStructures(Database):
         
         f.write('{0}(\n'.format(name))
         f.write('    label = "{0}",\n'.format(entry.label))
-        f.write('    multiplicity = {0},\n'.format(entry.multiplicity))
-
         if isinstance(entry.item, Molecule):
             f.write('    molecule = \n')
             f.write('"""\n')

@@ -56,7 +56,7 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
     atoms = []
     atomdict = {}
     bonds = {}
-    multiplicity = -1
+    multiplicity = None
     
     try:
         
@@ -73,8 +73,14 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
             
         # Skip the second line if it contains a multiplicity
         if lines[0].split()[0] == 'multiplicity':
-            multiplicity = int(lines[0].split()[1])
-            lines.pop(0)
+            line = lines.pop(0)
+            if group:
+                match = re.search('multiplicity\s+\[(.*?)\]',line)
+                assert match, "Invalid multiplicity line {0}".format(line)
+                multiplicities = match.group(1).split(',')
+                multiplicity = [int(i) for i in multiplicities]
+            else:
+                multiplicity = int(line.split()[1])
             if len(lines) == 0:
                 raise InvalidAdjacencyListError('No atoms specified in adjacency list.')
         
@@ -360,13 +366,10 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
         nRad = 0
         for atom in atoms:
             nRad += atom.radicalElectrons
-            
-        if multiplicity == -1:
+        if multiplicity == None:
             multiplicity = nRad + 1
-        
         n = 0
         while (nRad + 1 - n*2) > 0:
-            
             if (nRad + 1 - n*2) == multiplicity:
                 break
             n=n+1
@@ -376,14 +379,10 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
             
         return atoms, multiplicity
     else:
-        
         return atoms
 
 
-
-
-
-def toAdjacencyList(atoms, multiplicity=0, label=None, group=False, removeH=False, removeLonePairs=False, printMultiplicity=False):
+def toAdjacencyList(atoms, multiplicity, label=None, group=False, removeH=False, removeLonePairs=False):
     """
     Convert a chemical graph defined by a list of `atoms` into a string
     adjacency list.
@@ -398,7 +397,12 @@ def toAdjacencyList(atoms, multiplicity=0, label=None, group=False, removeH=Fals
 
     if label: adjlist += label + '\n'
     
-    if printMultiplicity: adjlist += 'multiplicity ' + str(multiplicity) + '\n'
+    if group:
+        if multiplicity is not None:
+            assert isinstance(multiplicity, list), "Functional group should have a list of possible multiplicities"
+    else:
+        assert isinstance(multiplicity, int), "Molecule should have an integer multiplicity"
+    adjlist += 'multiplicity {0!r}\n'.format(multiplicity)
 
     # Determine the numbers to use for each atom
     atomNumbers = {}

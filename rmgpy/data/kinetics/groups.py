@@ -81,16 +81,14 @@ class KineticsGroups(Database):
     def __repr__(self):
         return '<KineticsGroups "{0}">'.format(self.label)
 
-    def loadEntry(self, index, label, group, kinetics, multiplicity = [1,2,3,4,5], reference=None, referenceType='', shortDesc='', longDesc=''):
+    def loadEntry(self, index, label, group, kinetics, reference=None, referenceType='', shortDesc='', longDesc=''):
         if group[0:3].upper() == 'OR{' or group[0:4].upper() == 'AND{' or group[0:7].upper() == 'NOT OR{' or group[0:8].upper() == 'NOT AND{':
             item = makeLogicNode(group)
         else:
             item = Group().fromAdjacencyList(group)
-            item.multiplicity = multiplicity
         self.entries[label] = Entry(
             index = index,
             label = label,
-            multiplicity = multiplicity,
             item = item,
             data = kinetics,
             reference = reference,

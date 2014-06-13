@@ -143,7 +143,7 @@ def saveEntry(f, entry):
             elif isinstance(reactant, Species):
                 f.write('    reactant{0:d} = \n'.format(i+1))
                 f.write('"""\n')
-                f.write(reactant.molecule[0].toAdjacencyList(label=reactant.label, removeH=False, printMultiplicity=True))
+                f.write(reactant.molecule[0].toAdjacencyList(label=reactant.label, removeH=False))
                 f.write('""",\n')
             elif isinstance(reactant, Group):
                 f.write('    group{0:d} = \n'.format(i+1))
@@ -170,7 +170,6 @@ def saveEntry(f, entry):
         if not entry.item.reversible:
             f.write('    reversible = {0!r},\n'.format(entry.item.reversible))
     elif isinstance(entry.item, Group):
-        f.write('    multiplicity = {0},\n'.format(entry.multiplicity))
         f.write('    group = \n')
         f.write('"""\n')
         f.write(entry.item.toAdjacencyList())
