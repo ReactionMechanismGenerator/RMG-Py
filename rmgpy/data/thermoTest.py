@@ -66,14 +66,14 @@ class TestThermoDatabase(unittest.TestCase):
         for smiles, symm, H298, S298, Cp300, Cp400, Cp500, Cp600, Cp800, Cp1000, Cp1500 in self.testCases:
             Cplist = [Cp300, Cp400, Cp500, Cp600, Cp800, Cp1000, Cp1500]
             molecule=Molecule(SMILES=smiles)
-            species = Species(multiplicity=molecule.multiplicity, molecule=molecule)
+            species = Species(molecule=molecule)
             species.generateResonanceIsomers()
             species.molecule[0]
             thermoData = self.database.getThermoDataFromGroups(species)
             molecule = species.molecule[0]
             for mol in species.molecule[1:]:
-                thermoData0 = self.database.getAllThermoData(Species(multiplicity=mol.multiplicity, molecule=[mol]))[0][0]
-                for data in self.database.getAllThermoData(Species(multiplicity=mol.multiplicity, molecule=[mol]))[1:]:
+                thermoData0 = self.database.getAllThermoData(Species(molecule=[mol]))[0][0]
+                for data in self.database.getAllThermoData(Species(molecule=[mol]))[1:]:
                     if data.getEnthalpy(298) < thermoData0.getEnthalpy(298):
                         thermoData0 = data
                 if thermoData0.getEnthalpy(298) < thermoData.getEnthalpy(298):
@@ -94,14 +94,14 @@ class TestThermoDatabase(unittest.TestCase):
         """
         for smiles, symm, H298, S298, Cp300, Cp400, Cp500, Cp600, Cp800, Cp1000, Cp1500 in self.testCases:
             molecule=Molecule(SMILES=smiles)
-            species = Species(multiplicity=molecule.multiplicity, molecule=molecule)
+            species = Species(molecule=molecule)
             species.generateResonanceIsomers()
-            thermoData = self.database.getThermoDataFromGroups(Species(multiplicity=species.molecule[0].multiplicity, molecule=[species.molecule[0]]))
+            thermoData = self.database.getThermoDataFromGroups(Species(molecule=[species.molecule[0]]))
             # pick the molecule with lowest H298
             molecule = species.molecule[0]
             for mol in species.molecule[1:]:
-                thermoData0 = self.database.getAllThermoData(Species(multiplicity=mol.multiplicity, molecule=[mol]))[0][0]
-                for data in self.database.getAllThermoData(Species(multiplicity=mol.multiplicity, molecule=[mol]))[1:]:
+                thermoData0 = self.database.getAllThermoData(Species(molecule=[mol]))[0][0]
+                for data in self.database.getAllThermoData(Species(molecule=[mol]))[1:]:
                     if data.getEnthalpy(298) < thermoData0.getEnthalpy(298):
                         thermoData0 = data
                 if thermoData0.getEnthalpy(298) < thermoData.getEnthalpy(298):

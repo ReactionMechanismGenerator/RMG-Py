@@ -253,7 +253,7 @@ class TestTransportDatabase(unittest.TestCase):
             ]
         for name, smiles, sigma, epsilon, comment in self.testCases:
             molecule=Molecule(SMILES=smiles)
-            species = Species(multiplicity=molecule.multiplicity,molecule=[molecule])
+            species = Species(molecule=[molecule])
             transportData, blank, blank2 = self.transportdb.getTransportPropertiesViaGroupEstimates(species)
             # check Joback worked.
             # If we don't know what to expect, don't check (just make sure we didn't crash)
@@ -281,7 +281,7 @@ class TestTransportDatabase(unittest.TestCase):
                     12 H U0 L0 {6,S}
                     """
         m = Molecule().fromAdjacencyList(adjlist)
-        species = Species(multiplicity=m.multiplicity, molecule=[m])
+        species = Species(molecule=[m])
         transportData, blank, blank2 = self.transportdb.getTransportPropertiesViaGroupEstimates(species)
         self.assertIsNotNone(transportData)
 

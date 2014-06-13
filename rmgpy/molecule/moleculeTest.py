@@ -746,8 +746,11 @@ class TestMolecule(unittest.TestCase):
         """
         Test the Molecule.toAdjacencyList() method.
         """
-        adjlist_1 = self.molecule[0].toAdjacencyList(removeH=False,printMultiplicity=False)
-        self.assertEqual(adjlist_1.strip(), self.adjlist_1.strip())
+        adjlist_1 = self.molecule[0].toAdjacencyList(removeH=False)
+        newMolecule = Molecule().fromAdjacencyList(adjlist_1)
+        self.assertTrue(self.molecule[0].isIsomorphic(newMolecule))
+        
+        #self.assertEqual(adjlist_1.strip(), self.adjlist_1.strip())
         
 #    def testFromOldAdjacencyList(self):
 #        """

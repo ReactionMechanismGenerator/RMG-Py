@@ -56,12 +56,11 @@ def saveEntry(f, entry):
     f.write('entry(\n')
     f.write('    index        = {0:d},\n'.format(entry.index))
     f.write('    label        = "{0}",\n'.format(entry.label))
-    f.write('    multiplicity = {0},\n'.format(entry.multiplicity))
 
     if isinstance(entry.item, Molecule):
         f.write('    molecule = \n')
         f.write('"""\n')
-        f.write(entry.item.toAdjacencyList(removeH=False,printMultiplicity=False))
+        f.write(entry.item.toAdjacencyList(removeH=False))
         f.write('""",\n')
     elif isinstance(entry.item, Group):
         f.write('    group = \n')
@@ -185,11 +184,10 @@ class ThermoDepository(Database):
     def __init__(self, label='', name='', shortDesc='', longDesc=''):
         Database.__init__(self, label=label, name=name, shortDesc=shortDesc, longDesc=longDesc)
 
-    def loadEntry(self, index, label, multiplicity, molecule, thermo, reference=None, referenceType='', shortDesc='', longDesc=''):
+    def loadEntry(self, index, label, molecule, thermo, reference=None, referenceType='', shortDesc='', longDesc=''):
         entry = Entry(
             index = index,
             label = label,
-            multiplicity = multiplicity,
             item = Molecule().fromAdjacencyList(molecule),
             data = thermo,
             reference = reference,
@@ -219,7 +217,6 @@ class ThermoLibrary(Database):
     def loadEntry(self,
                   index,
                   label,
-                  multiplicity,
                   molecule,
                   thermo,
                   reference=None,
@@ -229,7 +226,6 @@ class ThermoLibrary(Database):
                   ):
         
         molecule = Molecule().fromAdjacencyList(molecule)
-        molecule.multiplicity = multiplicity
         
         # Internal checks for adding entry to the thermo library
         if label in self.entries.keys():
@@ -237,13 +233,12 @@ class ThermoLibrary(Database):
         
         for entry in self.entries.values():
             if molecule.isIsomorphic(entry.item):
-                if multiplicity == entry.multiplicity:
+                if molecule.multiplicity == entry.item.multiplicity:
                     raise DatabaseError('Adjacency list and multiplicity of {0} matches that of existing molecule {1} in thermo library.  Please correct your library.'.format(label, entry.label))
         
         self.entries[label] = Entry(
             index = index,
             label = label,
-            multiplicity = multiplicity,
             item = molecule,
             data = thermo,
             reference = reference,
@@ -287,7 +282,6 @@ class ThermoGroups(Database):
                   label,
                   group,
                   thermo,
-                  multiplicity = [1,2,3,4,5],
                   reference=None,
                   referenceType='',
                   shortDesc='',
@@ -297,11 +291,9 @@ class ThermoGroups(Database):
             item = makeLogicNode(group)
         else:
             item = Group().fromAdjacencyList(group)
-            item.multiplicity = multiplicity
         self.entries[label] = Entry(
             index = index,
             label = label,
-            multiplicity = multiplicity,
             item = item,
             data = thermo,
             reference = reference,
@@ -820,7 +812,7 @@ class ThermoDatabase(object):
         saturatedStruct.sortVertices()
         saturatedStruct.updateAtomTypes()
         saturatedStruct.updateLonePairs()
-        saturatedStruct.multiplicity = saturatedStruct.getRadicalCount() + 1
+        saturatedStruct.multiplicity = 1
         
         # Get thermo estimate for saturated form of structure
         thermoData = stableThermoEstimator(saturatedStruct)

@@ -73,11 +73,11 @@ class Species(rmgpy.species.Species):
     solventViscosity = None
     diffusionTemp = None
 
-    def __init__(self, index=-1, label='', multiplicity=103, thermo=None, conformer=None, 
+    def __init__(self, index=-1, label='', thermo=None, conformer=None, 
                  molecule=None, transportData=None, molecularWeight=None, 
                  dipoleMoment=None, polarizability=None, Zrot=None, 
                  energyTransferModel=None, reactive=True, coreSizeAtCreation=0):
-        rmgpy.species.Species.__init__(self, index, label, multiplicity, thermo, conformer, molecule, transportData, molecularWeight, dipoleMoment, polarizability, Zrot, energyTransferModel, reactive)
+        rmgpy.species.Species.__init__(self, index, label, thermo, conformer, molecule, transportData, molecularWeight, dipoleMoment, polarizability, Zrot, energyTransferModel, reactive)
         self.coreSizeAtCreation = coreSizeAtCreation
 
     def __reduce__(self):
@@ -154,7 +154,6 @@ class Species(rmgpy.species.Species):
                     # Write the QM molecule thermo to a library so that can be used in future RMG jobs.
                     quantumMechanics.database.loadEntry(index = len(quantumMechanics.database.entries) + 1,
                                                         label = molecule.toSMILES() + '_({0})'.format(_multiplicity_labels[molecule.multiplicity]),
-                                                        multiplicity = molecule.multiplicity,
                                                         molecule = molecule.toAdjacencyList(),
                                                         thermo = thermo0,
                                                         shortDesc = thermo0.comment
@@ -375,7 +374,7 @@ class CoreEdgeReactionModel:
         # At this point we can conclude that the structure does not exist
         return False, None
 
-    def makeNewSpecies(self, object, multiplicity, label='', reactive=True, checkForExisting=True):
+    def makeNewSpecies(self, object, label='', reactive=True, checkForExisting=True):
         """
         Formally create a new species from the specified `object`, which can be
         either a :class:`Molecule` object or an :class:`rmgpy.species.Species`
@@ -389,7 +388,6 @@ class CoreEdgeReactionModel:
             molecule = object
             
         molecule.clearLabeledAtoms()
-        molecule.multiplicity = multiplicity
 
         # If desired, check to ensure that the species is new; return the
         # existing species if not new
@@ -408,7 +406,7 @@ class CoreEdgeReactionModel:
             # so that we can use the label in file paths
             label = molecule.toSMILES().replace('/','').replace('\\','')
         logging.debug('Creating new species {0}'.format(label))
-        spec = Species(index=self.speciesCounter+1, label=label, multiplicity=multiplicity, molecule=[molecule], reactive=reactive)
+        spec = Species(index=self.speciesCounter+1, label=label, molecule=[molecule], reactive=reactive)
         spec.coreSizeAtCreation = len(self.core.species)
         spec.generateResonanceIsomers()
         spec.molecularWeight = Quantity(spec.molecule[0].getMolecularWeight()*1000.,"amu")
@@ -517,8 +515,8 @@ class CoreEdgeReactionModel:
         """
 
         # Determine the proper species objects for all reactants and products
-        reactants = [self.makeNewSpecies(reactant,reactant.multiplicity,)[0] for reactant in forward.reactants]
-        products  = [self.makeNewSpecies(product,product.multiplicity,)[0]  for product  in forward.products ]
+        reactants = [self.makeNewSpecies(reactant)[0] for reactant in forward.reactants]
+        products  = [self.makeNewSpecies(product)[0]  for product  in forward.products ]
         if forward.pairs is not None:
             for pairIndex in range(len(forward.pairs)):
                 reactantIndex = forward.reactants.index(forward.pairs[pairIndex][0])

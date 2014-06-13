@@ -644,7 +644,7 @@ class SolvationDatabase(object):
             saturatedStruct.sortVertices()
             saturatedStruct.updateAtomTypes()
             saturatedStruct.updateLonePairs()
-            saturatedStruct.multiplicity = saturatedStruct.getRadicalCount() + 1
+            saturatedStruct.multiplicity = 1
 
             # Get solute descriptor estimates for saturated form of structure
             soluteData = self.estimateSoluteViaGroupAdditivity(saturatedStruct)

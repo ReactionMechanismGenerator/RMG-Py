@@ -48,7 +48,7 @@ class TestSoluteDatabase(TestCase):
         
         for name, smiles, S, B, E, L, A, V in self.testCases:
             molecule=Molecule(SMILES=smiles)
-            species = Species(multiplicity=molecule.multiplicity, molecule=[molecule])
+            species = Species(molecule=[molecule])
             soluteData = self.database.getSoluteDataFromGroups(species)
             print name, soluteData
             print self.assertAlmostEqual(soluteData.S, S)
@@ -98,7 +98,7 @@ class TestSoluteDatabase(TestCase):
         
         for solventName, soluteName, smiles, H, G, S in self.testCases:
             molecule=Molecule(SMILES=smiles)
-            species = Species(multiplicity=molecule.multiplicity, molecule=[molecule])
+            species = Species(molecule=[molecule])
             soluteData = self.database.getSoluteDataFromGroups(species)
             solventData = self.database.getSolventData(solventName)
             solvationCorrection = self.database.getSolvationCorrection(soluteData, solventData)

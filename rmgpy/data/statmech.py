@@ -133,7 +133,6 @@ class StatmechDepository(Database):
                   ):
         
         item = Molecule().fromAdjacencyList(molecule)
-        item.multiplicity = multiplicity
         
         self.entries[label] = Entry(
             index = index,
