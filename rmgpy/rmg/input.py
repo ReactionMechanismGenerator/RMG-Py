@@ -276,7 +276,6 @@ def readInputFile(path, rmg0):
     Read an RMG input file at `path` on disk into the :class:`RMG` object 
     `rmg`.
     """
-
     global rmg, speciesDict
     
     full_path = os.path.abspath(os.path.expandvars(path))
@@ -414,17 +413,24 @@ def saveInputFile(path, rmg):
         f.write(species.molecule[0].toAdjacencyList())
         f.write('"""),\n')
         f.write(')\n\n')
-
+    
     # Reaction systems
     for system in rmg.reactionSystems:
-        f.write('simpleReactor(\n')
-        f.write('    temperature = ({0:g},"{1!s}"),\n'.format(system.T.getValue(),system.T.units))
-        # Convert the pressure from SI pascal units to bar here
-        # Do something more fancy later for converting to user's desired units for both T and P..
-        f.write('    pressure = ({0:g},"{1!s}"),\n'.format(system.P.getValue(),system.P.units))
-        f.write('    initialMoleFractions={\n')
-        for species, molfrac in system.initialMoleFractions.iteritems():
-            f.write('        "{0!s}": {1:g},\n'.format(species.label, molfrac))
+        if rmg.solvent:
+            f.write('liquidReactor(\n')
+            f.write('    temperature = ({0:g},"{1!s}"),\n'.format(system.T.getValue(),system.T.units))
+            f.write('    initialConcentrations={\n')
+            for species, conc in system.initialConcentrations.iteritems():
+                f.write('        "{0!s}": ({1:g},"{2!s}"),\n'.format(species.label,conc.getValue(),conc.units))
+        else:
+            f.write('simpleReactor(\n')
+            f.write('    temperature = ({0:g},"{1!s}"),\n'.format(system.T.getValue(),system.T.units))
+            # Convert the pressure from SI pascal units to bar here
+            # Do something more fancy later for converting to user's desired units for both T and P..
+            f.write('    pressure = ({0:g},"{1!s}"),\n'.format(system.P.getValue(),system.P.units))
+            f.write('    initialMoleFractions={\n')
+            for species, molfrac in system.initialMoleFractions.iteritems():
+                f.write('        "{0!s}": {1:g},\n'.format(species.label, molfrac))
         f.write('    },\n')               
         
         # Termination criteria
@@ -442,14 +448,13 @@ def saveInputFile(path, rmg):
         
         # Sensitivity analysis
         if system.sensitivity:
-            f.write('    sensitivity = {0},\n'.format(system.sensitivity))       
-        if system.sensitivityThreshold:
-            f.write('    sensitivityThreshold = {0},\n'.format(system.sensitivity))      
+            f.write('    sensitivity = {0},\n'.format(system.sensitivity))
+            f.write('    sensitivityThreshold = {0},\n'.format(system.sensitivityThreshold))      
         
         f.write(')\n\n')
     
     if rmg.solvent:
-    	f.write("solvation(\n    solvent = '{0!s}'\n)\n\n".format(solvent))
+        	f.write("solvation(\n    solvent = '{0!s}'\n)\n\n".format(rmg.solvent))
         
     # Simulator tolerances
     f.write('simulator(\n')
@@ -484,6 +489,14 @@ def saveInputFile(path, rmg):
             rmg.pressureDependence.Pcount,
         ))
         f.write('    interpolation = {0},\n'.format(rmg.pressureDependence.model))
+        f.write(')\n\n')
+    
+    if rmg.quantumMechanics:
+        f.write('quantumMechanics(\n')
+        f.write('    software="{0!s}",\n'.format(rmg.quantumMechanics.settings.software))
+        f.write('    method="{0!s}",\n'.format(rmg.quantumMechanics.settings.method))
+        f.write('    onlyCyclics="{0}",\n'.format(rmg.quantumMechanics.settings.onlyCyclics))
+        f.write('    maxRadicalNumber="{0!s}",\n'.format(rmg.quantumMechanics.settings.maxRadicalNumber))
         f.write(')\n\n')
         
     # Options
