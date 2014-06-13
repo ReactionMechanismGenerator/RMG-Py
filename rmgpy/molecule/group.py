@@ -668,7 +668,7 @@ class Group(Graph):
         Convert the molecular structure to a string adjacency list.
         """
         from .adjlist import toAdjacencyList
-        return toAdjacencyList(self.vertices, label='', group=True)
+        return toAdjacencyList(self.vertices, multiplicity=self.multiplicity, label='', group=True)
 
     def updateFingerprint(self):
         """
