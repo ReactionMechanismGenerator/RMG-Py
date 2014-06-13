@@ -65,7 +65,7 @@ _known_smiles_molecules = {
                  'He': '[He]',
                  'CH4O': 'CO',
                  'CO2': 'O=C=O',
-                 'CO': 'C#O',
+                 'CO': '[C+]#[O-]',
                  'C2H4': 'C=C',
                  'O2': 'O=O'
              }
@@ -1099,7 +1099,7 @@ class Molecule(Graph):
             1 He U0 L1
             """)
             return self
-        elif smilesstr == 'C#O':
+        elif smilesstr == '[C+]#[O-]':
             #  carbon monoxide
             self.fromAdjacencyList(
             """

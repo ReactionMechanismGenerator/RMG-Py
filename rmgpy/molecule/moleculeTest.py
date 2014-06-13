@@ -1001,7 +1001,7 @@ class TestMolecule(unittest.TestCase):
         Test that we can generate a few SMILES strings as expected
         """
         import rmgpy.molecule
-        test_strings =['C#O', '[C]', '[CH]', 'OO', '[H][H]', '[H]', '[He]', '[O]', 'O', '[CH3]', 'C', '[OH]', 'CCC', 'CC', 'N#N', '[O]O', 'C[CH2]', '[Ar]', 'CCCC','O=C=O','[C]#N']
+        test_strings =['[C+]#[O-]', '[C]', '[CH]', 'OO', '[H][H]', '[H]', '[He]', '[O]', 'O', '[CH3]', 'C', '[OH]', 'CCC', 'CC', 'N#N', '[O]O', 'C[CH2]', '[Ar]', 'CCCC','O=C=O','[C]#N']
         for s in test_strings:
             molecule = Molecule(SMILES=s)
             self.assertEqual(s,molecule.toSMILES())
