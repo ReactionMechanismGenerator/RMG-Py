@@ -16,7 +16,6 @@ important in the ignition chemistry of ethanol.
 
 species(
     label='acetylperoxy',
-    multiplicity = 2,
     SMILES='CC(=O)O[O]',
     E0=(-34.6,'kcal/mol'),
     states=States(
@@ -40,7 +39,6 @@ species(
 
 species(
     label='hydroperoxylvinoxy',
-    multiplicity = 2,
     SMILES='[CH2]C(=O)OO',
     E0=(-32.4,'kcal/mol'),
     states=States(
@@ -65,7 +63,6 @@ species(
 
 species(
     label='acetyl',
-    multiplicity = 1,
     SMILES='C[C]=O',
     E0=(0.0,'kcal/mol'),
     states=States(
@@ -87,7 +84,6 @@ species(
 
 species(
     label='oxygen',
-    multiplicity = 3,
     SMILES='[O][O]',
     E0=(0.0,'kcal/mol'),
     states=States(
@@ -106,35 +102,30 @@ species(
 
 species(
     label='ketene',
-    multiplicity = 1,
     SMILES='C=C=O',
     E0=(-6.6,'kcal/mol'),
 )
 
 species(
     label='lactone',
-    multiplicity = 1,
     SMILES='C1OC1(=O)',
     E0=(-30.8,'kcal/mol'),
 )
 
 species(
     label='hydroxyl',
-    multiplicity = 2,
     SMILES='[OH]',
     E0=(0.0,'kcal/mol'),
 )
 
 species(
     label='hydroperoxyl',
-    multiplicity = 2,
     SMILES='O[O]',
     E0=(0.0,'kcal/mol'),
 )
 
 species(
     label='nitrogen',
-    multiplicity = 1,
     SMILES='N#N',
     lennardJones=LennardJones(sigma=(3.70,'angstrom'), epsilon=(94.9,'K')),
     collisionModel = SingleExponentialDown(

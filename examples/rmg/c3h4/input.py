@@ -16,18 +16,15 @@ generatedSpeciesConstraints(
 species(
 	label='CH2',
 	reactive=True,
-	multiplicity = 3,
 	structure=SMILES("[CH2]"),
 )
 species(
 	label='C2H2',
-	multiplicity = 1,
 	reactive=True,
 	structure=SMILES("C#C"),
 )
 species(
 	label='N2',
-	multiplicity = 1,
 	reactive=False,
 	structure=InChI("InChI=1/N2/c1-2"),
 )
