@@ -379,7 +379,7 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
             
         return atoms, multiplicity
     else:
-        return atoms
+        return atoms, multiplicity
 
 
 def toAdjacencyList(atoms, multiplicity, label=None, group=False, removeH=False, removeLonePairs=False):

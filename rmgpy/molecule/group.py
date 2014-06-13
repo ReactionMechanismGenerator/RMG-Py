@@ -656,7 +656,9 @@ class Group(Graph):
         ``False``.
         """
         from .adjlist import fromAdjacencyList
-        self.vertices = fromAdjacencyList(adjlist, group=True)
+        self.vertices, multiplicity = fromAdjacencyList(adjlist, group=True)
+        if multiplicity is not None:
+            self.multiplicity = multiplicity
         self.updateConnectivityValues()
         self.updateFingerprint()
         return self
