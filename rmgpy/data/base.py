@@ -906,6 +906,49 @@ class Database:
         notInTree=list(set(notInTree))
         
         return (noGroup, noMatchingGroup, notInTree, notSubgroup, probablyProduct)
+    
+    def matchNodeToNode(self, node, nodeOther):
+        """ 
+        Return `True` if `node` and `nodeOther` are identical.  Otherwise, return `False`.
+        Both `node` and `nodeOther` must be Entry types with items containing Group or LogicNode types.
+        """
+        if isinstance(node.item, Group) and isinstance(nodeOther.item, Group):
+            return self.matchNodeToStructure(node,nodeOther.item, atoms=nodeOther.item.getLabeledAtoms()) and self.matchNodeToStructure(nodeOther,node.item,atoms=node.item.getLabeledAtoms())
+        elif isinstance(node.item,LogicOr) and isinstance(nodeOther.item,LogicOr):
+            return node.item.matchToLogicOr(nodeOther.item)
+        else:
+            # Assume nonmatching
+            return False
+        
+    def matchNodeToChild(self, parentNode, childNode):        
+        """ 
+        Return `True` if `parentNode` is a parent of `childNode`.  Otherwise, return `False`.
+        Both `parentNode` and `childNode` must be Entry types with items containing Group or LogicNode types.
+        If `parentNode` and `childNode` are identical, the function will also return `False`.
+        """
+        
+        if isinstance(parentNode.item, Group) and isinstance(childNode.item, Group):
+            if self.matchNodeToStructure(parentNode,childNode.item, atoms=childNode.item.getLabeledAtoms()) is True:
+                if self.matchNodeToStructure(childNode,parentNode.item, atoms=parentNode.item.getLabeledAtoms()) is False:
+                    return True                
+            return False
+        
+        elif isinstance(parentNode.item,LogicOr) and isinstance(childNode.item,Group):
+            if self.matchNodeToStructure(parentNode,childNode.item, atoms=childNode.item.getLabeledAtoms()) is True:
+                return True
+            else:
+                return False
+        elif isinstance(parentNode.item,LogicOr) and isinstance(childNode.item,LogicOr):
+            if parentNode.item.matchToLogicOr(childNode.item):
+                # the two LogicOrs are identical
+                return False 
+            else:
+                for group in parentNode.item.components:
+                    if group not in childNode.item.components:
+                        return False
+                return True
+        else:
+            return False
 
     def matchNodeToStructure(self, node, structure, atoms):
         """
@@ -917,6 +960,15 @@ class Database:
         include extra labels, and so we only require that every labeled atom in
         the functional group represented by `node` has an equivalent labeled
         atom in `structure`.
+        
+        Matching to structure is more strict than to node.  All labels in structure must 
+        be found in node.  However the reverse is not true.
+        
+        Usage: node = either an Entry or a key in the self.entries dictionary which has
+                      a Group or LogicNode as its Entry.item
+               structure = a Group or a Molecule
+               atoms = dictionary of {label: atom} in the structure.  A possible dictionary
+                       is the one produced by structure.getLabeledAtoms()
         """
         if isinstance(node, str): node = self.entries[node]
         group = node.item

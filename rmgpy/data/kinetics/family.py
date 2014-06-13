@@ -35,6 +35,7 @@ This module contains functionality for working with kinetics libraries.
 import os.path
 import logging
 import codecs
+import re
 from copy import copy, deepcopy
 
 from rmgpy.data.base import Database, Entry, LogicNode, LogicOr, ForbiddenStructures,\
@@ -774,23 +775,27 @@ class KineticsFamily(Database):
                 self.groups.entries[entry.label] = entry
                 productSet.append(entry)
             else:
-                item = []
+                children = []
                 counter = 0
                 for product in products:
                     entry = Entry(
                         label = '{0}{1:d}'.format(label,counter+1),
                         item = product,
-                    )
-                    item.append(entry.label)
+                    )                
+                    children.append(entry)
                     self.groups.entries[entry.label] = entry
                     counter += 1
-
-                item = LogicOr(item,invert=False)
+                
+                # Enter the parent of the groups as a logicOr of all the products
                 entry = Entry(
                     label = label,
-                    item = item,
+                    item = LogicOr([child.label for child in children],invert=False),
+                    children = children,
                 )
                 self.groups.entries[entry.label] = entry
+                # Make this entry the parent of all its children
+                for child in children:
+                    child.parent = entry
                 counter += 1
                 productSet.append(entry)
 
@@ -1923,30 +1928,17 @@ class KineticsFamily(Database):
     
     def checkWellFormed(self):
         """
-        Returns a tuple of malformed database entries:
+        Finds and logs the following errors:
         
-        noGroup is a list of nodes in the rules that has no corresponding group in
-        groups.py
+        -Groups named in rules.py that do not exist in groups.py
+        -Groups named i rules.py that do not share the same definitions
+        as its corresponding entry in groups.py
+        -Groups (in groups.py) that do not exist in the tree
+        -Groups (in groups.py) which are not actually subgroups of their
+        stated parent. 
         
-        noMatchingGroup is a dictionary with entry labels from the rules as a key
-        and entry labels from groups as values. These are groups where rule.py's
-        adj list does not match group.py's.
-        
-        notInTree is a list of groups that do not appear in the tree
-        
-        notSubgroup is a dictionary with group labels as keys and atom indexes 
-        as values. Each key is a group where the child's adj list is not a
-        true child of it's parent. The list of indexes corresponds to the
-        child's adj list index, where the atom is not a true child. 
-        
-        probablyProduct is a list of groups which do not apepar in the
-        tree, but are probably products (as opposed to reactants) which
-        are created in the database loading. These are not necessarily
-        malformations, but because I'm not certain where they came from,
-        I decided to list them.
+        The errors are logged into a logger object with the handle 'databaseLog'
         """
-        
-        
         #A function to add to the not in Subgroup dictionary
         def appendToDict(dictionary, key, value):
             if key not in dictionary:
@@ -1954,15 +1946,10 @@ class KineticsFamily(Database):
             else:
                 dictionary[key].append(value) 
             return dictionary
-
+        
+        databaseLog=logging.getLogger('databaseLog')
         #list of nodes that are not wellFormed
-        noGroup=[]
-        noMatchingGroup={}
-        tempNoMatchingGroup={}
         notInTree=[]
-        notUnique={}
-        notSubgroup={}
-        probablyProduct=[]
         
         # Give correct arguments for each type of database
 #         if isinstance(self, KineticsFamily):
@@ -1979,30 +1966,47 @@ class KineticsFamily(Database):
         try:
             #Each label in rules.py should be be in the form group1;group2;group3 etc
             #and each group must appear in groups.py
-            for libraryNode in libraryNodes:
-                nodes=libraryNode.split(';')
-                for libraryEntry in library[libraryNode]:
-                    for nodeName in nodes:
-                        if nodeName not in groups:
-                            noGroup.append(nodeName)
-                            #If the node is not in the dictionary, we can't do the rest of the check
-                            continue
-                        #Each adj list in rules.py should match the adj list in group's.py
-                        for libraryGroup in libraryEntry.item.reactants:
-                            #break if we find a match between two groups
-                            if isinstance(groups[nodeName].item, Group) and isinstance(libraryGroup, Group):
-                                if groups[nodeName].item.isIsomorphic(libraryGroup):
-                                    break
-                            #break if we find a match between two logic nodes
-                            elif isinstance(groups[nodeName].item, LogicOr) and isinstance(libraryGroup, LogicOr):
-                                if groups[nodeName].item.matchToLogicOr(libraryGroup):
-                                    break
-                        #Otherwise no match is found, so we add it to the tempNoMatchingGroup
+            for label, libraryEntries in library.iteritems():
+                for entry in libraryEntries:
+                    assert label == entry.label
+                    # Check that the groups are what we expect based on the name.
+                    expectedNodeNames = label.split(';')
+                    try:
+                        if len(expectedNodeNames) != len(entry.item.reactants):
+                            raise DatabaseError("Wrong number of semicolons in label")
+                        for expectedNodeName, actualNode in zip(expectedNodeNames, entry.item.reactants):
+                            if expectedNodeName not in groups:
+                                raise DatabaseError("No group definition for label '{label}'".format(label=expectedNodeName))
+                            expectedNode = groups[expectedNodeName].item
+                            if isinstance(actualNode, Group):
+                                if not (isinstance(expectedNode, Group) and expectedNode.isIdentical(actualNode)):
+                                    raise DatabaseError("Group definition doesn't match label '{label}'".format(label=expectedNodeName))
+                            elif isinstance(actualNode, LogicOr):
+                                if not (isinstance(expectedNode, LogicOr) and expectedNode.matchToLogicOr(actualNode)):
+                                    raise DatabaseError("Group definition doesn't match label '{label}'".format(label=expectedNodeName, node=expectedNode))
+                    except DatabaseError, e:
+                        "Didn't pass"
+                        databaseLog.error("Label '{label}' appears to be wrong on entry {index}".format(label=label, index=entry.index))
+                        databaseLog.error(e)
+                    else: 
+                        "Passed"
+                        continue # with next entry
+                    
+                    # We failed the name test. Find correct name, if possible
+                    correctNodeNames = []
+                    for actualGroup in entry.item.reactants:
+                        for groupName, groupEntry in groups.iteritems():
+                            potentialGroup = groupEntry.item
+                            if isinstance(actualGroup, Group) and isinstance(potentialGroup, Group) and potentialGroup.isIdentical(actualGroup):
+                                break
+                            elif isinstance(actualGroup, LogicOr) and isinstance(potentialGroup, LogicOr) and potentialGroup.matchToLogicOr(actualGroup):
+                                break
                         else:
-                            tempNoMatchingGroup=appendToDict(tempNoMatchingGroup, libraryNode, nodeName)
-            #eliminate duplicates
-            for key, nodeList in tempNoMatchingGroup.iteritems():
-                noMatchingGroup[key]=list(set(nodeList))
+                            "We didn't break, so we didn't find a match"
+                            groupName = 'UNKNOWN'
+                        correctNodeNames.append(groupName)
+                    correctName = ';'.join(correctNodeNames)
+                    databaseLog.error("Entry {index} called '{label}' should probably be called '{correct}' or the group definitions changed.".format(label=label, index=entry.index, correct=correctName))
                 
             # Each group in groups.py should appear in the tree
             # This is true when ascending through parents leads to a top node
@@ -2014,8 +2018,13 @@ class KineticsFamily(Database):
                     child=ascendParent
                     ascendParent=ascendParent.parent
                     if ascendParent is None or child not in ascendParent.children:
+                        #These are typically products of the recipe
                         if child.index==-1:
-                            probablyProduct.append(child.label)
+                            for product in self.forwardTemplate.products:
+                                #If it is a product, ignore it
+                                if re.match(re.escape(product.label)+'[0-9]*', child.label):
+                                    break
+                            else: notInTree.append(child.label)
                             break
                         else:
                         # If a group is not in a tree, we want to save the uppermost parent, not necessarily the original node
@@ -2028,10 +2037,10 @@ class KineticsFamily(Database):
                     nodeGroup2Item=self.groups.entries[nodeName2].item
                     if isinstance(nodeGroup2Item, Group) and isinstance(nodeGroupItem, Group):
                         if nodeGroupItem.isIdentical(nodeGroup2Item):
-                            notUnique=appendToDict(notUnique, nodeName, nodeName2)
+                            databaseLog.error("{0} is not unique. It shares its definition with {1}".format(nodeName, nodeName2))
                     if isinstance(nodeGroup2Item, LogicOr) and isinstance(nodeGroupItem, LogicOr):
                         if nodeGroupItem.matchToLogicOr(nodeGroup2Item):
-                            notUnique=appendToDict(notUnique, nodeName, nodeName2)
+                            databaseLog.error("{0} is not unique. It shares its definition with {1}".format(nodeName, nodeName2))
                     
                 #For a correct child-parent relationship, each atom in the parent should have a corresponding child atom in the child.
                 nodeParent=nodeGroup.parent
@@ -2041,7 +2050,10 @@ class KineticsFamily(Database):
                     if isinstance(nodeParent.item, LogicOr):
                         if not nodeGroup.label in nodeParent.item.components:
                             #-1 index means the child is not in the LogicOr
-                            notSubgroup[nodeName]=nodeParent.label
+                            databaseLog.error("{0}'s definition is not a subgroup of its stated parent, {1}. The child definition is".format(nodeName, nodeParent.label))
+                            databaseLog.error("{0}".format(groups[nodeName].item.toAdjacencyList()))
+                            databaseLog.error("The parent {0} definition is".format(nodeParent.label))
+                            databaseLog.error("{0}".format(nodeParent.item))
                             continue
                         else:
                             #if the parent is a LogicOr, we want to keep ascending until we get to a group or hit a discontinuity (could be
@@ -2052,16 +2064,20 @@ class KineticsFamily(Database):
                         if nodeParent == None: continue
 #                         nodeParent.item.sortAtoms()
                     elif isinstance(nodeGroup.item, LogicOr):
+                        databaseLog.error("{0} is an intermediate LogicOr. See if it can be replaced with a adj list.".format(nodeName))
                         print nodeGroup, ' is an intermediate LogicOr. See if it can be replaced with a adj list.'
                         continue
                     #If both the parent and child are graphs, we can use the function isSubgroupIsomorphic if it is actually a child
                     if not nodeGroup.item.isSubgraphIsomorphic(nodeParent.item):
-                        notSubgroup[nodeName]=nodeParent.label
+                        databaseLog.error("{0}'s definition is not a subgroup of its stated parent, {1}. The child definition is".format(nodeName, nodeParent.label))
+                        databaseLog.error("{0}".format(groups[nodeName].item.toAdjacencyList()))
+                        databaseLog.error("The parent {0} definition is".format(nodeParent.label))
+                        databaseLog.error("{0}".format(nodeParent.item.toAdjacencyList()))
         except DatabaseError, e:
-            logging.error(str(e))
+            databaseLog.error(str(e))
         
-        #eliminate duplicates
-        noGroup=list(set(noGroup))
+        #eliminate duplicates and print into logger
         notInTree=list(set(notInTree))
+        for groupName in notInTree:
+            databaseLog.error("The group '{0}' does not appear in tree'".format(groupName))
         
-        return (noGroup, noMatchingGroup, notInTree, notUnique, notSubgroup, probablyProduct)

@@ -1033,7 +1033,7 @@ class Molecule(Graph):
         # It only makes sense to compare a Molecule to a Group for subgraph
         # isomorphism, so raise an exception if this is not what was requested
         if not isinstance(other, Group):
-            raise TypeError('Got a {0} object for parameter "other", when a Molecule object is required.'.format(other.__class__))
+            raise TypeError('Got a {0} object for parameter "other", when a Group object is required.'.format(other.__class__))
         # Do the isomorphism comparison
         result = Graph.findSubgraphIsomorphisms(self, other, initialMap)
         return result
