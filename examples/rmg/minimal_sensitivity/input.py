@@ -16,7 +16,6 @@ generatedSpeciesConstraints(
 # List of species
 species(
     label='ethane',
-    multiplicity = 1,
     reactive=True,
     structure=SMILES("CC"),
 )
