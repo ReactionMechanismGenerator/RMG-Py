@@ -559,7 +559,24 @@ class KineticsFamily(Database):
         
         self.depositories = []
         
-                                
+        if depositoryLabels=='all':
+            # Load everything. This option is generally used for working with the database
+            # load all the remaining depositories, in order returned by os.walk
+            for root, dirs, files in os.walk(path):
+                for f in files:
+                    if not f.endswith('.py'): continue
+                    name = f.split('.py')[0]
+                    print name
+                    if name not in ['groups', 'rules']:
+                        fpath = os.path.join(path, f)
+                        label = '{0}/{1}'.format(self.label, name)
+                        depository = KineticsDepository(label=label)
+                        logging.debug("Loading kinetics family depository from {0}".format(fpath))
+                        print fpath
+                        depository.load(fpath, local_context, global_context)
+                        self.depositories.append(depository)
+            return
+                    
         if not depositoryLabels:
             # If depository labels is None or there are no depositories listed, then use the training
             # depository and add them to the RMG rate rules by default:
@@ -586,20 +603,7 @@ class KineticsFamily(Database):
             depository.load(fpath, local_context, global_context)
             self.depositories.append(depository)
         
-        if depositoryLabels is None:
-            # load all the remaining depositories, in order returned by os.walk
-            for root, dirs, files in os.walk(path):
-                if 'training' in root: continue
-                for f in files:
-                    if not f.endswith('.py'): continue
-                    name = f.split('.py')[0]
-                    if name not in ['groups', 'rules'] and name not in (depositoryLabels or ['training']):
-                        fpath = os.path.join(root, f)
-                        label = '{0}/{1}'.format(self.label, name)
-                        depository = KineticsDepository(label=label)
-                        logging.debug("Loading kinetics family depository from {0}".format(fpath))
-                        depository.load(fpath, local_context, global_context)
-                        self.depositories.append(depository)
+
             
     def loadTemplate(self, reactants, products, ownReverse=False):
         """
