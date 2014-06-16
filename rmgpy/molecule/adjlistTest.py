@@ -310,16 +310,15 @@ class TestMoleculeAdjLists(unittest.TestCase):
         
         #self.assertEqual(adjlist_1.strip(), adjlist.strip())
         
-#    def testFromOldAdjacencyList(self):
-#        """
-#        Test we can read things with implicit hydrogens.
-#        """
-#        adjList = """
-#        1 O 0 
-#        """ # should be Water
-#        molecule = Molecule().fromAdjacencyList(adjList, saturateH=True) # only works with saturateH=True
-#        self.assertEqual(molecule.getFormula(),'H2O')
-
+    def testFromOldAdjacencyList1(self):
+        """
+        Test we can read an old style adjacency list with implicit hydrogens 1
+        """
+        adjList = """
+        1 O 0 
+        """  # should be Water
+        molecule = Molecule().fromAdjacencyList(adjList, saturateH=True)  # only works with saturateH=True
+        self.assertEqual(molecule.getFormula(), 'H2O')
 
 
     def testAdjacencyList(self):
