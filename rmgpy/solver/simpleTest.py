@@ -138,10 +138,10 @@ class SimpleReactorCheck(unittest.TestCase):
                     jacobian[i,j] = (dydt[j][i]-dydt0[i])/dN
                     self.assertAlmostEqual(jacobian[i,j], solverJacobian[i,j], delta=abs(1e-4*jacobian[i,j]))
         
-        print 'Solver jacobian'
-        print solverJacobian
-        print 'Numerical jacobian'
-        print jacobian
+        #print 'Solver jacobian'
+        #print solverJacobian
+        #print 'Numerical jacobian'
+        #print jacobian
         
         ###
         # Unit test for the compute rate derivative
@@ -159,8 +159,8 @@ class SimpleReactorCheck(unittest.TestCase):
         rxnSystem0.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions)
         dfdt0 = rxnSystem0.residual(0.0, rxnSystem0.y, numpy.zeros(rxnSystem0.y.shape))[0]
         solver_dfdk = rxnSystem0.computeRateDerivative()
-        print 'Solver d(dy/dt)/dk'
-        print solver_dfdk
+        #print 'Solver d(dy/dt)/dk'
+        #print solver_dfdk
         
         integrationTime = 1e-8
         rxnSystem0.termination.append(TerminationTime((integrationTime,'s')))
@@ -191,8 +191,8 @@ class SimpleReactorCheck(unittest.TestCase):
             for j in range(len(rxnList)):
                 self.assertAlmostEqual(dfdk[i,j], solver_dfdk[i,j], delta=abs(1e-3*dfdk[i,j]))
             
-        print 'Numerical d(dy/dt)/dk'    
-        print dfdk
+        #print 'Numerical d(dy/dt)/dk'    
+        #print dfdk
         
         
         

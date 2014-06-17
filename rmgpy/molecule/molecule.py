@@ -1518,7 +1518,7 @@ class Molecule(Graph):
             for cycle in SSSR:
                 if len(cycle) == 6:
                     for atom in cycle:
-                        print atom.atomType.label
+                        #print atom.atomType.label
                         if atom.atomType.label == 'Cb' or atom.atomType.label == 'Cbf':
                             continue                        
                         # Go onto next cycle if a non Cb atomtype was discovered in this cycle

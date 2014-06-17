@@ -107,9 +107,8 @@ class TestSpecies(unittest.TestCase):
         """
         Test that toAdjacencyList() works as expected.
         """
-        print self.species.toAdjacencyList()
         string = self.species.toAdjacencyList()
-        self.assertTrue(string.startswith(self.species.molecule[0].toAdjacencyList(label=self.species.label,removeH=False)))
+        self.assertTrue(string.startswith(self.species.molecule[0].toAdjacencyList(label=self.species.label,removeH=False)),string)
 
 ################################################################################
 

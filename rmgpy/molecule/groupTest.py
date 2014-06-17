@@ -439,8 +439,7 @@ class TestGroup(unittest.TestCase):
         Test the Group.toAdjacencyList() method.
         """
         adjlist = self.group.toAdjacencyList()
-        print 'adjlist', adjlist
-        self.assertEqual(adjlist.strip(), self.adjlist.strip())
+        self.assertEqual(adjlist.strip(), self.adjlist.strip(),adjlist)
 
     def testIsIsomorphic(self):
         """

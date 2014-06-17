@@ -263,7 +263,7 @@ class TestConformer(unittest.TestCase):
         self.assertAlmostEqual(I[0]*constants.Na*1e23,  6.27074, 4)
         self.assertAlmostEqual(I[1]*constants.Na*1e23, 25.38321, 3)
         self.assertAlmostEqual(I[2]*constants.Na*1e23, 25.38341, 3)
-        print V
+        #print V
         # For some reason the axes seem to jump around (positioning and signs change)
         # but the absolute values should be the same as we expect
         expected = sorted([0.497140,
