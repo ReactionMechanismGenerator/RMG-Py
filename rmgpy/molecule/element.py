@@ -78,7 +78,12 @@ class Element:
         self.symbol = intern(symbol)
         self.name = name
         self.mass = mass
-        self.covRadius = _rdkit_periodic_table.GetRcovalent(symbol)
+        try:
+            self.covRadius = _rdkit_periodic_table.GetRcovalent(symbol)
+        except RuntimeError:
+            import logging
+            logging.error("RDkit doesn't know element {0} so covalent radius unknown".format(symbol))
+            self.covRadius = 0
     
     def __str__(self):
         """
