@@ -52,7 +52,9 @@ class InvalidAdjacencyListError(Exception):
 def fromOldAdjacencyList(adjlist, group=False, saturateH=False):
     """
     Convert a pre-June-2014 string adjacency list `adjlist` into a set of :class:`Atom` and
-    :class:`Bond` objects.
+    :class:`Bond` objects. 
+    It can read both "old style" that existed for years, an the "intermediate style" that
+    existed for a few months in 2014, with the extra column of integers for lone pairs.
     """
     atoms = []
     atomdict = {}
@@ -304,6 +306,21 @@ def fromOldAdjacencyList(adjlist, group=False, saturateH=False):
 
 ###############################
 
+re_IntermediateAdjList = re.compile('^\s*(\d)\s+' +  # atom number digit
+                          '(?P<label>\*\d*\s+)?' +  # optional label eg * or *2
+                          '(?P<atomtype>\{?[A-Z]\S*)\s+' +  # atomtype eg R!H or {Cb,Cd}
+                          '(?P<radicals>X|\d[STDQV]?|\{?\d[^}]*\})\s+' +  #radicals eg. X or 2T or {1,2,2T}
+                          '(?P<lonepairs>\d)' +  # lone pairs eg. 0
+                          '(?P<bonds>(\s+\{\d+\,(?:[SDTB]|\{.+?\})\},?)*)' +  # bonds, eg {2,S} {4,{S,D}}
+                          '\s*$')  # the end!
+
+re_OldAdjList = re.compile('^\s*(\d)\s+' +  # atom number digit
+                          '(?P<label>\*\d*\s+)?' +  # optional label eg * or *2
+                          '(?P<atomtype>\{?[A-Z]\S*)\s+' +  # atomtype eg R!H or {Cb,Cd}
+                          '(?P<radicals>X|\d[STDQV]?|\{?\d[^}]*\})' +  #radicals eg. X or 2T or {1,2,2T}
+                          '(?P<bonds>(\s+\{\d+\,(?:[SDTB]|\{.+?\})\},?)*)' +  # bonds, eg {2,S} {4,{S,D}}
+                          '\s*$')  # the end!
+
 def fromAdjacencyList(adjlist, group=False, saturateH=False):
     """
     Convert a string adjacency list `adjlist` into a set of :class:`Atom` and
@@ -319,6 +336,17 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
         lines = adjlist.splitlines()
         if adjlist == '' or len(lines) == 0:
             raise InvalidAdjacencyListError('Empty adjacency list.')
+
+        lastLine = lines[-1]
+        if re_IntermediateAdjList.match(lastLine):
+            logging.debug("Adjacency list line '{0}' looks like an intermediate style adjacency list".format(lastLine))
+            return fromOldAdjacencyList(adjlist, group=group, saturateH=saturateH)
+        if re_OldAdjList.match(lastLine):
+            logging.debug("Adjacency list line '{0}' looks like an old style adjacency list".format(lastLine))
+            if not group:
+                logging.debug("Will assume implicit H atoms")
+            return fromOldAdjacencyList(adjlist, group=group, saturateH=(not group))
+
 
         # Skip the first line if it contains a label
         if len(lines[0].split()) == 1:
@@ -615,6 +643,7 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
                     
     except InvalidAdjacencyListError, e:
         logging.debug("Assuming this adjacency list is old-style beceause {1}:\n{0}".format(adjlist, e.message))
+        logging.debug("Though it should have been detected by the regex test")
         return fromOldAdjacencyList(adjlist, group=group, saturateH=saturateH)
     
     if not group:
