@@ -49,12 +49,11 @@ class TestSoluteDatabase(TestCase):
         for name, smiles, S, B, E, L, A, V in self.testCases:
             species = Species(molecule=[Molecule(SMILES=smiles)])
             soluteData = self.database.getSoluteDataFromGroups(Species(molecule=[species.molecule[0]]))
-            print name, soluteData
-            print self.assertAlmostEqual(soluteData.S, S)
-            print self.assertAlmostEqual(soluteData.B, B)
-            print self.assertAlmostEqual(soluteData.E, E)
-            print self.assertAlmostEqual(soluteData.L, L)
-            print self.assertAlmostEqual(soluteData.A, A)
+            self.assertAlmostEqual(soluteData.S, S)
+            self.assertAlmostEqual(soluteData.B, B)
+            self.assertAlmostEqual(soluteData.E, E)
+            self.assertAlmostEqual(soluteData.L, L)
+            self.assertAlmostEqual(soluteData.A, A)
 
     @work_in_progress
     def testCorrectionGeneration(self):
