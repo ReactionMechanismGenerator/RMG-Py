@@ -688,7 +688,7 @@ def toAdjacencyList(atoms, multiplicity, label=None, group=False, removeH=False,
                 adjlist += 'multiplicity {0!r}\n'.format(multiplicity)
     else:
         assert isinstance(multiplicity, int), "Molecule should have an integer multiplicity"
-        if multiplicity != 1:
+        if multiplicity != 1 or any( atom.radicalElectrons for atom in atoms ):
             adjlist += 'multiplicity {0!r}\n'.format(multiplicity)
 
     # Determine the numbers to use for each atom
