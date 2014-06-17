@@ -922,20 +922,20 @@ class TestMolecule(unittest.TestCase):
     @work_in_progress
     def testAromaticBenzene(self):
         """
-        Test the Molecule.isAromatic() method.
+        Test the Molecule.isAromatic() method for Benzene.
         """
         self.assertTrue(Molecule().fromSMILES('C1=CC=CC=C1').isAromatic())
 
     @work_in_progress
     def testAromaticNaphthalene(self):
         """
-        Test the Molecule.isAromatic() method.
+        Test the Molecule.isAromatic() method for Naphthalene.
         """
         self.assertTrue(Molecule().fromSMILES('C12C(C=CC=C1)=CC=CC=2').isAromatic())
                         
     def testAromaticCyclohexane(self):
         """
-        Test the Molecule.isAromatic() method.
+        Test the Molecule.isAromatic() method for Cyclohexane.
         """
         self.assertFalse(Molecule().fromSMILES('C1CCCCC1').isAromatic())
          
