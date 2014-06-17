@@ -7,6 +7,9 @@ from rmgpy.molecule.molecule import *
 from rmgpy.molecule.group import Group
 from rmgpy.molecule.element import getElement, elementList
 
+import logging
+logging.basicConfig(level=logging.DEBUG)
+
 ################################################################################
 
 class TestGroupAdjLists(unittest.TestCase):
@@ -15,6 +18,42 @@ class TestGroupAdjLists(unittest.TestCase):
     """
     def setUp(self):
         pass
+
+    def testFromOldAdjacencyList1(self):
+        """
+        adjlist: Test the Group.fromAdjacencyList() method on an old style adjacency list.
+        """
+        adjlist = """
+1 *2 {Cs,Cd} 0 {2,{S,D}} {3,S}
+2 *1 {Os,Od}  0   {1,{S,D}}
+3    R!H     {0,1} {1,S}
+            """
+        group = Group().fromAdjacencyList(adjlist)
+
+        atom1, atom2, atom3 = group.atoms
+        self.assertTrue(group.hasBond(atom1, atom2))
+        self.assertTrue(group.hasBond(atom1, atom3))
+        self.assertFalse(group.hasBond(atom2, atom3))
+        bond12 = atom1.bonds[atom2]
+        bond13 = atom1.bonds[atom3]
+
+        self.assertTrue(atom1.label == '*2')
+        self.assertTrue(atom1.atomType[0].label in ['Cs', 'Cd'])
+        self.assertTrue(atom1.atomType[1].label in ['Cs', 'Cd'])
+        self.assertTrue(atom1.radicalElectrons == [0])
+
+        self.assertTrue(atom2.label == '*1')
+        self.assertTrue(atom2.atomType[0].label in ['Os', 'Od'])
+        self.assertTrue(atom2.atomType[1].label in ['Os', 'Od'])
+        self.assertTrue(atom2.radicalElectrons == [0])
+
+        self.assertTrue(atom3.label == '')
+        self.assertTrue(atom3.atomType[0].label == 'R!H')
+        self.assertTrue(atom3.radicalElectrons == [0, 1])
+
+        self.assertTrue(bond12.order == ['S', 'D'])
+        self.assertTrue(bond13.order == ['S'])
+
 
     def testFromAdjacencyList(self):
         """
@@ -310,6 +349,16 @@ class TestMoleculeAdjLists(unittest.TestCase):
         
         #self.assertEqual(adjlist_1.strip(), adjlist.strip())
         
+    def testFromIntermediateAdjacencyList1(self):
+        """
+        Test we can read an intermediate style adjacency list with implicit hydrogens 1
+        """
+        adjList = """
+        1 O 0 0
+        """  # should be Water
+        molecule = Molecule().fromAdjacencyList(adjList, saturateH=True)  # only works with saturateH=True
+        self.assertEqual(molecule.getFormula(), 'H2O')
+
     def testFromOldAdjacencyList1(self):
         """
         Test we can read an old style adjacency list with implicit hydrogens 1
@@ -317,7 +366,7 @@ class TestMoleculeAdjLists(unittest.TestCase):
         adjList = """
         1 O 0 
         """  # should be Water
-        molecule = Molecule().fromAdjacencyList(adjList, saturateH=True)  # only works with saturateH=True
+        molecule = Molecule().fromAdjacencyList(adjList)  # only works with saturateH=True
         self.assertEqual(molecule.getFormula(), 'H2O')
 
 
@@ -349,4 +398,5 @@ class TestMoleculeAdjLists(unittest.TestCase):
 ################################################################################
 
 if __name__ == '__main__':
-    unittest.main( testRunner = unittest.TextTestRunner(verbosity=2) )
+
+    unittest.main(testRunner=unittest.TextTestRunner(verbosity=3))
