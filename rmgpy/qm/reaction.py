@@ -579,7 +579,7 @@ class QMReaction:
         #calc = ase.calculators.emt.EMT()
         #calc.set(multiplicity=self.geometry.molecule.getRadicalCount() + 1)
 
-        calc = ase.calculators.mopac.Mopac(command=mopac.Mopac.executablePath)
+        calc = ase.calculators.mopac.Mopac(command=mopac.Mopac.executablePath, functional='PM7')
         calc.set(spin=self.geometry.molecule.getRadicalCount() )
         
         for image in images[1:x+1]:
