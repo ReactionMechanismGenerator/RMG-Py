@@ -201,6 +201,8 @@ class RMGDatabase:
 #         self.transport.save(os.path.join(path, 'transport')) #Currently no function for saving transport groups
         self.kinetics.save(os.path.join(path, 'kinetics'))
         self.statmech.save(os.path.join(path, 'statmech'))
+        self.solvation.save(os.path.join(path, 'solvation'))
+        self.transport.save(os.path.join(path, 'transport'))
 
     def saveOld(self, path):
         """
