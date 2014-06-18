@@ -682,72 +682,7 @@ class GaussianTS(QMReaction, Gaussian):
                 print line.rstrip()
         return self.verifyQST2OutputFile(), logFilePath
     
-    def runInterplolation(self, pGeom):
-        """
-        Takes the reactant geometry (in `self`) and the product geometry (`pGeom`)
-        and does an interpolation. This can run nudged-elastic band calculations using
-        the Atomic Simulation Environment (`ASE <https://wiki.fysik.dtu.dk/ase/>`).
-        """
-        import ase
-        from ase import io, Atoms
-        from ase.neb import NEB, SingleCalculatorNEB
-        from ase.calculators.emt import EMT
-        from ase.calculators.mopac import Mopac
-        from ase.optimize import BFGS
-        
-        # Give ase the atom positions for each side of the reaction path
-        initial = ase.io.read(self.outputFilePath, format='gaussian_out')
-        final = ase.io.read(pGeom.getFilePath(self.outputFileExtension), format='gaussian_out')
-        
-        # ASE doesn't keep the atoms in the same order as it's positions (weird!),
-        # so get the correct atom list and recreate the images
-        molfile = self.geometry.getRefinedMolFilePath()
-        atomline = re.compile('\s*([\- ][0-9.]+\s+[\-0-9.]+\s+[\-0-9.]+)\s+([A-Za-z]+)')
-        
-        atomCount = 0
-        atomnos = []
-        with open(molfile) as molinput:
-            for line in molinput:
-                match = atomline.match(line)
-                if match:
-                    atomnos.append(match.group(2))
-                    atomCount += 1
-                    
-        newImage = Atoms(atomnos)
-        newImage.set_positions(initial.get_positions())
-        initial = newImage.copy()
-        
-        newImage = Atoms(atomnos)
-        newImage.set_positions(final.get_positions())
-        final = newImage.copy()
-        
-        # Now make a band of x + 2 images (x plus the initial and final geometries)
-        x = 3
-        images = [initial]
-        images += [initial.copy() for i in range(x)]
-        images += [final]
-        
-        # We use the linear NEB, but we can use the 'climbing image' variation by adding `climb=True`
-        neb = ase.neb.NEB(images)
-        
-        # Interpolate the positions of the middle images linearly, then set calculators
-        neb.interpolate()
-        
-        # # Set up the calculator
-        # calc = ase.calculators.emt.EMT()
-        # calc.set(multiplicity=self.geometry.molecule.getRadicalCount() + 1)
-        # 
-        # for image in images[1:x+1]:
-        #     image.set_calculator(calc)
-        
-        for j, image in enumerate(neb.images):
-            image.write(self.getFilePath('int') + str(j+1), format='xyz')
-        
-        # optimizer = BFGS(neb, trajectory='trajNEB.traj')
-        # optimizer.run()
-        # 
-        # for j, image in enumerate(neb.images):
-        #     image.write('optimized' + str(j+1), format='xyz')
+
         
     def runIRC(self):
         self.testReady()
