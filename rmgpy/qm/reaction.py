@@ -564,13 +564,13 @@ class QMReaction:
         final = newImage.copy()
         
         # Now make a band of x + 2 images (x plus the initial and final geometries)
-        x = 3
+        x = 5
         images = [initial]
         images += [initial.copy() for i in range(x)]
         images += [final]
         
         # We use the linear NEB, but we can use the 'climbing image' variation by adding `climb=True`
-        neb = ase.neb.NEB(images)
+        neb = ase.neb.NEB(images, climb=False)
         
         # Interpolate the positions of the middle images linearly, then set calculators
         neb.interpolate()
@@ -587,6 +587,9 @@ class QMReaction:
         
         optimizer = BFGS(neb, trajectory='trajNEB.traj', logfile='NEB.log')
         #optimizer = FIRE(neb, trajectory='trajNEB.traj', logfile='NEB.log')
+        optimizer.run(fmax=0.05,steps=100)
+        print "Done first set of steps. Now trying with climb=True"
+        neb.climb=True
         optimizer.run()
          
         for j, image in enumerate(neb.images):
@@ -717,7 +720,7 @@ class QMReaction:
         self.runInterplolation(pGeom)
             
         print "Optimizing TS once"
-        self.writeInputFile(1, fromInt=True)
+        self.writeInputFile(1, fromNEB=True)
         converged, internalCoord = self.run()
         shutil.copy(self.outputFilePath, self.outputFilePath+'.TS1.log')
         
