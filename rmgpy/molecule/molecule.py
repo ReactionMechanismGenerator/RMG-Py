@@ -218,7 +218,7 @@ class Atom(Vertex):
         if isinstance(other, Atom):
             return self.equivalent(other)
         elif isinstance(other, GroupAtom):
-            cython.declare(atom=GroupAtom, a=AtomType, radical=cython.short, charge=cython.short, index=cython.int)
+            cython.declare(atom=GroupAtom, a=AtomType, radical=cython.short, charge=cython.short)
             atom = other
             if self.atomType is None:
                 return False
@@ -226,8 +226,7 @@ class Atom(Vertex):
                 if self.atomType.isSpecificCaseOf(a): break
             else:
                 return False
-            for index in range(len(atom.radicalElectrons)):
-                radical = atom.radicalElectrons[index]
+            for radical in atom.radicalElectrons:
                 if self.radicalElectrons == radical: break
             else:
                 return False
