@@ -176,9 +176,19 @@ def fromOldAdjacencyList(adjlist, group=False, saturateH=False):
             # Create a new atom based on the above information
             if group:
                 # charge currently not allowed
-                atom = GroupAtom(atomType=atomType, radicalElectrons=radicalElectrons, charge=[0], label=label, lonePairs=[lonePairElectrons])
+                atom = GroupAtom(atomType=atomType,
+                                 radicalElectrons=sorted(set(radicalElectrons)),
+                                 charge=[0],
+                                 label=label,
+                                 lonePairs=[lonePairElectrons]
+                                 )
             else:
-                atom = Atom(element=atomType[0], radicalElectrons=radicalElectrons[0], charge=0, label=label, lonePairs=lonePairElectrons)
+                atom = Atom(element=atomType[0],
+                            radicalElectrons=radicalElectrons[0],
+                            charge=0,
+                            label=label,
+                            lonePairs=lonePairElectrons
+                            )
 
             atomicMultiplicities[atom] = atomSpinMultiplicity
             # Add the atom to the list
