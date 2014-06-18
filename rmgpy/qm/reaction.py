@@ -1,4 +1,5 @@
 import os
+import re
 import logging
 import external.cclib.parser
 import time
