@@ -487,31 +487,31 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
                         if e == '0':
                             partialCharges.append(0)
                         elif e == '+1':
-                             partialCharges.append(1)
+                            partialCharges.append(1)
                         elif e == '+2':
-                             partialCharges.append(2)
+                            partialCharges.append(2)
                         elif e == '+3':
-                             partialCharges.append(3)
+                            partialCharges.append(3)
                         elif e == '+4':
-                             partialCharges.append(4)
+                            partialCharges.append(4)
                         elif e == '-1':
-                             partialCharges.append(-1)
+                            partialCharges.append(-1)
                         elif e == '-2':
-                             partialCharges.append(-2)
+                            partialCharges.append(-2)
                         elif e == '-3':
-                             partialCharges.append(-3)
+                            partialCharges.append(-3)
                         elif e == '-4':
-                             partialCharges.append(-4)
+                            partialCharges.append(-4)
                         elif e == 'x':
-                             partialCharges.append(0)
-                             partialCharges.append(1)
-                             partialCharges.append(2)
-                             partialCharges.append(3)
-                             partialCharges.append(4)
-                             partialCharges.append(-1)
-                             partialCharges.append(-2)
-                             partialCharges.append(-3)
-                             partialCharges.append(-4)
+                            partialCharges.append(0)
+                            partialCharges.append(1)
+                            partialCharges.append(2)
+                            partialCharges.append(3)
+                            partialCharges.append(4)
+                            partialCharges.append(-1)
+                            partialCharges.append(-2)
+                            partialCharges.append(-3)
+                            partialCharges.append(-4)
                         else:
                             raise InvalidAdjacencyListError('Number of partial charges not recognized.')
                     index += 1
