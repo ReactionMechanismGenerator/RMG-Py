@@ -352,11 +352,13 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
         if lines[0].split()[0] == 'multiplicity':
             line = lines.pop(0)
             if group:
-                match = re.search('multiplicity\s+\[(.*?)\]',line)
-                assert match, "Invalid multiplicity line {0}".format(line)
+                match = re.match('\s*multiplicity\s+\[\d(?:,\s*\d)*\]\s*$', line)
+                assert match, "Invalid multiplicity line '{0}'. Should be a list like 'multiplicity [1,2,3]'".format(line)
                 multiplicities = match.group(1).split(',')
                 multiplicity = [int(i) for i in multiplicities]
             else:
+                match = re.match('\s*multiplicity\s+\d+\s*$', line)
+                assert match, "Invalid multiplicity line '{0}'. Should be an integer like 'multiplicity 2'".format(line)
                 multiplicity = int(line.split()[1])
             if len(lines) == 0:
                 raise InvalidAdjacencyListError('No atoms specified in adjacency list.')
