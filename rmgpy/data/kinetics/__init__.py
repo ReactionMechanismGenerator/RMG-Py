@@ -237,9 +237,31 @@ class KineticsDatabase(object):
         """
         path = os.path.abspath(path)
         if not os.path.exists(path): os.mkdir(path)
+        self.saveRecommendedFamilies(os.path.join(path, 'families'))
         self.saveFamilies(os.path.join(path, 'families'))
         self.saveLibraries(os.path.join(path, 'libraries'))
-
+        
+    def saveRecommendedFamilies(self, path):
+        """ 
+        Save the list of recommended families in a dictionary stored at 
+        `path`/recommended.py
+        """
+        import codecs
+        
+        if not os.path.exists(path): os.mkdir(path)
+        f = codecs.open(os.path.join(path,'recommended.py'), 'w', 'utf-8')
+        f.write('''# This file contains a dictionary of kinetics families.  The families
+# set to `True` are recommended by RMG and turned on by default by setting
+# kineticsFamilies = 'default' in the RMG input file. Families set to `False` 
+# are not turned on by default because the family is severely lacking in data.
+# These families should only be turned on with caution.''')
+        f.write('\n\n')
+        f.write('recommendedFamilies = {\n')
+        for label in sorted(self.recommendedFamilies.keys()):
+            f.write("'{label}':{value},\n".format(label=label,value=self.recommendedFamilies[label]))
+        f.write('}')
+        f.close()
+        
     def saveFamilies(self, path):
         """
         Save the kinetics families to the given `path` on disk, where `path`
