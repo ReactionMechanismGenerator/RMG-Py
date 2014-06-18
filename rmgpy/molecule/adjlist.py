@@ -728,8 +728,9 @@ def toAdjacencyList(atoms, multiplicity, label=None, group=False, removeH=False,
                 atomUnpairedElectrons[atom] = 'x'  # the wildcard represents [0,1,2,3,4]
             else:
                 atomUnpairedElectrons[atom] = '{{{0}}}'.format(','.join([str(radical) for radical in atom.radicalElectrons]))
+
             # Lone Electron Pair(s)
-            if atom.lonePairs is None: 
+            if atom.lonePairs is None or not atom.lonePairs: # if None or []
                 atomLonePairs[atom] = None
             elif len(atom.lonePairs) == 1: 
                 atomLonePairs[atom] = str(atom.lonePairs[0])
@@ -770,7 +771,7 @@ def toAdjacencyList(atoms, multiplicity, label=None, group=False, removeH=False,
         # Unpaired Electron(s)
         adjlist += 'U{0:<{1:d}}'.format(atomUnpairedElectrons[atom], atomUnpairedElectronsWidth)
         # Lone Electron Pair(s)
-        if atomLonePairs[atom] != 'None':
+        if str(atomLonePairs[atom]) != 'None':
             adjlist += ' L{0:>{1:d}}'.format(atomLonePairs[atom], atomLonePairWidth)
         if not group:
             # Partial Charge(s)
