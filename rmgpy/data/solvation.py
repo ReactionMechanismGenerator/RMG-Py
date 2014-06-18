@@ -489,9 +489,9 @@ class SolvationDatabase(object):
         points to the top-level folder of the solute libraries.
         """
         if not os.path.exists(path): os.mkdir(path)
-        for library in self.libraries.values():
-            library.save(os.path.join(path, '{0}.py'.format(library.label)))
-
+        self.solventLibrary.save(os.path.join(path,'solvent.py'))
+        self.soluteLibrary.save(os.path.join(path,'solute.py'))
+        
     def saveGroups(self, path):
         """
         Save the solute groups to the given `path` on disk, where `path`

@@ -253,6 +253,34 @@ class TransportDatabase(object):
         self.groups = {}
         self.groups['ring'] = TransportGroups(label='ring').load(os.path.join(path, 'ring.py'), self.local_context, self.global_context)
         self.groups['nonring'] = TransportGroups(label='nonring').load(os.path.join(path, 'nonring.py'), self.local_context, self.global_context)
+        
+    def save(self, path):
+        """
+        Save the transport database to the given `path` on disk, where `path`
+        points to the top-level folder of the transport database.
+        """
+        path = os.path.abspath(path)
+        if not os.path.exists(path): os.mkdir(path)
+        self.saveLibraries(os.path.join(path, 'libraries'))
+        self.saveGroups(os.path.join(path, 'groups'))
+
+    def saveLibraries(self, path):
+        """
+        Save the trasnport libraries to the given `path` on disk, where `path`
+        points to the top-level folder of the transport libraries.
+        """
+        if not os.path.exists(path): os.mkdir(path)
+        for library in self.libraries.values():
+            library.save(os.path.join(path, '{0}.py'.format(library.label)))
+
+    def saveGroups(self, path):
+        """
+        Save the transport groups to the given `path` on disk, where `path`
+        points to the top-level folder of the transport groups.
+        """
+        if not os.path.exists(path): os.mkdir(path)
+        self.groups['nonring'].save(os.path.join(path, 'nonring.py'))
+        self.groups['ring'].save(os.path.join(path, 'ring.py'))
 
 
     def getTransportProperties(self, species):
