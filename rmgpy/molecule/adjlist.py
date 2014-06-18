@@ -273,7 +273,7 @@ def fromOldAdjacencyList(adjlist, group=False, saturateH=False):
                 try:
                     valence = valences[atom.symbol]
                 except KeyError:
-                    raise InvalidAdjacencyListError('Cannot add hydrogens to adjacency list: Unknown valence for atom "{0}".'.format(atom.symbol))
+                    raise InvalidAdjacencyListError('Cannot calculate lone pairs: Unknown valence for atom "{0}".'.format(atom.symbol))
                 radical = atom.radicalElectrons
                 order = 0
                 for atom2, bond in atom.bonds.items():
@@ -290,7 +290,7 @@ def fromOldAdjacencyList(adjlist, group=False, saturateH=False):
                 atom.updateCharge()
                     
     except InvalidAdjacencyListError:
-        print adjlist
+        logging.error("Troublesome adjacency list:\n" + adjlist)
         raise
     
     return atoms, multiplicity
@@ -329,6 +329,7 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
             raise InvalidAdjacencyListError('Empty adjacency list.')
 
         lastLine = lines[-1]
+        # Detect old-style adjacency lists by looking at the last line's syntax
         if re_IntermediateAdjList.match(lastLine):
             logging.debug("Adjacency list line '{0}' looks like an intermediate style adjacency list".format(lastLine))
             return fromOldAdjacencyList(adjlist, group=group, saturateH=saturateH)
@@ -338,14 +339,13 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
                 logging.debug("Will assume implicit H atoms")
             return fromOldAdjacencyList(adjlist, group=group, saturateH=(not group))
 
-
-        # Skip the first line if it contains a label
+        # Interpret the first line if it contains a label
         if len(lines[0].split()) == 1:
             label = lines.pop(0)
             if len(lines) == 0:
                 raise InvalidAdjacencyListError('No atoms specified in adjacency list.')
             
-        # Skip the second line if it contains a multiplicity
+        # Interpret the second line if it contains a multiplicity
         if lines[0].split()[0] == 'multiplicity':
             line = lines.pop(0)
             if group:

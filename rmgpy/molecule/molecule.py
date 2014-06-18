@@ -344,6 +344,10 @@ class Atom(Vertex):
         self.updateCharge()
         
     def updateCharge(self):
+        """
+        Update self.charge, according to the valence, and the 
+        number and types of bonds, radicals, and lone pairs.
+        """
         valences = {'H': 1, 'C': 4, 'O': 2, 'N': 3, 'S': 2, 'Si': 4, 'He': 0, 'Ne': 0, 'Ar': 0, 'Cl': 1}
         orders = {'S': 1, 'D': 2, 'T': 3, 'B': 1.5}
         valence = valences[self.symbol]
