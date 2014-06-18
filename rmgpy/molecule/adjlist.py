@@ -180,7 +180,7 @@ def fromOldAdjacencyList(adjlist, group=False, saturateH=False):
                                  radicalElectrons=sorted(set(radicalElectrons)),
                                  charge=[0],
                                  label=label,
-                                 lonePairs=[lonePairsOfElectrons]
+                                 lonePairs=(None if lonePairsOfElectrons==-1 else [lonePairsOfElectrons])
                                  )
             else:
                 atom = Atom(element=atomType[0],
