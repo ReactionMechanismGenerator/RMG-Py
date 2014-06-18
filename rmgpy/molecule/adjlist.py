@@ -328,8 +328,11 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
         if adjlist == '' or len(lines) == 0:
             raise InvalidAdjacencyListError('Empty adjacency list.')
 
-        lastLine = lines[-1]
         # Detect old-style adjacency lists by looking at the last line's syntax
+        lastLine = lines[-1].strip()
+        while not lastLine:  # Remove any empty lines from the end
+            lines.pop()
+            lastLine = lines[-1].strip()
         if re_IntermediateAdjList.match(lastLine):
             logging.debug("Adjacency list line '{0}' looks like an intermediate style adjacency list".format(lastLine))
             return fromOldAdjacencyList(adjlist, group=group, saturateH=saturateH)
