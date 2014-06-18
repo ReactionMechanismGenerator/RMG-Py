@@ -572,21 +572,18 @@ class QMReaction:
         # Interpolate the positions of the middle images linearly, then set calculators
         neb.interpolate()
         
-        # # Set up the calculator
-        # calc = ase.calculators.emt.EMT()
-        # calc.set(multiplicity=self.geometry.molecule.getRadicalCount() + 1)
-        # 
-        # for image in images[1:x+1]:
-        #     image.set_calculator(calc)
+        # Set up the calculator
+        calc = ase.calculators.emt.EMT()
+        calc.set(multiplicity=self.geometry.molecule.getRadicalCount() + 1)
+         
+        for image in images[1:x+1]:
+            image.set_calculator(calc)
         
+        optimizer = BFGS(neb, trajectory='trajNEB.traj')
+        optimizer.run()
+         
         for j, image in enumerate(neb.images):
-            image.write(self.getFilePath('int') + str(j+1), format='xyz')
-        
-        # optimizer = BFGS(neb, trajectory='trajNEB.traj')
-        # optimizer.run()
-        # 
-        # for j, image in enumerate(neb.images):
-        #     image.write('optimized' + str(j+1), format='xyz')
+            image.write('optimized' + str(j+1), format='xyz')
         
         
     def generateTSGeometryNEB(self, doubleEnd=None):
