@@ -588,9 +588,16 @@ class QMReaction:
         if os.path.exists('NEB.log'): os.unlink('NEB.log')
         optimizer = BFGS(neb, trajectory='trajNEB.traj', logfile='NEB.log')
         optimizer.run(fmax=0.05)
+
+        energies = numpy.empty(neb.nimages - 2)
+        for i in range(1, neb.nimages - 1):
+            energies[i - 1] = neb.images[i].get_potential_energy()
+        imax = 1 + numpy.argsort(energies)[-1]
+        image = neb.images[imax]
+        image.write('optimized_peak.xyz', format='xyz')
          
         for j, image in enumerate(neb.images):
-            image.write('optimized' + str(j+1), format='xyz')
+            image.write('optimized' + str(j+1) +'.xyz', format='xyz')
         
         
     def generateTSGeometryNEB(self, doubleEnd=None):
