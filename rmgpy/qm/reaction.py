@@ -10,6 +10,7 @@ import shutil
 from rmgpy.molecule import Molecule
 from rmgpy.species import Species, TransitionState
 from rmgpy.kinetics import Wigner
+import mopac
 from molecule import QMMolecule, Geometry
 from rmgpy.cantherm.gaussian import GaussianLog
 from rmgpy.cantherm.kinetics import KineticsJob
@@ -510,8 +511,10 @@ class QMReaction:
         import ase
         from ase import io, Atoms
         from ase.neb import NEB, SingleCalculatorNEB
+        import ase.calculators
         from ase.calculators.emt import EMT
         from ase.calculators.mopac import Mopac
+        from ase.calculators.gaussian import Gaussian
         from ase.optimize import BFGS
         
         # Give ase the atom positions for each side of the reaction path
@@ -573,9 +576,12 @@ class QMReaction:
         neb.interpolate()
         
         # Set up the calculator
-        calc = ase.calculators.emt.EMT()
-        calc.set(multiplicity=self.geometry.molecule.getRadicalCount() + 1)
-         
+        #calc = ase.calculators.emt.EMT()
+        #calc.set(multiplicity=self.geometry.molecule.getRadicalCount() + 1)
+
+        calc = ase.calculators.mopac.Mopac(command=mopac.Mopac.executablePath)
+        calc.set(spin=self.geometry.molecule.getRadicalCount() )
+        
         for image in images[1:x+1]:
             image.set_calculator(calc)
         
