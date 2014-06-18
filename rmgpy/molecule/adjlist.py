@@ -701,7 +701,7 @@ def toAdjacencyList(atoms, multiplicity, label=None, group=False, removeH=False,
     atomLabels = dict([(atom, '{0}'.format(atom.label)) for atom in atomNumbers])
     
     atomTypes = {}
-    atomElectronStates = {}
+    atomUnpairedElectrons = {}
     atomLonePairs = {}
     atomCharge = {}
     if group:
@@ -713,11 +713,11 @@ def toAdjacencyList(atoms, multiplicity, label=None, group=False, removeH=False,
                 atomTypes[atom] = '{{{0}}}'.format(','.join([a.label for a in atom.atomType]))
             # Unpaired Electron(s)
             if len(atom.radicalElectrons) == 1: 
-                atomElectronStates[atom] = str(atom.radicalElectrons[0])
+                atomUnpairedElectrons[atom] = str(atom.radicalElectrons[0])
             elif set(atom.radicalElectrons) == set(range(5)):
-                atomElectronStates[atom] = 'x'  # the wildcard represents [0,1,2,3,4]
+                atomUnpairedElectrons[atom] = 'x'  # the wildcard represents [0,1,2,3,4]
             else:
-                atomElectronStates[atom] = '{{{0}}}'.format(','.join([str(radical) for radical in atom.radicalElectrons]))  
+                atomUnpairedElectrons[atom] = '{{{0}}}'.format(','.join([str(radical) for radical in atom.radicalElectrons]))
             # Lone Electron Pair(s)
             if atom.lonePairs is None: 
                 atomLonePairs[atom] = None
@@ -732,7 +732,7 @@ def toAdjacencyList(atoms, multiplicity, label=None, group=False, removeH=False,
             # Atom type
             atomTypes[atom] = '{0}'.format(atom.element.symbol)
             # Unpaired Electron(s)
-            atomElectronStates[atom] = '{0}'.format(atom.radicalElectrons)    
+            atomUnpairedElectrons[atom] = '{0}'.format(atom.radicalElectrons)
             # Lone Electron Pair(s)
             atomLonePairs[atom] = atom.lonePairs
             # Partial Charge(s)
@@ -743,7 +743,7 @@ def toAdjacencyList(atoms, multiplicity, label=None, group=False, removeH=False,
     atomLabelWidth = max([len(s) for s in atomLabels.values()])
     if atomLabelWidth > 0: atomLabelWidth += 1
     atomTypeWidth = max([len(s) for s in atomTypes.values()]) + 1
-    atomElectronStateWidth = max([len(s) for s in atomElectronStates.values()])
+    atomUnpairedElectronsWidth = max([len(s) for s in atomUnpairedElectrons.values()])
     atomLonePairWidth = 1
     atomChargeWidth = 1
     
@@ -758,7 +758,7 @@ def toAdjacencyList(atoms, multiplicity, label=None, group=False, removeH=False,
         # Atom type(s)
         adjlist += '{0:<{1:d}}'.format(atomTypes[atom], atomTypeWidth)
         # Unpaired Electron(s)
-        adjlist += 'U{0:<{1:d}}'.format(atomElectronStates[atom], atomElectronStateWidth)
+        adjlist += 'U{0:<{1:d}}'.format(atomUnpairedElectrons[atom], atomUnpairedElectronsWidth)
         # Lone Electron Pair(s)
         if atomLonePairs[atom] != 'None':
             adjlist += ' L{0:>{1:d}}'.format(atomLonePairs[atom], atomLonePairWidth)
