@@ -415,8 +415,8 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
             
             # Next the number of unpaired electrons
             unpairedElectrons = []
-            uState = data[index].upper()
-            if uState[0] == 'U':
+            uState = data[index]
+            if uState[0] == 'u':
                 if uState[1] == '{':
                     uState = uState[2:-1].split(',')
                 else:
@@ -447,8 +447,8 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
             # Next the number of lone electron pairs (if provided)
             lonePairs = []
             if len(data) > index:
-                lpState = data[index].upper()
-                if lpState[0] == 'L':
+                lpState = data[index]
+                if lpState[0] == 'p':
                     if lpState[1] == '{':
                         lpState = lpState[2:-1].split(',')
                     else:
@@ -487,8 +487,8 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
             # Next the number of partial charges (if provided)
             partialCharges = []
             if len(data) > index:
-                eState = data[index].upper()
-                if eState[0] == 'E':
+                eState = data[index]
+                if eState[0] == 'c':
                     if eState[1] == '{':
                         eState = eState[2:-1].split(',')
                     else:
@@ -651,7 +651,7 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
                 atom.updateCharge()
                     
     except InvalidAdjacencyListError, e:
-        logging.debug("Assuming this adjacency list is old-style beceause {1}:\n{0}".format(adjlist, e.message))
+        logging.debug("Assuming this adjacency list is old-style because {1}:\n{0}".format(adjlist, e.message))
         logging.debug("Though it should have been detected by the regex test")
         return fromOldAdjacencyList(adjlist, group=group, saturateH=saturateH)
     
@@ -769,18 +769,18 @@ def toAdjacencyList(atoms, multiplicity, label=None, group=False, removeH=False,
         # Atom type(s)
         adjlist += '{0:<{1:d}}'.format(atomTypes[atom], atomTypeWidth)
         # Unpaired Electron(s)
-        adjlist += 'U{0:<{1:d}}'.format(atomUnpairedElectrons[atom], atomUnpairedElectronsWidth)
+        adjlist += 'u{0:<{1:d}}'.format(atomUnpairedElectrons[atom], atomUnpairedElectronsWidth)
         # Lone Electron Pair(s)
         if str(atomLonePairs[atom]) != 'None':
-            adjlist += ' L{0:>{1:d}}'.format(atomLonePairs[atom], atomLonePairWidth)
+            adjlist += ' p{0:>{1:d}}'.format(atomLonePairs[atom], atomLonePairWidth)
         if not group:
             # Partial Charge(s)
             if atomCharge[atom] > 0:
-                adjlist += ' E+{0:>{1:d}}'.format(atomCharge[atom], atomChargeWidth)
+                adjlist += ' c+{0:>{1:d}}'.format(atomCharge[atom], atomChargeWidth)
             elif atomCharge[atom] < 0:
-                adjlist += ' E{0:>{1:d}}'.format(atomCharge[atom], atomChargeWidth)
+                adjlist += ' c{0:>{1:d}}'.format(atomCharge[atom], atomChargeWidth)
             else:
-                adjlist += ' E{0:>{1:d}} '.format(atomCharge[atom], atomChargeWidth)
+                adjlist += ' c{0:>{1:d}} '.format(atomCharge[atom], atomChargeWidth)
         
         # Bonds list
         atoms2 = atom.bonds.keys()
