@@ -595,6 +595,8 @@ class Molecule(Graph):
         if SMILES != '': self.fromSMILES(SMILES)
         elif InChI != '': self.fromInChI(InChI)
         elif SMARTS != '': self.fromSMARTS(SMARTS)
+        if multiplicity != -187:  # it was set explicitly, so re-set it (fromSMILES etc may have changed it)
+            self.multiplicity = multiplicity
     
     def __str__(self):
         """
@@ -606,6 +608,10 @@ class Molecule(Graph):
         """
         Return a representation that can be used to reconstruct the object.
         """
+        cython.declare(multiplicity=cython.int)
+        multiplicity = self.multiplicity
+        if multiplicity != self.getRadicalCount() + 1:
+            return 'Molecule(SMILES="{0}", multiplicity={1:d})'.format(self.toSMILES(), multiplicity)
         return 'Molecule(SMILES="{0}")'.format(self.toSMILES())
 
     def __reduce__(self):
