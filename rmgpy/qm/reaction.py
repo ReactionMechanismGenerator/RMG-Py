@@ -515,29 +515,49 @@ class QMReaction:
         from ase.optimize import BFGS
         
         # Give ase the atom positions for each side of the reaction path
-        initial = ase.io.read(self.outputFilePath, format='gaussian_out')
-        final = ase.io.read(pGeom.getFilePath(self.outputFileExtension), format='gaussian_out')
+        #initial = ase.io.read(self.outputFilePath, format='gaussian_out')
+        # final = ase.io.read(pGeom.getFilePath(self.outputFileExtension), format='gaussian_out')
         
         # ASE doesn't keep the atoms in the same order as it's positions (weird!),
         # so get the correct atom list and recreate the images
-        molfile = self.geometry.getRefinedMolFilePath()
+        molfileR = self.geometry.getRefinedMolFilePath()
+        molfileP = pGeom.getRefinedMolFilePath()
         atomline = re.compile('\s*([\- ][0-9.]+\s+[\-0-9.]+\s+[\-0-9.]+)\s+([A-Za-z]+)')
         
         atomCount = 0
         atomnos = []
-        with open(molfile) as molinput:
+        atomcoords = []
+        with open(molfileR) as molinput:
             for line in molinput:
                 match = atomline.match(line)
                 if match:
                     atomnos.append(match.group(2))
+                    position = numpy.array([float(i) for i in match.group(1).split()])
+                    atomcoords.append(position)
                     atomCount += 1
-                    
-        newImage = Atoms(atomnos)
-        newImage.set_positions(initial.get_positions())
-        initial = newImage.copy()
+        atomcoords = numpy.array(atomcoords)
+        
         
         newImage = Atoms(atomnos)
-        newImage.set_positions(final.get_positions())
+        newImage.set_positions(atomcoords)
+        initial = newImage.copy()
+        
+        atomCount = 0
+        atomnos = []
+        atomcoords = []
+        with open(molfileP) as molinput:
+            for line in molinput:
+                match = atomline.match(line)
+                if match:
+                    atomnos.append(match.group(2))
+                    position = numpy.array([float(i) for i in match.group(1).split()])
+                    atomcoords.append(position)
+                    atomCount += 1
+        atomcoords = numpy.array(atomcoords)
+                    
+        
+        newImage = Atoms(atomnos)
+        newImage.set_positions(atomcoords)
         final = newImage.copy()
         
         # Now make a band of x + 2 images (x plus the initial and final geometries)
@@ -650,77 +670,75 @@ class QMReaction:
         #     else:
         #         return False, None, None, notes
     
-        if self.settings.software.lower() == 'gaussian':
-            # all below needs to change
-            if os.path.exists(self.getFilePath('.log.reactant.log')):
-                print "Already have reactant"
-                rightReactant = self.checkGeometry(self.getFilePath('.log.reactant.log'), self.geometry.molecule)
-            else:
-                print "Optimizing reactant geometry"
-                self.writeGeomInputFile(freezeAtoms=labels)
-                logFilePath = self.runDouble(self.inputFilePath)
-                rightReactant = self.checkGeometry(logFilePath, self.geometry.molecule)
-                shutil.copy(logFilePath, logFilePath+'.reactant.log')
+#         if self.settings.software.lower() == 'gaussian' or True:
+#             # all below needs to change
+#             if os.path.exists(self.getFilePath('.log.reactant.log')):
+#                 print "Already have reactant"
+#                 rightReactant = self.checkGeometry(self.getFilePath('.log.reactant.log'), self.geometry.molecule)
+#             else:
+#                 print "Optimizing reactant geometry"
+#                 self.writeGeomInputFile(freezeAtoms=labels)
+#                 logFilePath = self.runDouble(self.inputFilePath)
+#                 rightReactant = self.checkGeometry(logFilePath, self.geometry.molecule)
+#                 shutil.copy(logFilePath, logFilePath+'.reactant.log')
+#             
+#             if os.path.exists(pGeom.getFilePath('.log.product.log')):
+#                 print "Already have product"
+#                 rightProduct = self.checkGeometry(pGeom.getFilePath('.log.product.log'), pGeom.molecule)
+#             else:
+#                 print "Optimizing product geometry"
+#                 self.writeGeomInputFile(freezeAtoms=labels, otherGeom=pGeom)
+#                 logFilePath = self.runDouble(pGeom.getFilePath(self.inputFileExtension))
+#                 rightProduct = self.checkGeometry(logFilePath, pGeom.molecule)
+#                 shutil.copy(logFilePath, logFilePath+'.product.log')
+#             
+#             if not (rightReactant and rightProduct):
+#                 if not rightReactant:
+#                     print "Reactant geometry failure, see:" + self.settings.fileStore
+#                     notes = notes + 'Reactant geometry failure\n'
+#                 else:
+#                     print "Reactant geometry success"
+#                 
+#                 if not rightProduct:
+#                     print "Product geometry failure, see:" + self.settings.fileStore
+#                     notes = notes + 'Product geometry failure\n'
+#                 else:
+#                     print "Product geometry success"
+#                 # Don't run if the geometries have optimized to another geometry
+#                 return False, None, None, notes
+                
+        print "Running NEB from optimized geometries"
+        # Atomic Simulation Environment can take the two geometries and
+        # do the calculation on its own
+        self.runInterplolation(pGeom)
             
-            if os.path.exists(pGeom.getFilePath('.log.product.log')):
-                print "Already have product"
-                rightProduct = self.checkGeometry(pGeom.getFilePath('.log.product.log'), pGeom.molecule)
-            else:
-                print "Optimizing product geometry"
-                self.writeGeomInputFile(freezeAtoms=labels, otherGeom=pGeom)
-                logFilePath = self.runDouble(pGeom.getFilePath(self.inputFileExtension))
-                rightProduct = self.checkGeometry(logFilePath, pGeom.molecule)
-                shutil.copy(logFilePath, logFilePath+'.product.log')
-            
-            if not (rightReactant and rightProduct):
-                if not rightReactant:
-                    print "Reactant geometry failure, see:" + self.settings.fileStore
-                    notes = notes + 'Reactant geometry failure\n'
-                else:
-                    print "Reactant geometry success"
-                
-                if not rightProduct:
-                    print "Product geometry failure, see:" + self.settings.fileStore
-                    notes = notes + 'Product geometry failure\n'
-                else:
-                    print "Product geometry success"
-                # Don't run if the geometries have optimized to another geometry
-                return False, None, None, notes
-                
-            print "Running NEB from optimized geometries"
-            # Atomic Simulation Environment can take the two geometries and
-            # do the calculation on its own
-            self.runInterplolation(pGeom)
-                
-            print "Optimizing TS once"
-            self.writeInputFile(1, fromInt=True)
+        print "Optimizing TS once"
+        self.writeInputFile(1, fromInt=True)
+        converged, internalCoord = self.run()
+        shutil.copy(self.outputFilePath, self.outputFilePath+'.TS1.log')
+        
+        if internalCoord and not converged:
+            print "Internal coordinate error, trying in cartesian"
+            self.writeInputFile(2, fromInt=True)
             converged, internalCoord = self.run()
-            shutil.copy(self.outputFilePath, self.outputFilePath+'.TS1.log')
-            
-            if internalCoord and not converged:
-                print "Internal coordinate error, trying in cartesian"
-                self.writeInputFile(2, fromInt=True)
-                converged, internalCoord = self.run()
-            
-            if not converged:
-                notes = notes + 'Transition state failed\n'
-                return False, None, None, notes
-            
-            if os.path.exists(self.ircOutputFilePath):
-                rightTS = self.verifyIRCOutputFile()
-            else:
-                self.writeIRCFile()
-                rightTS = self.runIRC()
-            
-            if not rightTS:
-                notes = notes + 'IRC failed\n'
-                return False, None, None, notes
-            
-            self.writeRxnOutputFile(labels, doubleEnd=True)
-            return True, None, None, notes
-        else:
-            raise NotImplementedError("self.settings.software.lower() should be gaussian or mopac")
+        
+        if not converged:
+            notes = notes + 'Transition state failed\n'
             return False, None, None, notes
+        
+        if os.path.exists(self.ircOutputFilePath):
+            rightTS = self.verifyIRCOutputFile()
+        else:
+            self.writeIRCFile()
+            rightTS = self.runIRC()
+        
+        if not rightTS:
+            notes = notes + 'IRC failed\n'
+            return False, None, None, notes
+        
+        self.writeRxnOutputFile(labels, doubleEnd=True)
+        return True, None, None, notes
+
 
     def generateTSGeometryDirectGuess(self):
         """
