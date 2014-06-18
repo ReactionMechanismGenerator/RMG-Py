@@ -230,6 +230,7 @@ class Atom(Vertex):
                 if self.radicalElectrons == radical: break
             else:
                 return False
+            #TODO: lone pairs and charge
 # until we have charges and lone pairs in the group values we neglect them here
 #            for charge in atom.charge:
 #                if self.charge == charge: break
