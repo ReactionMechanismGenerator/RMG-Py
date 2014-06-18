@@ -587,11 +587,7 @@ class QMReaction:
         
         if os.path.exists('NEB.log'): os.unlink('NEB.log')
         optimizer = BFGS(neb, trajectory='trajNEB.traj', logfile='NEB.log')
-        optimizer.run(fmax=0.05,steps=100)
-        print "Done first set of steps. Now trying with climb=True"
-        neb.climb=True
-        optimizer = FIRE(neb, trajectory='trajNEB.traj', logfile='NEB.log')
-        optimizer.run()
+        optimizer.run(fmax=0.05)
          
         for j, image in enumerate(neb.images):
             image.write('optimized' + str(j+1), format='xyz')
