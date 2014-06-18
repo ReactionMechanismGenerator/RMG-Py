@@ -498,7 +498,7 @@ class TSGroups(Database):
                 group = entry.item.getPossibleStructures(self.entries)[0]
 
             atomList = group.getLabeledAtoms() # list of atom labels in highest non-union node
-
+            
             for reactant in reaction.reactants:
                 if isinstance(reactant, Species):
                     reactant = reactant.molecule[0]
@@ -539,7 +539,7 @@ class TSGroups(Database):
         for reactant in reaction.reactants:
             if isinstance(reactant, Species):
                 reactant = reactant.molecule[0]
-            reactant.clearLabeledAtoms()
+            #reactant.clearLabeledAtoms()
 
         return template
 
