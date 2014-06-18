@@ -423,6 +423,7 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
                     elif u == '4':
                         unpairedElectrons.append(4)
                     elif u == 'x':
+                        unpairedElectrons.append(0)
                         unpairedElectrons.append(1)
                         unpairedElectrons.append(2)
                         unpairedElectrons.append(3)
@@ -454,6 +455,7 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
                         elif l == '4':
                             lonePairs.append(4)
                         elif l == 'x':
+                            lonePairs.append(0)
                             lonePairs.append(1)
                             lonePairs.append(2)
                             lonePairs.append(3)
@@ -501,6 +503,7 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
                         elif e == '-4':
                              partialCharges.append(-4)
                         elif e == 'x':
+                             partialCharges.append(0)
                              partialCharges.append(1)
                              partialCharges.append(2)
                              partialCharges.append(3)
@@ -711,6 +714,8 @@ def toAdjacencyList(atoms, multiplicity, label=None, group=False, removeH=False,
             # Unpaired Electron(s)
             if len(atom.radicalElectrons) == 1: 
                 atomElectronStates[atom] = str(atom.radicalElectrons[0])
+            elif set(atom.radicalElectrons) == set(range(5)):
+                atomElectronStates[atom] = 'x'  # the wildcard represents [0,1,2,3,4]
             else:
                 atomElectronStates[atom] = '{{{0}}}'.format(','.join([str(radical) for radical in atom.radicalElectrons]))  
             # Lone Electron Pair(s)
@@ -718,6 +723,8 @@ def toAdjacencyList(atoms, multiplicity, label=None, group=False, removeH=False,
                 atomLonePairs[atom] = None
             elif len(atom.lonePairs) == 1: 
                 atomLonePairs[atom] = str(atom.lonePairs[0])
+            elif set(atom.lonePairs) == set(range(5)):
+                atomLonePairs[atom] = 'x'  # the wildcard represents [0,1,2,3,4]
             else:
                 atomLonePairs[atom] = '{{{0}}}'.format(','.join([str(pair) for pair in atom.lonePairs]))
     else:
