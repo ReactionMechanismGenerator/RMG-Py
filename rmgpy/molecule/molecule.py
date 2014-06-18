@@ -1108,7 +1108,7 @@ class Molecule(Graph):
             """
             He
             multiplicity 1
-            1 He U0 L1
+            1 He u0 p1
             """)
             return self
         elif smilesstr == '[C+]#[O-]':
@@ -1117,8 +1117,8 @@ class Molecule(Graph):
             """
             CO
             multiplicity 1
-            1 C U0 L1 {2,T}
-            2 O U0 L1 {1,T}
+            1 C u0 p1 {2,T}
+            2 O u0 p1 {1,T}
             """)
             return self
         
