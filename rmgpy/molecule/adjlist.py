@@ -152,26 +152,26 @@ def fromOldAdjacencyList(adjlist, group=False, saturateH=False):
             index += 1
             
             # Next number defines the number of lone electron pairs (if provided)
-            lonePairElectrons = -1
+            lonePairsOfElectrons = -1
             if len(data) > index:
                 lpState = data[index]
                 if lpState[0] == '{':
                     # this is the start of the chemical bonds - no lone pair info was provided
-                    lonePairElectrons = -1
+                    lonePairsOfElectrons = -1
                 else:
                     if lpState == '0':
-                        lonePairElectrons = 0
+                        lonePairsOfElectrons = 0
                     if lpState == '1':
-                        lonePairElectrons = 1
+                        lonePairsOfElectrons = 1
                     if lpState == '2':
-                        lonePairElectrons = 2
+                        lonePairsOfElectrons = 2
                     if lpState == '3':
-                        lonePairElectrons = 3
+                        lonePairsOfElectrons = 3
                     if lpState == '4':
-                        lonePairElectrons = 4
+                        lonePairsOfElectrons = 4
                     index += 1
             else: # no bonds or lone pair info provided.
-                lonePairElectrons = -1
+                lonePairsOfElectrons = -1
             
             # Create a new atom based on the above information
             if group:
@@ -180,14 +180,14 @@ def fromOldAdjacencyList(adjlist, group=False, saturateH=False):
                                  radicalElectrons=sorted(set(radicalElectrons)),
                                  charge=[0],
                                  label=label,
-                                 lonePairs=[lonePairElectrons]
+                                 lonePairs=[lonePairsOfElectrons]
                                  )
             else:
                 atom = Atom(element=atomType[0],
                             radicalElectrons=radicalElectrons[0],
                             charge=0,
                             label=label,
-                            lonePairs=lonePairElectrons
+                            lonePairs=lonePairsOfElectrons
                             )
 
             atomicMultiplicities[atom] = atomSpinMultiplicity
@@ -276,7 +276,7 @@ def fromOldAdjacencyList(adjlist, group=False, saturateH=False):
             atoms.extend(newAtoms)
         
         # Calculate the number of lone pair electrons requiring molecule with all hydrogen atoms present
-        if not group and lonePairElectrons == -1:
+        if not group and lonePairsOfElectrons == -1:
             valences = {'H': 1, 'C': 4, 'O': 2, 'N': 3, 'S': 2, 'Si': 4, 'He': 0, 'Ne': 0, 'Ar': 0, 'Cl': 1}
             orders = {'S': 1, 'D': 2, 'T': 3, 'B': 1.5}
             for atom in atoms:
