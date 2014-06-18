@@ -585,7 +585,7 @@ class QMReaction:
         for image in images[1:x+1]:
             image.set_calculator(calc)
         
-        optimizer = BFGS(neb, trajectory='trajNEB.traj')
+        optimizer = BFGS(neb, trajectory='trajNEB.traj', logfile='NEB.log')
         #optimizer = FIRE(neb, trajectory='trajNEB.traj', logfile='NEB.log')
         optimizer.run()
          
