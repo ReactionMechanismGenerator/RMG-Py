@@ -515,7 +515,7 @@ class QMReaction:
         from ase.calculators.emt import EMT
         from ase.calculators.mopac import Mopac
         from ase.calculators.gaussian import Gaussian
-        from ase.optimize import BFGS
+        from ase.optimize import BFGS, FIRE
         
         # Give ase the atom positions for each side of the reaction path
         #initial = ase.io.read(self.outputFilePath, format='gaussian_out')
@@ -586,6 +586,7 @@ class QMReaction:
             image.set_calculator(calc)
         
         optimizer = BFGS(neb, trajectory='trajNEB.traj')
+        #optimizer = FIRE(neb, trajectory='trajNEB.traj', logfile='NEB.log')
         optimizer.run()
          
         for j, image in enumerate(neb.images):
