@@ -39,7 +39,7 @@ import logging
 import numpy
 from copy import copy, deepcopy
 
-from base import Database, Entry, makeLogicNode
+from base import Database, Entry, makeLogicNode, DatabaseError
 
 import rmgpy.constants as constants
 from rmgpy.molecule import Molecule, Atom, Bond, Group
@@ -68,6 +68,48 @@ def saveEntry(f, entry):
     else:
         f.write('    group = "{0}",\n'.format(entry.item))
         
+    if isinstance(entry.data, CriticalPointGroupContribution):
+        f.write('    transportGroup = CriticalPointGroupContribution(\n')
+        f.write('        Tc = {0!r},\n'.format(entry.data.Tc))
+        f.write('        Pc = {0!r},\n'.format(entry.data.Pc))
+        f.write('        Vc = {0!r},\n'.format(entry.data.Vc))
+        f.write('        Tb = {0!r},\n'.format(entry.data.Tb))
+        f.write('        structureIndex = {0!r},\n'.format(entry.data.structureIndex))
+        f.write('    ),\n')
+    elif entry.data is None:
+        f.write('    transportGroup = None,\n')
+    elif isinstance(entry.data, TransportData):
+        f.write('    transport = TransportData(\n')
+        f.write('        shapeIndex = {0!r},\n'.format(entry.data.shapeIndex))
+        f.write('        epsilon = {0!r},\n'.format(entry.data.epsilon))
+        f.write('        sigma = {0!r},\n'.format(entry.data.sigma))
+        f.write('        dipoleMoment = {0!r},\n'.format(entry.data.dipoleMoment))
+        f.write('        polarizability = {0!r},\n'.format(entry.data.polarizability))
+        f.write('        rotrelaxcollnum = {0!r},\n'.format(entry.data.rotrelaxcollnum))
+        f.write('    ),\n')
+    else:
+        raise DatabaseError("Not sure how to save {0!r}".format(entry.data))
+
+    f.write('    shortDesc = u"""')
+    try:
+        f.write(entry.shortDesc.encode('utf-8'))
+    except:
+        f.write(entry.shortDesc.strip().encode('ascii', 'ignore'))
+    f.write('""",\n')
+    if entry.longDesc:
+        f.write('    longDesc = \n')
+        f.write('u"""\n')
+        try:
+            f.write(entry.longDesc.strip().encode('utf-8') + "\n")
+        except:
+            f.write(entry.longDesc.strip().encode('ascii', 'ignore')+ "\n")
+        f.write('""",\n')
+    else:
+        f.write('    longDesc = u"""""",\n')
+
+    f.write(')\n\n')
+
+
 def generateOldLibraryEntry(data):
     """
     Return a list of values used to save entries to the old-style RMG
