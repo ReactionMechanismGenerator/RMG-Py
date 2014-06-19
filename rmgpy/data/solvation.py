@@ -411,7 +411,7 @@ class SoluteGroups(Database):
 
 class SolvationDatabase(object):
     """
-    A class for working with the RMG solute database.
+    A class for working with the RMG solvation database.
     """
 
     def __init__(self):
@@ -426,18 +426,18 @@ class SolvationDatabase(object):
 
     def __reduce__(self):
         """
-        A helper function used when pickling a SoluteDatabase object.
+        A helper function used when pickling a SolvationDatabase object.
         """
         d = {
             'libraries': self.libraries,
             'groups': self.groups,
             'libraryOrder': self.libraryOrder,
             }
-        return (SoluteDatabase, (), d)
+        return (SolvationDatabase, (), d)
 
     def __setstate__(self, d):
         """
-        A helper function used when unpickling a SoluteDatabase object.
+        A helper function used when unpickling a SolvationDatabase object.
         """
         self.libraries = d['libraries']
         self.groups = d['groups']
@@ -448,7 +448,7 @@ class SolvationDatabase(object):
         Load the solvation database from the given `path` on disk, where `path`
         points to the top-level folder of the solvation database.
         
-        Load the solvent and solute (not used) libraries, then the solute groups.
+        Load the solvent and solute libraries, then the solute groups.
         """
         
         self.solventLibrary.load(os.path.join(path,'libraries','solvent.py'))
