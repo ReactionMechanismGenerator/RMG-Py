@@ -566,13 +566,11 @@ class KineticsFamily(Database):
                 for f in files:
                     if not f.endswith('.py'): continue
                     name = f.split('.py')[0]
-                    print name
                     if name not in ['groups', 'rules']:
                         fpath = os.path.join(path, f)
                         label = '{0}/{1}'.format(self.label, name)
                         depository = KineticsDepository(label=label)
                         logging.debug("Loading kinetics family depository from {0}".format(fpath))
-                        print fpath
                         depository.load(fpath, local_context, global_context)
                         self.depositories.append(depository)
             return
