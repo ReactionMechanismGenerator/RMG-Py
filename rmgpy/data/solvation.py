@@ -49,10 +49,76 @@ from rmgpy.molecule import Molecule, Atom, Bond, Group
 
 def saveEntry(f, entry):
     """
-    Write a Pythonic string representation of the given `entry` in the thermo
+    Write a Pythonic string representation of the given `entry` in the solvation
     database to the file object `f`.
     """
-    raise NotImplementedError()
+    f.write('entry(\n')
+    f.write('    index = {0:d},\n'.format(entry.index))
+    f.write('    label = "{0}",\n'.format(entry.label))
+    
+    if isinstance(entry.item, Molecule):
+        f.write('    molecule = \n')
+        f.write('"""\n')
+        f.write(entry.item.toAdjacencyList(removeH=False))
+        f.write('""",\n')
+    elif isinstance(entry.item, Group):
+        f.write('    group = \n')
+        f.write('"""\n')
+        f.write(entry.item.toAdjacencyList())
+        f.write('""",\n')
+    else:
+        f.write('    group = "{0}",\n'.format(entry.item))
+    
+    if isinstance(entry.data, SoluteData):
+        f.write('    solute = SoluteData(\n')
+        f.write('        S = {0!r},\n'.format(entry.data.S))
+        f.write('        B = {0!r},\n'.format(entry.data.B))
+        f.write('        E = {0!r},\n'.format(entry.data.E))
+        f.write('        L = {0!r},\n'.format(entry.data.L))
+        f.write('        A = {0!r},\n'.format(entry.data.A))
+        if entry.data.V is not None: f.write('        V = {0!r},\n'.format(entry.data.V))
+        f.write('    ),\n')
+    elif isinstance(entry.data, SolventData):
+        f.write('    solvent = SolventData(\n')
+        f.write('        s_g = {0!r},\n'.format(entry.data.s_g))
+        f.write('        b_g = {0!r},\n'.format(entry.data.b_g))
+        f.write('        e_g = {0!r},\n'.format(entry.data.e_g))
+        f.write('        l_g = {0!r},\n'.format(entry.data.l_g))
+        f.write('        a_g = {0!r},\n'.format(entry.data.a_g))
+        f.write('        c_g = {0!r},\n'.format(entry.data.c_g))
+        f.write('        s_h = {0!r},\n'.format(entry.data.s_h))
+        f.write('        b_h = {0!r},\n'.format(entry.data.b_h))
+        f.write('        e_h = {0!r},\n'.format(entry.data.e_h))
+        f.write('        l_h = {0!r},\n'.format(entry.data.l_h))
+        f.write('        a_h = {0!r},\n'.format(entry.data.a_h))
+        f.write('        c_h = {0!r},\n'.format(entry.data.c_h))
+        f.write('        A = {0!r},\n'.format(entry.data.A))
+        f.write('        B = {0!r},\n'.format(entry.data.B))
+        f.write('        C = {0!r},\n'.format(entry.data.C))
+        f.write('        D = {0!r},\n'.format(entry.data.D))
+        f.write('        E = {0!r},\n'.format(entry.data.E))
+        f.write('        alpha = {0!r},\n'.format(entry.data.alpha))
+        f.write('        beta = {0!r},\n'.format(entry.data.beta))
+        f.write('        eps = {0!r},\n'.format(entry.data.eps))
+        f.write('    ),\n')
+    else:
+        f.write('    solvation data = {0!r},\n'.format(entry.data))
+    
+    f.write('    shortDesc = u"""')
+    try:
+        f.write(entry.shortDesc.encode('utf-8'))
+    except:
+        f.write(entry.shortDesc.strip().encode('ascii', 'ignore')+ "\n")
+    f.write('""",\n')
+    f.write('    longDesc = \n')
+    f.write('u"""\n')
+    try:
+        f.write(entry.longDesc.strip().encode('utf-8') + "\n")    
+    except:
+        f.write(entry.longDesc.strip().encode('ascii', 'ignore')+ "\n")
+    f.write('""",\n')
+
+    f.write(')\n\n')
 
 def generateOldLibraryEntry(data):
     """
@@ -100,7 +166,7 @@ class SolventData():
         # This is the dielectric constant
         self.eps = eps
     
-    def getIntrinsicCorrection(self):
+    def getHAbsCorrection(self):
         """
         If solvation is on, this will give the log10 of the ratio of the intrinsic rate
         constants log10(k_sol/k_gas) for H-abstraction rxns
@@ -169,35 +235,11 @@ class SoluteData():
             elif (atom.element.number == 7): # nitrogen, do this way if we don't have an isElement method
                 thisV = 14.39
             elif atom.isOxygen():
-                thisV = thisV + 12.43
-            #else if (element.equals("F"))
-                #thisV = thisV + 10.48;
+                thisV = 12.43
             elif atom.isHydrogen():
-                thisV = thisV + 8.71
-           #  else if (element.equals("Si"))
-#                 thisV = thisV + 26.83;
-#             else if (element.equals("P"))
-#                 thisV = thisV + 24.87;
-#             else if (element.equals("S"))
-#                 thisV = thisV + 22.91;
-#             else if (element.equals("Cl"))
-#                 thisV = thisV + 20.95;
-#             else if (element.equals("B"))
-#                 thisV = thisV + 18.32;
-#             else if (element.equals("Ge"))
-#                 thisV = thisV + 31.02;
-#             else if (element.equals("As"))
-#                 thisV = thisV + 29.42;
-#             else if (element.equals("Se"))
-#                 thisV = thisV + 27.81;
-#             else if (element.equals("Br"))
-#                 thisV = thisV + 26.21;
-#             else if (element.equals("Sn"))
-#                 thisV = thisV + 39.35;
-#             else if (element.equals("Te"))
-#                 thisV = thisV + 36.14;
-#             else if (element.equals("I"))
-#                 thisV = thisV + 34.53;
+                thisV = 8.71
+            elif (atom.element.number == 16):
+                thisV = 22.91
             else:
                 raise Exception()
             Vtot = Vtot + thisV
@@ -369,7 +411,7 @@ class SoluteGroups(Database):
 
 class SolvationDatabase(object):
     """
-    A class for working with the RMG solute database.
+    A class for working with the RMG solvation database.
     """
 
     def __init__(self):
@@ -384,18 +426,18 @@ class SolvationDatabase(object):
 
     def __reduce__(self):
         """
-        A helper function used when pickling a SoluteDatabase object.
+        A helper function used when pickling a SolvationDatabase object.
         """
         d = {
             'libraries': self.libraries,
             'groups': self.groups,
             'libraryOrder': self.libraryOrder,
             }
-        return (SoluteDatabase, (), d)
+        return (SolvationDatabase, (), d)
 
     def __setstate__(self, d):
         """
-        A helper function used when unpickling a SoluteDatabase object.
+        A helper function used when unpickling a SolvationDatabase object.
         """
         self.libraries = d['libraries']
         self.groups = d['groups']
@@ -406,7 +448,7 @@ class SolvationDatabase(object):
         Load the solvation database from the given `path` on disk, where `path`
         points to the top-level folder of the solvation database.
         
-        Load the solvent and solute (not used) libraries, then the solute groups.
+        Load the solvent and solute libraries, then the solute groups.
         """
         
         self.solventLibrary.load(os.path.join(path,'libraries','solvent.py'))
