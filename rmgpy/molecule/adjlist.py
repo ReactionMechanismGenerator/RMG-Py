@@ -378,7 +378,7 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
         for line in lines:
 
             # Sometimes people put spaces after commas, which messes up the
-            # parse-by-whitespace. Examples include '{Cd, Ct}'.
+            # parse-by-whitespace. Examples include '[Cd, Ct]'.
             if mistake1.search(line):
                 raise InvalidAdjacencyListError(
                     "Shouldn't have spaces inside braces: {0}".format(mistake1.search(line).group())
@@ -407,7 +407,7 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
             # Next is the element or functional group element
             # A list can be specified with the {,} syntax
             atomType = data[index]
-            if atomType[0] == '{':
+            if atomType[0] == '[':
                 atomType = atomType[1:-1].split(',')
             else:
                 atomType = [atomType]
@@ -417,7 +417,7 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
             unpairedElectrons = []
             uState = data[index]
             if uState[0] == 'u':
-                if uState[1] == '{':
+                if uState[1] == '[':
                     uState = uState[2:-1].split(',')
                 else:
                     uState = [uState[1]]
@@ -449,7 +449,7 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
             if len(data) > index:
                 lpState = data[index]
                 if lpState[0] == 'p':
-                    if lpState[1] == '{':
+                    if lpState[1] == '[':
                         lpState = lpState[2:-1].split(',')
                     else:
                         lpState = [lpState[1]]
@@ -489,7 +489,7 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
             if len(data) > index:
                 eState = data[index]
                 if eState[0] == 'c':
-                    if eState[1] == '{':
+                    if eState[1] == '[':
                         eState = eState[2:-1].split(',')
                     else:
                         eState = [eState[1:]]
@@ -553,7 +553,7 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
                 if aid == aid2:
                     raise InvalidAdjacencyListError('Attempted to create a bond between atom {0:d} and itself.'.format(aid))
                 
-                if order[0] == '{':
+                if order[0] == '[':
                     order = order[1:-1].split(',')
                 else:
                     order = [order]
@@ -720,14 +720,14 @@ def toAdjacencyList(atoms, multiplicity, label=None, group=False, removeH=False,
             if len(atom.atomType) == 1: 
                 atomTypes[atom] = atom.atomType[0].label
             else:
-                atomTypes[atom] = '{{{0}}}'.format(','.join([a.label for a in atom.atomType]))
+                atomTypes[atom] = '[{0}]'.format(','.join([a.label for a in atom.atomType]))
             # Unpaired Electron(s)
             if len(atom.radicalElectrons) == 1: 
                 atomUnpairedElectrons[atom] = str(atom.radicalElectrons[0])
             elif set(atom.radicalElectrons) == set(range(5)):
                 atomUnpairedElectrons[atom] = 'x'  # the wildcard represents [0,1,2,3,4]
             else:
-                atomUnpairedElectrons[atom] = '{{{0}}}'.format(','.join([str(radical) for radical in atom.radicalElectrons]))
+                atomUnpairedElectrons[atom] = '[{0}]'.format(','.join([str(radical) for radical in atom.radicalElectrons]))
 
             # Lone Electron Pair(s)
             if atom.lonePairs is None or not atom.lonePairs: # if None or []
@@ -737,7 +737,7 @@ def toAdjacencyList(atoms, multiplicity, label=None, group=False, removeH=False,
             elif set(atom.lonePairs) == set(range(5)):
                 atomLonePairs[atom] = 'x'  # the wildcard represents [0,1,2,3,4]
             else:
-                atomLonePairs[atom] = '{{{0}}}'.format(','.join([str(pair) for pair in atom.lonePairs]))
+                atomLonePairs[atom] = '[{0}]'.format(','.join([str(pair) for pair in atom.lonePairs]))
     else:
         for atom in atomNumbers:
             # Atom type
@@ -798,7 +798,7 @@ def toAdjacencyList(atoms, multiplicity, label=None, group=False, removeH=False,
                 if len(bond.order) == 1:
                     adjlist += bond.order[0]
                 else:
-                    adjlist += '{{{0}}}'.format(','.join(bond.order))
+                    adjlist += '[{0}]'.format(','.join(bond.order))
             else:
                 adjlist += bond.order
             adjlist += '}'

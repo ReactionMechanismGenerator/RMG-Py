@@ -60,8 +60,8 @@ class TestGroupAdjLists(unittest.TestCase):
         adjlist: Test the Group.fromAdjacencyList() method.
         """
         adjlist = """
-1 *2 {Cs,Cd} u0 {2,{S,D}} {3,S}
-2 *1 {Os,Od} u0 {1,{S,D}}
+1 *2 [Cs,Cd] u0 {2,[S,D]} {3,S}
+2 *1 [Os,Od] u0 {1,[S,D]}
 3    R!H     u0 {1,S}
             """
         group = Group().fromAdjacencyList(adjlist)
@@ -95,8 +95,8 @@ class TestGroupAdjLists(unittest.TestCase):
         adjlist: Test the Group.toAdjacencyList() method.
         """
         adjlist = """
-1 *2 {Cs,Cd} u0 {2,{S,D}} {3,S}
-2 *1 {Os,Od} u0 {1,{S,D}}
+1 *2 [Cs,Cd] u0 {2,[S,D]} {3,S}
+2 *1 [Os,Od] u0 {1,[S,D]}
 3    R!H     u0 {1,S}
             """
         group = Group().fromAdjacencyList(adjlist)
