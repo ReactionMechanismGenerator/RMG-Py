@@ -647,7 +647,7 @@ class GaussianTS(QMReaction, Gaussian):
                 return None
         result = self.parse() # parsed in cclib
         return result
-    
+
     def runDouble(self, inputFilePath):
         self.testReady()
         with open(inputFilePath) as infile:
@@ -1062,8 +1062,8 @@ class GaussianTSM062X(GaussianTS):
             'Cl' : """Cl 0 \nS  6 1.00\n  1.058190000000E+05 7.423627000000E-04\n  1.587200000000E+04 5.747318000000E-03\n  3.619650000000E+03 2.964876000000E-02\n  1.030800000000E+03 1.178998000000E-01\n  3.399000000000E+02 3.648532000000E-01\n  1.245300000000E+02 5.816968000000E-01\nS  3 1.00\n  1.245300000000E+02 1.370443000000E-01\n  4.951000000000E+01 6.231380000000E-01\n  2.080000000000E+01 2.903279000000E-01\nS  1 1.00\n  6.460000000000E+00 1.000000000000E+00\nS  1 1.00\n  2.520000000000E+00 1.000000000000E+00\nS  1 1.00\n  5.300000000000E-01 1.000000000000E+00\nS  1 1.00\n  1.900000000000E-01 1.000000000000E+00\nS  1 1.00\n  4.830000000000E-02 1.000000000000E+00\nP  4 1.00\n  5.897800000000E+02 7.873332000000E-03\n  1.398500000000E+02 6.155460000000E-02\n  4.479000000000E+01 2.742514000000E-01\n  1.661000000000E+01 7.498994000000E-01\nP  2 1.00\n  6.590000000000E+00 6.147640000000E-01\n  2.710000000000E+00 4.413416000000E-01\nP  1 1.00\n  9.500000000000E-01 1.000000000000E+00\nP  1 1.00\n  3.500000000000E-01 1.000000000000E+00\nP  1 1.00\n  1.200000000000E-01 1.000000000000E+00\nP  1 1.00\n  4.830000000000E-02 1.000000000000E+00\nD  1 1.00\n  3.000000000000E+00 1.000000000000E+00\nD  1 1.00\n  7.500000000000E-01 1.000000000000E+00\nD  1 1.00\n  1.875000000000E-01 1.000000000000E+00\nF  1 1.00\n  1.400000000000E+00 1.000000000000E+00\nF  1 1.00\n  3.500000000000E-01 1.000000000000E+00\n****\n""",
             'Ar' : """Ar 0 \nS  6 1.00\n  1.180220000000E+05 7.461902000000E-04\n  1.768350000000E+04 5.786362000000E-03\n  4.027770000000E+03 2.990098000000E-02\n  1.145400000000E+03 1.191287000000E-01\n  3.771600000000E+02 3.687839000000E-01\n  1.381600000000E+02 5.767726000000E-01\nS  3 1.00\n  1.381600000000E+02 1.435931000000E-01\n  5.498000000000E+01 6.231142000000E-01\n  2.317000000000E+01 2.840810000000E-01\nS  1 1.00\n  7.370000000000E+00 1.000000000000E+00\nS  1 1.00\n  2.920000000000E+00 1.000000000000E+00\nS  1 1.00\n  6.500000000000E-01 1.000000000000E+00\nS  1 1.00\n  2.300000000000E-01 1.000000000000E+00\nS  1 1.00\n  6.000000000000E-02 1.000000000000E+00\nP  4 1.00\n  6.630600000000E+02 7.820021000000E-03\n  1.570900000000E+02 6.148333000000E-02\n  5.023000000000E+01 2.754731000000E-01\n  1.863000000000E+01 7.488402000000E-01\nP  2 1.00\n  7.440000000000E+00 -6.282210000000E-01\n  3.090000000000E+00 -4.260202000000E-01\nP  1 1.00\n  1.100000000000E+00 1.000000000000E+00\nP  1 1.00\n  4.100000000000E-01 1.000000000000E+00\nP  1 1.00\n  1.400000000000E-01 1.000000000000E+00\nP  1 1.00\n  6.000000000000E-02 1.000000000000E+00\nD  1 1.00\n  3.400000000000E+00 1.000000000000E+00\nD  1 1.00\n  8.500000000000E-01 1.000000000000E+00\nD  1 1.00\n  2.125000000000E-01 1.000000000000E+00\nF  1 1.00\n  1.700000000000E+00 1.000000000000E+00\nF  1 1.00\n  4.250000000000E-01 1.000000000000E+00\n****""",
             }
-
-
+    
+    
 class GaussianTSB3LYP(GaussianTS):
 
     #: Keywords that will be added at the top of the qm input file
@@ -1097,6 +1097,18 @@ class GaussianTSB3LYP(GaussianTS):
         
         qmMolecule = GaussianMolB3LYP(molecule, self.settings)
         return qmMolecule
+    
+    def setCalculator(self, images):
+        """
+        Set up the Gaussian calculator for the Atomic Simulation Environment
+        """
+        import ase
+        from ase.calculators.gaussian import Gaussian
+        
+        label=os.path.join(os.path.abspath(self.settings.fileStore), 'g09')
+        for image in images[1:len(images)-1]:
+            image.set_calculator(ase.calculators.gaussian.Gaussian(command=self.executablePath + '< ' + label + '.com' + ' > ' + label + '.log', label=label))
+            image.get_calculator().set(multiplicity=self.geometry.molecule.getRadicalCount() + 1, method='b3lyp', basis='6-31+g(d,p)')
     
     def writeGeomInputFile(self, freezeAtoms, otherGeom=None):
         
@@ -1288,6 +1300,17 @@ class GaussianTSPM6(GaussianTS):
 
         qmMolecule = GaussianMolB3LYP(molecule, self.settings)
         return qmMolecule
+    
+    def setCalculator(self, images):
+        """
+        Set up the Gaussian calculator for the Atomic Simulation Environment
+        """
+        import ase
+        from ase.calculators.gaussian import Gaussian
+        
+        for image in images[1:len(images)+1]:
+            image.set_calculator(ase.calculators.gaussian.Gaussian(command=self.executablePath + '< g09.com > g09.log'))
+            image.get_calculator().set(multiplicity=self.geometry.molecule.getRadicalCount() + 1, method='pm6', basis='')
     
     def writeGeomInputFile(self, freezeAtoms, otherGeom=None):
         
