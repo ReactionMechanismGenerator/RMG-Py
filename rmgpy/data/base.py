@@ -38,7 +38,11 @@ import os
 import logging
 import re
 import codecs
-
+try:
+    from collections import OrderedDict
+except ImportError:
+    logging.warning("Upgrade to Python 2.7 or later to ensure your database entries are read and written in the same order each time!")
+    OrderedDict = dict
 from rmgpy.molecule import Molecule, Group, InvalidAdjacencyListError
 
 from reference import Reference, Article, Book, Thesis
@@ -153,7 +157,7 @@ class Database:
                  shortDesc='',
                  longDesc='',
                  ):
-        self.entries = entries or {}
+        self.entries = OrderedDict(entries or {})
         self.top = top or []
         self.label = label
         self.name = name
@@ -179,7 +183,7 @@ class Database:
         from rdkit import Chem
 
         # Clear any previously-loaded data
-        self.entries = {}
+        self.entries = OrderedDict()
         self.top = []
 
         # Set up global and local context
@@ -238,9 +242,9 @@ class Database:
                             entries.append(self.entries[child])
                 index += 1
         else:
-            # Otherwise save the entries sorted by index
+            # Otherwise save the entries sorted by index, if defined
             entries = self.entries.values()
-            entries.sort(key=lambda x: (x.index, x.label))
+            entries.sort(key=lambda x: (x.index))
         return entries
 
     def save(self, path):
