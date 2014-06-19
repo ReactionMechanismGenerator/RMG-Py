@@ -236,15 +236,18 @@ def readKineticsEntry(entry, speciesDict, Aunits, Eunits):
             reaction.kinetics = _kinetics.ThirdBody(
                 arrheniusLow=kinetics['arrhenius high'])
             reaction.kinetics.efficiencies = kinetics['efficiencies']
-        elif reaction.duplicate:
+        elif 'explicit reverse' in kinetics or reaction.duplicate:
+            # it's a normal high-P reaction - the extra lines were only either REV (explicit reverse) or DUP (duplicate)
             reaction.kinetics = kinetics['arrhenius high']
-        elif 'explicit reverse' in kinetics:
+        else:
+            raise ChemkinError(
+                'Unable to understand all additional information lines for reaction {0}.'.format(reaction))
+
+        if 'explicit reverse' in kinetics:
             reaction.kinetics = kinetics['arrhenius high']
             reaction.kinetics.comment = (
                 "Chemkin file stated explicit reverse rate: {0}"
                 ).format(kinetics['explicit reverse'])
-        else:
-            raise ChemkinError('Unable to determine pressure-dependent kinetics for reaction {0}.'.format(reaction))
 
     return reaction
 
