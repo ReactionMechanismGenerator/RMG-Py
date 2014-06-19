@@ -21,7 +21,8 @@ else:
 
 qm = QMCalculator()
 qm.settings.software = 'gaussian'
-qm.settings.fileStore = os.path.join(os.getenv('RMGpy'), 'QMfiles')
+RMGpy_path = os.getenv('RMGpy') or os.path.normpath(os.path.join(rmgpy.getPath(),'..'))
+qm.settings.fileStore = os.path.join(RMGpy_path, 'testing', 'qm', 'QMfiles')
 qm.settings.scratchDirectory = None
 qm.settings.onlyCyclics = False
 qm.settings.maxRadicalNumber = 0

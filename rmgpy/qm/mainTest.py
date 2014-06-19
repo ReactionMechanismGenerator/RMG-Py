@@ -18,10 +18,12 @@ class TestQMSettings(unittest.TestCase):
 		"""
 		A function run before each unit test in this class.
 		"""
+		RMGpy_path = os.getenv('RMGpy') or os.path.normpath(os.path.join(rmgpy.getPath(),'..'))
+		
 		self.settings1 = QMSettings()
 		self.settings1.software = 'mopac'
 		self.settings1.method = 'pm3'
-		self.settings1.fileStore = os.path.join(os.getenv('RMGpy'), 'testing', 'qm', 'QMfiles')
+		self.settings1.fileStore = os.path.join(RMGpy_path, 'testing', 'qm', 'QMfiles')
 		self.settings1.scratchDirectory = None
 		self.settings1.onlyCyclics = False
 		self.settings1.maxRadicalNumber = 0
@@ -65,7 +67,9 @@ class TestQMCalculator(unittest.TestCase):
 		"""
 		A function run before each unit test in this class.
 		"""
-		self.mop1 = QMCalculator(fileStore = os.path.join(os.getenv('RMGpy'), 'testing', 'qm', 'QMfiles'))
+		RMGpy_path = os.getenv('RMGpy') or os.path.normpath(os.path.join(rmgpy.getPath(),'..'))
+		
+		self.mop1 = QMCalculator(fileStore = os.path.join(RMGpy_path, 'testing', 'qm', 'QMfiles'))
 		self.mop1.settings.software = 'mopac'
 		self.mop1.settings.method = 'pm3'
 		self.mop1.settings.onlyCyclics = False
@@ -78,13 +82,13 @@ class TestQMCalculator(unittest.TestCase):
 		self.mop2.settings.maxRadicalNumber = 0
 
 		
-		self.mop3 = QMCalculator(fileStore = os.path.join(os.getenv('RMGpy'), 'testing', 'qm', 'QMfiles'))
+		self.mop3 = QMCalculator(fileStore = os.path.join(RMGpy_path, 'testing', 'qm', 'QMfiles'))
 		self.mop3.settings.software = 'mopac'
 		self.mop3.settings.method = 'pm7'
 		self.mop3.settings.onlyCyclics = False
 		self.mop3.settings.maxRadicalNumber = 0
 		
-		self.mop4 = QMCalculator(fileStore = os.path.join(os.getenv('RMGpy'), 'testing', 'qm', 'QMfiles'))
+		self.mop4 = QMCalculator(fileStore = os.path.join(RMGpy_path, 'testing', 'qm', 'QMfiles'))
 		self.mop4.settings.software = 'mopac'
 		self.mop4.settings.method = 'pm8'
 		self.mop4.settings.onlyCyclics = False
@@ -96,29 +100,29 @@ class TestQMCalculator(unittest.TestCase):
 		self.gauss1.settings.onlyCyclics = False
 		self.gauss1.settings.maxRadicalNumber = 0	
 		
-		self.gauss2 = QMCalculator(fileStore = os.path.join(os.getenv('RMGpy'), 'testing', 'qm', 'QMfiles'))
+		self.gauss2 = QMCalculator(fileStore = os.path.join(RMGpy_path, 'testing', 'qm', 'QMfiles'))
 		self.gauss2.settings.software = 'gaussian'
 		self.gauss2.settings.method = 'pm6'
 		self.gauss2.settings.onlyCyclics = False
 		self.gauss2.settings.maxRadicalNumber = 0
 		
-		self.gauss3 = QMCalculator(fileStore = os.path.join(os.getenv('RMGpy'), 'testing', 'qm', 'QMfiles'))
+		self.gauss3 = QMCalculator(fileStore = os.path.join(RMGpy_path, 'testing', 'qm', 'QMfiles'))
 		self.gauss3.settings.software = 'gaussian'
 		self.gauss3.settings.method = 'pm7'
 		self.gauss3.settings.onlyCyclics = False
 		self.gauss3.settings.maxRadicalNumber = 0
 		
-		self.molpro1 = QMCalculator(fileStore = os.path.join(os.getenv('RMGpy'), 'testing', 'qm', 'QMfiles'))
+		self.molpro1 = QMCalculator(fileStore = os.path.join(RMGpy_path, 'testing', 'qm', 'QMfiles'))
 		self.molpro1.settings.software = 'molpro'
 		self.molpro1.settings.method = 'mp2'
 		self.molpro1.settings.onlyCyclics = False
 		self.molpro1.settings.maxRadicalNumber = 0
 		
-		self.qmmol1 = QMCalculator(fileStore = os.path.join(os.getenv('RMGpy'), 'testing', 'qm', 'QMfiles'))
-		self.qmmol1.RMG_bin_path = os.path.join(os.getenv('RMGpy'), 'testing', 'qm', 'bin')
+		self.qmmol1 = QMCalculator(fileStore = os.path.join(RMGpy_path, 'testing', 'qm', 'QMfiles'))
+		self.qmmol1.RMG_bin_path = os.path.join(RMGpy_path, 'testing', 'qm', 'bin')
 		
-		self.qmmol2 = QMCalculator(fileStore = os.path.join(os.getenv('RMGpy'), 'testing', 'qm', 'QMfiles'))
-		self.qmmol2.RMG_bin_path = os.path.join(os.getenv('RMGpy'), 'testing', 'hexadiene', 'input.py')
+		self.qmmol2 = QMCalculator(fileStore = os.path.join(RMGpy_path, 'testing', 'qm', 'QMfiles'))
+		self.qmmol2.RMG_bin_path = os.path.join(RMGpy_path, 'testing', 'hexadiene', 'input.py')
 
 	def testSetDefaultOutputDirectory(self):
 		"""
@@ -139,7 +143,7 @@ class TestQMCalculator(unittest.TestCase):
 		self.assertIsNone(self.gauss2.settings.scratchDirectory)
 		
 		# Now set the default directories for those not set
-		outputDirectory = os.path.join(os.getenv('RMGpy'), 'testing', 'qm')
+		outputDirectory = os.path.join(self.mop1.settings.fileStore, '..')
 		self.mop1.setDefaultOutputDirectory(outputDirectory)
 		self.mop2.setDefaultOutputDirectory(outputDirectory)
 		self.mop3.setDefaultOutputDirectory(outputDirectory)
@@ -172,7 +176,7 @@ class TestQMCalculator(unittest.TestCase):
 		"""
 		
 		# Now set the default directories for those not set
-		outputDirectory = os.path.join(os.getenv('RMGpy'), 'testing', 'qm')
+		outputDirectory = os.path.join(self.mop1.settings.fileStore, '..')
 		self.mop1.setDefaultOutputDirectory(outputDirectory)
 		self.mop2.setDefaultOutputDirectory(outputDirectory)
 		self.mop3.setDefaultOutputDirectory(outputDirectory)
@@ -194,7 +198,7 @@ class TestQMCalculator(unittest.TestCase):
 		"""
 		Test that getThermoData() fails when expected.
 		"""
-		outputDirectory = os.path.join(os.getenv('RMGpy'), 'testing', 'qm')
+		outputDirectory = os.path.join(self.mop4.settings.fileStore, '..')
 		self.mop4.setDefaultOutputDirectory(outputDirectory)
 		self.gauss3.setDefaultOutputDirectory(outputDirectory)
 		self.molpro1.setDefaultOutputDirectory(outputDirectory)
@@ -211,7 +215,7 @@ class TestQMCalculator(unittest.TestCase):
 		"""
 		Test that getThermoData() works correctly.
 		"""
-		outputDirectory = os.path.join(os.getenv('RMGpy'), 'testing', 'qm')
+		outputDirectory = os.path.join(self.mop1.settings.fileStore, '..')
 		self.mop1.setDefaultOutputDirectory(outputDirectory)
 		self.mop2.setDefaultOutputDirectory(outputDirectory)
 		self.mop3.setDefaultOutputDirectory(outputDirectory)
@@ -249,7 +253,7 @@ class TestQMCalculator(unittest.TestCase):
 		"""
 		Test that getThermoData() works correctly.
 		"""
-		outputDirectory = os.path.join(os.getenv('RMGpy'), 'testing', 'qm')
+		outputDirectory = os.path.join(self.mop1.settings.fileStore, '..')
 		self.gauss1.setDefaultOutputDirectory(outputDirectory)
 		self.gauss2.setDefaultOutputDirectory(outputDirectory)
 		
