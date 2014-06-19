@@ -1986,7 +1986,7 @@ class KineticsFamily(Database):
                                 if not (isinstance(expectedNode, Group) and expectedNode.isIdentical(actualNode)):
                                     raise DatabaseError("Group definition doesn't match label '{label}'".format(label=expectedNodeName))
                             elif isinstance(actualNode, LogicOr):
-                                if not (isinstance(expectedNode, LogicOr) and expectedNode.matchToLogicOr(actualNode)):
+                                if not (isinstance(expectedNode, LogicOr) and expectedNode.matchLogicOr(actualNode)):
                                     raise DatabaseError("Group definition doesn't match label '{label}'".format(label=expectedNodeName, node=expectedNode))
                     except DatabaseError, e:
                         "Didn't pass"
@@ -2003,7 +2003,7 @@ class KineticsFamily(Database):
                             potentialGroup = groupEntry.item
                             if isinstance(actualGroup, Group) and isinstance(potentialGroup, Group) and potentialGroup.isIdentical(actualGroup):
                                 break
-                            elif isinstance(actualGroup, LogicOr) and isinstance(potentialGroup, LogicOr) and potentialGroup.matchToLogicOr(actualGroup):
+                            elif isinstance(actualGroup, LogicOr) and isinstance(potentialGroup, LogicOr) and potentialGroup.matchLogicOr(actualGroup):
                                 break
                         else:
                             "We didn't break, so we didn't find a match"
@@ -2043,7 +2043,7 @@ class KineticsFamily(Database):
                         if nodeGroupItem.isIdentical(nodeGroup2Item):
                             databaseLog.error("{0} is not unique. It shares its definition with {1}".format(nodeName, nodeName2))
                     if isinstance(nodeGroup2Item, LogicOr) and isinstance(nodeGroupItem, LogicOr):
-                        if nodeGroupItem.matchToLogicOr(nodeGroup2Item):
+                        if nodeGroupItem.matchLogicOr(nodeGroup2Item):
                             databaseLog.error("{0} is not unique. It shares its definition with {1}".format(nodeName, nodeName2))
                     
                 #For a correct child-parent relationship, each atom in the parent should have a corresponding child atom in the child.

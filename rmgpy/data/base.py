@@ -915,7 +915,7 @@ class Database:
         if isinstance(node.item, Group) and isinstance(nodeOther.item, Group):
             return self.matchNodeToStructure(node,nodeOther.item, atoms=nodeOther.item.getLabeledAtoms()) and self.matchNodeToStructure(nodeOther,node.item,atoms=node.item.getLabeledAtoms())
         elif isinstance(node.item,LogicOr) and isinstance(nodeOther.item,LogicOr):
-            return node.item.matchToLogicOr(nodeOther.item)
+            return node.item.matchLogicOr(nodeOther.item)
         else:
             # Assume nonmatching
             return False
@@ -933,22 +933,14 @@ class Database:
                     return True                
             return False
         
-        elif isinstance(parentNode.item,LogicOr) and isinstance(childNode.item,Group):
-            if self.matchNodeToStructure(parentNode,childNode.item, atoms=childNode.item.getLabeledAtoms()) is True:
-                return True
-            else:
-                return False
-        elif isinstance(parentNode.item,LogicOr) and isinstance(childNode.item,LogicOr):
-            if parentNode.item.matchToLogicOr(childNode.item):
-                # the two LogicOrs are identical
-                return False 
-            else:
-                for group in parentNode.item.components:
-                    if group not in childNode.item.components:
-                        return False
-                return True
-        else:
-            return False
+        #If the parentNode is a Group and the childNode is a LogicOr there is nothing to check,
+        #so it gets an automatic pass. However, we do need to check that everything down this
+        #family line is consistent, which is done in the databaseTest unitTest
+        elif isinstance(parentNode.item, Group) and isinstance(childNode.item, LogicOr):
+            return True
+        
+        elif isinstance(parentNode.item,LogicOr):
+            return childNode.label in parentNode.item.components
 
     def matchNodeToStructure(self, node, structure, atoms):
         """
@@ -1108,7 +1100,7 @@ class LogicOr(LogicNode):
                 return True != self.invert
         return False != self.invert
 
-    def matchToLogicOr(self, other):
+    def matchLogicOr(self, other):
         """
         Is other the same LogicOr group as self?
         """
