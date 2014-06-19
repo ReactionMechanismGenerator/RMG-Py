@@ -457,40 +457,40 @@ class TestMolecule(unittest.TestCase):
     
     def setUp(self):
         self.adjlist_1 = """
-1 *1 C U1 L0 E0  {2,S} {3,S} {4,S}
-2    H U0 L0 E0  {1,S}
-3    H U0 L0 E0  {1,S}
-4 *2 N U0 L0 E+1 {1,S} {5,S} {6,D}
-5    O U0 L3 E-1 {4,S}
-6    O U0 L2 E0  {4,D}
+1 *1 C u1 p0 c0  {2,S} {3,S} {4,S}
+2    H u0 p0 c0  {1,S}
+3    H u0 p0 c0  {1,S}
+4 *2 N u0 p0 c+1 {1,S} {5,S} {6,D}
+5    O u0 p3 c-1 {4,S}
+6    O u0 p2 c0  {4,D}
             """
         self.molecule = [Molecule().fromAdjacencyList(self.adjlist_1)]
         
         self.adjlist_2 = """
-1 *1 C U1 L0 {2,S} {3,S} {4,S}
-2    H U0 L0 {1,S}
-3    H U0 L0 {1,S}
-4 *2 N U0 L0 {1,S} {5,S} {6,D}
-5    O U0 L3 {4,S}
-6    O U0 L2 {4,D}
+1 *1 C u1 p0 {2,S} {3,S} {4,S}
+2    H u0 p0 {1,S}
+3    H u0 p0 {1,S}
+4 *2 N u0 p0 {1,S} {5,S} {6,D}
+5    O u0 p3 {4,S}
+6    O u0 p2 {4,D}
             """
         self.molecule.append(Molecule().fromAdjacencyList(self.adjlist_2))
         
         self.adjlist_3 = """
-1 *1 C U1 {2,S} {3,S} {4,S}
-2    H U0 {1,S}
-3    H U0 {1,S}
-4 *2 N U0 {1,S} {5,S} {6,D}
-5    O U0 {4,S}
-6    O U0 {4,D}
+1 *1 C u1 {2,S} {3,S} {4,S}
+2    H u0 {1,S}
+3    H u0 {1,S}
+4 *2 N u0 {1,S} {5,S} {6,D}
+5    O u0 {4,S}
+6    O u0 {4,D}
             """
         self.molecule.append(Molecule().fromAdjacencyList(self.adjlist_3))
         
         self.adjlist_4 = """
-1 *1 C U1 L0 {2,S}
-2 *2 N U0 L0 {1,S} {3,S} {4,D}
-3    O U0 L3 {2,S}
-4    O U0 L2 {2,D}
+1 *1 C u1 p0 {2,S}
+2 *2 N u0 p0 {1,S} {3,S} {4,D}
+3    O u0 p3 {2,S}
+4    O u0 p2 {2,D}
             """
         self.molecule.append(Molecule().fromAdjacencyList(self.adjlist_4,saturateH=True))
         
@@ -777,8 +777,8 @@ class TestMolecule(unittest.TestCase):
         """
         molecule = Molecule().fromSMILES('C=CC=C[CH]C')
         group = Group().fromAdjacencyList("""
-        1 Cd U0 {2,D}
-        2 Cd U0 {1,D}
+        1 Cd u0 {2,D}
+        2 Cd u0 {1,D}
         """)
 
         self.assertTrue(molecule.isSubgraphIsomorphic(group))
@@ -793,30 +793,30 @@ class TestMolecule(unittest.TestCase):
     def testSubgraphIsomorphismAgain(self):
         molecule = Molecule()
         molecule.fromAdjacencyList("""
-        1 * C U0 {2,D} {7,S} {8,S}
-        2   C U0 {1,D} {3,S} {9,S}
-        3   C U0 {2,S} {4,D} {10,S}
-        4   C U0 {3,D} {5,S} {11,S}
-        5   C U0 {4,S} {6,S} {12,S} {13,S}
-        6   C U0 {5,S} {14,S} {15,S} {16,S}
-        7   H U0 {1,S}
-        8   H U0 {1,S}
-        9   H U0 {2,S}
-        10  H U0 {3,S}
-        11  H U0 {4,S}
-        12  H U0 {5,S}
-        13  H U0 {5,S}
-        14  H U0 {6,S}
-        15  H U0 {6,S}
-        16  H U0 {6,S}
+        1 * C u0 {2,D} {7,S} {8,S}
+        2   C u0 {1,D} {3,S} {9,S}
+        3   C u0 {2,S} {4,D} {10,S}
+        4   C u0 {3,D} {5,S} {11,S}
+        5   C u0 {4,S} {6,S} {12,S} {13,S}
+        6   C u0 {5,S} {14,S} {15,S} {16,S}
+        7   H u0 {1,S}
+        8   H u0 {1,S}
+        9   H u0 {2,S}
+        10  H u0 {3,S}
+        11  H u0 {4,S}
+        12  H u0 {5,S}
+        13  H u0 {5,S}
+        14  H u0 {6,S}
+        15  H u0 {6,S}
+        16  H u0 {6,S}
         """)
 
         group = Group()
         group.fromAdjacencyList("""
-        1 * C U0 {2,D} {3,S} {4,S}
-        2   C U0 {1,D}
-        3   H U0 {1,S}
-        4   H U0 {1,S}
+        1 * C u0 {2,D} {3,S} {4,S}
+        2   C u0 {1,D}
+        3   H u0 {1,S}
+        4   H u0 {1,S}
         """)
 
         labeled1 = molecule.getLabeledAtoms().values()[0]
@@ -837,21 +837,21 @@ class TestMolecule(unittest.TestCase):
     def testSubgraphIsomorphismManyLabels(self):
         molecule = Molecule() # specific case (species)
         molecule.fromAdjacencyList("""
-1 *1 C  U1 {2,S} {3,S} {4,S}
-2    C  U0 {1,S} {3,S} {5,S} {6,S}
-3    C  U0 {1,S} {2,S} {7,S} {8,S}
-4    H  U0 {1,S}
-5    H  U0 {2,S}
-6    H  U0 {2,S}
-7    H  U0 {3,S}
-8    H  U0 {3,S}
+1 *1 C  u1 {2,S} {3,S} {4,S}
+2    C  u0 {1,S} {3,S} {5,S} {6,S}
+3    C  u0 {1,S} {2,S} {7,S} {8,S}
+4    H  u0 {1,S}
+5    H  u0 {2,S}
+6    H  u0 {2,S}
+7    H  u0 {3,S}
+8    H  u0 {3,S}
         """)
 
         group = Group() # general case (functional group)
         group.fromAdjacencyList("""
-1 *1 C   U1 {2,S}, {3,S}
-2    R!H U0 {1,S}
-3    R!H U0 {1,S}
+1 *1 C   u1 {2,S}, {3,S}
+2    R!H u0 {1,S}
+3    R!H u0 {1,S}
         """)
 
         labeled1 = molecule.getLabeledAtoms()
@@ -874,21 +874,21 @@ class TestMolecule(unittest.TestCase):
         Check the adjacency list read/write functions for a full molecule.
         """
         molecule1 = Molecule().fromAdjacencyList("""
-        1  C U0 {2,D} {7,S} {8,S}
-        2  C U0 {1,D} {3,S} {9,S}
-        3  C U0 {2,S} {4,D} {10,S}
-        4  C U0 {3,D} {5,S} {11,S}
-        5  C U1 {4,S} {6,S} {12,S}
-        6  C U0 {5,S} {13,S} {14,S} {15,S}
-        7  H U0 {1,S}
-        8  H U0 {1,S}
-        9  H U0 {2,S}
-        10 H U0 {3,S}
-        11 H U0 {4,S}
-        12 H U0 {5,S}
-        13 H U0 {6,S}
-        14 H U0 {6,S}
-        15 H U0 {6,S}
+        1  C u0 {2,D} {7,S} {8,S}
+        2  C u0 {1,D} {3,S} {9,S}
+        3  C u0 {2,S} {4,D} {10,S}
+        4  C u0 {3,D} {5,S} {11,S}
+        5  C u1 {4,S} {6,S} {12,S}
+        6  C u0 {5,S} {13,S} {14,S} {15,S}
+        7  H u0 {1,S}
+        8  H u0 {1,S}
+        9  H u0 {2,S}
+        10 H u0 {3,S}
+        11 H u0 {4,S}
+        12 H u0 {5,S}
+        13 H u0 {6,S}
+        14 H u0 {6,S}
+        15 H u0 {6,S}
         """)
         molecule2 = Molecule().fromSMILES('C=CC=C[CH]C')
         self.assertTrue(molecule1.isIsomorphic(molecule2))
@@ -1019,8 +1019,8 @@ class TestMolecule(unittest.TestCase):
         Test that Augmented InChI generation is printing the /mult layer
         """
         mol = Molecule().fromAdjacencyList("""
-            1     C     U1 {2,S}
-            2     C     U1 {1,S}
+            1     C     u1 {2,S}
+            2     C     u1 {1,S}
         """)
         
         self.assertEqual(mol.toAugmentedInChI(), 'InChI=1S/C2H4/c1-2/h1-2H2/mult3')
@@ -1030,8 +1030,8 @@ class TestMolecule(unittest.TestCase):
         Test that Augmented InChI Key generation is printing the mult layer
         """
         mol = Molecule().fromAdjacencyList("""
-            1     C     U1 {2,S}
-            2     C     U1 {1,S}
+            1     C     u1 {2,S}
+            2     C     u1 {1,S}
         """)
         
         self.assertEqual(mol.toAugmentedInChIKey(), 'VGGSQFUCUMXWEO-UHFFFAOYSAmult3')

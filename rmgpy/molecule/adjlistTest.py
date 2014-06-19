@@ -60,9 +60,9 @@ class TestGroupAdjLists(unittest.TestCase):
         adjlist: Test the Group.fromAdjacencyList() method.
         """
         adjlist = """
-1 *2 {Cs,Cd} U0 {2,{S,D}} {3,S}
-2 *1 {Os,Od} U0 {1,{S,D}}
-3    R!H     U0 {1,S}
+1 *2 {Cs,Cd} u0 {2,{S,D}} {3,S}
+2 *1 {Os,Od} u0 {1,{S,D}}
+3    R!H     u0 {1,S}
             """
         group = Group().fromAdjacencyList(adjlist)
         
@@ -95,9 +95,9 @@ class TestGroupAdjLists(unittest.TestCase):
         adjlist: Test the Group.toAdjacencyList() method.
         """
         adjlist = """
-1 *2 {Cs,Cd} U0 {2,{S,D}} {3,S}
-2 *1 {Os,Od} U0 {1,{S,D}}
-3    R!H     U0 {1,S}
+1 *2 {Cs,Cd} u0 {2,{S,D}} {3,S}
+2 *1 {Os,Od} u0 {1,{S,D}}
+3    R!H     u0 {1,S}
             """
         group = Group().fromAdjacencyList(adjlist)
         adjlist2 = group.toAdjacencyList()
@@ -119,12 +119,12 @@ class TestMoleculeAdjLists(unittest.TestCase):
         """
         # molecule 1
         adjlist = """
-1 *1 C U1 L0 E0  {2,S} {3,S} {4,S}
-2    H U0 L0 E0  {1,S}
-3    H U0 L0 E0  {1,S}
-4 *2 N U0 L0 E+1 {1,S} {5,S} {6,D}
-5    O U0 L3 E-1 {4,S}
-6    O U0 L2 E0  {4,D}
+1 *1 C u1 p0 c0  {2,S} {3,S} {4,S}
+2    H u0 p0 c0  {1,S}
+3    H u0 p0 c0  {1,S}
+4 *2 N u0 p0 c+1 {1,S} {5,S} {6,D}
+5    O u0 p3 c-1 {4,S}
+6    O u0 p2 c0  {4,D}
             """
         molecule = Molecule().fromAdjacencyList(adjlist)
         
@@ -174,12 +174,12 @@ class TestMoleculeAdjLists(unittest.TestCase):
         """
         # molecule 2
         adjlist = """
-1 *1 C U1 L0 {2,S} {3,S} {4,S}
-2    H U0 L0 {1,S}
-3    H U0 L0 {1,S}
-4 *2 N U0 L0 {1,S} {5,S} {6,D}
-5    O U0 L3 {4,S}
-6    O U0 L2 {4,D}
+1 *1 C u1 p0 {2,S} {3,S} {4,S}
+2    H u0 p0 {1,S}
+3    H u0 p0 {1,S}
+4 *2 N u0 p0 {1,S} {5,S} {6,D}
+5    O u0 p3 {4,S}
+6    O u0 p2 {4,D}
             """
         molecule = Molecule().fromAdjacencyList(adjlist)
         
@@ -228,12 +228,12 @@ class TestMoleculeAdjLists(unittest.TestCase):
         """
         # molecule 3
         adjlist = """
-1 *1 C U1 {2,S} {3,S} {4,S}
-2    H U0 {1,S}
-3    H U0 {1,S}
-4 *2 N U0 {1,S} {5,S} {6,D}
-5    O U0 {4,S}
-6    O U0 {4,D}
+1 *1 C u1 {2,S} {3,S} {4,S}
+2    H u0 {1,S}
+3    H u0 {1,S}
+4 *2 N u0 {1,S} {5,S} {6,D}
+5    O u0 {4,S}
+6    O u0 {4,D}
             """
         molecule = Molecule().fromAdjacencyList(adjlist)
         
@@ -283,10 +283,10 @@ class TestMoleculeAdjLists(unittest.TestCase):
         """
         # molecule 4
         adjlist = """
-1 *1 C U1 L0 {2,S}
-2 *2 N U0 L0 {1,S} {3,S} {4,D}
-3    O U0 L3 {2,S}
-4    O U0 L2 {2,D}
+1 *1 C u1 p0 {2,S}
+2 *2 N u0 p0 {1,S} {3,S} {4,D}
+3    O u0 p3 {2,S}
+4    O u0 p2 {2,D}
             """
         molecule = Molecule().fromAdjacencyList(adjlist, saturateH=True)
         
@@ -335,12 +335,12 @@ class TestMoleculeAdjLists(unittest.TestCase):
         adjlist: Test the Molecule.toAdjacencyList() method.
         """
         adjlist = """
-1 *1 C U1 L0 E0  {2,S} {3,S} {4,S}
-2    H U0 L0 E0  {1,S}
-3    H U0 L0 E0  {1,S}
-4 *2 N U0 L0 E+1 {1,S} {5,S} {6,D}
-5    O U0 L3 E-1 {4,S}
-6    O U0 L2 E0  {4,D}
+1 *1 C u1 p0 c0  {2,S} {3,S} {4,S}
+2    H u0 p0 c0  {1,S}
+3    H u0 p0 c0  {1,S}
+4 *2 N u0 p0 c+1 {1,S} {5,S} {6,D}
+5    O u0 p3 c-1 {4,S}
+6    O u0 p2 c0  {4,D}
             """
         molecule = Molecule().fromAdjacencyList(adjlist)
         adjlist_1 = molecule.toAdjacencyList(removeH=False)
@@ -375,21 +375,21 @@ class TestMoleculeAdjLists(unittest.TestCase):
         adjlist: Check the adjacency list read/write functions for a full molecule.
         """
         molecule1 = Molecule().fromAdjacencyList("""
-        1  C U0 {2,D} {7,S} {8,S}
-        2  C U0 {1,D} {3,S} {9,S}
-        3  C U0 {2,S} {4,D} {10,S}
-        4  C U0 {3,D} {5,S} {11,S}
-        5  C U1 {4,S} {6,S} {12,S}
-        6  C U0 {5,S} {13,S} {14,S} {15,S}
-        7  H U0 {1,S}
-        8  H U0 {1,S}
-        9  H U0 {2,S}
-        10 H U0 {3,S}
-        11 H U0 {4,S}
-        12 H U0 {5,S}
-        13 H U0 {6,S}
-        14 H U0 {6,S}
-        15 H U0 {6,S}
+        1  C u0 {2,D} {7,S} {8,S}
+        2  C u0 {1,D} {3,S} {9,S}
+        3  C u0 {2,S} {4,D} {10,S}
+        4  C u0 {3,D} {5,S} {11,S}
+        5  C u1 {4,S} {6,S} {12,S}
+        6  C u0 {5,S} {13,S} {14,S} {15,S}
+        7  H u0 {1,S}
+        8  H u0 {1,S}
+        9  H u0 {2,S}
+        10 H u0 {3,S}
+        11 H u0 {4,S}
+        12 H u0 {5,S}
+        13 H u0 {6,S}
+        14 H u0 {6,S}
+        15 H u0 {6,S}
         """)
         molecule2 = Molecule().fromSMILES('C=CC=C[CH]C')
         self.assertTrue(molecule1.isIsomorphic(molecule2))

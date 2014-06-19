@@ -354,9 +354,9 @@ class TestGroup(unittest.TestCase):
 
     def setUp(self):
         self.adjlist = """
-1 *2 {Cs,Cd} U0 {2,{S,D}} {3,S}
-2 *1 {Os,Od} U0 {1,{S,D}}
-3    R!H     U0 {1,S}
+1 *2 {Cs,Cd} u0 {2,{S,D}} {3,S}
+2 *1 {Os,Od} u0 {1,{S,D}}
+3    R!H     u0 {1,S}
             """
         self.group = Group().fromAdjacencyList(self.adjlist)
         
@@ -446,9 +446,9 @@ class TestGroup(unittest.TestCase):
         Test the Group.isIsomorphic() method.
         """
         adjlist = """
-1  *1 {Os,Od} U0 {3,{S,D}}
-2     R!H     U0 {3,S}
-3  *2 {Cs,Cd} U0 {1,{S,D}} {2,S}
+1  *1 {Os,Od} u0 {3,{S,D}}
+2     R!H     u0 {3,S}
+3  *2 {Cs,Cd} u0 {1,{S,D}} {2,S}
             """
         group = Group().fromAdjacencyList(adjlist)
         self.assertTrue(self.group.isIsomorphic(group))
@@ -459,9 +459,9 @@ class TestGroup(unittest.TestCase):
         Test the Group.findIsomorphism() method.
         """
         adjlist = """
-1  *1 {Os,Od} U0 {3,{S,D}}
-2     R!H     U0 {3,S}
-3  *2 {Cs,Cd} U0 {1,{S,D}} {2,S}
+1  *1 {Os,Od} u0 {3,{S,D}}
+2     R!H     u0 {3,S}
+3  *2 {Cs,Cd} u0 {1,{S,D}} {2,S}
             """
         group = Group().fromAdjacencyList(adjlist)
         result = self.group.findIsomorphism(group)
@@ -483,7 +483,7 @@ class TestGroup(unittest.TestCase):
         Test the Group.isSubgraphIsomorphic() method.
         """
         adjlist = """
-1  *1 {Cs,Cd} U0
+1  *1 {Cs,Cd} u0
             """
         group = Group().fromAdjacencyList(adjlist)
         self.assertTrue(self.group.isSubgraphIsomorphic(group))
@@ -494,7 +494,7 @@ class TestGroup(unittest.TestCase):
         Test the Group.findSubgraphIsomorphisms() method.
         """
         adjlist = """
-1  *1 {Cs,Cd} U0
+1  *1 {Cs,Cd} u0
             """
         group = Group().fromAdjacencyList(adjlist)
         result = self.group.findSubgraphIsomorphisms(group)
