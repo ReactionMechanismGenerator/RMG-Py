@@ -40,7 +40,7 @@ import logging
 import numpy
 from copy import copy, deepcopy
 
-from base import Database, Entry, makeLogicNode
+from base import Database, Entry, makeLogicNode, DatabaseError
 
 import rmgpy.constants as constants
 from rmgpy.molecule import Molecule, Atom, Bond, Group
@@ -57,16 +57,20 @@ def saveEntry(f, entry):
     f.write('    label = "{0}",\n'.format(entry.label))
     
     if isinstance(entry.item, Molecule):
-        f.write('    molecule = \n')
-        f.write('"""\n')
-        f.write(entry.item.toAdjacencyList(removeH=False))
-        f.write('""",\n')
+        if Molecule(SMILES=entry.item.toSMILES()).isIsomorphic(entry.item):
+            # The SMILES representation accurately describes the molecule, so we can save it that way.
+            f.write('    molecule = "{0}",\n'.format(entry.item.toSMILES()))
+        else:
+            f.write('    molecule = \n')
+            f.write('"""\n')
+            f.write(entry.item.toAdjacencyList(removeH=False))
+            f.write('""",\n')
     elif isinstance(entry.item, Group):
         f.write('    group = \n')
         f.write('"""\n')
         f.write(entry.item.toAdjacencyList())
         f.write('""",\n')
-    else:
+    elif entry.item is not None:
         f.write('    group = "{0}",\n'.format(entry.item))
     
     if isinstance(entry.data, SoluteData):
@@ -101,8 +105,10 @@ def saveEntry(f, entry):
         f.write('        beta = {0!r},\n'.format(entry.data.beta))
         f.write('        eps = {0!r},\n'.format(entry.data.eps))
         f.write('    ),\n')
+    elif entry.data is None:
+        f.write('    solute = None,\n')
     else:
-        f.write('    solvation data = {0!r},\n'.format(entry.data))
+        raise DatabaseError("Not sure how to save {0!r}".format(entry.data))
     
     f.write('    shortDesc = u"""')
     try:
@@ -317,10 +323,19 @@ class SoluteLibrary(Database):
                   shortDesc='',
                   longDesc='',
                   ):
+        try:
+            mol = Molecule(SMILES=molecule)
+        except:
+            try:
+                mol = Molecule().fromAdjacencyList(molecule)
+            except:
+                logging.error("Can't understand '{0}' in solute library '{1}'".format(molecule,self.name))
+                raise
+
         self.entries[label] = Entry(
             index = index,
             label = label,
-            item = Molecule(SMILES=molecule),
+            item = mol,
             data = solute,
             reference = reference,
             referenceType = referenceType,
@@ -329,7 +344,10 @@ class SoluteLibrary(Database):
         )
     
     def load(self, path):
-        pass
+        """
+        Load the solute library from the given path
+        """
+        Database.load(self, path, local_context={'SoluteData': SoluteData}, global_context={})
 
     def saveEntry(self, f, entry):
         """
