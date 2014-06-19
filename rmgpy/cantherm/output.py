@@ -152,7 +152,8 @@ class PrettifyVisitor(ast.NodeVisitor):
         """
         Return a pretty representation of the number represented by `node`.
         """
-        result = repr(node.n)
+        result = '{0:g}'.format(node.n)
+        #result = repr(node.n)
         self.string = result
         return result
 
