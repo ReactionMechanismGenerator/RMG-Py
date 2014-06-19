@@ -191,7 +191,7 @@ def readKineticsEntry(entry, speciesDict, Aunits, Eunits):
         # Note that the subsequent lines could be in any order
         for line in lines[1:]:
             kinetics = _readKineticsLine(
-                line=line, reaction=reaction, Eunits=Eunits,
+                line=line, reaction=reaction, speciesDict=speciesDict, Eunits=Eunits,
                 kunits=kunits, klow_units=klow_units,
                 kinetics=kinetics)
 
@@ -225,27 +225,28 @@ def readKineticsEntry(entry, speciesDict, Aunits, Eunits):
             troe.arrheniusLow = kinetics['arrhenius low']
             troe.efficiencies = kinetics['efficiencies']
             reaction.kinetics = troe
+        elif thirdBody:
+            reaction.kinetics = _kinetics.ThirdBody(
+                arrheniusLow=kinetics['arrhenius low'])
+            reaction.kinetics.efficiencies = kinetics['efficiencies']
         elif 'arrhenius low' in kinetics:
             reaction.kinetics = _kinetics.Lindemann(
                 arrheniusHigh=kinetics['arrhenius high'],
                 arrheniusLow=kinetics['arrhenius low'])
-            reaction.kinetics.efficiencies = kinetics['efficiencies']
-        elif 'third body' in kinetics:
-            # what we had read first (and assumed High) is in fact the
-            # Low pressure rate.
-            reaction.kinetics = _kinetics.ThirdBody(
-                arrheniusLow=kinetics['arrhenius high'])
             reaction.kinetics.efficiencies = kinetics['efficiencies']
         elif 'explicit reverse' in kinetics or reaction.duplicate:
             # it's a normal high-P reaction - the extra lines were only either REV (explicit reverse) or DUP (duplicate)
             reaction.kinetics = kinetics['arrhenius high']
         else:
             raise ChemkinError(
-                'Unable to understand all additional information lines for reaction {0}.'.format(reaction))
+                'Unable to understand all additional information lines for reaction {0}.'.format(entry))
+        
+        # These things may *also* be true
+        if 'sri' in kinetics:
+            reaction.kinetics.comment += "Warning: SRI parameters from chemkin file ignored on import. "
 
         if 'explicit reverse' in kinetics:
-            reaction.kinetics = kinetics['arrhenius high']
-            reaction.kinetics.comment = (
+            reaction.kinetics.comment += (
                 "Chemkin file stated explicit reverse rate: {0}"
                 ).format(kinetics['explicit reverse'])
 
@@ -256,7 +257,7 @@ def _readKineticsReaction(line, speciesDict, Aunits, Eunits):
     """
     Parse the first line of of a Chemkin reaction entry.
     """
-    tokens = lines[0].split()
+    tokens = line.split()
     
     rmg = True
     try:
@@ -331,7 +332,7 @@ def _readKineticsReaction(line, speciesDict, Aunits, Eunits):
             pass
         elif product not in speciesDict:
             if re.match('[0-9.]+',product):
-                logging.warning("Looks like reaction {0!r} has fractional stoichiometry, which RMG cannot handle. Ignoring".format(lines[0]))
+                logging.warning("Looks like reaction {0!r} has fractional stoichiometry, which RMG cannot handle. Ignoring".format(line))
                 raise ChemkinError('Skip reaction!')
             raise ChemkinError('Unexpected product "{0}" in reaction {1}.'.format(product, reaction))
         else:
@@ -347,11 +348,10 @@ def _readKineticsReaction(line, speciesDict, Aunits, Eunits):
     except IndexError:
         raise ChemkinError('Invalid number of reactant species for reaction {0}.'.format(reaction))
     
-    # The rest of the first line contains the high-P limit Arrhenius parameters (if available)
-    #tokens = lines[0][52:].split()
-    tokens = lines[0].split()[1:]
+    key = 'arrhenius low' if thirdBody else 'arrhenius high'
+    
     kinetics = {
-        'arrhenius high': _kinetics.Arrhenius(
+        key: _kinetics.Arrhenius(
             A = (A,kunits,AuncertaintyType,dA),
             n = (n,'','+|-',dn),
             Ea = (Ea,Eunits,'+|-',dEa),
@@ -361,7 +361,7 @@ def _readKineticsReaction(line, speciesDict, Aunits, Eunits):
     return (reaction, thirdBody, kinetics, kunits, klow_units)
 
 
-def _readKineticsLine(line, reaction, Eunits, kunits, klow_units, kinetics):
+def _readKineticsLine(line, reaction, speciesDict, Eunits, kunits, klow_units, kinetics):
     """
     Parse the subsequent lines of of a Chemkin reaction entry.
     """
@@ -384,11 +384,12 @@ def _readKineticsLine(line, reaction, Eunits, kunits, klow_units, kinetics):
         )
 
     elif 'HIGH' in line:
-        # High-pressure-limit Arrhenius parameters
-        tokens = tokens[1].split()
+        # What we thought was high, was in fact low-pressure
         kinetics['arrhenius low'] = kinetics['arrhenius high']
         kinetics['arrhenius low'].A = (
             kinetics['arrhenius low'].A.value, klow_units)
+        # High-pressure-limit Arrhenius parameters
+        tokens = tokens[1].split()
         kinetics['arrhenius high'] = _kinetics.Arrhenius(
             A = (float(tokens[0].strip()),kunits),
             n = float(tokens[1].strip()),
@@ -414,7 +415,7 @@ def _readKineticsLine(line, reaction, Eunits, kunits, klow_units, kinetics):
             T2 = (T2,"K") if T2 is not None else None,
         )
     elif line.strip().startswith('SRI'):
-        pass
+        kinetics['sri'] = True
         """To define an SRI pressure-dependent reaction, in addition to the LOW or HIGH parameters, the
         keyword SRI followed by three or five parameters must be included in the following order: a, b,
         c, d, and e [Eq. (74)]. The fourth and fifth parameters are options. If only the first three are
