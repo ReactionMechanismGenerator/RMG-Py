@@ -111,7 +111,7 @@ def saveEntry(f, entry):
     try:
         f.write(entry.shortDesc.encode('utf-8'))
     except:
-        f.write(entry.shortDesc.strip().encode('ascii', 'ignore')+ "\n")
+        f.write(entry.shortDesc.strip().encode('ascii', 'ignore'))
     f.write('""",\n')
     f.write('    longDesc = \n')
     f.write('u"""\n')
