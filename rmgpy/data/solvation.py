@@ -49,10 +49,76 @@ from rmgpy.molecule import Molecule, Atom, Bond, Group
 
 def saveEntry(f, entry):
     """
-    Write a Pythonic string representation of the given `entry` in the thermo
+    Write a Pythonic string representation of the given `entry` in the solvation
     database to the file object `f`.
     """
-    raise NotImplementedError()
+    f.write('entry(\n')
+    f.write('    index = {0:d},\n'.format(entry.index))
+    f.write('    label = "{0}",\n'.format(entry.label))
+    
+    if isinstance(entry.item, Molecule):
+        f.write('    molecule = \n')
+        f.write('"""\n')
+        f.write(entry.item.toAdjacencyList(removeH=False))
+        f.write('""",\n')
+    elif isinstance(entry.item, Group):
+        f.write('    group = \n')
+        f.write('"""\n')
+        f.write(entry.item.toAdjacencyList())
+        f.write('""",\n')
+    else:
+        f.write('    group = "{0}",\n'.format(entry.item))
+    
+    if isinstance(entry.data, SoluteData):
+        f.write('    solute = SoluteData(\n')
+        f.write('        S = {0!r},\n'.format(entry.data.S))
+        f.write('        B = {0!r},\n'.format(entry.data.B))
+        f.write('        E = {0!r},\n'.format(entry.data.E))
+        f.write('        L = {0!r},\n'.format(entry.data.L))
+        f.write('        A = {0!r},\n'.format(entry.data.A))
+        if entry.data.V is not None: f.write('        V = {0!r},\n'.format(entry.data.V))
+        f.write('    ),\n')
+    elif isinstance(entry.data, SolventData):
+        f.write('    solvent = SolventData(\n')
+        f.write('        s_g = {0!r},\n'.format(entry.data.s_g))
+        f.write('        b_g = {0!r},\n'.format(entry.data.b_g))
+        f.write('        e_g = {0!r},\n'.format(entry.data.e_g))
+        f.write('        l_g = {0!r},\n'.format(entry.data.l_g))
+        f.write('        a_g = {0!r},\n'.format(entry.data.a_g))
+        f.write('        c_g = {0!r},\n'.format(entry.data.c_g))
+        f.write('        s_h = {0!r},\n'.format(entry.data.s_h))
+        f.write('        b_h = {0!r},\n'.format(entry.data.b_h))
+        f.write('        e_h = {0!r},\n'.format(entry.data.e_h))
+        f.write('        l_h = {0!r},\n'.format(entry.data.l_h))
+        f.write('        a_h = {0!r},\n'.format(entry.data.a_h))
+        f.write('        c_h = {0!r},\n'.format(entry.data.c_h))
+        f.write('        A = {0!r},\n'.format(entry.data.A))
+        f.write('        B = {0!r},\n'.format(entry.data.B))
+        f.write('        C = {0!r},\n'.format(entry.data.C))
+        f.write('        D = {0!r},\n'.format(entry.data.D))
+        f.write('        E = {0!r},\n'.format(entry.data.E))
+        f.write('        alpha = {0!r},\n'.format(entry.data.alpha))
+        f.write('        beta = {0!r},\n'.format(entry.data.beta))
+        f.write('        eps = {0!r},\n'.format(entry.data.eps))
+        f.write('    ),\n')
+    else:
+        f.write('    solvation data = {0!r},\n'.format(entry.data))
+    
+    f.write('    shortDesc = u"""')
+    try:
+        f.write(entry.shortDesc.encode('utf-8'))
+    except:
+        f.write(entry.shortDesc.strip().encode('ascii', 'ignore')+ "\n")
+    f.write('""",\n')
+    f.write('    longDesc = \n')
+    f.write('u"""\n')
+    try:
+        f.write(entry.longDesc.strip().encode('utf-8') + "\n")    
+    except:
+        f.write(entry.longDesc.strip().encode('ascii', 'ignore')+ "\n")
+    f.write('""",\n')
+
+    f.write(')\n\n')
 
 def generateOldLibraryEntry(data):
     """
