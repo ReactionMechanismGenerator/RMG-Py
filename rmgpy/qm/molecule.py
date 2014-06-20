@@ -1,15 +1,18 @@
 import os
 import logging
+import re
 import math
 
 import numpy
+import external.cclib as cclib
 
 try:
     from rdkit import Chem
     from rdkit.Chem import AllChem, Pharm3D
 except ImportError:
     logging.debug("To use QM calculations you must correctly install rdkit.")
-    
+
+from rmgpy.molecule import getElement    
 import rmgpy.quantity
 from rmgpy.thermo import ThermoData
 import rmgpy.statmech
@@ -147,6 +150,64 @@ class Geometry:
         with open(path, 'w') as out3Dcrude:
             out3Dcrude.write(Chem.MolToMolBlock(mol,confId=minEid))
     
+    def parseLOG(self, filePath):
+        """
+        Parses Gaussian `.log` files and returns the last geometry.
+        """
+        
+        parser = cclib.parser.Gaussian(filePath)
+        parser.logger.setLevel(logging.ERROR) #cf. http://cclib.sourceforge.net/wiki/index.php/Using_cclib#Additional_information
+        cclibData = parser.parse()
+        
+        atomsymbols = []
+        for item in cclibData.atomnos:
+            atomsymbols.append(getElement(item).symbol)
+        
+        return atomsymbols, cclibData.atomcoords[-1]
+    
+    def parseARC(self, filePath):
+        """
+        Parses Mopac `.arc` files and returns the geometry.
+        """
+        
+        atomline = re.compile('\s*([A-Za-z]+)\s+([\- ][0-9.]+)\s+([\+ ][0-9.]+)\s+([\- ][0-9.]+)\s+([\+ ][0-9.]+)\s+([\- ][0-9.]+)')
+        
+        atomCount = 0
+        atomsymbols = []
+        atomcoords = []
+        with open(filePath) as molinput:
+            for line in molinput:
+                match = atomline.match(line)
+                if match:
+                    atomsymbols.append(match.group(1))
+                    atomcoords.append([float(match.group(2)), float(match.group(6)), float(match.group(6))])
+                    atomCount += 1
+        
+        atomcoords = numpy.array(atomcoords)
+                    
+        return atomsymbols, atomcoords
+    
+    def parseMOL(self, filePath):
+        """
+        Parses RDKit `.mol` files and returns the geometry.
+        """
+        atomline = re.compile('\s*([\- ][0-9.]+\s+[\-0-9.]+\s+[\-0-9.]+)\s+([A-Za-z]+)')
+        
+        atomCount = 0
+        atomsymbols = []
+        atomcoords = []
+        with open(filePath) as molinput:
+            for line in molinput:
+                match = atomline.match(line)
+                if match:
+                    atomsymbols.append(match.group(2))
+                    atomcoords.append([float(i) for i in match.group(1).split()])
+                    atomCount += 1
+        
+        atomcoords = numpy.array(atomcoords)
+                    
+        return atomsymbols, atomcoords
+    
     def saveCoordinatesFromRDMol(self, rdmol, minEid, rdAtIdx):
         # Save xyz coordinates on each atom in molecule ****
         for atom in self.molecule.atoms:
@@ -254,7 +315,7 @@ class QMMolecule:
         """
         Parses the results of the Mopac calculation, and returns a CCLibData object.
         """
-        parser = self.getparser(outputFile=self.outputFilePath)
+        parser = self.getparser(self.outputFilePath)
         parser.logger.setLevel(logging.ERROR) #cf. http://cclib.sourceforge.net/wiki/index.php/Using_cclib#Additional_information
         cclibData = parser.parse()
         radicalNumber = sum([i.radicalElectrons for i in self.molecule.atoms])
