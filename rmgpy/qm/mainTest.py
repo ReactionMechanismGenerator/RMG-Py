@@ -5,6 +5,7 @@ import unittest
 
 import os
 
+from rmgpy import getPath
 from rmgpy.qm.main import QMSettings, QMCalculator
 from rmgpy.molecule import Molecule
 import qmdata
@@ -18,7 +19,7 @@ class TestQMSettings(unittest.TestCase):
 		"""
 		A function run before each unit test in this class.
 		"""
-		RMGpy_path = os.getenv('RMGpy') or os.path.normpath(os.path.join(rmgpy.getPath(),'..'))
+		RMGpy_path = os.getenv('RMGpy') or os.path.normpath(os.path.join(getPath(),'..'))
 		
 		self.settings1 = QMSettings()
 		self.settings1.software = 'mopac'
@@ -67,7 +68,7 @@ class TestQMCalculator(unittest.TestCase):
 		"""
 		A function run before each unit test in this class.
 		"""
-		RMGpy_path = os.getenv('RMGpy') or os.path.normpath(os.path.join(rmgpy.getPath(),'..'))
+		RMGpy_path = os.getenv('RMGpy') or os.path.normpath(os.path.join(getPath(),'..'))
 		
 		self.mop1 = QMCalculator(fileStore = os.path.join(RMGpy_path, 'testing', 'qm', 'QMfiles'))
 		self.mop1.settings.software = 'mopac'

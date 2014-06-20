@@ -6,6 +6,7 @@ import unittest
 import os
 import numpy as np
 
+from rmgpy import getPath
 from rmgpy.qm.main import QMCalculator
 from rmgpy.molecule import Molecule
 from rmgpy.qm.gaussian import GaussianMolPM3, GaussianMolPM6
@@ -21,7 +22,7 @@ else:
 
 qm = QMCalculator()
 qm.settings.software = 'gaussian'
-RMGpy_path = os.getenv('RMGpy') or os.path.normpath(os.path.join(rmgpy.getPath(),'..'))
+RMGpy_path = os.getenv('RMGpy') or os.path.normpath(os.path.join(getPath(),'..'))
 qm.settings.fileStore = os.path.join(RMGpy_path, 'testing', 'qm', 'QMfiles')
 qm.settings.scratchDirectory = None
 qm.settings.onlyCyclics = False
