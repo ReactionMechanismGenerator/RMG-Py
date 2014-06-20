@@ -19,7 +19,7 @@ class TestQMSettings(unittest.TestCase):
 		"""
 		A function run before each unit test in this class.
 		"""
-		RMGpy_path = os.getenv('RMGpy') or os.path.normpath(os.path.join(getPath(),'..'))
+		RMGpy_path = os.path.normpath(os.path.join(getPath(),'..'))
 		
 		self.settings1 = QMSettings()
 		self.settings1.software = 'mopac'
@@ -68,9 +68,13 @@ class TestQMCalculator(unittest.TestCase):
 		"""
 		A function run before each unit test in this class.
 		"""
-		RMGpy_path = os.getenv('RMGpy') or os.path.normpath(os.path.join(getPath(),'..'))
+		RMGpy_path = os.path.normpath(os.path.join(getPath(),'..'))
 		
-		self.mop1 = QMCalculator(fileStore = os.path.join(RMGpy_path, 'testing', 'qm', 'QMfiles'))
+		fileStore = os.path.join(RMGpy_path, 'testing', 'qm', 'QMfiles')
+		if not os.path.exists(fileStore):
+			os.makedirs(fileStore)
+		
+		self.mop1 = QMCalculator(fileStore=fileStore)
 		self.mop1.settings.software = 'mopac'
 		self.mop1.settings.method = 'pm3'
 		self.mop1.settings.onlyCyclics = False
@@ -83,13 +87,13 @@ class TestQMCalculator(unittest.TestCase):
 		self.mop2.settings.maxRadicalNumber = 0
 
 		
-		self.mop3 = QMCalculator(fileStore = os.path.join(RMGpy_path, 'testing', 'qm', 'QMfiles'))
+		self.mop3 = QMCalculator(fileStore=fileStore)
 		self.mop3.settings.software = 'mopac'
 		self.mop3.settings.method = 'pm7'
 		self.mop3.settings.onlyCyclics = False
 		self.mop3.settings.maxRadicalNumber = 0
 		
-		self.mop4 = QMCalculator(fileStore = os.path.join(RMGpy_path, 'testing', 'qm', 'QMfiles'))
+		self.mop4 = QMCalculator(fileStore=fileStore)
 		self.mop4.settings.software = 'mopac'
 		self.mop4.settings.method = 'pm8'
 		self.mop4.settings.onlyCyclics = False
@@ -101,28 +105,28 @@ class TestQMCalculator(unittest.TestCase):
 		self.gauss1.settings.onlyCyclics = False
 		self.gauss1.settings.maxRadicalNumber = 0	
 		
-		self.gauss2 = QMCalculator(fileStore = os.path.join(RMGpy_path, 'testing', 'qm', 'QMfiles'))
+		self.gauss2 = QMCalculator(fileStore=fileStore)
 		self.gauss2.settings.software = 'gaussian'
 		self.gauss2.settings.method = 'pm6'
 		self.gauss2.settings.onlyCyclics = False
 		self.gauss2.settings.maxRadicalNumber = 0
 		
-		self.gauss3 = QMCalculator(fileStore = os.path.join(RMGpy_path, 'testing', 'qm', 'QMfiles'))
+		self.gauss3 = QMCalculator(fileStore=fileStore)
 		self.gauss3.settings.software = 'gaussian'
 		self.gauss3.settings.method = 'pm7'
 		self.gauss3.settings.onlyCyclics = False
 		self.gauss3.settings.maxRadicalNumber = 0
 		
-		self.molpro1 = QMCalculator(fileStore = os.path.join(RMGpy_path, 'testing', 'qm', 'QMfiles'))
+		self.molpro1 = QMCalculator(fileStore=fileStore)
 		self.molpro1.settings.software = 'molpro'
 		self.molpro1.settings.method = 'mp2'
 		self.molpro1.settings.onlyCyclics = False
 		self.molpro1.settings.maxRadicalNumber = 0
 		
-		self.qmmol1 = QMCalculator(fileStore = os.path.join(RMGpy_path, 'testing', 'qm', 'QMfiles'))
+		self.qmmol1 = QMCalculator(fileStore=fileStore)
 		self.qmmol1.RMG_bin_path = os.path.join(RMGpy_path, 'testing', 'qm', 'bin')
 		
-		self.qmmol2 = QMCalculator(fileStore = os.path.join(RMGpy_path, 'testing', 'qm', 'QMfiles'))
+		self.qmmol2 = QMCalculator(fileStore=fileStore)
 		self.qmmol2.RMG_bin_path = os.path.join(RMGpy_path, 'testing', 'hexadiene', 'input.py')
 
 	def testSetDefaultOutputDirectory(self):

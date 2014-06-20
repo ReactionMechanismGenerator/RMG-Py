@@ -22,7 +22,7 @@ else:
 	
 qm = QMCalculator()
 qm.settings.software = 'mopac'
-RMGpy_path = os.getenv('RMGpy') or os.path.normpath(os.path.join(getPath(),'..'))
+RMGpy_path = os.path.normpath(os.path.join(getPath(),'..'))
 qm.settings.fileStore = os.path.join(RMGpy_path, 'testing', 'qm', 'QMfiles')
 qm.settings.scratchDirectory = None
 qm.settings.onlyCyclics = False
@@ -42,7 +42,7 @@ class TestMopacMolPM3(unittest.TestCase):
 		"""
 		
 		if not os.path.exists(qm.settings.fileStore):
-			os.mkdir(qm.settings.fileStore)
+			os.makedirs(qm.settings.fileStore)
 		
 		self.qmmol1 = MopacMolPM3(mol1, qm.settings)
 	
@@ -100,7 +100,7 @@ class TestMopacMolPM6(unittest.TestCase):
 		"""
 
 		if not os.path.exists(qm.settings.fileStore):
-			os.mkdir(qm.settings.fileStore)
+			os.makedirs(qm.settings.fileStore)
 
 		self.qmmol1 = MopacMolPM6(mol1, qm.settings)
 
@@ -158,7 +158,7 @@ class TestMopacMolPM7(unittest.TestCase):
 		"""
 
 		if not os.path.exists(qm.settings.fileStore):
-			os.mkdir(qm.settings.fileStore)
+			os.makedirs(qm.settings.fileStore)
 
 		mol1 = Molecule().fromSMILES('C1=CC=C2C=CC=CC2=C1')
 		self.qmmol1 = MopacMolPM7(mol1, qm.settings)

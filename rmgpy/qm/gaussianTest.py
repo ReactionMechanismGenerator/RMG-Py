@@ -22,7 +22,7 @@ else:
 
 qm = QMCalculator()
 qm.settings.software = 'gaussian'
-RMGpy_path = os.getenv('RMGpy') or os.path.normpath(os.path.join(getPath(),'..'))
+RMGpy_path = os.path.normpath(os.path.join(getPath(),'..'))
 qm.settings.fileStore = os.path.join(RMGpy_path, 'testing', 'qm', 'QMfiles')
 qm.settings.scratchDirectory = None
 qm.settings.onlyCyclics = False
@@ -42,7 +42,7 @@ class TestGaussianMolPM3(unittest.TestCase):
 		"""
 
 		if not os.path.exists(qm.settings.fileStore):
-			os.mkdir(qm.settings.fileStore)
+			os.makedirs(qm.settings.fileStore)
 
 		self.qmmol1 = GaussianMolPM3(mol1, qm.settings)
 
@@ -101,7 +101,7 @@ class TestGaussianMolPM6(unittest.TestCase):
 		"""
 
 		if not os.path.exists(qm.settings.fileStore):
-			os.mkdir(qm.settings.fileStore)
+			os.makedirs(qm.settings.fileStore)
 
 		self.qmmol1 = GaussianMolPM6(mol1, qm.settings)
 
