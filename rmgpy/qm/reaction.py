@@ -509,41 +509,10 @@ class QMReaction:
         the Atomic Simulation Environment (`ASE <https://wiki.fysik.dtu.dk/ase/>`).
         """
         import ase
-        from ase import io, Atoms
         from ase.neb import NEB
-        import ase.calculators
         from ase.optimize import BFGS, FIRE
         
-        # Give ase the atom positions for each side of the reaction path
-        initial = ase.io.read(self.outputFilePath)
-        final = ase.io.read(pGeom.getFilePath(self.outputFileExtension))
-        
-        # ASE doesn't keep the atoms in the same order as it's positions (weird!),
-        # so get the correct atom list and recreate the images
-        molfile = self.geometry.getRefinedMolFilePath()
-        atomline = re.compile('\s*([\- ][0-9.]+\s+[\-0-9.]+\s+[\-0-9.]+)\s+([A-Za-z]+)')
-        
-        atomCount = 0
-        atomnos = []
-        atomcoords = []
-        with open(molfile) as molinput:
-            for line in molinput:
-                match = atomline.match(line)
-                if match:
-                    atomnos.append(match.group(2))
-                    # position = numpy.array([float(i) for i in match.group(1).split()])
-                    # atomcoords.append(position)
-                    atomCount += 1
-        atomcoords = numpy.array(atomcoords)
-        
-        
-        newImage = Atoms(atomnos)
-        newImage.set_positions(initial.get_positions())
-        initial = newImage.copy()
-                    
-        newImage = Atoms(atomnos)
-        newImage.set_positions(final.get_positions())
-        final = newImage.copy()
+        initial, final = self.setImages(pGeom)
         
         # Now make a band of x + 2 images (x plus the initial and final geometries)
         x = 11
@@ -690,7 +659,36 @@ class QMReaction:
                 # Don't run if the geometries have optimized to another geometry
                 return False, None, None, notes
         elif self.settings.software.lower() == 'mopac':
-            return False, None, None, notes
+            print "Optimizing reactant geometry"
+            self.writeGeomInputFile(freezeAtoms=labels)
+            logFilePath = self.runDouble(self.inputFilePath)
+            shutil.copy(logFilePath, logFilePath+'.reactant.out')
+            
+            print "Optimizing product geometry"
+            self.writeGeomInputFile(freezeAtoms=labels, otherGeom=pGeom)
+            logFilePath = self.runDouble(pGeom.getFilePath(self.inputFileExtension))
+            shutil.copy(logFilePath, logFilePath+'.product.out')
+            
+            # print "Product geometry referencing reactant"
+            # self.writeReferenceFile(freezeAtoms=labels)#inputFilePath, molFilePathForCalc, geometry, attempt, outputFile=None)
+            # self.writeGeoRefInputFile(pGeom, freezeAtoms=labels, otherSide=True)#inputFilePath, molFilePathForCalc, refFilePath, geometry)
+            # logFilePath = self.runDouble(pGeom.getFilePath(self.inputFileExtension))
+            # shutil.copy(logFilePath, logFilePath+'.ref1.out')
+            #     
+            # if not os.path.exists(pGeom.getFilePath('.arc')):
+            #     notes = notes + 'product .arc file does not exits\n'
+            #     return False, None, None, notes
+            # 
+            # # Reactant that references the product geometry
+            # print "Reactant referencing product on slope"
+            # self.writeReferenceFile(freezeAtoms=labels, otherGeom=pGeom)
+            # self.writeGeoRefInputFile(pGeom, freezeAtoms=labels)
+            # logFilePath = self.runDouble(self.inputFilePath)
+            # shutil.copy(logFilePath, logFilePath+'.ref2.out')
+            # 
+            # if not os.path.exists(self.getFilePath('.arc')):
+            #     notes = notes + 'reactant .arc file does not exits\n'
+            #     return False, None, None, notes
                 
         print "Running NEB from optimized geometries"
         # Atomic Simulation Environment can take the two geometries and

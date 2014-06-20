@@ -1098,6 +1098,46 @@ class GaussianTSB3LYP(GaussianTS):
         qmMolecule = GaussianMolB3LYP(molecule, self.settings)
         return qmMolecule
     
+    def setImages(self, pGeom):
+        """
+        Set and return the initial and final ase images for the NEB calculation
+        """
+        import ase
+        from ase import io, Atoms
+        
+        # Give ase the atom positions for each side of the reaction path
+        initial = ase.io.read(self.outputFilePath)
+        final = ase.io.read(pGeom.getFilePath(self.outputFileExtension))
+        
+        # ASE doesn't keep the atoms in the same order as it's positions (weird!),
+        # so get the correct atom list and recreate the images
+        molfile = self.geometry.getRefinedMolFilePath()
+        atomline = re.compile('\s*([\- ][0-9.]+\s+[\-0-9.]+\s+[\-0-9.]+)\s+([A-Za-z]+)')
+        
+        atomCount = 0
+        atomnos = []
+        atomcoords = []
+        with open(molfile) as molinput:
+            for line in molinput:
+                match = atomline.match(line)
+                if match:
+                    atomnos.append(match.group(2))
+                    # position = numpy.array([float(i) for i in match.group(1).split()])
+                    # atomcoords.append(position)
+                    atomCount += 1
+        atomcoords = numpy.array(atomcoords)
+        
+        
+        newImage = Atoms(atomnos)
+        newImage.set_positions(initial.get_positions())
+        initial = newImage.copy()
+                    
+        newImage = Atoms(atomnos)
+        newImage.set_positions(final.get_positions())
+        final = newImage.copy()
+        
+        return initial, final
+    
     def setCalculator(self, images):
         """
         Set up the Gaussian calculator for the Atomic Simulation Environment
