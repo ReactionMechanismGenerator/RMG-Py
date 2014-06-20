@@ -430,6 +430,55 @@ class MopacTS(QMReaction, Mopac):
                    # '2 IMAGINARY FREQUENCIES'
                    ]
     
+    def setImages(self, pGeom):
+        """
+        Set and return the initial and final ase images for the NEB calculation
+        """
+        import ase
+        from ase import Atoms
+                
+        # ASE doesn't keep the atoms in the same order as it's positions (weird!),
+        # so get the correct atom list and recreate the images
+        molfileR = self.getFilePath('.arc')
+        molfileP = pGeom.getFilePath('.arc')
+        atomline = re.compile('\s*([A-Za-z]+)\s+([\- ][0-9.]+)\s+([\+ ][0-9.]+)\s+([\- ][0-9.]+)\s+([\+ ][0-9.]+)\s+([\- ][0-9.]+)')
+        
+        atomCount = 0
+        atomsymbols = []
+        atomcoords = []
+        with open(molfileR) as molinput:
+            for line in molinput:
+                match = atomline.match(line)
+                if match:
+                    atomsymbols.append(match.group(1))
+                    atomcoords.append([float(match.group(2)), float(match.group(4)), float(match.group(6))])
+                    atomCount += 1
+        
+        assert atomCount == len(self.geometry.molecule.atoms)
+        
+        newImage = Atoms(atomsymbols)
+        newImage.set_positions(atomcoords)
+        initial = newImage.copy()
+        
+        atomCount = 0
+        atomsymbols = []
+        atomcoords = []
+        with open(molfileP) as molinput:
+            for line in molinput:
+                match = atomline.match(line)
+                if match:
+                    atomsymbols.append(match.group(1))
+                    atomcoords.append([float(match.group(2)), float(match.group(4)), float(match.group(6))])
+                    atomCount += 1
+        
+        assert atomCount == len(self.geometry.molecule.atoms)
+        
+        newImage = Atoms(atomsymbols)
+        newImage.set_positions(atomcoords)
+        final = newImage.copy()
+        
+        return initial, final
+    
     def runDouble(self, inputFilePath):
         self.testReady()
         with open(inputFilePath) as infile:
@@ -965,3 +1014,15 @@ class MopacTSPM7(MopacTS):
                 )
 
         return top_keys, bottom_keys, polar_keys
+    
+    def setCalculator(self, images):
+        """
+        Set up the Mopac calculator for the Atomic Simulation Environment
+        """
+        import ase
+        from ase.calculators.mopac import Mopac
+        
+        label=os.path.join(os.path.abspath(self.settings.fileStore), 'ase')
+        for image in images[1:len(images)-1]:
+            image.set_calculator(ase.calculators.mopac.Mopac(command=self.executablePath, label=label, functional='PM7'))
+            image.get_calculator().set(spin=self.geometry.molecule.getRadicalCount())
