@@ -17,6 +17,7 @@ import rmgpy.thermo
 import rmgpy.molecule
 import symmetry
 import qmdata
+from qmdata import CCLibData
 
 class RDKitFailedError(Exception):
     """For when RDkit failed. try the next reaction """
@@ -248,6 +249,17 @@ class QMMolecule:
         self.geometry = Geometry(self.settings, self.uniqueID, self.molecule, multiplicity, uniqueIDlong=self.uniqueIDlong)
         self.geometry.generateRDKitGeometries(boundsMatrix, atomMatch)
         return self.geometry
+        
+    def parse(self):
+        """
+        Parses the results of the Mopac calculation, and returns a CCLibData object.
+        """
+        parser = self.getparser(outputFile=self.outputFilePath)
+        parser.logger.setLevel(logging.ERROR) #cf. http://cclib.sourceforge.net/wiki/index.php/Using_cclib#Additional_information
+        cclibData = parser.parse()
+        radicalNumber = sum([i.radicalElectrons for i in self.molecule.atoms])
+        qmData = CCLibData(cclibData, radicalNumber+1)
+        return qmData
     
     def generateQMData(self):
         """

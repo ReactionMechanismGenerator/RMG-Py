@@ -223,18 +223,12 @@ class GaussianMol(QMMolecule, Gaussian):
         result = self.parse() # parsed in cclib
         result.source = source
         return result # a CCLibData object
-    
-    def parse(self):
+        
+    def getParser(self, outputFile):
         """
-        Parses the results of the Gaussian calculation, and returns a CCLibData object.
+        Returns the appropriate cclib parser.
         """
-        parser = cclib.parser.Gaussian(self.outputFilePath)
-        parser.logger.setLevel(logging.ERROR) #cf. http://cclib.sourceforge.net/wiki/index.php/Using_cclib#Additional_information
-        cclibData = parser.parse()
-        radicalNumber = sum([i.radicalElectrons for i in self.molecule.atoms])
-        qmData = CCLibData(cclibData, radicalNumber+1)
-        return qmData
-
+        return cclib.parser.Gaussian(outputFile)
 
 class GaussianMolPM3(GaussianMol):
 

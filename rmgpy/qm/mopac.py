@@ -204,17 +204,12 @@ class MopacMol(QMMolecule, Mopac):
         
         #InChIs do not match (most likely due to limited name length mirrored in log file (240 characters), but possibly due to a collision)
         return self.checkForInChiKeyCollision(logFileInChI) # Not yet implemented!
-
-    def parse(self):
+    
+    def getParser(self, outputFile):
         """
-        Parses the results of the Mopac calculation, and returns a CCLibData object.
+        Returns the appropriate cclib parser.
         """
-        parser = cclib.parser.Mopac(self.outputFilePath)
-        parser.logger.setLevel(logging.ERROR) #cf. http://cclib.sourceforge.net/wiki/index.php/Using_cclib#Additional_information
-        cclibData = parser.parse()
-        radicalNumber = sum([i.radicalElectrons for i in self.molecule.atoms])
-        qmData = CCLibData(cclibData, radicalNumber+1)
-        return qmData
+        return cclib.parser.Mopac(outputFile)
 
     def generateQMData(self):
         """
