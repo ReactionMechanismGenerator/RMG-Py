@@ -4,16 +4,6 @@ Nevertheless, they are stored here because
  (1) they may be hard to find elsewhere
  (2) we know that that these versions work (but ones from elsewhere may not)
 
-gprof2dot
-produces pretty flow diagrams from profiling information
-It comes from http://jrfonseca.googlecode.com/svn/trunk/gprof2dot
-It comes under GNU Lesser General Public License 3 or later
-http://www.gnu.org/licenses/
-(using the Lesser GPL permits use of the library in proprietary programs)
-To use it, do something like:
-  python ../../source/external/gprof2dot/gprof2dot.py -f pstats RMG.profile  | dot -Tpdf -o RMG_profile.pdf
-
-
 ctml_writer.py 
 comes from Cantera 1.7 (https://sourceforge.net/projects/cantera/)
 which we think uses the New BSD License
