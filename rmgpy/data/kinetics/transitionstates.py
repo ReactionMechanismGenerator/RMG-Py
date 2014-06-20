@@ -119,13 +119,13 @@ class TransitionStates(Database):
         
         fpath = os.path.join(path,'TS_training.py')
         logging.debug("Loading transitions state family training set from {0}".format(fpath))
-        depository = TransitionStateDepository(label='intra_H_migration/TS_training')
+        depository = TransitionStateDepository(label='H_Abstraction/TS_training')#'intra_H_migration/TS_training')
         depository.load(fpath, local_context, global_context )
         self.depository = depository
         
         fpath = os.path.join(path,'TS_groups.py')
         logging.debug("Loading transitions state family groups from {0}".format(fpath))
-        groups = TSGroups(label="intra_H_migration/TS_groups")
+        groups = TSGroups(label='H_Abstraction/TS_groups')#'intra_H_migration/TS_groups')
         groups.load(fpath , local_context, global_context )
         self.groups = groups
     
@@ -290,7 +290,7 @@ class TransitionStates(Database):
                 print 'FAIL: No reactions found for "%s".' % (entry.label)
             else:
                 print 'FAIL: Unable to estimate distances for {0!r}.'.format(entry.label)
-        
+                
         assert reaction is not None
         assert template is not None
         return reaction, template
@@ -306,13 +306,13 @@ def filterReactions(reactants, products, reactionList):
     # Convert from molecules to species and generate resonance isomers.
     reactant_species = []
     for mol in reactants:
-        s = Species(molecule=[mol])
+        s = Species(molecule=mol)
         s.generateResonanceIsomers()
         reactant_species.append(s)
     reactants = reactant_species
     product_species = []
     for mol in products:
-        s = Species(molecule=[mol])
+        s = Species(molecule=mol)
         s.generateResonanceIsomers()
         product_species.append(s)
     products = product_species
@@ -508,6 +508,7 @@ class TSGroups(Database):
                     continue # don't try to match this structure - the atoms aren't there!
                 # Match structures
                 atoms = reactant.getLabeledAtoms()
+                
                 matched_node = self.descendTree(reactant, atoms, root=entry)
                 if matched_node is not None:
                     template.append(matched_node)
@@ -590,6 +591,7 @@ class TSGroups(Database):
         
         # Determine a complete list of the entries in the database, sorted as in the tree
         groupEntries = self.top[:]
+        
         for entry in self.top:
             groupEntries.extend(self.descendants(entry))
         
