@@ -64,7 +64,7 @@ class QMSettings():
         """
         from types import BooleanType, IntType
         assert self.fileStore
-        assert self.scratchDirectory
+        #assert self.scratchDirectory
         assert self.software
         assert self.method
         assert self.onlyCyclics is not None # but it can be False
