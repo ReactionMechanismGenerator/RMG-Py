@@ -1138,7 +1138,7 @@ def makeProfileGraph(stats_file):
     `dot -Tpdf input.dot -o output.pdf`.
     """
     try:
-        from gprof2dot import gprof2dot
+        import gprof2dot
     except ImportError:
         logging.warning('Package gprof2dot not found. Unable to create a graph of the profile statistics.')
         # `pip install gprof2dot` if you don't have it.
@@ -1151,6 +1151,9 @@ def makeProfileGraph(stats_file):
     m.options.node_thres = 0.8
     m.options.edge_thres = 0.1
     m.options.strip = False
+    m.options.show_samples = False
+    m.options.root = ""
+    #m.options.leaf = ""
     m.options.wrap = True
     m.theme = m.themes['color'] # bw color gray pink
     parser = gprof2dot.PstatsParser(stats_file)
