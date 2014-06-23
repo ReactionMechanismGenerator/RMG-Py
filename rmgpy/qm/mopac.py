@@ -504,7 +504,6 @@ class MopacTS(QMReaction, Mopac):
         Using the :class:`Geometry` object, write the input file
         for the `attmept`th attempt.
         """
-        
         molfile = self.geometry.getRefinedMolFilePath()
         atomline = re.compile('\s*([\- ][0-9.]+)\s+([\- ][0-9.]+)+\s+([\- ][0-9.]+)\s+([A-Za-z]+)')
         
@@ -535,29 +534,24 @@ class MopacTS(QMReaction, Mopac):
     
     def writeGeomInputFile(self, freezeAtoms, otherGeom=None):
         
-        atomline = re.compile('\s*([\- ][0-9.]+)\s+([\- ][0-9.]+)+\s+([\- ][0-9.]+)\s+([A-Za-z]+)')
-        
         output = [ self.geometry.uniqueID ]
         
         if otherGeom:
             freezeAtoms = [freezeAtoms[0], freezeAtoms[1]]
-            molfile = otherGeom.getRefinedMolFilePath() # Now get the product geometry
+            atomsymbols, atomcoords = self.geometry.parseMOL(otherGeom.getRefinedMolFilePath())
             inputFilePath = otherGeom.getFilePath(self.inputFileExtension)
         else:
             freezeAtoms = [freezeAtoms[1], freezeAtoms[2]]
-            molfile = self.geometry.getRefinedMolFilePath() # Get the reactant geometry
+            atomsymbols, atomcoords = self.geometry.parseMOL(self.geometry.getRefinedMolFilePath())
             inputFilePath = self.inputFilePath
         
         atomCount = 0
-        with open(molfile) as molinput:
-            for line in molinput:
-                match = atomline.match(line)
-                if match:
-                    if atomCount in freezeAtoms:
-                        output.append("{0:4s} {1} 0 {2} 0 {3} 0".format(match.group(4), match.group(1), match.group(2), match.group(3)))
-                    else:
-                        output.append("{0:4s} {1} 1 {2} 1 {3} 1".format(match.group(4), match.group(1), match.group(2), match.group(3)))
-                    atomCount += 1
+        for atomsymbol, atomcoord in zip(atomsymbols, atomcoords):
+            if atomCount in freezeAtoms:
+                output.append("{0:4s} {1} 0 {2} 0 {3} 0".format(atomsymbol, atomcoord[0], atomcoord[1], atomcoord[2]))
+            else:
+                output.append("{0:4s} {1} 1 {2} 1 {3} 1".format(atomsymbol, atomcoord[0], atomcoord[1], atomcoord[2]))
+            atomCount += 1
         
         assert atomCount == len(self.geometry.molecule.atoms)
         
@@ -593,34 +587,24 @@ class MopacTS(QMReaction, Mopac):
         with open(self.inputFilePath, 'w') as mopacFile:
             mopacFile.write(input_string)
         
-    def writeReferenceFile(self, freezeAtoms, otherGeom=None):#, inputFilePath, molFilePathForCalc, geometry, attempt, outputFile=None):
+    def writeReferenceFile(self, otherGeom=None):#, inputFilePath, molFilePathForCalc, geometry, attempt, outputFile=None):
         """
         Using the :class:`Geometry` object, write the input file
         for the `attmept`th attempt.
         """
-        
-        output = [ '', self.geometry.uniqueIDlong, '' ]
-        atomline = re.compile('\s*([A-Za-z]+)\s+([\- ][0-9.]+)\s+([\+ ][0-9.]+)\s+([\- ][0-9.]+)\s+([\+ ][0-9.]+)\s+([\- ][0-9.]+)')
-        
         if otherGeom:
             inputFilePath = otherGeom.getFilePath(self.inputFileExtension)
-            molfile = otherGeom.getFilePath('.arc')
+            atomsymbols, atomcoords = self.geometry.parseARC(otherGeom.getFilePath('.arc'))
         else:
             inputFilePath = self.inputFilePath
-            molfile = self.getFilePath('.arc')
-            
-        # freezeAtoms = [freezeAtoms[0], freezeAtoms[2]]
+            atomsymbols, atomcoords = self.geometry.parseARC(self.getFilePath('.arc'))
+        
+        output = [ '', self.geometry.uniqueIDlong, '' ]
+        
         atomCount = 0
-        with open(molfile) as molinput:
-            for line in molinput:
-                match = atomline.match(line)
-                if match:
-                    output.append("{0:4s} {1} 1 {2} 1 {3} 1".format(match.group(1), match.group(2), match.group(4), match.group(6)))
-                    # if atomCount in freezeAtoms:
-                    #     output.append("{0:4s} {1} 0 {2} 0 {3} 0".format(match.group(1), match.group(2), match.group(4), match.group(6)))
-                    # else:
-                    #     output.append("{0:4s} {1} 1 {2} 1 {3} 1".format(match.group(1), match.group(2), match.group(4), match.group(6)))
-                    atomCount += 1
+        for atomsymbol, atomcoord in zip(atomsymbols, atomcoords):
+            output.append("{0:4s} {1} 1 {2} 1 {3} 1".format(atomsymbol, atomcoord[0], atomcoord[1], atomcoord[2]))
+            atomCount += 1
         
         assert atomCount == len(self.geometry.molecule.atoms)
         
@@ -631,32 +615,23 @@ class MopacTS(QMReaction, Mopac):
             mopacFile.write(input_string)
             mopacFile.write('\n')
     
-    def writeGeoRefInputFile(self, otherGeom, freezeAtoms, otherSide=False):
+    def writeGeoRefInputFile(self, otherGeom, otherSide=False):
         if otherSide:
-            molfile = otherGeom.getFilePath('.arc')
+            atomsymbols, atomcoords = self.geometry.parseARC(otherGeom.getFilePath('.arc'))
             refFile = self.inputFilePath
             inputFilePath = otherGeom.getFilePath(self.inputFileExtension)
         else:
-            molfile = self.getFilePath('.arc')
+            atomsymbols, atomcoords = self.geometry.parseARC(self.getFilePath('.arc'))
             refFile = otherGeom.getFilePath(self.inputFileExtension)
             inputFilePath = self.inputFilePath
             
-        freezeAtoms = [freezeAtoms[0], freezeAtoms[2]]
-        atomline = re.compile('\s*([A-Za-z]+)\s+([\- ][0-9.]+)\s+([\+ ][0-9.]+)\s+([\- ][0-9.]+)\s+([\+ ][0-9.]+)\s+([\- ][0-9.]+)')
-        
         output = [ 'geo_ref="{0}"'.format(refFile), self.geometry.uniqueIDlong, '' ]
         
         atomCount = 0
-        with open(molfile) as molinput:
-            for line in molinput:
-                match = atomline.match(line)
-                if match:
-                    output.append("{0:4s} {1} 1 {2} 1 {3} 1".format(match.group(1), match.group(2), match.group(4), match.group(6)))
-                    # if atomCount in freezeAtoms:
-                    #     output.append("{0:4s} {1} 0 {2} 0 {3} 0".format(match.group(1), match.group(2), match.group(4), match.group(6)))
-                    # else:
-                    #     output.append("{0:4s} {1} 1 {2} 1 {3} 1".format(match.group(1), match.group(2), match.group(4), match.group(6)))
-                    atomCount += 1
+        for atomsymbol, atomcoord in zip(atomsymbols, atomcoords):
+            output.append("{0:4s} {1} 1 {2} 1 {3} 1".format(atomsymbol, atomcoord[0], atomcoord[1], atomcoord[2]))
+            atomCount += 1
+        
         assert atomCount == len(self.geometry.molecule.atoms)
         
         output.append('')
@@ -671,56 +646,26 @@ class MopacTS(QMReaction, Mopac):
         for the `attmept`th attempt.
         """
         output = [ 'saddle', self.geometry.uniqueIDlong, '' ]
-        atomline = re.compile('\s*([A-Za-z]+)\s+([\- ][0-9.]+)\s+([\+ ][0-9.]+)\s+([\- ][0-9.]+)\s+([\+ ][0-9.]+)\s+([\- ][0-9.]+)')
         
         # Reactant side
-        molfile = self.getFilePath('.arc')
+        atomsymbols, atomcoords = self.geometry.parseARC(self.getFilePath('.arc'))
+        
         atomCount = 0
-        with open(molfile) as molinput:
-            for line in molinput:
-                match = atomline.match(line)
-                if match:
-                    output.append("{0:4s} {1} 1 {2} 1 {3} 1".format(match.group(1), match.group(2), match.group(4), match.group(6)))
-                    atomCount += 1
+        for atomsymbol, atomcoord in zip(atomsymbols, atomcoords):
+            output.append("{0:4s} {1} 1 {2} 1 {3} 1".format(atomsymbol, atomcoord[0], atomcoord[1], atomcoord[2]))
+            atomCount += 1
         
         assert atomCount == len(self.geometry.molecule.atoms)
-        atomCount = 0
         
         output.append('')
         
         # Product side
-        molfile = otherGeom.getFilePath('.arc') 
-        with open(molfile) as molinput:
-            for line in molinput:
-                match = atomline.match(line)
-                if match:
-                    output.append("{0:4s} {1} 1 {2} 1 {3} 1".format(match.group(1), match.group(2), match.group(4), match.group(6)))
-                    atomCount += 1
+        atomsymbols, atomcoords = self.geometry.parseARC(otherGeom.getFilePath('.arc'))
         
-        # atomline = re.compile('\s*([A-Za-z]+)\s+([\- ][0-9.]+)\s+([\+ ][0-9.]+)\s+([\- ][0-9.]+)\s+([\+ ][0-9.]+)\s+([\- ][0-9.]+)')
-        # output = [ 'saddle', self.geometry.uniqueIDlong, '' ]
-        # 
-        # atomCount = 0
-        # molfile = self.getFilePath('.arc')
-        # with open(molfile) as molinput:
-        #     for line in molinput:
-        #         match = atomline.match(line)
-        #         if match:
-        #             output.append("{0:4s} {1} 1 {2} 1 {3} 1".format(match.group(1), match.group(2), match.group(4), match.group(6)))
-        #             atomCount += 1
-        #             
-        # assert atomCount == len(self.geometry.molecule.atoms)
-        # atomCount = 0
-        # 
-        # output.append('')
-        # 
-        # molfile = otherGeom.getFilePath('.arc')
-        # with open(molfile) as molinput:
-        #     for line in molinput:
-        #         match = atomline.match(line)
-        #         if match:
-        #             output.append("{0:4s} {1} 1 {2} 1 {3} 1".format(match.group(1), match.group(2), match.group(4), match.group(6)))
-        #             atomCount += 1
+        atomCount = 0
+        for atomsymbol, atomcoord in zip(atomsymbols, atomcoords):
+            output.append("{0:4s} {1} 1 {2} 1 {3} 1".format(atomsymbol, atomcoord[0], atomcoord[1], atomcoord[2]))
+            atomCount += 1
         
         assert atomCount == len(self.geometry.molecule.atoms)
         
@@ -730,23 +675,6 @@ class MopacTS(QMReaction, Mopac):
         with open(self.inputFilePath, 'w') as mopacFile:
             mopacFile.write(input_string)
             mopacFile.write('\n')
-    
-    def parseArc(outputFile):
-        """
-        This can be reworked with regex to be more general
-        """
-        arcFile = outputFile.split('.')[0] + '.arc'
-        geomLines = list()
-        readFile = file(arcFile)
-        for line in reversed(readFile.readlines()):
-            if line.startswith('geo_ref'):
-                break
-            else:
-                geomLines.append(line)
-    
-        geomLines.reverse()
-    
-        return geomLines
     
     def writeTSInputFile(self, doubleEnd=False):
         

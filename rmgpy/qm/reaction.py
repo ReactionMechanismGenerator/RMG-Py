@@ -391,8 +391,8 @@ class QMReaction:
             shutil.copy(logFilePath, logFilePath+'.product.out')
                 
             print "Product geometry referencing reactant"
-            self.writeReferenceFile(freezeAtoms=labels)#inputFilePath, molFilePathForCalc, geometry, attempt, outputFile=None)
-            self.writeGeoRefInputFile(pGeom, freezeAtoms=labels, otherSide=True)#inputFilePath, molFilePathForCalc, refFilePath, geometry)
+            self.writeReferenceFile()#inputFilePath, molFilePathForCalc, geometry, attempt, outputFile=None)
+            self.writeGeoRefInputFile(pGeom, otherSide=True)#inputFilePath, molFilePathForCalc, refFilePath, geometry)
             logFilePath = self.runDouble(pGeom.getFilePath(self.inputFileExtension))
             shutil.copy(logFilePath, logFilePath+'.ref1.out')
                 
@@ -402,8 +402,8 @@ class QMReaction:
             
             # Reactant that references the product geometry
             print "Reactant referencing product on slope"
-            self.writeReferenceFile(freezeAtoms=labels, otherGeom=pGeom)
-            self.writeGeoRefInputFile(pGeom, freezeAtoms=labels)
+            self.writeReferenceFile(otherGeom=pGeom)
+            self.writeGeoRefInputFile(pGeom)
             logFilePath = self.runDouble(self.inputFilePath)
             shutil.copy(logFilePath, logFilePath+'.ref2.out')
             
@@ -416,23 +416,6 @@ class QMReaction:
             self.writeSaddleInputFile(pGeom)
             self.runDouble(self.inputFilePath)
             return True, self.geometry, labels, notes
-            # # Optimize the transition state using the TS protocol
-            # self.writeInputFile(1, fromQST2=True)
-            # converged, cartesian = self.run()
-            # 
-            # if converged:
-            #     notes = notes + 'Transition state converged\n'
-            #     self.writeIRCFile()
-            #     rightTS = self.runIRC()
-            #     if rightTS:
-            #         notes = notes + 'Correct geometry found\n'
-            #         return True, self.geometry, labels, notes
-            #     else:
-            #         notes = notes + 'Failure at IRC\n'
-            #         return False, None, None, notes
-            # else:
-            #     notes = notes + 'Transition state not converged\n'
-            #     return False, None, None, notes
         elif self.settings.software.lower() == 'gaussian':
             # all below needs to change
             print "Optimizing reactant geometry"
