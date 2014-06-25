@@ -586,8 +586,10 @@ class SolvationDatabase(object):
         
         # Check the library first
         soluteData = self.getSoluteDataFromLibrary(species, self.soluteLibrary)
-        if soluteData is not None: 
-            soluteData[0].comment = 'solute'
+        if soluteData is not None:
+            assert len(soluteData)==3, "soluteData should be a tuple (soluteData, library, entry)"
+            soluteData[0].comment += "Data from solute library"
+            soluteData = soluteData[0]
         else:
             # Solute not found in any loaded libraries, so estimate
             soluteData = self.getSoluteDataFromGroups(species)
