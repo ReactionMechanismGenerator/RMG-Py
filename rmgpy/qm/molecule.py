@@ -161,7 +161,7 @@ class Geometry:
         
         atomsymbols = []
         for item in cclibData.atomnos:
-            atomsymbols.append(getElement(item).symbol)
+            atomsymbols.append(getElement(int(item)).symbol)
         
         return atomsymbols, cclibData.atomcoords[-1]
     
