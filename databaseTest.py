@@ -60,8 +60,35 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
             test.description = test_name
             self.compat_func_name = test_name
             yield test, family_name
-
+        
+        for group_name, group in self.database.thermo.groups.iteritems():
+            test = lambda x: self.general_checkNodesFoundInTree(group_name, group)
+            test_name = "Thermo groups {0}: nodes are in the tree with proper parents?".format(group_name)
+            test.description = test_name
+            self.compat_func_name = test_name
+            yield test, group_name
+            
+        for group_name, group in self.database.solvation.groups.iteritems():
+            test = lambda x: self.general_checkNodesFoundInTree(group_name, group)
+            test_name = "Solvation groups {0}: nodes are in the tree with proper parents?".format(group_name)
+            test.description = test_name
+            self.compat_func_name = test_name
+            yield test, group_name
     
+        for group_name, group in self.database.statmech.groups.iteritems():
+            test = lambda x: self.general_checkNodesFoundInTree(group_name, group)
+            test_name = "Statmech groups {0}: nodes are in the tree with proper parents?".format(group_name)
+            test.description = test_name
+            self.compat_func_name = test_name
+            yield test, group_name
+            
+        for group_name, group in self.database.transport.groups.iteritems():
+            test = lambda x: self.general_checkNodesFoundInTree(group_name, group)
+            test_name = "Transport groups {0}: nodes are in the tree with proper parents?".format(group_name)
+            test.description = test_name
+            self.compat_func_name = test_name
+            yield test, group_name
+            
     def kinetics_checkCorrectNumberofNodesInRules(self, family_name):
         """
         This test ensures that each rate rule contains the proper number of nodes according to the family it originates.
@@ -138,6 +165,19 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
                 if isinstance(ancestorNode, Group):
                     nose.tools.assert_true(family.matchNodeToChild(ancestorNode, childNode),
                                     "In {family} family, group {ancestor} is not a proper ancestor of its child {child}.".format(family=family_name, ancestor=ancestorNode, child=nodeName))
+                
+    def general_checkNodesFoundInTree(self, group_name, group):
+        """
+        This test checks whether nodes are found in the tree, with proper parents.
+        """
+        for nodeName, nodeGroup in group.entries.iteritems():
+            ascendParent = nodeGroup
+            # Check whether the node has proper parents unless it is the top reactant or product node
+            while ascendParent not in group.top:
+                child = ascendParent
+                ascendParent = ascendParent.parent
+                nose.tools.assert_true(ascendParent is not None, "Node {node} in {group} group was found in the tree without a proper parent.".format(node=child, group=group_name))
+                nose.tools.assert_true(child in ascendParent.children, "Node {node} in {group} group was found in the tree without a proper parent.".format(node=nodeName, group=group_name))
 
 if __name__ == '__main__':
     nose.run(argv=[__file__, '-v', '--nologcapture'], defaultTest=__name__)
