@@ -397,7 +397,7 @@ class StatMechJob:
         for mode in conformer.modes:
             if isinstance(mode, HarmonicOscillator):
                 mode.frequencies = (frequencies * self.frequencyScaleFactor,"cm^-1")
-                
+        
         self.species.conformer = conformer
         
     def getZPEfromfrequencies(self, frequencies):
