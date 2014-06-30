@@ -26,8 +26,9 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
         databaseDirectory = settings['database.directory']
         cls.database = RMGDatabase()
         cls.database.load(databaseDirectory, kineticsFamilies='all')
-        
-    def test_generator(self):
+    
+    # These are generators, that call the methods below.
+    def test_kinetics(self):
         for family_name, family in self.database.kinetics.families.iteritems():
 
             test = lambda x: self.kinetics_checkCorrectNumberofNodesInRules(family_name)
@@ -54,27 +55,29 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
             self.compat_func_name = test_name
             yield test, family_name
 
-
             test = lambda x: self.kinetics_checkChildParentRelationships(family_name)
             test_name = "Kinetics family {0}: parent-child relationships are correct?".format(family_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, family_name
         
+    def test_thermo(self):
         for group_name, group in self.database.thermo.groups.iteritems():
             test = lambda x: self.general_checkNodesFoundInTree(group_name, group)
             test_name = "Thermo groups {0}: nodes are in the tree with proper parents?".format(group_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, group_name
-            
+
+    def test_solvation(self):
         for group_name, group in self.database.solvation.groups.iteritems():
             test = lambda x: self.general_checkNodesFoundInTree(group_name, group)
             test_name = "Solvation groups {0}: nodes are in the tree with proper parents?".format(group_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, group_name
-    
+
+    def test_statmech(self):
         for group_name, group in self.database.statmech.groups.iteritems():
             test = lambda x: self.general_checkNodesFoundInTree(group_name, group)
             test_name = "Statmech groups {0}: nodes are in the tree with proper parents?".format(group_name)
@@ -82,13 +85,15 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
             self.compat_func_name = test_name
             yield work_in_progress(test), group_name
 
+    def test_transport(self):
         for group_name, group in self.database.transport.groups.iteritems():
             test = lambda x: self.general_checkNodesFoundInTree(group_name, group)
             test_name = "Transport groups {0}: nodes are in the tree with proper parents?".format(group_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, group_name
-            
+
+    # These are the actual tests, that don't start with a "test_" name:
     def kinetics_checkCorrectNumberofNodesInRules(self, family_name):
         """
         This test ensures that each rate rule contains the proper number of nodes according to the family it originates.
@@ -124,7 +129,7 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
                 ascendParent = ascendParent.parent
                 nose.tools.assert_true(ascendParent is not None, "Group {group} in {family} family was found in the tree without a proper parent.".format(group=child, family=family_name))
                 nose.tools.assert_true(child in ascendParent.children, "Group {group} in {family} family was found in the tree without a proper parent.".format(group=nodeName, family=family_name))
-                    
+
     def kinetics_checkGroupsNonidentical(self, family_name):
         """
         This test checks that the groups are non-identical.
@@ -138,7 +143,7 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
             del entriesCopy[nodeName]
             for nodeNameOther, nodeGroupOther in entriesCopy.iteritems():
                 nose.tools.assert_false(family.matchNodeToNode(nodeGroup, nodeGroupOther), "Group {group} in {family} family was found to be identical to group {groupOther}".format(group=nodeName, family=family_name, groupOther=nodeNameOther))
-    
+
     def kinetics_checkChildParentRelationships(self, family_name):
         """
         This test checks that groups' parent-child relationships are correct in the database.
@@ -165,7 +170,7 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
                 if isinstance(ancestorNode, Group):
                     nose.tools.assert_true(family.matchNodeToChild(ancestorNode, childNode),
                                     "In {family} family, group {ancestor} is not a proper ancestor of its child {child}.".format(family=family_name, ancestor=ancestorNode, child=nodeName))
-                
+
     def general_checkNodesFoundInTree(self, group_name, group):
         """
         This test checks whether nodes are found in the tree, with proper parents.
