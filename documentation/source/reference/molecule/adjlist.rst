@@ -7,6 +7,15 @@ Adjacency Lists
 
 .. module:: rmgpy.molecule.adjlist
 
+
+.. note::
+    The adjacency list syntax changed in July 2014.
+    The minimal requirement for most translations is to prefix the number
+    of unpaired electrons with the letter `u`.
+    The new syntax, however, allows much
+    greater flexibility, including definition of lone pairs, partial charges, 
+    wildcards, and molecule multiplicities.
+
 .. note::
     To quickly visualize any adjacency list, or to generate an adjacency list from
     other types of molecular representations such as SMILES, InChI, or even common
