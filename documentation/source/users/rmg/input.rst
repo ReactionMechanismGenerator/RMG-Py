@@ -163,7 +163,7 @@ The label, reactive or inert, and structure of each reactant must be specified.
 The label field will be used throughout your mechanism to identify the species. Inert
 species in the model cab be defined by setting reactive to be ``False``, for all
 other species the reactive status must be set as ``True``. The structure of the 
-species can be defined using either by using SMILES or adjacencyList.  
+species can be defined using either by using SMILES or :ref:`adjacencyList <rmgpy.molecule.adjlist>`.  
 
 The following is an example of a typical species item, based on methane using SMILE or adjacency list to define the structure::
 
