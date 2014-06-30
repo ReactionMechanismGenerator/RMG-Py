@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os
-from unittest import TestCase
+from unittest import TestCase, TestLoader, TextTestRunner
 from external.wip import work_in_progress
 
 from rmgpy import settings
@@ -14,14 +14,65 @@ from rmgpy.molecule.molecule import Molecule
 
 class TestSoluteDatabase(TestCase):
     
+    def setUp(self):
+        self.database = SolvationDatabase()
+        self.database.load(os.path.join(settings['database.directory'], 'solvation'))
+    
     def runTest(self):
         pass
+    
+    def testSoluteLibrary(self):
+        "Test we can obtain solute parameters from a library"
+        species = Species(molecule=[Molecule(SMILES='COC=O')]) #methyl formate - we know this is in the solute library
+        
+        libraryData = self.database.getSoluteDataFromLibrary(species, self.database.soluteLibrary)
+        self.assertEqual(len(libraryData), 3)
+        
+        soluteData = self.database.getSoluteData(species)
+        self.assertTrue(isinstance(soluteData, SoluteData))
+        
+        S = soluteData.S
+        self.assertEqual(S, 0.68)
+        self.assertTrue(soluteData.V is not None)
+     
+    def testMcGowan(self):
+        "Test we can calculate and set the McGowan volume for species containing H,C,O,N or S"
+        self.testCases = [
+                          ['CCCCCCCC', 1.2358], #n-octane, in library
+                          ['C(CO)O', 0.5078], #ethylene glycol
+                          ['CC#N', 0.4042], #acetonitrile
+                          ['CCS', 0.5539] #ethanethiol
+                           ]
+        
+        for smiles, volume in self.testCases:
+            species = Species(molecule=[Molecule(SMILES=smiles)])
+            soluteData = self.database.getSoluteData(species)
+            soluteData.setMcGowanVolume(species) # even if it was found in library, recalculate
+            self.assertTrue(soluteData.V is not None) # so if it wasn't found in library, we should have calculated it
+            self.assertAlmostEqual(soluteData.V, volume) # the volume is what we expect given the atoms and bonds 
+            
+    
+    def testDiffusivity(self):
+        "Test that for a given solvent viscosity and temperature we can calculate a solute's diffusivity"
+        species = Species(molecule=[Molecule(SMILES='COC=O')])
+        soluteData = self.database.getSoluteData(species)
+        T = 298
+        solventViscosity = 0.001
+        D = soluteData.getStokesDiffusivity(T, solventViscosity)
+        self.assertEqual(soluteData.V, 0.4648)
+        self.assertAlmostEqual((D*1E12), 0.00000979)
+        
+    def testSolventLibrary(self):
+        "Test we can obtain solvent parameters from a library"
+        pass
+        
+    def testViscosity(self):
+        "Test we can calculate the solvent viscosity given a temperature and its A-E correlation parameters"
+        solventData = self.database.getSolventData('water')  
+        self.assertAlmostEqual(solventData.getSolventViscosity(298), 0.0009155)
 
     def testSoluteGeneration(self):
         "Test we can estimate Abraham solute paramaters correctly"
-        
-        self.database = SolvationDatabase()
-        self.database.load(os.path.join(settings['database.directory'], 'solvation'))
         
         self.testCases = [
         # from RMG-Java test runs by RWest (mostly in agreement with Jalan et. al. supplementary data)
@@ -58,8 +109,6 @@ class TestSoluteDatabase(TestCase):
     @work_in_progress
     def testCorrectionGeneration(self):
         "Test we can estimate solvation thermochemistry."
-        self.database = SolvationDatabase()
-        self.database.load(os.path.join(settings['database.directory'], 'solvation'))
         self.testCases = [
         # solventName, soluteName, soluteSMILES, Hsolv, Gsolv, Ssolv
         ['water', 'methane', 'C', -12000, 2000*4.184, None],
@@ -107,6 +156,5 @@ class TestSoluteDatabase(TestCase):
 #####################################################
 
 if __name__ == '__main__':
-    myTest = TestSoluteDatabase()
-    #myTest.testSoluteGeneration()
-    myTest.testCorrectionGeneration()
+    suite = TestLoader().loadTestsFromTestCase(TestSoluteDatabase)
+    TextTestRunner(verbosity=2).run(suite)
