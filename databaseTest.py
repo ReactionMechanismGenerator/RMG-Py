@@ -80,8 +80,8 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
             test_name = "Statmech groups {0}: nodes are in the tree with proper parents?".format(group_name)
             test.description = test_name
             self.compat_func_name = test_name
-            yield test, group_name
-            
+            yield work_in_progress(test), group_name
+
         for group_name, group in self.database.transport.groups.iteritems():
             test = lambda x: self.general_checkNodesFoundInTree(group_name, group)
             test_name = "Transport groups {0}: nodes are in the tree with proper parents?".format(group_name)
