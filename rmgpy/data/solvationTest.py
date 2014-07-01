@@ -9,6 +9,7 @@ from rmgpy import settings
 from rmgpy.species import Species
 from rmgpy.data.solvation import *
 from rmgpy.molecule.molecule import Molecule
+from rmgpy.data.base import DatabaseError
 
 ###################################################
 
@@ -59,12 +60,14 @@ class TestSoluteDatabase(TestCase):
         T = 298
         solventViscosity = 0.001
         D = soluteData.getStokesDiffusivity(T, solventViscosity)
-        self.assertEqual(soluteData.V, 0.4648)
         self.assertAlmostEqual((D*1E12), 0.00000979)
         
     def testSolventLibrary(self):
         "Test we can obtain solvent parameters from a library"
-        pass
+        solventData = self.database.getSolventData('water')
+        self.assertTrue(solventData is not None)
+        self.assertEqual(solventData.s_h, 2.836)
+        self.assertRaises(DatabaseError, self.database.getSolventData, 'orange_juice')
         
     def testViscosity(self):
         "Test we can calculate the solvent viscosity given a temperature and its A-E correlation parameters"

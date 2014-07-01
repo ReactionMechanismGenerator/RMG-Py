@@ -40,6 +40,7 @@ import logging
 import numpy
 from copy import copy, deepcopy
 
+from copy import deepcopy
 from base import Database, Entry, makeLogicNode, DatabaseError
 
 import rmgpy.constants as constants
@@ -475,7 +476,11 @@ class SolvationDatabase(object):
         self.loadGroups(os.path.join(path, 'groups'))
         
     def getSolventData(self, solvent_name):
-        return self.solventLibrary.getSolventData(solvent_name)
+        try:
+            solventData = self.solventLibrary.getSolventData(solvent_name)
+        except:
+            raise DatabaseError('Solvent {0!r} not found in database'.format(solvent_name))
+        return solventData
         
         
     def loadGroups(self, path):
