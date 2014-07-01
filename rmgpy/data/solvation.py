@@ -434,8 +434,9 @@ class SolvationDatabase(object):
     """
 
     def __init__(self):
-        self.solventLibrary = SolventLibrary()
-        self.soluteLibrary = SoluteLibrary()
+        self.libraries = {}
+        self.libraries['solvent'] = SolventLibrary()
+        self.libraries['solute'] = SoluteLibrary()
         self.groups = {}
         self.local_context = {
             'SoluteData': SoluteData,
@@ -470,14 +471,14 @@ class SolvationDatabase(object):
         Load the solvent and solute libraries, then the solute groups.
         """
         
-        self.solventLibrary.load(os.path.join(path,'libraries','solvent.py'))
-        self.soluteLibrary.load(os.path.join(path,'libraries','solute.py'))
+        self.libraries['solvent'].load(os.path.join(path,'libraries','solvent.py'))
+        self.libraries['solute'].load(os.path.join(path,'libraries','solute.py'))
          
         self.loadGroups(os.path.join(path, 'groups'))
         
     def getSolventData(self, solvent_name):
         try:
-            solventData = self.solventLibrary.getSolventData(solvent_name)
+            solventData = self.libraries['solvent'].getSolventData(solvent_name)
         except:
             raise DatabaseError('Solvent {0!r} not found in database'.format(solvent_name))
         return solventData
@@ -512,8 +513,8 @@ class SolvationDatabase(object):
         points to the top-level folder of the solute libraries.
         """
         if not os.path.exists(path): os.mkdir(path)
-        self.solventLibrary.save(os.path.join(path,'solvent.py'))
-        self.soluteLibrary.save(os.path.join(path,'solute.py'))
+        self.libraries['solvent'].save(os.path.join(path,'solvent.py'))
+        self.libraries['solute'].save(os.path.join(path,'solute.py'))
         
     def saveGroups(self, path):
         """
@@ -590,7 +591,7 @@ class SolvationDatabase(object):
         soluteData = None
         
         # Check the library first
-        soluteData = self.getSoluteDataFromLibrary(species, self.soluteLibrary)
+        soluteData = self.getSoluteDataFromLibrary(species, self.libraries['solute'])
         if soluteData is not None:
             assert len(soluteData)==3, "soluteData should be a tuple (soluteData, library, entry)"
             soluteData[0].comment += "Data from solute library"

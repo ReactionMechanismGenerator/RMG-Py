@@ -26,7 +26,7 @@ class TestSoluteDatabase(TestCase):
         "Test we can obtain solute parameters from a library"
         species = Species(molecule=[Molecule(SMILES='COC=O')]) #methyl formate - we know this is in the solute library
         
-        libraryData = self.database.getSoluteDataFromLibrary(species, self.database.soluteLibrary)
+        libraryData = self.database.getSoluteDataFromLibrary(species, self.database.libraries['solute'])
         self.assertEqual(len(libraryData), 3)
         
         soluteData = self.database.getSoluteData(species)
