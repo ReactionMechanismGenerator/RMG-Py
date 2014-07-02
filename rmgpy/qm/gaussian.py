@@ -518,21 +518,15 @@ class GaussianTS(QMReaction, Gaussian):
                 output.append("{0:8s} {1}".format(atomnos[i], line))
                 atomCount += 1
         elif fromInt:
-            molfile = self.getFilePath('int3')
-            if os.path.exists(molfile):
-                atomline = re.compile('\s*([A-Za-z]+)\s+([\- ][0-9.]+\s+[\-0-9.]+\s+[\-0-9.]+)')
-                
-                output = ['', self.geometry.uniqueID, '' ]
-                output.append("{charge}   {mult}".format(charge=0, mult=(self.geometry.molecule.getRadicalCount() + 1) ))
-                
-                atomCount = 0
-                with open(molfile) as molinput:
-                    for line in molinput:
-                        match = atomline.match(line)
-                        if match:
-                            output.append("{0:8s} {1}".format(match.group(1), match.group(2)))
-                            atomCount += 1
-        elif attempt > 1:
+            output = ['', self.geometry.uniqueID, '' ]
+            output.append("{charge}   {mult}".format(charge=0, mult=self.geometry.multiplicity ))
+            
+            atomsymbols, atomcoords = self.geometry.parseLOG(self.outputFilePath)
+            atomCount = 0
+            for symbol, coordinates in zip(atomsymbols, atomcoords):
+                output.append("{0:8s} {1:+.6f}  {2:+.6f}  {3:+.6f}".format(symbol, coordinates[0], coordinates[1], coordinates[2]).replace('+',' '))
+                atomCount += 1
+        elif attempt > 2:
             # Until checkpointing is fixed, do the following
             output = ['', self.geometry.uniqueID, '' ]
             output.append("{charge}   {mult}".format(charge=0, mult=(self.geometry.molecule.getRadicalCount() + 1) ))
