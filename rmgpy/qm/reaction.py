@@ -543,15 +543,15 @@ class QMReaction:
         rRDMol, rBM, rMult, self.geometry = self.generateBoundsMatrix(reactant)
         pRDMol, pBM, pMult, pGeom = self.generateBoundsMatrix(product)
         
-        if not os.path.exists(self.getFilePath('peak.xyz')):
-            print "Reactant original matrix (smoothed)"
-            print matrixToString(rBM)
-            print "Product original matrix (smoothed)"
-            print matrixToString(pBM)
+        print "Reactant original matrix (smoothed)"
+        print matrixToString(rBM)
+        print "Product original matrix (smoothed)"
+        print matrixToString(pBM)
+        
+        self.geometry.uniqueID = self.uniqueID
+        rBM, pBM, labels, atomMatch = self.editDoubMatrix(reactant, product, rBM, pBM)
             
-            self.geometry.uniqueID = self.uniqueID
-            rBM, pBM, labels, atomMatch = self.editDoubMatrix(reactant, product, rBM, pBM)
-            
+        if not os.path.exists(self.getFilePath('peak.xyz')):            
             print "Reactant edited matrix"
             print matrixToString(rBM)
             print "Product edited matrix"
