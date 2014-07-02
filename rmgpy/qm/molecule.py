@@ -208,6 +208,27 @@ class Geometry:
                     
         return atomsymbols, atomcoords
     
+    def parseXYZ(self, filePath):
+        """
+        Parses `.xyz` file formats, files with molecular cartesian coordinates, and returns the geometry.
+        """
+        atomline = re.compile('\s*([A-Za-z])\s+([\- ][0-9.]+\s+[\-0-9.]+\s+[\-0-9.]+)')
+        
+        atomCount = 0
+        atomsymbols = []
+        atomcoords = []
+        with open(filePath) as molinput:
+            for line in molinput:
+                match = atomline.match(line)
+                if match:
+                    atomsymbols.append(match.group(1))
+                    atomcoords.append([float(i) for i in match.group(2).split()])
+                    atomCount += 1
+        
+        atomcoords = numpy.array(atomcoords)
+                    
+        return atomsymbols, atomcoords 
+    
     def saveCoordinatesFromRDMol(self, rdmol, minEid, rdAtIdx):
         # Save xyz coordinates on each atom in molecule ****
         for atom in self.molecule.atoms:

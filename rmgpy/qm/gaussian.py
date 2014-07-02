@@ -440,7 +440,7 @@ class GaussianTS(QMReaction, Gaussian):
                    'Error in internal coordinate system.',
                    ]
     
-    def writeInputFile(self, attempt, fromSddl=False, fromQST2=False, fromInt=False):
+    def writeInputFile(self, attempt, fromSddl=False, fromQST2=False, fromInt=False, fromNEB=False):
         """
         Using the :class:`Geometry` object, write the input file
         for the `attmept`th attempt.
@@ -463,6 +463,17 @@ class GaussianTS(QMReaction, Gaussian):
                     if match:
                         output.append("{0:8s} {1}  {2}  {3}".format(match.group(1), match.group(2), match.group(4), match.group(6)))
                         atomCount += 1
+        elif fromNEB:
+            output = ['', self.geometry.uniqueID, '' ]
+            output.append("{charge}   {mult}".format(charge=0, mult=self.geometry.multiplicity ))
+            
+            filePath = self.getFilePath('peak.xyz')
+            assert os.path.exists(filePath)
+            atomsymbols, atomcoords = self.geometry.parseXYZ(filePath)
+            atomCount = 0
+            for symbol, coordinates in zip(atomsymbols, atomcoords):
+                output.append("{0:8s} {1:+.6f}  {2:+.6f}  {3:+.6f}".format(symbol, coordinates[0], coordinates[1], coordinates[2]).replace('+',' '))
+                atomCount += 1
         elif fromQST2:
             # output = []
             # atomCount = len(self.geometry.molecule.atoms)

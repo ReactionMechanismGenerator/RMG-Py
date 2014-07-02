@@ -533,179 +533,181 @@ class QMReaction:
         """
         assert doubleEnd is not None and len(doubleEnd)==2, "You must provide the two ends of the search using 'doubleEnd' argument."
         notes = ''
-        if os.path.exists(os.path.join(self.file_store_path, self.uniqueID + '.data')):
+        if os.path.exists(self.getFilePath('.data')):
             logging.info("Not generating TS geometry because it's already done.")
             return True, None, None, "Already done!"
-    
+         
         reactant = doubleEnd[0]
         product = doubleEnd[1]
-    
+        
         rRDMol, rBM, rMult, self.geometry = self.generateBoundsMatrix(reactant)
         pRDMol, pBM, pMult, pGeom = self.generateBoundsMatrix(product)
         
-        print "Reactant original matrix (smoothed)"
-        print matrixToString(rBM)
-        print "Product original matrix (smoothed)"
-        print matrixToString(pBM)
-        
-        self.geometry.uniqueID = self.uniqueID
-        rBM, pBM, labels, atomMatch = self.editDoubMatrix(reactant, product, rBM, pBM)
-        
-        print "Reactant edited matrix"
-        print matrixToString(rBM)
-        print "Product edited matrix"
-        print matrixToString(pBM)
-        
-        reactantSmoothingSuccessful = rdkit.DistanceGeometry.DoTriangleSmoothing(rBM)
-        productSmoothingSuccessful  = rdkit.DistanceGeometry.DoTriangleSmoothing(pBM)
-        
-        if reactantSmoothingSuccessful:
-            print "Reactant matrix is embeddable"
-            print "Smoothed reactant matrix"
+        if not os.path.exists(self.getFilePath('peak.xyz')):
+            print "Reactant original matrix (smoothed)"
             print matrixToString(rBM)
-        else:
-            print "Reactant matrix is NOT embeddable"
-        if productSmoothingSuccessful:
-            print "Product matrix is embeddable"
-            print "Smoothed product matrix"
+            print "Product original matrix (smoothed)"
             print matrixToString(pBM)
-        else:
-            print "Product matrix is NOT embeddable"
             
-        if not (reactantSmoothingSuccessful and productSmoothingSuccessful):
-            notes = 'Bounds matrix editing failed\n'
-            return False, None, None, notes
-        
-        atoms = len(reactant.atoms)
-        distGeomAttempts = 15*(atoms-3) # number of conformers embedded from the bounds matrix
-         
-        rdmol, minEid = self.geometry.rd_embed(rRDMol, distGeomAttempts, bm=rBM, match=atomMatch)
-        if not rdmol:
-            print "RDKit failed all attempts to embed"
-            notes = notes + "RDKit failed all attempts to embed"
-            return False, None, None, notes
-        rRDMol = rdkit.Chem.MolFromMolFile(self.geometry.getCrudeMolFilePath(), removeHs=False)
-        # Make product pRDMol a copy of the reactant rRDMol geometry
-        for atom in reactant.atoms:
-            i = atom.sortingLabel
-            pRDMol.GetConformer(0).SetAtomPosition(i, rRDMol.GetConformer(0).GetAtomPosition(i))
-    
-        # don't re-embed the product, just optimize at UFF, constrained with the correct bounds matrix
-        pRDMol, minEid = pGeom.optimize(pRDMol, boundsMatrix=pBM, atomMatch=atomMatch)
-        pGeom.writeMolFile(pRDMol, pGeom.getRefinedMolFilePath(), minEid)
-             
-        # if os.path.exists(self.outputFilePath):
-        #     logging.info("File {0} already exists.".format(self.outputFilePath))
-        #     # I'm not sure why that should be a problem, but we used to do nothin in this case
-        #     notes = notes + 'Already have an output, check the IRC\n'
-        #     rightTS = self.verifyIRCOutputFile()
-        #     if rightTS:
-        #         self.writeRxnOutputFile(labels)
-        #         return True, self.geometry, labels, notes
-        #     else:
-        #         return False, None, None, notes
-    
-        if self.settings.software.lower() == 'gaussian':
-            # all below needs to change
-            if os.path.exists(self.getFilePath('.log.reactant.log')):
-                print "Already have reactant"
-                rightReactant = self.checkGeometry(self.getFilePath('.log.reactant.log'), self.geometry.molecule)
+            self.geometry.uniqueID = self.uniqueID
+            rBM, pBM, labels, atomMatch = self.editDoubMatrix(reactant, product, rBM, pBM)
+            
+            print "Reactant edited matrix"
+            print matrixToString(rBM)
+            print "Product edited matrix"
+            print matrixToString(pBM)
+            
+            reactantSmoothingSuccessful = rdkit.DistanceGeometry.DoTriangleSmoothing(rBM)
+            productSmoothingSuccessful  = rdkit.DistanceGeometry.DoTriangleSmoothing(pBM)
+            
+            if reactantSmoothingSuccessful:
+                print "Reactant matrix is embeddable"
+                print "Smoothed reactant matrix"
+                print matrixToString(rBM)
             else:
+                print "Reactant matrix is NOT embeddable"
+            if productSmoothingSuccessful:
+                print "Product matrix is embeddable"
+                print "Smoothed product matrix"
+                print matrixToString(pBM)
+            else:
+                print "Product matrix is NOT embeddable"
+                
+            if not (reactantSmoothingSuccessful and productSmoothingSuccessful):
+                notes = 'Bounds matrix editing failed\n'
+                return False, None, None, notes
+            
+            atoms = len(reactant.atoms)
+            distGeomAttempts = 15*(atoms-3) # number of conformers embedded from the bounds matrix
+             
+            rdmol, minEid = self.geometry.rd_embed(rRDMol, distGeomAttempts, bm=rBM, match=atomMatch)
+            if not rdmol:
+                print "RDKit failed all attempts to embed"
+                notes = notes + "RDKit failed all attempts to embed"
+                return False, None, None, notes
+            rRDMol = rdkit.Chem.MolFromMolFile(self.geometry.getCrudeMolFilePath(), removeHs=False)
+            # Make product pRDMol a copy of the reactant rRDMol geometry
+            for atom in reactant.atoms:
+                i = atom.sortingLabel
+                pRDMol.GetConformer(0).SetAtomPosition(i, rRDMol.GetConformer(0).GetAtomPosition(i))
+        
+            # don't re-embed the product, just optimize at UFF, constrained with the correct bounds matrix
+            pRDMol, minEid = pGeom.optimize(pRDMol, boundsMatrix=pBM, atomMatch=atomMatch)
+            pGeom.writeMolFile(pRDMol, pGeom.getRefinedMolFilePath(), minEid)
+                 
+            # if os.path.exists(self.outputFilePath):
+            #     logging.info("File {0} already exists.".format(self.outputFilePath))
+            #     # I'm not sure why that should be a problem, but we used to do nothin in this case
+            #     notes = notes + 'Already have an output, check the IRC\n'
+            #     rightTS = self.verifyIRCOutputFile()
+            #     if rightTS:
+            #         self.writeRxnOutputFile(labels)
+            #         return True, self.geometry, labels, notes
+            #     else:
+            #         return False, None, None, notes
+        
+            if self.settings.software.lower() == 'gaussian':
+                # all below needs to change
+                if os.path.exists(self.getFilePath('.log.reactant.log')):
+                    print "Already have reactant"
+                    rightReactant = self.checkGeometry(self.getFilePath('.log.reactant.log'), self.geometry.molecule)
+                else:
+                    print "Optimizing reactant geometry"
+                    self.writeGeomInputFile(freezeAtoms=labels)
+                    logFilePath = self.runDouble(self.inputFilePath)
+                    rightReactant = self.checkGeometry(logFilePath, self.geometry.molecule)
+                    shutil.copy(logFilePath, logFilePath+'.reactant.log')
+                
+                if os.path.exists(pGeom.getFilePath('.log.product.log')):
+                    print "Already have product"
+                    rightProduct = self.checkGeometry(pGeom.getFilePath('.log.product.log'), pGeom.molecule)
+                else:
+                    print "Optimizing product geometry"
+                    self.writeGeomInputFile(freezeAtoms=labels, otherGeom=pGeom)
+                    logFilePath = self.runDouble(pGeom.getFilePath(self.inputFileExtension))
+                    rightProduct = self.checkGeometry(logFilePath, pGeom.molecule)
+                    shutil.copy(logFilePath, logFilePath+'.product.log')
+                
+                if not (rightReactant and rightProduct):
+                    if not rightReactant:
+                        print "Reactant geometry failure, see:" + self.settings.fileStore
+                        notes = notes + 'Reactant geometry failure\n'
+                    else:
+                        print "Reactant geometry success"
+                    
+                    if not rightProduct:
+                        print "Product geometry failure, see:" + self.settings.fileStore
+                        notes = notes + 'Product geometry failure\n'
+                    else:
+                        print "Product geometry success"
+                    # Don't run if the geometries have optimized to another geometry
+                    return False, None, None, notes
+            elif self.settings.software.lower() == 'mopac':
                 print "Optimizing reactant geometry"
                 self.writeGeomInputFile(freezeAtoms=labels)
                 logFilePath = self.runDouble(self.inputFilePath)
-                rightReactant = self.checkGeometry(logFilePath, self.geometry.molecule)
-                shutil.copy(logFilePath, logFilePath+'.reactant.log')
-            
-            if os.path.exists(pGeom.getFilePath('.log.product.log')):
-                print "Already have product"
-                rightProduct = self.checkGeometry(pGeom.getFilePath('.log.product.log'), pGeom.molecule)
-            else:
+                shutil.copy(logFilePath, logFilePath+'.reactant.out')
+                
                 print "Optimizing product geometry"
                 self.writeGeomInputFile(freezeAtoms=labels, otherGeom=pGeom)
                 logFilePath = self.runDouble(pGeom.getFilePath(self.inputFileExtension))
-                rightProduct = self.checkGeometry(logFilePath, pGeom.molecule)
-                shutil.copy(logFilePath, logFilePath+'.product.log')
-            
-            if not (rightReactant and rightProduct):
-                if not rightReactant:
-                    print "Reactant geometry failure, see:" + self.settings.fileStore
-                    notes = notes + 'Reactant geometry failure\n'
-                else:
-                    print "Reactant geometry success"
+                shutil.copy(logFilePath, logFilePath+'.product.out')
                 
-                if not rightProduct:
-                    print "Product geometry failure, see:" + self.settings.fileStore
-                    notes = notes + 'Product geometry failure\n'
-                else:
-                    print "Product geometry success"
-                # Don't run if the geometries have optimized to another geometry
-                return False, None, None, notes
-        elif self.settings.software.lower() == 'mopac':
-            print "Optimizing reactant geometry"
-            self.writeGeomInputFile(freezeAtoms=labels)
-            logFilePath = self.runDouble(self.inputFilePath)
-            shutil.copy(logFilePath, logFilePath+'.reactant.out')
+                # print "Product geometry referencing reactant"
+                # self.writeReferenceFile(freezeAtoms=labels)#inputFilePath, molFilePathForCalc, geometry, attempt, outputFile=None)
+                # self.writeGeoRefInputFile(pGeom, freezeAtoms=labels, otherSide=True)#inputFilePath, molFilePathForCalc, refFilePath, geometry)
+                # logFilePath = self.runDouble(pGeom.getFilePath(self.inputFileExtension))
+                # shutil.copy(logFilePath, logFilePath+'.ref1.out')
+                #     
+                # if not os.path.exists(pGeom.getFilePath('.arc')):
+                #     notes = notes + 'product .arc file does not exits\n'
+                #     return False, None, None, notes
+                # 
+                # # Reactant that references the product geometry
+                # print "Reactant referencing product on slope"
+                # self.writeReferenceFile(freezeAtoms=labels, otherGeom=pGeom)
+                # self.writeGeoRefInputFile(pGeom, freezeAtoms=labels)
+                # logFilePath = self.runDouble(self.inputFilePath)
+                # shutil.copy(logFilePath, logFilePath+'.ref2.out')
+                # 
+                # if not os.path.exists(self.getFilePath('.arc')):
+                #     notes = notes + 'reactant .arc file does not exits\n'
+                #     return False, None, None, notes
+                    
+            print "Running NEB from optimized geometries"
+            # Atomic Simulation Environment can take the two geometries and
+            # do the calculation on its own
+            self.runNEB(pGeom)
             
-            print "Optimizing product geometry"
-            self.writeGeomInputFile(freezeAtoms=labels, otherGeom=pGeom)
-            logFilePath = self.runDouble(pGeom.getFilePath(self.inputFileExtension))
-            shutil.copy(logFilePath, logFilePath+'.product.out')
-            
-            # print "Product geometry referencing reactant"
-            # self.writeReferenceFile(freezeAtoms=labels)#inputFilePath, molFilePathForCalc, geometry, attempt, outputFile=None)
-            # self.writeGeoRefInputFile(pGeom, freezeAtoms=labels, otherSide=True)#inputFilePath, molFilePathForCalc, refFilePath, geometry)
-            # logFilePath = self.runDouble(pGeom.getFilePath(self.inputFileExtension))
-            # shutil.copy(logFilePath, logFilePath+'.ref1.out')
-            #     
-            # if not os.path.exists(pGeom.getFilePath('.arc')):
-            #     notes = notes + 'product .arc file does not exits\n'
-            #     return False, None, None, notes
-            # 
-            # # Reactant that references the product geometry
-            # print "Reactant referencing product on slope"
-            # self.writeReferenceFile(freezeAtoms=labels, otherGeom=pGeom)
-            # self.writeGeoRefInputFile(pGeom, freezeAtoms=labels)
-            # logFilePath = self.runDouble(self.inputFilePath)
-            # shutil.copy(logFilePath, logFilePath+'.ref2.out')
-            # 
-            # if not os.path.exists(self.getFilePath('.arc')):
-            #     notes = notes + 'reactant .arc file does not exits\n'
-            #     return False, None, None, notes
-                
-        print "Running NEB from optimized geometries"
-        # Atomic Simulation Environment can take the two geometries and
-        # do the calculation on its own
-        self.runNEB(pGeom)
+            print "Completed NEB calculation"
         
-        print "Completed NEB calculation"
-            
-        # print "Optimizing TS once"
-        # self.writeInputFile(1, fromNEB=True)
-        # converged, internalCoord = self.run()
-        # shutil.copy(self.outputFilePath, self.outputFilePath+'.TS1.log')
-        # 
-        # if internalCoord and not converged:
-        #     print "Internal coordinate error, trying in cartesian"
-        #     self.writeInputFile(2, fromInt=True)
-        #     converged, internalCoord = self.run()
-        # 
-        # if not converged:
-        #     notes = notes + 'Transition state failed\n'
-        #     return False, None, None, notes
-        # 
-        # if os.path.exists(self.ircOutputFilePath):
-        #     rightTS = self.verifyIRCOutputFile()
-        # else:
-        #     self.writeIRCFile()
-        #     rightTS = self.runIRC()
-        # 
-        # if not rightTS:
-        #     notes = notes + 'IRC failed\n'
-        #     return False, None, None, notes
-        # 
-        # self.writeRxnOutputFile(labels, doubleEnd=True)
-        # return True, None, None, notes
+        print "Optimizing TS once"
+        self.writeInputFile(1, fromNEB=True)
+        converged, internalCoord = self.run()
+        shutil.copy(self.outputFilePath, self.outputFilePath+'.TS1.log')
+        
+        if internalCoord and not converged:
+            print "Internal coordinate error, trying in cartesian"
+            self.writeInputFile(2, fromInt=True)
+            converged, internalCoord = self.run()
+            shutil.copy(self.outputFilePath, self.outputFilePath+'.TS2.log')
+        
+        if not converged:
+            notes = notes + 'Transition state failed\n'
+            return False, None, None, notes
+        
+        if os.path.exists(self.ircOutputFilePath):
+            rightTS = self.verifyIRCOutputFile()
+        else:
+            self.writeIRCFile()
+            rightTS = self.runIRC()
+        
+        if not rightTS:
+            notes = notes + 'IRC failed\n'
+            return False, None, None, notes
+        
+        self.writeRxnOutputFile(labels, doubleEnd=True)
+        return True, None, None, notes
 
 
     def generateTSGeometryDirectGuess(self):
