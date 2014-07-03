@@ -520,7 +520,8 @@ class StatmechDatabase(object):
         points to the top-level folder of the thermo database.
         """
         logging.info('Loading frequencies group database from {0}...'.format(path))
-        self.groups = StatmechGroups().load(os.path.join(path, 'groups.py' ), self.local_context, self.global_context)
+        self.groups = {}
+        self.groups['groups'] = StatmechGroups().load(os.path.join(path, 'groups.py' ), self.local_context, self.global_context)
 
     def save(self, path):
         """
@@ -662,7 +663,7 @@ class StatmechDatabase(object):
         remaining internal modes to heat capacity data from the given thermo
         model `thermoModel`. This always returns valid degrees of freedom data.
         """
-        return self.groups.getStatmechData(molecule, thermoModel)
+        return self.groups['groups'].getStatmechData(molecule, thermoModel)
         
 ################################################################################
 
