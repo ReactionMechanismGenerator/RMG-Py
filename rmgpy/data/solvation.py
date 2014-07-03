@@ -40,6 +40,7 @@ import logging
 import numpy
 from copy import copy, deepcopy
 
+from copy import deepcopy
 from base import Database, Entry, makeLogicNode, DatabaseError
 
 import rmgpy.constants as constants
@@ -216,7 +217,7 @@ class SoluteData():
         found from the McGowan volume.
         """
         k_b = 1.3806488e-23 # m2*kg/s2/K
-        radius = ((75*self.V/3.14159)**(1/3))/100 # in meters
+        radius = math.pow((75*self.V/3.14159),(1.0/3.0))/100 # in meters
         D = k_b*T/6/3.14159/solventViscosity/radius # m2/s
         return D
             
@@ -433,8 +434,9 @@ class SolvationDatabase(object):
     """
 
     def __init__(self):
-        self.solventLibrary = SolventLibrary()
-        self.soluteLibrary = SoluteLibrary()
+        self.libraries = {}
+        self.libraries['solvent'] = SolventLibrary()
+        self.libraries['solute'] = SoluteLibrary()
         self.groups = {}
         self.local_context = {
             'SoluteData': SoluteData,
@@ -469,13 +471,17 @@ class SolvationDatabase(object):
         Load the solvent and solute libraries, then the solute groups.
         """
         
-        self.solventLibrary.load(os.path.join(path,'libraries','solvent.py'))
-        self.soluteLibrary.load(os.path.join(path,'libraries','solute.py'))
+        self.libraries['solvent'].load(os.path.join(path,'libraries','solvent.py'))
+        self.libraries['solute'].load(os.path.join(path,'libraries','solute.py'))
          
         self.loadGroups(os.path.join(path, 'groups'))
         
     def getSolventData(self, solvent_name):
-        return self.solventLibrary.getSolventData(solvent_name)
+        try:
+            solventData = self.libraries['solvent'].getSolventData(solvent_name)
+        except:
+            raise DatabaseError('Solvent {0!r} not found in database'.format(solvent_name))
+        return solventData
         
         
     def loadGroups(self, path):
@@ -507,8 +513,8 @@ class SolvationDatabase(object):
         points to the top-level folder of the solute libraries.
         """
         if not os.path.exists(path): os.mkdir(path)
-        self.solventLibrary.save(os.path.join(path,'solvent.py'))
-        self.soluteLibrary.save(os.path.join(path,'solute.py'))
+        self.libraries['solvent'].save(os.path.join(path,'solvent.py'))
+        self.libraries['solute'].save(os.path.join(path,'solute.py'))
         
     def saveGroups(self, path):
         """
@@ -585,7 +591,7 @@ class SolvationDatabase(object):
         soluteData = None
         
         # Check the library first
-        soluteData = self.getSoluteDataFromLibrary(species, self.soluteLibrary)
+        soluteData = self.getSoluteDataFromLibrary(species, self.libraries['solute'])
         if soluteData is not None:
             assert len(soluteData)==3, "soluteData should be a tuple (soluteData, library, entry)"
             soluteData[0].comment += "Data from solute library"
