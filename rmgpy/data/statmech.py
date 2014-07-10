@@ -559,7 +559,8 @@ class StatmechDatabase(object):
         points to the top-level folder of the statmech groups.
         """
         if not os.path.exists(path): os.mkdir(path)
-        self.groups.save(os.path.join(path, 'groups.py'))
+        for name, groups in self.groups.iteritems():
+            groups.save(os.path.join(path, name + '.py'))
 
     def loadOld(self, path):
         """
