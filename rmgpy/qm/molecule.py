@@ -367,8 +367,10 @@ class QMMolecule:
         
         trans = rmgpy.statmech.IdealGasTranslation( mass=self.qmData.molecularMass )
         if self.pointGroup.linear:
+            # there should only be one rotational constant for a linear rotor
+            rotationalConstant = rmgpy.quantity.Frequency(max(self.qmData.rotationalConstants.value), self.qmData.rotationalConstants.units)
             rot = rmgpy.statmech.LinearRotor(
-                                         rotationalConstant = self.qmData.rotationalConstants,
+                                         rotationalConstant = rotationalConstant,
                                          symmetry = self.pointGroup.symmetryNumber,
                                         )
         else:
