@@ -160,22 +160,14 @@ defined, compute the reaction-path degeneracy.</p>
 <dl class="method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.checkWellFormed">
 <tt class="descname">checkWellFormed</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.checkWellFormed" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a tuple of malformed database entries:</p>
-<p>noGroup is a list of nodes in the rules that has no corresponding group in
-groups.py</p>
-<p>noMatchingGroup is a dictionary with entry labels from the rules as a key
-and entry labels from groups as values. These are groups where rule.py&#8217;s
-adj list does not match group.py&#8217;s.</p>
-<p>notInTree is a list of groups that do not appear in the tree</p>
-<p>notSubgroup is a dictionary with group labels as keys and atom indexes 
-as values. Each key is a group where the child&#8217;s adj list is not a
-true child of it&#8217;s parent. The list of indexes corresponds to the
-child&#8217;s adj list index, where the atom is not a true child.</p>
-<p>probablyProduct is a list of groups which do not apepar in the
-tree, but are probably products (as opposed to reactants) which
-are created in the database loading. These are not necessarily
-malformations, but because I&#8217;m not certain where they came from,
-I decided to list them.</p>
+<dd><p>Finds and logs the following errors:</p>
+<p>-Groups named in rules.py that do not exist in groups.py
+-Groups named i rules.py that do not share the same definitions
+as its corresponding entry in groups.py
+-Groups (in groups.py) that do not exist in the tree
+-Groups (in groups.py) which are not actually subgroups of their
+stated parent.</p>
+<p>The errors are logged into a logger object with the handle &#8216;databaseLog&#8217;</p>
 </dd></dl>
 
 <dl class="method">
@@ -411,6 +403,21 @@ dictionary.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsFamily.matchNodeToChild">
+<tt class="descname">matchNodeToChild</tt><big>(</big><em>parentNode</em>, <em>childNode</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.matchNodeToChild" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <cite>True</cite> if <cite>parentNode</cite> is a parent of <cite>childNode</cite>.  Otherwise, return <cite>False</cite>.
+Both <cite>parentNode</cite> and <cite>childNode</cite> must be Entry types with items containing Group or LogicNode types.
+If <cite>parentNode</cite> and <cite>childNode</cite> are identical, the function will also return <cite>False</cite>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsFamily.matchNodeToNode">
+<tt class="descname">matchNodeToNode</tt><big>(</big><em>node</em>, <em>nodeOther</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.matchNodeToNode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <cite>True</cite> if <cite>node</cite> and <cite>nodeOther</cite> are identical.  Otherwise, return <cite>False</cite>.
+Both <cite>node</cite> and <cite>nodeOther</cite> must be Entry types with items containing Group or LogicNode types.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.matchNodeToStructure">
 <tt class="descname">matchNodeToStructure</tt><big>(</big><em>node</em>, <em>structure</em>, <em>atoms</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.matchNodeToStructure" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <tt class="xref py py-data docutils literal"><span class="pre">True</span></tt> if the <cite>structure</cite> centered at <cite>atom</cite> matches the
@@ -421,6 +428,18 @@ correct labels, hence the <cite>atoms</cite> parameter. The <cite>atoms</cite> p
 include extra labels, and so we only require that every labeled atom in
 the functional group represented by <cite>node</cite> has an equivalent labeled
 atom in <cite>structure</cite>.</p>
+<p>Matching to structure is more strict than to node.  All labels in structure must 
+be found in node.  However the reverse is not true.</p>
+<dl class="docutils">
+<dt>Usage: node = either an Entry or a key in the self.entries dictionary which has</dt>
+<dd><blockquote class="first">
+<div>a Group or LogicNode as its Entry.item</div></blockquote>
+<p>structure = a Group or a Molecule
+atoms = dictionary of {label: atom} in the structure.  A possible dictionary</p>
+<blockquote class="last">
+<div>is the one produced by structure.getLabeledAtoms()</div></blockquote>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">

@@ -179,6 +179,21 @@ dictionary.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.data.base.Database.matchNodeToChild">
+<tt class="descname">matchNodeToChild</tt><big>(</big><em>parentNode</em>, <em>childNode</em><big>)</big><a class="headerlink" href="#rmgpy.data.base.Database.matchNodeToChild" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <cite>True</cite> if <cite>parentNode</cite> is a parent of <cite>childNode</cite>.  Otherwise, return <cite>False</cite>.
+Both <cite>parentNode</cite> and <cite>childNode</cite> must be Entry types with items containing Group or LogicNode types.
+If <cite>parentNode</cite> and <cite>childNode</cite> are identical, the function will also return <cite>False</cite>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.base.Database.matchNodeToNode">
+<tt class="descname">matchNodeToNode</tt><big>(</big><em>node</em>, <em>nodeOther</em><big>)</big><a class="headerlink" href="#rmgpy.data.base.Database.matchNodeToNode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <cite>True</cite> if <cite>node</cite> and <cite>nodeOther</cite> are identical.  Otherwise, return <cite>False</cite>.
+Both <cite>node</cite> and <cite>nodeOther</cite> must be Entry types with items containing Group or LogicNode types.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.data.base.Database.matchNodeToStructure">
 <tt class="descname">matchNodeToStructure</tt><big>(</big><em>node</em>, <em>structure</em>, <em>atoms</em><big>)</big><a class="headerlink" href="#rmgpy.data.base.Database.matchNodeToStructure" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <tt class="xref py py-data docutils literal"><span class="pre">True</span></tt> if the <cite>structure</cite> centered at <cite>atom</cite> matches the
@@ -189,6 +204,18 @@ correct labels, hence the <cite>atoms</cite> parameter. The <cite>atoms</cite> p
 include extra labels, and so we only require that every labeled atom in
 the functional group represented by <cite>node</cite> has an equivalent labeled
 atom in <cite>structure</cite>.</p>
+<p>Matching to structure is more strict than to node.  All labels in structure must 
+be found in node.  However the reverse is not true.</p>
+<dl class="docutils">
+<dt>Usage: node = either an Entry or a key in the self.entries dictionary which has</dt>
+<dd><blockquote class="first">
+<div>a Group or LogicNode as its Entry.item</div></blockquote>
+<p>structure = a Group or a Molecule
+atoms = dictionary of {label: atom} in the structure.  A possible dictionary</p>
+<blockquote class="last">
+<div>is the one produced by structure.getLabeledAtoms()</div></blockquote>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">

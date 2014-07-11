@@ -98,8 +98,9 @@ written in the kinetic group definitions.
 
 Group Definitions
 -----------------
-The main section in groups.py are the group definitions. Groups are adjacency 
-lists that describe structures around the reacting atoms. Between the adjacency
+The main section in groups.py are the group definitions. Groups are 
+:ref:`adjacency lists <rmgpy.molecule.adjlist>`
+that describe structures around the reacting atoms. Between the adjacency
 list's index number and atom type, a starred number is inserted if the
 atom is a reacting atom.
 

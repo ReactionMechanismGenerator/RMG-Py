@@ -1,3 +1,5 @@
+mkdir -p testing/coverage
+rm -rf testing/coverage/*
 nosetests --nocapture --nologcapture --all-modules --verbose --with-coverage --cover-inclusive --cover-package=rmgpy --cover-erase --cover-html --cover-html-dir=testing/coverage rmgpy
 WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
 WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
@@ -3238,9 +3240,16 @@ Test the value of the Planck constant. ... ok
 Test the value of the proton rest mass. ... ok
 Test the value of the reduced Planck constant. ... ok
 Test the value of the speed of light in a vacuum. ... ok
+Test that nodes can match other nodes. ... ok
+Test that the MatchNodeToStructure family works properly. ... ok
 Test that the loadFamilies function raises the correct exceptions ... ok
-Test we can estimate solvation thermochemistry. ... SKIP: WIP test failed: Solvation enthalpy discrepancy (-17533!=-12000) for methane in water
-Test we can estimate Abraham solute paramaters correctly ... ok
+Test we can estimate solvation thermochemistry. ... ok
+Test that for a given solvent viscosity and temperature we can calculate a solute's diffusivity ... ok
+Test we can calculate and set the McGowan volume for species containing H,C,O,N or S ... ok
+Test we can estimate Abraham solute parameters correctly using group contributions ... ok
+Test we can obtain solute parameters from a library ... ok
+Test we can obtain solvent parameters from a library ... ok
+Test we can calculate the solvent viscosity given a temperature and its A-E correlation parameters ... ok
 Test that the new ThermoDatabase generates appropriate thermo data. ... SKIP: WIP test failed: S298 error for C1C=CC=C1
 Test that the old ThermoDatabase generates relatively accurate thermo data. ... SKIP: WIP test failed: S298 error for C1C=CC=C1
 Test we generate symmetry numbers correctly. ... SKIP: WIP test failed: Symmetry number error for C1C=CC=C1
@@ -3515,9 +3524,9 @@ Test the Bond.isTriple() method. ... ok
 Test that a Bond object can be successfully pickled and ... ok
 Check the adjacency list read/write functions for a full molecule. ... WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
 ok
-Test the Molecule.isAromatic() method. ... SKIP: WIP test failed: False is not true
-Test the Molecule.isAromatic() method. ... ok
-Test the Molecule.isAromatic() method. ... SKIP: WIP test failed: False is not true
+Test the Molecule.isAromatic() method for Benzene. ... SKIP: WIP test failed: False is not true
+Test the Molecule.isAromatic() method for Cyclohexane. ... ok
+Test the Molecule.isAromatic() method for Naphthalene. ... SKIP: WIP test failed: False is not true
 Test that Augmented InChI generation is printing the /mult layer ... WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
 ok
 Test that Augmented InChI Key generation is printing the mult layer ... WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
@@ -3540,58 +3549,7 @@ Test the Molecule.getLabeledAtoms() method. ... ok
 Test the Molecule.getLabeledAtom() method. ... ok
 Test the Molecule.getLabeledAtoms() method. ... ok
 Test the Molecule.getMolecularWeight() method. ... ok
-Test that InChI Key generation is working properly. ... SHCSC2H5
-1 C 0 {2,D} {3,S} {4,S}
-2 S 0 {1,D}
-3 S 0 {1,S}
-4 C 0 {1,S} {5,S}
-5 C 0 {4,S}
-
-HCSCHCH3SH
-1 C 0 {2,S} {3,S} {4,S}
-2 C 0 {1,S}
-3 S 0 {1,S}
-4 C 0 {1,S} {5,D}
-5 S 0 {4,D}
-
-1,2-ethanediol SoluteData(S=0.823,B=0.685,E=0.327,L=2.572,A=0.693,comment='Average of abraham(CssH2)+nonacentered(Cs(OssH)Cs(OssH))+abraham(CssH2)+nonacentered(Cs(OssH)Cs(OssH))+abraham(OssH)+nonacentered(OssH)+abraham(OssH)+nonacentered(OssH)+')
-None
-None
-None
-None
-None
-
-        1 C 0       {2,D} {7,S} {8,S}
-        2 C 0 {1,D} {3,S} {9,S}
-        3 C 0 {2,S} {4,D} {10,S}
-        4 C 0 {3,D} {5,S} {11,S}
-        5 C 1 {4,S} {6,S} {12,S}
-        6 C 0 {5,S} {13,S} {14,S} {15,S}
-        7 H 0 {1,S}
-        8 H 0 {1,S}
-        9 H 0 {2,S}
-        10 H 0 {3,S}
-        11 H 0 {4,S}
-        12 H 0 {5,S}
-        13 H 0 {6,S}
-        14 H 0 {6,S}
-        15 H 0 {6,S}
-        
-Cd
-Cs
-Cd
-Cd
-
-            1     C     1 {2,S}
-            2     C     1 {1,S}
-        
-
-            1     C     1 {2,S}
-            2     C     1 {1,S}
-        
-1 O 0
-[HH:MM:SS] WARNING: Omitted undefined stereo
-ok
+Test that InChI Key generation is working properly. ... ok
 Test the Molecule.isInCycle() method with ethane. ... ok
 Test the Molecule.isInCycle() method with ethane. ... ok
 Check the graph isomorphism functions. ... ok
@@ -3676,6 +3634,23 @@ Test that the network `netReactions` property was properly set. ... ok
 Test that the network `pathReactions` property was properly set. ... ok
 Test that the network `products` property was properly set. ... ok
 Test that the network `reactants` property was properly set. ... ok
+Test that generateThermoData() works correctly. ... SKIP: Gaussian not found. Try resetting your environment variables if you want to use it.
+Test that generateThermoData() can load thermo from a previous run. ... SKIP: Gaussian not found. Try resetting your environment variables if you want to use it.
+Test that generateThermoData() works correctly. ... SKIP: Gaussian not found. Try resetting your environment variables if you want to use it.
+Test that generateThermoData() can load thermo from a previous run. ... SKIP: Gaussian not found. Try resetting your environment variables if you want to use it.
+Test that checkPaths() works correctly. ... ok
+Test that getThermoData() fails when expected. ... ok
+Test that getThermoData() works correctly. ... SKIP: If GAUSSIAN installed, try checking your environment variables.
+Test that getThermoData() works correctly. ... SKIP: If MOPAC installed, try checking your environment variables.
+Test that initialize() works correctly. ... ok
+Test that setDefaultOutputDirectory() works correctly. ... ok
+Test that checkAllSet() works correctly. ... ok
+Test that generateThermoData() works correctly. ... SKIP: MOPAC not found. Try resetting your environment variables if you want to use it.
+Test that generateThermoData() can load thermo from a previous run. ... SKIP: MOPAC not found. Try resetting your environment variables if you want to use it.
+Test that generateThermoData() works correctly. ... SKIP: MOPAC not found. Try resetting your environment variables if you want to use it.
+Test that generateThermoData() can load thermo from a previous run. ... SKIP: MOPAC not found. Try resetting your environment variables if you want to use it.
+Test that generateThermoData() works correctly. ... SKIP: MOPAC not found. Try resetting your environment variables if you want to use it.
+Test that generateThermoData() can load thermo from a previous run. ... SKIP: MOPAC not found. Try resetting your environment variables if you want to use it.
 Test the creation of an acceleration quantity with units of cm/s^2. ... ok
 Test the creation of an acceleration quantity with units of m/s^2. ... ok
 Test the creation of an area quantity with units of m^2. ... ok
@@ -4002,7 +3977,7 @@ Test Joback doesn't crash on Cb desription of beneze ... ok
 
 Name                              Stmts   Miss Branch BrMiss  Cover   Missing
 -----------------------------------------------------------------------------
-rmgpy                                55     17     18     10    63%   71, 79-82, 104-107, 113, 115, 119, 131-135, 155
+rmgpy                                55     16     18     10    64%   71, 79-82, 104-107, 113, 115, 119, 131-135
 rmgpy.cantherm                        5      0      0      0   100%   
 rmgpy.cantherm.gaussian             217    123    112     68    42%   57-72, 85-111, 120-162, 299, 303, 310-337, 345-396, 404-420
 rmgpy.cantherm.geometry              74     25     14      4    67%   93, 102-103, 130-148, 156-159, 191, 193
@@ -4010,27 +3985,27 @@ rmgpy.cantherm.input                224    190    100    100    10%   67-120, 12
 rmgpy.cantherm.kinetics              84     73     16     16    11%   47-48, 55-59, 66-89, 96-140, 150-171
 rmgpy.cantherm.main                  94     75     10     10    18%   45-46, 77-80, 89-130, 139-168, 174-187, 193-194, 201-204, 214-238
 rmgpy.cantherm.molepro               33      2     18      4    88%   64, 87
-rmgpy.cantherm.output                77     66     23     23    11%   47-49, 56-75, 81-94, 101-121, 127-141, 147-149, 155-157, 167-172
+rmgpy.cantherm.output                77     66     23     23    11%   47-49, 56-75, 81-94, 101-121, 127-141, 147-149, 155-158, 168-173
 rmgpy.cantherm.pdep                 403    365    156    156     7%   106-142, 147, 150, 155, 158, 163, 166, 171, 174, 179, 182, 187, 190, 195, 198, 204, 224-238, 250-267, 270-297, 309-326, 330-362, 366-382, 386-483, 488-552, 562-571, 578-691
 rmgpy.cantherm.statmech             509    480    226    226     4%   82, 89-120, 128-145, 150, 160-165, 172-174, 183-391, 395-401, 410-441, 449-479, 496-653, 664-864
 rmgpy.cantherm.thermo               155    140     32     32     8%   55-56, 63-67, 75-122, 129-205, 217-269
-rmgpy.chemkin                       984    941    492    491     3%   69, 79-156, 167-456, 466-615, 626-646, 652-665, 672-687, 695-846, 858-900, 914-972, 982-1130, 1138-1148, 1160-1210, 1221-1285, 1293-1335, 1352-1509, 1519-1535, 1545-1548, 1556-1562, 1584-1607, 1626-1672, 1680-1711
+rmgpy.chemkin                       987    942    495    494     3%   69, 79-156, 167-253, 260-361, 368-493, 504-653, 664-684, 690-703, 710-725, 733-892, 904-946, 960-1018, 1028-1176, 1184-1194, 1206-1256, 1267-1331, 1339-1385, 1402-1561, 1571-1587, 1597-1600, 1608-1614, 1636-1659, 1678-1724, 1732-1763
 rmgpy.data                            3      1      0      0    67%   34
-rmgpy.data.base                     697    388    327    215    41%   205-207, 223-244, 252-274, 287-289, 293-295, 299-301, 346-351, 369-372, 381, 393, 400, 410-411, 414, 451-452, 464, 472, 475-476, 483, 515, 531-532, 546-553, 564-572, 580-673, 680-686, 693-705, 712-746, 762-768, 774-779, 794-908, 939, 948-957, 966-968, 973, 993, 1004, 1008-1009, 1024, 1031-1035, 1052, 1063-1069, 1076-1085, 1096-1103, 1121, 1131, 1153-1156, 1179-1183, 1195-1199, 1221-1238, 1244-1245, 1251, 1259-1272, 1286-1308
-rmgpy.data.kinetics                 317    256    161    144    16%   86-91, 97-99, 106-108, 118-133, 147-157, 161-163, 165-167, 174-176, 182, 190-195, 205-231, 238-241, 248-252, 259-265, 272-291, 298-333, 341-344, 352-357, 365-380, 393-402, 423-521, 534-580
+rmgpy.data.base                     718    395    341    221    42%   43-45, 209-211, 227-248, 256-278, 291-293, 297-299, 303-305, 350-355, 373-376, 385, 397, 404, 414-415, 418, 455-456, 468, 476, 479-480, 487, 519, 535-536, 550-557, 568-576, 584-677, 684-690, 697-709, 716-750, 766-772, 778-783, 798-912, 921-925, 934-947, 987, 1000-1005, 1041, 1052, 1056-1057, 1072, 1079-1083, 1100, 1111-1117, 1124-1133, 1144-1151, 1169, 1179, 1201-1204, 1227-1231, 1243-1247, 1269-1286, 1292-1293, 1299, 1307-1320, 1334-1356
+rmgpy.data.kinetics                 329    267    163    146    16%   86-91, 97-99, 106-108, 118-133, 147-157, 161-163, 165-167, 174-176, 182, 190-195, 205-231, 238-242, 249-263, 270-274, 281-287, 294-313, 320-355, 363-366, 374-379, 387-402, 415-424, 445-543, 556-602
 rmgpy.data.kinetics.common          111     99     50     50     7%   105-106, 115-225
 rmgpy.data.kinetics.depository       31     18      0      0    42%   64-77, 83, 102, 115, 140-162, 168
-rmgpy.data.kinetics.family         1118   1049    650    650     4%   95-108, 114, 133, 161, 169, 177-193, 204-286, 293, 300, 346-357, 367-427, 434-469, 475-486, 492-515, 528-601, 607-608, 615-619, 625-627, 633, 641-644, 651, 659-706, 717-797, 804, 811-814, 821-922, 931-934, 941-944, 952-963, 976-1079, 1094-1304, 1311-1316, 1326-1352, 1361-1370, 1382-1417, 1424-1431, 1445-1649, 1657-1736, 1744, 1753-1758, 1768-1776, 1786-1800, 1808-1811, 1824-1878, 1886-1894, 1901-1909, 1917-1922, 1951-2067
+rmgpy.data.kinetics.family         1141   1071    662    662     4%   96-109, 115, 134, 162, 170, 178-194, 205-287, 294, 301, 347-358, 368-428, 435-470, 476-487, 493-516, 529-602, 610-611, 618-622, 628-630, 636, 644-647, 654, 662-709, 720-804, 811, 818-821, 828-929, 938-941, 948-951, 959-970, 983-1086, 1101-1311, 1318-1323, 1333-1359, 1368-1377, 1389-1424, 1431-1438, 1452-1656, 1664-1743, 1751, 1760-1765, 1775-1783, 1793-1807, 1815-1818, 1831-1885, 1893-1901, 1908-1916, 1924-1929, 1945-2084
 rmgpy.data.kinetics.groups          297    273    180    180     5%   78-79, 85-89, 108-170, 180-206, 215-267, 280-548
 rmgpy.data.kinetics.library         277    251    152    152     6%   71-84, 90, 108, 118, 128-149, 156-163, 171-180, 187-242, 246-256, 277-315, 321, 327-360, 370-374, 384-545
 rmgpy.data.kinetics.rules           313    283    135    135     7%   64, 87-126, 132, 140-188, 195-221, 229-277, 285-352, 359-366, 373, 380, 387-400, 407-423, 429-488, 499-525, 532-586
 rmgpy.data.reference                138    114     48     48    13%   89-95, 102-108, 114-132, 158-162, 169-183, 190-200, 226-231, 238-251, 258-269, 292-294, 301-311, 318-326
-rmgpy.data.rmg                       84     63     14     14    21%   56-71, 92-104, 111-112, 119-120, 127-128, 141-156, 167-168, 175-176, 183-192, 198-203, 209-214
-rmgpy.data.solvation                290    109     60     45    56%   108, 115, 146-149, 162-209, 252, 278, 296, 303, 310, 351, 359, 366, 389-394, 400-402, 439-442, 449-451, 458-460, 468-483, 499-512, 525-537, 557-561, 623-662, 673-677, 696, 710-714
-rmgpy.data.statmech                 291    240    101    101    13%   48-86, 93-96, 103-111, 122, 134, 149, 159, 171, 186, 193, 200, 211, 223-231, 246, 253, 260, 267-274, 283-298, 308-344, 353-434, 444-456, 462-468, 474-477, 484-489, 496, 503-515, 522-523, 530-534, 541-542, 549-551, 558-559, 567-583, 600-613, 626-634, 641-645, 653-656, 665, 678-679, 687-694
+rmgpy.data.rmg                       86     65     14     14    21%   56-71, 92-104, 111-112, 119-120, 127-128, 141-156, 167-168, 175-176, 183-192, 198-205, 211-216
+rmgpy.data.solvation                383    156     76     40    57%   56-128, 181, 252, 302, 330-335, 358, 365, 372, 413, 421, 428, 452-457, 463-465, 506-509, 516-518, 525-527, 535-550, 566-579, 617-629, 706-745, 756-760, 779, 793-797
+rmgpy.data.statmech                 297    246    107    107    13%   48-86, 93-96, 103-111, 122, 134, 149, 159, 171, 186, 193, 200, 211, 223-231, 246, 253, 260, 267-274, 283-298, 308-344, 353-434, 444-456, 462-468, 474-477, 484-489, 496-497, 504-516, 523-525, 532-536, 543-545, 552-554, 561-563, 571-588, 605-618, 631-639, 647-652, 660-663, 672, 685-686, 694-701
 rmgpy.data.statmechfit              248    213     70     70    11%   95-137, 151-193, 207-244, 260-307, 316-319, 327-330, 338-343, 352-355, 364-366, 378-381, 384-407, 419-422, 425-457, 469-472, 475-506
 rmgpy.data.thermo                   441    184    136     60    58%   56-124, 131-149, 188-199, 205, 232, 236, 253, 260, 308, 316, 349-355, 361-364, 374, 404, 426-430, 437-439, 446-448, 455-462, 552-563, 573-616, 635-636, 662-666, 676-677, 701-703, 722-725, 727-730, 747-749, 817-818, 840-844, 889-893, 904, 916-922, 930-934, 949, 978, 980, 999
-rmgpy.data.transport                233    100     66     47    51%   54-69, 117, 124, 131, 152, 170, 177, 184, 205-210, 216-218, 265-279, 287-299, 310-314, 341, 373-412, 434-435, 462, 470, 472, 476-480, 497-530
+rmgpy.data.transport                282    146     76     57    43%   54-110, 159, 166, 173, 194, 212, 219, 226, 247-252, 258-260, 304-307, 314-316, 323-325, 335-349, 357-369, 380-384, 411, 443-482, 504-505, 532, 540, 542, 546-550, 567-600
 rmgpy.display                        12      4      2      2    57%   37, 41-43, 47
 rmgpy.kinetics                        6      0      0      0   100%   
 rmgpy.kinetics.diffusionLimited      56     43     12     12    19%   16-19, 22, 34-61, 70-86
@@ -4049,15 +4024,15 @@ rmgpy.pdep.draw                     291    277     86     86     4%   57-70, 73-
 rmgpy.pdep.network                  532    408    230    209    19%   51-53, 60, 130, 137-149, 161, 181, 194-261, 272-345, 358, 361, 364, 396, 460-464, 473, 495-515, 529-688, 699-716, 724-738, 745-748, 755-758, 768-771, 774-775, 789-860, 871-925, 938-954
 rmgpy.qm                              0      0      0      0   100%   
 rmgpy.qm.gaussian                   129     99     48     46    18%   24, 26, 46-47, 51-56, 75-134, 140-145, 161-164, 171-196, 204-219
-rmgpy.qm.main                        73     58     26     26    15%   51-59, 65-73, 94-97, 103-108, 114, 120-121, 127-137, 147-167
-rmgpy.qm.molecule                   189    140     38     37    22%   10-11, 51, 59, 63, 67, 76-84, 97-118, 122-124, 140-173, 200-204, 213, 218, 223, 228, 233, 239-242, 249, 258-280, 286-294, 300-318, 325, 334-337, 345-347, 353-356, 365-408
+rmgpy.qm.main                        72     15     26     13    71%   135, 137, 149, 151, 153, 156-167
+rmgpy.qm.molecule                   190    141     38     37    22%   10-11, 51, 59, 63, 67, 76-84, 97-118, 122-124, 140-173, 200-204, 213, 218, 223, 228, 233, 239-242, 249, 258-280, 286-294, 300-318, 325, 334-337, 345-347, 353-356, 365-410
 rmgpy.qm.mopac                      144    107     50     48    20%   23, 25, 59-60, 63-68, 87-141, 147-152, 176-202, 214-236, 254-277
 rmgpy.qm.qmdata                      35     27      2      2    22%   23-38, 41, 75-101
 rmgpy.qm.qmverifier                  26     20      6      6    19%   18-24, 40-61, 71
 rmgpy.qm.symmetry                    82     53     22     18    32%   128-130, 133, 163-176, 182, 188-197, 203-208, 214-226, 235-259
 rmgpy.rmg                             2      0      0      0   100%   
-rmgpy.rmg.input                     267    234     60     60    10%   68-89, 92-96, 99, 102, 105, 108, 119-143, 148-164, 167-168, 172-173, 176-179, 189-196, 209-243, 246-252, 255-270, 282-333, 345-384, 394-502
-rmgpy.rmg.main                      687    636    248    248     5%   46-47, 120-124, 130-168, 175-192, 199-207, 213-219, 227-229, 233-254, 263-377, 385-549, 560-579, 586-587, 590-597, 604-619, 626-630, 637-703, 709-716, 722-743, 752-765, 778-825, 836-869, 880-1029, 1036-1045, 1056-1098, 1109, 1111-1112, 1115-1130, 1140-1171
+rmgpy.rmg.input                     279    246     64     64    10%   68-89, 92-96, 99, 102, 105, 108, 119-143, 148-164, 167-168, 172-173, 176-179, 189-196, 209-243, 246-252, 255-270, 281-332, 344-383, 393-515
+rmgpy.rmg.main                      690    639    248    248     5%   46-47, 120-124, 130-168, 175-192, 199-207, 213-219, 227-229, 233-254, 263-377, 385-549, 560-579, 586-587, 590-597, 604-619, 626-630, 637-703, 709-716, 722-743, 752-765, 778-825, 836-869, 880-1029, 1036-1045, 1056-1098, 1109, 1111-1112, 1115-1130, 1140-1174
 rmgpy.rmg.model                     964    897    514    514     5%   77-78, 84, 101-162, 172-222, 230-238, 245-249, 275, 290-291, 316-343, 353-373, 381-424, 434-499, 516-570, 588-599, 605-616, 628-779, 788-856, 863-951, 960-996, 1006-1032, 1038, 1046-1126, 1134-1180, 1189-1192, 1202-1203, 1211-1215, 1222-1228, 1236-1246, 1253-1258, 1270-1318, 1333-1373, 1387-1412, 1425-1478, 1493-1571, 1579-1665, 1675-1678, 1686-1704, 1711-1746
 rmgpy.rmg.output                    168    160     78     78     3%   62-584, 592-1177
 rmgpy.rmg.pdep                      316    287    182    182     6%   73-85, 91, 108, 130-133, 136, 142, 145, 152, 158-178, 187-208, 217-239, 246-265, 273-297, 305-315, 322-377, 387-448, 455-635
@@ -4066,11 +4041,51 @@ rmgpy.statmech                        5      0      0      0   100%
 rmgpy.thermo                          3      0      0      0   100%   
 rmgpy.transport                      28      1      0      0    96%   71
 -----------------------------------------------------------------------------
-TOTAL                             14709  11751   6313   5697    17%   
+TOTAL                             14933  11865   6380   5722    17%   
 ----------------------------------------------------------------------
-Ran 728 tests.
+Ran 752 tests.
 
-OK (SKIP=17)
+OK (SKIP=28)
+SHCSC2H5
+1 C 0 {2,D} {3,S} {4,S}
+2 S 0 {1,D}
+3 S 0 {1,S}
+4 C 0 {1,S} {5,S}
+5 C 0 {4,S}
+
+HCSCHCH3SH
+1 C 0 {2,S} {3,S} {4,S}
+2 C 0 {1,S}
+3 S 0 {1,S}
+4 C 0 {1,S} {5,D}
+5 S 0 {4,D}
+
+
+        1 C 0       {2,D} {7,S} {8,S}
+        2 C 0 {1,D} {3,S} {9,S}
+        3 C 0 {2,S} {4,D} {10,S}
+        4 C 0 {3,D} {5,S} {11,S}
+        5 C 1 {4,S} {6,S} {12,S}
+        6 C 0 {5,S} {13,S} {14,S} {15,S}
+        7 H 0 {1,S}
+        8 H 0 {1,S}
+        9 H 0 {2,S}
+        10 H 0 {3,S}
+        11 H 0 {4,S}
+        12 H 0 {5,S}
+        13 H 0 {6,S}
+        14 H 0 {6,S}
+        15 H 0 {6,S}
+        
+
+            1     C     1 {2,S}
+            2     C     1 {1,S}
+        
+
+            1     C     1 {2,S}
+            2     C     1 {1,S}
+        
+1 O 0
 
         1 * C 0 {2,D} {7,S} {8,S}
         2 C 0 {1,D} {3,S} {9,S}
@@ -4108,38 +4123,3 @@ OK (SKIP=17)
 7    H 0 0 {3,S}
 8    H 0 0 {3,S}
 
-Solver jacobian
-[[ -4.85410044 -12.94297143   3.2392154   -7.55039077   3.23477055]
- [ -4.85410044 -12.94297143   3.2392154   -7.55039077   3.23477055]
- [  9.70820089  25.88594287  -6.47843081  15.10078155  -6.46954109]
- [ -4.85410044 -12.94297143   3.2392154   -7.55039077   3.23477055]
- [ -0.          -0.          -0.          -0.          -0.        ]]
-Numerical jacobian
-[[ -4.85408912 -12.94294393   3.23921055  -7.55037406   3.23476569]
- [ -4.85408912 -12.94294393   3.23921055  -7.55037406   3.23476569]
- [  9.70817824  25.88588786  -6.47842111  15.10074811  -6.46953139]
- [ -4.85408912 -12.94294393   3.23921055  -7.55037406   3.23476569]
- [  0.           0.           0.           0.           0.        ]]
-Solver d(dy/dt)/dk
-[[  0.00000000e+00  -2.07721126e+04   0.00000000e+00]
- [  6.70497152e-01   2.07721126e+04   2.58805545e+13]
- [ -3.35248576e-01   2.07721126e+04   1.29402773e+13]
- [  0.00000000e+00  -2.07721126e+04  -2.58805545e+13]
- [  0.00000000e+00   0.00000000e+00  -1.29402773e+13]]
-Numerical d(dy/dt)/dk
-[[  0.00000000e+00  -2.07721126e+04   0.00000000e+00]
- [  6.70497092e-01   2.07736042e+04   2.58805545e+13]
- [ -3.35248546e-01   2.07727004e+04   1.29402773e+13]
- [  0.00000000e+00  -2.07717967e+04  -2.58805545e+13]
- [  0.00000000e+00   0.00000000e+00  -1.29402773e+13]]
-C2H4
-1 C 0 0 {2,D} {3,S} {4,S}
-2 C 0 0 {1,D} {5,S} {6,S}
-3 H 0 0 {1,S}
-4 H 0 0 {1,S}
-5 H 0 0 {2,S}
-6 H 0 0 {2,S}
-
-[[ 0.49713952 -0.61011423 -0.61693835]
- [ 0.78735968  0.01845445  0.61621763]
- [ 0.36457789  0.79209851 -0.48955379]]
