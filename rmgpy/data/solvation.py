@@ -608,10 +608,24 @@ class SolvationDatabase(object):
         """
         Return all possible sets of Abraham solute descriptors for a given
         :class:`Species` object `species`. The hits from the library come
-        first, then the group additivity  estimate. This method is useful 
-         for a generic search job.
+        first, then the group additivity  estimate. This method is useful
+        for a generic search job. Right now, there should either be 1 or 
+        2 sets of descriptors, depending on whether or not we have a 
+        library entry.
         """
-        raise NotImplementedError()
+        soluteDataList = []
+        
+        # Data from solute library
+        data = self.getSoluteDataFromLibrary(species, self.libraries['solute'])
+        if data is not None: 
+            assert len(data) == 3, "soluteData should be a tuple (soluteData, library, entry)"
+            data[0].comment += "Data from solute library"
+            soluteDataList.append(data)
+        # Estimate from group additivity
+        # Make it a tuple
+        data = (self.getSoluteDataFromGroups(species), None, None)
+        soluteDataList.append(data)
+        return soluteDataList
 
     def getSoluteDataFromLibrary(self, species, library):
         """
