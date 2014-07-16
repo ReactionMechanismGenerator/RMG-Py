@@ -46,8 +46,12 @@ class QMReaction:
         self.reaction = reaction
         self.settings = settings
         
-        reactants = sorted([s.toSMILES() for s in self.reaction.reactants])
-        products = sorted([s.toSMILES() for s in self.reaction.products])
+        if isinstance(self.reaction.reactants[0], Molecule):
+            reactants = sorted([s.toSMILES() for s in self.reaction.reactants])
+            products = sorted([s.toSMILES() for s in self.reaction.products])
+        elif isinstance(self.reaction.reactants[0], Species):
+            reactants = sorted([s.molecule[0].toSMILES() for s in self.reaction.reactants])
+            products = sorted([s.molecule[0].toSMILES() for s in self.reaction.products])
         stringID = "+".join(reactants) + "_" + "+".join(products)
         
         self.uniqueID = stringID
@@ -265,13 +269,13 @@ class QMReaction:
         For bimolecular reactions, reduce the minimum distance between atoms
         of the two reactants. 
         """
-        if self.reaction.label.lower() in ['h_abstraction', 'r_addition_multiplebond', 'intra_h_migration']:
+        if self.reaction.family.label.lower() in ['h_abstraction', 'r_addition_multiplebond', 'intra_h_migration']:
             
             lbl1 = reactant.getLabeledAtom('*1').sortingLabel
             lbl2 = reactant.getLabeledAtom('*2').sortingLabel
             lbl3 = reactant.getLabeledAtom('*3').sortingLabel
         
-        elif self.reaction.label.lower() == 'disproportionation':
+        elif self.reaction.family.label.lower() == 'disproportionation':
             
             lbl1 = reactant.getLabeledAtom('*2').sortingLabel
             lbl2 = reactant.getLabeledAtom('*4').sortingLabel
@@ -723,14 +727,27 @@ class QMReaction:
             return True, "Already done!"
         
         if len(self.reaction.reactants)==2:
-            reactant = self.reaction.reactants[0].merge(self.reaction.reactants[1])
+            if isinstance(self.reaction.reactants[0], Molecule):
+                reactant = self.reaction.reactants[0].merge(self.reaction.reactants[1])
+            elif isinstance(self.reaction.reactants[0], Species):
+                reactant = self.reaction.reactants[0].molecule[0].merge(self.reaction.reactants[1].molecule[0])
         else:
-            reactant = self.reaction.reactants[0]
-        if len(self.reaction.products)==2:
-            product = self.reaction.products[0].merge(self.reaction.products[1])
-        else:
-            product = self.reaction.products[0]
+            if isinstance(self.reaction.reactants[0], Molecule):
+                reactant = self.reaction.reactants[0]
+            elif isinstance(self.reaction.reactants[0], Species):
+                reactant = self.reaction.reactants[0].molecule[0]
         
+        if len(self.reaction.products)==2:
+            if isinstance(self.reaction.reactants[0], Molecule):
+                product = self.reaction.products[0].merge(self.reaction.products[1])
+            elif isinstance(self.reaction.reactants[0], Species):
+                product = self.reaction.products[0].molecule[0].merge(self.reaction.products[1].molecule[0])
+        else:
+            if isinstance(self.reaction.reactants[0], Molecule):
+                product = self.reaction.products[0]
+            elif isinstance(self.reaction.reactants[0], Species):
+                product = self.reaction.products[0].molecule[0]
+            
         reactant = self.fixSortLabel(reactant)
         product = self.fixSortLabel(product)
         

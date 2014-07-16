@@ -9,6 +9,7 @@ import numpy
 from subprocess import Popen, PIPE
 
 from rmgpy.molecule import Molecule, Atom, getElement
+from rmgpy.species import Species
 from rmgpy.reaction import Reaction
 from qmdata import CCLibData
 from molecule import QMMolecule
@@ -445,7 +446,7 @@ class GaussianTS(QMReaction, Gaussian):
         Using the :class:`Geometry` object, write the input file
         for the `attmept`th attempt.
         """
-        numProc = '%nprocshared=' + '8' + '\n' # could be something that is set in the qmSettings
+        numProc = '%nprocshared=' + '20' + '\n' # could be something that is set in the qmSettings
         mem = '%mem=' + '800MB' + '\n' # could be something that is set in the qmSettings
         chk_file = '%chk=' + os.path.join(self.settings.fileStore, self.uniqueID) + '\n'
 
@@ -596,7 +597,7 @@ class GaussianTS(QMReaction, Gaussian):
         from the checkpoint file created during the geometry search.
         """
         # Should be unaffected by bad checkpoint files since this should only run if Normal termination of previous runs
-        numProc = '%nprocshared=' + '8' + '\n' # could be something that is set in the qmSettings
+        numProc = '%nprocshared=' + '20' + '\n' # could be something that is set in the qmSettings
         mem = '%mem=' + '800MB' + '\n' # could be something that is set in the qmSettings
         chk_file = '%chk=' + os.path.join(self.settings.fileStore, self.uniqueID) + '\n'
         
@@ -887,15 +888,22 @@ class GaussianTS(QMReaction, Gaussian):
             mol2 = Molecule()
             mol2.fromXYZ(atomnos, atomcoords[-1])
             
-            targetReaction = Reaction(
-                                    reactants = [reactant.toSingleBonds() for reactant in self.reaction.reactants],
-                                    products = [product.toSingleBonds() for product in self.reaction.products],
-                                    )
             testReaction = Reaction(
                                     reactants = mol1.split(),
                                     products = mol2.split(),                     
                                     )
-                                                            
+            
+            if isinstance(self.reaction.reactants[0], Molecule):
+                targetReaction = Reaction(
+                                        reactants = [reactant.toSingleBonds() for reactant in self.reaction.reactants],
+                                        products = [product.toSingleBonds() for product in self.reaction.products],
+                                        )
+            elif isinstance(self.reaction.reactants[0], Species):
+                targetReaction = Reaction(
+                                        reactants = [reactant.molecule[0].toSingleBonds() for reactant in self.reaction.reactants],
+                                        products = [product.molecule[0].toSingleBonds() for product in self.reaction.products],
+                                        )
+                                                                      
             if targetReaction.isIsomorphic(testReaction):
                 return True
             else:
@@ -909,30 +917,6 @@ class GaussianTS(QMReaction, Gaussian):
         parser.logger.setLevel(logging.ERROR) #cf. http://cclib.sourceforge.net/wiki/index.php/Using_cclib#Additional_information
         cclibData = parser.parse()
         
-        # # All between the ##### can be removed once we go back to # from #  in gaussian inputs
-        # #####
-        # molfile = outputFilePath.split('.')[0] + '.crude.mol'
-        # atomline = re.compile('\s*([\- ][0-9.]+\s+[\-0-9.]+\s+[\-0-9.]+)\s+([A-Za-z]+)')
-        # atomCount = 0
-        # atomnosPrep = []
-        # with open(molfile) as molinput:
-        #     for line in molinput:
-        #         match = atomline.match(line)
-        #         if match:
-        #             atomnosPrep.append(match.group(2))
-        #             atomCount += 1    
-        # atomnos = []
-        # for atom in atomnosPrep:
-        #     if atom == 'H':
-        #         atomnos.append(1)
-        #     elif atom == 'C':
-        #         atomnos.append(6)
-        #     elif atom == 'O':
-        #         atomnos.append(8)
-        # 
-        # atomnos = numpy.array(atomnos)
-        # cclibData.atomnos = atomnos
-        # #####
         mol = Molecule()
         mol.fromXYZ(cclibData.atomnos, cclibData.atomcoords[-1])
                                                         
@@ -949,34 +933,12 @@ class GaussianTS(QMReaction, Gaussian):
         parser.logger.setLevel(logging.ERROR) #cf. http://cclib.sourceforge.net/wiki/index.php/Using_cclib#Additional_information
         cclibData = parser.parse()
         radicalNumber = 0
-        for molecule in self.reaction.reactants:
-            radicalNumber += sum([i.radicalElectrons for i in molecule.atoms])
-        
-        # # All between the ##### can be removed once we go back to # from #  in gaussian inputs
-        # #####
-        # molfile = self.getFilePath('.crude.mol')
-        # atomline = re.compile('\s*([\- ][0-9.]+\s+[\-0-9.]+\s+[\-0-9.]+)\s+([A-Za-z]+)')
-        # atomCount = 0
-        # atomnosPrep = []
-        # with open(molfile) as molinput:
-        #     for line in molinput:
-        #         match = atomline.match(line)
-        #         if match:
-        #             atomnosPrep.append(match.group(2))
-        #             atomCount += 1    
-        # atomnos = []
-        # for atom in atomnosPrep:
-        #     if atom == 'H':
-        #         atomnos.append(1)
-        #     elif atom == 'C':
-        #         atomnos.append(6)
-        #     elif atom == 'O':
-        #         atomnos.append(8)
-        # 
-        # atomnos = numpy.array(atomnos)
-        # cclibData.atomnos = atomnos
-        # 
-        # #####
+        if isinstance(self.reaction.reactants[0], Molecule):
+            for molecule in self.reaction.reactants:
+                radicalNumber += molecule.getRadicalCount()
+        elif isinstance(self.reaction.reactants[0], Species):
+            for molecule in self.reaction.reactants:
+                radicalNumber += molecule.molecule[0].getRadicalCount() 
         
         self.qmData = CCLibData(cclibData, radicalNumber+1)
         return self.qmData
@@ -1006,22 +968,7 @@ class GaussianTS(QMReaction, Gaussian):
         
         return atomDist
     
-    def writeRxnOutputFile(self, labels, doubleEnd=False):
-        
-        if self.reaction.label.lower() in ['h_abstraction', 'intra_h_migration']:
-            if self.reaction.label.lower() in ['h_abstraction']:
-                product = self.reaction.products[0].merge(self.reaction.products[1])
-                star3 = product.getLabeledAtom('*1').sortingLabel
-                star1 = product.getLabeledAtom('*3').sortingLabel
-                product.atoms[star1].label = '*1'
-                product.atoms[star3].label = '*3'
-            elif self.reaction.label.lower() in ['intra_h_migration']:
-                product = self.reaction.products[0]
-                star2 = product.getLabeledAtom('*1').sortingLabel
-                star1 = product.getLabeledAtom('*2').sortingLabel
-                product.atoms[star1].label = '*1'
-                product.atoms[star2].label = '*2'
-                
+    def writeRxnOutputFile(self, labels, doubleEnd=False):                
         atomDist = self.parseTS(labels)
         
         distances = {'d12':float(atomDist[0]), 'd23':float(atomDist[1]), 'd13':float(atomDist[2])}
@@ -1178,7 +1125,7 @@ class GaussianTSB3LYP(GaussianTS):
             gaussianFile.write('\n')
     
     def writeQST2InputFile(self, pGeom):
-        # numProc = '%nprocshared=' + '8' + '\n' # could be something that is set in the qmSettings
+        # numProc = '%nprocshared=' + '20' + '\n' # could be something that is set in the qmSettings
         # mem = '%mem=' + '800MB' + '\n' # could be something that is set in the qmSettings
         # For now we don't do this, until seg faults are fixed on Discovery.
         # chk_file = '%chk=' + os.path.join(self.settings.fileStore, self.uniqueID) + '\n'
@@ -1380,7 +1327,7 @@ class GaussianTSPM6(GaussianTS):
             gaussianFile.write('\n')
     
     def writeQST2InputFile(self, pGeom):
-        # numProc = '%nprocshared=' + '8' + '\n' # could be something that is set in the qmSettings
+        # numProc = '%nprocshared=' + '20' + '\n' # could be something that is set in the qmSettings
         # mem = '%mem=' + '800MB' + '\n' # could be something that is set in the qmSettings
         # For now we don't do this, until seg faults are fixed on Discovery.
         # chk_file = '%chk=' + os.path.join(self.settings.fileStore, self.uniqueID) + '\n'
