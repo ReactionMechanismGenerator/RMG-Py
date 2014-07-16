@@ -1351,6 +1351,9 @@ class KineticsFamily(Database):
         for reactant in reaction.reactants:
             for label, atom in reactant.getLabeledAtoms().items():
                 labeledAtoms.append((label, atom))
+        for product in reaction.products:
+            for label, atom in product.getLabeledAtoms().items():
+                labeledAtoms.append((label, atom))
         reaction.labeledAtoms = labeledAtoms
         
         return reaction
