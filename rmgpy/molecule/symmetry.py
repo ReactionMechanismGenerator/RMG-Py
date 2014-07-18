@@ -363,7 +363,7 @@ def calculateCyclicSymmetryNumber(molecule):
                         if str(mcopy.GetBondBetweenAtoms(i,i+1).GetBondType()) == 'AROMATIC':
                             bond = molecule.getBond(atom1, atom2)
                             bond.applyAction(['CHANGE_BOND', atom1, 'B', atom2])
-                            atom1.atomType = atom2.atomType = rmgpy.molecule.atomTypes['Cd']
+                            atom1.atomType = atom2.atomType = rmgpy.molecule.atomTypes['Cb']
                     else:
                         pass
         # Remove bonds of ring from structure
