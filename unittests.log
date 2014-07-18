@@ -3255,7 +3255,7 @@ Test that the old ThermoDatabase generates relatively accurate thermo data. ... 
 Test we generate symmetry numbers correctly. ... SKIP: WIP test failed: Symmetry number error for C1C=CC=C1
 Test that the new ThermoDatabase generates appropriate thermo data. for Aromatics. ... SKIP: WIP test failed: H298 error for c1ccccc1
 Test that the old ThermoDatabase generates relatively accurate thermo data. for Aromatics. ... SKIP: WIP test failed: H298 error for c1ccccc1
-Test we generate symmetry numbers correctly. for Aromatics. ... SKIP: WIP test failed: Symmetry number error for c1ccccc1
+Test we generate symmetry numbers correctly. for Aromatics. ... SKIP: WIP test failed: Symmetry number error for c1ccc2ccccc2c1
 Test that the Arrhenius A property was properly set. ... ok
 Test that the Arrhenius Ea property was properly set. ... ok
 Test that the Arrhenius T0 property was properly set. ... ok
@@ -3600,13 +3600,13 @@ Test the Molecule.calculateBondSymmetryNumber() method. ... ok
 Test the Molecule.calculateBondSymmetryNumber() method. ... ok
 Test the Molecule.calculateBondSymmetryNumber() method. ... ok
 Test the Molecule.calculateBondSymmetryNumber() method. ... ok
-Test the Molecule.calculateCyclicSymmetryNumber() method. ... SKIP: WIP test failed: 3 != 12
+Test the Molecule.calculateCyclicSymmetryNumber() method. ... SKIP: WIP test failed: 1 != 2
+Test the Molecule.calculateCyclicSymmetryNumber() method. ... SKIP: WIP test failed: 1 != 2
 Test the Molecule.calculateCyclicSymmetryNumber() method. ... ok
 Test the Molecule.calculateCyclicSymmetryNumber() method. ... ok
 Test the Molecule.calculateCyclicSymmetryNumber() method. ... ok
 Test the Molecule.calculateSymmetryNumber() method. ... ok
 Test the Molecule.calculateSymmetryNumber() method. ... ok
-Test the Molecule.calculateSymmetryNumber() method. ... SKIP: WIP test failed: 6 != '6?'
 Test the Molecule.calculateSymmetryNumber() method. ... ok
 Test the Molecule.calculateSymmetryNumber() method. ... ok
 Test the Molecule.calculateSymmetryNumber() method. ... ok
@@ -3617,8 +3617,9 @@ Test the Molecule.calculateSymmetryNumber() method. ... ok
 Test the Molecule.calculateSymmetryNumber() method. ... ok
 Test the Molecule.calculateSymmetryNumber() method. ... ok
 Test the Molecule.calculateSymmetryNumber() method. ... ok
-Test the Molecule.calculateSymmetryNumber() method. ... SKIP: WIP test failed: 18 != '???'
-Test the Molecule.calculateSymmetryNumber() method. ... SKIP: WIP test failed: 9 != 1
+Test the Molecule.calculateSymmetryNumber() method. ... ok
+Test the Molecule.calculateSymmetryNumber() method. ... ok
+Test the Molecule.calculateSymmetryNumber() method. ... SKIP: WIP test failed: 9 != '36?'
 Test the Molecule.calculateSymmetryNumber() method. ... ok
 Test the SingleExponentialDown.T0 attribute. ... ok
 Test the SingleExponentialDown.sigma attribute. ... ok
@@ -3769,6 +3770,7 @@ Test the StatMech.getHeatCapacity() method for ethylene. ... ok
 Test the StatMech.getHeatCapacity() method for oxygen. ... ok
 Test the Conformer.getInternalReducedMomentOfInertia() method. ... ok
 Test the Conformer.getMomentOfInertiaTensor() method. ... ok
+Test the Conformer.getNumberDegreesOfFreedom() method. ... ok
 Test the StatMech.getPartitionFunction() method for ethylene. ... ok
 Test the StatMech.getPartitionFunction() method for oxygen. ... ok
 Test the Conformer.getPrincipalMomentsOfInertia() method. ... ok
@@ -4004,7 +4006,7 @@ rmgpy.data.rmg                       86     65     14     14    21%   56-71, 92-
 rmgpy.data.solvation                383    156     76     40    57%   56-128, 181, 252, 302, 330-335, 358, 365, 372, 413, 421, 428, 452-457, 463-465, 506-509, 516-518, 525-527, 535-550, 566-579, 617-629, 706-745, 756-760, 779, 793-797
 rmgpy.data.statmech                 297    246    107    107    13%   48-86, 93-96, 103-111, 122, 134, 149, 159, 171, 186, 193, 200, 211, 223-231, 246, 253, 260, 267-274, 283-298, 308-344, 353-434, 444-456, 462-468, 474-477, 484-489, 496-497, 504-516, 523-525, 532-536, 543-545, 552-554, 561-563, 571-588, 605-618, 631-639, 647-652, 660-663, 672, 685-686, 694-701
 rmgpy.data.statmechfit              248    213     70     70    11%   95-137, 151-193, 207-244, 260-307, 316-319, 327-330, 338-343, 352-355, 364-366, 378-381, 384-407, 419-422, 425-457, 469-472, 475-506
-rmgpy.data.thermo                   441    184    136     60    58%   56-124, 131-149, 188-199, 205, 232, 236, 253, 260, 308, 316, 349-355, 361-364, 374, 404, 426-430, 437-439, 446-448, 455-462, 552-563, 573-616, 635-636, 662-666, 676-677, 701-703, 722-725, 727-730, 747-749, 817-818, 840-844, 889-893, 904, 916-922, 930-934, 949, 978, 980, 999
+rmgpy.data.thermo                   441    182    136     59    58%   56-124, 131-149, 188-199, 205, 232, 236, 253, 260, 308, 316, 349-355, 361-364, 374, 404, 426-430, 437-439, 446-448, 455-462, 552-563, 573-616, 635-636, 662-666, 676-677, 701-703, 722-725, 727-730, 747-749, 817-818, 840-844, 889-893, 904, 918-922, 930-934, 949, 978, 980, 999
 rmgpy.data.transport                282    146     76     57    43%   54-110, 159, 166, 173, 194, 212, 219, 226, 247-252, 258-260, 304-307, 314-316, 323-325, 335-349, 357-369, 380-384, 411, 443-482, 504-505, 532, 540, 542, 546-550, 567-600
 rmgpy.display                        12      4      2      2    57%   37, 41-43, 47
 rmgpy.kinetics                        6      0      0      0   100%   
@@ -4024,7 +4026,7 @@ rmgpy.pdep.draw                     291    277     86     86     4%   57-70, 73-
 rmgpy.pdep.network                  532    408    230    209    19%   51-53, 60, 130, 137-149, 161, 181, 194-261, 272-345, 358, 361, 364, 396, 460-464, 473, 495-515, 529-688, 699-716, 724-738, 745-748, 755-758, 768-771, 774-775, 789-860, 871-925, 938-954
 rmgpy.qm                              0      0      0      0   100%   
 rmgpy.qm.gaussian                   129     99     48     46    18%   24, 26, 46-47, 51-56, 75-134, 140-145, 161-164, 171-196, 204-219
-rmgpy.qm.main                        72     15     26     13    71%   135, 137, 149, 151, 153, 156-167
+rmgpy.qm.main                        72     17     26     14    68%   131-132, 135, 137, 149, 151, 153, 156-167
 rmgpy.qm.molecule                   190    141     38     37    22%   10-11, 51, 59, 63, 67, 76-84, 97-118, 122-124, 140-173, 200-204, 213, 218, 223, 228, 233, 239-242, 249, 258-280, 286-294, 300-318, 325, 334-337, 345-347, 353-356, 365-410
 rmgpy.qm.mopac                      144    107     50     48    20%   23, 25, 59-60, 63-68, 87-141, 147-152, 176-202, 214-236, 254-277
 rmgpy.qm.qmdata                      35     27      2      2    22%   23-38, 41, 75-101
@@ -4043,9 +4045,9 @@ rmgpy.transport                      28      1      0      0    96%   71
 -----------------------------------------------------------------------------
 TOTAL                             14933  11865   6380   5722    17%   
 ----------------------------------------------------------------------
-Ran 752 tests.
+Ran 754 tests.
 
-OK (SKIP=28)
+OK (SKIP=27)
 SHCSC2H5
 1 C 0 {2,D} {3,S} {4,S}
 2 S 0 {1,D}
