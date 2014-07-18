@@ -39,7 +39,7 @@ import numpy
 import scipy.interpolate
 
 from rmgpy.statmech import Conformer, IdealGasTranslation, NonlinearRotor, HarmonicOscillator, \
-                           LinearRotor, HinderedRotor
+                           LinearRotor, HinderedRotor 
 import rmgpy.constants as constants
 
 ################################################################################
@@ -295,3 +295,13 @@ class TestConformer(unittest.TestCase):
         """
         I = self.conformer.getInternalReducedMomentOfInertia(pivots=[1,5], top1=[1,2,3,4])
         self.assertAlmostEqual(I*constants.Na*1e23, 1.56768, 4)
+    def test_getNumberDegreesOfFreedom(self):
+        """
+        Test the Conformer.getNumberDegreesOfFreedom() method.
+        """
+        #this is for ethane:
+        numberDegreesOfFreedom = self.conformer.getNumberDegreesOfFreedom  
+        self.assertTrue(numberDegreesOfFreedom, 24) 
+        #this is for ethylene:
+        numberDegreesOfFreedom = self.ethylene.getNumberDegreesOfFreedom 
+        self.assertTrue(numberDegreesOfFreedom, 18)        

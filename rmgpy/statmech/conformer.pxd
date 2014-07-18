@@ -68,6 +68,8 @@ cdef class Conformer:
     cpdef getSymmetricTopRotors(self)
 
     cpdef list getActiveModes(self, bint activeJRotor=?, bint activeKRotor=?)
+    
+    cpdef getNumberDegreesOfFreedom(self)
 
 ################################################################################
 

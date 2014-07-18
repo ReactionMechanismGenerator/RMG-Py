@@ -567,6 +567,8 @@ class Bond(Edge):
                 self.incrementOrder()
             elif action[2] == -1:
                 self.decrementOrder()
+            elif action[2] == 'B':
+                self.order = 'B'
             else:
                 raise ActionError('Unable to update Bond due to CHANGE_BOND action: Invalid order "{0}".'.format(action[2]))
         else:
