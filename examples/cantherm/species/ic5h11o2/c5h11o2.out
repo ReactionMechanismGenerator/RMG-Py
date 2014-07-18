@@ -1,0 +1,211 @@
+-catch_rsh /opt/sge/default/spool/node69/active_jobs/274796.1/pe_hostfile /opt/mpich2-1.2.1p1
+node69:4
+startmpich2.sh: check for local mpd daemon (1 of 10)
+/opt/sge/bin/lx24-amd64/qrsh -inherit -V node69 /opt/mpich2-1.2.1p1/bin/mpd
+startmpich2.sh: check for local mpd daemon (2 of 10)
+startmpich2.sh: check for local mpd daemon (3 of 10)
+startmpich2.sh: check for mpd daemons (1 of 10)
+startmpich2.sh: got all 1 of 1 nodes
+==========================================================
+Starting on : Thu Mar 27 13:19:30 EDT 2014
+Running on node : node69
+Current directory : /home/edames/qchem/isoC5H11O
+Current job ID : 274796
+Current job name : c5h11o2
+Task index number : undefined
+==========================================================
+You are running Q-Chem version: 4.1.0
+You are running Q-Chem version: 4.1.0
+You are running Q-Chem version: 4.1.0
+An mpd is already running with console at /tmp/mpd2.console_edames_sge_274796. on node69. 
+Start mpd with the -n option for a second mpd on same host.
+
+#
+# job setting
+#
+
+#
+# job setting
+#
+
+#
+# job setting
+#
+local host:  node69
+current dir: /home/edames/qchem/isoC5H11O
+input file:  c5h11o-2.in
+local host:  node69
+current dir: /home/edames/qchem/isoC5H11O
+input file:  c5h11o-2.in
+output file: c5h11o-2.out
+nprocs     : 1
+output file: c5h11o-2.out
+nprocs     : 1
+nthreads   : 1
+#
+local host:  node69
+# qchem installation setting
+#
+QC:          /opt/qchem
+current dir: /home/edames/qchem/isoC5H11O
+input file:  c5h11o-2.in
+output file: c5h11o-2.out
+QCAUX:       /opt/qchem/qcaux
+nprocs     : 1
+nthreads   : 1
+QCPROG:      /opt/qchem/exe/qcprog.exe
+#
+QCPROG_S:    /opt/qchem/exe/qcprog.exe_s
+# qchem installation setting
+#
+QC:          /opt/qchem
+PARALLEL:    -DPARALLEL
+QCMPI:       mpich
+#
+QCAUX:       /opt/qchem/qcaux
+# qchem directory setting
+#
+QCPROG:      /opt/qchem/exe/qcprog.exe
+qcrun:       qchem22447
+QCPROG_S:    /opt/qchem/exe/qcprog.exe_s
+QCSCRATCH:   /scratch/qchem
+PARALLEL:    -DPARALLEL
+QCLOCALSCR:  /tmp/
+QCMPI:       mpich
+QCTMPDIR:    /tmp/
+#
+# qchem directory setting
+QCFILEPREF:  /tmp//qchem22447
+#
+QCSAVEDIR:   
+qcrun:       qchem22446
+QCSCRATCH:   /scratch/qchem
+QCLOCALSCR:  /tmp/
+workdirs:    /tmp//qchem22447
+QCTMPDIR:    /tmp/
+workdir0:    /tmp//qchem22447
+QCFILEPREF:  /tmp//qchem22446
+nthreads   : 1
+#
+# qchem installation setting
+#
+QC:          /opt/qchem
+QCAUX:       /opt/qchem/qcaux
+QCPROG:      /opt/qchem/exe/qcprog.exe
+QCPROG_S:    /opt/qchem/exe/qcprog.exe_s
+PARALLEL:    -DPARALLEL
+QCMPI:       mpich
+#
+# qchem directory setting
+#
+qcrun:       qchem22445
+QCSCRATCH:   /scratch/qchem
+QCLOCALSCR:  /tmp/
+QCTMPDIR:    /tmp/
+QCFILEPREF:  /tmp//qchem22445
+QCSAVEDIR:   
+workdirs:    /tmp//qchem22445
+QCSAVEDIR:   
+workdir0:    /tmp//qchem22445
+workdirs:    /tmp//qchem22446
+partmpdirs =  
+partmpdirs =  
+workdir0:    /tmp//qchem22446
+partmpdirs =  
+You are running Q-Chem version: 4.1.0
+
+#
+# job setting
+#
+local host:  node69
+current dir: /home/edames/qchem/isoC5H11O
+input file:  c5h11o-2.in
+output file: c5h11o-2.out
+nprocs     : 1
+nthreads   : 1
+#
+# qchem installation setting
+#
+QC:          /opt/qchem
+QCAUX:       /opt/qchem/qcaux
+QCPROG:      /opt/qchem/exe/qcprog.exe
+QCPROG_S:    /opt/qchem/exe/qcprog.exe_s
+PARALLEL:    -DPARALLEL
+QCMPI:       mpich
+#
+# qchem directory setting
+#
+qcrun:       qchem22444
+QCSCRATCH:   /scratch/qchem
+QCLOCALSCR:  /tmp/
+QCTMPDIR:    /tmp/
+QCFILEPREF:  /tmp//qchem22444
+QCSAVEDIR:   
+workdirs:    /tmp//qchem22444
+workdir0:    /tmp//qchem22444
+partmpdirs =  
+#
+# parallel setting
+#
+#
+# parallel setting
+#
+#
+# parallel setting
+#
+#
+# parallel setting
+#
+QCRSH:           ssh
+QCMPI:           mpich
+QCMPIRUN:        /opt/qchem/bin/mpi/mpirun_qchem
+QCMACHINEFILE:   /tmp/274796.1.long3/hostfile
+QCRSH:           ssh
+QCMPI:           mpich
+QCRSH:           ssh
+QCMPI:           mpich
+QCMPIRUN:        /opt/qchem/bin/mpi/mpirun_qchem
+QCMACHINEFILE:   /tmp/274796.1.long3/hostfile
+QCMPIRUN:        /opt/qchem/bin/mpi/mpirun_qchem
+QCMACHINEFILE:   /tmp/274796.1.long3/hostfile
+QCRSH:           ssh
+QCMPI:           mpich
+QCMPIRUN:        /opt/qchem/bin/mpi/mpirun_qchem
+QCMACHINEFILE:   /tmp/274796.1.long3/hostfile
+node69.cluster:4
+node69.cluster:4
+node69.cluster:4
+
+
+node69.cluster:4
+
+
+#
+#
+# env setting
+#
+#
+#
+# env setting
+#
+# env setting
+#
+# env setting
+#
+exported envs:   QC QCAUX QCSCRATCH QCRUNNAME QCFILEPREF QCPROG QCPROG_S GUIFILE
+exported envs:   QC QCAUX QCSCRATCH QCRUNNAME QCFILEPREF QCPROG QCPROG_S GUIFILE
+exported envs:   QC QCAUX QCSCRATCH QCRUNNAME QCFILEPREF QCPROG QCPROG_S GUIFILE
+exported envs:   QC QCAUX QCSCRATCH QCRUNNAME QCFILEPREF QCPROG QCPROG_S GUIFILE
+remove work dirs /tmp//qchem22444.0 -- /tmp//qchem22444.0
+rm -rf /tmp//qchem22444.0
+rm -rf /tmp//qchem22444
+remove work dirs /tmp//qchem22446.0 -- /tmp//qchem22446.0
+rm -rf /tmp//qchem22446.0
+rm -rf /tmp//qchem22446
+remove work dirs /tmp//qchem22445.0 -- /tmp//qchem22445.0
+rm -rf /tmp//qchem22445.0
+rm -rf /tmp//qchem22445
+remove work dirs /tmp//qchem22447.0 -- /tmp//qchem22447.0
+rm -rf /tmp//qchem22447.0
+rm -rf /tmp//qchem22447
+-catch_rsh /opt/mpich2-1.2.1p1
