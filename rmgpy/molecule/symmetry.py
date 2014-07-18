@@ -127,9 +127,8 @@ def calculateBondSymmetryNumber(molecule, atom1, atom2):
         if atom1.equivalent(atom2):
             # An O-O bond is considered to be an "optical isomer" and so no
             # symmetry correction will be applied
-            if atom1.atomType.label == atom2.atomType.label == 'Os' and \
-                atom1.radicalElectrons == atom2.radicalElectrons == 0:
-                pass
+            if atom1.atomType.label == 'Os' and atom2.atomType.label == 'Os' and atom1.radicalElectrons == atom2.radicalElectrons == 0:
+                return symmetryNumber
             # If the molecule is diatomic, then we don't have to check the
             # ligands on the two atoms in this bond (since we know there
             # aren't any)
