@@ -1,0 +1,96 @@
+# Coordinates for ch3oh (angstroms):
+#   H    0.0000    0.0000    0.0000
+#   H   -2.1841   -0.1948    0.8955
+#   H   -2.1841   -0.1948   -0.8955
+#   C   -1.8238   -0.7230    0.0000
+#   O   -0.4154   -0.8667    0.0000
+#   H   -2.2504   -1.7311    0.0000
+conformer(
+    label = 'ch3oh',
+    E0 = (-303601, 'kJ/mol'),
+    modes = [
+        IdealGasTranslation(mass=(32.0262, 'amu')),
+        NonlinearRotor(
+            inertia = ([3.953, 20.3572, 21.0771], 'amu*angstrom^2'),
+            symmetry = 1,
+        ),
+        HarmonicOscillator(
+            frequencies = ([282.327, 1034.93, 1089.1, 1145.71, 1319.76, 1439, 1457.49, 1467.39, 2907.75, 2960.64, 3016.78, 3839.95], 'cm^-1'),
+        ),
+    ],
+    spinMultiplicity = 2,
+    opticalIsomers = 1,
+)
+
+# Coordinates for ts (angstroms):
+#   O    0.0000    0.0000    0.0000
+#   H    0.6732    1.7998   -0.6429
+#   C   -0.1680    1.1339   -0.3219
+#   H   -1.4733    1.5497   -0.2558
+#   C   -2.7964    1.2106   -0.0147
+#   O   -2.8631   -0.1150   -0.3856
+#   H   -2.9173    1.4061    1.0592
+#   H   -3.4303    1.8285   -0.6540
+#   H   -2.1432   -0.6081    0.0350
+conformer(
+    label = 'ts',
+    E0 = (-602295, 'kJ/mol'),
+    modes = [
+        IdealGasTranslation(mass=(61.029, 'amu')),
+        NonlinearRotor(
+            inertia = ([31.3026, 121.908, 145.687], 'amu*angstrom^2'),
+            symmetry = 1,
+        ),
+        HarmonicOscillator(
+            frequencies = ([114.274, 157.85, 201.623, 315.051, 422.995, 544.13, 551.837, 1064.78, 1124.47, 1151.01, 1211.84, 1291.59, 1331.13, 1439.57, 1513.67, 1829.74, 2777.03, 2949.27, 3068.37, 3733.84], 'cm^-1'),
+        ),
+    ],
+    spinMultiplicity = 2,
+    opticalIsomers = 2,
+    frequency = (-1971.39, 'cm^-1'),
+)
+
+# Coordinates for hco (angstroms):
+#   C    0.0000    0.0000    0.0000
+#   O   -1.1468   -0.2271    0.0000
+#   H    0.8098   -0.7829    0.0000
+conformer(
+    label = 'hco',
+    E0 = (-298771, 'kJ/mol'),
+    modes = [
+        IdealGasTranslation(mass=(29.0027, 'amu')),
+        NonlinearRotor(
+            inertia = ([0.698419, 11.1747, 11.8731], 'amu*angstrom^2'),
+            symmetry = 1,
+        ),
+        HarmonicOscillator(frequencies=([1072.4, 1961.52, 2676.25], 'cm^-1')),
+    ],
+    spinMultiplicity = 2,
+    opticalIsomers = 1,
+)
+
+#   ======= =========== =========== =========== ===============
+#   Temp.   k (TST)     Tunneling   k (TST+T)   Units
+#   ======= =========== =========== =========== ===============
+#     300 K   6.101e-04           1   6.101e-04 cm^3/(mol*s)
+#     400 K   1.770e+00           1   1.770e+00 cm^3/(mol*s)
+#     500 K   2.474e+02           1   2.474e+02 cm^3/(mol*s)
+#     600 K   7.463e+03           1   7.463e+03 cm^3/(mol*s)
+#     800 K   6.519e+05           1   6.519e+05 cm^3/(mol*s)
+#    1000 K   1.143e+07           1   1.143e+07 cm^3/(mol*s)
+#    1500 K   7.629e+08           1   7.629e+08 cm^3/(mol*s)
+#    2000 K   8.325e+09           1   8.325e+09 cm^3/(mol*s)
+#   ======= =========== =========== =========== ===============
+kinetics(
+    label = 'hco + ch3oh <=> hco + ch3oh',
+    kinetics = Arrhenius(
+        A = (1.69733, 'cm^3/(mol*s)'),
+        n = 3.4832,
+        Ea = (69.2938, 'kJ/mol'),
+        T0 = (1, 'K'),
+        Tmin = (303.03, 'K'),
+        Tmax = (2500, 'K'),
+        comment = 'Fitted to 59 data points; dA = *|/ 1.04419, dn = +|- 0.00567514, dEa = +|- 0.031219 kJ/mol',
+    ),
+)
+

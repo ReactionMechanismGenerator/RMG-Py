@@ -4,7 +4,7 @@
 modelChemistry = "CBS-QB3"
 frequencyScaleFactor = 0.99
 useHinderedRotors = False
-useBondCorrections = False
+useBondCorrections = True
 
 species('H', '../../species/H/H.py')
 species('C2H4', '../../species/C2H4/ethene.py')
