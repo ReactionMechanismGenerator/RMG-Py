@@ -130,13 +130,10 @@ class QchemLog:
             if 'Standard Nuclear Orientation' in line:
                 found += 1
                 for i in range(3): line = f.readline() # skip  lines
-                num = 0
                 while '----------------------------------------------------' not in line:
                     data = line.split()
                     atom.append((data[1]))
                     coord.append([float(data[2]), float(data[3]), float(data[4])])
-                    num += 1
-                    number.append(num)
                     line = f.readline()
                 # Read the next line in the file    
                 line = f.readline()
@@ -147,7 +144,6 @@ class QchemLog:
         #print coord
         f.close()
         coord = numpy.array(coord, numpy.float64)
-        number = numpy.array(number, numpy.int)
         mass = numpy.array(coord, numpy.float64)
         # Assign appropriate mass to each atom in molecule
         # These values were taken from "Atomic Weights and Isotopic Compositions" v3.0 (July 2010) from NIST
@@ -157,21 +153,29 @@ class QchemLog:
         for i in range(len(atom)):  
             if atom[i] == 'H':
                 mass[i] = 1.00782503207
+                number.append('1')
             elif atom[i] == 'C':
                 mass[i] = 12.0
+                number.append('6')
             elif atom[i] == 'N':
                 mass[i] = 14.0030740048
+                number[i] = 7
+                number.append('7')
             elif atom[i] == 'O':
                 mass[i] = 15.99491461956
+                number.append('8')
             elif atom[i] == 'P':
                 mass[i] = 30.97376163
+                number.append('15')
             elif atom[i] == 'S':
                 mass[i] = 31.97207100
+                number.append('16')
             elif atom[i] == 'Cl':
                 mass[i] = 35.4527
+                number.append('17')
             else:
                 print 'Atomic atom {0:d} not yet supported in loadGeometry().'.format(atom[i])
-               
+        number = numpy.array(number, numpy.int)       
         return coord, number, mass
     
     def loadConformer(self, symmetry=None, spinMultiplicity=None, opticalIsomers=1):

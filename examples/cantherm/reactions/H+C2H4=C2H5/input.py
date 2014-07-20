@@ -3,7 +3,7 @@
 
 modelChemistry = "CBS-QB3"
 frequencyScaleFactor = 0.99
-useHinderedRotors = True
+useHinderedRotors = False
 useBondCorrections = False
 
 species('H', '../../species/H/H.py')
