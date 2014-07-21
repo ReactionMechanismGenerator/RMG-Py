@@ -1099,7 +1099,7 @@ class CoreEdgeReactionModel:
             elif numEdgeSpecies - len(speciesToPrune) > maximumEdgeSpecies and self.edge.species[index] not in ineligibleSpecies:
                 speciesToPrune.append((index, self.edge.species[index]))
             else:
-                break
+                continue
 
         # Actually do the pruning
         if pruneDueToRateCounter > 0:
