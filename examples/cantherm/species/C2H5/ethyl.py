@@ -26,7 +26,7 @@ energy = {
 
 geometry = GaussianLog('ethyl_cbsqb3.log')
 
-frequencies = GaussianLog('ethyl_b3lyp.log')
+frequencies = GaussianLog('ethyl_cbsqb3.log')
 
 """pivot are the two atoms that are attached to the rotor
 top contains the atoms that are being rotated including one of the atoms from pivots
