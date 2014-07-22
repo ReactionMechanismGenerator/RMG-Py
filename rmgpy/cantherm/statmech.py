@@ -512,7 +512,10 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds):
         atomEnergies = {'H':-0.499818 , 'N':-54.520543, 'O':-74.987624, 'C':-37.785385, 'P':-340.817186, 'S': -397.657360}
     elif modelChemistry == 'G3':
         atomEnergies = {'H':-0.5010030, 'N':-54.564343, 'O':-75.030991, 'C':-37.827717, 'P':-341.116432, 'S': -397.961110}
-
+    elif modelChemistry == 'M08SO/MG3S*': # * indicates that the grid size used in the [QChem} electronic 
+        #structure calculation utilized 75 radial points and 434 angular points 
+        #(i.e,, this is specified in the $rem section of the [qchem] input file as: XC_GRID 000075000434)
+        atomEnergies = {'H':-0.5017321350, 'N':-54.5574039365, 'O':-75.0382931348, 'C':-37.8245648740, 'P':-341.2444299005, 'S':-398.0940312227 }
     elif modelChemistry == 'Klip_1':
         atomEnergies = {'H':-0.50003976, 'N':-54.53383153, 'O':-75.00935474, 'C':-37.79266591}
     elif modelChemistry == 'Klip_2':
