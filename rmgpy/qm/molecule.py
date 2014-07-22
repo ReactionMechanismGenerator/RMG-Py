@@ -229,6 +229,17 @@ class Geometry:
                     
         return atomsymbols, atomcoords 
     
+    def getDistance(self, coords1, coords2):
+        """
+        Returns the distance between the two coordinates. The coordinates are provided in an array.
+        """
+        coordsDiff = coords1 - coords2
+        coordsSq = coordsDiff**2
+        distSq = coordsSq.sum()
+        dist = math.sqrt(distSq)
+        
+        return dist
+    
     def saveCoordinatesFromRDMol(self, rdmol, minEid, rdAtIdx):
         # Save xyz coordinates on each atom in molecule ****
         for atom in self.molecule.atoms:
