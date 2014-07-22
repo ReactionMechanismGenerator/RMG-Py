@@ -1043,7 +1043,7 @@ class CoreEdgeReactionModel:
         """
         self.edge.species.append(spec)
 
-    def prune(self, reactionSystems, fluxToleranceKeepInEdge, maximumEdgeSpecies):
+    def prune(self, reactionSystems, toleranceKeepInEdge, maximumEdgeSpecies):
         """
         Remove species from the model edge based on the simulation results from
         the list of `reactionSystems`.
@@ -1062,55 +1062,57 @@ class CoreEdgeReactionModel:
 
         # Get the maximum species rates (and network leak rates)
         # across all reaction systems
-        maxEdgeSpeciesRates = numpy.zeros((numEdgeSpecies), numpy.float64)
+        maxEdgeSpeciesRateRatios = numpy.zeros((numEdgeSpecies), numpy.float64)
         for reactionSystem in reactionSystems:
             for i in range(numEdgeSpecies):
-                rate = reactionSystem.maxEdgeSpeciesRates[i]
-                if maxEdgeSpeciesRates[i] < rate:
-                    maxEdgeSpeciesRates[i] = rate
+                rateRatio = reactionSystem.maxEdgeSpeciesRateRatios[i]
+                if maxEdgeSpeciesRateRatios[i] < rateRatio:
+                    maxEdgeSpeciesRateRatios[i] = rateRatio
 
             for i in range(len(self.networkList)):
                 network = self.networkList[i]
-                rate = reactionSystem.maxNetworkLeakRates[i]
+                rateRatio = reactionSystem.maxNetworkLeakRateRatios[i]
                 # Add the fraction of the network leak rate contributed by
                 # each unexplored species to that species' rate
                 # This is to ensure we have an overestimate of that species flux
                 ratios = network.getLeakBranchingRatios(reactionSystem.T.value_si,reactionSystem.P.value_si)
                 for spec, frac in ratios.iteritems():
                     index = self.edge.species.index(spec)
-                    maxEdgeSpeciesRates[index] += frac * rate
+                    maxEdgeSpeciesRateRatios[index] += frac * rateRatio
                 # Mark any species that is explored in any partial network as ineligible for pruning
                 for spec in network.explored:
                     if spec not in ineligibleSpecies:
                         ineligibleSpecies.append(spec)
 
         # Sort the edge species rates by index
-        indices = numpy.argsort(maxEdgeSpeciesRates)
-
+        indices = numpy.argsort(maxEdgeSpeciesRateRatios)
         # Determine which species to prune
         speciesToPrune = []
         pruneDueToRateCounter = 0
         for index in indices:
             # Remove the species with rates below the pruning tolerance from the model edge
-            if maxEdgeSpeciesRates[index] < fluxToleranceKeepInEdge and self.edge.species[index] not in ineligibleSpecies:
+            if maxEdgeSpeciesRateRatios[index] < toleranceKeepInEdge and self.edge.species[index] not in ineligibleSpecies:
                 speciesToPrune.append((index, self.edge.species[index]))
                 pruneDueToRateCounter += 1
             # Keep removing species with the lowest rates until we are below the maximum edge species size
             elif numEdgeSpecies - len(speciesToPrune) > maximumEdgeSpecies and self.edge.species[index] not in ineligibleSpecies:
+                logging.info('Pruning species {0} to make numEdgeSpecies smaller than maximumEdgeSpecies'.format(self.edge.species[index]))
                 speciesToPrune.append((index, self.edge.species[index]))
             else:
                 continue
 
         # Actually do the pruning
         if pruneDueToRateCounter > 0:
-            logging.info('Pruning {0:d} species whose rates did not exceed the minimum threshold of {1:g}'.format(pruneDueToRateCounter, fluxToleranceKeepInEdge))
+            logging.info('Pruning {0:d} species whose rate ratios against characteristic rate did not exceed the minimum threshold of {1:g}'.format(pruneDueToRateCounter, toleranceKeepInEdge))
             for index, spec in speciesToPrune[0:pruneDueToRateCounter]:
-                logging.debug('    {0:<56}    {1:10.4e}'.format(spec, maxEdgeSpeciesRates[index]))
+                logging.info('Pruning species {0:<56}'.format(spec))
+                logging.debug('    {0:<56}    {1:10.4e}'.format(spec, maxEdgeSpeciesRateRatios[index]))
                 self.removeSpeciesFromEdge(spec)
         if len(speciesToPrune) - pruneDueToRateCounter > 0:
             logging.info('Pruning {0:d} species to obtain an edge size of {1:d} species'.format(len(speciesToPrune) - pruneDueToRateCounter, maximumEdgeSpecies))
             for index, spec in speciesToPrune[pruneDueToRateCounter:]:
-                logging.debug('    {0:<56}    {1:10.4e}'.format(spec, maxEdgeSpeciesRates[index]))
+                logging.info('Pruning species {0:<56}'.format(spec))
+                logging.debug('    {0:<56}    {1:10.4e}'.format(spec, maxEdgeSpeciesRateRatios[index]))
                 self.removeSpeciesFromEdge(spec)
 
         # Delete any networks that became empty as a result of pruning
