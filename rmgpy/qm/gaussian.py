@@ -6,6 +6,7 @@ import logging
 import time
 import math
 import numpy
+import itertools
 from subprocess import Popen, PIPE
 
 from rmgpy.molecule import Molecule, Atom, getElement
@@ -437,7 +438,7 @@ class GaussianTS(QMReaction, Gaussian):
     #: List of phrases that indicate failure
     #: NONE of these must be present in a succesful job.
     failureKeys = [
-                   'ERROR TERMINATION',
+                   'Error termination',
                    'Error in internal coordinate system.',
                    ]
     
@@ -908,6 +909,30 @@ class GaussianTS(QMReaction, Gaussian):
                 return True
             else:
                 return False
+    
+    def testTSGeometry(self, reactant):
+        """
+        Generates a dictionary of distances between all labeled atoms pairs. This may help identify
+        transition state geometries with a small imaginary frequency that is NOT a reaction saddle
+        point. This would be valueable as it would prevent the need for an IRC in these cases, saving
+        on the computational cost.
+        """
+        labeledList = reactant.getLabeledAtoms()
+        labeledAtoms = labeledList.values()
+        labels = labeledList.keys()
+        atomSymbols, atomCoords = self.geometry.parseLOG(self.outputFilePath)
+        
+        distances = {}
+        dist_combo_it = itertools.combinations(labels, 2)
+        dist_combo_l = list(dist_combo_it)
+        for combo in dist_combo_l[:len(labels)]:
+            atom1 = reactant.getLabeledAtom(combo[0])
+            atom2 = reactant.getLabeledAtom(combo[1])
+            
+            coords1 = atomCoords[atom1.sortingLabel]
+            coords2 = atomCoords[atom2.sortingLabel]
+            
+            distances[combo] = self.geometry.getDistance(coords1, coords2)
     
     def checkGeometry(self, outputFilePath, molecule):
         """
