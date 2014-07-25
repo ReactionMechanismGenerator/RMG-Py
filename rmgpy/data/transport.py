@@ -52,13 +52,13 @@ def saveEntry(f, entry):
     database to the file object `f`.
     """
     f.write('entry(\n')
-    f.write('    index        = {0:d},\n'.format(entry.index))
-    f.write('    label        = "{0}",\n'.format(entry.label))
+    f.write('    index = {0:d},\n'.format(entry.index))
+    f.write('    label = "{0}",\n'.format(entry.label))
 
     if isinstance(entry.item, Molecule):
         f.write('    molecule = \n')
         f.write('"""\n')
-        f.write(entry.item.toAdjacencyList(removeH=True))
+        f.write(entry.item.toAdjacencyList(removeH=False))
         f.write('""",\n')
     elif isinstance(entry.item, Group):
         f.write('    group = \n')
