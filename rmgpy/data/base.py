@@ -428,18 +428,6 @@ class Database:
                 # Add node to list of parents for subsequent iteration
                 parents.append(label)
 
-        # Sort children by decreasing size; the algorithm returns the first
-        # match of each children, so this makes it less likely to miss a
-        # more detailed functional group
-        # First determine if we can do the sort (that is, all children have
-        # one Molecule or Group)
-        for label, entry in self.entries.iteritems():
-            canSort = True
-            for child in entry.children:
-                if not isinstance(child.item, Molecule) and not isinstance(child.item, Group):
-                    canSort = False
-            if canSort:
-                entry.children.sort(lambda y, x: cmp(len(x.item.atoms), len(y.item.atoms)))
 
     def loadOldTree(self, path):
         """
