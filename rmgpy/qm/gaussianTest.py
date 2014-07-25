@@ -13,10 +13,14 @@ from rmgpy.qm.gaussian import GaussianMolPM3, GaussianMolPM6
 
 
 gaussEnv = os.getenv('GAUSS_EXEDIR') or os.getenv('g09root') or os.getenv('g03root') or ""
-if os.path.exists(os.path.join(gaussEnv , 'g09')):
-	executablePath = os.path.join(gaussEnv , 'g09')
-elif os.path.exists(os.path.join(gaussEnv , 'g03')):
-	executablePath = os.path.join(gaussEnv , 'g03')
+# GAUSS_EXEDIR may be a list like "path1:path2:path3"
+for possibleDir in gaussEnv.split(':'):
+	if os.path.exists(os.path.join(possibleDir , 'g09')):
+		executablePath = os.path.join(possibleDir , 'g09')
+		break
+	elif os.path.exists(os.path.join(possibleDir , 'g03')):
+		executablePath = os.path.join(possibleDir , 'g03')
+		break
 else:
 	executablePath = os.path.join(gaussEnv , '(g03 or g09)')
 
