@@ -1,3221 +1,6 @@
 mkdir -p testing/coverage
 rm -rf testing/coverage/*
 nosetests --nocapture --nologcapture --all-modules --verbose --with-coverage --cover-inclusive --cover-package=rmgpy --cover-erase --cover-html --cover-html-dir=testing/coverage rmgpy
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-HCS
-1 C 1 {2,D}
-2 S 0 {1,D}
-
-cyclopropynylidyne
-1  C 0 {2,T} {3,S}
-2  C 0 {1,T} {3,S}
-3  C 1 {1,S} {2,S} {4,S}
-4  H 0 {3,S}
-
-OCCO(S)
-1 O 0 {2,D}
-2 C 0 {1,D} {3,D}
-3 C 0 {2,D} {4,D}
-4 O 0 {3,D}
-
-CO3s1
-1  C 0 {2,D} {3,S} {4,S}
-2  O 0 {1,D}
-3  O 0 {4,S} {1,S}
-4  O 0 {3,S} {1,S}
-
-OH
-1 O 1 {2,S}
-2 H 0 {1,S}
-
-H2
-1 H 0 {2,S}
-2 H 0 {1,S}
-
-H
-1 H 1
-
-OCCO
-1 O 1 {2,S}
-2 C 0 {1,S} {3,T}
-3 C 0 {2,T} {4,S}
-4 O 1 {3,S}
-
-CO3t1
-1  C 0 {2,D} {3,S} {4,S}
-2  O 0 {1,D}
-3  O 1 {1,S}
-4  O 1 {1,S}
-
-CO3t2
-1  C 1 {2,D} {3,S}
-2  O 0 {1,D}
-3  O 0 {4,S} {1,S}
-4  O 1 {3,S}
-
-S2
-1 S 1 {2,S}
-2 S 1 {1,S}
-
-C3H2
-1 C 2S {2,S} {3,S}
-2 C 0 {1,S} {3,D}
-3 C 0 {1,S} {2,D}
-
-cyclopropene12diyl
-1  C 1 {2,D} {3,S}
-2  C 1 {1,D} {3,S}
-3  C 0 {1,S} {2,S} {4,S} {5,S}
-4  H 0 {3,S}
-5  H 0 {3,S}
-
-O2
-1 O 1 {2,S}
-2 O 1 {1,S}
-
-C3H5OJ(17)
-1 C 0 {2,S}
-2 C 1 {1,S} {3,D}
-3 C 0 {2,D} {4,S}
-4 O 0 {3,S}
-
-C4H9Oi1
-1 C 1 {2,S}
-2 C 0 {1,S} {3,S} {5,S}
-3 C 0 {2,S} {4,S}
-4 O 0 {3,S}
-5 C 0 {2,S}
-
-CH3C[OH]C2H5
-1 C 0 {2,S}
-2 C 1 {1,S} {3,S} {5,S}
-3 C 0 {2,S} {4,S}
-4 C 0 {3,S}
-5 O 0 {2,S}
-
-C5H4C5H5
-1 C 1 {2,S} {5,S} {6,S}
-2 C 0 {1,S} {3,D}
-3 C 0 {2,D} {4,S}
-4 C 0 {3,S} {5,D}
-5 C 0 {4,D} {1,S}
-6 C 0 {7,S} {10,S} {1,S}
-7 C 0 {6,S} {8,D}
-8 C 0 {7,D} {9,S}
-9 C 0 {8,S} {10,D}
-10 C 0 {9,D} {6,S}
-
-CH3CH[OH]CH2CH2
-1 C 0 {2,S}
-2 C 0 {1,S} {3,S} {5,S}
-3 C 0 {2,S} {4,S}
-4 C 1 {3,S}
-5 O 0 {2,S}
-
-iC4H7OJ(17)
-1  C 0 {2,D}
-2  C 0 {1,D} {3,S} {5,S}
-3  C 0 {2,S} {4,S}
-4  O 0 {3,S}
-5  C 1 {2,S}
-
-C4H9O-3
-1 C 0 {2,S}
-2 C 0 {1,S} {3,S}
-3 C 1 {2,S} {4,S}
-4 C 0 {3,S} {5,S}
-5 O 0 {4,S}
-
-iC4H5OJ(15)
-1  C 0 {2,D}
-2  C 0 {1,D} {3,S} {5,S}
-3  C 0 {4,D} {2,S}
-4  O 0 {3,D}
-5  C 1 {2,S}
-
-HOCHC2H5
-1 O 0 {2,S}
-2 C 1 {1,S} {3,S}
-3 C 0 {2,S} {4,S}
-4 C 0 {3,S}
-
-C4H9O-2
-1 C 0 {2,S}
-2 C 1 {1,S} {3,S}
-3 C 0 {2,S} {4,S}
-4 C 0 {3,S} {5,S}
-5 O 0 {4,S}
-
-C4H9O-1
-1 C 1 {2,S}
-2 C 0 {1,S} {3,S}
-3 C 0 {2,S} {4,S}
-4 C 0 {3,S} {5,S}
-5 O 0 {4,S}
-
-CH2CH[OH]C2H5
-1 C 1 {2,S}
-2 C 0 {1,S} {3,S} {5,S}
-3 C 0 {2,S} {4,S}
-4 C 0 {3,S}
-5 O 0 {2,S}
-
-C4H9O-5
-1 C 0 {2,S}
-2 C 0 {1,S} {3,S}
-3 C 0 {2,S} {4,S}
-4 C 0 {3,S} {5,S}
-5 O 1 {4,S}
-
-C4H9O-4
-1 C 0 {2,S}
-2 C 0 {1,S} {3,S}
-3 C 0 {2,S} {4,S}
-4 C 1 {3,S} {5,S}
-5 O 0 {4,S}
-
-tC4H9
-1 C 1 {2,S} {3,S} {4,S}
-2 C 0 {1,S}
-3 C 0 {1,S}
-4 C 0 {1,S}
-
-HOC[CH2][CH3]2
-1 O 0 {2,S}
-2 C 0 {1,S} {3,S} {4,S} {5,S}
-3 C 1 {2,S}
-4 C 0 {2,S}
-5 C 0 {2,S}
-
-tSPC(1553)
-1  O 1 {5,S}
-2  O 0 {5,D}
-3  C 0 {4,D} {7,S} {8,S}
-4  C 0 {3,D} {5,S} {6,S}
-5  C 0 {2,D} {4,S} {1,S}
-6  H 0 {4,S}
-7  H 0 {3,S}
-8  H 0 {3,S}
-
-C4H7OJ(9)
-1 C 1 {2,S}
-2 C 0 {1,S} {3,S}
-3 C 0 {2,S} {4,D}
-4 C 0 {3,D} {5,S}
-5 O 0 {4,S}
-
-C4H7OJ(13)
-1 C 0 {2,S}
-2 C 1 {1,S} {3,S}
-3 C 0 {2,S} {4,S}
-4 C 0 {3,S} {5,D}
-5 O 0 {4,D}
-
-HOC[CH3]2
-1 O 0 {2,S}
-2 C 1 {1,S} {3,S} {4,S}
-3 C 0 {2,S}
-4 C 0 {2,S}
-
-C4H7O_1_2
-1 C 0 {2,S}
-2 C 1 {1,S} {3,S}
-3 C 0 {2,S} {4,D}
-4 C 0 {3,D} {5,S}
-5 O 0 {4,S}
-
-OC[CH3]3
-1 O 1 {2,S}
-2 C 0 {1,S} {3,S} {4,S} {5,S}
-3 C 0 {2,S}
-4 C 0 {2,S}
-5 C 0 {2,S}
-
-CHCCHCHOH
-1 C 0 {2,T}
-2 C 0 {1,T} {3,S}
-3 C 0 {2,S} {4,D}
-4 C 0 {3,D} {5,S}
-5 O 0 {4,S}
-
-CH3CHCHCO
-1 C 0 {2,S}
-2 C 0 {1,S} {3,D}
-3 C 0 {2,D} {4,S}
-4 C 1 {3,S} {5,D}
-5 O 0 {4,D}
-
-tBuOH
-1 O 0 {2,S}
-2 C 0 {1,S} {3,S} {4,S} {5,S}
-3 C 0 {2,S}
-4 C 0 {2,S}
-5 C 0 {2,S}
-
-iC4H7OJ(48)
-1  C 1 {2,S}
-2  C 0 {1,S} {3,S} {5,S}
-3  C 0 {4,D} {2,S}
-4  O 0 {3,D}
-5  C 0 {2,S}
-
-iC4H5OJ(14)
-1  C 0 {2,D}
-2  C 0 {1,D} {3,S} {5,S}
-3  C 1 {2,S} {4,D}
-4  O 0 {3,D}
-5  C 0 {2,S}
-
-CH3CH[OH]CH2
-1 C 0 {2,S}
-2 C 0 {1,S} {3,S} {4,S}
-3 C 1 {2,S}
-4 O 0 {2,S}
-
-C4H9Oi3
-1 C 0 {2,S}
-2 C 0 {1,S} {3,S} {5,S}
-3 C 1 {2,S} {4,S}
-4 O 0 {3,S}
-5 C 0 {2,S}
-
-C4H9Oi2
-1 C 0 {2,S}
-2 C 1 {1,S} {3,S} {5,S}
-3 C 0 {2,S} {4,S}
-4 O 0 {3,S}
-5 C 0 {2,S}
-
-nC4H10O
-1 C 0 {2,S}
-2 C 0 {1,S} {3,S}
-3 C 0 {2,S} {4,S}
-4 C 0 {3,S} {5,S}
-5 O 0 {4,S}
-
-fulvalene
-1 C 0 {2,S} {5,S} {6,D}
-2 C 0 {1,S} {3,D}
-3 C 0 {2,D} {4,S}
-4 C 0 {3,S} {5,D}
-5 C 0 {4,D} {1,S}
-6 C 0 {7,S} {10,S} {1,D}
-7 C 0 {6,S} {8,D}
-8 C 0 {7,D} {9,S}
-9 C 0 {8,S} {10,D}
-10 C 0 {9,D} {6,S}
-
-sBuOH
-1 C 0 {2,S}
-2 C 0 {1,S} {3,S} {5,S}
-3 C 0 {2,S} {4,S}
-4 C 0 {3,S}
-5 O 0 {2,S}
-
-iC4H7OJ(51)
-1  C 0 {2,S}
-2  C 0 {1,S} {3,S} {5,S}
-3  C 1 {2,S} {4,D}
-4  O 0 {3,D}
-5  C 0 {2,S}
-
-CH3CH[O]C2H5
-1 C 0 {2,S}
-2 C 0 {1,S} {3,S} {5,S}
-3 C 0 {WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-2,S} {4,S}
-4 C 0 {3,S}
-5 O 1 {2,S}
-
-CH2CHCCHOH
-1 C 0 {2,D}
-2 C 0 {1,D} {3,S}
-3 C 1 {2,S} {4,D}
-4 C 0 {3,D} {5,S}
-5 O 0 {4,S}
-
-tSPC(343)
-1  O 1 {6,S}
-2  O 0 {5,D}
-3  C 0 {4,D} {7,S} {8,S}
-4  C 0 {3,D} {5,S} {6,S}
-5  C 0 {2,D} {4,S} {9,S}
-6  C 0 {4,S} {10,S} {11,S} {1,S}
-7  H 0 {3,S}
-8  H 0 {3,S}
-9  H 0 {5,S}
-10  H 0 {6,S}
-11  H 0 {6,S}
-
-C4H9Oi4
-1 C 0 {2,S}
-2 C 0 {1,S} {3,S} {5,S}
-3 C 0 {2,S} {4,S}
-4 O 1 {3,S}
-5 C 0 {2,S}
-
-iBuOH
-1 C 0 {2,S}
-2 C 0 {1,S} {3,S} {5,S}
-3 C 0 {2,S} {4,S}
-4 O 0 {3,S}
-5 C 0 {2,S}
-
-HOCHCH3
-1 O 0 {2,S}
-2 C 1 {1,S} {3,S}
-3 C 0 {2,S}
-
-C4H7O-13
-1 C 0 {2,D}
-2 C 0 {1,D} {3,S}
-3 C 1 {2,S} {4,S}
-4 C 0 {3,S} {5,S}
-5 O 0 {4,S}
-
-CH3CH[OH]CHCH3
-1 C 0 {2,S}
-2 C 0 {1,S} {3,S} {5,S}
-3 C 1 {2,S} {4,S}
-4 C 0 {3,S}
-5 O 0 {2,S}
-
-tSPC(1286)
-1  O 0 {2,S} {6,S}
-2  O 1 {1,S}
-3  O 0 {6,D}
-4  C 0 {5,D} {8,S} {9,S}
-5  C 0 {4,D} {6,S} {7,S}
-6  C 0 {3,D} {5,S} {1,S}
-7  H 0 {5,S}
-8  H 0 {4,S}
-9  H 0 {4,S}
-
-HOJ
-1 O 1
-
-O2
-1 O 1 {2,S}
-2 O 1 {1,S}
-
-propen2ooh
-1 C 0 {2,D}
-2 C 0 {1,D} {3,S} {4,S}
-3 C 0 {2,S}
-4 O 0 {2,S} {5,S}
-5 O 0 {4,S}
-
-CH3CHCH2OH
-1 C 0 {2,S}
-2 C 1 {1,S} {3,S}
-3 C 0 {2,S} {4,S}
-4 O 0 {3,S}
-
-CH3CH2OO
-1 C 0 {2,S}
-2 C 0 {1,S} {3,S}
-3 O 0 {2,S} {4,S}
-4 O 1 {3,S}
-
-npropyl
-1 C 1 {2,S}
-2 C 0 {1,S} {3,S}
-3 C 0 {2,S}
-
-C3H6(T)
-1 C 1 {2,S}
-2 C 1 {1,S} {3,S}
-3 C 0 {2,S}
-
-CH2(S)
-1 C 2S
-
-CH
-1 C 3
-
-CH3OH
-1 C 0 {2,S}
-2 O 0 {1,S}
-
-HCCCH(T)
-1 C 0 {2,T}
-2 C 0 {1,T} {3,S}
-3 C 2T {2,S}
-
-isobutene
-1 C 0 {2,D}
-2 C 0 {1,D} {3,S} {4,S}
-3 C 0 {2,S}
-4 C 0 {2,S}
-
-CH3OO
-1 C 0 {2,S}
-2 O 0 {1,S} {3,S}
-3 O 1 {2,S}
-
-CH2COOH
-1 C 1 {2,S}
-2 C 0 {1,S} {3,D} {4,S}
-3 O 0 {2,D}
-4 O 0 {2,S}
-
-HCCCCH
-1 C 0 {2,T}
-2 C 0 {1,T} {3,S}
-3 C 0 {2,S} {4,T}
-4 C 0 {3,T}
-
-O2
-1 O 1 {2,S}
-2 O 1 {1,S}
-
-EME
-1 C 0 {2,S}
-2 C 0 {1,S} {3,S}
-3 O 0 {2,S} {4,S}
-4 C 0 {3,S}
-
-oxiranylmethyl
-1 C 1 {2,S}
-2 C 0 {1,S} {3,S} {4,S}
-3 C 0 {2,S} {4,S}
-4 O 0 {2,S} {3,S}
-
-OCHCH2CH2O
-1 O 1 {2,S}
-2 C 0 {1,S} {3,S}
-3 C 0 {2,S} {4,S}
-4 C 0 {3,S} {5,D}
-5 O 0 {4,D}
-
-formic_acid
-1 C 0 {2,D} {3,S}
-2 O 0 {1,D}
-3 O 0 {1,S}
-
-cyclopropanol
-1 C 0 {2,S} {3,S} {4,S}
-2 C 0 {1,S} {3,S}
-3 C 0 {1,S} {2,S}
-4 O 0 {1,S}
-
-oxetene
-1 O 0 {2,S} {3,S}
-2 C 0 {1,S} {4,D}
-3 C 0 {1,S} {4,S}
-4 C 0 {2,D} {3,S}
-
-propyne
-1 C 0 {2,S}
-2 C 0 {1,S} {3,T}
-3 C 0 {2,T}
-
-CH3
-1 C 1
-
-CH4
-1 C 0
-
-acetone
-1 O 0 {2,D}
-2 C 0 {1,D} {3,S} {4,S}
-3 C 0 {2,S}
-4 C 0 {2,S}
-
-OCH2CHO
-1 O 0 {2,D}
-2 C 0 {1,D} {3,S}
-3 C 0 {2,S} {4,S}
-4 O 1 {3,S}
-
-CH3CHOHCH2
-1 C 0 {2,S}
-2 C 0 {1,S} {3,S} {4,S}
-3 C 1 {2,S}
-4 O 0 {2,S}
-
-HOCH2O
-1 C 0 {2,S} {3,S}
-2 O 0 {1,S}
-3 O 1 {1,S}
-
-oxiranone
-1 O 0 {2,D}
-2 C 0 {1,D} {3,S} {4,S}
-3 C 0 {2,S} {4,S}
-4 O 0 {2,S} {3,S}
-
-CH3CHOOCHO
-1 C 0 {2,S}
-2 C 0 {1,S} {3,S} {5,S}
-3 C 0 {2,S} {4,D}
-4 O 0 {3,D}
-5 O 0 {2,S} {6,S}
-6 O 1 {5,S}
-
-acrolein(T)
-1 C 0 {2,D}
-2 C 0 {1,D} {3,S}
-3 C 1 {2,S} {4,S}
-4 O 1 {3,S}
-
-H2CC(S)
-1 C 2S {2,D}
-2 C 0 {1,D}
-
-butene2c
-1 C 0 {2,S}
-2 C 0 {1,S} {3,D}
-3 C 0 {2,D} {4,S}
-4 C 0 {3,S}
-
-OCHCO
-1 O 0 {2,D}
-2 C 0 {1,D} {3,S}
-3 C 1 {2,S} {4,D}
-4 O 0 {3,D}
-
-CH3O
-1 C 0 {2,S}
-2 O 1 {1,S}
-
-cC2H3O2
-1 O 1 {2,S}
-2 C 0 {1,S} {3,S} {4,S}
-3 C 0 {2,S} {4,S}
-4 O 0 {2,S} {3,S}
-
-butadiene13
-1 C 0 {2,D}
-2 C 0 {1,D} {3,S}
-3 C 0 {2,S} {4,D}
-4 C 0 {3,D}
-
-butene2t
-1 C 0 {2,S}
-2 C 0 {1,S} {3,D}
-3 C 0 {2,D} {4,S}
-4 C 0 {3,S}
-
-CH2CH2CH2OH
-1 C 1 {2,S}
-2 C 0 {1,S} {3,S}
-3 C 0 {2,S} {4,S}
-4 O 0 {3,S}
-
-methyl_formate
-1 C 0 {2,S}
-2 O 0 {1,S} {3,S}
-3 C 0 {2,S} {4,D}
-4 O 0 {3,D}
-
-CH3CHOCH3
-1 C 0 {2,S}
-2 C 1 {1,S} {3,S}
-3 O 0 {2,S} {4,S}
-4 C 0 {3,S}
-
-ethynol
-1 C 0 {2,T}
-2 C 0 {1,T} {3,S}
-3 O 0 {2,S}
-
-ipropyl
-1 C 0 {2,S}
-2 C 1 {1,S} {3,S}
-3 C 0 {2,S}
-
-OH
-1 O 1
-
-CH2CH2OCH3
-1 C 1 {2,S}
-2 C 0 {1,S} {3,S}
-3 O 0 {2,S} {4,S}
-4 C 0 {3,S}
-
-HOCH2CHOH
-1 C 0 {2,S}
-2 O 0 {1,S} {3,S}
-3 C 0 {2,S} {4,S}
-4 O 1 {3,S}
-
-CH3CH2O
-1 C 0 {2,S}
-2 C 0 {1,S} {3,S}
-3 O 1 {2,S}
-
-cC3H5
-1 C 0 {2,S} {3,S}
-2 C 0 {1,S} {3,S}
-3 C 1 {1,S} {2,S}
-
-CH2CHOOHCH2OOH
-1 C 1 {2,S}
-2 C 0 {1,S} {3,S} {6,S}
-3 C 0 {2,S} {4,S}
-4 O 0 {3,S} {5,S}
-5 O 0 {4,S}
-6 O 0 {2,S} {7,S}
-7 O 0 {6,S}
-
-CH3CH2CHOH
-1 C 0 {2,S}
-2 C 0 {1,S} {3,S}
-3 C 1 {2,S} {4,S}
-4 O 0 {3,S}
-
-OCHCH2CH2OO
-1 O 0 {2,D}
-2 C 0 {1,D} {3,S}
-3 C 0 {2,S} {4,S}
-4 C 0 {3,S} {5,S}
-5 O 0 {4,S} {6,S}
-6 O 1 {5,S}
-
-C3H3
-1 C 0 {2,D}
-2 C 0 {1,D} WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-{3,D}
-3 C 1 {2,D}
-
-vinoxy
-1 C 1 {2,S}
-2 C 0 {1,S} {3,D}
-3 O 0 {2,D}
-
-HOOCH2OH
-1 O 0 {2,S}
-2 C 0 {1,S} {3,S}
-3 O 0 {2,S} {4,S}
-4 O 0 {3,S}
-
-propen2yl
-1 C 0 {2,S}
-2 C 1 {1,S} {3,D}
-3 C 0 {2,D}
-
-butyl_2
-1 C 0 {2,S}
-2 C 1 {1,S} {3,S}
-3 C 0 {2,S} {4,S}
-4 C 0 {3,S}
-
-C3H8
-1 C 0 {2,S}
-2 C 0 {1,S} {3,S}
-3 C 0 {2,S}
-
-npropanol
-1 C 0 {2,S}
-2 C 0 {1,S} {3,S}
-3 C 0 {2,S} {4,S}
-4 O 0 {3,S}
-
-propen2oxy
-1 C 0 {2,D}
-2 C 0 {1,D} {3,S} {4,S}
-3 C 0 {2,S}
-4 O 1 {2,S}
-
-vinoxyperoxy
-1 C 0 {2,D} {3,S}
-2 O 0 {1,D}
-3 C 0 {1,S} {4,S}
-4 O 0 {3,S} {5,S}
-5 O 1 {4,S}
-
-ipropylooh
-1 C 0 {2,S}
-2 C 0 {1,S} {3,S} {4,S}
-3 C 0 {2,S}
-4 O 0 {2,S} {5,S}
-5 O 0 {4,S}
-
-buten3yl1
-1 C 0 {2,D}
-2 C 0 {1,D} {3,S}
-3 C 0 {2,S} {4,S}
-4 C 1 {3,S}
-
-CH2OCHCH2
-1 C 1 {2,S}
-2 O 0 {1,S} {3,S}
-3 C 0 {2,S} {4,D}
-4 C 0 {3,D}
-
-CH2O
-1 C 0 {2,D}
-2 O 0 {1,D}
-
-CH2OH
-1 C 1 {2,S}
-2 O 0 {1,S}
-
-HOOCH2CH2OO
-1 O 1 {2,S}
-2 O 0 {1,S} {3,S}
-3 C 0 {2,S} {4,S}
-4 C 0 {3,S} {5,S}
-5 O 0 {4,S} {6,S}
-6 O 0 {5,S}
-
-HC2
-1 C 1 {2,T}
-2 C 0 {1,T}
-
-HOCH2OCH2
-1 O 0 {2,S}
-2 C 0 {1,S} {3,S}
-3 O 0 {2,S} {4,S}
-4 C 1 {3,S}
-
-CH2CH2OOH
-1 C 1 {2,S}
-2 C 0 {1,S} {3,S}
-3 O 0 {2,S} {4,S}
-4 O 0 {3,S}
-
-propen1ooh
-1 C 0 {2,D} {4,S}
-2 C 0 {1,D} {3,S}
-3 C 0 {2,S}
-4 O 0 {1,S} {5,S}
-5 O 0 {4,S}
-
-ibutane
-1 C 0 {2,S}
-2 C 0 {1,S} {3,S} {4,S}
-3 C 0 {2,S}
-4 C 0 {2,S}
-
-HCCCHCH
-1 C 0 {2,T}
-2 C 0 {1,T} {3,S}
-3 C 0 {2,S} {4,D}
-4 C 1 {3,D}
-
-OCHOOH
-1 C 0 {2,D} {3,S}
-2 O 0 {1,D}
-3 O 0 {1,S} {4,S}
-4 O 0 {3,S}
-
-oxirane
-1 C 0 {2,S} {3,S}
-2 C 0 {1,S} {3,S}
-3 O 0 {1,S} {2,S}
-
-H2CC(T)
-1 C 2T {2,D}
-2 C 0 {1,D}
-
-cC3H6O
-1 C 0 {2,S}
-2 C 0 {1,S} {3,S} {4,S}
-3 C 0 {2,S} {4,S}
-4 O 0 {2,S} {3,S}
-
-CH3CHOOHCHO
-1 C 0 {2,S}
-2 C 0 {1,S} {3,S} {4,S}
-3 C 0 {2,S} {6,D}
-4 O 0 {2,S} {5,S}
-5 O 0 {4,S}
-6 O 0 {3,D}
-
-CH3COCH2O
-1 C 0 {2,S}
-2 C 0 {1,S} {3,S} {4,D}
-3 C 0 {2,S} {5,S}
-4 O 0 {2,D}
-5 O 1 {3,S}
-
-cC3H4
-1 C 0 {2,S} {3,S}
-2 C 0 {1,S} {3,D}
-3 C 0 {1,S} {2,D}
-
-HCCO
-1 C 1 {2,D}
-2 C 0 {1,D} {3,D}
-3 O 0 {2,D}
-
-cC3H6
-1 C 0 {2,S} {3,S}
-2 C 0 {1,S} {3,S}
-3 C 0 {1,S} {2,S}
-
-CH2(T)
-1 C 2T
-
-butyl_1
-1 C 1 {2,S}
-2 C 0 {1,S} {3,S}
-3 C 0 {2,S} {4,S}
-4 C 0 {3,S}
-
-oxetane
-1 O 0 {2,S} {3,S}
-2 C 0 {1,S} {4,S}
-3 C 0 {1,S} {4,S}
-4 C 0 {2,S} {3,S}
-
-CHCHCHO
-1 C 1 {2,D}
-2 C 0 {1,D} {3,S}
-3 C 0 {2,S} {4,D}
-4 O 0 {3,D}
-
-HCOH(T)
-1 C 2T {2,S}
-2 O 0 {1,S}
-
-HOOCH2O
-1 O 1 {2,S}
-2 C 0 {1,S} {3,S}
-3 O 0 {2,S} {4,S}
-4 O 0 {3,S}
-
-CH3CHOCHO
-1 C 0 {2,S}
-2 C 0 {1,S} {3,S} {4,S}
-3 C 0 {2,S} {5,D}
-4 O 1 {2,S}
-5 O 0 {3,D}
-
-CH2CCO
-1 C 0 {2,D}
-2 C 0 {1,D} {3,D}
-3 C 0 {2,D} {4,D}
-4 O 0 {3,D}
-
-oxirene
-1 C 0 {2,D} {3,S}
-2 C 0 {1,D} {3,S}
-3 O 0 {1,S} {2,S}
-
-acetic_acid
-1 C 0 {2,S}
-2 C 0 {1,S} {3,D} {4,S}
-3 O 0 {2,D}
-4 O 0 {2,S}
-
-ethanol
-1 C 0 {2,S}
-2 C 0 {1,S} {3,S}
-3 O 0 {2,S}
-
-C2H6
-1 C 0 {2,S}
-2 C 0 {1,S}
-
-CH3CHO
-1 C 0 {2,S}
-2 C 0 {1,S} {3,D}
-3 O 0 {2,D}
-
-C2H4
-1 C 0 {2,D}
-2 C 0 {1,D}
-
-C2H3
-1 C 1 {2,D}
-2 C 0 {1,D}
-
-C2H2
-1 C 0 {2,T}
-2 C 0 {1,T}
-
-npropylooh
-1 C 0 {2,S}
-2 C 0 {1,S} {3,S}
-3 C 0 {2,S} {4,S}
-4 O 0 {3,S} {5,S}
-5 O 0 {4,S}
-
-CH3OOCH2O
-1 C 0 {2,S}
-2 O 0 {1,S} {3,S}
-3 O 0 {2,S} {4,S}
-4 C 0 {3,S} {5,S}
-5 O 1 {4,S}
-
-buten1yl1
-1 C 1 {2,D}
-2 C 0 {1,D} {3,S}
-3 C 0 {2,S} {4,S}
-4 C 0 {3,S}
-
-acetylperoxy
-1 C 0 {2,S}
-2 C 0 {1,S} {3,D} {4,S}
-3 O 0 {2,D}
-4 O 0 {2,S} {5,S}
-5 O 1 {4,S}
-
-H2
-1 H 0 {2,S}
-2 H 0 {1,S}
-
-CHCH3(S)
-1 C 2S {2,S}
-2 C 0 {1,S}
-
-CH3OCHOH
-1 C 0 {2,S}
-2 O 0 {1,S} {3,S}
-3 C 1 {2,S} {4,S}
-4 O 0 {3,S}
-
-CHCH3(T)
-1 C 2T {2,S}
-2 C 0 {1,S}
-
-oxetanyl3
-1 O 0 {2,S} {3,S}
-2 C 0 {1,S} {4,S}
-3 C 0 {1,S} {4,S}
-4 C 1 {2,S} {3,S}
-
-CH2OCHO
-1 C 1 {2,S}
-2 O 0 {1,S} {3,S}
-3 C 0 {2,S} {4,D}
-4 O 0 {3,D}
-
-formyloxy
-1 C 0 {2,D} {3,S}
-2 O 0 {1,D}
-3 O 1 {1,S}
-
-CH3OOH
-1 C 0 {2,S}
-2 O 0 {1,S} {3,S}
-3 O 0 {2,S}
-
-CH2CHCH2OOH
-1 C 0 {2,D}
-2 C 0 {1,D} {3,S}
-3 C 0 {2,S} {4,S}
-4 O 0 {3,S} {5,S}
-5 O 0 {4,S}
-
-CH2CCHO
-1 C 0 {2,D}
-2 C 1 {1,D} {3,S}
-3 C 0 {2,S} {4,D}
-4 O 0 {3,D}
-
-propen2ol
-1 C 0 {2,D}
-2 C 0 {1,D} {3,S} {4,S}
-3 C 0 {2,S}
-4 O 0 {2,S}
-
-CH2CHOO
-1 C 0 {2,D}
-2 C 0 {1,D} {3,S}
-3 O 0 {2,S} {4,S}
-4 O 1 {3,S}
-
-CH3OOCH3
-1 C 0 {2,S}
-2 O 0 {1,S} {3,S}
-3 O 0 {2,S} {4,S}
-4 C 0 {3,S}
-
-C3H6
-1 C 0 {2,D}
-2 C 0 {1,D} {3,S}
-3 C 0 {2,S}
-
-CH3OCH2
-1 C 1 {2,S}
-2 O 0 {1,S} {3,S}
-3 C 0 {2,S}
-
-H2CCC(S)
-1 C 0 {2,D}
-2 C 0 {1,D} {3,D}
-3 C 2S {2,D}
-
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-C2O(T)
-1 C 2T {2,D}
-2 C 0 {1,D} {3,D}
-3 O 0 {2,D}
-
-CHCHOH
-1 C 1 {2,D}
-2 C 0 {1,D} {3,S}
-3 O 0 {2,S}
-
-oxiranylmethoxy
-1  O 1 {2,S}
-2  C 0 {1,S} {3,S}
-3  C 0 {4,S} {5,S} {2,S}
-4  C 0 {3,S} {5,S}
-5  O 0 {3,S} {4,S}
-
-C2H4(T)
-1 C 1 {2,S}
-2 C 1 {1,S}
-
-HCCCO
-1 C 0 {2,T}
-2 C 0 {1,T} {3,S}
-3 C 1 {2,S} {4,D}
-4 O 0 {3,D}
-
-C2H2(T)
-1 C 1 {2,D}
-2 C 1 {1,D}
-
-ketene
-1 C 0 {2,D}
-2 C 0 {1,D} {3,D}
-3 O 0 {2,D}
-
-CH3CHCCH
-1 C 0 {2,S}
-2 C 1 {1,S} {3,S}
-3 C 0 {2,S} {4,T}
-4 C 0 {3,T}
-
-CH3CH2OCH2
-1 C 0 {2,S}
-2 C 0 {1,S} {3,S}
-3 O 0 {2,S} {4,S}
-4 C 1 {3,S}
-
-C2H5
-1 C 1 {2,S}
-2 C 0 {1,S}
-
-DME
-1 C 0 {2,S}
-2 O 0 {1,S} {3,S}
-3 C 0 {2,S}
-
-glyoxal
-1 O 0 {2,D}
-2 C 0 {1,D} {3,S}
-3 C 0 {2,S} {4,D}
-4 O 0 {3,D}
-
-propen1yl
-1 C 0 {2,S}
-2 C 0 {1,S} {3,D}
-3 C 1 {2,D}
-
-ethynediol
-1 C 0 {2,T} {4,S}
-2 C 0 {1,T} {3,S}
-3 O 0 {2,S}
-4 O 0 {1,S}
-
-CH2CHOOH
-1 C 0 {2,D}
-2 C 0 {1,D} {3,S}
-3 O 0 {2,S} {4,S}
-4 O 0 {3,S}
-
-HCO
-1 C 1 {2,D}
-2 O 0 {1,D}
-
-propen2peroxy
-1 C 0 {2,D}
-2 C 0 {1,D} {3,S} {4,S}
-3 C 0 {2,S}
-4 O 0 {2,S} {5,S}
-5 O 1 {4,S}
-
-C2(T)
-1  C 1 {2,T}
-2  C 1 {1,T}
-
-hoo_acetyl
-1 C 1 {2,D} {3,S}
-2 O 0 {1,D}
-3 C 0 {1,S} {4,S}
-4 O 0 {3,S} {5,S}
-5 O 0 {4,S}
-
-CH2CHCHCH
-1 C 0 {2,D}
-2 C 0 {1,D} {3,S}
-3 C 0 {2,S} {4,D}
-4 C 1 {3,D}
-
-HOCH2OO
-1 C 0 {2,S} {3,S}
-2 O 0 {1,S}
-3 O 0 {1,S} {4,S}
-4 O 1 {3,S}
-
-propynal
-1 C 0 {2,T}
-2 C 0 {1,T} {3,S}
-3 C 0 {2,S} {4,D}
-4 O 0 {3,D}
-
-CH2CCCH
-1 C 0 {2,D}
-2 C 1 {1,D} {3,S}
-3 C 0 {2,S} {4,T}
-4 C 0 {3,T}
-
-CH2CH2OH
-1 C 1 {2,S}
-2 C 0 {1,S} {3,S}
-3 O 0 {2,S}
-
-CO
-1 C 2T {2,D}
-2 O 0 {1,D}
-
-npropoxy
-1 C 0 {2,S}
-2 C 0 {1,S} {3,S}
-3 C 0 {2,S} {4,S}
-4 O 1 {3,S}
-
-CH2CHCCH
-1 C 0 {2,D}
-2 C 0 {1,D} {3,S}
-3 C 0 {2,S} {4,T}
-4 C 0 {3,T}
-
-allyl
-1 C 0 {2,D}
-2 C 0 {1,D} {3,S}
-3 C 1 {2,S}
-
-ipropoxy
-1 C 0 {2,S}
-2 C 0 {1,S} {3,S} {4,S}
-3 C 0 {2,S}
-4 O 1 {2,S}
-
-m2_allyl
-1 C 1 {2,S}
-2 C 0 {1,S} {3,S} {4,D}
-3 C 0 {2,S}
-4 C 0 {2,D}
-
-CH2CH2CHO
-1 C 1 {2,S}
-2 C 0 {1,S} {3,S}
-3 C 0 {2,S} {4,D}
-4 O 0 {3,D}
-
-acrolein
-1 C 0 {2,D}
-2 C 0 {1,D} {3,S}
-3 C 0 {2,S} {4,D}
-4 O 0 {3,D}
-
-propen1peroxy
-1 C 0 {2,D} {4,S}
-2 C 0 {1,D} {3,S}
-3 C 0 {2,S}
-4 O 0 {1,S} {5,S}
-5 O 1 {4,S}
-
-CH2CHCCH2
-1 C 0 {2,D}
-2 C 1 {1,D} {3,S}
-3 C 0 {2,S} {4,D}
-4 C 0 {3,D}
-
-HOCH2CH2O
-1 O 0 {2,S}
-2 C 0 {1,S} {3,S}
-3 C 0 {2,S} {4,S}
-4 O 1 {3,S}
-
-ipropanol
-1 C 0 {2,S}
-2 C 0 {1,S} {3,S} {4,S}
-3 C 0 {2,S}
-4 O 0 {2,S}
-
-oxetanyl2
-1 O 0 {2,S} {3,S}
-2 C 1 {1,S} {4,S}
-3 C 0 {1,S} {4,S}
-4 C 0 {2,S} {3,S}
-
-CO2
-1 C 0 {2,D} {3,D}
-2 O 0 {1,D}
-3 O 0 {1,D}
-
-cCO3
-1 C 0 {2,D} {3,S} {4,S}
-2 O 0 {1,D}
-3 O 0 {1,S} {4,S}
-4 O 0 {1,S} {3,S}
-
-CH3CH2CO
-1 C 0 {2,S}
-2 C 0 {1,S} {3,S}
-3 C 1 {2,S} {4,D}
-4 O 0 {3,D}
-
-hydroxyketene
-1 O 0 {2,S}
-2 C 0 {1,S} {3,D}
-3 C 0 {2,D} {4,D}
-4 O 0 {3,D}
-
-buten22yl
-1 C 0 {2,S}
-2 C 1 {1,S} {3,D}
-3 C 0 {2,D} {4,S}
-4 C 0 {3,S}
-
-formylperoxy
-1 C 0 {2,D} {3,S}
-2 O 0 {1,D}
-3 O 0 {1,S} {4,S}
-4 O 1 {3,S}
-
-H2O
-1 O 0
-
-propen3ol
-1 C 0 {2,D}
-2 C 0 {1,D} {3,S}
-3 C 0 {2,S} {4,S}
-4 O 0 {3,S}
-
-allyloxy
-1 C 0 {2,D}
-2 C 0 {1,D} {3,S}
-3 C 0 {2,S} {4,S}
-4 O 1 {3,S}
-
-ketenylperoxy
-1 C 0 {2,D} {4,S}
-2 C 0 {1,D} {3,D}
-3 O 0 {2,D}
-4 O 0 {1,S} {5,S}
-5 O 1 {4,S}
-
-HOCH2CHO
-1 O 0 {2,S}
-2 C 0 {1,S} {3,S}
-3 C 0 {2,S} {4,D}
-4 O 0 {3,D}
-
-ethenol
-1 C 0 {2,D}
-2 C 0 {1,D} {3,S}
-3 O 0 {2,S}
-
-hydroxyl2allyl
-1  C 1 {2,S}
-2  C 0 {1,S} {3,D} {4,S}
-3  C 0 {2,D}
-4  O 0 {2,S}
-
-npropylperoxy
-1 C 0 {2,S}
-2 C 0 {1,S} {3,S}
-3 C 0 {2,S} {4,S}
-4 O 0 {3,S} {5,S}
-5 O 1 {4,S}
-
-CH3COCH2OO
-1 C 0 {2,S}
-2 C 0 {1,S} {3,S} {4,D}
-3 C 0 {2,S} {5,S}
-4 O 0 {2,D}
-5 O 0 {3,S} {6,S}
-6 O 1 {5,S}
-
-CH2CHCO
-1 C 0 {2,D}
-2 C 0 {1,D} {3,S}
-3 C 1 {2,S} {4,D}
-4 O 0 {3,D}
-
-nbutane
-1 C 0 {2,S}
-2 C 0 {1,S} {3,S}
-3 C 0 {2,S} {4,S}
-4 C 0 {3,S}
-
-HOOH
-1 O 0 {2,S}
-2 O 0 {1,S}
-
-CH3OCO
-1 C 0 {2,S}
-2 O 0 {1,S} {3,S}
-3 C 1 {2,S} {4,D}
-4 O 0 {3,D}
-
-HOOCH2CH2CH2OO
-1 O 0 {2,S}
-2 O 0 {1,S} {3,S}
-3 C 0 {2,S} {4,S}
-4 C 0 {3,S} {5,S}
-5 C 0 {4,S} {6,S}
-6 O 0 {5,S} {7,S}
-7 O 1 {6,S}
-
-OCHCH2CH2OOH
-1 O 0 {2,D}
-2 C 0 {1,D} {3,S}
-3 C 0 {2,S} {4,S}
-4 C 0 {3,S} {5,S}
-5 O 0 {4,S} {6,S}
-6 O 0 {5,S}
-
-OCCO(T)
-1 O 1 {2,S}
-2 C 0 {1,S} {3,T}
-3 C 0 {2,T} {4,S}
-4 O 1 {3,S}
-
-HOCO
-1 C 1 {2,D} {3,S}
-2 O 0 {1,D}
-3 O 0 {1,S}
-
-hoo_vinoxy
-1 C 1 {2,S}
-2 C 0 {1,S} {3,D} {4,S}
-3 O 0 {2,D}
-4 O 0 {2,S} {5,S}
-5 O 0 {4,S}
-
-CH3CHCHOWARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-
-1 C 0 {2,S}
-2 C 1 {1,S} {3,S}
-3 C 0 {2,S} {4,D}
-4 O 0 {3,D}
-
-HOOCH2CHCH2OOH
-1 O 0 {2,S}
-2 O 0 {1,S} {3,S}
-3 C 0 {2,S} {4,S}
-4 C 1 {3,S} {5,S}
-5 C 0 {4,S} {6,S}
-6 O 0 {5,S} {7,S}
-7 O 0 {6,S}
-
-butene1
-1 C 0 {2,D}
-2 C 0 {1,D} {3,S}
-3 C 0 {2,S} {4,S}
-4 C 0 {3,S}
-
-hydroxyl1allyl
-1  C 1 {2,S}
-2  C 0 {1,S} {3,D}
-3  C 0 {2,D} {4,S}
-4  O 0 {3,S}
-
-CH3CHOOCH2OOH
-1 C 0 {2,S}
-2 C 0 {1,S} {3,S} {6,S}
-3 C 0 {2,S} {4,S}
-4 O 0 {3,S} {5,S}
-5 O 0 {4,S}
-6 O 0 {2,S} {7,S}
-7 O 1 {6,S}
-
-CH3COCH2OOH
-1 C 0 {2,S}
-2 C 0 {1,S} {3,S} {4,D}
-3 C 0 {2,S} {5,S}
-4 O 0 {2,D}
-5 O 0 {3,S} {6,S}
-6 O 0 {5,S}
-
-ketene(T)
-1  C 1 {2,D}
-2  C 0 {1,D} {3,S}
-3  O 1 {2,S}
-
-QOOH_2
-1 C 0 {2,S}
-2 C 1 {1,S} {3,S}
-3 C 0 {2,S} {4,S}
-4 O 0 {3,S} {5,S}
-5 O 0 {4,S}
-
-QOOH_3
-1 C 1 {2,S}
-2 C 0 {1,S} {3,S} {4,S}
-3 C 0 {2,S}
-4 O 0 {2,S} {5,S}
-5 O 0 {4,S}
-
-QOOH_1
-1 C 1 {2,S}
-2 C 0 {1,S} {3,S}
-3 C 0 {2,S} {4,S}
-4 O 0 {3,S} {5,S}
-5 O 0 {4,S}
-
-HCCCH(S)
-1 C 1 {2,T}
-2 C 0 {1,T} {3,S}
-3 C 1 {2,S}
-
-m1_allyl
-1 C 0 {2,S}
-2 C 1 {1,S} {3,S}
-3 C 0 {2,S} {4,D}
-4 C 0 {3,D}
-
-CH3CHCCH2
-1 C 0 {2,S}
-2 C 0 {1,S} {3,D}
-3 C 0 {2,D} {4,D}
-4 C 0 {3,D}
-
-acetyloxy
-1 C 0 {2,S}
-2 C 0 {1,S} {3,D} {4,S}
-3 O 0 {2,D}
-4 O 1 {2,S}
-
-HO2
-1 O 1 {2,S}
-2 O 0 {1,S}
-
-HCOH(S)
-1 C 2S {2,S}
-2 O 0 {1,S}
-
-allene
-1 C 0 {2,D}
-2 C 0 {1,D} {3,D}
-3 C 0 {2,D}
-
-CH3CHOOHCH2OO
-1 C 0 {2,S}
-2 C 0 {1,S} {3,S} {6,S}
-3 C 0 {2,S} {4,S}
-4 O 0 {3,S} {5,S}
-5 O 1 {4,S}
-6 O 0 {2,S} {7,S}
-7 O 0 {6,S}
-
-cC2H3OCH2OOH
-1 O 0 {2,S} {3,S}
-2 C 0 {1,S} {3,S}
-3 C 0 {1,S} {2,S} {4,S}
-4 C 0 {3,S} {5,S}
-5 O 0 {4,S} {6,S}
-6 O 0 {5,S}
-
-C2O(S)
-1 C 2S {2,D}
-2 C 0 {1,D} {3,D}
-3 O 0 {2,D}
-
-CH3CH2OOH
-1 C 0 {2,S}
-2 C 0 {1,S} {3,S}
-3 O 0 {2,S} {4,S}
-4 O 0 {3,S}
-
-CH3OCH2O
-1 C 0 {2,S}
-2 O 0 {1,S} {3,S}
-3 C 0 {2,S} {4,S}
-4 O 1 {3,S}
-
-propanal
-1 C 0 {2,S}
-2 C 0 {1,S} {3,S}
-3 C 0 {2,S} {4,D}
-4 O 0 {3,D}
-
-HOCHCHOH
-1 O 0 {2,S}
-2 C 0 {1,S} {3,D}
-3 C 0 {2,D} {4,S}
-4 O 0 {3,S}
-
-CH3COHCH3
-1 C 0 {2,S}
-2 C 1 {1,S} {3,S} {4,S}
-3 C 0 {2,S}
-4 O 0 {2,S}
-
-butatriene123
-1 C 0 {2,D}
-2 C 0 {1,D} {3,D}
-3 C 0 {2,D} {4,D}
-4 C 0 {3,D}
-
-allylperoxy
-1 C 0 {2,D}
-2 C 0 {1,D} {3,S}
-3 C 0 {2,S} {4,S}
-4 O 0 {3,S} {5,S}
-5 O 1 {4,S}
-
-CHCHOOH
-1 C 1 {2,D}
-2 C 0 {1,D} {3,S}
-3 O 0 {2,S} {4,S}
-4 O 0 {3,S}
-
-acetyl
-1 C 1 {2,D} {3,S}
-2 O 0 {1,D}
-3 C 0 {1,S}
-
-ibutyl
-1 C 1 {2,S}
-2 C 0 {1,S} {3,S} {4,S}
-3 C 0 {2,S}
-4 C 0 {2,S}
-
-butyne1
-1 C 0 {2,S}
-2 C 0 {1,S} {3,S}
-3 C 0 {2,S} {4,T}
-4 C 0 {3,T}
-
-CH3CHOH
-1 C 0 {2,S}
-2 C 1 {1,S} {3,S}
-3 O 0 {2,S}
-
-propen1ol
-1 C 0 {2,D} {4,S}
-2 C 0 {1,D} {3,S}
-3 C 0 {2,S}
-4 O 0 {1,S}
-
-tbutyl
-1 C 0 {2,S}
-2 C 1 {1,S} {3,S} {4,S}
-3 C 0 {2,S}
-4 C 0 {2,S}
-
-methylketene
-1 C 0 {2,S}
-2 C 0 {1,S} {3,D}
-3 C 0 {2,D} {4,D}
-4 O 0 {3,D}
-
-oxiranyl
-1 C 1 {2,S} {3,S}
-2 C 0 {1,S} {3,S}
-3 O 0 {1,S} {2,S}
-
-OCCOH
-1 O 1 {2,S}
-2 C 0 {1,S} {3,T}
-3 C 0 {2,T} {4,S}
-4 O 0 {3,S}
-
-oxiranylmoo
-1  O 1 {2,S}
-2  O 0 {1,S} {3,S}
-3  C 0 {2,S} {4,S}
-4  C 0 {5,S} {6,S} {3,S}
-5  C 0 {4,S} {6,S}
-6  O 0 {4,S} {5,S}
-
-CH2COH
-1 C 0 {2,D}
-2 C 1 {1,D} {3,S}
-3 O 0 {2,S}
-
-CCH3
-1 C 1 {2,T}
-2 C 0 {1,T}
-
-ipropylperoxy
-1 C 0 {2,S}
-2 C 0 {1,S} {3,S} {4,S}
-3 C 0 {2,S}
-4 O 0 {2,S} {5,S}
-5 O 1 {4,S}
-
-s00002432
-1 C 0 {2,T}
-2 C 0 {1,T} {3,S}
-3 O 0 {2,S}
-
-s00003749
-1 C 0 {3,S}
-2 C 0 {3,S}
-3 C 0 {1,S} {2,S}
-
-s00002447
-1 C 1 {2,D}
-2 C 0 {1,D}
-
-s00002305
-1 C 0 {2,T}
-2 C 0 {1,T}
-
-s00002656
-1 C 0 {2,S}
-2 C 0 {1,S} {3,D}
-3 O 0 {2,D}
-
-s00010102
-1 O 1
-
-s00009800
-1 H 1
-
-s00010285
-1 O 2T
-
-s00009358
-1 C 2T {2,D}
-2 O 0 {1,D}
-
-s00009809
-1 H 0
-
-s00009193
-1 C 0
-
-s00009219
-1 C 0 {2,S}
-2 O 0 {1,S}
-
-s00009881
-1 O 0
-
-s00009076
-1 C 0 {2,D}
-2 O 0 {1,D}
-
-s00009882
-1 O 0 {2,S}
-2 O 0 {1,S}
-
-s00000208
-1 C 4
-
-s00009174
-1 C 1 {2,S}
-2 O 0 {1,S}
-
-s00009015
-1 C 2T
-
-s00002784
-1 C 0 {2,S}
-2 C 0 {1,S}
-
-s00009173
-1 C 0 {2,S}
-2 O 1 {1,S}
-
-s00010103
-1 O 0 {2,S}
-2 O 1 {1,S}
-
-s00009012
-1 C 2S
-
-s00009010
-1 C 3
-
-s00002431
-1 C 0 {2,D}
-2 C 0 {1,D} {3,D}
-3 O 0 {2,D}
-
-s00002577
-1 C 0 {2,D}
-2 C 0 {1,D}
-
-s00002559
-1 C 0 {2,D}
-2 C 0 {1,D} {3,S}
-3 O 1 {2,S}
-
-s00002703
-1 C 1 {2,S}
-2 C 0 {1,S}
-
-s00009360
-1 C 0 {2,D} {3,D}
-2 O 0 {1,D}
-3 O 0 {1,D}
-
-s00010295
-1 O 1 {2,S}
-2 O 1 {1,S}
-
-s00002295
-1 C 0 {2,T}
-2 C 1 {1,T}
-
-s00009325
-1 C 1 {2,D}
-2 O 0 {1,D}
-
-s00009089
-1 C 1
-
-s00003017
-1 C 0 {2,T}WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-
-2 C 0 {1,T} {3,S}
-3 O 1 {2,S}
-
-CO2
-1 C 0 {2,D} {3,D}
-2 O 0 {1,D}
-3 O 0 {1,D}
-
-CO
-1 C 2T {2,D}
-2 O 0 {1,D}
-
-H2O2
-1 O 0 {2,S}
-2 O 0 {1,S}
-
-OH
-1 O 1
-
-H2
-1 H 0 {2,S}
-2 H 0 {1,S}
-
-H
-1 H 1
-
-O
-1 O 2T
-
-H2O
-1 O 0
-
-HO2
-1 O 0 {2,S}
-2 O 1 {1,S}
-
-O2
-1 O 1 {2,S}
-2 O 1 {1,S}
-
-prop-2-enethial-2-methyl
-1 C 0 {2,D} {3,S} {4,S}
-2 C 0 {1,D}
-3 C 0 {1,S}
-4 C 0 {1,S} {5,D}
-5 S 0 {4,D}
-
-CH3SC2H
-1 C 0 {2,S}
-2 S 0 {1,S} {3,S}
-3 C 0 {2,S} {4,T}
-4 C 0 {3,T}
-
-but1ene3thiol
-1 C 0 {2,D}
-2 C 0 {1,D} {3,S}
-3 C 0 {2,S} {4,S} {5,S}
-4 C 0 {3,S}
-5 S 0 {3,S}
-
-C2H3CHjSH
-1 S 0 {2,S}
-2 C 1 {1,S} {3,S}
-3 C 0 {2,S} {4,D}
-4 C 0 {3,D}
-
-ethanedithial
-1 S 0 {2,D}
-2 C 0 {1,D} {3,S}
-3 C 0 {2,S} {4,D}
-4 S 0 {3,D}
-
-cyc-C6H10
-1 C 0 {2,D} {6,S}
-2 C 0 {1,D} {3,S}
-3 C 0 {2,S} {4,S}
-4 C 0 {3,S} {5,S}
-5 C 0 {4,S} {6,S}
-6 C 0 {1,S} {5,S}
-
-CH3CHjSH
-1 C 1 {2,S} {3,S}
-2 C 0 {1,S}
-3 S 0 {1,S}
-
-CH3CSSC2H5
-1 C 0 {2,S}
-2 C 0 {1,S} {3,D} {4,S}
-3 S 0 {2,D}
-4 S 0 {2,S} {5,S}
-5 C 0 {4,S} {6,S}
-6 C 0 {5,S}
-
-CH3SCH2j
-1 C 1 {2,S}
-2 S 0 {1,S} {3,S}
-3 C 0 {2,S}
-
-SHSj
-1 S 1 {2,S}
-2 S 0 {1,S}
-
-HCSCH2SH
-1 C 0 {2,D} {3,S}
-2 S 0 {1,D}
-3 C 0 {1,S} {4,S}
-4 S 0 {3,S}
-
-propynethial
-1 C 0 {2,T}
-2 C 0 {1,T} {3,S}
-3 C 0 {2,S} {4,D}
-4 S 0 {3,D}
-
-hex-2-yn-4-yl-4-methyl-5-thia
-1 C 0 {2,S}
-2 S 0 {1,S} {3,S}
-3 C 1 {2,S} {4,S} {5,S}
-4 C 0 {3,S}
-5 C 0 {3,S} {6,T}
-6 C 0 {5,T} {7,S}
-7 C 0 {6,S}
-
-propanethial-2-yl-2-thiol
-1 C 1 {2,S} {3,S} {4,S}
-2 S 0 {1,S}
-3 C 0 {1,S}
-4 C 0 {1,S} {5,D}
-5 S 0 {4,D}
-
-CH3SC2SH
-1 C 0 {2,S}
-2 S 0 {1,S} {3,S}
-3 C 0 {2,S} {4,T}
-4 C 0 {3,T} {5,S}
-5 S 0 {4,S}
-
-C2HSj
-1 S 1 {2,S}
-2 C 0 {1,S} {3,T}
-3 C 0 {2,T}
-
-isopropyl_methyl_sulfide
-1 C 0 {2,S}
-2 S 0 {1,S} {3,S}
-3 C 0 {2,S} {4,S} {5,S}
-4 C 0 {3,S}
-5 C 0 {3,S}
-
-CH3SCHjCH3
-1 C 0 {2,S}
-2 S 0 {1,S} {3,S}
-3 C 1 {2,S} {4,S}
-4 C 0 {3,S}
-
-but3ene2thione
-1 C 0 {2,S}
-2 C 0 {1,S} {3,D} {4,S}
-3 S 0 {2,D}
-4 C 0 {2,S} {5,D}
-5 C 0 {4,D}
-
-but-1-yn-3-yl-3-thiol
-1 C 1 {2,S} {3,S} {4,S}
-2 S 0 {1,S}
-3 C 0 {1,S}
-4 C 0 {1,S} {5,T}
-5 C 0 {4,T}
-
-butane-23-dithione
-1 C 0 {2,S} {3,S} {4,D}
-2 C 0 {1,S} {5,S} {6,D}
-3 C 0 {1,S}
-4 S 0 {1,D}
-5 C 0 {2,S}
-6 S 0 {2,D}
-
-CH3SSSj
-1 S 1 {2,S}
-2 S 0 {1,S} {3,S}
-3 S 0 {2,S} {4,S}
-4 C 0 {3,S}
-
-toluene
-1 C 0 {2,B} {6,B}
-2 C 0 {1,B} {3,B}
-3 C 0 {2,B} {4,B}
-4 C 0 {3,B} {5,B}
-5 C 0 {4,B} {6,B}
-6 C 0 {1,B} {5,B} {7,S}
-7 C 0 {6,S}
-
-butane-22-dithiol
-1 C 0 {2,S} {3,S} {4,S} {5,S}
-2 C 0 {1,S} {6,S}
-3 C 0 {1,S}
-4 S 0 {1,S}
-5 S 0 {1,S}
-6 C 0 {2,S}
-
-C2HSH
-1 C 0 {2,T}
-2 C 0 {1,T} {3,S}
-3 S 0 {2,S}
-
-benzaldehyde
-1 C 0 {2,B} {6,B}
-2 C 0 {1,B} {3,B}
-3 C 0 {2,B} {4,B}
-4 C 0 {3,B} {5,B}
-5 C 0 {4,B} {6,B}
-6 C 0 {5,B} {1,B} {7,S}
-7 C 0 {6,S} {8,D}
-8 O 0 {7,D}
-
-C2H3SC2H5
-1 C 0 {2,D}
-2 C 0 {1,D} {3,S}
-3 S 0 {2,S} {4,S}
-4 C 0 {3,S} {5,S}
-5 C 0 {4,S}
-
-C2H3SC2H3
-1 C 0 {2,D}
-2 C 0 {1,D} {3,S}
-3 S 0 {2,S} {4,S}
-4 C 0 {3,S} {5,D}
-5 C 0 {4,D}
-
-C2HSSH
-1 C 0 {2,T}
-2 C 0 {1,T} {3,S}
-3 S 0 {2,S} {4,S}
-4 S 0 {3,S}
-
-benzene
-1 C 0 {2,B} {6,B}
-2 C 0 {1,B} {3,B}
-3 C 0 {2,B} {4,B}
-4 C 0 {3,B} {5,B}
-5 C 0 {4,B} {6,B}
-6 C 0 {1,B} {5,B}
-
-CH2S
-1 C 0 {2,D}
-2 S 0 {1,D}
-
-propan-1-yl-1-thione
-1 S 0 {2,D}
-2 C 1 {1,D} {3,S}
-3 C 0 {2,S} {4,S}
-4 C 0 {3,S}
-
-but1ene3thiomethyl
-1 C 0 {2,S}
-2 S 0 {1,S} {3,S}
-3 C 0 {2,S} {4,S} {6,S}
-4 C 0 {3,S} {5,D}
-5 C 0 {4,D}
-6 C 0 {3,S}
-
-propane-22-dithiol
-1 C 0 {2,S} {3,S} {4,S} {5,S}
-2 C 0 {1,S}
-3 C 0 {1,S}
-4 S 0 {1,S}
-5 S 0 {1,S}
-
-cyc-C6H8
-1 C 0 {2,D} {6,S}
-2 C 0 {1,D} {3,S}
-3 C 0 {2,S} {4,D}
-4 C 0 {3,D} {5,S}
-5 C 0 {4,S} {6,S}
-6 C 0 {1,S} {5,S}
-
-allyl_methyl_sulfide
-1 C 0 {2,S}
-2 S 0 {1,S} {3,S}
-3 C 0 {2,S} {4,S}
-4 C 0 {3,S} {5,D}
-5 C 0 {4,D}
-
-HCSSj
-1 S 1 {2,S}
-2 C 0 {1,S} {3,D}
-3 S 0 {2,D}
-
-SHSSj
-1 S 1 {2,S}
-2 S 0 {1,S} {3,S}
-3 S 0 {2,S}
-
-DHTP-2-ol
-1 S 0 {2,S} {5,S}
-2 C 0 {1,S} {3,D} {6,S}
-3 C 0 {2,D} {4,S}
-4 C 0 {3,S} {5,D}
-5 C 0 {4,D} {1,S}
-6 O 0 {2,S}
-
-ethane-11-dithiol-1thiomethyl
-1 C 0 {2,S} {3,S} {4,S} {5,S}
-2 C 0 {1,S}
-3 S 0 {1,S}
-4 S 0 {1,S}
-5 S 0 {1,S} {6,S}
-6 C 0 {5,S}
-
-HCSCSCH3
-1 C 0 {2,S}
-2 C 0 {1,S} {3,S} {4,D}
-3 C 0 {2,S} {5,D}
-4 S 0 {2,D}
-5 S 0 {3,D}
-
-CH3SSCH2j
-1 C 1 {2,S}
-2 S 0 {1,S} {3,S}
-3 S 0 {2,S} {4,S}
-4 C 0 {3,S}
-
-propene2thiol
-1 C 0 {2,D} {3,S} {4,S}
-2 C 0 {1,D}
-3 C 0 {1,S}
-4 S 0 {1,S}
-
-allylthiol
-1 S 0 {2,S}
-2 C 0 {1WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-,S} {3,S}
-3 C 0 {2,S} {4,D}
-4 C 0 {3,D}
-
-thiophene
-1 S 0 {2,S} {5,S}
-2 C 0 {1,S} {3,D}
-3 C 0 {2,D} {4,S}
-4 C 0 {3,S} {5,D}
-5 C 0 {4,D} {1,S}
-
-CHOSH
-1 C 0 {2,D} {3,S}
-2 O 0 {1,D}
-3 S 0 {1,S}
-
-CHOSJ
-1 C 0 {2,D} {3,S}
-2 O 0 {1,D}
-3 S 1 {1,S}
-
-SHCHjSH
-1 C 1 {2,S} {3,S}
-2 S 0 {1,S}
-3 S 0 {1,S}
-
-HCSSH
-1 C 0 {2,D} {3,S}
-2 S 0 {1,D}
-3 S 0 {1,S}
-
-C2H3SH
-1 C 0 {2,D}
-2 C 0 {1,D} {3,S}
-3 S 0 {2,S}
-
-pent-1-yne-3-thione
-1 C 0 {2,T}
-2 C 0 {1,T} {3,S}
-3 C 0 {2,S} {4,D} {5,S}
-4 S 0 {3,D}
-5 C 0 {3,S} {6,S}
-6 C 0 {5,S}
-
-CS2
-1 C 0 {2,D} {3,D}
-2 S 0 {1,D}
-3 S 0 {1,D}
-
-CH3SSH
-1 C 0 {2,S}
-2 S 0 {1,S} {3,S}
-3 S 0 {2,S}
-
-C2H5SCHjCH3
-1 C 0 {2,S}
-2 C 0 {1,S} {3,S}
-3 S 0 {2,S} {4,S}
-4 C 1 {3,S} {5,S}
-5 C 0 {4,S}
-
-CH3CHS
-1 C 0 {2,D} {3,S}
-2 S 0 {1,D}
-3 C 0 {1,S}
-
-PhCHOHSH
-1 C 0 {2,B} {6,B}
-2 C 0 {1,B} {3,B}
-3 C 0 {2,B} {4,B}
-4 C 0 {3,B} {5,B}
-5 C 0 {4,B} {6,B}
-6 C 0 {5,B} {1,B} {7,S}
-7 C 0 {6,S} {8,S} {9,S}
-8 S 0 {7,S}
-9 O 0 {7,S}
-
-Sjj
-1 S 2
-
-benzyl
-1 C 0 {2,B} {6,B}
-2 C 0 {1,B} {3,B}
-3 C 0 {2,B} {4,B}
-4 C 0 {3,B} {5,B}
-5 C 0 {4,B} {6,B}
-6 C 0 {1,B} {5,B} {7,S}
-7 C 1 {6,S}
-
-ethanyl-11-dithiol
-1 C 1 {2,S} {3,S} {4,S}
-2 C 0 {1,S}
-3 S 0 {1,S}
-4 S 0 {1,S}
-
-tert-butylthio
-1 C 0 {2,S} {3,S} {4,S} {5,S}
-2 C 0 {1,S}
-3 C 0 {1,S}
-4 C 0 {1,S}
-5 S 1 {1,S}
-
-HCSSC2H
-1 C 0 {2,D} {3,S}
-2 S 0 {1,D}
-3 S 0 {1,S} {4,S}
-4 C 0 {3,S} {5,T}
-5 C 0 {4,T}
-
-CH3SSC2H3
-1 C 0 {2,S}
-2 S 0 {1,S} {3,S}
-3 S 0 {2,S} {4,S}
-4 C 0 {3,S} {5,D}
-5 C 0 {4,D}
-
-CH3SSj
-1 S 1 {2,S}
-2 S 0 {1,S} {3,S}
-3 C 0 {2,S}
-
-CH3SSSCH3
-1 C 0 {2,S}
-2 S 0 {1,S} {3,S}
-3 S 0 {2,S} {4,S}
-4 S 0 {3,S} {5,S}
-5 C 0 {4,S}
-
-cyc-C6H7J
-1 C 0 {2,D} {6,S}
-2 C 0 {1,D} {3,S}
-3 C 0 {2,S} {4,D}
-4 C 0 {3,D} {5,S}
-5 C 1 {4,S} {6,S}
-6 C 0 {1,S} {5,S}
-
-propen-2-thio
-1 C 0 {2,S} {3,S} {4,D}
-2 S 1 {1,S}
-3 C 0 {1,S}
-4 C 0 {1,D}
-
-SHCH2SCH2j
-1 C 1 {2,S}
-2 S 0 {1,S} {3,S}
-3 C 0 {2,S} {4,S}
-4 S 0 {3,S}
-
-t_butanethiol
-1 C 0 {2,S} {3,S} {4,S} {5,S}
-2 C 0 {1,S}
-3 C 0 {1,S}
-4 C 0 {1,S}
-5 S 0 {1,S}
-
-C2H3C2H2Sj
-1 S 1 {2,S}
-2 C 0 {1,S} {3,D}
-3 C 0 {2,D} {4,S}
-4 C 0 {3,S} {5,D}
-5 C 0 {4,D}
-
-CH3CSSH
-1 C 0 {2,S} {3,S} {4,D}
-2 C 0 {1,S}
-3 S 0 {1,S}
-4 S 0 {1,D}
-
-propene2thiomethyl
-1 C 0 {2,S}
-2 S 0 {1,S} {3,S}
-3 C 0 {2,S} {4,D} {5,S}
-4 C 0 {3,D}
-5 C 0 {3,S}
-
-propen-1-thio
-1 S 1 {2,S}
-2 C 0 {1,S} {3,D}
-3 C 0 {2,D} {4,S}
-4 C 0 {3,S}
-
-COS
-1 C 0 {2,D} {3,D}
-3 S 0 {1,D}
-2 O 0 {1,D}
-
-HCSC2H5
-1 C 0 {2,D} {3,S}
-2 S 0 {1,D}
-3 C 0 {1,S} {4,S}
-4 C 0 {3,S}
-
-C2HSC2H
-1 C 0 {2,T}
-2 C 0 {1,T} {3,S}
-3 S 0 {2,S} {4,S}
-4 C 0 {3,S} {5,T}
-5 C 0 {4,T}
-
-CH2OHSJ
-1 C 0 {2,S} {3,S}
-2 O 0 {1,S}
-3 S 1 {1,S}
-
-CH3SC2H5
-1 C 0 {2,S}
-2 S 0 {1,S} {3,S}
-3 C 0 {2,S} {4,S}
-4 C 0 {3,S}
-
-CH2OHSH
-1 C 0 {2,S} {3,S}
-2 O 0 {1,S}
-3 S 0 {1,S}
-
-CH3SC2H3
-1 C 0 {2,S}
-2 S 0 {1,S} {3,S}
-3 C 0 {2,S} {4,D}
-4 C 0 {3,D}
-
-DHTP-3-ol
-1 S 0 {2,S} {5,S}
-2 C 0 {1,S} {3,D}
-3 C 0 {2,D} {4,S} {6,S}
-4 C 0 {3,S} {5,D}
-5 C 0 {4,D} {1,S}
-6 O 0 {3,S}
-
-CH3SCH2Sj
-1 S 1 {2,S}
-2 C 0 {1,S} {3,S}
-3 S 0 {2,S} {4,S}
-4 C 0 {3,S}
-
-isopropyl-2-thiol
-1 C 1 {2,S} {3,S} {4,S}
-2 C 0 {1,S}
-3 C 0 {1,S}
-4 S 0 {1,S}
-
-CH3CHJSC2H5
-1 C 0 {2,S}
-2 C 1 {1,S} {3,S}
-3 S 0 {2,S} {4,S}
-4 C 0 {3,S} {5,S}
-5 C 0 {4,S}
-
-pent1ene3thia4methyl
-1 C 0 {2,D}
-2 C 0 {1,D} {3,S}
-3 S 0 {2,S} {4,S}
-4 C 0 {3,S} {5,S} {6,S}
-5 C 0 {4,S}
-6 C 0 {4,S}
-
-methanetrithiol
-1 C 0 {2,S} {3,S} {4,S}
-2 S 0 {1,S}
-3 S 0 {1,S}
-4 S 0 {1,S}
-
-HCSSC2H5
-1 S 0 {2,D}
-2 C 0 {1,D} {3,S}
-3 S 0 {2,S} {4,S}
-4 C 0 {3,S} {5,S}
-5 C 0 {4,S}
-
-HCSSC2H3
-1 C 0 {2,D} {3,S}
-2 S 0 {1,D}
-3 S 0 {1,S} {4,S}
-4 C 0 {3,S} {5,D}
-5 C 0 {4,D}
-
-C2HCHjSH
-1 S 0 {2,S}
-2 C 1 {1,S} {3,S}
-3 C 0 {2,S} {4,T}
-4 C 0 {3,T}
-
-propanethial2methyl
-1 C 0 {2,S} {3,S} {4,S}
-2 C 0 {1,S}
-3 C 0 {1,S}
-4 C 0 {1,S} {5,D}
-5 S 0 {4,D}
-
-C2H3Sj
-1 S 1 {2,S}
-2 C 0 {1,S} {3,D}
-3 C 0 {2,D}
-
-pentan-2-yl-2-methyl-3-thia
-1 C 0 {2,S}
-2 C 0 {1,S} {3,S}
-3 S 0 {2,S} {4,S}
-4 C 1 {3,S} {5,S} {6,S}
-5 C 0 {4,S}
-6 C 0 {4,S}
-
-HCSSCH3
-1 C 0 {2,D} {3,S}
-2 S 0 {1,D}
-3 S 0 {1,S} {4,S}
-4 C 0 {3,S}
-
-CH3SH
-1 C 0 {2,S}
-2 S 0 {1,S}
-
-HCSSSH
-1 C 0 {2,D} {3,S}
-2 S 0 {1,D}
-3 S 0 {1,S} {4,S}
-4 S 0 {3,S}
-
-propyl-2-thio
-1 C 0 {2,S} {3,S} {4,S}
-2 C 0 {1,S}
-3 C 0 {1,S}
-4 S 1 {1,S}
-
-C2H5SH
-1 C 0 {2,S}
-2 C 0 {1,S} {3,S}
-3 S 0 {2,S}
-
-C2H3SC2CH3
-1 C 0 {2,D}
-2 C 0 {1,D} {3,S}
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-3 S 0 {2,S} {4,S}
-4 C 0 {3,S} {5,T}
-5 C 0 {4,T} {6,S}
-6 C 0 {5,S}
-
-CS
-1 C 2 {2,D}
-2 S 0 {1,D}
-
-CHCH3OHSJ
-1 C 0 {2,S} {3,S} {4,S}
-2 C 0 {1,S}
-3 O 0 {1,S}
-4 S 1 {1,S}
-
-methyl_propargyl_sulfide
-1 C 0 {2,S}
-2 S 0 {1,S} {3,S}
-3 C 0 {2,S} {4,S}
-4 C 0 {3,S} {5,T}
-5 C 0 {4,T}
-
-CHCH3OHSH
-1 C 0 {2,S} {3,S} {4,S}
-2 C 0 {1,S}
-3 O 0 {1,S}
-4 S 0 {1,S}
-
-CH2jSH
-1 C 1 {2,S}
-2 S 0 {1,S}
-
-CH3Sj
-1 S 1 {2,S}
-2 C 0 {1,S}
-
-H2S
-1 S 0
-
-tertbutyl_methyl_sulfide
-1 C 0 {2,S}
-2 S 0 {1,S} {3,S}
-3 C 0 {2,S} {4,S} {5,S} {6,S}
-4 C 0 {3,S}
-5 C 0 {3,S}
-6 C 0 {3,S}
-
-propenethial
-1 C 0 {2,D}
-2 C 0 {1,D} {3,S}
-3 C 0 {2,S} {4,D}
-4 S 0 {3,D}
-
-but1yne3thiol
-1 C 0 {2,T}
-2 C 0 {1,T} {3,S}
-3 C 0 {2,S} {4,S} {5,S}
-4 C 0 {3,S}
-5 S 0 {3,S}
-
-ethane11dithiol
-1 C 0 {2,S} {3,S} {4,S}
-2 C 0 {1,S}
-3 S 0 {1,S}
-4 S 0 {1,S}
-
-pent1ene3thia24dimethyl
-1 C 0 {2,D}
-2 C 0 {1,D} {3,S} {7,S}
-3 S 0 {2,S} {4,S}
-4 C 0 {3,S} {5,S} {6,S}
-5 C 0 {4,S}
-6 C 0 {4,S}
-7 C 0 {2,S}
-
-HCSSC2H2SCH3
-1 S 0 {2,D}
-2 C 0 {1,D} {3,S}
-3 S 0 {2,S} {4,S}
-4 C 0 {3,S} {5,D}
-5 C 0 {4,D} {6,S}
-6 S 0 {5,S} {7,S}
-7 C 0 {6,S}
-
-ethenyl-1-thiol
-1 C 1 {2,D} {3,S}
-2 C 0 {1,D}
-3 S 0 {1,S}
-
-thioacetyl
-1 C 1 {2,S} {3,D}
-2 C 0 {1,S}
-3 S 0 {1,D}
-
-C2HSSCSH
-1 C 0 {2,T}
-2 C 0 {1,T} {3,S}
-3 S 0 {2,S} {4,S}
-4 S 0 {3,S} {5,S}
-5 C 0 {4,S} {6,D}
-6 S 0 {5,D}
-
-but-1-en-3-yl-3-thiol
-1 C 1 {2,S} {3,S} {4,S}
-2 S 0 {1,S}
-3 C 0 {1,S}
-4 C 0 {1,S} {5,D}
-5 C 0 {4,D}
-
-ethylthio
-1 S 1 {2,S}
-2 C 0 {1,S} {3,S}
-3 C 0 {2,S}
-
-CH3SSSH
-1 C 0 {2,S}
-2 S 0 {1,S} {3,S}
-3 S 0 {2,S} {4,S}
-4 S 0 {3,S}
-
-penta14diene3thia24dimethyl
-1 C 0 {2,D}
-2 C 0 {1,D} {3,S} {4,S}
-3 C 0 {2,S}
-4 S 0 {2,S} {5,S}
-5 C 0 {4,S} {6,D} {7,S}
-6 C 0 {5,D}
-7 C 0 {5,S}
-
-cyc-C6H9J-3
-1 C 0 {2,D} {6,S}
-2 C 0 {1,D} {3,S}
-3 C 1 {2,S} {4,S}
-4 C 0 {3,S} {5,S}
-5 C 0 {4,S} {6,S}
-6 C 0 {1,S} {5,S}
-
-cyc-C6H9J-4
-1 C 0 {2,D} {6,S}
-2 C 0 {1,D} {3,S}
-3 C 0 {2,S} {4,S}
-4 C 1 {3,S} {5,S}
-5 C 0 {4,S} {6,S}
-6 C 0 {1,S} {5,S}
-
-C2H5SC2H5
-1 C 0 {2,S}
-2 C 0 {1,S} {3,S}
-3 S 0 {2,S} {4,S}
-4 C 0 {3,S} {5,S}
-5 C 0 {4,S}
-
-ethane-111-trithiol
-1 C 0 {2,S} {3,S} {4,S} {5,S}
-2 C 0 {1,S}
-3 S 0 {1,S}
-4 S 0 {1,S}
-5 S 0 {1,S}
-
-H2S3
-1 S 0 {2,S} {3,S}
-2 S 0 {1,S}
-3 S 0 {1,S}
-
-H2S2
-1 S 0 {2,S}
-2 S 0 {1,S}
-
-propane2thione
-1 C 0 {2,D} {3,S} {4,S}
-2 S 0 {1,D}
-3 C 0 {1,S}
-4 C 0 {1,S}
-
-CH3SSCH3
-1 C 0 {2,S}
-2 S 0 {1,S} {3,S}
-3 S 0 {2,S} {4,S}
-4 C 0 {3,S}
-
-HCSSCSH
-1 C 0 {2,D} {3,S}
-2 S 0 {1,D}
-3 S 0 {1,S} {4,S}
-4 C 0 {3,S} {5,D}
-5 S 0 {4,D}
-
-C2H3CH2Sj
-1 S 1 {2,S}
-2 C 0 {1,S} {3,S}
-3 C 0 {2,S} {4,D}
-4 C 0 {3,D}
-
-propane2thiol
-1 C 0 {2,S} {3,S} {4,S}
-2 C 0 {1,S}
-3 C 0 {1,S}
-4 S 0 {1,S}
-
-HCSCHjSH
-1 S 0 {2,S}
-2 C 1 {1,S} {3,S}
-3 C 0 {2,S} {4,D}
-4 S 0 {3,D}
-
-CH3SSC2H
-1 C 0 {2,S}
-2 S 0 {1,S} {3,S}
-3 S 0 {2,S} {4,S}
-4 C 0 {3,S} {5,T}
-5 C 0 {4,T}
-
-mercapto_rad
-1 S 1
-
-but-3-ene-2-thione-3-methyl
-1 C 0 {2,S} {3,D} {4,S}
-2 C 0 {1,S} {5,D} {6,S}
-3 C 0 {1,D}
-4 C 0 {1,S}
-5 S 0 {2,D}
-6 C 0 {2,S}
-
-C2H3SSH
-1 C 0 {2,D}
-2 C 0 {1,D} {3,S}
-3 S 0 {2,S} {4,S}
-4 S 0 {3,S}
-
-C2H3SC2H
-1 C 0 {2,D}
-2 C 0 {1,D} {3,S}
-3 S 0 {2,S} {4,S}
-4 C 0 {3,S} {5,T}
-5 C 0 {4,T}
-
-but1yne3thiomethyl
-1 C 0 {2,S}
-2 S 0 {1,S} {3,S}
-3 C 0 {2,S} {4,S} {6,S}
-4 C 0 {3,S} {5,T}
-5 C 0 {4,T}
-6 C 0 {3,S}
-
-tertbutyl_hydrodisulfide
-1 C 0 {2,S} {3,S} {4,S} {5,S}
-2 C 0 {1,S}
-3 C 0 {1,S}
-4 C 0 {1,S}
-5 S 0 {1,S} {6,S}
-6 S 0 {5,S}
-
-prop2yne1thiol
-1 S 0 {2,S}
-2 C 0 {1,S} {3,S}
-3 C 0 {2,S} {4,T}
-4 C 0 {3,T}
-
-SHCH2SH
-1 C 0 {2,S} {3,S}
-2 S 0 {1,S}
-3 S 0 {1,S}
-
-pent1ene4methyl3thione
-1 C 0 {2,D}
-2 C 0 {1,D} {3,S}
-3 C 0 {2,S} {4,D} {5,S}
-4 S 0 {3,D}
-5 C 0 {3,S} {6,S} {7,S}
-6 C 0 {5,S}
-7 C 0 {5,S}
-
-propanethial22dimethyl
-1 C 0 {2,S} {3,S} {4,S} {5,S}
-2 C 0 {1,S}
-3 C 0 {1,S}
-4 C 0 {1,S}
-5 C 0 {1,S} {6,D}
-6 S 0 {5,D}
-
-CH2CS
-1 C 0 {2,D} {3,D}
-2 C 0 {1,D}
-3 S 0 {1,D}
-
-CHOHS
-1 C 0 {2,D} {3,S}
-2 S 0 {1,D}
-3 O 0 {1,S}
-
-benzenethial
-1 C 0 {2,B} {6,B}
-2 C 0 {1,B} {3,B}
-3 C 0 {2,B} {4,B}
-4 C 0 {3,B} {5,B}
-5 C 0 {4,B} {6,B}
-6 C 0 {5,B} {1,B} {7,S}
-7 C 0 {6,S} {8,D}
-8 S 0 {7,D}
-
-but3yne2thione
-1 C 0 {2,S}
-2 C 0 {1,S} {3,D} {4,S}
-3 S 0 {2,D}
-4 C 0 {2,S} {5,T}
-5 C 0 {4,T}
-
-CH3SCH3
-1 C 0 {2,S}
-2 S 0 {1,S} {3,S}
-3 C 0 {2,S}
-
-CH2JCH2SC2H5
-1 C 1 {2,S}
-2 C 0 {1,S} {3,S}
-3 S 0 {2,S} {4,S}
-4 C 0 {3,S} {5,S}
-5 C 0 {4,S}
-
-WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
 Uses a Gaussian03 log file for ethylene (C2H4) to test that its ... SKIP: WIP test failed: -78.46694399999998 != -78.467452 within 4 places
 Uses a Gaussian03 log file for ethylene (C2H4) to test that its ... SKIP: WIP test failed: -78.55632 != -78.562189 within 4 places
 Uses a Gaussian03 log file for oxygen (O2) to test that its ... ok
@@ -3250,12 +35,10 @@ Test we can estimate Abraham solute parameters correctly using group contributio
 Test we can obtain solute parameters from a library ... ok
 Test we can obtain solvent parameters from a library ... ok
 Test we can calculate the solvent viscosity given a temperature and its A-E correlation parameters ... ok
-Test that the new ThermoDatabase generates appropriate thermo data. ... SKIP: WIP test failed: S298 error for C1C=CC=C1
-Test that the old ThermoDatabase generates relatively accurate thermo data. ... SKIP: WIP test failed: S298 error for C1C=CC=C1
-Test we generate symmetry numbers correctly. ... SKIP: WIP test failed: Symmetry number error for C1C=CC=C1
-Test that the new ThermoDatabase generates appropriate thermo data. for Aromatics. ... SKIP: WIP test failed: H298 error for c1ccccc1
-Test that the old ThermoDatabase generates relatively accurate thermo data. for Aromatics. ... SKIP: WIP test failed: H298 error for c1ccccc1
-Test we generate symmetry numbers correctly. for Aromatics. ... SKIP: WIP test failed: Symmetry number error for c1ccc2ccccc2c1
+Test that the new ThermoDatabase generates appropriate thermo data. ... SKIP: WIP test failed: Expected list, got rmgpy.molecule.molecule.Molecule
+Test we generate symmetry numbers correctly. ... SKIP: WIP test failed: Expected list, got rmgpy.molecule.molecule.Molecule
+Test that the new ThermoDatabase generates appropriate thermo data. for Aromatics. ... SKIP: WIP test failed: Expected list, got rmgpy.molecule.molecule.Molecule
+Test we generate symmetry numbers correctly. for Aromatics. ... SKIP: WIP test failed: Expected list, got rmgpy.molecule.molecule.Molecule
 Test that the Arrhenius A property was properly set. ... ok
 Test that the Arrhenius Ea property was properly set. ... ok
 Test that the Arrhenius T0 property was properly set. ... ok
@@ -3412,6 +195,17 @@ Test the Wigner.calculateTunnelingFactor() method. ... ok
 Test that the Wigner frequency property was properly set. ... ok
 Test that a Wigner object can be successfully pickled and unpickled ... ok
 Test that a Wigner object can be successfully reconstructed from its ... ok
+adjlist: Test the Group.fromAdjacencyList() method. ... ok
+adjlist: Test the Group.fromAdjacencyList() method on an old style adjacency list. ... ok
+adjlist: Test the Group.toAdjacencyList() method. ... ok
+adjlist: Check the adjacency list read/write functions for a full molecule. ... ok
+adjlist: Test the Molecule.fromAdjacencyList() method 1. ... ok
+adjlist: Test the Molecule.fromAdjacencyList() method 2. ... ok
+adjlist: Test the Molecule.fromAdjacencyList() method 3. ... ok
+adjlist: Test the Molecule.fromAdjacencyList() method 4. ... ok
+Test we can read an intermediate style adjacency list with implicit hydrogens 1 ... ok
+Test we can read an old style adjacency list with implicit hydrogens 1 ... ok
+adjlist: Test the Molecule.toAdjacencyList() method. ... ok
 Test the AtomType.equivalent() method. ... ok
 Test the AtomType.isSpecificCaseOf() method. ... ok
 Test that we can reconstruct an AtomType object from its repr() ... ok
@@ -3522,15 +316,12 @@ Test the Bond.isSingle() method. ... ok
 Test the Bond.isSpecificCaseOf() method. ... ok
 Test the Bond.isTriple() method. ... ok
 Test that a Bond object can be successfully pickled and ... ok
-Check the adjacency list read/write functions for a full molecule. ... WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-ok
+Check the adjacency list read/write functions for a full molecule. ... ok
 Test the Molecule.isAromatic() method for Benzene. ... SKIP: WIP test failed: False is not true
 Test the Molecule.isAromatic() method for Cyclohexane. ... ok
 Test the Molecule.isAromatic() method for Naphthalene. ... SKIP: WIP test failed: False is not true
-Test that Augmented InChI generation is printing the /mult layer ... WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-ok
-Test that Augmented InChI Key generation is printing the mult layer ... WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-ok
+Test that Augmented InChI generation is printing the /mult layer ... ok
+Test that Augmented InChI Key generation is printing the mult layer ... ok
 Test the Molecule.clearLabeledAtoms() method. ... ok
 Test the Molecule.containsLabeledAtom() method. ... ok
 Test the Molecule.countInternalRotors() method. ... ok
@@ -3542,8 +333,6 @@ Test the Molecule.countInternalRotors() method. ... ok
 Test the Molecule.countInternalRotors() method. ... ok
 Test the Molecule.fromAdjacencyList() method. ... ok
 Make sure that H radical is produced properly from its InChI ... ok
-Test we can read things with implicit hydrogens. ... WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-ok
 Make sure that H radical is produced properly from its SMILES ... ok
 Test the Molecule.getLabeledAtoms() method. ... ok
 Test the Molecule.getLabeledAtom() method. ... ok
@@ -3570,57 +359,56 @@ Test the Molecule.getRadicalCount() method. ... ok
 Test that we can generate a few SMILES strings as expected ... ok
 Test the Molecule.getSmallestSetOfSmallestRings() method with a complex ... ok
 Check the graph isomorphism functions. ... ok
-testSubgraphIsomorphismAgain (rmgpy.molecule.moleculeTest.TestMolecule) ... WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-ok
-testSubgraphIsomorphismManyLabels (rmgpy.molecule.moleculeTest.TestMolecule) ... WARNING:root:There could be an old-style adjacency list. Please check library and input before proceeding!
-ok
+testSubgraphIsomorphismAgain (rmgpy.molecule.moleculeTest.TestMolecule) ... ok
+testSubgraphIsomorphismManyLabels (rmgpy.molecule.moleculeTest.TestMolecule) ... ok
 Test the Molecule.toAdjacencyList() method. ... ok
-Test the Molecule.calculateAtomSymmetryNumber() method. ... ok
-Test the Molecule.calculateAtomSymmetryNumber() method. ... ok
-Test the Molecule.calculateAtomSymmetryNumber() method. ... ok
-Test the Molecule.calculateAtomSymmetryNumber() method. ... ok
-Test the Molecule.calculateAtomSymmetryNumber() method. ... ok
-Test the Molecule.calculateAxisSymmetryNumber() method. ... ok
-Test the Molecule.calculateAxisSymmetryNumber() method. ... ok
-Test the Molecule.calculateAxisSymmetryNumber() method. ... ok
-Test the Molecule.calculateAxisSymmetryNumber() method. ... ok
-Test the Molecule.calculateAxisSymmetryNumber() method. ... SKIP: WIP test failed: 1 != 4
-Test the Molecule.calculateAxisSymmetryNumber() method. ... ok
-Test the Molecule.calculateAxisSymmetryNumber() method. ... ok
-Test the Molecule.calculateAxisSymmetryNumber() method. ... ok
-Test the Molecule.calculateAxisSymmetryNumber() method. ... ok
-Test the Molecule.calculateAxisSymmetryNumber() method. ... ok
-Test the Molecule.calculateAxisSymmetryNumber() method. ... ok
-Test the Molecule.calculateAxisSymmetryNumber() method. ... ok
-Test the Molecule.calculateAxisSymmetryNumber() method. ... ok
-Test the Molecule.calculateAxisSymmetryNumber() method. ... ok
-Test the Molecule.calculateAxisSymmetryNumber() method. ... ok
-Test the Molecule.calculateBondSymmetryNumber() method. ... ok
-Test the Molecule.calculateBondSymmetryNumber() method. ... ok
-Test the Molecule.calculateBondSymmetryNumber() method. ... ok
-Test the Molecule.calculateBondSymmetryNumber() method. ... ok
-Test the Molecule.calculateBondSymmetryNumber() method. ... ok
-Test the Molecule.calculateCyclicSymmetryNumber() method. ... SKIP: WIP test failed: 1 != 2
-Test the Molecule.calculateCyclicSymmetryNumber() method. ... SKIP: WIP test failed: 1 != 2
-Test the Molecule.calculateCyclicSymmetryNumber() method. ... ok
-Test the Molecule.calculateCyclicSymmetryNumber() method. ... ok
-Test the Molecule.calculateCyclicSymmetryNumber() method. ... ok
-Test the Molecule.calculateSymmetryNumber() method. ... ok
-Test the Molecule.calculateSymmetryNumber() method. ... ok
-Test the Molecule.calculateSymmetryNumber() method. ... ok
-Test the Molecule.calculateSymmetryNumber() method. ... ok
-Test the Molecule.calculateSymmetryNumber() method. ... ok
-Test the Molecule.calculateSymmetryNumber() method. ... ok
-Test the Molecule.calculateSymmetryNumber() method. ... ok
-Test the Molecule.calculateSymmetryNumber() method. ... ok
-Test the Molecule.calculateSymmetryNumber() method. ... ok
-Test the Molecule.calculateSymmetryNumber() method. ... ok
-Test the Molecule.calculateSymmetryNumber() method. ... ok
-Test the Molecule.calculateSymmetryNumber() method. ... ok
-Test the Molecule.calculateSymmetryNumber() method. ... ok
-Test the Molecule.calculateSymmetryNumber() method. ... ok
-Test the Molecule.calculateSymmetryNumber() method. ... SKIP: WIP test failed: 9 != '36?'
-Test the Molecule.calculateSymmetryNumber() method. ... ok
+Failure: ValueError (rmgpy.molecule.group.GroupAtom has the wrong size, try recompiling) ... ERROR
+Test the Molecule.calculateAtomSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateAtomSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateAtomSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateAtomSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateAtomSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateAxisSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateAxisSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateAxisSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateAxisSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateAxisSymmetryNumber() method. ... SKIP: WIP test failed: Missing type object
+Test the Molecule.calculateAxisSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateAxisSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateAxisSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateAxisSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateAxisSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateAxisSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateAxisSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateAxisSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateAxisSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateAxisSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateBondSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateBondSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateBondSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateBondSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateBondSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateCyclicSymmetryNumber() method. ... SKIP: WIP test failed: Missing type object
+Test the Molecule.calculateCyclicSymmetryNumber() method. ... SKIP: WIP test failed: Missing type object
+Test the Molecule.calculateCyclicSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateCyclicSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateCyclicSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateSymmetryNumber() method. ... ERROR
+Test the Molecule.calculateSymmetryNumber() method. ... SKIP: WIP test failed: Missing type object
+Test the Molecule.calculateSymmetryNumber() method. ... ERROR
 Test the SingleExponentialDown.T0 attribute. ... ok
 Test the SingleExponentialDown.sigma attribute. ... ok
 Test the SingleExponentialDown.getAlpha() method. ... ok
@@ -3977,6 +765,385 @@ Test that the TransportData sigma property was properly set. ... ok
 testJoback (rmgpy.transportDataTest.TestTransportDatabase) ... ok
 Test Joback doesn't crash on Cb desription of beneze ... ok
 
+======================================================================
+ERROR: Failure: ValueError (rmgpy.molecule.group.GroupAtom has the wrong size, try recompiling)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/virtualenvs/rmgweb/local/lib/python2.7/site-packages/nose/loader.py", line 390, in loadTestsFromName
+    addr.filename, addr.module)
+  File "/export/thishost/comocheng/virtualenvs/rmgweb/local/lib/python2.7/site-packages/nose/importer.py", line 39, in importFromPath
+    return self.importFromDir(dir_path, fqname)
+  File "/export/thishost/comocheng/virtualenvs/rmgweb/local/lib/python2.7/site-packages/nose/importer.py", line 86, in importFromDir
+    mod = load_module(part_fqname, fh, filename, desc)
+  File "group.pxd", line 32, in init rmgpy.molecule.symmetry (build/pyrex/rmgpy/molecule/symmetry.c:11207)
+ValueError: rmgpy.molecule.group.GroupAtom has the wrong size, try recompiling
+
+======================================================================
+ERROR: Test the Molecule.calculateAtomSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 48, in testAtomSymmetryNumberEthane
+    symmetryNumber *= calculateAtomSymmetryNumber(molecule, atom)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateAtomSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 70, in testAtomSymmetryNumberIsobutane
+    symmetryNumber *= calculateAtomSymmetryNumber(molecule, atom)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateAtomSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 26, in testAtomSymmetryNumberMethane
+    symmetryNumber *= calculateAtomSymmetryNumber(molecule, atom)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateAtomSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 37, in testAtomSymmetryNumberMethyl
+    symmetryNumber *= calculateAtomSymmetryNumber(molecule, atom)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateAtomSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 59, in testAtomSymmetryNumberPropane
+    symmetryNumber *= calculateAtomSymmetryNumber(molecule, atom)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateAxisSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 187, in testAxisSymmetryNumber1
+    self.assertEqual(calculateAxisSymmetryNumber(molecule), 2)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateAxisSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 173, in testAxisSymmetryNumber12Butadienyl
+    self.assertEqual(calculateAxisSymmetryNumber(molecule), 1)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateAxisSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 180, in testAxisSymmetryNumber12Hexadienyl
+    self.assertEqual(calculateAxisSymmetryNumber(molecule), 1)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateAxisSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 194, in testAxisSymmetryNumber2
+    self.assertEqual(calculateAxisSymmetryNumber(molecule), 2)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateAxisSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 209, in testAxisSymmetryNumber4
+    self.assertEqual(calculateAxisSymmetryNumber(molecule), 2)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateAxisSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 216, in testAxisSymmetryNumber5
+    self.assertEqual(calculateAxisSymmetryNumber(molecule), 1)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateAxisSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 223, in testAxisSymmetryNumber6
+    self.assertEqual(calculateAxisSymmetryNumber(molecule), 1)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateAxisSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 230, in testAxisSymmetryNumber7
+    self.assertEqual(calculateAxisSymmetryNumber(molecule), 2)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateAxisSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 152, in testAxisSymmetryNumberButatriene
+    self.assertEqual(calculateAxisSymmetryNumber(molecule), 2)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateAxisSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 159, in testAxisSymmetryNumberButatrienyl
+    self.assertEqual(calculateAxisSymmetryNumber(molecule), 1)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateAxisSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 138, in testAxisSymmetryNumberEthylene
+    self.assertEqual(calculateAxisSymmetryNumber(molecule), 2)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateAxisSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 145, in testAxisSymmetryNumberPropadiene
+    self.assertEqual(calculateAxisSymmetryNumber(molecule), 2)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateAxisSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 166, in testAxisSymmetryNumberPropadienyl
+    self.assertEqual(calculateAxisSymmetryNumber(molecule), 2)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateAxisSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 237, in testAxisSymmetryOxygenSinglet
+    self.assertEqual(calculateAxisSymmetryNumber(molecule), 1)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateBondSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 130, in testBondSymmetryNumberAcetylene
+    symmetryNumber *= calculateBondSymmetryNumber(molecule, atom1, atom2)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateBondSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 106, in testBondSymmetryNumberButane
+    symmetryNumber *= calculateBondSymmetryNumber(molecule, atom1, atom2)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateBondSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 82, in testBondSymmetryNumberEthane
+    symmetryNumber *= calculateBondSymmetryNumber(molecule, atom1, atom2)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateBondSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 118, in testBondSymmetryNumberEthylene
+    symmetryNumber *= calculateBondSymmetryNumber(molecule, atom1, atom2)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateBondSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 94, in testBondSymmetryNumberPropane
+    symmetryNumber *= calculateBondSymmetryNumber(molecule, atom1, atom2)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateCyclicSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 252, in testCyclicSymmetryNumberBenzene
+    symmetryNumber = calculateCyclicSymmetryNumber(molecule)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateCyclicSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 244, in testCyclicSymmetryNumberCyclohexane
+    symmetryNumber = calculateCyclicSymmetryNumber(molecule)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateCyclicSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 260, in testCyclicSymmetryNumberToluene
+    symmetryNumber = calculateCyclicSymmetryNumber(molecule)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 328, in testSymmetryNumberAcetylene
+    self.assertEqual(Molecule().fromSMILES('C#C').calculateSymmetryNumber(), 2)
+  File "molecule.py", line 1583, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24106)
+  File "molecule.py", line 1589, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24046)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 334, in testSymmetryNumberButadiyne
+    self.assertEqual(Molecule().fromSMILES('C#CC#C').calculateSymmetryNumber(), 2)
+  File "molecule.py", line 1583, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24106)
+  File "molecule.py", line 1589, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24046)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 376, in testSymmetryNumberCyclic
+    self.assertEqual(Molecule().fromSMILES('C1=C=C=1').calculateSymmetryNumber(), 6)
+  File "molecule.py", line 1583, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24106)
+  File "molecule.py", line 1589, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24046)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 316, in testSymmetryNumberDicarbon
+    self.assertEqual(Molecule().fromSMILES('[C]#[C]').calculateSymmetryNumber(), 2)
+  File "molecule.py", line 1583, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24106)
+  File "molecule.py", line 1589, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24046)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 370, in testSymmetryNumberEthenyl
+    self.assertEqual(Molecule().fromSMILES('C=[CH]').calculateSymmetryNumber(), 1)
+  File "molecule.py", line 1583, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24106)
+  File "molecule.py", line 1589, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24046)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 364, in testSymmetryNumberEthylene
+    self.assertEqual(Molecule().fromSMILES('C=C').calculateSymmetryNumber(), 4)
+  File "molecule.py", line 1583, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24106)
+  File "molecule.py", line 1589, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24046)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 346, in testSymmetryNumberFormaldehyde
+    self.assertEqual(Molecule().fromSMILES('C=O').calculateSymmetryNumber(), 2)
+  File "molecule.py", line 1583, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24106)
+  File "molecule.py", line 1589, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24046)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 322, in testSymmetryNumberHydrogen
+    self.assertEqual(Molecule().fromSMILES('[H][H]').calculateSymmetryNumber(), 2)
+  File "molecule.py", line 1583, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24106)
+  File "molecule.py", line 1589, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24046)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 304, in testSymmetryNumberHydroxyl
+    self.assertEqual(Molecule().fromSMILES('[OH]').calculateSymmetryNumber(), 1)
+  File "molecule.py", line 1583, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24106)
+  File "molecule.py", line 1589, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24046)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 340, in testSymmetryNumberMethane
+    self.assertEqual(Molecule().fromSMILES('C').calculateSymmetryNumber(), 12)
+  File "molecule.py", line 1583, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24106)
+  File "molecule.py", line 1589, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24046)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 352, in testSymmetryNumberMethyl
+    self.assertEqual(Molecule().fromSMILES('[CH3]').calculateSymmetryNumber(), 6)
+  File "molecule.py", line 1583, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24106)
+  File "molecule.py", line 1589, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24046)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 310, in testSymmetryNumberOxygen
+    self.assertEqual(Molecule().fromSMILES('O=O').calculateSymmetryNumber(), 2)
+  File "molecule.py", line 1583, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24106)
+  File "molecule.py", line 1589, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24046)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 358, in testSymmetryNumberWater
+    self.assertEqual(Molecule().fromSMILES('O').calculateSymmetryNumber(), 2)
+  File "molecule.py", line 1583, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24106)
+  File "molecule.py", line 1589, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24046)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 291, in testTotalSymmetryNumber1
+    self.assertEqual(Molecule().fromSMILES('C=C=[C]C(C)(C)[C]=C=C').calculateSymmetryNumber(), 18)
+  File "molecule.py", line 1583, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24106)
+  File "molecule.py", line 1589, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24046)
+SystemError: Missing type object
+
+======================================================================
+ERROR: Test the Molecule.calculateSymmetryNumber() method.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 285, in testTotalSymmetryNumberEthane
+    self.assertEqual(Molecule().fromSMILES('CC').calculateSymmetryNumber(), 18)
+  File "molecule.py", line 1583, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24106)
+  File "molecule.py", line 1589, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24046)
+SystemError: Missing type object
+
 Name                              Stmts   Miss Branch BrMiss  Cover   Missing
 -----------------------------------------------------------------------------
 rmgpy                                55     16     18     10    64%   71, 79-82, 104-107, 113, 115, 119, 131-135
@@ -3994,21 +1161,21 @@ rmgpy.cantherm.statmech             520    490    232    232     4%   83, 90-121
 rmgpy.cantherm.thermo               155    140     32     32     8%   55-56, 63-67, 75-122, 129-205, 217-269
 rmgpy.chemkin                       987    942    495    494     3%   69, 79-156, 167-253, 260-361, 368-493, 504-653, 664-684, 690-703, 710-725, 733-892, 904-946, 960-1018, 1028-1176, 1184-1194, 1206-1256, 1267-1331, 1339-1385, 1402-1561, 1571-1587, 1597-1600, 1608-1614, 1636-1659, 1678-1724, 1732-1763
 rmgpy.data                            3      1      0      0    67%   34
-rmgpy.data.base                     718    395    341    221    42%   43-45, 209-211, 227-248, 256-278, 291-293, 297-299, 303-305, 350-355, 373-376, 385, 397, 404, 414-415, 418, 455-456, 468, 476, 479-480, 487, 519, 535-536, 550-557, 568-576, 584-677, 684-690, 697-709, 716-750, 766-772, 778-783, 798-912, 921-925, 934-947, 987, 1000-1005, 1041, 1052, 1056-1057, 1072, 1079-1083, 1100, 1111-1117, 1124-1133, 1144-1151, 1169, 1179, 1201-1204, 1227-1231, 1243-1247, 1269-1286, 1292-1293, 1299, 1307-1320, 1334-1356
+rmgpy.data.base                     718    487    341    256    30%   43-45, 209-211, 227-248, 256-278, 289-307, 320-376, 385, 397, 404, 414-415, 418, 450-460, 467-497, 506-561, 568-576, 584-677, 684-690, 697-709, 716-750, 760, 766-772, 778-783, 798-912, 921-925, 934-947, 987, 989, 1000-1005, 1039, 1041, 1052, 1056-1057, 1072, 1079-1083, 1100, 1111-1117, 1124-1133, 1144-1151, 1169, 1179, 1201-1204, 1227-1231, 1243-1247, 1269-1286, 1292-1293, 1299, 1307-1320, 1334-1355
 rmgpy.data.kinetics                 329    267    163    146    16%   86-91, 97-99, 106-108, 118-133, 147-157, 161-163, 165-167, 174-176, 182, 190-195, 205-231, 238-242, 249-263, 270-274, 281-287, 294-313, 320-355, 363-366, 374-379, 387-402, 415-424, 445-543, 556-602
 rmgpy.data.kinetics.common          111     99     50     50     7%   105-106, 115-225
 rmgpy.data.kinetics.depository       31     18      0      0    42%   64-77, 83, 102, 115, 140-162, 168
-rmgpy.data.kinetics.family         1141   1071    662    662     4%   96-109, 115, 134, 162, 170, 178-194, 205-287, 294, 301, 347-358, 368-428, 435-470, 476-487, 493-516, 529-602, 610-611, 618-622, 628-630, 636, 644-647, 654, 662-709, 720-804, 811, 818-821, 828-929, 938-941, 948-951, 959-970, 983-1086, 1101-1311, 1318-1323, 1333-1359, 1368-1377, 1389-1424, 1431-1438, 1452-1656, 1664-1743, 1751, 1760-1765, 1775-1783, 1793-1807, 1815-1818, 1831-1885, 1893-1901, 1908-1916, 1924-1929, 1945-2084
-rmgpy.data.kinetics.groups          297    273    180    180     5%   78-79, 85-89, 108-170, 180-206, 215-267, 280-548
-rmgpy.data.kinetics.library         277    251    152    152     6%   71-84, 90, 108, 118, 128-149, 156-163, 171-180, 187-242, 246-256, 277-315, 321, 327-360, 370-374, 384-545
+rmgpy.data.kinetics.family         1051    981    608    608     4%   96-109, 115, 134, 162, 170, 178-194, 205-287, 294, 301, 347-358, 368-428, 435-470, 476-487, 493-516, 529-602, 610-611, 618-622, 628-630, 636, 644-647, 654, 662-709, 720-804, 811, 818-821, 828-929, 938-941, 948-951, 959-970, 983-1086, 1101-1218, 1225-1230, 1240-1266, 1275-1284, 1296-1331, 1338-1345, 1359-1563, 1571-1650, 1658, 1667-1672, 1682-1690, 1700-1714, 1722-1725, 1738-1792, 1800-1808, 1815-1823, 1831-1836, 1852-1991
+rmgpy.data.kinetics.groups          297    273    180    180     5%   78-79, 85-89, 108-174, 184-210, 219-271, 284-552
+rmgpy.data.kinetics.library         277    251    152    152     6%   71-84, 90, 108, 118, 128-149, 156-163, 171-180, 187-242, 246-256, 278-316, 322, 328-361, 371-375, 385-546
 rmgpy.data.kinetics.rules           313    283    135    135     7%   64, 87-126, 132, 140-188, 195-221, 229-277, 285-352, 359-366, 373, 380, 387-400, 407-423, 429-488, 499-525, 532-586
 rmgpy.data.reference                138    114     48     48    13%   89-95, 102-108, 114-132, 158-162, 169-183, 190-200, 226-231, 238-251, 258-269, 292-294, 301-311, 318-326
 rmgpy.data.rmg                       86     65     14     14    21%   56-71, 92-104, 111-112, 119-120, 127-128, 141-156, 167-168, 175-176, 183-192, 198-205, 211-216
-rmgpy.data.solvation                383    156     76     40    57%   56-128, 181, 252, 302, 330-335, 358, 365, 372, 413, 421, 428, 452-457, 463-465, 506-509, 516-518, 525-527, 535-550, 566-579, 617-629, 706-745, 756-760, 779, 793-797
-rmgpy.data.statmech                 297    246    107    107    13%   48-86, 93-96, 103-111, 122, 134, 149, 159, 171, 186, 193, 200, 211, 223-231, 246, 253, 260, 267-274, 283-298, 308-344, 353-434, 444-456, 462-468, 474-477, 484-489, 496-497, 504-516, 523-525, 532-536, 543-545, 552-554, 561-563, 571-588, 605-618, 631-639, 647-652, 660-663, 672, 685-686, 694-701
+rmgpy.data.solvation                385    158     76     40    57%   56-128, 181, 252, 302, 330-335, 358, 365, 372, 413, 421, 428, 452-457, 463-465, 506-509, 516-518, 525-527, 535-550, 566-579, 617-629, 706-747, 758-762, 781, 795-799
+rmgpy.data.statmech                 298    247    107    107    13%   48-86, 93-96, 103-111, 122, 135-137, 152, 162, 174, 189, 196, 203, 214, 226-234, 249, 256, 263, 270-277, 286-301, 311-347, 356-437, 447-459, 465-471, 477-480, 487-492, 499-500, 507-519, 526-528, 535-539, 546-548, 555-557, 564-566, 574-591, 608-621, 634-642, 650-655, 663-666, 675, 688-689, 697-704
 rmgpy.data.statmechfit              248    213     70     70    11%   95-137, 151-193, 207-244, 260-307, 316-319, 327-330, 338-343, 352-355, 364-366, 378-381, 384-407, 419-422, 425-457, 469-472, 475-506
-rmgpy.data.thermo                   441    182    136     59    58%   56-124, 131-149, 188-199, 205, 232, 236, 253, 260, 308, 316, 349-355, 361-364, 374, 404, 426-430, 437-439, 446-448, 455-462, 552-563, 573-616, 635-636, 662-666, 676-677, 701-703, 722-725, 727-730, 747-749, 817-818, 840-844, 889-893, 904, 918-922, 930-934, 949, 978, 980, 999
-rmgpy.data.transport                282    146     76     57    43%   54-110, 159, 166, 173, 194, 212, 219, 226, 247-252, 258-260, 304-307, 314-316, 323-325, 335-349, 357-369, 380-384, 411, 443-482, 504-505, 532, 540, 542, 546-550, 567-600
+rmgpy.data.thermo                   444    342    138    124    20%   56-124, 131-149, 169, 188-199, 205, 232, 236-237, 254, 261, 268, 309, 317, 324, 350-356, 362-365, 375, 405, 427-431, 438-440, 447-449, 456-463, 471-538, 553-564, 574-617, 634-649, 660-668, 676-682, 695-711, 721-732, 745-751, 765-779, 788-857, 870-944, 951-964, 972-1004
+rmgpy.data.transport                283    146     76     57    43%   54-110, 162, 169, 176, 197, 215, 222, 229, 250-255, 261-263, 307-310, 317-319, 326-328, 338-352, 360-372, 383-387, 414, 446-485, 507-508, 535, 543, 545, 549-553, 570-603
 rmgpy.display                        12      4      2      2    57%   37, 41-43, 47
 rmgpy.kinetics                        6      0      0      0   100%   
 rmgpy.kinetics.diffusionLimited      56     43     12     12    19%   16-19, 22, 34-61, 70-86
@@ -4020,7 +1187,7 @@ rmgpy.measure.output                164    146     82     82     7%   53-60, 71-
 rmgpy.measure.settings                2      0      0      0   100%   
 rmgpy.measure.simulate               67     54     30     30    13%   46, 49, 66-128, 144-169, 178-179, 182, 185
 rmgpy.molecule                        5      0      0      0   100%   
-rmgpy.molecule.adjlist              264     38    160     35    83%   65, 71, 80, 144-148, 194, 207, 209, 211, 229, 242-243, 265-266, 289-291, 308-323, 336-337, 365
+rmgpy.molecule.adjlist              532    104    327     80    79%   67, 71-73, 83, 136, 142, 147-151, 209, 229, 231, 233, 251, 263-264, 268, 285-286, 302-304, 339, 344-345, 359, 365-368, 374, 383, 421, 431-442, 453, 465-474, 485, 493, 502, 504, 506, 509-526, 554, 567, 569, 571, 589, 602-603, 611, 629-630, 650-651, 668-671, 688-689, 697, 727-730, 734, 737-740
 rmgpy.molecule.draw                 929    574    448    303    36%   76, 79-82, 141-143, 171-173, 182-187, 195-197, 200-203, 206-208, 211-213, 216-219, 268-276, 289, 297-349, 374-376, 385-390, 399-430, 438-448, 455-580, 587-641, 648-720, 733-827, 851-852, 860-861, 884, 906-927, 940-942, 993-996, 1002-1003, 1005-1007, 1046-1047, 1094-1102, 1124-1125, 1138-1141, 1160-1165, 1171-1172, 1201-1202, 1210-1212, 1215-1216, 1224-1226, 1232-1239, 1244-1247, 1256-1259, 1264-1281, 1291-1294, 1298-1301, 1305-1322, 1350-1354, 1368-1488
 rmgpy.pdep                            5      0      0      0   100%   
 rmgpy.pdep.draw                     291    277     86     86     4%   57-70, 73-79, 87-107, 116-125, 131-142, 148-159, 165-181, 185-213, 222-479
@@ -4028,7 +1195,7 @@ rmgpy.pdep.network                  532    408    230    209    19%   51-53, 60,
 rmgpy.qm                              0      0      0      0   100%   
 rmgpy.qm.gaussian                   132    101     50     46    19%   27-28, 30-31, 51-52, 56-61, 80-139, 145-150, 166-169, 176-201, 209-224
 rmgpy.qm.main                        72     17     26     14    68%   131-132, 135, 137, 149, 151, 153, 156-167
-rmgpy.qm.molecule                   190    141     38     37    22%   10-11, 51, 59, 63, 67, 76-84, 97-118, 122-124, 140-173, 200-204, 213, 218, 223, 228, 233, 239-242, 249, 258-280, 286-294, 300-318, 325, 334-337, 345-347, 353-356, 365-410
+rmgpy.qm.molecule                   188    140     38     37    22%   10-11, 48, 56, 60, 64, 73-81, 94-115, 119-121, 137-170, 197-201, 210, 215, 220, 225, 230, 236-238, 245, 254-276, 282-290, 296-314, 321, 330-333, 341-343, 349-352, 361-406
 rmgpy.qm.mopac                      144    107     50     48    20%   23, 25, 59-60, 63-68, 87-141, 147-152, 176-202, 214-236, 254-277
 rmgpy.qm.qmdata                      35     27      2      2    22%   23-38, 41, 75-101
 rmgpy.qm.qmverifier                  26     20      6      6    19%   18-24, 40-61, 71
@@ -4036,7 +1203,7 @@ rmgpy.qm.symmetry                    82     53     22     18    32%   128-130, 1
 rmgpy.rmg                             2      0      0      0   100%   
 rmgpy.rmg.input                     279    246     64     64    10%   68-89, 92-96, 99, 102, 105, 108, 119-143, 148-164, 167-168, 172-173, 176-179, 189-196, 209-243, 246-252, 255-270, 281-332, 344-383, 393-515
 rmgpy.rmg.main                      690    639    248    248     5%   46-47, 120-124, 130-168, 175-192, 199-207, 213-219, 227-229, 233-254, 263-377, 385-549, 560-579, 586-587, 590-597, 604-619, 626-630, 637-703, 709-716, 722-743, 752-765, 778-825, 836-869, 880-1029, 1036-1045, 1056-1098, 1109, 1111-1112, 1115-1130, 1140-1174
-rmgpy.rmg.model                     964    897    514    514     5%   77-78, 84, 101-162, 172-222, 230-238, 245-249, 275, 290-291, 316-343, 353-373, 381-424, 434-499, 516-570, 588-599, 605-616, 628-779, 788-856, 863-951, 960-996, 1006-1032, 1038, 1046-1126, 1134-1180, 1189-1192, 1202-1203, 1211-1215, 1222-1228, 1236-1246, 1253-1258, 1270-1318, 1333-1373, 1387-1412, 1425-1478, 1493-1571, 1579-1665, 1675-1678, 1686-1704, 1711-1746
+rmgpy.rmg.model                     964    896    514    514     5%   80-81, 87, 104-164, 174-224, 232-240, 247-251, 277, 292-293, 318-345, 355-375, 383-426, 436-501, 518-572, 590-601, 607-618, 630-781, 790-858, 865-953, 962-998, 1008-1034, 1040, 1048-1128, 1136-1182, 1191-1194, 1204-1205, 1213-1217, 1224-1230, 1238-1248, 1255-1260, 1272-1320, 1335-1375, 1389-1414, 1427-1480, 1495-1573, 1581-1667, 1677-1680, 1688-1706, 1713-1748
 rmgpy.rmg.output                    168    160     78     78     3%   62-584, 592-1177
 rmgpy.rmg.pdep                      316    287    182    182     6%   73-85, 91, 108, 130-133, 136, 142, 145, 152, 158-178, 187-208, 217-239, 246-265, 273-297, 305-315, 322-377, 387-448, 455-635
 rmgpy.solver                          2      0      0      0   100%   
@@ -4044,85 +1211,9 @@ rmgpy.statmech                        5      0      0      0   100%
 rmgpy.thermo                          3      0      0      0   100%   
 rmgpy.transport                      28      1      0      0    96%   71
 -----------------------------------------------------------------------------
-TOTAL                             15166  12081   6490   5830    17%   
+TOTAL                             15349  12310   6605   5921    17%   
 ----------------------------------------------------------------------
-Ran 754 tests.
+Ran 763 tests.
 
-OK (SKIP=27)
-SHCSC2H5
-1 C 0 {2,D} {3,S} {4,S}
-2 S 0 {1,D}
-3 S 0 {1,S}
-4 C 0 {1,S} {5,S}
-5 C 0 {4,S}
-
-HCSCHCH3SH
-1 C 0 {2,S} {3,S} {4,S}
-2 C 0 {1,S}
-3 S 0 {1,S}
-4 C 0 {1,S} {5,D}
-5 S 0 {4,D}
-
-
-        1 C 0       {2,D} {7,S} {8,S}
-        2 C 0 {1,D} {3,S} {9,S}
-        3 C 0 {2,S} {4,D} {10,S}
-        4 C 0 {3,D} {5,S} {11,S}
-        5 C 1 {4,S} {6,S} {12,S}
-        6 C 0 {5,S} {13,S} {14,S} {15,S}
-        7 H 0 {1,S}
-        8 H 0 {1,S}
-        9 H 0 {2,S}
-        10 H 0 {3,S}
-        11 H 0 {4,S}
-        12 H 0 {5,S}
-        13 H 0 {6,S}
-        14 H 0 {6,S}
-        15 H 0 {6,S}
-        
-
-            1     C     1 {2,S}
-            2     C     1 {1,S}
-        
-
-            1     C     1 {2,S}
-            2     C     1 {1,S}
-        
-1 O 0
-
-        1 * C 0 {2,D} {7,S} {8,S}
-        2 C 0 {1,D} {3,S} {9,S}
-        3 C 0 {2,S} {4,D} {10,S}
-        4 C 0 {3,D} {5,S} {11,S}
-        5 C 0 {4,S} {6,S} {12,S} {13,S}
-        6 C 0 {5,S} {14,S} {15,S} {16,S}
-        7 H 0 {1,S}
-        8 H 0 {1,S}
-        9 H 0 {2,S}
-        10 H 0 {3,S}
-        11 H 0 {4,S}
-        12 H 0 {5,S}
-        13 H 0 {5,S}
-        14 H 0 {6,S}
-        15 H 0 {6,S}
-        16 H 0 {6,S}
-        
-
-1 *1 C  1 {2,S} {3,S} {4,S}
-2    C  0 {1,S} {3,S} {5,S} {6,S}
-3    C  0 {1,S} {2,S} {7,S} {8,S}
-4    H  0 {1,S}
-5    H  0 {2,S}
-6    H  0 {2,S}
-7    H  0 {3,S}
-8    H  0 {3,S}
-        
-1 *1 C 1 0 {2,S} {3,S} {4,S}
-2    C 0 0 {1,S} {3,S} {5,S} {6,S}
-3    C 0 0 {1,S} {2,S} {7,S} {8,S}
-4    H 0 0 {1,S}
-5    H 0 0 {2,S}
-6    H 0 0 {2,S}
-7    H 0 0 {3,S}
-8    H 0 0 {3,S}
-
+FAILED (SKIP=25, errors=43)
+make: *** [test] Error 1

@@ -133,6 +133,11 @@ calculation of pressure-dependent reaction rates.</p>
     <span class="n">kineticsEstimator</span> <span class="o">=</span> <span class="s">&#39;rate rules&#39;</span><span class="p">,</span>
 <span class="p">)</span>
 
+<span class="c"># Constraints on generated species</span>
+<span class="n">generatedSpeciesConstraints</span><span class="p">(</span>
+    <span class="n">maximumRadicalElectrons</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+<span class="p">)</span>
+
 <span class="c"># List of species</span>
 <span class="n">species</span><span class="p">(</span>
     <span class="n">label</span><span class="o">=</span><span class="s">&#39;HXD13&#39;</span><span class="p">,</span>
@@ -149,8 +154,8 @@ calculation of pressure-dependent reaction rates.</p>
     <span class="n">reactive</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
     <span class="n">structure</span><span class="o">=</span><span class="n">adjacencyList</span><span class="p">(</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        1 H 0 {2,S}</span>
-<span class="sd">        2 H 0 {1,S}</span>
+<span class="sd">        1 H u0 p0 {2,S}</span>
+<span class="sd">        2 H u0 p0 {1,S}</span>
 <span class="sd">        &quot;&quot;&quot;</span><span class="p">),</span>
 <span class="p">)</span>
 <span class="n">species</span><span class="p">(</span>

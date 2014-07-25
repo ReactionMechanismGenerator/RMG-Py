@@ -65,6 +65,15 @@
 <span id="adjacency-lists"></span><span id="rmgpy-molecule-adjlist"></span><h1>Adjacency Lists<a class="headerlink" href="#module-rmgpy.molecule.adjlist" title="Permalink to this headline">¶</a></h1>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
+<p class="last">The adjacency list syntax changed in July 2014.
+The minimal requirement for most translations is to prefix the number
+of unpaired electrons with the letter <cite>u</cite>.
+The new syntax, however, allows much
+greater flexibility, including definition of lone pairs, partial charges,
+wildcards, and molecule multiplicities.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
 <p class="last">To quickly visualize any adjacency list, or to generate an adjacency list from
 other types of molecular representations such as SMILES, InChI, or even common
 species names, use the Molecule Search tool found here: <a class="reference external" href="http://rmg.mit.edu/molecule_search">http://rmg.mit.edu/molecule_search</a></p>
@@ -76,23 +85,62 @@ RMG &#8211; but extended to allow for specification of extra semantic informatio
 <p>The first line of most adjacency lists is a unique identifier for the molecule
 or pattern the adjacency list represents. This is not strictly required, but
 is recommended in most cases. Generally the identifier should only use
-alphanumeric characters and the underscore, as if an identifer in many popular
+alphanumeric characters and the underscore, as if an identifier in many popular
 programming languages. However, strictly speaking any non-space ASCII character
 is allowed.</p>
-<p>After the identifier line, each subsequent line describes a single atom and its
+<p>The subsequent lines may contain keyword-value pairs. Currently there is only
+one keyword, <tt class="docutils literal"><span class="pre">multiplicity</span></tt>.</p>
+<p>For species or molecule declarations, the value after <tt class="docutils literal"><span class="pre">multiplicity</span></tt> defines
+the spin multiplicity of the molecule. E.g. <tt class="docutils literal"><span class="pre">multiplicity</span> <span class="pre">1</span></tt> for most ground state
+closed shell species, <tt class="docutils literal"><span class="pre">multiplicity</span> <span class="pre">2</span></tt> for most radical species,
+and <tt class="docutils literal"><span class="pre">multiplicity</span> <span class="pre">3</span></tt> for a triplet biradical.
+If the <tt class="docutils literal"><span class="pre">multiplicity</span></tt> line is not present then a value of
+(1 + number of unpaired electrons) is assumed.
+Thus, it can usually be omitted, but if present can be used to distinguish,
+for example, singlet CH2 from triplet CH2.</p>
+<p>If defining a Functional <a class="reference internal" href="group.html#rmgpy.molecule.Group" title="rmgpy.molecule.Group"><tt class="xref py py-class docutils literal"><span class="pre">Group</span></tt></a>, then the value must be a list,
+which defines the multiplicities that will be matched by the group, eg.
+<tt class="docutils literal"><span class="pre">multiplicity</span> <span class="pre">[1,2,3,4,5]</span></tt> or, for a single value, <tt class="docutils literal"><span class="pre">multiplicity</span> <span class="pre">[1]</span></tt>.
+If the multiplicity line is omitted, then <tt class="docutils literal"><span class="pre">multiplicity</span> <span class="pre">[1,2,3,4,5]</span></tt> is assumed.</p>
+<p>After the identifier line and keyword-value lines,
+each subsequent line describes a single atom and its
 local bond structure. The format of these lines is a whitespace-delimited list
 with tokens</p>
-<div class="highlight-python"><pre>&lt;number&gt; [&lt;label&gt;] &lt;element&gt; &lt;radicals&gt; &lt;bondlist&gt;</pre>
+<div class="highlight-python"><pre>&lt;number&gt; [&lt;label&gt;] &lt;element&gt; u&lt;unpaired&gt; [p&lt;pairs&gt;] [c&lt;charge&gt;] &lt;bondlist&gt;</pre>
 </div>
 <p>The first item is the number used to identify that atom. Any number may be used,
 though it is recommended to number the atoms sequentially starting from one.
 Next is an optional label used to tag that atom; this should be an
-asterisk followed by a unique number for the label, e.g. <tt class="docutils literal"><span class="pre">*1</span></tt>. After that is
-the atom&#8217;s element, indicated by its atomic symbol, followed by the number of
-radical electrons on the atom. The last set of tokens is the list of bonds.
+asterisk followed by a unique number for the label, e.g. <tt class="docutils literal"><span class="pre">*1</span></tt>.
+In some cases (e.g. thermodynamics groups) there is only one labeled atom, and the label
+is just an asterisk with no number: <tt class="docutils literal"><span class="pre">*</span></tt>.</p>
+<p>After that is
+the atom&#8217;s element or atom type, indicated by its atomic symbol, followed by
+a sequence of tokens describing the electronic state of the atom:</p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">u0</span></tt> number of <strong>unpaired</strong> electrons (eg. radicals)</li>
+<li><tt class="docutils literal"><span class="pre">p0</span></tt> number of lone <strong>pairs</strong> of electrons, common on oxygen and nitrogen.</li>
+<li><tt class="docutils literal"><span class="pre">c0</span></tt> formal <strong>charge</strong> on the atom, e.g. <tt class="docutils literal"><span class="pre">c-1</span></tt> (negatively charged),
+<tt class="docutils literal"><span class="pre">c0</span></tt>, <tt class="docutils literal"><span class="pre">c+1</span></tt> (positively charged)</li>
+</ul>
+<p>For <a class="reference internal" href="molecule.html#rmgpy.molecule.Molecule" title="rmgpy.molecule.Molecule"><tt class="xref py py-class docutils literal"><span class="pre">Molecule</span></tt></a> definitions:
+The value must be a single integer (and for charge must have a + or - sign if not equal to 0)
+The number of unpaired electrons (i.e. radical electrons) is required, even if zero.
+The number of lone pairs and the formal charge are assumed to be zero if omitted.</p>
+<p>For <a class="reference internal" href="group.html#rmgpy.molecule.Group" title="rmgpy.molecule.Group"><tt class="xref py py-class docutils literal"><span class="pre">Group</span></tt></a> definitions:
+The value can be an integer or a list of integers (with signs, for charges),</p>
+<blockquote>
+<div>eg. <tt class="docutils literal"><span class="pre">u[0,1,2]</span></tt> or <tt class="docutils literal"><span class="pre">c[0,+1,+2,+3,+4]</span></tt>, or may be a wildcard <tt class="docutils literal"><span class="pre">x</span></tt>
+which matches any valid value,</div></blockquote>
+<p>eg. <tt class="docutils literal"><span class="pre">px</span></tt> is the same as <tt class="docutils literal"><span class="pre">p[0,1,2,3,4]</span></tt> and <tt class="docutils literal"><span class="pre">cx</span></tt> is the same as
+<tt class="docutils literal"><span class="pre">c[-4,-3,-2,-1,0,+1,+2,+3,+4]</span></tt>. Lists must be enclosed is square brackets,
+and separated by commas, without spaces.
+If lone pairs or formal charges are omitted from a group definition,
+the wildcard is assumed.</p>
+<p>The last set of tokens is the list of bonds.
 To indicate a bond, place the number of the atom at the other end of the bond
 and the bond type within curly braces and separated by a comma, e.g. <tt class="docutils literal"><span class="pre">{2,S}</span></tt>.
-Multiple bonds to the same atom should be separated by whitespace.</p>
+Multiple bonds from the same atom should be separated by whitespace.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">You must take care to make sure each bond is listed on the lines of <em>both</em>
@@ -100,21 +148,25 @@ atoms in the bond, and that these entries have the same bond type. RMG will
 raise an exception if it encounters such an invalid adjacency list.</p>
 </div>
 <p>When writing a molecular substructure pattern, you may specify multiple
-elements, radical counts, and bond types as a comma-separated list inside curly
-braces. For example, to specify any carbon or oxygen atom, use the syntax
-<tt class="docutils literal"><span class="pre">{C,O}</span></tt>. Atom types may also be used as a shorthand. (Atom types can also be
+elements, radical counts, and bond types as a comma-separated list inside square
+brackets. For example, to specify any carbon or oxygen atom, use the syntax
+<tt class="docutils literal"><span class="pre">[C,O]</span></tt>. For a single or double bond to atom 2, write <tt class="docutils literal"><span class="pre">{2,[S,D]}</span></tt>.</p>
+<p>Atom types such as <tt class="docutils literal"><span class="pre">R!H</span></tt> or <tt class="docutils literal"><span class="pre">Cdd</span></tt> may also be used as a shorthand. (Atom types
+like <tt class="docutils literal"><span class="pre">Cdd</span></tt> can also be
 used in full molecules, but this use is discouraged, as RMG can compute them
 automatically for full molecules.)</p>
 <p>Below is an example adjacency list, for 1,3-hexadiene, with the weakest bond in
 the molecule labeled with <tt class="docutils literal"><span class="pre">*1</span></tt> and <tt class="docutils literal"><span class="pre">*2</span></tt>. Note that hydrogen atoms
-can be omitted if desired, as their presence is inferred:</p>
+can be omitted if desired, as their presence is inferred, provided that unpaired
+electrons, lone pairs, and charges are all correctly defined:</p>
 <div class="highlight-python"><pre>HXD13
-1    C 0       {2,D}
-2    C 0 {1,D} {3,S}
-3    C 0 {2,S} {4,D}
-4    C 0 {3,D} {5,S}
-5 *1 C 0 {4,S} {6,S}
-6 *2 C 0 {5,S}</pre>
+multiplicity 1
+1    C u0       {2,D}
+2    C u0 {1,D} {3,S}
+3    C u0 {2,S} {4,D}
+4    C u0 {3,D} {5,S}
+5 *1 C u0 {4,S} {6,S}
+6 *2 C u0 {5,S}</pre>
 </div>
 <p>The allowed element types, radicals, and bonds are listed in the following table:</p>
 <blockquote>
@@ -131,7 +183,7 @@ can be omitted if desired, as their presence is inferred:</p>
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td rowspan="4">Chemical Element</td>
+<tr class="row-even"><td rowspan="5">Chemical Element</td>
 <td>C</td>
 <td>Carbon atom</td>
 </tr>
@@ -144,11 +196,11 @@ can be omitted if desired, as their presence is inferred:</p>
 <tr class="row-odd"><td>S</td>
 <td>Sulfur atom</td>
 </tr>
-<tr class="row-even"><td rowspan="6">Nonreactive Elements</td>
-<td>N</td>
+<tr class="row-even"><td>N</td>
 <td>Nitrogen atom</td>
 </tr>
-<tr class="row-odd"><td>Si</td>
+<tr class="row-odd"><td rowspan="5">Nonreactive Elements</td>
+<td>Si</td>
 <td>Silicon atom</td>
 </tr>
 <tr class="row-even"><td>Cl</td>
@@ -162,25 +214,6 @@ can be omitted if desired, as their presence is inferred:</p>
 </tr>
 <tr class="row-odd"><td>&nbsp;</td>
 <td>&nbsp;</td>
-</tr>
-<tr class="row-even"><td rowspan="6">Free Electrons</td>
-<td>0</td>
-<td>Non-radical</td>
-</tr>
-<tr class="row-odd"><td>1</td>
-<td>Mono-radical</td>
-</tr>
-<tr class="row-even"><td>2</td>
-<td>Bi-radical</td>
-</tr>
-<tr class="row-odd"><td>2T</td>
-<td>Triplet</td>
-</tr>
-<tr class="row-even"><td>2S</td>
-<td>Singlet</td>
-</tr>
-<tr class="row-odd"><td>3</td>
-<td>Tri-radical</td>
 </tr>
 <tr class="row-even"><td rowspan="4">Chemical Bond</td>
 <td>S</td>
@@ -207,7 +240,7 @@ can be omitted if desired, as their presence is inferred:</p>
 
 <dl class="function">
 <dt id="rmgpy.molecule.adjlist.toAdjacencyList">
-<tt class="descclassname">rmgpy.molecule.adjlist.</tt><tt class="descname">toAdjacencyList</tt><big>(</big><em>atoms</em>, <em>label=None</em>, <em>group=False</em>, <em>removeH=False</em>, <em>removeLonePairs=False</em><big>)</big><a class="headerlink" href="#rmgpy.molecule.adjlist.toAdjacencyList" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">rmgpy.molecule.adjlist.</tt><tt class="descname">toAdjacencyList</tt><big>(</big><em>atoms</em>, <em>multiplicity</em>, <em>label=None</em>, <em>group=False</em>, <em>removeH=False</em>, <em>removeLonePairs=False</em><big>)</big><a class="headerlink" href="#rmgpy.molecule.adjlist.toAdjacencyList" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert a chemical graph defined by a list of <cite>atoms</cite> into a string
 adjacency list.</p>
 </dd></dl>

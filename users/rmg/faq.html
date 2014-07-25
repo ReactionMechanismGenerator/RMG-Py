@@ -63,6 +63,35 @@
             
   <div class="section" id="frequently-asked-questions">
 <span id="faq"></span><h1>15. Frequently Asked Questions<a class="headerlink" href="#frequently-asked-questions" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="why-can-t-my-adjacency-lists-be-read-any-more">
+<h2>15.1. Why can&#8217;t my adjacency lists be read any more?<a class="headerlink" href="#why-can-t-my-adjacency-lists-be-read-any-more" title="Permalink to this headline">¶</a></h2>
+<p>The adjacency list syntax changed in July 2014.
+The minimal requirement for most translations is to prefix the number
+of unpaired electrons with the letter <cite>u</cite>.</p>
+<p>Example old syntax:</p>
+<div class="highlight-python"><pre>HXD13
+1    C 0       {2,D}
+2    C 0 {1,D} {3,S}
+3    C 0 {2,S} {4,D}
+4    C 0 {3,D} {5,S}
+5 *1 C 0 {4,S} {6,S}
+6 *2 C 0 {5,S}</pre>
+</div>
+<p>Example new syntax:</p>
+<div class="highlight-python"><pre>HXD13
+1    C u0       {2,D}
+2    C u0 {1,D} {3,S}
+3    C u0 {2,S} {4,D}
+4    C u0 {3,D} {5,S}
+5 *1 C u0 {4,S} {6,S}
+6 *2 C u0 {5,S}</pre>
+</div>
+<p>The new syntax, however, allows much
+greater flexibility, including definition of lone pairs, partial charges,
+wildcards, and molecule multiplicities, and was necessary to allow us to
+add Nitrogen chemistry.
+See <a class="reference internal" href="../../reference/molecule/adjlist.html#rmgpy-molecule-adjlist"><em>Adjacency Lists</em></a> for details of the new syntax.</p>
+</div>
 </div>
 
 
@@ -74,6 +103,14 @@
 <div class="sidebarlogo">
 <a href="../../index.html"><img src="../../_static/rmg-logo-small.png" alt="RMG" /></a>
 </div>
+  <h3><a href="../../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">15. Frequently Asked Questions</a><ul>
+<li><a class="reference internal" href="#why-can-t-my-adjacency-lists-be-read-any-more">15.1. Why can&#8217;t my adjacency lists be read any more?</a></li>
+</ul>
+</li>
+</ul>
+
   <h4>Previous topic</h4>
   <p class="topless"><a href="modules/generateFluxDiagram.html"
                         title="previous chapter">14.5. Generating Flux Diagrams</a></p>
