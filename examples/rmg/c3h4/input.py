@@ -8,6 +8,10 @@ database(
 	kineticsEstimator = 'rate rules',
 )
 
+generatedSpeciesConstraints(
+    maximumRadicalElectrons = 4,
+)
+
 # List of species
 species(
 	label='CH2',

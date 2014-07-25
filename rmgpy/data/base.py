@@ -1333,7 +1333,6 @@ class ForbiddenStructures(Database):
         
         f.write('{0}(\n'.format(name))
         f.write('    label = "{0}",\n'.format(entry.label))
-
         if isinstance(entry.item, Molecule):
             f.write('    molecule = \n')
             f.write('"""\n')

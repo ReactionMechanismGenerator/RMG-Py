@@ -157,6 +157,12 @@ class AtomType:
 
 ################################################################################
 
+
+"""
+Note: function to read adjacency lists assumes that all atom types begin
+with a capital letter [A-Z]
+"""
+
 atomTypes = {}
 atomTypes['R']    = AtomType(label='R', generic=[], specific=[
     'R!H',

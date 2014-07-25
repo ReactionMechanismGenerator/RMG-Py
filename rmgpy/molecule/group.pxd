@@ -33,7 +33,6 @@ cdef class GroupAtom(Vertex):
 
     cdef public list atomType
     cdef public list radicalElectrons
-    cdef public list spinMultiplicity
     cdef public list charge
     cdef public str label
     cdef public list lonePairs
@@ -79,6 +78,8 @@ cdef class GroupBond(Edge):
 ################################################################################
 
 cdef class Group(Graph):
+
+    cdef public list multiplicity
 
     # These read-only attribues act as a "fingerprint" for accelerating
     # subgraph isomorphism checks

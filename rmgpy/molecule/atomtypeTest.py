@@ -112,75 +112,75 @@ class TestGetAtomType(unittest.TestCase):
         self.mol1 = Molecule().fromSMILES('COC(=O)CC=C=CC#C')
         # self.mol2 = Molecule().fromSMILES('c1ccccc1')
         ## the fromSMILES method currently Kekulizes, so to test Benzene we use fromAdjacencyList
-        self.mol2 = Molecule().fromAdjacencyList('''1  C 0 0 {2,B} {6,B} {7,S}
-                                                    2  C 0 0 {1,B} {3,B} {8,S}
-                                                    3  C 0 0 {2,B} {4,B} {9,S}
-                                                    4  C 0 0 {3,B} {5,B} {10,S}
-                                                    5  C 0 0 {4,B} {6,B} {11,S}
-                                                    6  C 0 0 {1,B} {5,B} {12,S}
-                                                    7  H 0 0 {1,S}
-                                                    8  H 0 0 {2,S}
-                                                    9  H 0 0 {3,S}
-                                                    10 H 0 0 {4,S}
-                                                    11 H 0 0 {5,S}
-                                                    12 H 0 0 {6,S}''')
+        self.mol2 = Molecule().fromAdjacencyList('''1  C u0 p0 {2,B} {6,B} {7,S}
+                                                    2  C u0 p0 {1,B} {3,B} {8,S}
+                                                    3  C u0 p0 {2,B} {4,B} {9,S}
+                                                    4  C u0 p0 {3,B} {5,B} {10,S}
+                                                    5  C u0 p0 {4,B} {6,B} {11,S}
+                                                    6  C u0 p0 {1,B} {5,B} {12,S}
+                                                    7  H u0 p0 {1,S}
+                                                    8  H u0 p0 {2,S}
+                                                    9  H u0 p0 {3,S}
+                                                    10 H u0 p0 {4,S}
+                                                    11 H u0 p0 {5,S}
+                                                    12 H u0 p0 {6,S}''')
         self.mol3 = Molecule().fromSMILES('[H]')
         self.mol4 = Molecule().fromSMILES(
                                 'O=[Si][Si][Si]=[Si]=[Si][Si]#[Si]SS=S')
-        self.mol5 = Molecule().fromAdjacencyList('''1 H 0 0 {3,S}
-                                                    2 H 0 0 {3,S}
-                                                    3 N 0 0 {1,S} {2,S} {4,D}
-                                                    4 N 0 2 {3,D}''')
+        self.mol5 = Molecule().fromAdjacencyList('''1 H u0 p0 {3,S}
+                                                    2 H u0 p0 {3,S}
+                                                    3 N u0 p0 {1,S} {2,S} {4,D}
+                                                    4 N u0 p2 {3,D}''')
         self.mol6 = Molecule().fromSMILES('[Ar]')
         self.mol7 = Molecule().fromSMILES('[He]')
         self.mol8 = Molecule().fromSMILES('[Ne]')
-        self.mol9 = Molecule().fromAdjacencyList('''1 N 0 1 {2,S} {3,S} {4,S}
-                                                    2 H 0 0 {1,S}
-                                                    3 H 0 0 {1,S}
-                                                    4 H 0 0 {1,S}''')
+        self.mol9 = Molecule().fromAdjacencyList('''1 N u0 p1 {2,S} {3,S} {4,S}
+                                                    2 H u0 p0 {1,S}
+                                                    3 H u0 p0 {1,S}
+                                                    4 H u0 p0 {1,S}''')
         
-        self.mol10 = Molecule().fromAdjacencyList('''1 N 1 1 {2,S} {3,S}
-                                                     2 H 0 0 {1,S}
-                                                     3 H 0 0 {1,S}''')
+        self.mol10 = Molecule().fromAdjacencyList('''1 N u1 p1 {2,S} {3,S}
+                                                     2 H u0 p0 {1,S}
+                                                     3 H u0 p0 {1,S}''')
         
-        self.mol11 = Molecule().fromAdjacencyList('''1 N 2 1 {2,S}
-                                                     2 H 0 0 {1,S}''')
+        self.mol11 = Molecule().fromAdjacencyList('''1 N u2 p1 {2,S}
+                                                     2 H u0 p0 {1,S}''')
         
-        self.mol12 = Molecule().fromAdjacencyList('''1 N 0 1 {2,T}
-                                                     2 C 1 0 {1,T}''')
+        self.mol12 = Molecule().fromAdjacencyList('''1 N u0 p1 {2,T}
+                                                     2 C u1 p0 {1,T}''')
         
-        self.mol13 = Molecule().fromAdjacencyList('''1 N 0 0 {2,S} {3,S} {4,S} {5,S}
-                                                     2 H 0 0 {1,S}
-                                                     3 H 0 0 {1,S}
-                                                     4 H 0 0 {1,S}
-                                                     5 O 0 3 {1,S}''')
+        self.mol13 = Molecule().fromAdjacencyList('''1 N u0 p0 {2,S} {3,S} {4,S} {5,S}
+                                                     2 H u0 p0 {1,S}
+                                                     3 H u0 p0 {1,S}
+                                                     4 H u0 p0 {1,S}
+                                                     5 O u0 p3 {1,S}''')
         
-        self.mol14 = Molecule().fromAdjacencyList('''1 N 0 2 {2,D}
-                                                     2 N 0 0 {1,D} {3,D}
-                                                     3 O 0 2 {2,D}''')
+        self.mol14 = Molecule().fromAdjacencyList('''1 N u0 p2 {2,D}
+                                                     2 N u0 p0 {1,D} {3,D}
+                                                     3 O u0 p2 {2,D}''')
         
-        self.mol15 = Molecule().fromAdjacencyList('''1 N 0 1 {2,T}
-                                                     2 N 0 0 {1,T} {3,S}
-                                                     3 O 0 3 {2,S}''')
+        self.mol15 = Molecule().fromAdjacencyList('''1 N u0 p1 {2,T}
+                                                     2 N u0 p0 {1,T} {3,S}
+                                                     3 O u0 p3 {2,S}''')
         
-        self.mol16 = Molecule().fromAdjacencyList('''1 N 0 1 {2,D} {3,S}
-                                                     2 O 0 2 {1,D}
-                                                     3 O 1 2 {1,S}''')
+        self.mol16 = Molecule().fromAdjacencyList('''1 N u0 p1 {2,D} {3,S}
+                                                     2 O u0 p2 {1,D}
+                                                     3 O u1 p2 {1,S}''')
         
-        self.mol17 = Molecule().fromAdjacencyList('''1 N 1 1 {2,D}
-                                                     2 O 0 2 {1,D}''')
+        self.mol17 = Molecule().fromAdjacencyList('''1 N u1 p1 {2,D}
+                                                     2 O u0 p2 {1,D}''')
         
-        self.mol18 = Molecule().fromAdjacencyList('''1  N 0 0 {2,B} {6,B} {7,S}
-                                                     2  C 0 0 {1,B} {3,B} {8,S}
-                                                     3  C 0 0 {2,B} {4,B} {9,S}
-                                                     4  C 0 0 {3,B} {5,B} {10,S}
-                                                     5  C 0 0 {4,B} {6,B} {11,S}
-                                                     6  N 0 1 {1,B} {5,B}
-                                                     7  O 0 3 {1,S}
-                                                     8  H 0 0 {2,S}
-                                                     9  H 0 0 {3,S}
-                                                     10 H 0 0 {4,S}
-                                                     11 H 0 0 {5,S}''')
+        self.mol18 = Molecule().fromAdjacencyList('''1  N u0 p0 {2,B} {6,B} {7,S}
+                                                     2  C u0 p0 {1,B} {3,B} {8,S}
+                                                     3  C u0 p0 {2,B} {4,B} {9,S}
+                                                     4  C u0 p0 {3,B} {5,B} {10,S}
+                                                     5  C u0 p0 {4,B} {6,B} {11,S}
+                                                     6  N u0 p1 {1,B} {5,B}
+                                                     7  O u0 p3 {1,S}
+                                                     8  H u0 p0 {2,S}
+                                                     9  H u0 p0 {3,S}
+                                                     10 H u0 p0 {4,S}
+                                                     11 H u0 p0 {5,S}''')
         
     
     def atomType(self, mol, atomID):

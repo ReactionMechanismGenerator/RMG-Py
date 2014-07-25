@@ -8,6 +8,11 @@ database(
     kineticsEstimator = 'rate rules',
 )
 
+# Constraints on generated species
+generatedSpeciesConstraints(
+    maximumRadicalElectrons = 3,
+)
+
 # List of species
 species(
     label='octane',

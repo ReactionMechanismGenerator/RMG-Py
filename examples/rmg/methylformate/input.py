@@ -29,8 +29,8 @@ species(
     reactive=True,
     structure=adjacencyList(
         """
-        1     C     3 {2,S}
-        2     H     0 {1,S}
+        1 C u3 p0 {2,S}
+        2 H u0 p0 {1,S}
         """),
 )
 species(
@@ -46,7 +46,7 @@ species(
 species(
     label='CO',
     reactive=True,
-    structure=SMILES("[C]=O"),
+    structure=SMILES("[C+]#[O-]"),
 )
 species(
     label='CO2',
@@ -157,4 +157,5 @@ options(
     drawMolecules=False,
     generatePlots=False,
     saveConcentrationProfiles=False,
+    saveEdgeSpecies=True,
 )

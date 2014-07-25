@@ -61,6 +61,9 @@ from rmgpy.reaction import Reaction
 from pdep import PDepReaction, PDepNetwork, PressureDependenceError
 # generateThermoDataFromQM under the Species class imports the qm package
 
+#: This dictionary is used to add multiplicity to species label
+_multiplicity_labels = {1:'S',2:'D',3:'T',4:'Q',5:'V',}
+
 
 ################################################################################
 
@@ -126,7 +129,6 @@ class Species(rmgpy.species.Species):
                     thermo = []
                     for molecule in self.molecule:
                         molecule.clearLabeledAtoms()
-                        molecule.updateAtomTypes()
                         tdata = database.thermo.estimateRadicalThermoViaHBI(molecule, quantumMechanics.getThermoData)
                         if tdata is not None:
                             thermo.append(tdata)
@@ -151,7 +153,7 @@ class Species(rmgpy.species.Species):
                 if thermo0 is not None:
                     # Write the QM molecule thermo to a library so that can be used in future RMG jobs.
                     quantumMechanics.database.loadEntry(index = len(quantumMechanics.database.entries) + 1,
-                                                        label = molecule.toSMILES(),
+                                                        label = molecule.toSMILES() + '_({0})'.format(_multiplicity_labels[molecule.multiplicity]),
                                                         molecule = molecule.toAdjacencyList(),
                                                         thermo = thermo0,
                                                         shortDesc = thermo0.comment

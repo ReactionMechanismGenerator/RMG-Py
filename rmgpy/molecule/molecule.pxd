@@ -38,7 +38,6 @@ cdef class Atom(Vertex):
 
     cdef public Element element
     cdef public short radicalElectrons
-    cdef public short spinMultiplicity
     cdef public short charge
     cdef public str label
     cdef public AtomType atomType
@@ -103,6 +102,7 @@ cdef class Molecule(Graph):
 
     cdef public bint implicitHydrogens
     cdef public int symmetryNumber
+    cdef public int multiplicity
     cdef public object rdMol
     cdef public int rdMolConfId
     cdef str _fingerprint
