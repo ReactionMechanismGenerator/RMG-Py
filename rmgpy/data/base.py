@@ -439,7 +439,7 @@ class Database:
                 if not isinstance(child.item, Molecule) and not isinstance(child.item, Group):
                     canSort = False
             if canSort:
-                entry.children.sort(lambda x, y: cmp(len(x.item.atoms), len(y.item.atoms)))
+                entry.children.sort(lambda y, x: cmp(len(x.item.atoms), len(y.item.atoms)))
 
     def loadOldTree(self, path):
         """
