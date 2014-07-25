@@ -135,7 +135,7 @@ class Gaussian:
             logging.info("Incorrect connectivity for optimized geometry in file {0}".format(self.outputFilePath))
             return False
 
-        logging.info("Successful MOPAC quantum result found in {0}".format(self.outputFilePath))
+        logging.info("Successful {1} quantum result in {0}".format(self.outputFilePath, self.__class__.__name__))
         return True
         
     def parse(self):
@@ -212,19 +212,23 @@ class GaussianMol(QMMolecule, Gaussian):
                 
         if self.verifyOutputFile():
             logging.info("Found a successful output file already; using that.")
+            source = "QM Gaussian result file found from previous run."
         else:
             self.createGeometry()
             success = False
             for attempt in range(1, self.maxAttempts+1):
                 self.writeInputFile(attempt)
+                logging.info('Trying {3} attempt {0} of {1} on molecule {2}.'.format(attempt, self.maxAttempts, self.molecule.toSMILES(), self.__class__.__name__))
                 success = self.run()
                 if success:
                     logging.info('Attempt {0} of {1} on species {2} succeeded.'.format(attempt, self.maxAttempts, self.molecule.toAugmentedInChI()))
+                    source = "QM {0} calculation attempt {1}".format(self.__class__.__name__, attempt )
                     break
             else:
                 logging.error('QM thermo calculation failed for {0}.'.format(self.molecule.toAugmentedInChI()))
                 return None
         result = self.parse() # parsed in cclib
+        result.source = source
         return result
 
 
