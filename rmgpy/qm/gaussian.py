@@ -206,10 +206,14 @@ class GaussianMol(QMMolecule, Gaussian):
         """
         Calculate the QM data and return a QMData object.
         """
-        self.createGeometry()
+        for atom in self.molecule.vertices:
+            if atom.atomType.label in ('N5s', 'N5d', 'N5dd', 'N5t', 'N5b'):
+                return None
+                
         if self.verifyOutputFile():
             logging.info("Found a successful output file already; using that.")
         else:
+            self.createGeometry()
             success = False
             for attempt in range(1, self.maxAttempts+1):
                 self.writeInputFile(attempt)
