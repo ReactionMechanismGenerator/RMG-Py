@@ -808,6 +808,101 @@ class QMReaction:
             notes = 'Bounds matrix editing failed\n'
             return False, notes
     
+    def generateTSGeometryTest(self):
+        """
+        Generate a transition state geometry, using the direct guess (group additive) method.
+        
+        Returns (success, notes) where success is a True if it worked, else False,
+        and notes is a string describing what happened.
+        """
+        notes = ''
+        if os.path.exists(os.path.join(self.file_store_path, self.uniqueID + '.data')):
+            logging.info("Not generating TS geometry because it's already done.")
+            return True, "Already done!"
+        
+        if len(self.reaction.reactants)==2:
+            if isinstance(self.reaction.reactants[0], Molecule):
+                reactant = self.reaction.reactants[0].merge(self.reaction.reactants[1])
+            elif isinstance(self.reaction.reactants[0], Species):
+                reactant = self.reaction.reactants[0].molecule[0].merge(self.reaction.reactants[1].molecule[0])
+        else:
+            if isinstance(self.reaction.reactants[0], Molecule):
+                reactant = self.reaction.reactants[0]
+            elif isinstance(self.reaction.reactants[0], Species):
+                reactant = self.reaction.reactants[0].molecule[0]
+        
+        if len(self.reaction.products)==2:
+            if isinstance(self.reaction.reactants[0], Molecule):
+                product = self.reaction.products[0].merge(self.reaction.products[1])
+            elif isinstance(self.reaction.reactants[0], Species):
+                product = self.reaction.products[0].molecule[0].merge(self.reaction.products[1].molecule[0])
+        else:
+            if isinstance(self.reaction.reactants[0], Molecule):
+                product = self.reaction.products[0]
+            elif isinstance(self.reaction.reactants[0], Species):
+                product = self.reaction.products[0].molecule[0]
+            
+        reactant = self.fixSortLabel(reactant)
+        product = self.fixSortLabel(product)
+        
+        tsRDMol, tsBM, tsMult, self.geometry = self.generateBoundsMatrix(reactant)
+        
+        self.geometry.uniqueID = self.uniqueID
+        
+        tsBM, labels, atomMatch = self.editMatrix(reactant, tsBM)
+        atoms = len(reactant.atoms)
+        distGeomAttempts = 15*(atoms-3) # number of conformers embedded from the bounds matrix
+        
+        setBM = rdkit.DistanceGeometry.DoTriangleSmoothing(tsBM)
+        
+        if setBM:
+            for i in range(len(tsBM)):
+                for j in range(i,len(tsBM)):
+                    if tsBM[j,i] > tsBM[i,j]:
+                            print "BOUNDS MATRIX FLAWED {0}>{1}".format(tsBM[j,i], tsBM[i,j])
+        
+            self.geometry.rd_embed(tsRDMol, distGeomAttempts, bm=tsBM, match=atomMatch)
+            
+            if not os.path.exists(self.outputFilePath):
+                print "Optimizing TS once"
+                self.writeInputFile(1)
+                converged, internalCoord = self.run()
+            else:
+                converged, internalCoord = self.verifyOutputFile()
+                longDist = self.testTSGeometry(reactant)
+            
+            if internalCoord and not converged:
+                notes = 'Internal coordinate error, trying cartesian\n'
+                print "Optimizing TS in cartesian"
+                shutil.copy(self.outputFilePath, self.outputFilePath+'.TS1.log')
+                self.writeInputFile(2)
+                converged = self.run()
+                
+            if converged:
+                notes = 'TS converged, now for IRC\n'
+                print "IRC calculation"
+                if not os.path.exists(self.ircOutputFilePath):
+                    self.writeIRCFile()
+                    rightTS = self.runIRC()
+                else:
+                    rightTS = self.verifyIRCOutputFile()
+                if rightTS:
+                    print "Found a transition state"
+                    notes = 'Success\n'
+                    self.writeRxnOutputFile(labels)
+                    return True, notes
+                else:
+                    print "Graph matching failed"
+                    notes = 'IRC failed\n'
+                    return False, notes
+            else:
+                print "TS failed"
+                notes = 'TS not converged\n'
+                return False, notes
+        else:
+            notes = 'Bounds matrix editing failed\n'
+            return False, notes
+    
     def calculateQMData(self, moleculeList):
         """
         If the transition state is found, optimize reactant and product geometries for use in
