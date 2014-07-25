@@ -19,7 +19,8 @@ RMG User's Guide
     group
     database/index
     thermo
-    kinetics 
+    kinetics
+    liquids 
     guidelines
     modules/index
     faq
