@@ -240,6 +240,14 @@ atoms and <span class="math">\(N_\mathrm{rotors}\)</span> internal rotors.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.thermo.Wilhoit.discrepancy">
+<tt class="descname">discrepancy</tt><big>(</big><em>self</em>, <em>HeatCapacityModel other</em><big>)</big> &rarr; double<a class="headerlink" href="#rmgpy.thermo.Wilhoit.discrepancy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return some measure of how dissimilar <cite>self</cite> is from <cite>other</cite>.</p>
+<p>The measure is arbitrary, but hopefully useful for sorting purposes.
+Discrepancy of 0 means they are identical</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.thermo.Wilhoit.fitToData">
 <tt class="descname">fitToData</tt><big>(</big><em>self</em>, <em>ndarray Tdata</em>, <em>ndarray Cpdata</em>, <em>double Cp0</em>, <em>double CpInf</em>, <em>double H298</em>, <em>double S298</em>, <em>double B0=500.0</em><big>)</big><a class="headerlink" href="#rmgpy.thermo.Wilhoit.fitToData" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fit a Wilhoit model to the data points provided, allowing the 

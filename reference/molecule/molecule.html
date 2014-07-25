@@ -86,6 +86,10 @@ for the <cite>vertices</cite> and <cite>edges</cite> attributes. Other attribute
 <td><tt class="docutils literal"><span class="pre">int</span></tt></td>
 <td>The (estimated) external + internal symmetry number of the molecule</td>
 </tr>
+<tr class="row-odd"><td><cite>multiplicity</cite></td>
+<td><tt class="docutils literal"><span class="pre">int</span></tt></td>
+<td>The multiplicity of this species, multiplicity = 2*total_spin+1</td>
+</tr>
 </tbody>
 </table>
 <p>A new molecule object can be easily instantiated by passing the <cite>SMILES</cite> or
@@ -136,9 +140,23 @@ includes both external and internal modes.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.molecule.Molecule.changeTripletSinglet">
+<tt class="descname">changeTripletSinglet</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.changeTripletSinglet" title="Permalink to this definition">¶</a></dt>
+<dd><p>If the molecule is a 1-centered biradical, and the molecule is in a triplet state,
+change it to singlet state.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.molecule.Molecule.clearLabeledAtoms">
 <tt class="descname">clearLabeledAtoms</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.clearLabeledAtoms" title="Permalink to this definition">¶</a></dt>
 <dd><p>Remove the labels from all atoms in the molecule.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.Molecule.connectTheDots">
+<tt class="descname">connectTheDots</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.connectTheDots" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete all bonds, and set them again based on the Atoms&#8217; coords.
+Does not detect bond type.</p>
 </dd></dl>
 
 <dl class="method">
@@ -192,6 +210,20 @@ by <cite>atom1</cite>. Used to generate resonance isomers.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.molecule.Molecule.findAllDelocalizationPathsLonePairRadical">
+<tt class="descname">findAllDelocalizationPathsLonePairRadical</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.findAllDelocalizationPathsLonePairRadical" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find all the delocalization paths of lone electron pairs next to the radical center indicated
+by <cite>atom1</cite>. Used to generate resonance isomers.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.Molecule.findAllDelocalizationPathsN5dd_N5ts">
+<tt class="descname">findAllDelocalizationPathsN5dd_N5ts</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.findAllDelocalizationPathsN5dd_N5ts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find all the resonance structures of nitrogen atoms with two double bonds (N5dd)
+and nitrogen atoms with one triple and one single bond (N5ts)</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.molecule.Molecule.findIsomorphism">
 <tt class="descname">findIsomorphism</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.findIsomorphism" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <tt class="xref py py-data docutils literal"><span class="pre">True</span></tt> if <cite>other</cite> is isomorphic and <tt class="xref py py-data docutils literal"><span class="pre">False</span></tt>
@@ -225,31 +257,43 @@ Skips the first line (assuming it&#8217;s a label) unless <cite>withLabel</cite>
 </dd></dl>
 
 <dl class="method">
-<dt id="rmgpy.molecule.Molecule.fromCML">
-<tt class="descname">fromCML</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.fromCML" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convert a string of CML <cite>cmlstr</cite> to a molecular structure. Uses
-<a class="reference external" href="http://openbabel.org/">OpenBabel</a> to perform the conversion.</p>
-</dd></dl>
-
-<dl class="method">
 <dt id="rmgpy.molecule.Molecule.fromInChI">
 <tt class="descname">fromInChI</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.fromInChI" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert an InChI string <cite>inchistr</cite> to a molecular structure. Uses
-<a class="reference external" href="http://openbabel.org/">OpenBabel</a> to perform the conversion.</p>
+<a class="reference external" href="http://rdkit.org/">RDKit</a> to perform the conversion.
+This Kekulizes everything, removing all aromatic atom types.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="rmgpy.molecule.Molecule.fromOBMol">
-<tt class="descname">fromOBMol</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.fromOBMol" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convert an OpenBabel OBMol object <cite>obmol</cite> to a molecular structure. Uses
-<a class="reference external" href="http://openbabel.org/">OpenBabel</a> to perform the conversion.</p>
+<dt id="rmgpy.molecule.Molecule.fromRDKitMol">
+<tt class="descname">fromRDKitMol</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.fromRDKitMol" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a RDKit Mol object <cite>rdkitmol</cite> to a molecular structure. Uses
+<a class="reference external" href="http://rdkit.org/">RDKit</a> to perform the conversion.
+This Kekulizes everything, removing all aromatic atom types.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.Molecule.fromSMARTS">
+<tt class="descname">fromSMARTS</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.fromSMARTS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a SMARTS string <cite>smartsstr</cite> to a molecular structure. Uses
+<a class="reference external" href="http://rdkit.org/">RDKit</a> to perform the conversion.
+This Kekulizes everything, removing all aromatic atom types.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.fromSMILES">
 <tt class="descname">fromSMILES</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.fromSMILES" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert a SMILES string <cite>smilesstr</cite> to a molecular structure. Uses
-<a class="reference external" href="http://openbabel.org/">OpenBabel</a> to perform the conversion.</p>
+<a class="reference external" href="http://rdkit.org/">RDKit</a> to perform the conversion.
+This Kekulizes everything, removing all aromatic atom types.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.Molecule.fromXYZ">
+<tt class="descname">fromXYZ</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.fromXYZ" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create an RMG molecule from a list of coordinates and a corresponding
+list of atomic numbers. These are typically received from CCLib and the
+molecule is sent to <cite>ConnectTheDots</cite> so will only contain single bonds.</p>
 </dd></dl>
 
 <dl class="method">
@@ -338,9 +382,21 @@ same label, the value is converted to a list of these atoms.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.molecule.Molecule.getLonePairRadicalResonanceIsomers">
+<tt class="descname">getLonePairRadicalResonanceIsomers</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.getLonePairRadicalResonanceIsomers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate all of the resonance isomers formed by lone electron pair - radical shifts.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.molecule.Molecule.getMolecularWeight">
 <tt class="descname">getMolecularWeight</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.getMolecularWeight" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the molecular weight of the molecule in kg/mol.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.Molecule.getN5dd_N5tsResonanceIsomers">
+<tt class="descname">getN5dd_N5tsResonanceIsomers</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.getN5dd_N5tsResonanceIsomers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate all of the resonance isomers formed by shifts between N5dd and N5ts.</p>
 </dd></dl>
 
 <dl class="method">
@@ -356,6 +412,18 @@ the number of atoms of that element is returned.</p>
 <dd><p>Return the total number of radical electrons on all atoms in the
 molecule. In this function, monoradical atoms count as one, biradicals
 count as two, etc.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.Molecule.getRadicalAtoms">
+<tt class="descname">getRadicalAtoms</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.getRadicalAtoms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the atoms in the molecule that have unpaired electrons.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.Molecule.getRadicalCount">
+<tt class="descname">getRadicalCount</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.getRadicalCount" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the number of unpaired electrons.</p>
 </dd></dl>
 
 <dl class="method">
@@ -423,6 +491,20 @@ and <tt class="xref py py-data docutils literal"><span class="pre">False</span><
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.molecule.Molecule.isBiradicalSinglet">
+<tt class="descname">isBiradicalSinglet</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.isBiradicalSinglet" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if the molecule is a 1-centered biradical, and the molecule is in singlet state,
+or <tt class="docutils literal"><span class="pre">False</span></tt> otherwise.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.Molecule.isBiradicalTriplet">
+<tt class="descname">isBiradicalTriplet</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.isBiradicalTriplet" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if the molecule is a 1-centered biradical, and the molecule is in triplet state,
+or <tt class="docutils literal"><span class="pre">False</span></tt> otherwise.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.molecule.Molecule.isBondInCycle">
 <tt class="descname">isBondInCycle</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.isBondInCycle" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <tt class="xref py py-data docutils literal"><span class="pre">True</span></tt> if the bond between atoms <cite>atom1</cite> and <cite>atom2</cite>
@@ -450,7 +532,8 @@ is in one or more cycles in the graph, or <tt class="xref py py-data docutils li
 otherwise. The <cite>initialMap</cite> attribute can be used to specify a required
 mapping from <cite>self</cite> to <cite>other</cite> (i.e. the atoms of <cite>self</cite> are the keys,
 while the atoms of <cite>other</cite> are the values). The <cite>other</cite> parameter must
-be a <tt class="xref py py-class docutils literal"><span class="pre">Molecule</span></tt> object, or a <tt class="xref py py-class docutils literal"><span class="pre">TypeError</span></tt> is raised.</p>
+be a <tt class="xref py py-class docutils literal"><span class="pre">Molecule</span></tt> object, or a <tt class="xref py py-class docutils literal"><span class="pre">TypeError</span></tt> is raised.
+Also ensures multiplicities are also equal.</p>
 </dd></dl>
 
 <dl class="method">
@@ -580,16 +663,13 @@ more than 1 ( &gt;= 2) unpaired electrons are present in the molecule.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="rmgpy.molecule.Molecule.toCML">
-<tt class="descname">toCML</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.toCML" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convert the molecular structure to CML. Uses
-<a class="reference external" href="http://openbabel.org/">OpenBabel</a> to perform the conversion.</p>
-</dd></dl>
-
-<dl class="method">
 <dt id="rmgpy.molecule.Molecule.toInChI">
 <tt class="descname">toInChI</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.toInChI" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert a molecular structure to an InChI string. Uses
+<a class="reference external" href="http://rdkit.org/">RDKit</a> to perform the conversion.
+Perceives aromaticity.</p>
+<p>or</p>
+<p>Convert a molecular structure to an InChI string. Uses
 <a class="reference external" href="http://openbabel.org/">OpenBabel</a> to perform the conversion.</p>
 </dd></dl>
 
@@ -598,6 +678,9 @@ more than 1 ( &gt;= 2) unpaired electrons are present in the molecule.</p>
 <tt class="descname">toInChIKey</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.toInChIKey" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert a molecular structure to an InChI Key string. Uses
 <a class="reference external" href="http://openbabel.org/">OpenBabel</a> to perform the conversion.</p>
+<p>or</p>
+<p>Convert a molecular structure to an InChI Key string. Uses
+<a class="reference external" href="http://rdkit.org/">RDKit</a> to perform the conversion.</p>
 <p>Removes check-sum dash (-) and character so that only 
 the 14 + 9 characters remain.</p>
 </dd></dl>
@@ -610,10 +693,42 @@ the 14 + 9 characters remain.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.molecule.Molecule.toRDKitMol">
+<tt class="descname">toRDKitMol</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.toRDKitMol" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a molecular structure to a RDKit rdmol object. Uses
+<a class="reference external" href="http://rdkit.org/">RDKit</a> to perform the conversion.
+Perceives aromaticity and, unless removeHs==False, removes Hydrogen atoms.</p>
+<p>If returnMapping==True then it also returns a dictionary mapping the 
+atoms to RDKit&#8217;s atom indices.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.Molecule.toSMARTS">
+<tt class="descname">toSMARTS</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.toSMARTS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a molecular structure to an SMARTS string. Uses
+<a class="reference external" href="http://rdkit.org/">RDKit</a> to perform the conversion.
+Perceives aromaticity and removes Hydrogen atoms.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.molecule.Molecule.toSMILES">
 <tt class="descname">toSMILES</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.toSMILES" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convert a molecular structure to an SMILES string. Uses
-<a class="reference external" href="http://openbabel.org/">OpenBabel</a> to perform the conversion.</p>
+<dd><p>Convert a molecular structure to an SMILES string.</p>
+<p>If there is a Nitrogen atom present it uses
+<a class="reference external" href="http://openbabel.org/">OpenBabel</a> to perform the conversion,
+and the SMILES may or may not be canonical.</p>
+<p>Otherwise, it uses <a class="reference external" href="http://rdkit.org/">RDKit</a> to perform the 
+conversion, so it will be canonical SMILES.
+While converting to an RDMolecule it will perceive aromaticity
+and removes Hydrogen atoms.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.Molecule.toSingleBonds">
+<tt class="descname">toSingleBonds</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.toSingleBonds" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a copy of the current molecule, consisting of only single bonds.</p>
+<p>This is useful for isomorphism comparison against something that was made
+via fromXYZ, which does not attempt to perceive bond orders</p>
 </dd></dl>
 
 <dl class="method">
@@ -629,6 +744,13 @@ environment) and complete (i.e. are as detailed as possible).</p>
 <tt class="descname">updateConnectivityValues</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.updateConnectivityValues" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update the connectivity values for each vertex in the graph. These are
 used to accelerate the isomorphism checking.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.Molecule.updateLonePairs">
+<tt class="descname">updateLonePairs</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Molecule.updateLonePairs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate through the atoms in the structure and calcualte the
+number of lone electron pairs, assumin a neutral molecule.</p>
 </dd></dl>
 
 </dd></dl>

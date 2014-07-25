@@ -131,10 +131,25 @@ temperature range.</p>
 <dd><p>The minimum temperature at which the model is valid, or <tt class="docutils literal"><span class="pre">None</span></tt> if not defined.</p>
 </dd></dl>
 
+<dl class="method">
+<dt id="rmgpy.thermo.NASA.changeBaseEnthalpy">
+<tt class="descname">changeBaseEnthalpy</tt><big>(</big><em>self</em>, <em>double deltaH</em><big>)</big> &rarr; NASA<a class="headerlink" href="#rmgpy.thermo.NASA.changeBaseEnthalpy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add deltaH in J/mol to the base enthalpy of formation H298 and return the
+modified NASA object.</p>
+</dd></dl>
+
 <dl class="attribute">
 <dt id="rmgpy.thermo.NASA.comment">
 <tt class="descname">comment</tt><a class="headerlink" href="#rmgpy.thermo.NASA.comment" title="Permalink to this definition">¶</a></dt>
 <dd><p>comment: str</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.thermo.NASA.discrepancy">
+<tt class="descname">discrepancy</tt><big>(</big><em>self</em>, <em>HeatCapacityModel other</em><big>)</big> &rarr; double<a class="headerlink" href="#rmgpy.thermo.NASA.discrepancy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return some measure of how dissimilar <cite>self</cite> is from <cite>other</cite>.</p>
+<p>The measure is arbitrary, but hopefully useful for sorting purposes.
+Discrepancy of 0 means they are identical</p>
 </dd></dl>
 
 <dl class="method">

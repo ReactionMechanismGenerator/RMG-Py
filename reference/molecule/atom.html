@@ -92,17 +92,21 @@
 <td><tt class="docutils literal"><span class="pre">short</span></tt></td>
 <td>The number of radical electrons</td>
 </tr>
-<tr class="row-odd"><td><cite>spinMultiplicity</cite></td>
-<td><tt class="docutils literal"><span class="pre">short</span></tt></td>
-<td>The spin multiplicity of the atom</td>
-</tr>
-<tr class="row-even"><td><cite>charge</cite></td>
+<tr class="row-odd"><td><cite>charge</cite></td>
 <td><tt class="docutils literal"><span class="pre">short</span></tt></td>
 <td>The formal charge of the atom</td>
 </tr>
-<tr class="row-odd"><td><cite>label</cite></td>
+<tr class="row-even"><td><cite>label</cite></td>
 <td><tt class="docutils literal"><span class="pre">str</span></tt></td>
 <td>A string label that can be used to tag individual atoms</td>
+</tr>
+<tr class="row-odd"><td><cite>coords</cite></td>
+<td><tt class="docutils literal"><span class="pre">numpy</span> <span class="pre">array</span></tt></td>
+<td>The (x,y,z) coordinates in Angstrom</td>
+</tr>
+<tr class="row-even"><td><cite>lonePairs</cite></td>
+<td><tt class="docutils literal"><span class="pre">short</span></tt></td>
+<td>The number of lone electron pairs</td>
 </tr>
 </tbody>
 </table>
@@ -126,6 +130,12 @@ attributes of the copy will not affect the original.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.molecule.Atom.decrementLonePairs">
+<tt class="descname">decrementLonePairs</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Atom.decrementLonePairs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the lone electron pairs pattern as a result of applying a LOSE_PAIR action.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.molecule.Atom.decrementRadical">
 <tt class="descname">decrementRadical</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Atom.decrementRadical" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update the atom pattern as a result of applying a LOSE_RADICAL action,
@@ -140,6 +150,12 @@ where <cite>radical</cite> specifies the number of radical electrons to remove.<
 attributes except <cite>label</cite> must match exactly. If <cite>other</cite> is an
 <tt class="xref py py-class docutils literal"><span class="pre">GroupAtom</span></tt> object, then the atom must match any of the
 combinations in the atom pattern.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.Atom.incrementLonePairs">
+<tt class="descname">incrementLonePairs</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Atom.incrementLonePairs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the lone electron pairs pattern as a result of applying a GAIN_PAIR action.</p>
 </dd></dl>
 
 <dl class="method">
@@ -160,6 +176,13 @@ not.</p>
 <dt id="rmgpy.molecule.Atom.isHydrogen">
 <tt class="descname">isHydrogen</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Atom.isHydrogen" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if the atom represents a hydrogen atom or <tt class="docutils literal"><span class="pre">False</span></tt> if
+not.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.Atom.isNitrogen">
+<tt class="descname">isNitrogen</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Atom.isNitrogen" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if the atom represents a nitrogen atom or <tt class="docutils literal"><span class="pre">False</span></tt> if
 not.</p>
 </dd></dl>
 
@@ -191,6 +214,25 @@ specific than any of the combinations in the atom pattern.</p>
 <dt id="rmgpy.molecule.Atom.resetConnectivityValues">
 <tt class="descname">resetConnectivityValues</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Atom.resetConnectivityValues" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reset the cached structure information for this vertex.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.Atom.setLonePairs">
+<tt class="descname">setLonePairs</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Atom.setLonePairs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the number of lone electron pairs.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.Atom.setSpinMultiplicity">
+<tt class="descname">setSpinMultiplicity</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Atom.setSpinMultiplicity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the spin multiplicity.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.Atom.updateCharge">
+<tt class="descname">updateCharge</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.molecule.Atom.updateCharge" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update self.charge, according to the valence, and the 
+number and types of bonds, radicals, and lone pairs.</p>
 </dd></dl>
 
 </dd></dl>

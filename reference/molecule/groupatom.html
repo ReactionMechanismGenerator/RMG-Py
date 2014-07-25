@@ -90,23 +90,23 @@ attributes are lists rather than individual values. The attributes are:</p>
 <td><tt class="docutils literal"><span class="pre">list</span></tt></td>
 <td>The allowed numbers of radical electrons (as short integers)</td>
 </tr>
-<tr class="row-even"><td><cite>spinMultiplicity</cite></td>
-<td><tt class="docutils literal"><span class="pre">list</span></tt></td>
-<td>The allowed spin multiplicities (as short integers)</td>
-</tr>
-<tr class="row-odd"><td><cite>charge</cite></td>
+<tr class="row-even"><td><cite>charge</cite></td>
 <td><tt class="docutils literal"><span class="pre">list</span></tt></td>
 <td>The allowed formal charges (as short integers)</td>
 </tr>
-<tr class="row-even"><td><cite>label</cite></td>
+<tr class="row-odd"><td><cite>label</cite></td>
 <td><tt class="docutils literal"><span class="pre">str</span></tt></td>
 <td>A string label that can be used to tag individual atoms</td>
+</tr>
+<tr class="row-even"><td><cite>lonePairs</cite></td>
+<td><tt class="docutils literal"><span class="pre">list</span></tt></td>
+<td>The number of lone electron pairs</td>
 </tr>
 </tbody>
 </table>
 <p>Each list represents a logical OR construct, i.e. an atom will match the
 group if it matches <em>any</em> item in the list. However, the
-<cite>radicalElectrons</cite>, <cite>spinMultiplicity</cite>, and <cite>charge</cite> attributes are linked
+<cite>radicalElectrons</cite>, and <cite>charge</cite> attributes are linked
 such that an atom must match values from the same index in each of these in
 order to match.</p>
 <dl class="method">

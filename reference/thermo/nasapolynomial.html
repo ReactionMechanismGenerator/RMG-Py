@@ -170,6 +170,12 @@ temperature range; the <a class="reference internal" href="nasa.html#rmgpy.therm
 <dd><p>c6: &#8216;double&#8217;</p>
 </dd></dl>
 
+<dl class="method">
+<dt id="rmgpy.thermo.NASAPolynomial.changeBaseEnthalpy">
+<tt class="descname">changeBaseEnthalpy</tt><big>(</big><em>self</em>, <em>double deltaH</em><big>)</big><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.changeBaseEnthalpy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add deltaH in J/mol to the base enthalpy of formation H298.</p>
+</dd></dl>
+
 <dl class="attribute">
 <dt id="rmgpy.thermo.NASAPolynomial.cm1">
 <tt class="descname">cm1</tt><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.cm1" title="Permalink to this definition">¶</a></dt>
@@ -192,6 +198,14 @@ temperature range; the <a class="reference internal" href="nasa.html#rmgpy.therm
 <dt id="rmgpy.thermo.NASAPolynomial.comment">
 <tt class="descname">comment</tt><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.comment" title="Permalink to this definition">¶</a></dt>
 <dd><p>comment: str</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.thermo.NASAPolynomial.discrepancy">
+<tt class="descname">discrepancy</tt><big>(</big><em>self</em>, <em>HeatCapacityModel other</em><big>)</big> &rarr; double<a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.discrepancy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return some measure of how dissimilar <cite>self</cite> is from <cite>other</cite>.</p>
+<p>The measure is arbitrary, but hopefully useful for sorting purposes.
+Discrepancy of 0 means they are identical</p>
 </dd></dl>
 
 <dl class="method">

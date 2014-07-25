@@ -149,6 +149,12 @@ Chebyshev polynomial of degree <span class="math">\(n\)</span> evaluated at <spa
 <dd><p>The minimum temperature at which the model is valid, or <tt class="docutils literal"><span class="pre">None</span></tt> if not defined.</p>
 </dd></dl>
 
+<dl class="method">
+<dt id="rmgpy.kinetics.Chebyshev.changeRate">
+<tt class="descname">changeRate</tt><big>(</big><em>self</em>, <em>double factor</em><big>)</big><a class="headerlink" href="#rmgpy.kinetics.Chebyshev.changeRate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Changes kinetics rates by a multiple <tt class="docutils literal"><span class="pre">factor</span></tt>.</p>
+</dd></dl>
+
 <dl class="attribute">
 <dt id="rmgpy.kinetics.Chebyshev.coeffs">
 <tt class="descname">coeffs</tt><a class="headerlink" href="#rmgpy.kinetics.Chebyshev.coeffs" title="Permalink to this definition">¶</a></dt>
@@ -171,6 +177,12 @@ Chebyshev polynomial of degree <span class="math">\(n\)</span> evaluated at <spa
 <dt id="rmgpy.kinetics.Chebyshev.degreeT">
 <tt class="descname">degreeT</tt><a class="headerlink" href="#rmgpy.kinetics.Chebyshev.degreeT" title="Permalink to this definition">¶</a></dt>
 <dd><p>degreeT: &#8216;int&#8217;</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.kinetics.Chebyshev.discrepancy">
+<tt class="descname">discrepancy</tt><big>(</big><em>self</em>, <em>KineticsModel otherKinetics</em><big>)</big> &rarr; double<a class="headerlink" href="#rmgpy.kinetics.Chebyshev.discrepancy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns some measure of the discrepancy based on two different reaction models.</p>
 </dd></dl>
 
 <dl class="attribute">

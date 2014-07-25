@@ -82,8 +82,21 @@ and <cite>dydt</cite> attributes.</p>
 <dl class="method">
 <dt id="rmgpy.solver.SimpleReactor.computeRateDerivative">
 <tt class="descname">computeRateDerivative</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.solver.SimpleReactor.computeRateDerivative" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns derivative vector df/dk_j where dc/dt = f(c, t, k) and
+<dd><p>Returns derivative vector df/dk_j where dy/dt = f(y, t, k) and
 k_j is the rate parameter for the jth core reaction.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.solver.SimpleReactor.convertInitialKeysToSpeciesObjects">
+<tt class="descname">convertInitialKeysToSpeciesObjects</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.solver.SimpleReactor.convertInitialKeysToSpeciesObjects" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert the initialMoleFractions dictionary from species names into species objects,
+using the given dictionary of species.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.solver.SimpleReactor.getNormalizationFactor">
+<tt class="descname">getNormalizationFactor</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.solver.SimpleReactor.getNormalizationFactor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the normalization factor k_i/c_i for calculating the normalized sensitivities.</p>
 </dd></dl>
 
 <dl class="method">

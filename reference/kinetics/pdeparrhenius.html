@@ -149,10 +149,22 @@ to simple systems.</p>
 <dd><p>arrhenius: list</p>
 </dd></dl>
 
+<dl class="method">
+<dt id="rmgpy.kinetics.PDepArrhenius.changeRate">
+<tt class="descname">changeRate</tt><big>(</big><em>self</em>, <em>double factor</em><big>)</big><a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius.changeRate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Changes kinetics rate by a multiple <tt class="docutils literal"><span class="pre">factor</span></tt>.</p>
+</dd></dl>
+
 <dl class="attribute">
 <dt id="rmgpy.kinetics.PDepArrhenius.comment">
 <tt class="descname">comment</tt><a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius.comment" title="Permalink to this definition">¶</a></dt>
 <dd><p>comment: str</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.kinetics.PDepArrhenius.discrepancy">
+<tt class="descname">discrepancy</tt><big>(</big><em>self</em>, <em>KineticsModel otherKinetics</em><big>)</big> &rarr; double<a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius.discrepancy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns some measure of the discrepancy based on two different reaction models.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -167,7 +179,7 @@ to simple systems.</p>
 <dd><p>Fit the pressure-dependent Arrhenius model to a matrix of rate
 coefficient data <cite>K</cite> with units of <cite>kunits</cite> corresponding to a set of 
 temperatures <cite>Tlist</cite> in K and pressures <cite>Plist</cite> in Pa. An Arrhenius 
-model is fit at each pressure.</p>
+model is fit cpdef changeRate(self, double factor)at each pressure.</p>
 </dd></dl>
 
 <dl class="method">

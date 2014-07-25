@@ -159,6 +159,12 @@ is the activation energy.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.kinetics.Arrhenius.changeRate">
+<tt class="descname">changeRate</tt><big>(</big><em>self</em>, <em>double factor</em><big>)</big><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.changeRate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Changes A factor in Arrhenius expression by multiplying it by a <tt class="docutils literal"><span class="pre">factor</span></tt>.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.kinetics.Arrhenius.changeT0">
 <tt class="descname">changeT0</tt><big>(</big><em>self</em>, <em>double T0</em><big>)</big><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.changeT0" title="Permalink to this definition">¶</a></dt>
 <dd><p>Changes the reference temperature used in the exponent to <cite>T0</cite> in K, 
@@ -169,6 +175,12 @@ and adjusts the preexponential factor accordingly.</p>
 <dt id="rmgpy.kinetics.Arrhenius.comment">
 <tt class="descname">comment</tt><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.comment" title="Permalink to this definition">¶</a></dt>
 <dd><p>comment: str</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.kinetics.Arrhenius.discrepancy">
+<tt class="descname">discrepancy</tt><big>(</big><em>self</em>, <em>KineticsModel otherKinetics</em><big>)</big> &rarr; double<a class="headerlink" href="#rmgpy.kinetics.Arrhenius.discrepancy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns some measure of the discrepancy based on two different reaction models.</p>
 </dd></dl>
 
 <dl class="method">

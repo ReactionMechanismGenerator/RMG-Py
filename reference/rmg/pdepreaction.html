@@ -118,6 +118,12 @@ theory &#8211; to compute the rate coefficient for this reaction, or
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.rmg.pdep.PDepReaction.copy">
+<tt class="descname">copy</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.rmg.pdep.PDepReaction.copy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a deep copy of the current reaction.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.rmg.pdep.PDepReaction.draw">
 <tt class="descname">draw</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.rmg.pdep.PDepReaction.draw" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate a pictorial representation of the chemical reaction using the
@@ -137,6 +143,22 @@ for endothermic reactions, and is not negative only as a result
 of using Evans Polanyi with an exothermic reaction.
 If <cite>forcePositive</cite> is True, then all reactions
 are forced to have a non-negative barrier.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.rmg.pdep.PDepReaction.fixDiffusionLimitedA">
+<tt class="descname">fixDiffusionLimitedA</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.rmg.pdep.PDepReaction.fixDiffusionLimitedA" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decrease the pre-exponential factor (A) by a factor of getDiffusionFactor
+to account for the diffusion limit.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.rmg.pdep.PDepReaction.generate3dTS">
+<tt class="descname">generate3dTS</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.rmg.pdep.PDepReaction.generate3dTS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate the 3D structure of the transition state. Called from 
+model.generateKinetics().</p>
+<p>self.reactants is a list of reactants
+self.products is a list of products</p>
 </dd></dl>
 
 <dl class="method">
@@ -269,6 +291,9 @@ concentration.</p>
 <dd><p>Return the overall rate coefficient for the forward reaction at
 temperature <cite>T</cite> in K and pressure <cite>P</cite> in Pa, including any reaction
 path degeneracies.</p>
+<p>If diffusionLimiter is enabled, the reaction is in the liquid phase and we use
+a diffusion limitation to correct the rate. If not, then use the intrinsic rate
+coefficient.</p>
 </dd></dl>
 
 <dl class="method">
@@ -356,7 +381,9 @@ The reactants should be <tt class="xref py py-class docutils literal"><span clas
 <dt id="rmgpy.rmg.pdep.PDepReaction.toChemkin">
 <tt class="descname">toChemkin</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.rmg.pdep.PDepReaction.toChemkin" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the chemkin-formatted string for this reaction.</p>
-<p>Requires the <cite>speciesList</cite> to figure out third body colliders.</p>
+<p>If <cite>kinetics</cite> is set to True, the chemkin format kinetics will also
+be returned (requires the <cite>speciesList</cite> to figure out third body colliders.)
+Otherwise, only the reaction string will be returned.</p>
 </dd></dl>
 
 </dd></dl>

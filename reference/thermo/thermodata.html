@@ -173,6 +173,14 @@ The attributes are:</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.thermo.ThermoData.discrepancy">
+<tt class="descname">discrepancy</tt><big>(</big><em>self</em>, <em>HeatCapacityModel other</em><big>)</big> &rarr; double<a class="headerlink" href="#rmgpy.thermo.ThermoData.discrepancy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return some measure of how dissimilar <cite>self</cite> is from <cite>other</cite>.</p>
+<p>The measure is arbitrary, but hopefully useful for sorting purposes.
+Discrepancy of 0 means they are identical</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.thermo.ThermoData.getEnthalpy">
 <tt class="descname">getEnthalpy</tt><big>(</big><em>self</em>, <em>double T</em><big>)</big> &rarr; double<a class="headerlink" href="#rmgpy.thermo.ThermoData.getEnthalpy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the enthalpy in J/mol at the specified temperature <cite>T</cite> in K.</p>
