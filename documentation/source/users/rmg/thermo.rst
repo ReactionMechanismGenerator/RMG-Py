@@ -11,7 +11,7 @@ species.
 Thermochemistry of species is obtained via three possible ways:
 
 #. Species thermochemistry libraries
-#. Group contribution methods (GC)
+#. Group contribution methods
 #. On-the-fly Quantum-chemical calculation of Thermochemical Properties (QMTP)
 
 Species thermochemistry libraries
@@ -50,7 +50,7 @@ included. For example, the molecule 2-methylnonane consists of three types of gr
 	:align: center
 	
 Thermochemistry for the molecule X is calculated by summing up the values for each
-of the contributions. E.g.:
+of the contributions :math:`C_{i}`. E.g.:
 
 .. math::
 
@@ -116,7 +116,7 @@ standard enthalpies of formation the HBI is defined as
 .. math::
 
 	HBI = \Delta_fH_{298}^{o}(R^*) - \Delta_fH_{298}^{o}(R-H)
-    	= BDE(R-H) - \Delta_fH_{298}^{o}(H)
+    	= BDE(R-H) - \Delta_fH_{298}^{o}(H*)
 
 with BDE the bond dissociation enthalpy of the R-H bond at the radical position.
 Similar expressions are valid for the entropy and heat capacity.
@@ -178,7 +178,7 @@ The table belows shows an overview of the used file extensions and their meaning
     File extension                          Meaning
     ======================================= ========================================
     .mop					                MOPAC input
-    .out		              				MOPAC input
+    .out		              				MOPAC output
     .gjf									Gaussian input		              				
     .log									Gaussian output						         
     .arc						            MOPAC input created by MOPAC
@@ -238,14 +238,14 @@ More information can be found in the Ph.D Thesis of Joanna Yu [Yu]_.
 For molecules whose thermochemistry is calculated through group contribution techniques, the
 rotational symmetry number is calculated through graph algorithms of RMG based on the above equation. If 
 the thermochemistry is calculated through the QMTP process, the external, rotational symmetry number is calculatedµ
-using the open-source software SYMMETRY ([Patchkovskii, 2003]_). This program uses the optimized
+using the open-source software SYMMETRY "Brute Force Symmetry Analyzer" [Patchkovskii]_. This program uses the optimized
 three-dimensional geometry and calculates the corresponding point group. 
 
 Chirality
 ---------
 
 RMG does not take stereochemistry into account, effectively assuming a racemic mixture of mirror image enantiomers. 
-As a result, a chirality contribution of +R ln 2 is included in the entropy of the molecule.
+As a result, a chirality contribution of :math:`+R * ln(2)` is included in the entropy of the molecule.
 
 Chirality for molecules whose thermochemistry is determiend using group contribution techniques is detected 
 using graph algorithms similar to those used for determining the symmetry number. If the thermochemistry is calculated through the QMTP process, chirality is detected using
@@ -266,6 +266,8 @@ References
 
 .. [Allinger] Allinger, N. L., & Lii, J.-H. (2008). MM4(2008) and MM4(2003).
 
-.. [Patchkovskii, 2003] Patchkovskii, S. (2003). SYMMETRY, http://www.cobalt.chem.ucalgary.ca/ps/symmetry/.
-.. [Yu] XXXXX
+.. [Patchkovskii] Patchkovskii, S. (2003). SYMMETRY, http://www.cobalt.chem.ucalgary.ca/ps/symmetry/.
+
+.. [Yu] "Estimation method for the thermochemical properties of polycyclic aromatic molecules" (Ph.D), Joanna Yu, M.I.T (2005)
+
 .. [RDKit] Landrum, G. (2012). RDKit, http://rdkit.org.
