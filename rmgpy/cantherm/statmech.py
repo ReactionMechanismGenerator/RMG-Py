@@ -625,7 +625,7 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds):
     # See Gaussian thermo whitepaper at http://www.gaussian.com/g_whitepap/thermo.htm)
     # Note: these values are relatively old and some improvement may be possible by using newer values, particularly for carbon
     # However, care should be taken to ensure that they are compatible with the BAC values (if BACs are used)
-    atomHf = {'H': 51.63 , 'N': 112.53 ,'O': 58.99 ,'C': 169.98, 'S': 65.55 }
+    atomHf = {'H': 51.63 , 'N': 112.53 ,'O': 58.99 ,'C': 169.98, 'S': 65.66 }
     # Thermal contribution to enthalpy Hss(298 K) - Hss(0 K) reported by Gaussian thermo whitepaper
     # This will be subtracted from the corresponding value in atomHf to produce an enthalpy used in calculating the enthalpy of formation at 298 K
     atomThermal = {'H': 1.01 , 'N': 1.04, 'O': 1.04 ,'C': 0.25, 'S': 1.05 }
@@ -656,7 +656,7 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds):
     else:
         bondEnergies = { 'C-H': -0.11, 'C-C': -0.3, 'C=C': -0.08, 'C#C': -0.64,
             'O-H': 0.02, 'C-O': 0.33, 'C=O': 0.55, 'N#N': -2.0, 'O=O': -0.2, 
-            'H-H': 1.1, 'C#N': -0.89, 'C-S': 0.43, 'S=O': -0.78 }
+            'H-H': 1.1, 'C#N': -0.89, 'C-S': 0.43, 'S=O': -0.78, 'S-H', 0.0,}
 
     for symbol, count in bonds.items():
         if symbol in bondEnergies: E0 += count * bondEnergies[symbol] * 4184.
