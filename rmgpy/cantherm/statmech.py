@@ -536,11 +536,11 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds):
 
     elif modelChemistry == 'CCSD(T)-F12/cc-pVDZ-F12':
 #        atomEnergies = {'H':-0.499811124128, 'N':-54.526406291655, 'O':-74.995458316117, 'C':-37.788203485235}
-        atomEnergies = {'H':-0.499811124128, 'N':-54.526406291655, 'O':-74.995458316117, 'C':-37.788203485235}
+        atomEnergies = {'H':-0.499811124128, 'N':-54.526406291655, 'O':-74.995458316117, 'C':-37.788203485235, 'S':-397.663040369707}
     elif modelChemistry == 'CCSD(T)-F12/cc-pVTZ-F12':
-        atomEnergies = {'H':-0.499946213243, 'N':-54.53000909621, 'O':-75.004127673424, 'C':-37.789862146471}
+        atomEnergies = {'H':-0.499946213243, 'N':-54.53000909621, 'O':-75.004127673424, 'C':-37.789862146471, 'S':-397.675447487865}
     elif modelChemistry == 'CCSD(T)-F12/cc-pVQZ-F12':
-        atomEnergies = {'H':-0.499994558325, 'N':-54.530515226371, 'O':-75.005600062003, 'C':-37.789961656228}
+        atomEnergies = {'H':-0.499994558325, 'N':-54.530515226371, 'O':-75.005600062003, 'C':-37.789961656228, 'S':-397.676719774973}
         
     elif modelChemistry == 'CCSD(T)-F12/cc-pCVDZ-F12':
         atomEnergies = {'H':-0.499811124128, 'N':-54.582137180344, 'O':-75.053045547421, 'C':-37.840869118707}
@@ -558,11 +558,11 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds):
 
 
     elif modelChemistry == 'B-CCSD(T)-F12/cc-pVDZ-F12':
-        atomEnergies = {'H':-0.499811124128, 'N':-54.523269942190, 'O':-74.990725918500, 'C':-37.785409916465}
+        atomEnergies = {'H':-0.499811124128, 'N':-54.523269942190, 'O':-74.990725918500, 'C':-37.785409916465, 'S': -397.658155086033}
     elif modelChemistry == 'B-CCSD(T)-F12/cc-pVTZ-F12':
-        atomEnergies = {'H':-0.499946213243, 'N':-54.528135889213, 'O':-75.001094055506, 'C':-37.788233578503}
+        atomEnergies = {'H':-0.499946213243, 'N':-54.528135889213, 'O':-75.001094055506, 'C':-37.788233578503, 'S':-397.671745425929}
     elif modelChemistry == 'B-CCSD(T)-F12/cc-pVQZ-F12':
-        atomEnergies = {'H':-0.499994558325, 'N':-54.529425753163, 'O':-75.003820485005, 'C':-37.789006506290}
+        atomEnergies = {'H':-0.499994558325, 'N':-54.529425753163, 'O':-75.003820485005, 'C':-37.789006506290, 'S':-397.674145126931}
         
     elif modelChemistry == 'B-CCSD(T)-F12/cc-pCVDZ-F12':
         atomEnergies = {'H':-0.499811124128, 'N':-54.578602780288, 'O':-75.048064317367, 'C':-37.837592033417}
@@ -625,7 +625,7 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds):
     # See Gaussian thermo whitepaper at http://www.gaussian.com/g_whitepap/thermo.htm)
     # Note: these values are relatively old and some improvement may be possible by using newer values, particularly for carbon
     # However, care should be taken to ensure that they are compatible with the BAC values (if BACs are used)
-    atomHf = {'H': 51.63 , 'N': 112.53 ,'O': 58.99 ,'C': 169.98, 'S': 65.55 }
+    atomHf = {'H': 51.63 , 'N': 112.53 ,'O': 58.99 ,'C': 169.98, 'S': 65.66 }
     # Thermal contribution to enthalpy Hss(298 K) - Hss(0 K) reported by Gaussian thermo whitepaper
     # This will be subtracted from the corresponding value in atomHf to produce an enthalpy used in calculating the enthalpy of formation at 298 K
     atomThermal = {'H': 1.01 , 'N': 1.04, 'O': 1.04 ,'C': 0.25, 'S': 1.05 }
@@ -656,7 +656,7 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds):
     else:
         bondEnergies = { 'C-H': -0.11, 'C-C': -0.3, 'C=C': -0.08, 'C#C': -0.64,
             'O-H': 0.02, 'C-O': 0.33, 'C=O': 0.55, 'N#N': -2.0, 'O=O': -0.2, 
-            'H-H': 1.1, 'C#N': -0.89, 'C-S': 0.43, 'S=O': -0.78 }
+            'H-H': 1.1, 'C#N': -0.89, 'C-S': 0.43, 'S=O': -0.78, 'S-H': 0.0,}
 
     for symbol, count in bonds.items():
         if symbol in bondEnergies: E0 += count * bondEnergies[symbol] * 4184.
