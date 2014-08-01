@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>10.1. Thermo Database &mdash; RMG Py 0.1.0 documentation</title>
+    <title>10.2. Thermo Database &mdash; RMG Py 0.1.0 documentation</title>
     
     <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -26,8 +26,8 @@
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="RMG Py 0.1.0 documentation" href="../../../index.html" />
     <link rel="up" title="10. Databases" href="index.html" />
-    <link rel="next" title="10.2. Kinetics Database" href="kinetics.html" />
-    <link rel="prev" title="10. Databases" href="index.html" /> 
+    <link rel="next" title="10.3. Kinetics Database" href="kinetics.html" />
+    <link rel="prev" title="10.1. Introduction" href="introduction.html" /> 
   </head>
   <body>
 <div class="header">
@@ -49,10 +49,10 @@
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="kinetics.html" title="10.2. Kinetics Database"
+          <a href="kinetics.html" title="10.3. Kinetics Database"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="index.html" title="10. Databases"
+          <a href="introduction.html" title="10.1. Introduction"
              accesskey="P">previous</a> |</li>
 <li><a href="../../../index.html">Documentation</a> &raquo;</li>
 
@@ -63,15 +63,270 @@
     </div>
             
   <div class="section" id="thermo-database">
-<span id="thermodatabase"></span><h1>10.1. Thermo Database<a class="headerlink" href="#thermo-database" title="Permalink to this headline">¶</a></h1>
+<span id="thermodatabase"></span><h1>10.2. Thermo Database<a class="headerlink" href="#thermo-database" title="Permalink to this headline">¶</a></h1>
+<p>This section describes the general usage of RMG’s thermochemistry databases.
+Thermochemical data in RMG is reported using three different quantities:</p>
+<ol class="arabic simple">
+<li>Standard heat capacity data <span class="math">\(C_p^o(T)\)</span> as a function of temperature <span class="math">\(T\)</span></li>
+<li>Standard enthalpy of formation at 298K <span class="math">\(\Delta_fH^{o}(298K)\)</span></li>
+<li>Standard entropy at 298K <span class="math">\(S^{o}(298K)\)</span></li>
+</ol>
+<p>A heat capacity model based on the Wilhoit equation is used for inter- and
+extrapolation of the heat capacity data as a function of temperature.</p>
 <div class="section" id="libraries">
-<h2>10.1.1. Libraries<a class="headerlink" href="#libraries" title="Permalink to this headline">¶</a></h2>
+<h2>10.2.1. Libraries<a class="headerlink" href="#libraries" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="species-thermochemistry-libraries">
+<h3>10.2.1.1. Species thermochemistry libraries<a class="headerlink" href="#species-thermochemistry-libraries" title="Permalink to this headline">¶</a></h3>
+<p>The folder <tt class="docutils literal"><span class="pre">RMG-database/input/thermo/libraries/</span></tt> in RMG-database is the location to store
+species thermochemistry libraries. Each particularly library is stored in a file
+with the extension .py, e.g. &#8216;DFT_QCI_thermo.py&#8217;.</p>
+<p>An example of a species thermochemistry entry is shown here below:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">entry</span><span class="p">(</span>
+    <span class="n">index</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="s">&quot;H2&quot;</span><span class="p">,</span>
+    <span class="n">molecule</span> <span class="o">=</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">1 H 0 0 {2,S}</span>
+<span class="sd">2 H 0 0 {1,S}</span>
+<span class="sd">&quot;&quot;&quot;</span><span class="p">,</span>
+    <span class="n">thermo</span> <span class="o">=</span> <span class="n">ThermoData</span><span class="p">(</span>
+        <span class="n">Tdata</span> <span class="o">=</span> <span class="p">([</span><span class="mi">300</span><span class="p">,</span><span class="mi">400</span><span class="p">,</span><span class="mi">500</span><span class="p">,</span><span class="mi">600</span><span class="p">,</span><span class="mi">800</span><span class="p">,</span><span class="mi">1000</span><span class="p">,</span><span class="mi">1500</span><span class="p">],</span><span class="s">&#39;K&#39;</span><span class="p">),</span>
+        <span class="n">Cpdata</span> <span class="o">=</span> <span class="p">([</span><span class="mf">6.948</span><span class="p">,</span><span class="mf">6.948</span><span class="p">,</span><span class="mf">6.949</span><span class="p">,</span><span class="mf">6.954</span><span class="p">,</span><span class="mf">6.995</span><span class="p">,</span><span class="mf">7.095</span><span class="p">,</span><span class="mf">7.493</span><span class="p">],</span><span class="s">&#39;cal/(mol*K)&#39;</span><span class="p">),</span>
+        <span class="n">H298</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="s">&#39;kcal/mol&#39;</span><span class="p">),</span>
+        <span class="n">S298</span> <span class="o">=</span> <span class="p">(</span><span class="mf">31.095</span><span class="p">,</span><span class="s">&#39;cal/(mol*K)&#39;</span><span class="p">),</span>
+    <span class="p">),</span>
+    <span class="n">shortDesc</span> <span class="o">=</span> <span class="s">u&quot;&quot;&quot;&quot;&quot;&quot;</span><span class="p">,</span>
+    <span class="n">longDesc</span> <span class="o">=</span>
+<span class="sd">u&quot;&quot;&quot;</span>
+
+<span class="sd">&quot;&quot;&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
 </div>
-<div class="section" id="depository">
-<h2>10.1.2. Depository<a class="headerlink" href="#depository" title="Permalink to this headline">¶</a></h2>
+<p>The text above describes the first entry in the library (index = 1),
+labeled &#8216;H2&#8217;, through the adjacency list representation. Heat capacity data (&#8216;Cpdata&#8217;) is described
+at 7 different temperatures, along with the standard enthalpy of formation at 298K (&#8216;H298&#8217;), and
+the standard entropy at 298K (&#8216;S298&#8217;).</p>
+</div>
 </div>
 <div class="section" id="groups">
-<h2>10.1.3. Groups<a class="headerlink" href="#groups" title="Permalink to this headline">¶</a></h2>
+<h2>10.2.2. Groups<a class="headerlink" href="#groups" title="Permalink to this headline">¶</a></h2>
+<p>The folder <tt class="docutils literal"><span class="pre">RMG-database/input/thermo/groups/</span></tt> in RMG-database is the location to store
+group contribution databases. Each particularly type of group contribution is stored in a file
+with the extension .py, e.g. &#8216;groups.py&#8217;:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="37%" />
+<col width="63%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">file</th>
+<th class="head">Type of group contribution</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>gauche.py</td>
+<td>1,4-gauche non-nearest neighbor interactions (NNIs)</td>
+</tr>
+<tr class="row-odd"><td>group.py</td>
+<td>group additive values (GAVs)</td>
+</tr>
+<tr class="row-even"><td>int15.py</td>
+<td>1,5-repulsion non-nearest neighbor interactions (NNIs)</td>
+</tr>
+<tr class="row-odd"><td>other.py</td>
+<td>other non-nearest neighbor interactions (NNIs)</td>
+</tr>
+<tr class="row-even"><td>polycyclic.py</td>
+<td>polycyclic ring corrections (RSCs)</td>
+</tr>
+<tr class="row-odd"><td>radical.py</td>
+<td>hydrogen bond increments (HBIs)</td>
+</tr>
+<tr class="row-even"><td>ring.py</td>
+<td>monocyclic ring corrections (RSCs)</td>
+</tr>
+</tbody>
+</table>
+<p>Like many other entities in RMG, the database of each type of group contribution
+is organized in a hierarchical tree, and is defined at the bottom of the database file. E.g.:</p>
+<div class="highlight-python"><pre>tree(
+"""
+L1: R
+    L2: C
+        L3: Cbf
+            L4: Cbf-CbCbCbf
+            L4: Cbf-CbCbfCbf
+            L4: Cbf-CbfCbfCbf
+        L3: Cb
+            L4: Cb-H
+            L4: Cb-Os
+            L4: Cb-Ss
+            L4: Cb-C
+                L5: Cb-Cs
+                L5: Cb-Cds
+                    L6: Cb-(Cds-Od)
+                    ...</pre>
+</div>
+<p>More information on hierarchical tree structures in RMG can be found here:
+<a class="reference internal" href="introduction.html#introdatabase"><em>Introduction</em></a>.</p>
+<div class="section" id="group-additive-values-gav">
+<h3>10.2.2.1. Group additive values (GAV)<a class="headerlink" href="#group-additive-values-gav" title="Permalink to this headline">¶</a></h3>
+<p>An example of a GAV entry in group.py is shown here below:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">entry</span><span class="p">(</span>
+    <span class="n">index</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="s">&quot;Cbf-CbCbCbf&quot;</span><span class="p">,</span>
+    <span class="n">group</span> <span class="o">=</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">1 * Cbf 0 {2,B} {3,B} {4,B}</span>
+<span class="sd">2   Cb  0 {1,B}</span>
+<span class="sd">3   Cb  0 {1,B}</span>
+<span class="sd">4   Cbf 0 {1,B}</span>
+<span class="sd">&quot;&quot;&quot;</span><span class="p">,</span>
+    <span class="n">thermo</span> <span class="o">=</span> <span class="n">ThermoData</span><span class="p">(</span>
+        <span class="n">Tdata</span> <span class="o">=</span> <span class="p">([</span><span class="mi">300</span><span class="p">,</span><span class="mi">400</span><span class="p">,</span><span class="mi">500</span><span class="p">,</span><span class="mi">600</span><span class="p">,</span><span class="mi">800</span><span class="p">,</span><span class="mi">1000</span><span class="p">,</span><span class="mi">1500</span><span class="p">],</span><span class="s">&#39;K&#39;</span><span class="p">),</span>
+        <span class="n">Cpdata</span> <span class="o">=</span> <span class="p">([</span><span class="mf">3.01</span><span class="p">,</span><span class="mf">3.68</span><span class="p">,</span><span class="mf">4.2</span><span class="p">,</span><span class="mf">4.61</span><span class="p">,</span><span class="mf">5.2</span><span class="p">,</span><span class="mf">5.7</span><span class="p">,</span><span class="mf">6.2</span><span class="p">],</span><span class="s">&#39;cal/(mol*K)&#39;</span><span class="p">,</span><span class="s">&#39;+|-&#39;</span><span class="p">,[</span><span class="mf">0.1</span><span class="p">,</span><span class="mf">0.1</span><span class="p">,</span><span class="mf">0.1</span><span class="p">,</span><span class="mf">0.1</span><span class="p">,</span><span class="mf">0.1</span><span class="p">,</span><span class="mf">0.1</span><span class="p">,</span><span class="mf">0.1</span><span class="p">]),</span>
+        <span class="n">H298</span> <span class="o">=</span> <span class="p">(</span><span class="mf">4.8</span><span class="p">,</span><span class="s">&#39;kcal/mol&#39;</span><span class="p">,</span><span class="s">&#39;+|-&#39;</span><span class="p">,</span><span class="mf">0.17</span><span class="p">),</span>
+        <span class="n">S298</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span><span class="s">&#39;cal/(mol*K)&#39;</span><span class="p">,</span><span class="s">&#39;+|-&#39;</span><span class="p">,</span><span class="mf">0.1</span><span class="p">),</span>
+    <span class="p">),</span>
+    <span class="n">shortDesc</span> <span class="o">=</span> <span class="s">u&quot;&quot;&quot;Cbf-CbfCbCb STEIN and FAHR; J. PHYS. CHEM. 1985, 89, 17, 3714&quot;&quot;&quot;</span><span class="p">,</span>
+    <span class="n">longDesc</span> <span class="o">=</span>
+<span class="sd">u&quot;&quot;&quot;</span>
+
+<span class="sd">&quot;&quot;&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>The text above describes a GAV &#8220;Cbf-CbCbCbf&#8221;, with the central atom denoted by the asterisk in
+the adjacency list representation. Uncertainty margins are added in the data, after the unit
+specification. A short description &#8216;shortDesc&#8217; specifies the origin of the data.</p>
+</div>
+<div class="section" id="ring-strain-corrections-rsc">
+<h3>10.2.2.2. Ring Strain Corrections (RSC)<a class="headerlink" href="#ring-strain-corrections-rsc" title="Permalink to this headline">¶</a></h3>
+<p>RMG distinguishes between monocyclic and polycyclic ring correction databases.</p>
+<p>Monocyclic RSCs are used for molecules that contain one single ring.
+An example of a  monocyclic RSC entry in ring.py is shown here below:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">entry</span><span class="p">(</span>
+    <span class="n">index</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="s">&quot;Cyclopropane&quot;</span><span class="p">,</span>
+    <span class="n">group</span> <span class="o">=</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">1 * Cs 0 {2,S} {3,S}</span>
+<span class="sd">2   Cs 0 {1,S} {3,S}</span>
+<span class="sd">3   Cs 0 {1,S} {2,S}</span>
+<span class="sd">&quot;&quot;&quot;</span><span class="p">,</span>
+    <span class="n">thermo</span> <span class="o">=</span> <span class="n">ThermoData</span><span class="p">(</span>
+        <span class="n">Tdata</span> <span class="o">=</span> <span class="p">([</span><span class="mi">300</span><span class="p">,</span><span class="mi">400</span><span class="p">,</span><span class="mi">500</span><span class="p">,</span><span class="mi">600</span><span class="p">,</span><span class="mi">800</span><span class="p">,</span><span class="mi">1000</span><span class="p">,</span><span class="mi">1500</span><span class="p">],</span><span class="s">&#39;K&#39;</span><span class="p">),</span>
+        <span class="n">Cpdata</span> <span class="o">=</span> <span class="p">([</span><span class="o">-</span><span class="mf">3.227</span><span class="p">,</span><span class="o">-</span><span class="mf">2.849</span><span class="p">,</span><span class="o">-</span><span class="mf">2.536</span><span class="p">,</span><span class="o">-</span><span class="mf">2.35</span><span class="p">,</span><span class="o">-</span><span class="mf">2.191</span><span class="p">,</span><span class="o">-</span><span class="mf">2.111</span><span class="p">,</span><span class="o">-</span><span class="mf">1.76</span><span class="p">],</span><span class="s">&#39;cal/(mol*K)&#39;</span><span class="p">),</span>
+        <span class="n">H298</span> <span class="o">=</span> <span class="p">(</span><span class="mf">27.53</span><span class="p">,</span><span class="s">&#39;kcal/mol&#39;</span><span class="p">),</span>
+        <span class="n">S298</span> <span class="o">=</span> <span class="p">(</span><span class="mf">32.0088</span><span class="p">,</span><span class="s">&#39;cal/(mol*K)&#39;</span><span class="p">),</span>
+    <span class="p">),</span>
+    <span class="n">shortDesc</span> <span class="o">=</span> <span class="s">u&quot;&quot;&quot;Cyclopropane ring BENSON&quot;&quot;&quot;</span><span class="p">,</span>
+    <span class="n">longDesc</span> <span class="o">=</span>
+<span class="sd">u&quot;&quot;&quot;</span>
+
+<span class="sd">&quot;&quot;&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>A molecule may have two or more fused rings that mutually interact. In that case, a polycyclic ring
+strain correction may be more adequate. RMG identifies molecules with fused ring systems and subsequently
+searches through polycyclic.py to identify an adequate RSC.</p>
+<p>An example of a  polycyclic RSC entry in polycyclic.py is shown here below:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">entry</span><span class="p">(</span>
+    <span class="n">index</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="s">&quot;norbornane&quot;</span><span class="p">,</span>
+    <span class="n">group</span> <span class="o">=</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">1 * Cs 0 {3,S} {4,S} {7,S}</span>
+<span class="sd">2   Cs 0 {3,S} {5,S} {6,S}</span>
+<span class="sd">3   Cs 0 {1,S} {2,S}</span>
+<span class="sd">4   Cs 0 {1,S} {5,S}</span>
+<span class="sd">5   Cs 0 {2,S} {4,S}</span>
+<span class="sd">6   Cs 0 {2,S} {7,S}</span>
+<span class="sd">7   Cs 0 {1,S} {6,S}</span>
+<span class="sd">&quot;&quot;&quot;</span><span class="p">,</span>
+    <span class="n">thermo</span> <span class="o">=</span> <span class="n">ThermoData</span><span class="p">(</span>
+        <span class="n">Tdata</span> <span class="o">=</span> <span class="p">([</span><span class="mi">300</span><span class="p">,</span><span class="mi">400</span><span class="p">,</span><span class="mi">500</span><span class="p">,</span><span class="mi">600</span><span class="p">,</span><span class="mi">800</span><span class="p">,</span><span class="mi">1000</span><span class="p">,</span><span class="mi">1500</span><span class="p">],</span><span class="s">&#39;K&#39;</span><span class="p">),</span>
+        <span class="n">Cpdata</span> <span class="o">=</span> <span class="p">([</span><span class="o">-</span><span class="mf">4.5</span><span class="p">,</span><span class="o">-</span><span class="mf">3.942</span><span class="p">,</span><span class="o">-</span><span class="mf">3.291</span><span class="p">,</span><span class="o">-</span><span class="mf">2.759</span><span class="p">,</span><span class="o">-</span><span class="mf">2.08</span><span class="p">,</span><span class="o">-</span><span class="mf">1.628</span><span class="p">,</span><span class="o">-</span><span class="mf">0.898</span><span class="p">],</span><span class="s">&#39;cal/(mol*K)&#39;</span><span class="p">),</span>
+        <span class="n">H298</span> <span class="o">=</span> <span class="p">(</span><span class="mf">16.14</span><span class="p">,</span><span class="s">&#39;kcal/mol&#39;</span><span class="p">),</span>
+        <span class="n">S298</span> <span class="o">=</span> <span class="p">(</span><span class="mf">53.47</span><span class="p">,</span><span class="s">&#39;cal/(mol*K)&#39;</span><span class="p">),</span>
+    <span class="p">),</span>
+    <span class="n">shortDesc</span> <span class="o">=</span> <span class="s">u&quot;&quot;&quot;&quot;&quot;&quot;</span><span class="p">,</span>
+    <span class="n">longDesc</span> <span class="o">=</span>
+<span class="sd">u&quot;&quot;&quot;</span>
+
+<span class="sd">&quot;&quot;&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="hydrogen-bond-increments-hbi">
+<h3>10.2.2.3. Hydrogen Bond Increments (HBI)<a class="headerlink" href="#hydrogen-bond-increments-hbi" title="Permalink to this headline">¶</a></h3>
+<p>An example of a HBI entry in radical.py is shown here below:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">entry</span><span class="p">(</span>
+    <span class="n">index</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="s">&quot;CH3&quot;</span><span class="p">,</span>
+    <span class="n">group</span> <span class="o">=</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">1 * C 1 {2,S} {3,S} {4,S}</span>
+<span class="sd">2   H 0 {1,S}</span>
+<span class="sd">3   H 0 {1,S}</span>
+<span class="sd">4   H 0 {1,S}</span>
+<span class="sd">&quot;&quot;&quot;</span><span class="p">,</span>
+    <span class="n">thermo</span> <span class="o">=</span> <span class="n">ThermoData</span><span class="p">(</span>
+        <span class="n">Tdata</span> <span class="o">=</span> <span class="p">([</span><span class="mi">300</span><span class="p">,</span><span class="mi">400</span><span class="p">,</span><span class="mi">500</span><span class="p">,</span><span class="mi">600</span><span class="p">,</span><span class="mi">800</span><span class="p">,</span><span class="mi">1000</span><span class="p">,</span><span class="mi">1500</span><span class="p">],</span><span class="s">&#39;K&#39;</span><span class="p">),</span>
+        <span class="n">Cpdata</span> <span class="o">=</span> <span class="p">([</span><span class="mf">0.71</span><span class="p">,</span><span class="mf">0.34</span><span class="p">,</span><span class="o">-</span><span class="mf">0.33</span><span class="p">,</span><span class="o">-</span><span class="mf">1.07</span><span class="p">,</span><span class="o">-</span><span class="mf">2.43</span><span class="p">,</span><span class="o">-</span><span class="mf">3.54</span><span class="p">,</span><span class="o">-</span><span class="mf">5.43</span><span class="p">],</span><span class="s">&#39;cal/(mol*K)&#39;</span><span class="p">),</span>
+        <span class="n">H298</span> <span class="o">=</span> <span class="p">(</span><span class="mf">104.81</span><span class="p">,</span><span class="s">&#39;kcal/mol&#39;</span><span class="p">,</span><span class="s">&#39;+|-&#39;</span><span class="p">,</span><span class="mf">0.1</span><span class="p">),</span>
+        <span class="n">S298</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.52</span><span class="p">,</span><span class="s">&#39;cal/(mol*K)&#39;</span><span class="p">),</span>
+    <span class="p">),</span>
+    <span class="n">shortDesc</span> <span class="o">=</span> <span class="s">u&quot;&quot;&quot;Calculated in relation to methane from NIST values&quot;&quot;&quot;</span><span class="p">,</span>
+    <span class="n">longDesc</span> <span class="o">=</span>
+<span class="sd">u&quot;&quot;&quot;</span>
+
+<span class="sd">&quot;&quot;&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="non-nearest-neighbor-interactions">
+<h3>10.2.2.4. Non-nearest neighbor interactions<a class="headerlink" href="#non-nearest-neighbor-interactions" title="Permalink to this headline">¶</a></h3>
+<p>The majority of the NNIs groups pertain to small enthalpy of formation corrections. Only a very limited
+number include entropy or heat capacity corrections. The database other.py contains
+cis-, ortho- and ketene-corrections.</p>
+<p>An example of a NNI entry in gauche.py is shown here below:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">entry</span><span class="p">(</span>
+    <span class="n">index</span> <span class="o">=</span> <span class="mi">11</span><span class="p">,</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="s">&quot;Cs(Cs(CsCsR)Cs(CsCsR)RR)&quot;</span><span class="p">,</span>
+    <span class="n">group</span> <span class="o">=</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">1  * Cs                         0 {2,S} {3,S} {4,S} {5,S}</span>
+<span class="sd">2    Cs                         0 {1,S} {6,S} {7,S} {8,S}</span>
+<span class="sd">3    Cs                         0 {1,S} {9,S} {10,S} {11,S}</span>
+<span class="sd">4    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {1,S}</span>
+<span class="sd">5    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {1,S}</span>
+<span class="sd">6    Cs                         0 {2,S}</span>
+<span class="sd">7    Cs                         0 {2,S}</span>
+<span class="sd">8    {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {2,S}</span>
+<span class="sd">9    Cs                         0 {3,S}</span>
+<span class="sd">10   Cs                         0 {3,S}</span>
+<span class="sd">11   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}</span>
+<span class="sd">&quot;&quot;&quot;</span><span class="p">,</span>
+    <span class="n">thermo</span> <span class="o">=</span> <span class="n">ThermoData</span><span class="p">(</span>
+        <span class="n">Tdata</span> <span class="o">=</span> <span class="p">([</span><span class="mi">300</span><span class="p">,</span><span class="mi">400</span><span class="p">,</span><span class="mi">500</span><span class="p">,</span><span class="mi">600</span><span class="p">,</span><span class="mi">800</span><span class="p">,</span><span class="mi">1000</span><span class="p">,</span><span class="mi">1500</span><span class="p">],</span><span class="s">&#39;K&#39;</span><span class="p">),</span>
+        <span class="n">Cpdata</span> <span class="o">=</span> <span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span><span class="s">&#39;cal/(mol*K)&#39;</span><span class="p">),</span>
+        <span class="n">H298</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.8</span><span class="p">,</span><span class="s">&#39;kcal/mol&#39;</span><span class="p">),</span>
+        <span class="n">S298</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="s">&#39;cal/(mol*K)&#39;</span><span class="p">),</span>
+    <span class="p">),</span>
+    <span class="n">shortDesc</span> <span class="o">=</span> <span class="s">u&quot;&quot;&quot;&quot;&quot;&quot;</span><span class="p">,</span>
+    <span class="n">longDesc</span> <span class="o">=</span>
+<span class="sd">u&quot;&quot;&quot;</span>
+
+<span class="sd">&quot;&quot;&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
 </div>
 </div>
 
@@ -86,20 +341,28 @@
 </div>
   <h3><a href="../../../contents.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">10.1. Thermo Database</a><ul>
-<li><a class="reference internal" href="#libraries">10.1.1. Libraries</a></li>
-<li><a class="reference internal" href="#depository">10.1.2. Depository</a></li>
-<li><a class="reference internal" href="#groups">10.1.3. Groups</a></li>
+<li><a class="reference internal" href="#">10.2. Thermo Database</a><ul>
+<li><a class="reference internal" href="#libraries">10.2.1. Libraries</a><ul>
+<li><a class="reference internal" href="#species-thermochemistry-libraries">10.2.1.1. Species thermochemistry libraries</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#groups">10.2.2. Groups</a><ul>
+<li><a class="reference internal" href="#group-additive-values-gav">10.2.2.1. Group additive values (GAV)</a></li>
+<li><a class="reference internal" href="#ring-strain-corrections-rsc">10.2.2.2. Ring Strain Corrections (RSC)</a></li>
+<li><a class="reference internal" href="#hydrogen-bond-increments-hbi">10.2.2.3. Hydrogen Bond Increments (HBI)</a></li>
+<li><a class="reference internal" href="#non-nearest-neighbor-interactions">10.2.2.4. Non-nearest neighbor interactions</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="index.html"
-                        title="previous chapter">10. Databases</a></p>
+  <p class="topless"><a href="introduction.html"
+                        title="previous chapter">10.1. Introduction</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="kinetics.html"
-                        title="next chapter">10.2. Kinetics Database</a></p>
+                        title="next chapter">10.3. Kinetics Database</a></p>
   <h3>This Page </h3>
   <ul class="this-page-menu">
     <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/users/rmg/database/thermo.rst"
