@@ -17,6 +17,8 @@ Datasources
 ===========
 This section explains how to specify various reaction and thermo data sources in the input file.
 
+.. _thermolibraries:
+
 Thermo Libraries
 ---------------
 
@@ -47,6 +49,8 @@ This library is located in the
 :file:`$RMG/RMG-database/input/thermo/libraries` directory.  All "Locations" for the
 ThermoLibrary field must be with respect to the :file:`$RMG/RMG-database/input/thermo/libraries`
 directory.
+
+.. _reactionlibraries:
 
 Reaction Libraries
 -----------------
@@ -83,6 +87,7 @@ given in each mechanism, the different mechanisms can have different units.
 	Library, see :ref:`irreversiblekinetics`.
 	
 
+.. _seedmechanism:
 
 Seed Mechanisms
 --------------
@@ -110,11 +115,16 @@ reaction occurs more than once in the combined mechanism,
 the instance of it from the first mechanism in which it appears is
 the one that gets used.
 
+.. _kineticsdepositories:
+
 Kinetics Depositories
 ---------------------
-In this section by (?)...:: 
+:: 
 
 	kineticsDepositories = ['training']
+	
+	
+.. _kineticsfamilies:
 
 Kinetics Families
 ----------------
@@ -143,6 +153,8 @@ The following is an example of a database block, based on above chosen libraries
 		kineticsEstimator = 'rate rules',
 	)
 
+.. _species:
+
 List of species
 ===============
 
@@ -169,6 +181,9 @@ The following is an example of a typical species item, based on methane using SM
 			1 C 0
 			"""
 	)
+
+.. _reactionsystem:
+
 
 Reaction System
 ===============
@@ -197,6 +212,43 @@ The following is an example of a simple reactor system::
 		},
 		terminationTime=(1e0,'s'),
 	)
+
+
+.. _simulatortolerances:
+
+Simulator Tolerances
+====================
+The next two lines specify the absolute and relative tolerance for the ODE solver, respectively. Common values for the absolute tolerance are 1e-15 to 1e-25. Relative tolerance is usually 1e-4 to 1e-8::
+	
+	simulator(
+	    atol=1e-16,
+	    rtol=1e-8,
+	)
+
+
+.. _pruning:
+
+Pruning
+=======
+When using automated time stepping, it is also possible to perform mechanism generation with pruning of “unimportant” edge species to reduce memory usage. 
+The example below shows how to set up pruning parameters::
+	
+	model(
+	    toleranceKeepInEdge=0.0,
+	    toleranceMoveToCore=0.5,
+	    toleranceInterruptSimulation=0.5,
+	    maximumEdgeSpecies=100000
+	)
+
+:ref:`toleranceKeepInEdge` indicates how low the edge flux ratio for a species must get before the species is pruned (removed) from the edge.
+:ref:`toleranceInterruptSimulation` indicates how high the edge flux ratio must get to interrupt the simulation (before reaching the :ref:`terminationConversion` or 
+:ref:`terminationTime`). Pruning won’t occur if the simulation is interrupted before reaching the goal criteria, so set this high to increase pruning opportunities. 
+:ref:`maximumEdgeSpecies` indicates the upper limit for the size of the edge.
+
+When using pruning, RMG will not prune unless all reaction systems reach the goal reaction time or conversion without first exceeding the termination tolerance. Therefore, you may find that RMG is not pruning even though the model edge size exceeds :ref:`maximumEdgeSpecies`. In order to increase the likelihood of pruning in such cases, you can try increasing :ref:`toleranceInterruptSimulation` to an arbitrarily high value. Alternatively, if you are using a conversion goal, because reaction systems may reach equilibrium below the goal conversion, it may be helpful to reduce the goal conversion or switch to a goal reaction time.
+
+
+.. _ontheflyquantumcalculations:
 
 On the fly Quantum Calculations
 ===============================
@@ -230,6 +282,9 @@ The following is an example of the quantum mechanics options ::
 		)
 
 .. [RDKit] RDKit: Open-source cheminformatics; http://www.rdkit.org
+
+
+.. _pressuredependence:
 
 Pressure Dependence
 ===================
