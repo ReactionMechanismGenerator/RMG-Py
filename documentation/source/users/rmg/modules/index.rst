@@ -14,3 +14,4 @@ There are several standalone modules that can be run separately from RMG.
     generateReactions
     sensitivity
     generateFluxDiagram
+    thermoEstimation
