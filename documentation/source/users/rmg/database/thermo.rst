@@ -96,7 +96,7 @@ is organized in a hierarchical tree, and is defined at the bottom of the databas
 	                    ...
   
 More information on hierarchical tree structures in RMG can be found here:
-:ref:`kineticsDatabase`.
+:ref:`introDatabase`.
 
 Group additive values (GAV)
 ---------------------------
