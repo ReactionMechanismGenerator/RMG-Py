@@ -205,6 +205,7 @@ adjlist: Test the Molecule.fromAdjacencyList() method 3. ... ok
 adjlist: Test the Molecule.fromAdjacencyList() method 4. ... ok
 Test we can read an intermediate style adjacency list with implicit hydrogens 1 ... ok
 Test we can read an old style adjacency list with implicit hydrogens 1 ... ok
+adjlist: Test that the adjlist reading and writing works with Helium. ... ok
 adjlist: Test the Molecule.toAdjacencyList() method. ... ok
 Test the AtomType.equivalent() method. ... ok
 Test the AtomType.isSpecificCaseOf() method. ... ok
@@ -1000,8 +1001,8 @@ ERROR: Test the Molecule.calculateSymmetryNumber() method.
 Traceback (most recent call last):
   File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 328, in testSymmetryNumberAcetylene
     self.assertEqual(Molecule().fromSMILES('C#C').calculateSymmetryNumber(), 2)
-  File "molecule.py", line 1583, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24106)
-  File "molecule.py", line 1589, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24046)
+  File "molecule.py", line 1586, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24178)
+  File "molecule.py", line 1592, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24118)
 SystemError: Missing type object
 
 ======================================================================
@@ -1010,8 +1011,8 @@ ERROR: Test the Molecule.calculateSymmetryNumber() method.
 Traceback (most recent call last):
   File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 334, in testSymmetryNumberButadiyne
     self.assertEqual(Molecule().fromSMILES('C#CC#C').calculateSymmetryNumber(), 2)
-  File "molecule.py", line 1583, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24106)
-  File "molecule.py", line 1589, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24046)
+  File "molecule.py", line 1586, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24178)
+  File "molecule.py", line 1592, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24118)
 SystemError: Missing type object
 
 ======================================================================
@@ -1020,8 +1021,8 @@ ERROR: Test the Molecule.calculateSymmetryNumber() method.
 Traceback (most recent call last):
   File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 376, in testSymmetryNumberCyclic
     self.assertEqual(Molecule().fromSMILES('C1=C=C=1').calculateSymmetryNumber(), 6)
-  File "molecule.py", line 1583, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24106)
-  File "molecule.py", line 1589, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24046)
+  File "molecule.py", line 1586, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24178)
+  File "molecule.py", line 1592, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24118)
 SystemError: Missing type object
 
 ======================================================================
@@ -1030,8 +1031,8 @@ ERROR: Test the Molecule.calculateSymmetryNumber() method.
 Traceback (most recent call last):
   File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 316, in testSymmetryNumberDicarbon
     self.assertEqual(Molecule().fromSMILES('[C]#[C]').calculateSymmetryNumber(), 2)
-  File "molecule.py", line 1583, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24106)
-  File "molecule.py", line 1589, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24046)
+  File "molecule.py", line 1586, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24178)
+  File "molecule.py", line 1592, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24118)
 SystemError: Missing type object
 
 ======================================================================
@@ -1040,8 +1041,8 @@ ERROR: Test the Molecule.calculateSymmetryNumber() method.
 Traceback (most recent call last):
   File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 370, in testSymmetryNumberEthenyl
     self.assertEqual(Molecule().fromSMILES('C=[CH]').calculateSymmetryNumber(), 1)
-  File "molecule.py", line 1583, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24106)
-  File "molecule.py", line 1589, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24046)
+  File "molecule.py", line 1586, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24178)
+  File "molecule.py", line 1592, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24118)
 SystemError: Missing type object
 
 ======================================================================
@@ -1050,8 +1051,8 @@ ERROR: Test the Molecule.calculateSymmetryNumber() method.
 Traceback (most recent call last):
   File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 364, in testSymmetryNumberEthylene
     self.assertEqual(Molecule().fromSMILES('C=C').calculateSymmetryNumber(), 4)
-  File "molecule.py", line 1583, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24106)
-  File "molecule.py", line 1589, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24046)
+  File "molecule.py", line 1586, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24178)
+  File "molecule.py", line 1592, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24118)
 SystemError: Missing type object
 
 ======================================================================
@@ -1060,8 +1061,8 @@ ERROR: Test the Molecule.calculateSymmetryNumber() method.
 Traceback (most recent call last):
   File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 346, in testSymmetryNumberFormaldehyde
     self.assertEqual(Molecule().fromSMILES('C=O').calculateSymmetryNumber(), 2)
-  File "molecule.py", line 1583, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24106)
-  File "molecule.py", line 1589, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24046)
+  File "molecule.py", line 1586, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24178)
+  File "molecule.py", line 1592, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24118)
 SystemError: Missing type object
 
 ======================================================================
@@ -1070,8 +1071,8 @@ ERROR: Test the Molecule.calculateSymmetryNumber() method.
 Traceback (most recent call last):
   File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 322, in testSymmetryNumberHydrogen
     self.assertEqual(Molecule().fromSMILES('[H][H]').calculateSymmetryNumber(), 2)
-  File "molecule.py", line 1583, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24106)
-  File "molecule.py", line 1589, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24046)
+  File "molecule.py", line 1586, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24178)
+  File "molecule.py", line 1592, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24118)
 SystemError: Missing type object
 
 ======================================================================
@@ -1080,8 +1081,8 @@ ERROR: Test the Molecule.calculateSymmetryNumber() method.
 Traceback (most recent call last):
   File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 304, in testSymmetryNumberHydroxyl
     self.assertEqual(Molecule().fromSMILES('[OH]').calculateSymmetryNumber(), 1)
-  File "molecule.py", line 1583, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24106)
-  File "molecule.py", line 1589, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24046)
+  File "molecule.py", line 1586, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24178)
+  File "molecule.py", line 1592, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24118)
 SystemError: Missing type object
 
 ======================================================================
@@ -1090,8 +1091,8 @@ ERROR: Test the Molecule.calculateSymmetryNumber() method.
 Traceback (most recent call last):
   File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 340, in testSymmetryNumberMethane
     self.assertEqual(Molecule().fromSMILES('C').calculateSymmetryNumber(), 12)
-  File "molecule.py", line 1583, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24106)
-  File "molecule.py", line 1589, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24046)
+  File "molecule.py", line 1586, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24178)
+  File "molecule.py", line 1592, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24118)
 SystemError: Missing type object
 
 ======================================================================
@@ -1100,8 +1101,8 @@ ERROR: Test the Molecule.calculateSymmetryNumber() method.
 Traceback (most recent call last):
   File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 352, in testSymmetryNumberMethyl
     self.assertEqual(Molecule().fromSMILES('[CH3]').calculateSymmetryNumber(), 6)
-  File "molecule.py", line 1583, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24106)
-  File "molecule.py", line 1589, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24046)
+  File "molecule.py", line 1586, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24178)
+  File "molecule.py", line 1592, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24118)
 SystemError: Missing type object
 
 ======================================================================
@@ -1110,8 +1111,8 @@ ERROR: Test the Molecule.calculateSymmetryNumber() method.
 Traceback (most recent call last):
   File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 310, in testSymmetryNumberOxygen
     self.assertEqual(Molecule().fromSMILES('O=O').calculateSymmetryNumber(), 2)
-  File "molecule.py", line 1583, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24106)
-  File "molecule.py", line 1589, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24046)
+  File "molecule.py", line 1586, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24178)
+  File "molecule.py", line 1592, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24118)
 SystemError: Missing type object
 
 ======================================================================
@@ -1120,8 +1121,8 @@ ERROR: Test the Molecule.calculateSymmetryNumber() method.
 Traceback (most recent call last):
   File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 358, in testSymmetryNumberWater
     self.assertEqual(Molecule().fromSMILES('O').calculateSymmetryNumber(), 2)
-  File "molecule.py", line 1583, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24106)
-  File "molecule.py", line 1589, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24046)
+  File "molecule.py", line 1586, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24178)
+  File "molecule.py", line 1592, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24118)
 SystemError: Missing type object
 
 ======================================================================
@@ -1130,8 +1131,8 @@ ERROR: Test the Molecule.calculateSymmetryNumber() method.
 Traceback (most recent call last):
   File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 291, in testTotalSymmetryNumber1
     self.assertEqual(Molecule().fromSMILES('C=C=[C]C(C)(C)[C]=C=C').calculateSymmetryNumber(), 18)
-  File "molecule.py", line 1583, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24106)
-  File "molecule.py", line 1589, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24046)
+  File "molecule.py", line 1586, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24178)
+  File "molecule.py", line 1592, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24118)
 SystemError: Missing type object
 
 ======================================================================
@@ -1140,8 +1141,8 @@ ERROR: Test the Molecule.calculateSymmetryNumber() method.
 Traceback (most recent call last):
   File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/molecule/symmetryTest.py", line 285, in testTotalSymmetryNumberEthane
     self.assertEqual(Molecule().fromSMILES('CC').calculateSymmetryNumber(), 18)
-  File "molecule.py", line 1583, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24106)
-  File "molecule.py", line 1589, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24046)
+  File "molecule.py", line 1586, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24178)
+  File "molecule.py", line 1592, in rmgpy.molecule.molecule.Molecule.calculateSymmetryNumber (build/pyrex/rmgpy/molecule/molecule.c:24118)
 SystemError: Missing type object
 
 Name                              Stmts   Miss Branch BrMiss  Cover   Missing
@@ -1187,7 +1188,7 @@ rmgpy.measure.output                164    146     82     82     7%   53-60, 71-
 rmgpy.measure.settings                2      0      0      0   100%   
 rmgpy.measure.simulate               67     54     30     30    13%   46, 49, 66-128, 144-169, 178-179, 182, 185
 rmgpy.molecule                        5      0      0      0   100%   
-rmgpy.molecule.adjlist              532    104    327     80    79%   67, 71-73, 83, 136, 142, 147-151, 209, 229, 231, 233, 251, 263-264, 268, 285-286, 302-304, 339, 344-345, 359, 365-368, 374, 383, 421, 431-442, 453, 465-474, 485, 493, 502, 504, 506, 509-526, 554, 567, 569, 571, 589, 602-603, 611, 629-630, 650-651, 668-671, 688-689, 697, 727-730, 734, 737-740
+rmgpy.molecule.adjlist              509    100    323     80    78%   67, 71-73, 83, 136, 142, 147-151, 209, 229, 231, 233, 251, 263-264, 268, 294-296, 331, 336-337, 351, 357-360, 366, 375, 413, 423-434, 445, 457-466, 477, 485, 494, 496, 498, 501-518, 546, 559, 561, 563, 581, 594-595, 603, 625-626, 643-646, 663-664, 672, 702-705, 709, 712-715
 rmgpy.molecule.draw                 929    574    448    303    36%   76, 79-82, 141-143, 171-173, 182-187, 195-197, 200-203, 206-208, 211-213, 216-219, 268-276, 289, 297-349, 374-376, 385-390, 399-430, 438-448, 455-580, 587-641, 648-720, 733-827, 851-852, 860-861, 884, 906-927, 940-942, 993-996, 1002-1003, 1005-1007, 1046-1047, 1094-1102, 1124-1125, 1138-1141, 1160-1165, 1171-1172, 1201-1202, 1210-1212, 1215-1216, 1224-1226, 1232-1239, 1244-1247, 1256-1259, 1264-1281, 1291-1294, 1298-1301, 1305-1322, 1350-1354, 1368-1488
 rmgpy.pdep                            5      0      0      0   100%   
 rmgpy.pdep.draw                     291    277     86     86     4%   57-70, 73-79, 87-107, 116-125, 131-142, 148-159, 165-181, 185-213, 222-479
@@ -1211,9 +1212,9 @@ rmgpy.statmech                        5      0      0      0   100%
 rmgpy.thermo                          3      0      0      0   100%   
 rmgpy.transport                      28      1      0      0    96%   71
 -----------------------------------------------------------------------------
-TOTAL                             15342  12310   6595   5921    17%   
+TOTAL                             15319  12306   6591   5921    17%   
 ----------------------------------------------------------------------
-Ran 763 tests.
+Ran 764 tests.
 
 FAILED (SKIP=25, errors=43)
 make: *** [test] Error 1
