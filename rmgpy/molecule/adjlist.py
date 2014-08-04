@@ -277,23 +277,15 @@ def fromOldAdjacencyList(adjlist, group=False, saturateH=False):
         
         # Calculate the number of lone pair electrons requiring molecule with all hydrogen atoms present
         if not group and lonePairsOfElectrons == -1:
-            valences = {'H': 1, 'C': 4, 'O': 2, 'N': 3, 'S': 2, 'Si': 4, 'He': 0, 'Ne': 0, 'Ar': 0, 'Cl': 1}
             orders = {'S': 1, 'D': 2, 'T': 3, 'B': 1.5}
             for atom in atoms:
-                try:
-                    valence = valences[atom.symbol]
-                except KeyError:
-                    raise InvalidAdjacencyListError('Cannot calculate lone pairs: Unknown valence for atom "{0}".'.format(atom.symbol))
                 radical = atom.radicalElectrons
                 order = 0
                 for atom2, bond in atom.bonds.items():
                     order += orders[bond.order]
-                lonePairs = (1 if atom.isHydrogen() else 4) - order - radical
-                charge = (2 if atom.isHydrogen() else 8) - valence - order - radical - 2 * lonePairs
+                lonePairs = (1 if atom.symbol == 'H' or atom.symbol == 'He' else 4) - order - radical
                 atom.setLonePairs(lonePairs)
                 atom.updateCharge()
-                "It is pointless that we calculate this twice, but as we do, we may as well check they agree"
-                assert charge == atom.charge, "Charge calculations didn't agree!"
 
         elif not group:
             for atom in atoms:
@@ -620,32 +612,15 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
         
         # Calculate the number of lone pair electrons requiring molecule with all hydrogen atoms present
         if not group and lonePairs is not None:
-            valences = {'H': 1, 'C': 4, 'O': 2, 'N': 3, 'S': 2, 'Si': 4, 'He': 0, 'Ne': 0, 'Ar': 0, 'Cl': 1}
             orders = {'S': 1, 'D': 2, 'T': 3, 'B': 1.5}
             for atom in atoms:
-                if not atom.isHydrogen():
-                    try:
-                        valence = valences[atom.symbol]
-                    except KeyError:
-                        raise InvalidAdjacencyListError('Cannot add hydrogens to adjacency list: Unknown valence for atom "{0}".'.format(atom.symbol))
-                    radical = atom.radicalElectrons
-                    order = 0
-                    for atom2, bond in atom.bonds.items():
-                        order += orders[bond.order]
-                    lonePairs = 4 - order - radical
-                    charge = 8 - valence - order - radical - 2*lonePairs
-                    atom.setLonePairs(lonePairs)
-                    atom.updateCharge()
-                else:
-                    valence = valences[atom.symbol]
-                    radical = atom.radicalElectrons
-                    order = 0
-                    for atom2, bond in atom.bonds.items():
-                        order += orders[bond.order]
-                    lonePairs = 1 - order - radical
-                    charge = 2 - valence - order - radical - 2*lonePairs
-                    atom.setLonePairs(lonePairs)
-                    atom.updateCharge()
+                radical = atom.radicalElectrons
+                order = 0
+                for atom2, bond in atom.bonds.items():
+                    order += orders[bond.order]
+                lonePairs = (1 if atom.symbol == 'H' or atom.symbol == 'He' else 4) - order - radical
+                atom.setLonePairs(lonePairs)
+                atom.updateCharge()
         elif not group:
             for atom in atoms:
                 atom.updateCharge()

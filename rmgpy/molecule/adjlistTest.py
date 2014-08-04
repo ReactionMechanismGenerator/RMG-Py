@@ -328,8 +328,39 @@ class TestMoleculeAdjLists(unittest.TestCase):
         self.assertTrue(bond21.isSingle())
         self.assertTrue(bond23.isSingle())
         self.assertTrue(bond24.isDouble())
-
-
+        
+    def testHelium(self):
+        """
+        adjlist: Test that the adjlist reading and writing works with Helium.
+        """
+        smiles = '[He]'
+        inchi = 'InChI=1S/He'
+        adjlist = '1 He u0 p1 c0'
+        adjlist_old = '1 He 0'
+        adjlist_intermediate = '1 He 0 1'
+        
+        mol_smiles = Molecule().fromSMILES(smiles)
+        mol_inchi = Molecule().fromInChI(inchi)
+        mol = Molecule().fromAdjacencyList(adjlist)
+        mol_old = Molecule().fromAdjacencyList(adjlist_old)
+        mol_intermediate = Molecule().fromAdjacencyList(adjlist_intermediate)
+        
+        # Isomorphic check'
+        self.assertTrue(mol_smiles.isIsomorphic(mol))
+        self.assertTrue(mol_smiles.isIsomorphic(mol_inchi))
+        self.assertTrue(mol_smiles.isIsomorphic(mol_old))
+        self.assertTrue(mol_smiles.isIsomorphic(mol_intermediate))
+        
+        # Adjlist check
+        self.assertEqual(mol_smiles.toAdjacencyList().strip(), adjlist)
+        self.assertEqual(mol_inchi.toAdjacencyList().strip(), adjlist)
+        self.assertEqual(mol.toAdjacencyList().strip(), adjlist)
+        self.assertEqual(mol_old.toAdjacencyList().strip(), adjlist)
+        self.assertEqual(mol_intermediate.toAdjacencyList().strip(), adjlist)
+        
+        self.assertEqual(mol.toSMILES(),smiles)
+        self.assertEqual(mol.toInChI(),'InChI=1S/He')
+        
     def testToAdjacencyList(self):
         """
         adjlist: Test the Molecule.toAdjacencyList() method.
