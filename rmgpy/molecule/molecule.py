@@ -354,7 +354,7 @@ class Atom(Vertex):
         order = 0
         for atom2, bond in self.bonds.items():
             order += orders[bond.order]
-        if self.isHydrogen():
+        if self.symbol == 'H' or self.symbol == 'He':
             self.charge = 2 - valence - order - self.radicalElectrons - 2*self.lonePairs
         else:
             self.charge = 8 - valence - order - self.radicalElectrons - 2*self.lonePairs
