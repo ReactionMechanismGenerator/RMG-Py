@@ -1087,9 +1087,12 @@ class Molecule(Graph):
         This Kekulizes everything, removing all aromatic atom types.
         """
         #RDkit was improperly handling the Hydrogen radical from InChI
-        if inchistr == 'InChI=1/H':
+        if inchistr == 'InChI=1/H' or inchistr == 'InChI=1S/H':
             self.fromSMILES('[H]')
             return self          
+        elif inchistr == 'InChI=1/He' or inchistr == 'InChI=1S/He':
+            self.fromSMILES('[He]')
+            return self
         else:
             rdkitmol = Chem.inchi.MolFromInchi(inchistr)
             self.fromRDKitMol(rdkitmol)
