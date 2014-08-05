@@ -19,12 +19,15 @@ def makeopenbabel(atomcoords, atomnos, charge=0, mult=1):
     >>> print obconversion.WriteString(obmol).strip()
     InChI=1/H2O/h1H2
     """
+    reload(ob)
+    
     obmol = ob.OBMol()
     for i in range(len(atomnos)):
         # Note that list(atomcoords[i]) is not equivalent!!!
         coords = atomcoords[i].tolist()
         atomno = int(atomnos[i])
         obatom = ob.OBAtom()
+        obatom.thisown = False
         obatom.SetAtomicNum(atomno)
         obatom.SetVector(*coords)
         obmol.AddAtom(obatom)

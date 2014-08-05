@@ -2,11 +2,19 @@ import os
 import re
 import external.cclib as cclib
 import logging
+import time
+import math
+import numpy
 from subprocess import Popen, PIPE
 
-from rmgpy.molecule import Molecule
+from rmgpy.molecule import Molecule, Atom, getElement
+from rmgpy.reaction import Reaction
 from qmdata import CCLibData
 from molecule import QMMolecule
+from reaction import QMReaction
+from rmgpy.data.base import Entry
+from rmgpy.data.kinetics import saveEntry
+from rmgpy.data.kinetics.transitionstates import DistanceData
 
 class Mopac:
     """
@@ -26,7 +34,7 @@ class Mopac:
     else:
         executablePath = os.path.join(mopacEnv , '(MOPAC 2009 or 2012)')
     
-    usePolar = False #use polar keyword in MOPAC
+    usePolar = False#use polar keyword in MOPAC
     
     "Keywords for the multiplicity"
     multiplicityKeywords = {
@@ -67,6 +75,64 @@ class Mopac:
     
         return self.verifyOutputFile()
         
+    def parse(self):
+        """
+        Parses the results of the Mopac calculation, and returns a CCLibData object.
+        """
+        parser = cclib.parser.Mopac(self.outputFilePath)
+        parser.logger.setLevel(logging.ERROR) #cf. http://cclib.sourceforge.net/wiki/index.php/Using_cclib#Additional_information
+        cclibData = parser.parse()
+        radicalNumber = sum([i.radicalElectrons for i in self.molecule.atoms])
+        qmData = CCLibData(cclibData, radicalNumber+1)
+        return qmData
+
+class MopacMol(QMMolecule, Mopac):
+    """
+    A base Class for calculations of molecules using MOPAC. 
+    
+    Inherits from both :class:`QMMolecule` and :class:`Mopac`.
+    """
+                
+    def inputFileKeywords(self, attempt):
+        """
+        Return the top, bottom, and polar keywords.
+        """
+        raise NotImplementedError("Should be defined by subclass, eg. MopacMolPM3")
+        
+    def writeInputFile(self, attempt):
+        """
+        Using the :class:`Geometry` object, write the input file
+        for the `attmept`th attempt.
+        """
+        
+        molfile = self.getMolFilePathForCalculation(attempt) 
+        atomline = re.compile('\s*([\- ][0-9.]+)\s+([\- ][0-9.]+)+\s+([\- ][0-9.]+)\s+([A-Za-z]+)')
+        
+        output = [ self.geometry.uniqueIDlong, '' ]
+    
+        atomCount = 0
+        with open(molfile) as molinput:
+            for line in molinput:
+                match = atomline.match(line)
+                if match:
+                    output.append("{0:4s} {1} 1 {2} 1 {3} 1".format(match.group(4), match.group(1), match.group(2), match.group(3)))
+                    atomCount += 1
+        assert atomCount == len(self.molecule.atoms)
+    
+        output.append('')
+        input_string = '\n'.join(output)
+        
+        top_keys, bottom_keys, polar_keys = self.inputFileKeywords(attempt)
+        with open(self.inputFilePath, 'w') as mopacFile:
+            mopacFile.write(top_keys)
+            mopacFile.write('\n')
+            mopacFile.write(input_string)
+            mopacFile.write('\n')
+            mopacFile.write(bottom_keys)
+            if self.usePolar:
+                mopacFile.write('\n\n\n')
+                mopacFile.write(polar_keys)
+    
     def verifyOutputFile(self):
         """
         Check's that an output file exists and was successful.
@@ -87,7 +153,7 @@ class Mopac:
         if not os.path.exists(self.outputFilePath):
             logging.debug("Output file {0} does not (yet) exist.".format(self.outputFilePath))
             return False
-    
+        
         InChIMatch=False #flag (1 or 0) indicating whether the InChI in the file matches InChIaug this can only be 1 if InChIFound is also 1
         InChIFound=False #flag (1 or 0) indicating whether an InChI was found in the log file
         

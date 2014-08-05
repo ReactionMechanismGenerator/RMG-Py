@@ -140,6 +140,7 @@ class Atom(Vertex):
     def __reduce__(self):
         """
         A helper function used when pickling an object.
+        Atomic coords are not saved.
         """
         d = {
             'edges': self.edges,
@@ -172,6 +173,9 @@ class Atom(Vertex):
 
     @property
     def symbol(self): return self.element.symbol
+    
+    @property
+    def radius(self): return self.element.radius
 
     @property
     def bonds(self): return self.edges
@@ -254,7 +258,8 @@ class Atom(Vertex):
         a.label = self.label
         a.atomType = self.atomType
         a.lonePairs = self.lonePairs
-        a.coords = self.coords[:]
+        if self.coords is not None:
+            a.coords = self.coords[:]
         return a
 
     def isHydrogen(self):

@@ -1,15 +1,18 @@
 import os
 import logging
+import re
 import math
 
 import numpy
+import external.cclib as cclib
 
 try:
     from rdkit import Chem
-    from rdkit.Chem import AllChem
+    from rdkit.Chem import AllChem, Pharm3D
 except ImportError:
     logging.debug("To use QM calculations you must correctly install rdkit.")
-    
+
+from rmgpy.molecule import getElement    
 import rmgpy.quantity
 from rmgpy.thermo import ThermoData
 import rmgpy.statmech
@@ -17,7 +20,12 @@ import rmgpy.thermo
 import rmgpy.molecule
 import symmetry
 import qmdata
+from qmdata import CCLibData
 
+class RDKitFailedError(Exception):
+    """For when RDkit failed. try the next reaction """
+    pass
+    
 class Geometry:
     """
     A geometry, used for quantum calculations.
@@ -63,7 +71,7 @@ class Geometry:
         "Returns the path the the refined mol file."
         return self.getFilePath('.refined.mol')
 
-    def generateRDKitGeometries(self, boundsMatrix=None):
+    def generateRDKitGeometries(self, boundsMatrix=None, atomMatch=None):
         """
         Use RDKit to guess geometry.
 
@@ -75,7 +83,7 @@ class Geometry:
         atoms = len(self.molecule.atoms)
         distGeomAttempts=1
         if atoms > 3:#this check prevents the number of attempts from being negative
-            distGeomAttempts = 5*(atoms-3) #number of conformer attempts is just a linear scaling with molecule size, due to time considerations in practice, it is probably more like 3^(n-3) or something like that
+            distGeomAttempts = 15*(atoms-3) #number of conformer attempts is just a linear scaling with molecule size, due to time considerations in practice, it is probably more like 3^(n-3) or something like that
         
         rdmol, minEid = self.rd_embed(rdmol, distGeomAttempts, boundsMatrix)
         self.saveCoordinatesFromRDMol(rdmol, minEid, rdAtIdx)
@@ -87,33 +95,162 @@ class Geometry:
         return self.molecule.toRDKitMol(removeHs=False, returnMapping=True)
 
 
-    def rd_embed(self, rdmol, numConfAttempts, boundsMatrix=None):
+    def rd_embed(self, rdmol, numConfAttempts, bm=None, match=None):
         """
         Embed the RDKit molecule and create the crude molecule file.
         """
-        AllChem.EmbedMultipleConfs(rdmol, numConfAttempts,randomSeed=1)
+        if bm == None:
+            AllChem.EmbedMultipleConfs(rdmol, numConfAttempts,randomSeed=1)
+            crude = Chem.Mol(rdmol.ToBinary())
+            rdmol, minEid = self.optimize(rdmol)
+        else:
+            """
+            Embed the molecule according to the bounds matrix. Built to handle possible failures
+            of some of the embedding attempts.
+            """
+            rdmol.RemoveAllConformers()
+            for i in range(0,numConfAttempts):
+                try:
+                    Pharm3D.EmbedLib.EmbedMol(rdmol, bm, atomMatch=match)
+                    break
+                except ValueError:
+                    print("RDKit failed to embed on attemt {0} of {1}".format(i+1, numConfAttempts))
+                    # What to do next (what if they all fail?) !!!!!
+                except RuntimeError:
+                    raise RDKitFailedError()
+            else:
+                print("RDKit failed all attempts to embed")
+                return None, None
+                
+            """
+            RDKit currently embeds the conformers and sets the id as 0, so even though multiple
+            conformers have been generated, only 1 can be called. Below the id's are resolved.
+            """
+            for i in range(len(rdmol.GetConformers())):
+                rdmol.GetConformers()[i].SetId(i)
+            
+            crude = Chem.Mol(rdmol.ToBinary())
+            rdmol, minEid = self.optimize(rdmol, boundsMatrix=bm, atomMatch=match)
+        
+        self.writeMolFile(crude, self.getCrudeMolFilePath(), minEid)
+        self.writeMolFile(rdmol, self.getRefinedMolFilePath(), minEid)
+        
+        return rdmol, minEid
+    
+    def optimize(self, rdmol, boundsMatrix=None, atomMatch=None):
         
         energy=0.0
         minEid=0;
         lowestE=9.999999e99;#start with a very high number, which would never be reached
-
         crude = Chem.Mol(rdmol.ToBinary())
-        
-        for i in range(rdmol.GetNumConformers()):
-            AllChem.UFFOptimizeMolecule(rdmol,confId=i)
-            energy=AllChem.UFFGetMoleculeForceField(rdmol,confId=i).CalcEnergy()
+
+        for conf in rdmol.GetConformers():
+            if boundsMatrix == None:    
+                AllChem.UFFOptimizeMolecule(rdmol,confId=conf.GetId())
+                energy=AllChem.UFFGetMoleculeForceField(rdmol,confId=conf.GetId()).CalcEnergy()
+            else:
+                eBefore, energy = Pharm3D.EmbedLib.OptimizeMol(rdmol, boundsMatrix, atomMatches=atomMatch)
+            
             if energy < lowestE:
-                minEid = i
-                lowestE = energy 
-        
-        with open(self.getCrudeMolFilePath(), 'w') as out3Dcrude:
-            out3Dcrude.write(Chem.MolToMolBlock(crude,confId=minEid))
-        
-        with open(self.getRefinedMolFilePath(), 'w') as out3D:
-            out3D.write(Chem.MolToMolBlock(rdmol,confId=minEid))
-
+                minEid = conf.GetId()
+                lowestE = energy
+                
         return rdmol, minEid
-
+        
+    def writeMolFile(self, mol, path, minEid):
+        with open(path, 'w') as out3Dcrude:
+            out3Dcrude.write(Chem.MolToMolBlock(mol,confId=minEid))
+    
+    def parseLOG(self, filePath):
+        """
+        Parses Gaussian `.log` files and returns the last geometry.
+        """
+        
+        parser = cclib.parser.Gaussian(filePath)
+        parser.logger.setLevel(logging.ERROR) #cf. http://cclib.sourceforge.net/wiki/index.php/Using_cclib#Additional_information
+        cclibData = parser.parse()
+        
+        atomsymbols = []
+        for item in cclibData.atomnos:
+            atomsymbols.append(getElement(int(item)).symbol)
+        
+        return atomsymbols, cclibData.atomcoords[-1]
+    
+    def parseARC(self, filePath):
+        """
+        Parses Mopac `.arc` files and returns the geometry.
+        """
+        
+        atomline = re.compile('\s*([A-Za-z]+)\s+([\- ][0-9.]+)\s+([\+ ][0-9.]+)\s+([\- ][0-9.]+)\s+([\+ ][0-9.]+)\s+([\- ][0-9.]+)')
+        
+        atomCount = 0
+        atomsymbols = []
+        atomcoords = []
+        with open(filePath) as molinput:
+            for line in molinput:
+                match = atomline.match(line)
+                if match:
+                    atomsymbols.append(match.group(1))
+                    atomcoords.append([float(match.group(2)), float(match.group(6)), float(match.group(6))])
+                    atomCount += 1
+        
+        atomcoords = numpy.array(atomcoords)
+                    
+        return atomsymbols, atomcoords
+    
+    def parseMOL(self, filePath):
+        """
+        Parses RDKit `.mol` files and returns the geometry.
+        """
+        atomline = re.compile('\s*([\- ][0-9.]+\s+[\-0-9.]+\s+[\-0-9.]+)\s+([A-Za-z]+)')
+        
+        atomCount = 0
+        atomsymbols = []
+        atomcoords = []
+        with open(filePath) as molinput:
+            for line in molinput:
+                match = atomline.match(line)
+                if match:
+                    atomsymbols.append(match.group(2))
+                    atomcoords.append([float(i) for i in match.group(1).split()])
+                    atomCount += 1
+        
+        atomcoords = numpy.array(atomcoords)
+                    
+        return atomsymbols, atomcoords
+    
+    def parseXYZ(self, filePath):
+        """
+        Parses `.xyz` file formats, files with molecular cartesian coordinates, and returns the geometry.
+        """
+        atomline = re.compile('\s*([A-Za-z])\s+([\- ][0-9.]+\s+[\-0-9.]+\s+[\-0-9.]+)')
+        
+        atomCount = 0
+        atomsymbols = []
+        atomcoords = []
+        with open(filePath) as molinput:
+            for line in molinput:
+                match = atomline.match(line)
+                if match:
+                    atomsymbols.append(match.group(1))
+                    atomcoords.append([float(i) for i in match.group(2).split()])
+                    atomCount += 1
+        
+        atomcoords = numpy.array(atomcoords)
+                    
+        return atomsymbols, atomcoords 
+    
+    def getDistance(self, coords1, coords2):
+        """
+        Returns the distance between the two coordinates. The coordinates are provided in an array.
+        """
+        coordsDiff = coords1 - coords2
+        coordsSq = coordsDiff**2
+        distSq = coordsSq.sum()
+        dist = math.sqrt(distSq)
+        
+        return dist
+    
     def saveCoordinatesFromRDMol(self, rdmol, minEid, rdAtIdx):
         # Save xyz coordinates on each atom in molecule ****
         for atom in self.molecule.atoms:
@@ -233,9 +370,21 @@ class QMMolecule:
         """
         Creates self.geometry with RDKit geometries
         """
-        self.geometry = Geometry(self.settings, self.uniqueID, self.molecule, uniqueIDlong=self.uniqueIDlong)
-        self.geometry.generateRDKitGeometries()
+        multiplicity = sum([i.radicalElectrons for i in self.molecule.atoms]) + 1
+        self.geometry = Geometry(self.settings, self.uniqueID, self.molecule, multiplicity, uniqueIDlong=self.uniqueIDlong)
+        self.geometry.generateRDKitGeometries(boundsMatrix, atomMatch)
         return self.geometry
+        
+    def parse(self):
+        """
+        Parses the results of the Mopac calculation, and returns a CCLibData object.
+        """
+        parser = self.getparser(self.outputFilePath)
+        parser.logger.setLevel(logging.ERROR) #cf. http://cclib.sourceforge.net/wiki/index.php/Using_cclib#Additional_information
+        cclibData = parser.parse()
+        radicalNumber = sum([i.radicalElectrons for i in self.molecule.atoms])
+        qmData = CCLibData(cclibData, radicalNumber+1)
+        return qmData
     
     def generateQMData(self):
         """

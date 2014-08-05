@@ -170,6 +170,8 @@ cdef class Molecule(Graph):
     cpdef fromRDKitMol(self, rdkitmol)
 
     cpdef fromAdjacencyList(self, str adjlist, bint saturateH=?)
+    
+    cpdef fromXYZ(self, numpy.ndarray atomicNums, numpy.ndarray coordinates)
 
     cpdef fromXYZ(self, numpy.ndarray atomicNums, numpy.ndarray coordinates)
     
@@ -182,8 +184,6 @@ cdef class Molecule(Graph):
     cpdef str toAugmentedInChIKey(self)
 
     cpdef str toSMILES(self)
-
-#    cpdef tRDKitMol(self)
 
     cpdef toAdjacencyList(self, str label=?, bint removeH=?, bint removeLonePairs=?)
 
