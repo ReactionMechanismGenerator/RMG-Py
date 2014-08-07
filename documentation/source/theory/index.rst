@@ -7,4 +7,3 @@ RMG Theory Guide
    
     rmg/index
     measure/index
-    
