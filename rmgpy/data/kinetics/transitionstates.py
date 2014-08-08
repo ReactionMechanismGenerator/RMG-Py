@@ -362,8 +362,8 @@ class TransitionStateDepository(Database):
     real reactant and product species.
     """
 
-    def __init__(self, label='', name='', shortDesc='', longDesc='', recommended=False):
-        Database.__init__(self, label=label, name=name, shortDesc=shortDesc, longDesc=longDesc, recommended=recommended)
+    def __init__(self, label='', name='', shortDesc='', longDesc=''):
+        Database.__init__(self, label=label, name=name, shortDesc=shortDesc, longDesc=longDesc)
 
     def __repr__(self):
         return '<TransitionStateDepository "{0}">'.format(self.label)
@@ -379,12 +379,13 @@ class TransitionStateDepository(Database):
                   distances=None,
                   degeneracy=1,
                   label='',
+                  duplicate=False,
+                  reversible=True,
                   reference=None,
                   referenceType='',
                   shortDesc='',
                   longDesc='',
                   rank=None,
-                  history=None
                   ):
 
         reactants = [Molecule().fromAdjacencyList(reactant1, saturateH=True)]
@@ -407,7 +408,6 @@ class TransitionStateDepository(Database):
             shortDesc = shortDesc,
             longDesc = longDesc.strip(),
             rank = rank,
-            history = history or [],
         )
         self.entries['{0:d}:{1}'.format(index,label)] = entry
         return entry
@@ -445,7 +445,7 @@ class TSGroups(Database):
     def __repr__(self):
         return '<TSGroups "{0}">'.format(self.label)
 
-    def loadEntry(self, index, label, group, distances, reference=None, referenceType='', shortDesc='', longDesc='', history=None):
+    def loadEntry(self, index, label, group, distances, reference=None, referenceType='', shortDesc='', longDesc=''):
         if group[0:3].upper() == 'OR{' or group[0:4].upper() == 'AND{' or group[0:7].upper() == 'NOT OR{' or group[0:8].upper() == 'NOT AND{':
             item = makeLogicNode(group)
         else:
@@ -459,7 +459,6 @@ class TSGroups(Database):
             referenceType = referenceType,
             shortDesc = shortDesc,
             longDesc = longDesc.strip(),
-            history = history or [],
         )
 
     def getReactionTemplate(self, reaction):
