@@ -814,16 +814,6 @@ class TestMolecule(unittest.TestCase):
 #        """ # should be Water
 #        molecule = Molecule().fromAdjacencyList(adjList, saturateH=True) # only works with saturateH=True
 #        self.assertEqual(molecule.getFormula(),'H2O')
-    def testToSingleBonds(self):
-        """
-        Test the Molecule.toSingleBonds() method
-        """
-        original = self.molecule
-        singles =  original.toSingleBonds()
-        self.assertEqual(original.getFormula(), singles.getFormula())
-        for atom1 in singles.atoms:
-            for bond in atom1.bonds.values():
-                self.assertTrue( bond.isSingle() )
 
     def testIsomorphism(self):
         """
