@@ -1082,7 +1082,7 @@ class KineticsFamily(Database):
         else:
             return productStructures
 
-    def __generateProductStructures(self, reactantStructures, maps, forward, failsSpeciesConstraints=None):
+    def __generateProductStructures(self, reactantStructures, maps, forward, failsSpeciesConstraints=None, getTS=False):
         """
         For a given set of `reactantStructures` and a given set of `maps`,
         generate and return the corresponding product structures. The
@@ -1094,8 +1094,6 @@ class KineticsFamily(Database):
         `failsSpeciesConstraints` is a function that accepts a :class:`Molecule`
         structure and returns `True` if it is forbidden.
         """
-        
-        getTS = options.get('getTS', False)
         
         productStructuresList = []
 
