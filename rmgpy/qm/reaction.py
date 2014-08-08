@@ -10,7 +10,6 @@ import shutil
 from rmgpy.molecule import Molecule
 from rmgpy.species import Species, TransitionState
 from rmgpy.kinetics import Wigner
-import mopac
 from molecule import QMMolecule, Geometry
 from rmgpy.cantherm.gaussian import GaussianLog
 from rmgpy.cantherm.kinetics import KineticsJob
