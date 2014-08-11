@@ -19,14 +19,6 @@ elif os.path.exists(os.path.join(mopacEnv , 'MOPAC2009.exe')):
 	executablePath = os.path.join(mopacEnv , 'MOPAC2009.exe')
 else:
 	executablePath = os.path.join(mopacEnv , '(MOPAC 2009 or 2012)')
-	
-qm = QMCalculator()
-qm.settings.software = 'mopac'
-RMGpy_path = os.path.normpath(os.path.join(getPath(),'..'))
-qm.settings.fileStore = os.path.join(RMGpy_path, 'testing', 'qm', 'QMfiles')
-qm.settings.scratchDirectory = None
-qm.settings.onlyCyclics = False
-qm.settings.maxRadicalNumber = 0
 
 mol1 = Molecule().fromSMILES('C1=CC=C2C=CC=CC2=C1')
 
@@ -40,10 +32,16 @@ class TestMopacMolPM3(unittest.TestCase):
 		"""
 		A function run before each unit test in this class.
 		"""
+		RMGpy_path = os.path.normpath(os.path.join(getPath(),'..'))
+		
+		qm = QMCalculator(software = 'mopac',
+						  method = 'pm3',
+						  fileStore = os.path.join(RMGpy_path, 'testing', 'qm', 'QMfiles'),
+						  )
 		
 		if not os.path.exists(qm.settings.fileStore):
 			os.makedirs(qm.settings.fileStore)
-		
+			
 		self.qmmol1 = MopacMolPM3(mol1, qm.settings)
 	
 	def testGenerateThermoData(self):
@@ -98,6 +96,12 @@ class TestMopacMolPM6(unittest.TestCase):
 		"""
 		A function run before each unit test in this class.
 		"""
+		RMGpy_path = os.path.normpath(os.path.join(getPath(),'..'))
+		
+		qm = QMCalculator(software = 'mopac',
+						  method = 'pm6',
+						  fileStore = os.path.join(RMGpy_path, 'testing', 'qm', 'QMfiles'),
+						  )
 
 		if not os.path.exists(qm.settings.fileStore):
 			os.makedirs(qm.settings.fileStore)
@@ -156,6 +160,12 @@ class TestMopacMolPM7(unittest.TestCase):
 		"""
 		A function run before each unit test in this class.
 		"""
+		RMGpy_path = os.path.normpath(os.path.join(getPath(),'..'))
+		
+		qm = QMCalculator(software = 'mopac',
+						  method = 'pm7',
+						  fileStore = os.path.join(RMGpy_path, 'testing', 'qm', 'QMfiles'),
+						  )
 
 		if not os.path.exists(qm.settings.fileStore):
 			os.makedirs(qm.settings.fileStore)

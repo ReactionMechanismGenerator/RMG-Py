@@ -107,7 +107,7 @@ class Mopac:
                 if "InChI=" in line:
                     logFileInChI = line #output files should take up to 240 characters of the name in the input file
                     InChIFound = True
-                    if logFileInChI == self.uniqueIDlong:
+                    if self.uniqueIDlong in logFileInChI:
                         InChIMatch = True
                     else:
                         logging.warning("InChI in log file ({0}) didn't match that in geometry ({1}).".format(logFileInChI, self.uniqueIDlong))                    

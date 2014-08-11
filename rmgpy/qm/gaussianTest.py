@@ -23,14 +23,6 @@ for possibleDir in gaussEnv.split(':'):
 		break
 else:
 	executablePath = os.path.join(gaussEnv , '(g03 or g09)')
-
-qm = QMCalculator()
-qm.settings.software = 'gaussian'
-RMGpy_path = os.path.normpath(os.path.join(getPath(),'..'))
-qm.settings.fileStore = os.path.join(RMGpy_path, 'testing', 'qm', 'QMfiles')
-qm.settings.scratchDirectory = None
-qm.settings.onlyCyclics = False
-qm.settings.maxRadicalNumber = 0
 	
 mol1 = Molecule().fromSMILES('C1=CC=C2C=CC=CC2=C1')
 
@@ -44,6 +36,12 @@ class TestGaussianMolPM3(unittest.TestCase):
 		"""
 		A function run before each unit test in this class.
 		"""
+		RMGpy_path = os.path.normpath(os.path.join(getPath(),'..'))
+		
+		qm = QMCalculator(software = 'gaussian',
+						  method = 'pm3',
+						  fileStore = os.path.join(RMGpy_path, 'testing', 'qm', 'QMfiles'),
+						  )
 
 		if not os.path.exists(qm.settings.fileStore):
 			os.makedirs(qm.settings.fileStore)
@@ -68,10 +66,10 @@ class TestGaussianMolPM3(unittest.TestCase):
 		self.assertEqual(result.numberOfAtoms, 18)
 		self.assertIsInstance(result.atomicNumbers, np.ndarray)
 		if result.molecularMass.units=='amu':
-			self.assertEqual(result.molecularMass.value, 128.173)
+			self.assertAlmostEqual(result.molecularMass.value, 128.0626, 3)
 
-		self.assertAlmostEqual(self.qmmol1.thermo.H298.value_si, 169708.0608, 1) # to 1 decimal place
-		self.assertAlmostEqual(self.qmmol1.thermo.S298.value_si, 334.5007584, 1) # to 1 decimal place
+		self.assertAlmostEqual(self.qmmol1.thermo.H298.value_si, 169908.3376, 0) # to 0 decimal place
+		self.assertAlmostEqual(self.qmmol1.thermo.S298.value_si, 335.5438748, 0) # to 0 decimal place
 
 	def testLoadThermoData(self):
 		"""
@@ -86,12 +84,12 @@ class TestGaussianMolPM3(unittest.TestCase):
 		self.assertTrue(self.qmmol1.thermo.comment.startswith('QM GaussianMolPM3 calculation'))
 		self.assertEqual(result.numberOfAtoms, 18)
 		self.assertIsInstance(result.atomicNumbers, np.ndarray)
-		self.assertAlmostEqual(result.energy.value_si, 169708.01906637018, 1)
+		self.assertAlmostEqual(result.energy.value_si, 169908.7581, 0)
 		if result.molecularMass.units=='amu':
-			self.assertEqual(result.molecularMass.value, 128.173)
+			self.assertAlmostEqual(result.molecularMass.value, 128.0626, 3)
 
-		self.assertAlmostEqual(self.qmmol1.thermo.H298.value_si, 169708.0608, 1) # to 1 decimal place
-		self.assertAlmostEqual(self.qmmol1.thermo.S298.value_si, 334.5007584, 1) # to 1 decimal place
+		self.assertAlmostEqual(self.qmmol1.thermo.H298.value_si, 169908.3376, 0) # to 0 decimal place
+		self.assertAlmostEqual(self.qmmol1.thermo.S298.value_si, 335.5438748, 0) # to 0 decimal place
 		
 class TestGaussianMolPM6(unittest.TestCase):
 	"""
@@ -103,6 +101,12 @@ class TestGaussianMolPM6(unittest.TestCase):
 		"""
 		A function run before each unit test in this class.
 		"""
+		RMGpy_path = os.path.normpath(os.path.join(getPath(),'..'))
+		
+		qm = QMCalculator(software = 'gaussian',
+						  method = 'pm6',
+						  fileStore = os.path.join(RMGpy_path, 'testing', 'qm', 'QMfiles'),
+						  )
 
 		if not os.path.exists(qm.settings.fileStore):
 			os.makedirs(qm.settings.fileStore)
@@ -127,10 +131,10 @@ class TestGaussianMolPM6(unittest.TestCase):
 		self.assertEqual(result.numberOfAtoms, 18)
 		self.assertIsInstance(result.atomicNumbers, np.ndarray)
 		if result.molecularMass.units=='amu':
-			self.assertEqual(result.molecularMass.value, 128.173)
+			self.assertAlmostEqual(result.molecularMass.value, 128.0626, 3)
 
-		self.assertAlmostEqual(self.qmmol1.thermo.H298.value_si, 169708.0608, 1) # to 1 decimal place
-		self.assertAlmostEqual(self.qmmol1.thermo.S298.value_si, 334.5007584, 1) # to 1 decimal place
+		self.assertAlmostEqual(self.qmmol1.thermo.H298.value_si, 169326.2504, 0) # to 0 decimal place
+		self.assertAlmostEqual(self.qmmol1.thermo.S298.value_si, 338.2696063, 0) # to 0 decimal place
 
 	def testLoadThermoData(self):
 		"""
@@ -145,12 +149,12 @@ class TestGaussianMolPM6(unittest.TestCase):
 		self.assertTrue(self.qmmol1.thermo.comment.startswith('QM GaussianMolPM6 calculation'))
 		self.assertEqual(result.numberOfAtoms, 18)
 		self.assertIsInstance(result.atomicNumbers, np.ndarray)
-		self.assertAlmostEqual(result.energy.value_si, 169708.01906637018, 1)
+		self.assertAlmostEqual(result.energy.value_si, 169325.9867, 1)
 		if result.molecularMass.units=='amu':
-			self.assertEqual(result.molecularMass.value, 128.173)
+			self.assertAlmostEqual(result.molecularMass.value, 128.0626, 3)
 
-		self.assertAlmostEqual(self.qmmol1.thermo.H298.value_si, 169708.0608, 1) # to 1 decimal place
-		self.assertAlmostEqual(self.qmmol1.thermo.S298.value_si, 334.5007584, 1) # to 1 decimal place
+		self.assertAlmostEqual(self.qmmol1.thermo.H298.value_si, 169326.2504, 0) # to 0 decimal place
+		self.assertAlmostEqual(self.qmmol1.thermo.S298.value_si, 338.2696063, 0) # to 0 decimal place
 
 
 

@@ -42,18 +42,32 @@ class QMSettings():
     =================== ======================= ====================================
     Attribute           Type                    Description
     =================== ======================= ====================================
+    `software`          ``str``                 Quantum chemical package name in common letters
+    `method`            ``str``                 Semi-empirical method
     `fileStore`         ``str``                 The path to the QMfiles directory
     `scratchDirectory`  ``str``                 The path to the scratch directory
+    `onlyCyclics`       ``bool``                ``True`` if to run QM only on ringed species
+    `maxRadicalNumber`  ``int``                 Radicals larger than this are saturated before applying HBI
     =================== ======================= ====================================
     
     """
-    def __init__(self):
-        self.software = None
-        self.method = None
-        self.fileStore = None
-        self.scratchDirectory = None
-        self.onlyCyclics = None
-        self.maxRadicalNumber = None
+    def __init__(self,
+                 software = None,
+                 method = 'pm3',
+                 fileStore = None,
+                 scratchDirectory = None,
+                 onlyCyclics = True,
+                 maxRadicalNumber = 0,
+                 ):
+        self.software = software
+        self.method = method
+        if fileStore:
+            self.fileStore = os.path.join(fileStore, method)
+        else:
+            self.fileStore = fileStore
+        self.scratchDirectory = scratchDirectory
+        self.onlyCyclics = onlyCyclics
+        self.maxRadicalNumber = maxRadicalNumber
         
         RMGpy_path = os.getenv('RMGpy') or os.path.normpath(os.path.join(rmgpy.getPath(),'..'))
         self.RMG_bin_path = os.path.join(RMGpy_path, 'bin')
@@ -88,12 +102,21 @@ class QMCalculator():
     """
     
     def __init__(self,
+                 software = None,
+                 method = 'pm3',
                  fileStore = None,
                  scratchDirectory = None,
+                 onlyCyclics = True,
+                 maxRadicalNumber = 0,
                  ):
-        self.settings = QMSettings()
-        self.settings.fileStore = fileStore
-        self.settings.scratchDirectory = scratchDirectory
+                 
+        self.settings = QMSettings(software = software,
+                                   method = method,
+                                   fileStore = fileStore,
+                                   scratchDirectory = scratchDirectory,
+                                   onlyCyclics = onlyCyclics,
+                                   maxRadicalNumber = maxRadicalNumber,
+                                   )
         self.database = ThermoLibrary(name='QM Thermo Library')
         
     def setDefaultOutputDirectory(self, outputDirectory):
@@ -101,10 +124,10 @@ class QMCalculator():
         IF the fileStore or scratchDirectory are not already set, put them in here.
         """
         if not self.settings.fileStore:
-            self.settings.fileStore = os.path.join(outputDirectory, 'QMfiles')
+            self.settings.fileStore = os.path.join(outputDirectory, 'QMfiles', self.settings.method)
             logging.info("Setting the quantum mechanics fileStore to {0}".format(self.settings.fileStore))
         if not self.settings.scratchDirectory:
-            self.settings.scratchDirectory = os.path.join(outputDirectory, 'QMscratch')
+            self.settings.scratchDirectory = os.path.join(outputDirectory, 'QMscratch', self.settings.method)
             logging.info("Setting the quantum mechanics scratchDirectory to {0}".format(self.settings.scratchDirectory))
     
     def initialize(self):
@@ -144,6 +167,7 @@ class QMCalculator():
         Ignores the settings onlyCyclics and maxRadicalNumber and does the calculation anyway if asked.
         (I.e. the code that chooses whether to call this method should consider those settings).
         """
+        self.initialize()
         if self.settings.software == 'mopac':
             if self.settings.method == 'pm3':
                 qm_molecule_calculator = rmgpy.qm.mopac.MopacMolPM3(molecule, self.settings)

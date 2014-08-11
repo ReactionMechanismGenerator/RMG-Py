@@ -103,7 +103,7 @@ class Gaussian:
                 if line.startswith("InChI="):
                     logFileInChI = line #output files should take up to 240 characters of the name in the input file
                     InChIFound = True
-                    if logFileInChI == self.geometry.uniqueIDlong:
+                    if self.geometry.uniqueIDlong in logFileInChI:
                         InChIMatch = True
                     elif self.geometry.uniqueIDlong.startswith(logFileInChI):
                         logging.info("InChI too long to check, but beginning matches so assuming OK.")
