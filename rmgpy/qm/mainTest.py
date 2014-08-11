@@ -20,13 +20,13 @@ class TestQMSettings(unittest.TestCase):
 		"""
 		RMGpy_path = os.path.normpath(os.path.join(getPath(),'..'))
 		
-		self.settings1 = QMSettings()
-		self.settings1.software = 'mopac'
-		self.settings1.method = 'pm3'
-		self.settings1.fileStore = os.path.join(RMGpy_path, 'testing', 'qm', 'QMfiles')
-		self.settings1.scratchDirectory = None
-		self.settings1.onlyCyclics = False
-		self.settings1.maxRadicalNumber = 0
+		self.settings1 = QMSettings(software = 'mopac',
+								   method = 'pm3',
+								   fileStore = os.path.join(RMGpy_path, 'testing', 'qm', 'QMfiles'),
+								   scratchDirectory = None,
+								   onlyCyclics = False,
+								   maxRadicalNumber = 0,
+								   )
 		
 		self.settings2 = QMSettings()
 
@@ -74,57 +74,44 @@ class TestQMCalculator(unittest.TestCase):
 		RMGpy_path = os.path.normpath(os.path.join(getPath(),'..'))
 		
 		fileStore = os.path.join(RMGpy_path, 'testing', 'qm', 'QMfiles')
-		if not os.path.exists(fileStore):
-			os.makedirs(fileStore)
 		
-		self.mop1 = QMCalculator(fileStore=fileStore)
-		self.mop1.settings.software = 'mopac'
-		self.mop1.settings.method = 'pm3'
-		self.mop1.settings.onlyCyclics = False
-		self.mop1.settings.maxRadicalNumber = 0
+		self.mop1 = QMCalculator(software = 'mopac',
+								method = 'pm3',
+								fileStore = fileStore
+								)
 				
-		self.mop2 = QMCalculator()
-		self.mop2.settings.software = 'mopac'
-		self.mop2.settings.method = 'pm6'
-		self.mop2.settings.onlyCyclics = False
-		self.mop2.settings.maxRadicalNumber = 0
-
+		self.mop2 = QMCalculator(software = 'mopac',
+								method = 'pm6',
+								)
 		
-		self.mop3 = QMCalculator(fileStore=fileStore)
-		self.mop3.settings.software = 'mopac'
-		self.mop3.settings.method = 'pm7'
-		self.mop3.settings.onlyCyclics = False
-		self.mop3.settings.maxRadicalNumber = 0
+		self.mop3 = QMCalculator(software = 'mopac',
+								method = 'pm7',
+								fileStore = fileStore
+								)
 		
-		self.mop4 = QMCalculator(fileStore=fileStore)
-		self.mop4.settings.software = 'mopac'
-		self.mop4.settings.method = 'pm8'
-		self.mop4.settings.onlyCyclics = False
-		self.mop4.settings.maxRadicalNumber = 0
+		self.mop4 = QMCalculator(software = 'mopac',
+								method = 'pm8',
+								fileStore = fileStore
+								)
 		
-		self.gauss1 = QMCalculator()
-		self.gauss1.settings.software = 'gaussian'
-		self.gauss1.settings.method = 'pm3'
-		self.gauss1.settings.onlyCyclics = False
-		self.gauss1.settings.maxRadicalNumber = 0	
+		self.gauss1 = QMCalculator(software = 'gaussian',
+								  method = 'pm3',
+								  )	
 		
-		self.gauss2 = QMCalculator(fileStore=fileStore)
-		self.gauss2.settings.software = 'gaussian'
-		self.gauss2.settings.method = 'pm6'
-		self.gauss2.settings.onlyCyclics = False
-		self.gauss2.settings.maxRadicalNumber = 0
+		self.gauss2 = QMCalculator(software = 'gaussian',
+								  method = 'pm6',
+								  fileStore = fileStore
+								  )
 		
-		self.gauss3 = QMCalculator(fileStore=fileStore)
-		self.gauss3.settings.software = 'gaussian'
-		self.gauss3.settings.method = 'pm7'
-		self.gauss3.settings.onlyCyclics = False
-		self.gauss3.settings.maxRadicalNumber = 0
+		self.gauss3 = QMCalculator(software = 'gaussian',
+								  method = 'pm7',
+								  fileStore = fileStore
+								  )
 		
-		self.molpro1 = QMCalculator(fileStore=fileStore)
-		self.molpro1.settings.software = 'molpro'
-		self.molpro1.settings.method = 'mp2'
-		self.molpro1.settings.onlyCyclics = False
-		self.molpro1.settings.maxRadicalNumber = 0
+		self.molpro1 = QMCalculator(software = 'molpro',
+								   method = 'mp2',
+								   fileStore = fileStore
+								   )
 		
 		self.qmmol1 = QMCalculator(fileStore=fileStore)
 		self.qmmol1.RMG_bin_path = os.path.join(RMGpy_path, 'testing', 'qm', 'bin')
@@ -136,7 +123,6 @@ class TestQMCalculator(unittest.TestCase):
 		"""
 		Test that setDefaultOutputDirectory() works correctly.
 		"""
-		
 		self.assertIsNotNone(self.mop1.settings.fileStore)
 		self.assertIsNotNone(self.mop3.settings.fileStore)
 		self.assertIsNotNone(self.gauss2.settings.fileStore)
@@ -151,7 +137,7 @@ class TestQMCalculator(unittest.TestCase):
 		self.assertIsNone(self.gauss2.settings.scratchDirectory)
 		
 		# Now set the default directories for those not set
-		outputDirectory = os.path.join(self.mop1.settings.fileStore, '..')
+		outputDirectory = os.path.join(self.mop1.settings.fileStore, '..', '..')
 		self.mop1.setDefaultOutputDirectory(outputDirectory)
 		self.mop2.setDefaultOutputDirectory(outputDirectory)
 		self.mop3.setDefaultOutputDirectory(outputDirectory)
@@ -184,7 +170,7 @@ class TestQMCalculator(unittest.TestCase):
 		"""
 		
 		# Now set the default directories for those not set
-		outputDirectory = os.path.join(self.mop1.settings.fileStore, '..')
+		outputDirectory = os.path.join(self.mop1.settings.fileStore, '..', '..')
 		self.mop1.setDefaultOutputDirectory(outputDirectory)
 		self.mop2.setDefaultOutputDirectory(outputDirectory)
 		self.mop3.setDefaultOutputDirectory(outputDirectory)
@@ -206,7 +192,7 @@ class TestQMCalculator(unittest.TestCase):
 		"""
 		Test that getThermoData() fails when expected.
 		"""
-		outputDirectory = os.path.join(self.mop4.settings.fileStore, '..')
+		outputDirectory = os.path.join(self.mop4.settings.fileStore, '..', '..')
 		self.mop4.setDefaultOutputDirectory(outputDirectory)
 		self.gauss3.setDefaultOutputDirectory(outputDirectory)
 		self.molpro1.setDefaultOutputDirectory(outputDirectory)
@@ -223,26 +209,36 @@ class TestQMCalculator(unittest.TestCase):
 		"""
 		Test that getThermoData() works correctly.
 		"""
-		outputDirectory = os.path.join(self.mop1.settings.fileStore, '..')
+		outputDirectory = os.path.join(self.mop1.settings.fileStore, '..', '..')
 		self.mop1.setDefaultOutputDirectory(outputDirectory)
 		self.mop2.setDefaultOutputDirectory(outputDirectory)
 		self.mop3.setDefaultOutputDirectory(outputDirectory)
 		
 		mol = Molecule().fromSMILES('C1=CC=C2C=CC=CC2=C1')
 		
-		fileList = os.listdir(self.mop1.settings.fileStore)
-		for fileName in fileList:
-			os.remove(os.path.join(self.mop1.settings.fileStore, fileName))
+		try:
+			fileList = os.listdir(self.mop1.settings.fileStore)
+			for fileName in fileList:
+				os.remove(os.path.join(self.mop1.settings.fileStore, fileName))
+		except OSError:
+			pass		
+		
+		try:
+			fileList = os.listdir(self.mop2.settings.fileStore)
+			for fileName in fileList:
+				os.remove(os.path.join(self.mop2.settings.fileStore, fileName))
+		except OSError:
+			pass
+		
+		try:
+			fileList = os.listdir(self.mop3.settings.fileStore)
+			for fileName in fileList:
+				os.remove(os.path.join(self.mop3.settings.fileStore, fileName))
+		except OSError:
+			pass
+			
 		thermo1 = self.mop1.getThermoData(mol)
-		
-		fileList = os.listdir(self.mop2.settings.fileStore)
-		for fileName in fileList:
-			os.remove(os.path.join(self.mop2.settings.fileStore, fileName))
 		thermo2 = self.mop2.getThermoData(mol)
-		
-		fileList = os.listdir(self.mop3.settings.fileStore)
-		for fileName in fileList:
-			os.remove(os.path.join(self.mop3.settings.fileStore, fileName))
 		thermo3 = self.mop3.getThermoData(mol)
 			
 		self.assertTrue(thermo1.comment.startswith('QM MopacMolPM3'))
@@ -261,29 +257,36 @@ class TestQMCalculator(unittest.TestCase):
 		"""
 		Test that getThermoData() works correctly.
 		"""
-		outputDirectory = os.path.join(self.mop1.settings.fileStore, '..')
+		outputDirectory = os.path.join(self.mop1.settings.fileStore, '..', '..')
 		self.gauss1.setDefaultOutputDirectory(outputDirectory)
 		self.gauss2.setDefaultOutputDirectory(outputDirectory)
 		
 		mol = Molecule().fromSMILES('C1=CC=C2C=CC=CC2=C1')
 		
-		thermo1 = self.gauss1.getThermoData(mol)
-		fileList = os.listdir(self.gauss1.settings.fileStore)
-		for fileName in fileList:
-			os.remove(os.path.join(self.gauss1.settings.fileStore, fileName))
+		try:
+			fileList = os.listdir(self.gauss1.settings.fileStore)
+			for fileName in fileList:
+				os.remove(os.path.join(self.gauss1.settings.fileStore, fileName))
+		except OSError:
+			pass	
 		
+		try:
+			fileList = os.listdir(self.gauss2.settings.fileStore)
+			for fileName in fileList:
+				os.remove(os.path.join(self.gauss2.settings.fileStore, fileName))
+		except OSError:
+			pass	
+					
+		thermo1 = self.gauss1.getThermoData(mol)
 		thermo2 = self.gauss2.getThermoData(mol)
-		fileList = os.listdir(self.gauss2.settings.fileStore)
-		for fileName in fileList:
-			os.remove(os.path.join(self.gauss2.settings.fileStore, fileName))
 		
 		self.assertTrue(thermo1.comment.startswith('QM GaussianMolPM3'))
-		self.assertTrue(thermo1.comment.startswith('QM GaussianMolPM6'))
+		self.assertTrue(thermo2.comment.startswith('QM GaussianMolPM6'))
 		
-		self.assertAlmostEqual(thermo1.H298.value_si, 169708.0608, 1) # to 1 decimal place
-		self.assertAlmostEqual(thermo1.S298.value_si, 334.5007584, 1) # to 1 decimal place
-		self.assertAlmostEqual(thermo2.H298.value_si, 167704.4270, 1) # to 1 decimal place
-		self.assertAlmostEqual(thermo2.S298.value_si, 338.0999241, 1) # to 1 decimal place
+		self.assertAlmostEqual(thermo1.H298.value_si, 169908.3376, 0) # to 1 decimal place
+		self.assertAlmostEqual(thermo1.S298.value_si, 335.5438748, 0) # to 1 decimal place
+		self.assertAlmostEqual(thermo2.H298.value_si, 169326.2504, 0) # to 1 decimal place
+		self.assertAlmostEqual(thermo2.S298.value_si, 338.2696063, 0) # to 1 decimal place
 
 ################################################################################
 
