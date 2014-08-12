@@ -399,6 +399,8 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
         # A list can be specified with the {,} syntax
         atomType = data[index]
         if atomType[0] == '[':
+            if not group:
+                raise InvalidAdjacencyListError("A molecule should not assign more than one atomtype per atom.")
             atomType = atomType[1:-1].split(',')
         else:
             atomType = [atomType]
@@ -424,6 +426,8 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
                 elif u == '4':
                     unpairedElectrons.append(4)
                 elif u == 'x':
+                    if not group:
+                        raise InvalidAdjacencyListError("A molecule should not assign a wildcard to number of unpaired electrons.")
                     unpairedElectrons.append(0)
                     unpairedElectrons.append(1)
                     unpairedElectrons.append(2)
@@ -456,6 +460,8 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
                     elif l == '4':
                         lonePairs.append(4)
                     elif l == 'x':
+                        if not group:
+                            raise InvalidAdjacencyListError("A molecule should not have a wildcard assigned to number of lone pairs.")
                         lonePairs.append(0)
                         lonePairs.append(1)
                         lonePairs.append(2)
@@ -504,6 +510,8 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
                     elif e == '-4':
                         partialCharges.append(-4)
                     elif e == 'x':
+                        if not group:
+                            raise InvalidAdjacencyListError("A molecule should not have a wildcard assigned to number of charges.")
                         partialCharges.append(0)
                         partialCharges.append(1)
                         partialCharges.append(2)

@@ -3,6 +3,7 @@
 
 import unittest
 from external.wip import work_in_progress
+from rmgpy.molecule.adjlist import *
 from rmgpy.molecule.molecule import *
 from rmgpy.molecule.group import Group
 from rmgpy.molecule.element import getElement, elementList
@@ -329,6 +330,24 @@ class TestMoleculeAdjLists(unittest.TestCase):
         self.assertTrue(bond23.isSingle())
         self.assertTrue(bond24.isDouble())
         
+    def testWildcardAdjlists(self):
+        """
+        adjlist: Test that molecule adjlists containing wildcards raise an InvalidAdjacencyListError.
+        """
+        # A molecule with a wildcard assignment
+        wildcardAdjlist1 = "1 C u1 px c0"
+        wildcardAdjlist2 = "1 C ux p2 c0"
+        wildcardAdjlist3 = "1 C u1 p2 cx"
+        wildcardAdjlist4 = "1 [C,N] u1 p2 c0"
+
+        with self.assertRaises(InvalidAdjacencyListError):
+            Molecule().fromAdjacencyList(wildcardAdjlist1)
+        with self.assertRaises(InvalidAdjacencyListError):
+            Molecule().fromAdjacencyList(wildcardAdjlist2)
+        with self.assertRaises(InvalidAdjacencyListError):
+            Molecule().fromAdjacencyList(wildcardAdjlist3)
+        with self.assertRaises(InvalidAdjacencyListError):
+            Molecule().fromAdjacencyList(wildcardAdjlist4)
     def testHelium(self):
         """
         adjlist: Test that the adjlist reading and writing works with Helium.
