@@ -299,7 +299,7 @@ def fromOldAdjacencyList(adjlist, group=False, saturateH=False):
 
 ###############################
 
-re_IntermediateAdjList = re.compile('^\s*(\d)\s+' +  # atom number digit
+re_IntermediateAdjList = re.compile('^\s*(\d*)\s+' +  # atom number digit
                           '(?P<label>\*\d*\s+)?' +  # optional label eg * or *2
                           '(?P<atomtype>\{?[A-Z]\S*)\s+' +  # atomtype eg R!H or {Cb,Cd}
                           '(?P<radicals>X|\d[STDQV]?|\{?\d[^}]*\})\s+' +  #radicals eg. X or 2T or {1,2,2T}
@@ -307,7 +307,7 @@ re_IntermediateAdjList = re.compile('^\s*(\d)\s+' +  # atom number digit
                           '(?P<bonds>(\s+\{\d+\,(?:[SDTB]|\{.+?\})\},?)*)' +  # bonds, eg {2,S} {4,{S,D}}
                           '\s*$')  # the end!
 
-re_OldAdjList = re.compile('^\s*(\d)\s+' +  # atom number digit
+re_OldAdjList = re.compile('^\s*(\d*)\s+' +  # atom number digit
                           '(?P<label>\*\d*\s+)?' +  # optional label eg * or *2
                           '(?P<atomtype>\{?[A-Z]\S*)\s+' +  # atomtype eg R!H or {Cb,Cd}
                           '(?P<radicals>X|\d[STDQV]?|\{?\d[^}]*\})' +  #radicals eg. X or 2T or {1,2,2T}
