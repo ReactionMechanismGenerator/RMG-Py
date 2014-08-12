@@ -129,8 +129,8 @@ class TestGetAtomType(unittest.TestCase):
                                 'O=[Si][Si][Si]=[Si]=[Si][Si]#[Si]SS=S')
         self.mol5 = Molecule().fromAdjacencyList('''1 H u0 p0 {3,S}
                                                     2 H u0 p0 {3,S}
-                                                    3 N u0 p0 {1,S} {2,S} {4,D}
-                                                    4 N u0 p2 {3,D}''')
+                                                    3 N u0 p0 c+1 {1,S} {2,S} {4,D}
+                                                    4 N u0 p2 c-1 {3,D}''')
         self.mol6 = Molecule().fromSMILES('[Ar]')
         self.mol7 = Molecule().fromSMILES('[He]')
         self.mol8 = Molecule().fromSMILES('[Ne]')
@@ -149,19 +149,19 @@ class TestGetAtomType(unittest.TestCase):
         self.mol12 = Molecule().fromAdjacencyList('''1 N u0 p1 {2,T}
                                                      2 C u1 p0 {1,T}''')
         
-        self.mol13 = Molecule().fromAdjacencyList('''1 N u0 p0 {2,S} {3,S} {4,S} {5,S}
+        self.mol13 = Molecule().fromAdjacencyList('''1 N u0 p0 c+1 {2,S} {3,S} {4,S} {5,S}
                                                      2 H u0 p0 {1,S}
                                                      3 H u0 p0 {1,S}
                                                      4 H u0 p0 {1,S}
-                                                     5 O u0 p3 {1,S}''')
+                                                     5 O u0 p3 c-1 {1,S}''')
         
-        self.mol14 = Molecule().fromAdjacencyList('''1 N u0 p2 {2,D}
-                                                     2 N u0 p0 {1,D} {3,D}
+        self.mol14 = Molecule().fromAdjacencyList('''1 N u0 p2 c-1 {2,D}
+                                                     2 N u0 p0 c+1 {1,D} {3,D}
                                                      3 O u0 p2 {2,D}''')
         
         self.mol15 = Molecule().fromAdjacencyList('''1 N u0 p1 {2,T}
-                                                     2 N u0 p0 {1,T} {3,S}
-                                                     3 O u0 p3 {2,S}''')
+                                                     2 N u0 p0 c+1 {1,T} {3,S}
+                                                     3 O u0 p3 c-1 {2,S}''')
         
         self.mol16 = Molecule().fromAdjacencyList('''1 N u0 p1 {2,D} {3,S}
                                                      2 O u0 p2 {1,D}
@@ -170,13 +170,13 @@ class TestGetAtomType(unittest.TestCase):
         self.mol17 = Molecule().fromAdjacencyList('''1 N u1 p1 {2,D}
                                                      2 O u0 p2 {1,D}''')
         
-        self.mol18 = Molecule().fromAdjacencyList('''1  N u0 p0 {2,B} {6,B} {7,S}
+        self.mol18 = Molecule().fromAdjacencyList('''1  N u0 p0 c+1 {2,B} {6,B} {7,S}
                                                      2  C u0 p0 {1,B} {3,B} {8,S}
                                                      3  C u0 p0 {2,B} {4,B} {9,S}
                                                      4  C u0 p0 {3,B} {5,B} {10,S}
                                                      5  C u0 p0 {4,B} {6,B} {11,S}
                                                      6  N u0 p1 {1,B} {5,B}
-                                                     7  O u0 p3 {1,S}
+                                                     7  O u0 p3 c-1 {1,S}
                                                      8  H u0 p0 {2,S}
                                                      9  H u0 p0 {3,S}
                                                      10 H u0 p0 {4,S}

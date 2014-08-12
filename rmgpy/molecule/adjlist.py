@@ -617,38 +617,45 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
                     a.bonds[atom] = b
             atoms.extend(newAtoms)
     
-    # Calculate the number of lone pair electrons requiring molecule with all hydrogen atoms present
-    if not group and lonePairs is not None:
+    # Consistency checks
+    if not group:
+        # Molecule consistency check
+        # Electron and valency consistency check for each atom
+        valences = {'H': 1, 'C': 4, 'O': 2, 'N': 3, 'S': 2, 'Si': 4, 'He': 0, 'Ne': 0, 'Ar': 0, 'Cl': 1}
         orders = {'S': 1, 'D': 2, 'T': 3, 'B': 1.5}
+
         for atom in atoms:
-            radical = atom.radicalElectrons
+            valence = valences[atom.symbol]
             order = 0
             for atom2, bond in atom.bonds.items():
                 order += orders[bond.order]
-            lonePairs = (1 if atom.symbol == 'H' or atom.symbol == 'He' else 4) - order - radical
-            atom.setLonePairs(lonePairs)
-            atom.updateCharge()
-    elif not group:
-        for atom in atoms:
-            atom.updateCharge()
-    
-    if not group:
+            if atom.symbol == 'H' or atom.symbol == 'He':
+                charge = 2 - valence - order - atom.radicalElectrons - 2*atom.lonePairs
+            else:
+                charge = 8 - valence - order - atom.radicalElectrons - 2*atom.lonePairs
+            if atom.charge != charge:
+                raise InvalidAdjacencyListError('Invalid valency for atom {symbol} with {radicals} unpaired electrons, {lonePairs} pairs of electrons, and {charge} charge.'
+                                                .format(symbol=atom.symbol, radicals=atom.radicalElectrons, lonePairs=atom.lonePairs, charge=atom.charge))
+            
+        # Overall multiplicity check   
         nRad = 0
         for atom in atoms:
             nRad += atom.radicalElectrons
         if multiplicity == None:
             multiplicity = nRad + 1
-        n = 0
-        while (nRad + 1 - n*2) > 0:
-            if (nRad + 1 - n*2) == multiplicity:
-                break
-            n=n+1
         else:
-            print adjlist
-            raise InvalidAdjacencyListError('Multiplicity not in agreement with total number of radicals.')
+            n = 0
+            while (nRad + 1 - n*2) > 0:
+                if (nRad + 1 - n*2) == multiplicity:
+                    break
+                n=n+1
+            else:
+                print adjlist
+                raise InvalidAdjacencyListError('Multiplicity not in agreement with total number of radicals.')
             
         return atoms, multiplicity
     else:
+        # Currently no group consistency check
         return atoms, multiplicity
 
 
