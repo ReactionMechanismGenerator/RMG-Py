@@ -1,6 +1,0 @@
-.. _diffModels:
-
-****************
-Model Comparison
-****************
-

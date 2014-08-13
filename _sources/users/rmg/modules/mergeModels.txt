@@ -1,6 +1,0 @@
-.. _mergeModels:
-
-**************
-Merging Models
-**************
-

@@ -1,6 +1,0 @@
-.. _sensitivity:
-
-********************
-Sensitivity Analysis
-********************
-
