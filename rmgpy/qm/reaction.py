@@ -13,7 +13,6 @@ from rmgpy.kinetics import Wigner
 from molecule import QMMolecule, Geometry
 from rmgpy.cantherm.gaussian import GaussianLog
 from rmgpy.cantherm.kinetics import KineticsJob
-from rmgpy.data.kinetics.transitionstates import TransitionStates
 import symmetry
 
 try:
@@ -22,11 +21,6 @@ try:
     from rdkit.Chem.Pharm3D import EmbedLib
 except ImportError:
     logging.info("To use transition state searches, you must correctly install rdkit")
-
-transitionStates = TransitionStates()
-transitionStates.load(os.path.join(os.getenv('HOME'), 'Code/RMG-database/input/kinetics/families/H_Abstraction'), None, None)
-# transitionStates.load(os.path.join(os.getenv('HOME'), 'Code/RMG-database/input/kinetics/families/intra_H_migration'), None, None)
-# transitionStates.load(os.path.join(os.getenv('HOME'), 'Code/RMG-database/input/kinetics/families/R_Addition_MultipleBond'), None, None)
 
 def matrixToString(matrix):
     """Returns a string representation of a matrix, for printing to the console"""
@@ -262,7 +256,7 @@ class QMReaction:
         
         return bm1, bm2, labels, atomMatch
     
-    def editMatrix(self, reactant, bm):
+    def editMatrix(self, reactant, bm, database):
         
         """
         For bimolecular reactions, reduce the minimum distance between atoms
@@ -283,7 +277,9 @@ class QMReaction:
         labels = [lbl1, lbl2, lbl3]
         atomMatch = ((lbl1,),(lbl2,),(lbl3,))
         
-        distanceData = transitionStates.estimateDistances(self.reaction)
+        
+        tsData = database.kinetics.families[self.reaction.family.label]
+        distanceData = tsData.transitionStates.estimateDistances(self.reaction)
         
         sect = []
         for atom in reactant.split()[0].atoms: sect.append(atom.sortingLabel)
@@ -713,7 +709,7 @@ class QMReaction:
         return True, None, None, notes
 
 
-    def generateTSGeometryDirectGuess(self):
+    def generateTSGeometryDirectGuess(self, database):
         """
         Generate a transition state geometry, using the direct guess (group additive) method.
         
@@ -754,7 +750,7 @@ class QMReaction:
         
         self.geometry.uniqueID = self.uniqueID
         
-        tsBM, labels, atomMatch = self.editMatrix(reactant, tsBM)
+        tsBM, labels, atomMatch = self.editMatrix(reactant, tsBM, database)
         atoms = len(reactant.atoms)
         distGeomAttempts = 15*(atoms-3) # number of conformers embedded from the bounds matrix
         
