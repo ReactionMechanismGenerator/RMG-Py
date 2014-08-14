@@ -907,7 +907,6 @@ class GaussianTS(QMReaction, Gaussian):
             item = self.reaction,
             data = DistanceData(distances=distances, method='B3LYP/6-31+G(d,p)'),
             shortDesc = "B3LYP/6-31+G(d,p) calculation via group additive TS generator.",
-            history = [(time.asctime(), user, 'action', description)]
         )
         
         outputDataFile = os.path.join(self.settings.fileStore, self.uniqueID + '.data')

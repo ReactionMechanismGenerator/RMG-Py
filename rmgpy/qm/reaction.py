@@ -288,7 +288,7 @@ class QMReaction:
         sect = []
         for atom in reactant.split()[0].atoms: sect.append(atom.sortingLabel)
         
-        uncertainties = {'d12':0.1, 'd13':0.1, 'd23':0.1 }#distanceData.uncertainties or {'d12':0.1, 'd13':0.1, 'd23':0.1 } # default if uncertainty is None
+        uncertainties = distanceData.uncertainties or {'d12':0.1, 'd13':0.1, 'd23':0.1 } # default if uncertainty is None
         bm = self.setLimits(bm, lbl1, lbl2, distanceData.distances['d12'], uncertainties['d12'])
         bm = self.setLimits(bm, lbl2, lbl3, distanceData.distances['d23'], uncertainties['d23'])
         bm = self.setLimits(bm, lbl1, lbl3, distanceData.distances['d13'], uncertainties['d13'])
