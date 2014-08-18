@@ -206,7 +206,7 @@ class KineticsDatabase(object):
         
         if libraries is not None:
             for library_name in libraries:
-                library_file = os.path.join(path, library_name+'.py')
+                library_file = os.path.join(path, library_name,'reactions.py')
                 if os.path.exists(library_file):
                     logging.info('Loading kinetics library {0} from {1}...'.format(library_name, library_file))
                     library = KineticsLibrary(label=library_name)
@@ -223,7 +223,7 @@ class KineticsDatabase(object):
                     name, ext = os.path.splitext(f)
                     if ext.lower() == '.py':
                         library_file = os.path.join(root, f)
-                        label=library_file[len(path)+1:-3]
+                        label=os.path.dirname(library_file)[len(path)+1:]
                         logging.info('Loading kinetics library {0} from {1}...'.format(label, library_file))
                         library = KineticsLibrary(label=label)
                         library.load(library_file, self.local_context, self.global_context)
@@ -281,10 +281,11 @@ class KineticsDatabase(object):
         for label, library in self.libraries.iteritems():
             folders = label.split(os.sep)
             try:
-                os.makedirs(os.path.join(path, *folders[:-1]))
+                os.makedirs(os.path.join(path, *folders))
             except OSError:
                 pass
-            library.save(os.path.join(path, '{0}.py'.format(label)))
+            library.save(os.path.join(path, label, 'reactions.py'))
+            library.saveDictionary(os.path.join(path, label, 'dictionary.txt'))
 
     def loadOld(self, path):
         """
