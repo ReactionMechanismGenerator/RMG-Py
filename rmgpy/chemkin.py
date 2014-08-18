@@ -1404,8 +1404,6 @@ def writeKineticsEntry(reaction, speciesList, verbose = True, javaLibrary = Fals
     if isinstance(reaction.kinetics,
                   (_kinetics.MultiArrhenius, _kinetics.MultiPDepArrhenius)):
         if verbose:
-            if isinstance(reaction,LibraryReaction):
-                string += '! Library reaction: {0!s}\n'.format(reaction.library.label)
             if reaction.kinetics.comment:
                 for line in reaction.kinetics.comment.split("\n"):
                     string += "! {0}\n".format(line) 
