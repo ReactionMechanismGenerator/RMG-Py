@@ -348,6 +348,17 @@ class TestMoleculeAdjLists(unittest.TestCase):
             Molecule().fromAdjacencyList(wildcardAdjlist3)
         with self.assertRaises(InvalidAdjacencyListError):
             Molecule().fromAdjacencyList(wildcardAdjlist4)
+            
+    def testIncorrectAdjlists(self):
+        """
+        adjlist: Test that improperly formed adjlists raise an InvalidAdjacencyListError.
+        """
+        # Carbon with 1 radical and 3 lone pairs = 7 total electrons.  Should have -3 charge but doesn't
+        adjlist1 = "1 C u1 p3 c0"
+        
+        with self.assertRaises(InvalidAdjacencyListError):
+            Molecule().fromAdjacencyList(adjlist1)
+        
     def testHelium(self):
         """
         adjlist: Test that the adjlist reading and writing works with Helium.
