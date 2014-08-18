@@ -145,13 +145,6 @@ def saveEntry(f, entry):
                 f.write('"""\n')
                 f.write(reactant.molecule[0].toAdjacencyList(label=reactant.label, removeH=False))
                 f.write('""",\n')
-            elif isinstance(reactant, Group):
-                f.write('    group{0:d} = \n'.format(i+1))
-                f.write('"""\n')
-                f.write(reactant.toAdjacencyList())
-                f.write('""",\n')
-            elif isinstance(reactant, LogicNode):
-                f.write('    group{0:d} = "{1}",\n'.format(i+1, reactant))
         for i, product in enumerate(entry.item.products):
             if isinstance(product, Molecule):
                 f.write('    product{0:d} = \n'.format(i+1))

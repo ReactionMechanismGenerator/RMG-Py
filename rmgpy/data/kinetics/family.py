@@ -556,7 +556,13 @@ class KineticsFamily(Database):
         self.rules = KineticsRules(label='{0}/rules'.format(self.label))
         logging.debug("Loading kinetics family rules from {0}".format(os.path.join(path, 'rules.py')))
         self.rules.load(os.path.join(path, 'rules.py'), local_context, global_context)
-        
+        # load the groups indicated in the entry label
+        for label, entries in self.rules.entries.iteritems():
+            nodes = label.split(';')
+            reactants = [self.groups.entries[node] for node in nodes]
+            reaction = Reaction(reactants=reactants, products=[])
+            for entry in entries:
+                entry.item = reaction
         self.depositories = []
         
         if depositoryLabels=='all':
