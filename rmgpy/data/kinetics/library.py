@@ -283,13 +283,6 @@ class KineticsLibrary(Database):
         if product2 is not None: products.append(Species(label=product2.strip().splitlines()[0].strip(), molecule=[Molecule().fromAdjacencyList(product2)]))
         if product3 is not None: products.append(Species(label=product3.strip().splitlines()[0].strip(), molecule=[Molecule().fromAdjacencyList(product3)]))
         
-        comment = "Reaction and kinetics from {0}.".format(self.label)
-        if shortDesc.strip(): 
-            comment += "{0!s}\n".format(shortDesc.strip())
-        if longDesc.strip():
-            comment += str(re.sub('\s*\n\s*','\n',longDesc))
-        kinetics.comment = comment.strip()
-        
         # Perform mass balance check on the reaction
         rxn = Reaction(reactants=reactants, products=products, degeneracy=degeneracy, duplicate=duplicate, reversible=reversible)
         if not rxn.isBalanced():
