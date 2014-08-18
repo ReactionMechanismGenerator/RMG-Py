@@ -208,18 +208,22 @@ def saveEntry(f, entry):
         f.write('    referenceType = "{0}",\n'.format(entry.referenceType))
     if entry.rank is not None:
         f.write('    rank = {0},\n'.format(entry.rank))
-    f.write('    shortDesc = u"""')
-    try:
-        f.write(entry.shortDesc.encode('utf-8'))
-    except:
-        f.write(entry.shortDesc.strip().encode('ascii', 'ignore')+ "\n")
-    f.write('""",\n')
-    f.write('    longDesc = \n')
-    f.write('u"""\n')
-    try:
-        f.write(entry.longDesc.strip().encode('utf-8') + "\n")
-    except:
-        f.write(entry.longDesc.strip().encode('ascii', 'ignore')+ "\n")
-    f.write('""",\n')
+        
+    if entry.shortDesc.strip() !='':
+        f.write('    shortDesc = u"""')
+        try:
+            f.write(entry.shortDesc.encode('utf-8'))
+        except:
+            f.write(entry.shortDesc.strip().encode('ascii', 'ignore')+ "\n")
+        f.write('""",\n')
+    
+    if entry.longDesc.strip() !='':
+        f.write('    longDesc = \n')
+        f.write('u"""\n')
+        try:
+            f.write(entry.longDesc.strip().encode('utf-8') + "\n")
+        except:
+            f.write(entry.longDesc.strip().encode('ascii', 'ignore')+ "\n")
+        f.write('""",\n')
 
     f.write(')\n\n')
