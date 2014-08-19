@@ -200,20 +200,21 @@ species in the model can be defined by setting reactive to be <tt class="docutil
 other species the reactive status must be set as <tt class="docutils literal"><span class="pre">True</span></tt>. The structure of the
 species can be defined using either by using SMILES or <a class="reference internal" href="../../reference/molecule/adjlist.html#rmgpy-molecule-adjlist"><em>adjacencyList</em></a>.</p>
 <p>The following is an example of a typical species item, based on methane using SMILE or adjacency list to define the structure:</p>
-<div class="highlight-python"><pre>species(
-        label='CH4',
+<div class="highlight-python"><div class="highlight"><pre>species(
+        label=&#39;CH4&#39;,
         reactive=True,
-        structure=SMILES("C"),
+        structure=SMILES(&quot;C&quot;),
 )
 
 species(
-        label='CH4',
+        label=&#39;CH4&#39;,
         reactive=True,
         structure=adjacencyList(
-                """
+                &quot;&quot;&quot;
                 1 C 0
-                """
-)</pre>
+                &quot;&quot;&quot;
+)
+</pre></div>
 </div>
 </div>
 <div class="section" id="reaction-system">
@@ -537,7 +538,7 @@ in the <tt class="docutils literal"><span class="pre">examples</span></tt> direc
     </div>
     <div class="footer">
         &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div>
   </body>
 </html>

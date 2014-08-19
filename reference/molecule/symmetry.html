@@ -85,23 +85,26 @@ for single C=C bonds are handled in getBondSymmetryNumber().</p>
 <p>Each axis (C=C=C) has the potential to double the symmetry number.
 If an end has 0 or 1 groups (eg. =C=CJJ or =C=C-R) then it cannot 
 alter the axis symmetry and is disregarded:</p>
-<div class="highlight-python"><pre>A=C=C=C..        A-C=C=C=C-A
+<div class="highlight-python"><div class="highlight"><pre>A=C=C=C..        A-C=C=C=C-A
 
-  s=1                s=1</pre>
+  s=1                s=1
+</pre></div>
 </div>
 <p>If an end has 2 groups that are different then it breaks the symmetry 
 and the symmetry for that axis is 1, no matter what&#8217;s at the other end:</p>
-<div class="highlight-python"><pre>A\               A\         /A
+<div class="highlight-python"><div class="highlight"><pre>A\               A\         /A
   T=C=C=C=C-A      T=C=C=C=T
 B/               A/         \B
-      s=1             s=1</pre>
+      s=1             s=1
+</pre></div>
 </div>
 <p>If you have one or more ends with 2 groups, and neither end breaks the 
 symmetry, then you have an axis symmetry number of 2:</p>
-<div class="highlight-python"><pre>A\         /B      A\         
+<div class="highlight-python"><div class="highlight"><pre>A\         /B      A\         
   C=C=C=C=C          C=C=C=C-B
 A/         \B      A/         
-      s=2                s=2</pre>
+      s=2                s=2
+</pre></div>
 </div>
 </dd></dl>
 
@@ -160,7 +163,7 @@ includes both external and internal modes.</p>
     </div>
     <div class="footer">
         &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div>
   </body>
 </html>

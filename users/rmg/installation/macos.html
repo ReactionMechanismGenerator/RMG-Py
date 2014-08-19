@@ -71,73 +71,86 @@ The following instructions assume that you have <a class="reference external" hr
 but other methods like the <a class="reference external" href="http://fonnesbeck.github.com/ScipySuperpack/">Scipy Superpack</a> may work as well.</p>
 <ul>
 <li><p class="first">Install git (you may also like some graphical interfaces like <a class="reference external" href="https://github.com/mxcl/gitx/downloads">mxcl&#8217;s GitX</a> or <a class="reference external" href="http://mac.github.com/">GitHub for Mac</a>):</p>
-<div class="highlight-python"><pre>brew update
-brew install git</pre>
+<div class="highlight-python"><div class="highlight"><pre>brew update
+brew install git
+</pre></div>
 </div>
 </li>
 <li><p class="first">Make a directory to put everything in:</p>
-<div class="highlight-python"><pre>mkdir ~/Code</pre>
+<div class="highlight-python"><div class="highlight"><pre>mkdir ~/Code
+</pre></div>
 </div>
 </li>
 <li><p class="first">Get the RMG-Py source code from GitHub:</p>
-<div class="highlight-python"><pre>cd ~/Code
+<div class="highlight-python"><div class="highlight"><pre>cd ~/Code
 git clone git@github.com:GreenGroup/RMG-database.git
-git clone git@github.com:GreenGroup/RMG-Py.git</pre>
+git clone git@github.com:GreenGroup/RMG-Py.git
+</pre></div>
 </div>
 </li>
 <li><p class="first">Install the Python dependencies listed in the <tt class="file docutils literal"><span class="pre">RMG-Py/requirements.txt</span></tt> file using <cite>pip</cite> (do <tt class="docutils literal"><span class="pre">easy_install</span> <span class="pre">pip</span></tt> if you don&#8217;t already have it):</p>
-<div class="highlight-python"><pre>pip install -r RMG-Py/requirements.txt</pre>
+<div class="highlight-python"><div class="highlight"><pre>pip install -r RMG-Py/requirements.txt
+</pre></div>
 </div>
 </li>
 <li><p class="first">Get and build <a class="reference external" href="https://github.com/jwallen/PyDQED">PyDQED</a>:</p>
-<div class="highlight-python"><pre>cd ~/Code
+<div class="highlight-python"><div class="highlight"><pre>cd ~/Code
 git clone https://github.com/jwallen/PyDQED.git
 cd PyDQED
-make</pre>
+make
+</pre></div>
 </div>
 <p>It will build the fortran files, but fail to link using clang, so force it to use gcc for the linking with:</p>
-<div class="highlight-python"><pre>LIBRARY_PATH=/usr/local/lib/gcc LDSHARED='gcc -bundle -undefined dynamic_lookup -arch x86_64' python setup.py install</pre>
+<div class="highlight-python"><div class="highlight"><pre>LIBRARY_PATH=/usr/local/lib/gcc LDSHARED=&#39;gcc -bundle -undefined dynamic_lookup -arch x86_64&#39; python setup.py install
+</pre></div>
 </div>
 </li>
 <li><p class="first">Get and build <a class="reference external" href="https://github.com/jwallen/PyDAS">PyDAS</a>:</p>
-<div class="highlight-python"><pre>cd ~/Code
+<div class="highlight-python"><div class="highlight"><pre>cd ~/Code
 git clone https://github.com/jwallen/PyDAS.git
 cd PyDQED
-make</pre>
+make
+</pre></div>
 </div>
 <p>It will build the fortran files, but fail to link using clang, so force it to use gcc for the linking with:</p>
-<div class="highlight-python"><pre>LIBRARY_PATH=/usr/local/lib/gcc LDSHARED='gcc -bundle -undefined dynamic_lookup -arch x86_64' python setup.py install</pre>
+<div class="highlight-python"><div class="highlight"><pre>LIBRARY_PATH=/usr/local/lib/gcc LDSHARED=&#39;gcc -bundle -undefined dynamic_lookup -arch x86_64&#39; python setup.py install
+</pre></div>
 </div>
 </li>
 <li><p class="first">Get the RMG-Database and get and build RMG-Py:</p>
-<div class="highlight-python"><pre>cd ~/Code
+<div class="highlight-python"><div class="highlight"><pre>cd ~/Code
 git clone git@github.com:GreenGroup/RMG-database.git
 git clone git@github.com:GreenGroup/RMG-Py.git
 cd RMG-Py
-make</pre>
+make
+</pre></div>
 </div>
 </li>
 <li><p class="first">Install RDKit:</p>
-<div class="highlight-python"><pre>brew uninstall boost
+<div class="highlight-python"><div class="highlight"><pre>brew uninstall boost
 brew install boost --build-from-source
 brew tap edc/homebrew-rdkit
-brew install rdkit --with-inchi</pre>
+brew install rdkit --with-inchi
+</pre></div>
 </div>
 <p>You&#8217;ll need various environment variables set, eg.:</p>
-<div class="highlight-python"><pre>export RDBASE=$HOME/rdkit # CHECK THIS (maybe you put RDKit somewhere else)
+<div class="highlight-python"><div class="highlight"><pre>export RDBASE=$HOME/rdkit # CHECK THIS (maybe you put RDKit somewhere else)
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$RDBASE/lib
-export PYTHONPATH=$PYTHONPATH:$RDBASE</pre>
+export PYTHONPATH=$PYTHONPATH:$RDBASE
+</pre></div>
 </div>
 </li>
 <li><p class="first">Run an example:</p>
-<div class="highlight-python"><pre>cd ~/Code/RMG-Py/
-python rmg.py examples/rmg/minimal/input.py</pre>
+<div class="highlight-python"><div class="highlight"><pre>cd ~/Code/RMG-Py/
+python rmg.py examples/rmg/minimal/input.py
+</pre></div>
 </div>
 <p>Verify your installation by opening the resulting output.html file under the &#8220;examples/rmg/minimal&#8221; directory.</p>
 <p>You can also use the Makefile targets to test and run examples:</p>
-<div class="highlight-python"><pre>make test
+<div class="highlight-python"><div class="highlight"><pre>make test
 make eg1
-make eg2</pre>
+make eg2
+</pre></div>
 </div>
 </li>
 </ul>
@@ -182,7 +195,7 @@ make eg2</pre>
     </div>
     <div class="footer">
         &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div>
   </body>
 </html>

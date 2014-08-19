@@ -102,7 +102,8 @@ bugfixes.</p>
 <p>Once you have obtained the required dependencies, RMG-Py and MEASURE can be
 installed by executing the following command from within the root package
 directory:</p>
-<div class="highlight-python"><pre>$ python setup.py install</pre>
+<div class="highlight-python"><div class="highlight"><pre>$ python setup.py install
+</pre></div>
 </div>
 <p>This will move all of the necessary files to the appropriate Python installation
 location on disk. If Cython is installed, this will also compile the appropriate
@@ -111,21 +112,26 @@ modules prior to installation.</p>
 done by appending the full path to the package&#8217;s root directory to your
 <tt class="docutils literal"><span class="pre">PYTHONPATH</span></tt> environment variable. To compile the Cython modules in this
 case, use the command</p>
-<div class="highlight-python"><pre>$ python setup.py build_ext --inplace</pre>
+<div class="highlight-python"><div class="highlight"><pre>$ python setup.py build_ext --inplace
+</pre></div>
 </div>
 <p>You can remove the temporary build files - but <em>not</em> the compiled libraries! -
 via the command</p>
-<div class="highlight-python"><pre>$ python setup.py clean</pre>
+<div class="highlight-python"><div class="highlight"><pre>$ python setup.py clean
+</pre></div>
 </div>
 <p>If you have the <tt class="docutils literal"><span class="pre">make</span></tt> build automation tool installed, you can also use the
 provided <tt class="docutils literal"><span class="pre">Makefile</span></tt>, via</p>
-<div class="highlight-python"><pre>$ make install</pre>
+<div class="highlight-python"><div class="highlight"><pre>$ make install
+</pre></div>
 </div>
 <p>to install,</p>
-<div class="highlight-python"><pre>$ make</pre>
+<div class="highlight-python"><div class="highlight"><pre>$ make
+</pre></div>
 </div>
 <p>to build in-place, or</p>
-<div class="highlight-python"><pre>$ make clean</pre>
+<div class="highlight-python"><div class="highlight"><pre>$ make clean
+</pre></div>
 </div>
 <p>to remove all temporary build files <em>and</em> compiled files.</p>
 </div>
@@ -179,7 +185,7 @@ provided <tt class="docutils literal"><span class="pre">Makefile</span></tt>, vi
     </div>
     <div class="footer">
         &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div>
   </body>
 </html>

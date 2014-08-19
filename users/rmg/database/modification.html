@@ -117,26 +117,28 @@ of thumb is to see if the all neighbours of the reacting atoms are as specified
 as possible. For example, assume your species is ethanol</p>
 <a class="reference internal image-reference" href="../../../_images/ethanol.png"><img alt="../../../_images/ethanol.png" class="align-center" src="../../../_images/ethanol.png" /></a>
 <p>and RMG suggests the group:</p>
-<div class="highlight-python"><pre>label = "C_sec",
+<div class="highlight-python"><div class="highlight"><pre>label = &quot;C_sec&quot;,
 group =
-"""
+&quot;&quot;&quot;
 1 *1 Cs  0 {2,S} {3,S} {4,S}
 2 *2 H   0 {1,S}
 3    R!H 0 {1,S}
 4    R!H 0 {1,S}
-""",</pre>
+&quot;&quot;&quot;,
+</pre></div>
 </div>
 <p>If you use the suggested groups you will not capture the effect of the alcohol
 group. Therefore it is better to make a new group.</p>
-<div class="highlight-python"><pre>label = "C/H2/CsO",
+<div class="highlight-python"><div class="highlight"><pre>label = &quot;C/H2/CsO&quot;,
 group =
-"""
+&quot;&quot;&quot;
 1 *1 Cs  0 {2,S} {3,S} {4,S} {5,S}
 2 *2 H  0 {1,S}
 3    H  0 {1,S}
 4    O  0 {1,S}
 5    Cs 0 {1,S}
-""",</pre>
+&quot;&quot;&quot;,
+</pre></div>
 </div>
 <p>If you have determined the suggested groups is appropriate, skip to
 <a class="reference internal" href="#kinetic-training-set"><em>Adding Training Reactions</em></a> or <a class="reference internal" href="#kinetic-rules"><em>Adding Kinetic Rules</em></a>. Otherwise proceed to the
@@ -173,13 +175,14 @@ next section for instructions on creating the new group.</p>
 <p>Next, you must enter your new group into the tree. At the bottom of groups.py
 you will find the trees. Place your group in the appropriate position. In the
 example given in the previous section, the new group would be added under the C_sec.</p>
-<div class="highlight-python"><pre>L1: X_H
+<div class="highlight-python"><div class="highlight"><pre>L1: X_H
         L2: H2
         L2: Cs_H
                 L3: C_pri
                 L3: C_sec
                         L4: C/H2/CsO
-                L3: C_ter</pre>
+                L3: C_ter
+</pre></div>
 </div>
 </div>
 <div class="section" id="adding-kinetic-rules">
@@ -378,7 +381,7 @@ activation energy truly does reflect the reaction barrier height.</p>
     </div>
     <div class="footer">
         &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div>
   </body>
 </html>

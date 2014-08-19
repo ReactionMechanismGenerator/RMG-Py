@@ -106,7 +106,8 @@ If the multiplicity line is omitted, then <tt class="docutils literal"><span cla
 each subsequent line describes a single atom and its
 local bond structure. The format of these lines is a whitespace-delimited list
 with tokens</p>
-<div class="highlight-python"><pre>&lt;number&gt; [&lt;label&gt;] &lt;element&gt; u&lt;unpaired&gt; [p&lt;pairs&gt;] [c&lt;charge&gt;] &lt;bondlist&gt;</pre>
+<div class="highlight-python"><div class="highlight"><pre>&lt;number&gt; [&lt;label&gt;] &lt;element&gt; u&lt;unpaired&gt; [p&lt;pairs&gt;] [c&lt;charge&gt;] &lt;bondlist&gt;
+</pre></div>
 </div>
 <p>The first item is the number used to identify that atom. Any number may be used,
 though it is recommended to number the atoms sequentially starting from one.
@@ -159,14 +160,15 @@ automatically for full molecules.)</p>
 the molecule labeled with <tt class="docutils literal"><span class="pre">*1</span></tt> and <tt class="docutils literal"><span class="pre">*2</span></tt>. Note that hydrogen atoms
 can be omitted if desired, as their presence is inferred, provided that unpaired
 electrons, lone pairs, and charges are all correctly defined:</p>
-<div class="highlight-python"><pre>HXD13
+<div class="highlight-python"><div class="highlight"><pre>HXD13
 multiplicity 1
 1    C u0       {2,D}
 2    C u0 {1,D} {3,S}
 3    C u0 {2,S} {4,D}
 4    C u0 {3,D} {5,S}
 5 *1 C u0 {4,S} {6,S}
-6 *2 C u0 {5,S}</pre>
+6 *2 C u0 {5,S}
+</pre></div>
 </div>
 <p>The allowed element types, radicals, and bonds are listed in the following table:</p>
 <blockquote>
@@ -286,7 +288,7 @@ adjacency list.</p>
     </div>
     <div class="footer">
         &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div>
   </body>
 </html>

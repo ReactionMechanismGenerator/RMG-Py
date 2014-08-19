@@ -1,0 +1,396 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>13. Liquid Phase Systems &mdash; RMG Py 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="RMG Py 0.1.0 documentation" href="../../index.html" />
+    <link rel="up" title="RMG User’s Guide" href="index.html" />
+    <link rel="next" title="14. Guidelines for Building a Model" href="guidelines.html" />
+    <link rel="prev" title="12. Kinetics Estimation" href="kinetics.html" /> 
+  </head>
+  <body>
+<div class="header">
+&nbsp;
+</div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="guidelines.html" title="14. Guidelines for Building a Model"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="kinetics.html" title="12. Kinetics Estimation"
+             accesskey="P">previous</a> |</li>
+<li><a href="../../index.html">Documentation</a> &raquo;</li>
+
+          <li><a href="../index.html" >User&#8217;s Guide</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">RMG User&#8217;s Guide</a> &raquo;</li> 
+      </ul>
+    </div>
+            
+  <div class="section" id="liquid-phase-systems">
+<span id="liquids"></span><h1>13. Liquid Phase Systems<a class="headerlink" href="#liquid-phase-systems" title="Permalink to this headline">¶</a></h1>
+<p>To simulate liquids in RMG requires a module in your input file for liquid-phase:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">solvation</span><span class="p">(</span>
+    <span class="n">solvent</span><span class="o">=</span><span class="s">&#39;octane&#39;</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Your reaction system will also be different (liquidReactor rather than simpleReactor):</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">liquidReactor</span><span class="p">(</span>
+    <span class="n">temperature</span><span class="o">=</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span><span class="s">&#39;K&#39;</span><span class="p">),</span>
+    <span class="n">initialConcentrations</span><span class="o">=</span><span class="p">{</span>
+        <span class="s">&quot;octane&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mf">6.154e-3</span><span class="p">,</span><span class="s">&#39;mol/cm^3&#39;</span><span class="p">),</span>
+        <span class="s">&quot;oxygen&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mf">4.953e-6</span><span class="p">,</span><span class="s">&#39;mol/cm^3&#39;</span><span class="p">)</span>
+    <span class="p">},</span>
+    <span class="n">terminationTime</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="s">&#39;s&#39;</span><span class="p">),</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<div class="section" id="equation-of-state">
+<h2>13.1. Equation of state<a class="headerlink" href="#equation-of-state" title="Permalink to this headline">¶</a></h2>
+<p>Specifying a liquidReactor will have two effects:</p>
+<ol class="arabic simple">
+<li>disable the ideal gas law renormalization and instead rely on the concentrations you specified in the input file to initialize the system.</li>
+<li>prevent the volume from changing when there is a net stoichiometry change due to a chemical reaction (A = B + C).</li>
+</ol>
+</div>
+<div class="section" id="solvation-thermochemistry">
+<h2>13.2. Solvation thermochemistry<a class="headerlink" href="#solvation-thermochemistry" title="Permalink to this headline">¶</a></h2>
+<p>The next correction for liquids is solvation effects on the thermochemistry. By specifying a solvent in the input file, we load the solvent parameters to use.</p>
+<p>The free energy change associated with the process of transferring a
+molecule from the gas phase to the solvent phase is defined as the free
+energy of solvation (ΔG). Many different methods have been developed for
+computing solvation energies among which continuum dielectric and force
+field based methods are popular. Not all of these methods are easy to
+automate, and many are not robust i.e. they either fail or give
+unreasonable results for certain solute-solvent pairs. CPU time and
+memory (RAM) requirements are also important considerations. A fairly
+accurate and fast method for computing ΔG, which is used in RMG, is the
+LSER approach described below.</p>
+<div class="section" id="use-of-abraham-lser-to-estimate-thermochemistry">
+<h3>13.2.1. Use of Abraham LSER to estimate thermochemistry<a class="headerlink" href="#use-of-abraham-lser-to-estimate-thermochemistry" title="Permalink to this headline">¶</a></h3>
+<p>The Abraham LSER provides an estimate of the the partition coefficient (more specifically, the
+log (base 10) of the partition coefficient) of a solute between the vapor phase and a particular solvent
+(<cite>K</cite><sub>vs</sub>) (also known as gas-solvent partition coefficient) at 298 K:</p>
+<div class="math" id="equation-AbModelEqn">
+<span class="eqno">(1)</span>\[\log K_{vs} = c + eE + sS + aA + bB + lL\]</div>
+<p>The Abraham model is used in RMG to estimate ΔG which is related to the <cite>K</cite><sub>vs</sub> of a solute according to the following expression:</p>
+<div class="math" id="equation-partition">
+<span class="eqno">(2)</span>\[\begin{split}ΔG = -RT \ln K_{vs} \\
+= -2.303RT \log K_{vs}\end{split}\]</div>
+<p>The variables in the Abraham model represent solute (<cite>E, S, A, B, V, L</cite>) and solvent descriptors (<cite>c, e, s, a, b, v, l</cite>)
+for different interactions. The <cite>sS</cite> term is attributed to electrostatic interactions between the
+solute and the solvent (dipole-dipole interactions related to solvent dipolarity and the dipole-induced
+dipole interactions related to the polarizability of the solvent) <a class="reference internal" href="#vitha2006" id="id1">[Vitha2006]</a>, [Abraham1999], <a class="reference internal" href="#jalan2010" id="id3">[Jalan2010]</a>. The
+<cite>lL</cite> term accounts for the contribution from cavity formation and dispersion (dispersion interactions are
+known to scale with solute volume <a class="reference internal" href="#vitha2006" id="id4">[Vitha2006]</a>, [Abraham1999]. The <cite>eE</cite> term, like the <cite>sS</cite> term,
+accounts for residual contributions from dipolarity/polarizability related interactions for solutes
+whose blend of dipolarity/polarizability differs from that implicitly built into the <cite>S</cite> parameter <a class="reference internal" href="#vitha2006" id="id6">[Vitha2006]</a>, [Abraham1990], <a class="reference internal" href="#jalan2010" id="id8">[Jalan2010]</a>.
+The <cite>aA</cite> and <cite>bB</cite> terms account for the contribution of hydrogen bonding between the solute and
+the surrounding solvent molecules. H-bonding interactions require two terms as the solute (or solvent)
+can act as acceptor (donor) and vice versa. The descriptor <cite>A</cite> is a measure of the solute&#8217;s ability
+to donate a hydrogen bond (acidity) and the solvent descriptor <cite>a</cite> is a measure of the solvent&#8217;s ability
+to accept a hydrogen bond. A similar explanation applies to the <cite>bB</cite> term <a class="reference internal" href="#vitha2006" id="id9">[Vitha2006]</a>, [Abraham1999], [Poole2009].</p>
+<p>The solvent descriptors (<cite>c, e, s, a, b, l</cite>) are largely treated as regressed empirical coefficients. Parameters are provided in RMG&#8217;s database for the following solvents:</p>
+<ol class="arabic simple">
+<li>acetonitrile</li>
+<li>benzene</li>
+<li>butanol</li>
+<li>carbontet</li>
+<li>chloroform</li>
+<li>cyclohexane</li>
+<li>decane</li>
+<li>dibutylether</li>
+<li>dichloroethane</li>
+<li>dimethylformamide</li>
+<li>dimethylsulfoxide</li>
+<li>dodecane</li>
+<li>ethanol</li>
+<li>ethylacetate</li>
+<li>heptane</li>
+<li>hexadecane</li>
+<li>hexane</li>
+<li>isooctane</li>
+<li>nonane</li>
+<li>octane</li>
+<li>octanol</li>
+<li>pentane</li>
+<li>toluene</li>
+<li>undecane</li>
+<li>water</li>
+</ol>
+</div>
+<div class="section" id="group-additivity-method-for-solute-descriptor-estimation">
+<h3>13.2.2. Group additivity method for solute descriptor estimation<a class="headerlink" href="#group-additivity-method-for-solute-descriptor-estimation" title="Permalink to this headline">¶</a></h3>
+<p>Group additivity is a convenient way of estimating the thermochemistry for thousands of species sampled
+in a typical mechanism generation job. Use of the Abraham Model in RMG requires a similar approach
+to estimate the solute descriptors (<cite>A, B, E, L,</cite> and <cite>S</cite>). Platts et al. (<a class="reference internal" href="#platts1999" id="id11">[Platts1999]</a>) proposed such a scheme employing a set of 81 molecular fragments for estimating <cite>B, E, L, V</cite> and <cite>S</cite> and another set of 51 fragments for the estimation of <cite>A</cite>. Only those fragments containing C, H and O are implemented in order to match RMG&#8217;s existing capabilities. The value of a given descriptor for a molecule is obtained by summing the contributions from each fragment found in the molecule and the intercept associated with that descriptor.</p>
+</div>
+<div class="section" id="mintz-model-for-enthalpy-of-solvation">
+<h3>13.2.3. Mintz model for enthalpy of solvation<a class="headerlink" href="#mintz-model-for-enthalpy-of-solvation" title="Permalink to this headline">¶</a></h3>
+<p>For estimating ΔG at temperatures other than 298 K, the enthalpy change associated with solvation, ΔH must be calculated separately and, along with ΔS, assumed to be independent of temperature. Recently, Mintz et al. (<a class="reference internal" href="#mintz2007" id="id12">[Mintz2007]</a>, <a class="reference internal" href="#mintz2007a" id="id13">[Mintz2007a]</a>, <a class="reference internal" href="#mintz2007b" id="id14">[Mintz2007b]</a>, <a class="reference internal" href="#mintz2007c" id="id15">[Mintz2007c]</a>, <a class="reference internal" href="#mintz2007d" id="id16">[Mintz2007d]</a>, <a class="reference internal" href="#mintz2008" id="id17">[Mintz2008]</a>, <a class="reference internal" href="#mintz2008a" id="id18">[Mintz2008a]</a>, <a class="reference internal" href="#mintz2009" id="id19">[Mintz2009]</a>) have developed linear correlations similar to the Abraham model for estimating ΔH:</p>
+<div class="math" id="equation-mintz">
+<span class="eqno">(3)</span>\[ΔH(298 K) = c' + a'A+ b'B+ e'E+ s'S+ l'L\]</div>
+<p>where <cite>A, B, E, S</cite> and <cite>L</cite> are the same solute descriptors used in the Abraham model for the estimation of ΔG. The lowercase coefficients <cite>c&#8217;, a&#8217;, b&#8217;, e&#8217;, s&#8217;</cite> and <cite>l&#8217;</cite> depend only on the solvent and were obtained by fitting to experimental data. In RMG, this equation is implemented and together with ΔG(298 K) can be used to find ΔS(298 K). From this data, ΔG at other temperatures is found by extrapolation.</p>
+</div>
+</div>
+<div class="section" id="diffusion-limited-kinetics">
+<h2>13.3. Diffusion-limited kinetics<a class="headerlink" href="#diffusion-limited-kinetics" title="Permalink to this headline">¶</a></h2>
+<p>The next correction for liquid-phase reactions is to ensure that bimolecular reactions do not exceed their diffusion limits. The theory behind diffusive limits in solution phase reactions is well established (<a class="reference internal" href="#rice1985" id="id20">[Rice1985]</a>) and the effective rate constant of a bimolecular reaction is given as:</p>
+<div class="math" id="equation-diffusive_limit">
+<span class="eqno">(4)</span>\[k_{\textrm{eff}} = \frac {4\pi R\mathcal{D} k_{\textrm{int}}}{4\pi R\mathcal{D} + k_{\textrm{int}}}\]</div>
+<p>where <cite>k</cite><sub>int</sub> is the intrinsic reaction rate, <cite>R</cite> is the sum of radii of the reactants and
+<cite>D</cite> is the sum of the diffusivities of the reacting species. RMG uses the McGowan method for estimating
+radii, and diffusivities are estimated with the Stokes-Einstein equation using experimental solvent
+viscosities (<cite>eta</cite> (T)).  In a unimolecular to bimolecular reaction, for example, the forward rate
+constant (<cite>k</cite><sub>f</sub>) can be slowed down if the reverse rate (<cite>k</cite><sub>r, eff</sub>) is diffusion
+limited since the equilibrium constant (<cite>K</cite><sub>eq</sub>) is not affected by diffusion limitations. In cases
+where both the forward and the reverse reaction rates are bimolecular, both diffusive limits are
+estimated and RMG uses the direction with the larger magnitude.</p>
+<p>The viscosity of the solvent is calculated Pa.s using the solvent specified in the command line
+and a correlation for the viscosity using parameters <cite>A, B, C, D, E</cite>:</p>
+<div class="math" id="equation-viscosity">
+<span class="eqno">(5)</span>\[\ln \eta = A + \frac{B}{T} + C\log T + DT^E\]</div>
+<p>To build accurate models of liquid phase chemical reactions you will also want to modify your kinetics libraries or correct gas-phase rates for intrinsic barrier solvation corrections (coming soon).</p>
+</div>
+<div class="section" id="example-liquid-phase-input-file">
+<h2>13.4. Example liquid-phase input file<a class="headerlink" href="#example-liquid-phase-input-file" title="Permalink to this headline">¶</a></h2>
+<p>This is an example of an input file for a liquid-phase system:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># Data sources</span>
+<span class="n">database</span><span class="p">(</span>
+    <span class="n">thermoLibraries</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;primaryThermoLibrary&#39;</span><span class="p">],</span>
+    <span class="n">reactionLibraries</span> <span class="o">=</span> <span class="p">[],</span>
+    <span class="n">seedMechanisms</span> <span class="o">=</span> <span class="p">[],</span>
+    <span class="n">kineticsDepositories</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;training&#39;</span><span class="p">],</span>
+    <span class="n">kineticsFamilies</span> <span class="o">=</span> <span class="s">&#39;default&#39;</span><span class="p">,</span>
+    <span class="n">kineticsEstimator</span> <span class="o">=</span> <span class="s">&#39;rate rules&#39;</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c"># List of species</span>
+<span class="n">species</span><span class="p">(</span>
+    <span class="n">label</span><span class="o">=</span><span class="s">&#39;octane&#39;</span><span class="p">,</span>
+    <span class="n">reactive</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s">&quot;C(CCCCC)CC&quot;</span><span class="p">),</span>
+<span class="p">)</span>
+
+<span class="n">species</span><span class="p">(</span>
+    <span class="n">label</span><span class="o">=</span><span class="s">&#39;oxygen&#39;</span><span class="p">,</span>
+    <span class="n">reactive</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s">&quot;[O][O]&quot;</span><span class="p">),</span>
+<span class="p">)</span>
+
+<span class="c"># Reaction systems</span>
+<span class="n">liquidReactor</span><span class="p">(</span>
+    <span class="n">temperature</span><span class="o">=</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span><span class="s">&#39;K&#39;</span><span class="p">),</span>
+    <span class="n">initialConcentrations</span><span class="o">=</span><span class="p">{</span>
+        <span class="s">&quot;octane&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mf">6.154e-3</span><span class="p">,</span><span class="s">&#39;mol/cm^3&#39;</span><span class="p">),</span>
+        <span class="s">&quot;oxygen&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mf">4.953e-6</span><span class="p">,</span><span class="s">&#39;mol/cm^3&#39;</span><span class="p">)</span>
+    <span class="p">},</span>
+    <span class="n">terminationTime</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="s">&#39;s&#39;</span><span class="p">),</span>
+<span class="p">)</span>
+
+<span class="n">solvation</span><span class="p">(</span>
+    <span class="n">solvent</span><span class="o">=</span><span class="s">&#39;octane&#39;</span>
+<span class="p">)</span>
+
+<span class="n">simulator</span><span class="p">(</span>
+    <span class="n">atol</span><span class="o">=</span><span class="mf">1e-16</span><span class="p">,</span>
+    <span class="n">rtol</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">model</span><span class="p">(</span>
+    <span class="n">toleranceKeepInEdge</span><span class="o">=</span><span class="mf">1E-9</span><span class="p">,</span>
+    <span class="n">toleranceMoveToCore</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span>
+    <span class="n">toleranceInterruptSimulation</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+    <span class="n">maximumEdgeSpecies</span><span class="o">=</span><span class="mi">100000</span>
+<span class="p">)</span>
+
+<span class="n">options</span><span class="p">(</span>
+    <span class="n">units</span><span class="o">=</span><span class="s">&#39;si&#39;</span><span class="p">,</span>
+    <span class="n">saveRestartPeriod</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+    <span class="n">drawMolecules</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+    <span class="n">generatePlots</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+    <span class="n">saveConcentrationProfiles</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<table class="docutils citation" frame="void" id="vitha2006" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[Vitha2006]</td><td><em>(<a class="fn-backref" href="#id1">1</a>, <a class="fn-backref" href="#id4">2</a>, <a class="fn-backref" href="#id6">3</a>, <a class="fn-backref" href="#id9">4</a>)</em> Vitha2006</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="abrham1999" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[Abrham1999]</td><td>Abraham1999</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="jalan2010" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[Jalan2010]</td><td><em>(<a class="fn-backref" href="#id3">1</a>, <a class="fn-backref" href="#id8">2</a>)</em> Jalan2010</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="poole2009" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[Poole2009]</td><td>Poole2009</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="platts1999" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id11">[Platts1999]</a></td><td>Platts1999</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="mintz2007" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id12">[Mintz2007]</a></td><td>Mintz2007</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="mintz2007a" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id13">[Mintz2007a]</a></td><td>Mintz2007a</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="mintz2007b" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id14">[Mintz2007b]</a></td><td>Mintz2007b</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="mintz2007c" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id15">[Mintz2007c]</a></td><td>Mintz2007c</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="mintz2007d" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id16">[Mintz2007d]</a></td><td>Mintz2007d</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="mintz2008" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id17">[Mintz2008]</a></td><td>Mintz2008</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="mintz2008a" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id18">[Mintz2008a]</a></td><td>Mintz2008a</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="mintz2009" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id19">[Mintz2009]</a></td><td>Mintz2009</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="rice1985" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id20">[Rice1985]</a></td><td>Rice1985</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div class="sidebarlogo">
+<a href="../../index.html"><img src="../../_static/rmg-logo-small.png" alt="RMG" /></a>
+</div>
+  <h3><a href="../../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">13. Liquid Phase Systems</a><ul>
+<li><a class="reference internal" href="#equation-of-state">13.1. Equation of state</a></li>
+<li><a class="reference internal" href="#solvation-thermochemistry">13.2. Solvation thermochemistry</a><ul>
+<li><a class="reference internal" href="#use-of-abraham-lser-to-estimate-thermochemistry">13.2.1. Use of Abraham LSER to estimate thermochemistry</a></li>
+<li><a class="reference internal" href="#group-additivity-method-for-solute-descriptor-estimation">13.2.2. Group additivity method for solute descriptor estimation</a></li>
+<li><a class="reference internal" href="#mintz-model-for-enthalpy-of-solvation">13.2.3. Mintz model for enthalpy of solvation</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#diffusion-limited-kinetics">13.3. Diffusion-limited kinetics</a></li>
+<li><a class="reference internal" href="#example-liquid-phase-input-file">13.4. Example liquid-phase input file</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="kinetics.html"
+                        title="previous chapter">12. Kinetics Estimation</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="guidelines.html"
+                        title="next chapter">14. Guidelines for Building a Model</a></p>
+  <h3>This Page </h3>
+  <ul class="this-page-menu">
+    <li><a href="https://github.com/GreenGroup/RMG-Py/blob/master/documentation/source/users/rmg/liquids.rst"
+           rel="nofollow">Edit this page</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

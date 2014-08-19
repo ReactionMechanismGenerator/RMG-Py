@@ -69,22 +69,24 @@
 The minimal requirement for most translations is to prefix the number
 of unpaired electrons with the letter <cite>u</cite>.</p>
 <p>Example old syntax:</p>
-<div class="highlight-python"><pre>HXD13
+<div class="highlight-python"><div class="highlight"><pre>HXD13
 1    C 0       {2,D}
 2    C 0 {1,D} {3,S}
 3    C 0 {2,S} {4,D}
 4    C 0 {3,D} {5,S}
 5 *1 C 0 {4,S} {6,S}
-6 *2 C 0 {5,S}</pre>
+6 *2 C 0 {5,S}
+</pre></div>
 </div>
 <p>Example new syntax:</p>
-<div class="highlight-python"><pre>HXD13
+<div class="highlight-python"><div class="highlight"><pre>HXD13
 1    C u0       {2,D}
 2    C u0 {1,D} {3,S}
 3    C u0 {2,S} {4,D}
 4    C u0 {3,D} {5,S}
 5 *1 C u0 {4,S} {6,S}
-6 *2 C u0 {5,S}</pre>
+6 *2 C u0 {5,S}
+</pre></div>
 </div>
 <p>The new syntax, however, allows much
 greater flexibility, including definition of lone pairs, partial charges,
@@ -141,7 +143,7 @@ See <a class="reference internal" href="../../reference/molecule/adjlist.html#rm
     </div>
     <div class="footer">
         &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div>
   </body>
 </html>

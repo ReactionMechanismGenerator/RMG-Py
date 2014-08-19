@@ -75,7 +75,8 @@
 </pre></div>
 </div>
 <p>Click on &#8220;Environment Variables,&#8221; then edit the System Variable &#8220;Path&#8221; by appending the following to the variable value:</p>
-<div class="highlight-python"><pre>C:\Program Files\Git\bin;C:\MinGW\bin;C:\Python27;C:\Python27\Scripts</pre>
+<div class="highlight-python"><div class="highlight"><pre>C:\Program Files\Git\bin;C:\MinGW\bin;C:\Python27;C:\Python27\Scripts
+</pre></div>
 </div>
 </div>
 <div class="section" id="git">
@@ -84,7 +85,8 @@
 <li><p class="first">Create a <a class="reference external" href="https://github.com/signup/free">Github account</a>, then download and run the <a class="reference external" href="http://git-scm.com/download/win">Git Installer</a>. Be sure to install to the default &#8220;C:\Program Files\Git&#8221; directory.</p>
 </li>
 <li><p class="first">Provide easy access to the Git Bash command shell that will be used throughout this installation by creating a shortcut with the following target:</p>
-<div class="highlight-python"><pre>C:\Windows\System32\cmd.exe /c "sh --login -i"</pre>
+<div class="highlight-python"><div class="highlight"><pre>C:\Windows\System32\cmd.exe /c &quot;sh --login -i&quot;
+</pre></div>
 </div>
 </li>
 </ul>
@@ -94,10 +96,11 @@
 </dl>
 <ul>
 <li><p class="first">Generate and view your SSH Key by typing this into the Git Bash command line:</p>
-<div class="highlight-python"><pre>cd ~
+<div class="highlight-python"><div class="highlight"><pre>cd ~
 ssh-keygen              # press enter to save to the default directory
                         # create a password if desired
-cat .ssh/id_rsa.pub</pre>
+cat .ssh/id_rsa.pub
+</pre></div>
 </div>
 <p>Right-click the title of your bash window and select Edit &gt; Mark. Highlight the entire block of text and press enter to copy the selection to your clipboard. Add this SSH Key to your Github account <a class="reference external" href="https://github.com/settings/ssh">here</a>.</p>
 </li>
@@ -113,36 +116,39 @@ cat .ssh/id_rsa.pub</pre>
 <li><p class="first">Download and run the <a class="reference external" href="http://www.python.org/ftp/python/2.7.3/python-2.7.3.msi">Python 2.7 installer</a>. Be sure to install to the default &#8220;C:\Python27&#8221; directory.</p>
 </li>
 <li><p class="first">Patch distutils by opening &#8220;C:\Python27\Lib\disutils\cygwinccompiler.py&#8221; in a text editor and commenting out lines 132-137 and 322-328 with a # symbol at the beginning of each line:</p>
-<div class="highlight-python"><pre>[132:137]
+<div class="highlight-python"><div class="highlight"><pre>[132:137]
 
-#        self.set_executables(compiler='gcc -mcygwin -O -Wall',
-#                             compiler_so='gcc -mcygwin -mdll -O -Wall',
-#                             compiler_cxx='g++ -mcygwin -O -Wall',
-#                             linker_exe='gcc -mcygwin',
-#                             linker_so=('%s -mcygwin %s' %
+#        self.set_executables(compiler=&#39;gcc -mcygwin -O -Wall&#39;,
+#                             compiler_so=&#39;gcc -mcygwin -mdll -O -Wall&#39;,
+#                             compiler_cxx=&#39;g++ -mcygwin -O -Wall&#39;,
+#                             linker_exe=&#39;gcc -mcygwin&#39;,
+#                             linker_so=(&#39;%s -mcygwin %s&#39; %
 #                                        (self.linker_dll, shared_option)))
 
 [322:328]
 
-#        self.set_executables(compiler='gcc -mno-cygwin -O -Wall',
-#                             compiler_so='gcc -mno-cygwin -mdll -O -Wall',
-#                             compiler_cxx='g++ -mno-cygwin -O -Wall',
-#                             linker_exe='gcc -mno-cygwin',
-#                             linker_so='%s -mno-cygwin %s %s'
+#        self.set_executables(compiler=&#39;gcc -mno-cygwin -O -Wall&#39;,
+#                             compiler_so=&#39;gcc -mno-cygwin -mdll -O -Wall&#39;,
+#                             compiler_cxx=&#39;g++ -mno-cygwin -O -Wall&#39;,
+#                             linker_exe=&#39;gcc -mno-cygwin&#39;,
+#                             linker_so=&#39;%s -mno-cygwin %s %s&#39;
 #                                        % (self.linker_dll, shared_option,
-#                                           entry_point))</pre>
+#                                           entry_point))
+</pre></div>
 </div>
 </li>
 <li><p class="first">Point distutils to MinGW:</p>
-<div class="highlight-python"><pre>echo -e "[build]\ncompiler=mingw32" &gt; /c/Python27/Lib/distutils/distutils.cfg</pre>
+<div class="highlight-python"><div class="highlight"><pre>echo -e &quot;[build]\ncompiler=mingw32&quot; &gt; /c/Python27/Lib/distutils/distutils.cfg
+</pre></div>
 </div>
 </li>
 <li><p class="first">Add Python bindings to MinGW&#8217;s library:</p>
-<div class="highlight-python"><pre>mingw-get install pexports
+<div class="highlight-python"><div class="highlight"><pre>mingw-get install pexports
 pexports $SYSTEMROOT/system32/python27.dll &gt; python27.def
 dlltool -D python27.dll -d python27.def -l libpython27.a
 mv libpython27.a /c/MinGW/lib/libpython27.a
-rm python27.def</pre>
+rm python27.def
+</pre></div>
 </div>
 <p>If the <tt class="docutils literal"><span class="pre">pexports</span></tt> step doesn&#8217;t work then you can download the <tt class="file docutils literal"><span class="pre">python27.def</span></tt> file from the link on the <a class="reference external" href="http://wiki.cython.org/InstallingOnWindows">Cython wiki</a> and continue from the <tt class="docutils literal"><span class="pre">dlltool</span></tt> step.</p>
 </li>
@@ -167,8 +173,9 @@ rm python27.def</pre>
 <li><p class="first"><a class="reference external" href="http://voxel.dl.sourceforge.net/project/openbabel/openbabel/2.3.1/OpenBabel2.3.1_Windows_Installer.exe">OpenBabel 2.3.1</a></p>
 <ul>
 <li><p class="first">The OpenBabel installer includes some libraries (.dll files) that you also need for other purposes, so copy them out of the OpenBabel program directory and into your system directory so they are generally accessible:</p>
-<div class="highlight-python"><pre>cd /c/PROGRA~1/OpenBabel-2.3.1
-cp libcairo-2.dll libpng14-14.dll zlib1.dll $SYSTEMROOT/System32</pre>
+<div class="highlight-python"><div class="highlight"><pre>cd /c/PROGRA~1/OpenBabel-2.3.1
+cp libcairo-2.dll libpng14-14.dll zlib1.dll $SYSTEMROOT/System32
+</pre></div>
 </div>
 </li>
 </ul>
@@ -196,31 +203,35 @@ Required environment variables:</p>
 <div class="section" id="remaining-dependencies">
 <h2>3.1.7. Remaining Dependencies<a class="headerlink" href="#remaining-dependencies" title="Permalink to this headline">¶</a></h2>
 <p>Install the remaining six python dependencies using &#8216;pip&#8217;:</p>
-<div class="highlight-python"><pre>curl https://raw.github.com/pypa/pip/master/contrib/get-pip.py | python
+<div class="highlight-python"><div class="highlight"><pre>curl https://raw.github.com/pypa/pip/master/contrib/get-pip.py | python
 easy_install pip
-pip install nose quantities sphinx pydot psutil xlwt cython</pre>
+pip install nose quantities sphinx pydot psutil xlwt cython
+</pre></div>
 </div>
 </div>
 <div class="section" id="rmg">
 <span id="rmgsources"></span><h2>3.1.8. RMG<a class="headerlink" href="#rmg" title="Permalink to this headline">¶</a></h2>
 <ul>
 <li><p class="first">Download all RMG source packages:</p>
-<div class="highlight-python"><pre>cd /c
+<div class="highlight-python"><div class="highlight"><pre>cd /c
 git clone git@github.com:jwallen/PyDAS.git
 git clone git@github.com:jwallen/PyDQED.git
 git clone git@github.com:GreenGroup/RMG-database.git
-git clone git@github.com:GreenGroup/RMG-Py.git</pre>
+git clone git@github.com:GreenGroup/RMG-Py.git
+</pre></div>
 </div>
 </li>
 <li><p class="first">Build PyDAS by running the provided &#8220;make.bat&#8221; file, then install it:</p>
-<div class="highlight-python"><pre>cd /c/PyDAS
-python setup.py install</pre>
+<div class="highlight-python"><div class="highlight"><pre>cd /c/PyDAS
+python setup.py install
+</pre></div>
 </div>
 </li>
 <li><p class="first">Build and install PyDQED:</p>
-<div class="highlight-python"><pre>cd /c/PyDQED
+<div class="highlight-python"><div class="highlight"><pre>cd /c/PyDQED
 mingw32-make
-python setup.py install</pre>
+python setup.py install
+</pre></div>
 </div>
 </li>
 <li><p class="first">Build and install RMG-Py:</p>
@@ -230,8 +241,9 @@ python setup.py install</pre>
 </div>
 </li>
 <li><p class="first">Run an example:</p>
-<div class="highlight-python"><pre>cd /c/RMG-Py
-python rmg.py examples/rmg/minimal/input.py</pre>
+<div class="highlight-python"><div class="highlight"><pre>cd /c/RMG-Py
+python rmg.py examples/rmg/minimal/input.py
+</pre></div>
 </div>
 <p>Verify your installation by opening the resulting <a class="reference external" href="file:///C:/RMG-Py/examples/rmg/minimal/output.html">output.html</a> file.</p>
 </li>
@@ -293,7 +305,7 @@ python rmg.py examples/rmg/minimal/input.py</pre>
     </div>
     <div class="footer">
         &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div>
   </body>
 </html>

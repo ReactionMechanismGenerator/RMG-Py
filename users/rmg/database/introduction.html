@@ -172,8 +172,9 @@ table below shows all atoms types in RMG.</p>
 </tbody>
 </table>
 <p>Additionally, groups can also be defined as unions of other groups. For example,:</p>
-<div class="highlight-python"><pre>label="X_H_or_Xrad_H",
-group=OR{X_H, Xrad_H},</pre>
+<div class="highlight-python"><div class="highlight"><pre>label=&quot;X_H_or_Xrad_H&quot;,
+group=OR{X_H, Xrad_H},
+</pre></div>
 </div>
 </div>
 <div class="section" id="forbidden-groups">
@@ -186,10 +187,10 @@ or products that are forbidden.  These groups are stored in in the file located 
 <p>To ban certain specific pathways in the kinetics
 families, a <cite>forbidden</cite> group must be created, like the following group
 in the <tt class="docutils literal"><span class="pre">intra_H_migration</span></tt> family</p>
-<div class="highlight-python"><pre>forbidden(
-    label = "bridged56_1254",
+<div class="highlight-python"><div class="highlight"><pre>forbidden(
+    label = &quot;bridged56_1254&quot;,
 group =
-"""""""
+&quot;&quot;&quot;&quot;&quot;&quot;&quot;
 1 *1 C 1 {2,S} {6,S}
 2 *4 C 0 {1,S} {3,S} {7,S}
 3    C 0 {2,S} {4,S}
@@ -198,13 +199,14 @@ group =
 6    C 0 {1,S} {5,S}
 7    C 0 {2,S} {5,S}
 8 *3 H 0 {4,S}
-""",
-    shortDesc = u"""""",
+&quot;&quot;&quot;,
+    shortDesc = u&quot;&quot;&quot;&quot;&quot;&quot;,
     longDesc =
-u"""
+u&quot;&quot;&quot;
 
-""",
-)</pre>
+&quot;&quot;&quot;,
+)
+</pre></div>
 </div>
 <p>Forbidden groups should be placed inside the groups.py file located inside the
 specific kinetics family&#8217;s folder <tt class="docutils literal"><span class="pre">RMG-database/input/kinetics/family_name/</span></tt>
@@ -276,7 +278,7 @@ Templates can be filled in with kinetic parameters from the training set or rule
     </div>
     <div class="footer">
         &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div>
   </body>
 </html>

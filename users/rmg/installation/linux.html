@@ -68,18 +68,20 @@
 The instructions listed below have been confirmed on a fresh Ubuntu 12.04 installation and should generally apply to other distributions.</p>
 <ul>
 <li><p class="first">Install compilers and libraries:</p>
-<div class="highlight-python"><pre>sudo apt-get install git g++ gfortran python-dev liblapack-dev python-openbabel python-setuptools python-pip</pre>
+<div class="highlight-python"><div class="highlight"><pre>sudo apt-get install git g++ gfortran python-dev liblapack-dev python-openbabel python-setuptools python-pip
+</pre></div>
 </div>
 </li>
 <li><p class="first">After creating a <a class="reference external" href="https://github.com/signup/free">Github account</a>, generate your public key:</p>
-<div class="highlight-python"><pre>cd ~; ssh-keygen                # press enter to save to the default directory
+<div class="highlight-python"><div class="highlight"><pre>cd ~; ssh-keygen                # press enter to save to the default directory
                                 # create a password if desired
-cat .ssh/id_rsa.pub</pre>
+cat .ssh/id_rsa.pub
+</pre></div>
 </div>
 <p>Copy this public key to your <a class="reference external" href="https://github.com/settings/ssh">Github profile</a>.</p>
 </li>
 <li><p class="first">Install dependencies:</p>
-<div class="highlight-python"><pre>sudo pip install numpy          # install NumPy before other packages
+<div class="highlight-python"><div class="highlight"><pre>sudo pip install numpy          # install NumPy before other packages
 
 sudo pip install scipy cython nose matplotlib quantities guppy sphinx psutil xlwt freetype2 libpng-dev
 
@@ -87,13 +89,14 @@ cd ~
 git clone https://github.com/GreenGroup/PyDAS.git
 git clone https://github.com/GreenGroup/PyDQED.git
 cd PyDAS; make F77=gfortran; sudo make install; cd ..
-cd PyDQED; make F77=gfortran; sudo make install; cd ..</pre>
+cd PyDQED; make F77=gfortran; sudo make install; cd ..
+</pre></div>
 </div>
 </li>
 <li><p class="first">Install RDKit</p>
 <p>Full installation instructions: <a class="reference external" href="http://code.google.com/p/rdkit/wiki/GettingStarted">http://code.google.com/p/rdkit/wiki/GettingStarted</a>
 Be sure to <strong>build it with InChI support.</strong> Here&#8217;s a synopsis:</p>
-<div class="highlight-python"><pre>cd ~
+<div class="highlight-python"><div class="highlight"><pre>cd ~
 sudo apt-get install flex bison build-essential python-numpy cmake python-dev sqlite3 libsqlite3-dev libboost-dev libboost-python-dev libboost-regex-dev
 git clone https://github.com/rdkit/rdkit.git
 cd rdkit
@@ -107,31 +110,36 @@ mkdir build
 cd build
 cmake .. -DRDK_BUILD_INCHI_SUPPORT=ON
 make
-make install</pre>
+make install
+</pre></div>
 </div>
 <p>You&#8217;ll need various environment variables set (you may want to add these to your <cite>.bash_profile</cite> file), eg.:</p>
-<div class="highlight-python"><pre>export RDBASE=$HOME/rdkit # CHECK THIS (maybe you put RDKit somewhere else)
+<div class="highlight-python"><div class="highlight"><pre>export RDBASE=$HOME/rdkit # CHECK THIS (maybe you put RDKit somewhere else)
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$RDBASE/lib
-export PYTHONPATH=$PYTHONPATH:$RDBASE  # (or some other way to make sure it's on your Python path)</pre>
+export PYTHONPATH=$PYTHONPATH:$RDBASE  # (or some other way to make sure it&#39;s on your Python path)
+</pre></div>
 </div>
 </li>
 <li><p class="first">Install RMG-Py:</p>
-<div class="highlight-python"><pre>    cd ~
+<div class="highlight-python"><div class="highlight"><pre>    cd ~
     git clone https://github.com/GreenGroup/RMG-database.git
     git clone https://github.com/GreenGroup/RMG-Py.git
     sudo pip install -r RMG-Py/requirements.txt
     cd RMG-Py
-make</pre>
+make
+</pre></div>
 </div>
 </li>
 <li><p class="first">Run an example:</p>
-<div class="highlight-python"><pre>python rmg.py examples/rmg/minimal/input.py</pre>
+<div class="highlight-python"><div class="highlight"><pre>python rmg.py examples/rmg/minimal/input.py
+</pre></div>
 </div>
 <p>Verify your installation by opening the resulting output.html file under the &#8220;examples/rmg/minimal&#8221; directory.</p>
 <p>You can also use the Makefile targets to test and run examples:</p>
-<div class="highlight-python"><pre>make test
+<div class="highlight-python"><div class="highlight"><pre>make test
 make eg1
-make eg2</pre>
+make eg2
+</pre></div>
 </div>
 </li>
 </ul>
@@ -176,7 +184,7 @@ make eg2</pre>
     </div>
     <div class="footer">
         &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div>
   </body>
 </html>

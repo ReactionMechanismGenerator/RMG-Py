@@ -72,23 +72,27 @@ you will need some additional software.</p>
 <p>Installation instructions: <a class="reference external" href="http://code.google.com/p/rdkit/wiki/GettingStarted">http://code.google.com/p/rdkit/wiki/GettingStarted</a>
 Build it with InChI support.</p>
 <p>Mac users with <a class="reference external" href="http://brew.sh/">homebrew</a> can install it most easily with:</p>
-<div class="highlight-python"><pre>brew tap edc/homebrew-rdkit
-brew install rdkit --with-inchi</pre>
+<div class="highlight-python"><div class="highlight"><pre>brew tap edc/homebrew-rdkit
+brew install rdkit --with-inchi
+</pre></div>
 </div>
 <p>You&#8217;ll need various environment variables set, eg.:</p>
-<div class="highlight-python"><pre>export RDBASE=$HOME/rdkit # CHECK THIS (maybe you put RDKit somewhere else)
+<div class="highlight-python"><div class="highlight"><pre>export RDBASE=$HOME/rdkit # CHECK THIS (maybe you put RDKit somewhere else)
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$RDBASE/lib
-export PYTHONPATH=$PYTHONPATH:$RDBASE</pre>
+export PYTHONPATH=$PYTHONPATH:$RDBASE
+</pre></div>
 </div>
 </div>
 <div class="section" id="symmetry">
 <h2>3.4.2. SYMMETRY<a class="headerlink" href="#symmetry" title="Permalink to this headline">¶</a></h2>
 <p>See <a class="reference external" href="http://www.cobalt.chem.ucalgary.ca/ps/symmetry">http://www.cobalt.chem.ucalgary.ca/ps/symmetry</a>.
 The source code for this is included in the <cite>external</cite> folder, but it needs compiling.:</p>
-<div class="highlight-python"><pre>$ make -C $RMGpy/external/symmetry</pre>
+<div class="highlight-python"><div class="highlight"><pre>$ make -C $RMGpy/external/symmetry
+</pre></div>
 </div>
 <p>This is now included in the master Makefile, so you can simply type:</p>
-<div class="highlight-python"><pre>$ make QM</pre>
+<div class="highlight-python"><div class="highlight"><pre>$ make QM
+</pre></div>
 </div>
 </div>
 <div class="section" id="mopac">
@@ -96,8 +100,9 @@ The source code for this is included in the <cite>external</cite> folder, but it
 <p>This is a semi-empirical software package you can use for QM calculations.
 See <a class="reference external" href="http://openmopac.net/">http://openmopac.net/</a></p>
 <p>Ensure your environment contains the variables <cite>MOPAC_LICENSE</cite> and <cite>MOPAC_DIR</cite>. eg.:</p>
-<div class="highlight-python"><pre>export MOPAC_LICENSE=$HOME/mopac/
-export MOPAC_DIR=$HOME/mopac</pre>
+<div class="highlight-python"><div class="highlight"><pre>export MOPAC_LICENSE=$HOME/mopac/
+export MOPAC_DIR=$HOME/mopac
+</pre></div>
 </div>
 </div>
 <div class="section" id="gaussian">
@@ -157,7 +162,7 @@ export MOPAC_DIR=$HOME/mopac</pre>
     </div>
     <div class="footer">
         &copy; Copyright 2012, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div>
   </body>
 </html>
