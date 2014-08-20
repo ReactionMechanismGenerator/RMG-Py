@@ -116,33 +116,12 @@ class KineticsLibrary(Database):
 
     def __init__(self, label='', name='', shortDesc='', longDesc=''):
         Database.__init__(self, label=label, name=name, shortDesc=shortDesc, longDesc=longDesc)
-
+        
+    def __str__(self):
+        return 'Kinetics Library {0}'.format(self.label)
+    
     def __repr__(self):
         return '<KineticsLibrary "{0}">'.format(self.label)
-
-    def getSpecies(self, path):
-        """
-        Return a dictionary containing all of the species in this kinetics
-        library.
-        """
-        speciesDict = {}
-    
-        with open(path, 'r') as f:
-            adjlist = ''
-            for line in f:
-                if line.strip() == '' and adjlist.strip() != '':
-                    # Finish this adjacency list
-                    species = Species().fromAdjacencyList(adjlist)
-                    species.generateResonanceIsomers()
-                    label = species.label
-                    if label in speciesDict:
-                        raise DatabaseError('Species label "{0}" used for multiple species in kinetics library {1}.'.format(label, self.label))
-                    speciesDict[label] = species
-                    adjlist = ''
-                else:
-                    adjlist += line
-        
-        return speciesDict
 
     def markValidDuplicates(self, reactions1, reactions2):
         """
@@ -326,32 +305,6 @@ class KineticsLibrary(Database):
         Write the given `entry` in the kinetics library to the file object `f`.
         """
         return saveEntry(f, entry)
-    
-    def saveDictionary(self, path):
-        
-        # Extract species from all the entries
-        speciesDict = {}
-        entries = self.entries.values()
-        for entry in entries:
-            for reactant in entry.item.reactants:
-                if reactant.label not in speciesDict:
-                    speciesDict[reactant.label] = reactant
-                elif not reactant.isIsomorphic(speciesDict[reactant.label]):
-                    print reactant.molecule[0].toAdjacencyList()
-                    print speciesDict[reactant.label].molecule[0].toAdjacencyList()
-                    raise DatabaseError('Species label "{0}" used for multiple species in kinetics library {1}.'.format(reactant.label, self.label))
-            for product in entry.item.products:
-                if product.label not in speciesDict:
-                    speciesDict[product.label] = product
-                elif not product.isIsomorphic(speciesDict[product.label]):
-                    print product.molecule[0].toAdjacencyList()
-                    print speciesDict[product.label].molecule[0].toAdjacencyList()
-                    raise DatabaseError('Species label "{0}" used for multiple species in kinetics library {1}.'.format(product.label, self.label))
-        
-        with open(path, 'w') as f:
-            for label in speciesDict.keys():
-                f.write(speciesDict[label].molecule[0].toAdjacencyList(label=label, removeH=False))
-                f.write('\n')
 
     def loadOld(self, path):
         """
