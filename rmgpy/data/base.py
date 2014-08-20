@@ -284,50 +284,62 @@ class Database:
         entries = self.entries.values()
         for entry in entries:
             for reactant in entry.item.reactants:
+#                print reactant.label
+#                if reactant.label == 'HO':
+#                    print 'here'
+#                    reactant.label = 'OH'
                 if reactant.label not in speciesDict:
                     speciesDict[reactant.label] = reactant
-                else:
-                    index = 0
-                    for label in speciesDict.keys():
-                        if reactant.label in label:
-                            index += 1
-                            if reactant.isIsomorphic(speciesDict[label]):
-                                break
-                    else:
-                        # Reassign reactant label
-                        reactant.label = reactant.label + '-{0}'.format(index)
-                        # then add the new species
-                        speciesDict[reactant.label] = reactant
-                        
-                    
-                            
-#                elif not reactant.isIsomorphic(speciesDict[reactant.label]):
-#                    print reactant.molecule[0].toAdjacencyList()
-#                    print speciesDict[reactant.label].molecule[0].toAdjacencyList()
-#                    reactant.label = reactant.label + '-{0}'.format(index)
-#                    speciesDict[reactant.label] = reactant
-#                    #raise DatabaseError('Species label "{0}" used for multiple species in {1}.'.format(reactant.label, str(self)))
+#                else:
+#                    index = 1
+#                    for label in speciesDict.keys():
+#                        if reactant.label in label.split('-'):
+#                            index += 1
+#                            if reactant.isIsomorphic(speciesDict[label]):
+#                                reactant.label = label
+#                                break
+#                    else:
+#                        # Reassign reactant label
+#                        reactant.label = reactant.label + '-{0}'.format(index)
+#                        # then add the new species
+#                        speciesDict[reactant.label] = reactant
+#                        
+#                    
+#                            
+                elif not reactant.isIsomorphic(speciesDict[reactant.label]):
+                    print reactant.molecule[0].toAdjacencyList()
+                    print speciesDict[reactant.label].molecule[0].toAdjacencyList()
+                    speciesDict[reactant.label] = reactant
+                    raise DatabaseError('Species label "{0}" used for multiple species in {1}.'.format(reactant.label, str(self)))
             for product in entry.item.products:
+#                if product.label == 'HO':
+#                    print 'here'
+#                    product.label = 'OH'
                 if product.label not in speciesDict:
                     speciesDict[product.label] = product
-                else:
-                    index = 0
-                    for label in speciesDict.keys():
-                        if product.label in label:
-                            index += 1
-                            if product.isIsomorphic(speciesDict[label]):
-                                break
-                    else:
-                        # Reassign reactant label
-                        product.label = product.label + '-{0}'.format(index)
-                        # then add the new species
-                        speciesDict[product.label] = product
-#                elif not product.isIsomorphic(speciesDict[product.label]):
-#                    print product.molecule[0].toAdjacencyList()
-#                    print speciesDict[product.label].molecule[0].toAdjacencyList()
-#                    speciesDict[product.label] = reactant
-#                    #raise DatabaseError('Species label "{0}" used for multiple species in {1}.'.format(product.label, str(self)))
-        
+#                else:
+#                    index = 1
+#                    for label in speciesDict.keys():
+#                        if product.label in label.split('-'):
+#                            index += 1
+#                            if product.isIsomorphic(speciesDict[label]):
+#                                product.label = label
+#                                break
+#                    else:
+#                        # Reassign reactant label
+#                        product.label = product.label + '-{0}'.format(index)
+#                        # then add the new species
+#                        speciesDict[product.label] = product
+                elif not product.isIsomorphic(speciesDict[product.label]):
+                    print product.molecule[0].toAdjacencyList()
+                    print speciesDict[product.label].molecule[0].toAdjacencyList()
+                    speciesDict[product.label] = reactant
+                    raise DatabaseError('Species label "{0}" used for multiple species in {1}.'.format(product.label, str(self)))
+#            # reassign reaction label
+#            #print entry.label
+#            entry.label = str(entry.item)
+#            #print entry.label
+            
         with open(path, 'w') as f:
             for label in speciesDict.keys():
                 f.write(speciesDict[label].molecule[0].toAdjacencyList(label=label, removeH=False))
