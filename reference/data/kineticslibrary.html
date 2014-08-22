@@ -132,9 +132,8 @@ saved to the output file.</p>
 
 <dl class="method">
 <dt id="rmgpy.data.kinetics.KineticsLibrary.getSpecies">
-<tt class="descname">getSpecies</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsLibrary.getSpecies" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a dictionary containing all of the species in this kinetics
-library.</p>
+<tt class="descname">getSpecies</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsLibrary.getSpecies" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the dictionary containing all of the species in a kinetics library or depository.</p>
 </dd></dl>
 
 <dl class="method">
@@ -229,6 +228,13 @@ not discard duplicate entries.</p>
 <dd><p>Save the current database to the file at location <cite>path</cite> on disk. The
 optional <cite>entryName</cite> parameter specifies the identifier used for each
 data entry.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsLibrary.saveDictionary">
+<tt class="descname">saveDictionary</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsLibrary.saveDictionary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract species from all entries associated with a kinetics library or depository and save them 
+to the path given.</p>
 </dd></dl>
 
 <dl class="method">

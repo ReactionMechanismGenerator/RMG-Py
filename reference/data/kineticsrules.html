@@ -150,6 +150,12 @@ corresponding entry exists.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsRules.getSpecies">
+<tt class="descname">getSpecies</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsRules.getSpecies" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the dictionary containing all of the species in a kinetics library or depository.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.data.kinetics.KineticsRules.hasRule">
 <tt class="descname">hasRule</tt><big>(</big><em>template</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsRules.hasRule" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if a rate rule with the given <cite>template</cite> currently 
@@ -260,6 +266,13 @@ thermo database, returning the corresponding kinetics object.</p>
 <dd><p>Save the current database to the file at location <cite>path</cite> on disk. The
 optional <cite>entryName</cite> parameter specifies the identifier used for each
 data entry.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsRules.saveDictionary">
+<tt class="descname">saveDictionary</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsRules.saveDictionary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract species from all entries associated with a kinetics library or depository and save them 
+to the path given.</p>
 </dd></dl>
 
 <dl class="method">

@@ -322,6 +322,12 @@ R_Recombination).</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsFamily.getSpecies">
+<tt class="descname">getSpecies</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.getSpecies" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the dictionary containing all of the species in a kinetics library or depository.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.hasRateRule">
 <tt class="descname">hasRateRule</tt><big>(</big><em>template</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.hasRateRule" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if a rate rule with the given <cite>template</cite> currently 
@@ -471,6 +477,13 @@ data entry.</p>
 <tt class="descname">saveDepository</tt><big>(</big><em>depository</em>, <em>path</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.saveDepository" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the given kinetics family <cite>depository</cite> to the location <cite>path</cite> on
 disk.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsFamily.saveDictionary">
+<tt class="descname">saveDictionary</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.saveDictionary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract species from all entries associated with a kinetics library or depository and save them 
+to the path given.</p>
 </dd></dl>
 
 <dl class="method">
