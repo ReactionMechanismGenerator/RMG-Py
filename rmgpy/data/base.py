@@ -1041,7 +1041,7 @@ class Database:
             else:
                 return root
         else:
-            logging.warning('For {0}, a node {1} with overlapping children {2} was encountered in tree with top level nodes {3}. Assuming the first match is the better one.'.format(structure, root, next, self.top))
+            #logging.warning('For {0}, a node {1} with overlapping children {2} was encountered in tree with top level nodes {3}. Assuming the first match is the better one.'.format(structure, root, next, self.top))
             return self.descendTree(structure, atoms, next[0])
 
 ################################################################################
