@@ -331,7 +331,7 @@ class KineticsLibrary(Database):
         species = dict([(label, Species(label=label, molecule=[entry.item])) for label, entry in self.entries.iteritems()])
         
         # Add common bath gases (Ar, Ne, He, N2) if not already present
-        for label, smiles in [('AR','[Ar]'), ('HE','[He]'), ('NE','[Ne]'), ('N2','N#N')]:
+        for label, smiles in [('Ar','[Ar]'), ('He','[He]'), ('Ne','[Ne]'), ('N2','N#N')]:
             if label not in species:
                 molecule = Molecule().fromSMILES(smiles)
                 spec = Species(label=label, molecule=[molecule])
