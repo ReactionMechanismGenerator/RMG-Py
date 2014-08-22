@@ -344,28 +344,37 @@ def calculateCyclicSymmetryNumber(molecule):
     """
     from rdkit.Chem.rdmolops import SanitizeMol
     from rdkit.Chem.rdchem import Mol 
-    mcopy = molecule.toRDKitMol(removeHs=True, returnMapping=False)
-    SanitizeMol(mcopy)
+
     symmetryNumber = 1
-            
-    # Get symmetry number for each ring in structure
+    
+    molecule = molecule.copy(True)
     rings = molecule.getSmallestSetOfSmallestRings()
+    try: 
+        mcopy = molecule.toRDKitMol(removeHs=True, returnMapping=False)
+        SanitizeMol(mcopy)
+    except:
+        # RDKit failed
+        mcopy = None
+        pass
+    
+    # Get symmetry number for each ring in structure
     for ring0 in rings:
 
-        # Make copy of structure
+        # Make another copy structure
         structure = molecule.copy(True)
         ring = [structure.atoms[molecule.atoms.index(atom)] for atom in ring0]
+        
         # Figure out which atoms and bonds are aromatic and reassign appropriately:
-        for i, atom1 in enumerate(ring0):
-            for atom2 in ring0[i+1:]:
-                if molecule.hasBond(atom1, atom2):
-                    if mcopy.GetBondBetweenAtoms(i,i+1) is not None:
-                        if str(mcopy.GetBondBetweenAtoms(i,i+1).GetBondType()) == 'AROMATIC':
-                            bond = molecule.getBond(atom1, atom2)
-                            bond.applyAction(['CHANGE_BOND', atom1, 'B', atom2])
-                            atom1.atomType = atom2.atomType = rmgpy.molecule.atomTypes['Cb']
-                    else:
-                        pass
+        if mcopy is not None:
+            for i, atom1 in enumerate(ring0):
+                for atom2 in ring0[i+1:]:
+                    if molecule.hasBond(atom1, atom2):
+                        if mcopy.GetBondBetweenAtoms(i,i+1) is not None:
+                            if str(mcopy.GetBondBetweenAtoms(i,i+1).GetBondType()) == 'AROMATIC':
+                                bond = molecule.getBond(atom1, atom2)
+                                bond.applyAction(['CHANGE_BOND', atom1, 'B', atom2])
+                                atom1.atomType = atom2.atomType = rmgpy.molecule.atomTypes['Cb']
+        
         # Remove bonds of ring from structure
         for i, atom1 in enumerate(ring):
             for atom2 in ring[i+1:]:
@@ -431,8 +440,6 @@ def calculateCyclicSymmetryNumber(molecule):
             symmetryNumber *= len(ring) * 2
         else:
             symmetryNumber *= min(minEquivalentGroups, minEquivalentBonds)
-
-        #print len(ring), minEquivalentGroups, maxEquivalentGroups, minEquivalentBonds, maxEquivalentBonds, symmetryNumber
 
 
     return symmetryNumber
