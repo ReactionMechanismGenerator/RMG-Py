@@ -148,13 +148,13 @@ class KineticsDepository(Database):
                 if reactant not in speciesDict:
                     raise DatabaseError('Species {0} in kinetics depository {1} is missing from its dictionary.'.format(reactant, self.label))
                 # For some reason we need molecule objects in the depository rather than species objects
-                rxn.reactants.append(speciesDict[reactant].molecule[0])
+                rxn.reactants.append(speciesDict[reactant])
             for product in products.split('+'):
                 product = product.strip()
                 if product not in speciesDict:
                     raise DatabaseError('Species {0} in kinetics depository {1} is missing from its dictionary.'.format(product, self.label))
                 # For some reason we need molecule objects in the depository rather than species objects
-                rxn.products.append(speciesDict[product].molecule[0])
+                rxn.products.append(speciesDict[product])
                 
             if not rxn.isBalanced():
                 raise DatabaseError('Reaction {0} in kinetics depository {1} was not balanced! Please reformulate.'.format(rxn, self.label))    
