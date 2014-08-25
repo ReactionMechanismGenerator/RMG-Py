@@ -46,7 +46,7 @@ species(
 species(
     label='CO',
     reactive=True,
-    structure=SMILES("[C+]#[O-]"),
+    structure=SMILES("[C-]#[O+]"),
 )
 species(
     label='CO2',

@@ -467,32 +467,12 @@ class TestMolecule(unittest.TestCase):
         self.molecule = [Molecule().fromAdjacencyList(self.adjlist_1)]
         
         self.adjlist_2 = """
-1 *1 C u1 p0 {2,S} {3,S} {4,S}
-2    H u0 p0 {1,S}
-3    H u0 p0 {1,S}
-4 *2 N u0 p0 {1,S} {5,S} {6,D}
-5    O u0 p3 {4,S}
-6    O u0 p2 {4,D}
-            """
-        self.molecule.append(Molecule().fromAdjacencyList(self.adjlist_2))
-        
-        self.adjlist_3 = """
-1 *1 C u1 {2,S} {3,S} {4,S}
-2    H u0 {1,S}
-3    H u0 {1,S}
-4 *2 N u0 {1,S} {5,S} {6,D}
-5    O u0 {4,S}
-6    O u0 {4,D}
-            """
-        self.molecule.append(Molecule().fromAdjacencyList(self.adjlist_3))
-        
-        self.adjlist_4 = """
 1 *1 C u1 p0 {2,S}
-2 *2 N u0 p0 {1,S} {3,S} {4,D}
-3    O u0 p3 {2,S}
+2 *2 N u0 p0 c+1 {1,S} {3,S} {4,D}
+3    O u0 p3 c-1 {2,S}
 4    O u0 p2 {2,D}
             """
-        self.molecule.append(Molecule().fromAdjacencyList(self.adjlist_4,saturateH=True))
+        self.molecule.append(Molecule().fromAdjacencyList(self.adjlist_2,saturateH=True))
         
     def testClearLabeledAtoms(self):
         """
@@ -546,8 +526,6 @@ class TestMolecule(unittest.TestCase):
         """
         self.assertEqual(self.molecule[0].getFormula(), 'CH2NO2')
         self.assertEqual(self.molecule[1].getFormula(), 'CH2NO2')
-        self.assertEqual(self.molecule[2].getFormula(), 'CH2NO2')
-        self.assertEqual(self.molecule[3].getFormula(), 'CH2NO2')
 
 
     def testRadicalCount(self):
@@ -556,8 +534,6 @@ class TestMolecule(unittest.TestCase):
         """
         self.assertEqual( self.molecule[0].getRadicalCount(), sum([atom.radicalElectrons for atom in self.molecule[0].atoms]) )
         self.assertEqual( self.molecule[1].getRadicalCount(), sum([atom.radicalElectrons for atom in self.molecule[1].atoms]) )
-        self.assertEqual( self.molecule[2].getRadicalCount(), sum([atom.radicalElectrons for atom in self.molecule[2].atoms]) )
-        self.assertEqual( self.molecule[3].getRadicalCount(), sum([atom.radicalElectrons for atom in self.molecule[3].atoms]) )
         
     def testGetMolecularWeight(self):
         """
@@ -565,8 +541,6 @@ class TestMolecule(unittest.TestCase):
         """
         self.assertAlmostEqual(self.molecule[0].getMolecularWeight() * 1000, 60.03, 2)
         self.assertAlmostEqual(self.molecule[1].getMolecularWeight() * 1000, 60.03, 2)
-        self.assertAlmostEqual(self.molecule[2].getMolecularWeight() * 1000, 60.03, 2)
-        self.assertAlmostEqual(self.molecule[3].getMolecularWeight() * 1000, 60.03, 2)
 
     def testFromAdjacencyList(self):
         """
@@ -614,104 +588,19 @@ class TestMolecule(unittest.TestCase):
         self.assertTrue(bond23.isSingle())
         self.assertTrue(bond24.isDouble())
         
-        
         # molecule 2
         
         self.assertTrue(self.molecule[1].multiplicity == 2)
         
         atom1 = self.molecule[1].atoms[0]
-        atom2 = self.molecule[1].atoms[3]
-        atom3 = self.molecule[1].atoms[4]
-        atom4 = self.molecule[1].atoms[5]
+        atom2 = self.molecule[1].atoms[1]
+        atom3 = self.molecule[1].atoms[2]
+        atom4 = self.molecule[1].atoms[3]
         self.assertTrue(self.molecule[1].hasBond(atom2,atom1))
         self.assertTrue(self.molecule[1].hasBond(atom2,atom3))
         self.assertTrue(self.molecule[1].hasBond(atom2,atom4))
         self.assertFalse(self.molecule[1].hasBond(atom1,atom3))
         self.assertFalse(self.molecule[1].hasBond(atom1,atom4))
-        bond21 = atom2.bonds[atom1]
-        bond23 = atom2.bonds[atom3]
-        bond24 = atom2.bonds[atom4]
-           
-        self.assertTrue(atom1.label == '*1')
-        self.assertTrue(atom1.element.symbol == 'C')
-        self.assertTrue(atom1.radicalElectrons == 1)
-        self.assertTrue(atom1.charge == 0)
-        
-        self.assertTrue(atom2.label == '*2')
-        self.assertTrue(atom2.element.symbol == 'N')
-        self.assertTrue(atom2.radicalElectrons == 0)
-        self.assertTrue(atom2.charge == 1)
-        
-        self.assertTrue(atom3.label == '')
-        self.assertTrue(atom3.element.symbol == 'O')
-        self.assertTrue(atom3.radicalElectrons == 0)
-        self.assertTrue(atom3.charge == -1)
-        
-        self.assertTrue(atom4.label == '')
-        self.assertTrue(atom4.element.symbol == 'O')
-        self.assertTrue(atom4.radicalElectrons == 0)
-        self.assertTrue(atom4.charge == 0)
-
-        self.assertTrue(bond21.isSingle())
-        self.assertTrue(bond23.isSingle())
-        self.assertTrue(bond24.isDouble())
-        
-        
-        # molecule 3
-        
-        self.assertTrue(self.molecule[2].multiplicity == 2)
-        
-        atom1 = self.molecule[2].atoms[0]
-        atom2 = self.molecule[2].atoms[3]
-        atom3 = self.molecule[2].atoms[4]
-        atom4 = self.molecule[2].atoms[5]
-        self.assertTrue(self.molecule[2].hasBond(atom2,atom1))
-        self.assertTrue(self.molecule[2].hasBond(atom2,atom3))
-        self.assertTrue(self.molecule[2].hasBond(atom2,atom4))
-        self.assertFalse(self.molecule[2].hasBond(atom1,atom3))
-        self.assertFalse(self.molecule[2].hasBond(atom1,atom4))
-        bond21 = atom2.bonds[atom1]
-        bond23 = atom2.bonds[atom3]
-        bond24 = atom2.bonds[atom4]
-           
-        self.assertTrue(atom1.label == '*1')
-        self.assertTrue(atom1.element.symbol == 'C')
-        self.assertTrue(atom1.radicalElectrons == 1)
-        self.assertTrue(atom1.charge == 0)
-        
-        self.assertTrue(atom2.label == '*2')
-        self.assertTrue(atom2.element.symbol == 'N')
-        self.assertTrue(atom2.radicalElectrons == 0)
-        self.assertTrue(atom2.charge == 1)
-        
-        self.assertTrue(atom3.label == '')
-        self.assertTrue(atom3.element.symbol == 'O')
-        self.assertTrue(atom3.radicalElectrons == 0)
-        self.assertTrue(atom3.charge == -1)
-        
-        self.assertTrue(atom4.label == '')
-        self.assertTrue(atom4.element.symbol == 'O')
-        self.assertTrue(atom4.radicalElectrons == 0)
-        self.assertTrue(atom4.charge == 0)
-
-        self.assertTrue(bond21.isSingle())
-        self.assertTrue(bond23.isSingle())
-        self.assertTrue(bond24.isDouble())
-        
-        
-        # molecule 4
-        
-        self.assertTrue(self.molecule[3].multiplicity == 2)
-        
-        atom1 = self.molecule[3].atoms[0]
-        atom2 = self.molecule[3].atoms[1]
-        atom3 = self.molecule[3].atoms[2]
-        atom4 = self.molecule[3].atoms[3]
-        self.assertTrue(self.molecule[3].hasBond(atom2,atom1))
-        self.assertTrue(self.molecule[3].hasBond(atom2,atom3))
-        self.assertTrue(self.molecule[3].hasBond(atom2,atom4))
-        self.assertFalse(self.molecule[3].hasBond(atom1,atom3))
-        self.assertFalse(self.molecule[3].hasBond(atom1,atom4))
         bond21 = atom2.bonds[atom1]
         bond23 = atom2.bonds[atom3]
         bond24 = atom2.bonds[atom4]
@@ -1001,7 +890,7 @@ class TestMolecule(unittest.TestCase):
         Test that we can generate a few SMILES strings as expected
         """
         import rmgpy.molecule
-        test_strings =['[C+]#[O-]', '[C]', '[CH]', 'OO', '[H][H]', '[H]', '[He]', '[O]', 'O', '[CH3]', 'C', '[OH]', 'CCC', 'CC', 'N#N', '[O]O', 'C[CH2]', '[Ar]', 'CCCC','O=C=O','[C]#N']
+        test_strings =['[C-]#[O+]', '[C]', '[CH]', 'OO', '[H][H]', '[H]', '[He]', '[O]', 'O', '[CH3]', 'C', '[OH]', 'CCC', 'CC', 'N#N', '[O]O', 'C[CH2]', '[Ar]', 'CCCC','O=C=O','[C]#N']
         for s in test_strings:
             molecule = Molecule(SMILES=s)
             self.assertEqual(s,molecule.toSMILES())
@@ -1021,7 +910,7 @@ class TestMolecule(unittest.TestCase):
         mol = Molecule().fromAdjacencyList("""
             1     C     u1 {2,S}
             2     C     u1 {1,S}
-        """)
+        """, saturateH=True)
         
         self.assertEqual(mol.toAugmentedInChI(), 'InChI=1S/C2H4/c1-2/h1-2H2/mult3')
         
@@ -1032,7 +921,7 @@ class TestMolecule(unittest.TestCase):
         mol = Molecule().fromAdjacencyList("""
             1     C     u1 {2,S}
             2     C     u1 {1,S}
-        """)
+        """, saturateH=True)
         
         self.assertEqual(mol.toAugmentedInChIKey(), 'VGGSQFUCUMXWEO-UHFFFAOYSAmult3')
 
