@@ -158,19 +158,6 @@ defined, compute the reaction-path degeneracy.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="rmgpy.data.kinetics.KineticsFamily.checkWellFormed">
-<tt class="descname">checkWellFormed</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.checkWellFormed" title="Permalink to this definition">¶</a></dt>
-<dd><p>Finds and logs the following errors:</p>
-<p>-Groups named in rules.py that do not exist in groups.py
--Groups named i rules.py that do not share the same definitions
-as its corresponding entry in groups.py
--Groups (in groups.py) that do not exist in the tree
--Groups (in groups.py) which are not actually subgroups of their
-stated parent.</p>
-<p>The errors are logged into a logger object with the handle &#8216;databaseLog&#8217;</p>
-</dd></dl>
-
-<dl class="method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.descendTree">
 <tt class="descname">descendTree</tt><big>(</big><em>structure</em>, <em>atoms</em>, <em>root=None</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.descendTree" title="Permalink to this definition">¶</a></dt>
 <dd><p>Descend the tree in search of the functional group node that best
