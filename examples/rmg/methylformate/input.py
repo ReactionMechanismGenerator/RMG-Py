@@ -8,6 +8,10 @@ database(
     kineticsEstimator = 'rate rules',
 )
 
+generatedSpeciesConstraints(
+    allowed = ['seed mechanisms','reaction libraries', 'input species'],
+)
+
 # List of species
 species(
     label='Mfmt',
@@ -24,6 +28,10 @@ species(
     reactive=True,
     structure=SMILES("C#[C]"),
 )
+
+# Note that CH is globally forbidden in the reaction families.  However this species will
+# react if it is found in one of the reaction libraries or seed mechanisms.  It is explicitly
+# allowed in the generatedSpeciesConstraints.
 species(
     label='CH',
     reactive=True,

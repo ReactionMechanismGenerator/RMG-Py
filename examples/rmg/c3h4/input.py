@@ -3,12 +3,13 @@ database(
 	thermoLibraries = ['primaryThermoLibrary', 'GRI-Mech3.0-N'],
 	reactionLibraries = [],
 	seedMechanisms = ['GRI-Mech3.0-N'],
-	kineticsDepositories = ['training'], #  'all', 'default'==['training'], [], 
-	kineticsFamilies = ['!Intra_Disproportionation','!Substitution_O'],
+	kineticsDepositories = ['training'], 
+	kineticsFamilies = 'default',
 	kineticsEstimator = 'rate rules',
 )
 
 generatedSpeciesConstraints(
+    allowed = ['seed mechanisms'],
     maximumRadicalElectrons = 4,
 )
 
