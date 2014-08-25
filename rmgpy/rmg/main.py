@@ -537,7 +537,7 @@ class RMG:
                     toleranceKeepInEdge = self.fluxToleranceKeepInEdge,
                     toleranceMoveToCore = self.fluxToleranceMoveToCore,
                     toleranceInterruptSimulation = self.fluxToleranceInterrupt,
-                    pdepNetworks = pdepNetworks,
+                    pdepNetworks = self.reactionModel.networkList,
                     worksheet = worksheet,
                     absoluteTolerance = self.absoluteTolerance,
                     relativeTolerance = self.relativeTolerance,
