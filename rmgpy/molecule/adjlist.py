@@ -431,12 +431,8 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
                     unpairedElectrons.append(4)
                 elif u == 'x':
                     if not group:
-                        raise InvalidAdjacencyListError("A molecule should not assign a wildcard to number of unpaired electrons.")
-                    unpairedElectrons.append(0)
-                    unpairedElectrons.append(1)
-                    unpairedElectrons.append(2)
-                    unpairedElectrons.append(3)
-                    unpairedElectrons.append(4)
+                        raise InvalidAdjacencyListError("A molecule should not assign a wildcard to number of unpaired electrons.")                    
+                    unpairedElectrons.extend([0,1,2,3,4])
                 else:
                     raise InvalidAdjacencyListError('Number of unpaired electrons not recognized.')
             index += 1
@@ -466,11 +462,7 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
                     elif l == 'x':
                         if not group:
                             raise InvalidAdjacencyListError("A molecule should not have a wildcard assigned to number of lone pairs.")
-                        lonePairs.append(0)
-                        lonePairs.append(1)
-                        lonePairs.append(2)
-                        lonePairs.append(3)
-                        lonePairs.append(4)
+                        lonePairs.extend([0,1,2,3,4])
                     else:
                         raise InvalidAdjacencyListError('Number of lone electron pairs not recognized.')
                 index += 1
@@ -516,15 +508,7 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
                     elif e == 'x':
                         if not group:
                             raise InvalidAdjacencyListError("A molecule should not have a wildcard assigned to number of charges.")
-                        partialCharges.append(0)
-                        partialCharges.append(1)
-                        partialCharges.append(2)
-                        partialCharges.append(3)
-                        partialCharges.append(4)
-                        partialCharges.append(-1)
-                        partialCharges.append(-2)
-                        partialCharges.append(-3)
-                        partialCharges.append(-4)
+                        partialCharges.extend([0,1,2,3,4,-1,-2,-3,-4])
                     else:
                         raise InvalidAdjacencyListError('Number of partial charges not recognized.')
                 index += 1
