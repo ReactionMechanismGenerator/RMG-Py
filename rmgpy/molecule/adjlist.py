@@ -298,7 +298,6 @@ def fromOldAdjacencyList(adjlist, group=False, saturateH=False):
                             lonePairs=lonePairsOfElectrons
                             )
 
-            atomicMultiplicities[atom] = atomSpinMultiplicity
             # Add the atom to the list
             atoms.append(atom)
             atomdict[aid] = atom
@@ -322,13 +321,6 @@ def fromOldAdjacencyList(adjlist, group=False, saturateH=False):
                     order = [order]
 
                 bonds[aid][aid2] = order
-
-        if group:
-            multiplicity = None
-        else:
-            multiplicity = 1
-            for atom in atoms:
-                multiplicity += max(atomicMultiplicities[atom]) - 1
 
         # Check consistency using bonddict
         for atom1 in bonds:
@@ -383,21 +375,26 @@ def fromOldAdjacencyList(adjlist, group=False, saturateH=False):
                     a.bonds[atom] = b
             atoms.extend(newAtoms)
         
-        # Calculate the number of lone pair electrons requiring molecule with all hydrogen atoms present
-        if not group and lonePairsOfElectrons == -1:
+        # Calculate the number of lone pair electrons and multiplicities for the adjlist
+        if not group:
             orders = {'S': 1, 'D': 2, 'T': 3, 'B': 1.5}
+            nRad = 0   # total number of radical electrons
             for atom in atoms:
                 radical = atom.radicalElectrons
-                order = 0
-                for atom2, bond in atom.bonds.items():
-                    order += orders[bond.order]
-                lonePairs = (1 if atom.symbol == 'H' or atom.symbol == 'He' else 4) - order - radical
-                atom.setLonePairs(lonePairs)
+                nRad += radical
+                # Set the lone pairs of electrons if the adjlist style is missing lone pairs
+                if lonePairsOfElectrons == -1:
+                    order = 0
+                    for atom2, bond in atom.bonds.items():
+                        order += orders[bond.order]
+                    lonePairs = (1 if atom.symbol == 'H' or atom.symbol == 'He' else 4) - order - radical
+                    atom.setLonePairs(lonePairs)
                 atom.updateCharge()
-
-        elif not group:
-            for atom in atoms:
-                atom.updateCharge()
+            multiplicity = nRad + 1     # 2 s + 1, where s is the combined spin of unpaired electrons (s = 1/2 per unpaired electron)
+        
+        else:
+            # Don't set a multiplicity for groups when converting from an old adjlist
+            multiplicity = None        
                     
     except InvalidAdjacencyListError:
         logging.error("Troublesome adjacency list:\n" + adjlist)
