@@ -94,7 +94,7 @@ class Species(object):
     def __init__(self, index=-1, label='', thermo=None, conformer=None, 
                  molecule=None, transportData=None, molecularWeight=None, 
                  dipoleMoment=None, polarizability=None, Zrot=None, 
-                 energyTransferModel=None, reactive=True):
+                 energyTransferModel=None, reactive=True, props={}):
         self.index = index
         self.label = label
         self.thermo = thermo
@@ -115,7 +115,8 @@ class Species(object):
                 if mult != m.multiplicity:
                     raise SpeciesError('Multiplicities of molecules in species {species} do not match.'.format(species=label))
 
-        self.props = {}
+        self.props = props
+
 
     def __repr__(self):
         """
