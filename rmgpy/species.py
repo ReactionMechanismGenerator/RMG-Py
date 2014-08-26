@@ -84,6 +84,7 @@ class Species(object):
     `Zrot`                  The rotational relaxation collision number
     `energyTransferModel`   The collisional energy transfer model to use
     `reactive`              ``True`` if the species participates in reactions, ``False`` if not
+    'props'                 A generic 'properties' dictionary to store user-defined flags
     ======================= ====================================================
 
     note::
