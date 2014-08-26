@@ -86,6 +86,9 @@ class KineticsGroups(Database):
             item = makeLogicNode(group)
         else:
             item = Group().fromAdjacencyList(group)
+            
+        if label in self.entries:
+            raise DatabaseError("Duplicate group name {label} found in kinetics groups for {family} family.".format(label=label,family=self.label))
         self.entries[label] = Entry(
             index = index,
             label = label,
