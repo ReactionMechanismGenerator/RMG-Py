@@ -109,7 +109,14 @@ class TestSpecies(unittest.TestCase):
         """
         string = self.species.toAdjacencyList()
         self.assertTrue(string.startswith(self.species.molecule[0].toAdjacencyList(label=self.species.label,removeH=False)),string)
-
+    
+    def testSpeciesProps(self):
+        '''
+        Create a test in which a key-value pair is added to the props attribute of Species.
+        '''
+        self.species.props['foo'] = 'bar'
+        self.assertIsInstance(self.species.props, dict)
+        self.assertEquals(self.species.props['foo'], 'bar')
 ################################################################################
 
 if __name__ == '__main__':
