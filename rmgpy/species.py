@@ -115,6 +115,7 @@ class Species(object):
                 if mult != m.multiplicity:
                     raise SpeciesError('Multiplicities of molecules in species {species} do not match.'.format(species=label))
 
+        self.props = {}
 
     def __repr__(self):
         """
