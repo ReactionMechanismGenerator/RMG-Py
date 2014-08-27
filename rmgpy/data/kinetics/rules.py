@@ -68,10 +68,6 @@ class KineticsRules(Database):
 
     def loadEntry(self,
                   index,
-                  group1=None,
-                  group2=None,
-                  group3=None,
-                  group4=None,
                   kinetics=None,
                   degeneracy=1,
                   label='',
@@ -83,35 +79,11 @@ class KineticsRules(Database):
                   longDesc='',
                   rank=None,
                   ):
-        
-        reactants = []
-        
-        if group1[0:3].upper() == 'OR{' or group1[0:4].upper() == 'AND{' or group1[0:7].upper() == 'NOT OR{' or group1[0:8].upper() == 'NOT AND{':
-            reactants.append(makeLogicNode(group1))
-        else:
-            reactants.append(Group().fromAdjacencyList(group1))
-        if group2 is not None: 
-            if group2[0:3].upper() == 'OR{' or group2[0:4].upper() == 'AND{' or group2[0:7].upper() == 'NOT OR{' or group2[0:8].upper() == 'NOT AND{':
-                reactants.append(makeLogicNode(group2))
-            else:
-                reactants.append(Group().fromAdjacencyList(group2))
-        if group3 is not None: 
-            if group3[0:3].upper() == 'OR{' or group3[0:4].upper() == 'AND{' or group3[0:7].upper() == 'NOT OR{' or group3[0:8].upper() == 'NOT AND{':
-                reactants.append(makeLogicNode(group3))
-            else:
-                reactants.append(Group().fromAdjacencyList(group3))
-        if group4 is not None: 
-            if group4[0:3].upper() == 'OR{' or group4[0:4].upper() == 'AND{' or group4[0:7].upper() == 'NOT OR{' or group4[0:8].upper() == 'NOT AND{':
-                reactants.append(makeLogicNode(group4))
-            else:
-                reactants.append(Group().fromAdjacencyList(group4))
-        
-        reaction = Reaction(reactants=reactants, products=[])
             
         entry = Entry(
             index = index,
             label = label,
-            item = reaction,
+            # item = reaction,
             data = kinetics,
             reference = reference,
             referenceType = referenceType,

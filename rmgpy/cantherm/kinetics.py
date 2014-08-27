@@ -35,6 +35,9 @@ import logging
 from rmgpy.cantherm.output import prettify
 from rmgpy.kinetics import *
 
+import rmgpy.quantity as quantity
+import rmgpy.constants as constants
+
 ################################################################################
 
 class KineticsJob:
@@ -43,22 +46,84 @@ class KineticsJob:
     and save the high-pressure-limit kinetics information for a single reaction.
     """
     
-    def __init__(self, reaction):
+    def __init__(self, reaction,  
+                 Tmin=None, 
+                 Tmax=None,
+                 Tlist=None,
+                 Tcount=0):
+        
+        if Tmin is not None:
+            self.Tmin = quantity.Quantity(Tmin)
+        else:
+            self.Tmin = None
+            
+        if Tmax is not None:
+            self.Tmax = quantity.Quantity(Tmax)
+        else:
+            self.Tmax = None
+        
+        self.Tcount = Tcount
+        
+        if Tlist is not None:
+            self.Tlist = quantity.Quantity(Tlist)
+            self.Tmin = quantity.Quantity(numpy.min(self.Tlist.value_si),"K")
+            self.Tmax = quantity.Quantity(numpy.max(self.Tlist.value_si),"K")
+            self.Tcount = len(self.Tlist.value_si)
+        else:
+            if Tmin and Tmax is not None:
+                
+                if self.Tcount <= 3.:
+                    self.Tcount = 50
+                
+                stepsize = (self.Tmax.value_si-self.Tmin.value_si)/self.Tcount
+                
+                self.Tlist = quantity.Quantity(numpy.arange(self.Tmin.value_si, self.Tmax.value_si+stepsize, stepsize),"K")
+            else:
+                self.Tlist = None
+        
         self.reaction = reaction
         self.kunits = None
+    
+    @property
+    def Tmin(self):
+        """The minimum temperature at which the computed k(T) values are valid, or ``None`` if not defined."""
+        return self._Tmin
+    @Tmin.setter
+    def Tmin(self, value):
+        self._Tmin = quantity.Temperature(value)
+    
+    @property
+    def Tmax(self):
+        """The maximum temperature at which the computed k(T) values are valid, or ``None`` if not defined."""
+        return self._Tmax
+    @Tmax.setter
+    def Tmax(self, value):
+        self._Tmax = quantity.Temperature(value)
+    
+    @property
+    def Tlist(self):
+        """The temperatures at which the k(T) values are computed."""
+        return self._Tlist
+    @Tlist.setter
+    def Tlist(self, value):
+        self._Tlist = quantity.Temperature(value)
         
     def execute(self, outputFile=None, plot=False):
         """
         Execute the kinetics job, saving the results to the given `outputFile`
         on disk.
         """
-        self.generateKinetics()
+        
+        if self.Tlist is not None:
+            self.generateKinetics(self.Tlist.value_si)
+        else:
+            self.generateKinetics()
         if outputFile is not None:
             self.save(outputFile)
             if plot:
                 self.plot(os.path.dirname(outputFile))
     
-    def generateKinetics(self):
+    def generateKinetics(self,Tlist=None):
         """
         Generate the kinetics data for the reaction and fit it to a modified
         Arrhenius model.
@@ -78,7 +143,8 @@ class KineticsJob:
         
         logging.info('Generating {0} kinetics model for {0}...'.format(kineticsClass, self.reaction))
         
-        Tlist = 1000.0/numpy.arange(0.4, 3.35, 0.05)
+        if Tlist is None:
+            Tlist = 1000.0/numpy.arange(0.4, 3.35, 0.05)
         klist = numpy.zeros_like(Tlist)
         for i in range(Tlist.shape[0]):
             klist[i] = self.reaction.calculateTSTRateCoefficient(Tlist[i])
@@ -105,7 +171,13 @@ class KineticsJob:
         f.write('#   ======= =========== =========== =========== ===============\n')
         f.write('#   Temp.   k (TST)     Tunneling   k (TST+T)   Units\n')
         f.write('#   ======= =========== =========== =========== ===============\n')
-        for T in [300,400,500,600,800,1000,1500,2000]:  
+        
+        if self.Tlist is None:
+            Tlist = [300,400,500,600,800,1000,1500,2000]
+        else:
+            Tlist =self.Tlist.value_si
+
+        for T in Tlist:  
             tunneling = reaction.transitionState.tunneling
             reaction.transitionState.tunneling = None
             k0 = reaction.calculateTSTRateCoefficient(T) * factor

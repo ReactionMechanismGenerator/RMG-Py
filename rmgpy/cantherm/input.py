@@ -181,8 +181,6 @@ def reaction(label, reactants, products, transitionState, kinetics=None, tunneli
     rxn = Reaction(label=label, reactants=reactants, products=products, transitionState=transitionState, kinetics=kinetics)
     reactionDict[label] = rxn
     
-    print rxn
-    
     return rxn
 
 def network(label, isomers=None, reactants=None, products=None, pathReactions=None, bathGas=None):
@@ -254,13 +252,13 @@ def network(label, isomers=None, reactants=None, products=None, pathReactions=No
     )
     networkDict[label] = network
 
-def kinetics(label):
+def kinetics(label,Tmin=None, Tmax=None,Tlist=None, Tcount=0):
     global jobList, reactionDict
     try:
         rxn = reactionDict[label]
     except KeyError:
         raise ValueError('Unknown reaction label {0!r} for kinetics() job.'.format(label))
-    job = KineticsJob(reaction=rxn)
+    job = KineticsJob(reaction=rxn,Tmin=Tmin, Tmax=Tmax,Tcount = Tcount,Tlist=Tlist)
     jobList.append(job)
 
 def statmech(label):

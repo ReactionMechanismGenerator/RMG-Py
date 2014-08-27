@@ -3,8 +3,8 @@ database(
     thermoLibraries = ['primaryThermoLibrary', 'GRI-Mech3.0'],
     reactionLibraries = [],
     seedMechanisms = [],
-    kineticsDepositories = ['training'], #  'all', 'default'==['training'], [], 
-    kineticsFamilies = ['!Intra_Disproportionation','!Substitution_O'],
+    kineticsDepositories = ['training'], 
+    kineticsFamilies = 'default',
     kineticsEstimator = 'rate rules',
 )
 

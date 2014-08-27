@@ -1404,8 +1404,6 @@ def writeKineticsEntry(reaction, speciesList, verbose = True, javaLibrary = Fals
     if isinstance(reaction.kinetics,
                   (_kinetics.MultiArrhenius, _kinetics.MultiPDepArrhenius)):
         if verbose:
-            if isinstance(reaction,LibraryReaction):
-                string += '! Library reaction: {0!s}\n'.format(reaction.library.label)
             if reaction.kinetics.comment:
                 for line in reaction.kinetics.comment.split("\n"):
                     string += "! {0}\n".format(line) 
@@ -1661,8 +1659,8 @@ def saveTransportFile(path, species):
                     shapeIndex,
                     spec.transportData.epsilon.value_si / constants.R,
                     spec.transportData.sigma.value_si * 1e10,
-                    spec.transportData.dipoleMoment.value_si * constants.c * 1e21,
-                    spec.transportData.polarizability.value_si * 1e30,
+                    (spec.transportData.dipoleMoment.value_si * constants.c * 1e21 if spec.transportData.dipoleMoment else 0),
+                    (spec.transportData.polarizability.value_si * 1e30 if spec.transportData.polarizability else 0),
                     (spec.Zrot.value_si if spec.Zrot else 0),
                     spec.transportData.comment,
                 ))

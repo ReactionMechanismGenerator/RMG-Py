@@ -397,7 +397,7 @@ class StatMechJob:
         for mode in conformer.modes:
             if isinstance(mode, HarmonicOscillator):
                 mode.frequencies = (frequencies * self.frequencyScaleFactor,"cm^-1")
-                
+        
         self.species.conformer = conformer
         
     def getZPEfromfrequencies(self, frequencies):
@@ -509,31 +509,32 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds):
     # by subtracting out that model chemistry's atomic energies
     # Note: If your model chemistry does not include spin orbit coupling, you should add the corrections to the energies here
     if modelChemistry == 'CBS-QB3':
-        atomEnergies = {'H':-0.499818 , 'N':-54.520543, 'O':-74.987624, 'C':-37.785385, 'P':-340.817186, 'S': -397.657360}
+        atomEnergies = {'H':-0.499818 + SOC['H'], 'N':-54.520543 + SOC['N'], 'O':-74.987624+ SOC['O'], 'C':-37.785385+ SOC['C'], 'P':-340.817186+ SOC['P'], 'S': -397.657360+ SOC['S']}
     elif modelChemistry == 'G3':
         atomEnergies = {'H':-0.5010030, 'N':-54.564343, 'O':-75.030991, 'C':-37.827717, 'P':-341.116432, 'S': -397.961110}
     elif modelChemistry == 'M08SO/MG3S*': # * indicates that the grid size used in the [QChem} electronic 
         #structure calculation utilized 75 radial points and 434 angular points 
         #(i.e,, this is specified in the $rem section of the [qchem] input file as: XC_GRID 000075000434)
-        atomEnergies = {'H':-0.5017321350, 'N':-54.5574039365, 'O':-75.0382931348, 'C':-37.8245648740, 'P':-341.2444299005, 'S':-398.0940312227 }
+        atomEnergies = {'H':-0.5017321350 + SOC['H'], 'N':-54.5574039365 + SOC['N'], 'O':-75.0382931348+ SOC['O'], 'C':-37.8245648740+ SOC['C'], 'P':-341.2444299005+ SOC['P'], 'S':-398.0940312227+ SOC['S'] }
     elif modelChemistry == 'Klip_1':
-        atomEnergies = {'H':-0.50003976, 'N':-54.53383153, 'O':-75.00935474, 'C':-37.79266591}
+        atomEnergies = {'H':-0.50003976 + SOC['H'], 'N':-54.53383153 + SOC['N'], 'O':-75.00935474+ SOC['O'], 'C':-37.79266591+ SOC['C']}
     elif modelChemistry == 'Klip_2':
         #Klip QCI(tz,qz)
-        atomEnergies = {'H':-0.50003976, 'N':-54.53169400, 'O':-75.00714902, 'C':-37.79060419}
+        atomEnergies = {'H':-0.50003976 + SOC['H'], 'N':-54.53169400 + SOC['N'], 'O':-75.00714902+ SOC['O'], 'C':-37.79060419+ SOC['C']}
     elif modelChemistry == 'Klip_3':
         #Klip QCI(dz,tz)
-        atomEnergies = {'H':-0.50005578, 'N':-54.53128140, 'O':-75.00356581, 'C':-37.79025175}
+        atomEnergies = {'H':-0.50005578 + SOC['H'], 'N':-54.53128140 + SOC['N'], 'O':-75.00356581+ SOC['O'], 'C':-37.79025175+ SOC['C']}
 
     elif modelChemistry == 'Klip_2_cc':
         #Klip CCSD(T)(tz,qz)
-        atomEnergies = {'H':-0.50003976, 'O':-75.00681155, 'C':-37.79029443}
+        atomEnergies = {'H':-0.50003976 + SOC['H'], 'O':-75.00681155+ SOC['O'], 'C':-37.79029443+ SOC['C']}
 
     elif modelChemistry == 'CCSD(T)-F12/cc-pVDZ-F12_H-TZ':
-        atomEnergies = {'H':-0.499946213243, 'N':-54.526406291655, 'O':-74.995458316117, 'C':-37.788203485235}
+        atomEnergies = {'H':-0.499946213243 + SOC['H'], 'N':-54.526406291655 + SOC['N'], 'O':-74.995458316117+ SOC['O'], 'C':-37.788203485235+ SOC['C']}
     elif modelChemistry == 'CCSD(T)-F12/cc-pVDZ-F12_H-QZ':
-        atomEnergies = {'H':-0.499994558325, 'N':-54.526406291655, 'O':-74.995458316117, 'C':-37.788203485235}
-
+        atomEnergies = {'H':-0.499994558325 + SOC['H'], 'N':-54.526406291655 + SOC['N'], 'O':-74.995458316117+ SOC['O'], 'C':-37.788203485235+ SOC['C']}
+    
+    # We are assuming that SOC is included in the Bond Energy Corrections  
     elif modelChemistry == 'CCSD(T)-F12/cc-pVDZ-F12':
 #        atomEnergies = {'H':-0.499811124128, 'N':-54.526406291655, 'O':-74.995458316117, 'C':-37.788203485235}
         atomEnergies = {'H':-0.499811124128, 'N':-54.526406291655, 'O':-74.995458316117, 'C':-37.788203485235, 'S':-397.663040369707}
@@ -541,73 +542,71 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds):
         atomEnergies = {'H':-0.499946213243, 'N':-54.53000909621, 'O':-75.004127673424, 'C':-37.789862146471, 'S':-397.675447487865}
     elif modelChemistry == 'CCSD(T)-F12/cc-pVQZ-F12':
         atomEnergies = {'H':-0.499994558325, 'N':-54.530515226371, 'O':-75.005600062003, 'C':-37.789961656228, 'S':-397.676719774973}
-        
     elif modelChemistry == 'CCSD(T)-F12/cc-pCVDZ-F12':
-        atomEnergies = {'H':-0.499811124128, 'N':-54.582137180344, 'O':-75.053045547421, 'C':-37.840869118707}
+        atomEnergies = {'H':-0.499811124128 + SOC['H'], 'N':-54.582137180344 + SOC['N'], 'O':-75.053045547421 + SOC['O'], 'C':-37.840869118707+ SOC['C']}
     elif modelChemistry == 'CCSD(T)-F12/cc-pCVTZ-F12':
-        atomEnergies = {'H':-0.499946213243, 'N':-54.588545831900, 'O':-75.065995072347, 'C':-37.844662139972}
+        atomEnergies = {'H':-0.499946213243 + SOC['H'], 'N':-54.588545831900 + SOC['N'], 'O':-75.065995072347 + SOC['O'], 'C':-37.844662139972+ SOC['C']}
     elif modelChemistry == 'CCSD(T)-F12/cc-pCVQZ-F12':
-        atomEnergies = {'H':-0.499994558325, 'N':-54.589137594139, 'O':-75.067412234737, 'C':-37.844893820561}
+        atomEnergies = {'H':-0.499994558325 + SOC['H'], 'N':-54.589137594139+ SOC['N'], 'O':-75.067412234737+ SOC['O'], 'C':-37.844893820561+ SOC['C']}
 
     elif modelChemistry == 'CCSD(T)-F12/aug-cc-pVDZ':
-        atomEnergies = {'H':-0.499459066131, 'N':-54.524279516472, 'O':-74.992097308083, 'C':-37.786694171716}
+        atomEnergies = {'H':-0.499459066131 + SOC['H'], 'N':-54.524279516472 + SOC['N'], 'O':-74.992097308083+ SOC['O'], 'C':-37.786694171716+ SOC['C']}
     elif modelChemistry == 'CCSD(T)-F12/aug-cc-pVTZ':
-        atomEnergies = {'H':-0.499844820798, 'N':-54.527419359906, 'O':-75.000001429806, 'C':-37.788504810868}
+        atomEnergies = {'H':-0.499844820798 + SOC['H'], 'N':-54.527419359906 + SOC['N'], 'O':-75.000001429806+ SOC['O'], 'C':-37.788504810868+ SOC['C']}
     elif modelChemistry == 'CCSD(T)-F12/aug-cc-pVQZ':
-        atomEnergies = {'H':-0.499949526073, 'N':-54.529569719016, 'O':-75.004026586610, 'C':-37.789387892348}
+        atomEnergies = {'H':-0.499949526073 + SOC['H'], 'N':-54.529569719016 + SOC['N'], 'O':-75.004026586610+ SOC['O'], 'C':-37.789387892348+ SOC['C']}
 
 
     elif modelChemistry == 'B-CCSD(T)-F12/cc-pVDZ-F12':
-        atomEnergies = {'H':-0.499811124128, 'N':-54.523269942190, 'O':-74.990725918500, 'C':-37.785409916465, 'S': -397.658155086033}
+        atomEnergies = {'H':-0.499811124128 + SOC['H'], 'N':-54.523269942190 + SOC['N'], 'O':-74.990725918500 + SOC['O'], 'C':-37.785409916465 + SOC['C'], 'S': -397.658155086033 + SOC['S']}
     elif modelChemistry == 'B-CCSD(T)-F12/cc-pVTZ-F12':
-        atomEnergies = {'H':-0.499946213243, 'N':-54.528135889213, 'O':-75.001094055506, 'C':-37.788233578503, 'S':-397.671745425929}
+        atomEnergies = {'H':-0.499946213243 + SOC['H'], 'N':-54.528135889213 + SOC['N'], 'O':-75.001094055506 + SOC['O'], 'C':-37.788233578503 + SOC['C'], 'S':-397.671745425929 + SOC['S']}
     elif modelChemistry == 'B-CCSD(T)-F12/cc-pVQZ-F12':
-        atomEnergies = {'H':-0.499994558325, 'N':-54.529425753163, 'O':-75.003820485005, 'C':-37.789006506290, 'S':-397.674145126931}
-        
+        atomEnergies = {'H':-0.499994558325 + SOC['H'], 'N':-54.529425753163 + SOC['N'], 'O':-75.003820485005 + SOC['O'], 'C':-37.789006506290 + SOC['C'], 'S':-397.674145126931 + SOC['S']}
     elif modelChemistry == 'B-CCSD(T)-F12/cc-pCVDZ-F12':
-        atomEnergies = {'H':-0.499811124128, 'N':-54.578602780288, 'O':-75.048064317367, 'C':-37.837592033417}
+        atomEnergies = {'H':-0.499811124128 + SOC['H'], 'N':-54.578602780288 + SOC['N'], 'O':-75.048064317367+ SOC['O'], 'C':-37.837592033417+ SOC['C']}
     elif modelChemistry == 'B-CCSD(T)-F12/cc-pCVTZ-F12':
-        atomEnergies = {'H':-0.499946213243, 'N':-54.586402551258, 'O':-75.062767632757, 'C':-37.842729156944}
+        atomEnergies = {'H':-0.499946213243 + SOC['H'], 'N':-54.586402551258 + SOC['N'], 'O':-75.062767632757+ SOC['O'], 'C':-37.842729156944+ SOC['C']}
     elif modelChemistry == 'B-CCSD(T)-F12/cc-pCVQZ-F12':
-        atomEnergies = {'H':-0.49999456, 'N':-54.587781507581, 'O':-75.065397706471, 'C':-37.843634971592}
+        atomEnergies = {'H':-0.49999456 + SOC['H'], 'N':-54.587781507581 + SOC['N'], 'O':-75.065397706471+ SOC['O'], 'C':-37.843634971592+ SOC['C']}
 
     elif modelChemistry == 'B-CCSD(T)-F12/aug-cc-pVDZ':
-        atomEnergies = {'H':-0.499459066131, 'N':-54.520475581942, 'O':-74.986992215049, 'C':-37.783294495799}
+        atomEnergies = {'H':-0.499459066131 + SOC['H'], 'N':-54.520475581942 + SOC['N'], 'O':-74.986992215049+ SOC['O'], 'C':-37.783294495799+ SOC['C']}
     elif modelChemistry == 'B-CCSD(T)-F12/aug-cc-pVTZ':
-        atomEnergies = {'H':-0.499844820798, 'N':-54.524927371700, 'O':-74.996328829705, 'C':-37.786320700792}
+        atomEnergies = {'H':-0.499844820798 + SOC['H'], 'N':-54.524927371700 + SOC['N'], 'O':-74.996328829705+ SOC['O'], 'C':-37.786320700792+ SOC['C']}
     elif modelChemistry == 'B-CCSD(T)-F12/aug-cc-pVQZ':
-        atomEnergies = {'H':-0.499949526073, 'N':-54.528189769291, 'O':-75.001879610563, 'C':-37.788165047059}
+        atomEnergies = {'H':-0.499949526073 + SOC['H'], 'N':-54.528189769291 + SOC['N'], 'O':-75.001879610563+ SOC['O'], 'C':-37.788165047059+ SOC['C']}
 
     elif modelChemistry == 'DFT_G03_b3lyp':
-        atomEnergies = {'H':-0.502256981529, 'N':-54.6007233648, 'O':-75.0898777574, 'C':-37.8572666349}
+        atomEnergies = {'H':-0.502256981529 + SOC['H'], 'N':-54.6007233648 + SOC['N'], 'O':-75.0898777574+ SOC['O'], 'C':-37.8572666349+ SOC['C']}
     elif modelChemistry == 'DFT_ks_b3lyp':
-        atomEnergies = {'H':-0.49785866, 'N':-54.45608798, 'O':-74.93566254, 'C':-37.76119132}
+        atomEnergies = {'H':-0.49785866 + SOC['H'], 'N':-54.45608798 + SOC['N'], 'O':-74.93566254+ SOC['O'], 'C':-37.76119132+ SOC['C']}
     elif modelChemistry == 'DFT_uks_b3lyp':
-        atomEnergies = {'H':-0.49785866, 'N':-54.45729113, 'O':-74.93566254, 'C':-37.76119132}
+        atomEnergies = {'H':-0.49785866 + SOC['H'], 'N':-54.45729113 + SOC['N'], 'O':-74.93566254+ SOC['O'], 'C':-37.76119132+ SOC['C']}
 
     elif modelChemistry == 'MP2_rmp2_pVDZ':
-        atomEnergies = {'H':-0.49927840, 'N':-54.46141996, 'O':-74.89408254, 'C':-37.73792713}
+        atomEnergies = {'H':-0.49927840 + SOC['H'], 'N':-54.46141996 + SOC['N'], 'O':-74.89408254+ SOC['O'], 'C':-37.73792713+ SOC['C']}
     elif modelChemistry == 'MP2_rmp2_pVTZ':
-        atomEnergies = {'H':-0.49980981, 'N':-54.49615972, 'O':-74.95506980, 'C':-37.75833104}
+        atomEnergies = {'H':-0.49980981 + SOC['H'], 'N':-54.49615972 + SOC['N'], 'O':-74.95506980+ SOC['O'], 'C':-37.75833104+ SOC['C']}
     elif modelChemistry == 'MP2_rmp2_pVQZ':
-        atomEnergies = {'H':-0.49994557, 'N':-54.50715868, 'O':-74.97515364, 'C':-37.76533215}
+        atomEnergies = {'H':-0.49994557 + SOC['H'], 'N':-54.50715868 + SOC['N'], 'O':-74.97515364+ SOC['O'], 'C':-37.76533215+ SOC['C']}
 
     elif modelChemistry == 'CCSD-F12/cc-pVDZ-F12':
-        atomEnergies = {'H':-0.499811124128, 'N':-54.524325513811, 'O':-74.992326577897, 'C':-37.786213495943}
+        atomEnergies = {'H':-0.499811124128 + SOC['H'], 'N':-54.524325513811 + SOC['N'], 'O':-74.992326577897+ SOC['O'], 'C':-37.786213495943+ SOC['C']}
 
     elif modelChemistry == 'CCSD(T)-F12/cc-pVDZ-F12_noscale':
-        atomEnergies = {'H':-0.499811124128, 'N':-54.526026290887, 'O':-74.994751897699, 'C':-37.787881871511}
+        atomEnergies = {'H':-0.499811124128 + SOC['H'], 'N':-54.526026290887 + SOC['N'], 'O':-74.994751897699+ SOC['O'], 'C':-37.787881871511+ SOC['C']}
 
     elif modelChemistry == 'G03_PBEPBE_6-311++g_d_p':
-        atomEnergies = {'H':-0.499812273282, 'N':-54.5289567564, 'O':-75.0033596764, 'C':-37.7937388736}
+        atomEnergies = {'H':-0.499812273282 + SOC['H'], 'N':-54.5289567564 + SOC['N'], 'O':-75.0033596764+ SOC['O'], 'C':-37.7937388736+ SOC['C']}
 
     elif modelChemistry == 'FCI/cc-pVDZ':
 #        atomEnergies = {'C':-37.760717371923}
-        atomEnergies = {'C':-37.789527}
+        atomEnergies = {'C':-37.789527+ SOC['C']}
     elif modelChemistry == 'FCI/cc-pVTZ':
-        atomEnergies = {'C':-37.781266669684}
+        atomEnergies = {'C':-37.781266669684+ SOC['C']}
     elif modelChemistry == 'FCI/cc-pVQZ':
-        atomEnergies = {'C':-37.787052110598}
+        atomEnergies = {'C':-37.787052110598+ SOC['C']}
         
     elif modelChemistry == 'BMK/cbsb7':
         atomEnergies = {'H':-0.498618853119+ SOC['H'], 'N':-54.5697851544+ SOC['N'], 'O':-75.0515210278+ SOC['O'], 'C':-37.8287310027+ SOC['C'], 'P':-341.167615941+ SOC['P'], 'S': -398.001619915+ SOC['S']}
@@ -653,10 +652,15 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds):
             'O-H':  0.07, 'C-O': 0.25, 'C=O': -0.03, 'O-O': 0.26, 'N-C': -0.20,
             'N=C': -0.30, 'N#C': -1.33, 'N-O': 1.01, 'N_O': -0.03, 'N=O': -0.26,
             'N-H':  0.06, 'N-N': -0.23, 'N=N': -0.37, 'N#N': -0.64,}
-    else:
+    
+    # BAC corrections from Table IX in http://jcp.aip.org/resource/1/jcpsa6/v109/i24/p10570_s1 for CBS-Q method
+    # H-Cl correction from CBS-QB3 enthalpy difference with Gurvich 1989, HF298=-92.31 kJ
+    elif modelChemistry == 'CBS-QB3':
         bondEnergies = { 'C-H': -0.11, 'C-C': -0.3, 'C=C': -0.08, 'C#C': -0.64,
             'O-H': 0.02, 'C-O': 0.33, 'C=O': 0.55, 'N#N': -2.0, 'O=O': -0.2, 
-            'H-H': 1.1, 'C#N': -0.89, 'C-S': 0.43, 'S=O': -0.78, 'S-H': 0.0,}
+            'H-H': 1.1, 'C#N': -0.89, 'C-S': 0.43, 'S=O': -0.78, 'S-H': 0.0, }
+    else:
+        logging.warning('No bond energy correction found for  model chemistry: {0}'.format(modelChemistry))
 
     for symbol, count in bonds.items():
         if symbol in bondEnergies: E0 += count * bondEnergies[symbol] * 4184.

@@ -246,6 +246,63 @@ class Database:
             entries = self.entries.values()
             entries.sort(key=lambda x: (x.index))
         return entries
+    
+    def getSpecies(self, path):
+        """
+        Load the dictionary containing all of the species in a kinetics library or depository.
+        """
+        from rmgpy.species import Species
+        speciesDict = {}
+        with open(path, 'r') as f:
+            adjlist = ''
+            for line in f:
+                if line.strip() == '' and adjlist.strip() != '':
+                    # Finish this adjacency list
+                    species = Species().fromAdjacencyList(adjlist)
+                    species.generateResonanceIsomers()
+                    label = species.label
+                    if label in speciesDict:
+                        raise DatabaseError('Species label "{0}" used for multiple species in {1}.'.format(label, str(self)))
+                    speciesDict[label] = species
+                    adjlist = ''
+                else:
+                    adjlist += line
+        
+        return speciesDict
+    
+    def saveDictionary(self, path):
+        """
+        Extract species from all entries associated with a kinetics library or depository and save them 
+        to the path given.
+        """
+        try:
+            os.makedirs(os.path.dirname(path))
+        except OSError:
+            pass
+        # Extract species from all the entries
+        speciesDict = {}
+        entries = self.entries.values()
+        for entry in entries:
+            for reactant in entry.item.reactants:
+                if reactant.label not in speciesDict:
+                    speciesDict[reactant.label] = reactant
+                elif not reactant.isIsomorphic(speciesDict[reactant.label]):
+                    print reactant.molecule[0].toAdjacencyList()
+                    print speciesDict[reactant.label].molecule[0].toAdjacencyList()
+                    speciesDict[reactant.label] = reactant
+                    raise DatabaseError('Species label "{0}" used for multiple species in {1}.'.format(reactant.label, str(self)))
+            for product in entry.item.products:
+                if product.label not in speciesDict:
+                    speciesDict[product.label] = product
+                elif not product.isIsomorphic(speciesDict[product.label]):
+                    print product.molecule[0].toAdjacencyList()
+                    print speciesDict[product.label].molecule[0].toAdjacencyList()
+                    raise DatabaseError('Species label "{0}" used for multiple species in {1}.'.format(product.label, str(self)))
+            
+        with open(path, 'w') as f:
+            for label in speciesDict.keys():
+                f.write(speciesDict[label].molecule[0].toAdjacencyList(label=label, removeH=False))
+                f.write('\n')
 
     def save(self, path):
         """
@@ -253,6 +310,10 @@ class Database:
         optional `entryName` parameter specifies the identifier used for each
         data entry.
         """
+        try:
+            os.makedirs(os.path.dirname(path))
+        except OSError:
+            pass
         entries = self.getEntriesToSave()
 
         f = codecs.open(path, 'w', 'utf-8')
@@ -769,135 +830,6 @@ class Database:
             descendants.append(child)
             descendants.extend(self.descendants(child))
         return descendants
-
-    def checkWellFormed(self):
-        """
-        Return :data:`True` if the database is well-formed. A well-formed
-        database has an entry in the dictionary for every entry in the tree, and
-        an entry in the tree for every entry in the library. If no tree is
-        present (e.g. the primary libraries), then every entry in the library
-        must have an entry in the dictionary. Finally, each entry in the
-        library must have the same number of nodes as the number of top-level
-        nodes in the tree, if the tree is present; this is for databases with
-        multiple trees, e.g. the kinetics databases.
-        """
-        
-        
-        from rmgpy.data.kinetics.family import KineticsFamily
-        
-        #list of nodes that are not wellFormed
-        noGroup=[]
-        noMatchingGroup={}
-        notInTree=[]
-        notSubgroup=[]
-        probablyProduct=[]
-        
-        # Give correct arguments for each type of database
-        if isinstance(self, KineticsFamily):
-            library=self.rules.entries
-            groups=self.groups.entries
-            treeIsPresent=True
-            topNodes=self.getRootTemplate()
-
-        # Make list of all nodes in library
-        libraryNodes=[]
-        libraryNodesSplit = []
-        for nodes in library:
-            libraryNodes.append(nodes)
-            libraryNodesSplit.extend(nodes.split(';'))
-        libraryNodesSplit = list(set(libraryNodesSplit))
-
-        
-
-        try:
-            for node in libraryNodesSplit:
-
-            # All nodes in library must be in dictionary
-                if node not in groups:
-                    noGroup.append(node)
-                    
-                #no point checking in tree if it doesn't even exist in groups
-                for libraryNode in libraryNodes:
-                    nodes=libraryNode.split(';')
-                    for libraryEntry in library[libraryNode]:
-                        for node in nodes:
-                            for libraryGroup in libraryEntry.item.reactants:
-                                try:
-                                    if groups[node].item.isIsomorphic(libraryGroup):
-                                        break
-                                except AttributeError:
-                                    if isinstance(groups[node].item, LogicOr) and isinstance(libraryGroup, LogicOr):
-                                        if groups[node].item==libraryGroup:
-                                            break
-                                except TypeError:
-                                    print libraryGroup, type(libraryGroup)
-                                except KeyError:
-                                    noGroup.append(node)
-                            else:
-                                noMatchingGroup[node]=libraryNode
-                
-            if treeIsPresent:
-                # All nodes need to be in the tree
-                # This is true when ascending through parents leads to a top node
-                for nodeName in groups:
-                    ascendParent=self.groups.entries[nodeName]
-
-                    while ascendParent not in topNodes:
-                        child=ascendParent
-                        ascendParent=ascendParent.parent
-                        if ascendParent is None or child not in ascendParent.children:
-                            if child.index==-1:
-                                probablyProduct.append(child.label)
-                                break
-                            else:
-                            # If a group is not in a tree, we want to save the uppermost parent, not necessarily the original node
-                                notInTree.append(child.label)
-                                break
-                    #check if child is actually subgroup of parent
-                    ascendParent=self.groups.entries[nodeName].parent
-                    if ascendParent is not None:
-                        try:
-                            if not ascendParent.item.isSubgraphIsomorphic(self.groups.entries[nodeName].item):
-                                notSubgroup.append(nodeName)
-                        except AttributeError:
-                            if isinstance(groups[node].item, LogicOr) and isinstance(libraryGroup, LogicOr):
-                                if groups[node].item==libraryGroup:
-                                    break
-                        except TypeError:
-                            print libraryGroup, type(libraryGroup)
-            # The adj list of each node actually needs to be subset of its parent's adjlist
-            #More to come later -nyee
-        except DatabaseError, e:
-            logging.error(str(e))
-
-#             # If a tree is present, all nodes in library should be in tree
-#             # (Technically the database is still well-formed, but let's warn
-#             # the user anyway
-#             if len(self.tree.parent) > 0:
-#                 try:
-#                     if node not in self.tree.parent:
-#                         raise DatabaseError('Node "{0}" in library is not present in tree.'.format(node))
-#                 except DatabaseError, e:
-#                     logging.warning(str(e))
-# 
-#         # If a tree is present, all nodes in tree must be in dictionary
-#         if self.tree is not None:
-#             for node in self.tree.parent:
-#                 try:
-#                     if node not in self.entries:
-#                         raise DatabaseError('Node "{0}" in tree is not present in dictionary.'.format(node))
-#                 except DatabaseError, e:
-#                     wellFormed = False
-#                     logging.error(str(e))
-        
-#         for libraryRule in library:
-            #check the groups
-        
-        #eliminate duplicates
-        noGroup=list(set(noGroup))
-        notInTree=list(set(notInTree))
-        
-        return (noGroup, noMatchingGroup, notInTree, notSubgroup, probablyProduct)
     
     def matchNodeToNode(self, node, nodeOther):
         """ 
@@ -1041,7 +973,7 @@ class Database:
             else:
                 return root
         else:
-            logging.warning('For {0}, a node {1} with overlapping children {2} was encountered in tree with top level nodes {3}. Assuming the first match is the better one.'.format(structure, root, next, self.top))
+            #logging.warning('For {0}, a node {1} with overlapping children {2} was encountered in tree with top level nodes {3}. Assuming the first match is the better one.'.format(structure, root, next, self.top))
             return self.descendTree(structure, atoms, next[0])
 
 ################################################################################

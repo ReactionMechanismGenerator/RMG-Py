@@ -10,6 +10,7 @@ database(
 
 # Constraints on generated species
 generatedSpeciesConstraints(
+    allowed=['seed mechanisms'],
     maximumRadicalElectrons = 2,
 )
 

@@ -116,37 +116,12 @@ class KineticsLibrary(Database):
 
     def __init__(self, label='', name='', shortDesc='', longDesc=''):
         Database.__init__(self, label=label, name=name, shortDesc=shortDesc, longDesc=longDesc)
-
+        
+    def __str__(self):
+        return 'Kinetics Library {0}'.format(self.label)
+    
     def __repr__(self):
         return '<KineticsLibrary "{0}">'.format(self.label)
-
-    def getSpecies(self):
-        """
-        Return a dictionary containing all of the species in this kinetics
-        library.
-        """
-        speciesDict = {}
-        
-        entries = self.entries.values()
-        for entry in entries:
-            for reactant in entry.item.reactants:
-                if reactant.label not in speciesDict:
-                    speciesDict[reactant.label] = reactant
-                elif not reactant.isIsomorphic(speciesDict[reactant.label]):
-                    print reactant.molecule[0].toAdjacencyList()
-                    print speciesDict[reactant.label].molecule[0].toAdjacencyList()
-                    raise DatabaseError('Species label "{0}" used for multiple species in kinetics library {1}.'.format(reactant.label, self.label))
-            for product in entry.item.products:
-                if product.label not in speciesDict:
-                    speciesDict[product.label] = product
-                elif not product.isIsomorphic(speciesDict[product.label]):
-                    import pdb; pdb.set_trace()
-                    print product.molecule[0].toAdjacencyList()
-                    print speciesDict[product.label].molecule[0].toAdjacencyList()
-                    print product.molecule[0].isIsomorphic(speciesDict[product.label].molecule[0])
-                    raise DatabaseError('Species label "{0}" used for multiple species in kinetics library {1}.'.format(product.label, self.label))
-        
-        return speciesDict
 
     def markValidDuplicates(self, reactions1, reactions2):
         """
@@ -246,26 +221,44 @@ class KineticsLibrary(Database):
         Database.load(self, path, local_context, global_context)
         
         # Generate a unique set of the species in the kinetics library
-        speciesDict = self.getSpecies()
+        speciesDict = self.getSpecies(os.path.join(os.path.dirname(path),'dictionary.txt'))
         # Make sure all of the reactions draw from only this set
         entries = self.entries.values()
         for entry in entries:
-            entry.item.reactants = [speciesDict[spec.label] for spec in entry.item.reactants]
-            entry.item.products = [speciesDict[spec.label] for spec in entry.item.products]
+            # Create a new reaction per entry
+            rxn = entry.item
+            rxn_string = entry.label
+            # Convert the reactants and products to Species objects using the speciesDict
+            reactants, products = rxn_string.split('=')
+            reversible = True
+            if '<=>' in rxn_string:
+                reactants = reactants[:-1]
+                products = products[1:]
+            elif '=>' in rxn_string:
+                products = products[1:]
+                reversible = False
+            assert reversible == rxn.reversible
+            for reactant in reactants.split('+'):
+                reactant = reactant.strip()
+                if reactant not in speciesDict:
+                    raise DatabaseError('Species {0} in kinetics library {1} is missing from its dictionary.'.format(reactant, self.label))
+                rxn.reactants.append(speciesDict[reactant])
+            for product in products.split('+'):
+                product = product.strip()
+                if product not in speciesDict:
+                    raise DatabaseError('Species {0} in kinetics library {1} is missing from its dictionary.'.format(product, self.label))
+                rxn.products.append(speciesDict[product])
+                
+            if not rxn.isBalanced():
+                raise DatabaseError('Reaction {0} in kinetics library {1} was not balanced! Please reformulate.'.format(rxn, self.label))    
             
         self.checkForDuplicates()
         
     def loadEntry(self,
                   index,
-                  reactant1,
-                  product1,
+                  label,
                   kinetics,
-                  reactant2=None,
-                  reactant3=None,
-                  product2=None,
-                  product3=None,
                   degeneracy=1,
-                  label='',
                   duplicate=False,
                   reversible=True,
                   reference=None,
@@ -274,28 +267,20 @@ class KineticsLibrary(Database):
                   longDesc='',
                   ):
         
-        
-        reactants = [Species(label=reactant1.strip().splitlines()[0].strip(), molecule=[Molecule().fromAdjacencyList(reactant1)])]
-        if reactant2 is not None: reactants.append(Species(label=reactant2.strip().splitlines()[0].strip(), molecule=[Molecule().fromAdjacencyList(reactant2)]))
-        if reactant3 is not None: reactants.append(Species(label=reactant3.strip().splitlines()[0].strip(), molecule=[Molecule().fromAdjacencyList(reactant3)]))
-
-        products = [Species(label=product1.strip().splitlines()[0].strip(), molecule=[Molecule().fromAdjacencyList(product1)])]
-        if product2 is not None: products.append(Species(label=product2.strip().splitlines()[0].strip(), molecule=[Molecule().fromAdjacencyList(product2)]))
-        if product3 is not None: products.append(Species(label=product3.strip().splitlines()[0].strip(), molecule=[Molecule().fromAdjacencyList(product3)]))
-        
-        comment = "Reaction and kinetics from {0}.".format(self.label)
-        if shortDesc.strip(): 
-            comment += "{0!s}\n".format(shortDesc.strip())
-        if longDesc.strip():
-            comment += str(re.sub('\s*\n\s*','\n',longDesc))
-        kinetics.comment = comment.strip()
-        
-        # Perform mass balance check on the reaction
-        rxn = Reaction(reactants=reactants, products=products, degeneracy=degeneracy, duplicate=duplicate, reversible=reversible)
-        if not rxn.isBalanced():
-            raise DatabaseError('Reaction {0} in kinetics library {1} was not balanced! Please reformulate.'.format(rxn, self.label))        
-
-        assert index not in self.entries, "Reaction with index {0} already present!".format(index)
+#        reactants = [Species(label=reactant1.strip().splitlines()[0].strip(), molecule=[Molecule().fromAdjacencyList(reactant1)])]
+#        if reactant2 is not None: reactants.append(Species(label=reactant2.strip().splitlines()[0].strip(), molecule=[Molecule().fromAdjacencyList(reactant2)]))
+#        if reactant3 is not None: reactants.append(Species(label=reactant3.strip().splitlines()[0].strip(), molecule=[Molecule().fromAdjacencyList(reactant3)]))
+#
+#        products = [Species(label=product1.strip().splitlines()[0].strip(), molecule=[Molecule().fromAdjacencyList(product1)])]
+#        if product2 is not None: products.append(Species(label=product2.strip().splitlines()[0].strip(), molecule=[Molecule().fromAdjacencyList(product2)]))
+#        if product3 is not None: products.append(Species(label=product3.strip().splitlines()[0].strip(), molecule=[Molecule().fromAdjacencyList(product3)]))
+#        
+        # Make a blank reaction
+        rxn = Reaction(reactants=[], products=[], degeneracy=degeneracy, duplicate=duplicate, reversible=reversible)
+#        if not rxn.isBalanced():
+#            raise DatabaseError('Reaction {0} in kinetics library {1} was not balanced! Please reformulate.'.format(rxn, self.label))        
+#        label = str(rxn)
+        assert index not in self.entries, "Reaction {0} already present!".format(label)
         self.entries[index] = Entry(
             index = index,
             label = label,
@@ -331,7 +316,7 @@ class KineticsLibrary(Database):
         species = dict([(label, Species(label=label, molecule=[entry.item])) for label, entry in self.entries.iteritems()])
         
         # Add common bath gases (Ar, Ne, He, N2) if not already present
-        for label, smiles in [('AR','[Ar]'), ('HE','[He]'), ('NE','[Ne]'), ('N2','N#N')]:
+        for label, smiles in [('Ar','[Ar]'), ('He','[He]'), ('Ne','[Ne]'), ('N2','N#N')]:
             if label not in species:
                 molecule = Molecule().fromSMILES(smiles)
                 spec = Species(label=label, molecule=[molecule])

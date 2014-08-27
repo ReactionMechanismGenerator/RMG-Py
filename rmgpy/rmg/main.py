@@ -347,6 +347,13 @@ class RMG:
             # that RMG can find them if their rates are large enough
             for library, option in self.reactionLibraries:
                 self.reactionModel.addReactionLibraryToEdge(library)
+                
+            # Also always add in a few bath gases (since RMG-Java does)
+            for label, smiles in [('Ar','[Ar]'), ('He','[He]'), ('Ne','[Ne]'), ('N2','N#N')]:
+                molecule = Molecule().fromSMILES(smiles)
+                spec, isNew = self.reactionModel.makeNewSpecies(molecule, label=label, reactive=False)
+                if isNew:
+                    self.initialSpecies.append(spec)
             
             # Perform species constraints and forbidden species checks on input species
             for spec in self.initialSpecies:
@@ -530,7 +537,7 @@ class RMG:
                     toleranceKeepInEdge = self.fluxToleranceKeepInEdge,
                     toleranceMoveToCore = self.fluxToleranceMoveToCore,
                     toleranceInterruptSimulation = self.fluxToleranceInterrupt,
-                    pdepNetworks = pdepNetworks,
+                    pdepNetworks = self.reactionModel.networkList,
                     worksheet = worksheet,
                     absoluteTolerance = self.absoluteTolerance,
                     relativeTolerance = self.relativeTolerance,

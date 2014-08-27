@@ -134,35 +134,28 @@ def saveEntry(f, entry):
         f.write('    label = "{0}",\n'.format(entry.label))
 
     if isinstance(entry.item, Reaction):
-        for i, reactant in enumerate(entry.item.reactants):
-            if isinstance(reactant, Molecule):
-                f.write('    reactant{0:d} = \n'.format(i+1))
-                f.write('"""\n')
-                f.write(reactant.toAdjacencyList(removeH=False))
-                f.write('""",\n')
-            elif isinstance(reactant, Species):
-                f.write('    reactant{0:d} = \n'.format(i+1))
-                f.write('"""\n')
-                f.write(reactant.molecule[0].toAdjacencyList(label=reactant.label, removeH=False))
-                f.write('""",\n')
-            elif isinstance(reactant, Group):
-                f.write('    group{0:d} = \n'.format(i+1))
-                f.write('"""\n')
-                f.write(reactant.toAdjacencyList())
-                f.write('""",\n')
-            elif isinstance(reactant, LogicNode):
-                f.write('    group{0:d} = "{1}",\n'.format(i+1, reactant))
-        for i, product in enumerate(entry.item.products):
-            if isinstance(product, Molecule):
-                f.write('    product{0:d} = \n'.format(i+1))
-                f.write('"""\n')
-                f.write(product.toAdjacencyList(removeH=False))
-                f.write('""",\n')
-            elif isinstance(reactant, Species):
-                f.write('    product{0:d} = \n'.format(i+1))
-                f.write('"""\n')
-                f.write(product.molecule[0].toAdjacencyList(label=product.label, removeH=False))
-                f.write('""",\n')
+#        for i, reactant in enumerate(entry.item.reactants):
+#            if isinstance(reactant, Molecule):
+#                f.write('    reactant{0:d} = \n'.format(i+1))
+#                f.write('"""\n')
+#                f.write(reactant.toAdjacencyList(removeH=False))
+#                f.write('""",\n')
+#            elif isinstance(reactant, Species):
+#                f.write('    reactant{0:d} = \n'.format(i+1))
+#                f.write('"""\n')
+#                f.write(reactant.molecule[0].toAdjacencyList(label=reactant.label, removeH=False))
+#                f.write('""",\n')
+#        for i, product in enumerate(entry.item.products):
+#            if isinstance(product, Molecule):
+#                f.write('    product{0:d} = \n'.format(i+1))
+#                f.write('"""\n')
+#                f.write(product.toAdjacencyList(removeH=False))
+#                f.write('""",\n')
+#            elif isinstance(reactant, Species):
+#                f.write('    product{0:d} = \n'.format(i+1))
+#                f.write('"""\n')
+#                f.write(product.molecule[0].toAdjacencyList(label=product.label, removeH=False))
+#                f.write('""",\n')
         if not isinstance(entry.item.reactants[0], Group) and not isinstance(entry.item.reactants[0], LogicNode):
             f.write('    degeneracy = {0:d},\n'.format(entry.item.degeneracy))
         if entry.item.duplicate: 
@@ -213,18 +206,22 @@ def saveEntry(f, entry):
         f.write('    referenceType = "{0}",\n'.format(entry.referenceType))
     if entry.rank is not None:
         f.write('    rank = {0},\n'.format(entry.rank))
-    f.write('    shortDesc = u"""')
-    try:
-        f.write(entry.shortDesc.encode('utf-8'))
-    except:
-        f.write(entry.shortDesc.strip().encode('ascii', 'ignore')+ "\n")
-    f.write('""",\n')
-    f.write('    longDesc = \n')
-    f.write('u"""\n')
-    try:
-        f.write(entry.longDesc.strip().encode('utf-8') + "\n")
-    except:
-        f.write(entry.longDesc.strip().encode('ascii', 'ignore')+ "\n")
-    f.write('""",\n')
+        
+    if entry.shortDesc.strip() !='':
+        f.write('    shortDesc = u"""')
+        try:
+            f.write(entry.shortDesc.encode('utf-8'))
+        except:
+            f.write(entry.shortDesc.strip().encode('ascii', 'ignore')+ "\n")
+        f.write('""",\n')
+    
+    if entry.longDesc.strip() !='':
+        f.write('    longDesc = \n')
+        f.write('u"""\n')
+        try:
+            f.write(entry.longDesc.strip().encode('utf-8') + "\n")
+        except:
+            f.write(entry.longDesc.strip().encode('ascii', 'ignore')+ "\n")
+        f.write('""",\n')
 
     f.write(')\n\n')

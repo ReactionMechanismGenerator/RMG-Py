@@ -3,6 +3,7 @@
 
 import unittest
 from external.wip import work_in_progress
+from rmgpy.molecule.adjlist import *
 from rmgpy.molecule.molecule import *
 from rmgpy.molecule.group import Group
 from rmgpy.molecule.element import getElement, elementList
@@ -174,11 +175,11 @@ class TestMoleculeAdjLists(unittest.TestCase):
         """
         # molecule 2
         adjlist = """
-1 *1 C u1 p0 {2,S} {3,S} {4,S}
-2    H u0 p0 {1,S}
-3    H u0 p0 {1,S}
-4 *2 N u0 p0 {1,S} {5,S} {6,D}
-5    O u0 p3 {4,S}
+1 *1 C u1 {2,S} {3,S} {4,S}
+2    H u0 {1,S}
+3    H u0 {1,S}
+4 *2 N u0 p0 c+1 {1,S} {5,S} {6,D}
+5    O u0 p3 c-1 {4,S}
 6    O u0 p2 {4,D}
             """
         molecule = Molecule().fromAdjacencyList(adjlist)
@@ -231,9 +232,9 @@ class TestMoleculeAdjLists(unittest.TestCase):
 1 *1 C u1 {2,S} {3,S} {4,S}
 2    H u0 {1,S}
 3    H u0 {1,S}
-4 *2 N u0 {1,S} {5,S} {6,D}
-5    O u0 {4,S}
-6    O u0 {4,D}
+4 *2 N u0 p0 c+1 {1,S} {5,S} {6,D}
+5    O u0 p3 c-1 {4,S}
+6    O u0 p2 {4,D}
             """
         molecule = Molecule().fromAdjacencyList(adjlist)
         
@@ -283,9 +284,9 @@ class TestMoleculeAdjLists(unittest.TestCase):
         """
         # molecule 4
         adjlist = """
-1 *1 C u1 p0 {2,S}
-2 *2 N u0 p0 {1,S} {3,S} {4,D}
-3    O u0 p3 {2,S}
+1 *1 C u1 {2,S}
+2 *2 N u0 p0 c+1 {1,S} {3,S} {4,D}
+3    O u0 p3 c-1 {2,S}
 4    O u0 p2 {2,D}
             """
         molecule = Molecule().fromAdjacencyList(adjlist, saturateH=True)
@@ -328,6 +329,35 @@ class TestMoleculeAdjLists(unittest.TestCase):
         self.assertTrue(bond21.isSingle())
         self.assertTrue(bond23.isSingle())
         self.assertTrue(bond24.isDouble())
+        
+    def testWildcardAdjlists(self):
+        """
+        adjlist: Test that molecule adjlists containing wildcards raise an InvalidAdjacencyListError.
+        """
+        # A molecule with a wildcard assignment
+        wildcardAdjlist1 = "1 C u1 px c0"
+        wildcardAdjlist2 = "1 C ux p2 c0"
+        wildcardAdjlist3 = "1 C u1 p2 cx"
+        wildcardAdjlist4 = "1 [C,N] u1 p2 c0"
+
+        with self.assertRaises(InvalidAdjacencyListError):
+            Molecule().fromAdjacencyList(wildcardAdjlist1)
+        with self.assertRaises(InvalidAdjacencyListError):
+            Molecule().fromAdjacencyList(wildcardAdjlist2)
+        with self.assertRaises(InvalidAdjacencyListError):
+            Molecule().fromAdjacencyList(wildcardAdjlist3)
+        with self.assertRaises(InvalidAdjacencyListError):
+            Molecule().fromAdjacencyList(wildcardAdjlist4)
+            
+    def testIncorrectAdjlists(self):
+        """
+        adjlist: Test that improperly formed adjlists raise an InvalidAdjacencyListError.
+        """
+        # Carbon with 1 radical and 3 lone pairs = 7 total electrons.  Should have -3 charge but doesn't
+        adjlist1 = "1 C u1 p3 c0"
+        
+        with self.assertRaises(InvalidAdjacencyListError):
+            Molecule().fromAdjacencyList(adjlist1)
         
     def testHelium(self):
         """

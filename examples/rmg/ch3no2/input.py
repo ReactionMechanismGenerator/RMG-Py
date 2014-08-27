@@ -4,12 +4,13 @@ database(
     reactionLibraries = [('Nitrogen_Dean_and_Bozzelli',False)], 
     seedMechanisms = ['ERC-FoundationFuelv0.9'],
     kineticsDepositories = ['training'],
-    kineticsFamilies = ['!Intra_Disproportionation', '!Substitution_O'],
+    kineticsFamilies = 'default',
     kineticsEstimator = 'rate rules',
 )
 
 # Constraints on generated species
 generatedSpeciesConstraints(
+    allowed = ['seed mechanisms', 'reaction libraries'],
     #maximumCarbonAtoms = 7,
     #maximumHydrogenAtoms = 8,
     #maximumOxygenAtoms = 5,
@@ -26,13 +27,13 @@ species(
     reactive=True,
         structure=adjacencyList(
         """
-        1 C u0 p0 {2,S} {3,S} {4,S} {5,S}
-        2 H u0 p0 {1,S}
-        3 H u0 p0 {1,S}
-        4 H u0 p0 {1,S}
-        5 N u0 p0 {1,S} {6,D} {7,S}
-        6 O u0 p2 {5,D}
-        7 O u0 p3 {5,S}
+        1 C u0 p0     {2,S} {3,S} {4,S} {5,S}
+        2 H u0 p0     {1,S}
+        3 H u0 p0     {1,S}
+        4 H u0 p0     {1,S}
+        5 N u0 p0 c+1 {1,S} {6,D} {7,S}
+        6 O u0 p2     {5,D}
+        7 O u0 p3 c-1 {5,S}
         """),
 )
 

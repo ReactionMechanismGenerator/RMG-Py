@@ -219,7 +219,7 @@ class Species(rmgpy.species.Species):
             for T in Tlist:
                 err += (self.thermo.getHeatCapacity(T) - thermo0.getHeatCapacity(T))**2
             err = math.sqrt(err/len(Tlist))/constants.R
-            logging.log(logging.WARNING if err > 0.2 else 0, 'Average RMS error in heat capacity fit to {0} = {1:g}*R'.format(self, err))
+            # logging.log(logging.WARNING if err > 0.2 else 0, 'Average RMS error in heat capacity fit to {0} = {1:g}*R'.format(self, err))
 
         return self.thermo
 
@@ -406,7 +406,12 @@ class CoreEdgeReactionModel:
             # so that we can use the label in file paths
             label = molecule.toSMILES().replace('/','').replace('\\','')
         logging.debug('Creating new species {0}'.format(label))
-        spec = Species(index=self.speciesCounter+1, label=label, molecule=[molecule], reactive=reactive)
+        if reactive:
+            self.speciesCounter += 1   # count only reactive species
+            speciesIndex = self.speciesCounter
+        else:
+            speciesIndex = -1
+        spec = Species(index=speciesIndex, label=label, molecule=[molecule], reactive=reactive)
         spec.coreSizeAtCreation = len(self.core.species)
         spec.generateResonanceIsomers()
         spec.molecularWeight = Quantity(spec.molecule[0].getMolecularWeight()*1000.,"amu")
@@ -418,7 +423,6 @@ class CoreEdgeReactionModel:
         else:
             self.speciesDict[formula] = [spec]
 
-        self.speciesCounter += 1
 
         # Since the species is new, add it to the list of new species
         self.newSpeciesList.append(spec)
