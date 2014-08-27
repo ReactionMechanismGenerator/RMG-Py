@@ -814,11 +814,8 @@ class ThermoDatabase(object):
         saturatedStruct.updateLonePairs()
         saturatedStruct.multiplicity = 1
         
-        # Get thermo estimate for saturated form of structure
-        logging.info("/n This is using HBI to calculate thermo for radicals. ")
-        logging.info("/n Before thermo estimation the saturated structure for the radical has symmetry number: {0}. ".format(saturatedStruct.symmetryNumber))
-        thermoData = stableThermoEstimator(saturatedStruct)
-        logging.info("/n After thermo estimation the saturated structure for the radical has symmetry number: {0}. ".format(saturatedStruct.symmetryNumber))
+        # Get thermo estimate for saturated form of structure        
+        thermoData = stableThermoEstimator(saturatedStruct)        
         if thermoData is None:
             logging.info("Thermo data of saturated {0} of molecule {1} is None.".format(saturatedStruct, molecule))
             return None
