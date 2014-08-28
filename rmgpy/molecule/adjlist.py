@@ -112,7 +112,7 @@ class ConsistencyChecker(object):
                                                 .format(symbol=atom.symbol, radicals=atom.radicalElectrons, lonePairs=atom.lonePairs, charge=atom.charge))
 
     @staticmethod
-    def check_multiplicity(self, nRad, multiplicity):
+    def check_multiplicity(nRad, multiplicity):
         '''
         Check if the parameter multiplicity is an odd number,
         since the multiplicity should comply with the formula
@@ -121,7 +121,7 @@ class ConsistencyChecker(object):
         '''
         
         # Overall multiplicity check   
-        if multiplicity % 2 == 1: raise InvalidAdjacencyListError('Multiplicity not in agreement with total number of radicals.')
+        if multiplicity % 2 == 0: raise InvalidAdjacencyListError('Multiplicity not in agreement with total number of radicals.')
             
 ################################################################################
 
