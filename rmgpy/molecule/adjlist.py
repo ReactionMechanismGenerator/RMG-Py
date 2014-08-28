@@ -103,9 +103,8 @@ class ConsistencyChecker(object):
             order = 0
             for _, bond in atom.bonds.items():
                 order += bond_orders[bond.order]
-            maximum = 2 if (atom.symbol == 'H' or atom.symbol == 'He') else 8
-            
-            theoretical = maximum - valence - order - atom.radicalElectrons - 2*atom.lonePairs
+                
+            theoretical = valence - order - atom.radicalElectrons - 2*atom.lonePairs
 
             if atom.charge != theoretical:
                 raise InvalidAdjacencyListError('Invalid valency for atom {symbol} with {radicals} unpaired electrons, {lonePairs} pairs of electrons, and {charge} charge.'
