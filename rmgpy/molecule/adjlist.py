@@ -37,6 +37,7 @@ from .molecule import Atom, Bond
 from .group import GroupAtom, GroupBond
 #import chempy.molecule.atomtype as atomtypes
 
+bond_orders = {'S': 1, 'D': 2, 'T': 3, 'B': 1.5}
 
 class PeriodicSystem(object):
     valence_electrons_first_period_elements  = {'H':1, 'He':2}
@@ -50,6 +51,43 @@ class PeriodicSystem(object):
     valence_electrons.update(valence_electrons_second_period_elements)
     valence_electrons.update(valence_electrons_third_period_elements)
     
+class Saturator(object):
+    @staticmethod
+    def saturate(atoms):
+            '''
+            Returns a list of atoms that is extended 
+            (and bond attributes) by saturating the valency of the non-hydrogen atoms with an 
+            appropriate number of hydrogen atoms.
+            
+            The required number of hydrogen atoms per heavy atom is determined as follows:
+            H's =     max number of valence electrons - atom.radicalElectrons
+                        - 2* atom.lonePairs - order - atom.charge
+            
+            '''
+            global bond_orders
+            newAtoms = []
+            for atom in atoms:
+                try:
+                    max_number_of_valence_electrons = PeriodicSystem.valence_electrons[atom.symbol]
+                except KeyError:
+                    raise InvalidAdjacencyListError('Cannot add hydrogens to adjacency list: Unknown orbital for atom "{0}".'.format(atom.symbol))
+                
+                order = 0
+                for _, bond in atom.bonds.items():
+                    order += bond_orders[bond.order]
+                    
+                number_of_H_to_be_added = max_number_of_valence_electrons - atom.radicalElectrons - 2* atom.lonePairs - int(order) - atom.charge
+                
+                if number_of_H_to_be_added < 0:
+                    raise InvalidAdjacencyListError('Incorrect electron configuration on atom.')
+                    
+                for _ in range(number_of_H_to_be_added):
+                    a = Atom(element='H', radicalElectrons=0, charge=0, label='', lonePairs=0)
+                    b = Bond(atom, a, 'S')
+                    newAtoms.append(a)
+                    atom.bonds[a] = b
+                    a.bonds[atom] = b
+            atoms.extend(newAtoms)  
 
 ################################################################################
 
@@ -593,30 +631,8 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
     if saturateH:
         # Add explicit hydrogen atoms to complete structure if desired
         if not group:
-            orders = {'S': 1, 'D': 2, 'T': 3, 'B': 1.5}
-            newAtoms = []
-            for atom in atoms:
-                try:
-                    max_number_of_valence_electrons = PeriodicSystem.valence_electrons[atom.symbol]
-                except KeyError:
-                    raise InvalidAdjacencyListError('Cannot add hydrogens to adjacency list: Unknown orbital for atom "{0}".'.format(atom.symbol))
-                
-                order = 0
-                for atom2, bond in atom.bonds.items():
-                    order += orders[bond.order]
-                    
-                number_of_H_to_be_added = max_number_of_valence_electrons - atom.radicalElectrons - 2* atom.lonePairs - int(order) - atom.charge
-                
-                if number_of_H_to_be_added < 0:
-                    raise InvalidAdjacencyListError('Incorrect electron configuration on atom.')
-                    
-                for i in range(number_of_H_to_be_added):
-                    a = Atom(element='H', radicalElectrons=0, charge=0, label='', lonePairs=0)
-                    b = Bond(atom, a, 'S')
-                    newAtoms.append(a)
-                    atom.bonds[a] = b
-                    a.bonds[atom] = b
-            atoms.extend(newAtoms)
+            Saturator.saturate(atoms)
+
     
     # Consistency checks
     if not group:
