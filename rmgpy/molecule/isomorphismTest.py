@@ -2,7 +2,10 @@
 # -*- coding: utf-8 -*-
 
 from nose.tools import assert_equal
-from nose_parameterized import parameterized
+try:
+    from nose_parameterized import parameterized
+except:
+    print 'Install nose-parameterized via: "pip install nose-parametrized" !'
 import itertools
 import unittest
 from rmgpy.molecule.molecule import Molecule
@@ -10,8 +13,14 @@ from rmgpy.molecule.molecule import Molecule
 ################################################################################
 
 def load_test_cases():
-    allowed_charges = ['0', '+1', '-1']
-    return list(itertools.combinations_with_replacement(allowed_charges, 2))
+    charges  = list(itertools.combinations_with_replacement(['0', '+1', '-1'], 2))
+    elements = list(itertools.combinations(['C', 'O', 'N', 'S'], 1)) 
+    input_test = []
+    for el in elements:
+        for charge_combo in charges:#prepend element to tuple
+            input_test.append(el+charge_combo)
+    
+    return input_test
 
 class TestIsomorphism(unittest.TestCase):
     def create(self, adjlist):
@@ -28,11 +37,11 @@ class TestIsomorphism(unittest.TestCase):
     
     '''
     @parameterized.expand(load_test_cases)
-    def testIsomorphism_with_charge(self, charge_mol_1, charge_mol_2):
+    def testIsomorphism_with_charge(self, element, charge_mol_1, charge_mol_2):
         '''
         Check whether isomorphism sees difference in charge
         '''
-        base = "1 C u0 p0 c"
+        base = "1 "+element+" u0 p0 c"
         mol1 = self.create(base+charge_mol_1)
         mol2 = self.create(base+charge_mol_2)
         err = charge_mol_1+charge_mol_2
