@@ -5,7 +5,7 @@ from nose.tools import assert_equal
 try:
     from nose_parameterized import parameterized
 except:
-    print 'Install nose-parameterized via: "pip install nose-parametrized" !'
+    print 'Install nose-parameterized via: "pip install nose-parameterized" !'
     
 import itertools
 import unittest
