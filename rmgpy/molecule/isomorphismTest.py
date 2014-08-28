@@ -6,11 +6,13 @@ try:
     from nose_parameterized import parameterized
 except:
     print 'Install nose-parameterized via: "pip install nose-parametrized" !'
+    
 import itertools
 import unittest
 from rmgpy.molecule.molecule import Molecule
 
 ################################################################################
+lp = {'C': 0, 'O': 2, 'N': 1, 'S': 2}
 
 def load_test_cases():
     charges  = list(itertools.combinations_with_replacement(['0', '+1', '-1'], 2))
@@ -41,10 +43,13 @@ class TestIsomorphism(unittest.TestCase):
         '''
         Check whether isomorphism sees difference in charge
         '''
-        base = "1 "+element+" u0 p0 c"
+        global lp
+
+        base = "1 "+element+" u0 p"+str(lp[element])+" c"
         mol1 = self.create(base+charge_mol_1)
         mol2 = self.create(base+charge_mol_2)
         err = charge_mol_1+charge_mol_2
         exp = charge_mol_1 == charge_mol_2#string comparison will give us expected value!
         assert_equal(mol1.isIsomorphic(mol2), exp, err)
 ################################################################################
+        
