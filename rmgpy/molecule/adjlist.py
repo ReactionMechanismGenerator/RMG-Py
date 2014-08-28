@@ -31,12 +31,37 @@
 This module contains functionality for reading from and writing to the
 adjacency list format used by Reaction Mechanism Generator (RMG).
 """
-
+from sets import Set
 import logging
 import re
 from .molecule import Atom, Bond
 from .group import GroupAtom, GroupBond
 #import chempy.molecule.atomtype as atomtypes
+
+    
+supported_first_period_elements  = {'H', 'He'}
+    
+supported_second_period_elements = {'C', 'O', 'N', 'Ne'}
+    
+supported_third_period_elements  = {'Si', 'S', 'Cl', 'Ar'}
+    
+#supported_elements = supported_first_period_elements & supported_second_period_elements & supported_third_period_elements
+    
+'''
+    We consider that the number of orbitals available for valence electrons
+    equals the maximum number of valence electrons for each period of the
+    periodic system.
+    
+    For the first period, there is one 1s orbital,
+    for the second period, there is one 2s and 3 2p orbitals, a total of 4 orbitals
+    for the third period, we actually treat them the same as second period elements.
+'''
+max_orbitals_per_row = {'first_row': 1, 'second_row': 4, 'third_row': 4}
+valence_orbitals = {}
+valence_orbitals.update({x : max_orbitals_per_row['first_row'] for x in supported_first_period_elements})
+valence_orbitals.update({x : max_orbitals_per_row['second_row'] for x in supported_second_period_elements})
+valence_orbitals.update({x : max_orbitals_per_row['third_row'] for x in supported_third_period_elements})
+    
 
 ################################################################################
 
@@ -580,12 +605,12 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
     if saturateH:
         # Add explicit hydrogen atoms to complete structure if desired
         if not group:
-            orbitals = {'H': 1, 'C': 4, 'O': 4, 'N': 4, 'S': 4, 'Si': 4, 'Cl': 1, 'He': 0, 'Ne': 0, 'Ar': 0}
+            global valence_orbitals
             orders = {'S': 1, 'D': 2, 'T': 3, 'B': 1.5}
             newAtoms = []
             for atom in atoms:
                 try:
-                    orbital = orbitals[atom.symbol]
+                    orbital = valence_orbitals[atom.symbol]
                 except KeyError:
                     raise InvalidAdjacencyListError('Cannot add hydrogens to adjacency list: Unknown orbital for atom "{0}".'.format(atom.symbol))
                 
