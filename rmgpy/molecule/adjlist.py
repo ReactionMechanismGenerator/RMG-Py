@@ -39,28 +39,16 @@ from .group import GroupAtom, GroupBond
 #import chempy.molecule.atomtype as atomtypes
 
     
-supported_first_period_elements  = {'H', 'He'}
+valence_electrons_first_period_elements  = {'H':1, 'He':2}
     
-supported_second_period_elements = {'C', 'O', 'N', 'Ne'}
+valence_electrons_second_period_elements = {'C':4, 'N':5, 'O':6, 'Ne':8}
     
-supported_third_period_elements  = {'Si', 'S', 'Cl', 'Ar'}
+valence_electrons_third_period_elements  = {'Si':4, 'S':6, 'Cl':7, 'Ar':8}
     
-#supported_elements = supported_first_period_elements & supported_second_period_elements & supported_third_period_elements
-    
-'''
-    We consider that the number of orbitals available for valence electrons
-    equals the maximum number of valence electrons for each period of the
-    periodic system.
-    
-    For the first period, there is one 1s orbital,
-    for the second period, there is one 2s and 3 2p orbitals, a total of 4 orbitals
-    for the third period, we actually treat them the same as second period elements.
-'''
-max_orbitals_per_row = {'first_row': 1, 'second_row': 4, 'third_row': 4}
-valence_orbitals = {}
-valence_orbitals.update({x : max_orbitals_per_row['first_row'] for x in supported_first_period_elements})
-valence_orbitals.update({x : max_orbitals_per_row['second_row'] for x in supported_second_period_elements})
-valence_orbitals.update({x : max_orbitals_per_row['third_row'] for x in supported_third_period_elements})
+valence_electrons = {}
+valence_electrons.update(valence_electrons_first_period_elements)
+valence_electrons.update(valence_electrons_second_period_elements)
+valence_electrons.update(valence_electrons_third_period_elements)
     
 
 ################################################################################
@@ -605,24 +593,25 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
     if saturateH:
         # Add explicit hydrogen atoms to complete structure if desired
         if not group:
-            global valence_orbitals
+            global valence_electrons
             orders = {'S': 1, 'D': 2, 'T': 3, 'B': 1.5}
             newAtoms = []
             for atom in atoms:
                 try:
-                    orbital = valence_orbitals[atom.symbol]
+                    max_number_of_valence_electrons = valence_electrons[atom.symbol]
                 except KeyError:
                     raise InvalidAdjacencyListError('Cannot add hydrogens to adjacency list: Unknown orbital for atom "{0}".'.format(atom.symbol))
                 
                 order = 0
                 for atom2, bond in atom.bonds.items():
                     order += orders[bond.order]
-                count = orbital - atom.radicalElectrons - atom.lonePairs - int(order)
+                    
+                number_of_H_to_be_added = max_number_of_valence_electrons - atom.radicalElectrons - 2* atom.lonePairs - int(order) - atom.charge
                 
-                if count < 0:
+                if number_of_H_to_be_added < 0:
                     raise InvalidAdjacencyListError('Incorrect electron configuration on atom.')
                     
-                for i in range(count):
+                for i in range(number_of_H_to_be_added):
                     a = Atom(element='H', radicalElectrons=0, charge=0, label='', lonePairs=0)
                     b = Bond(atom, a, 'S')
                     newAtoms.append(a)
