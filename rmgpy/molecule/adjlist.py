@@ -117,10 +117,18 @@ class ConsistencyChecker(object):
         since the multiplicity should comply with the formula
         
         m = 2s + 1, with s the sum of the spin of the unpaired electrons
-        '''
         
-        # Overall multiplicity check   
-        if multiplicity % 2 == 0: raise InvalidAdjacencyListError('Multiplicity not in agreement with total number of radicals.')
+        For a simple radical (nRad = 1): 
+        s = 1/2 (doublet), m = 2
+        
+        For a biradical, s can be either 0 (singlet) or 1 (triplet)
+        and m = 1 (singlet) or m = 3 (triplet)
+        '''
+        if nRad == 1:
+            if multiplicity != 2:
+                raise InvalidAdjacencyListError('Multiplicity not in agreement with total number of radicals.')
+        if nRad == 2:
+            if multiplicity in [1,3]: raise InvalidAdjacencyListError('Multiplicity not in agreement with total number of radicals.')                        
             
 ################################################################################
 
