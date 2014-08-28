@@ -31,24 +31,24 @@
 This module contains functionality for reading from and writing to the
 adjacency list format used by Reaction Mechanism Generator (RMG).
 """
-from sets import Set
 import logging
 import re
 from .molecule import Atom, Bond
 from .group import GroupAtom, GroupBond
 #import chempy.molecule.atomtype as atomtypes
 
-    
-valence_electrons_first_period_elements  = {'H':1, 'He':2}
-    
-valence_electrons_second_period_elements = {'C':4, 'N':5, 'O':6, 'Ne':8}
-    
-valence_electrons_third_period_elements  = {'Si':4, 'S':6, 'Cl':7, 'Ar':8}
-    
-valence_electrons = {}
-valence_electrons.update(valence_electrons_first_period_elements)
-valence_electrons.update(valence_electrons_second_period_elements)
-valence_electrons.update(valence_electrons_third_period_elements)
+
+class PeriodicSystem(object):
+    valence_electrons_first_period_elements  = {'H':1, 'He':2}
+        
+    valence_electrons_second_period_elements = {'C':4, 'N':5, 'O':6, 'Ne':8}
+        
+    valence_electrons_third_period_elements  = {'Si':4, 'S':6, 'Cl':7, 'Ar':8}
+        
+    valence_electrons = {}
+    valence_electrons.update(valence_electrons_first_period_elements)
+    valence_electrons.update(valence_electrons_second_period_elements)
+    valence_electrons.update(valence_electrons_third_period_elements)
     
 
 ################################################################################
@@ -593,12 +593,11 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
     if saturateH:
         # Add explicit hydrogen atoms to complete structure if desired
         if not group:
-            global valence_electrons
             orders = {'S': 1, 'D': 2, 'T': 3, 'B': 1.5}
             newAtoms = []
             for atom in atoms:
                 try:
-                    max_number_of_valence_electrons = valence_electrons[atom.symbol]
+                    max_number_of_valence_electrons = PeriodicSystem.valence_electrons[atom.symbol]
                 except KeyError:
                     raise InvalidAdjacencyListError('Cannot add hydrogens to adjacency list: Unknown orbital for atom "{0}".'.format(atom.symbol))
                 
