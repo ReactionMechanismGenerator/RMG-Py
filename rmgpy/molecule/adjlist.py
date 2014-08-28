@@ -89,6 +89,40 @@ class Saturator(object):
                     a.bonds[atom] = b
             atoms.extend(newAtoms)  
 
+class ConsistencyChecker(object):
+        
+    @staticmethod
+    def check_partial_charge(atom):
+            '''
+            Checks whether the partial charge attribute of the atom checks out with 
+            the theoretical one:
+            
+            '''
+            global bond_orders
+            valence = PeriodicSystem.valence_electrons[atom.symbol]
+            order = 0
+            for _, bond in atom.bonds.items():
+                order += bond_orders[bond.order]
+            maximum = 2 if (atom.symbol == 'H' or atom.symbol == 'He') else 8
+            
+            theoretical = maximum - valence - order - atom.radicalElectrons - 2*atom.lonePairs
+
+            if atom.charge != theoretical:
+                raise InvalidAdjacencyListError('Invalid valency for atom {symbol} with {radicals} unpaired electrons, {lonePairs} pairs of electrons, and {charge} charge.'
+                                                .format(symbol=atom.symbol, radicals=atom.radicalElectrons, lonePairs=atom.lonePairs, charge=atom.charge))
+
+    @staticmethod
+    def check_multiplicity(self, nRad, multiplicity):
+        '''
+        Check if the parameter multiplicity is an odd number,
+        since the multiplicity should comply with the formula
+        
+        m = 2s + 1, with s the sum of the spin of the unpaired electrons
+        '''
+        
+        # Overall multiplicity check   
+        if multiplicity % 2 == 1: raise InvalidAdjacencyListError('Multiplicity not in agreement with total number of radicals.')
+            
 ################################################################################
 
 class InvalidAdjacencyListError(Exception):
@@ -638,37 +672,13 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
     if not group:
         # Molecule consistency check
         # Electron and valency consistency check for each atom
-        valences = {'H': 1, 'C': 4, 'O': 2, 'N': 3, 'S': 2, 'Si': 4, 'He': 0, 'Ne': 0, 'Ar': 0, 'Cl': 1}
-        orders = {'S': 1, 'D': 2, 'T': 3, 'B': 1.5}
+        for atom in atoms: ConsistencyChecker.check_partial_charge(atom)
 
-        for atom in atoms:
-            valence = valences[atom.symbol]
-            order = 0
-            for atom2, bond in atom.bonds.items():
-                order += orders[bond.order]
-            if atom.symbol == 'H' or atom.symbol == 'He':
-                charge = 2 - valence - order - atom.radicalElectrons - 2*atom.lonePairs
-            else:
-                charge = 8 - valence - order - atom.radicalElectrons - 2*atom.lonePairs
-            if atom.charge != charge:
-                raise InvalidAdjacencyListError('Invalid valency for atom {symbol} with {radicals} unpaired electrons, {lonePairs} pairs of electrons, and {charge} charge.'
-                                                .format(symbol=atom.symbol, radicals=atom.radicalElectrons, lonePairs=atom.lonePairs, charge=atom.charge))
+        nRad = sum([atom.radicalElectrons for atom in atoms])
+        absolute_spin_per_electron = 1/2.
+        if multiplicity == None: multiplicity = 2* (nRad * absolute_spin_per_electron) + 1
             
-        # Overall multiplicity check   
-        nRad = 0
-        for atom in atoms:
-            nRad += atom.radicalElectrons
-        if multiplicity == None:
-            multiplicity = nRad + 1
-        else:
-            n = 0
-            while (nRad + 1 - n*2) > 0:
-                if (nRad + 1 - n*2) == multiplicity:
-                    break
-                n=n+1
-            else:
-                print adjlist
-                raise InvalidAdjacencyListError('Multiplicity not in agreement with total number of radicals.')
+        ConsistencyChecker.check_multiplicity(nRad, multiplicity)
             
         return atoms, multiplicity
     else:
