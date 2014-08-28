@@ -823,7 +823,7 @@ class ThermoDatabase(object):
         
         # Undo symmetry number correction for saturated structure
         # saturatedStruct.calculateSymmetryNumber()
-        thermoData.S298.value_si += constants.R * math.log(saturatedStruct.symmetryNumber)
+        # thermoData.S298.value_si += constants.R * math.log(saturatedStruct.symmetryNumber)
         # Correct entropy for symmetry number of radical structure
         molecule.calculateSymmetryNumber()
         thermoData.S298.value_si -= constants.R * math.log(molecule.symmetryNumber)
@@ -878,68 +878,91 @@ class ThermoDatabase(object):
         )
 
         if molecule.getRadicalCount() > 0: # radical species
-            return self.estimateRadicalThermoViaHBI(molecule, self.estimateThermoViaGroupAdditivity )
+            return self.estimateRadicalThermoViaHBI(molecule, self.estimateThermoViaGroupAdditivityForSaturatedStruct)
 
         else: # non-radical species
-            cyclic = molecule.isCyclic()
-            # Generate estimate of thermodynamics
-            for atom in molecule.atoms:
-                # Iterate over heavy (non-hydrogen) atoms
-                if atom.isNonHydrogen():
-                    # Get initial thermo estimate from main group database
-                    try:
-                        self.__addGroupThermoData(thermoData, self.groups['group'], molecule, {'*':atom})
-                    except KeyError:
-                        logging.error("Couldn't find in main thermo database:")
-                        logging.error(molecule)
-                        logging.error(molecule.toAdjacencyList())
-                        raise
-                    # Correct for gauche and 1,5- interactions
-                    if not cyclic:
-                        try:
-                            self.__addGroupThermoData(thermoData, self.groups['gauche'], molecule, {'*':atom})
-                        except KeyError: pass
-                    try:
-                        self.__addGroupThermoData(thermoData, self.groups['int15'], molecule, {'*':atom})
-                    except KeyError: pass
-                    try:
-                        self.__addGroupThermoData(thermoData, self.groups['other'], molecule, {'*':atom})
-                    except KeyError: pass
-
-            # Do ring corrections separately because we only want to match
-            # each ring one time
-            
-            if cyclic:                
-                if molecule.getAllPolycyclicVertices():
-                    # If the molecule has fused ring atoms, this implies that we are dealing
-                    # with a polycyclic ring system, for which separate ring strain corrections may not
-                    # be adequate.  Therefore, we search the polycyclic thermo group corrections
-                    # instead of adding single ring strain corrections within the molecule.
-                    # For now, assume only one  polycyclic RSC can be found per molecule
-                    try:
-                        self.__addGroupThermoData(thermoData, self.groups['polycyclic'], molecule, {})
-                    except:
-                        logging.error("Couldn't find in polycyclic ring database:")
-                        logging.error(molecule)
-                        logging.error(molecule.toAdjacencyList())
-                        raise
-                else:
-                    rings = molecule.getSmallestSetOfSmallestRings()
-                    for ring in rings:
-                        # Make a temporary structure containing only the atoms in the ring
-                        # NB. if any of the ring corrections depend on ligands not in the ring, they will not be found!
-                        try:
-                            self.__addGroupThermoData(thermoData, self.groups['ring'], molecule, {})
-                        except KeyError:
-                            logging.error("Couldn't find in ring database:")
-                            logging.error(ring)
-                            logging.error(ring.toAdjacencyList())
-                            raise
-                            
+            thermoData = self.estimateThermoViaGroupAdditivityForSaturatedStruct(molecule)                            
                 
         # Correct entropy for symmetry number
         molecule.calculateSymmetryNumber()
         thermoData.S298.value_si -= constants.R * math.log(molecule.symmetryNumber)
+
+        return thermoData
+
+    def estimateThermoViaGroupAdditivityForSaturatedStruct(self, molecule):
+        """
+        Return the set of thermodynamic parameters corresponding to a given
+        :class:`Molecule` object `molecule` by estimation using the group
+        additivity values. If no group additivity values are loaded, a
+        :class:`DatabaseError` is raised.
+        """
+        # For thermo estimation we need the atoms to already be sorted because we
+        # iterate over them; if the order changes during the iteration then we
+        # will probably not visit the right atoms, and so will get the thermo wrong
+        molecule.sortVertices()
+
+        # Create the ThermoData object
+        thermoData = ThermoData(
+            Tdata = ([300,400,500,600,800,1000,1500],"K"),
+            Cpdata = ([0.0,0.0,0.0,0.0,0.0,0.0,0.0],"J/(mol*K)"),
+            H298 = (0.0,"kJ/mol"),
+            S298 = (0.0,"J/(mol*K)"),
+        )
+
+        cyclic = molecule.isCyclic()
+        # Generate estimate of thermodynamics
+        for atom in molecule.atoms:
+            # Iterate over heavy (non-hydrogen) atoms
+            if atom.isNonHydrogen():
+                # Get initial thermo estimate from main group database
+                try:
+                    self.__addGroupThermoData(thermoData, self.groups['group'], molecule, {'*':atom})
+                except KeyError:
+                    logging.error("Couldn't find in main thermo database:")
+                    logging.error(molecule)
+                    logging.error(molecule.toAdjacencyList())
+                    raise
+                # Correct for gauche and 1,5- interactions
+                if not cyclic:
+                    try:
+                        self.__addGroupThermoData(thermoData, self.groups['gauche'], molecule, {'*':atom})
+                    except KeyError: pass
+                try:
+                    self.__addGroupThermoData(thermoData, self.groups['int15'], molecule, {'*':atom})
+                except KeyError: pass
+                try:
+                    self.__addGroupThermoData(thermoData, self.groups['other'], molecule, {'*':atom})
+                except KeyError: pass
+
+        # Do ring corrections separately because we only want to match
+        # each ring one time
+        
+        if cyclic:                
+            if molecule.getAllPolycyclicVertices():
+                # If the molecule has fused ring atoms, this implies that we are dealing
+                # with a polycyclic ring system, for which separate ring strain corrections may not
+                # be adequate.  Therefore, we search the polycyclic thermo group corrections
+                # instead of adding single ring strain corrections within the molecule.
+                # For now, assume only one  polycyclic RSC can be found per molecule
+                try:
+                    self.__addGroupThermoData(thermoData, self.groups['polycyclic'], molecule, {})
+                except:
+                    logging.error("Couldn't find in polycyclic ring database:")
+                    logging.error(molecule)
+                    logging.error(molecule.toAdjacencyList())
+                    raise
+            else:
+                rings = molecule.getSmallestSetOfSmallestRings()
+                for ring in rings:
+                    # Make a temporary structure containing only the atoms in the ring
+                    # NB. if any of the ring corrections depend on ligands not in the ring, they will not be found!
+                    try:
+                        self.__addGroupThermoData(thermoData, self.groups['ring'], molecule, {})
+                    except KeyError:
+                        logging.error("Couldn't find in ring database:")
+                        logging.error(ring)
+                        logging.error(ring.toAdjacencyList())
+                        raise
 
         return thermoData
 
