@@ -908,8 +908,8 @@ class TestMolecule(unittest.TestCase):
         Test that Augmented InChI generation is printing the /mult layer
         """
         mol = Molecule().fromAdjacencyList("""
-            1     C     u1 {2,S}
-            2     C     u1 {1,S}
+            1     C     u1 p0 c0 {2,S}
+            2     C     u1 p0 c0 {1,S}
         """, saturateH=True)
         
         self.assertEqual(mol.toAugmentedInChI(), 'InChI=1S/C2H4/c1-2/h1-2H2/mult3')
@@ -919,8 +919,8 @@ class TestMolecule(unittest.TestCase):
         Test that Augmented InChI Key generation is printing the mult layer
         """
         mol = Molecule().fromAdjacencyList("""
-            1     C     u1 {2,S}
-            2     C     u1 {1,S}
+            1     C     u1 p0 c0 {2,S}
+            2     C     u1 p0 c0 {1,S}
         """, saturateH=True)
         
         self.assertEqual(mol.toAugmentedInChIKey(), 'VGGSQFUCUMXWEO-UHFFFAOYSAmult3')
