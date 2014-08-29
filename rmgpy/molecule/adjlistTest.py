@@ -91,6 +91,16 @@ class TestGroupAdjLists(unittest.TestCase):
         self.assertTrue(bond12.order == ['S', 'D'])
         self.assertTrue(bond13.order == ['S'])
 
+    def testFromAdjacencyList_multiplicity(self):
+        gp = Group().fromAdjacencyList(
+        """
+        multiplicity [1]
+        1 C u0 p0 c0
+        """
+        )
+        self.assertEqual(len(gp.multiplicity), 1)
+        self.assertEqual(gp.multiplicity.next(), 1)
+        
     def testToAdjacencyList(self):
         """
         adjlist: Test the Group.toAdjacencyList() method.
