@@ -99,7 +99,7 @@ class TestGroupAdjLists(unittest.TestCase):
         """
         )
         self.assertEqual(len(gp.multiplicity), 1)
-        self.assertEqual(gp.multiplicity.next(), 1)
+        self.assertEqual(gp.multiplicity[0], 1)
         
     def testToAdjacencyList(self):
         """
