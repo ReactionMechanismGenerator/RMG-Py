@@ -201,7 +201,12 @@ class Atom(Vertex):
                 if self.radicalElectrons == radical: break
             else:
                 return False
+            for lp in ap.lonepairs:
+                if self.lonePairs == lp: break
+            else:
+                return False
             for charge in ap.charge:
+                print 'Charge: RMG was here!'
                 if self.charge == charge: break
             else:
                 return False
@@ -228,14 +233,14 @@ class Atom(Vertex):
                 return False
             for radical in atom.radicalElectrons:
                 if self.radicalElectrons == radical: break
+            for lp in atom.lonepairs:
+                if self.lonePairs == lp: break
             else:
                 return False
-            #TODO: lone pairs and charge
-# until we have charges and lone pairs in the group values we neglect them here
-#            for charge in atom.charge:
-#                if self.charge == charge: break
-#            else:
-#                return False
+            for charge in atom.charge:
+                if self.charge == charge: break
+            else:
+                return False
             return True
 
     def copy(self):
