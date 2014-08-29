@@ -127,8 +127,10 @@ class ConsistencyChecker(object):
         if nRad == 1:
             if multiplicity != 2:
                 raise InvalidAdjacencyListError('Multiplicity not in agreement with total number of radicals.')
-        if nRad == 2:
-            if multiplicity in [1,3]: raise InvalidAdjacencyListError('Multiplicity not in agreement with total number of radicals.')                        
+        elif nRad == 2:
+            if multiplicity in [1,3]: raise InvalidAdjacencyListError('Multiplicity not in agreement with total number of radicals.')
+        else: logging.info("Consistency checking of multiplicity of molecules with more than 2 unpaired electrons is not implemented yet!")
+                                
             
 ################################################################################
 
