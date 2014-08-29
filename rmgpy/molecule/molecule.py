@@ -233,7 +233,8 @@ class Atom(Vertex):
                 return False
             for radical in atom.radicalElectrons:
                 if self.radicalElectrons == radical: break
-            for lp in atom.lonepairs:
+            
+            for lp in atom.lonePairs:
                 if self.lonePairs == lp: break
             else:
                 return False
