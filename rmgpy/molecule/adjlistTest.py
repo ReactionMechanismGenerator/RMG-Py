@@ -100,6 +100,18 @@ class TestGroupAdjLists(unittest.TestCase):
         )
         self.assertEqual(len(gp.multiplicity), 1)
         self.assertEqual(gp.multiplicity[0], 1)
+    
+    def testFromAdjacencyList_multiplicity_list(self):
+        gp = Group().fromAdjacencyList(
+        """
+        multiplicity [ 1, 3, 5 ]
+        1 C u0 p0 c0
+        """
+        )
+        self.assertEqual(len(gp.multiplicity), 3)
+        self.assertEqual(gp.multiplicity[0], 1)
+        self.assertEqual(gp.multiplicity[1], 3)
+        self.assertEqual(gp.multiplicity[2], 5)
         
     def testToAdjacencyList(self):
         """
