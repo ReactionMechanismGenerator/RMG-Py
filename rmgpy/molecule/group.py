@@ -304,7 +304,11 @@ class GroupAtom(Vertex):
                 if radical1 == radical2: break
             else:
                 return False
-        #TODO: Lone pairs??
+        for lp1 in self.lonePairs:
+            for lp2 in other.lonePairs:
+                if lp1 == lp2: break
+            else:
+                return False
         #Each charge in self must have an equivalent in other (and vice versa)
         for charge1 in self.charge:
             for charge2 in other.charge:
@@ -345,7 +349,11 @@ class GroupAtom(Vertex):
                 if radical1 == radical2: break
             else:
                 return False
-        # TODO: Lone pairs??
+        for lp1 in self.lonePairs:
+            for lp2 in other.lonePairs:
+                if lp1 == lp2: break
+            else:
+                return False
         #Each charge in self must have an equivalent in other
         for charge1 in self.charge:
             for charge2 in other.charge:
