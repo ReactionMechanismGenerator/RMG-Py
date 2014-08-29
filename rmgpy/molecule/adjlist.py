@@ -116,16 +116,16 @@ class ConsistencyChecker(object):
         Check if the parameter multiplicity is an odd number,
         since the multiplicity should comply with the formula
         
-        m = 2s + 1, with s the sum of the spin of the unpaired electrons
+        m = 2s + 1, with s the sum of the spin [+/- 1/2) ] of the unpaired electrons
         
         For a simple radical (nRad = 1): 
-        s = 1/2 (doublet), m = 2
+        s = +1/2 , m = 2 (doublet)
         
-        For a biradical, s can be either 0 (singlet) or 1 (triplet)
+        For a biradical, s can be either 0 [+0.5 + (-0.5) ] or 1 [+0.5 + (+0.5) ] 
         and m = 1 (singlet) or m = 3 (triplet)
         '''
-        if nRad == 1:
-            if multiplicity != 2:
+        if nRad in [0,1]:
+            if multiplicity != (2*nRad/2 + 1):
                 raise InvalidAdjacencyListError('Multiplicity not in agreement with total number of radicals.')
         elif nRad == 2:
             if multiplicity in [1,3]: raise InvalidAdjacencyListError('Multiplicity not in agreement with total number of radicals.')
