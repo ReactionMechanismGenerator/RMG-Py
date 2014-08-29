@@ -666,8 +666,8 @@ class TestMolecule(unittest.TestCase):
         """
         molecule = Molecule().fromSMILES('C=CC=C[CH]C')
         group = Group().fromAdjacencyList("""
-        1 Cd u0 {2,D}
-        2 Cd u0 {1,D}
+        1 Cd u0 p0 c0 {2,D}
+        2 Cd u0 p0 c0 {1,D}
         """)
 
         self.assertTrue(molecule.isSubgraphIsomorphic(group))
@@ -682,30 +682,30 @@ class TestMolecule(unittest.TestCase):
     def testSubgraphIsomorphismAgain(self):
         molecule = Molecule()
         molecule.fromAdjacencyList("""
-        1 * C u0 {2,D} {7,S} {8,S}
-        2   C u0 {1,D} {3,S} {9,S}
-        3   C u0 {2,S} {4,D} {10,S}
-        4   C u0 {3,D} {5,S} {11,S}
-        5   C u0 {4,S} {6,S} {12,S} {13,S}
-        6   C u0 {5,S} {14,S} {15,S} {16,S}
-        7   H u0 {1,S}
-        8   H u0 {1,S}
-        9   H u0 {2,S}
-        10  H u0 {3,S}
-        11  H u0 {4,S}
-        12  H u0 {5,S}
-        13  H u0 {5,S}
-        14  H u0 {6,S}
-        15  H u0 {6,S}
-        16  H u0 {6,S}
+        1 * C u0 p0 c0 {2,D} {7,S} {8,S}
+        2   C u0 p0 c0 {1,D} {3,S} {9,S}
+        3   C u0 p0 c0 {2,S} {4,D} {10,S}
+        4   C u0 p0 c0 {3,D} {5,S} {11,S}
+        5   C u0 p0 c0 {4,S} {6,S} {12,S} {13,S}
+        6   C u0 p0 c0 {5,S} {14,S} {15,S} {16,S}
+        7   H u0 p0 c0 {1,S}
+        8   H u0 p0 c0 {1,S}
+        9   H u0 p0 c0 {2,S}
+        10  H u0 p0 c0 {3,S}
+        11  H u0 p0 c0 {4,S}
+        12  H u0 p0 c0 {5,S}
+        13  H u0 p0 c0 {5,S}
+        14  H u0 p0 c0 {6,S}
+        15  H u0 p0 c0 {6,S}
+        16  H u0 p0 c0 {6,S}
         """)
 
         group = Group()
         group.fromAdjacencyList("""
-        1 * C u0 {2,D} {3,S} {4,S}
-        2   C u0 {1,D}
-        3   H u0 {1,S}
-        4   H u0 {1,S}
+        1 * C u0 p0 c0 {2,D} {3,S} {4,S}
+        2   C u0 p0 c0 {1,D}
+        3   H u0 p0 c0 {1,S}
+        4   H u0 p0 c0 {1,S}
         """)
 
         labeled1 = molecule.getLabeledAtoms().values()[0]
@@ -726,21 +726,21 @@ class TestMolecule(unittest.TestCase):
     def testSubgraphIsomorphismManyLabels(self):
         molecule = Molecule() # specific case (species)
         molecule.fromAdjacencyList("""
-1 *1 C  u1 {2,S} {3,S} {4,S}
-2    C  u0 {1,S} {3,S} {5,S} {6,S}
-3    C  u0 {1,S} {2,S} {7,S} {8,S}
-4    H  u0 {1,S}
-5    H  u0 {2,S}
-6    H  u0 {2,S}
-7    H  u0 {3,S}
-8    H  u0 {3,S}
+1 *1 C  u1 p0 c0 {2,S} {3,S} {4,S}
+2    C  u0 p0 c0 {1,S} {3,S} {5,S} {6,S}
+3    C  u0 p0 c0 {1,S} {2,S} {7,S} {8,S}
+4    H  u0 p0 c0 {1,S}
+5    H  u0 p0 c0 {2,S}
+6    H  u0 p0 c0 {2,S}
+7    H  u0 p0 c0 {3,S}
+8    H  u0 p0 c0 {3,S}
         """)
 
         group = Group() # general case (functional group)
         group.fromAdjacencyList("""
-1 *1 C   u1 {2,S}, {3,S}
-2    R!H u0 {1,S}
-3    R!H u0 {1,S}
+1 *1 C   u1 p0 c0 {2,S}, {3,S}
+2    R!H u0 p0 c0 {1,S}
+3    R!H u0 p0 c0 {1,S}
         """)
 
         labeled1 = molecule.getLabeledAtoms()
@@ -763,21 +763,21 @@ class TestMolecule(unittest.TestCase):
         Check the adjacency list read/write functions for a full molecule.
         """
         molecule1 = Molecule().fromAdjacencyList("""
-        1  C u0 {2,D} {7,S} {8,S}
-        2  C u0 {1,D} {3,S} {9,S}
-        3  C u0 {2,S} {4,D} {10,S}
-        4  C u0 {3,D} {5,S} {11,S}
+        1  C u0 p0 c0 {2,D} {7,S} {8,S}
+        2  C u0 p0 c0 {1,D} {3,S} {9,S}
+        3  C u0 p0 c0 {2,S} {4,D} {10,S}
+        4  C u0 p0 c0 {3,D} {5,S} {11,S}
         5  C u1 {4,S} {6,S} {12,S}
-        6  C u0 {5,S} {13,S} {14,S} {15,S}
-        7  H u0 {1,S}
-        8  H u0 {1,S}
-        9  H u0 {2,S}
-        10 H u0 {3,S}
-        11 H u0 {4,S}
-        12 H u0 {5,S}
-        13 H u0 {6,S}
-        14 H u0 {6,S}
-        15 H u0 {6,S}
+        6  C u0 p0 c0 {5,S} {13,S} {14,S} {15,S}
+        7  H u0 p0 c0 {1,S}
+        8  H u0 p0 c0 {1,S}
+        9  H u0 p0 c0 {2,S}
+        10 H u0 p0 c0 {3,S}
+        11 H u0 p0 c0 {4,S}
+        12 H u0 p0 c0 {5,S}
+        13 H u0 p0 c0 {6,S}
+        14 H u0 p0 c0 {6,S}
+        15 H u0 p0 c0 {6,S}
         """)
         molecule2 = Molecule().fromSMILES('C=CC=C[CH]C')
         self.assertTrue(molecule1.isIsomorphic(molecule2))
