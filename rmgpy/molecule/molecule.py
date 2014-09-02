@@ -187,9 +187,12 @@ class Atom(Vertex):
         cython.declare(atom=Atom, ap=GroupAtom)
         if isinstance(other, Atom):
             atom = other
-            return (self.element is atom.element and
-                self.radicalElectrons == atom.radicalElectrons and
-                self.charge == atom.charge)
+            return (
+                self.element                is atom.element and
+                self.radicalElectrons       == atom.radicalElectrons   and
+                self.lonePairs              == atom.lonePairs           and
+                self.charge                 == atom.charge
+                )
         elif isinstance(other, GroupAtom):
             cython.declare(a=AtomType, radical=cython.short, spin=cython.short, charge=cython.short)
             ap = other
