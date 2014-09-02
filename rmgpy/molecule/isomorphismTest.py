@@ -4,6 +4,7 @@
 
 from nose.tools import assert_equal
 import logging
+from rmgpy.molecule.adjlist import PeriodicSystem
 try:
     '''
     Requires:
@@ -19,10 +20,8 @@ import unittest
 from rmgpy.molecule.molecule import Molecule
 from rmgpy.molecule.group import Group
 
-lone_pairs         = {'H': 0, 'C': 0, 'N': 1, 'O': 2, 'Si':0, 'S': 2, 'Cl':3 }
 elements           = [ 'C', 'O', 'N', 'S', 'Si', 'Cl']#'H',
 unpaired_electrons = list(itertools.product(range(2), repeat=2))#, '2'
-valency             = {'H': 1, 'C': 4, 'N': 5, 'O': 6, 'Si':4, 'S': 6, 'Cl':7 }
 
 def get_multiplicity(unpaired_electrons):
     '''
@@ -33,7 +32,7 @@ def get_multiplicity(unpaired_electrons):
     return unpaired_electrons+1
 
 def get_molecule_string(element, unpaired_electrons, charge):
-    lp = lone_pairs[element]
+    lp = PeriodicSystem.lone_pairs[element]
     
     charge = '+1' if charge == 1 else charge
     
@@ -56,7 +55,7 @@ def createGroup(element, u1, c1):
 
 
 def retrieve_unspecified_valency(element, unpaired_electrons):
-    return valency[element] - 2*lone_pairs[element] - unpaired_electrons
+    return PeriodicSystem.valence_electrons[element] - 2*PeriodicSystem.lone_pairs[element] - unpaired_electrons
 
 def load_test_cases():
     output = []
