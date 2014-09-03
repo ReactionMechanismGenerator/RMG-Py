@@ -1229,7 +1229,8 @@ class Molecule(Graph):
         multiplicity = self.multiplicity
         if not (n_rad + 1 == multiplicity or n_rad - 1 == multiplicity or n_rad - 3 == multiplicity or n_rad - 5 == multiplicity):
             raise ValueError('Impossible multiplicity for molecule\n{0}\n multiplicity = {1} and number of unpaired electrons = {2}'.format(self.toAdjacencyList(),multiplicity,n_rad))
-
+        if self.getNetCharge() != 0:
+            raise ValueError('Non-neutral molecule encountered. Currently, RMG does not support ion chemistry.\n {0}'.format(adjlist))
         return self
         
     def fromXYZ(self, atomicNums, coordinates):
@@ -1975,4 +1976,14 @@ class Molecule(Graph):
         
             else:
                 atom1.lonePairs = 0
+                
+    def getNetCharge(self):
+        """
+        Iterate through the atoms in the structure and calculate the net charge
+        on the overall molecule.
+        """
+        charge = 0
+        for atom in self.vertices:
+            charge += atom.charge
+        return charge
 
