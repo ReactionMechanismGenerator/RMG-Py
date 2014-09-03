@@ -985,6 +985,15 @@ class Molecule(Graph):
         # isomorphism, so raise an exception if this is not what was requested
         if not isinstance(other, Molecule):
             raise TypeError('Got a {0} object for parameter "other", when a Molecule object is required.'.format(other.__class__))
+        # Do the quick isomorphism comparison using the fingerprint
+        # Two fingerprint strings matching is a necessary (but not
+        # sufficient!) condition for the associated molecules to be isomorphic
+        if self.getFingerprint() != other.getFingerprint():
+            return []
+        # check multiplicity
+        if self.multiplicity != other.multiplicity:
+            return []
+            
         # Do the isomorphism comparison
         result = Graph.findIsomorphism(self, other, initialMap)
         return result
