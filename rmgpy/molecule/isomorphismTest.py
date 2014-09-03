@@ -62,13 +62,22 @@ def load_test_cases():
     cross_element_unpaired = list(itertools.product(elements,unpaired_electrons))
     for item in cross_element_unpaired:
         charges = []#list containing tuples of charge for graph 1 and graph 2 [(0,0), (0,1), ...]
+        
+        '''
+        for each atom we need to determine the unspecified valency, and generate
+        a list of possible charges that go along with that unspecified valency. 
+        ''' 
         for unp in item[1]:#unpaired electrons
                 el = item[0]
                 val = retrieve_unspecified_valency(el, unp)
+                '''
+                for now, only allow charges up to +1, not +2, +3, even
+                if the unspecified valency allows for that.
+                '''
                 charges.append(range(min(val,1)+1))
                 
-        charge_combos = list(itertools.product(charges[0],charges[1]))
-        for charge_combo in charge_combos:
+        charge_combos = list(itertools.product(charges[0],charges[1]))#cross product for both graphs
+        for charge_combo in charge_combos:#combine charge tuple with the cross product of element and unpaired
             output.append((item[0],)+item[1]+tuple(charge_combo))
           
     return output
@@ -138,12 +147,16 @@ class TestIsomorphism(unittest.TestCase):
         '''
         mol = Molecule().fromAdjacencyList("""
         multiplicity 1
-        1 C u2 p0 c0
+        1 C u1 p0 c0 {2,S}
+        2 C u0 p0 c0 {1,S} {3,S}
+        3 C u1 p0 c0 {2,S}
         """, saturateH=True)
         
         mol2 = Molecule().fromAdjacencyList("""
         multiplicity 3
-        1 C u2 p0 c0
+        1 C u1 p0 c0 {2,S}
+        2 C u0 p0 c0 {1,S} {3,S}
+        3 C u1 p0 c0 {2,S}
         """, saturateH=True)
         
         self.assertFalse(mol.isIsomorphic(mol2))
@@ -154,12 +167,12 @@ class TestIsomorphism(unittest.TestCase):
         identical multiplicity for both molecules set by user.
         '''
         mol = Molecule().fromAdjacencyList("""
-        multiplicity 1
+        multiplicity 3
         1 C u2 p0 c0
         """, saturateH=True)
         
         mol2 = Molecule().fromAdjacencyList("""
-        multiplicity 1
+        multiplicity 3
         1 C u2 p0 c0
         """, saturateH=True)
         
@@ -175,12 +188,12 @@ class TestIsomorphism(unittest.TestCase):
         """, saturateH=True)
         
         mol2 = Molecule().fromAdjacencyList("""
-        multiplicity 1
+        multiplicity 3
         1 C u2 p0 c0
         """, saturateH=True)
         
-        self.assertFalse(mol.isIsomorphic(mol2))
-        self.assertFalse(len(mol.findIsomorphism(mol2)) > 0)
+        self.assertTrue(mol.isIsomorphic(mol2))
+        self.assertTrue(len(mol.findIsomorphism(mol2)) > 0)
         
     def testMultiplicity_mol_not_specified_mol_not_specified(self):
         '''
