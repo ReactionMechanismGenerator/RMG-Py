@@ -480,13 +480,13 @@ class TestMoleculeAdjLists(unittest.TestCase):
 
 ################################################################################
 class TestConsistencyChecker(unittest.TestCase):
-    def test_check_hundt_rule_fail(self):
+    def test_check_hund_rule_fail(self):
         with self.assertRaises(InvalidAdjacencyListError):
             Molecule().fromAdjacencyList("""
             multiplicity 1
             1 C u2 p0 c0
             """, saturateH=True)
-    def test_check_hundt_rule_success(self):
+    def test_check_hund_rule_success(self):
         try:
             Molecule().fromAdjacencyList("""
             multiplicity 3
