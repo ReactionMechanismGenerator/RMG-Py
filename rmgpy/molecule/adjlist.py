@@ -124,7 +124,7 @@ class ConsistencyChecker(object):
         s = +1/2 , m = 2 (doublet)
         
         For a biradical, s can be either 0 [+0.5 + (-0.5) ] or 1 [+0.5 + (+0.5) ] 
-        and m = 1 (singlet) or m = 3 (triplet)
+        and m = 1 (singlet) or m = 3 (triplet).
         '''
         if nRad in [0,1]:
             if multiplicity != (2*nRad/2 + 1):
@@ -132,7 +132,19 @@ class ConsistencyChecker(object):
         elif nRad == 2:
             if not int(multiplicity) in [1,3]: raise InvalidAdjacencyListError('Multiplicity {0} not in agreement with total number of radicals {1}.'.format(multiplicity, nRad))
         else: logging.info("Consistency checking of multiplicity of molecules with more than 2 unpaired electrons is not implemented yet!")
-                                
+    
+    @staticmethod
+    def check_hundt_rule(atom, multiplicity):
+        '''
+        It is checked whether atoms with 2 unpaired electrons on the same atom
+        result in a multiplicity of 3, and not 1. 
+        
+        Unpaired electrons in 2 different orbitals belonging to the same atom
+        should have the same spin, and hence, should result in a multiplicity of 3. 
+        '''
+        if atom.radicalElectrons == 2 and multiplicity == 1:
+            raise InvalidAdjacencyListError("Violation of Hundt's rule. Invalid multiplicity of {0} because there is an atom with {1} unpaired electrons"
+                                            .format(multiplicity, atom.radicalElectrons))
             
 ################################################################################
 
@@ -690,7 +702,7 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
         if multiplicity == None: multiplicity = 2* (nRad * absolute_spin_per_electron) + 1
             
         ConsistencyChecker.check_multiplicity(nRad, multiplicity)
-            
+        for atom in atoms: ConsistencyChecker.check_hundt_rule(atom, multiplicity)
         return atoms, multiplicity
     else:
         # Currently no group consistency check
