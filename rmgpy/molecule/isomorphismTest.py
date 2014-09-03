@@ -20,8 +20,8 @@ import unittest
 from rmgpy.molecule.molecule import Molecule
 from rmgpy.molecule.group import Group
 
-elements           = [ 'C', 'O', 'N', 'S', 'Si', 'Cl']#'H',
-unpaired_electrons = list(itertools.product(range(2), repeat=2))#, '2'
+elements           = [ 'C', 'O', 'N', 'S', 'Si', 'Cl']
+unpaired_electrons = list(itertools.product(range(3), repeat=2))
 
 def get_multiplicity(unpaired_electrons):
     '''
