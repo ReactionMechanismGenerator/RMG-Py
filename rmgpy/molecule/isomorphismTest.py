@@ -132,3 +132,67 @@ class TestIsomorphism(unittest.TestCase):
         calc = len(mol1.findSubgraphIsomorphisms(group1)) > 0
         assert_equal(calc, exp, err)
     
+    def testMultiplicity_mol_mol_distinct_multiplicity(self):
+        '''
+        distinct multiplicity for both molecules set by user.
+        '''
+        mol = Molecule().fromAdjacencyList("""
+        multiplicity 1
+        1 C u2 p0 c0
+        """, saturateH=True)
+        
+        mol2 = Molecule().fromAdjacencyList("""
+        multiplicity 3
+        1 C u2 p0 c0
+        """, saturateH=True)
+        
+        self.assertFalse(mol.isIsomorphic(mol2))
+        self.assertFalse(len(mol.findIsomorphism(mol2)) > 0)
+        
+    def testMultiplicity_mol_mol_identical_multiplicity(self):
+        '''
+        identical multiplicity for both molecules set by user.
+        '''
+        mol = Molecule().fromAdjacencyList("""
+        multiplicity 1
+        1 C u2 p0 c0
+        """, saturateH=True)
+        
+        mol2 = Molecule().fromAdjacencyList("""
+        multiplicity 1
+        1 C u2 p0 c0
+        """, saturateH=True)
+        
+        self.assertTrue(mol.isIsomorphic(mol2))
+        self.assertTrue(len(mol.findIsomorphism(mol2)) > 0)
+        
+    def testMultiplicity_mol_not_specified_mol_specified(self):
+        '''
+        Multiplicity not set for one of two molecules
+        '''
+        mol = Molecule().fromAdjacencyList("""
+        1 C u2 p0 c0
+        """, saturateH=True)
+        
+        mol2 = Molecule().fromAdjacencyList("""
+        multiplicity 1
+        1 C u2 p0 c0
+        """, saturateH=True)
+        
+        self.assertFalse(mol.isIsomorphic(mol2))
+        self.assertFalse(len(mol.findIsomorphism(mol2)) > 0)
+        
+    def testMultiplicity_mol_not_specified_mol_not_specified(self):
+        '''
+        Both multiplicities not set.
+        '''
+        mol = Molecule().fromAdjacencyList("""
+        1 C u2 p0 c0
+        """, saturateH=True)
+        
+        mol2 = Molecule().fromAdjacencyList("""
+        1 C u2 p0 c0
+        """, saturateH=True)
+        
+        self.assertTrue(mol.isIsomorphic(mol2))
+        self.assertTrue(len(mol.findIsomorphism(mol2)) > 0)
