@@ -189,6 +189,8 @@ Test that the Wigner frequency property was properly set. ... ok
 Test that a Wigner object can be successfully pickled and unpickled ... ok
 Test that a Wigner object can be successfully reconstructed from its ... ok
 adjlist: Test the Group.fromAdjacencyList() method. ... ok
+testFromAdjacencyList_multiplicity (rmgpy.molecule.adjlistTest.TestGroupAdjLists) ... ok
+testFromAdjacencyList_multiplicity_list (rmgpy.molecule.adjlistTest.TestGroupAdjLists) ... ok
 adjlist: Test the Group.fromAdjacencyList() method on an old style adjacency list. ... ok
 adjlist: Test the Group.toAdjacencyList() method. ... ok
 adjlist: Check the adjacency list read/write functions for a full molecule. ... ok
