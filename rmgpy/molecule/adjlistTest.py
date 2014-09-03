@@ -4,10 +4,10 @@
 import unittest
 from external.wip import work_in_progress
 from rmgpy.molecule.adjlist import *
+from rmgpy.molecule.adjlist import InvalidAdjacencyListError
 from rmgpy.molecule.molecule import *
 from rmgpy.molecule.group import Group
 from rmgpy.molecule.element import getElement, elementList
-
 import logging
 logging.basicConfig(level=logging.DEBUG)
 
@@ -479,7 +479,22 @@ class TestMoleculeAdjLists(unittest.TestCase):
         self.assertTrue(molecule2.isIsomorphic(molecule1))
 
 ################################################################################
-
+class TestConsistencyChecker(unittest.TestCase):
+    def test_check_hundt_rule_fail(self):
+        with self.assertRaises(InvalidAdjacencyListError):
+            Molecule().fromAdjacencyList("""
+            multiplicity 1
+            1 C u2 p0 c0
+            """, saturateH=True)
+    def test_check_hundt_rule_success(self):
+        try:
+            Molecule().fromAdjacencyList("""
+            multiplicity 3
+            1 C u2 p0 c0
+            """, saturateH=True)
+        except InvalidAdjacencyListError:
+            self.fail('InvalidAdjacencyListError thrown unexpectedly!')
+    
 if __name__ == '__main__':
 
     unittest.main(testRunner=unittest.TextTestRunner(verbosity=3))
