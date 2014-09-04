@@ -5,6 +5,7 @@
 from nose.tools import assert_equal
 import logging
 from rmgpy.molecule.adjlist import PeriodicSystem
+from rmgpy.molecule.atomtype import atomTypes
 try:
     '''
     Requires:
@@ -20,7 +21,7 @@ import unittest
 from rmgpy.molecule.molecule import Molecule
 from rmgpy.molecule.group import Group
 
-elements           = list(itertools.product([ 'C', 'O', 'N', 'S', 'Si', 'Cl'], repeat=2))
+molecule_atom_types           = list(itertools.product([ 'C', 'O', 'N', 'S', 'Si', 'Cl'], repeat=2))
 unpaired_electrons = list(itertools.product(range(3), repeat=2))
 
 def get_multiplicity(unpaired_electrons):
@@ -32,7 +33,9 @@ def get_multiplicity(unpaired_electrons):
     return unpaired_electrons+1
 
 def get_molecule_string(element, unpaired_electrons, charge):
-    lp = PeriodicSystem.lone_pairs[element]
+    if element in ['Cs']:
+        lp = 0
+    else: lp = PeriodicSystem.lone_pairs[element]
     
     charge = '+1' if charge == 1 else charge
     
@@ -55,11 +58,46 @@ def createGroup(element, u1, c1):
 
 
 def retrieve_unspecified_valency(element, unpaired_electrons):
+    if element in ['Cs']:
+        return 0
     return PeriodicSystem.valence_electrons[element] - 2*PeriodicSystem.lone_pairs[element] - unpaired_electrons
+
+def load_test_cases_groups():
+    output = []
+    molecule_atom_types           = [ 'C', 'O', 'N', 'S', 'Si', 'Cl']
+    group_atomtypes = ['Cs']
+    a_types = list(itertools.product(molecule_atom_types, group_atomtypes))
+    
+    molecule_unpaired_electrons = [0, 1, 2]#0, 1, 2
+    group_unpaired_electrons = [0]#0
+    u_e = list(itertools.product(molecule_unpaired_electrons, group_unpaired_electrons))
+    
+    cross_element_unpaired = list(itertools.product(a_types,u_e))
+    
+    for item in cross_element_unpaired:
+        charges = []#list containing tuples of charge for graph 1 and graph 2 [(0,0), (0,1), ...]
+        
+        '''
+        for each atom we need to determine the unspecified valency, and generate
+        a list of possible charges that go along with that unspecified valency. 
+        ''' 
+        for el, unp in zip(item[0], item[1]):#elements, unpaired electrons
+                val = retrieve_unspecified_valency(el, unp)
+                '''
+                for now, only allow charges up to +1, not +2, +3, even
+                if the unspecified valency allows for that.
+                '''
+                charges.append(range(min(val,1)+1))
+                
+        charge_combos = list(itertools.product(charges[0],charges[1]))#cross product for both graphs
+        for charge_combo in charge_combos:#combine charge tuple with the cross product of element and unpaired
+            output.append(item[0]+item[1]+tuple(charge_combo))
+          
+    return output
 
 def load_test_cases():
     output = []
-    cross_element_unpaired = list(itertools.product(elements,unpaired_electrons))
+    cross_element_unpaired = list(itertools.product(molecule_atom_types,unpaired_electrons))
     for item in cross_element_unpaired:
         charges = []#list containing tuples of charge for graph 1 and graph 2 [(0,0), (0,1), ...]
         
@@ -82,7 +120,7 @@ def load_test_cases():
     return output
 
 class TestIsomorphism(unittest.TestCase):
-    
+    '''
     @parameterized.expand(load_test_cases)
     def testIsIsomorphic(self, e1, e2, u1, u2, c1, c2):
         """
@@ -141,20 +179,21 @@ class TestIsomorphism(unittest.TestCase):
         assert_equal(calc, exp, err)
     '''    
     @parameterized.expand(load_test_cases_groups)
-    def testIsIsomorphic_group_group(self, element, u1, u2, c1, c2):
+    def testIsIsomorphic_group_group(self, e1, e2, u1, u2, c1, c2):
         """
         Check whether isomorphism between 2 molecules consisting of each 1 atom
         perceives the difference in charge
         """
-        mol1, adjList1 = createGroup(element, u1, c1)
-        mol2, adjList2 = createGroup(element, u2, c2)
-
-        exp = (c1 == c2) and (u1 == u2)#string comparison will give us expected value!        
+        mol1, adjList1 = createMolecule(e1, u1, c1)
+        group1, adjList2 = createGroup(e2, u2, c2)
+        a1 = atomTypes[e1]
+        a2 = atomTypes[e2]
+        exp = a1.equivalent(a2) and (c1 == c2) and (u1 == u2)#string comparison will give us expected value!        
         err = "\nGraph 1: {0},\nGraph 2: {1}. \nExpected: {2}".format(adjList1, adjList2, exp)
 
-        calc = mol1.isIsomorphic(mol2)
+        calc = mol1.isSubgraphIsomorphic(group1)
         assert_equal(calc, exp, err)
-    '''    
+        
     def testMultiplicity_mol_mol_distinct_multiplicity(self):
         '''
         distinct multiplicity for both molecules set by user.
@@ -223,3 +262,5 @@ class TestIsomorphism(unittest.TestCase):
         
         self.assertTrue(mol.isIsomorphic(mol2))
         self.assertTrue(len(mol.findIsomorphism(mol2)) > 0)
+        
+print load_test_cases_groups()        
