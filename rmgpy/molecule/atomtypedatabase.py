@@ -4,7 +4,7 @@ Created on Sep 4, 2014
 @author: nickvandewiele
 '''
 class AbstractAtomType(object):
-    def __init__(self, element = None, label=None, double=-1, doubleO=-1, triple=-1, benzene=-1, lp=-1):
+    def __init__(self, element = None, label=None, double=-1, triple=-1, benzene=-1, lp=-1):
         self.element = element
         self.label = label
         self.double = double
