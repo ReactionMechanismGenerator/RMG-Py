@@ -29,7 +29,6 @@ for item in create_atom_types() :
     group_atomtypes[item.label] = item
     
 
-
 def get_multiplicity(unpaired_electrons):
     '''
     2*s + 1, with s = 1/2
@@ -115,9 +114,9 @@ def load_test_cases():
     for both graphs.
     '''
     output = []
-    molecule_atom_types           = list(itertools.product(molecule_atom_types, repeat=2))
+    a_types           = list(itertools.product(molecule_atom_types, repeat=2))
     unpaired_electrons = list(itertools.product(range(3), repeat=2))
-    cross_element_unpaired = list(itertools.product(molecule_atom_types,unpaired_electrons))
+    cross_element_unpaired = list(itertools.product(a_types,unpaired_electrons))
     for item in cross_element_unpaired:
         charges = []#list containing tuples of charge for graph 1 and graph 2 [(0,0), (0,1), ...]
         
@@ -300,5 +299,15 @@ class TestIsomorphism(unittest.TestCase):
         
         self.assertTrue(mol.isIsomorphic(mol2))
         self.assertTrue(len(mol.findIsomorphism(mol2)) > 0)
+    
+    def test_isomorphism_R(self):
+        mol = Molecule().fromAdjacencyList("""
+        1 C u0 p0 c0
+        """, saturateH=True)
         
-print load_test_cases_groups()        
+        gp = Group().fromAdjacencyList("""
+        1 R u0 p0 c0
+        """)
+        
+        self.assertTrue(len(mol.findSubgraphIsomorphisms(gp)) > 0)
+    
