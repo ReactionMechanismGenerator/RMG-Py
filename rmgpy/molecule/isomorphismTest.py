@@ -28,7 +28,6 @@ group_atomtypes = {}
 for item in create_atom_types() :
     group_atomtypes[item.label] = item
     
-
 def get_multiplicity(unpaired_electrons):
     '''
     2*s + 1, with s = 1/2
@@ -71,7 +70,7 @@ def retrieve_unspecified_valency(atom_type, unpaired_electrons):
         return PeriodicSystem.valence_electrons[t.element] - 2*t.lp - unpaired_electrons - order
     return PeriodicSystem.valence_electrons[atom_type] - 2*PeriodicSystem.lone_pairs[atom_type] - unpaired_electrons
 
-def load_test_cases_groups():
+def load_test_cases_group_atom_types():
     '''
     creates test cases in which the atom types of the 1st graph are 'molecule' atom types, like 'C', 'N', ...
     and are 'group' atom types like 'Cs', 'Od', ... for the 2nd graph.
@@ -108,7 +107,7 @@ def load_test_cases_groups():
           
     return output
 
-def load_test_cases():
+def load_test_cases_molecule_atom_types():
     '''
     creates test cases in which the atom types are 'molecule' atom types, like 'C', 'N', ...
     for both graphs.
@@ -138,16 +137,16 @@ def load_test_cases():
           
     return output
 
-def mol_mol_comparison(e1, e2, u1, u2, c1, c2):
+def mol_atom_type_comparison(e1, e2, u1, u2, c1, c2):
     return  (e1 == e2) and (c1 == c2) and (u1 == u2)
 
-def mol_group_comparison(a1, a2, u1, u2, c1, c2):
+def group_atom_type_comparison(a1, a2, u1, u2, c1, c2):
     return a1.equivalent(a2) and (c1 == c2) and (u1 == u2)
     
 class TestIsomorphism(unittest.TestCase):
     
-    @parameterized.expand(load_test_cases)
-    def testIsIsomorphic(self, e1, e2, u1, u2, c1, c2):
+    @parameterized.expand(load_test_cases_molecule_atom_types)
+    def testIsIsomorphic_mol_atom_types(self, e1, e2, u1, u2, c1, c2):
         """
         Check whether isomorphism between 2 molecules consisting of each 1 atom
         perceives the difference in charge
@@ -155,14 +154,14 @@ class TestIsomorphism(unittest.TestCase):
         mol1, adjList1 = createMolecule(e1, u1, c1)
         mol2, adjList2 = createMolecule(e2, u2, c2)
         
-        exp = mol_mol_comparison(e1, e2, u1, u2, c1, c2)    
+        exp = mol_atom_type_comparison(e1, e2, u1, u2, c1, c2)    
         err = "\nGraph 1: {0},\nGraph 2: {1}. \nExpected: {2}".format(adjList1, adjList2, exp)
 
         calc = mol1.isIsomorphic(mol2)
         assert_equal(calc, exp, err)
     
-    @parameterized.expand(load_test_cases)
-    def testFindIsomorphisms(self, e1, e2, u1, u2, c1, c2):
+    @parameterized.expand(load_test_cases_molecule_atom_types)
+    def testFindIsomorphisms_mol_atom_types(self, e1, e2, u1, u2, c1, c2):
         """
         Check whether isomorphism between 2 molecules consisting of each 1 atom
         perceives the difference in charge
@@ -171,40 +170,40 @@ class TestIsomorphism(unittest.TestCase):
         mol1, adjList1 = createMolecule(e1, u1, c1)
         mol2, adjList2 = createMolecule(e2, u2, c2)
 
-        exp = mol_mol_comparison(e1, e2, u1, u2, c1, c2)        
+        exp = mol_atom_type_comparison(e1, e2, u1, u2, c1, c2)        
         err = "\nGraph 1: {0},\nGraph 2: {1}. \nExpected: {2}".format(adjList1, adjList2, exp)
 
         calc = len(mol1.findIsomorphism(mol2)) > 0
         assert_equal(calc, exp, err)
         
-    @parameterized.expand(load_test_cases)
-    def testIsSubgraphIsomorphic(self, e1, e2, u1, u2, c1, c2):
+    @parameterized.expand(load_test_cases_molecule_atom_types)
+    def testIsSubgraphIsomorphic_mol_atom_types(self, e1, e2, u1, u2, c1, c2):
         
         mol1, adjList1 = createMolecule(e1, u1, c1)
         group1, adjList2 = createGroup(e2, u2, c2)
 
-        exp = (e1 == e2) and (c1 == c2) and (u1 == u2)#string comparison will give us expected value! 
+        exp = mol_atom_type_comparison(e1, e2, u1, u2, c1, c2)#string comparison will give us expected value! 
         
         err = "\nGraph 1: {0},\nGraph 2: {1}. \nExpected: {2}".format(adjList1, adjList2, exp)
         
         calc = mol1.isSubgraphIsomorphic(group1)
         assert_equal(calc, exp, err)
         
-    @parameterized.expand(load_test_cases)
-    def testFindSubgraphIsomorphisms(self, e1, e2, u1, u2, c1, c2):
+    @parameterized.expand(load_test_cases_molecule_atom_types)
+    def testFindSubgraphIsomorphisms_mol_atom_types(self, e1, e2, u1, u2, c1, c2):
 
         mol1, adjList1 = createMolecule(e1, u1, c1)
         group1, adjList2 = createGroup(e2, u2, c2)
 
-        exp = (e1 == e2) and (c1 == c2) and (u1 == u2)#string comparison will give us expected value! 
+        exp = mol_atom_type_comparison(e1, e2, u1, u2, c1, c2)#string comparison will give us expected value! 
         
         err = "\nGraph 1: {0},\nGraph 2: {1}. \nExpected: {2}".format(adjList1, adjList2, exp)
         
         calc = len(mol1.findSubgraphIsomorphisms(group1)) > 0
         assert_equal(calc, exp, err)
         
-    @parameterized.expand(load_test_cases_groups)
-    def testIsIsomorphic_group_group(self, e1, e2, u1, u2, c1, c2):
+    @parameterized.expand(load_test_cases_group_atom_types)
+    def testIsIsomorphic_mol_group_atom_types(self, e1, e2, u1, u2, c1, c2):
         """
         Check whether isomorphism between 2 molecules consisting of each 1 atom
         perceives the difference in charge
@@ -213,19 +212,19 @@ class TestIsomorphism(unittest.TestCase):
         group1, adjList2 = createGroup(e2, u2, c2)
         a1 = mol1.atoms[0].atomType
         a2 = group1.atoms[0].atomType[0]
-        exp = a1.equivalent(a2) and (c1 == c2) and (u1 == u2)#string comparison will give us expected value!        
+        exp = group_atom_type_comparison(a1, a2, u1, u2, c1, c2)#string comparison will give us expected value!        
         err = "\nGraph 1: {0},\nGraph 2: {1}. \nExpected: {2}".format(adjList1, adjList2, exp)
 
         calc = mol1.isSubgraphIsomorphic(group1)
         assert_equal(calc, exp, err)
     
-    @parameterized.expand(load_test_cases_groups)
-    def testFindSubgraphIsomorphisms_group_group(self, e1, e2, u1, u2, c1, c2):
+    @parameterized.expand(load_test_cases_group_atom_types)
+    def testFindSubgraphIsomorphisms_mol_group_atom_types(self, e1, e2, u1, u2, c1, c2):
         mol1, adjList1 = createMolecule(e1, u1, c1)
         group1, adjList2 = createGroup(e2, u2, c2)
         a1 = mol1.atoms[0].atomType
         a2 = group1.atoms[0].atomType[0]
-        exp = mol_group_comparison(a1, a2, u1, u2, c1, c2)        
+        exp = group_atom_type_comparison(a1, a2, u1, u2, c1, c2)        
         err = "\nGraph 1: {0},\nGraph 2: {1}. \nExpected: {2}".format(adjList1, adjList2, exp)
 
         calc = len(mol1.findSubgraphIsomorphisms(group1)) > 0
