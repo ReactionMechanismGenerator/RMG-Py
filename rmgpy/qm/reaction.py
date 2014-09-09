@@ -507,14 +507,27 @@ class QMReaction:
         nebLog = os.path.join(self.settings.fileStore, 'NEB.log')    
         if os.path.exists(nebLog): os.unlink(nebLog)
         optimizer = BFGS(neb, logfile=nebLog)
-        optimizer.run(steps=500)
-    
-        energies = numpy.empty(neb.nimages - 2)
-        for i in range(1, neb.nimages - 1):
-            energies[i - 1] = neb.images[i].get_potential_energy()
-        imax = 1 + numpy.argsort(energies)[-1]
-        image = neb.images[imax]
-        image.write(self.getFilePath('peak.xyz'), format='xyz')
+        optimized = True
+        try:
+            optimizer.run(steps=200)
+        except Exception, e:
+            print str(e)
+            optimized = False
+            pass
+        else:
+            print "Unknown Error from ASE"
+            optimized = False
+            pass
+        
+        if optimized:
+            energies = numpy.empty(neb.nimages - 2)
+            for i in range(1, neb.nimages - 1):
+                energies[i - 1] = neb.images[i].get_potential_energy()
+            imax = 1 + numpy.argsort(energies)[-1]
+            image = neb.images[imax]
+            image.write(self.getFilePath('peak.xyz'), format='xyz')
+        else:
+            print "Not optimized"
         
     def generateTSGeometryNEB(self, doubleEnd=None):
         """
