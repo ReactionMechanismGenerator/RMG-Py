@@ -1003,6 +1003,8 @@ class GaussianTSB3LYP(GaussianTS):
             image.get_calculator().set(multiplicity=self.geometry.molecule.getRadicalCount() + 1, method='b3lyp', basis='6-31+g(d,p)')
     
     def writeGeomInputFile(self, freezeAtoms, otherGeom=None):
+        numProc = '%nprocshared=' + '20' + '\n' # could be something that is set in the qmSettings
+        mem = '%mem=' + '800MB' + '\n' # could be something that is set in the qmSettings
         
         output = [ '', self.geometry.uniqueIDlong, '', "{charge}   {mult}".format(charge=0, mult=(self.geometry.molecule.getRadicalCount() + 1) ) ]
         
@@ -1040,8 +1042,8 @@ class GaussianTSB3LYP(GaussianTS):
         top_keys = "#  b3lyp/6-31+g(d,p) opt=(modredundant,MaxCycles={N}) nosymm\n".format(N=max(100,atomCount*10))
         
         with open(inputFilePath, 'w') as gaussianFile:
-            # gaussianFile.write(numProc)
-            # gaussianFile.write(mem)
+            gaussianFile.write(numProc)
+            gaussianFile.write(mem)
             # gaussianFile.write(chk_file)
             gaussianFile.write(top_keys)
             gaussianFile.write(input_string)
@@ -1049,8 +1051,8 @@ class GaussianTSB3LYP(GaussianTS):
             gaussianFile.write('\n')
     
     def writeQST2InputFile(self, pGeom):
-        # numProc = '%nprocshared=' + '20' + '\n' # could be something that is set in the qmSettings
-        # mem = '%mem=' + '800MB' + '\n' # could be something that is set in the qmSettings
+        numProc = '%nprocshared=' + '20' + '\n' # could be something that is set in the qmSettings
+        mem = '%mem=' + '800MB' + '\n' # could be something that is set in the qmSettings
         # For now we don't do this, until seg faults are fixed on Discovery.
         # chk_file = '%chk=' + os.path.join(self.settings.fileStore, self.uniqueID) + '\n'
         output = ['', self.geometry.uniqueID, '' ]
@@ -1152,8 +1154,8 @@ class GaussianTSB3LYP(GaussianTS):
         top_keys = "#  b3lyp/6-31+g(d,p) opt=(qst2,calcall,noeigentest,MaxCycles={N}) nosymm\n".format(N=max(100,atomCount*10))
         
         with open(self.inputFilePath, 'w') as gaussianFile:
-            # gaussianFile.write(numProc)
-            # gaussianFile.write(mem)
+            gaussianFile.write(numProc)
+            gaussianFile.write(mem)
             # gaussianFile.write(chk_file)
             gaussianFile.write(top_keys)
             gaussianFile.write(input_string)

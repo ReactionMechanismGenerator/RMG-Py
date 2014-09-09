@@ -96,10 +96,9 @@ class QMReaction:
     
     def getGeometry(self, molecule, settings):
         
-        multiplicity = sum([i.radicalElectrons for i in molecule.atoms]) + 1
-        geom = Geometry(settings, molecule.toAugmentedInChIKey(), molecule, multiplicity)
+        geom = Geometry(settings, molecule.toAugmentedInChIKey(), molecule)
         
-        return geom, multiplicity
+        return geom
         
     def getRDKitMol(self, geometry):
         """
@@ -115,11 +114,11 @@ class QMReaction:
         """
         Uses rdkit to generate the bounds matrix of a rdkit molecule.
         """
-        geometry, multiplicity = self.getGeometry(molecule, self.settings)
+        geometry = self.getGeometry(molecule, self.settings)
         rdKitMol = self.getRDKitMol(geometry)
         boundsMatrix = rdkit.Chem.rdDistGeom.GetMoleculeBoundsMatrix(rdKitMol)
         
-        return rdKitMol, boundsMatrix, multiplicity, geometry
+        return rdKitMol, boundsMatrix, geometry
     
     def setLimits(self, bm, lbl1, lbl2, value, uncertainty):
         if lbl1 > lbl2:
@@ -215,7 +214,7 @@ class QMReaction:
                     bm[lbl2][lbl3] = bm[lbl1][lbl3] - upDiff
                     bm[lbl3][lbl2] = bm[lbl3][lbl1] - dnDiff
             return bm
-                
+        
         if self.reaction.label.lower() == 'h_abstraction':
             
             lbl1 = reactant.getLabeledAtom('*1').sortingLabel
@@ -231,15 +230,9 @@ class QMReaction:
         labels = [lbl1, lbl2, lbl3]
         atomMatch = ((lbl1,),(lbl2,),(lbl3,))
             
-        if (reactant.atoms[lbl1].symbol == 'H' and reactant.atoms[lbl3].symbol == 'C') or (reactant.atoms[lbl1].symbol == 'C' and reactant.atoms[lbl3].symbol == 'H'):
+        if reactant.atoms[lbl1].symbol == 'H' or reactant.atoms[lbl3].symbol == 'H':
             bm1 = fixMatrix(bm1, lbl1, lbl2, lbl3, 2.3, 0.1)
             bm2 = fixMatrix(bm2, lbl3, lbl2, lbl1, 2.3, 0.1)
-        # elif (reactant.atoms[lbl1].symbol == 'H' and reactant.atoms[lbl3].symbol == 'O') or (reactant.atoms[lbl1].symbol == 'O' and reactant.atoms[lbl3].symbol == 'H'):
-        #     bm1 = fixMatrix(bm1, lbl1, lbl2, lbl3, 2.2, 0.1)
-        #     bm2 = fixMatrix(bm2, lbl3, lbl2, lbl1, 2.2, 0.1)
-        # elif reactant.atoms[lbl1].symbol == 'O' and reactant.atoms[lbl3].symbol == 'O':
-        #     bm1 = fixMatrix(bm1, lbl1, lbl2, lbl3, 2.2, 0.1)
-        #     bm2 = fixMatrix(bm2, lbl3, lbl2, lbl1, 2.2, 0.1)
         else:
             bm1 = fixMatrix(bm1, lbl1, lbl2, lbl3, 2.7, 0.1)
             bm2 = fixMatrix(bm2, lbl3, lbl2, lbl1, 2.7, 0.1)
@@ -284,7 +277,7 @@ class QMReaction:
         sect = []
         for atom in reactant.split()[0].atoms: sect.append(atom.sortingLabel)
         
-        uncertainties = distanceData.uncertainties or {'d12':0.1, 'd13':0.1, 'd23':0.1 } # default if uncertainty is None
+        uncertainties = {'d12':0.1, 'd13':0.1, 'd23':0.1 } # distanceData.uncertainties or {'d12':0.1, 'd13':0.1, 'd23':0.1 } # default if uncertainty is None
         bm = self.setLimits(bm, lbl1, lbl2, distanceData.distances['d12'], uncertainties['d12'])
         bm = self.setLimits(bm, lbl2, lbl3, distanceData.distances['d23'], uncertainties['d23'])
         bm = self.setLimits(bm, lbl1, lbl3, distanceData.distances['d13'], uncertainties['d13'])
@@ -309,8 +302,8 @@ class QMReaction:
         reactant = doubleEnd[0]
         product = doubleEnd[1]
 
-        rRDMol, rBM, rMult, self.geometry = self.generateBoundsMatrix(reactant)
-        pRDMol, pBM, pMult, pGeom = self.generateBoundsMatrix(product)
+        rRDMol, rBM, self.geometry = self.generateBoundsMatrix(reactant)
+        pRDMol, pBM, pGeom = self.generateBoundsMatrix(product)
         
         # # Smooth the inital matrix derived in rdkit
         # reactantSmoothingSuccessful = rdkit.DistanceGeometry.DoTriangleSmoothing(rBM)
@@ -539,8 +532,8 @@ class QMReaction:
         reactant = doubleEnd[0]
         product = doubleEnd[1]
         
-        rRDMol, rBM, rMult, self.geometry = self.generateBoundsMatrix(reactant)
-        pRDMol, pBM, pMult, pGeom = self.generateBoundsMatrix(product)
+        rRDMol, rBM, self.geometry = self.generateBoundsMatrix(reactant)
+        pRDMol, pBM, pGeom = self.generateBoundsMatrix(product)
         
         print "Reactant original matrix (smoothed)"
         print matrixToString(rBM)
@@ -746,7 +739,7 @@ class QMReaction:
         reactant = self.fixSortLabel(reactant)
         product = self.fixSortLabel(product)
         
-        tsRDMol, tsBM, tsMult, self.geometry = self.generateBoundsMatrix(reactant)
+        tsRDMol, tsBM, self.geometry = self.generateBoundsMatrix(reactant)
         
         self.geometry.uniqueID = self.uniqueID
         
@@ -840,7 +833,7 @@ class QMReaction:
         reactant = self.fixSortLabel(reactant)
         product = self.fixSortLabel(product)
         
-        tsRDMol, tsBM, tsMult, self.geometry = self.generateBoundsMatrix(reactant)
+        tsRDMol, tsBM, self.geometry = self.generateBoundsMatrix(reactant)
         
         self.geometry.uniqueID = self.uniqueID
         
