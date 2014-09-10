@@ -164,6 +164,29 @@ class Mopac:
         radicalNumber = sum([i.radicalElectrons for i in self.molecule.atoms])
         qmData = CCLibData(cclibData, radicalNumber+1)
         return qmData
+    
+    def writeInputFile(self, output, attempt=None, top_keys=None):
+        """
+        Takes the output from the writeInputFile method and prints the
+        file. Options provided allow the 
+        Using the :class:`Geometry` object, write the input file
+        for the `attmept`th attempt.
+        """
+        if not top_keys:
+            top_keys, bottom_keys, polar_keys = self.inputFileKeywords(attempt)
+        output = [top_keys] + output
+        
+        if bottom_keys:
+            output = output + [bottom_keys]
+        
+        if self.usePolar:
+            polar_keys = '\n\n\n' + polar_keys
+            output = output + [polar_keys]
+        
+        input_string = '\n'.join(output)
+        
+        with open(self.inputFilePath, 'w') as mopacFile:
+            mopacFile.write(input_string)
 
 class MopacMol(QMMolecule, Mopac):
     """
@@ -181,7 +204,7 @@ class MopacMol(QMMolecule, Mopac):
                 {'top':"precise nosym recalc=10 dmax=0.10 nonr cycles=2000 t=2000", 'bottom':"oldgeo thermo nosym precise "},
                 ]
 
-    def writeInputFile(self, attempt):
+    def createInputFile(self, attempt):
         """
         Using the :class:`Geometry` object, write the input file
         for the `attmept`th attempt.
@@ -202,18 +225,7 @@ class MopacMol(QMMolecule, Mopac):
         assert atomCount == len(self.molecule.atoms)
     
         output.append('')
-        input_string = '\n'.join(output)
-        
-        top_keys, bottom_keys, polar_keys = self.inputFileKeywords(attempt)
-        with open(self.inputFilePath, 'w') as mopacFile:
-            mopacFile.write(top_keys)
-            mopacFile.write('\n')
-            mopacFile.write(input_string)
-            mopacFile.write('\n')
-            mopacFile.write(bottom_keys)
-            if self.usePolar:
-                mopacFile.write('\n\n\n')
-                mopacFile.write(polar_keys)
+        self.writeInputFile(output, attempt)
                 
     def inputFileKeywords(self, attempt):
         """
@@ -236,7 +248,7 @@ class MopacMol(QMMolecule, Mopac):
             self.createGeometry()
             success = False
             for attempt in range(1, self.maxAttempts+1):
-                self.writeInputFile(attempt)
+                self.createInputFile(attempt)
                 logging.info('Trying {3} attempt {0} of {1} on molecule {2}.'.format(attempt, self.maxAttempts, self.molecule.toSMILES(), self.__class__.__name__))
                 success = self.run()
                 if success:
