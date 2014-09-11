@@ -68,11 +68,23 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
             test.description = test_name
             self.compat_func_name = test_name
             yield test, group_name
-
+            
+            test = lambda x: self.general_checkGroupsNonidentical(group_name, group)
+            test_name = "Thermo groups {0}: nodes are nonidentical?".format(group_name)
+            test.description = test_name
+            self.compat_func_name = test_name
+            yield test, group_name
+            
     def test_solvation(self):
         for group_name, group in self.database.solvation.groups.iteritems():
             test = lambda x: self.general_checkNodesFoundInTree(group_name, group)
             test_name = "Solvation groups {0}: nodes are in the tree with proper parents?".format(group_name)
+            test.description = test_name
+            self.compat_func_name = test_name
+            yield test, group_name
+            
+            test = lambda x: self.general_checkGroupsNonidentical(group_name, group)
+            test_name = "Solvation groups {0}: nodes are nonidentical?".format(group_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, group_name
@@ -84,6 +96,12 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
             test.description = test_name
             self.compat_func_name = test_name
             yield work_in_progress(test), group_name
+            
+            test = lambda x: self.general_checkGroupsNonidentical(group_name, group)
+            test_name = "Statmech groups {0}: nodes are nonidentical?".format(group_name)
+            test.description = test_name
+            self.compat_func_name = test_name
+            yield test, group_name
 
     def test_transport(self):
         for group_name, group in self.database.transport.groups.iteritems():
@@ -93,6 +111,12 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
             self.compat_func_name = test_name
             yield test, group_name
 
+            test = lambda x: self.general_checkGroupsNonidentical(group_name, group)
+            test_name = "Transport groups {0}: nodes are nonidentical?".format(group_name)
+            test.description = test_name
+            self.compat_func_name = test_name
+            yield test, group_name
+            
     # These are the actual tests, that don't start with a "test_" name:
     def kinetics_checkCorrectNumberofNodesInRules(self, family_name):
         """
@@ -183,6 +207,22 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
                 ascendParent = ascendParent.parent
                 nose.tools.assert_true(ascendParent is not None, "Node {node} in {group} group was found in the tree without a proper parent.".format(node=child, group=group_name))
                 nose.tools.assert_true(child in ascendParent.children, "Node {node} in {group} group was found in the tree without a proper parent.".format(node=nodeName, group=group_name))
+    
+    def general_checkGroupsNonidentical(self, group_name, group):
+        """
+        This test checks whether nodes found in the group are nonidentical.
+        """
+        entriesCopy = copy(group.entries)
+        for nodeName, nodeGroup in group.entries.iteritems():
+            del entriesCopy[nodeName]
+            for nodeNameOther, nodeGroupOther in entriesCopy.iteritems():
+                try: 
+                    group.matchNodeToNode(nodeGroup,nodeGroupOther)
+                except:
+                    print nodeName
+                    print nodeNameOther
+                    pass
+                nose.tools.assert_false(group.matchNodeToNode(nodeGroup, nodeGroupOther), "Node {node} in {group} group was found to be identical to node {nodeOther}".format(node=nodeName, group=group_name, nodeOther=nodeNameOther))
 
 if __name__ == '__main__':
     nose.run(argv=[__file__, '-v', '--nologcapture'], defaultTest=__name__)
