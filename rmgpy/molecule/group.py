@@ -273,6 +273,7 @@ class GroupAtom(Vertex):
         where `other` can be either an :class:`Atom` or an :class:`GroupAtom`
         object. When comparing two :class:`GroupAtom` objects, this function
         respects wildcards, e.g. ``R!H`` is equivalent to ``C``.
+        
         """
 
         if not isinstance(other, GroupAtom):
@@ -295,31 +296,36 @@ class GroupAtom(Vertex):
                 return False
         # Each free radical electron state in self must have an equivalent in other (and vice versa)
         for radical1 in self.radicalElectrons:
-            for radical2  in other.radicalElectrons:
-                if radical1 == radical2: break
-            else:
-                return False
+            if other.radicalElectrons:  # Only check if the list is non-empty.  An empty list indicates a wildcard.
+                for radical2  in other.radicalElectrons:
+                    if radical1 == radical2: break
+                else:
+                    return False
         for radical1 in other.radicalElectrons:
-            for radical2 in self.radicalElectrons:
-                if radical1 == radical2: break
-            else:
-                return False
+            if self.radicalElectrons:
+                for radical2 in self.radicalElectrons:
+                    if radical1 == radical2: break
+                else:
+                    return False
         for lp1 in self.lonePairs:
-            for lp2 in other.lonePairs:
-                if lp1 == lp2: break
-            else:
-                return False
+            if other.lonePairs:
+                for lp2 in other.lonePairs:
+                    if lp1 == lp2: break
+                else:
+                    return False
         #Each charge in self must have an equivalent in other (and vice versa)
         for charge1 in self.charge:
-            for charge2 in other.charge:
-                if charge1 == charge2: break
-            else:
-                return False
+            if other.charge:
+                for charge2 in other.charge:
+                    if charge1 == charge2: break
+                else:
+                    return False
         for charge1 in other.charge:
-            for charge2 in self.charge:
-                if charge1 == charge2: break
-            else:
-                return False
+            if self.charge:
+                for charge2 in self.charge:
+                    if charge1 == charge2: break
+                else:
+                    return False
         # Otherwise the two atom groups are equivalent
         return True
 
@@ -327,7 +333,7 @@ class GroupAtom(Vertex):
         """
         Returns ``True`` if `other` is the same as `self` or is a more
         specific case of `self`. Returns ``False`` if some of `self` is not
-        included in `other` or they are mutually exclusive.
+        included in `other` or they are mutually exclusive. 
         """
 
         if not isinstance(other, GroupAtom):
@@ -344,22 +350,34 @@ class GroupAtom(Vertex):
             else:
                 return False
         # Each free radical electron state in self must have an equivalent in other (and vice versa)
-        for radical1 in self.radicalElectrons:
-            for radical2 in other.radicalElectrons:
-                if radical1 == radical2: break
-            else:
-                return False
-        for lp1 in self.lonePairs:
-            for lp2 in other.lonePairs:
-                if lp1 == lp2: break
-            else:
-                return False
+        if self.radicalElectrons:
+            for radical1 in self.radicalElectrons:
+                if other.radicalElectrons:
+                    for radical2 in other.radicalElectrons:
+                        if radical1 == radical2: break
+                    else:
+                        return False
+        else:
+            if other.radicalElectrons: return False
+        if self.lonePairs:
+            for lp1 in self.lonePairs:
+                if other.lonePairs:
+                    for lp2 in other.lonePairs:
+                        if lp1 == lp2: break
+                    else:
+                        return False
+        else:
+            if other.lonePairs: return False
         #Each charge in self must have an equivalent in other
-        for charge1 in self.charge:
-            for charge2 in other.charge:
-                if charge1 == charge2: break
-            else:
-                return False
+        if self.charge:
+            for charge1 in self.charge:
+                if other.charge:
+                    for charge2 in other.charge:
+                        if charge1 == charge2: break
+                    else:
+                        return False
+        else:
+            if other.charge: return False
         # Otherwise self is in fact a specific case of other
         return True
 ################################################################################

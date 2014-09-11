@@ -194,25 +194,27 @@ class Atom(Vertex):
                 self.charge                 == atom.charge
                 )
         elif isinstance(other, GroupAtom):
-            cython.declare(a=AtomType, radical=cython.short, spin=cython.short, charge=cython.short)
+            cython.declare(a=AtomType, radical=cython.short, lp=cython.short, charge=cython.short)
             ap = other
             for a in ap.atomType:
                 if self.atomType.equivalent(a): break
             else:
                 return False
-            for radical in ap.radicalElectrons:
-                if self.radicalElectrons == radical: break
-            else:
-                return False
-            for lp in ap.lonepairs:
-                if self.lonePairs == lp: break
-            else:
-                return False
-            for charge in ap.charge:
-                print 'Charge: RMG was here!'
-                if self.charge == charge: break
-            else:
-                return False
+            if ap.radicalElectrons:
+                for radical in ap.radicalElectrons:
+                    if self.radicalElectrons == radical: break
+                else:
+                    return False
+            if ap.lonePairs:
+                for lp in ap.lonePairs:
+                    if self.lonePairs == lp: break
+                else:
+                    return False
+            if ap.charge:
+                for charge in ap.charge:
+                    if self.charge == charge: break
+                else:
+                    return False
             return True
 
     def isSpecificCaseOf(self, other):
@@ -226,7 +228,7 @@ class Atom(Vertex):
         if isinstance(other, Atom):
             return self.equivalent(other)
         elif isinstance(other, GroupAtom):
-            cython.declare(atom=GroupAtom, a=AtomType, radical=cython.short, charge=cython.short)
+            cython.declare(atom=GroupAtom, a=AtomType, radical=cython.short, lp = cython.short, charge=cython.short)
             atom = other
             if self.atomType is None:
                 return False
@@ -234,18 +236,21 @@ class Atom(Vertex):
                 if self.atomType.isSpecificCaseOf(a): break
             else:
                 return False
-            for radical in atom.radicalElectrons:
-                if self.radicalElectrons == radical: break
-            else:
-                return False
-            for lp in atom.lonePairs:
-                if self.lonePairs == lp: break
-            else:
-                return False
-            for charge in atom.charge:
-                if self.charge == charge: break
-            else:
-                return False
+            if atom.radicalElectrons:
+                for radical in atom.radicalElectrons:
+                    if self.radicalElectrons == radical: break
+                else:
+                    return False
+            if atom.lonePairs:
+                for lp in atom.lonePairs:
+                    if self.lonePairs == lp: break
+                else:
+                    return False
+            if atom.charge:
+                for charge in atom.charge:
+                    if self.charge == charge: break
+                else:
+                    return False
             return True
 
     def copy(self):
