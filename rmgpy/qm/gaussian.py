@@ -420,19 +420,12 @@ class GaussianTS(QMReaction, Gaussian):
         """
         
         if fromSddl:
-            molfile = self.getFilePath('.arc')
-            atomline = re.compile('\s*([A-Za-z]+)\s+([\- ][0-9.]+)\s+([\+ ][0-9.]+)\s+([\- ][0-9.]+)\s+([\+ ][0-9.]+)\s+([\- ][0-9.]+)')
-            
             output = ['', self.geometry.uniqueID, '' ]
             output.append("{charge}   {mult}".format(charge=0, mult=(fromSddl + 1) ))
             
-            atomCount = 0
-            with open(molfile) as molinput:
-                for line in molinput:
-                    match = atomline.match(line)
-                    if match:
-                        output.append("{0:8s} {1}  {2}  {3}".format(match.group(1), match.group(2), match.group(4), match.group(6)))
-                        atomCount += 1
+            filePath = self.getFilePath('.arc')
+            assert os.path.exists(filePath)
+            atomsymbols, atomcoords = self.geometry.parseARC(filePath)
         elif fromNEB:
             output = ['', self.geometry.uniqueID, '' ]
             output.append("{charge}   {mult}".format(charge=0, mult=self.geometry.multiplicity ))
@@ -440,10 +433,6 @@ class GaussianTS(QMReaction, Gaussian):
             filePath = self.getFilePath('peak.xyz')
             assert os.path.exists(filePath)
             atomsymbols, atomcoords = self.geometry.parseXYZ(filePath)
-            atomCount = 0
-            for symbol, coordinates in zip(atomsymbols, atomcoords):
-                output.append("{0:8s} {1:+.6f}  {2:+.6f}  {3:+.6f}".format(symbol, coordinates[0], coordinates[1], coordinates[2]).replace('+',' '))
-                atomCount += 1
         elif fromQST2:
             # output = []
             # atomCount = len(self.geometry.molecule.atoms)
@@ -452,88 +441,34 @@ class GaussianTS(QMReaction, Gaussian):
             # Also see the keywords that we have changed to use the workaround.
             
             output = ['', self.geometry.uniqueID, '' ]
-            output.append("{charge}   {mult}".format(charge=0, mult=(self.geometry.molecule.getRadicalCount() + 1) ))
-            
-            
-            molfile = self.geometry.getRefinedMolFilePath()
-            atomline = re.compile('\s*([\- ][0-9.]+\s+[\-0-9.]+\s+[\-0-9.]+)\s+([A-Za-z]+)')
-            
-            atomCount = 0
-            atomnos = []
-            with open(molfile) as molinput:
-                for line in molinput:
-                    match = atomline.match(line)
-                    if match:
-                        atomnos.append(match.group(2))
-                        atomCount += 1
-            
-            assert atomCount == len(self.geometry.molecule.atoms)
-            
-            parser = cclib.parser.Gaussian(self.outputFilePath)
-            parser.logger.setLevel(logging.ERROR)
-            parser = parser.parse()
-            
-            lines = []
-            for line in parser.atomcoords[-1]:
-                lineList = ''
-                for item in line:
-                    if item > 0:
-                        lineList = lineList + ' ' + str(format(item, '.6f')) + ' '
-                    else:
-                        lineList = lineList + str(format(item, '.6f')) + ' '
-                lines.append(lineList)
-                
-            atomCount = 0
-            for i, line in enumerate(lines):
-                output.append("{0:8s} {1}".format(atomnos[i], line))
-                atomCount += 1
+            output.append("{charge}   {mult}".format(charge=0, mult=(self.geometry.multiplicity) ))
+            assert os.path.exists(self.outputFilePath)
+            atomsymbols, atomcoords = self.geometry.parseLOG(self.outputFilePath)
         elif fromInt:
             output = ['', self.geometry.uniqueID, '' ]
             output.append("{charge}   {mult}".format(charge=0, mult=self.geometry.multiplicity ))
             
+            assert os.path.exists(self.outputFilePath)
             atomsymbols, atomcoords = self.geometry.parseLOG(self.outputFilePath)
-            atomCount = 0
-            for symbol, coordinates in zip(atomsymbols, atomcoords):
-                output.append("{0:8s} {1:+.6f}  {2:+.6f}  {3:+.6f}".format(symbol, coordinates[0], coordinates[1], coordinates[2]).replace('+',' '))
-                atomCount += 1
         elif attempt > 2:
             # Until checkpointing is fixed, do the following
             output = ['', self.geometry.uniqueID, '' ]
-            output.append("{charge}   {mult}".format(charge=0, mult=(self.geometry.molecule.getRadicalCount() + 1) ))
-            
-            parser = cclib.parser.Gaussian(self.outputFilePath)
-            parser.logger.setLevel(logging.ERROR)
-            parser = parser.parse()
-            
-            lines = []
-            for line in parser.atomcoords[-1]:
-                lineList = ''
-                for item in line:
-                    if item > 0:
-                        lineList = lineList + ' ' + str(format(item, '.6f')) + ' '
-                    else:
-                        lineList = lineList + str(format(item, '.6f')) + ' '
-                lines.append(lineList)
-                
-            atomCount = 0
-            atomnos = parser.atomnos
-            for i, line in enumerate(lines):
-                output.append("{0:8s} {1}".format(getElement(int(atomnos[i])).symbol, line))
-                atomCount += 1
+            output.append("{charge}   {mult}".format(charge=0, mult=(self.geometry.multiplicity) ))
+            assert os.path.exists(self.outputFilePath)
+            atomsymbols, atomcoords = self.geometry.parseLOG(self.outputFilePath)
         else:
             molfile = self.geometry.getRefinedMolFilePath()
             atomline = re.compile('\s*([\- ][0-9.]+\s+[\-0-9.]+\s+[\-0-9.]+)\s+([A-Za-z]+)')
         
             output = ['', self.geometry.uniqueID, '' ]
-            output.append("{charge}   {mult}".format(charge=0, mult=(self.geometry.molecule.getRadicalCount() + 1) ))
-            
-            atomCount = 0
-            with open(molfile) as molinput:
-                for line in molinput:
-                    match = atomline.match(line)
-                    if match:
-                        output.append("{0:8s} {1}".format(match.group(2), match.group(1)))
-                        atomCount += 1
+            output.append("{charge}   {mult}".format(charge=0, mult=(self.geometry.multiplicity) ))
+            assert os.path.exists(molfile)
+            atomsymbols, atomcoords = self.geometry.parseMOL(molfile)
+        
+        atomCount = 0
+        for symbol, coordinates in zip(atomsymbols, atomcoords):
+            output.append("{0:8s} {1:+.6f}  {2:+.6f}  {3:+.6f}".format(symbol, coordinates[0], coordinates[1], coordinates[2]).replace('+',' '))
+            atomCount += 1
         assert atomCount == len(self.geometry.molecule.atoms)
         
         output.append('')
