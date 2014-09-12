@@ -285,7 +285,181 @@ class QMReaction:
         bm = self.bmPreEdit(bm, sect)
             
         return bm, labels, atomMatch
+    
+    def runNEB(self, pGeom):
+        """
+        Takes the reactant geometry (in `self`) and the product geometry (`pGeom`)
+        and does an interpolation. This can run nudged-elastic band calculations using
+        the Atomic Simulation Environment (`ASE <https://wiki.fysik.dtu.dk/ase/>`).
+        """
+        import ase
+        from ase.neb import NEB
+        from ase.optimize import BFGS, FIRE
         
+        initial, final = self.setImages(pGeom)
+        
+        # Now make a band of x + 2 images (x plus the initial and final geometries)
+        x = 11
+        images = [initial]
+        images += [initial.copy() for i in range(x)]
+        images += [final]
+        
+        # We use the linear NEB, but we can use the 'climbing image' variation by adding `climb=True`
+        # Options recommended in Gonzalez-Garcia et al., doi: 10.1021/ct060032y (They do recommend climbing image, but I'll test without if first)
+        neb = ase.neb.NEB(images, k=0.01, climb=False)
+        
+        # Interpolate the positions of the middle images linearly, then set calculators
+        neb.interpolate()
+        
+        self.setCalculator(images)
+        
+        nebLog = os.path.join(self.settings.fileStore, 'NEB.log')    
+        if os.path.exists(nebLog): os.unlink(nebLog)
+        optimizer = BFGS(neb, logfile=nebLog)
+        optimized = True
+        try:
+            optimizer.run(steps=200)
+        except Exception, e:
+            print str(e)
+            optimized = False
+            pass
+        else:
+            print "Unknown Error from ASE"
+            optimized = False
+            pass
+        
+        if optimized:
+            energies = numpy.empty(neb.nimages - 2)
+            for i in range(1, neb.nimages - 1):
+                energies[i - 1] = neb.images[i].get_potential_energy()
+            imax = 1 + numpy.argsort(energies)[-1]
+            image = neb.images[imax]
+            image.write(self.getFilePath('peak.xyz'), format='xyz')
+        else:
+            print "Not optimized"
+            
+    def setupMolecules(self):
+        """
+        Setup the reactant and product molecules for the transition state calculations.
+        If there are 2 reactants and/or products, they are merged. This also handles
+        species as well as molecules, but returns the reactant and product as merged molecules.
+        """
+        if len(self.reaction.reactants)==2:
+            if isinstance(self.reaction.reactants[0], Molecule):
+                reactant = self.reaction.reactants[0].merge(self.reaction.reactants[1])
+            elif isinstance(self.reaction.reactants[0], Species):
+                reactant = self.reaction.reactants[0].molecule[0].merge(self.reaction.reactants[1].molecule[0])
+        else:
+            if isinstance(self.reaction.reactants[0], Molecule):
+                reactant = self.reaction.reactants[0]
+            elif isinstance(self.reaction.reactants[0], Species):
+                reactant = self.reaction.reactants[0].molecule[0]
+        
+        if len(self.reaction.products)==2:
+            if isinstance(self.reaction.reactants[0], Molecule):
+                product = self.reaction.products[0].merge(self.reaction.products[1])
+            elif isinstance(self.reaction.reactants[0], Species):
+                product = self.reaction.products[0].molecule[0].merge(self.reaction.products[1].molecule[0])
+        else:
+            if isinstance(self.reaction.reactants[0], Molecule):
+                product = self.reaction.products[0]
+            elif isinstance(self.reaction.reactants[0], Species):
+                product = self.reaction.products[0].molecule[0]
+            
+        reactant = self.fixSortLabel(reactant)
+        product = self.fixSortLabel(product)
+        
+        return reactant, product
+    
+    def optimizeTS(self):
+        """
+        Conduct the optimization step of the transition state search.
+        """
+        if not os.path.exists(self.outputFilePath):
+            print "Optimizing TS once"
+            self.writeInputFile(1)
+            converged, internalCoord = self.run()
+            shutil.copy(self.outputFilePath, self.outputFilePath+'.TS1.log')
+        else:
+            converged, internalCoord = self.verifyOutputFile()
+        
+        if internalCoord and not converged:
+            notes = 'Internal coordinate error, trying cartesian\n'
+            print "Optimizing TS in cartesian"
+            self.writeInputFile(2)
+            converged = self.run()
+            shutil.copy(self.outputFilePath, self.outputFilePath+'.TS2.log')
+            
+        if converged:
+            return True
+        
+        return False
+        
+    def validateTS(self):
+        """
+        Conduct the path analysis calculations and validate the transition state.
+        """
+        if not os.path.exists(self.ircOutputFilePath):
+            self.writeIRCFile()
+            rightTS = self.runIRC()
+        else:
+            rightTS = self.verifyIRCOutputFile()
+            
+        if rightTS:
+            return True
+        
+        return False
+        
+    def generateTSGeometryDirectGuess(self, database):
+        """
+        Generate a transition state geometry, using the direct guess (group additive) method.
+        
+        Returns (success, notes) where success is a True if it worked, else False,
+        and notes is a string describing what happened.
+        """
+        notes = ''
+        if os.path.exists(os.path.join(self.file_store_path, self.uniqueID + '.data')):
+            logging.info("Not generating TS geometry because it's already done.")
+            return True, "Already done!"
+            
+        reactant, product = self.setupMolecules()
+        
+        tsRDMol, tsBM, self.geometry = self.generateBoundsMatrix(reactant)
+        
+        self.geometry.uniqueID = self.uniqueID
+        
+        tsBM, labels, atomMatch = self.editMatrix(reactant, tsBM, database)
+        atoms = len(reactant.atoms)
+        distGeomAttempts = 15*(atoms-3) # number of conformers embedded from the bounds matrix
+        
+        setBM = rdkit.DistanceGeometry.DoTriangleSmoothing(tsBM)
+        
+        if not setBM:
+            notes = 'Bounds matrix editing failed\n'
+            return False, notes
+            
+        for i in range(len(tsBM)):
+            for j in range(i,len(tsBM)):
+                if tsBM[j,i] > tsBM[i,j]:
+                        print "BOUNDS MATRIX FLAWED {0}>{1}".format(tsBM[j,i], tsBM[i,j])
+        
+        self.geometry.rd_embed(tsRDMol, distGeomAttempts, bm=tsBM, match=atomMatch)
+        successfulTS = self.optimizeTS()
+        if not successfulTS:
+            notes = 'TS not converged\n'
+            return False, notes
+            
+        notes = 'TS converged\n'
+        validTS = self.validateTS()
+        
+        if not validTS:
+            self.writeRxnOutputFile(labels)
+            notes = 'IRC failed\n'
+            return False, notes
+            
+        notes = 'Success\n'
+        return True, notes
+            
     def generateTSGeometryDoubleEnded(self, doubleEnd=None):
         """
         Generate a Transition State geometry using the double-ended search method
@@ -298,10 +472,10 @@ class QMReaction:
         if os.path.exists(os.path.join(self.file_store_path, self.uniqueID + '.data')):
             logging.info("Not generating TS geometry because it's already done.")
             return True, None, None, "Already done!"
-
+    
         reactant = doubleEnd[0]
         product = doubleEnd[1]
-
+    
         rRDMol, rBM, self.geometry = self.generateBoundsMatrix(reactant)
         pRDMol, pBM, pGeom = self.generateBoundsMatrix(product)
         
@@ -355,7 +529,7 @@ class QMReaction:
         for atom in reactant.atoms:
             i = atom.sortingLabel
             pRDMol.GetConformer(0).SetAtomPosition(i, rRDMol.GetConformer(0).GetAtomPosition(i))
-
+    
         # don't re-embed the product, just optimize at UFF, constrained with the correct bounds matrix
         pRDMol, minEid = pGeom.optimize(pRDMol, boundsMatrix=pBM, atomMatch=atomMatch)
         pGeom.writeMolFile(pRDMol, pGeom.getRefinedMolFilePath(), minEid)
@@ -370,7 +544,7 @@ class QMReaction:
                 return True, self.geometry, labels, notes
             else:
                 return False, None, None, notes
-
+    
         if self.settings.software.lower() == 'mopac':
             # all below needs to change
             print "Optimizing reactant geometry"
@@ -476,58 +650,6 @@ class QMReaction:
         else:
             raise NotImplementedError("self.settings.software.lower() should be gaussian or mopac")
             return False, None, None, notes
-    
-    def runNEB(self, pGeom):
-        """
-        Takes the reactant geometry (in `self`) and the product geometry (`pGeom`)
-        and does an interpolation. This can run nudged-elastic band calculations using
-        the Atomic Simulation Environment (`ASE <https://wiki.fysik.dtu.dk/ase/>`).
-        """
-        import ase
-        from ase.neb import NEB
-        from ase.optimize import BFGS, FIRE
-        
-        initial, final = self.setImages(pGeom)
-        
-        # Now make a band of x + 2 images (x plus the initial and final geometries)
-        x = 11
-        images = [initial]
-        images += [initial.copy() for i in range(x)]
-        images += [final]
-        
-        # We use the linear NEB, but we can use the 'climbing image' variation by adding `climb=True`
-        # Options recommended in Gonzalez-Garcia et al., doi: 10.1021/ct060032y (They do recommend climbing image, but I'll test without if first)
-        neb = ase.neb.NEB(images, k=0.01, climb=False)
-        
-        # Interpolate the positions of the middle images linearly, then set calculators
-        neb.interpolate()
-        
-        self.setCalculator(images)
-        
-        nebLog = os.path.join(self.settings.fileStore, 'NEB.log')    
-        if os.path.exists(nebLog): os.unlink(nebLog)
-        optimizer = BFGS(neb, logfile=nebLog)
-        optimized = True
-        try:
-            optimizer.run(steps=200)
-        except Exception, e:
-            print str(e)
-            optimized = False
-            pass
-        else:
-            print "Unknown Error from ASE"
-            optimized = False
-            pass
-        
-        if optimized:
-            energies = numpy.empty(neb.nimages - 2)
-            for i in range(1, neb.nimages - 1):
-                energies[i - 1] = neb.images[i].get_potential_energy()
-            imax = 1 + numpy.argsort(energies)[-1]
-            image = neb.images[imax]
-            image.write(self.getFilePath('peak.xyz'), format='xyz')
-        else:
-            print "Not optimized"
         
     def generateTSGeometryNEB(self, doubleEnd=None):
         """
@@ -713,196 +835,6 @@ class QMReaction:
         
         self.writeRxnOutputFile(labels, doubleEnd=True)
         return True, None, None, notes
-
-
-    def generateTSGeometryDirectGuess(self, database):
-        """
-        Generate a transition state geometry, using the direct guess (group additive) method.
-        
-        Returns (success, notes) where success is a True if it worked, else False,
-        and notes is a string describing what happened.
-        """
-        notes = ''
-        if os.path.exists(os.path.join(self.file_store_path, self.uniqueID + '.data')):
-            logging.info("Not generating TS geometry because it's already done.")
-            return True, "Already done!"
-        
-        if len(self.reaction.reactants)==2:
-            if isinstance(self.reaction.reactants[0], Molecule):
-                reactant = self.reaction.reactants[0].merge(self.reaction.reactants[1])
-            elif isinstance(self.reaction.reactants[0], Species):
-                reactant = self.reaction.reactants[0].molecule[0].merge(self.reaction.reactants[1].molecule[0])
-        else:
-            if isinstance(self.reaction.reactants[0], Molecule):
-                reactant = self.reaction.reactants[0]
-            elif isinstance(self.reaction.reactants[0], Species):
-                reactant = self.reaction.reactants[0].molecule[0]
-        
-        if len(self.reaction.products)==2:
-            if isinstance(self.reaction.reactants[0], Molecule):
-                product = self.reaction.products[0].merge(self.reaction.products[1])
-            elif isinstance(self.reaction.reactants[0], Species):
-                product = self.reaction.products[0].molecule[0].merge(self.reaction.products[1].molecule[0])
-        else:
-            if isinstance(self.reaction.reactants[0], Molecule):
-                product = self.reaction.products[0]
-            elif isinstance(self.reaction.reactants[0], Species):
-                product = self.reaction.products[0].molecule[0]
-            
-        reactant = self.fixSortLabel(reactant)
-        product = self.fixSortLabel(product)
-        
-        tsRDMol, tsBM, self.geometry = self.generateBoundsMatrix(reactant)
-        
-        self.geometry.uniqueID = self.uniqueID
-        
-        tsBM, labels, atomMatch = self.editMatrix(reactant, tsBM, database)
-        atoms = len(reactant.atoms)
-        distGeomAttempts = 15*(atoms-3) # number of conformers embedded from the bounds matrix
-        
-        setBM = rdkit.DistanceGeometry.DoTriangleSmoothing(tsBM)
-        
-        if setBM:
-            for i in range(len(tsBM)):
-                for j in range(i,len(tsBM)):
-                    if tsBM[j,i] > tsBM[i,j]:
-                            print "BOUNDS MATRIX FLAWED {0}>{1}".format(tsBM[j,i], tsBM[i,j])
-        
-            self.geometry.rd_embed(tsRDMol, distGeomAttempts, bm=tsBM, match=atomMatch)
-            
-            if not os.path.exists(self.outputFilePath):
-                print "Optimizing TS once"
-                self.writeInputFile(1)
-                converged, internalCoord = self.run()
-            else:
-                converged, internalCoord = self.verifyOutputFile()
-            
-            if internalCoord and not converged:
-                notes = 'Internal coordinate error, trying cartesian\n'
-                print "Optimizing TS in cartesian"
-                shutil.copy(self.outputFilePath, self.outputFilePath+'.TS1.log')
-                self.writeInputFile(2)
-                converged = self.run()
-                
-            if converged:
-                notes = 'TS converged, now for IRC\n'
-                print "IRC calculation"
-                if not os.path.exists(self.ircOutputFilePath):
-                    self.writeIRCFile()
-                    rightTS = self.runIRC()
-                else:
-                    rightTS = self.verifyIRCOutputFile()
-                if rightTS:
-                    print "Found a transition state"
-                    notes = 'Success\n'
-                    self.writeRxnOutputFile(labels)
-                    return True, notes
-                else:
-                    print "Graph matching failed"
-                    notes = 'IRC failed\n'
-                    return False, notes
-            else:
-                print "TS failed"
-                notes = 'TS not converged\n'
-                return False, notes
-        else:
-            notes = 'Bounds matrix editing failed\n'
-            return False, notes
-    
-    def generateTSGeometryTest(self):
-        """
-        Generate a transition state geometry, using the direct guess (group additive) method.
-        
-        Returns (success, notes) where success is a True if it worked, else False,
-        and notes is a string describing what happened.
-        """
-        notes = ''
-        if os.path.exists(os.path.join(self.file_store_path, self.uniqueID + '.data')):
-            logging.info("Not generating TS geometry because it's already done.")
-            return True, "Already done!"
-        
-        if len(self.reaction.reactants)==2:
-            if isinstance(self.reaction.reactants[0], Molecule):
-                reactant = self.reaction.reactants[0].merge(self.reaction.reactants[1])
-            elif isinstance(self.reaction.reactants[0], Species):
-                reactant = self.reaction.reactants[0].molecule[0].merge(self.reaction.reactants[1].molecule[0])
-        else:
-            if isinstance(self.reaction.reactants[0], Molecule):
-                reactant = self.reaction.reactants[0]
-            elif isinstance(self.reaction.reactants[0], Species):
-                reactant = self.reaction.reactants[0].molecule[0]
-        
-        if len(self.reaction.products)==2:
-            if isinstance(self.reaction.reactants[0], Molecule):
-                product = self.reaction.products[0].merge(self.reaction.products[1])
-            elif isinstance(self.reaction.reactants[0], Species):
-                product = self.reaction.products[0].molecule[0].merge(self.reaction.products[1].molecule[0])
-        else:
-            if isinstance(self.reaction.reactants[0], Molecule):
-                product = self.reaction.products[0]
-            elif isinstance(self.reaction.reactants[0], Species):
-                product = self.reaction.products[0].molecule[0]
-            
-        reactant = self.fixSortLabel(reactant)
-        product = self.fixSortLabel(product)
-        
-        tsRDMol, tsBM, self.geometry = self.generateBoundsMatrix(reactant)
-        
-        self.geometry.uniqueID = self.uniqueID
-        
-        tsBM, labels, atomMatch = self.editMatrix(reactant, tsBM)
-        atoms = len(reactant.atoms)
-        distGeomAttempts = 15*(atoms-3) # number of conformers embedded from the bounds matrix
-        
-        setBM = rdkit.DistanceGeometry.DoTriangleSmoothing(tsBM)
-        
-        if setBM:
-            for i in range(len(tsBM)):
-                for j in range(i,len(tsBM)):
-                    if tsBM[j,i] > tsBM[i,j]:
-                            print "BOUNDS MATRIX FLAWED {0}>{1}".format(tsBM[j,i], tsBM[i,j])
-        
-            self.geometry.rd_embed(tsRDMol, distGeomAttempts, bm=tsBM, match=atomMatch)
-            
-            if not os.path.exists(self.outputFilePath):
-                print "Optimizing TS once"
-                self.writeInputFile(1)
-                converged, internalCoord = self.run()
-            else:
-                converged, internalCoord = self.verifyOutputFile()
-                longDist = self.testTSGeometry(reactant)
-            
-            if internalCoord and not converged:
-                notes = 'Internal coordinate error, trying cartesian\n'
-                print "Optimizing TS in cartesian"
-                shutil.copy(self.outputFilePath, self.outputFilePath+'.TS1.log')
-                self.writeInputFile(2)
-                converged = self.run()
-                
-            if converged:
-                notes = 'TS converged, now for IRC\n'
-                print "IRC calculation"
-                if not os.path.exists(self.ircOutputFilePath):
-                    self.writeIRCFile()
-                    rightTS = self.runIRC()
-                else:
-                    rightTS = self.verifyIRCOutputFile()
-                if rightTS:
-                    print "Found a transition state"
-                    notes = 'Success\n'
-                    self.writeRxnOutputFile(labels)
-                    return True, notes
-                else:
-                    print "Graph matching failed"
-                    notes = 'IRC failed\n'
-                    return False, notes
-            else:
-                print "TS failed"
-                notes = 'TS not converged\n'
-                return False, notes
-        else:
-            notes = 'Bounds matrix editing failed\n'
-            return False, notes
     
     def calculateQMData(self, moleculeList):
         """
