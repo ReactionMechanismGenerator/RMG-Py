@@ -24,6 +24,7 @@ pydot
 
 # For running the unit tests
 nose
+nose-parameterized
 coverage
 
 # for generating the documentation
