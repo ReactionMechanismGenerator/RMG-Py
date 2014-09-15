@@ -653,6 +653,19 @@ class TestMoleculeAdjLists(unittest.TestCase):
         molecule2 = Molecule().fromSMILES('C=CC=C[CH]C')
         self.assertTrue(molecule1.isIsomorphic(molecule2))
         self.assertTrue(molecule2.isIsomorphic(molecule1))
+        
+    def testGroupAdjacencyList(self):
+        """
+        adjlist: Check the adjacency list read/write functions for a full molecule.
+        """
+        adjlist = """1 C u0 {2,D}
+2 O u1 p1 c[-1,0,+1] {1,D}
+"""
+        group = Group().fromAdjacencyList("""
+        1 C u0 {2,D} 
+        2 O u1 p1 c[-1,0,+1] {1,D}
+        """)
+        self.assertEqual(adjlist, group.toAdjacencyList())
 
 ################################################################################
 class TestConsistencyChecker(unittest.TestCase):
