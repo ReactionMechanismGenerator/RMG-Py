@@ -428,7 +428,7 @@ class GaussianTS(QMReaction, Gaussian):
             atomsymbols, atomcoords = self.geometry.parseARC(filePath)
         elif fromNEB:
             output = ['', self.geometry.uniqueID, '' ]
-            output.append("{charge}   {mult}".format(charge=0, mult=self.geometry.multiplicity ))
+            output.append("{charge}   {mult}".format(charge=0, mult=self.geometry.molecule.multiplicity ))
             
             filePath = self.getFilePath('peak.xyz')
             assert os.path.exists(filePath)
@@ -441,19 +441,19 @@ class GaussianTS(QMReaction, Gaussian):
             # Also see the keywords that we have changed to use the workaround.
             
             output = ['', self.geometry.uniqueID, '' ]
-            output.append("{charge}   {mult}".format(charge=0, mult=(self.geometry.multiplicity) ))
+            output.append("{charge}   {mult}".format(charge=0, mult=(self.geometry.molecule.multiplicity) ))
             assert os.path.exists(self.outputFilePath)
             atomsymbols, atomcoords = self.geometry.parseLOG(self.outputFilePath)
         elif fromInt:
             output = ['', self.geometry.uniqueID, '' ]
-            output.append("{charge}   {mult}".format(charge=0, mult=self.geometry.multiplicity ))
+            output.append("{charge}   {mult}".format(charge=0, mult=self.geometry.molecule.multiplicity ))
             
             assert os.path.exists(self.outputFilePath)
             atomsymbols, atomcoords = self.geometry.parseLOG(self.outputFilePath)
         elif attempt > 2:
             # Until checkpointing is fixed, do the following
             output = ['', self.geometry.uniqueID, '' ]
-            output.append("{charge}   {mult}".format(charge=0, mult=(self.geometry.multiplicity) ))
+            output.append("{charge}   {mult}".format(charge=0, mult=(self.geometry.molecule.multiplicity) ))
             assert os.path.exists(self.outputFilePath)
             atomsymbols, atomcoords = self.geometry.parseLOG(self.outputFilePath)
         else:
@@ -461,7 +461,7 @@ class GaussianTS(QMReaction, Gaussian):
             atomline = re.compile('\s*([\- ][0-9.]+\s+[\-0-9.]+\s+[\-0-9.]+)\s+([A-Za-z]+)')
         
             output = ['', self.geometry.uniqueID, '' ]
-            output.append("{charge}   {mult}".format(charge=0, mult=(self.geometry.multiplicity) ))
+            output.append("{charge}   {mult}".format(charge=0, mult=(self.geometry.molecule.multiplicity) ))
             assert os.path.exists(molfile)
             atomsymbols, atomcoords = self.geometry.parseMOL(molfile)
         
