@@ -552,8 +552,7 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
                     unpairedElectrons.append(4)
                 elif u == 'x':
                     if not group:
-                        raise InvalidAdjacencyListError("A molecule should not assign a wildcard to number of unpaired electrons.")                    
-                    unpairedElectrons.extend([0,1,2,3,4])
+                        raise InvalidAdjacencyListError("A molecule should not assign a wildcard to number of unpaired electrons.")
                 else:
                     raise InvalidAdjacencyListError('Number of unpaired electrons not recognized.')
             index += 1
@@ -583,19 +582,14 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
                     elif l == 'x':
                         if not group:
                             raise InvalidAdjacencyListError("A molecule should not have a wildcard assigned to number of lone pairs.")
-                        lonePairs.extend([0,1,2,3,4])
                     else:
                         raise InvalidAdjacencyListError('Number of lone electron pairs not recognized.')
                 index += 1
             else:
-                if group:
-                    lonePairs.append(None)
-                else:
+                if not group:
                     lonePairs.append(0)
         else:
-            if group:
-                lonePairs.append(None)
-            else:
+            if not group:
                 lonePairs.append(0)
             
         # Next the number of partial charges (if provided)
@@ -629,14 +623,15 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
                     elif e == 'x':
                         if not group:
                             raise InvalidAdjacencyListError("A molecule should not have a wildcard assigned to number of charges.")
-                        partialCharges.extend([0,1,2,3,4,-1,-2,-3,-4])
                     else:
                         raise InvalidAdjacencyListError('Number of partial charges not recognized.')
                 index += 1
             else:
-                partialCharges.append(0)
+                if not group:
+                    partialCharges.append(0)
         else:
-            partialCharges.append(0)
+            if not group:
+                partialCharges.append(0)
         
         # Create a new atom based on the above information
         if group:
