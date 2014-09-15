@@ -724,6 +724,43 @@ class GaussianTS(QMReaction, Gaussian):
         
         return self.verifyIRCOutputFile()
     
+    def prepDoubleEnded(self, labels, productGeometry, notes):
+        """
+        Optimize the reactant and product geometries while freeezing the distances between
+        the reactive atoms.
+        """
+        if os.path.exists(self.getFilePath('.log.reactant.log')):
+            rightReactant = self.checkGeometry(self.getFilePath('.log.reactant.log'), self.geometry.molecule)
+        else:
+            self.writeGeomInputFile(freezeAtoms=labels)
+            logFilePath = self.runDouble(self.inputFilePath)
+            rightReactant = self.checkGeometry(logFilePath, self.geometry.molecule)
+            shutil.copy(logFilePath, logFilePath+'.reactant.log')
+        
+        if os.path.exists(productGeometry.getFilePath('.log.product.log')):
+            rightProduct = self.checkGeometry(productGeometry.getFilePath('.log.product.log'), productGeometry.molecule)
+        else:
+            self.writeGeomInputFile(freezeAtoms=labels, otherGeom=productGeometry)
+            logFilePath = self.runDouble(productGeometry.getFilePath(self.inputFileExtension))
+            rightProduct = self.checkGeometry(logFilePath, productGeometry.molecule)
+            shutil.copy(logFilePath, logFilePath+'.product.log')
+        
+        if not (rightReactant and rightProduct):
+            """
+            Despite freezing the reacting atom distances, the reactant and product can still
+            optimize to some other species. If it does, the algorithm will follow this path
+            and return a failure.
+            """
+            if not rightReactant:
+                notes = notes + 'Reactant geometry failure\n'
+            
+            if not rightProduct:
+                notes = notes + 'Product geometry failure\n'
+            
+            return False, notes
+        
+        return True, notes
+    
     def verifyOutputFile(self):
         """
         Check's that an output file exists and was successful.
