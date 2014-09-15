@@ -37,6 +37,7 @@ before_install:
   - cd ..
 install:
   - cd $TRAVIS_BUILD_DIR
+  - git checkout new-style-adjacency-list
   - pip install numpy
   - pip install -r requirements.txt
   - cd ..
@@ -47,6 +48,9 @@ install:
   - cd PyDQED
   - make F77=gfortran
   - make install
+  - cd ..
+  - cd RMG-database
+  - git checkout new-style-adjacency-list
   - cd ..
   - cd $TRAVIS_BUILD_DIR
   - make noQM
