@@ -657,12 +657,6 @@ class GaussianTS(QMReaction, Gaussian):
         for image in images[1:len(images)-1]:
             image.set_calculator(ase.calculators.gaussian.Gaussian(command=self.executablePath + '< ' + label + '.com' + ' > ' + label + '.log', label=label))
             image.get_calculator().set(multiplicity=self.geometry.molecule.getRadicalCount() + 1, method=self.method, basis=self.basisSet)
-            
-    def inputFileKeywords(self, attempt):
-        """
-        Return the top keywords.
-        """
-        raise NotImplementedError("Should be defined by subclass, eg. GaussianTSM062X")
 
     def generateQMKinetics(self):
         """
