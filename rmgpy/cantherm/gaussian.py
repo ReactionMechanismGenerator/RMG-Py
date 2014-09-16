@@ -31,7 +31,7 @@
 import math
 import numpy
 import os.path
-
+from rmgpy.cantherm.common import checkConformerEnergy
 import rmgpy.constants as constants
 from rmgpy.statmech import IdealGasTranslation, NonlinearRotor, LinearRotor, HarmonicOscillator, Conformer
 
@@ -380,9 +380,12 @@ class GaussianLog:
         if rigidScan==True:
             print '   Assuming', os.path.basename(self.path), 'is the output from a rigid scan...'
         
+        Vlist = numpy.array(Vlist, numpy.float64)
+        # check to see if the scanlog indicates that a one of your reacting species may not be the lowest energy conformer
+        checkConformerEnergy(Vlist, self.path)
+        
         # Adjust energies to be relative to minimum energy conformer
         # Also convert units from Hartree/particle to kJ/mol
-        Vlist = numpy.array(Vlist, numpy.float64)
         Vlist -= numpy.min(Vlist)
         Vlist *= constants.E_h * constants.Na
 
