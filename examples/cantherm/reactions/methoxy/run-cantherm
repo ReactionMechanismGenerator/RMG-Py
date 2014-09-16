@@ -1,0 +1,3 @@
+#!/bin/bash                                                                                                                                    
+
+python ../../../../cantherm.py input.py

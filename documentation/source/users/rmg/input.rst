@@ -132,7 +132,7 @@ In this section users can specify the particular reaction families that they wis
 
 	kineticsFamilies = ['Intra_RH_Add_Endocyclic']
 	
-Otherwise, by typing 'default', RMG will use recommended reaction families to generate the mechanism. The recommended reaction families can be found in :file:`RMG-database/input/families/recommended.py`.
+Otherwise, by typing 'default' (and excluding the brackets that are shown in the example above), RMG will use recommended reaction families to generate the mechanism. The recommended reaction families can be found in :file:`RMG-database/input/families/recommended.py`.
 
 	
 Kinetics Estimator
