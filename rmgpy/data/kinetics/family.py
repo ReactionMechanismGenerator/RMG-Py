@@ -1088,6 +1088,7 @@ class KineticsFamily(Database):
         for struct in productStructures:
             if isinstance(struct, Molecule):
                 struct.updateAtomTypes()
+                struct.updateMultiplicity()
 
         # Return the product structures
         return productStructures
