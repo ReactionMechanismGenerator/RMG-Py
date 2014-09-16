@@ -898,6 +898,15 @@ class Molecule(Graph):
         """
         for atom in self.vertices:
             atom.atomType = getAtomType(atom, atom.edges)
+            
+    def updateMultiplicity(self):
+        """
+        Update the multiplicity of a newly formed molecule.
+        """
+        # Assume this is always true
+        # There are cases where 2 radicalElectrons is a singlet, but
+        # the triplet is often more stable, 
+        self.multiplicity = self.getRadicalCount() + 1
 
     def clearLabeledAtoms(self):
         """
