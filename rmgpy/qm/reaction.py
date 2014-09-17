@@ -323,10 +323,6 @@ class QMReaction:
             print str(e)
             optimized = False
             pass
-        else:
-            print "Unknown Error from ASE"
-            optimized = False
-            pass
         
         if optimized:
             energies = numpy.empty(neb.nimages - 2)
