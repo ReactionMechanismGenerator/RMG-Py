@@ -176,6 +176,21 @@ class Geometry:
         
         return atomsymbols, cclibData.atomcoords[-1]
     
+    def parseOUT(self, filePath):
+        """
+        Parses Mopac `.out` files and returns the last geometry.
+        """
+        
+        parser = cclib.parser.Mopac(filePath)
+        parser.logger.setLevel(logging.ERROR) #cf. http://cclib.sourceforge.net/wiki/index.php/Using_cclib#Additional_information
+        cclibData = parser.parse()
+        
+        atomsymbols = []
+        for item in cclibData.atomnos:
+            atomsymbols.append(getElement(int(item)).symbol)
+        
+        return atomsymbols, cclibData.atomcoords[-1]
+    
     def parseARC(self, filePath):
         """
         Parses Mopac `.arc` files and returns the geometry.
