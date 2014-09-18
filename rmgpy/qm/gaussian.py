@@ -761,6 +761,20 @@ class GaussianTS(QMReaction, Gaussian):
         
         return True, notes
     
+    def conductDoubleEnded(self, NEB=False):
+        if NEB:
+            self.runNEB()
+        else:
+            # Gaussian QST2 Calculation
+                
+            self.createQST2InputFile()
+            qst2, logFilePath = self.runQST2()
+            shutil.copy(logFilePath, logFilePath+'.QST2.log')
+            
+            if not qst2:
+                notes = notes + 'QST3 needed, see {0}\n'.format(self.settings.fileStore)
+                return False, notes
+    
     def verifyOutputFile(self):
         """
         Check's that an output file exists and was successful.

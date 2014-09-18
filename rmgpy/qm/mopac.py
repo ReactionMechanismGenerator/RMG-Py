@@ -650,7 +650,40 @@ class MopacTS(QMReaction, Mopac):
         
         # A check is needed to ensure the geometry that comes out has not been altered
         return True, notes
-
+    
+    def conductDoubleEnded(self, NEB=False):
+        if NEB:
+            self.runNEB()
+        else:
+            # MOPAC Saddle Calculation
+            self.createReferenceFile()
+            self.createGeoRefInputFile(productSide=True)
+            logFilePath = self.runDouble(self.productGeom.getFilePath(self.inputFileExtension))
+            # shutil.copy(logFilePath, logFilePath+'.ref1.out')
+                
+            if not os.path.exists(self.productGeom.getFilePath('.arc')):
+                notes = notes + 'product .arc file does not exits\n'
+                return False, notes
+            
+            # Reactant that references the product geometry
+            self.createReferenceFile(productSide=True)
+            self.createGeoRefInputFile()
+            logFilePath = self.runDouble(self.reactantGeom.getFilePath(self.inputFileExtension))
+            # shutil.copy(logFilePath, logFilePath+'.ref2.out')
+            
+            if not os.path.exists(self.reactantGeom.getFilePath('.arc')):
+                notes = notes + 'reactant .arc file does not exits\n'
+                return False, notes
+            
+            # Write saddle calculation file using the outputs of the reference calculations
+            self.createSaddleInputFile()
+            self.runDouble(self.inputFilePath)
+            
+            atomSymbols, atomCoords = self.reactantGeom.parseOUT(self.outputFilePath)
+            self.writeXYZ(atomSymbols, atomCoords)
+            
+            return True, notes # True, self.geometry, labels, notes
+            
     def verifyOutputFile(self):
         """
         Check's that an output file exists and was successful.

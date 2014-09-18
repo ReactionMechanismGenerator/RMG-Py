@@ -308,17 +308,17 @@ class QMReaction:
             
         return bm, labels, atomMatch
     
-    def runNEB(self, pGeom):
+    def runNEB(self):
         """
-        Takes the reactant geometry (in `self`) and the product geometry (`pGeom`)
-        and does an interpolation. This can run nudged-elastic band calculations using
-        the Atomic Simulation Environment (`ASE <https://wiki.fysik.dtu.dk/ase/>`).
+        Takes the reactant and product geometries and does an interpolation. This
+        can run nudged-elastic band calculations using the Atomic Simulation
+        Environment (`ASE <https://wiki.fysik.dtu.dk/ase/>`).
         """
         import ase
         from ase.neb import NEB
         from ase.optimize import BFGS, FIRE
         
-        initial, final = self.setImages(pGeom)
+        initial, final = self.setImages()
         
         # Now make a band of x + 2 images (x plus the initial and final geometries)
         x = 11
@@ -571,48 +571,7 @@ class QMReaction:
           
         check, notes = self.prepDoubleEnded(labels, productGeometry, notes)
         
-        if neb:
-            self.runNEB(pGeom)
-        elif self.settings.software.lower() == 'mopac':
-            # MOPAC Saddle Calculation
-                
-            self.writeReferenceFile()#inputFilePath, molFilePathForCalc, geometry, attempt, outputFile=None)
-            self.writeGeoRefInputFile(pGeom, otherSide=True)#inputFilePath, molFilePathForCalc, refFilePath, geometry)
-            logFilePath = self.runDouble(pGeom.getFilePath(self.inputFileExtension))
-            shutil.copy(logFilePath, logFilePath+'.ref1.out')
-                
-            if not os.path.exists(pGeom.getFilePath('.arc')):
-                notes = notes + 'product .arc file does not exits\n'
-                return False, None, None, notes
-            
-            # Reactant that references the product geometry
-            self.writeReferenceFile(otherGeom=pGeom)
-            self.writeGeoRefInputFile(pGeom)
-            logFilePath = self.runDouble(self.inputFilePath)
-            shutil.copy(logFilePath, logFilePath+'.ref2.out')
-            
-            if not os.path.exists(self.getFilePath('.arc')):
-                notes = notes + 'reactant .arc file does not exits\n'
-                return False, None, None, notes
-            
-            # Write saddle calculation file using the outputs of the reference calculations
-            self.writeSaddleInputFile(pGeom)
-            self.runDouble(self.inputFilePath)
-            return True, self.geometry, labels, notes
-        
-        elif self.settings.software.lower() == 'gaussian':
-            # Gaussian QST2 Calculation
-                
-            self.writeQST2InputFile(pGeom)
-            qst2, logFilePath = self.runQST2()
-            shutil.copy(logFilePath, logFilePath+'.QST2.log')
-            
-            if not qst2:
-                notes = notes + 'QST3 needed, see {0}\n'.format(self.settings.fileStore)
-                return False, None, None, notes
-        else:
-            raise NotImplementedError("self.settings.software.lower() should be gaussian or mopac")
-            return False, None, None, notes
+        check, notes = self.conductDoubleEnded(NEB=neb)
         
         # Optimize the TS 
         worked, notes =  self.tsSearch(notes, fromQST2=True)
