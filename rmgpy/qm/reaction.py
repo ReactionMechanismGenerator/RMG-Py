@@ -29,11 +29,26 @@ def matrixToString(matrix):
 
                 
 class QMReaction:
+    """ 
+    A base class for QM Reaction calculations.
     
-    file_store_path = 'QMfiles'
-    if not os.path.exists(file_store_path):
-        logging.info("Creating directory %s for mol files."%os.path.abspath(file_store_path))
-        os.makedirs(file_store_path)
+    Specific programs and methods should inherit from this and define some
+    extra attributes and methods:
+     
+    The attributes are:
+    
+    =================== =========================== ====================================
+    Attribute           Type                        Description
+    =================== =========================== ====================================
+    `reaction`          :class:`Reaction`           RMG Reaction object
+    `settings`          :class:`QMSettings`         Settings for QM calculations
+    `database`                                      The RMG Database
+    `uniqueID`          ``str``                     A reaction ID with canonical smiles of the reactants and products
+    `geometry`          :class:`Geometry`           Geometry object for handling 3-dimensional structures
+    `transitionState`   :class:`TransitionState`    Storage of the transition state object
+    =================== =========================== ====================================
+    
+    """
     
     def __init__(self, reaction, settings):
         self.reaction = reaction
@@ -49,8 +64,15 @@ class QMReaction:
         
         self.uniqueID = stringID
         
-        self.geometry = None
-        self.transitionState = None
+        # self.geometry = None
+        self.reactantGeom = None # Geometry(settings, molecule.toAugmentedInChIKey(), molecule)
+        self.productGeom = None
+        self.tsGeom = None
+        
+        file_store_path = self.settings.fileStore
+        if not os.path.exists(file_store_path):
+            logging.info("Creating directory %s for mol files."%os.path.abspath(file_store_path))
+            os.makedirs(file_store_path)
     
     def getFilePath(self, extension):
         """
