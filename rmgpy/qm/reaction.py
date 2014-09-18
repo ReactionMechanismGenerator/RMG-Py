@@ -389,13 +389,13 @@ class QMReaction:
         
         return reactant, product
     
-    def optimizeTS(self, fromQST2=False, fromNEB=False):
+    def optimizeTS(self, fromDoubleEnded=False):
         """
         Conduct the optimization step of the transition state search.
         """
         if not os.path.exists(self.outputFilePath):
             print "Optimizing TS once"
-            self.writeInputFile(1, fromQST2=fromQST2, fromNEB=fromNEB)
+            self.writeInputFile(1, fromDoubleEnded=fromDoubleEnded)
             converged, internalCoord = self.run()
             shutil.copy(self.outputFilePath, self.outputFilePath+'.TS1.log')
         else:
@@ -428,13 +428,13 @@ class QMReaction:
         
         return False
     
-    def tsSearch(self, notes, fromQST2=False, fromNEB=False):
+    def tsSearch(self, notes, fromDoubleEnded=False):
         """
         Once the transition state estimate is made, this runs the optimization and the
         path analysis calculation. The ts estimate can be from the group additive or
         double-ended search methods.
         """
-        successfulTS = self.optimizeTS(fromQST2=fromQST2, fromNEB=fromNEB)
+        successfulTS = self.optimizeTS(fromDoubleEnded=fromDoubleEnded)
         if not successfulTS:
             notes = 'TS not converged\n'
             return False, notes
@@ -488,7 +488,7 @@ class QMReaction:
         
         return worked, notes
             
-    def generateTSGeometryDoubleEnded(self, doubleEnd=None, neb=False):
+    def generateTSGeometryDoubleEnded(self, neb=False):
         """
         Generate a Transition State geometry using the double-ended search method
         

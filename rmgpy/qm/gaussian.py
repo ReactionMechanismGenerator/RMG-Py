@@ -409,67 +409,36 @@ class GaussianTS(QMReaction, Gaussian):
                 
         return top_keys
     
-    def createInputFile(self, attempt, fromInt=False, fromSddl=False, fromQST2=False, fromNEB=False):
+    def createInputFile(self, attempt, fromInt=False, fromDoubleEnded=False):
         """
         Using the :class:`Geometry` object, write the input file
         for the `attmept`th attempt.
         fromInt are files written after an internal coordinate error (switch to cartesian).
-        fromSddl are files written after a MOPAC Saddle calculation.
-        fromQST2 are files written after a Gaussian QST2 calculation.
-        fromNEB are files written after an ASE-enabled NEB calculation.
+        fromDoubleEneded are files written after any double-ended search has concluded. A cartesian
+        coordinate file with extension `.xyz` should have been written with the geometry from the
+        double-ended calculation, and is used to start the TS search.
         """
+        output = ['', self.uniqueID, '' ]
+        output.append("{charge}   {mult}".format(charge=0, mult=self.reactantGeom.molecule.multiplicity ))
         
-        if fromSddl:
-            output = ['', self.geometry.uniqueID, '' ]
-            output.append("{charge}   {mult}".format(charge=0, mult=(fromSddl + 1) ))
-            
-            filePath = self.getFilePath('.arc')
-            assert os.path.exists(filePath)
-            atomsymbols, atomcoords = self.geometry.parseARC(filePath)
-        elif fromNEB:
-            output = ['', self.geometry.uniqueID, '' ]
-            output.append("{charge}   {mult}".format(charge=0, mult=self.geometry.molecule.multiplicity ))
-            
-            filePath = self.getFilePath('peak.xyz')
-            assert os.path.exists(filePath)
-            atomsymbols, atomcoords = self.geometry.parseXYZ(filePath)
-        elif fromQST2:
-            # output = []
-            # atomCount = len(self.geometry.molecule.atoms)
-            # Really should be using above as we take advantage of gaussian's checkpoint files
-            # However with the seg faults on the Discovery cluster, we use below as a temporary workaround.
-            # Also see the keywords that we have changed to use the workaround.
-            
-            output = ['', self.geometry.uniqueID, '' ]
-            output.append("{charge}   {mult}".format(charge=0, mult=(self.geometry.molecule.multiplicity) ))
+        if fromDoubleEnded:
+            xyzFile = self.getFilePath('.xyz')
+            assert os.path.exists(xyzFile)
+            atomsymbols, atomcoords = self.reactantGeom.parseXYZ(xyzFile)
+        elif fromInt or attempt > 2:
+            # Until checkpointing is fixed, rewrite the whole output
             assert os.path.exists(self.outputFilePath)
-            atomsymbols, atomcoords = self.geometry.parseLOG(self.outputFilePath)
-        elif fromInt:
-            output = ['', self.geometry.uniqueID, '' ]
-            output.append("{charge}   {mult}".format(charge=0, mult=self.geometry.molecule.multiplicity ))
-            
-            assert os.path.exists(self.outputFilePath)
-            atomsymbols, atomcoords = self.geometry.parseLOG(self.outputFilePath)
-        elif attempt > 2:
-            # Until checkpointing is fixed, do the following
-            output = ['', self.geometry.uniqueID, '' ]
-            output.append("{charge}   {mult}".format(charge=0, mult=(self.geometry.molecule.multiplicity) ))
-            assert os.path.exists(self.outputFilePath)
-            atomsymbols, atomcoords = self.geometry.parseLOG(self.outputFilePath)
+            atomsymbols, atomcoords = self.reactantGeom.parseLOG(self.outputFilePath)
         else:
-            molfile = self.geometry.getRefinedMolFilePath()
+            molfile = self.reactantGeom.getRefinedMolFilePath()
             atomline = re.compile('\s*([\- ][0-9.]+\s+[\-0-9.]+\s+[\-0-9.]+)\s+([A-Za-z]+)')
         
-            output = ['', self.geometry.uniqueID, '' ]
-            output.append("{charge}   {mult}".format(charge=0, mult=(self.geometry.molecule.multiplicity) ))
             assert os.path.exists(molfile)
-            atomsymbols, atomcoords = self.geometry.parseMOL(molfile)
+            atomsymbols, atomcoords = self.reactantGeom.parseMOL(molfile)
         
-        atomCount = 0
-        for symbol, coordinates in zip(atomsymbols, atomcoords):
-            output.append("{0:8s} {1:+.6f}  {2:+.6f}  {3:+.6f}".format(symbol, coordinates[0], coordinates[1], coordinates[2]).replace('+',' '))
-            atomCount += 1
-        assert atomCount == len(self.geometry.molecule.atoms)
+        output, atomCount = self.geomToString(atomsymbols, atomcoords, outputString=output)
+        
+        assert atomCount == len(self.reactantGeom.molecule.atoms)
         
         output.append('')
         self.writeInputFile(output, attempt, numProcShared=20, memory='800MB', checkPoint=True)
