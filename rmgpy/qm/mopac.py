@@ -165,16 +165,18 @@ class Mopac:
         qmData = CCLibData(cclibData, radicalNumber+1)
         return qmData
     
-    def writeInputFile(self, output, attempt=None, top_keys=None):
+    def writeInputFile(self, output, attempt=None, top_keys=None, bottom_keys=None, inputFilePath=None, refFile=False):
         """
         Takes the output from the writeInputFile method and prints the
         file. Options provided allow the 
         Using the :class:`Geometry` object, write the input file
         for the `attmept`th attempt.
         """
-        if not top_keys:
-            top_keys, bottom_keys, polar_keys = self.inputFileKeywords(attempt)
-        output = [top_keys] + output
+        
+        if not refFile:
+            if not top_keys:
+                top_keys, bottom_keys, polar_keys = self.inputFileKeywords(attempt)
+            output = [top_keys] + output
         
         if bottom_keys:
             output = output + [bottom_keys]
@@ -185,7 +187,10 @@ class Mopac:
         
         input_string = '\n'.join(output)
         
-        with open(self.inputFilePath, 'w') as mopacFile:
+        if not inputFilePath:
+            inputFilePath = self.inputFilePath
+        
+        with open(inputFilePath, 'w') as mopacFile:
             mopacFile.write(input_string)
 
 class MopacMol(QMMolecule, Mopac):
