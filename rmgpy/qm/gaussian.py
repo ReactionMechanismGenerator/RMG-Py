@@ -61,7 +61,14 @@ class Gaussian:
         if not os.path.exists(self.executablePath):
             raise Exception("Couldn't find Gaussian executable at {0}. Try setting your GAUSS_EXEDIR environment variable.".format(self.executablePath))
 
-   
+    def geomToString(self, atomsymbols, atomcoords, outputString='', freezeAtoms=[]):
+        atomCount = 0
+        for atomsymbol, atomcoord in zip(atomsymbols, atomcoords):
+            outputString.append("{0:8s} {1: .6f}  {2: .6f}  {3: .6f}".format(atomsymbol, atomcoord[0], atomcoord[1], atomcoord[2]))
+            atomCount += 1
+        
+        return outputString, atomCount
+    
     def run(self):
         self.testReady()
         
@@ -451,18 +458,17 @@ class GaussianTS(QMReaction, Gaussian):
         """
         
         top_keys = self.inputFileKeywords(0, irc=True)
-        output = "{charge}   {mult}".format(charge=0, mult=(self.geometry.molecule.getRadicalCount() + 1) )
+        output = "{charge}   {mult}".format(charge=0, mult=self.reactantGeom.molecule.multiplicity )
         
         self.writeInputFile(output, top_keys=top_keys, numProcShared=20, memory='800MB', checkPoint=True)
     
-    def createGeomInputFile(self, freezeAtoms, otherGeom=None):
-        
-        output = [ '', self.geometry.uniqueIDlong, '', "{charge}   {mult}".format(charge=0, mult=(self.geometry.molecule.getRadicalCount() + 1) ) ]
+    def createGeomInputFile(self, freezeAtoms, otherGeom=False):
         
         atomline = re.compile('\s*([\- ][0-9.]+\s+[\-0-9.]+\s+[\-0-9.]+)\s+([A-Za-z]+)')
         
         if otherGeom:
-            molfile = otherGeom.getRefinedMolFilePath() # Now get the product geometry
+            output = [ '', self.productGeom.uniqueIDlong, '', "{charge}   {mult}".format(charge=0, mult=self.productGeom.molecule.multiplicity ) ]
+            molfile = self.productGeom.getRefinedMolFilePath() # Now get the product geometry
             
             atomCount = 0
             with open(molfile) as molinput:
@@ -471,10 +477,11 @@ class GaussianTS(QMReaction, Gaussian):
                     if match:
                         output.append("{0:8s} {1}".format(match.group(2), match.group(1)))
                         atomCount += 1
-            inputFilePath = otherGeom.getFilePath(self.inputFileExtension)
+            inputFilePath = self.productGeom.getFilePath(self.inputFileExtension)
             bottom_keys = "{atom1} {atom3} F\n{atom1} {atom2} F\n".format(atom1=freezeAtoms[0] + 1, atom2=freezeAtoms[1] + 1, atom3=freezeAtoms[2] + 1)
         else:
-            molfile = self.geometry.getRefinedMolFilePath() # Get the reactant geometry
+            output = [ '', self.reactantGeom.uniqueIDlong, '', "{charge}   {mult}".format(charge=0, mult=self.reactantGeom.molecule.multiplicity ) ]
+            molfile = self.reactantGeom.getRefinedMolFilePath() # Get the reactant geometry
             
             atomCount = 0
             with open(molfile) as molinput:
@@ -483,117 +490,41 @@ class GaussianTS(QMReaction, Gaussian):
                     if match:
                         output.append("{0:8s} {1}".format(match.group(2), match.group(1)))
                         atomCount += 1
-            inputFilePath = self.inputFilePath
+            inputFilePath = self.reactantGeom.getFilePath(self.inputFileExtension)
             bottom_keys = "{atom1} {atom3} F\n{atom2} {atom3} F\n".format(atom1=freezeAtoms[0] + 1, atom2=freezeAtoms[1] + 1, atom3=freezeAtoms[2] + 1)
         
-        assert atomCount == len(self.geometry.molecule.atoms)
+        assert atomCount == len(self.reactantGeom.molecule.atoms)
         
         output.append('')
         top_keys = self.inputFileKeywords(0, modRed=atomCount)
         self.writeInputFile(output, top_keys=top_keys, numProcShared=20, memory='800MB', bottomKeys=bottom_keys)
     
-    def createQST2InputFile(self, pGeom):
+    def createQST2InputFile(self):
         # For now we don't do this, until seg faults are fixed on Discovery.
         # chk_file = '%chk=' + os.path.join(self.settings.fileStore, self.uniqueID) + '\n'
-        output = ['', self.geometry.uniqueID, '' ]
+        output = ['', self.reactantGeom.uniqueID, '' ]
         output.append("{charge}   {mult}".format(charge=0, mult=(self.geometry.molecule.getRadicalCount() + 1) ))
         
-        molfile = self.geometry.getRefinedMolFilePath()
-        atomline = re.compile('\s*([\- ][0-9.]+\s+[\-0-9.]+\s+[\-0-9.]+)\s+([A-Za-z]+)')
+        atomsymbols, atomcoords = self.reactantGeom.parseLOG(self.reactantGeom.getFilePath(self.outputFileExtension))
+        output, atomCount = self.geomToString(atomsymbols, atomcoords, outputString=output)
         
-        atomCount = 0
-        atomnos = []
-        with open(molfile) as molinput:
-            for line in molinput:
-                match = atomline.match(line)
-                if match:
-                    atomnos.append(match.group(2))
-                    atomCount += 1
-        
-        assert atomCount == len(self.geometry.molecule.atoms)
-        
-        parser = cclib.parser.Gaussian(self.outputFilePath)
-        parser.logger.setLevel(logging.ERROR)
-        parser = parser.parse()
-        
-        lines = []
-        for line in parser.atomcoords[-1]:
-            lineList = ''
-            for item in line:
-                if item > 0:
-                    lineList = lineList + ' ' + str(format(item, '.6f')) + ' '
-                else:
-                    lineList = lineList + str(format(item, '.6f')) + ' '
-            lines.append(lineList)
-            
-        atomCount = 0
-        
-        for i, line in enumerate(lines):
-            output.append("{0:8s} {1}".format(atomnos[i], line))
-            atomCount += 1
-        
-        assert atomCount == len(self.geometry.molecule.atoms)
+        assert atomCount == len(self.reactantGeom.molecule.atoms)
         
         output.append('')
-        output.append(pGeom.uniqueIDlong)
+        output.append(self.productGeom.uniqueIDlong)
         output.append('')
-        output.append("{charge}   {mult}".format(charge=0, mult=(pGeom.molecule.getRadicalCount() + 1) ))
+        output.append("{charge}   {mult}".format(charge=0, mult=(self.productGeom.molecule.getRadicalCount() + 1) ))
         
-        parser = cclib.parser.Gaussian(pGeom.getFilePath(self.outputFileExtension))
-        parser.logger.setLevel(logging.ERROR)
-        parser = parser.parse()
+        atomsymbols, atomcoords = self.productGeom.parseLOG(self.productGeom.getFilePath(self.outputFileExtension))
+        output, atomCount = self.geomToString(atomsymbols, atomcoords, outputString=output)
         
-        lines = []
-        for line in parser.atomcoords[-1]:
-            lineList = ''
-            for item in line:
-                if item > 0:
-                    lineList = lineList + ' ' + str(format(item, '.6f')) + ' '
-                else:
-                    lineList = lineList + str(format(item, '.6f')) + ' '
-            lines.append(lineList)
-            
-        atomCount = 0
-        for i, line in enumerate(lines):
-            output.append("{0:8s} {1}".format(atomnos[i], line))
-            atomCount += 1
-        
-        assert atomCount == len(self.geometry.molecule.atoms)
-        # 
-        # #####################
-        # 
-        # atomCount = 0
-        # with open(molfile) as molinput:
-        #     for line in molinput:
-        #         match = atomline.match(line)
-        #         if match:
-        #             output.append("{0:8s} {1}".format(match.group(2), match.group(1)))
-        #             atomCount += 1
-        # 
-        # assert atomCount == len(self.geometry.molecule.atoms)
-        # 
-        # output.append('')
-        # output.append(pGeom.uniqueIDlong)
-        # output.append('')
-        # output.append("{charge}   {mult}".format(charge=0, mult=(pGeom.molecule.getRadicalCount() + 1) ))
-        # 
-        # molfile = pGeom.getRefinedMolFilePath() # Now get the product geometry
-        # 
-        # atomCount = 0
-        # with open(molfile) as molinput:
-        #     for line in molinput:
-        #         match = atomline.match(line)
-        #         if match:
-        #             output.append("{0:8s} {1}".format(match.group(2), match.group(1)))
-        #             atomCount += 1
-        # 
-        # assert atomCount == len(self.geometry.molecule.atoms)
+        assert atomCount == len(self.reactantGeom.molecule.atoms)
         
         output.append('')
         top_keys = self.inputFileKeywords(0, qst2=atomCount)
         self.writeInputFile(output, top_keys=top_keys, numProcShared=20, memory='800MB')
         
-    def setImages(self, pGeom):
+    def setImages(self):
         """
         Set and return the initial and final ase images for the NEB calculation
         """
@@ -601,13 +532,13 @@ class GaussianTS(QMReaction, Gaussian):
         from ase import io, Atoms
         
         # Give ase the atom positions for each side of the reaction path
-        atomsymbols, atomcoords = self.geometry.parseLOG(self.outputFilePath)
+        atomsymbols, atomcoords = self.reactantGeometry.parseLOG(self.outputFilePath)
         
         newImage = Atoms([getElement(i).number for i in atomsymbols])
         newImage.set_positions(atomcoords)
         initial = newImage.copy()
         
-        atomsymbols, atomcoords = self.geometry.parseLOG(pGeom.getFilePath(self.outputFileExtension))
+        atomsymbols, atomcoords = self.productGeom.parseLOG(self.outputFilePath)
         
         newImage = Atoms([getElement(i).number for i in atomsymbols])
         newImage.set_positions(atomcoords)
@@ -625,7 +556,7 @@ class GaussianTS(QMReaction, Gaussian):
         label=os.path.join(os.path.abspath(self.settings.fileStore), 'g09')
         for image in images[1:len(images)-1]:
             image.set_calculator(ase.calculators.gaussian.Gaussian(command=self.executablePath + '< ' + label + '.com' + ' > ' + label + '.log', label=label))
-            image.get_calculator().set(multiplicity=self.geometry.molecule.getRadicalCount() + 1, method=self.method, basis=self.basisSet)
+            image.get_calculator().set(multiplicity=self.reactantGeom.molecule.getRadicalCount() + 1, method=self.method, basis=self.basisSet)
 
     def generateQMKinetics(self):
         """
@@ -693,25 +624,25 @@ class GaussianTS(QMReaction, Gaussian):
         
         return self.verifyIRCOutputFile()
     
-    def prepDoubleEnded(self, labels, productGeometry, notes):
+    def prepDoubleEnded(self, labels, notes):
         """
         Optimize the reactant and product geometries while freeezing the distances between
         the reactive atoms.
         """
         if os.path.exists(self.getFilePath('.log.reactant.log')):
-            rightReactant = self.checkGeometry(self.getFilePath('.log.reactant.log'), self.geometry.molecule)
+            rightReactant = self.checkGeometry(self.getFilePath('.log.reactant.log'), self.reactantGeom.molecule)
         else:
             self.writeGeomInputFile(freezeAtoms=labels)
             logFilePath = self.runDouble(self.inputFilePath)
-            rightReactant = self.checkGeometry(logFilePath, self.geometry.molecule)
+            rightReactant = self.checkGeometry(logFilePath, self.reactantGeom.molecule)
             shutil.copy(logFilePath, logFilePath+'.reactant.log')
         
-        if os.path.exists(productGeometry.getFilePath('.log.product.log')):
-            rightProduct = self.checkGeometry(productGeometry.getFilePath('.log.product.log'), productGeometry.molecule)
+        if os.path.exists(self.productGeom.getFilePath('.log.product.log')):
+            rightProduct = self.checkGeometry(self.productGeom.getFilePath('.log.product.log'), self.productGeom.molecule)
         else:
-            self.writeGeomInputFile(freezeAtoms=labels, otherGeom=productGeometry)
-            logFilePath = self.runDouble(productGeometry.getFilePath(self.inputFileExtension))
-            rightProduct = self.checkGeometry(logFilePath, productGeometry.molecule)
+            self.writeGeomInputFile(freezeAtoms=labels, otherGeom=True)
+            logFilePath = self.runDouble(self.productGeom.getFilePath(self.inputFileExtension))
+            rightProduct = self.checkGeometry(logFilePath, self.productGeom.molecule)
             shutil.copy(logFilePath, logFilePath+'.product.log')
         
         if not (rightReactant and rightProduct):
@@ -949,7 +880,7 @@ class GaussianTS(QMReaction, Gaussian):
         labeledList = reactant.getLabeledAtoms()
         labeledAtoms = labeledList.values()
         labels = labeledList.keys()
-        atomSymbols, atomCoords = self.geometry.parseLOG(self.outputFilePath)
+        atomSymbols, atomCoords = self.reactantGeom.parseLOG(self.outputFilePath)
         
         distances = {}
         dist_combo_it = itertools.combinations(labels, 2)
@@ -961,7 +892,7 @@ class GaussianTS(QMReaction, Gaussian):
             coords1 = atomCoords[atom1.sortingLabel]
             coords2 = atomCoords[atom2.sortingLabel]
             
-            distances[combo] = self.geometry.getDistance(coords1, coords2)
+            distances[combo] = self.reactantGeom.getDistance(coords1, coords2)
     
     def checkGeometry(self, outputFilePath, molecule):
         """
@@ -1125,5 +1056,5 @@ class GaussianTSPM6(GaussianTS):
         
         for image in images[1:len(images)+1]:
             image.set_calculator(ase.calculators.gaussian.Gaussian(command=self.executablePath + '< g09.com > g09.log'))
-            image.get_calculator().set(multiplicity=self.geometry.molecule.getRadicalCount() + 1, method=self.method, basis='')
+            image.get_calculator().set(multiplicity=self.reactantGeom.molecule.getRadicalCount() + 1, method=self.method, basis='')
             
