@@ -459,14 +459,14 @@ class QMReaction:
         """
         notes = ''
         if os.path.exists(os.path.join(self.file_store_path, self.uniqueID + '.data')):
-            logging.info("Not generating TS geometry because it's already done.")
+            logging.info("Transition state geometry already exists.")
             return True, "Already done!"
             
         reactant, product = self.setupMolecules()
         
-        tsRDMol, tsBM, self.geometry = self.generateBoundsMatrix(reactant)
+        tsRDMol, tsBM, self.reactantGeom = self.generateBoundsMatrix(reactant)
         
-        self.geometry.uniqueID = self.uniqueID
+        self.reactantGeom.uniqueID = self.uniqueID
         
         tsBM, labels, atomMatch = self.editMatrix(reactant, tsBM, database)
         atoms = len(reactant.atoms)
@@ -483,7 +483,7 @@ class QMReaction:
                 if tsBM[j,i] > tsBM[i,j]:
                         print "BOUNDS MATRIX FLAWED {0}>{1}".format(tsBM[j,i], tsBM[i,j])
         
-        self.geometry.rd_embed(tsRDMol, distGeomAttempts, bm=tsBM, match=atomMatch)
+        self.reactantGeom.rd_embed(tsRDMol, distGeomAttempts, bm=tsBM, match=atomMatch)
         worked, notes =  self.tsSearch(notes)
         
         return worked, notes
@@ -497,45 +497,21 @@ class QMReaction:
         """
         assert doubleEnd is not None and len(doubleEnd)==2, "You must provide the two ends of the search using 'doubleEnd' argument."
         notes = ''
-        if os.path.exists(os.path.join(self.file_store_path, self.uniqueID + '.data')):
+        if os.path.exists(os.path.join(self.settings.fileStore, self.uniqueID + '.data')):
             logging.info("Not generating TS geometry because it's already done.")
-            return True, None, None, "Already done!"
-    
-        reactant = doubleEnd[0]
-        product = doubleEnd[1]
-    
-        rRDMol, rBM, self.geometry = self.generateBoundsMatrix(reactant)
-        pRDMol, pBM, pGeom = self.generateBoundsMatrix(product)
+            return True, "Output used from a previous run."
         
-        print "Reactant original matrix (smoothed)"
-        print matrixToString(rBM)
-        print "Product original matrix (smoothed)"
-        print matrixToString(pBM)
+        rRDMol, rBM, self.reactantGeom = self.generateBoundsMatrix(reactant)
+        pRDMol, pBM, self.productGeom = self.generateBoundsMatrix(product)
         
-        self.geometry.uniqueID = self.uniqueID
+        self.reactantGeom.uniqueID = 'reactant'
+        self.productGeom.uniqueID = 'product'
+        
         rBM, pBM, labels, atomMatch = self.editDoubMatrix(reactant, product, rBM, pBM)
-        
-        print "Reactant edited matrix"
-        print matrixToString(rBM)
-        print "Product edited matrix"
-        print matrixToString(pBM)
         
         reactantSmoothingSuccessful = rdkit.DistanceGeometry.DoTriangleSmoothing(rBM)
         productSmoothingSuccessful  = rdkit.DistanceGeometry.DoTriangleSmoothing(pBM)
         
-        if reactantSmoothingSuccessful:
-            print "Reactant matrix is embeddable"
-            print "Smoothed reactant matrix"
-            print matrixToString(rBM)
-        else:
-            print "Reactant matrix is NOT embeddable"
-        if productSmoothingSuccessful:
-            print "Product matrix is embeddable"
-            print "Smoothed product matrix"
-            print matrixToString(pBM)
-        else:
-            print "Product matrix is NOT embeddable"
-            
         if not (reactantSmoothingSuccessful and productSmoothingSuccessful):
             notes = 'Bounds matrix editing failed\n'
             return False, None, None, notes
@@ -543,20 +519,19 @@ class QMReaction:
         atoms = len(reactant.atoms)
         distGeomAttempts = 15*(atoms-3) # number of conformers embedded from the bounds matrix
          
-        rdmol, minEid = self.geometry.rd_embed(rRDMol, distGeomAttempts, bm=rBM, match=atomMatch)
+        rdmol, minEid = self.reactantGeom.rd_embed(rRDMol, distGeomAttempts, bm=rBM, match=atomMatch)
         if not rdmol:
-            print "RDKit failed all attempts to embed"
             notes = notes + "RDKit failed all attempts to embed"
             return False, None, None, notes
-        rRDMol = rdkit.Chem.MolFromMolFile(self.geometry.getCrudeMolFilePath(), removeHs=False)
+        rRDMol = rdkit.Chem.MolFromMolFile(self.reactantGeom.getCrudeMolFilePath(), removeHs=False)
         # Make product pRDMol a copy of the reactant rRDMol geometry
         for atom in reactant.atoms:
             i = atom.sortingLabel
             pRDMol.GetConformer(0).SetAtomPosition(i, rRDMol.GetConformer(0).GetAtomPosition(i))
     
         # don't re-embed the product, just optimize at UFF, constrained with the correct bounds matrix
-        pRDMol, minEid = pGeom.optimize(pRDMol, boundsMatrix=pBM, atomMatch=atomMatch)
-        pGeom.writeMolFile(pRDMol, pGeom.getRefinedMolFilePath(), minEid)
+        pRDMol, minEid = self.productGeom.optimize(pRDMol, boundsMatrix=pBM, atomMatch=atomMatch)
+        self.productGeom.writeMolFile(pRDMol, self.productGeom.getRefinedMolFilePath(), minEid)
              
         if os.path.exists(self.outputFilePath):
             logging.info("File {0} already exists.".format(self.outputFilePath))
@@ -565,18 +540,35 @@ class QMReaction:
             rightTS = self.verifyIRCOutputFile()
             if rightTS:
                 self.writeRxnOutputFile(labels)
-                return True, self.geometry, labels, notes
+                return True, notes#True, self.geometry, labels, notes
             else:
-                return False, None, None, notes
+                return False, notes#False, None, None, notes
           
-        check, notes = self.prepDoubleEnded(labels, productGeometry, notes)
+        check, notes = self.prepDoubleEnded(labels, notes)
         
         check, notes = self.conductDoubleEnded(NEB=neb)
         
         # Optimize the TS 
-        worked, notes =  self.tsSearch(notes, fromQST2=True)
+        worked, notes =  self.tsSearch(notes, fromDoubleEnded=True)
         
         return worked, notes
+    
+    def writeXYZ(self, atomSymbols, atomCoords):
+        """
+        Takes a list of atom symbols stings, and an array of coordiantes and
+        writes a file to store the geometry.
+        """
+        xyzOutput = []
+        for atomsymbol, atomcoord in zip(atomsymbols, atomcoords):
+            inputline = "{0:4s}  {1:4f}  {2:4f}  {3:4f}".format(atomsymbol, atomcoord[0], atomcoord[1], atomcoord[2])
+            inputline = inputline.replace(' -', '-')
+            xyzOutput.append(inputline)
+            
+        input_string = '\n'.join(xyzOutput)
+            
+        with open(self.getFilePath('.xyz'), 'w') as xyzFile:
+            xyzFile.write(input_string)
+        
     
     def calculateQMData(self, moleculeList):
         """
