@@ -7,6 +7,8 @@ from subprocess import Popen
 from copy import deepcopy
 import numpy
 import shutil
+
+from rmgpy.data.rmg import RMGDatabase
 from rmgpy.molecule import Molecule
 from rmgpy.species import Species, TransitionState
 from rmgpy.kinetics import Wigner
@@ -53,7 +55,13 @@ class QMReaction:
     def __init__(self, reaction, settings):
         self.reaction = reaction
         self.settings = settings
-        
+        self.database = RMGDatabase()
+        self.database.load(
+                path = os.path.abspath(os.path.join(os.getenv('RMGpy'), '..', 'RMG-database', 'input')),
+                kineticsFamilies = 'default',
+                depository = False,
+                )
+                
         if isinstance(self.reaction.reactants[0], Molecule):
             reactants = sorted([s.toSMILES() for s in self.reaction.reactants])
             products = sorted([s.toSMILES() for s in self.reaction.products])
@@ -495,7 +503,15 @@ class QMReaction:
         Returns (mopac, fromDbl, labels, notes) where mopac and fromDbl are 
         booleans (fromDbl is always True), and notes is a string of comments on what happened.
         """
-        assert doubleEnd is not None and len(doubleEnd)==2, "You must provide the two ends of the search using 'doubleEnd' argument."
+        kineticsFamily = self.database.kinetics.families[self.reaction.label]
+        prodStruct, tsStructures = kineticsFamily.applyRecipe(self.reaction.reactants, getTS=True)
+        
+        reactant = self.fixSortLabel(tsStructures[0])
+        product = self.fixSortLabel(tsStructures[1])
+        
+        reactant.multiplicity = reactant.getRadicalCount() + 1
+        product.multiplicity = product.getRadicalCount() + 1
+        
         notes = ''
         if os.path.exists(os.path.join(self.settings.fileStore, self.uniqueID + '.data')):
             logging.info("Not generating TS geometry because it's already done.")
