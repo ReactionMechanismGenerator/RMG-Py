@@ -443,7 +443,7 @@ class MopacTS(QMReaction, Mopac):
 
         return self.verifyIRCOutputFile()
 
-    def writeInputFile(self, attempt):
+    def createInputFile(self, attempt):
         """
         Using the :class:`Geometry` object, write the input file
         for the `attmept`th attempt.
@@ -463,20 +463,10 @@ class MopacTS(QMReaction, Mopac):
         assert atomCount == len(self.geometry.molecule.atoms)
 
         output.append('')
-        input_string = '\n'.join(output)
+        self.writeInputFile(output, attempt)
 
-        top_keys, bottom_keys, polar_keys = self.inputFileKeywords(attempt, self.geometry.molecule.getRadicalCount() + 1)
-        with open(self.inputFilePath, 'w') as mopacFile:
-            mopacFile.write(top_keys)
-            mopacFile.write('\n')
-            mopacFile.write(input_string)
-            mopacFile.write('\n')
-            mopacFile.write(bottom_keys)
-            if self.usePolar:
-                mopacFile.write('\n\n\n')
-                mopacFile.write(polar_keys)
+    def createGeomInputFile(self, freezeAtoms, product=False):
 
-    def writeGeomInputFile(self, freezeAtoms, otherGeom=None):
 
         output = [ self.geometry.uniqueID ]
 
@@ -500,17 +490,11 @@ class MopacTS(QMReaction, Mopac):
         assert atomCount == len(self.geometry.molecule.atoms)
 
         output.append('')
-        input_string = '\n'.join(output)
+        
+        top_keys = "precise nosym {spin}".format(spin=self.multiplicityKeywords[multiplicity])
+        self.writeInputFile(output, top_keys=top_keys, inputFilePath=inputFilePath)
 
-        top_keys = "precise nosym {spin}\n".format(spin=self.multiplicityKeywords[self.geometry.multiplicity])
-
-        with open(inputFilePath, 'w') as mopacFile:
-            mopacFile.write(top_keys)
-            mopacFile.write('\n')
-            mopacFile.write(input_string)
-            mopacFile.write('\n')
-
-    def writeIRCFile(self):
+    def createIRCFile(self):
         output = ['irc=1* let', self.geometry.uniqueID, '' ]
         atomCount = 0
 
@@ -531,7 +515,7 @@ class MopacTS(QMReaction, Mopac):
         with open(self.inputFilePath, 'w') as mopacFile:
             mopacFile.write(input_string)
 
-    def writeReferenceFile(self, otherGeom=None):#, inputFilePath, molFilePathForCalc, geometry, attempt, outputFile=None):
+    def createReferenceFile(self, productSide=False):#, inputFilePath, molFilePathForCalc, geometry, attempt, outputFile=None):
         """
         Using the :class:`Geometry` object, write the input file
         for the `attmept`th attempt.
@@ -553,17 +537,13 @@ class MopacTS(QMReaction, Mopac):
         assert atomCount == len(self.geometry.molecule.atoms)
 
         output.append('')
-        input_string = '\n'.join(output)
-
-        with open(inputFilePath, 'w') as mopacFile:
-            mopacFile.write(input_string)
-            mopacFile.write('\n')
-
-    def writeGeoRefInputFile(self, otherGeom, otherSide=False):
         if otherSide:
             atomsymbols, atomcoords = self.geometry.parseARC(otherGeom.getFilePath('.arc'))
             refFile = self.inputFilePath
             inputFilePath = otherGeom.getFilePath(self.inputFileExtension)
+        self.writeInputFile(output, inputFilePath=inputFilePath, refFile=True)
+
+    def createGeoRefInputFile(self, productSide=False):
         else:
             atomsymbols, atomcoords = self.geometry.parseARC(self.getFilePath('.arc'))
             refFile = otherGeom.getFilePath(self.inputFileExtension)
@@ -579,12 +559,9 @@ class MopacTS(QMReaction, Mopac):
         assert atomCount == len(self.geometry.molecule.atoms)
 
         output.append('')
-        input_string = '\n'.join(output)
-        with open(inputFilePath, 'w') as mopacFile:
-            mopacFile.write(input_string)
-            mopacFile.write('\n')
+        self.writeInputFile(output, inputFilePath=inputFilePath, refFile=True)
 
-    def writeSaddleInputFile(self, otherGeom):
+    def createSaddleInputFile(self):
         """
         Using the :class:`Geometry` object, write the input file
         for the `attmept`th attempt.
@@ -614,11 +591,7 @@ class MopacTS(QMReaction, Mopac):
         assert atomCount == len(self.geometry.molecule.atoms)
 
         output.append('')
-        input_string = '\n'.join(output)
-
-        with open(self.inputFilePath, 'w') as mopacFile:
-            mopacFile.write(input_string)
-            mopacFile.write('\n')
+        self.writeInputFile(output, refFile=True)
 
     def writeTSInputFile(self, doubleEnd=False):
 
