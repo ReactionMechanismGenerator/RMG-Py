@@ -68,7 +68,7 @@ class Geometry:
         return self.getFilePath('.crude.mol')
 
     def getRefinedMolFilePath(self):
-        "Returns the path the the refined mol file."
+        "Returns the path of the refined mol file."
         return self.getFilePath('.refined.mol')
 
     def generateRDKitGeometries(self, boundsMatrix=None, atomMatch=None):
