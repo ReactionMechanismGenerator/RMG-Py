@@ -66,7 +66,19 @@ class Mopac:
     def testReady(self):
         if not os.path.exists(self.executablePath):
             raise Exception("Couldn't find MOPAC executable at {0}. Try setting your MOPAC_DIR environment variable.".format(self.executablePath))
-
+    
+    def geomToString(self, atomsymbols, atomcoords, outputString='', freezeAtoms=[]):
+        atomCount = 0
+        for atomsymbol, atomcoord in zip(atomsymbols, atomcoords):
+            if atomCount in freezeAtoms:
+                inputline = "{0:4s} {1: .6f}  0  {2: .6f}  0  {3: .6f}  0".format(atomsymbol, atomcoord[0], atomcoord[1], atomcoord[2])
+            else:
+                inputline = "{0:4s} {1: .6f}  1  {2: .6f}  1  {3: .6f}  1".format(atomsymbol, atomcoord[0], atomcoord[1], atomcoord[2])
+            outputString.append(inputline)
+            atomCount += 1
+        
+        return outputString, atomCount
+    
     def run(self):
         self.testReady()
         # submits the input file to mopac
@@ -467,28 +479,23 @@ class MopacTS(QMReaction, Mopac):
 
     def createGeomInputFile(self, freezeAtoms, product=False):
 
-
-        output = [ self.geometry.uniqueID ]
-
-        if otherGeom:
+        if product:
+            output = [ self.productGeom.uniqueID, '' ]
             freezeAtoms = [freezeAtoms[0], freezeAtoms[1]]
-            atomsymbols, atomcoords = self.geometry.parseMOL(otherGeom.getRefinedMolFilePath())
-            inputFilePath = otherGeom.getFilePath(self.inputFileExtension)
+            atomsymbols, atomcoords = self.productGeom.parseMOL(self.productGeom.getRefinedMolFilePath())
+            inputFilePath = self.productGeom.getFilePath(self.inputFileExtension)
+            multiplicity = self.productGeom.molecule.multiplicity
         else:
+            output = [ self.reactantGeom.uniqueID, '' ]
             freezeAtoms = [freezeAtoms[1], freezeAtoms[2]]
-            atomsymbols, atomcoords = self.geometry.parseMOL(self.geometry.getRefinedMolFilePath())
-            inputFilePath = self.inputFilePath
+            atomsymbols, atomcoords = self.reactantGeom.parseMOL(self.reactantGeom.getRefinedMolFilePath())
+            inputFilePath = self.reactantGeom.getFilePath(self.inputFileExtension)
+            multiplicity = self.reactantGeom.molecule.multiplicity
+            
+        output, atomCount = self.geomToString(atomsymbols, atomcoords, outputString=output, freezeAtoms=freezeAtoms)
 
-        atomCount = 0
-        for atomsymbol, atomcoord in zip(atomsymbols, atomcoords):
-            if atomCount in freezeAtoms:
-                output.append("{0:4s} {1} 0 {2} 0 {3} 0".format(atomsymbol, atomcoord[0], atomcoord[1], atomcoord[2]))
-            else:
-                output.append("{0:4s} {1} 1 {2} 1 {3} 1".format(atomsymbol, atomcoord[0], atomcoord[1], atomcoord[2]))
-            atomCount += 1
-
-        assert atomCount == len(self.geometry.molecule.atoms)
-
+        assert atomCount == len(self.reactantGeom.molecule.atoms)
+        
         output.append('')
         
         top_keys = "precise nosym {spin}".format(spin=self.multiplicityKeywords[multiplicity])
@@ -506,12 +513,12 @@ class MopacTS(QMReaction, Mopac):
                 if match:
                     output.append("{0:4s} {1} 1 {2} 1 {3} 1".format(match.group(1), match.group(2), match.group(4), match.group(6)))
                     atomCount += 1
-
+                    
         assert atomCount == len(self.geometry.molecule.atoms)
-
+        
         output.append('')
         input_string = '\n'.join(output)
-
+        
         with open(self.inputFilePath, 'w') as mopacFile:
             mopacFile.write(input_string)
 
@@ -520,43 +527,37 @@ class MopacTS(QMReaction, Mopac):
         Using the :class:`Geometry` object, write the input file
         for the `attmept`th attempt.
         """
-        if otherGeom:
-            inputFilePath = otherGeom.getFilePath(self.inputFileExtension)
-            atomsymbols, atomcoords = self.geometry.parseARC(otherGeom.getFilePath('.arc'))
+        if productSide:
+            inputFilePath = self.productGeom.getFilePath(self.inputFileExtension)
+            atomsymbols, atomcoords = self.productGeom.parseOUT(self.productGeom.getFilePath(self.outputFileExtension))
+            output = [ '', self.productGeom.uniqueIDlong, '' ]
         else:
-            inputFilePath = self.inputFilePath
-            atomsymbols, atomcoords = self.geometry.parseARC(self.getFilePath('.arc'))
+            inputFilePath = self.reactantGeom.getFilePath(self.inputFileExtension)
+            atomsymbols, atomcoords = self.reactantGeom.parseARC(self.reactantGeom.getFilePath('.arc'))
+            output = [ '', self.reactantGeom.uniqueIDlong, '' ]
+        
+        output, atomCount = self.geomToString(atomsymbols, atomcoords, outputString=output)
 
-        output = [ '', self.geometry.uniqueIDlong, '' ]
-
-        atomCount = 0
-        for atomsymbol, atomcoord in zip(atomsymbols, atomcoords):
-            output.append("{0:4s} {1} 1 {2} 1 {3} 1".format(atomsymbol, atomcoord[0], atomcoord[1], atomcoord[2]))
-            atomCount += 1
-
-        assert atomCount == len(self.geometry.molecule.atoms)
+        assert atomCount == len(self.reactantGeom.molecule.atoms)
 
         output.append('')
-        if otherSide:
-            atomsymbols, atomcoords = self.geometry.parseARC(otherGeom.getFilePath('.arc'))
-            refFile = self.inputFilePath
-            inputFilePath = otherGeom.getFilePath(self.inputFileExtension)
         self.writeInputFile(output, inputFilePath=inputFilePath, refFile=True)
 
     def createGeoRefInputFile(self, productSide=False):
+        if productSide:
+            atomsymbols, atomcoords = self.productGeom.parseARC(self.productGeom.getFilePath('.arc'))
+            refFile = self.reactantGeom.getFilePath(self.inputFileExtension)
+            inputFilePath = self.productGeom.getFilePath(self.inputFileExtension)
+            output = [ 'geo_ref="{0}"'.format(refFile), self.productGeom.uniqueIDlong, '' ]
         else:
-            atomsymbols, atomcoords = self.geometry.parseARC(self.getFilePath('.arc'))
-            refFile = otherGeom.getFilePath(self.inputFileExtension)
-            inputFilePath = self.inputFilePath
+            atomsymbols, atomcoords = self.reactantGeom.parseARC(self.reactantGeom.getFilePath('.arc'))
+            refFile = self.productGeom.getFilePath(self.inputFileExtension)
+            inputFilePath = self.reactantGeom.getFilePath(self.inputFileExtension)
+            output = [ 'geo_ref="{0}"'.format(refFile), self.reactantGeom.uniqueIDlong, '' ]
+        
+        output, atomCount = self.geomToString(atomsymbols, atomcoords, outputString=output)
 
-        output = [ 'geo_ref="{0}"'.format(refFile), self.geometry.uniqueIDlong, '' ]
-
-        atomCount = 0
-        for atomsymbol, atomcoord in zip(atomsymbols, atomcoords):
-            output.append("{0:4s} {1} 1 {2} 1 {3} 1".format(atomsymbol, atomcoord[0], atomcoord[1], atomcoord[2]))
-            atomCount += 1
-
-        assert atomCount == len(self.geometry.molecule.atoms)
+        assert atomCount == len(self.reactantGeom.molecule.atoms)
 
         output.append('')
         self.writeInputFile(output, inputFilePath=inputFilePath, refFile=True)
@@ -566,29 +567,23 @@ class MopacTS(QMReaction, Mopac):
         Using the :class:`Geometry` object, write the input file
         for the `attmept`th attempt.
         """
-        output = [ 'saddle', self.geometry.uniqueIDlong, '' ]
+        output = [ 'saddle', self.uniqueID, '' ]
 
         # Reactant side
-        atomsymbols, atomcoords = self.geometry.parseARC(self.getFilePath('.arc'))
+        atomsymbols, atomcoords = self.reactantGeom.parseARC(self.reactantGeom.getFilePath('.arc'))
+        
+        output, atomCount = self.geomToString(atomsymbols, atomcoords, outputString=output)
 
-        atomCount = 0
-        for atomsymbol, atomcoord in zip(atomsymbols, atomcoords):
-            output.append("{0:4s} {1} 1 {2} 1 {3} 1".format(atomsymbol, atomcoord[0], atomcoord[1], atomcoord[2]))
-            atomCount += 1
-
-        assert atomCount == len(self.geometry.molecule.atoms)
+        assert atomCount == len(self.reactantGeom.molecule.atoms)
 
         output.append('')
 
         # Product side
-        atomsymbols, atomcoords = self.geometry.parseARC(otherGeom.getFilePath('.arc'))
+        atomsymbols, atomcoords = self.productGeom.parseARC(self.productGeom.getFilePath('.arc'))
+        
+        output, atomCount = self.geomToString(atomsymbols, atomcoords, outputString=output)
 
-        atomCount = 0
-        for atomsymbol, atomcoord in zip(atomsymbols, atomcoords):
-            output.append("{0:4s} {1} 1 {2} 1 {3} 1".format(atomsymbol, atomcoord[0], atomcoord[1], atomcoord[2]))
-            atomCount += 1
-
-        assert atomCount == len(self.geometry.molecule.atoms)
+        assert atomCount == len(self.productGeom.molecule.atoms)
 
         output.append('')
         self.writeInputFile(output, refFile=True)
@@ -639,14 +634,12 @@ class MopacTS(QMReaction, Mopac):
             mopacFile.write('\n')
             mopacFile.write(bottom_keys)
     
-    def prepDoubleEnded(self, labels, productGeometry, notes):
-        self.writeGeomInputFile(freezeAtoms=labels)
-        logFilePath = self.runDouble(self.inputFilePath)
-        shutil.copy(logFilePath, logFilePath+'.reactant.out')
+    def prepDoubleEnded(self, labels, notes):
+        self.createGeomInputFile(freezeAtoms=labels)
+        logFilePath = self.runDouble(self.reactantGeom.getFilePath(self.inputFileExtension))
         
-        self.writeGeomInputFile(freezeAtoms=labels, otherGeom=productGeometry)
-        logFilePath = self.runDouble(productGeometry.getFilePath(self.inputFileExtension))
-        shutil.copy(logFilePath, logFilePath+'.product.out')
+        self.createGeomInputFile(freezeAtoms=labels, product=True)
+        logFilePath = self.runDouble(self.productGeom.getFilePath(self.inputFileExtension))
         
         # A check is needed to ensure the geometry that comes out has not been altered
         return True, notes
