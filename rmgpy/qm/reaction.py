@@ -210,7 +210,28 @@ class QMReaction:
                     if Uij < diffLikUjk or Uik < diffLjkUik:
                         print "Lower limit for {i} and {j} is too low".format(i=i, j=j)
     
-    def editDoubMatrix(self, reactant, product, bm1, bm2):
+    def getLabels(self, reactant):
+        """
+        Creates the list of sorting labels for the reacting atoms. These labels are
+        also put intoa tuple for the atomMatch weighting for RDKit. The weighting tells
+        RDKit to place greater importance in maintaining these distance limits when
+        generating conformers.
+        """
+        if self.reaction.family.label.lower() in ['h_abstraction', 'r_addition_multiplebond', 'intra_h_migration']:
+            lbl1 = reactant.getLabeledAtom('*1').sortingLabel
+            lbl2 = reactant.getLabeledAtom('*2').sortingLabel
+            lbl3 = reactant.getLabeledAtom('*3').sortingLabel
+        elif self.reaction.family.label.lower() in ['disproportionation']:
+            lbl1 = reactant.getLabeledAtom('*2').sortingLabel
+            lbl2 = reactant.getLabeledAtom('*4').sortingLabel
+            lbl3 = reactant.getLabeledAtom('*1').sortingLabel
+            
+        labels = [lbl1, lbl2, lbl3]
+        atomMatch = ((lbl1,),(lbl2,),(lbl3,))
+        
+        return labels, atomMatch
+    
+    def editDoubMatrix(self, reactant, product, bm1, bm2, labels):
         """
         For bimolecular reactions, reduce the minimum distance between atoms
         of the two reactanting species, in preparation for a double-ended search.
@@ -244,21 +265,8 @@ class QMReaction:
                     bm[lbl2][lbl3] = bm[lbl1][lbl3] - upDiff
                     bm[lbl3][lbl2] = bm[lbl3][lbl1] - dnDiff
             return bm
-        
-        if self.reaction.label.lower() == 'h_abstraction':
             
-            lbl1 = reactant.getLabeledAtom('*1').sortingLabel
-            lbl2 = reactant.getLabeledAtom('*2').sortingLabel
-            lbl3 = reactant.getLabeledAtom('*3').sortingLabel
-        
-        elif self.reaction.label.lower() == 'disproportionation':
-            
-            lbl1 = reactant.getLabeledAtom('*2').sortingLabel
-            lbl2 = reactant.getLabeledAtom('*4').sortingLabel
-            lbl3 = reactant.getLabeledAtom('*1').sortingLabel
-            
-        labels = [lbl1, lbl2, lbl3]
-        atomMatch = ((lbl1,),(lbl2,),(lbl3,))
+        lbl1, lbl2, lbl3 = labels
             
         if reactant.atoms[lbl1].symbol == 'H' or reactant.atoms[lbl3].symbol == 'H':
             bm1 = fixMatrix(bm1, lbl1, lbl2, lbl3, 2.3, 0.1)
@@ -267,7 +275,6 @@ class QMReaction:
             bm1 = fixMatrix(bm1, lbl1, lbl2, lbl3, 2.7, 0.1)
             bm2 = fixMatrix(bm2, lbl3, lbl2, lbl1, 2.7, 0.1)
         
-        # sect = len(reactant.split()[1].atoms)
         rSect = []
         for atom in reactant.split()[0].atoms: rSect.append(atom.sortingLabel)
         
@@ -277,29 +284,15 @@ class QMReaction:
         bm1 = self.bmPreEdit(bm1, rSect)
         bm2 = self.bmPreEdit(bm2, pSect)
         
-        return bm1, bm2, labels, atomMatch
+        return bm1, bm2
     
-    def editMatrix(self, reactant, bm, database):
+    def editMatrix(self, reactant, bm, database, labels):
         
         """
         For bimolecular reactions, reduce the minimum distance between atoms
         of the two reactants. 
         """
-        if self.reaction.family.label.lower() in ['h_abstraction', 'r_addition_multiplebond', 'intra_h_migration']:
-            
-            lbl1 = reactant.getLabeledAtom('*1').sortingLabel
-            lbl2 = reactant.getLabeledAtom('*2').sortingLabel
-            lbl3 = reactant.getLabeledAtom('*3').sortingLabel
-        
-        elif self.reaction.family.label.lower() == 'disproportionation':
-            
-            lbl1 = reactant.getLabeledAtom('*2').sortingLabel
-            lbl2 = reactant.getLabeledAtom('*4').sortingLabel
-            lbl3 = reactant.getLabeledAtom('*1').sortingLabel
-            
-        labels = [lbl1, lbl2, lbl3]
-        atomMatch = ((lbl1,),(lbl2,),(lbl3,))
-        
+        lbl1, lbl2, lbl3 = labels
         
         tsData = database.kinetics.families[self.reaction.family.label]
         distanceData = tsData.transitionStates.estimateDistances(self.reaction)
@@ -314,7 +307,7 @@ class QMReaction:
         
         bm = self.bmPreEdit(bm, sect)
             
-        return bm, labels, atomMatch
+        return bm
     
     def runNEB(self):
         """
@@ -476,7 +469,8 @@ class QMReaction:
         
         self.reactantGeom.uniqueID = self.uniqueID
         
-        tsBM, labels, atomMatch = self.editMatrix(reactant, tsBM, database)
+        labels, atomMatch = self.getLabels(reactant)
+        tsBM = self.editMatrix(reactant, tsBM, database, labels)
         atoms = len(reactant.atoms)
         distGeomAttempts = 15*(atoms-3) # number of conformers embedded from the bounds matrix
         
@@ -523,7 +517,8 @@ class QMReaction:
         self.reactantGeom.uniqueID = 'reactant'
         self.productGeom.uniqueID = 'product'
         
-        rBM, pBM, labels, atomMatch = self.editDoubMatrix(reactant, product, rBM, pBM)
+        labels, atomMatch = self.getLabels(reactant)
+        rBM, pBM = self.editDoubMatrix(reactant, product, rBM, pBM, labels)
         
         reactantSmoothingSuccessful = rdkit.DistanceGeometry.DoTriangleSmoothing(rBM)
         productSmoothingSuccessful  = rdkit.DistanceGeometry.DoTriangleSmoothing(pBM)
