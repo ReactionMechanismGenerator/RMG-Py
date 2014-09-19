@@ -357,34 +357,44 @@ class QMReaction:
         else:
             print "Not optimized"
             
-    def setupMolecules(self):
+    def setupMolecules(self, doubleEnded=False):
         """
         Setup the reactant and product molecules for the transition state calculations.
         If there are 2 reactants and/or products, they are merged. This also handles
         species as well as molecules, but returns the reactant and product as merged molecules.
         """
-        if len(self.reaction.reactants)==2:
-            if isinstance(self.reaction.reactants[0], Molecule):
-                reactant = self.reaction.reactants[0].merge(self.reaction.reactants[1])
-            elif isinstance(self.reaction.reactants[0], Species):
-                reactant = self.reaction.reactants[0].molecule[0].merge(self.reaction.reactants[1].molecule[0])
-        else:
-            if isinstance(self.reaction.reactants[0], Molecule):
-                reactant = self.reaction.reactants[0]
-            elif isinstance(self.reaction.reactants[0], Species):
-                reactant = self.reaction.reactants[0].molecule[0]
-        
-        if len(self.reaction.products)==2:
-            if isinstance(self.reaction.reactants[0], Molecule):
-                product = self.reaction.products[0].merge(self.reaction.products[1])
-            elif isinstance(self.reaction.reactants[0], Species):
-                product = self.reaction.products[0].molecule[0].merge(self.reaction.products[1].molecule[0])
-        else:
-            if isinstance(self.reaction.reactants[0], Molecule):
-                product = self.reaction.products[0]
-            elif isinstance(self.reaction.reactants[0], Species):
-                product = self.reaction.products[0].molecule[0]
+        if doubleEnded:
+            kineticsFamily = self.database.kinetics.families[self.reaction.label]
+            prodStruct, tsStructures = kineticsFamily.applyRecipe(self.reaction.reactants, getTS=True)
             
+            reactant = tsStructures[0]
+            product = tsStructures[1]
+        else:
+            if len(self.reaction.reactants)==2:
+                if isinstance(self.reaction.reactants[0], Molecule):
+                    reactant = self.reaction.reactants[0].merge(self.reaction.reactants[1])
+                elif isinstance(self.reaction.reactants[0], Species):
+                    reactant = self.reaction.reactants[0].molecule[0].merge(self.reaction.reactants[1].molecule[0])
+            else:
+                if isinstance(self.reaction.reactants[0], Molecule):
+                    reactant = self.reaction.reactants[0]
+                elif isinstance(self.reaction.reactants[0], Species):
+                    reactant = self.reaction.reactants[0].molecule[0]
+            
+            if len(self.reaction.products)==2:
+                if isinstance(self.reaction.reactants[0], Molecule):
+                    product = self.reaction.products[0].merge(self.reaction.products[1])
+                elif isinstance(self.reaction.reactants[0], Species):
+                    product = self.reaction.products[0].molecule[0].merge(self.reaction.products[1].molecule[0])
+            else:
+                if isinstance(self.reaction.reactants[0], Molecule):
+                    product = self.reaction.products[0]
+                elif isinstance(self.reaction.reactants[0], Species):
+                    product = self.reaction.products[0].molecule[0]
+            
+        reactant.multiplicity = reactant.getRadicalCount() + 1
+        product.multiplicity = product.getRadicalCount() + 1
+        
         reactant = self.fixSortLabel(reactant)
         product = self.fixSortLabel(product)
         
@@ -486,9 +496,9 @@ class QMReaction:
                         print "BOUNDS MATRIX FLAWED {0}>{1}".format(tsBM[j,i], tsBM[i,j])
         
         self.reactantGeom.rd_embed(tsRDMol, distGeomAttempts, bm=tsBM, match=atomMatch)
-        worked, notes =  self.tsSearch(notes)
+        check, notes =  self.tsSearch(notes)
         
-        return worked, notes
+        return check, notes
             
     def generateTSGeometryDoubleEnded(self, neb=False):
         """
@@ -497,19 +507,13 @@ class QMReaction:
         Returns (mopac, fromDbl, labels, notes) where mopac and fromDbl are 
         booleans (fromDbl is always True), and notes is a string of comments on what happened.
         """
-        kineticsFamily = self.database.kinetics.families[self.reaction.label]
-        prodStruct, tsStructures = kineticsFamily.applyRecipe(self.reaction.reactants, getTS=True)
-        
-        reactant = self.fixSortLabel(tsStructures[0])
-        product = self.fixSortLabel(tsStructures[1])
-        
-        reactant.multiplicity = reactant.getRadicalCount() + 1
-        product.multiplicity = product.getRadicalCount() + 1
         
         notes = ''
         if os.path.exists(os.path.join(self.settings.fileStore, self.uniqueID + '.data')):
             logging.info("Not generating TS geometry because it's already done.")
             return True, "Output used from a previous run."
+        
+        reactant, product = self.setupMolecules(doubleEnded=True)
         
         rRDMol, rBM, self.reactantGeom = self.generateBoundsMatrix(reactant)
         pRDMol, pBM, self.productGeom = self.generateBoundsMatrix(product)
