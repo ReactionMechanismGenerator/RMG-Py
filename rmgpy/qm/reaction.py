@@ -561,12 +561,13 @@ class QMReaction:
           
         check, notes = self.prepDoubleEnded(labels, notes)
         
-        check, notes = self.conductDoubleEnded(NEB=neb)
+        if check:
+            check, notes = self.conductDoubleEnded(NEB=neb)
+            if check:
+                # Optimize the TS
+                check, notes =  self.tsSearch(notes, fromDoubleEnded=True)
         
-        # Optimize the TS 
-        worked, notes =  self.tsSearch(notes, fromDoubleEnded=True)
-        
-        return worked, notes
+        return check, notes
     
     def writeXYZ(self, atomSymbols, atomCoords):
         """
