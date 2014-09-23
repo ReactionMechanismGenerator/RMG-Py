@@ -96,7 +96,7 @@ cdef class ReactionSystem(DASSL):
         self.maxEdgeSpeciesRates = numpy.zeros((numEdgeSpecies), numpy.float64)
         self.maxNetworkLeakRates = numpy.zeros((numPdepNetworks), numpy.float64)
         self.maxEdgeSpeciesRateRatios = numpy.zeros((numEdgeSpecies), numpy.float64)
-        elf.maxNetworkLeakRateRatios = numpy.zeros((numPdepNetworks), numpy.float64)
+        self.maxNetworkLeakRateRatios = numpy.zeros((numPdepNetworks), numpy.float64)
         self.sensitivityCoefficients = numpy.zeros((numCoreSpecies, numCoreReactions), numpy.float64)
 
     
