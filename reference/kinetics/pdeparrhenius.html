@@ -205,7 +205,7 @@ mol, and s at temperature <cite>T</cite> in K and pressure <cite>P</cite> in Pa.
 
 <dl class="method">
 <dt id="rmgpy.kinetics.PDepArrhenius.isIdenticalTo">
-<tt class="descname">isIdenticalTo</tt><big>(</big><em>self</em>, <em>KineticsModel otherKinetics</em><big>)</big> &rarr; int<a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius.isIdenticalTo" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">isIdenticalTo</tt><big>(</big><em>self</em>, <em>KineticsModel otherKinetics</em><big>)</big> &rarr; bool<a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius.isIdenticalTo" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <tt class="docutils literal"><span class="pre">True</span></tt> if kinetics matches that of another kinetics model.  Each duplicate
 reaction must be matched and equal to that in the other PDepArrhenius model
 in the same order.  Otherwise returns <tt class="docutils literal"><span class="pre">False</span></tt></p>
@@ -213,14 +213,14 @@ in the same order.  Otherwise returns <tt class="docutils literal"><span class="
 
 <dl class="method">
 <dt id="rmgpy.kinetics.PDepArrhenius.isPressureDependent">
-<tt class="descname">isPressureDependent</tt><big>(</big><em>self</em><big>)</big> &rarr; int<a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius.isPressureDependent" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">isPressureDependent</tt><big>(</big><em>self</em><big>)</big> &rarr; bool<a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius.isPressureDependent" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> since all objects derived from PDepKineticsModel
 represent pressure-dependent kinetics.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.kinetics.PDepArrhenius.isPressureValid">
-<tt class="descname">isPressureValid</tt><big>(</big><em>self</em>, <em>double P</em><big>)</big> &rarr; int<a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius.isPressureValid" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">isPressureValid</tt><big>(</big><em>self</em>, <em>double P</em><big>)</big> &rarr; bool<a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius.isPressureValid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if the pressure <cite>P</cite> in Pa is within the valid
 pressure range of the kinetic data, or <tt class="docutils literal"><span class="pre">False</span></tt> if not. If
 the minimum and maximum pressure are not defined, <tt class="docutils literal"><span class="pre">True</span></tt> is 
@@ -229,14 +229,14 @@ returned.</p>
 
 <dl class="method">
 <dt id="rmgpy.kinetics.PDepArrhenius.isSimilarTo">
-<tt class="descname">isSimilarTo</tt><big>(</big><em>self</em>, <em>KineticsModel otherKinetics</em><big>)</big> &rarr; int<a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius.isSimilarTo" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">isSimilarTo</tt><big>(</big><em>self</em>, <em>KineticsModel otherKinetics</em><big>)</big> &rarr; bool<a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius.isSimilarTo" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <tt class="docutils literal"><span class="pre">True</span></tt> if rates of reaction at temperatures 500,1000,1500,2000 K
 and 1 and 10 bar are within +/ .5 for log(k), in other words, within a factor of 3.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.kinetics.PDepArrhenius.isTemperatureValid">
-<tt class="descname">isTemperatureValid</tt><big>(</big><em>self</em>, <em>double T</em><big>)</big> &rarr; int<a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius.isTemperatureValid" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">isTemperatureValid</tt><big>(</big><em>self</em>, <em>double T</em><big>)</big> &rarr; bool<a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius.isTemperatureValid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if the temperature <cite>T</cite> in K is within the valid
 temperature range of the kinetic data, or <tt class="docutils literal"><span class="pre">False</span></tt> if not. If
 the minimum and maximum temperature are not defined, <tt class="docutils literal"><span class="pre">True</span></tt> is 

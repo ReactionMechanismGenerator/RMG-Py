@@ -208,7 +208,7 @@ temperature <cite>T</cite> in K.</p>
 
 <dl class="method">
 <dt id="rmgpy.thermo.ThermoData.isIdenticalTo">
-<tt class="descname">isIdenticalTo</tt><big>(</big><em>self</em>, <em>HeatCapacityModel other</em><big>)</big> &rarr; int<a class="headerlink" href="#rmgpy.thermo.ThermoData.isIdenticalTo" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">isIdenticalTo</tt><big>(</big><em>self</em>, <em>HeatCapacityModel other</em><big>)</big> &rarr; bool<a class="headerlink" href="#rmgpy.thermo.ThermoData.isIdenticalTo" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <tt class="docutils literal"><span class="pre">True</span></tt> if <cite>self</cite> and <cite>other</cite> report very similar thermo values
 for heat capacity, enthalpy, entropy, and free energy over a wide
 range of temperatures, or <tt class="docutils literal"><span class="pre">False</span></tt> otherwise.</p>
@@ -216,7 +216,7 @@ range of temperatures, or <tt class="docutils literal"><span class="pre">False</
 
 <dl class="method">
 <dt id="rmgpy.thermo.ThermoData.isSimilarTo">
-<tt class="descname">isSimilarTo</tt><big>(</big><em>self</em>, <em>HeatCapacityModel other</em><big>)</big> &rarr; int<a class="headerlink" href="#rmgpy.thermo.ThermoData.isSimilarTo" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">isSimilarTo</tt><big>(</big><em>self</em>, <em>HeatCapacityModel other</em><big>)</big> &rarr; bool<a class="headerlink" href="#rmgpy.thermo.ThermoData.isSimilarTo" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <tt class="docutils literal"><span class="pre">True</span></tt> if <cite>self</cite> and <cite>other</cite> report similar thermo values
 for heat capacity, enthalpy, entropy, and free energy over a wide
 range of temperatures, or <tt class="docutils literal"><span class="pre">False</span></tt> otherwise.</p>
@@ -224,7 +224,7 @@ range of temperatures, or <tt class="docutils literal"><span class="pre">False</
 
 <dl class="method">
 <dt id="rmgpy.thermo.ThermoData.isTemperatureValid">
-<tt class="descname">isTemperatureValid</tt><big>(</big><em>self</em>, <em>double T</em><big>)</big> &rarr; int<a class="headerlink" href="#rmgpy.thermo.ThermoData.isTemperatureValid" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">isTemperatureValid</tt><big>(</big><em>self</em>, <em>double T</em><big>)</big> &rarr; bool<a class="headerlink" href="#rmgpy.thermo.ThermoData.isTemperatureValid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if the temperature <cite>T</cite> in K is within the valid
 temperature range of the thermodynamic data, or <tt class="docutils literal"><span class="pre">False</span></tt> if not. If
 the minimum and maximum temperature are not defined, <tt class="docutils literal"><span class="pre">True</span></tt> is 
@@ -233,7 +233,7 @@ returned.</p>
 
 <dl class="method">
 <dt id="rmgpy.thermo.ThermoData.toNASA">
-<tt class="descname">toNASA</tt><big>(</big><em>self</em>, <em>double Tmin</em>, <em>double Tmax</em>, <em>double Tint</em>, <em>int fixedTint=False</em>, <em>int weighting=True</em>, <em>int continuity=3</em><big>)</big> &rarr; NASA<a class="headerlink" href="#rmgpy.thermo.ThermoData.toNASA" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">toNASA</tt><big>(</big><em>self</em>, <em>double Tmin</em>, <em>double Tmax</em>, <em>double Tint</em>, <em>bool fixedTint=False</em>, <em>bool weighting=True</em>, <em>int continuity=3</em><big>)</big> &rarr; NASA<a class="headerlink" href="#rmgpy.thermo.ThermoData.toNASA" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert the object to a <a class="reference internal" href="nasa.html#rmgpy.thermo.NASA" title="rmgpy.thermo.NASA"><tt class="xref py py-class docutils literal"><span class="pre">NASA</span></tt></a> object. You must specify the
 minimum and maximum temperatures of the fit <cite>Tmin</cite> and <cite>Tmax</cite> in K, as
 well as the intermediate temperature <cite>Tint</cite> in K to use as the bridge

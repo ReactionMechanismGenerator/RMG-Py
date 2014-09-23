@@ -236,7 +236,7 @@ temperature <cite>T</cite> in K.</p>
 
 <dl class="method">
 <dt id="rmgpy.thermo.NASAPolynomial.isIdenticalTo">
-<tt class="descname">isIdenticalTo</tt><big>(</big><em>self</em>, <em>HeatCapacityModel other</em><big>)</big> &rarr; int<a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.isIdenticalTo" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">isIdenticalTo</tt><big>(</big><em>self</em>, <em>HeatCapacityModel other</em><big>)</big> &rarr; bool<a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.isIdenticalTo" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <tt class="docutils literal"><span class="pre">True</span></tt> if <cite>self</cite> and <cite>other</cite> report very similar thermo values
 for heat capacity, enthalpy, entropy, and free energy over a wide
 range of temperatures, or <tt class="docutils literal"><span class="pre">False</span></tt> otherwise.</p>
@@ -244,7 +244,7 @@ range of temperatures, or <tt class="docutils literal"><span class="pre">False</
 
 <dl class="method">
 <dt id="rmgpy.thermo.NASAPolynomial.isSimilarTo">
-<tt class="descname">isSimilarTo</tt><big>(</big><em>self</em>, <em>HeatCapacityModel other</em><big>)</big> &rarr; int<a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.isSimilarTo" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">isSimilarTo</tt><big>(</big><em>self</em>, <em>HeatCapacityModel other</em><big>)</big> &rarr; bool<a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.isSimilarTo" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <tt class="docutils literal"><span class="pre">True</span></tt> if <cite>self</cite> and <cite>other</cite> report similar thermo values
 for heat capacity, enthalpy, entropy, and free energy over a wide
 range of temperatures, or <tt class="docutils literal"><span class="pre">False</span></tt> otherwise.</p>
@@ -252,7 +252,7 @@ range of temperatures, or <tt class="docutils literal"><span class="pre">False</
 
 <dl class="method">
 <dt id="rmgpy.thermo.NASAPolynomial.isTemperatureValid">
-<tt class="descname">isTemperatureValid</tt><big>(</big><em>self</em>, <em>double T</em><big>)</big> &rarr; int<a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.isTemperatureValid" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">isTemperatureValid</tt><big>(</big><em>self</em>, <em>double T</em><big>)</big> &rarr; bool<a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.isTemperatureValid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <tt class="docutils literal"><span class="pre">True</span></tt> if the temperature <cite>T</cite> in K is within the valid
 temperature range of the thermodynamic data, or <tt class="docutils literal"><span class="pre">False</span></tt> if not. If
 the minimum and maximum temperature are not defined, <tt class="docutils literal"><span class="pre">True</span></tt> is 
