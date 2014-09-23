@@ -241,12 +241,15 @@ The example below shows how to set up pruning parameters::
 	)
 
 :ref:`toleranceKeepInEdge` indicates how low the edge flux ratio for a species must get before the species is pruned (removed) from the edge.
+:ref:`toleranceMoveToCore` indicates how high the edge flux ratio for a species must get to enter the core model.
 :ref:`toleranceInterruptSimulation` indicates how high the edge flux ratio must get to interrupt the simulation (before reaching the :ref:`terminationConversion` or 
 :ref:`terminationTime`). Pruning won’t occur if the simulation is interrupted before reaching the goal criteria, so set this high to increase pruning opportunities. 
 :ref:`maximumEdgeSpecies` indicates the upper limit for the size of the edge.
 
 When using pruning, RMG will not prune unless all reaction systems reach the goal reaction time or conversion without first exceeding the termination tolerance. Therefore, you may find that RMG is not pruning even though the model edge size exceeds :ref:`maximumEdgeSpecies`. In order to increase the likelihood of pruning in such cases, you can try increasing :ref:`toleranceInterruptSimulation` to an arbitrarily high value. Alternatively, if you are using a conversion goal, because reaction systems may reach equilibrium below the goal conversion, it may be helpful to reduce the goal conversion or switch to a goal reaction time.
 
+
+Please find more details about pruning at :ref:`Pruning Theory <prune>`.
 
 .. _ontheflyquantumcalculations:
 

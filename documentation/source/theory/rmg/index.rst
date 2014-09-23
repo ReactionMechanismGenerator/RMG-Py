@@ -9,6 +9,7 @@ RMG Theory Guide
     :numbered:
     
     enlarger
+    prune
     
 * :ref:`genindex`
 * :ref:`modindex`
