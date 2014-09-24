@@ -726,14 +726,15 @@ def loadTransportFile(path, speciesDict):
 
 def loadChemkinFile(path, dictionaryPath=None, transportPath=None, readComments = True, thermoPath = None):
     """
-    Load a Chemkin input file to `path` on disk, returning lists of the species
-    and reactions in the Chemkin file.
+    Load a Chemkin input file located at `path` on disk to `path`, returning lists of the species
+    and reactions in the Chemkin file. The 'thermoPath' point to a separate thermo file, or, if 'None' is 
+    specified, the function will look for the thermo database within the chemkin mechanism file
     """
     
     speciesList = []; speciesDict = {}; speciesAliases = {}
     reactionList = []
 
-    # If the dictionary path is given, the read it and generate Molecule objects
+    # If the dictionary path is given, then read it and generate Molecule objects
     # You need to append an additional adjacency list for nonreactive species, such
     # as N2, or else the species objects will not store any structures for the final
     # HTML output.
