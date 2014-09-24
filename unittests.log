@@ -1,6 +1,25 @@
 mkdir -p testing/coverage
 rm -rf testing/coverage/*
 nosetests --nocapture --nologcapture --all-modules --verbose --with-coverage --cover-inclusive --cover-package=rmgpy --cover-erase --cover-html --cover-html-dir=testing/coverage rmgpy
+test the checkConformerEnergy function with an list of energies. ... ok
+Test the calculation of the high-pressure limit rate coef for one of the kinetics jobs at Tmin and Tmax. ... ok
+Test the generated temperature list. ... ok
+Test the master equation solution method chosen. ... ok
+Test the number of isomers identified. ... ok
+Test the whether or not RMG mode is turned on. ... ok
+Test the number of products identified. ... ok
+Test the number of reactants identified. ... ok
+Test a path reaction label ... ok
+Test the number pressures specified. ... ok
+Test the minimum pressure value. ... ok
+Test the pressure list. ... ok
+Test the whether or not RMG mode is turned on. ... ok
+Test the number temperatures specified. ... ok
+Test the temperature list. ... ok
+Test the Temperature Units. ... ok
+Test the temperature value. ... ok
+Test the whether or not tunneling has been included in a specific kinetics job. ... ok
+Test the max grain size value. ... ok
 Uses a Gaussian03 log file for ethylene (C2H4) to test that its ... SKIP: WIP test failed: -78.46694399999998 != -78.467452 within 4 places
 Uses a Gaussian03 log file for ethylene (C2H4) to test that its ... SKIP: WIP test failed: -78.55632 != -78.562189 within 4 places
 Uses a Gaussian03 log file for oxygen (O2) to test that its ... ok
@@ -11,6 +30,7 @@ Test that a Geometry object can be successfully pickled and unpickled ... ok
 Uses a Molepro log file for ethylene_dz (C2H4) to test that F12a ... ok
 Uses a Molepro log file for ethylene_qz (C2H4) to test that F12b ... ok
 Uses a Molepro log file for OH (C2H4) to test that radical ... ok
+Failure: NameError (name 'transitionState' is not defined) ... ERROR
 Test the value of the atomic mass unit. ... ok
 Test the value of the Avogadro constant. ... ok
 Test the value of the Bohr radius. ... ok
@@ -771,22 +791,37 @@ Test that the TransportData sigma property was properly set. ... ok
 testJoback (rmgpy.transportDataTest.TestTransportDatabase) ... ok
 Test Joback doesn't crash on Cb desription of beneze ... ok
 
+======================================================================
+ERROR: Failure: NameError (name 'transitionState' is not defined)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/thishost/comocheng/virtualenvs/rmgweb/local/lib/python2.7/site-packages/nose/loader.py", line 390, in loadTestsFromName
+    addr.filename, addr.module)
+  File "/export/thishost/comocheng/virtualenvs/rmgweb/local/lib/python2.7/site-packages/nose/importer.py", line 39, in importFromPath
+    return self.importFromDir(dir_path, fqname)
+  File "/export/thishost/comocheng/virtualenvs/rmgweb/local/lib/python2.7/site-packages/nose/importer.py", line 86, in importFromDir
+    mod = load_module(part_fqname, fh, filename, desc)
+  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/cantherm/test/methoxy.py", line 13, in <module>
+    transitionState(
+NameError: name 'transitionState' is not defined
+
 Name                              Stmts   Miss Branch BrMiss  Cover   Missing
 -----------------------------------------------------------------------------
 rmgpy                                55     16     18     10    64%   71, 79-82, 104-107, 113, 115, 119, 131-135
 rmgpy.cantherm                        5      0      0      0   100%   
-rmgpy.cantherm.gaussian             217    123    112     68    42%   57-72, 85-111, 120-162, 299, 303, 310-337, 345-396, 404-420
+rmgpy.cantherm.common                 9      4      2      2    45%   43-46
+rmgpy.cantherm.gaussian             219    124    112     68    42%   57-72, 85-111, 120-162, 299, 303, 310-337, 345-399, 407-423
 rmgpy.cantherm.geometry              74     25     14      4    67%   93, 102-103, 130-148, 156-159, 191, 193
-rmgpy.cantherm.input                223    189    100    100    11%   67-120, 124-160, 165-184, 188-253, 257-262, 266-273, 277-282, 291-301, 304, 307, 319-388
-rmgpy.cantherm.kinetics             122    103     32     32    12%   55-85, 90, 93, 98, 101, 106, 109, 117-124, 131-155, 162-212, 222-243
-rmgpy.cantherm.main                  94     75     10     10    18%   45-46, 77-80, 89-130, 139-168, 174-187, 193-194, 201-204, 214-238
+rmgpy.cantherm.input                223     56    100     40    70%   68, 76-78, 108-111, 125, 132-134, 155, 166-168, 174, 176, 179-180, 192, 198, 205-207, 221, 223, 227, 231-235, 259-260, 266-273, 277-282, 307, 367-369, 373, 382-386
+rmgpy.cantherm.kinetics             122     93     32     28    21%   56, 61, 68-71, 75-80, 90, 93, 98, 101, 106, 109, 117-124, 131-155, 162-212, 222-243
+rmgpy.cantherm.main                  94     67     10     10    26%   45-46, 89-130, 139-168, 174-187, 193-194, 214-238
 rmgpy.cantherm.molepro               33      2     18      4    88%   64, 87
 rmgpy.cantherm.output                77     66     23     23    11%   47-49, 56-75, 81-94, 101-121, 127-141, 147-149, 155-158, 168-173
-rmgpy.cantherm.pdep                 403    365    156    156     7%   106-142, 147, 150, 155, 158, 163, 166, 171, 174, 179, 182, 187, 190, 195, 198, 204, 224-238, 250-267, 270-297, 309-326, 330-362, 366-382, 386-483, 488-552, 562-571, 578-691
-rmgpy.cantherm.qchem                219    204    102    102     5%   46, 55-70, 80-105, 114-179, 190-278, 286-313, 320-345, 352-382, 390-404
+rmgpy.cantherm.pdep                 403    318    156    153    16%   117, 128, 179, 204, 224-238, 255-266, 270-297, 309-326, 330-362, 366-382, 386-483, 488-552, 562-571, 578-691
+rmgpy.cantherm.qchem                221    205    102    102     5%   47, 56-71, 81-106, 115-180, 191-279, 287-314, 321-346, 353-387, 395-409
 rmgpy.cantherm.statmech             522    492    234    234     4%   83, 90-121, 129-146, 151, 161-166, 173-175, 184-401, 405-411, 420-451, 459-489, 506-670, 681-881
 rmgpy.cantherm.thermo               155    140     32     32     8%   55-56, 63-67, 75-122, 129-205, 217-269
-rmgpy.chemkin                       985    940    493    492     3%   69, 79-156, 167-253, 260-361, 368-493, 504-653, 664-684, 690-703, 710-725, 733-892, 904-946, 960-1018, 1028-1176, 1184-1194, 1206-1256, 1267-1331, 1339-1385, 1402-1559, 1569-1585, 1595-1598, 1606-1612, 1634-1657, 1676-1722, 1730-1761
+rmgpy.chemkin                       985    940    493    492     3%   69, 79-156, 167-253, 260-361, 368-493, 504-653, 664-684, 690-703, 710-725, 734-893, 905-947, 961-1019, 1029-1177, 1185-1195, 1207-1257, 1268-1332, 1340-1386, 1403-1560, 1570-1586, 1596-1599, 1607-1613, 1635-1658, 1677-1723, 1731-1762
 rmgpy.data                            3      1      0      0    67%   34
 rmgpy.data.base                     690    465    313    238    30%   43-45, 209-211, 227-248, 254-271, 278-305, 313-339, 350-368, 381-437, 446, 458, 465, 475-476, 479, 499-509, 516-546, 555-610, 617-625, 633-726, 733-739, 746-758, 765-799, 809, 815-821, 827-832, 841-845, 854-867, 907, 909, 920-925, 959, 961, 972, 977, 992, 999-1003, 1020, 1031-1037, 1044-1053, 1064-1071, 1089, 1099, 1121-1124, 1147-1151, 1163-1167, 1189-1206, 1212-1213, 1219, 1227-1240, 1254-1275
 rmgpy.data.kinetics                 330    268    163    146    16%   86-91, 97-99, 106-108, 118-133, 147-157, 161-163, 165-167, 174-176, 182, 190-195, 205-231, 238-242, 249-263, 270-274, 281-288, 295-314, 321-356, 364-367, 375-380, 388-403, 416-425, 446-544, 557-603
@@ -838,8 +873,9 @@ rmgpy.statmech                        5      0      0      0   100%
 rmgpy.thermo                          3      0      0      0   100%   
 rmgpy.transport                      28      1      0      0    96%   71
 -----------------------------------------------------------------------------
-TOTAL                             15218  12178   6515   5827    17%   
+TOTAL                             15231  11986   6517   5762    18%   
 ----------------------------------------------------------------------
-Ran 769 tests.
+Ran 789 tests.
 
-OK (SKIP=25)
+FAILED (SKIP=25, errors=1)
+make: *** [test] Error 1

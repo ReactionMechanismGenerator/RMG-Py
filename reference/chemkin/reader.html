@@ -68,8 +68,9 @@
 <dl class="function">
 <dt id="rmgpy.chemkin.loadChemkinFile">
 <tt class="descclassname">rmgpy.chemkin.</tt><tt class="descname">loadChemkinFile</tt><big>(</big><em>path</em>, <em>dictionaryPath=None</em>, <em>transportPath=None</em>, <em>readComments=True</em>, <em>thermoPath=None</em><big>)</big><a class="headerlink" href="#rmgpy.chemkin.loadChemkinFile" title="Permalink to this definition">¶</a></dt>
-<dd><p>Load a Chemkin input file to <cite>path</cite> on disk, returning lists of the species
-and reactions in the Chemkin file.</p>
+<dd><p>Load a Chemkin input file located at <cite>path</cite> on disk to <cite>path</cite>, returning lists of the species
+and reactions in the Chemkin file. The &#8216;thermoPath&#8217; point to a separate thermo file, or, if &#8216;None&#8217; is 
+specified, the function will look for the thermo database within the chemkin mechanism file</p>
 </dd></dl>
 
 <dl class="function">
