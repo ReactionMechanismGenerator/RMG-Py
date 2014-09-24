@@ -33,6 +33,7 @@ This script contains unit tests of the :mod:`rmgpy.quantity` module.
 """
 import unittest
 import numpy
+import os
 from rmgpy.cantherm import CanTherm
 import rmgpy.constants as constants
 ################################################################################
@@ -59,7 +60,8 @@ class testCanthermJob(unittest.TestCase):
     def setUp(self):
 
         cantherm = CanTherm()
-        jobList = cantherm.loadInputFile(r'./test/methoxy.py')
+        
+        jobList = cantherm.loadInputFile(os.path.join(os.path.dirname(os.path.abspath(__file__)),r'test/methoxy.py'))
         pdepjob = jobList[-1]
         self.kineticsjob = jobList[0]
         pdepjob.activeJRotor = True
