@@ -32,6 +32,7 @@ import math
 import numpy
 import os.path
 import rmgpy.constants as constants
+from rmgpy.cantherm.common import checkConformerEnergy
 from rmgpy.statmech import IdealGasTranslation, NonlinearRotor, LinearRotor, HarmonicOscillator, Conformer
 ################################################################################
 class QchemLog:
@@ -373,9 +374,13 @@ class QchemLog:
         print '   Assuming', os.path.basename(self.path), 'is the output from a Qchem PES scan...'
         f.close()  
                     
+
+        Vlist = numpy.array(Vlist, numpy.float64)
+        # check to see if the scanlog indicates that one of your reacting species may not be the lowest energy conformer
+        checkConformerEnergy(Vlist, self.path)
+        
         # Adjust energies to be relative to minimum energy conformer
         # Also convert units from Hartree/particle to J/mol
-        Vlist = numpy.array(Vlist, numpy.float64)
         Vlist -= numpy.min(Vlist)
         Vlist *= constants.E_h * constants.Na      
         angle = numpy.arange(0.0, 2*math.pi+0.00001, 2*math.pi/(len(Vlist)-1), numpy.float64)
