@@ -550,7 +550,8 @@ test2to3 (rmgpy.reactionTest.TestReactionIsomorphism) ... ok
 Test the simple batch reactor with a simple kinetic model. Here we ... ok
 Test that a Species object can be reconstructed from its repr(). ... ok
 Test that a Species object can be pickled and unpickled. ... ok
-Create a test in which a key-value pair is added to the props attribute of Species. ... ok
+Test a key-value pair is added to the props attribute of Species. ... ok
+Test that Species's props dictionaries are independent of each other. ... ok
 Test that toAdjacencyList() works as expected. ... ok
 Test the Conformer.getCenterOfMass() method. ... ok
 Test the StatMech.getDensityOfStates() method for ethylene. ... ok
@@ -839,6 +840,6 @@ rmgpy.transport                      28      1      0      0    96%   71
 -----------------------------------------------------------------------------
 TOTAL                             15218  12178   6515   5827    17%   
 ----------------------------------------------------------------------
-Ran 768 tests.
+Ran 769 tests.
 
 OK (SKIP=25)
