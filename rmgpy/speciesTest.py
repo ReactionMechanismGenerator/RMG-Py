@@ -117,6 +117,20 @@ class TestSpecies(unittest.TestCase):
         self.species.props['foo'] = 'bar'
         self.assertIsInstance(self.species.props, dict)
         self.assertEquals(self.species.props['foo'], 'bar')
+        
+    def testSpeciesProps_object_attribute(self):
+        '''
+        Create a test in which is checked whether props is an object attribute rather
+        than a class attribute
+        '''
+        
+        spc2 = Species()
+        self.species.props['foo'] = 'bar'
+        spc3 = Species()
+        spc3.props['foo'] = 'bla'
+        self.assertEquals(self.species.props['foo'], 'bar')
+        self.assertDictEqual(spc2.props, {})
+        self.assertDictEqual(spc3.props, {'foo': 'bla'})
 ################################################################################
 
 if __name__ == '__main__':
