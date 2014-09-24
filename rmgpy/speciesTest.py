@@ -111,19 +111,20 @@ class TestSpecies(unittest.TestCase):
         self.assertTrue(string.startswith(self.species.molecule[0].toAdjacencyList(label=self.species.label,removeH=False)),string)
     
     def testSpeciesProps(self):
-        '''
-        Create a test in which a key-value pair is added to the props attribute of Species.
-        '''
+        """
+        Test a key-value pair is added to the props attribute of Species.
+        """
         self.species.props['foo'] = 'bar'
         self.assertIsInstance(self.species.props, dict)
         self.assertEquals(self.species.props['foo'], 'bar')
         
     def testSpeciesProps_object_attribute(self):
-        '''
+        """
+        Test that Species's props dictionaries are independent of each other.
+        
         Create a test in which is checked whether props is an object attribute rather
         than a class attribute
-        '''
-        
+        """
         spc2 = Species()
         self.species.props['foo'] = 'bar'
         spc3 = Species()
