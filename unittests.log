@@ -30,7 +30,6 @@ Test that a Geometry object can be successfully pickled and unpickled ... ok
 Uses a Molepro log file for ethylene_dz (C2H4) to test that F12a ... ok
 Uses a Molepro log file for ethylene_qz (C2H4) to test that F12b ... ok
 Uses a Molepro log file for OH (C2H4) to test that radical ... ok
-Failure: NameError (name 'transitionState' is not defined) ... ERROR
 Test the value of the atomic mass unit. ... ok
 Test the value of the Avogadro constant. ... ok
 Test the value of the Bohr radius. ... ok
@@ -791,20 +790,6 @@ Test that the TransportData sigma property was properly set. ... ok
 testJoback (rmgpy.transportDataTest.TestTransportDatabase) ... ok
 Test Joback doesn't crash on Cb desription of beneze ... ok
 
-======================================================================
-ERROR: Failure: NameError (name 'transitionState' is not defined)
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/export/thishost/comocheng/virtualenvs/rmgweb/local/lib/python2.7/site-packages/nose/loader.py", line 390, in loadTestsFromName
-    addr.filename, addr.module)
-  File "/export/thishost/comocheng/virtualenvs/rmgweb/local/lib/python2.7/site-packages/nose/importer.py", line 39, in importFromPath
-    return self.importFromDir(dir_path, fqname)
-  File "/export/thishost/comocheng/virtualenvs/rmgweb/local/lib/python2.7/site-packages/nose/importer.py", line 86, in importFromDir
-    mod = load_module(part_fqname, fh, filename, desc)
-  File "/export/thishost/comocheng/build/greengroup-rmg-py/rmgpy/cantherm/test/methoxy.py", line 13, in <module>
-    transitionState(
-NameError: name 'transitionState' is not defined
-
 Name                              Stmts   Miss Branch BrMiss  Cover   Missing
 -----------------------------------------------------------------------------
 rmgpy                                55     16     18     10    64%   71, 79-82, 104-107, 113, 115, 119, 131-135
@@ -875,7 +860,6 @@ rmgpy.transport                      28      1      0      0    96%   71
 -----------------------------------------------------------------------------
 TOTAL                             15231  11986   6517   5762    18%   
 ----------------------------------------------------------------------
-Ran 789 tests.
+Ran 788 tests.
 
-FAILED (SKIP=25, errors=1)
-make: *** [test] Error 1
+OK (SKIP=25)
