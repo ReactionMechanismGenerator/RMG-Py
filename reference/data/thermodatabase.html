@@ -86,6 +86,15 @@ additivity values. If no group additivity values are loaded, a
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.data.thermo.ThermoDatabase.estimateThermoViaGroupAdditivityForSaturatedStruct">
+<tt class="descname">estimateThermoViaGroupAdditivityForSaturatedStruct</tt><big>(</big><em>molecule</em><big>)</big><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.estimateThermoViaGroupAdditivityForSaturatedStruct" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the set of thermodynamic parameters corresponding to a given
+<tt class="xref py py-class docutils literal"><span class="pre">Molecule</span></tt> object <cite>molecule</cite> by estimation using the group
+additivity values. If no group additivity values are loaded, a
+<tt class="xref py py-class docutils literal"><span class="pre">DatabaseError</span></tt> is raised.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.data.thermo.ThermoDatabase.findCp0andCpInf">
 <tt class="descname">findCp0andCpInf</tt><big>(</big><em>species</em>, <em>thermoData</em><big>)</big><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.findCp0andCpInf" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the Cp0 and CpInf values, and add them to the thermoData object.</p>

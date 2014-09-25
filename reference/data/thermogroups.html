@@ -74,19 +74,6 @@
 </dd></dl>
 
 <dl class="method">
-<dt id="rmgpy.data.thermo.ThermoGroups.checkWellFormed">
-<tt class="descname">checkWellFormed</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.data.thermo.ThermoGroups.checkWellFormed" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return <tt class="xref py py-data docutils literal"><span class="pre">True</span></tt> if the database is well-formed. A well-formed
-database has an entry in the dictionary for every entry in the tree, and
-an entry in the tree for every entry in the library. If no tree is
-present (e.g. the primary libraries), then every entry in the library
-must have an entry in the dictionary. Finally, each entry in the
-library must have the same number of nodes as the number of top-level
-nodes in the tree, if the tree is present; this is for databases with
-multiple trees, e.g. the kinetics databases.</p>
-</dd></dl>
-
-<dl class="method">
 <dt id="rmgpy.data.thermo.ThermoGroups.descendTree">
 <tt class="descname">descendTree</tt><big>(</big><em>structure</em>, <em>atoms</em>, <em>root=None</em><big>)</big><a class="headerlink" href="#rmgpy.data.thermo.ThermoGroups.descendTree" title="Permalink to this definition">¶</a></dt>
 <dd><p>Descend the tree in search of the functional group node that best
@@ -120,6 +107,12 @@ the old-style syntax.</p>
 <tt class="descname">getEntriesToSave</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.data.thermo.ThermoGroups.getEntriesToSave" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a sorted list of the entries in this database that should be
 saved to the output file.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.thermo.ThermoGroups.getSpecies">
+<tt class="descname">getSpecies</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#rmgpy.data.thermo.ThermoGroups.getSpecies" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the dictionary containing all of the species in a kinetics library or depository.</p>
 </dd></dl>
 
 <dl class="method">
@@ -229,6 +222,13 @@ thermo database, returning the corresponding thermodynamics object.</p>
 <dd><p>Save the current database to the file at location <cite>path</cite> on disk. The
 optional <cite>entryName</cite> parameter specifies the identifier used for each
 data entry.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.thermo.ThermoGroups.saveDictionary">
+<tt class="descname">saveDictionary</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#rmgpy.data.thermo.ThermoGroups.saveDictionary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract species from all entries associated with a kinetics library or depository and save them 
+to the path given.</p>
 </dd></dl>
 
 <dl class="method">
