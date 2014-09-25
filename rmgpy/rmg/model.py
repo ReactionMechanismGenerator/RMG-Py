@@ -1090,16 +1090,19 @@ class CoreEdgeReactionModel:
         speciesToPrune = []
         pruneDueToRateCounter = 0
         for index in indices:
+            spec = self.edge.species[index]
+            if spec in ineligibleSpecies:
+                continue
             # Remove the species with rates below the pruning tolerance from the model edge
-            if maxEdgeSpeciesRateRatios[index] < toleranceKeepInEdge and self.edge.species[index] not in ineligibleSpecies:
-                speciesToPrune.append((index, self.edge.species[index]))
+            if maxEdgeSpeciesRateRatios[index] < toleranceKeepInEdge:
+                speciesToPrune.append((index, spec))
                 pruneDueToRateCounter += 1
             # Keep removing species with the lowest rates until we are below the maximum edge species size
-            elif numEdgeSpecies - len(speciesToPrune) > maximumEdgeSpecies and self.edge.species[index] not in ineligibleSpecies:
-                logging.info('Pruning species {0} to make numEdgeSpecies smaller than maximumEdgeSpecies'.format(self.edge.species[index]))
-                speciesToPrune.append((index, self.edge.species[index]))
+            elif numEdgeSpecies - len(speciesToPrune) > maximumEdgeSpecies:
+                logging.info('Pruning species {0} to make numEdgeSpecies smaller than maximumEdgeSpecies'.format(spec)) # repeated ~15 lines below
+                speciesToPrune.append((index, spec))
             else:
-                continue
+                break
 
         # Actually do the pruning
         if pruneDueToRateCounter > 0:
