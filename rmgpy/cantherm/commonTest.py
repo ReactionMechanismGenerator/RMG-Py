@@ -61,7 +61,7 @@ class testCanthermJob(unittest.TestCase):
 
         cantherm = CanTherm()
         
-        jobList = cantherm.loadInputFile(os.path.join(os.path.dirname(os.path.abspath(__file__)),r'test/methoxy.py'))
+        jobList = cantherm.loadInputFile(os.path.join(os.path.dirname(os.path.abspath(__file__)),r'files/methoxy.py'))
         pdepjob = jobList[-1]
         self.kineticsjob = jobList[0]
         pdepjob.activeJRotor = True
