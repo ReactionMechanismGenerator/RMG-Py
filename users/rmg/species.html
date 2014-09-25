@@ -103,16 +103,16 @@ molecular oxygen. The ground electronic state of molecular oxygen,
 <span class="math">\(^3\Sigma^-_g\)</span>, does <em>not</em> contain a double bond, but instead a single
 bond and two lone electrons. In RMG&#8217;s adjaceny list notation the ground state
 of oxygen is represented as</p>
-<div class="highlight-python"><div class="highlight"><pre>1 O 1 {2,S}
-2 O 1 {1,S}
+<div class="highlight-python"><div class="highlight"><pre>1 O u1 p2 {2,S}
+2 O u1 p2 {1,S}
 </pre></div>
 </div>
 <p>You should use the above adjacency list to represent molecular oxygen in
 your condition files, seed mechanisms, etc. The triplet form is 22 kcal/mol
 more stable than the first singlet excited state, <span class="math">\(^1\Delta_g\)</span>, which
 does contain a double bond. The adjacency list for singlet oxygen is</p>
-<div class="highlight-python"><div class="highlight"><pre>1 O 0 {2,D}
-2 O 0 {1,D}
+<div class="highlight-python"><div class="highlight"><pre>1 O u0 p2 {2,D}
+2 O u0 p2 {1,D}
 </pre></div>
 </div>
 <p>Selecting the correct structure for oxygen is important, as the reactions
