@@ -1145,7 +1145,7 @@ def makeProfileGraph(stats_file):
     `dot -Tpdf input.dot -o output.pdf`.
     """
     try:
-        import gprof2dot
+        from gprof2dot import gprof2dot
     except ImportError:
         logging.warning('Package gprof2dot not found. Unable to create a graph of the profile statistics.')
         # `pip install gprof2dot` if you don't have it.
