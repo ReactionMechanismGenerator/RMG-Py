@@ -784,8 +784,14 @@ class ThermoDatabase(object):
         applying the provided stableThermoEstimator method on the saturated species,
         then applying hydrogen bond increment corrections for the radical
         site(s) and correcting for the symmetry.
+        
+        The stableThermoEstimator should NOT have already corrected for the symmetry of the 
+        stable saturated molecule, because we do not "uncorrect" it. 
+        I.e. stableThermoEstimator should be a method that overestimates the entropy by R*ln(symmetry).
         """
-        assert molecule.getRadicalCount() > 0, "Method only valid for radicals."
+        #TODO: check the validity of the above statement for QMThermo and databases.
+        
+        assert molecule.isRadical(), "Method only valid for radicals."
         
         # Make a copy of the structure so we don't change the original
         saturatedStruct = molecule.copy(deep=True)
@@ -803,7 +809,7 @@ class ThermoDatabase(object):
                     added[atom] = []
                 added[atom].append([H, bond])
                 atom.decrementRadical()
-        
+
         # Update the atom types of the saturated structure (not sure why
         # this is necessary, because saturating with H shouldn't be
         # changing atom types, but it doesn't hurt anything and is not
@@ -821,9 +827,6 @@ class ThermoDatabase(object):
             return None
         assert thermoData is not None, "Thermo data of saturated {0} of molecule {1} is None!".format(saturatedStruct, molecule)
         
-        # Undo symmetry number correction for saturated structure
-        saturatedStruct.calculateSymmetryNumber()
-        thermoData.S298.value_si += constants.R * math.log(saturatedStruct.symmetryNumber)
         # Correct entropy for symmetry number of radical structure
         molecule.calculateSymmetryNumber()
         thermoData.S298.value_si -= constants.R * math.log(molecule.symmetryNumber)
@@ -877,69 +880,97 @@ class ThermoDatabase(object):
             S298 = (0.0,"J/(mol*K)"),
         )
 
-        if molecule.getRadicalCount() > 0: # radical species
-            return self.estimateRadicalThermoViaHBI(molecule, self.estimateThermoViaGroupAdditivity )
+        if molecule.isRadical(): # radical species
+            return self.estimateRadicalThermoViaHBI(molecule, self.estimateThermoViaGroupAdditivityForSaturatedStructWithoutSymmetryCorrection)
 
         else: # non-radical species
-            cyclic = molecule.isCyclic()
-            # Generate estimate of thermodynamics
-            for atom in molecule.atoms:
-                # Iterate over heavy (non-hydrogen) atoms
-                if atom.isNonHydrogen():
-                    # Get initial thermo estimate from main group database
-                    try:
-                        self.__addGroupThermoData(thermoData, self.groups['group'], molecule, {'*':atom})
-                    except KeyError:
-                        logging.error("Couldn't find in main thermo database:")
-                        logging.error(molecule)
-                        logging.error(molecule.toAdjacencyList())
-                        raise
-                    # Correct for gauche and 1,5- interactions
-                    if not cyclic:
-                        try:
-                            self.__addGroupThermoData(thermoData, self.groups['gauche'], molecule, {'*':atom})
-                        except KeyError: pass
-                    try:
-                        self.__addGroupThermoData(thermoData, self.groups['int15'], molecule, {'*':atom})
-                    except KeyError: pass
-                    try:
-                        self.__addGroupThermoData(thermoData, self.groups['other'], molecule, {'*':atom})
-                    except KeyError: pass
+            thermoData = self.estimateThermoViaGroupAdditivityForSaturatedStructWithoutSymmetryCorrection(molecule)
 
-            # Do ring corrections separately because we only want to match
-            # each ring one time
-            
-            if cyclic:                
-                if molecule.getAllPolycyclicVertices():
-                    # If the molecule has fused ring atoms, this implies that we are dealing
-                    # with a polycyclic ring system, for which separate ring strain corrections may not
-                    # be adequate.  Therefore, we search the polycyclic thermo group corrections
-                    # instead of adding single ring strain corrections within the molecule.
-                    # For now, assume only one  polycyclic RSC can be found per molecule
-                    try:
-                        self.__addGroupThermoData(thermoData, self.groups['polycyclic'], molecule, {})
-                    except:
-                        logging.error("Couldn't find in polycyclic ring database:")
-                        logging.error(molecule)
-                        logging.error(molecule.toAdjacencyList())
-                        raise
-                else:
-                    rings = molecule.getSmallestSetOfSmallestRings()
-                    for ring in rings:
-                        # Make a temporary structure containing only the atoms in the ring
-                        # NB. if any of the ring corrections depend on ligands not in the ring, they will not be found!
-                        try:
-                            self.__addGroupThermoData(thermoData, self.groups['ring'], molecule, {})
-                        except KeyError:
-                            logging.error("Couldn't find in ring database:")
-                            logging.error(ring)
-                            logging.error(ring.toAdjacencyList())
-                            raise
-                            
-                
         # Correct entropy for symmetry number
         molecule.calculateSymmetryNumber()
         thermoData.S298.value_si -= constants.R * math.log(molecule.symmetryNumber)
+
+        return thermoData
+
+    def estimateThermoViaGroupAdditivityForSaturatedStructWithoutSymmetryCorrection(self, molecule):
+        """
+        Return the set of thermodynamic parameters corresponding to a given
+        :class:`Molecule` object `molecule` by estimation using the group
+        additivity values. If no group additivity values are loaded, a
+        :class:`DatabaseError` is raised.
+        
+        The entropy is not corrected for the symmetry of the molecule.
+        This should be done later by the calling function.
+        """
+
+        assert not molecule.isRadical(), "This method is only for saturated non-radical species."
+        # For thermo estimation we need the atoms to already be sorted because we
+        # iterate over them; if the order changes during the iteration then we
+        # will probably not visit the right atoms, and so will get the thermo wrong
+        molecule.sortVertices()
+
+        # Create the ThermoData object
+        thermoData = ThermoData(
+            Tdata = ([300,400,500,600,800,1000,1500],"K"),
+            Cpdata = ([0.0,0.0,0.0,0.0,0.0,0.0,0.0],"J/(mol*K)"),
+            H298 = (0.0,"kJ/mol"),
+            S298 = (0.0,"J/(mol*K)"),
+        )
+
+        cyclic = molecule.isCyclic()
+        # Generate estimate of thermodynamics
+        for atom in molecule.atoms:
+            # Iterate over heavy (non-hydrogen) atoms
+            if atom.isNonHydrogen():
+                # Get initial thermo estimate from main group database
+                try:
+                    self.__addGroupThermoData(thermoData, self.groups['group'], molecule, {'*':atom})
+                except KeyError:
+                    logging.error("Couldn't find in main thermo database:")
+                    logging.error(molecule)
+                    logging.error(molecule.toAdjacencyList())
+                    raise
+                # Correct for gauche and 1,5- interactions
+                if not cyclic:
+                    try:
+                        self.__addGroupThermoData(thermoData, self.groups['gauche'], molecule, {'*':atom})
+                    except KeyError: pass
+                try:
+                    self.__addGroupThermoData(thermoData, self.groups['int15'], molecule, {'*':atom})
+                except KeyError: pass
+                try:
+                    self.__addGroupThermoData(thermoData, self.groups['other'], molecule, {'*':atom})
+                except KeyError: pass
+
+        # Do ring corrections separately because we only want to match
+        # each ring one time
+        
+        if cyclic:                
+            if molecule.getAllPolycyclicVertices():
+                # If the molecule has fused ring atoms, this implies that we are dealing
+                # with a polycyclic ring system, for which separate ring strain corrections may not
+                # be adequate.  Therefore, we search the polycyclic thermo group corrections
+                # instead of adding single ring strain corrections within the molecule.
+                # For now, assume only one  polycyclic RSC can be found per molecule
+                try:
+                    self.__addGroupThermoData(thermoData, self.groups['polycyclic'], molecule, {})
+                except:
+                    logging.error("Couldn't find in polycyclic ring database:")
+                    logging.error(molecule)
+                    logging.error(molecule.toAdjacencyList())
+                    raise
+            else:
+                rings = molecule.getSmallestSetOfSmallestRings()
+                for ring in rings:
+                    # Make a temporary structure containing only the atoms in the ring
+                    # NB. if any of the ring corrections depend on ligands not in the ring, they will not be found!
+                    try:
+                        self.__addGroupThermoData(thermoData, self.groups['ring'], molecule, {})
+                    except KeyError:
+                        logging.error("Couldn't find in ring database:")
+                        logging.error(ring)
+                        logging.error(ring.toAdjacencyList())
+                        raise
 
         return thermoData
 

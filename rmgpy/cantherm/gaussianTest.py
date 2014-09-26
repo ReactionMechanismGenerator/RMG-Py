@@ -23,7 +23,7 @@ class GaussianTest(unittest.TestCase):
         molecular degrees of freedom can be properly read.
         """
 
-        log = GaussianLog(os.path.join(os.path.dirname(__file__),'test','ethylene.log'))
+        log = GaussianLog(os.path.join(os.path.dirname(__file__),'files','ethylene.log'))
         conformer = log.loadConformer()
         E0 = log.loadEnergy()
         
@@ -50,7 +50,7 @@ class GaussianTest(unittest.TestCase):
         molecular degrees of freedom can be properly read.
         """
 
-        log = GaussianLog(os.path.join(os.path.dirname(__file__),'test','oxygen.log'))
+        log = GaussianLog(os.path.join(os.path.dirname(__file__),'files','oxygen.log'))
         conformer = log.loadConformer()
         E0 = log.loadEnergy()
         
@@ -78,7 +78,7 @@ class GaussianTest(unittest.TestCase):
         molecular degrees of freedom can be properly read.
         """
 
-        log = GaussianLog(os.path.join(os.path.dirname(__file__),'test','ethylene_G3.log'))
+        log = GaussianLog(os.path.join(os.path.dirname(__file__),'files','ethylene_G3.log'))
         conformer = log.loadConformer()
         E0 = log.loadEnergy()
         
