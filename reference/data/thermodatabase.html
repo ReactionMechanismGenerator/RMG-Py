@@ -74,6 +74,9 @@
 applying the provided stableThermoEstimator method on the saturated species,
 then applying hydrogen bond increment corrections for the radical
 site(s) and correcting for the symmetry.</p>
+<p>The stableThermoEstimator should NOT have already corrected for the symmetry of the 
+stable saturated molecule, because we do not &#8220;uncorrect&#8221; it. 
+I.e. stableThermoEstimator should be a method that overestimates the entropy by R*ln(symmetry).</p>
 </dd></dl>
 
 <dl class="method">
@@ -86,12 +89,14 @@ additivity values. If no group additivity values are loaded, a
 </dd></dl>
 
 <dl class="method">
-<dt id="rmgpy.data.thermo.ThermoDatabase.estimateThermoViaGroupAdditivityForSaturatedStruct">
-<tt class="descname">estimateThermoViaGroupAdditivityForSaturatedStruct</tt><big>(</big><em>molecule</em><big>)</big><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.estimateThermoViaGroupAdditivityForSaturatedStruct" title="Permalink to this definition">¶</a></dt>
+<dt id="rmgpy.data.thermo.ThermoDatabase.estimateThermoViaGroupAdditivityForSaturatedStructWithoutSymmetryCorrection">
+<tt class="descname">estimateThermoViaGroupAdditivityForSaturatedStructWithoutSymmetryCorrection</tt><big>(</big><em>molecule</em><big>)</big><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.estimateThermoViaGroupAdditivityForSaturatedStructWithoutSymmetryCorrection" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the set of thermodynamic parameters corresponding to a given
 <tt class="xref py py-class docutils literal"><span class="pre">Molecule</span></tt> object <cite>molecule</cite> by estimation using the group
 additivity values. If no group additivity values are loaded, a
 <tt class="xref py py-class docutils literal"><span class="pre">DatabaseError</span></tt> is raised.</p>
+<p>The entropy is not corrected for the symmetry of the molecule.
+This should be done later by the calling function.</p>
 </dd></dl>
 
 <dl class="method">
