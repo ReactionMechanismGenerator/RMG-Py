@@ -125,7 +125,11 @@ following is an example of a typical reaction item::
         reactants = ['H', 'C2H4'],
         products = ['C2H5'],
         transitionState = 'TS',
+        tunneling='Eckart'        
     )
+
+Note that in the above example, 'Wigner' is also an acceptable method of estimating the 
+quantum tunneling factor. 
 
 Thermodynamics Computations
 ===========================
@@ -144,16 +148,23 @@ Below is a typical ``thermo()`` function::
 Kinetics Computations
 =====================
 
-Use a ``kinetics()`` function to compute the kinetic parameters for a
-reaction. Pass the string label of the reaction you wish to compute the 
-reaction parameters for and the type of tunneling to use (``'Wigner'``,
-``'Eckart'``, or ``''`` for no tunneling). A modified Arrhenius model will
-automatically be fit to the generated rate coefficients. If you would like to 
-see a plot of the fitted kinetics, set the `plot` parameter to ``True``.
+Use a ``kinetics()`` function to compute the high-pressure limit kinetic parameters for a
+reaction.  If desired, define a desired temperature range and number of temperatures 
+at which the high-pressure rate coefficient will be tabulated and saved to 
+the outupt file. 3-parameter modified Arrhenius coefficients will automatically be fit 
+to the computed rate coefficients. The quantum tunneling factor will also be displayed
 
 Below is a typical ``kinetics()`` function::
 
-    kinetics('H + C2H4 -> C2H5', tunneling='', plot=True)
+    kinetics(    
+    label = 'H + C2H4 <=> C2H5',
+    Tmin = (400,'K'), Tmax = (1200,'K'), Tcount = 6, 
+    Tlist = ([400,500,700,900,1100,1200],'K'),
+    )
+
+This is also acceptable::
+
+    kinetics('H + C2H4 <=> C2H5')
 
 Examples
 ========
@@ -161,3 +172,10 @@ Examples
 Perhaps the best way to learn the input file syntax is by example. To that end,
 a number of example input files and their corresponding output have been given
 in the ``examples`` directory.
+
+Troubleshooting and FAQs
+========================
+
+1) The network that CanTherm generated and the resulting pdf file show abnormally large
+absolute values. What's going on?
+    This can happen if the number of atoms and atom types is not properly defined or consistent in your input file(s).

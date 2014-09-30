@@ -235,9 +235,12 @@ following is an example of a typical reaction item:</p>
     <span class="n">reactants</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;H&#39;</span><span class="p">,</span> <span class="s">&#39;C2H4&#39;</span><span class="p">],</span>
     <span class="n">products</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;C2H5&#39;</span><span class="p">],</span>
     <span class="n">transitionState</span> <span class="o">=</span> <span class="s">&#39;TS&#39;</span><span class="p">,</span>
+    <span class="n">tunneling</span><span class="o">=</span><span class="s">&#39;Eckart&#39;</span>
 <span class="p">)</span>
 </pre></div>
 </div>
+<p>Note that in the above example, &#8216;Wigner&#8217; is also an acceptable method of estimating the
+quantum tunneling factor.</p>
 </div>
 <div class="section" id="thermodynamics-computations">
 <h2>3.6. Thermodynamics Computations<a class="headerlink" href="#thermodynamics-computations" title="Permalink to this headline">¶</a></h2>
@@ -254,14 +257,21 @@ fitted thermodynamics, set the <cite>plot</cite> parameter to <tt class="docutil
 </div>
 <div class="section" id="kinetics-computations">
 <h2>3.7. Kinetics Computations<a class="headerlink" href="#kinetics-computations" title="Permalink to this headline">¶</a></h2>
-<p>Use a <tt class="docutils literal"><span class="pre">kinetics()</span></tt> function to compute the kinetic parameters for a
-reaction. Pass the string label of the reaction you wish to compute the
-reaction parameters for and the type of tunneling to use (<tt class="docutils literal"><span class="pre">'Wigner'</span></tt>,
-<tt class="docutils literal"><span class="pre">'Eckart'</span></tt>, or <tt class="docutils literal"><span class="pre">''</span></tt> for no tunneling). A modified Arrhenius model will
-automatically be fit to the generated rate coefficients. If you would like to
-see a plot of the fitted kinetics, set the <cite>plot</cite> parameter to <tt class="docutils literal"><span class="pre">True</span></tt>.</p>
+<p>Use a <tt class="docutils literal"><span class="pre">kinetics()</span></tt> function to compute the high-pressure limit kinetic parameters for a
+reaction.  If desired, define a desired temperature range and number of temperatures
+at which the high-pressure rate coefficient will be tabulated and saved to
+the outupt file. 3-parameter modified Arrhenius coefficients will automatically be fit
+to the computed rate coefficients. The quantum tunneling factor will also be displayed</p>
 <p>Below is a typical <tt class="docutils literal"><span class="pre">kinetics()</span></tt> function:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">kinetics</span><span class="p">(</span><span class="s">&#39;H + C2H4 -&gt; C2H5&#39;</span><span class="p">,</span> <span class="n">tunneling</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">kinetics</span><span class="p">(</span>
+<span class="n">label</span> <span class="o">=</span> <span class="s">&#39;H + C2H4 &lt;=&gt; C2H5&#39;</span><span class="p">,</span>
+<span class="n">Tmin</span> <span class="o">=</span> <span class="p">(</span><span class="mi">400</span><span class="p">,</span><span class="s">&#39;K&#39;</span><span class="p">),</span> <span class="n">Tmax</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1200</span><span class="p">,</span><span class="s">&#39;K&#39;</span><span class="p">),</span> <span class="n">Tcount</span> <span class="o">=</span> <span class="mi">6</span><span class="p">,</span>
+<span class="n">Tlist</span> <span class="o">=</span> <span class="p">([</span><span class="mi">400</span><span class="p">,</span><span class="mi">500</span><span class="p">,</span><span class="mi">700</span><span class="p">,</span><span class="mi">900</span><span class="p">,</span><span class="mi">1100</span><span class="p">,</span><span class="mi">1200</span><span class="p">],</span><span class="s">&#39;K&#39;</span><span class="p">),</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>This is also acceptable:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">kinetics</span><span class="p">(</span><span class="s">&#39;H + C2H4 &lt;=&gt; C2H5&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -270,6 +280,13 @@ see a plot of the fitted kinetics, set the <cite>plot</cite> parameter to <tt cl
 <p>Perhaps the best way to learn the input file syntax is by example. To that end,
 a number of example input files and their corresponding output have been given
 in the <tt class="docutils literal"><span class="pre">examples</span></tt> directory.</p>
+</div>
+<div class="section" id="troubleshooting-and-faqs">
+<h2>3.9. Troubleshooting and FAQs<a class="headerlink" href="#troubleshooting-and-faqs" title="Permalink to this headline">¶</a></h2>
+<p>1) The network that CanTherm generated and the resulting pdf file show abnormally large
+absolute values. What&#8217;s going on?</p>
+<blockquote>
+<div>This can happen if the number of atoms and atom types is not properly defined or consistent in your input file(s).</div></blockquote>
 </div>
 </div>
 
@@ -293,6 +310,7 @@ in the <tt class="docutils literal"><span class="pre">examples</span></tt> direc
 <li><a class="reference internal" href="#thermodynamics-computations">3.6. Thermodynamics Computations</a></li>
 <li><a class="reference internal" href="#kinetics-computations">3.7. Kinetics Computations</a></li>
 <li><a class="reference internal" href="#examples">3.8. Examples</a></li>
+<li><a class="reference internal" href="#troubleshooting-and-faqs">3.9. Troubleshooting and FAQs</a></li>
 </ul>
 </li>
 </ul>
