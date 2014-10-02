@@ -608,7 +608,7 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds):
     elif modelChemistry == 'FCI/cc-pVQZ':
         atomEnergies = {'C':-37.787052110598+ SOC['C']}
         
-    elif modelChemistry == 'BMK/cbsb7':
+    elif modelChemistry in ['BMK/cbsb7', 'BMK/6-311G(2d,d,p)']:
         atomEnergies = {'H':-0.498618853119+ SOC['H'], 'N':-54.5697851544+ SOC['N'], 'O':-75.0515210278+ SOC['O'], 'C':-37.8287310027+ SOC['C'], 'P':-341.167615941+ SOC['P'], 'S': -398.001619915+ SOC['S']}
         
     else:
@@ -637,6 +637,7 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds):
         if symbol in atomEnergies: E0 += count * atomEnergies[symbol] * 4184.
     
     # Step 3: Bond energy corrections
+    bondEnergies = {}
     if modelChemistry == 'CCSD(T)-F12/cc-pVDZ-F12':
         bondEnergies = { 'C-H': -0.46, 'C-C': -0.68, 'C=C': -1.90, 'C#C': -3.13,
             'O-H': -0.51, 'C-O': -0.23, 'C=O': -0.69, 'O-O': -0.02, 'N-C': -0.67,
@@ -659,8 +660,13 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds):
         bondEnergies = { 'C-H': -0.11, 'C-C': -0.3, 'C=C': -0.08, 'C#C': -0.64,
             'O-H': 0.02, 'C-O': 0.33, 'C=O': 0.55, 'N#N': -2.0, 'O=O': -0.2, 
             'H-H': 1.1, 'C#N': -0.89, 'C-S': 0.43, 'S=O': -0.78, 'S-H': 0.0, }
+    elif modelChemistry in ['B3LYP/cbsb7', 'B3LYP/6-311G(2d,d,p)', 'DFT_G03_b3lyp','B3LYP/6-311+G(3df,2p)']:
+        bondEnergies = { 'C-H': 0.25, 'C-C': -1.89, 'C=C': -0.40, 'C#C': -1.50,
+            'O-H': -1.09, 'C-O': -1.18, 'C=O': -0.01, 'N-H': 1.36, 'C-N': -0.44, 
+            'C#N': 0.22, 'C-S': -2.35, 'S=O': -5.19, 'S-H': -0.52, }    
     else:
-        logging.warning('No bond energy correction found for  model chemistry: {0}'.format(modelChemistry))
+        
+        logging.warning('No bond energy correction found for model chemistry: {0}'.format(modelChemistry))
 
     for symbol, count in bonds.items():
         if symbol in bondEnergies: E0 += count * bondEnergies[symbol] * 4184.
