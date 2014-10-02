@@ -253,7 +253,7 @@ class GaussianMol(QMMolecule, Gaussian):
         Calculate the QM data and return a QMData object, or None if it fails.
         """
         for atom in self.molecule.vertices:
-            if atom.atomType.label == 'N5s' or atom.atomType.label == 'N5d' or atom.atomType.label =='N5dd' or atom.atomType.label == 'N5t' or atom.atomType.label == 'N5b':
+            if atom.atomType.label in ('N5s', 'N5d', 'N5dd', 'N5t', 'N5b'):
                 return None
                 
         if self.verifyOutputFile():
