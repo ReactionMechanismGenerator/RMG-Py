@@ -17,11 +17,21 @@ Model Chemistry
 ===============
 
 The first item in the input file should be a ``modelChemistry()`` function,
-which accepts a string describing the model chemistry. Currently the only
-allowed model chemistries are ``'CBS-QB3'`` and ``'G3'``. CanTherm uses this
-information to adjust the computed energies to the usual gas-phase reference
-states. For example, below demonstrates how to specify CBS-QB3 as a model 
-chemistry::
+which accepts a string describing the model chemistry. Currently the 
+allowed model chemistries are:
+``'CBS-QB3'``
+``'G3'``
+``'M08SO/MG3S*'`` * indicates that the grid size used in the [QChem] electronic structure calculation utilized 75 radial points and 434 angular points
+``'CCSD(T)-F12/cc-pVnZ-F12'``  n = D, T, Q
+``'CCSD(T)-F12/aug-cc-pVnZ-F12'``  n = D, T, Q
+``'MP2_rmp2_pVnZ'``  n = D, T, Q
+``'FCI/cc-pVnZ'``  n = D, T, Q
+``'DFT_G03_b3lyp'``  a B3LYP calculation with a moderately large basis set
+``'BMK/cbsb7'`` or  ``'BMK/6-311G(2d,d,p)'``
+
+CanTherm uses this information to adjust the computed energies to the usual gas-phase reference
+states by applying atom, bond and spin-orbit coupling energy corrections. This is particularly important for ``thermo()`` calculations (see below). The example below 
+demonstrates how to specify CBS-QB3 as a model chemistry::
 
     modelChemistry("CBS-QB3")
 
@@ -58,7 +68,7 @@ Each :class:`HinderedRotor()` object requires the following parameters:
 ====================== =========================================================
 Parameter              Description
 ====================== =========================================================
-``scanLog``            The path to the Gaussian log file containing the scan
+``scanLog``            The path to the Gaussian/Qchem log file containing the scan
 ``pivots``             The indices of the atoms in the hindered rotor torsional bond
 ``top``                The indices of all atoms on one side of the torsional bond (including the pivot atom)
 ``symmetry``           The symmetry number for the torsional rotation
@@ -79,6 +89,9 @@ The following is an example of a typical species item, based on ethane::
         atoms = {'C': 2, 'H': 6},
         bonds = {'C-C': 1, 'C-H': 6},
     )
+
+Note that the atoms identified within the rotor section should correspond to the geometry indicated by
+``geomLog``. 
 
 Transition State
 ================
@@ -138,12 +151,12 @@ Use a ``thermo()`` function to compute the thermodynamic parameters for a
 species. Pass the string label of the species you wish to compute the 
 thermodynamic parameters for and the type of thermodynamics model to
 generate (either ``'Wilhoit'`` or ''`NASA`'' for a Wilhoit polynomial
-model or NASA polynomial model). If you would like to see a plot of the
-fitted thermodynamics, set the `plot` parameter to ``True``.
+model or NASA polynomial model). A table of thermodynamic parameters will
+also be displayed in the output file. 
 
 Below is a typical ``thermo()`` function::
 
-    thermo('ethane', model='Wilhoit', plot=True)
+    thermo('ethane', model='Wilhoit')
 
 Kinetics Computations
 =====================
