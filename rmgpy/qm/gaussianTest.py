@@ -40,12 +40,16 @@ class TestGaussianMolPM3(unittest.TestCase):
 		
 		qm = QMCalculator(software = 'gaussian',
 						  method = 'pm3',
-						  fileStore = os.path.join(RMGpy_path, 'testing', 'qm', 'QMfiles'),
+						  molecule = mol1,
 						  )
-
+						  				  
+		outputDirectory = os.path.normpath(os.path.join(getPath(),'..', 'testing', 'qm'))
+		qm.setOutputDirectory(outputDirectory)
+		
+		# This is usually done via `qm/main.py`.
 		if not os.path.exists(qm.settings.fileStore):
 			os.makedirs(qm.settings.fileStore)
-
+			
 		self.qmmol1 = GaussianMolPM3(mol1, qm.settings)
 
 	def testGenerateThermoData(self):
@@ -105,12 +109,16 @@ class TestGaussianMolPM6(unittest.TestCase):
 		
 		qm = QMCalculator(software = 'gaussian',
 						  method = 'pm6',
-						  fileStore = os.path.join(RMGpy_path, 'testing', 'qm', 'QMfiles'),
+						  molecule = mol1,
 						  )
-
+						  				  
+		outputDirectory = os.path.normpath(os.path.join(getPath(),'..', 'testing', 'qm'))
+		qm.setOutputDirectory(outputDirectory)
+		
+		# This is usually done via `qm/main.py`.
 		if not os.path.exists(qm.settings.fileStore):
 			os.makedirs(qm.settings.fileStore)
-
+			
 		self.qmmol1 = GaussianMolPM6(mol1, qm.settings)
 
 	def testGenerateThermoData(self):

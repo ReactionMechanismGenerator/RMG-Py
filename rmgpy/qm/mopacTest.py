@@ -36,9 +36,13 @@ class TestMopacMolPM3(unittest.TestCase):
 		
 		qm = QMCalculator(software = 'mopac',
 						  method = 'pm3',
-						  fileStore = os.path.join(RMGpy_path, 'testing', 'qm', 'QMfiles'),
+						  molecule = mol1,
 						  )
+						  
+		outputDirectory = os.path.normpath(os.path.join(getPath(),'..', 'testing', 'qm'))
+		qm.setOutputDirectory(outputDirectory)
 		
+		# This is usually done via `qm/main.py`.
 		if not os.path.exists(qm.settings.fileStore):
 			os.makedirs(qm.settings.fileStore)
 			
@@ -100,12 +104,16 @@ class TestMopacMolPM6(unittest.TestCase):
 		
 		qm = QMCalculator(software = 'mopac',
 						  method = 'pm6',
-						  fileStore = os.path.join(RMGpy_path, 'testing', 'qm', 'QMfiles'),
+						  molecule = mol1,
 						  )
-
+						  
+		outputDirectory = os.path.normpath(os.path.join(getPath(),'..', 'testing', 'qm'))
+		qm.setOutputDirectory(outputDirectory)
+		
+		# This is usually done via `qm/main.py`.
 		if not os.path.exists(qm.settings.fileStore):
 			os.makedirs(qm.settings.fileStore)
-
+			
 		self.qmmol1 = MopacMolPM6(mol1, qm.settings)
 
 	def testGenerateThermoData(self):
@@ -164,13 +172,16 @@ class TestMopacMolPM7(unittest.TestCase):
 		
 		qm = QMCalculator(software = 'mopac',
 						  method = 'pm7',
-						  fileStore = os.path.join(RMGpy_path, 'testing', 'qm', 'QMfiles'),
+						  molecule = mol1,
 						  )
-
+						  
+		outputDirectory = os.path.normpath(os.path.join(getPath(),'..', 'testing', 'qm'))
+		qm.setOutputDirectory(outputDirectory)
+		
+		# This is usually done via `qm/main.py`.
 		if not os.path.exists(qm.settings.fileStore):
 			os.makedirs(qm.settings.fileStore)
-
-		mol1 = Molecule().fromSMILES('C1=CC=C2C=CC=CC2=C1')
+			
 		self.qmmol1 = MopacMolPM7(mol1, qm.settings)
 
 	def testGenerateThermoData(self):
