@@ -31,6 +31,8 @@ import os
 
 import logging
 
+from rmgpy.qm.molecule import QMMolecule
+from rmgpy.qm.reaction import QMReaction
 import rmgpy.qm.mopac
 import rmgpy.qm.gaussian
 from rmgpy.data.thermo import ThermoLibrary
@@ -61,10 +63,7 @@ class QMSettings():
                  ):
         self.software = software
         self.method = method
-        if fileStore:
-            self.fileStore = os.path.join(fileStore, method)
-        else:
-            self.fileStore = fileStore
+        self.fileStore = fileStore
         self.scratchDirectory = scratchDirectory
         self.onlyCyclics = onlyCyclics
         self.maxRadicalNumber = maxRadicalNumber
@@ -108,6 +107,8 @@ class QMCalculator():
                  scratchDirectory = None,
                  onlyCyclics = True,
                  maxRadicalNumber = 0,
+                 molecule = None,
+                 reaction = None,
                  ):
                  
         self.settings = QMSettings(software = software,
@@ -171,6 +172,12 @@ class QMCalculator():
         """
         Check the paths in the settings are OK. Make folders as necessary.
         """
+        if not os.path.exists(self.settings.RMG_bin_path):
+            raise Exception("RMG-Py 'bin' directory {0} does not exist.".format(self.settings.RMG_bin_path))
+        if not os.path.isdir(self.settings.RMG_bin_path):
+            raise Exception("RMG-Py 'bin' directory {0} is not a directory.".format(self.settings.RMG_bin_path))
+            
+        self.setOutputDirectory(self.settings.fileStore)
         self.settings.fileStore = os.path.expandvars(self.settings.fileStore) # to allow things like $HOME or $RMGpy
         self.settings.scratchDirectory = os.path.expandvars(self.settings.scratchDirectory)
         for path in [self.settings.fileStore, self.settings.scratchDirectory]:
@@ -178,12 +185,6 @@ class QMCalculator():
                 logging.info("Creating directory %s for QM files."%os.path.abspath(path))
                 os.makedirs(path)
 
-        if not os.path.exists(self.settings.RMG_bin_path):
-            raise Exception("RMG-Py 'bin' directory {0} does not exist.".format(self.settings.RMG_bin_path))
-        if not os.path.isdir(self.settings.RMG_bin_path):
-            raise Exception("RMG-Py 'bin' directory {0} is not a directory.".format(self.settings.RMG_bin_path))
-            
-        
     def getThermoData(self, molecule):
         """
         Generate thermo data for the given :class:`Molecule` via a quantum mechanics calculation.
