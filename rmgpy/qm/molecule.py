@@ -197,10 +197,9 @@ class QMMolecule:
         self.molecule = molecule
         self.settings = settings
         
-        self.uniqueID = self.molecule.toAugmentedInChIKey()
+        self.uniqueID = self.molecule.toSMILES()
         self.uniqueIDlong = self.molecule.toAugmentedInChI()
         
-
     def getFilePath(self, extension):
         """
         Returns the path to the file with the given extension.
