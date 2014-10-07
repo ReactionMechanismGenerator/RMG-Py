@@ -29,5 +29,6 @@ coverage
 # for generating the documentation
 Sphinx
 
-# Oasa was required for drawing molecules:
--f http://bkchem.zirael.org/ oasa==0.13.1
+# Oasa was required for drawing molecules, via pybel:
+git+https://gitorious.org/oasa/oasa.git
+
