@@ -1147,8 +1147,8 @@ def makeProfileGraph(stats_file):
     try:
         from gprof2dot import PstatsParser, DotWriter, SAMPLES, themes
     except ImportError:
-        logging.warning('Package gprof2dot not found. Unable to create a graph of the profile statistics.')
-        logging.warning('Try something like `pip install --upgrade gprof2dot` to get it.')
+        logging.warning('Trouble importing from package gprof2dot. Unable to create a graph of the profile statistics.')
+        logging.warning('Try getting the latest version with something like `pip install --upgrade gprof2dot`.')
         return
     import subprocess
     
@@ -1166,6 +1166,7 @@ def makeProfileGraph(stats_file):
     options.wrap = True
     
     theme = themes['color'] # bw color gray pink
+    theme.fontname = "ArialMT" # default "Arial" leads to PostScript warnings in dot (on Mac OS)
     parser = PstatsParser(stats_file)
     profile = parser.parse()
     
@@ -1208,5 +1209,4 @@ def makeProfileGraph(stats_file):
         logging.info("Once you've got it, try:\n     dot -Tpdf {0} -o {0}.pdf".format(dot_file))
     else:
         logging.info("Graph of profile statistics saved to: \n {0}.pdf".format(dot_file))
-    # we could actually try this here using subprocess.Popen() or something
-    # wrapped in a try: block.
+
