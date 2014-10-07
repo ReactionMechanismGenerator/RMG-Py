@@ -17,7 +17,7 @@ before_install:
   - sudo apt-get install -qq flex bison build-essential python-numpy cmake python-dev sqlite3 libsqlite3-dev libboost-dev libboost-python-dev libboost-regex-dev python-imaging openjdk-7-jdk swig junit
   - export CXX=g++
   - export CC=gcc
-  - git clone https://github.com/rdkit/rdkit.git
+  - git clone https://github.com/rwest/rdkit.git
   - cd rdkit
   - export RDBASE=`pwd`
   - export PYTHONPATH=${PYTHONPATH}:${RDBASE}
