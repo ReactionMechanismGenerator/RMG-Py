@@ -75,11 +75,20 @@ either single or double quotes.</p>
 <div class="section" id="model-chemistry">
 <h2>3.2. Model Chemistry<a class="headerlink" href="#model-chemistry" title="Permalink to this headline">¶</a></h2>
 <p>The first item in the input file should be a <tt class="docutils literal"><span class="pre">modelChemistry()</span></tt> function,
-which accepts a string describing the model chemistry. Currently the only
-allowed model chemistries are <tt class="docutils literal"><span class="pre">'CBS-QB3'</span></tt> and <tt class="docutils literal"><span class="pre">'G3'</span></tt>. CanTherm uses this
-information to adjust the computed energies to the usual gas-phase reference
-states. For example, below demonstrates how to specify CBS-QB3 as a model
-chemistry:</p>
+which accepts a string describing the model chemistry. Currently the
+allowed model chemistries are:
+<tt class="docutils literal"><span class="pre">'CBS-QB3'</span></tt>
+<tt class="docutils literal"><span class="pre">'G3'</span></tt>
+<tt class="docutils literal"><span class="pre">'M08SO/MG3S*'</span></tt> * indicates that the grid size used in the [QChem] electronic structure calculation utilized 75 radial points and 434 angular points
+<tt class="docutils literal"><span class="pre">'CCSD(T)-F12/cc-pVnZ-F12'</span></tt>  n = D, T, Q
+<tt class="docutils literal"><span class="pre">'CCSD(T)-F12/aug-cc-pVnZ-F12'</span></tt>  n = D, T, Q
+<tt class="docutils literal"><span class="pre">'MP2_rmp2_pVnZ'</span></tt>  n = D, T, Q
+<tt class="docutils literal"><span class="pre">'FCI/cc-pVnZ'</span></tt>  n = D, T, Q
+<tt class="docutils literal"><span class="pre">'DFT_G03_b3lyp'</span></tt>  a B3LYP calculation with a moderately large basis set
+<tt class="docutils literal"><span class="pre">'BMK/cbsb7'</span></tt> or  <tt class="docutils literal"><span class="pre">'BMK/6-311G(2d,d,p)'</span></tt></p>
+<p>CanTherm uses this information to adjust the computed energies to the usual gas-phase reference
+states by applying atom, bond and spin-orbit coupling energy corrections. This is particularly important for <tt class="docutils literal"><span class="pre">thermo()</span></tt> calculations (see below). The example below
+demonstrates how to specify CBS-QB3 as a model chemistry:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">modelChemistry</span><span class="p">(</span><span class="s">&quot;CBS-QB3&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -148,7 +157,7 @@ species, and their counts will be automatically set to zero.</p>
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td><tt class="docutils literal"><span class="pre">scanLog</span></tt></td>
-<td>The path to the Gaussian log file containing the scan</td>
+<td>The path to the Gaussian/Qchem log file containing the scan</td>
 </tr>
 <tr class="row-odd"><td><tt class="docutils literal"><span class="pre">pivots</span></tt></td>
 <td>The indices of the atoms in the hindered rotor torsional bond</td>
@@ -177,6 +186,8 @@ species, and their counts will be automatically set to zero.</p>
 )
 </pre></div>
 </div>
+<p>Note that the atoms identified within the rotor section should correspond to the geometry indicated by
+<tt class="docutils literal"><span class="pre">geomLog</span></tt>.</p>
 </div>
 <div class="section" id="transition-state">
 <h2>3.4. Transition State<a class="headerlink" href="#transition-state" title="Permalink to this headline">¶</a></h2>
@@ -248,10 +259,10 @@ quantum tunneling factor.</p>
 species. Pass the string label of the species you wish to compute the
 thermodynamic parameters for and the type of thermodynamics model to
 generate (either <tt class="docutils literal"><span class="pre">'Wilhoit'</span></tt> or &#8216;&#8217;<cite>NASA</cite>&#8216;&#8217; for a Wilhoit polynomial
-model or NASA polynomial model). If you would like to see a plot of the
-fitted thermodynamics, set the <cite>plot</cite> parameter to <tt class="docutils literal"><span class="pre">True</span></tt>.</p>
+model or NASA polynomial model). A table of thermodynamic parameters will
+also be displayed in the output file.</p>
 <p>Below is a typical <tt class="docutils literal"><span class="pre">thermo()</span></tt> function:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">thermo</span><span class="p">(</span><span class="s">&#39;ethane&#39;</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s">&#39;Wilhoit&#39;</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">thermo</span><span class="p">(</span><span class="s">&#39;ethane&#39;</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s">&#39;Wilhoit&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
