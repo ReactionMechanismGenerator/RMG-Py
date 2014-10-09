@@ -215,4 +215,36 @@ class QMCalculator():
             raise Exception("Unknown QM software '{0}'".format(self.settings.software))
         return thermo0
     
+    def getKineticData(self, reaction):
+        """
+        Generate thermo data for the given :class:`Molecule` via a quantum mechanics calculation.
+        
+        Ignores the settings onlyCyclics and maxRadicalNumber and does the calculation anyway if asked.
+        (I.e. the code that chooses whether to call this method should consider those settings).
+        """
+        self.initialize()
+        if self.settings.software == 'mopac':
+            if self.settings.method == 'pm3':
+                qm_reaction_calculator = rmgpy.qm.mopac.MopacTSPM3(reaction, self.settings)
+            elif self.settings.method == 'pm6':
+                qm_reaction_calculator = rmgpy.qm.mopac.MopacTSPM6(reaction, self.settings)
+            elif self.settings.method == 'pm7':
+                qm_reaction_calculator = rmgpy.qm.mopac.MopacTSPM7(reaction, self.settings)
+            else:
+                raise Exception("Unknown QM method '{0}' for mopac".format(self.settings.method))
+        if self.settings.software == 'gaussian':
+            if self.settings.method == 'pm6':
+                qm_reaction_calculator = rmgpy.qm.gaussian.GaussianTSPM6(reaction, self.settings)
+            elif self.settings.method == 'b3lyp':
+                qm_reaction_calculator = rmgpy.qm.gaussian.GaussianTSB3LYP(reaction, self.settings)
+            elif self.settings.method == 'm062x':
+                qm_reaction_calculator = rmgpy.qm.gaussian.GaussianTSM062X(reaction, self.settings)
+            else:
+                raise Exception("Unknown QM method '{0}' for gaussian".format(self.settings.method))
+        else:
+            raise Exception("Unknown QM software '{0}'".format(self.settings.software))
+        
+        kinetics0 = qm_reaction_calculator.generateKineticData()
+        return kinetics0
+    
         
