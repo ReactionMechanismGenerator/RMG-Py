@@ -172,7 +172,7 @@ def solvation(solvent):
 	assert isinstance(solvent,str), "solvent should be a string like 'water'"
 	rmg.solvent = solvent
 
-def model(toleranceMoveToCore, toleranceKeepInEdge=0.0, toleranceInterruptSimulation=1.0, maximumEdgeSpecies=None):
+def model(toleranceMoveToCore=None, toleranceKeepInEdge=0.0, toleranceInterruptSimulation=1.0, maximumEdgeSpecies=None):
     rmg.fluxToleranceKeepInEdge = toleranceKeepInEdge
     rmg.fluxToleranceMoveToCore = toleranceMoveToCore
     rmg.fluxToleranceInterrupt = toleranceInterruptSimulation
