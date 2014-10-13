@@ -172,12 +172,16 @@ def solvation(solvent):
 	assert isinstance(solvent,str), "solvent should be a string like 'water'"
 	rmg.solvent = solvent
 
-def model(toleranceMoveToCore, toleranceKeepInEdge=0.0, toleranceInterruptSimulation=1.0, maximumEdgeSpecies=None):
+def model(toleranceMoveToCore=None, toleranceKeepInEdge=0.0, toleranceInterruptSimulation=1.0, maximumEdgeSpecies=None):
     rmg.fluxToleranceKeepInEdge = toleranceKeepInEdge
     rmg.fluxToleranceMoveToCore = toleranceMoveToCore
     rmg.fluxToleranceInterrupt = toleranceInterruptSimulation
     rmg.maximumEdgeSpecies = maximumEdgeSpecies
-
+    if toleranceMoveToCore is None:
+        raise InputError("Provide a toleranceMoveToCore value <= toleranceInterruptSimulation. Current toleranceInterruptSimulation={}".format(toleranceInterruptSimulation))
+    if toleranceMoveToCore > toleranceInterruptSimulation:
+        raise InputError("toleranceMoveToCore has to be lower or equal to toleranceInterruptSimulation")
+    
 def quantumMechanics(
                     software,
                     method,
