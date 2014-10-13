@@ -177,7 +177,9 @@ def model(toleranceMoveToCore, toleranceKeepInEdge=0.0, toleranceInterruptSimula
     rmg.fluxToleranceMoveToCore = toleranceMoveToCore
     rmg.fluxToleranceInterrupt = toleranceInterruptSimulation
     rmg.maximumEdgeSpecies = maximumEdgeSpecies
-
+    if toleranceMoveToCore > toleranceInterruptSimulation:
+        raise InputError("Tolerance move to core has to be lower or equal to tolerance to interrupt simulation")
+    
 def quantumMechanics(
                     software,
                     method,
