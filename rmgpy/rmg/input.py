@@ -177,6 +177,8 @@ def model(toleranceMoveToCore, toleranceKeepInEdge=0.0, toleranceInterruptSimula
     rmg.fluxToleranceMoveToCore = toleranceMoveToCore
     rmg.fluxToleranceInterrupt = toleranceInterruptSimulation
     rmg.maximumEdgeSpecies = maximumEdgeSpecies
+    if toleranceMoveToCore is None:
+        raise InputError("Provide a toleranceMoveToCore value <= toleranceInterruptSimulation. Current toleranceInterruptSimulation={}".format(toleranceInterruptSimulation))
     if toleranceMoveToCore > toleranceInterruptSimulation:
         raise InputError("toleranceMoveToCore has to be lower or equal to toleranceInterruptSimulation")
     
