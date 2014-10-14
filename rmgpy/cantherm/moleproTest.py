@@ -23,7 +23,7 @@ class MoleProTest(unittest.TestCase):
         """
         
         log=MoleProLog(os.path.join(os.path.dirname(__file__),'files','ethylene_f12_dz.out'))
-        E0=log.loadCCSDEnergy()
+        E0=log.loadEnergy()
         
         self.assertAlmostEqual(E0 / constants.Na / constants.E_h, -78.474353559604, 5)
     
@@ -34,7 +34,7 @@ class MoleProTest(unittest.TestCase):
         """
         
         log=MoleProLog(os.path.join(os.path.dirname(__file__),'files','ethylene_f12_qz.out'))
-        E0=log.loadCCSDEnergy()
+        E0=log.loadEnergy()
         
         self.assertAlmostEqual(E0 / constants.Na / constants.E_h, -78.472682755635, 5)
 
@@ -45,6 +45,6 @@ class MoleProTest(unittest.TestCase):
         """
         
         log=MoleProLog(os.path.join(os.path.dirname(__file__),'files','OH_f12.out'))
-        E0=log.loadCCSDEnergy()
+        E0=log.loadEnergy()
         
         self.assertAlmostEqual(E0 / constants.Na / constants.E_h, -75.663696424380, 5)
