@@ -2,21 +2,12 @@
 # -*- coding: utf-8 -*-
 
 
-from nose.tools import assert_equal
+from nose.tools import assert_equal, assert_true, assert_false
 import logging
 from rmgpy.molecule.adjlist import PeriodicSystem
 from rmgpy.molecule.atomtype import atomTypes
 from rmgpy.molecule.atomtypedatabase import *
-try:
-    '''
-    Requires:
-    
-    https://github.com/wolever/nose-parameterized
-    '''
-    from nose_parameterized import parameterized
-except:
-    print 'Install nose-parameterized via: "pip install nose-parameterized" !'
-    
+  
 import itertools
 import unittest
 from rmgpy.molecule.molecule import Molecule
@@ -78,7 +69,7 @@ def retrieve_unspecified_valency(atom_type, unpaired_electrons):
         return PeriodicSystem.valence_electrons[t.element] - 2*t.lp - unpaired_electrons - order
     return PeriodicSystem.valence_electrons[atom_type] - 2*PeriodicSystem.lone_pairs[atom_type] - unpaired_electrons
 
-def load_test_cases_group_atom_types():
+def load_cases_group_atom_types():
     '''
     creates test cases in which the atom types of the 1st graph are 'molecule' atom types, like 'C', 'N', ...
     and are 'group' atom types like 'Cs', 'Od', ... for the 2nd graph.
@@ -115,7 +106,7 @@ def load_test_cases_group_atom_types():
           
     return output
 
-def load_test_cases_molecule_atom_types():
+def load_cases_molecule_atom_types():
     '''
     creates test cases in which the atom types are 'molecule' atom types, like 'C', 'N', ...
     for both graphs.
@@ -150,11 +141,19 @@ def mol_atom_type_comparison(e1, e2, u1, u2, c1, c2):
 
 def group_atom_type_comparison(a1, a2, u1, u2, c1, c2):
     return a1.equivalent(a2) and (c1 == c2) and (u1 == u2)
+   
+def run_parameter_tests():
     
-class TestIsomorphism(unittest.TestCase):
-    
-    @parameterized.expand(load_test_cases_molecule_atom_types)
-    def testIsIsomorphic_mol_atom_types(self, e1, e2, u1, u2, c1, c2):
+    def failed(*args):
+        raise AssertionError
+
+    def exception(exc):
+        raise exc
+
+    def success():
+        assert_equal(True, True)
+        
+    def isIsomorphic_mol_atom_types(e1, e2, u1, u2, c1, c2):
         """
         Check whether isomorphism between 2 molecules consisting of each 1 atom
         perceives the difference in charge
@@ -169,8 +168,7 @@ class TestIsomorphism(unittest.TestCase):
             calc = mol1.isIsomorphic(mol2)
             assert_equal(calc, exp, err)
     
-    @parameterized.expand(load_test_cases_molecule_atom_types)
-    def testFindIsomorphisms_mol_atom_types(self, e1, e2, u1, u2, c1, c2):
+    def findIsomorphisms_mol_atom_types(e1, e2, u1, u2, c1, c2):
         """
         Check whether isomorphism between 2 molecules consisting of each 1 atom
         perceives the difference in charge
@@ -185,10 +183,8 @@ class TestIsomorphism(unittest.TestCase):
         if mol1 is not None and mol2 is not None:
             calc = len(mol1.findIsomorphism(mol2)) > 0
             assert_equal(calc, exp, err)
-        
-    @parameterized.expand(load_test_cases_molecule_atom_types)
-    def testIsSubgraphIsomorphic_mol_atom_types(self, e1, e2, u1, u2, c1, c2):
-        
+    
+    def isSubgraphIsomorphic_mol_atom_types(e1, e2, u1, u2, c1, c2):
         mol1, adjList1 = createMolecule(e1, u1, c1)
         group1, adjList2 = createGroup(e2, u2, c2)
 
@@ -199,9 +195,8 @@ class TestIsomorphism(unittest.TestCase):
         if mol1 is not None and group1 is not None:
             calc = mol1.isSubgraphIsomorphic(group1)
             assert_equal(calc, exp, err)
-        
-    @parameterized.expand(load_test_cases_molecule_atom_types)
-    def testFindSubgraphIsomorphisms_mol_atom_types(self, e1, e2, u1, u2, c1, c2):
+            
+    def findSubgraphIsomorphisms_mol_atom_types(e1, e2, u1, u2, c1, c2):
 
         mol1, adjList1 = createMolecule(e1, u1, c1)
         group1, adjList2 = createGroup(e2, u2, c2)
@@ -213,9 +208,22 @@ class TestIsomorphism(unittest.TestCase):
         if mol1 is not None and group1 is not None:
             calc = len(mol1.findSubgraphIsomorphisms(group1)) > 0
             assert_equal(calc, exp, err)
-        
-    @parameterized.expand(load_test_cases_group_atom_types)
-    def testIsIsomorphic_mol_group_atom_types(self, e1, e2, u1, u2, c1, c2):
+    
+    output = load_cases_molecule_atom_types()
+    for args in output:
+        try:
+            isIsomorphic_mol_atom_types(*args)
+            findIsomorphisms_mol_atom_types(*args)
+            isSubgraphIsomorphic_mol_atom_types(*args)
+            
+        except AssertionError:
+            yield (failed, args)
+            
+        except Exception as e:
+            yield (exception, e)
+    
+    
+    def isIsomorphic_mol_group_atom_types(e1, e2, u1, u2, c1, c2):
         """
         Check whether isomorphism between 2 molecules consisting of each 1 atom
         perceives the difference in charge
@@ -231,8 +239,7 @@ class TestIsomorphism(unittest.TestCase):
             calc = mol1.isSubgraphIsomorphic(group1)
             assert_equal(calc, exp, err)
     
-    @parameterized.expand(load_test_cases_group_atom_types)
-    def testFindSubgraphIsomorphisms_mol_group_atom_types(self, e1, e2, u1, u2, c1, c2):
+    def findSubgraphIsomorphisms_mol_group_atom_types(e1, e2, u1, u2, c1, c2):
         mol1, adjList1 = createMolecule(e1, u1, c1)
         group1, adjList2 = createGroup(e2, u2, c2)
         if mol1 is not None and group1 is not None:
@@ -244,83 +251,95 @@ class TestIsomorphism(unittest.TestCase):
             calc = len(mol1.findSubgraphIsomorphisms(group1)) > 0
             assert_equal(calc, exp, err)
             
-    def testMultiplicity_mol_mol_distinct_multiplicity(self):
-        '''
-        distinct multiplicity for both molecules set by user.
-        '''
-        mol = Molecule().fromAdjacencyList("""
-        multiplicity 1
-        1 C u1 p0 c0 {2,S}
-        2 C u0 p0 c0 {1,S} {3,S}
-        3 C u1 p0 c0 {2,S}
-        """, saturateH=True)
-        
-        mol2 = Molecule().fromAdjacencyList("""
-        multiplicity 3
-        1 C u1 p0 c0 {2,S}
-        2 C u0 p0 c0 {1,S} {3,S}
-        3 C u1 p0 c0 {2,S}
-        """, saturateH=True)
-        
-        self.assertFalse(mol.isIsomorphic(mol2))
-        self.assertFalse(len(mol.findIsomorphism(mol2)) > 0)
-        
-    def testMultiplicity_mol_mol_identical_multiplicity(self):
-        '''
-        identical multiplicity for both molecules set by user.
-        '''
-        mol = Molecule().fromAdjacencyList("""
-        multiplicity 3
-        1 C u2 p0 c0
-        """, saturateH=True)
-        
-        mol2 = Molecule().fromAdjacencyList("""
-        multiplicity 3
-        1 C u2 p0 c0
-        """, saturateH=True)
-        
-        self.assertTrue(mol.isIsomorphic(mol2))
-        self.assertTrue(len(mol.findIsomorphism(mol2)) > 0)
-        
-    def testMultiplicity_mol_not_specified_mol_specified(self):
-        '''
-        Multiplicity not set for one of two molecules
-        '''
-        mol = Molecule().fromAdjacencyList("""
-        1 C u2 p0 c0
-        """, saturateH=True)
-        
-        mol2 = Molecule().fromAdjacencyList("""
-        multiplicity 3
-        1 C u2 p0 c0
-        """, saturateH=True)
-        
-        self.assertTrue(mol.isIsomorphic(mol2))
-        self.assertTrue(len(mol.findIsomorphism(mol2)) > 0)
-        
-    def testMultiplicity_mol_not_specified_mol_not_specified(self):
-        '''
-        Both multiplicities not set.
-        '''
-        mol = Molecule().fromAdjacencyList("""
-        1 C u2 p0 c0
-        """, saturateH=True)
-        
-        mol2 = Molecule().fromAdjacencyList("""
-        1 C u2 p0 c0
-        """, saturateH=True)
-        
-        self.assertTrue(mol.isIsomorphic(mol2))
-        self.assertTrue(len(mol.findIsomorphism(mol2)) > 0)
+    output = load_cases_group_atom_types()
+    for args in output:
+        try:
+            isIsomorphic_mol_group_atom_types(*args)
+            findSubgraphIsomorphisms_mol_group_atom_types(*args)
+        except AssertionError:
+            yield (failed, args)
+        except Exception as e:
+            yield (exception, e)
+                    
+    # Make sure that one test is always returned
+    yield (success, )
+
+def testMultiplicity_mol_mol_distinct_multiplicity():
+    '''
+    distinct multiplicity for both molecules set by user.
+    '''
+    mol = Molecule().fromAdjacencyList("""
+    multiplicity 1
+    1 C u1 p0 c0 {2,S}
+    2 C u0 p0 c0 {1,S} {3,S}
+    3 C u1 p0 c0 {2,S}
+    """, saturateH=True)
     
-    def test_isomorphism_R(self):
-        mol = Molecule().fromAdjacencyList("""
-        1 C u0 p0 c0
-        """, saturateH=True)
-        
-        gp = Group().fromAdjacencyList("""
-        1 R u0 p0 c0
-        """)
-        
-        self.assertTrue(len(mol.findSubgraphIsomorphisms(gp)) > 0)
+    mol2 = Molecule().fromAdjacencyList("""
+    multiplicity 3
+    1 C u1 p0 c0 {2,S}
+    2 C u0 p0 c0 {1,S} {3,S}
+    3 C u1 p0 c0 {2,S}
+    """, saturateH=True)
     
+    assert_false(mol.isIsomorphic(mol2))
+    assert_false(len(mol.findIsomorphism(mol2)) > 0)
+    
+def testMultiplicity_mol_mol_identical_multiplicity():
+    '''
+    identical multiplicity for both molecules set by user.
+    '''
+    mol = Molecule().fromAdjacencyList("""
+    multiplicity 3
+    1 C u2 p0 c0
+    """, saturateH=True)
+    
+    mol2 = Molecule().fromAdjacencyList("""
+    multiplicity 3
+    1 C u2 p0 c0
+    """, saturateH=True)
+    
+    assert_true(mol.isIsomorphic(mol2))
+    assert_true(len(mol.findIsomorphism(mol2)) > 0)
+    
+def testMultiplicity_mol_not_specified_mol_specified():
+    '''
+    Multiplicity not set for one of two molecules
+    '''
+    mol = Molecule().fromAdjacencyList("""
+    1 C u2 p0 c0
+    """, saturateH=True)
+    
+    mol2 = Molecule().fromAdjacencyList("""
+    multiplicity 3
+    1 C u2 p0 c0
+    """, saturateH=True)
+    
+    assert_true(mol.isIsomorphic(mol2))
+    assert_true(len(mol.findIsomorphism(mol2)) > 0)
+    
+def testMultiplicity_mol_not_specified_mol_not_specified():
+    '''
+    Both multiplicities not set.
+    '''
+    mol = Molecule().fromAdjacencyList("""
+    1 C u2 p0 c0
+    """, saturateH=True)
+    
+    mol2 = Molecule().fromAdjacencyList("""
+    1 C u2 p0 c0
+    """, saturateH=True)
+    
+    assert_true(mol.isIsomorphic(mol2))
+    assert_true(len(mol.findIsomorphism(mol2)) > 0)
+
+def test_isomorphism_R():
+    mol = Molecule().fromAdjacencyList("""
+    1 C u0 p0 c0
+    """, saturateH=True)
+    
+    gp = Group().fromAdjacencyList("""
+    1 R u0 p0 c0
+    """)
+    
+    assert_true(len(mol.findSubgraphIsomorphisms(gp)) > 0)
