@@ -178,7 +178,7 @@ def fromOldAdjacencyList(adjlist, group=False, saturateH=False):
         if len(lines[0].split()) == 1:
             label = lines.pop(0)
             if len(lines) == 0:
-                raise InvalidAdjacencyListError('No atoms specified in adjacency list.')
+                raise InvalidAdjacencyListError('Error in {} adjacency list: No atoms specified.'.format(adjlist.splitlines()[0]))
         
         mistake1 = re.compile('\{[^}]*\s+[^}]*\}')
         atomicMultiplicities = {} # these are no longer stored on atoms, so we make a separate dictionary
@@ -189,7 +189,7 @@ def fromOldAdjacencyList(adjlist, group=False, saturateH=False):
             # parse-by-whitespace. Examples include '{Cd, Ct}'.
             if mistake1.search(line):
                 raise InvalidAdjacencyListError(
-                    "Shouldn't have spaces inside braces: {0}".format(mistake1.search(line).group())
+                    "Error in {1} adjacency list: species shouldn't have spaces inside braces: {0}".format(mistake1.search(line).group(), adjlist.splitlines()[0])
                     )
 
             # Sometimes commas are used to delimit bonds in the bond list,
@@ -230,7 +230,7 @@ def fromOldAdjacencyList(adjlist, group=False, saturateH=False):
             else:
                 elecState = [elecState]
             if len(elecState) == 0:
-                raise InvalidAdjacencyListError("There must be some electronic state defined for an old adjlist.")
+                raise InvalidAdjacencyListError("Error in {} adjacency list: There must be some electronic state defined for an old adjlist".format(adjlist.splitlines()[0]))
             for e in elecState:
                 if e == '0':
                     radicalElectrons.append(0); additionalLonePairs.append(0)
@@ -238,7 +238,7 @@ def fromOldAdjacencyList(adjlist, group=False, saturateH=False):
                     radicalElectrons.append(1); additionalLonePairs.append(0)
                 elif e == '2': 
                     if not group:
-                        raise InvalidAdjacencyListError("Number of radical electrons = 2 is not specific enough for a molecule adjlist.  Please use 2S or 2T.")
+                        raise InvalidAdjacencyListError("Error in {} adjacency list: Number of radical electrons = 2 is not specific enough.  Please use 2S or 2T.".format(adjlist.splitlines()[0]))
                     # includes 2S and 2T
                     radicalElectrons.append(0); additionalLonePairs.append(1)
                     radicalElectrons.append(2); additionalLonePairs.append(0)
@@ -248,7 +248,7 @@ def fromOldAdjacencyList(adjlist, group=False, saturateH=False):
                     radicalElectrons.append(2); additionalLonePairs.append(0)
                 elif e == '3':
                     if not group:
-                        raise InvalidAdjacencyListError("Number of radical electrons = 3 is not specific enough for a molecule adjlist.  Please use 3D or 3Q.")
+                        raise InvalidAdjacencyListError("Error in {} adjacency list: Number of radical electrons = 3 is not specific enough.  Please use 3D or 3Q.".format(adjlist.splitlines()[0]))
                     # includes 3D and 3Q
                     radicalElectrons.append(1); additionalLonePairs.append(1)
                     radicalElectrons.append(3); additionalLonePairs.append(0)
@@ -258,7 +258,7 @@ def fromOldAdjacencyList(adjlist, group=False, saturateH=False):
                     radicalElectrons.append(3); additionalLonePairs.append(0)
                 elif e == '4':
                     if not group:
-                        raise InvalidAdjacencyListError("Number of radical electrons = 4 is not specific enough for a molecule adjlist.  Please use 4S, 4T, or 4V.")
+                        raise InvalidAdjacencyListError("Error in {} adjacency list: Number of radical electrons = 4 is not specific enough. Please use 4S, 4T, or 4V.".format(adjlist.splitlines()[0]))
                     # includes 4S, 4T, and 4V
                     radicalElectrons.append(0); additionalLonePairs.append(2)
                     radicalElectrons.append(2); additionalLonePairs.append(1)
@@ -271,7 +271,7 @@ def fromOldAdjacencyList(adjlist, group=False, saturateH=False):
                     radicalElectrons.append(4); additionalLonePairs.append(0)
                 elif e == 'X':
                     if not group:
-                        raise InvalidAdjacencyListError("Number of radical electrons = X is not specific enough for a molecule adjlist.  Wildcards should only be used for groups.")
+                        raise InvalidAdjacencyListError("Error in {} adjacency list: Number of radical electrons = X is not specific enough.  Wildcards should only be used for groups.".format(adjlist.splitlines()[0]))
                     radicalElectrons = []
             index += 1
             
@@ -338,7 +338,7 @@ def fromOldAdjacencyList(adjlist, group=False, saturateH=False):
                 aid2, comma, order = datum[1:-1].partition(',')
                 aid2 = int(aid2)
                 if aid == aid2:
-                    raise InvalidAdjacencyListError('Attempted to create a bond between atom {0:d} and itself.'.format(aid))
+                    raise InvalidAdjacencyListError('Error in {1} adjacency list: Attempted to create a bond between atom {0:d} and itself.'.format(aid,adjlist.splitlines()[0]))
                 
                 if order[0] == '{':
                     order = order[1:-1].split(',')
@@ -351,11 +351,11 @@ def fromOldAdjacencyList(adjlist, group=False, saturateH=False):
         for atom1 in bonds:
             for atom2 in bonds[atom1]:
                 if atom2 not in bonds:
-                    raise InvalidAdjacencyListError('Atom {0:d} not in bond dictionary.'.format(atom2))
+                    raise InvalidAdjacencyListError('Error in {1} adjacency list: Atom {0:d} not in bond dictionary.'.format(atom2,adjlist.splitlines()[0]))
                 elif atom1 not in bonds[atom2]:
-                    raise InvalidAdjacencyListError('Found bond between {0:d} and {1:d}, but not the reverse.'.format(atom1, atom2))
+                    raise InvalidAdjacencyListError('Error in {2} adjacency list: Found bond between {0:d} and {1:d}, but not the reverse'.format(atom1, atom2, adjlist.splitlines()[0]))
                 elif bonds[atom1][atom2] != bonds[atom2][atom1]:
-                    raise InvalidAdjacencyListError('Found bonds between {0:d} and {1:d}, but of different orders "{2}" and "{3}".'.format(atom1, atom2, bonds[atom1][atom2], bonds[atom2][atom1]))
+                    raise InvalidAdjacencyListError('Error in {4} adjacency list: Found bonds between {0:d} and {1:d}, but of different orders "{2}" and "{3}".'.format(atom1, atom2, bonds[atom1][atom2], bonds[atom2][atom1], adjlist.splitlines()[0]))
 
         # Convert bonddict to use Atom[group] and Bond[group] objects
         atomkeys = atomdict.keys()
@@ -373,7 +373,7 @@ def fromOldAdjacencyList(adjlist, group=False, saturateH=False):
                     elif len(order) == 1:
                         bond = Bond(atom1, atom2, order[0])
                     else:
-                        raise InvalidAdjacencyListError('Multiple bond orders specified for an atom in a Molecule.')
+                        raise InvalidAdjacencyListError('Error in {} adjacency list: Multiple bond orders specified for an atom.'.format(adjlist.splitlines()[0]))
                     atom1.edges[atom2] = bond
                     atom2.edges[atom1] = bond
         
@@ -388,7 +388,7 @@ def fromOldAdjacencyList(adjlist, group=False, saturateH=False):
                     try:
                         valence = valences[atom.symbol]
                     except KeyError:
-                        raise InvalidAdjacencyListError('Cannot add hydrogens to adjacency list: Unknown valence for atom "{0}".'.format(atom.symbol))
+                        raise InvalidAdjacencyListError('Error in {1} adjacency list: Cannot add hydrogens: Unknown valence for atom "{0}".'.format(atom.symbol, adjlist.splitlines()[0]))
                     radical = atom.radicalElectrons
                     order = 0
                     for atom2, bond in atom.bonds.items():
@@ -487,7 +487,7 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
             assert match, "Invalid multiplicity line '{0}'. Should be an integer like 'multiplicity 2'".format(line)
             multiplicity = int(line.split()[1])
         if len(lines) == 0:
-            raise InvalidAdjacencyListError('No atoms specified in adjacency list.')
+            raise InvalidAdjacencyListError('No atoms specified in {} adjacency list.'.format(adjlist.splitlines()[0]))
     
     mistake1 = re.compile('\{[^}]*\s+[^}]*\}')
     # Iterate over the remaining lines, generating Atom or GroupAtom objects
@@ -497,7 +497,7 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
         # parse-by-whitespace. Examples include '[Cd, Ct]'.
         if mistake1.search(line):
             raise InvalidAdjacencyListError(
-                "Shouldn't have spaces inside braces: {0}".format(mistake1.search(line).group())
+                "{1} Shouldn't have spaces inside braces: {0}".format(mistake1.search(line).group(), adjlist.splitlines()[0])
                 )
 
         # Sometimes commas are used to delimit bonds in the bond list,
@@ -525,7 +525,7 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
         atomType = data[index]
         if atomType[0] == '[':
             if not group:
-                raise InvalidAdjacencyListError("A molecule should not assign more than one atomtype per atom.")
+                raise InvalidAdjacencyListError("Error on {}: A molecule should not assign more than one atomtype per atom.".format(adjlist.splitlines()[0]))
             atomType = atomType[1:-1].split(',')
         else:
             atomType = [atomType]
@@ -552,12 +552,12 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
                     unpairedElectrons.append(4)
                 elif u == 'x':
                     if not group:
-                        raise InvalidAdjacencyListError("A molecule should not assign a wildcard to number of unpaired electrons.")
+                        raise InvalidAdjacencyListError("Error on {}: A molecule should not assign a wildcard to number of unpaired electrons.".format(adjlist.splitlines()[0]))
                 else:
-                    raise InvalidAdjacencyListError('Number of unpaired electrons not recognized.')
+                    raise InvalidAdjacencyListError('Number of unpaired electrons not recognized on {}.'.format(*adjlist.splitlines()[0]))
             index += 1
         else:
-            raise InvalidAdjacencyListError('Number of unpaired electrons not defined.')
+            raise InvalidAdjacencyListError('Number of unpaired electrons not defined on {}.'.format(adjlist.splitlines()[0]))
         
         # Next the number of lone electron pairs (if provided)
         lonePairs = []
@@ -581,9 +581,9 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
                         lonePairs.append(4)
                     elif l == 'x':
                         if not group:
-                            raise InvalidAdjacencyListError("A molecule should not have a wildcard assigned to number of lone pairs.")
+                            raise InvalidAdjacencyListError("Error in {} adjacency list: A molecule should not have a wildcard assigned to number of lone pairs.".format(adjlist.splitlines()[0]))
                     else:
-                        raise InvalidAdjacencyListError('Number of lone electron pairs not recognized.')
+                        raise InvalidAdjacencyListError('Error in {} adjacency list: Number of lone electron pairs not recognized.'.format(adjlist.splitlines()[0]))
                 index += 1
             else:
                 if not group:
@@ -622,9 +622,9 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
                         partialCharges.append(-4)
                     elif e == 'x':
                         if not group:
-                            raise InvalidAdjacencyListError("A molecule should not have a wildcard assigned to number of charges.")
+                            raise InvalidAdjacencyListError("Error on {} adjacency list: A molecule should not have a wildcard assigned to number of charges.".format(adjlist.splitlines()[0]))
                     else:
-                        raise InvalidAdjacencyListError('Number of partial charges not recognized.')
+                        raise InvalidAdjacencyListError('Error on {} adjacency list: Number of partial charges not recognized.'.format(adjlist.splitlines()[0]))
                 index += 1
             else:
                 if not group:
@@ -654,7 +654,7 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
             aid2, comma, order = datum[1:-1].partition(',')
             aid2 = int(aid2)
             if aid == aid2:
-                raise InvalidAdjacencyListError('Attempted to create a bond between atom {0:d} and itself.'.format(aid))
+                raise InvalidAdjacencyListError('Error in {1} adjacency list: Attempted to create a bond between atom {0:d} and itself.'.format(aid, adjlist.splitlines()[0]))
             
             if order[0] == '[':
                 order = order[1:-1].split(',')
@@ -667,11 +667,11 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
     for atom1 in bonds:
         for atom2 in bonds[atom1]:
             if atom2 not in bonds:
-                raise InvalidAdjacencyListError('Atom {0:d} not in bond dictionary.'.format(atom2))
+                raise InvalidAdjacencyListError('Error in {1} adjacency list: Atom {0:d} not in bond dictionary.'.format(atom2, adjlist.splitlines()[0]))
             elif atom1 not in bonds[atom2]:
-                raise InvalidAdjacencyListError('Found bond between {0:d} and {1:d}, but not the reverse.'.format(atom1, atom2))
+                raise InvalidAdjacencyListError('Error in {2} adjacency list: Found bond between {0:d} and {1:d}, but not the reverse.'.format(atom1, atom2, adjlist.splitlines()[0]))
             elif bonds[atom1][atom2] != bonds[atom2][atom1]:
-                raise InvalidAdjacencyListError('Found bonds between {0:d} and {1:d}, but of different orders "{2}" and "{3}".'.format(atom1, atom2, bonds[atom1][atom2], bonds[atom2][atom1]))
+                raise InvalidAdjacencyListError('Error in {4} adjacency list: Found bonds between {0:d} and {1:d}, but of different orders "{2}" and "{3}".'.format(atom1, atom2, bonds[atom1][atom2], bonds[atom2][atom1], adjlist.splitlines()[0]))
 
     # Convert bonddict to use Atom[group] and Bond[group] objects
     atomkeys = atomdict.keys()
@@ -689,7 +689,7 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
                 elif len(order) == 1:
                     bond = Bond(atom1, atom2, order[0])
                 else:
-                    raise InvalidAdjacencyListError('Multiple bond orders specified for an atom in a Molecule.')
+                    raise InvalidAdjacencyListError('Error in {} adjacency list: Multiple bond orders specified for an atom in a Molecule.'.format(adjlist.splitlines()[0]))
                 atom1.edges[atom2] = bond
                 atom2.edges[atom1] = bond
     
