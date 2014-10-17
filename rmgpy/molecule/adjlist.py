@@ -456,10 +456,10 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
         lines.pop()
         lastLine = lines[-1].strip()
     if re_IntermediateAdjList.match(lastLine):
-        logging.debug("Adjacency list line '{0}' looks like an intermediate style adjacency list".format(lastLine))
+        logging.debug("{1} adjacency list line '{0}' looks like an intermediate style adjacency list".format(lastLine, adjlist.splitlines()[0])
         return fromOldAdjacencyList(adjlist, group=group, saturateH=saturateH)
     if re_OldAdjList.match(lastLine):
-        logging.debug("Adjacency list line '{0}' looks like an old style adjacency list".format(lastLine))
+        logging.debug("{1} adjacency list line '{0}' looks like an old style adjacency list".format(lastLine, adjlist.splitlines()[0]))
         if not group:
             logging.debug("Will assume implicit H atoms")
         return fromOldAdjacencyList(adjlist, group=group, saturateH=(not group))
