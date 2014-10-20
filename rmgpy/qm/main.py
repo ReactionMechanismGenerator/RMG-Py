@@ -123,7 +123,7 @@ class QMCalculator():
         if molecule:
             self.molecule = QMMolecule(molecule, self.settings)
         if reaction:
-            self.reaction = QMReaaction(reaction, self.settings)
+            self.reaction = QMReaction(reaction, self.settings)
             
         self.database = ThermoLibrary(name='QM Thermo Library')
         
