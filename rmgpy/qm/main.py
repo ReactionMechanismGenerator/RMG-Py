@@ -134,7 +134,7 @@ class QMCalculator():
         if self.molecule and not self.reaction:
             subPath = os.path.join('Species', self.molecule.uniqueID, self.settings.method)
         elif self.reaction and not self.molecule:
-            subPath = os.path.join('Reactions', self.molecule.uniqueID, self.settings.method)
+            subPath = os.path.join('Reactions', self.reaction.uniqueID, self.settings.method)
         else:
             raise Exception("Specify a molecule OR a reaction for QM calculations.")
         
