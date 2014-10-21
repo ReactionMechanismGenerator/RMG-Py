@@ -8,8 +8,8 @@ mechanisms, and related projects. RMG is developed primarily by researchers in
 and [Prof. Richard West's research group](http://www.northeastern.edu/comocheng/) at 
 [Northeastern University](http://www.northeastern.edu/). 
 
-The most official repository is at https://github.com/GreenGroup/RMG-Py.
-There are some instructions at  http://greengroup.github.com/RMG-Py/ including
+The most official repository can be found on github and is located at https://github.com/GreenGroup/RMG-Py.
+Instructions on how to use RMG can be found in the [Documentation](http://greengroup.github.io/RMG-Py/) including
 details on [how to install RMG-Py](http://greengroup.github.com/RMG-Py/users/rmg/installation/index.html)
 and its numerous dependencies.
 
