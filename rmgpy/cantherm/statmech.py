@@ -256,6 +256,9 @@ class StatMechJob:
         elif isinstance(energy, QchemLog):
             energyLog = energy; E0 = None
             energyLog.path = os.path.join(directory, energyLog.path)
+        elif isinstance(energy, MoleProLog):
+            energyLog = energy; E0 = None
+            energyLog.path = os.path.join(directory, energyLog.path)
         elif isinstance(energy, float):
             energyLog = None; E0 = energy
         
