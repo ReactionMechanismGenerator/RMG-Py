@@ -286,18 +286,10 @@ class Database:
             for reactant in entry.item.reactants:
                 if reactant.label not in speciesDict:
                     speciesDict[reactant.label] = reactant
-                elif not reactant.isIsomorphic(speciesDict[reactant.label]):
-                    print reactant.molecule[0].toAdjacencyList()
-                    print speciesDict[reactant.label].molecule[0].toAdjacencyList()
-                    speciesDict[reactant.label] = reactant
-                    raise DatabaseError('Species label "{0}" used for multiple species in {1}.'.format(reactant.label, str(self)))
+                    
             for product in entry.item.products:
                 if product.label not in speciesDict:
                     speciesDict[product.label] = product
-                elif not product.isIsomorphic(speciesDict[product.label]):
-                    print product.molecule[0].toAdjacencyList()
-                    print speciesDict[product.label].molecule[0].toAdjacencyList()
-                    raise DatabaseError('Species label "{0}" used for multiple species in {1}.'.format(product.label, str(self)))
             
         with open(path, 'w') as f:
             for label in speciesDict.keys():
