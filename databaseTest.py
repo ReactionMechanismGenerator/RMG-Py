@@ -60,6 +60,22 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
             test.description = test_name
             self.compat_func_name = test_name
             yield test, family_name
+            
+            for depository in family.depositories:
+                
+                test = lambda x: self.kinetics_checkAdjlistsNonidentical(depository)
+                test_name = "Kinetics {1} Depository: check adjacency lists are nonidentical?".format(family_name, depository.label)
+                test.description = test_name
+                self.compat_func_name = test_name
+                yield test, depository.label
+        
+        for library_name, library in self.database.kinetics.libraries.iteritems():
+            
+            test = lambda x: self.kinetics_checkAdjlistsNonidentical(library)
+            test_name = "Kinetics library {0}: check adjacency lists are nonidentical?".format(library_name)
+            test.description = test_name
+            self.compat_func_name = test_name
+            yield test, library_name
         
     def test_thermo(self):
         for group_name, group in self.database.thermo.groups.iteritems():
@@ -194,6 +210,36 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
                 if isinstance(ancestorNode, Group):
                     nose.tools.assert_true(family.matchNodeToChild(ancestorNode, childNode),
                                     "In {family} family, group {ancestor} is not a proper ancestor of its child {child}.".format(family=family_name, ancestor=ancestorNode, child=nodeName))
+
+    def kinetics_checkAdjlistsNonidentical(self, database):
+        """
+        This test checks whether adjacency lists of reactants in a KineticsDepository or KineticsLibrary database object are nonidentical.
+        """
+        speciesDict = {}
+        entries = database.entries.values()
+        for entry in entries:
+            for reactant in entry.item.reactants:
+                if reactant.label not in speciesDict:
+                    speciesDict[reactant.label] = reactant
+                
+            for product in entry.item.products:
+                if product.label not in speciesDict:
+                    speciesDict[product.label] = product
+                    
+        # Go through all species to make sure they are nonidentical
+        speciesList = speciesDict.values()
+        labeledAtoms = [species.molecule[0].getLabeledAtoms() for species in speciesList]
+        for i in range(len(speciesList)):
+            for j in range(i+1,len(speciesList)):
+                    initialMap = {}
+                    try:
+                        for atomLabel in labeledAtoms[i]:
+                            initialMap[labeledAtoms[i][atomLabel]] = labeledAtoms[j][atomLabel]
+                    except KeyError:
+                        # atom labels did not match, therefore not a match
+                        continue
+                    
+                    nose.tools.assert_false(speciesList[i].molecule[0].isIsomorphic(speciesList[j].molecule[0], initialMap), "Species {0} and species {1} in {2} database were found to be identical.".format(speciesList[i].label,speciesList[j].label,database.label))
 
     def general_checkNodesFoundInTree(self, group_name, group):
         """
