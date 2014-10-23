@@ -1259,6 +1259,24 @@ class ModelMatcher():
                     else:
                         logging.info("    {0!s}".format(rxn))
 
+    def constrainReactionFamilies(self):
+        """
+        Add restraints to the reaction families so they do not produce 
+        edge species that cannot possibly be in the chemkin file.
+        """
+        import rmgpy.data.rmg
+        old_isMoleculeForbidden = rmgpy.data.rmg.database.forbiddenStructures.isMoleculeForbidden
+        chemkin_formulas = set(self.formulaDict.values())
+        def new_isMoleculeForbidden(molecule):
+            # return True (Forbidden) if we forbid it, 
+            if molecule.getFormula() not in chemkin_formulas:
+                return True
+            # otherwise return whatever we would have returned
+            return old_isMoleculeForbidden(molecule)
+        rmgpy.data.rmg.database.forbiddenStructures.isMoleculeForbidden = new_isMoleculeForbidden
+         
+
+
     def limitEnlarge(self, newObject):
         """
         Enlarges the rmg reaction model, but only reacts the new species with
@@ -1508,6 +1526,9 @@ recommended = False
                 self.saveReactionToKineticsFile(chemkinReaction)
 
         self.pruneInertSpecies()
+        
+        # Let's reduce the number of edge reactions producing things that can't possibly match
+        self.constrainReactionFamilies()
 
         # Let's put things in the core by size, smallest first.
         self.identified_unprocessed_labels.sort(key=lambda x: newSpeciesDict[x].molecularWeight.value_si)
@@ -1541,6 +1562,7 @@ recommended = False
                     if newSpecies in rxn.reactants or newSpecies in rxn.products:
                         reactionsToPrune.add(rxn)
             logging.info("Removing {0} edge reactions that aren't useful".format(len(reactionsToPrune)))
+            # this should only be library reactions, because we prevented reaction families from making un-helpful things
             # remove those reactions
             for rxn in reactionsToPrune:
                 try:
