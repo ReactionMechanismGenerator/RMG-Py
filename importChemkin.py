@@ -1082,7 +1082,7 @@ class ModelMatcher():
             entry.longDesc += "Duplicate of species {0} (i.e. same molecular structure according to RMG)\n".format(duplicate)
         entry.longDesc += '{smiles}\nImported from {source}.'.format(source=source, smiles=molecule.toSMILES())
         entry.shortDesc = comment.split('\n')[0].strip()
-        user = getUsername()
+        user = 'Importer'
         event = [time.asctime(), user, 'action', '{user} imported this entry from {source}'.format(user=user, source=source)]
         entry.history = [event]
         with open(self.outputThermoFile, 'a') as f:
@@ -1171,7 +1171,7 @@ class ModelMatcher():
         else:
             entry.longDesc = ''
         entry.shortDesc = 'The chemkin file reaction is {0}'.format(str(chemkinReaction))
-        user = getUsername()
+        user = 'Importer'
         event = [time.asctime(), user, 'action', '{user} imported this entry from {source}'.format(user=user, source=source)]
         entry.history = [event]
         with open(self.outputKineticsFile, 'a') as f:
