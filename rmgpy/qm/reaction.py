@@ -8,12 +8,12 @@ from copy import deepcopy
 import numpy
 import shutil
 
-from rmgpy.data.rmg import RMGDatabase
+from rmgpy.data.kinetics.transitionstates import TransitionStates
 from rmgpy.molecule import Molecule
 from rmgpy.species import Species, TransitionState
 from rmgpy.kinetics import Wigner
 from molecule import QMMolecule, Geometry
-from rmgpy.cantherm.gaussian import GaussianLog
+from rmgpy.cantherm.main import CanTherm
 from rmgpy.cantherm.kinetics import KineticsJob
 import symmetry
 
@@ -55,11 +55,11 @@ class QMReaction:
     def __init__(self, reaction, settings):
         self.reaction = reaction
         self.settings = settings
-        self.database = RMGDatabase()
-        self.database.load(
-                path = os.path.abspath(os.path.join(os.getenv('RMGpy'), '..', 'RMG-database', 'input')),
-                kineticsFamilies = 'default',
-                depository = False,
+        self.tsDatabase = TransitionStates()
+        self.tsDatabase.load(
+                path=os.path.abspath(os.path.join(os.getenv('RMGpy'), '..', 'RMG-database', 'input', 'kinetics', 'families', self.reaction.family.label)),
+                local_context={},
+                global_context={},
                 )
                 
         if isinstance(self.reaction.reactants[0], Molecule):
@@ -77,10 +77,11 @@ class QMReaction:
         self.productGeom = None
         self.tsGeom = None
         
-        file_store_path = self.settings.fileStore
-        if not os.path.exists(file_store_path):
-            logging.info("Creating directory %s for mol files."%os.path.abspath(file_store_path))
-            os.makedirs(file_store_path)
+        self.fileStore = self.settings.fileStore
+        self.scratchDirectory = self.settings.scratchDirectory
+        if not os.path.exists(self.fileStore):
+            logging.info("Creating directory %s for qm files."%os.path.abspath(self.fileStore))
+            os.makedirs(self.fileStore)
     
     def getFilePath(self, extension):
         """
@@ -91,7 +92,7 @@ class QMReaction:
         Need to define some reaction line notation.
         Possibly '<Reaction_Family>/<reactant1SMILES>+<reactant2SMILES>--<product1SMILES>+<product2SMILES>' ???
         """
-        return os.path.join(self.settings.fileStore, self.uniqueID  + extension)
+        return os.path.join(self.fileStore, self.uniqueID  + extension)
     
     @property
     def outputFilePath(self):
@@ -112,6 +113,59 @@ class QMReaction:
     def ircInputFilePath(self):
         """Get the irc input file name."""
         return self.getFilePath('IRC' + self.inputFileExtension)
+        
+    def setOutputDirectory(self):
+        """
+        Set up the fileStore and scratchDirectory if not already done.
+        """
+        subPath = os.path.join('Reactions', self.reaction.family.label, self.uniqueID, self.settings.method)
+        
+        setFileStore = True
+        setScratch = True
+        if self.fileStore:
+            if self.fileStore.endswith(subPath):
+                setFileStore = False
+        
+        if self.scratchDirectory:
+            if self.scratchDirectory.endswith(subPath):
+                setScratch = False
+                
+        if setFileStore:
+            self.fileStore = os.path.join(self.fileStore, subPath)
+            logging.info("Set the qm kinetics fileStore to {0}".format(self.fileStore))
+        if setScratch:
+            self.scratchDirectory = os.path.join(self.scratchDirectory, subPath)
+            logging.info("Set the qm kinetics scratchDirectory to {0}".format(self.scratchDirectory))  
+            
+    def initialize(self):
+        """
+        Do any startup tasks.
+        """
+        self.checkReady()
+    
+    def checkReady(self):
+        """
+        Check that it's ready to run calculations.
+        """
+        self.settings.checkAllSet()
+        self.checkPaths()
+    
+    def checkPaths(self):
+        """
+        Check the paths in the settings are OK. Make folders as necessary.
+        """
+        if not os.path.exists(self.settings.RMG_bin_path):
+            raise Exception("RMG-Py 'bin' directory {0} does not exist.".format(self.settings.RMG_bin_path))
+        if not os.path.isdir(self.settings.RMG_bin_path):
+            raise Exception("RMG-Py 'bin' directory {0} is not a directory.".format(self.settings.RMG_bin_path))
+            
+        self.setOutputDirectory()
+        self.settings.fileStore = os.path.expandvars(self.settings.fileStore) # to allow things like $HOME or $RMGpy
+        self.settings.scratchDirectory = os.path.expandvars(self.settings.scratchDirectory)
+        for path in [self.settings.fileStore, self.settings.scratchDirectory]:
+            if not os.path.exists(path):
+                logging.info("Creating directory %s for QM files."%os.path.abspath(path))
+                os.makedirs(path)
         
     def fixSortLabel(self, molecule):
         """
@@ -286,7 +340,7 @@ class QMReaction:
         
         return bm1, bm2
     
-    def editMatrix(self, reactant, bm, database, labels):
+    def editMatrix(self, reactant, bm, labels):
         
         """
         For bimolecular reactions, reduce the minimum distance between atoms
@@ -294,8 +348,7 @@ class QMReaction:
         """
         lbl1, lbl2, lbl3 = labels
         
-        tsData = database.kinetics.families[self.reaction.family.label]
-        distanceData = tsData.transitionStates.estimateDistances(self.reaction)
+        distanceData = self.tsDatabase.estimateDistances(self.reaction)
         
         sect = []
         for atom in reactant.split()[0].atoms: sect.append(atom.sortingLabel)
@@ -364,7 +417,7 @@ class QMReaction:
         species as well as molecules, but returns the reactant and product as merged molecules.
         """
         if doubleEnded:
-            kineticsFamily = self.database.kinetics.families[self.reaction.label]
+            kineticsFamily = self.reaction.family
             prodStruct, tsStructures = kineticsFamily.applyRecipe(self.reaction.reactants, getTS=True)
             
             reactant = tsStructures[0]
@@ -406,7 +459,7 @@ class QMReaction:
         """
         if not os.path.exists(self.outputFilePath):
             print "Optimizing TS once"
-            self.writeInputFile(1, fromDoubleEnded=fromDoubleEnded)
+            self.createInputFile(1, fromDoubleEnded=fromDoubleEnded)
             converged, internalCoord = self.run()
             shutil.copy(self.outputFilePath, self.outputFilePath+'.TS1.log')
         else:
@@ -415,21 +468,18 @@ class QMReaction:
         if internalCoord and not converged:
             notes = 'Internal coordinate error, trying cartesian\n'
             print "Optimizing TS in cartesian"
-            self.writeInputFile(2)
+            self.createInputFile(2)
             converged = self.run()
             shutil.copy(self.outputFilePath, self.outputFilePath+'.TS2.log')
-            
-        if converged:
-            return True
         
-        return False
+        return converged
         
     def validateTS(self):
         """
         Conduct the path analysis calculations and validate the transition state.
         """
         if not os.path.exists(self.ircOutputFilePath):
-            self.writeIRCFile()
+            self.createIRCFile()
             rightTS = self.runIRC()
         else:
             rightTS = self.verifyIRCOutputFile()
@@ -439,7 +489,7 @@ class QMReaction:
         
         return False
     
-    def tsSearch(self, notes, fromDoubleEnded=False):
+    def tsSearch(self, notes, labels, fromDoubleEnded=False):
         """
         Once the transition state estimate is made, this runs the optimization and the
         path analysis calculation. The ts estimate can be from the group additive or
@@ -448,20 +498,18 @@ class QMReaction:
         successfulTS = self.optimizeTS(fromDoubleEnded=fromDoubleEnded)
         if not successfulTS:
             notes = 'TS not converged\n'
-            return False, notes
-            
-        notes = 'TS converged\n'
+            return successfulTS, notes
+        
         validTS = self.validateTS()
-        
         if not validTS:
-            self.writeRxnOutputFile(labels)
             notes = 'IRC failed\n'
-            return False, notes
+        else:
+            self.writeRxnOutputFile(labels)
+            notes = 'Success\n'
             
-        notes = 'Success\n'
-        return True, notes
+        return validTS, notes
         
-    def generateTSGeometryDirectGuess(self, database):
+    def generateTSGeometryDirectGuess(self):
         """
         Generate a transition state geometry, using the direct guess (group additive) method.
         
@@ -469,7 +517,7 @@ class QMReaction:
         and notes is a string describing what happened.
         """
         notes = ''
-        if os.path.exists(os.path.join(self.file_store_path, self.uniqueID + '.data')):
+        if os.path.exists(os.path.join(self.fileStore, self.uniqueID + '.data')):
             logging.info("Transition state geometry already exists.")
             return True, "Already done!"
             
@@ -480,7 +528,7 @@ class QMReaction:
         self.reactantGeom.uniqueID = self.uniqueID
         
         labels, atomMatch = self.getLabels(reactant)
-        tsBM = self.editMatrix(reactant, tsBM, database, labels)
+        tsBM = self.editMatrix(reactant, tsBM, labels)
         atoms = len(reactant.atoms)
         distGeomAttempts = 15*(atoms-3) # number of conformers embedded from the bounds matrix
         
@@ -496,7 +544,7 @@ class QMReaction:
                         print "BOUNDS MATRIX FLAWED {0}>{1}".format(tsBM[j,i], tsBM[i,j])
         
         self.reactantGeom.rd_embed(tsRDMol, distGeomAttempts, bm=tsBM, match=atomMatch)
-        check, notes =  self.tsSearch(notes)
+        check, notes =  self.tsSearch(notes, labels)
         
         return check, notes
             
@@ -565,7 +613,7 @@ class QMReaction:
             check, notes = self.conductDoubleEnded(NEB=neb)
             if check:
                 # Optimize the TS
-                check, notes =  self.tsSearch(notes, fromDoubleEnded=True)
+                check, notes =  self.tsSearch(notes, labels, fromDoubleEnded=True)
         
         return check, notes
     
@@ -584,56 +632,230 @@ class QMReaction:
             
         with open(self.getFilePath('.xyz'), 'w') as xyzFile:
             xyzFile.write(input_string)
-        
     
-    def calculateQMData(self, moleculeList):
+    def getBonds(self, qmMolecule):
+        bondList = []
+        for atom in qmMolecule.molecule.atoms:
+            for bond in atom.bonds.values():
+                bondList.append(bond)
+        bonds = list(set(bondList))
+        bondDict = {}
+        for bond in bonds:
+            if bond.isSingle():
+                if bond.atom1.symbol=='C' and bond.atom2.symbol=='C':
+                    bondType = 'C-C'
+                elif (bond.atom1.symbol=='H' and bond.atom2.symbol=='H'):
+                    bondType = 'H-H'
+                elif (bond.atom1.symbol=='C' and bond.atom2.symbol=='H') or (bond.atom1.symbol=='H' and bond.atom2.symbol=='C'):
+                    bondType = 'C-H'
+                elif (bond.atom1.symbol=='O' and bond.atom2.symbol=='O'):
+                    bondType = 'O-O'
+                elif (bond.atom1.symbol=='C' and bond.atom2.symbol=='O') or (bond.atom1.symbol=='O' and bond.atom2.symbol=='C'):
+                    bondType = 'C-O'
+                elif (bond.atom1.symbol=='H' and bond.atom2.symbol=='O') or (bond.atom1.symbol=='O' and bond.atom2.symbol=='H'):
+                    bondType = 'O-H'
+                elif bond.atom1.symbol=='N' and bond.atom2.symbol=='N':
+                    bondType = 'N-N'
+                elif (bond.atom1.symbol=='C' and bond.atom2.symbol=='N') or (bond.atom1.symbol=='N' and bond.atom2.symbol=='C'):
+                    bondType = 'N-C'
+                elif (bond.atom1.symbol=='O' and bond.atom2.symbol=='N') or (bond.atom1.symbol=='N' and bond.atom2.symbol=='O'):
+                    bondType = 'N-O'
+                elif (bond.atom1.symbol=='H' and bond.atom2.symbol=='N') or (bond.atom1.symbol=='N' and bond.atom2.symbol=='H'):
+                    bondType = 'N-H'
+                elif bond.atom1.symbol=='S' and bond.atom2.symbol=='S':
+                    bondType = 'S-S'
+                elif (bond.atom1.symbol=='H' and bond.atom2.symbol=='S') or (bond.atom1.symbol=='S' and bond.atom2.symbol=='H'):
+                    bondType = 'S-H'
+            elif bond.isDouble:
+                if bond.atom1.symbol=='C' and bond.atom2.symbol=='C':
+                    bondType = 'C=C'
+                elif (bond.atom1.symbol=='O' and bond.atom2.symbol=='O'):
+                    bondType = 'O=O'
+                elif (bond.atom1.symbol=='C' and bond.atom2.symbol=='O') or (bond.atom1.symbol=='O' and bond.atom2.symbol=='C'):
+                    bondType = 'C=O'
+                elif bond.atom1.symbol=='N' and bond.atom2.symbol=='N':
+                    bondType = 'N=N'
+                elif (bond.atom1.symbol=='C' and bond.atom2.symbol=='N') or (bond.atom1.symbol=='N' and bond.atom2.symbol=='C'):
+                    bondType = 'N=C'
+                elif (bond.atom1.symbol=='O' and bond.atom2.symbol=='N') or (bond.atom1.symbol=='N' and bond.atom2.symbol=='O'):
+                    bondType = 'N=O'
+                elif (bond.atom1.symbol=='O' and bond.atom2.symbol=='S') or (bond.atom1.symbol=='S' and bond.atom2.symbol=='O'):
+                    bondType = 'S=O'
+            elif bond.isTriple:
+                if bond.atom1.symbol=='C' and bond.atom2.symbol=='C':
+                    bondType = 'C#C'
+                elif bond.atom1.symbol=='N' and bond.atom2.symbol=='N':
+                    bondType = 'N#N'
+                elif (bond.atom1.symbol=='C' and bond.atom2.symbol=='N') or (bond.atom1.symbol=='N' and bond.atom2.symbol=='C'):
+                    bondType = 'N#C'
+            try:
+                bondDict[bondType] += 1
+            except KeyError:
+                bondDict[bondType] = 1
+        
+        return bondDict
+    
+    def writeCanThermStatMech(self, allAtomTypes, bondDict, multiplicity, path):
+        """
+        Write the file required by cantherm to do the statmech calculation for the molecule
+        """
+        output = ['#!/usr/bin/env python', '# -*- coding: utf-8 -*-', '', 'atoms = {']
+        
+        # add the atoms
+        atomTypes = set(list(allAtomTypes))
+        for atom in atomTypes:
+            output.append("    '{0}': {1},".format(atom, allAtomTypes.count(atom)))
+        output = output + ['}', '']
+        
+        if bondDict!={}:
+            output.append('bonds = {')
+            for bondType, num in bondDict.iteritems():
+                output.append("    '{0}': {1},".format(bondType, num))
+            output.append('}')
+        else:
+            output.append('bonds = {}')
+                
+        # add the bonds
+        output = output + ['', 'linear = False', '', 'externalSymmetry = 1', '', 'spinMultiplicity = {0}'.format(multiplicity), '', 'opticalIsomers = 1', '']
+        
+        # Energy - get it from the QM output file
+        output = output + ['energy = {', "    'DFT_G03_b3lyp': GaussianLog('{0}'),".format(path.split('/')[-1]), '}', '']
+        
+        # Geometry - get it from the QM output file
+        output = output + ["geometry = GaussianLog('{0}')".format(path.split('/')[-1]), '']
+        
+        # Frequencies - get them from the QM output file
+        output = output + ["frequencies = GaussianLog('{0}')".format(path.split('/')[-1]), '']
+        
+        # Rotors -  no rotors yet
+        output = output + ['rotors = []', '']
+        
+        input_string = '\n'.join(output)
+        
+        with open(path.split('.')[0]+'.py', 'w') as statMechFile:
+            statMechFile.write(input_string)
+    
+    def writeCanThermInput(self, reactants, products, filePath, fileStore):
+        """
+        Write the CanTherm input file
+        """
+        output = ['#!/usr/bin/env python', '# -*- coding: utf-8 -*-', '']
+        
+        output.append('modelChemistry = "DFT_G03_b3lyp"')
+        output.append('frequencyScaleFactor = 0.99')
+        output.append('useHinderedRotors = False')
+        output.append('useBondCorrections = False\n')
+        
+        for reactant in reactants:
+            reactant.setOutputDirectory(fileStore)
+            output.append("species('{0}', '{1}{2}')".format(reactant.uniqueID, self.outputFilePath.count('/')*'../', reactant.outputFilePath.split('.')[0]+'.py', ))
+        for product in products:
+            product.setOutputDirectory(fileStore)
+            output.append("species('{0}', '{1}{2}')".format(product.uniqueID, self.outputFilePath.count('/')*'../', product.outputFilePath.split('.')[0]+'.py', ))
+        output.append("transitionState('TS', '{0}')".format(self.outputFilePath.split('.')[0].split('/')[-1]+'.py'))
+        output.append('')
+        output.append('reaction(')
+        output.append("    label = '{0}',".format(self.uniqueID))
+        if len(reactants)==2:
+            output.append("    reactants = ['{0}', '{1}'],".format(reactants[0].uniqueID, reactants[1].uniqueID))
+        else:
+            output.append("    reactants = ['{0}']".format(reactants[0].uniqueID))
+            
+        if len(products)==2:
+            output.append("    products = ['{0}', '{1}'],".format(products[0].uniqueID, products[1].uniqueID))
+        else:
+            output.append("    products = ['{0}']".format(products[0].uniqueID))
+        output.append("    transitionState = 'TS',")
+        output.append("    tunneling = 'Eckart',\n)\n")
+        output.append("statmech('TS')\nkinetics('{0}')\n".format(self.uniqueID))
+        
+        input_string = '\n'.join(output)
+        
+        with open(filePath, 'w') as canThermInp:
+            canThermInp.write(input_string)
+    
+    def calculateQMData(self, moleculeList, fileStore):
         """
         If the transition state is found, optimize reactant and product geometries for use in
         TST calculations.
         """
         molecules = []
-        
         for molecule in moleculeList:
-            molecule = self.fixSortLabel(molecule)
+            if isinstance(molecule, Species):
+                molecule = molecule.molecule[0]
             qmMolecule = self.getQMMolecule(molecule)
+            qmMolecule.settings.fileStore = fileStore
+            qmMolecule.checkPaths()
             result = qmMolecule.generateQMData()
             if result:
-                log = GaussianLog(qmMolecule.outputFilePath)
-                species = Species(label=qmMolecule.molecule.toSMILES(), conformer=log.loadConformer(), molecule=[molecule])
-                molecules.append(species)
+                allAtoms = []
+                for atom in qmMolecule.molecule.atoms:
+                    allAtoms.append(atom.symbol)
+                bondDict = self.getBonds(qmMolecule)
+                self.writeCanThermStatMech(allAtoms, bondDict, qmMolecule.molecule.multiplicity, qmMolecule.outputFilePath)
+                molecules.append(qmMolecule)
+                # log = GaussianLog(qmMolecule.outputFilePath)
+                # species = Species(label=qmMolecule.molecule.toSMILES(), conformer=log.loadConformer(), molecule=[molecule])
+                # molecules.append(species)
+            else:
+                raise Exception('The reactant or product geometry did not optimize. Cannot calculate the kinetics.')
         return molecules
     
-    def calculateKinetics(self):
+    def generateKineticData(self):
+        self.initialize()
         # provides transitionstate geometry
         tsFound = self.generateTSGeometryDirectGuess()
-        
         if not tsFound:
-            # fall back on group additivity
-            return None
-            
-        reactants = self.calculateQMData(self.reaction.reactants)
-        products = self.calculateQMData(self.reaction.products)
+            # Return the reaction without the kinetics included. Fall back on group additivity.
+            return self.reaction
         
-        if len(reactants)==len(self.reaction.reactants) and len(products)==len(self.reaction.products):
-            #self.determinePointGroup()
-            tsLog = GaussianLog(self.outputFilePath)
-            self.reaction.transitionState = TransitionState(label=self.uniqueID + 'TS', conformer=tsLog.loadConformer(), frequency=(tsLog.loadNegativeFrequency(), 'cm^-1'), tunneling=Wigner(frequency=None))
-                            
-            self.reaction.reactants = reactants
-            self.reaction.products = products
-
-            
-            kineticsJob = KineticsJob(self.reaction)
-            kineticsJob.generateKinetics()
-            
-            """
-            What do I do with it? For now just save it.
-            Various parameters are not considered in the calculations so far e.g. symmetry.
-            This is just a crude calculation, calculating the partition functions
-            from the molecular properties and plugging them through the equation. 
-            """
-            kineticsJob.save(self.getFilePath('.kinetics'))
-            # return self.reaction.kinetics     
+        fileStore = self.settings.fileStore # To ensure all files are found in the same base directory
+        reactants = self.calculateQMData(self.reaction.reactants, fileStore)
+        products = self.calculateQMData(self.reaction.products, fileStore)
+        
+        allAtoms = []
+        multiplicity=1
+        for molecule in self.reaction.reactants:
+            if isinstance(molecule, Species):
+                molecule = molecule.molecule[0]
+            multiplicity += molecule.getRadicalCount()
+            for atom in molecule.atoms:
+                allAtoms.append(atom.symbol)
+                
+        self.writeCanThermStatMech(allAtoms, {}, multiplicity, self.outputFilePath)
+        canThermFilePath = os.path.join(self.fileStore, 'input.py')
+        self.writeCanThermInput(reactants, products, canThermFilePath, fileStore)
+        canThermJob = CanTherm()
+        canThermJob.outputDirectory = self.fileStore
+        canThermJob.inputFile = canThermFilePath
+        canThermJob.plot = False
+        canThermJob.execute()
+        
+        for job in canThermJob.jobList:
+            if isinstance(job, KineticsJob):
+                # Return the reaction with the kinetics.
+                return job.reaction
+        # 
+        # if len(reactants)==len(self.reaction.reactants) and len(products)==len(self.reaction.products):
+        #     #self.determinePointGroup()
+        #     tsLog = GaussianLog(self.outputFilePath)
+        #     self.reaction.transitionState = TransitionState(label=self.uniqueID + 'TS', conformer=tsLog.loadConformer(), frequency=(tsLog.loadNegativeFrequency(), 'cm^-1'), tunneling=Wigner(frequency=None))
+        #                     
+        #     self.reaction.reactants = reactants
+        #     self.reaction.products = products
+        # 
+        #     
+        #     kineticsJob = KineticsJob(self.reaction)
+        #     kineticsJob.generateKinetics()
+        #     
+        #     """
+        #     What do I do with it? For now just save it.
+        #     Various parameters are not considered in the calculations so far e.g. symmetry.
+        #     This is just a crude calculation, calculating the partition functions
+        #     from the molecular properties and plugging them through the equation. 
+        #     """
+        #     kineticsJob.save(self.getFilePath('.kinetics'))
+        #     # return self.reaction.kinetics     
     
     def determinePointGroup(self):
         """

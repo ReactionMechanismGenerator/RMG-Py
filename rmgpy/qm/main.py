@@ -55,7 +55,7 @@ class QMSettings():
     """
     def __init__(self,
                  software = None,
-                 method = 'pm3',
+                 method = None,
                  fileStore = None,
                  scratchDirectory = None,
                  onlyCyclics = True,
@@ -102,13 +102,11 @@ class QMCalculator():
     
     def __init__(self,
                  software = None,
-                 method = 'pm3',
+                 method = None,
                  fileStore = None,
                  scratchDirectory = None,
                  onlyCyclics = True,
                  maxRadicalNumber = 0,
-                 molecule = None,
-                 reaction = None,
                  ):
                  
         self.settings = QMSettings(software = software,
@@ -118,72 +116,8 @@ class QMCalculator():
                                    onlyCyclics = onlyCyclics,
                                    maxRadicalNumber = maxRadicalNumber,
                                    )
-        self.molecule = None
-        self.reaction = None
-        if molecule:
-            self.molecule = QMMolecule(molecule, self.settings)
-        if reaction:
-            self.reaction = QMReaction(reaction, self.settings)
             
         self.database = ThermoLibrary(name='QM Thermo Library')
-        
-    def setOutputDirectory(self, outputDirectory):
-        """
-        Set up the fileStore and scratchDirectory if not already done.
-        """
-        if self.molecule and not self.reaction:
-            subPath = os.path.join('Species', self.molecule.uniqueID, self.settings.method)
-        elif self.reaction and not self.molecule:
-            subPath = os.path.join('Reactions', self.reaction.uniqueID, self.settings.method)
-        else:
-            raise Exception("Specify a molecule OR a reaction for QM calculations.")
-        
-        setFileStore = True
-        setScratch = True
-        if self.settings.fileStore:
-            if self.settings.fileStore.endswith(subPath):
-                setFileStore = False
-        
-        if self.settings.scratchDirectory:
-            if self.settings.scratchDirectory.endswith(subPath):
-                setScratch = False
-                
-        if setFileStore:
-            self.settings.fileStore = os.path.join(outputDirectory, 'QMfiles', subPath)
-            logging.info("Setting the quantum mechanics fileStore to {0}".format(self.settings.fileStore))
-        if setScratch:
-            self.settings.scratchDirectory = os.path.join(outputDirectory, 'QMscratch', subPath)
-            logging.info("Setting the quantum mechanics fileStore to {0}".format(self.settings.scratchDirectory))            
-    
-    def initialize(self):
-        """
-        Do any startup tasks.
-        """
-        self.checkReady()
-
-    def checkReady(self):
-        """
-        Check that it's ready to run calculations.
-        """
-        self.settings.checkAllSet()
-        self.checkPaths()
-
-    def checkPaths(self):
-        """
-        Check the paths in the settings are OK. Make folders as necessary.
-        """
-        if not os.path.exists(self.settings.RMG_bin_path):
-            raise Exception("RMG-Py 'bin' directory {0} does not exist.".format(self.settings.RMG_bin_path))
-        if not os.path.isdir(self.settings.RMG_bin_path):
-            raise Exception("RMG-Py 'bin' directory {0} is not a directory.".format(self.settings.RMG_bin_path))
-            
-        self.setOutputDirectory(self.settings.fileStore)
-        self.settings.fileStore = os.path.expandvars(self.settings.fileStore) # to allow things like $HOME or $RMGpy
-        self.settings.scratchDirectory = os.path.expandvars(self.settings.scratchDirectory)
-        for path in [self.settings.fileStore, self.settings.scratchDirectory]:
-            if not os.path.exists(path):
-                logging.info("Creating directory %s for QM files."%os.path.abspath(path))
-                os.makedirs(path)
 
     def getThermoData(self, molecule):
         """
@@ -192,7 +126,6 @@ class QMCalculator():
         Ignores the settings onlyCyclics and maxRadicalNumber and does the calculation anyway if asked.
         (I.e. the code that chooses whether to call this method should consider those settings).
         """
-        self.initialize()
         if self.settings.software == 'mopac':
             if self.settings.method == 'pm3':
                 qm_molecule_calculator = rmgpy.qm.mopac.MopacMolPM3(molecule, self.settings)
@@ -208,6 +141,8 @@ class QMCalculator():
                 qm_molecule_calculator = rmgpy.qm.gaussian.GaussianMolPM3(molecule, self.settings)
             elif self.settings.method == 'pm6':
                 qm_molecule_calculator = rmgpy.qm.gaussian.GaussianMolPM6(molecule, self.settings)
+            elif self.settings.method == 'b3lyp':
+                qm_molecule_calculator = rmgpy.qm.gaussian.GaussianMolB3LYP(molecule, self.settings)
             else:
                 raise Exception("Unknown QM method '{0}' for gaussian".format(self.settings.method))
             thermo0 = qm_molecule_calculator.generateThermoData()
@@ -222,7 +157,6 @@ class QMCalculator():
         Ignores the settings onlyCyclics and maxRadicalNumber and does the calculation anyway if asked.
         (I.e. the code that chooses whether to call this method should consider those settings).
         """
-        self.initialize()
         if self.settings.software == 'mopac':
             if self.settings.method == 'pm3':
                 qm_reaction_calculator = rmgpy.qm.mopac.MopacTSPM3(reaction, self.settings)

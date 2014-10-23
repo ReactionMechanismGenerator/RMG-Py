@@ -132,14 +132,14 @@ class Gaussian:
                 if line.startswith("InChI="):
                     logFileInChI = line #output files should take up to 240 characters of the name in the input file
                     InChIFound = True
-                    if self.geometry.uniqueIDlong in logFileInChI:
+                    if self.uniqueIDlong in logFileInChI:
                         InChIMatch = True
-                    elif self.geometry.uniqueIDlong.startswith(logFileInChI):
+                    elif self.uniqueIDlong.startswith(logFileInChI):
                         logging.info("InChI too long to check, but beginning matches so assuming OK.")
                         InChIMatch = True
                     else:
-                        logging.warning("InChI in log file ({0}) didn't match that in geometry ({1}).".format(logFileInChI, self.geometry.uniqueIDlong))                    
-                        if self.geometry.uniqueIDlong.startswith(logFileInChI):
+                        logging.warning("InChI in log file ({0}) didn't match that in geometry ({1}).".format(logFileInChI, self.uniqueIDlong))                    
+                        if self.uniqueIDlong.startswith(logFileInChI):
                             logging.warning("but the beginning matches so it's probably just a truncation problem.")
                             InChIMatch = True
         # Check that ALL 'success' keywords were found in the file.
@@ -178,7 +178,7 @@ class Gaussian:
         qmData = CCLibData(cclibData, radicalNumber+1)
         return qmData
     
-    def writeInputFile(self, output, attempt=None, top_keys=None, numProcShared=None, memory=None, checkPoint=False, bottomKeys=None):
+    def writeInputFile(self, output, attempt=None, top_keys=None, numProcShared=None, memory=None, checkPoint=False, bottomKeys=None, inputFilePath=None):
         """
         Takes the output from the createInputFile method and prints the
         file. Options provided allow the 
@@ -195,7 +195,7 @@ class Gaussian:
         if memory:
             mem = '%mem={0}'.format(memory)
             output = [mem] + output
-        if numProc:
+        if numProcShared:
             numProc = '%nprocshared={0}'.format(numProcShared)
             output = [numProc] + output
         if bottomKeys:
@@ -203,7 +203,10 @@ class Gaussian:
         
         input_string = '\n'.join(output)
         
-        with open(self.inputFilePath, 'w') as gaussianFile:
+        if not inputFilePath:
+            inputFilePath = self.inputFilePath
+            
+        with open(inputFilePath, 'w') as gaussianFile:
             gaussianFile.write(input_string)
             gaussianFile.write('\n')                
     
@@ -343,6 +346,36 @@ class GaussianMolPM6(GaussianMol):
                "# pm6 opt=(calcall,small,maxcyc=100) IOP(2/16=3)",
                ]
 
+class GaussianMolB3LYP(GaussianMol):
+    """
+    Gaussian PM6 calculations for molecules
+
+    This is a class of its own in case you wish to do anything differently,
+    but for now it's only the 'pm6' in the keywords that differs.
+    """
+    #: Keywords that will be added at the top of the qm input file
+    keywords = [
+                # The combinations of keywords were derived by Greg Magoon for pm3. For now, we assume similar ones will work for pm6:
+               "# b3lyp/6-31+g(d,p) opt=(verytight,gdiis) freq IOP(2/16=3)",
+               "# b3lyp/6-31+g(d,p) opt=(verytight,gdiis) freq IOP(2/16=3) IOP(4/21=2)",
+               "# b3lyp/6-31+g(d,p) opt=(verytight,calcfc,maxcyc=200) freq IOP(2/16=3) nosymm" ,
+               "# b3lyp/6-31+g(d,p) opt=(verytight,calcfc,maxcyc=200) freq=numerical IOP(2/16=3) nosymm",
+               "# b3lyp/6-31+g(d,p) opt=(verytight,gdiis,small) freq IOP(2/16=3)",
+               "# b3lyp/6-31+g(d,p) opt=(verytight,nolinear,calcfc,small) freq IOP(2/16=3)",
+               "# b3lyp/6-31+g(d,p) opt=(verytight,gdiis,maxcyc=200) freq=numerical IOP(2/16=3)",
+               "# b3lyp/6-31+g(d,p) opt=tight freq IOP(2/16=3)",
+               "# b3lyp/6-31+g(d,p) opt=tight freq=numerical IOP(2/16=3)",
+               "# b3lyp/6-31+g(d,p) opt=(tight,nolinear,calcfc,small,maxcyc=200) freq IOP(2/16=3)",
+               "# b3lyp/6-31+g(d,p) opt freq IOP(2/16=3)",
+               "# b3lyp/6-31+g(d,p) opt=(verytight,gdiis) freq=numerical IOP(2/16=3) IOP(4/21=200)",
+               "# b3lyp/6-31+g(d,p) opt=(calcfc,verytight,newton,notrustupdate,small,maxcyc=100,maxstep=100) freq=(numerical,step=10) IOP(2/16=3) nosymm",
+               "# b3lyp/6-31+g(d,p) opt=(tight,gdiis,small,maxcyc=200,maxstep=100) freq=numerical IOP(2/16=3) nosymm",
+               "# b3lyp/6-31+g(d,p) opt=(verytight,gdiis,calcall) IOP(2/16=3)",
+               "# b3lyp/6-31+g(d,p) opt=(verytight,gdiis,calcall,small,maxcyc=200) IOP(2/16=3) IOP(4/21=2) nosymm",
+               "# b3lyp/6-31+g(d,p) opt=(verytight,gdiis,calcall,small) IOP(2/16=3) nosymm",
+               "# b3lyp/6-31+g(d,p) opt=(calcall,small,maxcyc=100) IOP(2/16=3)",
+               ]
+
 ##########################################################################################
 
 class GaussianTS(QMReaction, Gaussian):
@@ -458,9 +491,9 @@ class GaussianTS(QMReaction, Gaussian):
         """
         
         top_keys = self.inputFileKeywords(0, irc=True)
-        output = "{charge}   {mult}".format(charge=0, mult=self.reactantGeom.molecule.multiplicity )
+        output = ['', "{charge}   {mult}".format(charge=0, mult=self.reactantGeom.molecule.multiplicity ), '', '']
         
-        self.writeInputFile(output, top_keys=top_keys, numProcShared=20, memory='800MB', checkPoint=True)
+        self.writeInputFile(output, top_keys=top_keys, numProcShared=20, memory='800MB', checkPoint=True, inputFilePath=self.ircInputFilePath)
     
     def createGeomInputFile(self, freezeAtoms, otherGeom=False):
         
