@@ -7,6 +7,7 @@ from subprocess import Popen
 from copy import deepcopy
 import numpy
 import shutil
+import math
 
 from rmgpy.data.kinetics.transitionstates import TransitionStates
 from rmgpy.molecule import Molecule
@@ -160,9 +161,9 @@ class QMReaction:
             raise Exception("RMG-Py 'bin' directory {0} is not a directory.".format(self.settings.RMG_bin_path))
             
         self.setOutputDirectory()
-        self.settings.fileStore = os.path.expandvars(self.settings.fileStore) # to allow things like $HOME or $RMGpy
-        self.settings.scratchDirectory = os.path.expandvars(self.settings.scratchDirectory)
-        for path in [self.settings.fileStore, self.settings.scratchDirectory]:
+        self.fileStore = os.path.expandvars(self.fileStore) # to allow things like $HOME or $RMGpy
+        self.scratchDirectory = os.path.expandvars(self.scratchDirectory)
+        for path in [self.fileStore, self.scratchDirectory]:
             if not os.path.exists(path):
                 logging.info("Creating directory %s for QM files."%os.path.abspath(path))
                 os.makedirs(path)
@@ -516,6 +517,7 @@ class QMReaction:
         Returns (success, notes) where success is a True if it worked, else False,
         and notes is a string describing what happened.
         """
+        self.settings.fileStore = self.fileStore
         notes = ''
         if os.path.exists(os.path.join(self.fileStore, self.uniqueID + '.data')):
             logging.info("Transition state geometry already exists.")
@@ -544,6 +546,17 @@ class QMReaction:
                         print "BOUNDS MATRIX FLAWED {0}>{1}".format(tsBM[j,i], tsBM[i,j])
         
         self.reactantGeom.rd_embed(tsRDMol, distGeomAttempts, bm=tsBM, match=atomMatch)
+        atomSymbols, atomCoords = self.reactantGeom.parseMOL(self.reactantGeom.getRefinedMolFilePath())
+        
+        d12sq = (atomCoords[labels[0]]-atomCoords[labels[1]])**2
+        d23sq = (atomCoords[labels[1]]-atomCoords[labels[2]])**2
+        d13sq = (atomCoords[labels[0]]-atomCoords[labels[2]])**2
+        d12 = math.sqrt(d12sq.sum())
+        d23 = math.sqrt(d23sq.sum())
+        d13 = math.sqrt(d13sq.sum())
+        
+        with open(os.path.join(self.fileStore, 'rdkitDists.txt'), 'w') as distFile:
+            distFile.write('d12: {0:.6f}, d13: {1:.6f}, d23: {2:.6f}'.format(d12, d13, d23))
         check, notes =  self.tsSearch(notes, labels)
         
         return check, notes
@@ -742,7 +755,7 @@ class QMReaction:
         output = ['#!/usr/bin/env python', '# -*- coding: utf-8 -*-', '']
         
         output.append('modelChemistry = "DFT_G03_b3lyp"')
-        output.append('frequencyScaleFactor = 0.99')
+        output.append('frequencyScaleFactor = 0.964')
         output.append('useHinderedRotors = False')
         output.append('useBondCorrections = False\n')
         
@@ -804,12 +817,16 @@ class QMReaction:
     def generateKineticData(self):
         self.initialize()
         # provides transitionstate geometry
-        tsFound = self.generateTSGeometryDirectGuess()
+        fileStore = self.settings.fileStore #  To ensure all files are found in the same base directory
+        tsFound, notes = self.generateTSGeometryDirectGuess()
+        self.settings.fileStore = fileStore
+        with open(os.path.join(self.fileStore, 'error.txt'), 'w') as errorFile:
+            errorFile.write(notes)
+            
         if not tsFound:
             # Return the reaction without the kinetics included. Fall back on group additivity.
             return self.reaction
         
-        fileStore = self.settings.fileStore # To ensure all files are found in the same base directory
         reactants = self.calculateQMData(self.reaction.reactants, fileStore)
         products = self.calculateQMData(self.reaction.products, fileStore)
         
