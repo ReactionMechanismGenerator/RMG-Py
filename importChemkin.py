@@ -1914,9 +1914,10 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
                 output.append('<table  style="width:800px">')
                 for n, rxn in enumerate(votingReactions):
                     if isinstance(rxn, tuple):
+                        chemkinrxn = str(rxn[0])
                         rmgrxn = str(rxn[1])
                         rmgRxnPics = searcher.sub(replacer, rmgrxn + ' ')
-                        output.append("<tr><td>{0}</td><td> {1!s}   </td><td>  {2!s} </td></tr>".format(n + 1, rxn[0], rmgRxnPics))
+                        output.append("<tr><td>{0}</td><td> {1!s}   </td><td>  {2!s} </td><td style='text-align: right; font-size: small;'>{3!s}</td></tr>".format(n + 1, chemkinrxn, rmgRxnPics, rxn[1].family.label))
                     else:
                         output.append("<tr><td>{0}</td><td> {1!s}</td></tr>".format(n + 1, rxn))
                 output.append("</table>")
