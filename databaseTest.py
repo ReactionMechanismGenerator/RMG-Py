@@ -91,6 +91,12 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
             self.compat_func_name = test_name
             yield test, group_name
             
+            test = lambda x: self.general_checkChildParentRelationships(group_name, group)
+            test_name = "Thermo groups {0}: parent-child relationships are correct?".format(group_name)
+            test.description = test_name
+            self.compat_func_name = test_name
+            yield test, group_name
+            
     def test_solvation(self):
         for group_name, group in self.database.solvation.groups.iteritems():
             test = lambda x: self.general_checkNodesFoundInTree(group_name, group)
@@ -105,6 +111,12 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
             self.compat_func_name = test_name
             yield test, group_name
 
+            test = lambda x: self.general_checkChildParentRelationships(group_name, group)
+            test_name = "Solvation groups {0}: parent-child relationships are correct?".format(group_name)
+            test.description = test_name
+            self.compat_func_name = test_name
+            yield test, group_name
+            
     def test_statmech(self):
         for group_name, group in self.database.statmech.groups.iteritems():
             test = lambda x: self.general_checkNodesFoundInTree(group_name, group)
@@ -115,6 +127,12 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
             
             test = lambda x: self.general_checkGroupsNonidentical(group_name, group)
             test_name = "Statmech groups {0}: nodes are nonidentical?".format(group_name)
+            test.description = test_name
+            self.compat_func_name = test_name
+            yield test, group_name
+            
+            test = lambda x: self.general_checkChildParentRelationships(group_name, group)
+            test_name = "Statmech groups {0}: parent-child relationships are correct?".format(group_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, group_name
@@ -129,6 +147,12 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
 
             test = lambda x: self.general_checkGroupsNonidentical(group_name, group)
             test_name = "Transport groups {0}: nodes are nonidentical?".format(group_name)
+            test.description = test_name
+            self.compat_func_name = test_name
+            yield test, group_name
+            
+            test = lambda x: self.general_checkChildParentRelationships(group_name, group)
+            test_name = "Transport groups {0}: parent-child relationships are correct?".format(group_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, group_name
@@ -269,6 +293,28 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
                     print nodeNameOther
                     pass
                 nose.tools.assert_false(group.matchNodeToNode(nodeGroup, nodeGroupOther), "Node {node} in {group} group was found to be identical to node {nodeOther}".format(node=nodeName, group=group_name, nodeOther=nodeNameOther))
+    
+    def general_checkChildParentRelationships(self, group_name, group):
+        """
+        This test checks that nodes' parent-child relationships are correct in the database.
+        """
+        for nodeName, childNode in group.entries.iteritems():
+            #top nodes and product nodes don't have parents by definition, so they get an automatic pass:
+            if childNode in group.top: continue
+            parentNode = childNode.parent
+            # Check whether the node has proper parents unless it is the top reactant or product node
+            # The parent should be more general than the child
+            nose.tools.assert_true(group.matchNodeToChild(parentNode, childNode),
+                            "In {group} group, node {parent} is not a proper parent of its child {child}.".format(group=group_name, parent=parentNode, child=nodeName))
 
+            #check that parentNodes which are LogicOr do not have an ancestor that is a Group
+            #If it does, then the childNode must also be a child of the ancestor
+            if isinstance(parentNode, LogicOr):
+                ancestorNode = childNode
+                while ancestorNode not in group.top and isinstance(ancestorNode, LogicOr):
+                    ancestorNode = ancestorNode.parent
+                if isinstance(ancestorNode, Group):
+                    nose.tools.assert_true(group.matchNodeToChild(ancestorNode, childNode),
+                                    "In {group} group, node {ancestor} is not a proper ancestor of its child {child}.".format(group=group_name, ancestor=ancestorNode, child=nodeName))
 if __name__ == '__main__':
     nose.run(argv=[__file__, '-v', '--nologcapture'], defaultTest=__name__)
