@@ -249,7 +249,7 @@ class GaussianMol(QMMolecule, Gaussian):
         assert atomCount == len(self.molecule.atoms)
     
         output.append('')
-        self.writeInputFile(output, attempt)
+        self.writeInputFile(output, attempt, numProcShared=20, memory='800MB')
     
     def generateQMData(self):
         """
@@ -436,16 +436,16 @@ class GaussianTS(QMReaction, Gaussian):
             optionsKeys = self.keywords[attempt-1]
         
         if self.basisSet=='':
-            top_keys = "# {method}/{basisSet} {optionsKeys}".format(
-                    method = self.method,
-                    basisSet = self.basisSet,
-                    optionsKeys = optionsKeys,
-                    )
-        else:
             top_keys = "# {method} {optionsKeys}".format(
-                    method = self.method,
-                    optionsKeys = optionsKeys,
-                    )
+            method = self.method,
+            optionsKeys = optionsKeys,
+            )
+        else:
+            top_keys = "# {method}/{basisSet} {optionsKeys}".format(
+            method = self.method,
+            basisSet = self.basisSet,
+            optionsKeys = optionsKeys,
+            )
                 
         return top_keys
     
