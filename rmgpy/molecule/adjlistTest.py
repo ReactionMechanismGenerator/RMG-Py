@@ -4,10 +4,10 @@
 import unittest
 from external.wip import work_in_progress
 from rmgpy.molecule.adjlist import *
+from rmgpy.molecule.adjlist import InvalidAdjacencyListError
 from rmgpy.molecule.molecule import *
 from rmgpy.molecule.group import Group
 from rmgpy.molecule.element import getElement, elementList
-
 import logging
 logging.basicConfig(level=logging.DEBUG)
 
@@ -351,6 +351,92 @@ class TestMoleculeAdjLists(unittest.TestCase):
         self.assertTrue(bond21.isSingle())
         self.assertTrue(bond23.isSingle())
         self.assertTrue(bond24.isDouble())
+    
+    def testVariousSpinAdjlists(self):
+        """
+        adjlist: Test that molecules with old or intermediate adjacency list formats containing unusual 
+        spin states can get converted to the proper new adjlist format.
+        """
+        
+        adjlist_2S = """
+1 C 2S 0 {2,S} {3,S}
+2 H 0  0 {1,S}
+3 H 0  0 {1,S}
+"""
+        adjlist_2S_new ="""
+1 C u0 p1 c0  {2,S} {3,S}
+2 H u0 p0 c0  {1,S}
+3 H u0 p0 c0  {1,S}
+"""
+        mol_2S = Molecule().fromAdjacencyList(adjlist_2S)
+        mol_2S_new = Molecule().fromAdjacencyList(adjlist_2S_new)
+        self.assertTrue(mol_2S.isIsomorphic(mol_2S_new))
+        
+        adjlist_2T = """
+1 C 2T 0 {2,S} {3,S}
+2 H 0  0 {1,S}
+3 H 0  0 {1,S}
+"""
+        adjlist_2T_new ="""
+1 C u2 p0 c0  {2,S} {3,S}
+2 H u0 p0 c0  {1,S}
+3 H u0 p0 c0  {1,S}
+"""
+        mol_2T = Molecule().fromAdjacencyList(adjlist_2T)
+        mol_2T_new = Molecule().fromAdjacencyList(adjlist_2T_new)
+        self.assertTrue(mol_2T.isIsomorphic(mol_2T_new))
+
+        adjlist_3D = """
+1 C 3D 0 {2,S}
+2 H 0  0 {1,S}
+"""
+        adjlist_3D_new = """
+1 C u1 p1 c0  {2,S}
+2 H u0 p0 c0  {1,S}
+"""
+        mol_3D = Molecule().fromAdjacencyList(adjlist_3D)
+        mol_3D_new = Molecule().fromAdjacencyList(adjlist_3D_new)
+        self.assertTrue(mol_3D.isIsomorphic(mol_3D_new))
+
+        adjlist_3Q = """
+1 N 3Q 1
+"""
+        adjlist_3Q_new = """
+1 N u3 p1 c0 
+"""
+        mol_3Q = Molecule().fromAdjacencyList(adjlist_3Q)
+        mol_3Q_new = Molecule().fromAdjacencyList(adjlist_3Q_new)
+        self.assertTrue(mol_3Q.isIsomorphic(mol_3Q_new))
+        
+        adjlist_4S = """
+1 C 4S 0
+        """
+        adjlist_4S_new = """
+1 C u0 p2 c0
+"""
+        mol_4S = Molecule().fromAdjacencyList(adjlist_4S)
+        mol_4S_new = Molecule().fromAdjacencyList(adjlist_4S_new)
+        self.assertTrue(mol_4S.isIsomorphic(mol_4S_new))
+        
+        adjlist_4T = """
+1 C 4T 0
+"""
+        adjlist_4T_new = """
+1 C u2 p1 c0
+"""
+        mol_4T = Molecule().fromAdjacencyList(adjlist_4T)
+        mol_4T_new = Molecule().fromAdjacencyList(adjlist_4T_new)
+        self.assertTrue(mol_4T.isIsomorphic(mol_4T_new))
+        
+        adjlist_4V = """
+1 C 4V 0
+"""
+        adjlist_4V_new ="""
+1 C u4 p0 c0        
+"""
+        mol_4V = Molecule().fromAdjacencyList(adjlist_4V)
+        mol_4V_new = Molecule().fromAdjacencyList(adjlist_4V_new)
+        self.assertTrue(mol_4V.isIsomorphic(mol_4V_new))
         
     def testWildcardAdjlists(self):
         """
@@ -397,7 +483,7 @@ class TestMoleculeAdjLists(unittest.TestCase):
         mol_old = Molecule().fromAdjacencyList(adjlist_old)
         mol_intermediate = Molecule().fromAdjacencyList(adjlist_intermediate)
         
-        # Isomorphic check'
+        # Isomorphic check
         self.assertTrue(mol_smiles.isIsomorphic(mol))
         self.assertTrue(mol_smiles.isIsomorphic(mol_inchi))
         self.assertTrue(mol_smiles.isIsomorphic(mol_old))
@@ -417,6 +503,15 @@ class TestMoleculeAdjLists(unittest.TestCase):
         """
         adjlist: Test the Molecule.toAdjacencyList() method.
         """
+        inter_adjlist = """
+1 *1 C 1 0  {2,S} {3,S} {4,S}
+2    H 0 0  {1,S}
+3    H 0 0  {1,S}
+4 *2 N 0 0 {1,S} {5,S} {6,D}
+5    O 0 3 {4,S}
+6    O 0 2 {4,D}
+            """
+            
         adjlist = """
 1 *1 C u1 p0 c0  {2,S} {3,S} {4,S}
 2    H u0 p0 c0  {1,S}
@@ -426,20 +521,20 @@ class TestMoleculeAdjLists(unittest.TestCase):
 6    O u0 p2 c0  {4,D}
             """
         molecule = Molecule().fromAdjacencyList(adjlist)
+        molecule2 = Molecule().fromAdjacencyList(inter_adjlist)
         adjlist_1 = molecule.toAdjacencyList(removeH=False)
+        self.assertEqual(adjlist_1,molecule2.toAdjacencyList())
         newMolecule = Molecule().fromAdjacencyList(adjlist_1)
         self.assertTrue(molecule.isIsomorphic(newMolecule))
-        
-        #self.assertEqual(adjlist_1.strip(), adjlist.strip())
         
     def testFromIntermediateAdjacencyList1(self):
         """
         Test we can read an intermediate style adjacency list with implicit hydrogens 1
         """
         adjList = """
-        1 O 0 0
+        1 O 0 2
         """  # should be Water
-        molecule = Molecule().fromAdjacencyList(adjList, saturateH=True)  # only works with saturateH=True
+        molecule = Molecule().fromAdjacencyList(adjList, saturateH=True)  
         self.assertEqual(molecule.getFormula(), 'H2O')
 
     def testFromOldAdjacencyList1(self):
@@ -449,10 +544,91 @@ class TestMoleculeAdjLists(unittest.TestCase):
         adjList = """
         1 O 0 
         """  # should be Water
-        molecule = Molecule().fromAdjacencyList(adjList)  # only works with saturateH=True
+        molecule = Molecule().fromAdjacencyList(adjList)  
         self.assertEqual(molecule.getFormula(), 'H2O')
 
-
+    def testFromOldAdjacencyList2(self):
+        """
+        Test we can read an old style adjacency list with implicit hydrogens 2
+        """
+        adjlist = """
+        1 C 2S
+        """  
+        adjlist_new = """
+        1 C u0 p1 c0 {2,S} {3,S}
+        2 H u0 p0 c0 {1,S}
+        3 H u0 p0 c0 {1,S}
+        """
+        molecule = Molecule().fromAdjacencyList(adjlist)  
+        molecule_new = Molecule().fromAdjacencyList(adjlist_new)
+        self.assertTrue(molecule.isIsomorphic(molecule_new))
+        
+    def testFromOldAdjacencyList3(self):
+        """
+        Test we can read an old style adjacency list with implicit hydrogens 3
+        """
+        adjlist = """
+        1 C 0
+        """  
+        adjlist_new = """
+        1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+        2 H u0 p0 c0 {1,S}
+        3 H u0 p0 c0 {1,S}
+        4 H u0 p0 c0 {1,S}
+        5 H u0 p0 c0 {1,S}
+        """
+        molecule = Molecule().fromAdjacencyList(adjlist)  
+        molecule_new = Molecule().fromAdjacencyList(adjlist_new)
+        self.assertTrue(molecule.isIsomorphic(molecule_new))
+        
+    def testFromOldAdjacencyList4(self):
+        """
+        Test we can read an old style adjacency list with implicit hydrogens 4
+        """
+        adjlist = """
+        1 O 2S
+        """  
+        adjlist_new = """
+        1 O u0 p3 c0
+        """
+        molecule = Molecule().fromAdjacencyList(adjlist)  
+        molecule_new = Molecule().fromAdjacencyList(adjlist_new)
+        self.assertTrue(molecule.isIsomorphic(molecule_new))
+    
+    @work_in_progress
+    def testFromOldAdjacencyList5(self):
+        """
+        Test we can read an old style adjacency list with implicit hydrogens 5
+        """
+        adjlist = """
+        1 C 2S {2,T}
+        2 O 2S {1,T}
+        """  
+        adjlist_new = """
+        1 C u0 p1 c-1 {2,T}
+        2 O u0 p1 c+1 {1,T}
+        """
+        molecule = Molecule().fromAdjacencyList(adjlist)  
+        molecule_new = Molecule().fromAdjacencyList(adjlist_new)
+        self.assertTrue(molecule.isIsomorphic(molecule_new))    
+        # Currently the fromOldAdjacencyList cannot correctly interpret CO written in this old form
+        # (I don't think any adjlists are actually formed this way.)  
+        # Currently 'adjlist' will fail when the Molecule is determined to be non-neurtral in net charge.
+        
+    def testFromOldAdjacencyList6(self):
+        """
+        Test we can read an old style adjacency list with implicit hydrogens 1
+        """
+        adjlist = """
+        1 C 4T
+        """  
+        adjlist_new = """
+        1 C u2 p1 c0 
+        """
+        molecule = Molecule().fromAdjacencyList(adjlist)
+        molecule_new = Molecule().fromAdjacencyList(adjlist_new)
+        self.assertTrue(molecule.isIsomorphic(molecule_new))
+        
     def testAdjacencyList(self):
         """
         adjlist: Check the adjacency list read/write functions for a full molecule.
@@ -477,9 +653,37 @@ class TestMoleculeAdjLists(unittest.TestCase):
         molecule2 = Molecule().fromSMILES('C=CC=C[CH]C')
         self.assertTrue(molecule1.isIsomorphic(molecule2))
         self.assertTrue(molecule2.isIsomorphic(molecule1))
+        
+    def testGroupAdjacencyList(self):
+        """
+        adjlist: Check the adjacency list read/write functions for a full molecule.
+        """
+        adjlist = """1 C u0 {2,D}
+2 O u1 p1 c[-1,0,+1] {1,D}
+"""
+        group = Group().fromAdjacencyList("""
+        1 C u0 {2,D} 
+        2 O u1 p1 c[-1,0,+1] {1,D}
+        """)
+        self.assertEqual(adjlist, group.toAdjacencyList())
 
 ################################################################################
-
+class TestConsistencyChecker(unittest.TestCase):
+    def test_check_hund_rule_fail(self):
+        with self.assertRaises(InvalidAdjacencyListError):
+            Molecule().fromAdjacencyList("""
+            multiplicity 1
+            1 C u2 p0 c0
+            """, saturateH=True)
+    def test_check_hund_rule_success(self):
+        try:
+            Molecule().fromAdjacencyList("""
+            multiplicity 3
+            1 C u2 p0 c0
+            """, saturateH=True)
+        except InvalidAdjacencyListError:
+            self.fail('InvalidAdjacencyListError thrown unexpectedly!')
+    
 if __name__ == '__main__':
 
     unittest.main(testRunner=unittest.TextTestRunner(verbosity=3))
