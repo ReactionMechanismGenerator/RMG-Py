@@ -276,10 +276,12 @@ class PressureDependenceJob(object):
                 tunneling.E0_reac = (sum([reactant.conformer.E0.value_si for reactant in reaction.reactants])*0.001,"kJ/mol")
                 tunneling.E0_TS = (reaction.transitionState.conformer.E0.value_si*0.001,"kJ/mol")
                 tunneling.E0_prod = (sum([product.conformer.E0.value_si for product in reaction.products])*0.001,"kJ/mol")
-            elif tunneling.frequency is not None:
-                pass
             elif tunneling is not None:
-                raise ValueError('Unknown tunneling model {0!r} for path reaction {1}.'.format(tunneling, reaction))
+                if tunneling.frequency is not None:
+                    # Frequency was given by the user
+                    pass
+                else:
+                    raise ValueError('Unknown tunneling model {0!r} for path reaction {1}.'.format(tunneling, reaction))
 
         maximumGrainSize = self.maximumGrainSize.value_si if self.maximumGrainSize is not None else 0.0
         
