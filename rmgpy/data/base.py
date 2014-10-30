@@ -1183,10 +1183,12 @@ class ForbiddenStructures(Database):
             moleculeLabeledAtoms = molecule.getLabeledAtoms()
             initialMap = {}
             for label in entryLabeledAtoms:
-                if label not in moleculeLabeledAtoms: continue
+                # all group labels must be present in the molecule
+                if label not in moleculeLabeledAtoms: break  
                 initialMap[moleculeLabeledAtoms[label]] = entryLabeledAtoms[label]
-            if molecule.isMappingValid(entry.item, initialMap) and molecule.isSubgraphIsomorphic(entry.item, initialMap):
-                return True
+            else:
+                if molecule.isMappingValid(entry.item, initialMap) and molecule.isSubgraphIsomorphic(entry.item, initialMap):
+                    return True
             
         # Until we have more thermodynamic data of molecular ions we will forbid them
         molecule_charge = 0
