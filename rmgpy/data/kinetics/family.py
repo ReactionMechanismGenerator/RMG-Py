@@ -673,9 +673,9 @@ class KineticsFamily(Database):
         f.write('#!/usr/bin/env python\n')
         f.write('# encoding: utf-8\n\n')
         f.write('name = "{0}/groups"\n'.format(self.name))
-        f.write('shortDesc = u"{0}"\n'.format(self.shortDesc))
+        f.write('shortDesc = u"{0}"\n'.format(self.groups.shortDesc))
         f.write('longDesc = u"""\n')
-        f.write(self.longDesc)
+        f.write(self.groups.longDesc)
         f.write('\n"""\n\n')
 
         # Write the template
