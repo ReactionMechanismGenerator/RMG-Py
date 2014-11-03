@@ -641,13 +641,11 @@ class KineticsFamily(Database):
         """
         return saveEntry(f, entry)
 
-    def save(self, path, entryName='entry'):
+    def save(self, path):
         """
-        Save the current database to the file at location `path` on disk. The
-        optional `entryName` parameter specifies the identifier used for each
-        data entry.
+        Save the current database to the file at location `path` on disk. 
         """
-        self.saveGroups(os.path.join(path, 'groups.py'), entryName=entryName)
+        self.saveGroups(os.path.join(path, 'groups.py'))
         self.rules.save(os.path.join(path, 'rules.py'))
         for depository in self.depositories:
             self.saveDepository(depository, os.path.join(path, '{0}'.format(depository.label[len(self.label)+1:])))
@@ -660,11 +658,9 @@ class KineticsFamily(Database):
         depository.saveDictionary(os.path.join(path,'dictionary.txt'))
         depository.save(os.path.join(path,'reactions.py'))
         
-    def saveGroups(self, path, entryName='entry'):
+    def saveGroups(self, path):
         """
-        Save the current database to the file at location `path` on disk. The
-        optional `entryName` parameter specifies the identifier used for each
-        data entry.
+        Save the current database to the file at location `path` on disk. 
         """
         entries = self.groups.getEntriesToSave()
                 
