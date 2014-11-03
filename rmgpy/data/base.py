@@ -167,8 +167,7 @@ class Database:
     def load(self, path, local_context=None, global_context=None):
         """
         Load an RMG-style database from the file at location `path` on disk.
-        The `entryName` parameter specifies the identifier used for each data
-        entry. The parameters `local_context` and `global_context` are used to
+        The parameters `local_context` and `global_context` are used to
         provide specialized mapping of identifiers in the input file to
         corresponding functions to evaluate. This method will automatically add
         a few identifiers required by all data entries, so you don't need to
@@ -298,9 +297,7 @@ class Database:
 
     def save(self, path):
         """
-        Save the current database to the file at location `path` on disk. The
-        optional `entryName` parameter specifies the identifier used for each
-        data entry.
+        Save the current database to the file at location `path` on disk. 
         """
         try:
             os.makedirs(os.path.dirname(path))
