@@ -1182,6 +1182,14 @@ class CoreEdgeReactionModel:
             for reactant1 in self.reactionDict[family]:
                 if spec in self.reactionDict[family][reactant1]:
                     del self.reactionDict[family][reactant1][spec]
+            for reactant1 in self.reactionDict[family]:
+                for reactant2 in self.reactionDict[family][reactant1]:
+                    tempRxnDeleteList = []
+                    for templateReaction in self.reactionDict[family][reactant1][reactant2]:
+                        if spec in templateReaction.reactants or spec in templateReaction.products:
+                            tempRxnDeleteList.append(templateReaction)
+                    for tempRxnToBeDeleted in tempRxnDeleteList:
+                        self.reactionDict[family][reactant1][reactant2].remove(tempRxnToBeDeleted)
 
         # remove from the global list of species, to free memory
         formula = spec.molecule[0].getFormula()
