@@ -78,9 +78,11 @@ Python
 	#                                        % (self.linker_dll, shared_option,
 	#                                           entry_point))
 
-* Point distutils to MinGW: ::
+* Tell distutils to use the MinGW compiler, by typing this in a Git Bash shell: ::
 
 	echo -e "[build]\ncompiler=mingw32" > /c/Python27/Lib/distutils/distutils.cfg
+	
+  it will create a file C:\\Python27\\Lib\\distutils\\distutils.cfg containing the appropriate setting.
 
 * Add Python bindings to MinGW's library: ::
 
@@ -90,7 +92,11 @@ Python
 	mv libpython27.a /c/MinGW/lib/libpython27.a
 	rm python27.def
 
-  If the ``pexports`` step doesn't work then you can download the :file:`python27.def` file from the link on the `Cython wiki <http://wiki.cython.org/InstallingOnWindows>`_ and continue from the ``dlltool`` step.
+  If the ``pexports`` step doesn't work because the dll is in a different place then try this line instead::
+  
+	pexports /c/Python27/python27.dll > python27.def
+  	
+  or you can download the :file:`python27.def` file from the link on the `Cython wiki <http://wiki.cython.org/InstallingOnWindows>`_ and continue from the ``dlltool`` step.
 
 	
 .. _prepackageddependencies:
