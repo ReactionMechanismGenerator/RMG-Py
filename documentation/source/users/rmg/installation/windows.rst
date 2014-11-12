@@ -97,7 +97,7 @@ Python
 	pexports /c/Python27/python27.dll > python27.def
 	pexports $SYSTEMROOT/SysWOW64/python27.dll > python27.def
   	
-  or you can download the :file:`python27.def` file from the link on the `Cython wiki <http://wiki.cython.org/InstallingOnWindows>`_ and continue from the ``dlltool`` step.
+  or you can download the :file:`python27.def` file from the link on the `Cython wiki page on Installing On Windows <https://github.com/cython/cython/wiki/InstallingOnWindows>`_ and continue from the ``dlltool`` step.
 
 	
 .. _prepackageddependencies:
@@ -127,7 +127,7 @@ Download and run the installers listed below. These builds have been verified as
 
 
 RDKit
-================
+=====
 
 Project home on GitHub: https://github.com/rdkit/rdkit
 
