@@ -367,6 +367,7 @@ def readThermoInputFile(path, rmg0):
         'SMARTS': SMARTS,
         'SMILES': SMILES,
         'InChI': InChI,
+        'solvation': solvation,
         'adjacencyList': adjacencyList,
         'quantumMechanics': quantumMechanics,
     }
