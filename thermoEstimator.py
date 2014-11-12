@@ -12,6 +12,7 @@ import os.path
 from rmgpy.rmg.main import RMG
 from rmgpy.data.thermo import ThermoLibrary
 from rmgpy.chemkin import writeThermoEntry
+from rmgpy.rmg.model import Species
 
 ################################################################################
 
@@ -27,7 +28,11 @@ def runThermoEstimator(inputFile):
     rmg.loadDatabase()
     if rmg.quantumMechanics:
         rmg.quantumMechanics.initialize()
-    
+   
+    if rmg.solvent:
+        Species.solventData = rmg.database.solvation.getSolventData(rmg.solvent)
+        Species.solventName = rmg.solvent
+        
     # Generate the thermo for all the species and write them to chemkin format as well as
     # ThermoLibrary format with values for H, S, and Cp's.
     output = open(os.path.join(rmg.outputDirectory, 'output.txt'),'wb')
