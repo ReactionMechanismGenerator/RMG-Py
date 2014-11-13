@@ -64,6 +64,8 @@ cdef class ReactionSystem(DASSL):
         self.maxCoreSpeciesRates = None
         self.maxEdgeSpeciesRates = None
         self.maxNetworkLeakRates = None
+        self.maxEdgeSpeciesRateRatios = None
+        self.maxNetworkLeakRateRatios = None
         self.sensitivityCoefficients = None
         self.termination = termination or []
     
@@ -93,6 +95,8 @@ cdef class ReactionSystem(DASSL):
         self.maxCoreSpeciesRates = numpy.zeros((numCoreSpecies), numpy.float64)
         self.maxEdgeSpeciesRates = numpy.zeros((numEdgeSpecies), numpy.float64)
         self.maxNetworkLeakRates = numpy.zeros((numPdepNetworks), numpy.float64)
+        self.maxEdgeSpeciesRateRatios = numpy.zeros((numEdgeSpecies), numpy.float64)
+        self.maxNetworkLeakRateRatios = numpy.zeros((numPdepNetworks), numpy.float64)
         self.sensitivityCoefficients = numpy.zeros((numCoreSpecies, numCoreReactions), numpy.float64)
 
     
@@ -126,7 +130,7 @@ cdef class ReactionSystem(DASSL):
         cdef double stepTime, charRate, maxSpeciesRate, maxNetworkRate, prevTime, volume
         cdef numpy.ndarray[numpy.float64_t, ndim=1] y0, dydk  #: Vector containing the number of moles of each species
         cdef numpy.ndarray[numpy.float64_t, ndim=1] coreSpeciesRates, edgeSpeciesRates, networkLeakRates
-        cdef numpy.ndarray[numpy.float64_t, ndim=1] maxCoreSpeciesRates, maxEdgeSpeciesRates, maxNetworkLeakRates
+        cdef numpy.ndarray[numpy.float64_t, ndim=1] maxCoreSpeciesRates, maxEdgeSpeciesRates, maxNetworkLeakRates,maxEdgeSpeciesRateRatios, maxNetworkLeakRateRatios
         cdef bint terminated
         cdef object maxSpecies, maxNetwork
         cdef int iteration, i
@@ -158,6 +162,8 @@ cdef class ReactionSystem(DASSL):
         maxCoreSpeciesRates = self.maxCoreSpeciesRates
         maxEdgeSpeciesRates = self.maxEdgeSpeciesRates
         maxNetworkLeakRates = self.maxNetworkLeakRates
+        maxEdgeSpeciesRateRatios = self.maxEdgeSpeciesRateRatios
+        maxNetworkLeakRateRatios = self.maxNetworkLeakRateRatios
         
         # Copy the initial conditions to use in evaluating conversions
         y0 = self.y.copy()
@@ -220,6 +226,8 @@ cdef class ReactionSystem(DASSL):
             coreSpeciesRates = numpy.abs(self.coreSpeciesRates)
             edgeSpeciesRates = numpy.abs(self.edgeSpeciesRates)
             networkLeakRates = numpy.abs(self.networkLeakRates)
+            edgeSpeciesRateRatios = numpy.abs(self.edgeSpeciesRates/charRate)
+            networkLeakRateRatios = numpy.abs(self.networkLeakRates/charRate)
 
             # Update the maximum species rate and maximum network leak rate arrays
             for index in range(numCoreSpecies):
@@ -231,6 +239,12 @@ cdef class ReactionSystem(DASSL):
             for index in range(numPdepNetworks):
                 if maxNetworkLeakRates[index] < networkLeakRates[index]:
                     maxNetworkLeakRates[index] = networkLeakRates[index]
+            for index in range(numEdgeSpecies):
+                if maxEdgeSpeciesRateRatios[index] < edgeSpeciesRateRatios[index]:
+                    maxEdgeSpeciesRateRatios[index] = edgeSpeciesRateRatios[index]
+            for index in range(numPdepNetworks):
+                if maxNetworkLeakRateRatios[index] < networkLeakRateRatios[index]:
+                    maxNetworkLeakRateRatios[index] = networkLeakRateRatios[index]
 
             # Get the edge species with the highest flux
             if numEdgeSpecies > 0:
@@ -313,6 +327,8 @@ cdef class ReactionSystem(DASSL):
         self.maxCoreSpeciesRates = maxCoreSpeciesRates
         self.maxEdgeSpeciesRates = maxEdgeSpeciesRates
         self.maxNetworkLeakRates = maxNetworkLeakRates
+        self.maxEdgeSpeciesRateRatios = maxEdgeSpeciesRateRatios
+        self.maxNetworkLeakRateRatios = maxNetworkLeakRateRatios
 
         # Return the invalid object (if the simulation was invalid) or None
         # (if the simulation was valid)

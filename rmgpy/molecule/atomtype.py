@@ -166,6 +166,7 @@ with a capital letter [A-Z]
 atomTypes = {}
 atomTypes['R']    = AtomType(label='R', generic=[], specific=[
     'R!H',
+    'Val4','Val5','Val6','Val7',    
     'H','He',
     'C','Cs','Cd','Cdd','Ct','CO','Cb','Cbf','CS',
     'N','N1d','N3s','N3d','N3t','N3b','N5s','N5d','N5dd','N5t','N5b',
@@ -177,6 +178,7 @@ atomTypes['R']    = AtomType(label='R', generic=[], specific=[
 )
 atomTypes['R!H']  = AtomType(label='R!H', generic=['R'], specific=[
     'He',
+    'Val4','Val5','Val6','Val7',
     'C','Cs','Cd','Cdd','Ct','CO','Cb','Cbf','CS',
     'N','N1d','N3s','N3d','N3t','N3b','N5s','N5d','N5dd','N5t','N5b',
     'O','Os','Od','Oa','Ot',
@@ -185,72 +187,92 @@ atomTypes['R!H']  = AtomType(label='R!H', generic=['R'], specific=[
     'S','Ss','Sd','Sa',
     'Cl','Ar']
 )
+atomTypes['Val4'] = AtomType(label='Val4', generic=['R','R!H'], specific=[
+    'C','Cs','Cd','Cdd','Ct','CO','Cb','Cbf','CS',
+    'Si','Sis','Sid','Sidd','Sit','SiO','Sib','Sibf']
+)
+atomTypes['Val5'] = AtomType(label='Val5', generic=['R','R!H'], specific=[
+    'N','N1d','N3s','N3d','N3t','N3b','N5s','N5d','N5dd','N5t','N5b']
+)
+atomTypes['Val6'] = AtomType(label='Val6', generic=['R','R!H'], specific=[
+    'O','Os','Od','Oa','Ot',
+    'S','Ss','Sd','Sa']
+)
+atomTypes['Val7'] = AtomType(label='Val7', generic=['R','R!H'], specific=[
+    'Cl']
+)
+
 atomTypes['H'   ] = AtomType('H',    generic=['R'],            specific=[])
 
 atomTypes['He'   ] = AtomType('He',  generic=['R','R!H'],      specific=[])
 
-atomTypes['C'   ] = AtomType('C',    generic=['R','R!H'],      specific=['Cs','Cd','Cdd','Ct','CO','Cb','Cbf','CS'])
-atomTypes['Cs'  ] = AtomType('Cs',   generic=['R','R!H','C'],  specific=[])
-atomTypes['Cd'  ] = AtomType('Cd',   generic=['R','R!H','C'],  specific=[])
-atomTypes['Cdd' ] = AtomType('Cdd',  generic=['R','R!H','C'],  specific=[])
-atomTypes['Ct'  ] = AtomType('Ct',   generic=['R','R!H','C'],  specific=[])
-atomTypes['CO'  ] = AtomType('CO',   generic=['R','R!H','C'],  specific=[])
-atomTypes['Cb'  ] = AtomType('Cb',   generic=['R','R!H','C'],  specific=[])
-atomTypes['Cbf' ] = AtomType('Cbf',  generic=['R','R!H','C'],  specific=[])
-atomTypes['CS'  ] = AtomType('CS',   generic=['R','R!H','C'],  specific=[])
+atomTypes['C'   ] = AtomType('C',    generic=['R','R!H','Val4'],      specific=['Cs','Cd','Cdd','Ct','CO','Cb','Cbf','CS'])
+atomTypes['Cs'  ] = AtomType('Cs',   generic=['R','R!H','C','Val4'],  specific=[])
+atomTypes['Cd'  ] = AtomType('Cd',   generic=['R','R!H','C','Val4'],  specific=[])
+atomTypes['Cdd' ] = AtomType('Cdd',  generic=['R','R!H','C','Val4'],  specific=[])
+atomTypes['Ct'  ] = AtomType('Ct',   generic=['R','R!H','C','Val4'],  specific=[])
+atomTypes['CO'  ] = AtomType('CO',   generic=['R','R!H','C','Val4'],  specific=[])
+atomTypes['Cb'  ] = AtomType('Cb',   generic=['R','R!H','C','Val4'],  specific=[])
+atomTypes['Cbf' ] = AtomType('Cbf',  generic=['R','R!H','C','Val4'],  specific=[])
+atomTypes['CS'  ] = AtomType('CS',   generic=['R','R!H','C','Val4'],  specific=[])
 
-atomTypes['N'   ] = AtomType('N',    generic=['R','R!H'],      specific=['N1d','N3s','N3d','N3t','N3b','N5s','N5d','N5dd','N5t','N5b'])
-atomTypes['N1d' ] = AtomType('N1d',  generic=['R','R!H','N'],  specific=[])
-atomTypes['N3s' ] = AtomType('N3s',  generic=['R','R!H','N'],  specific=[])
-atomTypes['N3d' ] = AtomType('N3d',  generic=['R','R!H','N'],  specific=[])
-atomTypes['N3t' ] = AtomType('N3t',  generic=['R','R!H','N'],  specific=[])
-atomTypes['N3b' ] = AtomType('N3b',  generic=['R','R!H','N'],  specific=[])
-atomTypes['N5s' ] = AtomType('N5s',  generic=['R','R!H','N'],  specific=[])
-atomTypes['N5d' ] = AtomType('N5d',  generic=['R','R!H','N'],  specific=[])
-atomTypes['N5dd'] = AtomType('N5dd', generic=['R','R!H','N'],  specific=[])
-atomTypes['N5t' ] = AtomType('N5t',  generic=['R','R!H','N'],  specific=[])
-atomTypes['N5b' ] = AtomType('N5b',  generic=['R','R!H','N'],  specific=[])
+atomTypes['N'   ] = AtomType('N',    generic=['R','R!H','Val5'],      specific=['N1d','N3s','N3d','N3t','N3b','N5s','N5d','N5dd','N5t','N5b'])
+atomTypes['N1d' ] = AtomType('N1d',  generic=['R','R!H','N','Val5'],  specific=[])
+atomTypes['N3s' ] = AtomType('N3s',  generic=['R','R!H','N','Val5'],  specific=[])
+atomTypes['N3d' ] = AtomType('N3d',  generic=['R','R!H','N','Val5'],  specific=[])
+atomTypes['N3t' ] = AtomType('N3t',  generic=['R','R!H','N','Val5'],  specific=[])
+atomTypes['N3b' ] = AtomType('N3b',  generic=['R','R!H','N','Val5'],  specific=[])
+atomTypes['N5s' ] = AtomType('N5s',  generic=['R','R!H','N','Val5'],  specific=[])
+atomTypes['N5d' ] = AtomType('N5d',  generic=['R','R!H','N','Val5'],  specific=[])
+atomTypes['N5dd'] = AtomType('N5dd', generic=['R','R!H','N','Val5'],  specific=[])
+atomTypes['N5t' ] = AtomType('N5t',  generic=['R','R!H','N','Val5'],  specific=[])
+atomTypes['N5b' ] = AtomType('N5b',  generic=['R','R!H','N','Val5'],  specific=[])
 
-atomTypes['O'   ] = AtomType('O',    generic=['R','R!H'],      specific=['Os','Od','Oa','Ot'])
-atomTypes['Os'  ] = AtomType('Os',   generic=['R','R!H','O'],  specific=[])
-atomTypes['Od'  ] = AtomType('Od',   generic=['R','R!H','O'],  specific=[])
-atomTypes['Oa'  ] = AtomType('Oa',   generic=['R','R!H','O'],  specific=[])
-atomTypes['Ot'  ] = AtomType('Ot',   generic=['R','R!H','O'],  specific=[])
+atomTypes['O'   ] = AtomType('O',    generic=['R','R!H','Val6'],      specific=['Os','Od','Oa','Ot'])
+atomTypes['Os'  ] = AtomType('Os',   generic=['R','R!H','O','Val6'],  specific=[])
+atomTypes['Od'  ] = AtomType('Od',   generic=['R','R!H','O','Val6'],  specific=[])
+atomTypes['Oa'  ] = AtomType('Oa',   generic=['R','R!H','O','Val6'],  specific=[])
+atomTypes['Ot'  ] = AtomType('Ot',   generic=['R','R!H','O','Val6'],  specific=[])
 
 atomTypes['Ne'  ] = AtomType('Ne',   generic=['R','R!H'],      specific=[])
 
-atomTypes['Si'  ] = AtomType('Si',   generic=['R','R!H'],      specific=['Sis','Sid','Sidd','Sit','SiO','Sib','Sibf'])
-atomTypes['Sis' ] = AtomType('Sis',  generic=['R','R!H','Si'], specific=[])
-atomTypes['Sid' ] = AtomType('Sid',  generic=['R','R!H','Si'], specific=[])
-atomTypes['Sidd'] = AtomType('Sidd', generic=['R','R!H','Si'], specific=[])
-atomTypes['Sit' ] = AtomType('Sit',  generic=['R','R!H','Si'], specific=[])
-atomTypes['SiO' ] = AtomType('SiO',  generic=['R','R!H','Si'], specific=[])
-atomTypes['Sib' ] = AtomType('Sib',  generic=['R','R!H','Si'], specific=[])
-atomTypes['Sibf'] = AtomType('Sibf', generic=['R','R!H','Si'], specific=[])
+atomTypes['Si'  ] = AtomType('Si',   generic=['R','R!H','Val4'],      specific=['Sis','Sid','Sidd','Sit','SiO','Sib','Sibf'])
+atomTypes['Sis' ] = AtomType('Sis',  generic=['R','R!H','Si','Val4'], specific=[])
+atomTypes['Sid' ] = AtomType('Sid',  generic=['R','R!H','Si','Val4'], specific=[])
+atomTypes['Sidd'] = AtomType('Sidd', generic=['R','R!H','Si','Val4'], specific=[])
+atomTypes['Sit' ] = AtomType('Sit',  generic=['R','R!H','Si','Val4'], specific=[])
+atomTypes['SiO' ] = AtomType('SiO',  generic=['R','R!H','Si','Val4'], specific=[])
+atomTypes['Sib' ] = AtomType('Sib',  generic=['R','R!H','Si','Val4'], specific=[])
+atomTypes['Sibf'] = AtomType('Sibf', generic=['R','R!H','Si','Val4'], specific=[])
 
-atomTypes['S'   ] = AtomType('S',    generic=['R','R!H'],      specific=['Ss','Sd','Sa'])
-atomTypes['Ss'  ] = AtomType('Ss',   generic=['R','R!H','S'],  specific=[])
-atomTypes['Sd'  ] = AtomType('Sd',   generic=['R','R!H','S'],  specific=[])
-atomTypes['Sa'  ] = AtomType('Sa',   generic=['R','R!H','S'],  specific=[])
+atomTypes['S'   ] = AtomType('S',    generic=['R','R!H','Val6'],      specific=['Ss','Sd','Sa'])
+atomTypes['Ss'  ] = AtomType('Ss',   generic=['R','R!H','S','Val6'],  specific=[])
+atomTypes['Sd'  ] = AtomType('Sd',   generic=['R','R!H','S','Val6'],  specific=[])
+atomTypes['Sa'  ] = AtomType('Sa',   generic=['R','R!H','S','Val6'],  specific=[])
 
-atomTypes['Cl'  ] = AtomType('Cl',   generic=['R','R!H'],      specific=[])
+atomTypes['Cl'  ] = AtomType('Cl',   generic=['R','R!H','Val7'],      specific=[])
 
 atomTypes['Ar'  ] = AtomType('Ar',   generic=['R','R!H'],      specific=[])
 
 atomTypes['R'   ].setActions(incrementBond=['R'],            decrementBond=['R'],            formBond=['R'],         breakBond=['R'],         incrementRadical=['R'],    decrementRadical=['R'],    incrementLonePair=['R'],   decrementLonePair=['R'])
 atomTypes['R!H' ].setActions(incrementBond=['R!H'],          decrementBond=['R!H'],          formBond=['R!H'],       breakBond=['R!H'],       incrementRadical=['R!H'],  decrementRadical=['R!H'],  incrementLonePair=['R!H'], decrementLonePair=['R!H'])
+atomTypes['Val4'].setActions(incrementBond=['Val4'],         decrementBond=['Val4'],         formBond=['Val4'],      breakBond=['Val4'],      incrementRadical=['Val4'], decrementRadical=['Val4'], incrementLonePair=['Val4'],decrementLonePair=['Val4'])
+atomTypes['Val5'].setActions(incrementBond=['Val5'],         decrementBond=['Val5'],         formBond=['Val5'],      breakBond=['Val5'],      incrementRadical=['Val5'], decrementRadical=['Val5'], incrementLonePair=['Val5'],decrementLonePair=['Val5'])
+atomTypes['Val6'].setActions(incrementBond=['Val6'],         decrementBond=['Val6'],         formBond=['Val6'],      breakBond=['Val6'],      incrementRadical=['Val6'], decrementRadical=['Val6'], incrementLonePair=['Val6'],decrementLonePair=['Val6'])
+atomTypes['Val7'].setActions(incrementBond=['Val7'],         decrementBond=['Val7'],         formBond=['Val7'],      breakBond=['Val7'],      incrementRadical=['Val7'], decrementRadical=['Val7'], incrementLonePair=['Val7'],decrementLonePair=['Val7'])
+
 
 atomTypes['H'   ].setActions(incrementBond=[],               decrementBond=[],               formBond=['H'],         breakBond=['H'],         incrementRadical=['H'],    decrementRadical=['H'],    incrementLonePair=[],      decrementLonePair=[])
 
 atomTypes['He'  ].setActions(incrementBond=[],               decrementBond=[],               formBond=[],            breakBond=[],            incrementRadical=['He'],   decrementRadical=['He'],   incrementLonePair=[],      decrementLonePair=[])
 
-atomTypes['C'   ].setActions(incrementBond=['C'],            decrementBond=['C'],            formBond=['C'],         breakBond=['C'],         incrementRadical=['C'],    decrementRadical=['C'],    incrementLonePair=[],      decrementLonePair=[])
-atomTypes['Cs'  ].setActions(incrementBond=['Cd','CO','Cs'], decrementBond=[],               formBond=['Cs'],        breakBond=['Cs'],        incrementRadical=['Cs'],   decrementRadical=['Cs'],   incrementLonePair=[],      decrementLonePair=[])
-atomTypes['Cd'  ].setActions(incrementBond=['Cdd','Ct'],     decrementBond=['Cs'],           formBond=['Cd'],        breakBond=['Cd'],        incrementRadical=['Cd'],   decrementRadical=['Cd'],   incrementLonePair=[],      decrementLonePair=[])
+atomTypes['C'   ].setActions(incrementBond=['C'],            decrementBond=['C'],            formBond=['C'],         breakBond=['C'],         incrementRadical=['C'],    decrementRadical=['C'],    incrementLonePair=['C'],      decrementLonePair=['C'])
+atomTypes['Cs'  ].setActions(incrementBond=['Cd','CO','Cs'], decrementBond=[],               formBond=['Cs'],        breakBond=['Cs'],        incrementRadical=['Cs'],   decrementRadical=['Cs'],   incrementLonePair=['Cs'],      decrementLonePair=['Cs'])
+atomTypes['Cd'  ].setActions(incrementBond=['Cdd','Ct'],     decrementBond=['Cs'],           formBond=['Cd'],        breakBond=['Cd'],        incrementRadical=['Cd'],   decrementRadical=['Cd'],   incrementLonePair=['Cd'],      decrementLonePair=['Cd'])
 atomTypes['Cdd' ].setActions(incrementBond=[],               decrementBond=['Cd','CO','CS'], formBond=[],            breakBond=[],            incrementRadical=[],       decrementRadical=[],       incrementLonePair=[],      decrementLonePair=[])
 atomTypes['Ct'  ].setActions(incrementBond=[],               decrementBond=['Cd'],           formBond=['Ct'],        breakBond=['Ct'],        incrementRadical=['Ct'],   decrementRadical=['Ct'],   incrementLonePair=['Ct'],  decrementLonePair=['Ct'])
 atomTypes['CO'  ].setActions(incrementBond=['Cdd'],          decrementBond=['Cs'],           formBond=['CO'],        breakBond=['CO'],        incrementRadical=['CO'],   decrementRadical=['CO'],   incrementLonePair=['CO'],  decrementLonePair=['CO'])
-atomTypes['CS'  ].setActions(incrementBond=['Cdd'],          decrementBond=['Cs'],           formBond=['CS'],        breakBond=['CS'],        incrementRadical=['CS'],   decrementRadical=['CS'],   incrementLonePair=[],      decrementLonePair=[])
+atomTypes['CS'  ].setActions(incrementBond=['Cdd'],          decrementBond=['Cs'],           formBond=['CS'],        breakBond=['CS'],        incrementRadical=['CS'],   decrementRadical=['CS'],   incrementLonePair=['CS'],  decrementLonePair=['CS'])
 atomTypes['Cb'  ].setActions(incrementBond=[],               decrementBond=[],               formBond=['Cb'],        breakBond=['Cb'],        incrementRadical=['Cb'],   decrementRadical=['Cb'],   incrementLonePair=[],      decrementLonePair=[])
 atomTypes['Cbf' ].setActions(incrementBond=[],               decrementBond=[],               formBond=[],            breakBond=[],            incrementRadical=[],       decrementRadical=[],       incrementLonePair=[],      decrementLonePair=[])
 
@@ -283,9 +305,9 @@ atomTypes['SiO' ].setActions(incrementBond=['Sidd'],         decrementBond=['Sis
 atomTypes['Sib' ].setActions(incrementBond=[],               decrementBond=[],               formBond=['Sib'],       breakBond=['Sib'],       incrementRadical=['Sib'],  decrementRadical=['Sib'],  incrementLonePair=[],      decrementLonePair=[])
 atomTypes['Sibf'].setActions(incrementBond=[],               decrementBond=[],               formBond=[],            breakBond=[],            incrementRadical=[],       decrementRadical=[],       incrementLonePair=[],      decrementLonePair=[])
 
-atomTypes['S'   ].setActions(incrementBond=['S'],            decrementBond=['S'],            formBond=['S'],         breakBond=['S'],         incrementRadical=['S'],    decrementRadical=['S'],    incrementLonePair=[],      decrementLonePair=[])
-atomTypes['Ss'  ].setActions(incrementBond=['Sd'],           decrementBond=[],               formBond=['Ss'],        breakBond=['Ss'],        incrementRadical=['Ss'],   decrementRadical=['Ss'],   incrementLonePair=[],      decrementLonePair=[])
-atomTypes['Sd'  ].setActions(incrementBond=[],               decrementBond=['Ss'],           formBond=[],            breakBond=[],            incrementRadical=[],       decrementRadical=[],       incrementLonePair=[],      decrementLonePair=[])
+atomTypes['S'   ].setActions(incrementBond=['S'],            decrementBond=['S'],            formBond=['S'],         breakBond=['S'],         incrementRadical=['S'],    decrementRadical=['S'],    incrementLonePair=['S'],   decrementLonePair=['S'])
+atomTypes['Ss'  ].setActions(incrementBond=['Sd'],           decrementBond=[],               formBond=['Ss'],        breakBond=['Ss'],        incrementRadical=['Ss'],   decrementRadical=['Ss'],   incrementLonePair=['Ss'],  decrementLonePair=['Ss'])
+atomTypes['Sd'  ].setActions(incrementBond=[],               decrementBond=['Ss'],           formBond=[],            breakBond=[],            incrementRadical=[],       decrementRadical=[],       incrementLonePair=['Sd'],  decrementLonePair=['Sd'])
 atomTypes['Sa'  ].setActions(incrementBond=[],               decrementBond=[],               formBond=[],            breakBond=[],            incrementRadical=[],       decrementRadical=[],       incrementLonePair=[],      decrementLonePair=[])
 
 atomTypes['Cl'  ].setActions(incrementBond=[],               decrementBond=['Cl'],           formBond=['Cl'],        breakBond=['Cl'],        incrementRadical=['Cl'],   decrementRadical=['Cl'],   incrementLonePair=[],      decrementLonePair=[])

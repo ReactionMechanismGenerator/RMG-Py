@@ -17,11 +17,21 @@ Model Chemistry
 ===============
 
 The first item in the input file should be a ``modelChemistry()`` function,
-which accepts a string describing the model chemistry. Currently the only
-allowed model chemistries are ``'CBS-QB3'`` and ``'G3'``. CanTherm uses this
-information to adjust the computed energies to the usual gas-phase reference
-states. For example, below demonstrates how to specify CBS-QB3 as a model 
-chemistry::
+which accepts a string describing the model chemistry. Currently the 
+allowed model chemistries are:
+``'CBS-QB3'``
+``'G3'``
+``'M08SO/MG3S*'`` * indicates that the grid size used in the [QChem] electronic structure calculation utilized 75 radial points and 434 angular points
+``'CCSD(T)-F12/cc-pVnZ-F12'``  n = D, T, Q
+``'CCSD(T)-F12/aug-cc-pVnZ-F12'``  n = D, T, Q
+``'MP2_rmp2_pVnZ'``  n = D, T, Q
+``'FCI/cc-pVnZ'``  n = D, T, Q
+``'DFT_G03_b3lyp'``  a B3LYP calculation with a moderately large basis set
+``'BMK/cbsb7'`` or  ``'BMK/6-311G(2d,d,p)'``
+
+CanTherm uses this information to adjust the computed energies to the usual gas-phase reference
+states by applying atom, bond and spin-orbit coupling energy corrections. This is particularly important for ``thermo()`` calculations (see below). The example below 
+demonstrates how to specify CBS-QB3 as a model chemistry::
 
     modelChemistry("CBS-QB3")
 
@@ -58,7 +68,7 @@ Each :class:`HinderedRotor()` object requires the following parameters:
 ====================== =========================================================
 Parameter              Description
 ====================== =========================================================
-``scanLog``            The path to the Gaussian log file containing the scan
+``scanLog``            The path to the Gaussian/Qchem log file containing the scan
 ``pivots``             The indices of the atoms in the hindered rotor torsional bond
 ``top``                The indices of all atoms on one side of the torsional bond (including the pivot atom)
 ``symmetry``           The symmetry number for the torsional rotation
@@ -79,6 +89,9 @@ The following is an example of a typical species item, based on ethane::
         atoms = {'C': 2, 'H': 6},
         bonds = {'C-C': 1, 'C-H': 6},
     )
+
+Note that the atoms identified within the rotor section should correspond to the geometry indicated by
+``geomLog``. 
 
 Transition State
 ================
@@ -125,7 +138,11 @@ following is an example of a typical reaction item::
         reactants = ['H', 'C2H4'],
         products = ['C2H5'],
         transitionState = 'TS',
+        tunneling='Eckart'        
     )
+
+Note that in the above example, 'Wigner' is also an acceptable method of estimating the 
+quantum tunneling factor. 
 
 Thermodynamics Computations
 ===========================
@@ -134,26 +151,33 @@ Use a ``thermo()`` function to compute the thermodynamic parameters for a
 species. Pass the string label of the species you wish to compute the 
 thermodynamic parameters for and the type of thermodynamics model to
 generate (either ``'Wilhoit'`` or ''`NASA`'' for a Wilhoit polynomial
-model or NASA polynomial model). If you would like to see a plot of the
-fitted thermodynamics, set the `plot` parameter to ``True``.
+model or NASA polynomial model). A table of thermodynamic parameters will
+also be displayed in the output file. 
 
 Below is a typical ``thermo()`` function::
 
-    thermo('ethane', model='Wilhoit', plot=True)
+    thermo('ethane', model='Wilhoit')
 
 Kinetics Computations
 =====================
 
-Use a ``kinetics()`` function to compute the kinetic parameters for a
-reaction. Pass the string label of the reaction you wish to compute the 
-reaction parameters for and the type of tunneling to use (``'Wigner'``,
-``'Eckart'``, or ``''`` for no tunneling). A modified Arrhenius model will
-automatically be fit to the generated rate coefficients. If you would like to 
-see a plot of the fitted kinetics, set the `plot` parameter to ``True``.
+Use a ``kinetics()`` function to compute the high-pressure limit kinetic parameters for a
+reaction.  If desired, define a desired temperature range and number of temperatures 
+at which the high-pressure rate coefficient will be tabulated and saved to 
+the outupt file. 3-parameter modified Arrhenius coefficients will automatically be fit 
+to the computed rate coefficients. The quantum tunneling factor will also be displayed
 
 Below is a typical ``kinetics()`` function::
 
-    kinetics('H + C2H4 -> C2H5', tunneling='', plot=True)
+    kinetics(    
+    label = 'H + C2H4 <=> C2H5',
+    Tmin = (400,'K'), Tmax = (1200,'K'), Tcount = 6, 
+    Tlist = ([400,500,700,900,1100,1200],'K'),
+    )
+
+This is also acceptable::
+
+    kinetics('H + C2H4 <=> C2H5')
 
 Examples
 ========
@@ -161,3 +185,10 @@ Examples
 Perhaps the best way to learn the input file syntax is by example. To that end,
 a number of example input files and their corresponding output have been given
 in the ``examples`` directory.
+
+Troubleshooting and FAQs
+========================
+
+1) The network that CanTherm generated and the resulting pdf file show abnormally large
+absolute values. What's going on?
+    This can happen if the number of atoms and atom types is not properly defined or consistent in your input file(s).

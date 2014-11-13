@@ -167,8 +167,7 @@ class Database:
     def load(self, path, local_context=None, global_context=None):
         """
         Load an RMG-style database from the file at location `path` on disk.
-        The `entryName` parameter specifies the identifier used for each data
-        entry. The parameters `local_context` and `global_context` are used to
+        The parameters `local_context` and `global_context` are used to
         provide specialized mapping of identifiers in the input file to
         corresponding functions to evaluate. This method will automatically add
         a few identifiers required by all data entries, so you don't need to
@@ -286,18 +285,10 @@ class Database:
             for reactant in entry.item.reactants:
                 if reactant.label not in speciesDict:
                     speciesDict[reactant.label] = reactant
-                elif not reactant.isIsomorphic(speciesDict[reactant.label]):
-                    print reactant.molecule[0].toAdjacencyList()
-                    print speciesDict[reactant.label].molecule[0].toAdjacencyList()
-                    speciesDict[reactant.label] = reactant
-                    raise DatabaseError('Species label "{0}" used for multiple species in {1}.'.format(reactant.label, str(self)))
+                    
             for product in entry.item.products:
                 if product.label not in speciesDict:
                     speciesDict[product.label] = product
-                elif not product.isIsomorphic(speciesDict[product.label]):
-                    print product.molecule[0].toAdjacencyList()
-                    print speciesDict[product.label].molecule[0].toAdjacencyList()
-                    raise DatabaseError('Species label "{0}" used for multiple species in {1}.'.format(product.label, str(self)))
             
         with open(path, 'w') as f:
             for label in speciesDict.keys():
@@ -306,9 +297,7 @@ class Database:
 
     def save(self, path):
         """
-        Save the current database to the file at location `path` on disk. The
-        optional `entryName` parameter specifies the identifier used for each
-        data entry.
+        Save the current database to the file at location `path` on disk. 
         """
         try:
             os.makedirs(os.path.dirname(path))
@@ -1192,10 +1181,12 @@ class ForbiddenStructures(Database):
             moleculeLabeledAtoms = molecule.getLabeledAtoms()
             initialMap = {}
             for label in entryLabeledAtoms:
-                if label not in moleculeLabeledAtoms: continue
+                # all group labels must be present in the molecule
+                if label not in moleculeLabeledAtoms: break  
                 initialMap[moleculeLabeledAtoms[label]] = entryLabeledAtoms[label]
-            if molecule.isMappingValid(entry.item, initialMap) and molecule.isSubgraphIsomorphic(entry.item, initialMap):
-                return True
+            else:
+                if molecule.isMappingValid(entry.item, initialMap) and molecule.isSubgraphIsomorphic(entry.item, initialMap):
+                    return True
             
         # Until we have more thermodynamic data of molecular ions we will forbid them
         molecule_charge = 0

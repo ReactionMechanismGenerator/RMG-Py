@@ -84,6 +84,7 @@ class Species(object):
     `Zrot`                  The rotational relaxation collision number
     `energyTransferModel`   The collisional energy transfer model to use
     `reactive`              ``True`` if the species participates in reactions, ``False`` if not
+    'props'                 A generic 'properties' dictionary to store user-defined flags
     ======================= ====================================================
 
     note::
@@ -94,7 +95,7 @@ class Species(object):
     def __init__(self, index=-1, label='', thermo=None, conformer=None, 
                  molecule=None, transportData=None, molecularWeight=None, 
                  dipoleMoment=None, polarizability=None, Zrot=None, 
-                 energyTransferModel=None, reactive=True):
+                 energyTransferModel=None, reactive=True, props=None):
         self.index = index
         self.label = label
         self.thermo = thermo
@@ -106,7 +107,8 @@ class Species(object):
         self.dipoleMoment = dipoleMoment
         self.polarizability = polarizability
         self.Zrot = Zrot
-        self.energyTransferModel = energyTransferModel
+        self.energyTransferModel = energyTransferModel        
+        self.props = props or {}
         
         # Check multiplicity of each molecule is the same
         if molecule is not None and len(molecule)>1:
@@ -114,6 +116,8 @@ class Species(object):
             for m in molecule[1:]:
                 if mult != m.multiplicity:
                     raise SpeciesError('Multiplicities of molecules in species {species} do not match.'.format(species=label))
+
+        
 
 
     def __repr__(self):

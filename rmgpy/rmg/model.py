@@ -76,8 +76,8 @@ class Species(rmgpy.species.Species):
     def __init__(self, index=-1, label='', thermo=None, conformer=None, 
                  molecule=None, transportData=None, molecularWeight=None, 
                  dipoleMoment=None, polarizability=None, Zrot=None, 
-                 energyTransferModel=None, reactive=True, coreSizeAtCreation=0):
-        rmgpy.species.Species.__init__(self, index, label, thermo, conformer, molecule, transportData, molecularWeight, dipoleMoment, polarizability, Zrot, energyTransferModel, reactive)
+                 energyTransferModel=None, reactive=True, props=None, coreSizeAtCreation=0):
+        rmgpy.species.Species.__init__(self, index, label, thermo, conformer, molecule, transportData, molecularWeight, dipoleMoment, polarizability, Zrot, energyTransferModel, reactive, props)
         self.coreSizeAtCreation = coreSizeAtCreation
 
     def __reduce__(self):
@@ -1044,7 +1044,7 @@ class CoreEdgeReactionModel:
         """
         self.edge.species.append(spec)
 
-    def prune(self, reactionSystems, fluxToleranceKeepInEdge, maximumEdgeSpecies):
+    def prune(self, reactionSystems, toleranceKeepInEdge, maximumEdgeSpecies):
         """
         Remove species from the model edge based on the simulation results from
         the list of `reactionSystems`.
@@ -1063,55 +1063,60 @@ class CoreEdgeReactionModel:
 
         # Get the maximum species rates (and network leak rates)
         # across all reaction systems
-        maxEdgeSpeciesRates = numpy.zeros((numEdgeSpecies), numpy.float64)
+        maxEdgeSpeciesRateRatios = numpy.zeros((numEdgeSpecies), numpy.float64)
         for reactionSystem in reactionSystems:
             for i in range(numEdgeSpecies):
-                rate = reactionSystem.maxEdgeSpeciesRates[i]
-                if maxEdgeSpeciesRates[i] < rate:
-                    maxEdgeSpeciesRates[i] = rate
+                rateRatio = reactionSystem.maxEdgeSpeciesRateRatios[i]
+                if maxEdgeSpeciesRateRatios[i] < rateRatio:
+                    maxEdgeSpeciesRateRatios[i] = rateRatio
 
             for i in range(len(self.networkList)):
                 network = self.networkList[i]
-                rate = reactionSystem.maxNetworkLeakRates[i]
+                rateRatio = reactionSystem.maxNetworkLeakRateRatios[i]
                 # Add the fraction of the network leak rate contributed by
                 # each unexplored species to that species' rate
                 # This is to ensure we have an overestimate of that species flux
                 ratios = network.getLeakBranchingRatios(reactionSystem.T.value_si,reactionSystem.P.value_si)
                 for spec, frac in ratios.iteritems():
                     index = self.edge.species.index(spec)
-                    maxEdgeSpeciesRates[index] += frac * rate
+                    maxEdgeSpeciesRateRatios[index] += frac * rateRatio
                 # Mark any species that is explored in any partial network as ineligible for pruning
                 for spec in network.explored:
                     if spec not in ineligibleSpecies:
                         ineligibleSpecies.append(spec)
 
         # Sort the edge species rates by index
-        indices = numpy.argsort(maxEdgeSpeciesRates)
-
+        indices = numpy.argsort(maxEdgeSpeciesRateRatios)
         # Determine which species to prune
         speciesToPrune = []
         pruneDueToRateCounter = 0
         for index in indices:
+            spec = self.edge.species[index]
+            if spec in ineligibleSpecies:
+                continue
             # Remove the species with rates below the pruning tolerance from the model edge
-            if maxEdgeSpeciesRates[index] < fluxToleranceKeepInEdge and self.edge.species[index] not in ineligibleSpecies:
-                speciesToPrune.append((index, self.edge.species[index]))
+            if maxEdgeSpeciesRateRatios[index] < toleranceKeepInEdge:
+                speciesToPrune.append((index, spec))
                 pruneDueToRateCounter += 1
             # Keep removing species with the lowest rates until we are below the maximum edge species size
-            elif numEdgeSpecies - len(speciesToPrune) > maximumEdgeSpecies and self.edge.species[index] not in ineligibleSpecies:
-                speciesToPrune.append((index, self.edge.species[index]))
+            elif numEdgeSpecies - len(speciesToPrune) > maximumEdgeSpecies:
+                logging.info('Pruning species {0} to make numEdgeSpecies smaller than maximumEdgeSpecies'.format(spec)) # repeated ~15 lines below
+                speciesToPrune.append((index, spec))
             else:
                 break
 
         # Actually do the pruning
         if pruneDueToRateCounter > 0:
-            logging.info('Pruning {0:d} species whose rates did not exceed the minimum threshold of {1:g}'.format(pruneDueToRateCounter, fluxToleranceKeepInEdge))
+            logging.info('Pruning {0:d} species whose rate ratios against characteristic rate did not exceed the minimum threshold of {1:g}'.format(pruneDueToRateCounter, toleranceKeepInEdge))
             for index, spec in speciesToPrune[0:pruneDueToRateCounter]:
-                logging.debug('    {0:<56}    {1:10.4e}'.format(spec, maxEdgeSpeciesRates[index]))
+                logging.info('Pruning species {0:<56}'.format(spec))
+                logging.debug('    {0:<56}    {1:10.4e}'.format(spec, maxEdgeSpeciesRateRatios[index]))
                 self.removeSpeciesFromEdge(spec)
         if len(speciesToPrune) - pruneDueToRateCounter > 0:
             logging.info('Pruning {0:d} species to obtain an edge size of {1:d} species'.format(len(speciesToPrune) - pruneDueToRateCounter, maximumEdgeSpecies))
             for index, spec in speciesToPrune[pruneDueToRateCounter:]:
-                logging.debug('    {0:<56}    {1:10.4e}'.format(spec, maxEdgeSpeciesRates[index]))
+                logging.info('Pruning species {0:<56}'.format(spec))
+                logging.debug('    {0:<56}    {1:10.4e}'.format(spec, maxEdgeSpeciesRateRatios[index]))
                 self.removeSpeciesFromEdge(spec)
 
         # Delete any networks that became empty as a result of pruning
@@ -1577,99 +1582,6 @@ class CoreEdgeReactionModel:
                 else:
                     reaction.reversible = True
 
-    def loadSeedMechanism(self, path):
-        """
-        Loads a seed mechanism from the folder indicated by `path` into the
-        core-edge reaction model.
-        """
-
-        import os.path
-        import quantities as pq
-        import data
-        import thermo.data
-        import kinetics.data
-        import reaction
-
-        # Load the species data from the file species.txt
-        # This file has the format of a standard RMG dictionary
-        d = data.Dictionary()
-        d.load(os.path.join(path, 'species.txt'))
-        d.toStructure(addH=True)
-
-        # Load the thermo data from the file thermo.txt
-        # This file has the format of a standard RMG thermo library
-        thermoData = thermo.data.ThermoDatabase()
-        thermoData.load(os.path.join(path, 'species.txt'), '', os.path.join(path, 'thermo.txt'))
-        # Populate the main primary thermo library with this thermo data
-        # This will overwrite keys (but not values), so the order that the
-        # seed mechanisms are loaded matters!
-        for key, value in d.iteritems():
-            thermo.data.thermoDatabase.primaryDatabase.dictionary[key] = value
-        for key, value in thermoData.library.iteritems():
-            thermo.data.thermoDatabase.primaryDatabase.library[key] = value
-
-        # Create new species based on items in species.txt
-        seedSpeciesDict = {}; seedSpeciesList = []
-        for label, struct in d.iteritems():
-            spec, isNew = species.makeNewSpecies(struct, label, reactive=True)
-            seedSpeciesDict[label] = spec
-            seedSpeciesList.append(spec)
-
-        # Load the reactions from the file reaction.txt
-        seedReactionList = []
-        f = open(os.path.join(path, 'reactions.txt'), 'r')
-        for line in f:
-            line = data.removeCommentFromLine(line)
-            line.strip()
-            if len(line) > 0:
-                items = line.split()
-                if len(items) > 0:
-                    rxn = items[0:-6]
-
-                    # Extract reactants and products
-                    if '<=>' in rxn: arrow = rxn.index('<=>')
-                    elif '=>' in rxn: arrow = rxn.index('=>')
-                    else: raise IOError('No arrow found in reaction equation from line {0}'.format(line))
-                    reactants = rxn[0:arrow:2]
-                    products = rxn[arrow+1::2]
-
-                    # Remove third body 'M' if present
-                    thirdBody = False
-                    if 'M' in reactants and 'M' in products:
-                        thirdBody = True
-                        reactants.remove('M')
-                        products.remove('M')
-
-                    # Convert strings to species objects
-                    reactants = [seedSpeciesDict[r] for r in reactants]
-                    products = [seedSpeciesDict[r] for r in products]
-                    reactants.sort()
-                    products.sort()
-
-                    # Process Arrhenius parameters
-                    order = len(reactants)
-                    if (thirdBody): order += 1
-                    Aunits = 'cm^{0:d}/(mol^{1:d}*s)'.format(3*(order-1), order-1)
-                    A = float(pq.Quantity(float(items[-6]), Aunits).simplified)
-                    n = float(items[-5])			# dimensionless
-                    Ea = float(pq.Quantity(float(items[-4]), 'cal/mol').simplified)
-                    kin = [kinetics.model.Arrhenius(A=A, n=n, Ea=Ea)]
-
-                    # Create reaction object and add to list
-                    rxn = reaction.Reaction(id=0, reactants=reactants, products=products, family='seed', kinetics=kin, thirdBody=thirdBody)
-                    rxn.reverse = reaction.Reaction(id=0, reactants=products, products=reactants, family='seed', kinetics=None, thirdBody=thirdBody)
-                    rxn.reverse.reverse = rxn
-                    reaction.processNewReaction(rxn)
-                    seedReactionList.append(rxn)
-
-        f.close()
-
-        # Add species to core
-        for spec in seedSpeciesList:
-            self.addSpeciesToCore(spec)
-        # Add reactions to core
-        for rxn in seedReactionList:
-            self.addReactionToCore(rxn)
 
     def markChemkinDuplicates(self):
         """

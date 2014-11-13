@@ -191,24 +191,34 @@ class Atom(Vertex):
         cython.declare(atom=Atom, ap=GroupAtom)
         if isinstance(other, Atom):
             atom = other
-            return (self.element is atom.element and
-                self.radicalElectrons == atom.radicalElectrons and
-                self.charge == atom.charge)
+            return (
+                self.element                is atom.element and
+                self.radicalElectrons       == atom.radicalElectrons   and
+                self.lonePairs              == atom.lonePairs           and
+                self.charge                 == atom.charge
+                )
         elif isinstance(other, GroupAtom):
-            cython.declare(a=AtomType, radical=cython.short, spin=cython.short, charge=cython.short)
+            cython.declare(a=AtomType, radical=cython.short, lp=cython.short, charge=cython.short)
             ap = other
             for a in ap.atomType:
                 if self.atomType.equivalent(a): break
             else:
                 return False
-            for radical in ap.radicalElectrons:
-                if self.radicalElectrons == radical: break
-            else:
-                return False
-            for charge in ap.charge:
-                if self.charge == charge: break
-            else:
-                return False
+            if ap.radicalElectrons:
+                for radical in ap.radicalElectrons:
+                    if self.radicalElectrons == radical: break
+                else:
+                    return False
+            if ap.lonePairs:
+                for lp in ap.lonePairs:
+                    if self.lonePairs == lp: break
+                else:
+                    return False
+            if ap.charge:
+                for charge in ap.charge:
+                    if self.charge == charge: break
+                else:
+                    return False
             return True
 
     def isSpecificCaseOf(self, other):
@@ -222,7 +232,7 @@ class Atom(Vertex):
         if isinstance(other, Atom):
             return self.equivalent(other)
         elif isinstance(other, GroupAtom):
-            cython.declare(atom=GroupAtom, a=AtomType, radical=cython.short, charge=cython.short)
+            cython.declare(atom=GroupAtom, a=AtomType, radical=cython.short, lp = cython.short, charge=cython.short)
             atom = other
             if self.atomType is None:
                 return False
@@ -230,16 +240,21 @@ class Atom(Vertex):
                 if self.atomType.isSpecificCaseOf(a): break
             else:
                 return False
-            for radical in atom.radicalElectrons:
-                if self.radicalElectrons == radical: break
-            else:
-                return False
-            #TODO: lone pairs and charge
-# until we have charges and lone pairs in the group values we neglect them here
-#            for charge in atom.charge:
-#                if self.charge == charge: break
-#            else:
-#                return False
+            if atom.radicalElectrons:
+                for radical in atom.radicalElectrons:
+                    if self.radicalElectrons == radical: break
+                else:
+                    return False
+            if atom.lonePairs:
+                for lp in atom.lonePairs:
+                    if self.lonePairs == lp: break
+                else:
+                    return False
+            if atom.charge:
+                for charge in atom.charge:
+                    if self.charge == charge: break
+                else:
+                    return False
             return True
 
     def copy(self):
@@ -888,6 +903,15 @@ class Molecule(Graph):
         """
         for atom in self.vertices:
             atom.atomType = getAtomType(atom, atom.edges)
+            
+    def updateMultiplicity(self):
+        """
+        Update the multiplicity of a newly formed molecule.
+        """
+        # Assume this is always true
+        # There are cases where 2 radicalElectrons is a singlet, but
+        # the triplet is often more stable, 
+        self.multiplicity = self.getRadicalCount() + 1
 
     def clearLabeledAtoms(self):
         """
@@ -980,6 +1004,15 @@ class Molecule(Graph):
         # isomorphism, so raise an exception if this is not what was requested
         if not isinstance(other, Molecule):
             raise TypeError('Got a {0} object for parameter "other", when a Molecule object is required.'.format(other.__class__))
+        # Do the quick isomorphism comparison using the fingerprint
+        # Two fingerprint strings matching is a necessary (but not
+        # sufficient!) condition for the associated molecules to be isomorphic
+        if self.getFingerprint() != other.getFingerprint():
+            return []
+        # check multiplicity
+        if self.multiplicity != other.multiplicity:
+            return []
+            
         # Do the isomorphism comparison
         result = Graph.findIsomorphism(self, other, initialMap)
         return result
@@ -1215,7 +1248,8 @@ class Molecule(Graph):
         multiplicity = self.multiplicity
         if not (n_rad + 1 == multiplicity or n_rad - 1 == multiplicity or n_rad - 3 == multiplicity or n_rad - 5 == multiplicity):
             raise ValueError('Impossible multiplicity for molecule\n{0}\n multiplicity = {1} and number of unpaired electrons = {2}'.format(self.toAdjacencyList(),multiplicity,n_rad))
-
+        if self.getNetCharge() != 0:
+            raise ValueError('Non-neutral molecule encountered. Currently, RMG does not support ion chemistry.\n {0}'.format(adjlist))
         return self
         
     def fromXYZ(self, atomicNums, coordinates):
@@ -1895,41 +1929,6 @@ class Molecule(Graph):
         adjlist = self.toAdjacencyList(removeH=False)
         url += "{0}".format(re.sub('\s+', '%20', adjlist.replace('\n', ';')))
         return url.strip('_')
-    
-    def isBiradicalSinglet(self):
-        """
-        Return ``True`` if the molecule is a 1-centered biradical, and the molecule is in singlet state,
-        or ``False`` otherwise.
-        """
-        cython.declare(atom=Atom)
-        for atom in self.vertices:
-            if atom.radicalElectrons == 2:
-                if self.multiplicity == 1:
-                    return True
-        return False
-    
-    def isBiradicalTriplet(self):
-        """
-        Return ``True`` if the molecule is a 1-centered biradical, and the molecule is in triplet state,
-        or ``False`` otherwise.
-        """
-        cython.declare(atom=Atom)
-        for atom in self.vertices:
-            if atom.radicalElectrons == 2:
-                if self.multiplicity == 3:
-                    return True
-        return False
-    
-    def changeTripletSinglet(self):
-        """
-        If the molecule is a 1-centered biradical, and the molecule is in a triplet state,
-        change it to singlet state.
-        """
-        cython.declare(atom=Atom)
-        for atom in self.vertices:
-            if atom.radicalElectrons == 2:
-                if self.multiplicity == 3:
-                    self.multiplicity = 1
                     
     def getRadicalAtoms(self):
         """
@@ -1961,4 +1960,14 @@ class Molecule(Graph):
         
             else:
                 atom1.lonePairs = 0
+                
+    def getNetCharge(self):
+        """
+        Iterate through the atoms in the structure and calculate the net charge
+        on the overall molecule.
+        """
+        charge = 0
+        for atom in self.vertices:
+            charge += atom.charge
+        return charge
 

@@ -43,7 +43,7 @@ class MoleProLog:
     def __init__(self, path):
         self.path = path
             
-    def loadCCSDEnergy(self):
+    def loadEnergy(self,frequencyScaleFactor=1.):
         """
         Return the f12 energy in J/mol from a MolePro Logfile of a CCSD(T)-f12 job. 
         This function determines which energy (f12a or f12b) to use based on the basis set,

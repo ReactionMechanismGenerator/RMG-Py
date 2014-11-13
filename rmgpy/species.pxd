@@ -48,6 +48,7 @@ cdef class Species:
     cdef public ScalarQuantity _Zrot
     cdef public bint reactive
     cdef public object energyTransferModel
+    cdef public dict props
     
     cpdef generateResonanceIsomers(self)
     

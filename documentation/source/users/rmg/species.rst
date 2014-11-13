@@ -51,16 +51,16 @@ molecular oxygen. The ground electronic state of molecular oxygen,
 bond and two lone electrons. In RMG's adjaceny list notation the ground state
 of oxygen is represented as ::
 
-   1 O 1 {2,S}
-   2 O 1 {1,S}
+   1 O u1 p2 {2,S}
+   2 O u1 p2 {1,S}
 
 You should use the above adjacency list to represent molecular oxygen in
 your condition files, seed mechanisms, etc. The triplet form is 22 kcal/mol
 more stable than the first singlet excited state, :math:`^1\Delta_g`, which 
 does contain a double bond. The adjacency list for singlet oxygen is ::
 
-   1 O 0 {2,D}
-   2 O 0 {1,D}
+   1 O u0 p2 {2,D}
+   2 O u0 p2 {1,D}
 
 Selecting the correct structure for oxygen is important, as the reactions
 generated from a double bond are significantly different than those generated

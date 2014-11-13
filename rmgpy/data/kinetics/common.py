@@ -156,7 +156,8 @@ def saveEntry(f, entry):
 #                f.write('"""\n')
 #                f.write(product.molecule[0].toAdjacencyList(label=product.label, removeH=False))
 #                f.write('""",\n')
-        if not isinstance(entry.item.reactants[0], Group) and not isinstance(entry.item.reactants[0], LogicNode):
+        if isinstance(entry.item.reactants[0], Species): 
+            # Add degeneracy if the reaction is coming from a depository or kinetics library
             f.write('    degeneracy = {0:d},\n'.format(entry.item.degeneracy))
         if entry.item.duplicate: 
             f.write('    duplicate = {0!r},\n'.format(entry.item.duplicate))

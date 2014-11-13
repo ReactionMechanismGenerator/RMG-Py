@@ -1145,30 +1145,60 @@ def makeProfileGraph(stats_file):
     `dot -Tpdf input.dot -o output.pdf`.
     """
     try:
-        import gprof2dot
+        from gprof2dot import PstatsParser, DotWriter, SAMPLES, themes
     except ImportError:
-        logging.warning('Package gprof2dot not found. Unable to create a graph of the profile statistics.')
-        # `pip install gprof2dot` if you don't have it.
+        logging.warning('Trouble importing from package gprof2dot. Unable to create a graph of the profile statistics.')
+        logging.warning('Try getting the latest version with something like `pip install --upgrade gprof2dot`.')
         return
     import subprocess
-    m = gprof2dot.Main()
+    
+    #create an Options class to mimic optparser output as much as possible:
     class Options:
         pass
-    m.options = Options()
-    m.options.node_thres = 0.8
-    m.options.edge_thres = 0.1
-    m.options.strip = False
-    m.options.show_samples = False
-    m.options.root = ""
-    m.options.leaf = ""
-    m.options.wrap = True
-    m.theme = m.themes['color'] # bw color gray pink
-    parser = gprof2dot.PstatsParser(stats_file)
-    m.profile = parser.parse()
+    
+    options = Options()
+    options.node_thres = 0.8
+    options.edge_thres = 0.1
+    options.strip = False
+    options.show_samples = False
+    options.root = ""
+    options.leaf = ""
+    options.wrap = True
+    
+    theme = themes['color'] # bw color gray pink
+    theme.fontname = "ArialMT" # default "Arial" leads to PostScript warnings in dot (on Mac OS)
+    parser = PstatsParser(stats_file)
+    profile = parser.parse()
+    
     dot_file = stats_file + '.dot'
-    m.output = open(dot_file,'wt')
-    m.write_graph()
-    m.output.close()
+    output = open(dot_file,'wt')
+    dot = DotWriter(output)
+    dot.strip = options.strip
+    dot.wrap = options.wrap
+    
+    if options.show_samples:
+        dot.show_function_events.append(SAMPLES)
+    
+    profile = profile
+    profile.prune(options.node_thres/100.0, options.edge_thres/100.0)
+
+    if options.root:
+        rootId = profile.getFunctionId(options.root)
+        if not rootId:
+            sys.stderr.write('root node ' + options.root + ' not found (might already be pruned : try -e0 -n0 flags)\n')
+            sys.exit(1)
+        profile.prune_root(rootId)
+    if options.leaf:
+        leafId = profile.getFunctionId(options.leaf)
+        if not leafId:
+            sys.stderr.write('leaf node ' + options.leaf + ' not found (maybe already pruned : try -e0 -n0 flags)\n')
+            sys.exit(1)
+        profile.prune_leaf(leafId)
+
+    dot.graph(profile, theme)
+
+    output.close()
+    
     try:
         subprocess.check_call(['dot', '-Tpdf', dot_file, '-o', '{0}.pdf'.format(dot_file)])
     except subprocess.CalledProcessError:
@@ -1179,5 +1209,4 @@ def makeProfileGraph(stats_file):
         logging.info("Once you've got it, try:\n     dot -Tpdf {0} -o {0}.pdf".format(dot_file))
     else:
         logging.info("Graph of profile statistics saved to: \n {0}.pdf".format(dot_file))
-    # we could actually try this here using subprocess.Popen() or something
-    # wrapped in a try: block.
+

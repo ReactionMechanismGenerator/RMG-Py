@@ -42,6 +42,8 @@ cdef class ReactionSystem(DASSL):
     cdef public numpy.ndarray maxCoreSpeciesRates
     cdef public numpy.ndarray maxEdgeSpeciesRates
     cdef public numpy.ndarray maxNetworkLeakRates
+    cdef public numpy.ndarray maxEdgeSpeciesRateRatios
+    cdef public numpy.ndarray maxNetworkLeakRateRatios
     cdef public numpy.ndarray sensitivityCoefficients
     
     cdef public list termination

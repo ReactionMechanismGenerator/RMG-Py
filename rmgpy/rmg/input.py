@@ -80,18 +80,22 @@ def database(
     elif kineticsDepositories == 'all':
         rmg.kineticsDepositories = None
     else:
-        assert isinstance(kineticsDepositories,list), "kineticsDepositories should be either 'default', 'all', or a list of names eg. ['training','PrIMe']."
+        if not isinstance(kineticsDepositories,list):
+            raise InputError("kineticsDepositories should be either 'default', 'all', or a list of names eg. ['training','PrIMe'].")
         rmg.kineticsDepositories = kineticsDepositories
+
     if kineticsFamilies in ('default', 'all', 'none'):
         rmg.kineticsFamilies = kineticsFamilies
     else:
-        assert isinstance(kineticsFamilies,list), "kineticsFamilies should be either 'default', 'all', 'none', or a list of names eg. ['H_Abstraction','R_Recombination'] or ['!Intra_Disproportionation']."
+        if not isinstance(kineticsFamilies,list):
+            raise InputError("kineticsFamilies should be either 'default', 'all', 'none', or a list of names eg. ['H_Abstraction','R_Recombination'] or ['!Intra_Disproportionation'].")
         rmg.kineticsFamilies = kineticsFamilies
 
 def species(label, structure, reactive=True):
     logging.debug('Found {0} species "{1}" ({2})'.format('reactive' if reactive else 'nonreactive', label, structure.toSMILES()))
     spec, isNew = rmg.reactionModel.makeNewSpecies(structure, label=label, reactive=reactive)
-    assert isNew, "Species {0} is a duplicate of {1}. Species in input file must be unique".format(label,spec.label)
+    if not isNew:
+        raise InputError("Species {0} is a duplicate of {1}. Species in input file must be unique".format(label,spec.label))
     rmg.initialSpecies.append(spec)
     speciesDict[label] = spec
     
@@ -169,10 +173,19 @@ def simulator(atol, rtol):
     
 def solvation(solvent):
     # If solvation module in input file, set the RMG solvent variable
-	assert isinstance(solvent,str), "solvent should be a string like 'water'"
-	rmg.solvent = solvent
+    if not isinstance(solvent,str):
+        raise InputError("solvent should be a string like 'water'")
+    rmg.solvent = solvent
 
-def model(toleranceMoveToCore, toleranceKeepInEdge=0.0, toleranceInterruptSimulation=1.0, maximumEdgeSpecies=None):
+def model(toleranceMoveToCore=None, toleranceKeepInEdge=0.0, toleranceInterruptSimulation=1.0, maximumEdgeSpecies=None):
+    """
+    How to generate the model. `toleranceMoveToCore` must be specified. Other parameters are optional and control the pruning.
+    """
+    if toleranceMoveToCore is None:
+        raise InputError("You must provide a toleranceMoveToCore value. It should be less than or equal to toleranceInterruptSimulation which is currently {0}".format(toleranceInterruptSimulation))
+    if toleranceMoveToCore > toleranceInterruptSimulation:
+        raise InputError("toleranceMoveToCore must be less than or equal to toleranceInterruptSimulation, which is currently {0}".format(toleranceInterruptSimulation))
+
     rmg.fluxToleranceKeepInEdge = toleranceKeepInEdge
     rmg.fluxToleranceMoveToCore = toleranceMoveToCore
     rmg.fluxToleranceInterrupt = toleranceInterruptSimulation
@@ -263,7 +276,6 @@ def generatedSpeciesConstraints(**kwargs):
         'maximumHeavyAtoms',
         'maximumRadicalElectrons',
     ]
-    constraints = {}
     for key, value in kwargs.items():
         if key not in validConstraints:
             raise InputError('Invalid generated species constraint {0!r}.'.format(key))
@@ -454,7 +466,7 @@ def saveInputFile(path, rmg):
         f.write(')\n\n')
     
     if rmg.solvent:
-        	f.write("solvation(\n    solvent = '{0!s}'\n)\n\n".format(rmg.solvent))
+        f.write("solvation(\n    solvent = '{0!s}'\n)\n\n".format(rmg.solvent))
         
     # Simulator tolerances
     f.write('simulator(\n')
@@ -464,8 +476,8 @@ def saveInputFile(path, rmg):
 
     # Model
     f.write('model(\n')
-    f.write('    toleranceKeepInEdge = {0:g},\n'.format(rmg.fluxToleranceKeepInEdge))
     f.write('    toleranceMoveToCore = {0:g},\n'.format(rmg.fluxToleranceMoveToCore))
+    f.write('    toleranceKeepInEdge = {0:g},\n'.format(rmg.fluxToleranceKeepInEdge))
     f.write('    toleranceInterruptSimulation = {0:g},\n'.format(rmg.fluxToleranceInterrupt))
     f.write('    maximumEdgeSpecies = {0:d},\n'.format(rmg.maximumEdgeSpecies))
     f.write(')\n\n')
