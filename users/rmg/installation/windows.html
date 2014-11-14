@@ -137,10 +137,11 @@ cat .ssh/id_rsa.pub
 </pre></div>
 </div>
 </li>
-<li><p class="first">Point distutils to MinGW:</p>
+<li><p class="first">Tell distutils to use the MinGW compiler, by typing this in a Git Bash shell:</p>
 <div class="highlight-python"><div class="highlight"><pre>echo -e &quot;[build]\ncompiler=mingw32&quot; &gt; /c/Python27/Lib/distutils/distutils.cfg
 </pre></div>
 </div>
+<p>it will create a file C:\Python27\Lib\distutils\distutils.cfg containing the appropriate setting.</p>
 </li>
 <li><p class="first">Add Python bindings to MinGW&#8217;s library:</p>
 <div class="highlight-python"><div class="highlight"><pre>mingw-get install pexports
@@ -150,7 +151,12 @@ mv libpython27.a /c/MinGW/lib/libpython27.a
 rm python27.def
 </pre></div>
 </div>
-<p>If the <tt class="docutils literal"><span class="pre">pexports</span></tt> step doesn&#8217;t work then you can download the <tt class="file docutils literal"><span class="pre">python27.def</span></tt> file from the link on the <a class="reference external" href="http://wiki.cython.org/InstallingOnWindows">Cython wiki</a> and continue from the <tt class="docutils literal"><span class="pre">dlltool</span></tt> step.</p>
+<p>If the <tt class="docutils literal"><span class="pre">pexports</span></tt> step doesn&#8217;t work because the dll is in a different place then try one of these lines instead, depending on where your python27.dll file is:</p>
+<div class="highlight-python"><div class="highlight"><pre>pexports /c/Python27/python27.dll &gt; python27.def
+pexports $SYSTEMROOT/SysWOW64/python27.dll &gt; python27.def
+</pre></div>
+</div>
+<p>or you can download the <tt class="file docutils literal"><span class="pre">python27.def</span></tt> file from the link on the <a class="reference external" href="https://github.com/cython/cython/wiki/InstallingOnWindows">Cython wiki page on Installing On Windows</a> and continue from the <tt class="docutils literal"><span class="pre">dlltool</span></tt> step.</p>
 </li>
 </ul>
 </div>
