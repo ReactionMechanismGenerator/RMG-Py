@@ -69,6 +69,7 @@ UNIMOLECULAR_KINETICS_FAMILIES = [
     'Birad_recombination',
     'intra_OH_migration',
     'HO2_Elimination_from_PeroxyRadical',
+    'H_shift_cyclopentadiene',
     'Cyclic_Ether_Formation',
     'Intra_R_Add_Exocyclic',
     'Intra_R_Add_Endocyclic',
