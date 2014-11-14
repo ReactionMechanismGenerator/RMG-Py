@@ -808,10 +808,11 @@ class Gaussian(logfileparser.Logfile):
 
             # If nmo was already parsed, check if it changed.
             nmo = int(line.split('=')[1].split()[0])
-            if hasattr(self, "nmo"):
-                assert nmo == self.nmo
-            else:
-                self.nmo = nmo
+            # if hasattr(self, "nmo"):
+            #     assert nmo == self.nmo
+            # else:
+            #     self.nmo = nmo
+            self.nmo = nmo
 
         # For AM1 calculations, set nbasis by a second method,
         #   as nmo may not always be explicitly stated.

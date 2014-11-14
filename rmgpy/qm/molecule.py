@@ -149,7 +149,7 @@ class Geometry:
                 AllChem.UFFOptimizeMolecule(rdmol,confId=conf.GetId())
                 energy=AllChem.UFFGetMoleculeForceField(rdmol,confId=conf.GetId()).CalcEnergy()
             else:
-                eBefore, energy = Pharm3D.EmbedLib.OptimizeMol(rdmol, boundsMatrix, atomMatches=atomMatch)
+                eBefore, energy = Pharm3D.EmbedLib.OptimizeMol(rdmol, boundsMatrix, atomMatches=atomMatch, forceConstant=100000.0)
             
             if energy < lowestE:
                 minEid = conf.GetId()

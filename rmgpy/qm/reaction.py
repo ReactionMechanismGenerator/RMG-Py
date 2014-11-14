@@ -354,7 +354,7 @@ class QMReaction:
         sect = []
         for atom in reactant.split()[0].atoms: sect.append(atom.sortingLabel)
         
-        uncertainties = {'d12':0.1, 'd13':0.1, 'd23':0.1 } # distanceData.uncertainties or {'d12':0.1, 'd13':0.1, 'd23':0.1 } # default if uncertainty is None
+        uncertainties = {'d12':0.05, 'd13':0.05, 'd23':0.05 } # distanceData.uncertainties or {'d12':0.1, 'd13':0.1, 'd23':0.1 } # default if uncertainty is None
         bm = self.setLimits(bm, lbl1, lbl2, distanceData.distances['d12'], uncertainties['d12'])
         bm = self.setLimits(bm, lbl2, lbl3, distanceData.distances['d23'], uncertainties['d23'])
         bm = self.setLimits(bm, lbl1, lbl3, distanceData.distances['d13'], uncertainties['d13'])
@@ -557,6 +557,7 @@ class QMReaction:
         
         with open(os.path.join(self.fileStore, 'rdkitDists.txt'), 'w') as distFile:
             distFile.write('d12: {0:.6f}, d13: {1:.6f}, d23: {2:.6f}'.format(d12, d13, d23))
+        
         check, notes =  self.tsSearch(notes, labels)
         
         return check, notes
@@ -708,7 +709,7 @@ class QMReaction:
         
         return bondDict
     
-    def writeCanThermStatMech(self, allAtomTypes, bondDict, multiplicity, path):
+    def writeCanThermStatMech(self, allAtomTypes, bondDict, multiplicity, path, symmetry=1):
         """
         Write the file required by cantherm to do the statmech calculation for the molecule
         """
@@ -729,7 +730,7 @@ class QMReaction:
             output.append('bonds = {}')
                 
         # add the bonds
-        output = output + ['', 'linear = False', '', 'externalSymmetry = 1', '', 'spinMultiplicity = {0}'.format(multiplicity), '', 'opticalIsomers = 1', '']
+        output = output + ['', 'linear = False', '', 'externalSymmetry = {0}'.format(symmetry), '', 'spinMultiplicity = {0}'.format(multiplicity), '', 'opticalIsomers = 1', '']
         
         # Energy - get it from the QM output file
         output = output + ['energy = {', "    'DFT_G03_b3lyp': GaussianLog('{0}'),".format(path.split('/')[-1]), '}', '']
@@ -772,12 +773,12 @@ class QMReaction:
         if len(reactants)==2:
             output.append("    reactants = ['{0}', '{1}'],".format(reactants[0].uniqueID, reactants[1].uniqueID))
         else:
-            output.append("    reactants = ['{0}']".format(reactants[0].uniqueID))
+            output.append("    reactants = ['{0}'],".format(reactants[0].uniqueID))
             
         if len(products)==2:
             output.append("    products = ['{0}', '{1}'],".format(products[0].uniqueID, products[1].uniqueID))
         else:
-            output.append("    products = ['{0}']".format(products[0].uniqueID))
+            output.append("    products = ['{0}'],".format(products[0].uniqueID))
         output.append("    transitionState = 'TS',")
         output.append("    tunneling = 'Eckart',\n)\n")
         output.append("statmech('TS')\nkinetics('{0}')\n".format(self.uniqueID))
@@ -799,13 +800,14 @@ class QMReaction:
             qmMolecule = self.getQMMolecule(molecule)
             qmMolecule.settings.fileStore = fileStore
             qmMolecule.checkPaths()
-            result = qmMolecule.generateQMData()
-            if result:
+            qmMolecule.qmData = qmMolecule.generateQMData()
+            if qmMolecule.qmData:
+                qmMolecule.determinePointGroup()
                 allAtoms = []
                 for atom in qmMolecule.molecule.atoms:
                     allAtoms.append(atom.symbol)
                 bondDict = self.getBonds(qmMolecule)
-                self.writeCanThermStatMech(allAtoms, bondDict, qmMolecule.molecule.multiplicity, qmMolecule.outputFilePath)
+                self.writeCanThermStatMech(allAtoms, bondDict, qmMolecule.molecule.multiplicity, qmMolecule.outputFilePath, symmetry=1)#qmMolecule.pointGroup.symmetryNumber)
                 molecules.append(qmMolecule)
                 # log = GaussianLog(qmMolecule.outputFilePath)
                 # species = Species(label=qmMolecule.molecule.toSMILES(), conformer=log.loadConformer(), molecule=[molecule])
@@ -826,6 +828,20 @@ class QMReaction:
         if not tsFound:
             # Return the reaction without the kinetics included. Fall back on group additivity.
             return self.reaction
+            
+        cantopt = ['CC(C)C([O])(OO)C(C)C', 'C[C](CC(=O)C(C)(C)OO)OO', 'C[C](OO)C(=O)C(C)(C)OO', 'CC(C)(C)[CH]OO', 'OO[C]1CCCCC1', '[CH2]OO', '[O]Cc1ccccc1'] # A local minimum for the following geometries has not been found at B3LYP/6-31+G(d,p)
+        for mol in self.reaction.reactants:
+            if isinstance(mol, Species):
+                mol = mol.molecule[0]
+            if mol.toSMILES() in cantopt:
+                print 'Cannot optimize geometry for {0}'.format(mol.toSMILES())
+                return self.reaction
+        for mol in self.reaction.products:
+            if isinstance(mol, Species):
+                mol = mol.molecule[0]
+            if mol.toSMILES() in cantopt:
+                print 'Cannot optimize geometry for {0}'.format(mol.toSMILES())
+                return self.reaction
         
         reactants = self.calculateQMData(self.reaction.reactants, fileStore)
         products = self.calculateQMData(self.reaction.products, fileStore)
