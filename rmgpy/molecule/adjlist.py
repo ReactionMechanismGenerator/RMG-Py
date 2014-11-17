@@ -733,10 +733,10 @@ def toAdjacencyList(atoms, multiplicity, label=None, group=False, removeH=False,
     if label: adjlist += label + '\n'
     
     if group:
-        if multiplicity is not None:
-            assert isinstance(multiplicity, list), "Functional group should have a list of possible multiplicities"
-            if multiplicity != [1,2,3,4,5]:
-                adjlist += 'multiplicity [{0!s}]\n'.format(','.join(str(i) for i in multiplicity))
+        if multiplicity:
+            # Functional group should have a list of possible multiplicities.  
+            # If the list is empty, then it does not need to be written
+            adjlist += 'multiplicity [{0!s}]\n'.format(','.join(str(i) for i in multiplicity))
     else:
         assert isinstance(multiplicity, int), "Molecule should have an integer multiplicity"
         if multiplicity != 1 or any( atom.radicalElectrons for atom in atoms ):

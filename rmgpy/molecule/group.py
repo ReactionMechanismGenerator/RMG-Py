@@ -526,7 +526,7 @@ class Group(Graph):
 
     def __init__(self, atoms=None):
         Graph.__init__(self, atoms)
-        self.multiplicity = [1,2,3,4,5]
+        self.multiplicity = []
         self.updateConnectivityValues()
         self.updateFingerprint()
     

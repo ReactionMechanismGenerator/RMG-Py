@@ -1041,6 +1041,10 @@ class Molecule(Graph):
             elif atom.element.symbol == 'S':
                 sulfurCount += 1
             radicalCount += atom.radicalElectrons
+        
+        
+        if group.multiplicity:
+            if self.multiplicity not in group.multiplicity: return False
         # If the molecule has fewer of any of these things than the functional
         # group does, then we know the subgraph isomorphism fails without
         # needing to perform the full isomorphism check
@@ -1048,8 +1052,7 @@ class Molecule(Graph):
             carbonCount < group.carbonCount or
             nitrogenCount < group.nitrogenCount or
             oxygenCount < group.oxygenCount or
-            sulfurCount < group.sulfurCount or
-            self.multiplicity not in group.multiplicity):
+            sulfurCount < group.sulfurCount):
             return False
 
         # Do the isomorphism comparison
