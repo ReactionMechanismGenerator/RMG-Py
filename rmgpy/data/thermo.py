@@ -639,12 +639,6 @@ class ThermoDatabase(object):
             # Thermo not found in any loaded libraries, so estimate
             thermoData = self.getThermoDataFromGroups(species)
 
-        # Add Cp0 and CpInf values, if it's a ThermoData type (as opposed to eg. NASA), whether from Library or Groups
-        if isinstance(thermoData, ThermoData):
-            Cp0 = species.calculateCp0()
-            CpInf = species.calculateCpInf()
-            thermoData.Cp0 = (Cp0,"J/(mol*K)")
-            thermoData.CpInf = (CpInf,"J/(mol*K)")
         # Return the resulting thermo parameters
         return thermoData
     
