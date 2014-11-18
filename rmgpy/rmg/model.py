@@ -159,7 +159,8 @@ class Species(rmgpy.species.Species):
                                                         shortDesc = thermo0.comment
                                                         )                    
         if thermo0 is None:
-            thermo0 = database.thermo.getThermoData(self)
+            thermo0 = database.thermo.getThermoDataFromGroups(self)
+
 
         return self.processThermoData(database, thermo0, thermoClass)
 
