@@ -10,6 +10,7 @@ from rmgpy.molecule.atomtypedatabase import *
   
 import itertools
 import unittest
+from external.wip import work_in_progress
 from rmgpy.molecule.molecule import Molecule
 from rmgpy.molecule.group import Group
 
@@ -343,3 +344,20 @@ def test_isomorphism_R():
     """)
     
     assert_true(len(mol.findSubgraphIsomorphisms(gp)) > 0)
+
+@work_in_progress
+def test_isomorphism_mol_group_not_identical():
+    """
+    Testing multiplicities in mol and group that don't match
+    """
+    mol = Molecule().fromAdjacencyList("""
+    1 C u0 p0 c0
+    """, saturateH=True)
+    
+    gp = Group().fromAdjacencyList("""
+    multiplicity [2]
+    1 R u0 p0 c0
+    """)
+    assert_false(mol.isSubgraphIsomorphic(gp))
+    assert_false(len(mol.findSubgraphIsomorphisms(gp)) > 0)
+
