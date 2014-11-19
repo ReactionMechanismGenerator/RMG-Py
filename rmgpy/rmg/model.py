@@ -203,15 +203,12 @@ class Species(rmgpy.species.Species):
         self.conformer.E0 = (wilhoit.getEnthalpy(1.0)*1e-3,"kJ/mol")
         
         # Convert to desired thermo class
-        if isinstance(thermo0, thermoClass):
-            self.thermo = thermo0
-            # If we don't have an E0, copy it across from the Wilhoit that was fitted
-            if self.thermo.E0 is None:
-                self.thermo.E0 = wilhoit.E0
-        elif isinstance(wilhoit, thermoClass):
+        if isinstance(wilhoit, thermoClass):
             self.thermo = wilhoit
-        else:
+        elif isinstance(NASA, thermoClass):
             self.thermo = wilhoit.toNASA(Tmin=100.0, Tmax=5000.0, Tint=1000.0)
+        else:
+            raise Exception('thermoClass neither NASA nor Wilhoit.  Cannot process thermo data.')
         
         if self.thermo.__class__ != thermo0.__class__:
             # Compute RMS error of overall transformation
