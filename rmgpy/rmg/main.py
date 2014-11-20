@@ -1,5 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+from __builtin__ import globals
 
 ################################################################################
 #
@@ -61,6 +62,8 @@ from model import Species, CoreEdgeReactionModel
 from pdep import PDepNetwork
 
 ################################################################################
+
+solvent = None
 
 class RMG:
     """
@@ -276,6 +279,15 @@ class RMG:
             #frequenciesLibraries = self.statmechLibraries,
             depository = False, # Don't bother loading the depository information, as we don't use it
         )
+        
+        #check libraries
+        self.checkLibraries()
+        
+        #set global variable solvent
+        if self.solvent:
+            global solvent
+            solvent=self.solvent
+        
         if self.kineticsEstimator == 'rate rules':
             if '!training' not in self.kineticsDepositories:
                 logging.info('Adding rate rules from training set in kinetics families...')
@@ -339,9 +351,6 @@ class RMG:
 
         # Load databases
         self.loadDatabase()
-        
-        #check libraries
-        self.checkLibraries()
         
         # Do all liquid-phase startup things:
         if self.solvent:
