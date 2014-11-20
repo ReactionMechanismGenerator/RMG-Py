@@ -108,7 +108,7 @@ class Species(rmgpy.species.Species):
         thermo0 = database.thermo.getThermoDataFromLibraries(self)
         
         if thermo0 is not None:
-            logging.info("Found thermo for {0} in thermo library".format(self.label))
+            logging.info("Found thermo for {0} in {1}".format(self.label,thermo0[0].comment.lower()))
             assert len(thermo0) == 3, "thermo0 should be a tuple at this point: (thermoData, library, entry)"
             thermo0 = thermo0[0]
             
@@ -189,7 +189,7 @@ class Species(rmgpy.species.Species):
         wilhoit.comment = thermo0.comment
 
         # Add on solvation correction
-        if Species.solventData:
+        if Species.solventData and not "Liquid thermo library" in thermo0.comment:
             #logging.info("Making solvent correction for {0}".format(Species.solventName))
             soluteData = database.solvation.getSoluteData(self)
             solvation_correction = database.solvation.getSolvationCorrection(soluteData, Species.solventData)
