@@ -206,7 +206,17 @@ class Species(rmgpy.species.Species):
         if thermoClass is Wilhoit:
             self.thermo = wilhoit
         elif thermoClass is NASA:
-            self.thermo = wilhoit.toNASA(Tmin=100.0, Tmax=5000.0, Tint=1000.0)
+            if Species.solventData:
+                #if liquid phase simulation keep the nasa polynomial if it comes from a liquid phase thermoLibrary. Otherwise convert wilhoit to NASA
+                if "Liquid thermo library" in thermo0.comment:
+                    self.thermo = thermo0
+                else:
+                    self.thermo = wilhoit.toNASA(Tmin=100.0, Tmax=5000.0, Tint=1000.0)
+            else: #gas phase with species matching thermo library keep the NASA from library or convert if group additivity
+                if "Thermo library" in thermo0.comment:
+                    self.thermo=thermo0
+                else:
+                    self.thermo = wilhoit.toNASA(Tmin=100.0, Tmax=5000.0, Tint=1000.0)
         else:
             raise Exception('thermoClass neither NASA nor Wilhoit.  Cannot process thermo data.')
         
