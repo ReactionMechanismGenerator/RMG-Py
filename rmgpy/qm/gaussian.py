@@ -71,20 +71,10 @@ class Gaussian:
     
     def run(self):
         self.testReady()
-        
-        with open(self.inputFilePath) as infile:
-            print "Running GAUSSIAN input file {0!s}:".format(self.inputFilePath)
-            for line in infile:
-                print line.rstrip()
 
         # submits the input file to Gaussian
         process = Popen([self.executablePath, self.inputFilePath, self.outputFilePath])
         process.communicate()# necessary to wait for executable termination!
-            
-        with open(self.outputFilePath) as outfile:
-            print "Gaussian output file {0!s}:".format(self.outputFilePath)
-            for line in outfile:
-                print line.rstrip()
 
         return self.verifyOutputFile()
 
@@ -615,36 +605,23 @@ class GaussianTS(QMReaction, Gaussian):
 
     def runDouble(self, inputFilePath):
         self.testReady()
-        with open(inputFilePath) as infile:
-            print "Running GAUSSIAN input file {0!s}:".format(inputFilePath)
-            for line in infile:
-                print line.rstrip()
         # submits the input file to Gaussian
         process = Popen([self.executablePath, inputFilePath])
         process.communicate()# necessary to wait for executable termination!
         
         logFilePath = os.path.splitext(inputFilePath)[0]+self.outputFileExtension
-        with open(logFilePath) as outfile:
-            print "Gaussian output file {0!s}:".format(logFilePath)
-            for line in outfile:
-                print line.rstrip()
+        
         return logFilePath
         
     def runQST2(self):
         self.testReady()
-        with open(self.inputFilePath) as infile:
-            print "Running GAUSSIAN input file {0!s}:".format(self.inputFilePath)
-            for line in infile:
-                print line.rstrip()
+        
         # submits the input file to Gaussian
         process = Popen([self.executablePath, self.inputFilePath])
         process.communicate()# necessary to wait for executable termination!
         
         logFilePath = self.outputFilePath
-        with open(logFilePath) as outfile:
-            print "Gaussian output file {0!s}:".format(logFilePath)
-            for line in outfile:
-                print line.rstrip()
+        
         return self.verifyQST2OutputFile(), logFilePath
     
 
