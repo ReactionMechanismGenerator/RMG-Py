@@ -265,6 +265,25 @@ class QMReaction:
                     if Uij < diffLikUjk or Uik < diffLjkUik:
                         print "Lower limit for {i} and {j} is too low".format(i=i, j=j)
     
+    def bmLenComp(self, bm, i, j):
+        
+        listDist = []
+        for k in range(len(bm)):
+            if k==i or k==j or i==j: continue
+            Uik = bm[i,k] if k>i else bm[k,i]
+            Ukj = bm[j,k] if k>j else bm[k,j]
+            if i>j:
+                dist = Uik + Ukj - bm[i,j]
+            else:
+                dist = Uik + Ukj - bm[j,i]
+            listDist.append(dist)
+            
+        return listDist
+            # maxLij = Uik + Ukj - 0.1
+            # if bm[i,j] >  maxLij:
+            #     print "CHANGING Lower limit {0} to {1}".format(bm[i,j], maxLij)
+            #     bm[i,j] = maxLij
+    
     def getLabels(self, reactant):
         """
         Creates the list of sorting labels for the reacting atoms. These labels are
@@ -354,13 +373,16 @@ class QMReaction:
         sect = []
         for atom in reactant.split()[0].atoms: sect.append(atom.sortingLabel)
         
-        uncertainties = {'d12':0.05, 'd13':0.05, 'd23':0.05 } # distanceData.uncertainties or {'d12':0.1, 'd13':0.1, 'd23':0.1 } # default if uncertainty is None
+        uncertainties = {'d12':0.02, 'd13':0.02, 'd23':0.02 } # distanceData.uncertainties or {'d12':0.1, 'd13':0.1, 'd23':0.1 } # default if uncertainty is None
         bm = self.setLimits(bm, lbl1, lbl2, distanceData.distances['d12'], uncertainties['d12'])
         bm = self.setLimits(bm, lbl2, lbl3, distanceData.distances['d23'], uncertainties['d23'])
         bm = self.setLimits(bm, lbl1, lbl3, distanceData.distances['d13'], uncertainties['d13'])
         
+        with open(os.path.join(self.fileStore, 'estDists.txt'), 'w') as distFile:
+            distFile.write('d12: {0:.6f}, d13: {1:.6f}, d23: {2:.6f}'.format(distanceData.distances['d12'], distanceData.distances['d13'], distanceData.distances['d23']))
+        
         bm = self.bmPreEdit(bm, sect)
-            
+        
         return bm
     
     def runNEB(self):
@@ -821,6 +843,7 @@ class QMReaction:
         # provides transitionstate geometry
         fileStore = self.settings.fileStore #  To ensure all files are found in the same base directory
         tsFound, notes = self.generateTSGeometryDirectGuess()
+        
         self.settings.fileStore = fileStore
         with open(os.path.join(self.fileStore, 'error.txt'), 'w') as errorFile:
             errorFile.write(notes)
