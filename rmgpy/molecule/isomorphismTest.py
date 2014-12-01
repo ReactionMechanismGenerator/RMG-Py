@@ -345,7 +345,6 @@ def test_isomorphism_R():
     
     assert_true(len(mol.findSubgraphIsomorphisms(gp)) > 0)
 
-@work_in_progress
 def test_isomorphism_mol_group_not_identical():
     """
     Testing multiplicities in mol and group that don't match
