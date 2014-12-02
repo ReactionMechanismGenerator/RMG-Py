@@ -771,22 +771,37 @@ class Group(Graph):
     def isSubgraphIsomorphic(self, other, initialMap=None):
         """
         Returns ``True`` if `other` is subgraph isomorphic and ``False``
-        otherwise. The `initialMap` attribute can be used to specify a required
+        otherwise. In other words, return ``True`` if self is more specific than other.
+        The `initialMap` attribute can be used to specify a required
         mapping from `self` to `other` (i.e. the atoms of `self` are the keys,
         while the atoms of `other` are the values). The `other` parameter must
         be a :class:`Group` object, or a :class:`TypeError` is raised.
-        """
+        """        
+        cython.declare(group=Group)
+        cython.declare(mult1=cython.short, mult2=cython.short)
         # It only makes sense to compare a Group to a Group for subgraph
         # isomorphism, so raise an exception if this is not what was requested
         if not isinstance(other, Group):
             raise TypeError('Got a {0} object for parameter "other", when a Group object is required.'.format(other.__class__))
+        group = other
+        
+        if self.multiplicity:
+            for mult1 in self.multiplicity:
+                if group.multiplicity:
+                    for mult2 in group.multiplicity:
+                        if mult1 == mult2: break
+                    else:
+                        return False
+        else:
+            if group.multiplicity: return False
         # Do the isomorphism comparison
         return Graph.isSubgraphIsomorphic(self, other, initialMap)
 
     def findSubgraphIsomorphisms(self, other, initialMap=None):
         """
         Returns ``True`` if `other` is subgraph isomorphic and ``False``
-        otherwise. Also returns the lists all of valid mappings. The
+        otherwise. In other words, return ``True`` is self is more specific than other.
+        Also returns the lists all of valid mappings. The
         `initialMap` attribute can be used to specify a required mapping from
         `self` to `other` (i.e. the atoms of `self` are the keys, while the
         atoms of `other` are the values). The returned mappings also use the
@@ -794,10 +809,25 @@ class Group(Graph):
         The `other` parameter must be a :class:`Group` object, or a
         :class:`TypeError` is raised.
         """
+        cython.declare(group=Group)
+        cython.declare(mult1=cython.short, mult2=cython.short)
+
         # It only makes sense to compare a Group to a Group for subgraph
         # isomorphism, so raise an exception if this is not what was requested
         if not isinstance(other, Group):
             raise TypeError('Got a {0} object for parameter "other", when a Group object is required.'.format(other.__class__))
+        group = other
+        
+        if self.multiplicity:
+            for mult1 in self.multiplicity:
+                if group.multiplicity:
+                    for mult2 in group.multiplicity:
+                        if mult1 == mult2: break
+                    else:
+                        return []
+        else:
+            if group.multiplicity: return []
+                
         # Do the isomorphism comparison
         return Graph.findSubgraphIsomorphisms(self, other, initialMap)
     
