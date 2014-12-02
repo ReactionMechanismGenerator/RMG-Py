@@ -70,7 +70,8 @@ kinetic parameters. For general usage of the kinetic database see <a class="refe
 <p>When multiple sources are available for kinetic parameters, the following priority
 is followed:</p>
 <ol class="arabic simple">
-<li>Kinetic libraries (based on listed order in input.py)</li>
+<li>Seed mechanisms (based on listed order in input.py)</li>
+<li>Reaction libraries (based on listed order in input.py)</li>
 <li>Matched training set reactions</li>
 <li>Exact template matches from rules or matched training groups (based on rank)</li>
 <li>Estimated averaged rules</li>
@@ -80,8 +81,8 @@ template node, we use a user-defined rank to determine the priority of kinetic
 parameters</p>
 <table border="1" class="docutils">
 <colgroup>
-<col width="10%" />
-<col width="90%" />
+<col width="11%" />
+<col width="89%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Rank</th>
@@ -104,11 +105,19 @@ parameters</p>
 <tr class="row-even"><td>Rank 5</td>
 <td>User&#8217;s estimates without supporting methods</td>
 </tr>
-<tr class="row-odd"><td>Rank 0</td>
+<tr class="row-odd"><td>Rank 10</td>
+<td>Averaged value from child nodes&#8217; rate rules</td>
+</tr>
+<tr class="row-even"><td>Rank 0</td>
 <td>Untrusted method and never used in generation</td>
 </tr>
 </tbody>
 </table>
+<p>The rank of 0 is assigned to kinetics that are generally default values for top level nodes
+that we have little faith in.  It is never used in generation and its value will in fact be overriden
+by averages of its child nodes, which generates an averaged rate rule with rank 10.</p>
+<p>Only non-zero rules are used in generation.  A rank of 1 is assigned to the most trustworthy kinetics, while a rank of 10 is considered very poor (ie. averaged kinetics).
+Thus, a rate rule of rank 3 will be given priority over a rate rule of rank 5.</p>
 </div>
 <div class="section" id="kinetic-families">
 <h2>12.2. Kinetic Families<a class="headerlink" href="#kinetic-families" title="Permalink to this headline">¶</a></h2>
