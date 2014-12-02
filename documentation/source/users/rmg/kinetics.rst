@@ -11,7 +11,8 @@ Priority of Kinetic Databases
 When multiple sources are available for kinetic parameters, the following priority
 is followed:
 
-#. Kinetic libraries (based on listed order in input.py)
+#. Seed mechanisms (based on listed order in input.py)
+#. Reaction libraries (based on listed order in input.py)
 #. Matched training set reactions
 #. Exact template matches from rules or matched training groups (based on rank) 
 #. Estimated averaged rules
@@ -20,21 +21,30 @@ In the case where multiple rules or training set reactions fall under the same
 template node, we use a user-defined rank to determine the priority of kinetic
 parameters
 
-+------+------------------------------------------------------+
-|Rank  |Example methods                                       |
-+======+======================================================+
-|Rank 1|Experiment                                            |
-+------+------------------------------------------------------+
-|Rank 2|High level calculation: CCSD(T)-F12, MS-Tor, 2d rotors|
-+------+------------------------------------------------------+
-|Rank 3|Mid level calculation:  CBS-QB3, 1-d rotors           |
-+------+------------------------------------------------------+
-|Rank 4|Low level calculation: no rotor treatment             |
-+------+------------------------------------------------------+
-|Rank 5|User's estimates without supporting methods           |
-+------+------------------------------------------------------+
-|Rank 0|Untrusted method and never used in generation         |
-+------+------------------------------------------------------+
++-------+------------------------------------------------------+
+|Rank   |Example methods                                       |
++=======+======================================================+
+|Rank 1 |Experiment                                            |
++-------+------------------------------------------------------+
+|Rank 2 |High level calculation: CCSD(T)-F12, MS-Tor, 2d rotors|
++-------+------------------------------------------------------+
+|Rank 3 |Mid level calculation:  CBS-QB3, 1-d rotors           |
++-------+------------------------------------------------------+
+|Rank 4 |Low level calculation: no rotor treatment             |
++-------+------------------------------------------------------+
+|Rank 5 |User's estimates without supporting methods           |
++-------+------------------------------------------------------+
+|Rank 10|Averaged value from child nodes' rate rules           |
++-------+------------------------------------------------------+
+|Rank 0 |Untrusted method and never used in generation         |
++-------+------------------------------------------------------+
+
+The rank of 0 is assigned to kinetics that are generally default values for top level nodes 
+that we have little faith in.  It is never used in generation and its value will in fact be overriden
+by averages of its child nodes, which generates an averaged rate rule with rank 10.  
+
+Only non-zero rules are used in generation.  A rank of 1 is assigned to the most trustworthy kinetics, while a rank of 10 is considered very poor (ie. averaged kinetics).
+Thus, a rate rule of rank 3 will be given priority over a rate rule of rank 5.  
 
 Kinetic Families
 ----------------
