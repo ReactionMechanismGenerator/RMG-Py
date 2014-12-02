@@ -48,8 +48,20 @@ for example, singlet CH2 from triplet CH2.
 
 If defining a Functional :class:`~rmgpy.molecule.Group`, then the value must be a list,
 which defines the multiplicities that will be matched by the group, eg. 
-``multiplicity [1,2,3,4,5]`` or, for a single value, ``multiplicity [1]``. 
-If the multiplicity line is omitted, then ``multiplicity [1,2,3,4,5]`` is assumed.
+``multiplicity [1,2,3]`` or, for a single value, ``multiplicity [1]``. 
+If a wildcard is desired, the line ``'multiplicity x`` can be used instead to accept
+all multiplicities.  If the multiplicity line is omitted altogether, then a wildcard 
+is assumed.
+
+e.g. the following two group adjlists represent identical groups. ::
+
+    group1
+    multiplicity x
+    1    R!H u0
+::
+
+    group2
+    1    R!H u0
 
 After the identifier line and keyword-value lines,
 each subsequent line describes a single atom and its
@@ -83,8 +95,8 @@ For :class:`~rmgpy.molecule.Group` definitions:
 The value can be an integer or a list of integers (with signs, for charges),
  eg. ``u[0,1,2]`` or ``c[0,+1,+2,+3,+4]``, or may be a wildcard ``x`` 
  which matches any valid value, 
-eg. ``px`` is the same as ``p[0,1,2,3,4]`` and ``cx`` is the same as
-``c[-4,-3,-2,-1,0,+1,+2,+3,+4]``. Lists must be enclosed is square brackets,
+eg. ``px`` is the same as ``p[0,1,2,3,4, ...]`` and ``cx`` is the same as
+``c[...,-4,-3,-2,-1,0,+1,+2,+3,+4,...]``. Lists must be enclosed is square brackets,
 and separated by commas, without spaces.
 If lone pairs or formal charges are omitted from a group definition,
 the wildcard is assumed.
