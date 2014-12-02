@@ -275,52 +275,55 @@ class GroupAtom(Vertex):
         respects wildcards, e.g. ``R!H`` is equivalent to ``C``.
         
         """
-
+        cython.declare(group=GroupAtom)
         if not isinstance(other, GroupAtom):
             # Let the equivalent method of other handle it
             # We expect self to be an Atom object, but can't test for it here
             # because that would create an import cycle
             return other.equivalent(self)
-
+        group=other
+        
+        cython.declare(atomType1=AtomType, atomtype2=AtomType, radical1=cython.short, radical2=cython.short,
+                       lp1=cython.short, lp2=cython.short, charge1=cython.short, charge2=cython.short)
         # Compare two atom groups for equivalence
         # Each atom type in self must have an equivalent in other (and vice versa)
         for atomType1 in self.atomType:
-            for atomType2 in other.atomType:
+            for atomType2 in group.atomType:
                 if atomType1.equivalent(atomType2): break
             else:
                 return False
-        for atomType1 in other.atomType:
+        for atomType1 in group.atomType:
             for atomType2 in self.atomType:
                 if atomType1.equivalent(atomType2): break
             else:
                 return False
         # Each free radical electron state in self must have an equivalent in other (and vice versa)
         for radical1 in self.radicalElectrons:
-            if other.radicalElectrons:  # Only check if the list is non-empty.  An empty list indicates a wildcard.
-                for radical2  in other.radicalElectrons:
+            if group.radicalElectrons:  # Only check if the list is non-empty.  An empty list indicates a wildcard.
+                for radical2  in group.radicalElectrons:
                     if radical1 == radical2: break
                 else:
                     return False
-        for radical1 in other.radicalElectrons:
+        for radical1 in group.radicalElectrons:
             if self.radicalElectrons:
                 for radical2 in self.radicalElectrons:
                     if radical1 == radical2: break
                 else:
                     return False
         for lp1 in self.lonePairs:
-            if other.lonePairs:
-                for lp2 in other.lonePairs:
+            if group.lonePairs:
+                for lp2 in group.lonePairs:
                     if lp1 == lp2: break
                 else:
                     return False
         #Each charge in self must have an equivalent in other (and vice versa)
         for charge1 in self.charge:
-            if other.charge:
-                for charge2 in other.charge:
+            if group.charge:
+                for charge2 in group.charge:
                     if charge1 == charge2: break
                 else:
                     return False
-        for charge1 in other.charge:
+        for charge1 in group.charge:
             if self.charge:
                 for charge2 in self.charge:
                     if charge1 == charge2: break
@@ -335,49 +338,52 @@ class GroupAtom(Vertex):
         specific case of `self`. Returns ``False`` if some of `self` is not
         included in `other` or they are mutually exclusive. 
         """
-
+        cython.declare(group=GroupAtom)
         if not isinstance(other, GroupAtom):
             # Let the isSpecificCaseOf method of other handle it
             # We expect self to be an Atom object, but can't test for it here
             # because that would create an import cycle
             return other.isSpecificCaseOf(self)
-
+        group=other
+        
+        cython.declare(atomType1=AtomType, atomtype2=AtomType, radical1=cython.short, radical2=cython.short, 
+                       lp1=cython.short, lp2=cython.short, charge1=cython.short, charge2=cython.short)
         # Compare two atom groups for equivalence
         # Each atom type in self must have an equivalent in other (and vice versa)
         for atomType1 in self.atomType: # all these must match
-            for atomType2 in other.atomType: # can match any of these
+            for atomType2 in group.atomType: # can match any of these
                 if atomType1.isSpecificCaseOf(atomType2): break
             else:
                 return False
         # Each free radical electron state in self must have an equivalent in other (and vice versa)
         if self.radicalElectrons:
             for radical1 in self.radicalElectrons:
-                if other.radicalElectrons:
-                    for radical2 in other.radicalElectrons:
+                if group.radicalElectrons:
+                    for radical2 in group.radicalElectrons:
                         if radical1 == radical2: break
                     else:
                         return False
         else:
-            if other.radicalElectrons: return False
+            if group.radicalElectrons: return False
         if self.lonePairs:
             for lp1 in self.lonePairs:
-                if other.lonePairs:
-                    for lp2 in other.lonePairs:
+                if group.lonePairs:
+                    for lp2 in group.lonePairs:
                         if lp1 == lp2: break
                     else:
                         return False
         else:
-            if other.lonePairs: return False
+            if group.lonePairs: return False
         #Each charge in self must have an equivalent in other
         if self.charge:
             for charge1 in self.charge:
-                if other.charge:
-                    for charge2 in other.charge:
+                if group.charge:
+                    for charge2 in group.charge:
                         if charge1 == charge2: break
                     else:
                         return False
         else:
-            if other.charge: return False
+            if group.charge: return False
         # Otherwise self is in fact a specific case of other
         return True
 ################################################################################
@@ -468,21 +474,23 @@ class GroupBond(Edge):
         where `other` can be either an :class:`Bond` or an :class:`GroupBond`
         object.
         """
-
+        cython.declare(gb=GroupBond)
         if not isinstance(other, GroupBond):
             # Let the equivalent method of other handle it
             # We expect self to be a Bond object, but can't test for it here
             # because that would create an import cycle
             return other.equivalent(self)
-
+        gb = other
+        
+        cython.declare(order1=str, order2=str)
         # Compare two bond groups for equivalence
         # Each atom type in self must have an equivalent in other (and vice versa)
         for order1 in self.order:
-            for order2 in other.order:
+            for order2 in gb.order:
                 if order1 == order2: break
             else:
                 return False
-        for order1 in other.order:
+        for order1 in gb.order:
             for order2 in self.order:
                 if order1 == order2: break
             else:
@@ -496,17 +504,19 @@ class GroupBond(Edge):
         specific case of `self`. Returns ``False`` if some of `self` is not
         included in `other` or they are mutually exclusive.
         """
-
+        cython.declare(gb=GroupBond)
         if not isinstance(other, GroupBond):
             # Let the isSpecificCaseOf method of other handle it
             # We expect self to be a Bond object, but can't test for it here
             # because that would create an import cycle
             return other.isSpecificCaseOf(self)
-
+        gb = other
+        
+        cython.declare(order1=str, order2=str)
         # Compare two bond groups for equivalence
         # Each atom type in self must have an equivalent in other
         for order1 in self.order: # all these must match
-            for order2 in other.order: # can match any of these
+            for order2 in gb.order: # can match any of these
                 if order1 == order2: break
             else:
                 return False
