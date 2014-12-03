@@ -51,7 +51,7 @@ cdef class SimpleReactor(ReactionSystem):
     cdef public ScalarQuantity T
     cdef public ScalarQuantity P
     cdef public dict initialMoleFractions
-    cdef public list sensitivity
+    cdef public list sensitiveSpecies
     cdef public double sensitivityThreshold
 
     cdef public numpy.ndarray reactantIndices
@@ -62,12 +62,12 @@ cdef class SimpleReactor(ReactionSystem):
     cdef public numpy.ndarray networkLeakCoefficients
     cdef public numpy.ndarray jacobianMatrix
 
-    def __init__(self, T, P, initialMoleFractions, termination, sensitivity=None, sensitivityThreshold=1e-3):
+    def __init__(self, T, P, initialMoleFractions, termination, sensitiveSpecies=None, sensitivityThreshold=1e-3):
         ReactionSystem.__init__(self, termination)
         self.T = Quantity(T)
         self.P = Quantity(P)
         self.initialMoleFractions = initialMoleFractions
-        self.sensitivity = sensitivity
+        self.sensitiveSpecies = sensitiveSpecies
         self.sensitivityThreshold = sensitivityThreshold
         
         # These are helper variables used within the solver
@@ -88,7 +88,7 @@ cdef class SimpleReactor(ReactionSystem):
             initialMoleFractions[speciesDict[label]] = moleFrac
         self.initialMoleFractions = initialMoleFractions
 
-    cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions, list pdepNetworks=None, atol=1e-16, rtol=1e-8):
+    cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions, list pdepNetworks=None, atol=1e-16, rtol=1e-8, sensitivity=False):
         """
         Initialize a simulation of the simple reactor using the provided kinetic
         model.
@@ -96,7 +96,7 @@ cdef class SimpleReactor(ReactionSystem):
 
         # First call the base class version of the method
         # This initializes the attributes declared in the base class
-        ReactionSystem.initializeModel(self, coreSpecies, coreReactions, edgeSpecies, edgeReactions, pdepNetworks, atol, rtol)
+        ReactionSystem.initializeModel(self, coreSpecies, coreReactions, edgeSpecies, edgeReactions, pdepNetworks, atol, rtol, sensitivity)
 
         cdef int numCoreSpecies, numCoreReactions, numEdgeSpecies, numEdgeReactions, numPdepNetworks
         cdef int i, j, l, index

@@ -561,7 +561,7 @@ class RMG:
         # Run sensitivity analysis post-model generation if sensitivity analysis is on
         for index, reactionSystem in enumerate(self.reactionSystems):
             
-            if reactionSystem.sensitivity:
+            if reactionSystem.sensitiveSpecies:
                 logging.info('Conducting sensitivity analysis of reaction system %s...' % (index+1))
                                 
                 if self.saveConcentrationProfiles:                    
@@ -571,7 +571,7 @@ class RMG:
                     worksheet = None
                     
                 sensWorksheet = []
-                for spec in reactionSystem.sensitivity:
+                for spec in reactionSystem.sensitiveSpecies:
                     csvfile = file(os.path.join(self.outputDirectory, 'solver', 'sensitivity_{0}_SPC_{1}.csv'.format(index+1, spec.index)),'w')
                     sensWorksheet.append(csv.writer(csvfile))
                     
@@ -587,7 +587,7 @@ class RMG:
                     worksheet = worksheet,
                     absoluteTolerance = self.absoluteTolerance,
                     relativeTolerance = self.relativeTolerance,
-                    sensitivity = reactionSystem.sensitivity,
+                    sensitivity = True,
                     sensWorksheet = sensWorksheet,
                 )                                 
     

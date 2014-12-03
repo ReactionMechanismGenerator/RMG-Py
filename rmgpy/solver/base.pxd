@@ -48,7 +48,7 @@ cdef class ReactionSystem(DASSL):
     
     cdef public list termination
 
-    cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions, list pdepNetworks=?, atol=?, rtol=?)
+    cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions, list pdepNetworks=?, atol=?, rtol=?, sensitivity=?)
 
     cpdef writeWorksheetHeader(self, worksheet)
     

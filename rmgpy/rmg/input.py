@@ -139,11 +139,11 @@ def simpleReactor(temperature,
     if len(termination) == 0:
         raise InputError('No termination conditions specified for reaction system #{0}.'.format(len(rmg.reactionSystems)+2))
     
-    sensitivitySpecies = []
+    sensitiveSpecies = []
     if sensitivity:
         for spec in sensitivity:
-            sensitivitySpecies.append(speciesDict[spec])
-    system = SimpleReactor(T, P, initialMoleFractions, termination, sensitivitySpecies, sensitivityThreshold)
+            sensitiveSpecies.append(speciesDict[spec])
+    system = SimpleReactor(T, P, initialMoleFractions, termination, sensitiveSpecies, sensitivityThreshold)
     rmg.reactionSystems.append(system)
 
 

@@ -53,7 +53,7 @@ cdef class LiquidReactor(ReactionSystem):
     cdef public ScalarQuantity P
     
     cdef public dict initialConcentrations
-    cdef public list sensitivity
+    cdef public list sensitiveSpecies
     cdef public double sensitivityThreshold
 
     cdef public numpy.ndarray reactantIndices
@@ -64,7 +64,7 @@ cdef class LiquidReactor(ReactionSystem):
     cdef public numpy.ndarray networkLeakCoefficients
     cdef public numpy.ndarray jacobianMatrix
 
-    def __init__(self, T, initialConcentrations, termination, sensitivity=None, sensitivityThreshold=1e-3):
+    def __init__(self, T, initialConcentrations, termination, sensitiveSpecies=None, sensitivityThreshold=1e-3):
         ReactionSystem.__init__(self, termination)
         self.T = Quantity(T)
         self.P = Quantity(100000.,'kPa') # Arbitrary high pressure (1000 Bar) to get reactions in the high-pressure limit!
@@ -72,7 +72,7 @@ cdef class LiquidReactor(ReactionSystem):
         self.V = None # will be set from initialConcentrations in initializeModel
         # Sensitivity is not yet implemented in the liquid reactor, but these variables can be set later 
         # similar to in the SimpleReactor.
-        self.sensitivity = sensitivity
+        self.sensitiveSpecies = sensitiveSpecies
         self.sensitivityThreshold = sensitivityThreshold
         
         # These are helper variables used within the solver
@@ -93,7 +93,7 @@ cdef class LiquidReactor(ReactionSystem):
             initialConcentrations[speciesDict[label]] = moleFrac
         self.initialConcentrations = initialConcentrations
 
-    cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions, list pdepNetworks=None, atol=1e-16, rtol=1e-8):
+    cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions, list pdepNetworks=None, atol=1e-16, rtol=1e-8, sensitivity=False):
         """
         Initialize a simulation of the simple reactor using the provided kinetic
         model.
@@ -101,7 +101,7 @@ cdef class LiquidReactor(ReactionSystem):
 
         # First call the base class version of the method
         # This initializes the attributes declared in the base class
-        ReactionSystem.initializeModel(self, coreSpecies, coreReactions, edgeSpecies, edgeReactions, pdepNetworks, atol, rtol)
+        ReactionSystem.initializeModel(self, coreSpecies, coreReactions, edgeSpecies, edgeReactions, pdepNetworks, atol, rtol, sensitivity)
 
         cdef int numCoreSpecies, numCoreReactions, numEdgeSpecies, numEdgeReactions, numPdepNetworks
         cdef int i, j, l, index

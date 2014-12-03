@@ -22,7 +22,7 @@ def simulate(rmg):
         
     for index, reactionSystem in enumerate(rmg.reactionSystems):
             
-        if reactionSystem.sensitivity:
+        if reactionSystem.sensitiveSpecies:
             logging.info('Conducting sensitivity analysis of reaction system %s...' % (index+1))
             
             if rmg.saveConcentrationProfiles:
@@ -32,7 +32,7 @@ def simulate(rmg):
                 worksheet = None
                 
             sensWorksheet = []
-            for spec in reactionSystem.sensitivity:
+            for spec in reactionSystem.sensitiveSpecies:
                 csvfile = file(os.path.join(rmg.outputDirectory, 'sensitivity_{0}_SPC_{1}.csv'.format(index+1, spec.index)),'w')
                 sensWorksheet.append(csv.writer(csvfile))
     
@@ -51,7 +51,7 @@ def simulate(rmg):
                 worksheet = worksheet,
                 absoluteTolerance = rmg.absoluteTolerance,
                 relativeTolerance = rmg.relativeTolerance,
-                sensitivity = reactionSystem.sensitivity,
+                sensitivity = True,
                 sensWorksheet = sensWorksheet,
             )                      
 
