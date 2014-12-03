@@ -36,7 +36,7 @@ reducing the master equation.
 
 import numpy
 import scipy.integrate
-from pydas import DASSL
+#from pydas import DASSL
 
 import rmgpy.constants as constants
 
@@ -168,18 +168,18 @@ def solveReducedME(T, P, Elist, tlist, x0, K, p0, Nisom, Nreac, Nprod):
 
     return t, p, x
 
-################################################################################
-
-class MasterEquation(DASSL):
-    """
-    """
-
-    def __init__(self, M):
-        DASSL.__init__(self)
-        self.M = M
-
-    def residual(self, t, y, dydt):
-        return numpy.dot(self.M, y) - dydt, 0
-
-    def jacobian(self, t, y, dydt, cj):
-        return self.M - cj * numpy.identity(y.shape[0], numpy.float64)
+#################################################################################
+#
+#class MasterEquation(DASSL):
+#    """
+#    """
+#
+#    def __init__(self, M):
+#        DASSL.__init__(self)
+#        self.M = M
+#
+#    def residual(self, t, y, dydt):
+#        return numpy.dot(self.M, y) - dydt, 0
+#
+#    def jacobian(self, t, y, dydt, cj):
+#        return self.M - cj * numpy.identity(y.shape[0], numpy.float64)
