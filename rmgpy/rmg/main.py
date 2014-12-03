@@ -1,5 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+from __builtin__ import globals
 
 ################################################################################
 #
@@ -50,7 +51,7 @@ from rmgpy.molecule import Molecule
 from rmgpy.solver.base import TerminationTime, TerminationConversion
 from rmgpy.solver.simple import SimpleReactor
 from rmgpy.data.rmg import RMGDatabase
-from rmgpy.data.base import ForbiddenStructureException
+from rmgpy.data.base import ForbiddenStructureException, DatabaseError
 from rmgpy.data.kinetics import KineticsLibrary, KineticsFamily, LibraryReaction, TemplateReaction
 
 from rmgpy.reaction import Reaction
@@ -61,6 +62,8 @@ from model import Species, CoreEdgeReactionModel
 from pdep import PDepNetwork
 
 ################################################################################
+
+solvent = None
 
 class RMG:
     """
@@ -219,6 +222,40 @@ class RMG:
             assert any([not s.reactive for s in reactionSystem.initialMoleFractions.keys()]), \
                 "Pressure Dependence calculations require at least one inert (nonreacting) species for the bath gas."
 
+    def checkLibraries(self):
+        """
+        Check unwanted use of libraries:
+        Liquid phase libraries in Gas phase simulation.
+        Loading a Liquid phase library obtained in another solvent than the one defined in the input file.
+        Other checks can be added here.
+        """
+        #Liquid phase simulation checks
+        if self.solvent:
+            #check thermo librairies
+            for libIter in self.database.thermo.libraries.iterkeys():
+                if self.database.thermo.libraries[libIter].solvent:
+                    if not self.solvent ==  self.database.thermo.libraries[libIter].solvent:
+                        raise DatabaseError('''Thermo library "{2}" was obtained in "{1}" and cannot be used with this liquid phase simulation in "{0}"
+                        '''.format(self.solvent, self.database.thermo.libraries[libIter].solvent, self.database.thermo.libraries[libIter].name))   
+            #Check kinetic librairies
+            for libIter in self.database.kinetics.libraries.iterkeys():
+                if self.database.kinetics.libraries[libIter].solvent:
+                    if not self.solvent ==  self.database.kinetics.libraries[libIter].solvent:
+                        raise DatabaseError('''Kinetics library "{2}" was obtained in "{1}" and cannot be used with this liquid phase simulation in "{0}"
+                        '''.format(self.solvent, self.database.kinetics.libraries[libIter].solvent, self.database.kinetics.libraries[libIter].name))
+        #Gas phase simulation checks
+        else:
+            #check thermo librairies
+            for libIter in self.database.thermo.libraries.iterkeys():
+                if self.database.thermo.libraries[libIter].solvent:
+                    raise DatabaseError('''Thermo library "{1}" was obtained in "{0}" solvent and cannot be used in gas phase simulation
+                    '''.format(self.database.thermo.libraries[libIter].solvent, self.database.thermo.libraries[libIter].name))   
+            #Check kinetic librairies
+            for libIter in self.database.kinetics.libraries.iterkeys():
+                if self.database.kinetics.libraries[libIter].solvent:
+                    raise DatabaseError('''Kinetics library "{1}" was obtained in "{0}" solvent and cannot be used in gas phase simulation
+                    '''.format(self.database.kinetics.libraries[libIter].solvent, self.database.kinetics.libraries[libIter].name))
+    
     def saveInput(self, path=None):
         """
         Save an RMG job to the input file located at `path`, or
@@ -242,6 +279,15 @@ class RMG:
             #frequenciesLibraries = self.statmechLibraries,
             depository = False, # Don't bother loading the depository information, as we don't use it
         )
+        
+        #check libraries
+        self.checkLibraries()
+        
+        #set global variable solvent
+        if self.solvent:
+            global solvent
+            solvent=self.solvent
+        
         if self.kineticsEstimator == 'rate rules':
             if '!training' not in self.kineticsDepositories:
                 logging.info('Adding rate rules from training set in kinetics families...')

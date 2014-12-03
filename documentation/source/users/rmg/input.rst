@@ -33,8 +33,11 @@ The order in which the thermo libraries are specified is important:
 If a species appears in multiple thermo libraries, the first instance will
 be used.
 
-Please see Section :ref:`editingthermodatabase` for details on editing the
-thermo library. In general, it is best to leave the ThermoLibrary
+Now in RMG, you have two types of thermo libraries: gas and liquid thermo libraries. As species thermo in liquid phase depends on the solvent,
+those libraries can only be used in liquid phase simulation with the corresponding solvent. Gas phase thermo library can be used either in gas phase simulation or
+in liquid phase simulation. (see more details on the two :ref:`thermo library types <thermoLibraryType>` and :ref:`how to use thermo librairies in liquid phase simulation <useofthermolibrariesliquid>`)
+
+Please see Section :ref:`editing thermo database <thermoDatabase>` for more details. In general, it is best to leave the ThermoLibrary
 set to its default value.  In particular, the thermodynamic properties for H and H2
 must be specified in one of the primary thermo libraries as they cannot be estimated
 by Benson's method.
@@ -49,6 +52,10 @@ This library is located in the
 :file:`$RMG/RMG-database/input/thermo/libraries` directory.  All "Locations" for the
 ThermoLibrary field must be with respect to the :file:`$RMG/RMG-database/input/thermo/libraries`
 directory.
+
+.. note::
+	Checks during the initialization are maid to avoid users to use "liquid thermo librairies" in gas phase simulations or to use 
+	"liquid phase libraries" obtained in another solvent that the one defined in the input file in liquid phase simulations.
 
 .. _reactionlibraries:
 

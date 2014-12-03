@@ -889,15 +889,16 @@ class KineticsFamily(Database):
             data.changeT0(1)
             
             # Estimate the thermo for the reactants and products
+            # trainingSet=True used later to does not allow species to match a liquid phase library and get corrected thermo which will affect reverse rate calculation
             item = Reaction(reactants=[m.molecule[0].copy(deep=True) for m in entry.item.reactants], products=[m.molecule[0].copy(deep=True) for m in entry.item.products])
             item.reactants = [Species(molecule=[m]) for m in item.reactants]
             for reactant in item.reactants:
                 reactant.generateResonanceIsomers()
-                reactant.thermo = thermoDatabase.getThermoData(reactant)
+                reactant.thermo = thermoDatabase.getThermoData(reactant, trainingSet=True) 
             item.products = [Species(molecule=[m]) for m in item.products]
             for product in item.products:
                 product.generateResonanceIsomers()
-                product.thermo = thermoDatabase.getThermoData(product)
+                product.thermo = thermoDatabase.getThermoData(product,trainingSet=True)
             # Now that we have the thermo, we can get the reverse k(T)
             item.kinetics = data
             data = item.generateReverseRateCoefficient()

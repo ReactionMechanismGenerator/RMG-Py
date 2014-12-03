@@ -154,6 +154,7 @@ class Database:
                  top=None,
                  label='',
                  name='',
+                 solvent=None,
                  shortDesc='',
                  longDesc='',
                  ):
@@ -161,6 +162,7 @@ class Database:
         self.top = top or []
         self.label = label
         self.name = name
+        self.solvent = solvent
         self.shortDesc = shortDesc
         self.longDesc = longDesc
 
@@ -195,6 +197,7 @@ class Database:
         local_context['entry'] = self.loadEntry
         local_context['tree'] = self.__loadTree
         local_context['name'] = self.name
+        local_context['solvent'] = self.solvent
         local_context['shortDesc'] = self.shortDesc
         local_context['longDesc'] = self.longDesc
         # add in anything from the Class level dictionary.
@@ -212,6 +215,7 @@ class Database:
 
         # Extract the database metadata
         self.name = local_context['name']
+        self.solvent = local_context['solvent']
         self.shortDesc = local_context['shortDesc']
         self.longDesc = local_context['longDesc'].strip()
         

@@ -211,7 +211,7 @@ class ThermoLibrary(Database):
     A class for working with a RMG thermodynamics library.
     """
 
-    def __init__(self, label='', name='', shortDesc='', longDesc=''):
+    def __init__(self, label='', name='',solvent=None, shortDesc='', longDesc=''):
         Database.__init__(self, label=label, name=name, shortDesc=shortDesc, longDesc=longDesc)
 
     def loadEntry(self,
@@ -621,7 +621,7 @@ class ThermoDatabase(object):
         )
 
 
-    def getThermoData(self, species):
+    def getThermoData(self, species, trainingSet=None):
         """
         Return the thermodynamic parameters for a given :class:`Species`
         object `species`. This function first searches the loaded libraries
@@ -631,7 +631,7 @@ class ThermoDatabase(object):
         Returns: ThermoData
         """
         # Check the libraries in order first; return the first successful match
-        thermoData = self.getThermoDataFromLibraries(species)
+        thermoData = self.getThermoDataFromLibraries(species, trainingSet)
         if thermoData is not None:
             assert len(thermoData)==3, "thermoData should be a tuple at this point, eg. (thermoData, library, entry)"
             thermoData = thermoData[0]
@@ -643,22 +643,56 @@ class ThermoDatabase(object):
         return thermoData
     
         
-    def getThermoDataFromLibraries(self, species):
+    def getThermoDataFromLibraries(self, species, trainingSet=None):
         """
         Return the thermodynamic parameters for a given :class:`Species`
         object `species`. This function first searches the loaded libraries
         in order, returning the first match found, before failing and returning None.
+        `trainingSet` is used to identify if function is called during training set or not.
+        During training set calculation we want to use gas phase thermo to not affect reverse
+        rate calculation.
         
         Returns: ThermoData or None
         """
         thermoData = None
-        # Check the libraries in order first; return the first successful match
-        for label in self.libraryOrder:
+        
+        #chatelak 11/15/14: modification to introduce liquid phase thermo libraries
+        libraryList=deepcopy(self.libraryOrder) #copy the value to not affect initial object
+
+        if rmgpy.rmg.main.solvent is not None:
+            liqLibraries=[]
+            #Liquid phase simulation part: 
+            #This bloc "for": Identify liquid phase libraries and store them in liqLibraries
+            for iterLib in libraryList:
+                if self.libraries[iterLib].solvent:
+                    liqLibraries.append(iterLib)
+            #Check in liqLibraries if thermo for species exists and return the first match. Only if function not called by trainingSet
+            if liqLibraries and trainingSet is None:
+                for label in liqLibraries:
+                    thermoData = self.getThermoDataFromLibrary(species, self.libraries[label])
+                    if thermoData is not None:
+                        assert len(thermoData) == 3, "thermoData should be a tuple at this point"
+                        #Watch out comments changed: this is used later to apply solvation or not on species matching thermo. If required, Modify this carefully.
+                        thermoData[0].comment += 'Liquid thermo library: ' + label
+                        return thermoData
+            #Remove liqLibraries from libraryList if: called by training set (trainingSet=True) or if no thermo found in liqLibrairies
+            #if no liquid library found this does nothing.   
+            for libIter in liqLibraries:
+                libraryList.remove(libIter)
+
+        # Condition to execute this part: gas phase simulation or training set or liquid phase simulation with : noliquid libraries found or no matching species found in liquid libraries       
+        # If gas phase simulation libraryList = self.libraryOrder (just like before modifications) and they are all gas phase, already checked by checkLibrairies function in database.load()
+        # Check the libraries in order; return the first successful match
+        for label in libraryList:
             thermoData = self.getThermoDataFromLibrary(species, self.libraries[label])
             if thermoData is not None:
                 assert len(thermoData) == 3, "thermoData should be a tuple at this point"
-                thermoData[0].comment += 'Thermo library: ' + label
+                if rmgpy.rmg.main.solvent is not None and trainingSet is None:
+                    thermoData[0].comment += 'Thermo library "corrected": ' + label
+                else:
+                    thermoData[0].comment += 'Thermo library: ' + label
                 return thermoData
+
         return None
     
     def findCp0andCpInf(self, species, thermoData):

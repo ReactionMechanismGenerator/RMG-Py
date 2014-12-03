@@ -17,6 +17,28 @@ extrapolation of the heat capacity data as a function of temperature.
 Libraries
 =========
 
+.. _thermoLibraryType:
+
+Library types
+-------------
+
+Two types of thermo libraries are available in RMG: "gas phase" and "liquid thermo" libraries respectively identified thanks to the absence or presence of the keyword 
+`solvent = "solvent_name"` in the header of a thermo library. Here is an example of a liquid thermo library header::
+
+	name = "example_liquid_thermo_library"
+	solvent = "octane"
+	shortDesc = u"test"
+	longDesc = u"""
+
+In this example the library name is "example_liquid_thermo_library" and thermo data provided was obtained in `octane` solvent.
+The only difference between gas phase and liquid phase thermo libraries is made through this keyword, the rest of the library is similar to gas phase.
+
+.. note::
+	You can only provide one solvent per library and users should pay attention to not mix thermo of species obtained in different solvent in a same library.
+	RMG will raise an error if users try to load a liquid thermo library obtained in another solvent that the one provided in input file. (in the example provided here, 
+	this liquid thermo library can only be used in liquid phase simulation with octane as solvent.
+	RMG will also raise an error if user try to use liquid phase thermo library in gas phase simulations.
+
 Species thermochemistry libraries
 ---------------------------------
 
@@ -50,7 +72,10 @@ An example of a species thermochemistry entry is shown here below::
 The text above describes the first entry in the library (index = 1), 
 labeled 'H2', through the adjacency list representation. Heat capacity data ('Cpdata') is described
 at 7 different temperatures, along with the standard enthalpy of formation at 298K ('H298'), and 
-the standard entropy at 298K ('S298').
+the standard entropy at 298K ('S298'). 
+
+According to the `thermo classes` availble in RMG, you can provide different thermo data: :ref:`NASA <thermoNASA>`, :ref:`thermodata <thermoThermoData>` (as shown above),
+:ref:`wilhoit <thermoWilhoit>` or :ref:`NASAPolynomial <thermoNASAPolynomial>`. 
 
 Groups
 ======
