@@ -1,6 +1,7 @@
 ***********************
 rmgpy.thermo.ThermoData
 ***********************
+.. _thermoThermoData:
 
 .. currentmodule:: rmgpy.thermo
 

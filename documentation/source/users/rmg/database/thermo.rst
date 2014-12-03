@@ -50,7 +50,10 @@ An example of a species thermochemistry entry is shown here below::
 The text above describes the first entry in the library (index = 1), 
 labeled 'H2', through the adjacency list representation. Heat capacity data ('Cpdata') is described
 at 7 different temperatures, along with the standard enthalpy of formation at 298K ('H298'), and 
-the standard entropy at 298K ('S298').
+the standard entropy at 298K ('S298'). 
+
+According to the `thermo classes` availble in RMG, you can provide different thermo data: :ref:`NASA <thermoNASA>`, :ref:`thermodata <thermoThermoData>` (as shown above),
+:ref:`wilhoit <thermoWilhoit>` or :ref:`NASAPolynomial <thermoNASAPolynomial>`. 
 
 Groups
 ======

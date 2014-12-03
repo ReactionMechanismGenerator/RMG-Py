@@ -1,6 +1,7 @@
 ***************************
 rmgpy.thermo.NASAPolynomial
 ***************************
+.. _thermoNASAPolynomial:
 
 .. currentmodule:: rmgpy.thermo
 
