@@ -475,13 +475,17 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
         line = lines.pop(0)
         if group:
             match = re.match('\s*multiplicity\s+\[\s*(\d(?:,\s*\d)*)\s*\]\s*$', line)
+            if not match:
+                rematch = re.match('\s*multiplicity\s+x\s*$', line)
+                assert rematch, "Invalid multiplicity line '{0}'. Should be a list like 'multiplicity [1,2,3]' or a wildcard 'multiplicity x'".format(line)
+            else:
             # should match "multiplicity [1]" or " multiplicity   [ 1, 2, 3 ]" or " multiplicity [1,2,3]"
             # and whatever's inside the [] (excluding leading and trailing spaces) should be captured as group 1.
+            # If a wildcard is desired, this line can be omitted or replaced with 'multiplicity x'
             # Multiplicities must be only one digit (i.e. less than 10)
-            # The (?:,\s*\d)* matches patters like ", 2" 0 or more times, but doesn't capture them (because of the leading ?:)
-            assert match, "Invalid multiplicity line '{0}'. Should be a list like 'multiplicity [1,2,3]'".format(line)
-            multiplicities = match.group(1).split(',')
-            multiplicity = [int(i) for i in multiplicities]
+            # The (?:,\s*\d)* matches patters like ", 2" 0 or more times, but doesn't capture them (because of the leading ?:)            
+                multiplicities = match.group(1).split(',')
+                multiplicity = [int(i) for i in multiplicities]
         else:
             match = re.match('\s*multiplicity\s+\d+\s*$', line)
             assert match, "Invalid multiplicity line '{0}'. Should be an integer like 'multiplicity 2'".format(line)
@@ -733,10 +737,10 @@ def toAdjacencyList(atoms, multiplicity, label=None, group=False, removeH=False,
     if label: adjlist += label + '\n'
     
     if group:
-        if multiplicity is not None:
-            assert isinstance(multiplicity, list), "Functional group should have a list of possible multiplicities"
-            if multiplicity != [1,2,3,4,5]:
-                adjlist += 'multiplicity [{0!s}]\n'.format(','.join(str(i) for i in multiplicity))
+        if multiplicity:
+            # Functional group should have a list of possible multiplicities.  
+            # If the list is empty, then it does not need to be written
+            adjlist += 'multiplicity [{0!s}]\n'.format(','.join(str(i) for i in multiplicity))
     else:
         assert isinstance(multiplicity, int), "Molecule should have an integer multiplicity"
         if multiplicity != 1 or any( atom.radicalElectrons for atom in atoms ):

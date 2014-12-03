@@ -10,6 +10,7 @@ from rmgpy.molecule.atomtypedatabase import *
   
 import itertools
 import unittest
+from external.wip import work_in_progress
 from rmgpy.molecule.molecule import Molecule
 from rmgpy.molecule.group import Group
 
@@ -343,3 +344,48 @@ def test_isomorphism_R():
     """)
     
     assert_true(len(mol.findSubgraphIsomorphisms(gp)) > 0)
+
+def test_isomorphism_mol_group_not_identical():
+    """
+    Testing multiplicities in mol and group that don't match
+    """
+    mol = Molecule().fromAdjacencyList("""
+    1 C u0 p0 c0
+    """, saturateH=True)
+    
+    gp = Group().fromAdjacencyList("""
+    multiplicity [2]
+    1 R u0 p0 c0
+    """)
+    assert_false(mol.isSubgraphIsomorphic(gp))
+    assert_false(len(mol.findSubgraphIsomorphisms(gp)) > 0)
+
+def test_isomorphism_group_group():
+    """
+    Testing multiplicities in group vs. group 
+    """
+    gp1 = Group().fromAdjacencyList("""
+    1 R u0 p0 c0
+    """)
+    
+    gp2 = Group().fromAdjacencyList("""
+    multiplicity [2]
+    1 R u0 p0 c0
+    """)
+    
+    gp3 = Group().fromAdjacencyList("""
+    1 C u0 p0 c0
+    """)
+    
+    assert_false(gp1.isSubgraphIsomorphic(gp2))
+    assert_false(len(gp1.findSubgraphIsomorphisms(gp2)) > 0)
+
+    assert_true(gp2.isSubgraphIsomorphic(gp1))
+    assert_true(len(gp2.findSubgraphIsomorphisms(gp1)) > 0)
+
+    assert_false(gp2.isIdentical(gp1))
+    
+    assert_true(gp3.isSubgraphIsomorphic(gp1))
+    assert_true(len(gp3.findSubgraphIsomorphisms(gp1)) > 0)
+    assert_false(gp3.isSubgraphIsomorphic(gp2))    
+    assert_false(len(gp3.findSubgraphIsomorphisms(gp2)) > 0)

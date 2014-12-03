@@ -953,25 +953,6 @@ class KineticsFamily(Database):
             rootTemplate = self.getRootTemplate()
             alreadyDone = {}
         self.rules.fillRulesByAveragingUp(rootTemplate, alreadyDone)
-            
-    def reactantMatch(self, reactant, templateReactant):
-        """
-        Return ``True`` if the provided reactant matches the provided
-        template reactant and ``False`` if not, along with a complete list of
-        the identified mappings.
-        """
-        mapsList = []
-        if templateReactant.__class__ == list: templateReactant = templateReactant[0]
-        struct = self.dictionary[templateReactant]
-
-        if isinstance(struct, LogicNode):
-            for child_structure in struct.getPossibleStructures(self.dictionary):
-                ismatch, mappings = reactant.findSubgraphIsomorphisms(child_structure)
-                if ismatch:
-                    mapsList.extend(mappings)
-            return len(mapsList) > 0, mapsList
-        elif isinstance(struct, Molecule):
-            return reactant.findSubgraphIsomorphisms(struct)
 
     def applyRecipe(self, reactantStructures, forward=True, unique=True):
         """
