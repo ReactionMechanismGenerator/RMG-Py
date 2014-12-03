@@ -85,8 +85,10 @@ them from Benson&#8217;s formulas. Multiple libraries may be created, if so desi
 The order in which the thermo libraries are specified is important:
 If a species appears in multiple thermo libraries, the first instance will
 be used.</p>
-<p>Please see Section <em class="xref std std-ref">editingthermodatabase</em> for details on editing the
-thermo library. In general, it is best to leave the ThermoLibrary
+<p>Now in RMG, you have two types of thermo libraries: gas and liquid thermo libraries. As species thermo in liquid phase depends on the solvent,
+those libraries can only be used in liquid phase simulation with the corresponding solvent. Gas phase thermo library can be used either in gas phase simulation or
+in liquid phase simulation. (see more details on the two <a class="reference internal" href="database/thermo.html#thermolibrarytype"><em>thermo library types</em></a> and <a class="reference internal" href="liquids.html#useofthermolibrariesliquid"><em>how to use thermo librairies in liquid phase simulation</em></a>)</p>
+<p>Please see Section <a class="reference internal" href="database/thermo.html#thermodatabase"><em>editing thermo database</em></a> for more details. In general, it is best to leave the ThermoLibrary
 set to its default value.  In particular, the thermodynamic properties for H and H2
 must be specified in one of the primary thermo libraries as they cannot be estimated
 by Benson&#8217;s method.</p>
@@ -104,6 +106,11 @@ by Benson&#8217;s method.</p>
 <tt class="file docutils literal"><span class="pre">$RMG/RMG-database/input/thermo/libraries</span></tt> directory.  All &#8220;Locations&#8221; for the
 ThermoLibrary field must be with respect to the <tt class="file docutils literal"><span class="pre">$RMG/RMG-database/input/thermo/libraries</span></tt>
 directory.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Checks during the initialization are maid to avoid users to use &#8220;liquid thermo librairies&#8221; in gas phase simulations or to use
+&#8220;liquid phase libraries&#8221; obtained in another solvent that the one defined in the input file in liquid phase simulations.</p>
+</div>
 </div>
 <div class="section" id="reaction-libraries">
 <span id="reactionlibraries"></span><h3>4.2.2. Reaction Libraries<a class="headerlink" href="#reaction-libraries" title="Permalink to this headline">¶</a></h3>

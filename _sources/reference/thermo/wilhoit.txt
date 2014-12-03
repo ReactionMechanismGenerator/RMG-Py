@@ -1,6 +1,7 @@
 ********************
 rmgpy.thermo.Wilhoit
 ********************
+.. _thermoWilhoit:
 
 .. currentmodule:: rmgpy.thermo
 

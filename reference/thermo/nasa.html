@@ -63,7 +63,7 @@
             
   <div class="section" id="rmgpy-thermo-nasa">
 <h1>rmgpy.thermo.NASA<a class="headerlink" href="#rmgpy-thermo-nasa" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
+<span class="target" id="thermonasa"></span><dl class="class">
 <dt id="rmgpy.thermo.NASA">
 <em class="property">class </em><tt class="descclassname">rmgpy.thermo.</tt><tt class="descname">NASA</tt><a class="headerlink" href="#rmgpy.thermo.NASA" title="Permalink to this definition">¶</a></dt>
 <dd><p>NASA(polynomials=None, Tmin=None, Tmax=None, E0=None, comment=&#8217;&#8216;)</p>
@@ -252,6 +252,39 @@ limits at zero and infinite temperature.</p>
 
 </dd></dl>
 
+<p>Here is an example of a NASA entry:</p>
+<div class="highlight-python"><div class="highlight"><pre>    entry(
+index = 2,
+label = &quot;octane&quot;,
+molecule =
+    &quot;&quot;&quot;
+    1 C 0 {2,S}
+    2 C 0 {1,S} {3,S}
+    3 C 0 {2,S} {4,S}
+    4 C 0 {3,S} {5,S}
+    5 C 0 {4,S} {6,S}
+    6 C 0 {5,S} {7,S}
+    7 C 0 {6,S} {8,S}
+    8 C 0 {7,S}
+    &quot;&quot;&quot;,
+thermo = NASA(
+    polynomials = [
+        NASAPolynomial(coeffs=[1.25245480E+01,-1.01018826E-02,2.21992610E-04,-2.84863722E-07,1.12410138E-10,-2.98434398E+04,-1.97109989E+01], Tmin=(200,&#39;K&#39;), Tmax=(1000,&#39;K&#39;)),
+        NASAPolynomial(coeffs=[2.09430708E+01,4.41691018E-02,-1.53261633E-05,2.30544803E-09,-1.29765727E-13,-3.55755088E+04,-8.10637726E+01], Tmin=(1000,&#39;K&#39;), Tmax=(6000,&#39;K&#39;)),
+    ],
+    Tmin = (200,&#39;K&#39;),
+    Tmax = (6000,&#39;K&#39;),
+),
+reference = Reference(authors=[&quot;check on burcat&quot;], title=&#39;burcat&#39;, year=&quot;1999&quot;, url=&quot;http://www.me.berkeley.edu/gri-mech/version30/text30.html&quot;),
+referenceType = &quot;review&quot;,
+shortDesc = u&quot;&quot;&quot;&quot;&quot;&quot;,
+longDesc =
+    u&quot;&quot;&quot;
+
+    &quot;&quot;&quot;,
+    )
+</pre></div>
+</div>
 </div>
 
 

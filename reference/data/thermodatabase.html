@@ -119,7 +119,7 @@ estimate. This method is useful for a generic search job.</p>
 
 <dl class="method">
 <dt id="rmgpy.data.thermo.ThermoDatabase.getThermoData">
-<tt class="descname">getThermoData</tt><big>(</big><em>species</em><big>)</big><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.getThermoData" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getThermoData</tt><big>(</big><em>species</em>, <em>trainingSet=None</em><big>)</big><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.getThermoData" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the thermodynamic parameters for a given <tt class="xref py py-class docutils literal"><span class="pre">Species</span></tt>
 object <cite>species</cite>. This function first searches the loaded libraries
 in order, returning the first match found, before falling back to
@@ -150,10 +150,13 @@ the resonance isomers (items in <cite>species.molecule</cite> list) are sorted i
 
 <dl class="method">
 <dt id="rmgpy.data.thermo.ThermoDatabase.getThermoDataFromLibraries">
-<tt class="descname">getThermoDataFromLibraries</tt><big>(</big><em>species</em><big>)</big><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.getThermoDataFromLibraries" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getThermoDataFromLibraries</tt><big>(</big><em>species</em>, <em>trainingSet=None</em><big>)</big><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.getThermoDataFromLibraries" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the thermodynamic parameters for a given <tt class="xref py py-class docutils literal"><span class="pre">Species</span></tt>
 object <cite>species</cite>. This function first searches the loaded libraries
-in order, returning the first match found, before failing and returning None.</p>
+in order, returning the first match found, before failing and returning None.
+<cite>trainingSet</cite> is used to identify if function is called during training set or not.
+During training set calculation we want to use gas phase thermo to not affect reverse
+rate calculation.</p>
 <p>Returns: ThermoData or None</p>
 </dd></dl>
 

@@ -75,8 +75,28 @@ Thermochemical data in RMG is reported using three different quantities:</p>
 extrapolation of the heat capacity data as a function of temperature.</p>
 <div class="section" id="libraries">
 <h2>10.2.1. Libraries<a class="headerlink" href="#libraries" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="library-types">
+<span id="thermolibrarytype"></span><h3>10.2.1.1. Library types<a class="headerlink" href="#library-types" title="Permalink to this headline">¶</a></h3>
+<p>Two types of thermo libraries are available in RMG: &#8220;gas phase&#8221; and &#8220;liquid thermo&#8221; libraries respectively identified thanks to the absence or presence of the keyword
+<cite>solvent = &#8220;solvent_name&#8221;</cite> in the header of a thermo library. Here is an example of a liquid thermo library header:</p>
+<div class="highlight-python"><div class="highlight"><pre>name = &quot;example_liquid_thermo_library&quot;
+solvent = &quot;octane&quot;
+shortDesc = u&quot;test&quot;
+longDesc = u&quot;&quot;&quot;
+</pre></div>
+</div>
+<p>In this example the library name is &#8220;example_liquid_thermo_library&#8221; and thermo data provided was obtained in <cite>octane</cite> solvent.
+The only difference between gas phase and liquid phase thermo libraries is made through this keyword, the rest of the library is similar to gas phase.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">You can only provide one solvent per library and users should pay attention to not mix thermo of species obtained in different solvent in a same library.
+RMG will raise an error if users try to load a liquid thermo library obtained in another solvent that the one provided in input file. (in the example provided here,
+this liquid thermo library can only be used in liquid phase simulation with octane as solvent.
+RMG will also raise an error if user try to use liquid phase thermo library in gas phase simulations.</p>
+</div>
+</div>
 <div class="section" id="species-thermochemistry-libraries">
-<h3>10.2.1.1. Species thermochemistry libraries<a class="headerlink" href="#species-thermochemistry-libraries" title="Permalink to this headline">¶</a></h3>
+<h3>10.2.1.2. Species thermochemistry libraries<a class="headerlink" href="#species-thermochemistry-libraries" title="Permalink to this headline">¶</a></h3>
 <p>The folder <tt class="docutils literal"><span class="pre">RMG-database/input/thermo/libraries/</span></tt> in RMG-database is the location to store
 species thermochemistry libraries. Each particularly library is stored in a file
 with the extension .py, e.g. &#8216;DFT_QCI_thermo.py&#8217;.</p>
@@ -107,6 +127,8 @@ with the extension .py, e.g. &#8216;DFT_QCI_thermo.py&#8217;.</p>
 labeled &#8216;H2&#8217;, through the adjacency list representation. Heat capacity data (&#8216;Cpdata&#8217;) is described
 at 7 different temperatures, along with the standard enthalpy of formation at 298K (&#8216;H298&#8217;), and
 the standard entropy at 298K (&#8216;S298&#8217;).</p>
+<p>According to the <cite>thermo classes</cite> availble in RMG, you can provide different thermo data: <a class="reference internal" href="../../../reference/thermo/nasa.html#thermonasa"><em>NASA</em></a>, <a class="reference internal" href="../../../reference/thermo/thermodata.html#thermothermodata"><em>thermodata</em></a> (as shown above),
+<a class="reference internal" href="../../../reference/thermo/wilhoit.html#thermowilhoit"><em>wilhoit</em></a> or <a class="reference internal" href="../../../reference/thermo/nasapolynomial.html#thermonasapolynomial"><em>NASAPolynomial</em></a>.</p>
 </div>
 </div>
 <div class="section" id="groups">
@@ -344,7 +366,8 @@ cis-, ortho- and ketene-corrections.</p>
   <ul>
 <li><a class="reference internal" href="#">10.2. Thermo Database</a><ul>
 <li><a class="reference internal" href="#libraries">10.2.1. Libraries</a><ul>
-<li><a class="reference internal" href="#species-thermochemistry-libraries">10.2.1.1. Species thermochemistry libraries</a></li>
+<li><a class="reference internal" href="#library-types">10.2.1.1. Library types</a></li>
+<li><a class="reference internal" href="#species-thermochemistry-libraries">10.2.1.2. Species thermochemistry libraries</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#groups">10.2.2. Groups</a><ul>

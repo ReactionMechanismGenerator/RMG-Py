@@ -65,7 +65,7 @@
 <h1>rmgpy.data.kinetics.KineticsLibrary<a class="headerlink" href="#rmgpy-data-kinetics-kineticslibrary" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="rmgpy.data.kinetics.KineticsLibrary">
-<em class="property">class </em><tt class="descclassname">rmgpy.data.kinetics.</tt><tt class="descname">KineticsLibrary</tt><big>(</big><em>label=''</em>, <em>name=''</em>, <em>shortDesc=''</em>, <em>longDesc=''</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsLibrary" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">rmgpy.data.kinetics.</tt><tt class="descname">KineticsLibrary</tt><big>(</big><em>label=''</em>, <em>name=''</em>, <em>solvent=None</em>, <em>shortDesc=''</em>, <em>longDesc=''</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsLibrary" title="Permalink to this definition">¶</a></dt>
 <dd><p>A class for working with an RMG kinetics library.</p>
 <dl class="method">
 <dt id="rmgpy.data.kinetics.KineticsLibrary.ancestors">
@@ -79,19 +79,6 @@
 <dd><p>Check that all duplicate reactions in the kinetics library are
 properly marked (i.e. with their <tt class="docutils literal"><span class="pre">duplicate</span></tt> attribute set to 
 <tt class="docutils literal"><span class="pre">True</span></tt>).</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.data.kinetics.KineticsLibrary.checkWellFormed">
-<tt class="descname">checkWellFormed</tt><big>(</big><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsLibrary.checkWellFormed" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return <tt class="xref py py-data docutils literal"><span class="pre">True</span></tt> if the database is well-formed. A well-formed
-database has an entry in the dictionary for every entry in the tree, and
-an entry in the tree for every entry in the library. If no tree is
-present (e.g. the primary libraries), then every entry in the library
-must have an entry in the dictionary. Finally, each entry in the
-library must have the same number of nodes as the number of top-level
-nodes in the tree, if the tree is present; this is for databases with
-multiple trees, e.g. the kinetics databases.</p>
 </dd></dl>
 
 <dl class="method">
@@ -225,9 +212,7 @@ not discard duplicate entries.</p>
 <dl class="method">
 <dt id="rmgpy.data.kinetics.KineticsLibrary.save">
 <tt class="descname">save</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#rmgpy.data.kinetics.KineticsLibrary.save" title="Permalink to this definition">¶</a></dt>
-<dd><p>Save the current database to the file at location <cite>path</cite> on disk. The
-optional <cite>entryName</cite> parameter specifies the identifier used for each
-data entry.</p>
+<dd><p>Save the current database to the file at location <cite>path</cite> on disk.</p>
 </dd></dl>
 
 <dl class="method">

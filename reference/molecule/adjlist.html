@@ -100,8 +100,20 @@ Thus, it can usually be omitted, but if present can be used to distinguish,
 for example, singlet CH2 from triplet CH2.</p>
 <p>If defining a Functional <a class="reference internal" href="group.html#rmgpy.molecule.Group" title="rmgpy.molecule.Group"><tt class="xref py py-class docutils literal"><span class="pre">Group</span></tt></a>, then the value must be a list,
 which defines the multiplicities that will be matched by the group, eg.
-<tt class="docutils literal"><span class="pre">multiplicity</span> <span class="pre">[1,2,3,4,5]</span></tt> or, for a single value, <tt class="docutils literal"><span class="pre">multiplicity</span> <span class="pre">[1]</span></tt>.
-If the multiplicity line is omitted, then <tt class="docutils literal"><span class="pre">multiplicity</span> <span class="pre">[1,2,3,4,5]</span></tt> is assumed.</p>
+<tt class="docutils literal"><span class="pre">multiplicity</span> <span class="pre">[1,2,3]</span></tt> or, for a single value, <tt class="docutils literal"><span class="pre">multiplicity</span> <span class="pre">[1]</span></tt>.
+If a wildcard is desired, the line <tt class="docutils literal"><span class="pre">'multiplicity</span> <span class="pre">x</span></tt> can be used instead to accept
+all multiplicities.  If the multiplicity line is omitted altogether, then a wildcard
+is assumed.</p>
+<p>e.g. the following two group adjlists represent identical groups.</p>
+<div class="highlight-python"><div class="highlight"><pre>group1
+multiplicity x
+1    R!H u0
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>group2
+1    R!H u0
+</pre></div>
+</div>
 <p>After the identifier line and keyword-value lines,
 each subsequent line describes a single atom and its
 local bond structure. The format of these lines is a whitespace-delimited list
@@ -133,8 +145,8 @@ The value can be an integer or a list of integers (with signs, for charges),</p>
 <blockquote>
 <div>eg. <tt class="docutils literal"><span class="pre">u[0,1,2]</span></tt> or <tt class="docutils literal"><span class="pre">c[0,+1,+2,+3,+4]</span></tt>, or may be a wildcard <tt class="docutils literal"><span class="pre">x</span></tt>
 which matches any valid value,</div></blockquote>
-<p>eg. <tt class="docutils literal"><span class="pre">px</span></tt> is the same as <tt class="docutils literal"><span class="pre">p[0,1,2,3,4]</span></tt> and <tt class="docutils literal"><span class="pre">cx</span></tt> is the same as
-<tt class="docutils literal"><span class="pre">c[-4,-3,-2,-1,0,+1,+2,+3,+4]</span></tt>. Lists must be enclosed is square brackets,
+<p>eg. <tt class="docutils literal"><span class="pre">px</span></tt> is the same as <tt class="docutils literal"><span class="pre">p[0,1,2,3,4,</span> <span class="pre">...]</span></tt> and <tt class="docutils literal"><span class="pre">cx</span></tt> is the same as
+<tt class="docutils literal"><span class="pre">c[...,-4,-3,-2,-1,0,+1,+2,+3,+4,...]</span></tt>. Lists must be enclosed is square brackets,
 and separated by commas, without spaces.
 If lone pairs or formal charges are omitted from a group definition,
 the wildcard is assumed.</p>
