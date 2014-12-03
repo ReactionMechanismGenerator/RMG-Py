@@ -47,6 +47,25 @@ memory (RAM) requirements are also important considerations. A fairly
 accurate and fast method for computing ΔG, which is used in RMG, is the
 LSER approach described below.
 
+.. _useofthermolibrariesliquid:
+
+Use of thermo libraries in liquid phase system
+---------------------------------------------------
+
+As it is for gas phase simulation, thermo libraries listed in the input files are checked first to find thermo for a given species and return the first match.
+As it exists two types of thermo libraries, (more details on :ref:`thermo libraries <thermoDatabase>`),
+thermo of species matching a library in a liquid phase simulation is obtained following those two cases:
+
+If library is a "liquid thermo library", thermo data are directly used without applying solvation on it.
+
+If library is a "gas thermo library", thermo data are extracted and then corrections are applied on it using the :ref:`LSER method <lserToEstimateThermo>`
+for this specific species-solvent system. 
+
+.. note::
+	Gas phase libraries can be declared first, liquid thermo libraries will still be tested first but the order will be respected if several liquid libraries are provided. 
+
+.. _lserToEstimateThermo:
+
 Use of Abraham LSER to estimate thermochemistry
 -----------------------------------------------
 
@@ -148,6 +167,7 @@ and a correlation for the viscosity using parameters `A, B, C, D, E`:
        
 To build accurate models of liquid phase chemical reactions you will also want to modify your kinetics libraries or correct gas-phase rates for intrinsic barrier solvation corrections (coming soon).
 
+.. _exampleLiquidPhase:
 
 Example liquid-phase input file
 ================================
