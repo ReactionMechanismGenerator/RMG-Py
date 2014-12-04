@@ -32,12 +32,13 @@ consisting of a homogeneous, isothermal, isobaric batch reactor.
 
 import numpy
 cimport numpy
-#try:
-#    # Import DASPK first if it is available for sensitivity capabilities
-#    from pydaspk cimport DASPK as DASx
-#except:
-#    from pydas cimport DASSL as DASx
-from pydas cimport DASSL as DASx
+
+include "settings.pxi"
+if DASPK == 1:
+    from pydaspk cimport DASPK as DASx
+else:
+    from pydas cimport DASSL as DASx
+    
 from base cimport ReactionSystem
 cimport cython
 

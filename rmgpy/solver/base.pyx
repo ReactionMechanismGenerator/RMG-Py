@@ -37,12 +37,13 @@ import numpy
 cimport numpy
 import rmgpy.constants as constants
 cimport rmgpy.constants as constants
-#try:
-#    # Import DASPK first if it is available for sensitivity capabilities
-#    from pydaspk cimport DASPK as DASx
-#except:
-#    from pydas cimport DASSL as DASx
-from pydas cimport DASSL as DASx
+
+include "settings.pxi"
+if DASPK == 1:
+    from pydaspk cimport DASPK as DASx
+else:
+    from pydas cimport DASSL as DASx
+    
 import cython
 import logging
 import csv

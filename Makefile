@@ -4,6 +4,9 @@
 #
 ################################################################################
 
+
+sensitivity=off
+
 .PHONY : all minimal main measure solver cantherm clean decython documentation QM
 
 all: main measure solver QM
@@ -22,8 +25,15 @@ measure:
 	python setup.py build_ext measure --build-lib . --build-temp build --pyrex-c-in-temp
 
 solver:
+ifeq ($(sensitivity),on)
+	echo "Checking you have PyDASPK"
+	@ python -c 'import pydaspk; print pydaspk.__file__'
+	echo "DEF DASPK = 1" > rmgpy/solver/settings.pxi
+else
 	echo "Checking you have PyDAS..."
 	@ python -c 'import pydas; print pydas.__file__'
+	echo "DEF DASPK = 0" > rmgpy/solver/settings.pxi
+endif
 	python setup.py build_ext solver --build-lib . --build-temp build --pyrex-c-in-temp
 
 cantherm:
