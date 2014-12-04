@@ -32,7 +32,12 @@ consisting of a homogeneous, isothermal, isobaric batch reactor.
 
 import numpy
 cimport numpy
-from pydas cimport DASSL
+#try:
+#    # Import DASPK first if it is available for sensitivity capabilities
+#    from pydaspk cimport DASPK as DASx
+#except:
+#    from pydas cimport DASSL as DASx
+from pydas cimport DASSL as DASx
 from base cimport ReactionSystem
 cimport cython
 
@@ -59,6 +64,7 @@ cdef class SimpleReactor(ReactionSystem):
     cdef public numpy.ndarray networkIndices
     cdef public numpy.ndarray forwardRateCoefficients
     cdef public numpy.ndarray reverseRateCoefficients
+    cdef public numpy.ndarray equilibriumConstants
     cdef public numpy.ndarray networkLeakCoefficients
     cdef public numpy.ndarray jacobianMatrix
 
@@ -76,6 +82,8 @@ cdef class SimpleReactor(ReactionSystem):
         self.networkIndices = None
         self.forwardRateCoefficients = None
         self.reverseRateCoefficients = None
+        self.equilibriumConstants = None
+        self.networkLeakCoefficients = None
         self.jacobianMatrix = None
         
     def convertInitialKeysToSpeciesObjects(self, speciesDict):
@@ -99,11 +107,11 @@ cdef class SimpleReactor(ReactionSystem):
         ReactionSystem.initializeModel(self, coreSpecies, coreReactions, edgeSpecies, edgeReactions, pdepNetworks, atol, rtol, sensitivity)
 
         cdef int numCoreSpecies, numCoreReactions, numEdgeSpecies, numEdgeReactions, numPdepNetworks
-        cdef int i, j, l, index
+        cdef int i, j, l, index, neq
         cdef double V
         cdef dict speciesIndex, reactionIndex
         cdef numpy.ndarray[numpy.int_t, ndim=2] reactantIndices, productIndices, networkIndices
-        cdef numpy.ndarray[numpy.float64_t, ndim=1] forwardRateCoefficients, reverseRateCoefficients, networkLeakCoefficients
+        cdef numpy.ndarray[numpy.float64_t, ndim=1] forwardRateCoefficients, reverseRateCoefficients, equilibriumConstants, networkLeakCoefficients
         
         pdepNetworks = pdepNetworks or []
 
@@ -132,12 +140,14 @@ cdef class SimpleReactor(ReactionSystem):
         productIndices = -numpy.ones_like(reactantIndices)
         forwardRateCoefficients = numpy.zeros((numCoreReactions + numEdgeReactions), numpy.float64)
         reverseRateCoefficients = numpy.zeros_like(forwardRateCoefficients)
+        equilibriumConstants = numpy.zeros_like(forwardRateCoefficients)
         for rxnList in [coreReactions, edgeReactions]:
             for rxn in rxnList:
                 j = reactionIndex[rxn]
                 forwardRateCoefficients[j] = rxn.getRateCoefficient(self.T.value_si, self.P.value_si)
                 if rxn.reversible:
-                    reverseRateCoefficients[j] = forwardRateCoefficients[j] / rxn.getEquilibriumConstant(self.T.value_si)
+                    equilibriumConstants[j] = rxn.getEquilibriumConstant(self.T.value_si)
+                    reverseRateCoefficients[j] = forwardRateCoefficients[j] / equilibriumConstants[j]
                 for l, spec in enumerate(rxn.reactants):
                     i = speciesIndex[spec]
                     reactantIndices[j,l] = i
@@ -157,23 +167,33 @@ cdef class SimpleReactor(ReactionSystem):
         self.productIndices = productIndices
         self.forwardRateCoefficients = forwardRateCoefficients
         self.reverseRateCoefficients = reverseRateCoefficients
+        self.equilibriumConstants = equilibriumConstants
         self.networkIndices = networkIndices
         self.networkLeakCoefficients = networkLeakCoefficients
         
         # Set initial conditions
         t0 = 0.0
-        y0 = numpy.zeros((numCoreSpecies), numpy.float64)
+        # Compute number of equations    
+        if sensitivity:    
+            # Set DASPK sensitivity analysis to ON
+            self.sensitivity = True
+            # Compute number of variables
+            neq = numCoreSpecies*(len(forwardRateCoefficients)+1)
+        else:
+            neq = numCoreSpecies
+        y0 = numpy.zeros(neq, numpy.float64)
         for spec, moleFrac in self.initialMoleFractions.iteritems():
             y0[speciesIndex[spec]] = moleFrac
             
         # Use ideal gas law to compute volume
-        V = constants.R * self.T.value_si * numpy.sum(y0) / self.P.value_si
-        for j in range(y0.shape[0]):
+        V = constants.R * self.T.value_si * numpy.sum(y0[:numCoreSpecies]) / self.P.value_si
+        for j in range(numCoreSpecies):
             self.coreSpeciesConcentrations[j] = y0[j] / V
         
         # Initialize the model
-        dydt0 = - self.residual(t0, y0, numpy.zeros((numCoreSpecies), numpy.float64))[0]
-        DASSL.initialize(self, t0, y0, dydt0, atol, rtol)
+        #dydt0 = numpy.zeros(neq, numpy.float64)
+        dydt0 = - self.residual(t0, y0, numpy.zeros(neq, numpy.float64), forwardRateCoefficients)[0]
+        DASx.initialize(self, t0, y0, dydt0, forwardRateCoefficients, atol, rtol)
 
     cpdef writeWorksheetHeader(self, worksheet):
         """
@@ -186,7 +206,7 @@ cdef class SimpleReactor(ReactionSystem):
         worksheet.write(1, 0, 'T = {0:g} K, P = {1:g} bar'.format(self.T.value_si, self.P.value_si/1e5))
 
     @cython.boundscheck(False)
-    def residual(self, double t, numpy.ndarray[numpy.float64_t, ndim=1] y, numpy.ndarray[numpy.float64_t, ndim=1] dydt):
+    def residual(self, double t, numpy.ndarray[numpy.float64_t, ndim=1] y, numpy.ndarray[numpy.float64_t, ndim=1] dydt, numpy.ndarray[numpy.float64_t, ndim=1] senpar):
 
         """
         Return the residual function for the governing DAE system for the
@@ -200,12 +220,17 @@ cdef class SimpleReactor(ReactionSystem):
         cdef numpy.ndarray[numpy.float64_t, ndim=1] coreSpeciesConcentrations, coreSpeciesRates, coreReactionRates, edgeSpeciesRates, edgeReactionRates, networkLeakRates
         cdef numpy.ndarray[numpy.float64_t, ndim=1] C
 
-        res = numpy.zeros(y.shape[0], numpy.float64)
-
         ir = self.reactantIndices
         ip = self.productIndices
-        kf = self.forwardRateCoefficients
-        kr = self.reverseRateCoefficients
+        if self.sensitivity:
+            kf = senpar
+            kr = numpy.zeros_like(kf)
+            for j in range(len(senpar)):
+                kr[j] = kf[j] / self.equilibriumConstants[j]
+        else:
+            kf = self.forwardRateCoefficients
+            kr = self.reverseRateCoefficients
+        
         inet = self.networkIndices
         knet = self.networkLeakCoefficients
 
@@ -214,6 +239,9 @@ cdef class SimpleReactor(ReactionSystem):
         numEdgeSpecies = len(self.edgeSpeciesRates)
         numEdgeReactions = len(self.edgeReactionRates)
         numPdepNetworks = len(self.networkLeakRates)
+        
+        
+        res = numpy.zeros(numCoreSpecies, numpy.float64)
 
         coreSpeciesConcentrations = numpy.zeros_like(self.coreSpeciesConcentrations)
         coreSpeciesRates = numpy.zeros_like(self.coreSpeciesRates)
@@ -225,9 +253,9 @@ cdef class SimpleReactor(ReactionSystem):
         C = numpy.zeros_like(self.coreSpeciesConcentrations)
         
         # Use ideal gas law to compute volume
-        V = constants.R * self.T.value_si * numpy.sum(y) / self.P.value_si
+        V = constants.R * self.T.value_si * numpy.sum(y[:numCoreSpecies]) / self.P.value_si
 
-        for j in range(y.shape[0]):
+        for j in range(numCoreSpecies):
             C[j] = y[j] / V
             coreSpeciesConcentrations[j] = C[j]
         
@@ -318,11 +346,26 @@ cdef class SimpleReactor(ReactionSystem):
         self.edgeReactionRates = edgeReactionRates
         self.networkLeakRates = networkLeakRates
 
-        res = coreSpeciesRates * V - dydt
-        return res, 0
+        res = coreSpeciesRates * V #- dydt[:numCoreSpecies]
+        
+        
+        if self.sensitivity:
+            delta = numpy.zeros(len(y), numpy.float64)
+            delta[:numCoreSpecies] = res
+            jacobian = self.jacobian(t,y,dydt,0,senpar)
+            dgdk = self.computeRateDerivative(y)
+            for j in range(numCoreReactions):
+                for i in range(numCoreSpecies):
+                    for k in range(numCoreSpecies):
+                        delta[(j+1)*numCoreSpecies + i] += jacobian[i,k]*y[(j+1)*numCoreSpecies + k] 
+                    delta[(j+1)*numCoreSpecies + i] += dgdk[i,j]
+        else:
+            delta = res
+        delta = delta - dydt
+        return delta, 1
     
     @cython.boundscheck(False)
-    def jacobian(self, double t, numpy.ndarray[numpy.float64_t, ndim=1] y, numpy.ndarray[numpy.float64_t, ndim=1] dydt, double cj):
+    def jacobian(self, double t, numpy.ndarray[numpy.float64_t, ndim=1] y, numpy.ndarray[numpy.float64_t, ndim=1] dydt, double cj, numpy.ndarray[numpy.float64_t, ndim=1] senpar):
         """
         Return the analytical Jacobian for the reaction system.
         """
@@ -332,16 +375,22 @@ cdef class SimpleReactor(ReactionSystem):
         cdef int numCoreReactions, numCoreSpecies, i, j
         cdef double k, V, Ctot, deriv, corr
         
-        pd = -cj * numpy.identity(y.shape[0], numpy.float64)
         ir = self.reactantIndices
         ip = self.productIndices
-        kf = self.forwardRateCoefficients
-        kr = self.reverseRateCoefficients
+        if self.sensitivity:
+            kf = senpar
+            kr = numpy.zeros_like(kf)
+            for j in range(len(senpar)):
+                kr[j] = kf[j] / self.equilibriumConstants[j]
+        else:
+            kf = self.forwardRateCoefficients
+            kr = self.reverseRateCoefficients
         numCoreReactions = len(self.coreReactionRates)
         numCoreSpecies = len(self.coreSpeciesConcentrations)
         
+        pd = -cj * numpy.identity(numCoreSpecies, numpy.float64)
         # Use ideal gas law to compute volume
-        V = constants.R * self.T.value_si * numpy.sum(y) / self.P.value_si
+        V = constants.R * self.T.value_si * numpy.sum(y[:numCoreSpecies]) / self.P.value_si
         
         Ctot = self.P.value_si /(constants.R * self.T.value_si)
 
@@ -745,11 +794,11 @@ cdef class SimpleReactor(ReactionSystem):
                             for i in range(numCoreSpecies):
                                 pd[ir[j,2], i] += corr  
 
-        self.jacobianMatrix = pd + cj * numpy.identity(y.shape[0], numpy.float64)
+        self.jacobianMatrix = pd + cj * numpy.identity(numCoreSpecies, numpy.float64)
         return pd
     
     @cython.boundscheck(False)
-    def computeRateDerivative(self):
+    def computeRateDerivative(self, y):
         """
         Returns derivative vector df/dk_j where dy/dt = f(y, t, k) and
         k_j is the rate parameter for the jth core reaction.
@@ -770,7 +819,7 @@ cdef class SimpleReactor(ReactionSystem):
         numCoreSpecies = len(self.coreSpeciesConcentrations)      
         
         # Use ideal gas law to compute volume
-        V = constants.R * self.T.value_si * numpy.sum(self.y) / self.P.value_si
+        V = constants.R * self.T.value_si * numpy.sum(y[:numCoreSpecies]) / self.P.value_si
 
         C = self.coreSpeciesConcentrations
 

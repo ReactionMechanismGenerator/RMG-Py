@@ -37,10 +37,13 @@ cdef class DASSL:
 	cdef public double maximumStep
 	cdef public object bandwidths
 	cdef public bint nonnegative
+	cdef public bint sensitivity
+	cdef public int sensmethod
 	
 	cdef public double t
 	cdef public numpy.ndarray y
-	cdef public numpy.ndarray dydt
+	cdef public numpy.ndarray dydt	
+	cdef public numpy.ndarray senpar
 	
 	cdef numpy.ndarray info
 	cdef numpy.ndarray atol
@@ -51,7 +54,7 @@ cdef class DASSL:
 	cdef numpy.ndarray ipar
 	cdef int idid
 	
-	cpdef initialize(self, double t0, y0, dydt0=?, atol=?, rtol=?)
+	cpdef initialize(self, double t0, y0, dydt0=?, senpar=?, atol=?, rtol=?)
 	
 	cpdef advance(self, double tout)
 		

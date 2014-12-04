@@ -37,8 +37,12 @@ import numpy
 cimport numpy
 import rmgpy.constants as constants
 cimport rmgpy.constants as constants
-from pydas cimport DASSL
-
+#try:
+#    # Import DASPK first if it is available for sensitivity capabilities
+#    from pydaspk cimport DASPK as DASx
+#except:
+#    from pydas cimport DASSL as DASx
+from pydas cimport DASSL as DASx
 import cython
 import logging
 import csv
@@ -47,13 +51,14 @@ from rmgpy.quantity import Quantity
 
 ################################################################################
 
-cdef class ReactionSystem(DASSL):
+cdef class ReactionSystem(DASx):
     """
     A base class for all RMG reaction systems.
     """
 
     def __init__(self, termination=None):
-        DASSL.__init__(self)
+        DASx.__init__(self)
+        self.sensmethod = 0 # sensmethod = 1 for staggered corrector sensitivities, 0 (simultaneous corrector), 2 (staggered direct)
         # The reaction and species rates at the current time (in mol/m^3*s)
         self.coreSpeciesConcentrations = None
         self.coreSpeciesRates = None
@@ -127,14 +132,20 @@ cdef class ReactionSystem(DASSL):
         cdef dict speciesIndex
         cdef int index, maxSpeciesIndex, maxNetworkIndex
         cdef int numCoreSpecies, numEdgeSpecies, numPdepNetworks, numCoreReactions
-        cdef double stepTime, charRate, maxSpeciesRate, maxNetworkRate, prevTime, volume
-        cdef numpy.ndarray[numpy.float64_t, ndim=1] y0, dydk  #: Vector containing the number of moles of each species
+        cdef double stepTime, charRate, maxSpeciesRate, maxNetworkRate
+        cdef numpy.ndarray[numpy.float64_t, ndim=1] y0, dVdk  #: Vector containing the number of moles of each species
         cdef numpy.ndarray[numpy.float64_t, ndim=1] coreSpeciesRates, edgeSpeciesRates, networkLeakRates
         cdef numpy.ndarray[numpy.float64_t, ndim=1] maxCoreSpeciesRates, maxEdgeSpeciesRates, maxNetworkLeakRates,maxEdgeSpeciesRateRatios, maxNetworkLeakRateRatios
         cdef bint terminated
         cdef object maxSpecies, maxNetwork
-        cdef int iteration, i
-        cdef numpy.ndarray[numpy.float64_t, ndim=2] A, moleSens, normSens, b
+        cdef int i, j
+        cdef numpy.ndarray[numpy.float64_t, ndim=1] forwardRateCoefficients
+        cdef double  prevTime, totalMoles, c, volume
+        #cdef numpy.ndarray[numpy.float64_t, ndim=2] A, moleSens, normSens, b
+        
+#        # Turn on DASPK sensitivity
+#        if sensitivity:
+#            self.sensitivity = True 
         
         pdepNetworks = pdepNetworks or []
 
@@ -164,6 +175,7 @@ cdef class ReactionSystem(DASSL):
         maxNetworkLeakRates = self.maxNetworkLeakRates
         maxEdgeSpeciesRateRatios = self.maxEdgeSpeciesRateRatios
         maxNetworkLeakRateRatios = self.maxNetworkLeakRateRatios
+        forwardRateCoefficients = self.forwardRateCoefficients
         
         # Copy the initial conditions to use in evaluating conversions
         y0 = self.y.copy()
@@ -171,22 +183,17 @@ cdef class ReactionSystem(DASSL):
         
         if worksheet:
             row = ['Time (s)']
-            worksheet.writerow(['Time (s)','Mole fraction'])
-            row = ['']
             for i in range(numCoreSpecies):
                 row.append(str(coreSpecies[i]))
             worksheet.writerow(row)
         
-        if sensitivity:            
-            # initialize molar sensitivity coefficients to zeros
-            moleSens = self.sensitivityCoefficients
-            
+        if sensitivity:
             time_array = []
-            normSens_array = [[] for spec in sensitivity]    
+            normSens_array = [[] for spec in self.sensitiveSpecies]    
             
             # identify species indices
             sensSpeciesIndices = []
-            for spec in sensitivity:
+            for spec in self.sensitiveSpecies:
                 sensSpeciesIndices.append(speciesIndex[spec])  # index within coreSpecies list of the sensitive species
                 
         
@@ -195,29 +202,57 @@ cdef class ReactionSystem(DASSL):
         while not terminated:
             # Integrate forward in time by one time step
             self.step(stepTime)
-            iteration += 1
+#            iteration += 1
+#            if sensitivity:
+#                self.jacobian(self.t, self.y, self.y, 0)
+#                A = self.jacobianMatrix - 1 / (self.t - prevTime) * numpy.identity(numCoreSpecies, numpy.float64)
+#                b = - 1 / (self.t - prevTime) * moleSens - self.computeRateDerivative() 
+#                moleSens = numpy.dot(numpy.linalg.inv(A), b)                                     
+#                volume = sum(self.y) * constants.R * self.T.value_si / self.P.value_si  
+#                
+#                dydk = numpy.zeros(numCoreReactions, numpy.float64)
+#                for j in range(numCoreReactions):
+#                    dydk[j] = sum(moleSens[:,j])                
+#                
+#                normSens = 1 / volume * (moleSens - numpy.outer(self.y/sum(self.y), dydk)) * self.getNormalizationFactor()   
+#                prevTime = self.t
+#                self.sensitivityCoefficients = moleSens
+#                
+#                time_array.append(self.t)
+#                for i in range(len(sensitivity)):
+#                    normSens_array[i].append([normSens[sensSpeciesIndices[i],j] for j in range(numCoreReactions)])
+
+
+
+            totalMoles = sum(self.y[:numCoreSpecies])
             if sensitivity:
-                self.jacobian(self.t, self.y, self.y, 0)
-                A = self.jacobianMatrix - 1 / (self.t - prevTime) * numpy.identity(numCoreSpecies, numpy.float64)
-                b = - 1 / (self.t - prevTime) * moleSens - self.computeRateDerivative() 
-                moleSens = numpy.dot(numpy.linalg.inv(A), b)                                     
-                volume = sum(self.y) * constants.R * self.T.value_si / self.P.value_si  
-                
-                dydk = numpy.zeros(numCoreReactions, numpy.float64)
-                for j in range(numCoreReactions):
-                    dydk[j] = sum(moleSens[:,j])                
-                
-                normSens = 1 / volume * (moleSens - numpy.outer(self.y/sum(self.y), dydk)) * self.getNormalizationFactor()   
-                prevTime = self.t
-                self.sensitivityCoefficients = moleSens
-                
                 time_array.append(self.t)
-                for i in range(len(sensitivity)):
-                    normSens_array[i].append([normSens[sensSpeciesIndices[i],j] for j in range(numCoreReactions)])
+                moleSens = self.y[numCoreSpecies:]#       
+                volume = totalMoles * constants.R * self.T.value_si / self.P.value_si
                 
+                dVdk = numpy.zeros(numCoreReactions, numpy.float64)
+                for j in range(numCoreReactions):
+                    dVdk[j] = sum(moleSens[j*numCoreSpecies:(j+1)*numCoreSpecies])*constants.R*self.T.value_si/self.P.value_si
+                for i in sensSpeciesIndices:
+#                    dydk = 0
+#                    for j in range(numCoreReactions):
+#                        dydk += moleSens[j*numCoreSpecies+i]
+#                        
+#                    dydk = sum(moleSens[index*numCoreReactions:(index+1)*numCoreReactions])
+                    normSens = []
+                    c = self.coreSpeciesConcentrations[i]
+                    if c != 0:                        
+                        for j in range(numCoreReactions):
+                            normSens.append(1/volume*(moleSens[j*numCoreSpecies+i]-c*dVdk[j])*forwardRateCoefficients[j]/c)
+                            #normSens.append(moleSens[j*numCoreSpecies+i]/c)
+                    else:
+                        normSens = numpy.zeros(numCoreReactions, numpy.float64)
+                    normSens_array[i].append(normSens)
+
+            # Save the species mole fractions to CSV file
             if worksheet:
                 row = [self.t]
-                row.extend(self.y/numpy.sum(self.y))
+                row.extend(self.y[:numCoreSpecies]/totalMoles)
                 worksheet.writerow(row)
 
             # Get the characteristic flux
@@ -306,8 +341,8 @@ cdef class ReactionSystem(DASSL):
                 stepTime *= 10.0
                 
             
-        if sensWorksheet:   
-            for i in range(len(sensitivity)):
+        if sensitivity:   
+            for i in range(len(self.sensitiveSpecies)):
                 reactionsAboveThreshold = []
                 for j in range(numCoreReactions):
                     for k in range(len(time_array)):

@@ -23,7 +23,7 @@
 #   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #   DEALINGS IN THE SOFTWARE.
 #
-################################################################################
+########################dydt0########################################################
 
 """
 Contains the :class:`SimpleReactor` class, providing a reaction system
@@ -32,7 +32,12 @@ consisting of a homogeneous, isothermal, isobaric batch reactor.
 
 import numpy
 cimport numpy
-from pydas cimport DASSL
+#try:
+#    # Import DASPK first if it is available for sensitivity capabilities
+#    from pydaspk cimport DASPK as DASx
+#except:
+#    from pydas cimport DASSL as DASx
+from pydas cimport DASSL as DASx
 from base cimport ReactionSystem
 cimport cython
 
@@ -178,7 +183,7 @@ cdef class LiquidReactor(ReactionSystem):
         
         # Initialize the model
         dydt0 = - self.residual(t0, y0, numpy.zeros((numCoreSpecies), numpy.float64))[0]
-        DASSL.initialize(self, t0, y0, dydt0, atol, rtol)
+        DASx.initialize(self, t0, y0, dydt0, dydt0, atol, rtol)
 
     cpdef writeWorksheetHeader(self, worksheet):
         """

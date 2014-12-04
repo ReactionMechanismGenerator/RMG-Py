@@ -26,11 +26,15 @@
 ################################################################################
 
 cimport numpy
-from pydas cimport DASSL
-
+#try:
+#    # Import DASPK first if it is available for sensitivity capabilities
+#    from pydaspk cimport DASPK as DASx
+#except:
+#    from pydas cimport DASSL as DASx
+from pydas cimport DASSL as DASx
 ################################################################################
 
-cdef class ReactionSystem(DASSL):
+cdef class ReactionSystem(DASx):
 
     cdef public numpy.ndarray coreSpeciesConcentrations
     cdef public numpy.ndarray coreSpeciesRates
