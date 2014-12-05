@@ -1120,7 +1120,7 @@ class ModelMatcher():
                 self.suggestedMatches = {}
                 if reactionsMatch(edgeReaction, chemkinReaction):
                     edgeReactionMatchesSomething = True
-                    logging.info("Chemkin reaction     {0}\n matches RMG reaction  {1}".format(chemkinReaction, edgeReaction))
+                    logging.info("Chemkin reaction     {0}\n matches RMG {2} reaction  {1}".format(chemkinReaction, edgeReaction, edgeReaction.family.name))
                     if self.suggestedMatches:
                         logging.info(" suggesting new species match: {0!r}".format(dict((l, str(s)) for (l, s) in self.suggestedMatches.iteritems())))
                     else:
