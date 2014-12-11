@@ -200,7 +200,7 @@ class Species(rmgpy.species.Species):
         # Compute E0 by extrapolation to 0 K
         if self.conformer is None:
             self.conformer = Conformer()
-        self.conformer.E0 = (wilhoit.getEnthalpy(1.0)*1e-3,"kJ/mol")
+        self.conformer.E0 = wilhoit.E0
         
         # Convert to desired thermo class
         if thermoClass is Wilhoit:
