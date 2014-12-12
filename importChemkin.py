@@ -882,11 +882,11 @@ class ModelMatcher():
         Clear all tentative matches from that have either that label or species, 
         eg. because you've confirmed a match.
         """
-        for (l, s, h) in self.tentativeMatches:
-            if l == chemkinLabel or s == rmgSpecies:
-                self.tentativeMatches.remove((l, s, h))
+        for match in self.tentativeMatches:
+            if match['label'] == chemkinLabel or match['species'] == rmgSpecies:
+                self.tentativeMatches.remove(match)
 
-    def setTentativeMatch(self, chemkinLabel, rmgSpecies):
+    def setTentativeMatch(self, chemkinLabel, rmgSpecies, username=None):
         """
         Store a tentative match, waiting for user confirmation.
         
@@ -895,17 +895,17 @@ class ModelMatcher():
         the new one, call it again.
         """
         self.drawSpecies(rmgSpecies)
-        for (l, s, h) in self.tentativeMatches:
-            if l == chemkinLabel:
-                if s == rmgSpecies:
+        for match in self.tentativeMatches:
+            if match['label'] == chemkinLabel:
+                if match['species'] == rmgSpecies:
                     return True  # it's already there
                 else:
                     # something else matches that label! Remove both
-                    self.tentativeMatches.remove((l, s, h))
+                    self.tentativeMatches.remove(match)
                     return False
-            elif s == rmgSpecies:
+            elif match['species'] == rmgSpecies:
                 # something else matches that rmgSpecies! Remove both
-                self.tentativeMatches.remove((l, s, h))
+                self.tentativeMatches.remove(match)
                 return False
         for (l, s) in self.manualMatchesToProcess:
             if l == chemkinLabel:
@@ -933,7 +933,11 @@ class ModelMatcher():
 
         # haven't already returned? then
         # that tentative match is new, add it
-        self.tentativeMatches.append((chemkinLabel, rmgSpecies, self.getEnthalpyDiscrepancy(chemkinLabel, rmgSpecies)))
+        self.tentativeMatches.append({'label': chemkinLabel,
+                                      'species': rmgSpecies,
+                                      'enthalpy': self.getEnthalpyDiscrepancy(chemkinLabel, rmgSpecies),
+                                      'username': username,
+                                     })
         return True
 
     def checkThermoLibraries(self):
@@ -1784,7 +1788,11 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
         img = self._img
         output = [self.html_head(), '<h1>{0} Tentative Matches</h1><table style="width:800px">'.format(len(self.tentativeMatches))]
         output.append("<tr><th>Name</th><th>Molecule</th><th>&Delta;H&deg;<sub>f</sub>(298K)</th><th>Matching Thermo</th></tr>")
-        for (chemkinLabel, rmgSpec, deltaH) in self.tentativeMatches:
+        for match in self.tentativeMatches:
+            chemkinLabel = match['label']
+            rmgSpec = match['species']
+            deltaH = match['enthalpy']
+            username = match['username']
             output.append("<tr><td>{label}</td><td>{img}</td><td title='{Hsource}'>{delH:.1f} kJ/mol</td>".format(img=img(rmgSpec), label=chemkinLabel, delH=deltaH, Hsource=rmgSpec.thermo.comment))
             output.append("<td>")
             try:
@@ -1801,6 +1809,10 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
             output.append("<td><a href='/edit.html?ckLabel={ckl}&SMILES={smi}'>edit</a></td>".format(ckl=urllib2.quote(chemkinLabel), smi=urllib2.quote(rmgSpec.molecule[0].toSMILES())))
             output.append("<td><a href='/clear.html?ckLabel={ckl}'>clear</a></td>".format(ckl=urllib2.quote(chemkinLabel)))
             output.append("<td><a href='/votes.html#{label}'>check {num} votes</a></td>".format(label=urllib2.quote(chemkinLabel), num=len(self.votes[chemkinLabel].get(rmgSpec,[]))) if chemkinLabel in self.votes else "<td>No votes yet.</td>")
+            if username:
+                output.append("<td>Proposed by {0}</td>".format(username))
+            else:
+                output.append("<td></td>")
             output.append("</tr>")
         output.extend(['</table>', self.html_tail])
         return ('\n'.join(output))
@@ -1876,7 +1888,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
     def species_html(self, sort="ck"):
         img = self._img
         output = [self.html_head(), '<h1>All {0} Species</h1><table>'.format(len(self.speciesList))]
-        tentativeDict = dict((chemkinLabel, (rmgSpec, deltaH)) for (chemkinLabel, rmgSpec, deltaH) in self.tentativeMatches)
+        tentativeDict = dict((match['label'], (match['species'], match['enthalpy'])) for match in self.tentativeMatches)
         manualDict = dict((chemkinLabel, rmgSpec) for (chemkinLabel, rmgSpec) in self.manualMatchesToProcess)
 
         labels = [s.label for s in self.speciesList]
@@ -2043,12 +2055,12 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
             <input type=submit label="Edit">
             </form>
             """.format(lab=ckLabel, smi=smiles))
-
+        username = self.getUsername()
         if self.formulaDict[ckLabel] == species.molecule[0].getFormula():
-            if not self.setTentativeMatch(ckLabel, species):
+            if not self.setTentativeMatch(ckLabel, species, username=username):
                 # first attempt removed the old tentative match
                 # second attempt should add the new!
-                self.setTentativeMatch(ckLabel, species)
+                self.setTentativeMatch(ckLabel, species, username=username)
             output.append("Return to <a href='tentative.html'>Tentative matches</a> to confirm.")
         else:
             output.append('<p><b>Invalid match!</b></p>Species "{lab}" has formula {f1}<br/>\n but SMILES "{smi}" has formula {f2}'.format(
@@ -2089,12 +2101,12 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
             else:
                 logging.warning("Confirming a match that had no votes: {0} is {1}".format(ckLabel, rmgLabel))
 
-        for (l, rmgSpecies, h) in self.tentativeMatches:
-            if l == ckLabel:
-                if str(rmgSpecies) != rmgLabel:
+        for match in self.tentativeMatches:
+            if match['label'] == ckLabel:
+                if str(match['species']) != rmgLabel:
                     return "Trying to confirm something that wasn't a tentative match!"
                 self.manualMatchesToProcess.append((str(ckLabel), rmgSpecies))
-                self.tentativeMatches.remove((l, rmgSpecies, h))
+                self.tentativeMatches.remove(match)
                 break
         else:
             return "Trying to confirm something that wasn't a tentative match!"
