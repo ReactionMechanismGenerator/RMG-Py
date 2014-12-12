@@ -2244,7 +2244,7 @@ td.centered {text-align: center;}
     </tr>
     </table>
 </div>
-<div style="height: 2 em;"><br><a href="/">Home</a>&nbsp</div>
+<div style="height: 1em; padding-top: 0.5em;"><br><a href="/">Home</a>&nbsp</div>
     """
     html_tail = """
     </body></html>
