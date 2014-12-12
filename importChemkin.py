@@ -52,7 +52,7 @@ import sys
 databaseDirectory = rmgpy.settings['database.directory']
 databaseProjectDirectory = os.path.abspath(os.path.join(databaseDirectory, '..'))
 sys.path.insert(0, databaseProjectDirectory)
-from importOldDatabase import getUsername
+
 ################################################################################
 
 class MagicSpeciesDict(dict):
@@ -1719,6 +1719,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
 </ul>
         """]
         
+        output.append("""Your name: <a href="setname.html">{0}</a><br/>""".format(self.getUsername()))
         output.append("""Model: <a href="chemkin.inp">{0}</a><br/>""".format(location))
         output.append(self.html_tail)
         return "\n".join(output)
@@ -1729,7 +1730,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
         return (self.html_head() + '<h1>{0} Identified Species</h1><table style="width:500px"><tr>'.format(len(self.identified_labels)) +
                 "</tr>\n<tr>".join(["<td>{number}</td><td>{label}</td><td>{img}</td>".format(img=img(self.speciesDict_rmg[lab]), label=lab, number=n + 1) for n, lab in enumerate(self.identified_labels)]) +
                 '</tr></table>' + self.html_tail)
-
+        
     @cherrypy.expose
     def thermomatches_html(self):
         img = self._img
@@ -1780,6 +1781,40 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
             output.append("</tr>")
         output.extend(['</table>', self.html_tail])
         return ('\n'.join(output))
+    
+    def getUsername(self):
+        try:
+            username = cherrypy.request.cookie['username'].value.strip()
+            username = username.encode('ascii', 'ignore')
+            username = re.sub(r'\s+',' ', username)
+            username = re.sub(r'[^A-Za-z ]+','_', username)
+            return username
+        except KeyError:
+            return "Anonymous"
+    
+    @cherrypy.expose
+    def setname_html(self, Name=None):
+        """Save the user's name"""
+        if Name:
+            username = str(Name)
+            cookie = cherrypy.response.cookie
+            cookie['username'] = username
+            cookie['username']['path'] = '/'
+            cookie['username']['max-age'] = 3600*24*7
+            cookie['username']['version'] = 1
+            raise cherrypy.HTTPRedirect("/")
+        else:
+            username = self.getUsername()
+            output = [self.html_head()]
+            output.append("<h1>Edit your name</h1>")
+            output.append("""
+                <form action="setname.html" method="get">
+                <input type=text name="Name" value="{name}">
+                <input type=submit value="Save">
+                </form>
+                """.format(name=username))
+            output.append(self.html_tail)
+            return '\n'.join(output)
 
     @cherrypy.expose
     def chemkin_inp(self):
