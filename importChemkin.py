@@ -1800,8 +1800,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
             output.append("<td><a href='/confirm.html?ckLabel={ckl}&rmgLabel={rmgl}'>confirm</a></td>".format(ckl=urllib2.quote(chemkinLabel), rmgl=urllib2.quote(str(rmgSpec))))
             output.append("<td><a href='/edit.html?ckLabel={ckl}&SMILES={smi}'>edit</a></td>".format(ckl=urllib2.quote(chemkinLabel), smi=urllib2.quote(rmgSpec.molecule[0].toSMILES())))
             output.append("<td><a href='/clear.html?ckLabel={ckl}'>clear</a></td>".format(ckl=urllib2.quote(chemkinLabel)))
-            output.append("<td><a href='/votes.html#{0}'>check votes</a></td>".format(urllib2.quote(chemkinLabel)) if chemkinLabel in self.votes else "<td>No votes yet.</td>")
-
+            output.append("<td><a href='/votes.html#{label}'>check {num} votes</a></td>".format(label=urllib2.quote(chemkinLabel), num=len(self.votes[chemkinLabel].get(rmgSpec,[]))) if chemkinLabel in self.votes else "<td>No votes yet.</td>")
             output.append("</tr>")
         output.extend(['</table>', self.html_tail])
         return ('\n'.join(output))
