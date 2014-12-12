@@ -1715,7 +1715,7 @@ recommended = False
         output = [self.html_head() , """
 <script>
 function alsoUpdate(json) {
-$('#identified_count').html("("+json.confirmed+")");
+$('#identified_count').html("("+json.confirmed+(json.unprocessed?"; "+json.unprocessed+" unprocessed":"")+")");
 $('#tentative_count').html("("+json.tentative+")");
 $('#unmatchedreactions_count').html("("+json.unmatchedreactions+")");
 $('#unconfirmedspecies_count').html("("+json.unconfirmed+")");
