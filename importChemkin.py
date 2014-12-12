@@ -189,6 +189,7 @@ class ModelMatcher():
         self.smilesDict = {}
         self.identified_labels = []
         self.identified_unprocessed_labels = []
+        self.identified_by = {}
         self.speciesList = None
         self.speciesDict_rmg = {}
         self.chemkinReactions = []
@@ -340,12 +341,21 @@ class ModelMatcher():
                 if not line.strip():
                     continue
                 try:
+                    user = None
+                    if '!' in line:
+                        line, comments = line.split("!",1)
+                        if comments:
+                            usermatch = re.match("\s+Confirmed by (.*)",comments)
+                            if usermatch:
+                                user = usermatch.group(1)
                     tokens = line.split()
                     assert len(tokens) == 2, "Not two tokens on line (was expecting NAME    SMILES)"
                     name, smiles = tokens
                     if name in known_smiles:
                         assert smiles == known_smiles[name], "{0} defined twice".format(name)
                     known_smiles[name] = smiles
+                    if user:
+                        self.identified_by[name] = user
                     if name not in known_names:
                         known_names.append(name)
                 except Exception as e:
@@ -965,20 +975,27 @@ class ModelMatcher():
                             logging.info("Thermo match found for chemkin species {0} in thermo library {1}".format(ck_label, library_name))
                             self.setThermoMatch(ck_label, rmg_species, library_name, entry.label)
 
-    def saveMatchToFile(self, ckLabel, rmgSpecies):
+    def saveMatchToFile(self, ckLabel, rmgSpecies, username=None):
         """
         Save the match to the known_species_file
         """
         with open(self.known_species_file) as f:
             for line in f.readlines():
+                line = line.split('!')[0]
                 if not line.strip():
                     continue
                 label, smiles = line.split()
                 if label == ckLabel:
                     logging.info("Already matched {!s}".format(label))
                     return False
+        if username:
+            user_text = "\t! Confirmed by {0}".format(username)
+            self.identified_by[ckLabel] = username
+        else:
+            user_text = ""
+    
         with open(self.known_species_file, 'a') as f:
-            f.write("{0}\t{1}\n".format(ckLabel, rmgSpecies.molecule[0].toSMILES()))
+            f.write("{name}\t{smi}{user}\n".format(name=ckLabel, smi=rmgSpecies.molecule[0].toSMILES(), user=user_text))
         return True
 
     def setThermoMatch(self, chemkinLabel, rmgSpecies, libraryName, librarySpeciesName):
@@ -1728,7 +1745,14 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
     def identified_html(self):
         img = self._img
         return (self.html_head() + '<h1>{0} Identified Species</h1><table style="width:500px"><tr>'.format(len(self.identified_labels)) +
-                "</tr>\n<tr>".join(["<td>{number}</td><td>{label}</td><td>{img}</td>".format(img=img(self.speciesDict_rmg[lab]), label=lab, number=n + 1) for n, lab in enumerate(self.identified_labels)]) +
+                "</tr>\n<tr>".join([
+                        "<td>{number}</td><td>{label}</td><td>{img}</td><td>{user}</td>".format(
+                                img=img(self.speciesDict_rmg[lab]),
+                                label=lab,
+                                number=n + 1,
+                                user = self.identified_by.get(lab,"-"),
+                                ) for n, lab in enumerate(self.identified_labels)
+                            ]) +
                 '</tr></table>' + self.html_tail)
         
     @cherrypy.expose
@@ -2075,7 +2099,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
                 break
         else:
             return "Trying to confirm something that wasn't a tentative match!"
-        self.saveMatchToFile(ckLabel, rmgSpecies)
+        self.saveMatchToFile(ckLabel, rmgSpecies, username=self.getUsername())
         
         referer = cherrypy.request.headers.get("Referer", "/tentative.html")
         raise cherrypy.HTTPRedirect(referer)
@@ -2098,8 +2122,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
         self.clearThermoMatch(ckLabel, None)
         self.manualMatchesToProcess.append((str(ckLabel), rmgSpecies))
         self.clearTentativeMatch(ckLabel, None)
-        with open(self.known_species_file, 'a') as f:
-            f.write("{0}\t{1}\n".format(ckLabel, rmgSpecies.molecule[0].toSMILES()))
+        self.saveMatchToFile(ckLabel, rmgSpecies, username=self.getUsername())
         referer = cherrypy.request.headers.get("Referer", "/thermomatches.html")
         raise cherrypy.HTTPRedirect(referer)
 
@@ -2121,8 +2144,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
         else:
             return "rmgLabel not a candidate for that ckLabel"
 
-        with open(self.known_species_file, 'a') as f:
-            f.write("{0}\t{1}\n".format(ckLabel, rmgSpecies.molecule[0].toSMILES()))
+        self.saveMatchToFile(ckLabel, rmgSpecies, username=self.getUsername())
         ## Wait for it to be processed:
         #while self.manualMatchesToProcess:
         #    time.sleep(1)
