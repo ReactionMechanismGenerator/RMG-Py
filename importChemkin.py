@@ -1695,7 +1695,7 @@ recommended = False
         except ValueError:
             pass
         
-        return self.html_head() + """
+        output = [self.html_head() , """
 <script>
 function alsoUpdate(json) {
 $('#identified_count').html("("+json.confirmed+")");
@@ -1717,7 +1717,11 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
 <li><a href="thermolibraries.html">Loaded thermodynamics libraries.</a></li>
 <li><a href="thermo.py">Download thermo library.</a></li>
 </ul>
-        """ + location + self.html_tail
+        """]
+        
+        output.append("""Model: <a href="chemkin.inp">{0}</a><br/>""".format(location))
+        output.append(self.html_tail)
+        return "\n".join(output)
 
     @cherrypy.expose
     def identified_html(self):
@@ -1776,6 +1780,13 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
             output.append("</tr>")
         output.extend(['</table>', self.html_tail])
         return ('\n'.join(output))
+
+    @cherrypy.expose
+    def chemkin_inp(self):
+        """The raw chemkin input file"""
+        return serve_file(os.path.abspath(self.args.reactions or self.args.species),
+                              content_type='text/plain')
+    
 
     @cherrypy.expose
     def unconfirmedspecies_html(self):
