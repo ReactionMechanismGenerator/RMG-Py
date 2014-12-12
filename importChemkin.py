@@ -1958,7 +1958,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
                     token = "<span class='unid'>{0}</span>".format(token)
                 reaction_string.append(token)
             reaction_string = ' '.join(reaction_string)
-            output.append("<tr><td>{number}</td><td>{rxn}</td></tr>".format(number=i + 1, rxn=reaction_string))
+            output.append("<tr><td>{number}</td><td style='white-space: nowrap;'>{rxn}</td></tr>".format(number=i + 1, rxn=reaction_string))
         output.append(self.html_tail)
         return ('\n'.join(output))
 
@@ -2020,7 +2020,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
                         chemkinrxn = str(rxn[0])
                         rmgrxn = str(rxn[1])
                         rmgRxnPics = searcher.sub(replacer, rmgrxn + ' ')
-                        output.append("<tr><td>{0}</td><td> {1!s}   </td><td>  {2!s} </td><td style='text-align: right; font-size: small;'>{3!s}</td></tr>".format(n + 1, chemkinrxn, rmgRxnPics, rxn[1].family.label))
+                        output.append("<tr><td>{0}</td><td> {1!s}   </td><td>  {2!s} </td><td style='text-align: right; font-size: small; white-space: nowrap;'>{3!s}</td></tr>".format(n + 1, chemkinrxn, rmgRxnPics, rxn[1].family.label))
                     else:
                         output.append("<tr><td>{0}</td><td> {1!s}</td></tr>".format(n + 1, rxn))
                 output.append("</table>")
