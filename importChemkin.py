@@ -1732,6 +1732,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
 <li><a href="identified.html">Identified species.</a> <span id="identified_count"></span></li>
 <li><a href="tentative.html">Tentative Matches.</a> <span id="tentative_count"></span></li>
 <li><a href="votes.html">Voting reactions.</a></li>
+<li><a href="votes2.html">Voting reactions table view.</a></li>
 <li><a href="unmatchedreactions.html">Unmatched reactions.</a> <span id="unmatchedreactions_count"></span></li>
 <li><a href="unconfirmedspecies.html">Unconfirmed species.</a> <span id="unconfirmedspecies_count"></span></li>
 <li><a href="thermomatches.html">Unconfirmed thermodynamics matches.</a> <span id="thermomatches_count"></span></li>
@@ -1969,6 +1970,112 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
         return serve_file(os.path.abspath(self.outputThermoFile),
                               content_type='application/octet-stream')
 
+
+    @cherrypy.expose
+    def votes2_html(self):
+        votes = self.votes.copy()
+        img = self._img
+        chemkinControversy = dict((label, 0) for label in votes.iterkeys())
+        rmgControversy = {}
+        flatVotes = {}
+
+        labelsWaitingToProcess = [item[0] for item in self.manualMatchesToProcess]
+        speciesWaitingToProcess = [item[1] for item in self.manualMatchesToProcess]
+        # to turn reactions into pictures
+        searcher = re.compile('(\S+\(\d+\))\s')
+        def replacer(match):
+            return self._img(match.group(1))
+
+        for chemkinLabel, possibleMatches in votes.iteritems():
+            for matchingSpecies, votingReactions in possibleMatches.iteritems():
+                flatVotes[(chemkinLabel, matchingSpecies)] = votingReactions
+                chemkinControversy[chemkinLabel] += len(votingReactions)
+                rmgControversy[matchingSpecies] = rmgControversy.get(matchingSpecies, 0) + len(votingReactions)
+        output = [self.html_head()]
+        output.append("<h1>Votes Tables</h1>")
+        for chemkinLabel in sorted(chemkinControversy.keys(), key=lambda label:-chemkinControversy[label]):
+            output.append("<hr id='{0}' />".format(chemkinLabel))
+            if chemkinLabel in labelsWaitingToProcess:
+                output.append("<h2>{0} has just been identified but not yet processed.</h2>".format(chemkinLabel))
+                continue
+            possibleMatches = votes[chemkinLabel]
+            output.append("<h2>{0} matches {1} RMG species</h2>".format(chemkinLabel, len(possibleMatches)))
+            chemkinReactions = self.chemkinReactionsDict[chemkinLabel]
+
+            myVotingChemkinReactions = dict()
+            
+            sortedMatchingSpeciesList = sorted(possibleMatches.iterkeys(), key=lambda species:-len(possibleMatches[species]))
+            
+            for s in speciesWaitingToProcess:
+                if s in sortedMatchingSpeciesList:
+                    # structure already matched, so remove from possible matches
+                    sortedMatchingSpeciesList.remove(s)
+            
+            for chemkinReaction in chemkinReactions:
+                this_reaction_votes_for = dict()
+                myVotingChemkinReactions[chemkinReaction] = this_reaction_votes_for
+                for matchingSpecies, votingReactions in possibleMatches.iteritems():
+                    for (chemkinRxn, rmgRxn) in votingReactions:
+                        if (chemkinReaction == chemkinRxn):
+                            this_reaction_votes_for[matchingSpecies] = rmgRxn
+                            
+            output.append("<table>")
+            output.append("<tr><td>Structure</td>")
+            for matchingSpecies in sortedMatchingSpeciesList:
+                output.append("<td><a href='/match.html?ckLabel={ckl}&rmgLabel={rmgl}'>{img}</a><br/>".format(ckl=urllib2.quote(chemkinLabel), rmgl=urllib2.quote(str(matchingSpecies)), img=img(matchingSpecies)))
+            output.append("</tr>")
+            
+            output.append("<tr><td>&Delta;H(298K)</td>")
+            for matchingSpecies in sortedMatchingSpeciesList:
+                output.append("<td>{0:.1f} kJ/mol</span></td>".format(self.getEnthalpyDiscrepancy(chemkinLabel, matchingSpecies), Hsource=matchingSpecies.thermo.comment))
+            output.append("</tr>")
+            
+            output.append("<tr><td></td>")
+            for matchingSpecies in sortedMatchingSpeciesList:
+                output.append("<td style='font-size: small; width: 150px';>")
+                try:
+                    for libraryName, librarySpeciesName in self.thermoMatches[chemkinLabel][matchingSpecies]:
+                        output.append("<span title='{spec}' class='{match}'>{lib}</span>".format(
+                                            lib=libraryName,
+                                            spec=librarySpeciesName,
+                                            match=('goodmatch' if librarySpeciesName.upper() == chemkinLabel.upper() else 'badmatch'),
+                                            ))
+                    output.append("have the same thermo.</td>")
+                except KeyError:
+                    output.append("</td>")
+            output.append("</tr>")
+                
+            output.append("<tr><td>{num} Reactions</td>".format(num=len(chemkinReactions)))
+            for matchingSpecies in sortedMatchingSpeciesList:
+                output.append("<td>{n}</td>".format(n=len(possibleMatches[matchingSpecies])))
+            output.append("</tr>")
+                
+            for chemkinReaction in sorted(chemkinReactions, key=lambda rxn:-len(myVotingChemkinReactions[rxn])):
+                reaction_string = []
+                for token in str(chemkinReaction).split():
+                    if token in ['+', '<=>', '=>']:
+                        pass
+                    elif token in self.speciesDict_rmg:
+                        token = img(self.speciesDict_rmg[token])
+                    elif token == chemkinLabel:
+                        token = "<span class='unid'>{0}</span>".format(token)
+                    reaction_string.append(token)
+                reaction_string = ' '.join(reaction_string)
+                
+                output.append("<tr><td style='white-space: nowrap;'>{rxn!s}</td>".format(rxn=reaction_string))
+                this_reaction_votes_for = myVotingChemkinReactions[chemkinReaction]
+                for matchingSpecies in sortedMatchingSpeciesList :
+                    if matchingSpecies in this_reaction_votes_for:
+                        rmgRxn = this_reaction_votes_for[matchingSpecies]
+                        output.append("<td>{family}</td>".format(family=rmgRxn.family.label))
+                    else:
+                        output.append("<td>-</td>")
+                output.append("</tr>")
+            output.append("</table>")
+
+        output.append(self.html_tail)
+        return '\n'.join(output)
+
     @cherrypy.expose
     def votes_html(self):
         votes = self.votes.copy()
@@ -2161,7 +2268,8 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
         ## Wait for it to be processed:
         #while self.manualMatchesToProcess:
         #    time.sleep(1)
-        raise cherrypy.HTTPRedirect("/votes.html")
+        referer = cherrypy.request.headers.get("Referer", "/votes.html")
+        raise cherrypy.HTTPRedirect(referer)
 
     @cherrypy.expose
     def progress_json(self):
