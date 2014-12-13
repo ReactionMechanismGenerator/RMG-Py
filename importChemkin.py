@@ -1998,6 +1998,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
                 continue
             possibleMatches = votes[chemkinLabel]
             output.append("<h2>{0} matches {1} RMG species</h2>".format(chemkinLabel, len(possibleMatches)))
+            
             for matchingSpecies in sorted(possibleMatches.iterkeys(), key=lambda species:-len(possibleMatches[species])) :
                 if matchingSpecies in speciesWaitingToProcess:
                     output.append("{img} which has just been identified but not yet processed.<br>".format(img=img(matchingSpecies)))
@@ -2021,7 +2022,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
                         chemkinrxn = str(rxn[0])
                         rmgrxn = str(rxn[1])
                         rmgRxnPics = searcher.sub(replacer, rmgrxn + ' ')
-                        output.append("<tr><td>{0}</td><td> {1!s}   </td><td>  {2!s} </td><td style='text-align: right; font-size: small; white-space: nowrap;'>{3!s}</td></tr>".format(n + 1, chemkinrxn, rmgRxnPics, rxn[1].family.label))
+                        output.append("<tr><td>{0}</td><td style='white-space: nowrap;'> {1!s}   </td><td>  {2!s} </td><td style='text-align: right; font-size: small; white-space: nowrap;'>{3!s}</td></tr>".format(n + 1, chemkinrxn, rmgRxnPics, rxn[1].family.label))
                     else:
                         output.append("<tr><td>{0}</td><td> {1!s}</td></tr>".format(n + 1, rxn))
                 output.append("</table>")
