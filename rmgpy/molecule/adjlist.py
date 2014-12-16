@@ -721,11 +721,14 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
         return atoms, multiplicity
 
 
-def toAdjacencyList(atoms, multiplicity, label=None, group=False, removeH=False, removeLonePairs=False):
+def toAdjacencyList(atoms, multiplicity, label=None, group=False, removeH=False, removeLonePairs=False, oldStyle=False):
     """
     Convert a chemical graph defined by a list of `atoms` into a string
     adjacency list.
     """
+    if oldStyle:
+        return toOldAdjacencyList(atoms, multiplicity, label, group, removeH)
+    
     adjlist = ''
 
     # Don't remove hydrogen atoms if the molecule consists only of hydrogen atoms
@@ -846,6 +849,134 @@ def toAdjacencyList(atoms, multiplicity, label=None, group=False, removeH=False,
                     adjlist += bond.order[0]
                 else:
                     adjlist += '[{0}]'.format(','.join(bond.order))
+            else:
+                adjlist += bond.order
+            adjlist += '}'
+
+        # Each atom begins on a new line
+        adjlist += '\n'
+
+    return adjlist
+
+def getOldElectronState(atom):
+    """
+    Get the old adjacency list format electronic state
+    """
+    standardLonePairs = {'H': 0, 'C': 0, 'O': 2, 'S': 2, 'Si': 0, 'Cl': 3, 'He': 1, 'Ne': 4, 'Ar': 4}
+    additionalLonePairs = atom.lonePairs - standardLonePairs[atom.element.symbol]
+    electrons = atom.radicalElectrons + additionalLonePairs * 2
+    if electrons == 0:
+        electronState = '0'
+    elif electrons == 1:
+        electronState = '1'
+    elif electrons == 2:
+        if additionalLonePairs == 0:
+            electronState = '2T'
+        elif additionalLonePairs == 1:
+            electronState = '2S'
+        else:
+            raise InvalidAdjacencyListError("Cannot find electron state of atom {0}".format(atom))
+    elif electrons == 3:
+        if additionalLonePairs == 0: 
+            electronState = '3Q'
+        elif additionalLonePairs == 1:
+            electronState = '3D'
+        else: 
+            raise InvalidAdjacencyListError("Cannot find electron state of atom {0}".format(atom))
+    elif electrons == 4:
+        if additionalLonePairs == 0:
+            electronState = '4V'
+        elif additionalLonePairs == 1:
+            electronState = '4T'
+        elif additionalLonePairs == 2:
+            electronState = '4S'
+        else: 
+            raise InvalidAdjacencyListError("Cannot find electron state of atom {0}".format(atom))
+    else: 
+        raise InvalidAdjacencyListError("Cannot find electron state of atom {0}".format(atom))
+    return electronState
+
+
+
+def toOldAdjacencyList(atoms, multiplicity=None, label=None, group=False, removeH=False):
+    """
+    Convert a chemical graph defined by a list of `atoms` into a string old-style 
+    adjacency list that can be used in RMG-Java.  Currently not working for groups.
+    """
+    adjlist = ''
+
+    # Filter out all non-valid atoms
+    if not group:
+        for atom in atoms:
+            if atom.element.symbol in ['He','Ne','Ar','N']:
+                raise InvalidAdjacencyListError("Old-style adjacency list does not accept He, Ne, Ar, N elements.")
+
+    # Don't remove hydrogen atoms if the molecule consists only of hydrogen atoms
+    try:
+        if removeH and all([atom.element.symbol == 'H' for atom in atoms]): removeH = False
+    except AttributeError:
+        pass
+
+    if label: adjlist += label + '\n'
+
+    # Determine the numbers to use for each atom
+    atomNumbers = {}
+    index = 0
+    for atom in atoms:
+        if removeH and atom.element.symbol == 'H' and atom.label == '': continue
+        atomNumbers[atom] = '{0:d}'.format(index + 1)
+        index += 1
+    
+    atomLabels = dict([(atom, '{0}'.format(atom.label)) for atom in atomNumbers])
+    
+    atomTypes = {}
+    atomElectronStates = {}
+    if group:
+        raise InvalidAdjacencyListError("Not yet implemented.")
+    else:
+        for atom in atomNumbers:
+            # Atom type
+            atomTypes[atom] = '{0}'.format(atom.element.symbol)
+            # Electron state(s)
+            atomElectronStates[atom] = '{0}'.format(getOldElectronState(atom))    
+    
+    # Determine field widths
+    atomNumberWidth = max([len(s) for s in atomNumbers.values()]) + 1
+    atomLabelWidth = max([len(s) for s in atomLabels.values()])
+    if atomLabelWidth > 0: atomLabelWidth += 1
+    atomTypeWidth = max([len(s) for s in atomTypes.values()]) + 1
+    atomElectronStateWidth = max([len(s) for s in atomElectronStates.values()])
+    
+    # Assemble the adjacency list
+    for atom in atoms:
+        if atom not in atomNumbers: continue
+
+        # Atom number
+        adjlist += '{0:<{1:d}}'.format(atomNumbers[atom], atomNumberWidth)
+        # Atom label
+        adjlist += '{0:<{1:d}}'.format(atomLabels[atom], atomLabelWidth)
+        # Atom type(s)
+        adjlist += '{0:<{1:d}}'.format(atomTypes[atom], atomTypeWidth)
+        # Electron state(s)
+        adjlist += '{0:<{1:d}}'.format(atomElectronStates[atom], atomElectronStateWidth)
+        
+        # Bonds list
+        atoms2 = atom.bonds.keys()
+        # sort them the same way as the atoms
+        atoms2.sort(key=atoms.index)
+
+        for atom2 in atoms2:
+            if atom2 not in atomNumbers: continue
+
+            bond = atom.bonds[atom2]
+            adjlist += ' {{{0},'.format(atomNumbers[atom2])
+
+            # Bond type(s)
+            if group:
+                if len(bond.order) == 1:
+                    adjlist += bond.order[0]
+                else:
+                    adjlist += '{{{0}}}'.format(','.join(bond.order))
             else:
                 adjlist += bond.order
             adjlist += '}'
