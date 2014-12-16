@@ -2201,24 +2201,30 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
 
     @cherrypy.expose
     def confirm_html(self, ckLabel=None, rmgLabel=None):
-        if ckLabel not in self.votes:
-            logging.warning("Confirming a match that had no votes: {0} is {1}".format(ckLabel, rmgLabel))
+        #rmgName = re.match('^(.*)\(\d+\)$',rmgLabel).group(1)
+        chemical_formula = self.formulaDict[ckLabel]
+        for rmgSpecies in self.rmg_object.reactionModel.speciesDict[chemical_formula]:
+            if str(rmgSpecies) == rmgLabel:
+                break
         else:
-            for rmgSpecies in self.votes[ckLabel].iterkeys():
-                if str(rmgSpecies) == rmgLabel:
-                    break
-            else:
-                logging.warning("Confirming a match that had no votes: {0} is {1}".format(ckLabel, rmgLabel))
+            raise KeyError("Couldn't find RMG species with formula {0} and name {1}".format(chemical_formula, rmgLabel))
+
+        if ckLabel not in self.votes:
+            logging.warning("Confirming a match that had no votes for anything: {0} is {1} with SMILES {2}".format(ckLabel, rmgLabel, rmgSpecies.molecule[0].toSMILES() ))
+        elif rmgSpecies not in self.votes[ckLabel] :
+            logging.warning("Confirming a match that had no votes for this match: {0} is {1} with SMILES {2}".format(ckLabel, rmgLabel, rmgSpecies.molecule[0].toSMILES()))
+
+        assert str(rmgSpecies) == rmgLabel, "Didn't find the right RMG species!"
 
         for match in self.tentativeMatches:
             if match['label'] == ckLabel:
                 if str(match['species']) != rmgLabel:
-                    return "Trying to confirm something that wasn't a tentative match!"
+                    raise cherrypy.HTTPError(message="Trying to confirm something that wasn't a tentative match!")
                 self.manualMatchesToProcess.append((str(ckLabel), rmgSpecies))
                 self.tentativeMatches.remove(match)
                 break
         else:
-            return "Trying to confirm something that wasn't a tentative match!"
+            raise cherrypy.HTTPError(message="Trying to confirm something that has no tentative matches!")
         self.saveMatchToFile(ckLabel, rmgSpecies, username=self.getUsername())
         
         referer = cherrypy.request.headers.get("Referer", "/tentative.html")
