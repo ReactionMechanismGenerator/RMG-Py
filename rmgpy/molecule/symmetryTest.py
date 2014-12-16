@@ -6,6 +6,7 @@ from external.wip import work_in_progress
 
 from rmgpy.molecule.molecule import *
 from rmgpy.molecule.symmetry import *
+from rmgpy.species import Species
 
 ################################################################################
 
@@ -244,39 +245,46 @@ class TestMoleculeSymmetry(unittest.TestCase):
         symmetryNumber = calculateCyclicSymmetryNumber(molecule)
         self.assertEqual(symmetryNumber, 12)
 
-    def testCyclicSymmetryNumberBenzene(self):
+    def testTotalSymmetryNumberBenzene(self):
         """
         Test the Molecule.calculateCyclicSymmetryNumber() method.
         """
         molecule = Molecule().fromSMILES('c1ccccc1')
-        symmetryNumber = calculateCyclicSymmetryNumber(molecule)
+        species = Species(molecule=[molecule])
+        species.generateResonanceIsomers()
+        symmetryNumber = species.getSymmetryNumber()
         self.assertEqual(symmetryNumber, 12)
 
-    def testCyclicSymmetryNumberToluene(self):
+    def testTotalSymmetryNumberToluene(self):
         """
         Test the Molecule.calculateCyclicSymmetryNumber() method.
         """
         molecule = Molecule().fromSMILES('c1ccccc1C')
-        symmetryNumber = calculateCyclicSymmetryNumber(molecule)
-        self.assertEqual(symmetryNumber, 1)
+        species = Species(molecule=[molecule])
+        species.generateResonanceIsomers()
+        symmetryNumber = species.getSymmetryNumber()
+        self.assertEqual(symmetryNumber, 3)
 
-    @work_in_progress
-    def testCyclicSymmetryNumber12Dimethylbenzene(self):
+    def testTotalSymmetryNumber12Dimethylbenzene(self):
         """
         Test the Molecule.calculateCyclicSymmetryNumber() method.
         """
         molecule = Molecule().fromSMILES('Cc1ccccc1C')
-        symmetryNumber = calculateCyclicSymmetryNumber(molecule)
-        self.assertEqual(symmetryNumber, 2)
+        species = Species(molecule=[molecule])
+        species.generateResonanceIsomers()
+        symmetryNumber = species.getSymmetryNumber()
+        self.assertEqual(symmetryNumber, 18)
 
     @work_in_progress
-    def testCyclicSymmetryNumber14Dimethylbenzene(self):
+    def testTotalSymmetryNumber14Dimethylbenzene(self):
         """
         Test the Molecule.calculateCyclicSymmetryNumber() method.
         """
         molecule = Molecule().fromSMILES('Cc1ccc(C)cc1')
-        symmetryNumber = calculateCyclicSymmetryNumber(molecule)
-        self.assertEqual(symmetryNumber, 2)
+        species = Species(molecule=[molecule])
+        species.generateResonanceIsomers()
+        symmetryNumber = species.getSymmetryNumber()
+        self.assertEqual(symmetryNumber, 36)
         
     def testTotalSymmetryNumberEthane(self):
         """
