@@ -1731,7 +1731,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
 <li><a href="species.html">All species.</a> (Sorted by <a href="species.html?sort=name">name</a> or <a href="species.html?sort=formula">formula</a>.)</li>
 <li><a href="identified.html">Identified species.</a> <span id="identified_count"></span></li>
 <li><a href="tentative.html">Tentative Matches.</a> <span id="tentative_count"></span></li>
-<li><a href="votes.html">Voting reactions.</a></li>
+<li><a href="votes.html">Voting reactions list view.</a></li>
 <li><a href="votes2.html">Voting reactions table view.</a></li>
 <li><a href="unmatchedreactions.html">Unmatched reactions.</a> <span id="unmatchedreactions_count"></span></li>
 <li><a href="unconfirmedspecies.html">Unconfirmed species.</a> <span id="unconfirmedspecies_count"></span></li>
@@ -1809,7 +1809,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
             output.append("<td><a href='/confirm.html?ckLabel={ckl}&rmgLabel={rmgl}'>confirm</a></td>".format(ckl=urllib2.quote(chemkinLabel), rmgl=urllib2.quote(str(rmgSpec))))
             output.append("<td><a href='/edit.html?ckLabel={ckl}&SMILES={smi}'>edit</a></td>".format(ckl=urllib2.quote(chemkinLabel), smi=urllib2.quote(rmgSpec.molecule[0].toSMILES())))
             output.append("<td><a href='/clear.html?ckLabel={ckl}'>clear</a></td>".format(ckl=urllib2.quote(chemkinLabel)))
-            output.append("<td><a href='/votes.html#{label}'>check {num} votes</a></td>".format(label=urllib2.quote(chemkinLabel), num=len(self.votes[chemkinLabel].get(rmgSpec,[]))) if chemkinLabel in self.votes else "<td>No votes yet.</td>")
+            output.append("<td><a href='/votes2.html#{label}'>check {num} votes</a></td>".format(label=urllib2.quote(chemkinLabel), num=len(self.votes[chemkinLabel].get(rmgSpec,[]))) if chemkinLabel in self.votes else "<td>No votes yet.</td>")
             if username:
                 output.append("<td>Proposed by {0}</td>".format(username))
             else:
@@ -1923,7 +1923,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
                 output.append("<tr><td class='tentative'>{label}</td><td class='centered'>{img}</td><td>{smi}</td><td title='{Hsource}'>{delH:.1f} kJ/mol</td>".format(
                                     img=img(rmgSpec), label=chemkinLabel, delH=deltaH, Hsource=rmgSpec.thermo.comment, smi=rmgSpec.molecule[0].toSMILES()))
                 output.append("<td>Tentative match. <a href='/confirm.html?ckLabel={ckl}&rmgLabel={rmgl}'>confirm</a> / ".format(ckl=urllib2.quote(chemkinLabel), rmgl=urllib2.quote(str(rmgSpec))))
-                votes = "/ <a href='/votes.html#{0}'>check votes</a>".format(urllib2.quote(chemkinLabel)) if chemkinLabel in self.votes else "No votes yet. "
+                votes = "/ <a href='/votes2.html#{0}'>check votes</a>".format(urllib2.quote(chemkinLabel)) if chemkinLabel in self.votes else "No votes yet. "
                 output.append("<a href='/edit.html?ckLabel={ckl}&SMILES={smi}'>edit</a> {votes}</td></tr>".format(ckl=urllib2.quote(chemkinLabel), smi=urllib2.quote(rmgSpec.molecule[0].toSMILES()),votes=votes))
             else:
                 output.append("<tr><td class='unknown'>{label}</td><td class='centered'>?</td>".format(label=chemkinLabel))
@@ -1934,7 +1934,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
             <td><input type=submit></td>
             </form>
             """.format(lab=chemkinLabel))
-                votes = "<a href='/votes.html#{0}'>check votes</a> / ".format(urllib2.quote(chemkinLabel)) if chemkinLabel in self.votes else "No votes yet. "
+                votes = "<a href='/votes2.html#{0}'>check votes</a> / ".format(urllib2.quote(chemkinLabel)) if chemkinLabel in self.votes else "No votes yet. "
                 output.append("<td>Unknown species. {votes} <a href='/propose.html?ckLabel={ckl}'>propose match</a></td></tr>".format(ckl=urllib2.quote(chemkinLabel), votes=votes))
         output.extend(['</table>', self.html_tail])
         return ('\n'.join(output))
@@ -2274,7 +2274,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
         ## Wait for it to be processed:
         #while self.manualMatchesToProcess:
         #    time.sleep(1)
-        referer = cherrypy.request.headers.get("Referer", "/votes.html")
+        referer = cherrypy.request.headers.get("Referer", "/votes2.html")
         raise cherrypy.HTTPRedirect(referer)
 
     @cherrypy.expose
