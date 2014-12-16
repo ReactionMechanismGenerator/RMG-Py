@@ -2059,6 +2059,8 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
                         token = img(self.speciesDict_rmg[token])
                     elif token == chemkinLabel:
                         token = "<span class='unid'>{0}</span>".format(token)
+                    elif token in votes:
+                        token = "<a href='#{0}' class='species'>{0}</a>".format(token)
                     reaction_string.append(token)
                 reaction_string = ' '.join(reaction_string)
                 
