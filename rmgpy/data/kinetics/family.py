@@ -1127,9 +1127,11 @@ class KineticsFamily(Database):
                 productStructures.reverse()
 
         # Apply the generated species constraints (if given)
-        if failsSpeciesConstraints:
-            for struct in productStructures:
-                if failsSpeciesConstraints(struct) or self.isMoleculeForbidden(struct):
+        for struct in productStructures:
+            if self.isMoleculeForbidden(struct):
+                raise ForbiddenStructureException()
+            if failsSpeciesConstraints:
+                if failsSpeciesConstraints(struct):
                     raise ForbiddenStructureException() 
                 
         return productStructures
