@@ -362,9 +362,9 @@ Test the Bond.isSpecificCaseOf() method. ... ok
 Test the Bond.isTriple() method. ... ok
 Test that a Bond object can be successfully pickled and ... ok
 Check the adjacency list read/write functions for a full molecule. ... ok
-Test the Molecule.isAromatic() method for Benzene. ... SKIP: WIP test failed: False is not true
+Test the Molecule.isAromatic() method for Benzene. ... ok
 Test the Molecule.isAromatic() method for Cyclohexane. ... ok
-Test the Molecule.isAromatic() method for Naphthalene. ... SKIP: WIP test failed: False is not true
+Test the Molecule.isAromatic() method for Naphthalene. ... ok
 Test that Augmented InChI generation is printing the /mult layer ... ok
 Test that Augmented InChI Key generation is printing the mult layer ... ok
 Test the Molecule.clearLabeledAtoms() method. ... ok
@@ -407,52 +407,52 @@ Check the graph isomorphism functions. ... ok
 testSubgraphIsomorphismAgain (rmgpy.molecule.moleculeTest.TestMolecule) ... ok
 testSubgraphIsomorphismManyLabels (rmgpy.molecule.moleculeTest.TestMolecule) ... ok
 Test the Molecule.toAdjacencyList() method. ... ok
-Test the Molecule.calculateAtomSymmetryNumber() method. ... ok
-Test the Molecule.calculateAtomSymmetryNumber() method. ... ok
-Test the Molecule.calculateAtomSymmetryNumber() method. ... ok
-Test the Molecule.calculateAtomSymmetryNumber() method. ... ok
-Test the Molecule.calculateAtomSymmetryNumber() method. ... ok
-Test the Molecule.calculateAxisSymmetryNumber() method. ... ok
-Test the Molecule.calculateAxisSymmetryNumber() method. ... ok
-Test the Molecule.calculateAxisSymmetryNumber() method. ... ok
-Test the Molecule.calculateAxisSymmetryNumber() method. ... ok
-Test the Molecule.calculateAxisSymmetryNumber() method. ... SKIP: WIP test failed: 1 != 4
-Test the Molecule.calculateAxisSymmetryNumber() method. ... ok
-Test the Molecule.calculateAxisSymmetryNumber() method. ... ok
-Test the Molecule.calculateAxisSymmetryNumber() method. ... ok
-Test the Molecule.calculateAxisSymmetryNumber() method. ... ok
-Test the Molecule.calculateAxisSymmetryNumber() method. ... ok
-Test the Molecule.calculateAxisSymmetryNumber() method. ... ok
-Test the Molecule.calculateAxisSymmetryNumber() method. ... ok
-Test the Molecule.calculateAxisSymmetryNumber() method. ... ok
-Test the Molecule.calculateAxisSymmetryNumber() method. ... ok
-Test the Molecule.calculateAxisSymmetryNumber() method. ... ok
-Test the Molecule.calculateBondSymmetryNumber() method. ... ok
-Test the Molecule.calculateBondSymmetryNumber() method. ... ok
-Test the Molecule.calculateBondSymmetryNumber() method. ... ok
-Test the Molecule.calculateBondSymmetryNumber() method. ... ok
-Test the Molecule.calculateBondSymmetryNumber() method. ... ok
-Test the Molecule.calculateCyclicSymmetryNumber() method. ... SKIP: WIP test failed: 1 != 2
-Test the Molecule.calculateCyclicSymmetryNumber() method. ... SKIP: WIP test failed: 1 != 2
-Test the Molecule.calculateCyclicSymmetryNumber() method. ... ok
-Test the Molecule.calculateCyclicSymmetryNumber() method. ... ok
-Test the Molecule.calculateCyclicSymmetryNumber() method. ... ok
-Test the Molecule.calculateSymmetryNumber() method. ... ok
-Test the Molecule.calculateSymmetryNumber() method. ... ok
-Test the Molecule.calculateSymmetryNumber() method. ... ok
-Test the Molecule.calculateSymmetryNumber() method. ... ok
-Test the Molecule.calculateSymmetryNumber() method. ... ok
-Test the Molecule.calculateSymmetryNumber() method. ... ok
-Test the Molecule.calculateSymmetryNumber() method. ... ok
-Test the Molecule.calculateSymmetryNumber() method. ... ok
-Test the Molecule.calculateSymmetryNumber() method. ... ok
-Test the Molecule.calculateSymmetryNumber() method. ... ok
-Test the Molecule.calculateSymmetryNumber() method. ... ok
-Test the Molecule.calculateSymmetryNumber() method. ... ok
-Test the Molecule.calculateSymmetryNumber() method. ... ok
-Test the Molecule.calculateSymmetryNumber() method. ... ok
-Test the Molecule.calculateSymmetryNumber() method. ... SKIP: WIP test failed: 9 != '36?'
-Test the Molecule.calculateSymmetryNumber() method. ... ok
+Test the Molecule.calculateAtomSymmetryNumber() on CC ... ok
+Test the Molecule.calculateAtomSymmetryNumber() on CC(C)C ... ok
+Test the Molecule.calculateAtomSymmetryNumber() on CH4 ... ok
+Test the Molecule.calculateAtomSymmetryNumber() on [CH3] ... ok
+Test the Molecule.calculateAtomSymmetryNumber() on CCC ... ok
+Test the Molecule.calculateAxisSymmetryNumber() on CC(C)=C=C(CC)CC ... ok
+Test the Molecule.calculateAxisSymmetryNumber() on CC=C=[C] ... ok
+Test the Molecule.calculateAxisSymmetryNumber() on C=C=CCCC ... ok
+Test the Molecule.calculateAxisSymmetryNumber() on C=C=C(C(C(C(C=C=C)=C=C)=C=C)=C=C) ... ok
+Test the Molecule.calculateAxisSymmetryNumber() on C=C=[C]C(C)(C)[C]=C=C ... SKIP: WIP test failed: 1 != 4
+Test the Molecule.calculateAxisSymmetryNumber() on C=C=C=O ... ok
+Test the Molecule.calculateAxisSymmetryNumber() on CC=C=C=O ... ok
+Test the Molecule.calculateAxisSymmetryNumber() on C=C=C=N ... ok
+Test the Molecule.calculateAxisSymmetryNumber() on C=C=C=[N] ... ok
+Test the Molecule.calculateAxisSymmetryNumber() on C=C=C=C ... ok
+Test the Molecule.calculateAxisSymmetryNumber() on C=C=C=[CH] ... ok
+Test the Molecule.calculateAxisSymmetryNumber() on C=C ... ok
+Test the Molecule.calculateAxisSymmetryNumber() on C=C=C ... ok
+Test the Molecule.calculateAxisSymmetryNumber() on C=C=[C] ... ok
+Test the Molecule.calculateAxisSymmetryNumber() on O=O ... ok
+Test the Molecule.calculateBondSymmetryNumber() on C#C ... ok
+Test the Molecule.calculateBondSymmetryNumber() on CCCC ... ok
+Test the Molecule.calculateBondSymmetryNumber() on CC ... ok
+Test the Molecule.calculateBondSymmetryNumber() on C=C. ... ok
+Test the Molecule.calculateBondSymmetryNumber() on CCC ... ok
+Test the Molecule.calculateCyclicSymmetryNumber() on C1CCCCC1 ... ok
+Test the Molecule.calculateSymmetryNumber() on C#C ... ok
+Test the Molecule.calculateSymmetryNumber() on C#CC#C ... ok
+Test the Molecule.calculateSymmetryNumber() on C1=C=C=1 ... ok
+Test the Molecule.calculateSymmetryNumber() on [C]#[C] ... ok
+Test the Molecule.calculateSymmetryNumber() on C=[CH]. ... ok
+Test the Molecule.calculateSymmetryNumber() on C=C ... ok
+Test the Molecule.calculateSymmetryNumber() on C=O ... ok
+Test the Molecule.calculateSymmetryNumber() on [H][H] ... ok
+Test the Molecule.calculateSymmetryNumber() on [OH] ... ok
+Test the Molecule.calculateSymmetryNumber() on CH4 ... ok
+Test the Molecule.calculateSymmetryNumber() on [CH3] ... ok
+Test the Molecule.calculateSymmetryNumber() on O=O ... ok
+Test the Molecule.calculateSymmetryNumber() on H2O ... ok
+Test the Molecule.calculateSymmetryNumber() on C=C=[C]C(C)(C)[C]=C=C ... ok
+Test the Species.getSymmetryNumber() (total symmetry) on Cc1ccccc1C ... ok
+Test the Species.getSymmetryNumber() (total symmetry) on Cc1ccc(C)cc1 ... SKIP: WIP test failed: 18 != 36
+Test the Molecule.calculateSymmetryNumber() on C(=CC(c1ccccc1)C([CH]CCCCCC)C=Cc1ccccc1)[CH]CCCCCC ... SKIP: WIP test failed: 9 != '36?'
+Test the Species.getSymmetryNumber() (total symmetry) on c1ccccc1 ... ok
+Test the Molecule.calculateSymmetryNumber() on CC ... ok
+Test the Species.getSymmetryNumber() (total symmetry) on c1ccccc1C ... ok
 Test the SingleExponentialDown.T0 attribute. ... ok
 Test the SingleExponentialDown.sigma attribute. ... ok
 Test the SingleExponentialDown.getAlpha() method. ... ok
@@ -931,5 +931,5 @@ TOTAL                             14257  11013   6191   5424    20%
 ----------------------------------------------------------------------
 Ran 807 tests.
 
-FAILED (SKIP=26, errors=3)
+FAILED (SKIP=23, errors=3)
 make: *** [test] Error 1
