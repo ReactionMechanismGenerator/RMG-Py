@@ -382,6 +382,7 @@ class ModelMatcher():
                 logging.info("Blocking {0} from being {1}".format(species_label, smiles))
 
                 rmg_species, wasNew = self.rmg_object.reactionModel.makeNewSpecies(molecule)
+                rmg_species.generateResonanceIsomers()
                 if wasNew:
                     self.drawSpecies(rmg_species)
                     rmg_species.generateThermoData(self.rmg_object.database)
