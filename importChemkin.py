@@ -190,6 +190,7 @@ class ModelMatcher():
         self.identified_labels = []
         self.identified_unprocessed_labels = []
         self.identified_by = {}
+        """Which user identified which species. Keys: chemkinLabels, Values: usernames"""
         self.speciesList = None
         self.speciesDict_rmg = {}
         self.chemkinReactions = []
@@ -202,6 +203,13 @@ class ModelMatcher():
         self.tentativeMatches = []
         self.thermoMatches = {}
         self.thermo_libraries_to_check = []
+        self.blockedMatches = {}
+        """A dictionary of matches forbidden manually. blockedMatches[ckLabel][rmg Species or Molecule] = username (or None)"""
+        self.known_species_file = ""
+        """Filename of the known species file"""
+        self.blocked_matches_file = ""
+        """Filename of the blocked matches file"""
+
 
     def loadSpecies(self, species_file):
         """
@@ -324,6 +332,65 @@ class ModelMatcher():
             del(self.formulaDict[label])
         logging.info("Removed {0} species that did not react.".format(len(unreactiveSpecies)))
 
+    def loadBlockedMatches(self):
+        """
+        Load the list of blocked matches.
+        """
+        logging.info("Reading blocked matches...")
+        if not os.path.exists(self.blocked_matches_file):
+            logging.info("Blocked Matches file does not exist. Will create on first manual match.")
+            return
+        #: blocked_smiles[chemkinLabel][SMILES] = username_who_blocked_it
+        blocked_smiles = {} 
+        line = None
+        with open(self.blocked_matches_file) as f:
+            for line in f:
+                if not line.strip():
+                    continue
+                try:
+                    user = None
+                    if '!' in line:
+                        line, comments = line.split("!", 1)
+                        if comments:
+                            usermatch = re.match("\s+Blocked by (.*)", comments)
+                            if usermatch:
+                                user = usermatch.group(1)
+                    tokens = line.split()
+                    assert len(tokens) == 2, "Not two tokens on line (was expecting NAME    SMILES)"
+                    name, smiles = tokens
+
+                    if name not in blocked_smiles:
+                        blocked_smiles[name] = dict()
+                    blocked_smiles[name][smiles] = user
+                except Exception as e:
+                    logging.warning("Error reading line '{0}'".format(line))
+                    raise e
+        if not line.endswith('\n'):
+            logging.info("Ensuring blocked matches file ends with a line break")
+            with open(self.blocked_matches_file, 'a') as f:
+                f.write('\n')
+                
+        for species_label in blocked_smiles:
+            if species_label not in self.formulaDict:
+                logging.info("{0} is not in the chemkin model. Skipping".format(species_label))
+                continue
+            formula = self.formulaDict[species_label]
+            for smiles, username in blocked_smiles[species_label].iteritems():
+                molecule = Molecule(SMILES=smiles)
+                if formula != molecule.getFormula():
+                    raise Exception("{0} cannot be {1} because the SMILES formula is {2} not required formula {3}.".format(species_label, smiles, molecule.getFormula(), formula))
+                logging.info("Blocking {0} from being {1}".format(species_label, smiles))
+
+                rmg_species, wasNew = self.rmg_object.reactionModel.makeNewSpecies(molecule)
+                if wasNew:
+                    self.drawSpecies(rmg_species)
+                    rmg_species.generateThermoData(self.rmg_object.database)
+
+                if species_label not in self.blockedMatches:
+                    self.blockedMatches[species_label] = dict()
+                self.blockedMatches[species_label][rmg_species] = username
+
+
     def loadKnownSpecies(self, known_species_file):
         """
         Load (or make) the list of known species
@@ -359,7 +426,7 @@ class ModelMatcher():
                     if name not in known_names:
                         known_names.append(name)
                 except Exception as e:
-                    logging.info("Error reading line '{0}'".format(line))
+                    logging.warning("Error reading line '{0}'".format(line))
                     raise e
         if not line.endswith('\n'):
             logging.info("Ensuring known species file ends with a line break")
@@ -518,6 +585,7 @@ class ModelMatcher():
         i.e. if chemkin_species has been identified, it must be the rmg_species,
         but if it hasn't it must at least have the same formula.
         If it matches based only on formula, the match it is added to the self.suggestedMatches dictionary.
+        If it is blocked, return false.
         """
         chemkin_label = chemkin_species.label
         identified_labels = self.identified_labels
@@ -527,6 +595,8 @@ class ModelMatcher():
             return False
         else:
             if self.formulaDict[chemkin_label] == rmg_species.molecule[0].getFormula():
+                if rmg_species in self.blockedMatches.get(chemkin_label, {}):
+                    return False
                 self.suggestedMatches[chemkin_label] = rmg_species
                 return True
             else:
@@ -979,6 +1049,20 @@ class ModelMatcher():
                             logging.info("Thermo match found for chemkin species {0} in thermo library {1}".format(ck_label, library_name))
                             self.setThermoMatch(ck_label, rmg_species, library_name, entry.label)
 
+    def saveBlockedMatchToFile(self, ckLabel, rmgSpecies, username=None):
+        """
+        Save the blocked match to the blocked_matches_file
+        """
+        if username:
+            user_text = "\t! Blocked by {0}".format(username)
+            self.identified_by[ckLabel] = username
+        else:
+            user_text = ""
+
+        with open(self.blocked_matches_file, 'a') as f:
+            f.write("{name}\t{smi}{user}\n".format(name=ckLabel, smi=rmgSpecies.molecule[0].toSMILES(), user=user_text))
+        return True
+
     def saveMatchToFile(self, ckLabel, rmgSpecies, username=None):
         """
         Save the match to the known_species_file
@@ -1026,6 +1110,19 @@ class ModelMatcher():
             if len(self.thermoMatches[chemkinLabel]) == 0:
                 del(self.thermoMatches[chemkinLabel])
 
+    def blockMatch(self, chemkinLabel, rmgSpecies, username=None):
+        """Store a blocked match"""
+        for match in self.tentativeMatches:
+            if match['label'] == chemkinLabel:
+                if match['species'] == rmgSpecies:
+                    self.tentativeMatches.remove(match)
+                break
+        self.saveBlockedMatchToFile(chemkinLabel, rmgSpecies, username=username)
+        if chemkinLabel not in self.blockedMatches:
+            self.blockedMatches[chemkinLabel] = dict()
+        self.blockedMatches[chemkinLabel][rmgSpecies] = username
+
+        self.votes[chemkinLabel].pop(rmgSpecies, None)
 
     def setMatch(self, chemkinLabel, rmgSpecies):
         """Store a match, once you've identified it"""
@@ -1434,6 +1531,7 @@ class ModelMatcher():
         thermo_file = args.thermo
         known_species_file = args.known or species_file + '.SMILES.txt'
         self.known_species_file = known_species_file
+        self.blocked_matches_file = os.path.splitext(known_species_file)[0] + '-BLOCKED.txt'
 
         self.outputThermoFile = os.path.splitext(thermo_file)[0] + '.thermo.py'
         self.outputKineticsFile = os.path.splitext(reactions_file)[0] + '.kinetics.py'
@@ -1500,6 +1598,9 @@ recommended = False
            shortDesc=os.path.abspath(reactions_file).replace('"', ''),
            longDesc=source.strip())
           )
+
+
+        self.loadBlockedMatches()
 
         self.identifySmallMolecules()
 
@@ -1735,6 +1836,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
 <li><a href="votes2.html">Voting reactions table view.</a></li>
 <li><a href="unmatchedreactions.html">Unmatched reactions.</a> <span id="unmatchedreactions_count"></span></li>
 <li><a href="unconfirmedspecies.html">Unconfirmed species.</a> <span id="unconfirmedspecies_count"></span></li>
+<li><a href="blocked.html">Blocked matches.</a></li>
 <li><a href="thermomatches.html">Unconfirmed thermodynamics matches.</a> <span id="thermomatches_count"></span></li>
 <li><a href="thermolibraries.html">Loaded thermodynamics libraries.</a></li>
 <li><a href="thermo.py">Download thermo library.</a></li>
@@ -1746,6 +1848,28 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
         output.append(self.html_tail)
         return "\n".join(output)
 
+    @cherrypy.expose
+    def blocked_html(self):
+        img = self._img
+        blockedMatches = self.blockedMatches
+        output = [self.html_head()]
+
+        count = sum([len(blocks) for label, blocks in blockedMatches.iteritems()])
+        output.append('<h1>{0} Blocked Matches</h1><table style="width:500px">'.format(count))
+
+        blocked_labels = sorted(blockedMatches.keys())
+        for ckLabel in blocked_labels:
+            blocks = blockedMatches[ckLabel]
+            for rmgSpecies, username in blocks.iteritems():
+                output.append("<tr><td>{label}</td><td>{img}</td><td>{user}</td></tr>".format(
+                                img=img(rmgSpecies),
+                                label=ckLabel,
+                                user=(username or '-')
+                                ))
+        output.append('</table>')
+        output.append(self.html_tail)
+        return '\n'.join(output)
+        
     @cherrypy.expose
     def identified_html(self):
         img = self._img
@@ -1809,6 +1933,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
             output.append("<td><a href='/confirm.html?ckLabel={ckl}&rmgLabel={rmgl}'>confirm</a></td>".format(ckl=urllib2.quote(chemkinLabel), rmgl=urllib2.quote(str(rmgSpec))))
             output.append("<td><a href='/edit.html?ckLabel={ckl}&SMILES={smi}'>edit</a></td>".format(ckl=urllib2.quote(chemkinLabel), smi=urllib2.quote(rmgSpec.molecule[0].toSMILES())))
             output.append("<td><a href='/clear.html?ckLabel={ckl}'>clear</a></td>".format(ckl=urllib2.quote(chemkinLabel)))
+            output.append("<td><a href='/block.html?ckLabel={ckl}&rmgLabel={rmgl}'>block</a></td>".format(ckl=urllib2.quote(chemkinLabel), rmgl=urllib2.quote(str(rmgSpec))))
             output.append("<td><a href='/votes2.html#{label}'>check {num} votes</a></td>".format(label=urllib2.quote(chemkinLabel), num=len(self.votes[chemkinLabel].get(rmgSpec,[]))) if chemkinLabel in self.votes else "<td>No votes yet.</td>")
             if username:
                 output.append("<td>Proposed by {0}</td>".format(username))
@@ -2022,9 +2147,15 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
             output.append("<table>")
             output.append("<tr><td>Structure</td>")
             for matchingSpecies in sortedMatchingSpeciesList:
-                output.append("<td><a href='/match.html?ckLabel={ckl}&rmgLabel={rmgl}'>{img}</a><br/>".format(ckl=urllib2.quote(chemkinLabel), rmgl=urllib2.quote(str(matchingSpecies)), img=img(matchingSpecies)))
+                output.append("<td>{img}<br/>".format(img=img(matchingSpecies)))
             output.append("</tr>")
             
+            output.append("<tr><td>Action</td>")
+            for matchingSpecies in sortedMatchingSpeciesList:
+                output.append("""<td><a href='/match.html?ckLabel={ckl}&rmgLabel={rmgl}' class='confirm'>confirm</a>
+                <a href='/block.html?ckLabel={ckl}&rmgLabel={rmgl}' class='block'>block</a>""".format(ckl=urllib2.quote(chemkinLabel), rmgl=urllib2.quote(str(matchingSpecies))))
+            output.append("</tr>")
+
             output.append("<tr><td>&Delta;H(298K)</td>")
             for matchingSpecies in sortedMatchingSpeciesList:
                 output.append("<td>{0:.1f} kJ/mol</span></td>".format(self.getEnthalpyDiscrepancy(chemkinLabel, matchingSpecies), Hsource=matchingSpecies.thermo.comment))
@@ -2202,6 +2333,27 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
         return '\n'.join(output)
 
     @cherrypy.expose
+    def block_html(self, ckLabel=None, rmgLabel=None):
+        #rmgName = re.match('^(.*)\(\d+\)$',rmgLabel).group(1)
+        chemical_formula = self.formulaDict[ckLabel]
+        for rmgSpecies in self.rmg_object.reactionModel.speciesDict[chemical_formula]:
+            if str(rmgSpecies) == rmgLabel:
+                break
+        else:
+            raise KeyError("Couldn't find RMG species with formula {0} and name {1}".format(chemical_formula, rmgLabel))
+
+        if ckLabel not in self.votes:
+            logging.warning("Blocking a match that had no votes for anything: {0} is {1} with SMILES {2}".format(ckLabel, rmgLabel, rmgSpecies.molecule[0].toSMILES()))
+        elif rmgSpecies not in self.votes[ckLabel] :
+            logging.warning("Blocking a match that had no votes for this match: {0} is {1} with SMILES {2}".format(ckLabel, rmgLabel, rmgSpecies.molecule[0].toSMILES()))
+        assert str(rmgSpecies) == rmgLabel, "Didn't find the right RMG species!"
+
+        self.blockMatch(ckLabel, rmgSpecies, username=self.getUsername())
+
+        referer = cherrypy.request.headers.get("Referer", "/tentative.html")
+        raise cherrypy.HTTPRedirect(referer)
+
+    @cherrypy.expose
     def confirm_html(self, ckLabel=None, rmgLabel=None):
         #rmgName = re.match('^(.*)\(\d+\)$',rmgLabel).group(1)
         chemical_formula = self.formulaDict[ckLabel]
@@ -2354,6 +2506,8 @@ td.bar { text-align: right; overflow: hidden}
 .unid {color: #00DE1A;}
 a.unid {text-decoration: none;}
 a.unid:hover {text-decoration: underline;}
+a.confirm {background-color: green; padding-left: 1em; padding-right: 1em; color: white; text-decoration: none;}
+a.block {background-color: red; padding-left: 1em; padding-right: 1em; color: white; text-decoration: none;}
 td.confirmed {border-left: 5px solid green;}
 td.tentative {border-left: 5px solid orange;}
 td.unknown {border-left: 5px solid red;}
