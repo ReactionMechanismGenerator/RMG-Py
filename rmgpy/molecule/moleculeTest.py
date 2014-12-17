@@ -979,25 +979,29 @@ class TestMolecule(unittest.TestCase):
         """
         self.assertTrue(Molecule().fromSMILES('C#CC#CC#C').isLinear())
 
-    @work_in_progress
     def testAromaticBenzene(self):
         """
         Test the Molecule.isAromatic() method for Benzene.
         """
-        self.assertTrue(Molecule().fromSMILES('C1=CC=CC=C1').isAromatic())
+        m = Molecule().fromSMILES('C1=CC=CC=C1')
+        isomers = m.generateResonanceIsomers()
+        self.assertTrue(any(isomer.isAromatic() for isomer in isomers))
 
-    @work_in_progress
     def testAromaticNaphthalene(self):
         """
         Test the Molecule.isAromatic() method for Naphthalene.
         """
-        self.assertTrue(Molecule().fromSMILES('C12C(C=CC=C1)=CC=CC=2').isAromatic())
+        m = Molecule().fromSMILES('C12C(C=CC=C1)=CC=CC=2')
+        isomers = m.generateResonanceIsomers()
+        self.assertTrue(any(isomer.isAromatic() for isomer in isomers))
                         
     def testAromaticCyclohexane(self):
         """
         Test the Molecule.isAromatic() method for Cyclohexane.
         """
-        self.assertFalse(Molecule().fromSMILES('C1CCCCC1').isAromatic())
+        m = Molecule().fromSMILES('C1CCCCC1')
+        isomers = m.generateResonanceIsomers()
+        self.assertFalse(any(isomer.isAromatic() for isomer in isomers))
          
     def testCountInternalRotorsEthane(self):
         """

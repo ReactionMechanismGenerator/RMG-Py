@@ -1676,6 +1676,8 @@ class Molecule(Graph):
             newIsomers = isomer.getAdjacentResonanceIsomers()
             newIsomers += isomer.getLonePairRadicalResonanceIsomers()
             newIsomers += isomer.getN5dd_N5tsResonanceIsomers()
+            newIsomers += isomer.getAromaticResonanceIsomers()
+            
             for newIsomer in newIsomers:
                 newIsomer.updateAtomTypes()
                 # Append to isomer list if unique
@@ -1857,6 +1859,45 @@ class Molecule(Graph):
                     # Append to isomer list if unique
                     isomers.append(isomer)
                     
+        return isomers
+    
+    def getAromaticResonanceIsomers(self):
+        """
+        Generate the aromatic form of the molecule.
+        """
+        cython.declare(isomers=list, molecule=Molecule, rdAtomIndices=dict, aromatic=cython.bint, aromaticBonds=list)
+        cython.declare(rings=list, ring0=list, i=cython.int, atom1=Atom, atom2=Atom, bond=Bond)
+        
+        isomers = []
+
+        # Radicals
+        if self.isCyclic():
+            molecule = self.copy(deep=True)
+            rdkitmol, rdAtomIndices= molecule.toRDKitMol(removeHs=True, returnMapping=True)
+            aromatic = False
+            rings = molecule.getSmallestSetOfSmallestRings()            
+            for ring0 in rings:
+                # In RMG, only 6-member rings can be considered aromatic, so ignore all other rings                
+                aromaticBonds = []
+                if len(ring0) == 6:
+                    # Figure out which atoms and bonds are aromatic and reassign appropriately:
+                    for i, atom1 in enumerate(ring0):
+                        if not atom1.isCarbon():
+                            # all atoms in the ring must be carbon in RMG for our definition of aromatic
+                            break
+                        for atom2 in ring0[i+1:]:
+                            if molecule.hasBond(atom1, atom2):
+                                if str(rdkitmol.GetBondBetweenAtoms(rdAtomIndices[atom1],rdAtomIndices[atom2]).GetBondType()) == 'AROMATIC':
+                                    aromaticBonds.append(molecule.getBond(atom1, atom2))
+                if len(aromaticBonds) == 6:
+                    aromatic = True
+                    # Only change bonds if there are all 6 are aromatic.  Otherwise don't do anything
+                    for bond in aromaticBonds:
+                        bond.order = 'B'
+                        
+            if aromatic:              
+                isomers.append(molecule)
+
         return isomers
 
     def findAllDelocalizationPaths(self, atom1):

@@ -355,6 +355,16 @@ class Species(object):
         else:
             raise Exception('Unable to calculate density of states for species {0!r}: no statmech data available.'.format(self.label))
 
+    def getSymmetryNumber(self):
+        """
+        Get the symmetry number for the species, which is the highest symmetry number amongst
+        its resonance isomers.  This function is currently used for website purposes and testing only as it
+        requires additional calculateSymmetryNumber calls.
+        """
+        cython.declare(symmetryNumber=cython.int)
+        symmetryNumber = numpy.max([mol.calculateSymmetryNumber() for mol in self.molecule])
+        return symmetryNumber
+        
     def calculateCp0(self):
         """
         Return the value of the heat capacity at zero temperature in J/mol*K.
