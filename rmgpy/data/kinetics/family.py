@@ -529,6 +529,7 @@ class KineticsFamily(Database):
         If depositoryLabels is None then load 'training' first then everything else.
         If depositoryLabels is not None then load in the order specified in depositoryLabels.
         """
+        
         local_context['recipe'] = self.loadRecipe
         local_context['template'] = self.loadTemplate
         local_context['forbidden'] = self.loadForbidden
@@ -630,6 +631,20 @@ class KineticsFamily(Database):
         if os.path.exists(os.path.join(path, 'TS_groups.py')):
             logging.debug("Loading transition state groups for {0}".format(path))
             self.transitionStates = TransitionStates()
+            self.transitionStates.family = KineticsFamily(  entries=None,
+                                                            top=None,
+                                                            label=self.label,
+                                                            name=self.name,
+                                                            reverse='',
+                                                            shortDesc='',
+                                                            longDesc='',
+                                                            forwardTemplate=self.forwardTemplate,
+                                                            forwardRecipe=self.forwardRecipe,
+                                                            reverseTemplate=self.reverseTemplate,
+                                                            reverseRecipe=self.reverseRecipe,
+                                                            forbidden=None
+                                                            )
+                                                            
             self.transitionStates.load(path, local_context, global_context)
 
     def loadTemplate(self, reactants, products, ownReverse=False):
@@ -1287,8 +1302,9 @@ class KineticsFamily(Database):
                     for product in rxn.products:
                         logging.info("Product")
                         logging.info(product.toAdjacencyList())
-                    raise KineticsError("Did not find reverse reaction in reaction family {0} for reaction {1}.".format(self.label, str(rxn)))
-                rxn.reverse = reactions[0]
+                    #raise KineticsError("Did not find reverse reaction in reaction family {0} for reaction {1}.".format(self.label, str(rxn)))
+                else:
+                    rxn.reverse = reactions[0]
             
         else: # family is not ownReverse
             # Reverse direction (the direction in which kinetics is not defined)

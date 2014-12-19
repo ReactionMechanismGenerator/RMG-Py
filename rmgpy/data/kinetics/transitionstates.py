@@ -127,6 +127,12 @@ class TransitionStates(Database):
         logging.debug("Loading transitions state family groups from {0}".format(fpath))
         groups = TSGroups(label='{0}/TS_groups'.format(path.split('/')[-1]))#'intra_H_migration/TS_groups')
         groups.load(fpath , local_context, global_context )
+        
+        self.family.forwardTemplate.reactants = [groups.entries[entry.label] for entry in self.family.forwardTemplate.reactants]
+        self.family.forwardTemplate.products = [groups.entries[entry.label] for entry in self.family.forwardTemplate.products]
+        self.family.entries = groups.entries
+        self.family.groups = groups
+        groups.numReactants = len(self.family.forwardTemplate.reactants)
         self.groups = groups
     
     def estimateDistances(self, reaction):
@@ -592,7 +598,7 @@ class TSGroups(Database):
         groupEntries = self.top[:]
         
         for entry in self.top:
-            groupEntries.extend(self.descendants(entry))
+            groupEntries.extend(self.descendants(entry)) # Entries in the TS_group.py tree
         
         # Determine a unique list of the groups we will be able to fit parameters for
         groupList = []
@@ -625,7 +631,7 @@ class TSGroups(Database):
                 # Create every combination of each group and its ancestors with each other
                 combinations = []
                 for group in template:
-                    groups = [group]; groups.extend(self.ancestors(group))
+                    groups = [group]; groups.extend(self.ancestors(group)) # Groups from the group.py tree
                     combinations.append(groups)
                 combinations = getAllCombinations(combinations)
                 # Add a row to the matrix for each combination
@@ -704,9 +710,8 @@ class TSGroups(Database):
                     else:
                         uncertainties = {}
                     # should be entry.*
-                    shortDesc = "Group additive distances."
-                    longDesc = "Fitted to {0} distances.\n".format(groupCounts[entry][0])
-                    longDesc += "\n".join(groupComments[entry.label])
+                    shortDesc = "Fitted to {0} distances.\n".format(groupCounts[entry][0])
+                    longDesc = "\n".join(groupComments[entry.label])
                     distances_dict = {key:distance for key, distance in zip(distance_keys, groupValues[entry])}
                     uncertainties_dict = {key:distance for key, distance in zip(distance_keys, uncertainties)}
                     entry.data = DistanceData(distances=distances_dict, uncertainties=uncertainties_dict)
