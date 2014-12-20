@@ -638,10 +638,10 @@ class KineticsFamily(Database):
                                                             reverse='',
                                                             shortDesc='',
                                                             longDesc='',
-                                                            forwardTemplate=self.forwardTemplate,
+                                                            forwardTemplate=self.forwardTemplate.copy(),
                                                             forwardRecipe=self.forwardRecipe,
-                                                            reverseTemplate=self.reverseTemplate,
-                                                            reverseRecipe=self.reverseRecipe,
+                                                            reverseTemplate=None,
+                                                            reverseRecipe=None,
                                                             forbidden=None
                                                             )
                                                             
