@@ -115,6 +115,16 @@ class Entry:
 
     def __repr__(self):
         return '<Entry index={0:d} label="{1}">'.format(self.index, self.label)
+    
+    def copy(self, deep=False):
+        from copy import copy, deepcopy
+        if deep:
+            other = deepcopy(self)
+        else:
+            other = copy(self)
+        return other
+        
+        
 
 ################################################################################
 
