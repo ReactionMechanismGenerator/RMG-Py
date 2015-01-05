@@ -1873,7 +1873,10 @@ class Molecule(Graph):
         # Radicals
         if self.isCyclic():
             molecule = self.copy(deep=True)
-            rdkitmol, rdAtomIndices= molecule.toRDKitMol(removeHs=True, returnMapping=True)
+            try:
+                rdkitmol, rdAtomIndices = molecule.toRDKitMol(removeHs=True, returnMapping=True)
+            except:
+                return []
             aromatic = False
             rings = molecule.getSmallestSetOfSmallestRings()            
             for ring0 in rings:
