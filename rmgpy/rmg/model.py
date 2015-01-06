@@ -629,12 +629,12 @@ class CoreEdgeReactionModel:
         reactionList = []
         if speciesB is None:
             for moleculeA in speciesA.molecule:
-                reactionList.extend(database.kinetics.generateReactions([moleculeA], failsSpeciesConstraints=self.failsSpeciesConstraints))
+                reactionList.extend(database.kinetics.generateReactionsFromFamilies([moleculeA], products=None, failsSpeciesConstraints=self.failsSpeciesConstraints))
                 moleculeA.clearLabeledAtoms()
         else:
             for moleculeA in speciesA.molecule:
                 for moleculeB in speciesB.molecule:
-                    reactionList.extend(database.kinetics.generateReactions([moleculeA, moleculeB], failsSpeciesConstraints=self.failsSpeciesConstraints))
+                    reactionList.extend(database.kinetics.generateReactionsFromFamilies([moleculeA, moleculeB], products=None, failsSpeciesConstraints=self.failsSpeciesConstraints))
                     moleculeA.clearLabeledAtoms()
                     moleculeB.clearLabeledAtoms()
         return reactionList
