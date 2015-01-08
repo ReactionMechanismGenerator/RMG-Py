@@ -666,7 +666,19 @@ class TestMoleculeAdjLists(unittest.TestCase):
         2 O u1 p1 c[-1,0,+1] {1,D}
         """)
         self.assertEqual(adjlist, group.toAdjacencyList())
-
+        
+    def testToOldAjacencyList(self):
+        """
+        adjlist: Check that we can convert back to old style adjacency list
+        """
+        molecule2 = Molecule().fromSMILES('C=CC=C[CH]C')
+        string = """1 C 0 {2,D}
+2 C 0 {1,D} {3,S}
+3 C 0 {2,S} {4,D}
+4 C 0 {3,D} {5,S}
+5 C 1 {4,S} {6,S}
+6 C 0 {5,S}"""
+        self.assertEqual(molecule2.toAdjacencyList(removeH=True,oldStyle=True).strip(),string.strip())
 ################################################################################
 class TestConsistencyChecker(unittest.TestCase):
     def test_check_hund_rule_fail(self):
