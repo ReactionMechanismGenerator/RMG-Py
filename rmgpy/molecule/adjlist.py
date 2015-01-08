@@ -904,7 +904,9 @@ def toOldAdjacencyList(atoms, multiplicity=None, label=None, group=False, remove
     adjacency list that can be used in RMG-Java.  Currently not working for groups.
     """
     adjlist = ''
-
+    
+    if group:
+        raise InvalidAdjacencyListError("Not yet implemented.")
     # Filter out all non-valid atoms
     if not group:
         for atom in atoms:
