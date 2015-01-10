@@ -365,7 +365,7 @@ class ModelMatcher():
                 except Exception as e:
                     logging.warning("Error reading line '{0}'".format(line))
                     raise e
-        if not line.endswith('\n'):
+        if line is None or not line.endswith('\n'):
             logging.info("Ensuring blocked matches file ends with a line break")
             with open(self.blocked_matches_file, 'a') as f:
                 f.write('\n')
