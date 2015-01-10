@@ -791,6 +791,9 @@ class ModelMatcher():
         Return true if the two species have been identified and are on 
         the same side of at least one chemkin reaction. i.e. we know that
         according to the chemkin file, they react with each other.
+        
+        If rmgSpecies1 and rmgSpecies2 are the same thing, it must react
+        with itself to return true. (eg. A + A -> products)
         """
         try:
             set1 = self.chemkinReactionsDict[rmgSpecies1.label]
@@ -801,12 +804,14 @@ class ModelMatcher():
             return False
         for chemkin_reaction in set1.intersection(set2):
             for reacting in [chemkin_reaction.reactants, chemkin_reaction.products]:
-                matchedSpecies = set()
+                matchedSpecies = list()
                 for ckSpecies in reacting:
                     if ckSpecies.label in self.identified_labels:
-                        matchedSpecies.add(self.speciesDict_rmg[ckSpecies.label])
-                if rmgSpecies1 in matchedSpecies and rmgSpecies2 in matchedSpecies:
-                    return True
+                        matchedSpecies.append(self.speciesDict_rmg[ckSpecies.label])
+                if rmgSpecies1 in matchedSpecies:
+                    matchedSpecies.remove(rmgSpecies1)
+                    if rmgSpecies2 in matchedSpecies:
+                        return True
         return False
 
     def identifySmallMolecules(self):
@@ -1440,7 +1445,7 @@ class ModelMatcher():
             newReactions.extend(rm.react(database, newSpecies))
             # Find reactions involving the new species as bimolecular reactants
             # or products with other core species (e.g. A + B <---> products)
-            # This is the primary differenct from a standard enlarge, where
+            # This is the primary difference from a standard enlarge, where
             # normally it would react with all things in the core, this just
             # finds reactions in the chemkin file and creates those
             for coreSpecies in rm.core.species:
@@ -1448,8 +1453,10 @@ class ModelMatcher():
                     if self.speciesReactAccordingToChemkin(newSpecies, coreSpecies):
                         newReactions.extend(rm.react(database, newSpecies, coreSpecies))
             # Find reactions involving the new species as bimolecular reactants
-            # or products with itrm (e.g. A + A <---> products)
-            newReactions.extend(rm.react(database, newSpecies, newSpecies))
+            # or products with itself (e.g. A + A <---> products)
+            # This is also limited to only reactions that occur in the chemkin file.
+            if self.speciesReactAccordingToChemkin(newSpecies, newSpecies):
+                newReactions.extend(rm.react(database, newSpecies, newSpecies))
 
         # Add new species
         reactionsMovedFromEdge = rm.addSpeciesToCore(newSpecies)
