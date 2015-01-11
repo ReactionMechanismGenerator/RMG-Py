@@ -1303,12 +1303,14 @@ class ModelMatcher():
             f.write(' rmgPyKinetics: {!s}\n'.format(prettify(repr(chemkinReaction.kinetics))))
             
             f.write(' possibleReactionFamilies: [\n')
-            generated_reactions = self.rmg_object.database.kinetics.generateReactions([s.molecule[0] for s in chemkinReaction.reactants], [s.molecule[0] for s in chemkinReaction.products])
+            reactant_molecules = [s.molecule[0] for s in chemkinReaction.reactants]
+            product_molecules = [s.molecule[0] for s in chemkinReaction.products]
+            generated_reactions = self.rmg_object.database.kinetics.generateReactionsFromFamilies(reactant_molecules, product_molecules)
             for reaction in generated_reactions:
-                f.write('  {!r},\n'.format(reaction.family.label))
+                f.write('  {0!r},\n'.format(reaction.family.label))
             f.write(' ],\n')
-                
             f.write('},\n\n')
+            del generated_reactions
         return True
 
         entry = kinEntry()
