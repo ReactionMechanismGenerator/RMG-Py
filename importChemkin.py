@@ -195,6 +195,10 @@ class ModelMatcher():
         self.speciesDict_rmg = {}
         self.chemkinReactions = []
         self.chemkinReactionsUnmatched = []
+        self.chemkinReactionsToSave = []
+        """A list of chemkin reactions that have been fully identified but not yet saved to a file.
+        (because the reagents may not have been properly processed yet we have to defer the saving)
+        """
         self.chemkinReactionsDict = {}
         """A dictionary such that self.chemkinReactionsDict[chemkinLabel] = {set of chemkin reactions it is part of}"""
         self.suggestedMatches = {}
@@ -1128,6 +1132,7 @@ class ModelMatcher():
                 if match['species'] == rmgSpecies:
                     self.tentativeMatches.remove(match)
                 break
+        self.clearThermoMatch(chemkinLabel, str(rmgSpecies))
         self.saveBlockedMatchToFile(chemkinLabel, rmgSpecies, username=username)
         if chemkinLabel not in self.blockedMatches:
             self.blockedMatches[chemkinLabel] = dict()
@@ -1265,7 +1270,7 @@ class ModelMatcher():
                         else:  # didn't break outer loop, so all species have been identified
                             # remove it from the list of useful unmatched reactions.
                             chemkinReactionsUnmatched.remove(chemkinReaction)
-                            self.saveReactionToKineticsFile(chemkinReaction)
+                            self.chemkinReactionsToSave.append(chemkinReaction)
                     for chemkinLabel, rmgSpecies in self.suggestedMatches.iteritems():
                         if chemkinLabel not in votes:
                             votes[chemkinLabel] = {rmgSpecies: set([(chemkinReaction, edgeReaction)])}
@@ -1782,6 +1787,11 @@ recommended = False
                     invalidatedReactions = self.getInvalidatedReactionsAndRemoveVotes(chemkinLabel, matchingSpecies)
                     reactionsToCheck.update(invalidatedReactions)
                     logging.info("After making that match, will have to re-check {0} edge reactions".format(len(reactionsToCheck)))
+
+                #After processing all matches, now is a good time to save reactions.
+                while self.chemkinReactionsToSave:
+                    chemkinReaction = self.chemkinReactionsToSave.pop(0)
+                    self.saveReactionToKineticsFile(chemkinReaction)
 
             terminal_input_enabled = False
             if len(self.identified_unprocessed_labels) == 0 and self.votes and terminal_input_enabled:
