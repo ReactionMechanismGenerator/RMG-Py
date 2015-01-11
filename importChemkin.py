@@ -1303,8 +1303,10 @@ class ModelMatcher():
             f.write(' rmgPyKinetics: {!s}\n'.format(prettify(repr(chemkinReaction.kinetics))))
             
             f.write(' possibleReactionFamilies: [\n')
-            reactant_molecules = [s.molecule[0] for s in chemkinReaction.reactants]
-            product_molecules = [s.molecule[0] for s in chemkinReaction.products]
+            reactant_molecules = [s.molecule[0] for s in chemkinReaction.reactants if s.reactive]
+            product_molecules = [s.molecule[0] for s in chemkinReaction.products if s.reactive]
+            f.flush()
+            logging.info("Trying to generate reactions for " + str(chemkinReaction))
             generated_reactions = self.rmg_object.database.kinetics.generateReactionsFromFamilies(reactant_molecules, product_molecules)
             for reaction in generated_reactions:
                 f.write('  {0!r},\n'.format(reaction.family.label))
@@ -1656,6 +1658,8 @@ recommended = False
             newSpeciesDict[species_label] = rmg_species
             if self.formulaDict[species_label] in ['N2', 'Ar', 'He']:
                 rmg_species.reactive = False
+                old_species.reactive = False
+                # when this occurs in collider lists it's still the old species?
             rmg_species.generateThermoData(self.rmg_object.database)
         # Set match using the function to get all the side-effects.
         labelsToProcess = self.identified_labels
