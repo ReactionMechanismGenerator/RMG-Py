@@ -1295,6 +1295,22 @@ class ModelMatcher():
         """
         Output to the kinetics.py library file
         """
+        from rmgpy.cantherm.output import prettify
+        with open(self.outputKineticsFile, 'a') as f:
+            f.write('{\n')
+            f.write(' reaction: {!r},\n'.format(str(chemkinReaction)))
+            f.write(' chemkinKinetics: """\n{!s}""",\n'.format(rmgpy.chemkin.writeKineticsEntry(chemkinReaction, self.speciesList, verbose=False)))
+            f.write(' rmgPyKinetics: {!s}\n'.format(prettify(repr(chemkinReaction.kinetics))))
+            
+            f.write(' possibleReactionFamilies: [\n')
+            generated_reactions = self.rmg_object.database.kinetics.generateReactions([s.molecule[0] for s in chemkinReaction.reactants], [s.molecule[0] for s in chemkinReaction.products])
+            for reaction in generated_reactions:
+                f.write('  {!r},\n'.format(reaction.family.label))
+            f.write(' ],\n')
+                
+            f.write('},\n\n')
+        return True
+
         entry = kinEntry()
         source = self.args.reactions
         entry.index = len(self.chemkinReactions) - len(self.chemkinReactionsUnmatched)
