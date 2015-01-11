@@ -190,21 +190,26 @@ class ModelMatcher():
         self.identified_labels = []
         self.identified_unprocessed_labels = []
         self.identified_by = {}
-        """Which user identified which species. Keys: chemkinLabels, Values: usernames"""
+        """Which user identified which species: self.identified_by[chemkinLabels] = username"""
         self.speciesList = None
         self.speciesDict_rmg = {}
         self.chemkinReactions = []
         self.chemkinReactionsUnmatched = []
         self.chemkinReactionsDict = {}
+        """A dictionary such that self.chemkinReactionsDict[chemkinLabel] = {set of chemkin reactions it is part of}"""
         self.suggestedMatches = {}
         self.votes = {}
+        """self.votes is a dict of dicts of lists of tuples: {'ch3':{<Species CH3>: [ voting_reactions ]}}
+           so self.votes[chemkinLabel][rmgSpecies][0] = (chemkinReaction, rmgReaction)
+           """
         self.prunedVotes = {}
         self.manualMatchesToProcess = []
+        """A list of tuples of matches not yet processed: [(chemkinLabel, rmgSpecies),...]"""
         self.tentativeMatches = []
         self.thermoMatches = {}
         self.thermo_libraries_to_check = []
         self.blockedMatches = {}
-        """A dictionary of matches forbidden manually. blockedMatches[ckLabel][rmg Species or Molecule] = username (or None)"""
+        """A dictionary of matches forbidden manually. blockedMatches[ckLabel][rmg Species] = username (or None)"""
         self.known_species_file = ""
         """Filename of the known species file"""
         self.blocked_matches_file = ""
@@ -338,7 +343,7 @@ class ModelMatcher():
         """
         logging.info("Reading blocked matches...")
         if not os.path.exists(self.blocked_matches_file):
-            logging.info("Blocked Matches file does not exist. Will create on first manual match.")
+            logging.info("Blocked Matches file does not exist. Will create.")
             return
         #: blocked_smiles[chemkinLabel][SMILES] = username_who_blocked_it
         blocked_smiles = {} 
@@ -1048,8 +1053,8 @@ class ModelMatcher():
                             if wasNew:
                                 self.drawSpecies(rmg_species)
                             else:
-                                logging.info("Trying to match {0}, from {1}, but it's already in the model!".format(ck_label, library_name))
-                                #continue
+                                pass
+                                # logging.info("Thermo matches {0}, from {1}, but it's already in the model.".format(ck_label, library_name))
 
                             rmg_species.generateThermoData(self.rmg_object.database)
                             logging.info("Thermo match found for chemkin species {0} in thermo library {1}".format(ck_label, library_name))
@@ -1080,7 +1085,7 @@ class ModelMatcher():
                     continue
                 label, smiles = line.split()
                 if label == ckLabel:
-                    logging.info("Already matched {!s}".format(label))
+                    logging.info("Trying to confirm match {0!s} but already matched to {1!s}".format(label, smiles))
                     return False
         if username:
             user_text = "\t! Confirmed by {0}".format(username)
@@ -1249,6 +1254,7 @@ class ModelMatcher():
                         logging.info(" suggesting new species match: {0!r}".format(dict((l, str(s)) for (l, s) in self.suggestedMatches.iteritems())))
                     else:
                         logging.info(" suggesting no new species matches.")
+                        # See if all species have been matched
                         for reagents in (chemkinReaction.reactants, chemkinReaction.products):
                             for reagent in reagents:
                                 if reagent.label not in self.identified_labels:
@@ -1257,7 +1263,7 @@ class ModelMatcher():
                                 continue
                             break  # did break inner loop, so break outer loop as there's an unidentified species
                         else:  # didn't break outer loop, so all species have been identified
-                            # remove it from the list of useful reactions.
+                            # remove it from the list of useful unmatched reactions.
                             chemkinReactionsUnmatched.remove(chemkinReaction)
                             self.saveReactionToKineticsFile(chemkinReaction)
                     for chemkinLabel, rmgSpecies in self.suggestedMatches.iteritems():
@@ -1268,7 +1274,7 @@ class ModelMatcher():
                                 votes[chemkinLabel][rmgSpecies] = set([(chemkinReaction, edgeReaction)])
                             else:
                                 votes[chemkinLabel][rmgSpecies].add((chemkinReaction, edgeReaction))
-                        # now votes is a dict of dicts of lists {'ch3':{<Species CH3>: [ voting_reactions ]}}
+                        # now votes is a dict of dicts of lists of tuples {'ch3':{<Species CH3>: [ voting_reactions ]}}
             if not edgeReactionMatchesSomething:
                 reactionsToPrune.add(edgeReaction)
         # remove those reactions
@@ -1651,7 +1657,7 @@ recommended = False
                     continue # to the other side of the reaction
                 break  # did break inner loop, so break outer loop as there's an unidentified species
             else:  # didn't break outer loop, so all species have been identified
-                # remove it from the list of useful reactions.
+                # remove it from the list of useful unmatched reactions.
                 chemkinReactionsUnmatched.remove(chemkinReaction)
                 self.saveReactionToKineticsFile(chemkinReaction)
 
