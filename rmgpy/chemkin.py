@@ -1218,6 +1218,7 @@ def readReactionsBlock(f, speciesDict, readComments = True):
         if kineticsList[0] == '':
             kineticsList.pop(0)
         if len(kineticsList) != len(commentsList):
+            logging.warning("Discarding comments from Chemkin file because not sure which reaction they apply to")
             commentsList = ['' for kinetics in kineticsList]
         
     reactionList = []
