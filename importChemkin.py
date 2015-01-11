@@ -1299,17 +1299,16 @@ class ModelMatcher():
         with open(self.outputKineticsFile, 'a') as f:
             f.write('{\n')
             f.write(' reaction: {!r},\n'.format(str(chemkinReaction)))
-            f.write(' chemkinKinetics: """\n{!s}""",\n'.format(rmgpy.chemkin.writeKineticsEntry(chemkinReaction, self.speciesList, verbose=False)))
-            f.write(' rmgPyKinetics: {!s}\n'.format(prettify(repr(chemkinReaction.kinetics))))
-            
-            f.write(' possibleReactionFamilies: [\n')
+            #f.write(' chemkinKinetics: """\n{!s}""",\n'.format(rmgpy.chemkin.writeKineticsEntry(chemkinReaction, self.speciesList, verbose=False)))
+            #f.write(' rmgPyKinetics: {!s}\n'.format(prettify(repr(chemkinReaction.kinetics))))
+            f.write(' possibleReactionFamilies: [')
             reactant_molecules = [s.molecule[0] for s in chemkinReaction.reactants if s.reactive]
             product_molecules = [s.molecule[0] for s in chemkinReaction.products if s.reactive]
             f.flush()
             logging.info("Trying to generate reactions for " + str(chemkinReaction))
             generated_reactions = self.rmg_object.database.kinetics.generateReactionsFromFamilies(reactant_molecules, product_molecules)
             for reaction in generated_reactions:
-                f.write('  {0!r},\n'.format(reaction.family.label))
+                f.write('{0!r}, '.format(reaction.family.label))
             f.write(' ],\n')
             f.write('},\n\n')
             del generated_reactions
