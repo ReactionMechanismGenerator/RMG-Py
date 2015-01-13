@@ -319,6 +319,7 @@ Test the GroupBond.copy() method. ... ok
 Test the GroupBond.equivalent() method. ... ok
 Test the GroupBond.isSpecificCaseOf() method. ... ok
 Test that a GroupBond object can be successfully pickled and ... ok
+Test isormophism check of a CS group vs. a sulfur containing molecule ... SKIP: WIP test failed: False is not true
 rmgpy.molecule.isomorphismTest.run_parameter_tests ... ok
 distinct multiplicity for both molecules set by user. ... ok
 identical multiplicity for both molecules set by user. ... ok
@@ -930,7 +931,7 @@ rmgpy.transport                      28      1      0      0    96%   71
 -----------------------------------------------------------------------------
 TOTAL                             14343  11044   6247   5454    20%   
 ----------------------------------------------------------------------
-Ran 808 tests.
+Ran 809 tests.
 
-FAILED (SKIP=23, errors=3)
+FAILED (SKIP=24, errors=3)
 make: *** [test] Error 1
