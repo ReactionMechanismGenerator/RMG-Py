@@ -389,3 +389,33 @@ def test_isomorphism_group_group():
     assert_true(len(gp3.findSubgraphIsomorphisms(gp1)) > 0)
     assert_false(gp3.isSubgraphIsomorphic(gp2))    
     assert_false(len(gp3.findSubgraphIsomorphisms(gp2)) > 0)
+
+@work_in_progress
+def test_isomorphism_sulfurGroup_sulfurMolecule():
+    """
+    Test isormophism check of a CS group vs. a sulfur containing molecule
+    """
+    gp1 = Group().fromAdjacencyList("""
+1 S  u0 {2,S} {3,S}
+2 H  u0 {1,S}
+3 C u0 {1,S} {4,D}
+4 S  u0 {3,D}
+""")
+    
+    gp2 = Group().fromAdjacencyList("""
+1 S  u0 {2,S} {3,S}
+2 H  u0 {1,S}
+3 CS u0 {1,S} {4,D}
+4 S  u0 {3,D}
+""")
+    
+    mol = Molecule().fromAdjacencyList("""
+1 S  0 {2,S} {3,S}
+2 H  0 {1,S}
+3 C 0 {1,S} {4,D} {5,S}
+4 S 0 {3,D}
+5 H 0 {3,S}
+""")
+    assert_true(mol.isSubgraphIsomorphic(gp1))
+    
+    assert_true(mol.isSubgraphIsomorphic(gp2))
