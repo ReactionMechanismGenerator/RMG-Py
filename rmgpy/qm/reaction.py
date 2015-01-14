@@ -53,15 +53,16 @@ class QMReaction:
     
     """
     
-    def __init__(self, reaction, settings):
+    def __init__(self, reaction, settings, tsDatabase):
         self.reaction = reaction
         self.settings = settings
-        self.tsDatabase = TransitionStates()
-        self.tsDatabase.load(
-                path=os.path.abspath(os.path.join(os.getenv('RMGpy'), '..', 'RMG-database', 'input', 'kinetics', 'families', self.reaction.family.label)),
-                local_context={},
-                global_context={},
-                )
+        self.tsDatabase = tsDatabase
+        # self.tsDatabase = TransitionStates()
+        # self.tsDatabase.load(
+        #         path=os.path.abspath(os.path.join(os.getenv('RMGpy'), '..', 'RMG-database', 'input', 'kinetics', 'families', self.reaction.family.label)),
+        #         local_context={},
+        #         global_context={},
+        #         )
                 
         if isinstance(self.reaction.reactants[0], Molecule):
             reactants = sorted([s.toSMILES() for s in self.reaction.reactants])
@@ -476,13 +477,13 @@ class QMReaction:
         
         return reactant, product
     
-    def optimizeTS(self, fromDoubleEnded=False):
+    def optimizeTS(self, fromDoubleEnded=False, optEst=False):
         """
         Conduct the optimization step of the transition state search.
         """
         if not os.path.exists(self.outputFilePath):
             print "Optimizing TS once"
-            self.createInputFile(1, fromDoubleEnded=fromDoubleEnded)
+            self.createInputFile(1, fromDoubleEnded=fromDoubleEnded, optEst=optEst)
             converged, internalCoord = self.run()
             shutil.copy(self.outputFilePath, self.outputFilePath+'.TS1.log')
         else:
@@ -518,7 +519,10 @@ class QMReaction:
         path analysis calculation. The ts estimate can be from the group additive or
         double-ended search methods.
         """
-        successfulTS = self.optimizeTS(fromDoubleEnded=fromDoubleEnded)
+        optEst = False
+        optEst = self.optEstimate(labels)
+        
+        successfulTS = self.optimizeTS(fromDoubleEnded=fromDoubleEnded, optEst=optEst)
         if not successfulTS:
             notes = 'TS not converged\n'
             return successfulTS, notes

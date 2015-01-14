@@ -439,7 +439,7 @@ class GaussianTS(QMReaction, Gaussian):
                 
         return top_keys
     
-    def createInputFile(self, attempt, fromInt=False, fromDoubleEnded=False):
+    def createInputFile(self, attempt, fromInt=False, fromDoubleEnded=False, optEst=False):
         """
         Using the :class:`Geometry` object, write the input file
         for the `attmept`th attempt.
@@ -459,9 +459,12 @@ class GaussianTS(QMReaction, Gaussian):
             # Until checkpointing is fixed, rewrite the whole output
             assert os.path.exists(self.outputFilePath)
             atomsymbols, atomcoords = self.reactantGeom.parseLOG(self.outputFilePath)
+        elif optEst:
+            outputFilePath = self.getFilePath('Est{0}'.format(self.outputFileExtension))
+            assert os.path.exists(outputFilePath)
+            atomsymbols, atomcoords = self.reactantGeom.parseLOG(outputFilePath)
         else:
             molfile = self.reactantGeom.getRefinedMolFilePath()
-            atomline = re.compile('\s*([\- ][0-9.]+\s+[\-0-9.]+\s+[\-0-9.]+)\s+([A-Za-z]+)')
         
             assert os.path.exists(molfile)
             atomsymbols, atomcoords = self.reactantGeom.parseMOL(molfile)
@@ -546,6 +549,50 @@ class GaussianTS(QMReaction, Gaussian):
         output.append('')
         top_keys = self.inputFileKeywords(0, qst2=atomCount)
         self.writeInputFile(output, top_keys=top_keys, numProcShared=20, memory='800MB')
+        
+    def optEstimate(self, labels):
+        """
+        Writes and runs a loose optimization of the transition state estimate with frozen reaction
+        center distances.
+        """
+        
+        inputFilePath = self.getFilePath('Est{0}'.format(self.inputFileExtension))
+        outputFilePath = self.getFilePath('Est{0}'.format(self.outputFileExtension))
+        
+        if not os.path.exists(outputFilePath):
+            attempt = 1
+            
+            output = ['', self.uniqueID, '' ]
+            output.append("{charge}   {mult}".format(charge=0, mult=self.reactantGeom.molecule.multiplicity ))
+            
+            # molfile = self.reactantGeom.getRefinedMolFilePath()
+            molfile = self.reactantGeom.getCrudeMolFilePath()
+            
+            assert os.path.exists(molfile)
+            atomsymbols, atomcoords = self.reactantGeom.parseMOL(molfile)
+            
+            output, atomCount = self.geomToString(atomsymbols, atomcoords, outputString=output)
+            
+            assert atomCount == len(self.reactantGeom.molecule.atoms)
+            
+            output.append('')
+            
+            if self.basisSet:
+                top_keys = '# {0}/{1} Opt=(ModRedun,Loose) Int(Grid=SG1)'.format(self.method, self.basisSet)
+            else:
+                top_keys = '# {0} Opt=(ModRedun,Loose) Int(Grid=SG1)'.format(self.method)
+            
+            dist_combo_it = itertools.combinations(labels, 2)
+            dist_combo_l = list(dist_combo_it)
+            bottomKeys = ''
+            for combo in dist_combo_l:
+                bottomKeys = bottomKeys + '{0} {1} F\n'.format(combo[0] + 1, combo[1] + 1)
+            
+            self.writeInputFile(output, attempt, top_keys=top_keys, numProcShared=20, memory='2GB', bottomKeys=bottomKeys, inputFilePath=inputFilePath)
+            
+            outputFilePath = self.runDouble(inputFilePath)
+        
+        return outputFilePath
         
     def setImages(self):
         """
@@ -734,6 +781,55 @@ class GaussianTS(QMReaction, Gaussian):
             return False, False
         else:
             return True, False
+    
+    def verifyOptOutputFile(self):
+        """
+        Check's that an output file exists and was successful.
+        
+        Returns a boolean flag that states whether a successful GAUSSIAN simulation already exists for the molecule with the 
+        given file name.
+        
+        The definition of finding a successful simulation is based on these criteria:
+        1) finding an output file with the file name equal to the the reaction unique ID
+        2) NOT finding any of the keywords that are denote a calculation failure
+        3) verifying the file terminated normally.
+        
+        If any of the above criteria is not matched, False will be returned and the procedures to start a new calculation 
+        will be initiated. The second boolean flag indicates if there was a failure in the internal coordinate system.
+        This will initiate a subsequent calculation in cartesian coordinates.
+        """
+        inputFilePath = self.getFilePath('Est{0}'.format(self.inputFileExtension))
+        outputFilePath = self.getFilePath('Est{0}'.format(self.outputFileExtension))
+        
+        if not os.path.exists(outputFilePath):
+            logging.info("Output file {0} does not exist.".format(outputFilePath))
+            return False
+        
+        failureKeysFound = dict([(key, False) for key in self.failureKeys])
+        successKeysFound = dict([('Normal termination of Gaussian', False)])
+        
+        with open(outputFilePath) as outputFile:
+            for line in outputFile:
+                line = line.strip()
+                
+                for element in self.failureKeys: #search for failure keywords
+                    if element in line:
+                        logging.error("Gaussian output file contains the following error: {0}".format(element) )
+                        failureKeysFound[element] = True
+                    
+                for element in successKeysFound.iterkeys(): #search for success keywords
+                    if element in line:
+                        successKeysFound[element] = True
+        
+        if any(failureKeysFound.values()):
+            return False
+        
+        # Check that ALL 'success' keywords were found in the file.
+        if not all( successKeysFound.values() ):
+            logging.error('Not all of the required keywords for success were found in the output file!')
+            return False
+        
+        return True
             
     def verifyQST2OutputFile(self):
         """
