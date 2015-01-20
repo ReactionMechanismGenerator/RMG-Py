@@ -227,14 +227,82 @@ class QMMolecule:
     def maxAttempts(self):
         "The total number of attempts to try"
         return 2 * len(self.keywords)
+    
+    def setOutputDirectory(self, outputDirectory, scratchDirectory=None):
+        """
+        Set up the fileStore and scratchDirectory if not already done.
+        """
+        subPath = os.path.join('Species', self.uniqueID, self.settings.method)
         
-    def createGeometry(self):
+        setFileStore = True
+        setScratch = True
+        if self.settings.fileStore:
+            if not self.settings.fileStore.endswith(subPath):
+                self.settings.fileStore = os.path.join(self.settings.fileStore, subPath)
+                logging.info("Setting the quantum mechanics fileStore to {0}".format(self.settings.fileStore))
+            setFileStore = False    
+        
+        if self.settings.scratchDirectory:
+            if not self.settings.scratchDirectory.endswith(subPath):
+                self.settings.scratchDirectory = os.path.join(self.settings.scratchDirectory, subPath)
+                logging.info("Setting the quantum mechanics fileStore to {0}".format(self.settings.scratchDirectory)) 
+            setScratch = False
+                    
+        if setFileStore:
+            self.settings.fileStore = os.path.join(outputDirectory, subPath)
+            logging.info("Setting the quantum mechanics fileStore to {0}".format(self.settings.fileStore))
+        if setScratch:
+            self.settings.scratchDirectory = os.path.join(outputDirectory, subPath)
+            logging.info("Setting the quantum mechanics fileStore to {0}".format(self.settings.scratchDirectory))            
+    
+    def initialize(self):
+        """
+        Do any startup tasks.
+        """
+        self.checkReady()
+    
+    def checkReady(self):
+        """
+        Check that it's ready to run calculations.
+        """
+        self.settings.checkAllSet()
+        self.checkPaths()
+    
+    def checkPaths(self):
+        """
+        Check the paths in the settings are OK. Make folders as necessary.
+        """
+        if not os.path.exists(self.settings.RMG_bin_path):
+            raise Exception("RMG-Py 'bin' directory {0} does not exist.".format(self.settings.RMG_bin_path))
+        if not os.path.isdir(self.settings.RMG_bin_path):
+            raise Exception("RMG-Py 'bin' directory {0} is not a directory.".format(self.settings.RMG_bin_path))
+            
+        self.setOutputDirectory(self.settings.fileStore)
+        self.settings.fileStore = os.path.expandvars(self.settings.fileStore) # to allow things like $HOME or $RMGpy
+        self.settings.scratchDirectory = os.path.expandvars(self.settings.scratchDirectory)
+        for path in [self.settings.fileStore, self.settings.scratchDirectory]:
+            if not os.path.exists(path):
+                logging.info("Creating directory %s for QM files."%os.path.abspath(path))
+                os.makedirs(path)
+        
+    def createGeometry(self, boundsMatrix=None, atomMatch=None):
         """
         Creates self.geometry with RDKit geometries
         """
         self.geometry = Geometry(self.settings, self.uniqueID, self.molecule, uniqueIDlong=self.uniqueIDlong)
-        self.geometry.generateRDKitGeometries()
+        self.geometry.generateRDKitGeometries(boundsMatrix, atomMatch)
         return self.geometry
+        
+    def parse(self):
+        """
+        Parses the results of the Mopac calculation, and returns a CCLibData object.
+        """
+        parser = self.getParser(self.outputFilePath)
+        parser.logger.setLevel(logging.ERROR) #cf. http://cclib.sourceforge.net/wiki/index.php/Using_cclib#Additional_information
+        cclibData = parser.parse()
+        radicalNumber = self.molecule.getRadicalCount()
+        qmData = CCLibData(cclibData, radicalNumber+1) # Should `radicalNumber+1` be `self.molecule.multiplicity` in the next line of code? It's the electronic ground state degeneracy.
+        return qmData
     
     def generateQMData(self):
         """
