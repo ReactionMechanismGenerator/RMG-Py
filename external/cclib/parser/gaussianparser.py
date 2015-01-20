@@ -632,7 +632,14 @@ class Gaussian(logfileparser.Logfile):
                 try:
                     value = self.float(parts[2])
                 except ValueError:
-                    self.logger.error("Problem parsing the value for geometry optimisation: %s is not a number." % parts[2])
+                    #gmagoon 20111202: because the value can become **** (as shown below, I'm changing this to not report an error, and instead just set the value to -1.0
+                    #         Item               Value     Threshold  Converged?
+                    # Maximum Force            ********     0.000015     NO 
+                    # RMS     Force            1.813626     0.000010     NO 
+                    # Maximum Displacement     0.915407     0.000060     NO 
+                    # RMS     Displacement     0.280831     0.000040     NO
+                    value = -1.0
+                    # self.logger.error("Problem parsing the value for geometry optimisation: %s is not a number." % parts[2])
                 else:
                     newlist[i] = value
                 self.geotargets[i] = self.float(parts[3])
