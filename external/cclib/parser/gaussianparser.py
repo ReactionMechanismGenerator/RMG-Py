@@ -7,6 +7,7 @@
 # the GNU Lesser General Public version 2.1 or later. You should have
 # received a copy of the license along with cclib. You can also access
 # the full license online at http://www.gnu.org/copyleft/lgpl.html.
+# gmagoon 4/5/10-4/6/10 (this notice added 4/29/10): Gregory Magoon modified this file from cclib 1.0
 
 """Parser for Gaussian output files"""
 
@@ -519,6 +520,38 @@ class Gaussian(logfileparser.Logfile):
             if not hasattr(self, "scfenergies"):
                 self.scfenergies = []
             self.scfenergies.append(utils.convertor(self.float(line.split()[1]), "hartree", "eV"))
+        
+        #gmagoon 6/8/09: added molecular mass parsing (units will be amu)
+        #example line: " Molecular mass:   208.11309 amu."
+        if line[1:16] == 'Molecular mass:':
+            self.molmass = self.float(line.split()[2])
+        
+        #gmagoon 5/27/09: added rotsymm for reading rotational symmetry number
+        #it would probably be better to read in point group (or calculate separately with OpenBabel, and I probably won't end up using this
+        #example line: " Rotational symmetry number  1."
+        if line[1:27] == 'Rotational symmetry number':
+            self.rotsymm = int(self.float(line.split()[3]))
+        
+        #gmagoon 5/28/09: added rotcons for rotational constants (at each step) in GHZ
+        #example line:  Rotational constants (GHZ):     17.0009421      5.8016756      4.5717439
+        #could also read in moment of inertia, but this should just differ by a constant: rot cons= h/(8*Pi^2*I)
+        #note that the last occurence of this in the thermochemistry section has reduced precision, so we will want to use the 2nd to last instance
+        if line[1:28] == 'Rotational constants (GHZ):':
+            if not hasattr(self, "rotcons"):
+                self.rotcons = []
+        
+            #some linear cases (e.g. if linearity is not recognized) can have asterisks ****... for the first rotational constant; e.g.:
+            # Rotational constants (GHZ):      ************    12.73690    12.73690
+            # or:
+            # Rotational constants (GHZ):***************     10.4988228     10.4988223
+            # if this is the case, replace the asterisks with a 0.0
+            #we can also have cases like this:
+            # Rotational constants (GHZ):6983905.3278703     11.8051382     11.8051183
+            #if line[28:29] == '*' or line.split()[3].startswith('*'):
+            if line[37:38] == '*':
+                self.rotcons.append([0.0]+map(float, line[28:].split()[-2:])) #record last 0.0 and last 2 numbers (words) in the string following the prefix
+            else:
+                self.rotcons.append(map(float, line[28:].split()[-3:])) #record last 3 numbers (words) in the string following the prefix
         
         # Total energies after Moller-Plesset corrections.
         # Second order correction is always first, so its first occurance
