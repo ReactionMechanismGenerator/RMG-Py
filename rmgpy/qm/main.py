@@ -35,6 +35,7 @@ from rmgpy.qm.molecule import QMMolecule
 from rmgpy.qm.reaction import QMReaction
 import rmgpy.qm.mopac
 import rmgpy.qm.gaussian
+import rmgpy.qm.nwchem
 from rmgpy.data.thermo import ThermoLibrary
 
 class QMSettings():
@@ -126,6 +127,7 @@ class QMCalculator():
         Ignores the settings onlyCyclics and maxRadicalNumber and does the calculation anyway if asked.
         (I.e. the code that chooses whether to call this method should consider those settings).
         """
+        
         if self.settings.software == 'mopac':
             if self.settings.method == 'pm3':
                 qm_molecule_calculator = rmgpy.qm.mopac.MopacMolPM3(molecule, self.settings)
@@ -135,7 +137,6 @@ class QMCalculator():
                 qm_molecule_calculator = rmgpy.qm.mopac.MopacMolPM7(molecule, self.settings)
             else:
                 raise Exception("Unknown QM method '{0}' for mopac".format(self.settings.method))
-            thermo0 = qm_molecule_calculator.generateThermoData()
         elif self.settings.software == 'gaussian':
             if self.settings.method == 'pm3':
                 qm_molecule_calculator = rmgpy.qm.gaussian.GaussianMolPM3(molecule, self.settings)
@@ -145,9 +146,14 @@ class QMCalculator():
                 qm_molecule_calculator = rmgpy.qm.gaussian.GaussianMolB3LYP(molecule, self.settings)
             else:
                 raise Exception("Unknown QM method '{0}' for gaussian".format(self.settings.method))
-            thermo0 = qm_molecule_calculator.generateThermoData()
+        elif self.settings.software == 'nwchem':
+            if self.settings.method =='hf':
+                qm_molecule_calculator = rmgpy.qm.nwchem.NWChemMolHF(molecule, self.settings)
+            else:
+                raise Exception("Unknown QM method '{0}' for gaussian".format(self.settings.method))
         else:
             raise Exception("Unknown QM software '{0}'".format(self.settings.software))
+        thermo0 = qm_molecule_calculator.generateThermoData()
         return thermo0
     
     def getKineticData(self, reaction):
