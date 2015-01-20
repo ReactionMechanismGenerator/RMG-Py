@@ -239,7 +239,7 @@ class GaussianMol(QMMolecule, Gaussian):
         assert atomCount == len(self.molecule.atoms)
     
         output.append('')
-        self.writeInputFile(output, attempt, numProcShared=20, memory='2GB')
+        self.writeInputFile(output, attempt, numProcShared=40, memory='10GB')
     
     def generateQMData(self):
         """
@@ -474,7 +474,7 @@ class GaussianTS(QMReaction, Gaussian):
         assert atomCount == len(self.reactantGeom.molecule.atoms)
         
         output.append('')
-        self.writeInputFile(output, attempt, numProcShared=20, memory='800MB', checkPoint=True)
+        self.writeInputFile(output, attempt, numProcShared=40, memory='10GB', checkPoint=True)
     
     def createIRCFile(self):
         """
@@ -486,7 +486,7 @@ class GaussianTS(QMReaction, Gaussian):
         top_keys = self.inputFileKeywords(0, irc=True)
         output = ['', "{charge}   {mult}".format(charge=0, mult=self.reactantGeom.molecule.multiplicity ), '', '']
         
-        self.writeInputFile(output, top_keys=top_keys, numProcShared=20, memory='800MB', checkPoint=True, inputFilePath=self.ircInputFilePath)
+        self.writeInputFile(output, top_keys=top_keys, numProcShared=40, memory='10GB', checkPoint=True, inputFilePath=self.ircInputFilePath)
     
     def createGeomInputFile(self, freezeAtoms, otherGeom=False):
         
@@ -523,7 +523,7 @@ class GaussianTS(QMReaction, Gaussian):
         
         output.append('')
         top_keys = self.inputFileKeywords(0, modRed=atomCount)
-        self.writeInputFile(output, top_keys=top_keys, numProcShared=20, memory='800MB', bottomKeys=bottom_keys)
+        self.writeInputFile(output, top_keys=top_keys, numProcShared=40, memory='10GB', bottomKeys=bottom_keys)
     
     def createQST2InputFile(self):
         # For now we don't do this, until seg faults are fixed on Discovery.
@@ -548,7 +548,7 @@ class GaussianTS(QMReaction, Gaussian):
         
         output.append('')
         top_keys = self.inputFileKeywords(0, qst2=atomCount)
-        self.writeInputFile(output, top_keys=top_keys, numProcShared=20, memory='800MB')
+        self.writeInputFile(output, top_keys=top_keys, numProcShared=40, memory='10GB')
         
     def optEstimate(self, labels):
         """
@@ -588,7 +588,7 @@ class GaussianTS(QMReaction, Gaussian):
             for combo in dist_combo_l:
                 bottomKeys = bottomKeys + '{0} {1} F\n'.format(combo[0] + 1, combo[1] + 1)
             
-            self.writeInputFile(output, attempt, top_keys=top_keys, numProcShared=20, memory='2GB', bottomKeys=bottomKeys, inputFilePath=inputFilePath)
+            self.writeInputFile(output, attempt, top_keys=top_keys, numProcShared=40, memory='10GB', bottomKeys=bottomKeys, inputFilePath=inputFilePath)
             
             outputFilePath = self.runDouble(inputFilePath)
         
@@ -1072,7 +1072,7 @@ class GaussianTS(QMReaction, Gaussian):
             index = 1,
             item = self.reaction,
             data = DistanceData(distances=distances, method='{method}/{basis}'.format(method=self.method, basis=self.basisSet)),
-            shortDesc = "B3LYP/6-31+G(d,p) calculation via group additive TS generator.",
+            shortDesc = "M06-2X/6-311+G(2df,2p) calculation via group additive TS generator.",
         )
         
         outputDataFile = os.path.join(self.settings.fileStore, self.uniqueID + '.data')
@@ -1085,9 +1085,9 @@ class GaussianTSM062X(GaussianTS):
     The 6-311+G(2df,2p) is recommended for this basis set.
     """
     method = 'm062x'
-    basisSet = '6-311+g(2df,2p)'
+    basisSet = '6-311+G(2df,2p)'# It's suppoed to be "6-311+g(3d2f,2df,2p)" to include 3rd row elements, but I get an error when I use that.
     
-    # Before using the '6-311+G(2df, 2p)', gen was being used and the basis set was explicitly
+    # Before using the '6-311+G(2df,2p)', gen was being used and the basis set was explicitly
     # written in the input file
     
     # mg3s = {
