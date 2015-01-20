@@ -380,7 +380,7 @@ class QMMolecule:
         "The total number of attempts to try"
         return 2 * len(self.keywords)
     
-    def setOutputDirectory(self, outputDirectory):
+    def setOutputDirectory(self, outputDirectory, scratchDirectory=None):
         """
         Set up the fileStore and scratchDirectory if not already done.
         """
@@ -389,13 +389,17 @@ class QMMolecule:
         setFileStore = True
         setScratch = True
         if self.settings.fileStore:
-            if self.settings.fileStore.endswith(subPath):
-                setFileStore = False
+            if not self.settings.fileStore.endswith(subPath):
+                self.settings.fileStore = os.path.join(self.settings.fileStore, subPath)
+                logging.info("Setting the quantum mechanics fileStore to {0}".format(self.settings.fileStore))
+            setFileStore = False    
         
         if self.settings.scratchDirectory:
-            if self.settings.scratchDirectory.endswith(subPath):
-                setScratch = False
-                
+            if not self.settings.scratchDirectory.endswith(subPath):
+                self.settings.scratchDirectory = os.path.join(self.settings.scratchDirectory, subPath)
+                logging.info("Setting the quantum mechanics fileStore to {0}".format(self.settings.scratchDirectory)) 
+            setScratch = False
+                    
         if setFileStore:
             self.settings.fileStore = os.path.join(outputDirectory, subPath)
             logging.info("Setting the quantum mechanics fileStore to {0}".format(self.settings.fileStore))
@@ -448,8 +452,8 @@ class QMMolecule:
         parser = self.getParser(self.outputFilePath)
         parser.logger.setLevel(logging.ERROR) #cf. http://cclib.sourceforge.net/wiki/index.php/Using_cclib#Additional_information
         cclibData = parser.parse()
-        radicalNumber = sum([i.radicalElectrons for i in self.molecule.atoms])
-        qmData = CCLibData(cclibData, radicalNumber+1)
+        radicalNumber = self.molecule.getRadicalCount()
+        qmData = CCLibData(cclibData, radicalNumber+1) # Should `radicalNumber+1` be `self.molecule.multiplicity` in the next line of code? It's the electronic ground state degeneracy.
         return qmData
     
     def generateQMData(self):
