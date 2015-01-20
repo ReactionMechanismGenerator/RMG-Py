@@ -270,10 +270,12 @@ class NWChem(logfileparser.Logfile):
                 self.scftargets.append([target_energy, target_density, target_gradient])
 
         if line.strip() in ("The SCF is already converged", "The DFT is already converged"):
-            if self.linesearch:
+            if hasattr(self, 'linesearch') and self.linesearch:
                 return
-            self.scftargets.append(self.scftargets[-1])
-            self.scfvalues.append(self.scfvalues[-1])
+            if hasattr(self, 'scftargets'):
+                self.scftargets.append(self.scftargets[-1])
+            if hasattr(self, 'scfvalues'):
+                self.scfvalues.append(self.scfvalues[-1])
 
         # The default (only?) SCF algorithm for Hartree-Fock is a preconditioned conjugate
         # gradient method that apparently "always" converges, so this header should reliably
@@ -442,13 +444,54 @@ class NWChem(logfileparser.Logfile):
             # unless the coordinates can also be extracted (possibly from the gradients?).
             if hasattr(self, 'linesearch') and self.linesearch:
                 return
-
+                
             if not hasattr(self, "scfenergies"):
                 self.scfenergies = []
             energy = float(line.split()[-1])
             energy = utils.convertor(energy, "hartree", "eV")
             self.scfenergies.append(energy)
-
+        
+        # pierrelb 1/20/15: added molecular mass parsing (units in amu)
+        # example line: "   - Translational                =   38.079 cal/mol-K (mol. weight =  58.0419)"
+        if "mol. weight" in line:
+            self.molmass = self.float(line.split("mol. weight =")[1].split(")")[0])
+            # self.set_attribute('molmass', molmass)
+        
+        # pierrelb 1/20/15: added rotsymm for reading rotational symmetry number
+        # example line: "   - Rotational                   =   22.784 cal/mol-K (symmetry #  =        2)"
+        if "symmetry #" in line:
+            self.rotsymm = int(self.float(line.split("symmetry #  =")[1].split(")")[0]))
+            # self.set_attribute('rotsymm', rotsymm)
+        
+        # pierrelb 1/20/15: added rotcons for rotational constants (converted to GHZ)
+        # example lines:
+        # """
+        # Rotational Constants
+        # --------------------
+        # A=   0.338992 cm-1  (  0.487723 K)
+        # B=   0.277691 cm-1  (  0.399526 K)
+        # C=   0.162393 cm-1  (  0.233641 K)"""
+        if "Rotational Constants" in line:
+            if not hasattr(self, "rotcons"):
+                self.rotcons = []
+            dashedLine = inputfile.next()
+            aLine = inputfile.next()
+            bLine = inputfile.next()
+            cLine = inputfile.next()
+            sol = 29.9792458 #speed of light in vacuum in 10^9 cm/s, cf. http://physics.nist.gov/cgi-bin/cuu/Value?c|search_for=universal_in!
+            a = float(aLine.split()[1])*sol 
+            b = float(bLine.split()[1])*sol 
+            c = float(cLine.split()[1])*sol 
+            self.rotcons.append([a, b, c])
+            # self.set_attribute('rotcons', rotcons)
+        
+        if "P.Frequency" in line:
+            if not hasattr(self, "vibfreqs"):
+                self.vibfreqs = []
+            for freq in line.split()[1:]:
+                self.vibfreqs.append(self.float(freq))
+                    
+        
         # The final MO orbitals are printed in a simple list, but apparently not for
         # DFT calcs, and often this list does not contain all MOs, so make sure to
         # parse them from the MO analysis below if possible. This section will be like this:
