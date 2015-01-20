@@ -8,7 +8,7 @@
 # received a copy of the license along with cclib. You can also access
 # the full license online at http://www.gnu.org/copyleft/lgpl.html.
 
-"""Löwdin population analysis."""
+"""Lowdin population analysis."""
 
 import random
 
@@ -18,7 +18,7 @@ from .population import Population
 
 
 class LPA(Population):
-    """The Löwdin population analysis"""
+    """The Lowdin population analysis"""
     def __init__(self, *args):
 
         # Call the __init__ method of the superclass.
@@ -33,7 +33,7 @@ class LPA(Population):
         return 'LPA("%s")' % (self.data)
 
     def calculate(self, indices=None, x=0.5, fupdate=0.05):
-        """Perform a calculation of Löwdin population analysis.
+        """Perform a calculation of Lowdin population analysis.
         
         Inputs:
           indices - list of lists containing atomic orbital indices of fragments
