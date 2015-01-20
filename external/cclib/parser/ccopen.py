@@ -1,22 +1,30 @@
-"""
-cclib (http://cclib.sf.net) is (c) 2006, the cclib development team
-and licensed under the LGPL (http://www.gnu.org/copyleft/lgpl.html).
-"""
+# This file is part of cclib (http://cclib.github.io), a library for parsing
+# and interpreting the results of computational chemistry packages.
+#
+# Copyright (C) 2009-2014, the cclib development team
+#
+# The library is free software, distributed under the terms of
+# the GNU Lesser General Public version 2.1 or later. You should have
+# received a copy of the license along with cclib. You can also access
+# the full license online at http://www.gnu.org/copyleft/lgpl.html.
 
-__revision__ = "$Revision: 860 $"
+"""Tools for identifying and working with files and streams for any supported program"""
 
 
-import types
+from __future__ import print_function
 
-import logfileparser
+from . import logfileparser
 
-import adfparser
-import gamessparser
-import gamessukparser
-import gaussianparser
-import jaguarparser
-import molproparser
-import orcaparser
+from . import adfparser
+from . import gamessparser
+from . import gamessukparser
+from . import gaussianparser
+from . import jaguarparser
+from . import molproparser
+from . import nwchemparser
+from . import orcaparser
+from . import psiparser
+from . import qchemparser
 
 
 def ccopen(source, *args, **kargs):
@@ -26,19 +34,21 @@ def ccopen(source, *args, **kargs):
       source - a single logfile, a list of logfiles, or an input stream
 
     Returns:
-      one of ADF, GAMESS, GAMESS UK, Gaussian, Jaguar, Molpro, ORCA, or
-        None (if it cannot figure it out or the file does not exist).
+      one of ADF, GAMESS, GAMESS UK, Gaussian, Jaguar, Molpro, NWChem, ORCA,
+        Psi, QChem, or None (if it cannot figure it out or the file does not
+        exist).
     """
 
     filetype = None
 
     # Try to open the logfile(s), using openlogfile.
-    if isinstance(source,types.StringTypes) or \
-       isinstance(source,list) and all([isinstance(s,types.StringTypes) for s in source]):
+    if isinstance(source, str) or \
+       isinstance(source, list) and all([isinstance(s, str) for s in source]):
         try:
             inputfile = logfileparser.openlogfile(source)
-        except IOError, (errno, strerror):
-            print "I/O error %s (%s): %s" %(errno, source, strerror)
+        except IOError as error:
+            (errno, strerror) = error.args
+            print("I/O error %s (%s): %s" % (errno, source, strerror))
             return None
         isstream = False
     elif hasattr(source, "read"):
@@ -85,8 +95,20 @@ def ccopen(source, *args, **kargs):
         elif line[0:8] == "1PROGRAM" and not filetype:
             filetype = molproparser.Molpro
 
+        elif line.find("Northwest Computational Chemistry Package") >= 0:
+            filetype = nwchemparser.NWChem
+            break
+
         elif line.find("O   R   C   A") >= 0:
             filetype = orcaparser.ORCA
+            break
+
+        elif line.find("PSI") >= 0 and line.find("Ab Initio Electronic Structure") >= 0:
+            filetype = psiparser.Psi
+            break
+
+        elif line.find("A Quantum Leap Into The Future Of Chemistry") >= 0:
+            filetype = qchemparser.QChem
             break
 
     # Need to close file before creating a instance.
@@ -97,5 +119,4 @@ def ccopen(source, *args, **kargs):
     try:
         return filetype(source, *args, **kargs)
     except TypeError:
-        print "Log file type not identified."
-        raise
+        print("Log file type not identified.")

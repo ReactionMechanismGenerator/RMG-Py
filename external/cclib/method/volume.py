@@ -1,16 +1,23 @@
-"""
-cclib (http://cclib.sf.net) is (c) 2006, the cclib development team
-and licensed under the LGPL (http://www.gnu.org/copyleft/lgpl.html).
-"""
+# This file is part of cclib (http://cclib.github.io), a library for parsing
+# and interpreting the results of computational chemistry packages.
+#
+# Copyright (C) 2006-2014, the cclib development team
+#
+# The library is free software, distributed under the terms of
+# the GNU Lesser General Public version 2.1 or later. You should have
+# received a copy of the license along with cclib. You can also access
+# the full license online at http://www.gnu.org/copyleft/lgpl.html.
 
-__revision__ = "$Revision: 742 $"
+"""Calculation methods related to volume based on cclib data."""
 
+from __future__ import print_function
 import copy
 
 import numpy
 
 try:
     from PyQuante.CGBF import CGBF
+    from cclib.bridge import cclib2pyquante
     module_pyq = True
 except:
     module_pyq = False
@@ -22,7 +29,6 @@ try:
 except:
     module_pyvtk = False
 
-from cclib.bridge import makepyquante
 from cclib.parser.utils import convertor
 
 
@@ -70,7 +76,7 @@ class Volume(object):
 
     def writeasvtk(self, filename):
         if not module_pyvtk:
-            raise Exception, "You need to have pyvtk installed"
+            raise Exception("You need to have pyvtk installed")
         ranges = (numpy.arange(self.data.shape[2]),
                   numpy.arange(self.data.shape[1]),
                   numpy.arange(self.data.shape[0]))
@@ -255,10 +261,10 @@ if __name__=="__main__":
                           c.gbasis, vol)
     assert abs(wavefn.integrate())<1E-6 # not necessarily true for all wavefns
     assert abs(wavefn.integrate_square() - 1.00)<1E-3 #   true for all wavefns
-    print wavefn.integrate(), wavefn.integrate_square()
+    print(wavefn.integrate(), wavefn.integrate_square())
 
     vol = Volume( (-3.0,-6,-2.0), (3.0, 6, 2.0), spacing=(0.25,0.25,0.25) )
     frontierorbs = [d.mocoeffs[0][(d.homos[0]-3):(d.homos[0]+1)]]
     density = electrondensity(d.atomcoords[0], frontierorbs, c.gbasis, vol)
     assert abs(density.integrate()-8.00)<1E-2
-    print "Combined Density of 4 Frontier orbitals=",density.integrate()
+    print("Combined Density of 4 Frontier orbitals=",density.integrate())

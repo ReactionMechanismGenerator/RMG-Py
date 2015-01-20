@@ -1,16 +1,21 @@
-"""
-cclib (http://cclib.sf.net) is (c) 2006, the cclib development team
-and licensed under the LGPL (http://www.gnu.org/copyleft/lgpl.html).
-"""
+# This file is part of cclib (http://cclib.github.io), a library for parsing
+# and interpreting the results of computational chemistry packages.
+#
+# Copyright (C) 2006-2014, the cclib development team
+#
+# The library is free software, distributed under the terms of
+# the GNU Lesser General Public version 2.1 or later. You should have
+# received a copy of the license along with cclib. You can also access
+# the full license online at http://www.gnu.org/copyleft/lgpl.html.
 
-__revision__ = "$Revision: 238 $"
+"""Fragment analysis based on parsed ADF data."""
 
-import random # For sometimes running the progress updater
+import random
 
 import numpy
 numpy.inv = numpy.linalg.inv
 
-from calculationmethod import *
+from .calculationmethod import *
 
 
 class FragmentAnalysis(Method):
@@ -24,7 +29,7 @@ class FragmentAnalysis(Method):
         
     def __str__(self):
         """Return a string representation of the object."""
-        return "Fragment molecule basis of" % (self.data)
+        return "Fragment molecule basis of %s" % (self.data)
 
     def __repr__(self):
         """Return a representation of the object."""
@@ -80,14 +85,20 @@ class FragmentAnalysis(Method):
 
         for frag in fragments:
             if len(frag.atomcoords) != 1:
-                self.logger.warning("One or more fragment appears to be an optimization")
+                msg = "One or more fragment appears to be an optimization"
+                self.logger.warning(msg)
                 break
 
         last = 0
         for frag in fragments:
             size = frag.natom
-            if self.data.atomcoords[0][last:last+size].tolist() != frag.atomcoords[0].tolist():
+            if self.data.atomcoords[0][last:last+size].tolist() != \
+                    frag.atomcoords[0].tolist():
                 self.logger.error("Atom coordinates aren't aligned")
+                return False
+            if self.data.atomnos[last:last+size].tolist() != \
+                    frag.atomnos.tolist():
+                self.logger.error("Elements don't match")
                 return False
 
             last += size
@@ -105,14 +116,18 @@ class FragmentAnalysis(Method):
             for i in range(len(fragments)):
                 size = fragments[i].nbasis
                 if len(fragments[i].mocoeffs) == 1:
-                    blockMatrix[pos:pos+size,pos:pos+size] = numpy.transpose(fragments[i].mocoeffs[0])
+                    temp = numpy.transpose(fragments[i].mocoeffs[0])
+                    blockMatrix[pos:pos+size, pos:pos+size] = temp
                 else:
-                    blockMatrix[pos:pos+size,pos:pos+size] = numpy.transpose(fragments[i].mocoeffs[spin])
+                    temp = numpy.transpose(fragments[i].mocoeffs[spin])
+                    blockMatrix[pos:pos+size, pos:pos+size] = temp
                 pos += size
             
             # Invert and mutliply to result in fragment MOs as basis.
             iBlockMatrix = numpy.inv(blockMatrix) 
-            results = numpy.transpose(numpy.dot(iBlockMatrix, numpy.transpose(self.data.mocoeffs[spin])))
+            temp = numpy.transpose(self.data.mocoeffs[spin])
+            results = numpy.transpose(numpy.dot(iBlockMatrix, temp))
+
             self.mocoeffs.append(results)
             
             if hasattr(self.data, "aooverlaps"):
