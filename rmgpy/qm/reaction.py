@@ -442,7 +442,13 @@ class QMReaction:
         """
         if doubleEnded:
             kineticsFamily = self.reaction.family
-            prodStruct, tsStructures = kineticsFamily.applyRecipe(self.reaction.reactants, getTS=True)
+            if isinstance(self.reaction.reactants[0], Species):
+                reactants = []
+                for reactant in self.reaction.reactants:
+                    reactants.append(reactant.molecule[0])
+            else:
+                reactants = self.reaction.reactants
+            prodStruct, tsStructures = kineticsFamily.applyRecipe(reactants, getTS=True)
             
             reactant = tsStructures[0]
             product = tsStructures[1]
@@ -639,7 +645,7 @@ class QMReaction:
         if os.path.exists(self.outputFilePath):
             logging.info("File {0} already exists.".format(self.outputFilePath))
             # I'm not sure why that should be a problem, but we used to do nothin in this case
-            notes = notes + 'Already have an output, check the IRC\n'
+            notes = notes + 'Already have an output, checking the IRC\n'
             rightTS = self.verifyIRCOutputFile()
             if rightTS:
                 self.writeRxnOutputFile(labels)
