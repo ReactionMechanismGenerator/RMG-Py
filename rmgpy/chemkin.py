@@ -828,7 +828,8 @@ def loadChemkinFile(path, dictionaryPath=None, transportPath=None, readComments 
                                             _kinetics.Arrhenius):
                                 kinetics = _kinetics.MultiArrhenius()
                             else:
-                                raise ChemkinError('Unexpected kinetics type {0} for duplicate reaction {1}.'.format(reaction1.kinetics.__class__, reaction1))
+                                logging.warning('Unexpected kinetics type {0} for duplicate reaction {1}. Not combining reactions.'.format(reaction1.kinetics.__class__, reaction1))
+                                continue
                             reaction = LibraryReaction(
                                 index = reaction1.index,
                                 reactants = reaction1.reactants,
