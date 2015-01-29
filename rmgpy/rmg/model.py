@@ -478,7 +478,12 @@ class CoreEdgeReactionModel:
         # Now use short-list to check for matches. All should be in same forward direction.
         for rxn0 in my_reactionList:
             if (rxn0.reactants == rxn.reactants and rxn0.products == rxn.products):
-                return True, rxn0
+                if isinstance(family, KineticsLibrary):
+                    # If the reaction comes from a kinetics library, then we can retain duplicates if they are marked
+                    if not rxn.duplicate:
+                        return True, rxn0
+                else:
+                    return True, rxn0
             
             if isinstance(family,KineticsFamily) and family.ownReverse:
                 if (rxn0.reactants == rxn.products and rxn0.products == rxn.reactants):
@@ -624,12 +629,12 @@ class CoreEdgeReactionModel:
         reactionList = []
         if speciesB is None:
             for moleculeA in speciesA.molecule:
-                reactionList.extend(database.kinetics.generateReactions([moleculeA], failsSpeciesConstraints=self.failsSpeciesConstraints))
+                reactionList.extend(database.kinetics.generateReactionsFromFamilies([moleculeA], products=None, failsSpeciesConstraints=self.failsSpeciesConstraints))
                 moleculeA.clearLabeledAtoms()
         else:
             for moleculeA in speciesA.molecule:
                 for moleculeB in speciesB.molecule:
-                    reactionList.extend(database.kinetics.generateReactions([moleculeA, moleculeB], failsSpeciesConstraints=self.failsSpeciesConstraints))
+                    reactionList.extend(database.kinetics.generateReactionsFromFamilies([moleculeA, moleculeB], products=None, failsSpeciesConstraints=self.failsSpeciesConstraints))
                     moleculeA.clearLabeledAtoms()
                     moleculeB.clearLabeledAtoms()
         return reactionList
@@ -1311,7 +1316,7 @@ class CoreEdgeReactionModel:
         seedMechanism = database.kinetics.libraries[seedMechanism]
 
         for entry in seedMechanism.entries.values():
-            rxn = LibraryReaction(reactants=entry.item.reactants[:], products=entry.item.products[:], library=seedMechanism, kinetics=entry.data)
+            rxn = LibraryReaction(reactants=entry.item.reactants[:], products=entry.item.products[:], library=seedMechanism, kinetics=entry.data, duplicate=entry.item.duplicate)
             r, isNew = self.makeNewReaction(rxn) # updates self.newSpeciesList and self.newReactionlist
             
         # Perform species constraints and forbidden species checks
@@ -1374,7 +1379,7 @@ class CoreEdgeReactionModel:
         reactionLibrary = database.kinetics.libraries[reactionLibrary]
 
         for entry in reactionLibrary.entries.values():
-            rxn = LibraryReaction(reactants=entry.item.reactants[:], products=entry.item.products[:], library=reactionLibrary, kinetics=entry.data)
+            rxn = LibraryReaction(reactants=entry.item.reactants[:], products=entry.item.products[:], library=reactionLibrary, kinetics=entry.data, duplicate=entry.item.duplicate)
             r, isNew = self.makeNewReaction(rxn) # updates self.newSpeciesList and self.newReactionlist
             if not isNew: logging.info("This library reaction was not new: {0}".format(rxn))
             
