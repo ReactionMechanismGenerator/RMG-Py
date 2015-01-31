@@ -136,7 +136,7 @@ class KineticsLibrary(Database):
                     ):
                     r1.duplicate = True
                     r2.duplicate = True
-
+                    
     def checkForDuplicates(self):
         """
         Check that all duplicate reactions in the kinetics library are
@@ -178,8 +178,8 @@ class KineticsLibrary(Database):
                         print "Reactions isomorphic but with different reversibilities"
                         continue
                     duplicates.append(entry)
-            
-            assert len(duplicates)>1
+            if len(duplicates)<=1:
+                continue
             kineticsList = []
             longDesc = ''
             
