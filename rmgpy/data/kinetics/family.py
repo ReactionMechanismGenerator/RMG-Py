@@ -903,8 +903,8 @@ class KineticsFamily(Database):
             item.kinetics = data
             data = item.generateReverseRateCoefficient()
             
-            item = Reaction(reactants=[m.molecule[0].copy(deep=True) for m in entry.item.products], products=[m.molecule[0].copy(deep=True) for m in entry.item.reactants])
-            template = self.getReactionTemplate(item)
+            item = TemplateReaction(reactants=[m.molecule[0].copy(deep=True) for m in entry.item.products], products=[m.molecule[0].copy(deep=True) for m in entry.item.reactants])
+            item.template = self.getReactionTemplate(item)
             item.degeneracy = self.calculateDegeneracy(item)
             
             new_entry = Entry(
@@ -1271,15 +1271,8 @@ class KineticsFamily(Database):
                 reaction.pairs = self.getReactionPairs(reaction)
             for possibleReaction in reactions:
                 # Match the correct reaction if there are multiple reaction pathways
-                if possibleReaction.pairs[0][0].isIsomorphic(reaction.pairs[0][0]) and possibleReaction.pairs[0][1].isIsomorphic(reaction.pairs[0][1]):
-                    return possibleReaction.degeneracy
-                if possibleReaction.pairs[0][0].isIsomorphic(reaction.pairs[0][1]) and possibleReaction.pairs[0][1].isIsomorphic(reaction.pairs[0][0]):
-                    return possibleReaction.degeneracy
-                if possibleReaction.pairs[0][0].isIsomorphic(reaction.pairs[1][0]) and possibleReaction.pairs[0][1].isIsomorphic(reaction.pairs[1][1]):
-                    return possibleReaction.degeneracy
-                if possibleReaction.pairs[0][0].isIsomorphic(reaction.pairs[1][1]) and possibleReaction.pairs[0][1].isIsomorphic(reaction.pairs[1][0]):
-                    return possibleReaction.degeneracy
-                        
+                if set(possibleReaction.template) == set(reaction.template): return possibleReaction.degeneracy 
+            
             raise Exception('Unable to calculate degeneracy for reaction {0} in reaction family {1}.'.format(reaction, self.label))
         
         else:
