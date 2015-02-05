@@ -1222,25 +1222,11 @@ class KineticsFamily(Database):
             for rxn in reactionList:
                 reactions = self.__generateReactions(rxn.products, products=rxn.reactants, forward=True, failsSpeciesConstraints=failsSpeciesConstraints)
                 #assert len(reactions) == 1, "Expecting one matching reverse reaction, not {0}. Forward reaction {1!s} : {1!r}".format(len(reactions), rxn)
-                if len(reactions) != 1:
-                    for possibleReaction in reactions:   
-                        if possibleReaction.pairs[0][0].isIsomorphic(rxn.pairs[0][0]) and possibleReaction.pairs[0][1].isIsomorphic(rxn.pairs[0][1]):
-                            rxn.reverse = possibleReaction
-                            break
-                        if possibleReaction.pairs[0][0].isIsomorphic(rxn.pairs[0][1]) and possibleReaction.pairs[0][1].isIsomorphic(rxn.pairs[0][0]):
-                            rxn.reverse = possibleReaction
-                            break
-                        if possibleReaction.pairs[0][0].isIsomorphic(rxn.pairs[1][0]) and possibleReaction.pairs[0][1].isIsomorphic(rxn.pairs[1][1]):
-                            rxn.reverse = possibleReaction
-                            break
-                        if possibleReaction.pairs[0][0].isIsomorphic(rxn.pairs[1][1]) and possibleReaction.pairs[0][1].isIsomorphic(rxn.pairs[1][0]):
-                            rxn.reverse = possibleReaction
-                            break
-                    else:
-                        raise Exception("Could not match to reverse reaction due to no matching pairs. Forward reaction {1!s} : {1!r}".format(len(reactions), rxn))
+                if len(reactions) == 0:
+                    raise Exception("Could not match to reverse reaction due to no matching pairs. Forward reaction {1!s} : {1!r}".format(len(reactions), rxn))
                    
                 else:
-                    # Only one matching reverse reaction
+                    # Use one of the matching reverse reactions
                     rxn.reverse = reactions[0]
             
         else: # family is not ownReverse
