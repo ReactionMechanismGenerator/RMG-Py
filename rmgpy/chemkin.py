@@ -1575,7 +1575,8 @@ def markDuplicateReaction(test_reaction, reaction_list):
             # duplicates of one another.
             # RHW question: why can't TemplateReaction be duplicate of LibraryReaction, in Chemkin terms? I guess it shouldn't happen in RMG.
             continue
-        if reaction1.reactants == reaction2.reactants and reaction1.products == reaction2.products:
+        if (reaction1.reactants == reaction2.reactants and reaction1.products == reaction2.products) \
+        or (reaction1.products == reaction2.reactants and reaction1.reactants == reaction2.products):
             if reaction1.duplicate and reaction2.duplicate:
                 continue
             else:
