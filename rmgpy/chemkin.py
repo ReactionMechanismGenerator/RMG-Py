@@ -34,6 +34,7 @@ This module contains functions for writing of Chemkin input files.
 import math
 import re
 import logging
+import textwrap
 import os.path
 import numpy
 import kinetics as _kinetics
@@ -1301,7 +1302,12 @@ def writeThermoEntry(species, verbose = True):
     if verbose:
         if thermo.comment:
             for line in thermo.comment.split("\n"):
-                string += "! {0}\n".format(line) 
+                if len(line) > 150:
+                    short_lines = textwrap.fill(line,150).split("\n")
+                    for short_line in short_lines:
+                        string += "! {0}\n".format(short_line) 
+                else:
+                    string += "! {0}\n".format(line) 
 
     # Line 1
     string += '{0:<16}        '.format(getSpeciesIdentifier(species))
@@ -1456,7 +1462,12 @@ def writeKineticsEntry(reaction, speciesList, verbose = True, javaLibrary = Fals
         # Remaining lines of comments taken from reaction kinetics
         if reaction.kinetics.comment:
             for line in reaction.kinetics.comment.split("\n"):
-                string += "! {0}\n".format(line)                               
+                if len(line) > 150:
+                    short_lines = textwrap.fill(line,150).split("\n")
+                    for short_line in short_lines:
+                        string += "! {0}\n".format(short_line) 
+                else:
+                    string += "! {0}\n".format(line)                               
     
     kinetics = reaction.kinetics
     numReactants = len(reaction.reactants)
