@@ -1588,8 +1588,11 @@ def markDuplicateReaction(test_reaction, reaction_list):
             continue
         if (reaction1.reactants == reaction2.reactants and reaction1.products == reaction2.products) \
         or (reaction1.products == reaction2.reactants and reaction1.reactants == reaction2.products):
-            if reaction1.duplicate and reaction2.duplicate:
-                continue
+            if reaction1.duplicate and reaction2.duplicate:                
+                if reaction1.kinetics.isPressureDependent() != reaction2.kinetics.isPressureDependent():
+                    logging.warning('Marked reaction {0} as not duplicate because of mixed pressure dependence for saving to Chemkin file.'.format(reaction1))
+                    reaction1.duplicate = False
+                    reaction2.duplicate = False
             else:
                 if reaction1.kinetics.isPressureDependent() == reaction2.kinetics.isPressureDependent():
                     # Only mark as duplicate if both reactions are pressure dependent or both are
