@@ -129,7 +129,7 @@ class TransitionStates(Database):
         groups.load(fpath , local_context, global_context )
         
         self.family.forwardTemplate.reactants = [groups.entries[entry.label] for entry in self.family.forwardTemplate.reactants]
-        self.family.forwardTemplate.products = [groups.entries[entry.label] for entry in self.family.forwardTemplate.products]
+        # self.family.forwardTemplate.products = [groups.entries[entry.label] for entry in self.family.forwardTemplate.products]
         self.family.entries = groups.entries
         self.family.groups = groups
         groups.numReactants = len(self.family.forwardTemplate.reactants)
