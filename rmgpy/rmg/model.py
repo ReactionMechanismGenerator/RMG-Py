@@ -1625,27 +1625,33 @@ class CoreEdgeReactionModel:
     def saveChemkinFile(self, path, verbose_path, dictionaryPath=None, transportPath=None, saveEdgeSpecies=False):
         """
         Save a Chemkin file for the current model as well as any desired output
-        species and reactions to `path`.
+        species and reactions to `path`. If `saveEdgeSpecies` is True, then 
+        a chemkin file and dictionary file for the core and edge species and reactions
+        will be saved.  
         """
         from rmgpy.chemkin import saveChemkinFile, saveSpeciesDictionary, saveTransportFile
-        speciesList = self.core.species + self.outputSpeciesList
-        rxnList = self.core.reactions + self.outputReactionList
-        saveChemkinFile(path, speciesList, rxnList, verbose = False, checkForDuplicates=False) # We should already have marked everything as duplicates by now        
-        logging.info('Saving current model to verbose Chemkin file...')
-        saveChemkinFile(verbose_path, speciesList, rxnList, verbose = True, checkForDuplicates=False)
-        if dictionaryPath:
-            saveSpeciesDictionary(dictionaryPath, speciesList)
-        if transportPath:
-            saveTransportFile(transportPath, speciesList)
-            
-        if saveEdgeSpecies == True:
-            speciesList = self.edge.species + self.outputSpeciesList
-            rxnList = self.edge.reactions + self.outputReactionList
-            saveChemkinFile(path, speciesList, rxnList, verbose = False, checkForDuplicates=False)        
-            logging.info('Saving current edge to verbose Chemkin file...')
+        
+        if saveEdgeSpecies == False:
+            speciesList = self.core.species + self.outputSpeciesList
+            rxnList = self.core.reactions + self.outputReactionList
+            saveChemkinFile(path, speciesList, rxnList, verbose = False, checkForDuplicates=False) # We should already have marked everything as duplicates by now        
+            logging.info('Saving current model to verbose Chemkin file...')
             saveChemkinFile(verbose_path, speciesList, rxnList, verbose = True, checkForDuplicates=False)
             if dictionaryPath:
                 saveSpeciesDictionary(dictionaryPath, speciesList)
+            if transportPath:
+                saveTransportFile(transportPath, speciesList)
+            
+        else:
+            speciesList = self.core.species + self.edge.species + self.outputSpeciesList
+            rxnList = self.core.reactions + self.edge.reactions + self.outputReactionList
+            saveChemkinFile(path, speciesList, rxnList, verbose = False, checkForDuplicates=False)        
+            logging.info('Saving current core and edge to verbose Chemkin file...')
+            saveChemkinFile(verbose_path, speciesList, rxnList, verbose = True, checkForDuplicates=False)
+            if dictionaryPath:
+                saveSpeciesDictionary(dictionaryPath, speciesList)
+            if transportPath:
+                saveTransportFile(transportPath, speciesList)
                 
     def failsSpeciesConstraints(self, species):
         """

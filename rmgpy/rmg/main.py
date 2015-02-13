@@ -784,13 +784,13 @@ class RMG:
         shutil.copy2(this_chemkin_path,latest_chemkin_path)
         
         if self.saveEdgeSpecies ==True:
-            logging.info('Saving current model edge to Chemkin file...')
+            logging.info('Saving current model core and edge to Chemkin file...')
             this_chemkin_path = os.path.join(self.outputDirectory, 'chemkin', 'chem_edge%04i.inp' % len(self.reactionModel.core.species)) # len() needs to be core to have unambiguous index
             latest_chemkin_path = os.path.join(self.outputDirectory, 'chemkin','chem_edge.inp')
             latest_chemkin_verbose_path = os.path.join(self.outputDirectory, 'chemkin', 'chem_edge_annotated.inp')
             latest_dictionary_path = os.path.join(self.outputDirectory, 'chemkin','species_edge_dictionary.txt')
             latest_transport_path = None
-            self.reactionModel.saveChemkinFile(this_chemkin_path, latest_chemkin_verbose_path, latest_dictionary_path, latest_dictionary_path, self.saveEdgeSpecies)
+            self.reactionModel.saveChemkinFile(this_chemkin_path, latest_chemkin_verbose_path, latest_dictionary_path, latest_transport_path, self.saveEdgeSpecies)
             if os.path.exists(latest_chemkin_path):
                 os.unlink(latest_chemkin_path)
             shutil.copy2(this_chemkin_path,latest_chemkin_path)
