@@ -101,7 +101,7 @@ cdef class HeatCapacityModel:
         """
         return (self._Tmin is None or self._Tmin.value_si <= T) and (self.Tmax is None or T <= self._Tmax.value_si)
 
-    cpdef double getHeatCapacity(self, double T) except -100000000:
+    cpdef double getHeatCapacity(self, double T) except -1000000000:
         """
         Return the constant-pressure heat capacity in J/mol*K at the specified
         temperature `T` in K. This method must be overloaded in the derived
@@ -109,21 +109,21 @@ cdef class HeatCapacityModel:
         """
         raise NotImplementedError('Unexpected call to HeatCapacityModel.getHeatCapacity(); you should be using a class derived from HeatCapacityModel.')
 
-    cpdef double getEnthalpy(self, double T) except 100000000:
+    cpdef double getEnthalpy(self, double T) except 1000000000:
         """
         Return the enthalpy in J/mol at the specified temperature `T` in K.
         This method must be overloaded in the derived class.
         """
         raise NotImplementedError('Unexpected call to HeatCapacityModel.getEnthalpy(); you should be using a class derived from HeatCapacityModel.')
 
-    cpdef double getEntropy(self, double T) except -100000000:
+    cpdef double getEntropy(self, double T) except -1000000000:
         """
         Return the entropy in J/mol*K at the specified temperature `T` in K.
         This method must be overloaded in the derived class.
         """
         raise NotImplementedError('Unexpected call to HeatCapacityModel.getEntropy(); you should be using a class derived from HeatCapacityModel.')
 
-    cpdef double getFreeEnergy(self, double T) except 100000000:
+    cpdef double getFreeEnergy(self, double T) except 1000000000:
         """
         Return the Gibbs free energy in J/mol at the specified temperature `T`
         in K. This method must be overloaded in the derived class.

@@ -34,13 +34,13 @@ cdef class HeatCapacityModel:
     
     cpdef bint isTemperatureValid(self, double T) except -2
 
-    cpdef double getHeatCapacity(self, double T) except -100000000
+    cpdef double getHeatCapacity(self, double T) except -1000000000
 
-    cpdef double getEnthalpy(self, double T) except 100000000
+    cpdef double getEnthalpy(self, double T) except 1000000000
 
-    cpdef double getEntropy(self, double T) except -100000000
+    cpdef double getEntropy(self, double T) except -1000000000
 
-    cpdef double getFreeEnergy(self, double T) except 100000000
+    cpdef double getFreeEnergy(self, double T) except 1000000000
     
     cpdef bint isSimilarTo(self, HeatCapacityModel other) except -2
 

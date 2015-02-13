@@ -55,9 +55,9 @@ cdef class GroupAtom(Vertex):
 
     cpdef applyAction(self, list action)
 
-    cpdef bint equivalent(self, Vertex other)
+    cpdef bint equivalent(self, Vertex other) except -2
 
-    cpdef bint isSpecificCaseOf(self, Vertex other)
+    cpdef bint isSpecificCaseOf(self, Vertex other) except -2
 
 ################################################################################
 
@@ -71,9 +71,9 @@ cdef class GroupBond(Edge):
 
     cpdef applyAction(self, list action)
 
-    cpdef bint equivalent(self, Edge other)
+    cpdef bint equivalent(self, Edge other) except -2
 
-    cpdef bint isSpecificCaseOf(self, Edge other)
+    cpdef bint isSpecificCaseOf(self, Edge other) except -2
 
 ################################################################################
 

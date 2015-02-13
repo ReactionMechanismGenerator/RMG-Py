@@ -40,13 +40,13 @@ cdef class ThermoData(HeatCapacityModel):
     cdef public ArrayQuantity _Tdata, _Cpdata
     cdef public ScalarQuantity _Cp0, _CpInf
     
-    cpdef double getHeatCapacity(self, double T) except -100000000
+    cpdef double getHeatCapacity(self, double T) except -1000000000
 
-    cpdef double getEnthalpy(self, double T) except 100000000
+    cpdef double getEnthalpy(self, double T) except 1000000000
 
-    cpdef double getEntropy(self, double T) except -100000000
+    cpdef double getEntropy(self, double T) except -1000000000
 
-    cpdef double getFreeEnergy(self, double T) except 100000000
+    cpdef double getFreeEnergy(self, double T) except 1000000000
 
     cpdef Wilhoit toWilhoit(self)
 

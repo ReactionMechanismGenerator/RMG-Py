@@ -37,13 +37,13 @@ cdef class NASAPolynomial(HeatCapacityModel):
 
     cdef public double cm2, cm1, c0, c1, c2, c3, c4, c5, c6
     
-    cpdef double getHeatCapacity(self, double T) except -100000000
+    cpdef double getHeatCapacity(self, double T) except -1000000000
 
-    cpdef double getEnthalpy(self, double T) except 100000000
+    cpdef double getEnthalpy(self, double T) except 1000000000
 
-    cpdef double getEntropy(self, double T) except -100000000
+    cpdef double getEntropy(self, double T) except -1000000000
 
-    cpdef double getFreeEnergy(self, double T) except 100000000    
+    cpdef double getFreeEnergy(self, double T) except 1000000000    
     
     cpdef changeBaseEnthalpy(self, double deltaH)
 
@@ -57,13 +57,13 @@ cdef class NASA(HeatCapacityModel):
     
     cpdef NASAPolynomial selectPolynomial(self, double T)
 
-    cpdef double getHeatCapacity(self, double T) except -100000000
+    cpdef double getHeatCapacity(self, double T) except -1000000000
 
-    cpdef double getEnthalpy(self, double T) except 100000000
+    cpdef double getEnthalpy(self, double T) except 1000000000
 
-    cpdef double getEntropy(self, double T) except -100000000
+    cpdef double getEntropy(self, double T) except -1000000000
 
-    cpdef double getFreeEnergy(self, double T) except 100000000
+    cpdef double getFreeEnergy(self, double T) except 1000000000
 
     cpdef ThermoData toThermoData(self, double Cp0=?, double CpInf=?)
 
