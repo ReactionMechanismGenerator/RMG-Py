@@ -181,7 +181,7 @@ cdef class Arrhenius(KineticsModel):
         
         return self
 
-    cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -1:
+    cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2:
         """
         Returns ``True`` if kinetics matches that of another kinetics model.  Must match temperature
         and pressure range of kinetics model, as well as parameters: A, n, Ea, T0. (Shouldn't have pressure
@@ -295,7 +295,7 @@ cdef class ArrheniusEP(KineticsModel):
         n = self._n.value_si
         return A * T**n * exp(-Ea / (constants.R * T))
 
-    cpdef double getActivationEnergy(self, double dHrxn):
+    cpdef double getActivationEnergy(self, double dHrxn) except -1:
         """
         Return the activation energy in J/mol corresponding to the given
         enthalpy of reaction `dHrxn` in J/mol.
@@ -324,7 +324,7 @@ cdef class ArrheniusEP(KineticsModel):
             comment = self.comment,
         )
 
-    cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -1:
+    cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2:
         """
         Returns ``True`` if kinetics matches that of another kinetics model.  Must match temperature
         and pressure range of kinetics model, as well as parameters: A, n, Ea, T0. (Shouldn't have pressure
