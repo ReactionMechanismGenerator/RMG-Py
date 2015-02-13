@@ -281,16 +281,17 @@ class MoleculeDrawer:
         """
         atoms = self.molecule.atoms
         Natoms = len(atoms)
-        flag_nitrogen = 0
+        flag_charge = 0
         
         for atom in self.molecule.atoms:
-             if atom.atomType.label in ['N5s','N5d','N5dd','N5t','N5b']:
-                 flag_nitrogen = 1
+            if atom.charge != 0: #atomType.label in ['N5s','N5d','N5dd','N5t','N5b']:
+                 flag_charge = 1
+                 break
         
         # Initialize array of coordinates
         self.coordinates = coordinates = numpy.zeros((Natoms, 2))
         
-        if flag_nitrogen == 1:
+        if flag_charge == 1:
             # If there are only one or two atoms to draw, then determining the
             # coordinates is trivial
             if Natoms == 1:
