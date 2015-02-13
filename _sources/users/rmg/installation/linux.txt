@@ -9,7 +9,7 @@ The instructions listed below have been confirmed on a fresh Ubuntu 12.04 instal
 
 * Install compilers and libraries: ::
 
-	sudo apt-get install git g++ gfortran python-dev liblapack-dev python-openbabel python-setuptools python-pip
+	sudo apt-get install git g++ gfortran python-dev liblapack-dev python-openbabel python-setuptools python-pip graphviz mencoder
 
 * After creating a `Github account <https://github.com/signup/free>`_, generate your public key: ::
 

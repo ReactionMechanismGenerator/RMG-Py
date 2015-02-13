@@ -24,6 +24,7 @@ Briefly, RMG depends on the following packages:
 * **psutil:** system utilization diagnostic tool
 * **xlwt:** generating Excel output files
 * **Graphviz:** generating flux diagrams
+* **MEncoder:** encode video flux diagrams
 * **PyDAS:** differential algebraic system solver
 * **PyDQED:** constrained nonlinear optimization
 * **RMG-database:** thermodynamic and kinetic libraries
