@@ -122,6 +122,7 @@ Download and run the installers listed below. These builds have been verified as
 * `openbabel-python 1.7 <http://softlayer.dl.sourceforge.net/project/openbabel/openbabel-python/1.7/openbabel-python-1.7.py27.exe>`_
 * `py2cairo 1.10.0 <http://wxpython.org/cairo/py2cairo-1.10.0.win32-py2.7.exe>`_
 * `Graphviz 2.28.0 <http://www.graphviz.org/pub/graphviz/stable/windows/graphviz-2.28.0.msi>`_
+* `MEncoder <http://sourceforge.net/projects/mplayerwin/files/MPlayer-MEncoder/>`_
 
 .. _remainingdependencies:
 
