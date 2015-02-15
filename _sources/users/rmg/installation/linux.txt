@@ -9,7 +9,7 @@ The instructions listed below have been confirmed on a fresh Ubuntu 12.04 instal
 
 * Install compilers and libraries: ::
 
-	sudo apt-get install git g++ gfortran python-dev liblapack-dev python-openbabel python-setuptools python-pip graphviz mencoder
+	sudo apt-get install git g++ gfortran python-dev liblapack-dev python-openbabel python-setuptools python-pip 
 
 * After creating a `Github account <https://github.com/signup/free>`_, generate your public key: ::
 
@@ -21,9 +21,11 @@ The instructions listed below have been confirmed on a fresh Ubuntu 12.04 instal
 
 * Install dependencies: ::
 
+	sudo apt-get install libpng-dev libfreetype6-dev graphviz mencoder
+	
 	sudo pip install numpy		# install NumPy before other packages
 	
-	sudo pip install scipy cython nose matplotlib quantities guppy sphinx psutil xlwt freetype2 libpng-dev
+	sudo pip install scipy cython nose matplotlib quantities guppy sphinx psutil xlwt 
 	
 	cd ~
 	git clone https://github.com/GreenGroup/PyDAS.git

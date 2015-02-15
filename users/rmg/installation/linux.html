@@ -68,7 +68,7 @@
 The instructions listed below have been confirmed on a fresh Ubuntu 12.04 installation and should generally apply to other distributions.</p>
 <ul>
 <li><p class="first">Install compilers and libraries:</p>
-<div class="highlight-python"><div class="highlight"><pre>sudo apt-get install git g++ gfortran python-dev liblapack-dev python-openbabel python-setuptools python-pip graphviz mencoder
+<div class="highlight-python"><div class="highlight"><pre>sudo apt-get install git g++ gfortran python-dev liblapack-dev python-openbabel python-setuptools python-pip
 </pre></div>
 </div>
 </li>
@@ -81,9 +81,11 @@ cat .ssh/id_rsa.pub
 <p>Copy this public key to your <a class="reference external" href="https://github.com/settings/ssh">Github profile</a>.</p>
 </li>
 <li><p class="first">Install dependencies:</p>
-<div class="highlight-python"><div class="highlight"><pre>sudo pip install numpy          # install NumPy before other packages
+<div class="highlight-python"><div class="highlight"><pre>sudo apt-get install libpng-dev libfreetype6-dev graphviz mencoder
 
-sudo pip install scipy cython nose matplotlib quantities guppy sphinx psutil xlwt freetype2 libpng-dev
+sudo pip install numpy          # install NumPy before other packages
+
+sudo pip install scipy cython nose matplotlib quantities guppy sphinx psutil xlwt
 
 cd ~
 git clone https://github.com/GreenGroup/PyDAS.git
