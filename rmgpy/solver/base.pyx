@@ -59,7 +59,7 @@ cdef class ReactionSystem(DASx):
 
     def __init__(self, termination=None):
         DASx.__init__(self)
-        self.sensmethod = 0 # sensmethod = 1 for staggered corrector sensitivities, 0 (simultaneous corrector), 2 (staggered direct)
+        self.sensmethod = 2 # sensmethod = 1 for staggered corrector sensitivities, 0 (simultaneous corrector), 2 (staggered direct)
         # The reaction and species rates at the current time (in mol/m^3*s)
         self.coreSpeciesConcentrations = None
         self.coreSpeciesRates = None
