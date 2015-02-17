@@ -234,17 +234,17 @@ cdef class ReactionSystem(DASx):
                 dVdk = numpy.zeros(numCoreReactions, numpy.float64)
                 for j in range(numCoreReactions):
                     dVdk[j] = sum(moleSens[j*numCoreSpecies:(j+1)*numCoreSpecies])*constants.R*self.T.value_si/self.P.value_si
-                for i in sensSpeciesIndices:
+                for i in range(len(self.sensitiveSpecies)):
 #                    dydk = 0
 #                    for j in range(numCoreReactions):
 #                        dydk += moleSens[j*numCoreSpecies+i]
 #                        
 #                    dydk = sum(moleSens[index*numCoreReactions:(index+1)*numCoreReactions])
                     normSens = []
-                    c = self.coreSpeciesConcentrations[i]
+                    c = self.coreSpeciesConcentrations[sensSpeciesIndices[i]]
                     if c != 0:                        
                         for j in range(numCoreReactions):
-                            normSens.append(1/volume*(moleSens[j*numCoreSpecies+i]-c*dVdk[j])*forwardRateCoefficients[j]/c)
+                            normSens.append(1/volume*(moleSens[j*numCoreSpecies+sensSpeciesIndices[i]]-c*dVdk[j])*forwardRateCoefficients[j]/c)
                             #normSens.append(moleSens[j*numCoreSpecies+i]/c)
                     else:
                         normSens = numpy.zeros(numCoreReactions, numpy.float64)
