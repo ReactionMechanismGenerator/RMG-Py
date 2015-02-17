@@ -214,12 +214,13 @@ cdef class SimpleReactor(ReactionSystem):
         simple reaction system.
         """
         cdef numpy.ndarray[numpy.int_t, ndim=2] ir, ip, inet
-        cdef numpy.ndarray[numpy.float64_t, ndim=1] res, kf, kr, knet
+        cdef numpy.ndarray[numpy.float64_t, ndim=1] res, kf, kr, knet, delta
         cdef int numCoreSpecies, numCoreReactions, numEdgeSpecies, numEdgeReactions, numPdepNetworks
-        cdef int j, first, second, third
+        cdef int i, j, z, first, second, third
         cdef double k, V, reactionRate
         cdef numpy.ndarray[numpy.float64_t, ndim=1] coreSpeciesConcentrations, coreSpeciesRates, coreReactionRates, edgeSpeciesRates, edgeReactionRates, networkLeakRates
         cdef numpy.ndarray[numpy.float64_t, ndim=1] C
+        cdef numpy.ndarray[numpy.float64_t, ndim=2] jacobian, dgdk
 
         ir = self.reactantIndices
         ip = self.productIndices
@@ -353,13 +354,17 @@ cdef class SimpleReactor(ReactionSystem):
         if self.sensitivity:
             delta = numpy.zeros(len(y), numpy.float64)
             delta[:numCoreSpecies] = res
-            jacobian = self.jacobian(t,y,dydt,0,senpar)
+            if self.jacobianMatrix is None:
+                jacobian = self.jacobian(t,y,dydt,0,senpar)
+            else:
+                jacobian = self.jacobianMatrix
             dgdk = self.computeRateDerivative(y)
             for j in range(numCoreReactions):
                 for i in range(numCoreSpecies):
-                    for k in range(numCoreSpecies):
-                        delta[(j+1)*numCoreSpecies + i] += jacobian[i,k]*y[(j+1)*numCoreSpecies + k] 
+                    for z in range(numCoreSpecies):
+                        delta[(j+1)*numCoreSpecies + i] += jacobian[i,z]*y[(j+1)*numCoreSpecies + z] 
                     delta[(j+1)*numCoreSpecies + i] += dgdk[i,j]
+
         else:
             delta = res
         delta = delta - dydt
