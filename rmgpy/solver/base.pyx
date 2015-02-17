@@ -40,9 +40,9 @@ cimport rmgpy.constants as constants
 
 include "settings.pxi"
 if DASPK == 1:
-    from pydaspk cimport DASPK as DASx
+    from pydas.daspk cimport DASPK as DASx
 else:
-    from pydas cimport DASSL as DASx
+    from pydas.dassl cimport DASSL as DASx
     
 import cython
 import logging
