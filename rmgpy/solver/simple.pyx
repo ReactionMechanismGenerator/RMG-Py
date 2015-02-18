@@ -203,7 +203,7 @@ cdef class SimpleReactor(ReactionSystem):
         simple reaction system.
         """
         cdef numpy.ndarray[numpy.int_t, ndim=2] ir, ip, inet
-        cdef numpy.ndarray[numpy.float64_t, ndim=1] res, kf, kr, knet, delta
+        cdef numpy.ndarray[numpy.float64_t, ndim=1] res, kf, kr, knet, delta, equilibriumConstants
         cdef int numCoreSpecies, numCoreReactions, numEdgeSpecies, numEdgeReactions, numPdepNetworks
         cdef int i, j, z, first, second, third
         cdef double k, V, reactionRate
@@ -213,11 +213,12 @@ cdef class SimpleReactor(ReactionSystem):
 
         ir = self.reactantIndices
         ip = self.productIndices
+        equilibriumConstants = self.equilibriumConstants
         if self.sensitivity:
             kf = senpar
             kr = numpy.zeros_like(kf)
             for j in range(len(senpar)):
-                kr[j] = kf[j] / self.equilibriumConstants[j]
+                kr[j] = kf[j] / equilibriumConstants[j]
         else:
             kf = self.forwardRateCoefficients
             kr = self.reverseRateCoefficients
@@ -367,18 +368,19 @@ cdef class SimpleReactor(ReactionSystem):
         Return the analytical Jacobian for the reaction system.
         """
         cdef numpy.ndarray[numpy.int_t, ndim=2] ir, ip
-        cdef numpy.ndarray[numpy.float64_t, ndim=1] kf, kr, C
+        cdef numpy.ndarray[numpy.float64_t, ndim=1] kf, kr, C, equilibriumConstants
         cdef numpy.ndarray[numpy.float64_t, ndim=2] pd
         cdef int numCoreReactions, numCoreSpecies, i, j
         cdef double k, V, Ctot, deriv, corr
         
         ir = self.reactantIndices
         ip = self.productIndices
+        equilibriumConstants = self.equilibriumConstants
         if self.sensitivity:
             kf = senpar
             kr = numpy.zeros_like(kf)
             for j in range(len(senpar)):
-                kr[j] = kf[j] / self.equilibriumConstants[j]
+                kr[j] = kf[j] / equilibriumConstants[j]
         else:
             kf = self.forwardRateCoefficients
             kr = self.reverseRateCoefficients
