@@ -202,7 +202,7 @@ class Network:
                 logging.debug('Using ILT method to compute k(E) for path reaction {0}.'.format(rxn))
         logging.debug('')
         
-        logging.info('Calculating phenomenological rate coefficients for {0}...'.format(self))
+        logging.info('Calculating phenomenological rate coefficients for {0}...'.format(rxn))
         K = numpy.zeros((len(Tlist),len(Plist),Nisom+Nreac+Nprod,Nisom+Nreac+Nprod), numpy.float64)
         
         for t, T in enumerate(Tlist):
