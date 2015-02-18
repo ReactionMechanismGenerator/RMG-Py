@@ -563,12 +563,6 @@ class RMG:
             
             if reactionSystem.sensitiveSpecies:
                 logging.info('Conducting sensitivity analysis of reaction system %s...' % (index+1))
-                                
-                if self.saveConcentrationProfiles:                    
-                    csvfile = file(os.path.join(self.outputDirectory, 'solver', 'simulation_{0}_final.csv'.format(index+1)),'w')
-                    worksheet = csv.writer(csvfile)
-                else:
-                    worksheet = None
                     
                 sensWorksheet = []
                 for spec in reactionSystem.sensitiveSpecies:
@@ -584,12 +578,32 @@ class RMG:
                     toleranceMoveToCore = self.fluxToleranceMoveToCore,
                     toleranceInterruptSimulation = self.fluxToleranceInterrupt,
                     pdepNetworks = self.reactionModel.networkList,
-                    worksheet = worksheet,
+                    worksheet = None,
                     absoluteTolerance = self.absoluteTolerance,
                     relativeTolerance = self.relativeTolerance,
                     sensitivity = True,
                     sensWorksheet = sensWorksheet,
-                )                                 
+                )        
+            
+            # Update RMG execution statistics for each time a reactionSystem has sensitivity analysis performed.  
+            # But just provide time and memory used.
+            logging.info('Updating RMG execution statistics...')
+            execTime.append(time.time() - self.initializationTime)
+            elapsed = execTime[-1]
+            seconds = elapsed % 60
+            minutes = (elapsed - seconds) % 3600 / 60
+            hours = (elapsed - seconds - minutes * 60) % (3600 * 24) / 3600
+            days = (elapsed - seconds - minutes * 60 - hours * 3600) / (3600 * 24)
+            logging.info('    Execution time (DD:HH:MM:SS): '
+                '{0:02}:{1:02}:{2:02}:{3:02}'.format(int(days), int(hours), int(minutes), int(seconds)))
+            try:
+                import psutil
+                process = psutil.Process(os.getpid())
+                rss, vms = process.get_memory_info()
+                memoryUse.append(rss / 1.0e6)
+                logging.info('    Memory used: %.2f MB' % (memoryUse[-1]))
+            except ImportError:
+                memoryUse.append(0.0)
     
         # Write output file
         logging.info('')
