@@ -134,19 +134,19 @@ cdef class ReactionSystem(DASx):
         cdef int index, maxSpeciesIndex, maxNetworkIndex
         cdef int numCoreSpecies, numEdgeSpecies, numPdepNetworks, numCoreReactions
         cdef double stepTime, charRate, maxSpeciesRate, maxNetworkRate
-        cdef numpy.ndarray[numpy.float64_t, ndim=1] y0, dVdk  #: Vector containing the number of moles of each species
+        cdef numpy.ndarray[numpy.float64_t, ndim=1] y0 #: Vector containing the number of moles of each species
         cdef numpy.ndarray[numpy.float64_t, ndim=1] coreSpeciesRates, edgeSpeciesRates, networkLeakRates
         cdef numpy.ndarray[numpy.float64_t, ndim=1] maxCoreSpeciesRates, maxEdgeSpeciesRates, maxNetworkLeakRates,maxEdgeSpeciesRateRatios, maxNetworkLeakRateRatios
         cdef bint terminated
         cdef object maxSpecies, maxNetwork
-        cdef int i, j
+        cdef int i, j, k
         cdef numpy.ndarray[numpy.float64_t, ndim=1] forwardRateCoefficients
-        cdef double  prevTime, totalMoles, c, volume
-        #cdef numpy.ndarray[numpy.float64_t, ndim=2] A, moleSens, normSens, b
+        cdef double  prevTime, totalMoles, c, volume, RTP
         
-#        # Turn on DASPK sensitivity
-#        if sensitivity:
-#            self.sensitivity = True 
+        # cython declations for sensitivity analysis
+        cdef numpy.ndarray[numpy.int_t, ndim=1] sensSpeciesIndices
+        cdef numpy.ndarray[numpy.float64_t, ndim=1] moleSens, dVdk, normSens
+        cdef list time_array, normSens_array 
         
         pdepNetworks = pdepNetworks or []
 
@@ -191,11 +191,9 @@ cdef class ReactionSystem(DASx):
         if sensitivity:
             time_array = []
             normSens_array = [[] for spec in self.sensitiveSpecies]    
-            
-            # identify species indices
-            sensSpeciesIndices = []
-            for spec in self.sensitiveSpecies:
-                sensSpeciesIndices.append(speciesIndex[spec])  # index within coreSpecies list of the sensitive species
+            RTP = constants.R * self.T.value_si / self.P.value_si
+            # identify sensitive species indices
+            sensSpeciesIndices = numpy.array([speciesIndex[spec] for spec in self.sensitiveSpecies], numpy.int64)  # index within coreSpecies list of the sensitive species
                 
         
         stepTime = 1e-12
@@ -203,57 +201,29 @@ cdef class ReactionSystem(DASx):
         while not terminated:
             # Integrate forward in time by one time step
             self.step(stepTime)
-#            iteration += 1
-#            if sensitivity:
-#                self.jacobian(self.t, self.y, self.y, 0)
-#                A = self.jacobianMatrix - 1 / (self.t - prevTime) * numpy.identity(numCoreSpecies, numpy.float64)
-#                b = - 1 / (self.t - prevTime) * moleSens - self.computeRateDerivative() 
-#                moleSens = numpy.dot(numpy.linalg.inv(A), b)                                     
-#                volume = sum(self.y) * constants.R * self.T.value_si / self.P.value_si  
-#                
-#                dydk = numpy.zeros(numCoreReactions, numpy.float64)
-#                for j in range(numCoreReactions):
-#                    dydk[j] = sum(moleSens[:,j])                
-#                
-#                normSens = 1 / volume * (moleSens - numpy.outer(self.y/sum(self.y), dydk)) * self.getNormalizationFactor()   
-#                prevTime = self.t
-#                self.sensitivityCoefficients = moleSens
-#                
-#                time_array.append(self.t)
-#                for i in range(len(sensitivity)):
-#                    normSens_array[i].append([normSens[sensSpeciesIndices[i],j] for j in range(numCoreReactions)])
-
-
-
-            totalMoles = sum(self.y[:numCoreSpecies])
+            
+            y_coreSpecies = self.y[:numCoreSpecies]
+            totalMoles = numpy.sum(y_coreSpecies)
             if sensitivity:
                 time_array.append(self.t)
-                moleSens = self.y[numCoreSpecies:]#       
-                volume = totalMoles * constants.R * self.T.value_si / self.P.value_si
+                moleSens = self.y[numCoreSpecies:]#   
+                volume = totalMoles * RTP
                 
                 dVdk = numpy.zeros(numCoreReactions, numpy.float64)
                 for j in range(numCoreReactions):
-                    dVdk[j] = sum(moleSens[j*numCoreSpecies:(j+1)*numCoreSpecies])*constants.R*self.T.value_si/self.P.value_si
+                    dVdk[j] = numpy.sum(moleSens[j*numCoreSpecies:(j+1)*numCoreSpecies])*RTP
                 for i in range(len(self.sensitiveSpecies)):
-#                    dydk = 0
-#                    for j in range(numCoreReactions):
-#                        dydk += moleSens[j*numCoreSpecies+i]
-#                        
-#                    dydk = sum(moleSens[index*numCoreReactions:(index+1)*numCoreReactions])
-                    normSens = []
+                    normSens = numpy.zeros(numCoreReactions, numpy.float64)
                     c = self.coreSpeciesConcentrations[sensSpeciesIndices[i]]
                     if c != 0:                        
                         for j in range(numCoreReactions):
-                            normSens.append(1/volume*(moleSens[j*numCoreSpecies+sensSpeciesIndices[i]]-c*dVdk[j])*forwardRateCoefficients[j]/c)
-                            #normSens.append(moleSens[j*numCoreSpecies+i]/c)
-                    else:
-                        normSens = numpy.zeros(numCoreReactions, numpy.float64)
+                            normSens[j] = 1/volume*(moleSens[j*numCoreSpecies+sensSpeciesIndices[i]]-c*dVdk[j])*forwardRateCoefficients[j]/c
                     normSens_array[i].append(normSens)
 
             # Save the species mole fractions to CSV file
             if worksheet:
                 row = [self.t]
-                row.extend(self.y[:numCoreSpecies]/totalMoles)
+                row.extend(y_coreSpecies/totalMoles)
                 worksheet.writerow(row)
 
             # Get the characteristic flux
@@ -331,7 +301,7 @@ cdef class ReactionSystem(DASx):
                         break
                 elif isinstance(term, TerminationConversion):
                     index = speciesIndex[term.species]
-                    if 1 - (self.y[index] / y0[index]) > term.conversion:
+                    if 1 - (y_coreSpecies[index] / y0[index]) > term.conversion:
                         terminated = True
                         logging.info('At time {0:10.4e} s, reached target termination conversion: {1:f} of {2}'.format(self.t,term.conversion,term.species))
                         self.logConversions(speciesIndex, y0)
