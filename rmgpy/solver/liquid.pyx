@@ -57,6 +57,7 @@ cdef class LiquidReactor(ReactionSystem):
     cdef public ScalarQuantity T
     cdef public ScalarQuantity P    
     cdef public double V
+    cdef public bint constantVolume
     cdef public dict initialConcentrations
     cdef public list sensitiveSpecies
     cdef public double sensitivityThreshold
@@ -76,6 +77,7 @@ cdef class LiquidReactor(ReactionSystem):
         self.P = Quantity(100000.,'kPa') # Arbitrary high pressure (1000 Bar) to get reactions in the high-pressure limit!
         self.initialConcentrations = initialConcentrations # should be passed in SI
         self.V = None # will be set from initialConcentrations in initializeModel
+        self.constantVolume = True
       
         self.sensitiveSpecies = sensitiveSpecies
         self.sensitivityThreshold = sensitivityThreshold

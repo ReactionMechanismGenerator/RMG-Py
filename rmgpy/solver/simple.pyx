@@ -57,6 +57,7 @@ cdef class SimpleReactor(ReactionSystem):
     cdef public ScalarQuantity T
     cdef public ScalarQuantity P
     cdef public double V
+    cdef public bint constantVolume
     cdef public dict initialMoleFractions
     cdef public list sensitiveSpecies
     cdef public double sensitivityThreshold
@@ -77,6 +78,7 @@ cdef class SimpleReactor(ReactionSystem):
         self.initialMoleFractions = initialMoleFractions
 
         self.V = None # will be set in initializeModel
+        self.constantVolume = False
         self.sensitiveSpecies = sensitiveSpecies
         self.sensitivityThreshold = sensitivityThreshold
         
