@@ -186,15 +186,6 @@ cdef class LiquidReactor(ReactionSystem):
         dydt0 = - self.residual(t0, y0, numpy.zeros((numCoreSpecies), numpy.float64))[0]
         DASx.initialize(self, t0, y0, dydt0, dydt0, atol, rtol)
 
-    cpdef writeWorksheetHeader(self, worksheet):
-        """
-        Write some descriptive information about the reaction system to the
-        first two rows of the given `worksheet`.
-        """
-        import xlwt
-        style0 = xlwt.easyxf('font: bold on')
-        worksheet.write(0, 0, 'Liquid Reactor', style0)
-        worksheet.write(1, 0, 'T = {0:g} K'.format(self.T.value_si))
 
     @cython.boundscheck(False)
     def residual(self, double t, numpy.ndarray[numpy.float64_t, ndim=1] y, numpy.ndarray[numpy.float64_t, ndim=1] dydt):

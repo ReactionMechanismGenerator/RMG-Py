@@ -54,8 +54,6 @@ cdef class ReactionSystem(DASx):
     cdef public list termination
 
     cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions, list pdepNetworks=?, atol=?, rtol=?, sensitivity=?)
-
-    cpdef writeWorksheetHeader(self, worksheet)
     
     cpdef simulate(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions,
         double toleranceKeepInEdge, double toleranceMoveToCore, double toleranceInterruptSimulation,

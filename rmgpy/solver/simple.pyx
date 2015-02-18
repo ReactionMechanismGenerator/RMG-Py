@@ -192,19 +192,8 @@ cdef class SimpleReactor(ReactionSystem):
             self.coreSpeciesConcentrations[j] = y0[j] / V
         
         # Initialize the model
-        #dydt0 = numpy.zeros(neq, numpy.float64)
         dydt0 = - self.residual(t0, y0, numpy.zeros(neq, numpy.float64), forwardRateCoefficients)[0]
         DASx.initialize(self, t0, y0, dydt0, forwardRateCoefficients, atol, rtol)
-
-    cpdef writeWorksheetHeader(self, worksheet):
-        """
-        Write some descriptive information about the reaction system to the
-        first two rows of the given `worksheet`.
-        """
-        import xlwt
-        style0 = xlwt.easyxf('font: bold on')
-        worksheet.write(0, 0, 'Simple Reactor', style0)
-        worksheet.write(1, 0, 'T = {0:g} K, P = {1:g} bar'.format(self.T.value_si, self.P.value_si/1e5))
 
     @cython.boundscheck(False)
     def residual(self, double t, numpy.ndarray[numpy.float64_t, ndim=1] y, numpy.ndarray[numpy.float64_t, ndim=1] dydt, numpy.ndarray[numpy.float64_t, ndim=1] senpar = numpy.zeros(1, numpy.float64)):

@@ -105,16 +105,6 @@ cdef class ReactionSystem(DASx):
         self.maxNetworkLeakRateRatios = numpy.zeros((numPdepNetworks), numpy.float64)
         self.sensitivityCoefficients = numpy.zeros((numCoreSpecies, numCoreReactions), numpy.float64)
 
-    
-    cpdef writeWorksheetHeader(self, worksheet):
-        """
-        Write some descriptive information about the reaction system to the
-        first two rows of the given `worksheet`.
-        """
-        import xlwt
-        style0 = xlwt.easyxf('font: bold on')
-        worksheet.write(0, 0, 'Reaction System', style0)
-
     @cython.boundscheck(False)
     cpdef simulate(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions,
         double toleranceKeepInEdge, double toleranceMoveToCore, double toleranceInterruptSimulation,
