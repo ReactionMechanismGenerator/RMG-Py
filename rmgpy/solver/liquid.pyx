@@ -757,24 +757,3 @@ cdef class LiquidReactor(ReactionSystem):
         rateDeriv = V * rateDeriv
                 
         return rateDeriv
-    
-    @cython.boundscheck(False)
-    def getNormalizationFactor(self):
-        """
-        Returns the normalization factor k_i/c_i for calculating the normalized sensitivities.
-        """
-        cdef numpy.ndarray[numpy.float64_t, ndim=1] c, kf 
-        cdef numpy.ndarray[numpy.float64_t, ndim=2] norm       
-        cdef int i, j, numCoreSpecies, numCoreReactions
-        
-        kf = self.forwardRateCoefficients
-        c = self.coreSpeciesConcentrations
-        numCoreReactions = len(self.coreReactionRates)
-        numCoreSpecies = len(self.coreSpeciesConcentrations)
-        
-        norm = numpy.zeros((c.shape[0],numCoreReactions), numpy.float64)
-        for i in range(numCoreSpecies):
-            for j in range(numCoreReactions):
-                if c[i] != 0.0:
-                    norm[i,j] = kf[j]/c[i]                
-        return norm
