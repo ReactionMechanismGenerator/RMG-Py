@@ -8,6 +8,7 @@ This script runs stand-alone sensitivity analysis on an RMG job.
 import os.path
 import logging
 import csv
+from time import time
 
 from rmgpy.rmg.main import RMG
 from generateFluxDiagram import loadRMGPyJob
@@ -62,8 +63,12 @@ def runSensitivity(inputFile, chemkinFile, dictFile):
     # Load the RMG job
     rmg = loadRMGPyJob(inputFile, chemkinFile, dictFile, generateImages=False)    
     
+    start_time = time()
     # conduct sensitivity simulation
     simulate(rmg)
+    end_time = time()
+    time_taken = end_time - start_time
+    print "Sensitivity analysis took {0} seconds".format(time_taken)
 
 ################################################################################
 
