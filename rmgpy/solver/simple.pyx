@@ -368,6 +368,8 @@ cdef class SimpleReactor(ReactionSystem):
         else:
             delta = res
         delta = delta - dydt
+        
+        # Return DELTA, IRES.  IRES is set to 1 in order to tell DASPK to evaluate the sensitivity residuals
         return delta, 1
     
     @cython.boundscheck(False)
