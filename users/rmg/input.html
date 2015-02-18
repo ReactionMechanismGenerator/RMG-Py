@@ -429,6 +429,7 @@ of atoms (16 in the above example).</p>
 <span class="p">)</span>
 </pre></div>
 </div>
+<p>Regarding the number of polynomial coeffients for Chebyshev interpolated rates, plese refer to the <em class="xref std std-ref">documentation</em>. The number of pressures and temperature coefficents should always be smaller than the respective number of user-specified temperatures and pressures.</p>
 </div>
 </div>
 <div class="section" id="miscellaneous-options">
@@ -437,11 +438,13 @@ of atoms (16 in the above example).</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">options</span><span class="p">(</span>
     <span class="n">units</span><span class="o">=</span><span class="s">&#39;si&#39;</span><span class="p">,</span>
     <span class="n">saveRestartPeriod</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="s">&#39;hour&#39;</span><span class="p">),</span>
-    <span class="n">drawMolecules</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+    <span class="n">drawMolecules</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
     <span class="n">generatePlots</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
+<p>Setting <cite>drawMolecules=True</cite> will let RMG know that you want to save 2-D images (png files in the local <cite>species</cite> folder) of all species in the generated core model. This feature is recommended if you wish to easily view the species and reactions in the html file that accompanies an RMG job. Otherwise, the user will be forced to decifer SMILES strings. Also note that if <cite>drawMolecules=False</cite>, but the user specifies a <cite>pressureDependence</cite> section of the input file, RMG will still generate species files in the <cite>species</cite> folder, but only those that pertain to pressure dependent networks that RMG discovers.</p>
+<p>The <cite>saveRestartPeriod</cite> indictes how frequently you wish to save restart files. For very large/long RMG jobs, this process can take a significant amount of time. In such cases, the user may wish to increase the time period for restart.</p>
 </div>
 <div class="section" id="species-constraints">
 <h2>4.10. Species Constraints<a class="headerlink" href="#species-constraints" title="Permalink to this headline">¶</a></h2>

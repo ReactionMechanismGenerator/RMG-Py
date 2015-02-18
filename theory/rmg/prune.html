@@ -71,10 +71,10 @@ in order to achieve both low memory consumption and mechanism accuracy. Pruning 
 <h2>2.1. Key Parameters in Pruning<a class="headerlink" href="#key-parameters-in-pruning" title="Permalink to this headline">¶</a></h2>
 <ul>
 <li><p class="first">toleranceKeepInEdge</p>
-<p>Any edge species to prune should have peak flux along the whole conversion course lower than toleranceKeepInEdge <span class="math">\(*\)</span> characteristic flux.</p>
+<p>Any edge species to prune should have peak flux along the whole conversion course lower than toleranceKeepInEdge <span class="math">\(*\)</span> characteristic flux. Thus, larger values will lead to larger edge mechanisms.</p>
 </li>
 <li><p class="first">toleranceMoveToCore</p>
-<p>Any edge species to enter core model should have flux at some point larger than toleranceKeepInEdge <span class="math">\(*\)</span> characteristic flux</p>
+<p>Any edge species to enter core model should have flux at some point larger than toleranceMoveToCore <span class="math">\(*\)</span> characteristic flux Thus, in general, smaller values will lead to larger core mechanisms.</p>
 </li>
 <li><p class="first">toleranceInterrupSimulation</p>
 <p>Once flux of any edge species exceeds toleranceInterruptSimulation <span class="math">\(*\)</span> characteristic flux, dynamic simulation will be stopped.

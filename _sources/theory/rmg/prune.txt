@@ -14,11 +14,11 @@ Key Parameters in Pruning
 
 * toleranceKeepInEdge
 
-  Any edge species to prune should have peak flux along the whole conversion course lower than toleranceKeepInEdge :math:`*` characteristic flux.
+  Any edge species to prune should have peak flux along the whole conversion course lower than toleranceKeepInEdge :math:`*` characteristic flux. Thus, larger values will lead to larger edge mechanisms.
 
 * toleranceMoveToCore
 
-  Any edge species to enter core model should have flux at some point larger than toleranceKeepInEdge :math:`*` characteristic flux
+  Any edge species to enter core model should have flux at some point larger than toleranceMoveToCore :math:`*` characteristic flux Thus, in general, smaller values will lead to larger core mechanisms.
 
 * toleranceInterrupSimulation
 
