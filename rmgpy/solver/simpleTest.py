@@ -158,7 +158,7 @@ class SimpleReactorCheck(unittest.TestCase):
         rxnSystem0 = SimpleReactor(T,P,initialMoleFractions={CH4:0.2,CH3:0.1,C2H6:0.35,C2H5:0.15, H2:0.2},termination=[])
         rxnSystem0.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions)
         dfdt0 = rxnSystem0.residual(0.0, rxnSystem0.y, numpy.zeros(rxnSystem0.y.shape))[0]
-        solver_dfdk = rxnSystem0.computeRateDerivative()
+        solver_dfdk = rxnSystem0.computeRateDerivative(rxnSystem0.y)
         #print 'Solver d(dy/dt)/dk'
         #print solver_dfdk
         
