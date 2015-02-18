@@ -56,6 +56,7 @@ cdef class SimpleReactor(ReactionSystem):
 
     cdef public ScalarQuantity T
     cdef public ScalarQuantity P
+    cdef public double V
     cdef public dict initialMoleFractions
     cdef public list sensitiveSpecies
     cdef public double sensitivityThreshold
@@ -74,6 +75,8 @@ cdef class SimpleReactor(ReactionSystem):
         self.T = Quantity(T)
         self.P = Quantity(P)
         self.initialMoleFractions = initialMoleFractions
+
+        self.V = None # will be set in initializeModel
         self.sensitiveSpecies = sensitiveSpecies
         self.sensitivityThreshold = sensitivityThreshold
         
@@ -188,6 +191,7 @@ cdef class SimpleReactor(ReactionSystem):
             
         # Use ideal gas law to compute volume
         V = constants.R * self.T.value_si * numpy.sum(y0[:numCoreSpecies]) / self.P.value_si
+        self.V = V # volume in m^3
         for j in range(numCoreSpecies):
             self.coreSpeciesConcentrations[j] = y0[j] / V
         
@@ -246,6 +250,7 @@ cdef class SimpleReactor(ReactionSystem):
         
         # Use ideal gas law to compute volume
         V = constants.R * self.T.value_si * numpy.sum(y[:numCoreSpecies]) / self.P.value_si
+        self.V = V
 
         for j in range(numCoreSpecies):
             C[j] = y[j] / V
@@ -388,8 +393,8 @@ cdef class SimpleReactor(ReactionSystem):
         numCoreSpecies = len(self.coreSpeciesConcentrations)
         
         pd = -cj * numpy.identity(numCoreSpecies, numpy.float64)
-        # Use ideal gas law to compute volume
-        V = constants.R * self.T.value_si * numpy.sum(y[:numCoreSpecies]) / self.P.value_si
+        # Use stored volume
+        V = self.V
         
         Ctot = self.P.value_si /(constants.R * self.T.value_si)
 
@@ -817,8 +822,8 @@ cdef class SimpleReactor(ReactionSystem):
         numCoreReactions = len(self.coreReactionRates)
         numCoreSpecies = len(self.coreSpeciesConcentrations)      
         
-        # Use ideal gas law to compute volume
-        V = constants.R * self.T.value_si * numpy.sum(y[:numCoreSpecies]) / self.P.value_si
+        # Use stored volume
+        V = self.V
 
         C = self.coreSpeciesConcentrations
 

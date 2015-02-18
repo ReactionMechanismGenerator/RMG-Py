@@ -197,7 +197,7 @@ cdef class ReactionSystem(DASx):
             if sensitivity:
                 time_array.append(self.t)
                 moleSens = self.y[numCoreSpecies:]#   
-                volume = totalMoles * RTP
+                volume = self.V
                 
                 dVdk = numpy.zeros(numCoreReactions, numpy.float64)
                 for j in range(numCoreReactions):
