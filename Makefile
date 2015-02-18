@@ -60,6 +60,12 @@ clean:
 	$(MAKE) -C external/symmetry clean
 	rm -f bin/symmetry
 
+clean-solver:
+	rm -r build/pyrex/rmgpy/solver/
+	rm -r build/build/pyrex/rmgpy/solver/
+	find rmgpy/solver/ -name '*.so' -exec rm -f '{}' \;
+	find rmgpy/solver/ -name '*.pyc' -exec rm -f '{}' \;
+
 decython:
 	# de-cythonize all but the 'minimal'. Helpful for debugging in "pure python" mode.
 	find . -name *.so ! \( -name _statmech.so -o -name quantity.so -o -regex '.*rmgpy/measure/.*' -o -regex '.*rmgpy/solver/.*' \) -exec rm -f '{}' \;
