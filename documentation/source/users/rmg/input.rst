@@ -20,7 +20,7 @@ This section explains how to specify various reaction and thermo data sources in
 .. _thermolibraries:
 
 Thermo Libraries
----------------
+----------------
 
 By default, RMG will calculate the thermodynamic properties of the species from
 Benson additivity formulas. In general, the group-additivity results are
@@ -60,7 +60,7 @@ directory.
 .. _reactionlibraries:
 
 Reaction Libraries
------------------
+------------------
 The next section of the :file:`input.py` file specifies which, if any,
 Reaction Libraries should be used. When a reaction library is specified, RMG will first
 use the reaction library to generate all the relevant reactions for the species 
@@ -99,7 +99,7 @@ given in each mechanism, the different mechanisms can have different units.
 .. _seedmechanism:
 
 Seed Mechanisms
---------------
+---------------
 The next section of the :file:`input.py` file specifies which, if any, 
 Seed Mechanisms should be used.  If a seed mechanism is passed to RMG, every
 species and reaction present in the seed mechanism will be placed into the core, in
@@ -136,7 +136,7 @@ Kinetics Depositories
 .. _kineticsfamilies:
 
 Kinetics Families
-----------------
+-----------------
 In this section users can specify the particular reaction families that they wish to use to generate their model. for example you can use only :file:`Intra_RH_Add_Endocyclic` family to build the model by:: 
 
 	kineticsFamilies = ['Intra_RH_Add_Endocyclic']
@@ -145,7 +145,7 @@ Otherwise, by typing 'default' (and excluding the brackets that are shown in the
 
 	
 Kinetics Estimator
------------------
+------------------
 The last section is specifying that RMG is estimating kinetics of reactions from rate rules. For more details on how kinetic estimations is working check :ref:`Kinetics Estimation <kinetics>`:: 
 
 	kineticsEstimator = 'rate rules'
@@ -220,8 +220,25 @@ The following is an example of a simple reactor system::
 			'CH4': 0.9,
 		},
 		terminationTime=(1e0,'s'),
+	    sensitivity=['CH4','H2'],
+	    sensitivityThreshold=0.001,
+
 	)
 
+For sensitivity analysis, RMG-Py must be compiled with the DASPK solver. 
+(See :ref:`Compiling RMG-Py with Sensitivity Analysis  <compile_sensitivity>` for more details.)
+The sensitivity and sensitivityThrehold are optional arguments for when the
+user would like to conduct sensitivity analysis with respect to the reaction rate
+coefficients for the list of species given for ``sensitivity``.  
+
+The normalized sensitivities
+are saved to a csv file found in the folder ``solver`` with the file name ``sensitivity_1_SPC_1.csv`` 
+with the first index value indicating the reactor system and the second naming the index of the species
+the sensitivity analysis is conducted for.  The sensitivityThreshold is set to some value so that only
+sensitivities for normalized dlnC/dlnk > sensitivityThreshold are saved to this file.
+
+Note that in the RMG job, after the model has been generated to completion, sensitivity analysis will be conducted
+in one final simulation (sensitivity is not performed in intermediate iterations of the job).
 
 .. _simulatortolerances:
 
@@ -232,8 +249,12 @@ The next two lines specify the absolute and relative tolerance for the ODE solve
 	simulator(
 	    atol=1e-16,
 	    rtol=1e-8,
+	    sens_atol=1e-6,
+	    sens_rtol=1e-4,
 	)
 
+The ``sens_atol`` and ``sens_rtol`` are optional arguments for the sensitivity absolute tolerance and sensitivity relative tolerances, respectively.  They
+are set to a default value of 1e-6 and 1e-4 respectively unless the user specifies otherwise.  They do not apply when sensitivity analysis is not conducted.
 
 .. _pruning:
 
