@@ -76,7 +76,7 @@ cdef class LiquidReactor(ReactionSystem):
         self.T = Quantity(T)
         self.P = Quantity(100000.,'kPa') # Arbitrary high pressure (1000 Bar) to get reactions in the high-pressure limit!
         self.initialConcentrations = initialConcentrations # should be passed in SI
-        self.V = None # will be set from initialConcentrations in initializeModel
+        self.V = 0 # will be set from initialConcentrations in initializeModel
         self.constantVolume = True
       
         self.sensitiveSpecies = sensitiveSpecies
@@ -350,7 +350,7 @@ cdef class LiquidReactor(ReactionSystem):
                 jacobian = self.jacobian(t,y,dydt,0,senpar)
             else:
                 jacobian = self.jacobianMatrix
-            dgdk = self.computeRateDerivative(y)
+            dgdk = self.computeRateDerivative()
             for j in range(numCoreReactions):
                 for i in range(numCoreSpecies):
                     for z in range(numCoreSpecies):
@@ -692,7 +692,7 @@ cdef class LiquidReactor(ReactionSystem):
         return pd
     
     @cython.boundscheck(False)
-    def computeRateDerivative(self, y):
+    def computeRateDerivative(self):
         """
         Returns derivative vector df/dk_j where dy/dt = f(y, t, k) and
         k_j is the rate parameter for the jth core reaction.

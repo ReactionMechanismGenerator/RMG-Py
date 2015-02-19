@@ -77,7 +77,7 @@ cdef class SimpleReactor(ReactionSystem):
         self.P = Quantity(P)
         self.initialMoleFractions = initialMoleFractions
 
-        self.V = None # will be set in initializeModel
+        self.V = 0 # will be set in initializeModel
         self.constantVolume = False
         self.sensitiveSpecies = sensitiveSpecies
         self.sensitivityThreshold = sensitivityThreshold
@@ -355,7 +355,7 @@ cdef class SimpleReactor(ReactionSystem):
                 jacobian = self.jacobian(t,y,dydt,0,senpar)
             else:
                 jacobian = self.jacobianMatrix
-            dgdk = self.computeRateDerivative(y)
+            dgdk = self.computeRateDerivative()
             for j in range(numCoreReactions):
                 for i in range(numCoreSpecies):
                     for z in range(numCoreSpecies):
@@ -804,7 +804,7 @@ cdef class SimpleReactor(ReactionSystem):
         return pd
     
     @cython.boundscheck(False)
-    def computeRateDerivative(self, y):
+    def computeRateDerivative(self):
         """
         Returns derivative vector df/dk_j where dy/dt = f(y, t, k) and
         k_j is the rate parameter for the jth core reaction.
