@@ -178,9 +178,11 @@ def liquidReactor(temperature,
     system = LiquidReactor(T, initialConcentrations, termination, sensitiveSpecies, sensitivityThreshold)
     rmg.reactionSystems.append(system)
     
-def simulator(atol, rtol):
+def simulator(atol, rtol, sens_atol=1e-6, sens_rtol=1e-4):
     rmg.absoluteTolerance = atol
     rmg.relativeTolerance = rtol
+    rmg.sensitivityAbsoluteTolerance = sens_atol
+    rmg.sensitivityRelativeTolerance = sens_rtol
     
 def solvation(solvent):
     # If solvation module in input file, set the RMG solvent variable

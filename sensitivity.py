@@ -53,6 +53,8 @@ def simulate(rmg):
                 absoluteTolerance = rmg.absoluteTolerance,
                 relativeTolerance = rmg.relativeTolerance,
                 sensitivity = True,
+                sensitivityAbsoluteTolerance = rmg.sensitivityAbsoluteTolerance,
+                sensitivityRelativeTolerance = rmg.sensitivityRelativeTolerance,
                 sensWorksheet = sensWorksheet,
             )                      
 

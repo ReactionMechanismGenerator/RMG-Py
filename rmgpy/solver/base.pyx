@@ -75,7 +75,7 @@ cdef class ReactionSystem(DASx):
         self.sensitivityCoefficients = None
         self.termination = termination or []
     
-    cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions, list pdepNetworks=None, atol=1e-16, rtol=1e-8, sensitivity=False):
+    cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions, list pdepNetworks=None, atol=1e-16, rtol=1e-8, sensitivity=False, sens_atol=1e-6, sens_rtol=1e-4):
         """
         Initialize a simulation of the reaction system using the provided
         kinetic model. You will probably want to create your own version of this
@@ -108,7 +108,8 @@ cdef class ReactionSystem(DASx):
     @cython.boundscheck(False)
     cpdef simulate(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions,
         double toleranceKeepInEdge, double toleranceMoveToCore, double toleranceInterruptSimulation,
-        list pdepNetworks=None, worksheet=None, absoluteTolerance=1e-16, relativeTolerance=1e-8, sensitivity=False, sensWorksheet=None):
+        list pdepNetworks=None, worksheet=None, absoluteTolerance=1e-16, relativeTolerance=1e-8, sensitivity=False, 
+        sensitivityAbsoluteTolerance=1e-6, sensitivityRelativeTolerance=1e-4, sensWorksheet=None):
         """
         Simulate the reaction system with the provided reaction model,
         consisting of lists of core species, core reactions, edge species, and
@@ -149,7 +150,7 @@ cdef class ReactionSystem(DASx):
         for index, spec in enumerate(coreSpecies):
             speciesIndex[spec] = index
         
-        self.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions, pdepNetworks, absoluteTolerance, relativeTolerance, sensitivity)
+        self.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions, pdepNetworks, absoluteTolerance, relativeTolerance, sensitivity, sensitivityAbsoluteTolerance, sensitivityRelativeTolerance)
 
         invalidObject = None
         terminated = False

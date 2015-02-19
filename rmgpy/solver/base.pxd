@@ -53,11 +53,11 @@ cdef class ReactionSystem(DASx):
     
     cdef public list termination
 
-    cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions, list pdepNetworks=?, atol=?, rtol=?, sensitivity=?)
+    cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions, list pdepNetworks=?, atol=?, rtol=?, sensitivity=?, sens_atol=?, sens_rtol=?)
     
     cpdef simulate(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions,
         double toleranceKeepInEdge, double toleranceMoveToCore, double toleranceInterruptSimulation,
-        list pdepNetworks=?, worksheet=?, absoluteTolerance=?, relativeTolerance=?, sensitivity=?, sensWorksheet=?)
+        list pdepNetworks=?, worksheet=?, absoluteTolerance=?, relativeTolerance=?, sensitivity=?, sensitivityAbsoluteTolerance=?, sensitivityRelativeTolerance=?, sensWorksheet=?)
 
     cpdef logRates(self, double charRate, object species, double speciesRate, object network, double networkRate)
 

@@ -92,6 +92,8 @@ class RMG:
     --------------------------- ------------------------------------------------
     `absoluteTolerance`         The absolute tolerance used in the ODE/DAE solver
     `relativeTolerance`         The relative tolerance used in the ODE/DAE solver
+    `sensitivityAbsoluteTolerance`   The absolute tolerance used in the ODE/DAE solver for the sensitivities
+    `sensitivityRelativeTolerance`   The relative tolerance used in the ODE/DAE solver for the sensitivities
     `fluxToleranceKeepInEdge`   The relative species flux below which species are discarded from the edge
     `fluxToleranceMoveToCore`   The relative species flux above which species are moved from the edge to the core
     `fluxToleranceInterrupt`    The relative species flux above which the simulation will halt
@@ -151,6 +153,8 @@ class RMG:
         self.fluxToleranceInterrupt = 1.0
         self.absoluteTolerance = 1.0e-8
         self.relativeTolerance = 1.0e-4
+        self.sensitivityAbsoluteTolerance = 1.0e-6
+        self.sensitivityRelativeTolerance = 1.0e-4
         self.maximumEdgeSpecies = 1000000
         self.termination = []
         
@@ -582,6 +586,8 @@ class RMG:
                     absoluteTolerance = self.absoluteTolerance,
                     relativeTolerance = self.relativeTolerance,
                     sensitivity = True,
+                    sensitivityAbsoluteTolerance = self.sensitivityAbsoluteTolerance,
+                    sensitivityRelativeTolerance = self.sensitivityRelativeTolerance,
                     sensWorksheet = sensWorksheet,
                 )        
             

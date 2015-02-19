@@ -102,7 +102,7 @@ cdef class SimpleReactor(ReactionSystem):
             initialMoleFractions[speciesDict[label]] = moleFrac
         self.initialMoleFractions = initialMoleFractions
 
-    cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions, list pdepNetworks=None, atol=1e-16, rtol=1e-8, sensitivity=False):
+    cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions, list pdepNetworks=None, atol=1e-16, rtol=1e-8, sensitivity=False, sens_atol=1e-6, sens_rtol=1e-4):
         """
         Initialize a simulation of the simple reactor using the provided kinetic
         model.
@@ -110,14 +110,14 @@ cdef class SimpleReactor(ReactionSystem):
 
         # First call the base class version of the method
         # This initializes the attributes declared in the base class
-        ReactionSystem.initializeModel(self, coreSpecies, coreReactions, edgeSpecies, edgeReactions, pdepNetworks, atol, rtol, sensitivity)
+        ReactionSystem.initializeModel(self, coreSpecies, coreReactions, edgeSpecies, edgeReactions, pdepNetworks, atol, rtol, sensitivity, sens_atol, sens_rtol)
 
         cdef int numCoreSpecies, numCoreReactions, numEdgeSpecies, numEdgeReactions, numPdepNetworks
         cdef int i, j, l, index, neq
         cdef double V
         cdef dict speciesIndex, reactionIndex
         cdef numpy.ndarray[numpy.int_t, ndim=2] reactantIndices, productIndices, networkIndices
-        cdef numpy.ndarray[numpy.float64_t, ndim=1] forwardRateCoefficients, reverseRateCoefficients, equilibriumConstants, networkLeakCoefficients
+        cdef numpy.ndarray[numpy.float64_t, ndim=1] forwardRateCoefficients, reverseRateCoefficients, equilibriumConstants, networkLeakCoefficients, atol_array, rtol_array
         
         pdepNetworks = pdepNetworks or []
 
@@ -185,8 +185,18 @@ cdef class SimpleReactor(ReactionSystem):
             self.sensitivity = True
             # Compute number of variables
             neq = numCoreSpecies*(len(forwardRateCoefficients)+1)
+            
+            atol_array = numpy.ones(neq, numpy.float64)*sens_atol
+            atol_array[:numCoreSpecies] = atol
+            
+            rtol_array = numpy.ones(neq, numpy.float64)*sens_rtol
+            rtol_array[:numCoreSpecies] = rtol
         else:
             neq = numCoreSpecies
+            
+            atol_array = numpy.ones(neq,numpy.float64)*atol
+            rtol_array = numpy.ones(neq,numpy.float64)*rtol
+            
         y0 = numpy.zeros(neq, numpy.float64)
         for spec, moleFrac in self.initialMoleFractions.iteritems():
             y0[speciesIndex[spec]] = moleFrac
@@ -199,7 +209,7 @@ cdef class SimpleReactor(ReactionSystem):
         
         # Initialize the model
         dydt0 = - self.residual(t0, y0, numpy.zeros(neq, numpy.float64), forwardRateCoefficients)[0]
-        DASx.initialize(self, t0, y0, dydt0, forwardRateCoefficients, atol, rtol)
+        DASx.initialize(self, t0, y0, dydt0, forwardRateCoefficients, atol_array, rtol_array)
 
     @cython.boundscheck(False)
     def residual(self, double t, numpy.ndarray[numpy.float64_t, ndim=1] y, numpy.ndarray[numpy.float64_t, ndim=1] dydt, numpy.ndarray[numpy.float64_t, ndim=1] senpar = numpy.zeros(1, numpy.float64)):
