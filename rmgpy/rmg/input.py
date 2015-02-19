@@ -148,7 +148,13 @@ def simpleReactor(temperature,
 
 
 # Reaction systems
-def liquidReactor(temperature, initialConcentrations, terminationConversion=None, terminationTime=None):
+def liquidReactor(temperature,
+                  initialConcentrations,
+                  terminationConversion=None,
+                  terminationTime=None,
+                  sensitivity=None,
+                  sensitivityThreshold=1e-3):
+    
     logging.debug('Found LiquidReactor reaction system')
     T = Quantity(temperature)
     for spec,conc in initialConcentrations.iteritems():
@@ -164,7 +170,12 @@ def liquidReactor(temperature, initialConcentrations, terminationConversion=None
         termination.append(TerminationTime(Quantity(terminationTime)))
     if len(termination) == 0:
         raise InputError('No termination conditions specified for reaction system #{0}.'.format(len(rmg.reactionSystems)+2))
-    system = LiquidReactor(T, initialConcentrations, termination)
+    
+    sensitiveSpecies = []
+    if sensitivity:
+        for spec in sensitivity:
+            sensitiveSpecies.append(speciesDict[spec])
+    system = LiquidReactor(T, initialConcentrations, termination, sensitiveSpecies, sensitivityThreshold)
     rmg.reactionSystems.append(system)
     
 def simulator(atol, rtol):
