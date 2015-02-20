@@ -1676,7 +1676,6 @@ class Molecule(Graph):
             newIsomers = isomer.getAdjacentResonanceIsomers()
             newIsomers += isomer.getLonePairRadicalResonanceIsomers()
             newIsomers += isomer.getN5dd_N5tsResonanceIsomers()
-            newIsomers += isomer.getAromaticResonanceIsomers()
             
             for newIsomer in newIsomers:
                 newIsomer.updateAtomTypes()
@@ -1686,6 +1685,23 @@ class Molecule(Graph):
                         break
                 else:
                     isomers.append(newIsomer)
+            
+            newIsomers = isomer.getAromaticResonanceIsomers()
+            # Perform extra check for aromatic isomers when updating atomtypes
+            for newIsomer in newIsomers:
+                try:
+                    newIsomer.updateAtomTypes()
+                except:
+                    # Something incorrect has happened, ie. 2 double bonds on a Cb atomtype
+                    # Do not add the new isomer since it is malformed
+                    continue 
+                # Append to isomer list if unique
+                for isom in isomers:
+                    if isom.isIsomorphic(newIsomer):
+                        break
+                else:
+                    isomers.append(newIsomer)
+            
                         
             # Move to next resonance isomer
             index += 1
