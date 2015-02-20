@@ -26,11 +26,11 @@ measure:
 
 solver:
 ifeq ($(sensitivity),on)
-	echo "Checking you have PyDASPK"
+	echo "Checking you have the latest version of PyDAS with DASPK support"
 	@ python -c 'import pydas.daspk'
 	echo "DEF DASPK = 1" > rmgpy/solver/settings.pxi
 else
-	echo "Checking you have PyDAS..."
+	echo "Checking you have the latest version of PyDAS with DASSL support..."
 	@ python -c 'import pydas.dassl'
 	echo "DEF DASPK = 0" > rmgpy/solver/settings.pxi
 endif
