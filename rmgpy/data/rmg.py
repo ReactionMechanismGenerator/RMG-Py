@@ -38,7 +38,7 @@ import os.path
 from base import ForbiddenStructures
 from thermo import ThermoDatabase
 from transport import TransportDatabase
-from kinetics import KineticsDatabase
+from rmgpy.data.kinetics.database import KineticsDatabase
 from statmech import StatmechDatabase
 from solvation import SolvationDatabase
 

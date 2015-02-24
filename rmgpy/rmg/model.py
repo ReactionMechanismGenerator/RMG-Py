@@ -50,8 +50,11 @@ from rmgpy.statmech import  Conformer
 from rmgpy.data.base import Entry, ForbiddenStructureException
 from rmgpy.data.thermo import *
 from rmgpy.data.solvation import *
-from rmgpy.data.kinetics import *
+from rmgpy.data.kinetics.depository import DepositoryReaction, KineticsDepository
+from rmgpy.data.kinetics.family import KineticsFamily, TemplateReaction
+from rmgpy.data.kinetics.library import KineticsLibrary, LibraryReaction
 from rmgpy.data.statmech import *
+from rmgpy.kinetics import *
 from rmgpy.transport import TransportData
 import rmgpy.data.rmg
 

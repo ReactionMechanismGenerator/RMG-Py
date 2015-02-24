@@ -52,7 +52,8 @@ from rmgpy.solver.base import TerminationTime, TerminationConversion
 from rmgpy.solver.simple import SimpleReactor
 from rmgpy.data.rmg import RMGDatabase
 from rmgpy.data.base import ForbiddenStructureException, DatabaseError
-from rmgpy.data.kinetics import KineticsLibrary, KineticsFamily, LibraryReaction, TemplateReaction
+from rmgpy.data.kinetics.library import KineticsLibrary, LibraryReaction
+from rmgpy.data.kinetics.family import KineticsFamily, TemplateReaction
 
 from rmgpy.reaction import Reaction
 from rmgpy.kinetics.diffusionLimited import diffusionLimiter
