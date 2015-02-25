@@ -4,8 +4,8 @@
 #
 ################################################################################
 
-
-sensitivity=off
+DASPK=$(shell python -c 'import pydas.daspk; print pydas.daspk.__file__')
+DASSL=$(shell python -c 'import pydas.dassl; print pydas.dassl.__file__')
 
 .PHONY : all minimal main measure solver cantherm clean decython documentation QM
 
@@ -25,14 +25,16 @@ measure:
 	python setup.py build_ext measure --build-lib . --build-temp build --pyrex-c-in-temp
 
 solver:
-ifeq ($(sensitivity),on)
-	echo "Checking you have the latest version of PyDAS with DASPK support"
-	@ python -c 'import pydas.daspk'
-	echo "DEF DASPK = 1" > rmgpy/solver/settings.pxi
+
+ifneq ($(DASPK),)
+	@ echo "DASPK solver found. Compiling with DASPK and sensitivity analysis capability..."
+	@ echo "DEF DASPK = 1" > rmgpy/solver/settings.pxi 
+else ifneq ($(DASSL),)
+	@ echo "DASSL solver found. Compiling with DASSL.  Sensitivity analysis capabilities are off..."
+	@ echo "DEF DASPK = 0" > rmgpy/solver/settings.pxi
 else
-	echo "Checking you have the latest version of PyDAS with DASSL support..."
-	@ python -c 'import pydas.dassl'
-	echo "DEF DASPK = 0" > rmgpy/solver/settings.pxi
+	@ echo 'No PyDAS solvers found.  Please check if you have the latest version of PyDAS.'
+	@ python -c 'import pydas.dassl' 
 endif
 	python setup.py build_ext solver --build-lib . --build-temp build --pyrex-c-in-temp
 
