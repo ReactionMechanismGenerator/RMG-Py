@@ -94,10 +94,10 @@ The instructions listed below have been confirmed on a fresh Ubuntu 12.04 instal
     cd ..
     make daspk
 
-  Then compile RMG-Py with the sensitivity capability set to on. ::
+  Then compile RMG-Py normally.  It will automatically be compiled with sensitivity analysis if DASPK is found. ::
 
     cd RMG-Py
     make clean-solver
-    make sensitivity=on
+    make
     
   Note that using this option will allow RMG to both run with and without sensitivity.  
