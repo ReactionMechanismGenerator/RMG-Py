@@ -2,7 +2,7 @@ import os
 
 import external.cclib as cclib
 import logging
-from subprocess import Popen, PIPE
+from subprocess import Popen
 import re
 
 from rmgpy.molecule import Molecule

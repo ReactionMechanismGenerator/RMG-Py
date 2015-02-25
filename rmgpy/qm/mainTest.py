@@ -8,7 +8,6 @@ import os
 from rmgpy import getPath
 from rmgpy.qm.main import QMSettings, QMCalculator
 from rmgpy.molecule import Molecule
-import qmdata
 
 class TestQMSettings(unittest.TestCase):
 	"""

@@ -26,13 +26,13 @@
 #   DEALINGS IN THE SOFTWARE.
 #
 ################################################################################
+import rmgpy.quantity as quantity
 
 """
 This module contains base classes that represent various thermodynamic
 property calculation methods.
 """
 
-import rmgpy.quantity as quantity
 
 ################################################################################
 

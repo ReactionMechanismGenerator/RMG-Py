@@ -45,7 +45,6 @@ transition states (first-order saddle points on a potential energy surface).
 import numpy
 import cython
 
-import rmgpy.constants as constants
 import rmgpy.quantity as quantity
 from rmgpy.molecule import Molecule
 

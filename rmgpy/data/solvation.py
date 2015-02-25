@@ -31,19 +31,13 @@
 """
 
 """
-import rmgpy.quantity as quantity
 
-import os
 import os.path
 import math
 import logging
-import numpy
-from copy import copy, deepcopy
-
 from copy import deepcopy
 from base import Database, Entry, makeLogicNode, DatabaseError
 
-import rmgpy.constants as constants
 from rmgpy.molecule import Molecule, Atom, Bond, Group
 
 ################################################################################

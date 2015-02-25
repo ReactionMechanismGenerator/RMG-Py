@@ -35,7 +35,7 @@ in this subpackage.
 
 from rmgpy.data.base import DatabaseError, LogicNode
 from rmgpy.reaction import Reaction, ReactionError
-from rmgpy.molecule import Molecule, Group
+from rmgpy.molecule import Group
 from rmgpy.species import Species
 
 ################################################################################

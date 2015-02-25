@@ -8,8 +8,6 @@ from external.wip import work_in_progress
 from rmgpy import settings
 from rmgpy.species import Species
 from rmgpy.data.solvation import *
-from rmgpy.molecule.molecule import Molecule
-from rmgpy.data.base import DatabaseError
 
 ###################################################
 

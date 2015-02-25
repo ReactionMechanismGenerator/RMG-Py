@@ -26,9 +26,9 @@
 #   DEALINGS IN THE SOFTWARE.
 #
 ################################################################################
-
 import numpy
 import cython
+
 from libc.math cimport log
 
 cimport rmgpy.constants as constants

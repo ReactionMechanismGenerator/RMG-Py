@@ -36,11 +36,9 @@ functionality to RMG.
 import logging
 import os.path
 
-from rmgpy.quantity import Quantity
 import rmgpy.pdep.network
 import rmgpy.reaction
 
-from rmgpy.cantherm.pdep import PressureDependenceJob
 from rmgpy.pdep import Conformer, Configuration
 
 ################################################################################
@@ -455,8 +453,6 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         from rmgpy.kinetics import Arrhenius, KineticsData, MultiArrhenius
         from rmgpy.measure.collision import SingleExponentialDown
         from rmgpy.measure.reaction import fitInterpolationModel
-        from rmgpy.measure.main import MEASURE
-        import rmgpy.measure.settings
         
         # Get the parameters for the pressure dependence calculation
         job = pdepSettings

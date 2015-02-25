@@ -1,6 +1,5 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-from __builtin__ import globals
 
 ################################################################################
 #
@@ -34,7 +33,6 @@ This module contains the main execution functionality for Reaction Mechanism
 Generator (RMG).
 """
 
-import os
 import os.path
 import sys
 import logging
@@ -55,9 +53,7 @@ from rmgpy.data.base import ForbiddenStructureException, DatabaseError
 from rmgpy.data.kinetics.library import KineticsLibrary, LibraryReaction
 from rmgpy.data.kinetics.family import KineticsFamily, TemplateReaction
 
-from rmgpy.reaction import Reaction
 from rmgpy.kinetics.diffusionLimited import diffusionLimiter
-from rmgpy.quantity import Quantity
 
 from model import Species, CoreEdgeReactionModel
 from pdep import PDepNetwork

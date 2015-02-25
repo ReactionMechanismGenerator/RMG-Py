@@ -34,7 +34,6 @@ methods.
 """
 
 import unittest
-import math
 import numpy
 
 from rmgpy.thermo import Wilhoit, NASA, NASAPolynomial, ThermoData

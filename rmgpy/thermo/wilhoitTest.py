@@ -33,7 +33,6 @@ This script contains unit tests of the :mod:`rmgpy.thermo.wilhoit` module.
 """
 
 import unittest
-import math
 import numpy
 
 from rmgpy.thermo.wilhoit import Wilhoit

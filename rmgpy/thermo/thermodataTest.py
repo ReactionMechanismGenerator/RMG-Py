@@ -33,7 +33,6 @@ This script contains unit tests of the :mod:`rmgpy.thermo.thermodata` module.
 """
 
 import unittest
-import math
 import numpy
 
 from rmgpy.thermo.thermodata import ThermoData

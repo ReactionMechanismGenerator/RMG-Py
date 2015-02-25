@@ -32,12 +32,9 @@
 A class for returning and estimating the transport properties of a species
 
 """
-import os
 import os.path
-import math
 import logging
-import numpy
-from copy import copy, deepcopy
+from copy import deepcopy
 
 from base import Database, Entry, makeLogicNode, DatabaseError
 
