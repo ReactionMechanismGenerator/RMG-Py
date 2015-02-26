@@ -405,8 +405,8 @@ cdef class SimpleReactor(ReactionSystem):
         numCoreSpecies = len(self.coreSpeciesConcentrations)
         
         pd = -cj * numpy.identity(numCoreSpecies, numpy.float64)
-        # Use stored volume
-        V = self.V
+        
+        V = constants.R * self.T.value_si * numpy.sum(y[:numCoreSpecies]) / self.P.value_si
         
         Ctot = self.P.value_si /(constants.R * self.T.value_si)
 
@@ -834,7 +834,7 @@ cdef class SimpleReactor(ReactionSystem):
         numCoreReactions = len(self.coreReactionRates)
         numCoreSpecies = len(self.coreSpeciesConcentrations)      
         
-        # Use stored volume
+        # Use stored volume, since this function is only called from residual function. 
         V = self.V
 
         C = self.coreSpeciesConcentrations
