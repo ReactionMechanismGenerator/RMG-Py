@@ -2006,7 +2006,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
             cookie = cherrypy.response.cookie
             cookie['username'] = username
             cookie['username']['path'] = '/'
-            cookie['username']['max-age'] = 3600*24*7
+            cookie['username']['max-age'] = 3600*24*30
             cookie['username']['version'] = 1
             raise cherrypy.HTTPRedirect("/")
         else:
