@@ -1659,6 +1659,7 @@ recommended = False
                 rmg_species.reactive = False
                 old_species.reactive = False
                 # when this occurs in collider lists it's still the old species?
+            rmg_species.generateResonanceIsomers()
             rmg_species.generateThermoData(self.rmg_object.database)
         # Set match using the function to get all the side-effects.
         labelsToProcess = self.identified_labels
@@ -1674,6 +1675,7 @@ recommended = False
         votes = self.votes
         
         # Now would be a good time to print identified reactions?
+        # All the species in self.identified_labels should have been through generateResonanceIsomers and generateThermoData
         for chemkinReaction in chemkinReactionsUnmatched:
             for reagents in (chemkinReaction.reactants, chemkinReaction.products):
                 for reagent in reagents:
