@@ -2203,7 +2203,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
 
             output.append("<tr><td>&Delta;H(298K)</td>")
             for matchingSpecies in sortedMatchingSpeciesList:
-                output.append("<td>{0:.1f} kJ/mol</span></td>".format(self.getEnthalpyDiscrepancy(chemkinLabel, matchingSpecies), Hsource=matchingSpecies.thermo.comment))
+                output.append("<td><span title='{Hsource}'>{0:.1f} kJ/mol</span></td>".format(self.getEnthalpyDiscrepancy(chemkinLabel, matchingSpecies), Hsource=matchingSpecies.thermo.comment))
             output.append("</tr>")
             
             output.append("<tr><td></td>")
