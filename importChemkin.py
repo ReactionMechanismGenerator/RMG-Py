@@ -2174,7 +2174,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
 
             myVotingChemkinReactions = dict()
             
-            sortedMatchingSpeciesList = sorted(possibleMatches.iterkeys(), key=lambda species:-len(possibleMatches[species]))
+            sortedMatchingSpeciesList = sorted(possibleMatches.iterkeys(), key=lambda species:-len(possibleMatches[species])-0.001*abs(self.getEnthalpyDiscrepancy(chemkinLabel, species)))
             
             for s in speciesWaitingToProcess:
                 if s in sortedMatchingSpeciesList:
