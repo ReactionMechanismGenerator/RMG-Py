@@ -230,14 +230,9 @@ cdef class SimpleReactor(ReactionSystem):
         ir = self.reactantIndices
         ip = self.productIndices
         equilibriumConstants = self.equilibriumConstants
-        if self.sensitivity:
-            kf = senpar
-            kr = numpy.zeros_like(kf)
-            for j in range(len(senpar)):
-                kr[j] = kf[j] / equilibriumConstants[j]
-        else:
-            kf = self.forwardRateCoefficients
-            kr = self.reverseRateCoefficients
+
+        kf = self.forwardRateCoefficients
+        kr = self.reverseRateCoefficients
         
         inet = self.networkIndices
         knet = self.networkLeakCoefficients
@@ -393,14 +388,9 @@ cdef class SimpleReactor(ReactionSystem):
         ir = self.reactantIndices
         ip = self.productIndices
         equilibriumConstants = self.equilibriumConstants
-        if self.sensitivity:
-            kf = senpar
-            kr = numpy.zeros_like(kf)
-            for j in range(len(senpar)):
-                kr[j] = kf[j] / equilibriumConstants[j]
-        else:
-            kf = self.forwardRateCoefficients
-            kr = self.reverseRateCoefficients
+
+        kf = self.forwardRateCoefficients
+        kr = self.reverseRateCoefficients
         numCoreReactions = len(self.coreReactionRates)
         numCoreSpecies = len(self.coreSpeciesConcentrations)
         
