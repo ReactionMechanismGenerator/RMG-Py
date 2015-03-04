@@ -49,6 +49,7 @@ import logging
 import csv
 
 from rmgpy.quantity import Quantity
+from rmgpy.chemkin import getSpeciesIdentifier
 
 ################################################################################
 
@@ -176,7 +177,7 @@ cdef class ReactionSystem(DASx):
         if worksheet:
             row = ['Time (s)']
             for i in range(numCoreSpecies):
-                row.append(str(coreSpecies[i]))
+                row.append(getSpeciesIdentifier(coreSpecies[i]))
             worksheet.writerow(row)
         
         if sensitivity:
