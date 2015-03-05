@@ -46,6 +46,21 @@ class Geometry:
         else:
             #: Long, truly unique, ID, such as the augmented InChI.
             self.uniqueIDlong = uniqueIDlong
+        
+        if self.settings:
+            self.fileStore = self.settings.fileStore
+            self.scratchDirectory = self.settings.scratchDirectory
+        else:
+            self.fileStore = None
+            self.scratchDirectory = None
+        
+        if self.fileStore and not os.path.exists(self.fileStore):
+            logging.info("Creating permanent directory %s for qm files."%os.path.abspath(self.fileStore))
+            os.makedirs(self.fileStore)
+            
+        if self.scratchDirectory and not os.path.exists(self.scratchDirectory):
+            logging.info("Creating scratch directory %s for qm files."%os.path.abspath(self.scratchDirectory))
+            os.makedirs(self.scratchDirectory)
 
     def getFilePath(self, extension):
         """
@@ -63,7 +78,7 @@ class Geometry:
         "Returns the path the the refined mol file."
         return self.getFilePath('.refined.mol')
 
-    def generateRDKitGeometries(self, boundsMatrix=None):
+    def generateRDKitGeometries(self):
         """
         Use RDKit to guess geometry.
 
@@ -77,7 +92,7 @@ class Geometry:
         if atoms > 3:#this check prevents the number of attempts from being negative
             distGeomAttempts = 5*(atoms-3) #number of conformer attempts is just a linear scaling with molecule size, due to time considerations in practice, it is probably more like 3^(n-3) or something like that
         
-        rdmol, minEid = self.rd_embed(rdmol, distGeomAttempts, boundsMatrix)
+        rdmol, minEid = self.rd_embed(rdmol, distGeomAttempts)
         self.saveCoordinatesFromRDMol(rdmol, minEid, rdAtIdx)
         
     def rd_build(self):
@@ -87,7 +102,7 @@ class Geometry:
         return self.molecule.toRDKitMol(removeHs=False, returnMapping=True)
 
 
-    def rd_embed(self, rdmol, numConfAttempts, boundsMatrix=None):
+    def rd_embed(self, rdmol, numConfAttempts):
         """
         Embed the RDKit molecule and create the crude molecule file.
         """
@@ -228,7 +243,7 @@ class QMMolecule:
         "The total number of attempts to try"
         return 2 * len(self.keywords)
     
-    def setOutputDirectory(self, outputDirectory, scratchDirectory=None):
+    def setOutputDirectory(self, outputDirectory):
         """
         Set up the fileStore and scratchDirectory if not already done.
         """
@@ -236,6 +251,7 @@ class QMMolecule:
         
         setFileStore = True
         setScratch = True
+        # Configure the scratch directories
         if self.settings.fileStore:
             if not self.settings.fileStore.endswith(subPath):
                 self.settings.fileStore = os.path.join(self.settings.fileStore, subPath)
@@ -249,10 +265,10 @@ class QMMolecule:
             setScratch = False
                     
         if setFileStore:
-            self.settings.fileStore = os.path.join(outputDirectory, subPath)
+            self.settings.fileStore = os.path.join(outputDirectory, 'QMfiles', subPath)
             logging.info("Setting the quantum mechanics fileStore to {0}".format(self.settings.fileStore))
         if setScratch:
-            self.settings.scratchDirectory = os.path.join(outputDirectory, subPath)
+            self.settings.scratchDirectory = os.path.join(outputDirectory, 'QMscratch', subPath)
             logging.info("Setting the quantum mechanics fileStore to {0}".format(self.settings.scratchDirectory))            
     
     def initialize(self):
@@ -285,12 +301,12 @@ class QMMolecule:
                 logging.info("Creating directory %s for QM files."%os.path.abspath(path))
                 os.makedirs(path)
         
-    def createGeometry(self, boundsMatrix=None, atomMatch=None):
+    def createGeometry(self):
         """
         Creates self.geometry with RDKit geometries
         """
         self.geometry = Geometry(self.settings, self.uniqueID, self.molecule, uniqueIDlong=self.uniqueIDlong)
-        self.geometry.generateRDKitGeometries(boundsMatrix, atomMatch)
+        self.geometry.generateRDKitGeometries()
         return self.geometry
         
     def parse(self):
