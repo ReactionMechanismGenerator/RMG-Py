@@ -1438,8 +1438,9 @@ class KineticsFamily(Database):
                                 except ForbiddenStructureException:
                                     pass
                                 else:
-                                    rxn = self.__createReaction(reactantStructures, productStructures, forward)
-                                    if rxn: rxnList.append(rxn)
+                                    if productStructures is not None:
+                                        rxn = self.__createReaction(reactantStructures, productStructures, forward)
+                                        if rxn: rxnList.append(rxn)
         # If products is given, remove reactions from the reaction list that
         # don't generate the given products
         if products is not None:
