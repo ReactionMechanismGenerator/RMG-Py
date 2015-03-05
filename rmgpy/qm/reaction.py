@@ -81,9 +81,14 @@ class QMReaction:
         
         self.fileStore = self.settings.fileStore
         self.scratchDirectory = self.settings.scratchDirectory
+        
         if not os.path.exists(self.fileStore):
-            logging.info("Creating directory %s for qm files."%os.path.abspath(self.fileStore))
+            logging.info("Creating permanent directory %s for qm files."%os.path.abspath(self.fileStore))
             os.makedirs(self.fileStore)
+            
+        if not os.path.exists(self.scratchDirectory):
+            logging.info("Creating scratch directory %s for qm files."%os.path.abspath(self.scratchDirectory))
+            os.makedirs(self.scratchDirectory)
     
     def getFilePath(self, extension):
         """
@@ -125,18 +130,22 @@ class QMReaction:
         setFileStore = True
         setScratch = True
         if self.fileStore:
-            if self.fileStore.endswith(subPath):
-                setFileStore = False
+            if not self.fileStore.endswith(subPath):
+                self.fileStore = os.path.join(self.settings.fileStore, subPath)
+                logging.info("Setting the qm kinetics fileStore to {0}".format(self.settings.fileStore))
+            setFileStore = False
         
         if self.scratchDirectory:
-            if self.scratchDirectory.endswith(subPath):
-                setScratch = False
+            if not self.scratchDirectory.endswith(subPath):
+                self.scratchDirectory = os.path.join(self.settings.scratchDirectory, subPath)
+                logging.info("Setting the qm kinetics scratchDirectory fileStore to {0}".format(self.settings.scratchDirectory))
+            setScratch = False
                 
         if setFileStore:
-            self.fileStore = os.path.join(self.fileStore, subPath)
+            self.fileStore = os.path.join('QMfiles', subPath)
             logging.info("Set the qm kinetics fileStore to {0}".format(self.fileStore))
         if setScratch:
-            self.scratchDirectory = os.path.join(self.scratchDirectory, subPath)
+            self.scratchDirectory = os.path.join('QMscratch', subPath)
             logging.info("Set the qm kinetics scratchDirectory to {0}".format(self.scratchDirectory))  
             
     def initialize(self):
@@ -652,14 +661,11 @@ class QMReaction:
                 return True, notes#True, self.geometry, labels, notes
             else:
                 return False, notes#False, None, None, notes
-          
-        check, notes = self.prepDoubleEnded(labels, notes)
         
+        check, notes = self.conductDoubleEnded(notes, NEB=neb, labels=labels)
         if check:
-            check, notes = self.conductDoubleEnded(NEB=neb)
-            if check:
-                # Optimize the TS
-                check, notes =  self.tsSearch(notes, labels, fromDoubleEnded=True)
+            # Optimize the TS
+            check, notes =  self.tsSearch(notes, labels, fromDoubleEnded=True)
         
         return check, notes
     
