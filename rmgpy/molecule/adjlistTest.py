@@ -3,11 +3,9 @@
 
 import unittest
 from external.wip import work_in_progress
-from rmgpy.molecule.adjlist import *
 from rmgpy.molecule.adjlist import InvalidAdjacencyListError
-from rmgpy.molecule.molecule import *
+from rmgpy.molecule.molecule import Molecule
 from rmgpy.molecule.group import Group
-from rmgpy.molecule.element import getElement, elementList
 import logging
 logging.basicConfig(level=logging.DEBUG)
 

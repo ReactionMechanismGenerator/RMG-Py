@@ -33,16 +33,18 @@ This script contains unit tests of the :mod:`rmgpy.pdep.network` module.
 """
 
 import unittest
-import math
-import numpy
 
 from rmgpy.pdep.network import Network
 from rmgpy.pdep.configuration import Configuration
 from rmgpy.transport import TransportData
-from rmgpy.statmech import *
+from rmgpy.statmech.translation import Translation, IdealGasTranslation
+from rmgpy.statmech.rotation import Rotation, LinearRotor, NonlinearRotor, KRotor, SphericalTopRotor
+from rmgpy.statmech.vibration import Vibration, HarmonicOscillator
+from rmgpy.statmech.torsion import Torsion, HinderedRotor
+from rmgpy.statmech.conformer import Conformer
 from rmgpy.species import Species, TransitionState
 from rmgpy.reaction import Reaction
-from rmgpy.pdep.collision import *
+from rmgpy.pdep.collision import SingleExponentialDown
 
 ################################################################################
 

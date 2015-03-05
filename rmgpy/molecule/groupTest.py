@@ -4,7 +4,7 @@
 import unittest
 from external.wip import work_in_progress
 
-from rmgpy.molecule.group import *
+from rmgpy.molecule.group import ActionError, GroupAtom, GroupBond, Group
 from rmgpy.molecule.atomtype import atomTypes
 
 ################################################################################
