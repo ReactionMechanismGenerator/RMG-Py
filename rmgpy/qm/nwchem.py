@@ -48,10 +48,11 @@ class NWChem:
 
 	# #: List of phrases that indicate failure
 	# #: NONE of these must be present in a succesful job.
-	# failureKeys = [
-	# 			   'ERROR TERMINATION',
-	# 			   'IMAGINARY FREQUENCIES'
-	# 			   ]
+	failureKeys = [
+					'There is an error in the input file',
+					'An error occured while trying to read or write to disk space',
+					'Received an Error in Communication',
+					]
 	# 
 	# #: List of phrases to indicate success.
 	# #: ALL of these must be present in a successful job.
@@ -185,24 +186,9 @@ class NWChem:
 			output.append('task {0}'.format(keywords))
 		else:
 			output.append('task {0}'.format(self.keywords[attempt-1]))
-		# if not top_keys:
-		# 	top_keys = self.inputFileKeywords(attempt)
-		# output = [top_keys] + output
-		# 
-		# if checkPoint:
-		# 	chk_file = '%chk=' + os.path.join(self.settings.fileStore, self.uniqueID)
-		# 	output = [chk_file] + output
-		# if memory:
-		# 	mem = '%mem={0}'.format(memory)
-		# 	output = [mem] + output
-		# if numProcShared:
-		# 	numProc = '%nprocshared={0}'.format(numProcShared)
-		# 	output = [numProc] + output
-		# if bottomKeys:
-		# 	output = output + [bottomKeys]
-		# 
+			
 		input_string = '\n'.join(output)
-		# 
+		
 		if not inputFilePath:
 			inputFilePath = self.inputFilePath
 		
@@ -234,7 +220,7 @@ class NWChemMol(QMMolecule, NWChem):
 		for the `attmept`th attempt.
 		"""
 		
-		output = ['title "{0}"'.format(self.geometry.uniqueIDlong),'scratch_dir {0}'.format(self.settings.scratchDirectory)]
+		output = ['title "{0}"'.format(self.geometry.uniqueIDlong),'permanent_dir {0}'.format(os.path.abspath(self.fileStore)),'scratch_dir {0}'.format(os.path.abspath(self.scratchDirectory))]
 		# output.append("{charge}   {mult}".format(charge=0, mult=(self.molecule.getRadicalCount() + 1) ))
 		
 		output.append('geometry')
@@ -242,20 +228,17 @@ class NWChemMol(QMMolecule, NWChem):
 		atomline = re.compile('\s*([\- ][0-9.]+\s+[\-0-9.]+\s+[\-0-9.]+)\s+([A-Za-z]+)')
 		
 		atomCount = 0
-		basisAtoms = []
 		with open(molfile) as molinput:
 			for line in molinput:
 				match = atomline.match(line)
 				if match:
 					output.append("  {0:8s} {1}".format(match.group(2), match.group(1)))
 					atomCount += 1
-					if match.group(2) not in basisAtoms:
-						basisAtoms.append(match.group(2))
+					
 		assert atomCount == len(self.molecule.atoms)
 		output.append('end')
 		output.append('basis')
-		for atom in basisAtoms:
-			output.append('  {0} {1}'.format(atom, self.basisSet))
+		output.append('  * {0}'.format(self.basisSet))
 		output.append('end')
 		
 		self.directives(output)
@@ -305,7 +288,7 @@ class NWChemMolHF(NWChemMol):
 	but for now it's only the 'hf' in the keywords that differs.
 	"""
 	# Says the basis set is in the `library` as `cc-pvdz`
-	basisSet = 'cc-pvdz'
+	basisSet = 'library cc-pvdz'
 	
 	#: Keywords that will be added at the top of the qm input file
 	keywords = [
@@ -362,6 +345,8 @@ class NWChemTS(QMReaction, NWChem):
 	#: List of phrases that indicate failure
 	#: NONE of these must be present in a succesful job.
 	failureKeys = [
+				   'There is an error in the input file',
+				   'An error occured while trying to read or write to disk space',
 				   'Received an Error in Communication',
 				   ]
 
@@ -425,7 +410,7 @@ class NWChemTS(QMReaction, NWChem):
 		double-ended calculation, and is used to start the TS search.
 		"""
 		
-		output = ['title "{0}"'.format(self.uniqueID),'scratch_dir {0}'.format(self.settings.scratchDirectory)]
+		output = ['title "{0}"'.format(self.uniqueID),'permanent_dir {0}'.format(os.path.abspath(self.fileStore)),'scratch_dir {0}'.format(os.path.abspath(self.scratchDirectory))]
 		# output.append("{charge}   {mult}".format(charge=0, mult=(self.molecule.getRadicalCount() + 1) ))
 		
 		output.append('geometry')
@@ -438,7 +423,7 @@ class NWChemTS(QMReaction, NWChem):
 		output.append('end')
 		
 		output.append('basis')
-		output.append('  * library {0}'.format(self.basisSet))
+		output.append('  * {0}'.format(self.basisSet))
 		output.append('end')
 		
 		keywords = '{0} optimize saddle'.format(self.method)
@@ -446,34 +431,6 @@ class NWChemTS(QMReaction, NWChem):
 		self.directives(output)
 		
 		self.writeInputFile(output, keywords=keywords)#, numProcShared=40, memory='10GB')
-		
-		# output = ['', self.uniqueID, '' ]
-		# output.append("{charge}   {mult}".format(charge=0, mult=self.reactantGeom.molecule.multiplicity ))
-		# 
-		# if fromDoubleEnded:
-		# 	xyzFile = self.getFilePath('.xyz')
-		# 	assert os.path.exists(xyzFile)
-		# 	atomsymbols, atomcoords = self.reactantGeom.parseXYZ(xyzFile)
-		# elif fromInt or attempt > 2:
-		# 	# Until checkpointing is fixed, rewrite the whole output
-		# 	assert os.path.exists(self.outputFilePath)
-		# 	atomsymbols, atomcoords = self.reactantGeom.parseLOG(self.outputFilePath)
-		# elif optEst:
-		# 	outputFilePath = self.getFilePath('Est{0}'.format(self.outputFileExtension))
-		# 	assert os.path.exists(outputFilePath)
-		# 	atomsymbols, atomcoords = self.reactantGeom.parseLOG(outputFilePath)
-		# else:
-		# 	molfile = self.reactantGeom.getRefinedMolFilePath()
-		# 
-		# 	assert os.path.exists(molfile)
-		# 	atomsymbols, atomcoords = self.reactantGeom.parseMOL(molfile)
-		# 
-		# output, atomCount = self.geomToString(atomsymbols, atomcoords, outputString=output)
-		# 
-		# assert atomCount == len(self.reactantGeom.molecule.atoms)
-		# 
-		# output.append('')
-		# self.writeInputFile(output, attempt, numProcShared=40, memory='10GB', checkPoint=True)
 
 	def createIRCFile(self):
 		"""
@@ -481,7 +438,7 @@ class NWChemTS(QMReaction, NWChem):
 		IRC calculation on the transition state. The geometry is taken 
 		from the checkpoint file created during the geometry search.
 		"""
-		output = ['title "{0}"'.format(self.uniqueID),'start {0}'.format(self.uniqueID),'permanent_dir {0}'.format(self.settings.fileStore),'scratch_dir {0}'.format(self.settings.scratchDirectory)]
+		output = ['title "{0}"'.format(self.uniqueID),'start {0}'.format(self.uniqueID),'permanent_dir {0}'.format(os.path.abspath(self.fileStore)),'scratch_dir {0}'.format(os.path.abspath(self.scratchDirectory))]
 		# output.append("{charge}   {mult}".format(charge=0, mult=(self.molecule.getRadicalCount() + 1) ))
 		
 		output.append('geometry')
@@ -490,7 +447,7 @@ class NWChemTS(QMReaction, NWChem):
 		output.append('end')
 		
 		output.append('basis')
-		output.append('  * library {0}'.format(self.basisSet))
+		output.append('  * {0}'.format(self.basisSet))
 		output.append('end')
 		
 		output.append('task {0} freq'.format(self.method))
@@ -505,108 +462,46 @@ class NWChemTS(QMReaction, NWChem):
 		self.directives(output)
 		
 		self.writeInputFile(output, keywords=keywords)#, numProcShared=40, memory='10GB')
-		
-	def createGeomInputFile(self, freezeAtoms, otherGeom=False):
 
-		atomline = re.compile('\s*([\- ][0-9.]+\s+[\-0-9.]+\s+[\-0-9.]+)\s+([A-Za-z]+)')
-
-		if otherGeom:
-			output = [ '', self.productGeom.uniqueIDlong, '', "{charge}   {mult}".format(charge=0, mult=self.productGeom.molecule.multiplicity ) ]
-			molfile = self.productGeom.getRefinedMolFilePath() # Now get the product geometry
-
-			atomCount = 0
-			with open(molfile) as molinput:
-				for line in molinput:
-					match = atomline.match(line)
-					if match:
-						output.append("{0:8s} {1}".format(match.group(2), match.group(1)))
-						atomCount += 1
-			inputFilePath = self.productGeom.getFilePath(self.inputFileExtension)
-			bottom_keys = "{atom1} {atom3} F\n{atom1} {atom2} F\n".format(atom1=freezeAtoms[0] + 1, atom2=freezeAtoms[1] + 1, atom3=freezeAtoms[2] + 1)
-		else:
-			output = [ '', self.reactantGeom.uniqueIDlong, '', "{charge}   {mult}".format(charge=0, mult=self.reactantGeom.molecule.multiplicity ) ]
-			molfile = self.reactantGeom.getRefinedMolFilePath() # Get the reactant geometry
-
-			atomCount = 0
-			with open(molfile) as molinput:
-				for line in molinput:
-					match = atomline.match(line)
-					if match:
-						output.append("{0:8s} {1}".format(match.group(2), match.group(1)))
-						atomCount += 1
-			inputFilePath = self.reactantGeom.getFilePath(self.inputFileExtension)
-			bottom_keys = "{atom1} {atom3} F\n{atom2} {atom3} F\n".format(atom1=freezeAtoms[0] + 1, atom2=freezeAtoms[1] + 1, atom3=freezeAtoms[2] + 1)
-
-		assert atomCount == len(self.reactantGeom.molecule.atoms)
-
-		output.append('')
-		top_keys = self.inputFileKeywords(0, modRed=atomCount)
-		self.writeInputFile(output, top_keys=top_keys, numProcShared=40, memory='10GB', bottomKeys=bottom_keys)
-
-	def createQST2InputFile(self):
-		# For now we don't do this, until seg faults are fixed on Discovery.
-		# chk_file = '%chk=' + os.path.join(self.settings.fileStore, self.uniqueID) + '\n'
-		output = ['', self.reactantGeom.uniqueID, '' ]
-		output.append("{charge}   {mult}".format(charge=0, mult=(self.geometry.molecule.getRadicalCount() + 1) ))
-
-		atomsymbols, atomcoords = self.reactantGeom.parseLOG(self.reactantGeom.getFilePath(self.outputFileExtension))
-		output, atomCount = self.geomToString(atomsymbols, atomcoords, outputString=output)
-
-		assert atomCount == len(self.reactantGeom.molecule.atoms)
-
-		output.append('')
-		output.append(self.productGeom.uniqueIDlong)
-		output.append('')
-		output.append("{charge}   {mult}".format(charge=0, mult=(self.productGeom.molecule.getRadicalCount() + 1) ))
-
-		atomsymbols, atomcoords = self.productGeom.parseLOG(self.productGeom.getFilePath(self.outputFileExtension))
-		output, atomCount = self.geomToString(atomsymbols, atomcoords, outputString=output)
-
-		assert atomCount == len(self.reactantGeom.molecule.atoms)
-
-		output.append('')
-		top_keys = self.inputFileKeywords(0, qst2=atomCount)
-		self.writeInputFile(output, top_keys=top_keys, numProcShared=40, memory='10GB')
-
-	def optEstimate(self, labels):
-		"""
-		Writes and runs a loose optimization of the transition state estimate with frozen reaction
-		center distances.
-		"""
-
-		inputFilePath = self.getFilePath('Est{0}'.format(self.inputFileExtension))
-		outputFilePath = self.getFilePath('Est{0}'.format(self.outputFileExtension))
-
-		if not os.path.exists(outputFilePath):
-			output = ['title "{0}"'.format(self.uniqueID),'scratch_dir {0}'.format(self.settings.scratchDirectory)]
-			# output.append("{charge}   {mult}".format(charge=0, mult=(self.molecule.getRadicalCount() + 1) ))
-			
-			output.append('geometry')
-			molfile = self.reactantGeom.getCrudeMolFilePath()
-			
-			assert os.path.exists(molfile)
-			atomsymbols, atomcoords = self.reactantGeom.parseMOL(molfile)
-			
-			output, atomCount = self.geomToString(atomsymbols, atomcoords, outputString=output)
-			
-			assert atomCount == len(self.reactantGeom.molecule.atoms)
-			output.append('end')
-			
-			output.append('basis')
-			output.append('  * library {0}'.format(self.basisSet))
-			output.append('end')
-			
-			output.append('constraints')
-			for lbl in labels:
-				output.append('  fix atom {0}'.format(lbl + 1))
-			output.append('end')
-			
-			keywords = '{0} optimize'.format(self.method)
-			self.writeInputFile(output, keywords=keywords, inputFilePath=inputFilePath)#, numProcShared=40, memory='10GB')
-
-			outputFilePath = self.runDouble(inputFilePath)
-
-		return outputFilePath
+	# def optEstimate(self, labels):
+	# 	"""
+	# 	Writes and runs a loose optimization of the transition state estimate with frozen reaction
+	# 	center distances.
+	# 	"""
+	# 
+	# 	inputFilePath = self.getFilePath('Est{0}'.format(self.inputFileExtension))
+	# 	outputFilePath = self.getFilePath('Est{0}'.format(self.outputFileExtension))
+	# 
+	# 	if not os.path.exists(outputFilePath):
+	# 		output = ['title "{0}"'.format(self.uniqueID),'permanent_dir {0}'.format(os.path.abspath(self.fileStore)),'scratch_dir {0}'.format(os.path.abspath(self.scratchDirectory))]
+	# 		# output.append("{charge}   {mult}".format(charge=0, mult=(self.molecule.getRadicalCount() + 1) ))
+	# 		
+	# 		output.append('geometry')
+	# 		molfile = self.reactantGeom.getCrudeMolFilePath()
+	# 		
+	# 		assert os.path.exists(molfile)
+	# 		atomsymbols, atomcoords = self.reactantGeom.parseMOL(molfile)
+	# 		
+	# 		output, atomCount = self.geomToString(atomsymbols, atomcoords, outputString=output)
+	# 		
+	# 		assert atomCount == len(self.reactantGeom.molecule.atoms)
+	# 		output.append('end')
+	# 		
+	# 		output.append('basis')
+	# 		output.append('  * {0}'.format(self.basisSet))
+	# 		output.append('end')
+	# 		
+	# 		output.append('constraints')
+	# 		for lbl in labels:
+	# 			output.append('  fix atom {0}'.format(lbl + 1))
+	# 		output.append('end')
+	# 		
+	# 		keywords = '{0} optimize'.format(self.method)
+	# 		self.writeInputFile(output, keywords=keywords, inputFilePath=inputFilePath)#, numProcShared=40, memory='10GB')
+	# 
+	# 		outputFilePath = self.runDouble(inputFilePath)
+	# 
+	# 	return outputFilePath
 
 	def setCalculator(self, images):
 		"""
@@ -615,7 +510,7 @@ class NWChemTS(QMReaction, NWChem):
 		import ase
 		from ase.calculators.nwchem import NWChem
 
-		label=os.path.join(os.path.abspath(self.settings.fileStore), 'g09')
+		label=os.path.join(os.path.abspath(self.fileStore), 'g09')
 		for image in images[1:len(images)-1]:
 			image.set_calculator(ase.calculators.nwchem.NWChem(command=self.executablePath + '< ' + label + '.com' + ' > ' + label + '.log', label=label))
 			image.get_calculator().set(multiplicity=self.reactantGeom.molecule.getRadicalCount() + 1, method=self.method, basis=self.basisSet)
@@ -690,7 +585,7 @@ class NWChemTS(QMReaction, NWChem):
 	
 	def createNEBInputFile(self):
 		inputFilePath = self.inputFileinputFilePath=None
-		output = ['title "{0}"'.format(self.uniqueID),'scratch_dir {0}'.format(self.settings.scratchDirectory)]
+		output = ['title "{0}"'.format(self.uniqueID),'permanent_dir {0}'.format(os.path.abspath(self.fileStore)),'scratch_dir {0}'.format(os.path.abspath(self.scratchDirectory))]
 		# output.append("{charge}   {mult}".format(charge=0, mult=(self.molecule.getRadicalCount() + 1) ))
 		
 		output.append('geometry nocenter noautosym noautoz')
@@ -706,12 +601,11 @@ class NWChemTS(QMReaction, NWChem):
 		output.append('end')
 		
 		output.append('basis')
-		output.append('  * library {0}'.format(self.basisSet))
+		output.append('  * {0}'.format(self.basisSet))
 		output.append('end')
 		
 		output.append('neb')
-		output.append('  nbeads 10')
-		output.append('  kbeads 1.0')
+		output.append('  nbeads 11')
 		output.append('  maxiter 10')
 		output.append('end')
 		
@@ -721,8 +615,10 @@ class NWChemTS(QMReaction, NWChem):
 		
 		self.writeInputFile(output, keywords=keywords)#, numProcShared=40, memory='10GB')
 
-	def conductDoubleEnded(self, NEB=False):
+	def conductDoubleEnded(self, notes, NEB=False, labels=False):
 		if NEB:
+			self.createNEBInputFile()
+			import ipdb; ipdb.set_trace()
 			self.runNEB()
 		else:
 			raise Error('no other method available')
@@ -733,7 +629,7 @@ class NWChemTS(QMReaction, NWChem):
 			shutil.copy(logFilePath, logFilePath+'.QST2.log')
 
 			if not qst2:
-				notes = notes + 'QST3 needed, see {0}\n'.format(self.settings.fileStore)
+				notes = notes + 'QST3 needed, see {0}\n'.format(self.fileStore)
 				return False, notes
 
 	def verifyOutputFile(self):
@@ -1078,7 +974,7 @@ class NWChemTS(QMReaction, NWChem):
 			shortDesc = "M06-2X/6-311+G(2df,2p) calculation via group additive TS generator.",
 		)
 
-		outputDataFile = os.path.join(self.settings.fileStore, self.uniqueID + '.data')
+		outputDataFile = os.path.join(self.fileStore, self.uniqueID + '.data')
 		with open(outputDataFile, 'w') as parseFile:
 			saveEntry(parseFile, entry)
 
@@ -1088,7 +984,7 @@ class NWChemTSM062X(NWChemTS):
 	The 6-311+G(2df,2p) is recommended for this basis set.
 	"""
 	method = 'm062x'
-	basisSet = '6-311+G(2df,2p)'# It's suppoed to be "6-311+g(3d2f,2df,2p)" to include 3rd row elements, but I get an error when I use that.
+	basisSet = 'library 6-311+G(2df,2p)'# It's suppoed to be "6-311+g(3d2f,2df,2p)" to include 3rd row elements, but I get an error when I use that.
 
 	# Before using the '6-311+G(2df,2p)', gen was being used and the basis set was explicitly
 	# written in the input file
@@ -1128,7 +1024,7 @@ class NWChemTSB3LYP(NWChemTS):
 	at minimal computational cost.
 	"""
 	method = 'b3lyp'
-	basisSet = '6-31+g(d,p)'
+	basisSet = 'library 6-31+g(d,p)'
 
 
 	def getQMMolecule(self, molecule):
@@ -1147,7 +1043,7 @@ class NWChemTSHF(NWChemTS):
 	at minimal computational cost.
 	"""
 	method = 'scf'
-	basisSet = 'cc-pvdz'
+	basisSet = 'library cc-pvdz'
 	
 	
 	def directives(self, output):
