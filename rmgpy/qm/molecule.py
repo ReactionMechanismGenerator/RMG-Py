@@ -54,6 +54,21 @@ class Geometry:
         else:
             #: Long, truly unique, ID, such as the augmented InChI.
             self.uniqueIDlong = uniqueIDlong
+        
+        if self.settings:
+            self.fileStore = self.settings.fileStore
+            self.scratchDirectory = self.settings.scratchDirectory
+        else:
+            self.fileStore = None
+            self.scratchDirectory = None
+        
+        if self.fileStore and not os.path.exists(self.fileStore):
+            logging.info("Creating permanent directory %s for qm files."%os.path.abspath(self.fileStore))
+            os.makedirs(self.fileStore)
+            
+        if self.scratchDirectory and not os.path.exists(self.scratchDirectory):
+            logging.info("Creating scratch directory %s for qm files."%os.path.abspath(self.scratchDirectory))
+            os.makedirs(self.scratchDirectory)
 
     def getFilePath(self, extension):
         """
@@ -380,7 +395,7 @@ class QMMolecule:
         "The total number of attempts to try"
         return 2 * len(self.keywords)
     
-    def setOutputDirectory(self, outputDirectory, scratchDirectory=None):
+    def setOutputDirectory(self, outputDirectory):
         """
         Set up the fileStore and scratchDirectory if not already done.
         """
