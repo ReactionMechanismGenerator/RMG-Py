@@ -123,6 +123,7 @@ cdef class ReactionSystem(DASx):
         """
 
         cdef dict speciesIndex
+        cdef list row
         cdef int index, maxSpeciesIndex, maxNetworkIndex
         cdef int numCoreSpecies, numEdgeSpecies, numPdepNetworks, numCoreReactions
         cdef double stepTime, charRate, maxSpeciesRate, maxNetworkRate
@@ -175,7 +176,7 @@ cdef class ReactionSystem(DASx):
         
         
         if worksheet:
-            row = ['Time (s)']
+            row = ['Time (s)', 'Volume (m^3)']
             for i in range(numCoreSpecies):
                 row.append(getSpeciesIdentifier(coreSpecies[i]))
             worksheet.writerow(row)
@@ -201,22 +202,24 @@ cdef class ReactionSystem(DASx):
                 moleSens = self.y[numCoreSpecies:]#   
                 volume = self.V
                 
-                dVdk = numpy.zeros(numCoreReactions, numpy.float64)
+                dVdk = numpy.zeros(numCoreReactions + numCoreSpecies, numpy.float64)
                 if not self.constantVolume:
-                    for j in range(numCoreReactions):
-                        dVdk[j] = numpy.sum(moleSens[j*numCoreSpecies:(j+1)*numCoreSpecies])*RTP
+                    for j in range(numCoreReactions + numCoreSpecies):
+                        dVdk[j] = numpy.sum(moleSens[j*numCoreSpecies:(j+1)*numCoreSpecies])*RTP   # Contains [ dV_dk and dV_dG ]
                 for i in range(len(self.sensitiveSpecies)):
-                    normSens = numpy.zeros(numCoreReactions, numpy.float64)
+                    normSens = numpy.zeros(numCoreReactions + numCoreSpecies, numpy.float64)
                     c = self.coreSpeciesConcentrations[sensSpeciesIndices[i]]
                     if c != 0:                        
                         for j in range(numCoreReactions):
                             normSens[j] = 1/volume*(moleSens[j*numCoreSpecies+sensSpeciesIndices[i]]-c*dVdk[j])*forwardRateCoefficients[j]/c
+                        for j in range(numCoreReactions,numCoreReactions+numCoreSpecies):
+                            normSens[j] = 1/volume*(moleSens[j*numCoreSpecies+sensSpeciesIndices[i]]-c*dVdk[j])/c*4184   # no normalization against dG, converstion to kcal/mol units
                     normSens_array[i].append(normSens)
 
             # Save the species mole fractions to CSV file
             if worksheet:
-                row = [self.t]
-                row.extend(y_coreSpecies/totalMoles)
+                row = [self.t, self.V]
+                row.extend(y_coreSpecies/numpy.sum(y_coreSpecies))
                 worksheet.writerow(row)
 
             # Get the characteristic flux
@@ -308,14 +311,15 @@ cdef class ReactionSystem(DASx):
         if sensitivity:   
             for i in range(len(self.sensitiveSpecies)):
                 reactionsAboveThreshold = []
-                for j in range(numCoreReactions):
+                for j in range(numCoreReactions + numCoreSpecies):
                     for k in range(len(time_array)):
                         if abs(normSens_array[i][k][j]) > self.sensitivityThreshold:
                             reactionsAboveThreshold.append(j)
                             break
-                                                              
+                species_name = getSpeciesIdentifier(self.sensitiveSpecies[i])
                 headers = ['Time (s)']
-                headers.extend(['dln(c)/dln(k{0})'.format(j+1) for j in reactionsAboveThreshold])
+                headers.extend(['dln[{0}]/dln[k{1}]: {2}'.format(species_name, j+1, coreReactions[j].toChemkin(kinetics=False)) if j < numCoreReactions 
+                                else 'dln[{0}]/dG[{1}]'.format(species_name, getSpeciesIdentifier(coreSpecies[j-numCoreReactions])) for j in reactionsAboveThreshold])
                 sensWorksheet[i].writerow(headers)               
             
                 for k in range(len(time_array)):
