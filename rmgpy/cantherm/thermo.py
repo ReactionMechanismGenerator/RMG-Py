@@ -40,8 +40,16 @@ import logging
 
 import rmgpy.constants as constants
 from rmgpy.cantherm.output import prettify
-from rmgpy.statmech import *
-from rmgpy.thermo import *
+
+from rmgpy.statmech.translation import Translation, IdealGasTranslation
+from rmgpy.statmech.rotation import Rotation, LinearRotor, NonlinearRotor, KRotor, SphericalTopRotor
+from rmgpy.statmech.vibration import Vibration, HarmonicOscillator
+from rmgpy.statmech.torsion import Torsion, HinderedRotor
+from rmgpy.statmech.conformer import Conformer
+
+from rmgpy.thermo.thermodata import ThermoData
+from rmgpy.thermo.nasa import NASAPolynomial, NASA
+from rmgpy.thermo.wilhoit import Wilhoit
 
 ################################################################################
 
