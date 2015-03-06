@@ -355,7 +355,7 @@ cdef class SimpleReactor(ReactionSystem):
         self.edgeReactionRates = edgeReactionRates
         self.networkLeakRates = networkLeakRates
 
-        res = coreSpeciesRates * V #- dydt[:numCoreSpecies]
+        res = coreSpeciesRates * V 
         
         
         if self.sensitivity:
