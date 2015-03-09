@@ -46,7 +46,7 @@ but other methods like the `Scipy Superpack <http://fonnesbeck.github.com/ScipyS
 
 	cd ~/Code
 	git clone https://github.com/GreenGroup/PyDAS.git
-	cd PyDQED
+	cd PyDAS
 	make
 
   It will build the fortran files, but fail to link using clang, so force it to use gcc for the linking with::
