@@ -25,7 +25,8 @@ does not generate a RMG job.  See the following ``input.py`` example file found 
 The names of species named in the input file must coincide with the name specified in the CHEMKIN file.  
 
 Sensitivity analysis is conducted for the list of species given for ``sensitivity`` argument in the input file.  
-The normalized concentration sensitivities with respect to the reaction rate coefficients dlnC/dlnk are saved to a csv file 
-with the file name ``sensitivity_1_SPC_1.csv`` with the first index value indicating the reactor system and the second naming the index of the species
-the sensitivity analysis is conducted for.  The sensitivityThreshold is set to some value so that only
-sensitivities for normalized dlnC/dlnk > sensitivityThreshold are saved to this file.
+The normalized concentration sensitivities with respect to the reaction rate coefficients dln(C_i)/dln(k_j) are saved to a csv file 
+with the file name ``sensitivity_1_SPC_1.csv`` with the first index value indicating the reactor system and the second naming the index of the species 
+the sensitivity analysis is conducted for.  Sensitivities to thermo of individual species is also saved as semi normalized sensitivities
+dln(C_i)/d(G_j) where the units are given in 1/(kcal mol-1). The sensitivityThreshold is set to some value so that only
+sensitivities for dln(C_i)/dln(k_j) > sensitivityThreshold  or dlnC_i/d(G_j) > sensitivityThreshold are saved to this file.  
