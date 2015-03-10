@@ -336,6 +336,7 @@ class KineticsLibrary(Database):
                 index = index+1,
                 item = reaction,
                 data = reaction.kinetics,
+                label = str(reaction)
             )
             entry.longDesc = reaction.kinetics.comment
             reaction.kinetics.comment = ''
