@@ -450,19 +450,19 @@ Miscellaneous options::
         saveEdgeSpecies=True,
     )
 
-The `units` field is set to `si`.  Currently there are no other unit options.
+The ``units`` field is set to ``si``.  Currently there are no other unit options.
 
-The `saveRestartPeriod` indictes how frequently you wish to save restart files. For very large/long RMG jobs, this process can take a significant amount of time. In such cases, the user may wish to increase the time period for saving these restart files.
+The ``saveRestartPeriod`` indictes how frequently you wish to save restart files. For very large/long RMG jobs, this process can take a significant amount of time. In such cases, the user may wish to increase the time period for saving these restart files.
 
-Setting `drawMolecules=True` will let RMG know that you want to save 2-D images (png files in the local `species` folder) of all species in the generated core model. This feature is recommended if you wish to easily view the species and reactions in the html file that accompanies an RMG job. Otherwise, the user will be forced to decifer SMILES strings. Also note that if `drawMolecules=False`, but the user specifies a `pressureDependence` section of the input file, RMG will still generate species files in the `species` folder, but only those that pertain to pressure dependent networks that RMG discovers. 
+Setting ``drawMolecules=True`` will let RMG know that you want to save 2-D images (png files in the local ``species`` folder) of all species in the generated core model. This feature is recommended if you wish to easily view the species and reactions in the html file that accompanies an RMG job. Otherwise, the user will be forced to decifer SMILES strings. Also note that if ``drawMolecules=False``, but the user specifies a ``pressureDependence`` section of the input file, RMG will still generate species files in the ``species`` folder, but only those that pertain to pressure dependent networks that RMG discovers. 
 
-Setting `generatePlots` to `True` will generate a number of plots describing the statistics of the RMG job, including the reaction model core and edge size and memory use versus  execution time. These will be placed in the output directory in the plot/ folder.
+Setting ``generatePlots`` to ``True`` will generate a number of plots describing the statistics of the RMG job, including the reaction model core and edge size and memory use versus  execution time. These will be placed in the output directory in the plot/ folder.
 
-Setting `saveSimulationProfiles` to `True` will make RMG save csv files of the simulation in .csv files in the `solver/` folder.  The filename will be `simulation_1_26.csv` where the first number corresponds to the reaciton system, and the second number corresponds to the total number of species at the point of the simulation.  Therefore, the highest second number will indicate the latest simulation that RMG has complete while enlarging the core model.  The information inside the csv file will provide the time, reactor volume in m^3, as well as mole fractions of the individual species.
+Setting ``saveSimulationProfiles`` to ``True`` will make RMG save csv files of the simulation in .csv files in the ``solver/`` folder.  The filename will be ``simulation_1_26.csv`` where the first number corresponds to the reaciton system, and the second number corresponds to the total number of species at the point of the simulation.  Therefore, the highest second number will indicate the latest simulation that RMG has complete while enlarging the core model.  The information inside the csv file will provide the time, reactor volume in m^3, as well as mole fractions of the individual species.
 
-Setting `verboseComments` to `True` will make RMG generate chemkin files with complete verbose commentary for the kinetic and thermo parameters.  This will be helpful in debugging what values are being averaged for the kinetics.  Note that this may produce very large files.  
+Setting ``verboseComments`` to ``True`` will make RMG generate chemkin files with complete verbose commentary for the kinetic and thermo parameters.  This will be helpful in debugging what values are being averaged for the kinetics.  Note that this may produce very large files.  
 
-Setting `saveEdgeSpecies` to `True` will make RMG generate chemkin files of the edge reactions in addition to the core model in files such as `chem_edge.inp` and `chem_edge_annotated.inp` files located inside the `chemkin` folder.  These files will be helpful in viewing RMG's estimate for edge reactions and seeing if certain reactions one expects are actually in the edge or not.  
+Setting ``saveEdgeSpecies`` to ``True`` will make RMG generate chemkin files of the edge reactions in addition to the core model in files such as ``chem_edge.inp`` and ``chem_edge_annotated.inp`` files located inside the ``chemkin`` folder.  These files will be helpful in viewing RMG's estimate for edge reactions and seeing if certain reactions one expects are actually in the edge or not.  
 
 
 Species Constraints
