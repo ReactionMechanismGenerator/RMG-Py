@@ -165,7 +165,7 @@ class RMG:
         self.units = 'si'
         self.drawMolecules = None
         self.generatePlots = None
-        self.saveConcentrationProfiles = None
+        self.saveSimulationProfiles = None
         self.verboseComments = None
         self.saveEdgeSpecies = None
         self.pressureDependence = None
@@ -460,7 +460,7 @@ class RMG:
             allTerminated = True
             for index, reactionSystem in enumerate(self.reactionSystems):
     
-                if self.saveConcentrationProfiles:
+                if self.saveSimulationProfiles:
                     csvfile = file(os.path.join(self.outputDirectory, 'solver', 'simulation_{0}_{1:d}.csv'.format(index+1, len(self.reactionModel.core.species))),'w')
                     worksheet = csv.writer(csvfile)
                 else:

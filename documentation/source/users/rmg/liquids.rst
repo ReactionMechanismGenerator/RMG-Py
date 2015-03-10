@@ -244,7 +244,7 @@ This is an example of an input file for a liquid-phase system::
         saveRestartPeriod=None,
         drawMolecules=False,
         generatePlots=False,
-        saveConcentrationProfiles=True,
+        saveSimulationProfiles=True,
     )
 
 .. [Vitha2006] \ Vitha2006

@@ -444,6 +444,9 @@ Miscellaneous options::
         saveRestartPeriod=(1,'hour'),
         drawMolecules=True,
         generatePlots=False,
+        saveSimulationProfiles=True,
+        verboseComments=False,
+        saveEdgeSpecies=True,
     )
 
 Setting `drawMolecules=True` will let RMG know that you want to save 2-D images (png files in the local `species` folder) of all species in the generated core model. This feature is recommended if you wish to easily view the species and reactions in the html file that accompanies an RMG job. Otherwise, the user will be forced to decifer SMILES strings. Also note that if `drawMolecules=False`, but the user specifies a `pressureDependence` section of the input file, RMG will still generate species files in the `species` folder, but only those that pertain to pressure dependent networks that RMG discovers. 

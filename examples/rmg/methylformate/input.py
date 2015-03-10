@@ -164,6 +164,6 @@ options(
     saveRestartPeriod=(1,'hour'),
     drawMolecules=False,
     generatePlots=False,
-    saveConcentrationProfiles=False,
+    saveSimulationProfiles=False,
     saveEdgeSpecies=True,
 )

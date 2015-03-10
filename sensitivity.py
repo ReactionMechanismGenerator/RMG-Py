@@ -26,7 +26,7 @@ def simulate(rmg):
         if reactionSystem.sensitiveSpecies:
             logging.info('Conducting sensitivity analysis of reaction system %s...' % (index+1))
             
-            if rmg.saveConcentrationProfiles:
+            if rmg.saveSimulationProfiles:
                 csvfile = file(os.path.join(rmg.outputDirectory, 'simulation_{0}.csv'.format(index+1)),'w')
                 worksheet = csv.writer(csvfile)
             else:

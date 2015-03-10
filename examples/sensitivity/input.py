@@ -47,7 +47,7 @@ model(
 options(
     units='si',
     saveRestartPeriod=None,
-    saveConcentrationProfiles=True,
+    saveSimulationProfiles=True,
     drawMolecules=False,
     generatePlots=False,
 )

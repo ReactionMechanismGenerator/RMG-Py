@@ -46,5 +46,5 @@ options(
     drawMolecules=False,
     generatePlots=False,
     saveEdgeSpecies=True,
-    saveConcentrationProfiles=True,
+    saveSimulationProfiles=True,
 )
