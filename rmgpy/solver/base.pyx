@@ -186,7 +186,7 @@ cdef class ReactionSystem(DASx):
             normSens_array = [[] for spec in self.sensitiveSpecies]    
             RTP = constants.R * self.T.value_si / self.P.value_si
             # identify sensitive species indices
-            sensSpeciesIndices = numpy.array([speciesIndex[spec] for spec in self.sensitiveSpecies], numpy.int64)  # index within coreSpecies list of the sensitive species
+            sensSpeciesIndices = numpy.array([speciesIndex[spec] for spec in self.sensitiveSpecies], numpy.int)  # index within coreSpecies list of the sensitive species
                 
         
         stepTime = 1e-12
