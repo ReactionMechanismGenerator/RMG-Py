@@ -157,21 +157,22 @@ RMG
 * Download all RMG source packages: ::
 
 	cd /c
-	git clone git@github.com:jwallen/PyDAS.git
-	git clone git@github.com:jwallen/PyDQED.git
+	git clone git@github.com:GreenGroup/PyDAS.git
+	git clone git@github.com:GreenGroup/PyDQED.git
 	git clone git@github.com:GreenGroup/RMG-database.git
 	git clone git@github.com:GreenGroup/RMG-Py.git
 
 * Build PyDAS by running the provided "make.bat" file, then install it: ::
 
-	cd /c/PyDAS
-	python setup.py install
+    cd /c/PyDAS
+    mingw32-make
+    mingw32-make install
 
 * Build and install PyDQED: ::
 
-	cd /c/PyDQED
-	mingw32-make
-	python setup.py install
+    cd /c/PyDQED
+    mingw32-make
+    mingw32-make install
 
 * Build and install RMG-Py: ::
 
