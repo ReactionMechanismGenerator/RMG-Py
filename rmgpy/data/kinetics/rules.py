@@ -500,6 +500,8 @@ class KineticsRules(Database):
             # Get string format of the template in the form "(leaf1,leaf2)"
             return '({0})'.format(','.join([g.label for g in template]))
     
+        
+        originalLeaves = getTemplateLabel(template)
         templateList = [template]
         while len(templateList) > 0:
             
@@ -511,7 +513,6 @@ class KineticsRules(Database):
                 kineticsList.append([kinetics, t])
             
             if len(kineticsList) > 0:                 
-                originalLeaves = getTemplateLabel(template)
                                 
                 if len(kineticsList) == 1:
                     kinetics, t = kineticsList[0]
