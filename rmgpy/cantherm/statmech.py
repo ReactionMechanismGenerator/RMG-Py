@@ -40,12 +40,19 @@ import numpy
 import logging
 
 import rmgpy.constants as constants
+
 from rmgpy.cantherm.output import prettify
 from rmgpy.cantherm.gaussian import GaussianLog
 from rmgpy.cantherm.molepro import MoleProLog 
 from rmgpy.cantherm.qchem import QchemLog 
+
 from rmgpy.species import TransitionState
-from rmgpy.statmech import *
+
+from rmgpy.statmech.translation import Translation, IdealGasTranslation
+from rmgpy.statmech.rotation import Rotation, LinearRotor, NonlinearRotor, KRotor, SphericalTopRotor
+from rmgpy.statmech.vibration import Vibration, HarmonicOscillator
+from rmgpy.statmech.torsion import Torsion, HinderedRotor
+from rmgpy.statmech.conformer import Conformer
 
 ################################################################################
 

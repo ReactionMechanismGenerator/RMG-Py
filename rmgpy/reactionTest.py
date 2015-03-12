@@ -9,8 +9,12 @@ import numpy
 import unittest
 
 from rmgpy.species import Species, TransitionState
-from rmgpy.reaction import *
-from rmgpy.statmech import *
+from rmgpy.reaction import Reaction
+from rmgpy.statmech.translation import Translation, IdealGasTranslation
+from rmgpy.statmech.rotation import Rotation, LinearRotor, NonlinearRotor, KRotor, SphericalTopRotor
+from rmgpy.statmech.vibration import Vibration, HarmonicOscillator
+from rmgpy.statmech.torsion import Torsion, HinderedRotor
+from rmgpy.statmech.conformer import Conformer
 from rmgpy.kinetics import Arrhenius
 from rmgpy.thermo import Wilhoit
 import rmgpy.constants as constants

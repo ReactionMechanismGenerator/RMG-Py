@@ -6,10 +6,9 @@ from unittest import TestCase, TestLoader, TextTestRunner
 from external.wip import work_in_progress
 
 from rmgpy import settings
+from rmgpy.molecule import Molecule
 from rmgpy.species import Species
-from rmgpy.data.solvation import *
-from rmgpy.molecule.molecule import Molecule
-from rmgpy.data.base import DatabaseError
+from rmgpy.data.solvation import DatabaseError, SoluteData, SolvationDatabase
 
 ###################################################
 

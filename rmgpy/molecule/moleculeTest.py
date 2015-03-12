@@ -3,7 +3,7 @@
 
 import unittest
 from external.wip import work_in_progress
-from rmgpy.molecule.molecule import *
+from rmgpy.molecule.molecule import Atom, Bond, Molecule, ActionError
 from rmgpy.molecule.group import Group
 from rmgpy.molecule.element import getElement, elementList
 

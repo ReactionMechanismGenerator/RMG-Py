@@ -45,7 +45,6 @@ transition states (first-order saddle points on a potential energy surface).
 import numpy
 import cython
 
-import rmgpy.constants as constants
 import rmgpy.quantity as quantity
 from rmgpy.molecule import Molecule
 
@@ -158,7 +157,7 @@ class Species(object):
         """
         A helper function used when pickling an object.
         """
-        return (Species, (self.index, self.label, self.thermo, self.conformer, self.molecule, self.transportData, self.molecularWeight, self.dipoleMoment, self.polarizability, self.Zrot, self.energyTransferModel, self.reactive))
+        return (Species, (self.index, self.label, self.thermo, self.conformer, self.molecule, self.transportData, self.molecularWeight, self.dipoleMoment, self.polarizability, self.Zrot, self.energyTransferModel, self.reactive, self.props))
 
     def getMolecularWeight(self):
         return self._molecularWeight

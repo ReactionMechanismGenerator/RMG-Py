@@ -3,7 +3,7 @@ import unittest
 from external.wip import work_in_progress
 
 from rmgpy import settings
-from rmgpy.data.kinetics import *
+from rmgpy.data.kinetics.database import KineticsDatabase
 from rmgpy.data.base import DatabaseError
 ###################################################
 

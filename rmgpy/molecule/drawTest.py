@@ -9,9 +9,8 @@ import unittest
 import os
 import os.path
 
-import rmgpy.molecule
 from rmgpy.molecule import  Molecule
-from rmgpy.molecule.draw import *
+from rmgpy.molecule.draw import MoleculeDrawer
 
 ################################################################################
 

@@ -33,27 +33,17 @@ This module contains functionality for working with kinetics family functional
 groups, including support for using group additivity to estimate rate
 coefficients.
 """
-
-import os
-import os.path
-import re
 import logging
-import codecs
 import math
 import numpy
-from copy import copy, deepcopy
+from copy import deepcopy
 
-from rmgpy.data.base import *
+from rmgpy.data.base import Database, DatabaseError, Entry, Group, LogicNode, getAllCombinations, makeLogicNode
 
-from rmgpy.quantity import Quantity
-from rmgpy.reaction import Reaction, ReactionError
-from rmgpy.kinetics import Arrhenius, ArrheniusEP, ThirdBody, Lindemann, Troe, \
-                           PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, \
-                           Chebyshev, KineticsData, PDepKineticsModel
-from rmgpy.molecule import Bond, GroupBond, Group
+from rmgpy.kinetics import Arrhenius, ArrheniusEP, KineticsData
 from rmgpy.species import Species
 from rmgpy.quantity import constants
-from .common import KineticsError, UndeterminableKineticsError, saveEntry
+from .common import KineticsError, UndeterminableKineticsError
 
 ################################################################################
 
@@ -527,7 +517,6 @@ class KineticsGroups(Database):
                 )
         
         # Add a note to the history of each changed item indicating that we've generated new group values
-        import time
         changed = False
         for label, entry in self.entries.items():
             if entry.data is not None and old_entries.has_key(label):

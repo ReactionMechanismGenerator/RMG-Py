@@ -35,15 +35,12 @@ This module contains functionality for working with kinetics libraries.
 import os.path
 import logging
 import codecs
-import re
-from copy import copy, deepcopy
+from copy import deepcopy
 
 from rmgpy.data.base import Database, Entry, LogicNode, LogicOr, ForbiddenStructures,\
-                            ForbiddenStructureException, getAllCombinations, DatabaseError
+                            ForbiddenStructureException, getAllCombinations
 from rmgpy.reaction import Reaction
-from rmgpy.kinetics import Arrhenius, ArrheniusEP, ThirdBody, Lindemann, Troe, \
-                           PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, \
-                           Chebyshev, KineticsData, PDepKineticsModel
+from rmgpy.kinetics import Arrhenius, ArrheniusEP
 from rmgpy.molecule import Bond, GroupBond, Group, Molecule
 from rmgpy.species import Species
 

@@ -6,7 +6,7 @@ from nose.tools import assert_equal, assert_true, assert_false
 import logging
 from rmgpy.molecule.adjlist import PeriodicSystem
 from rmgpy.molecule.atomtype import atomTypes
-from rmgpy.molecule.atomtypedatabase import *
+from rmgpy.molecule.atomtypedatabase import create_atom_types 
   
 import itertools
 import unittest
