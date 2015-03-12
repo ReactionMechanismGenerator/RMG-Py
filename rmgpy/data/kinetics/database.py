@@ -45,7 +45,7 @@ from rmgpy.data.base import LogicNode, DatabaseError
 
 from .family import  KineticsFamily
 from .library import LibraryReaction, KineticsLibrary
-from .__init__ import filterReactions
+from .common import filterReactions
 
 ################################################################################
 
