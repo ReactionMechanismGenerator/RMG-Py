@@ -8,6 +8,7 @@ This script runs stand-alone sensitivity analysis on an RMG job.
 import os.path
 import logging
 import csv
+from time import time
 
 from rmgpy.rmg.main import RMG
 from generateFluxDiagram import loadRMGPyJob
@@ -22,17 +23,17 @@ def simulate(rmg):
         
     for index, reactionSystem in enumerate(rmg.reactionSystems):
             
-        if reactionSystem.sensitivity:
+        if reactionSystem.sensitiveSpecies:
             logging.info('Conducting sensitivity analysis of reaction system %s...' % (index+1))
             
-            if rmg.saveConcentrationProfiles:
+            if rmg.saveSimulationProfiles:
                 csvfile = file(os.path.join(rmg.outputDirectory, 'simulation_{0}.csv'.format(index+1)),'w')
                 worksheet = csv.writer(csvfile)
             else:
                 worksheet = None
                 
             sensWorksheet = []
-            for spec in reactionSystem.sensitivity:
+            for spec in reactionSystem.sensitiveSpecies:
                 csvfile = file(os.path.join(rmg.outputDirectory, 'sensitivity_{0}_SPC_{1}.csv'.format(index+1, spec.index)),'w')
                 sensWorksheet.append(csv.writer(csvfile))
     
@@ -51,7 +52,9 @@ def simulate(rmg):
                 worksheet = worksheet,
                 absoluteTolerance = rmg.absoluteTolerance,
                 relativeTolerance = rmg.relativeTolerance,
-                sensitivity = reactionSystem.sensitivity,
+                sensitivity = True,
+                sensitivityAbsoluteTolerance = rmg.sensitivityAbsoluteTolerance,
+                sensitivityRelativeTolerance = rmg.sensitivityRelativeTolerance,
                 sensWorksheet = sensWorksheet,
             )                      
 
@@ -62,8 +65,12 @@ def runSensitivity(inputFile, chemkinFile, dictFile):
     # Load the RMG job
     rmg = loadRMGPyJob(inputFile, chemkinFile, dictFile, generateImages=False)    
     
+    start_time = time()
     # conduct sensitivity simulation
     simulate(rmg)
+    end_time = time()
+    time_taken = end_time - start_time
+    print "Sensitivity analysis took {0} seconds".format(time_taken)
 
 ################################################################################
 

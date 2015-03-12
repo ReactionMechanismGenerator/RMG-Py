@@ -139,16 +139,22 @@ def simpleReactor(temperature,
     if len(termination) == 0:
         raise InputError('No termination conditions specified for reaction system #{0}.'.format(len(rmg.reactionSystems)+2))
     
-    sensitivitySpecies = []
+    sensitiveSpecies = []
     if sensitivity:
         for spec in sensitivity:
-            sensitivitySpecies.append(speciesDict[spec])
-    system = SimpleReactor(T, P, initialMoleFractions, termination, sensitivitySpecies, sensitivityThreshold)
+            sensitiveSpecies.append(speciesDict[spec])
+    system = SimpleReactor(T, P, initialMoleFractions, termination, sensitiveSpecies, sensitivityThreshold)
     rmg.reactionSystems.append(system)
 
 
 # Reaction systems
-def liquidReactor(temperature, initialConcentrations, terminationConversion=None, terminationTime=None):
+def liquidReactor(temperature,
+                  initialConcentrations,
+                  terminationConversion=None,
+                  terminationTime=None,
+                  sensitivity=None,
+                  sensitivityThreshold=1e-3):
+    
     logging.debug('Found LiquidReactor reaction system')
     T = Quantity(temperature)
     for spec,conc in initialConcentrations.iteritems():
@@ -164,12 +170,19 @@ def liquidReactor(temperature, initialConcentrations, terminationConversion=None
         termination.append(TerminationTime(Quantity(terminationTime)))
     if len(termination) == 0:
         raise InputError('No termination conditions specified for reaction system #{0}.'.format(len(rmg.reactionSystems)+2))
-    system = LiquidReactor(T, initialConcentrations, termination)
+    
+    sensitiveSpecies = []
+    if sensitivity:
+        for spec in sensitivity:
+            sensitiveSpecies.append(speciesDict[spec])
+    system = LiquidReactor(T, initialConcentrations, termination, sensitiveSpecies, sensitivityThreshold)
     rmg.reactionSystems.append(system)
     
-def simulator(atol, rtol):
+def simulator(atol, rtol, sens_atol=1e-6, sens_rtol=1e-4):
     rmg.absoluteTolerance = atol
     rmg.relativeTolerance = rtol
+    rmg.sensitivityAbsoluteTolerance = sens_atol
+    rmg.sensitivityRelativeTolerance = sens_rtol
     
 def solvation(solvent):
     # If solvation module in input file, set the RMG solvent variable
@@ -255,12 +268,12 @@ def pressureDependence(
     rmg.pressureDependence.activeKRotor = True
     rmg.pressureDependence.rmgmode = True
 
-def options(units='si', saveRestartPeriod=None, drawMolecules=False, generatePlots=False, saveConcentrationProfiles=False, verboseComments=False, saveEdgeSpecies=False):
+def options(units='si', saveRestartPeriod=None, drawMolecules=False, generatePlots=False, saveSimulationProfiles=False, verboseComments=False, saveEdgeSpecies=False):
     rmg.units = units
     rmg.saveRestartPeriod = Quantity(saveRestartPeriod) if saveRestartPeriod else None
     rmg.drawMolecules = drawMolecules
     rmg.generatePlots = generatePlots
-    rmg.saveConcentrationProfiles = saveConcentrationProfiles
+    rmg.saveSimulationProfiles = saveSimulationProfiles
     rmg.verboseComments = verboseComments
     rmg.saveEdgeSpecies = saveEdgeSpecies
 
@@ -521,7 +534,7 @@ def saveInputFile(path, rmg):
         f.write('    saveRestartPeriod = None,\n')
     f.write('    drawMolecules = {0},\n'.format(rmg.drawMolecules))
     f.write('    generatePlots = {0},\n'.format(rmg.generatePlots))
-    f.write('    saveConcentrationProfiles = {0},\n'.format(rmg.saveConcentrationProfiles))
+    f.write('    saveSimulationProfiles = {0},\n'.format(rmg.saveSimulationProfiles))
     f.write('    verboseComments = {0},\n'.format(rmg.verboseComments))
     f.write(')\n\n')
         

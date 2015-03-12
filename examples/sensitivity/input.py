@@ -4,7 +4,7 @@ database(
     reactionLibraries = [],
     seedMechanisms = [],
     kineticsDepositories = ['training'],
-    kineticsFamilies = 'default',
+    kineticsFamilies = ['!Intra_Disproportionation','!Substitution_O'],
     kineticsEstimator = 'rate rules',
 )
 
@@ -26,11 +26,15 @@ simpleReactor(
         'ethane': 0.9,
     },
     terminationTime=(1e6,'s'),
+    sensitivity=['ethane'],
+    sensitivityThreshold=0.01,
 )
 
 simulator(
     atol=1e-16,
     rtol=1e-8,
+    sens_atol=1e-6,
+    sens_rtol=1e-4,
 )
 
 model(
@@ -43,8 +47,7 @@ model(
 options(
     units='si',
     saveRestartPeriod=None,
+    saveSimulationProfiles=True,
     drawMolecules=False,
     generatePlots=False,
-    saveEdgeSpecies=True,
-    saveSimulationProfiles=True,
 )

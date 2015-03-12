@@ -57,5 +57,5 @@ options(
     saveRestartPeriod=None,
     drawMolecules=False,
     generatePlots=False,
-    saveConcentrationProfiles=True,
+    saveSimulationProfiles=True,
 )

@@ -20,8 +20,27 @@ Your reaction system will also be different (liquidReactor rather than simpleRea
             "oxygen": (4.953e-6,'mol/cm^3')
         },
         terminationTime=(5,'s'),
+        sensitivity=['octane','oxygen'],
+        sensitivityThreshold=0.001,
+
     )
 
+
+For sensitivity analysis, RMG-Py must be compiled with the DASPK solver. 
+(See :ref:`Compiling RMG-Py with Sensitivity Analysis  <compile_sensitivity>` for more details.)
+Like for the simpleReactor, the sensitivity and sensitivityThrehold are optional arguments for when the
+user would like to conduct sensitivity analysis with respect to the reaction rate
+coefficients for the list of species given for ``sensitivity``.  
+
+Sensitivity analysis is conducted for the list of species given for ``sensitivity`` argument in the input file.  
+The normalized concentration sensitivities with respect to the reaction rate coefficients dln(C_i)/dln(k_j) are saved to a csv file 
+with the file name ``sensitivity_1_SPC_1.csv`` with the first index value indicating the reactor system and the second naming the index of the species 
+the sensitivity analysis is conducted for.  Sensitivities to thermo of individual species is also saved as semi normalized sensitivities
+dln(C_i)/d(G_j) where the units are given in 1/(kcal mol-1). The sensitivityThreshold is set to some value so that only
+sensitivities for dln(C_i)/dln(k_j) > sensitivityThreshold  or dlnC_i/d(G_j) > sensitivityThreshold are saved to this file.  
+
+Note that in the RMG job, after the model has been generated to completion, sensitivity analysis will be conducted
+in one final simulation (sensitivity is not performed in intermediate iterations of the job).
 
 Equation of state
 =================
@@ -50,7 +69,7 @@ LSER approach described below.
 .. _useofthermolibrariesliquid:
 
 Use of thermo libraries in liquid phase system
----------------------------------------------------
+----------------------------------------------
 
 As it is for gas phase simulation, thermo libraries listed in the input files are checked first to find thermo for a given species and return the first match.
 As it exists two types of thermo libraries, (more details on :ref:`thermo libraries <thermoDatabase>`),
@@ -133,7 +152,7 @@ in a typical mechanism generation job. Use of the Abraham Model in RMG requires 
 to estimate the solute descriptors (`A, B, E, L,` and `S`). Platts et al. ([Platts1999]_) proposed such a scheme employing a set of 81 molecular fragments for estimating `B, E, L, V` and `S` and another set of 51 fragments for the estimation of `A`. Only those fragments containing C, H and O are implemented in order to match RMG's existing capabilities. The value of a given descriptor for a molecule is obtained by summing the contributions from each fragment found in the molecule and the intercept associated with that descriptor.
 
 Mintz model for enthalpy of solvation
---------------------------------------
+-------------------------------------
 
 For estimating ΔG at temperatures other than 298 K, the enthalpy change associated with solvation, ΔH must be calculated separately and, along with ΔS, assumed to be independent of temperature. Recently, Mintz et al. ([Mintz2007]_, [Mintz2007a]_, [Mintz2007b]_, [Mintz2007c]_, [Mintz2007d]_, [Mintz2008]_, [Mintz2008a]_, [Mintz2009]_) have developed linear correlations similar to the Abraham model for estimating ΔH:
 
@@ -170,7 +189,7 @@ To build accurate models of liquid phase chemical reactions you will also want t
 .. _exampleLiquidPhase:
 
 Example liquid-phase input file
-================================
+===============================
 This is an example of an input file for a liquid-phase system::
 
     # Data sources
@@ -227,7 +246,7 @@ This is an example of an input file for a liquid-phase system::
         saveRestartPeriod=None,
         drawMolecules=False,
         generatePlots=False,
-        saveConcentrationProfiles=True,
+        saveSimulationProfiles=True,
     )
 
 .. [Vitha2006] \ Vitha2006

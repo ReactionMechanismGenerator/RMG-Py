@@ -41,6 +41,9 @@ install:
   - pip install -r requirements.txt
   - cd ..
   - cd PyDAS
+  - cd daspk31
+  - wget http://www.engineering.ucsb.edu/~cse/Software/daspk31.tgz
+  - cd ..
   - make F77=gfortran
   - make install
   - cd ..

@@ -26,11 +26,16 @@
 ################################################################################
 
 cimport numpy
-from pydas cimport DASSL
 
+include "settings.pxi"
+if DASPK == 1:
+    from pydas.daspk cimport DASPK as DASx
+else:
+    from pydas.dassl cimport DASSL as DASx
+    
 ################################################################################
 
-cdef class ReactionSystem(DASSL):
+cdef class ReactionSystem(DASx):
 
     cdef public numpy.ndarray coreSpeciesConcentrations
     cdef public numpy.ndarray coreSpeciesRates
@@ -48,13 +53,11 @@ cdef class ReactionSystem(DASSL):
     
     cdef public list termination
 
-    cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions, list pdepNetworks=?, atol=?, rtol=?)
-
-    cpdef writeWorksheetHeader(self, worksheet)
+    cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions, list pdepNetworks=?, atol=?, rtol=?, sensitivity=?, sens_atol=?, sens_rtol=?)
     
     cpdef simulate(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions,
         double toleranceKeepInEdge, double toleranceMoveToCore, double toleranceInterruptSimulation,
-        list pdepNetworks=?, worksheet=?, absoluteTolerance=?, relativeTolerance=?, sensitivity=?, sensWorksheet=?)
+        list pdepNetworks=?, worksheet=?, absoluteTolerance=?, relativeTolerance=?, sensitivity=?, sensitivityAbsoluteTolerance=?, sensitivityRelativeTolerance=?, sensWorksheet=?)
 
     cpdef logRates(self, double charRate, object species, double speciesRate, object network, double networkRate)
 

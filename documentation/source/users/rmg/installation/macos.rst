@@ -31,10 +31,10 @@ but other methods like the `Scipy Superpack <http://fonnesbeck.github.com/ScipyS
 
 	pip install -r RMG-Py/requirements.txt
 
-* Get and build `PyDQED <https://github.com/jwallen/PyDQED>`_::
+* Get and build `PyDQED <https://github.com/GreenGroup/PyDQED>`_::
 
 	cd ~/Code
-	git clone https://github.com/jwallen/PyDQED.git
+	git clone https://github.com/GreenGroup/PyDQED.git
 	cd PyDQED
 	make
 
@@ -42,10 +42,10 @@ but other methods like the `Scipy Superpack <http://fonnesbeck.github.com/ScipyS
 
 	LIBRARY_PATH=/usr/local/lib/gcc LDSHARED='gcc -bundle -undefined dynamic_lookup -arch x86_64' python setup.py install
 
-* Get and build `PyDAS <https://github.com/jwallen/PyDAS>`_::
+* Get and build `PyDAS <https://github.com/GreenGroup/PyDAS>`_::
 
 	cd ~/Code
-	git clone https://github.com/jwallen/PyDAS.git
+	git clone https://github.com/GreenGroup/PyDAS.git
 	cd PyDQED
 	make
 

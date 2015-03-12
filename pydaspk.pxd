@@ -4,7 +4,8 @@
 #
 #   PyDAS - A Python wrapper for several differential algebraic system solvers
 #
-#   Copyright (c) 2010 by Joshua W. Allen (jwallen@mit.edu)
+#   Copyright (c) 2010-2014 by Joshua W. Allen (jwallen@mit.edu) 
+#   and Connie W. Gao (connieg@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
 #   copy of this software and associated documentation files (the 'Software'),
@@ -26,39 +27,39 @@
 #
 ################################################################################
 
-import numpy
-cimport numpy
 
-cdef class DASSL:
-	
-	cdef public int maxOrder
-	cdef public object tstop
-	cdef public double initialStep
-	cdef public double maximumStep
-	cdef public object bandwidths
-	cdef public bint nonnegative
-	cdef public bint sensitivity
-	cdef public int sensmethod
-	
-	cdef public double t
-	cdef public numpy.ndarray y
-	cdef public numpy.ndarray dydt	
-	cdef public numpy.ndarray senpar
-	
-	cdef numpy.ndarray info
-	cdef numpy.ndarray atol
-	cdef numpy.ndarray rtol
-	cdef numpy.ndarray rwork
-	cdef numpy.ndarray iwork
-	cdef numpy.ndarray rpar
-	cdef numpy.ndarray ipar
-	cdef int idid
-	
-	cpdef initialize(self, double t0, y0, dydt0=?, senpar=?, atol=?, rtol=?)
-	
-	cpdef advance(self, double tout)
-		
-	cpdef step(self, double tout)
-		
-	cdef solve(self, double tout)
-	
+import numpy as np
+cimport numpy as np
+
+cdef class DASPK:
+
+    cdef public int maxOrder
+    cdef public object tstop
+    cdef public double initialStep
+    cdef public double maximumStep
+    cdef public object bandwidths
+    cdef public bint nonnegative
+    cdef public bint sensitivity
+    cdef public int sensmethod
+    
+    cdef public double t
+    cdef public np.ndarray y
+    cdef public np.ndarray dydt
+    cdef public np.ndarray senpar
+    
+    cdef np.ndarray info
+    cdef np.ndarray atol
+    cdef np.ndarray rtol
+    cdef np.ndarray rwork
+    cdef np.ndarray iwork
+    cdef np.ndarray rpar
+    cdef np.ndarray ipar
+    cdef int idid
+    
+    cpdef initialize(self, double t0, np.ndarray y0, np.ndarray dydt0=?, np.ndarray senpar=?, atol=?, rtol=?)
+    
+    cpdef advance(self, double tout)
+    
+    cpdef step(self, double tout)
+    
+    cdef solve(self, double tout)

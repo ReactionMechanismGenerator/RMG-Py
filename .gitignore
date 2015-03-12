@@ -41,3 +41,6 @@ htmlcov/*
 
 # Quantum Mechanics temporary, cache, and result files
 QMfiles/*
+
+# Solver settings file
+rmgpy/solver/settings.pxi

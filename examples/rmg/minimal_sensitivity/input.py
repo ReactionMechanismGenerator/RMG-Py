@@ -38,6 +38,8 @@ simpleReactor(
 simulator(
     atol=1e-16,
     rtol=1e-8,
+    sens_atol=1e-6,
+    sens_rtol=1e-4,
 )
 
 model(
@@ -50,7 +52,7 @@ model(
 options(
     units='si',
     saveRestartPeriod=None,
-    saveConcentrationProfiles=True,
+    saveSimulationProfiles=True,
     drawMolecules=False,
     generatePlots=False,
 )
