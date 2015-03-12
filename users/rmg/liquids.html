@@ -77,9 +77,25 @@
         <span class="s">&quot;oxygen&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mf">4.953e-6</span><span class="p">,</span><span class="s">&#39;mol/cm^3&#39;</span><span class="p">)</span>
     <span class="p">},</span>
     <span class="n">terminationTime</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="s">&#39;s&#39;</span><span class="p">),</span>
+    <span class="n">sensitivity</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;octane&#39;</span><span class="p">,</span><span class="s">&#39;oxygen&#39;</span><span class="p">],</span>
+    <span class="n">sensitivityThreshold</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span>
+
 <span class="p">)</span>
 </pre></div>
 </div>
+<p>For sensitivity analysis, RMG-Py must be compiled with the DASPK solver.
+(See <a class="reference internal" href="installation/linux.html#compile-sensitivity"><em>Compiling RMG-Py with Sensitivity Analysis</em></a> for more details.)
+Like for the simpleReactor, the sensitivity and sensitivityThrehold are optional arguments for when the
+user would like to conduct sensitivity analysis with respect to the reaction rate
+coefficients for the list of species given for <tt class="docutils literal"><span class="pre">sensitivity</span></tt>.</p>
+<p>Sensitivity analysis is conducted for the list of species given for <tt class="docutils literal"><span class="pre">sensitivity</span></tt> argument in the input file.
+The normalized concentration sensitivities with respect to the reaction rate coefficients dln(C_i)/dln(k_j) are saved to a csv file
+with the file name <tt class="docutils literal"><span class="pre">sensitivity_1_SPC_1.csv</span></tt> with the first index value indicating the reactor system and the second naming the index of the species
+the sensitivity analysis is conducted for.  Sensitivities to thermo of individual species is also saved as semi normalized sensitivities
+dln(C_i)/d(G_j) where the units are given in 1/(kcal mol-1). The sensitivityThreshold is set to some value so that only
+sensitivities for dln(C_i)/dln(k_j) &gt; sensitivityThreshold  or dlnC_i/d(G_j) &gt; sensitivityThreshold are saved to this file.</p>
+<p>Note that in the RMG job, after the model has been generated to completion, sensitivity analysis will be conducted
+in one final simulation (sensitivity is not performed in intermediate iterations of the job).</p>
 <div class="section" id="equation-of-state">
 <h2>13.1. Equation of state<a class="headerlink" href="#equation-of-state" title="Permalink to this headline">¶</a></h2>
 <p>Specifying a liquidReactor will have two effects:</p>
@@ -257,7 +273,7 @@ and a correlation for the viscosity using parameters <cite>A, B, C, D, E</cite>:
     <span class="n">saveRestartPeriod</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
     <span class="n">drawMolecules</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
     <span class="n">generatePlots</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
-    <span class="n">saveConcentrationProfiles</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+    <span class="n">saveSimulationProfiles</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>

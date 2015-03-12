@@ -93,27 +93,27 @@ git clone git@github.com:GreenGroup/RMG-Py.git
 </pre></div>
 </div>
 </li>
-<li><p class="first">Get and build <a class="reference external" href="https://github.com/jwallen/PyDQED">PyDQED</a>:</p>
+<li><p class="first">Get and build <a class="reference external" href="https://github.com/GreenGroup/PyDQED">PyDQED</a>:</p>
 <div class="highlight-python"><div class="highlight"><pre>cd ~/Code
-git clone https://github.com/jwallen/PyDQED.git
+git clone https://github.com/GreenGroup/PyDQED.git
 cd PyDQED
 make
 </pre></div>
 </div>
 <p>It will build the fortran files, but fail to link using clang, so force it to use gcc for the linking with:</p>
-<div class="highlight-python"><div class="highlight"><pre>LIBRARY_PATH=/usr/local/lib/gcc LDSHARED=&#39;gcc -bundle -undefined dynamic_lookup -arch x86_64&#39; python setup.py install
+<div class="highlight-python"><div class="highlight"><pre>LIBRARY_PATH=$(dirname $(gfortran -print-file-name=libgfortran.a)) LDSHARED=&#39;gcc -bundle -undefined dynamic_lookup -arch x86_64&#39; python setup.py install
 </pre></div>
 </div>
 </li>
-<li><p class="first">Get and build <a class="reference external" href="https://github.com/jwallen/PyDAS">PyDAS</a>:</p>
+<li><p class="first">Get and build <a class="reference external" href="https://github.com/GreenGroup/PyDAS">PyDAS</a>:</p>
 <div class="highlight-python"><div class="highlight"><pre>cd ~/Code
-git clone https://github.com/jwallen/PyDAS.git
-cd PyDQED
+git clone https://github.com/GreenGroup/PyDAS.git
+cd PyDAS
 make
 </pre></div>
 </div>
 <p>It will build the fortran files, but fail to link using clang, so force it to use gcc for the linking with:</p>
-<div class="highlight-python"><div class="highlight"><pre>LIBRARY_PATH=/usr/local/lib/gcc LDSHARED=&#39;gcc -bundle -undefined dynamic_lookup -arch x86_64&#39; python setup.py install
+<div class="highlight-python"><div class="highlight"><pre>LIBRARY_PATH=$(dirname $(gfortran -print-file-name=libgfortran.a)) LDSHARED=&#39;gcc -bundle -undefined dynamic_lookup -arch x86_64&#39; python setup.py install
 </pre></div>
 </div>
 </li>

@@ -249,9 +249,25 @@ the model generation will stop when either of the termination criterion is satis
                 <span class="s">&#39;CH4&#39;</span><span class="p">:</span> <span class="mf">0.9</span><span class="p">,</span>
         <span class="p">},</span>
         <span class="n">terminationTime</span><span class="o">=</span><span class="p">(</span><span class="mf">1e0</span><span class="p">,</span><span class="s">&#39;s&#39;</span><span class="p">),</span>
+    <span class="n">sensitivity</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;CH4&#39;</span><span class="p">,</span><span class="s">&#39;H2&#39;</span><span class="p">],</span>
+    <span class="n">sensitivityThreshold</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span>
+
 <span class="p">)</span>
 </pre></div>
 </div>
+<p>For sensitivity analysis, RMG-Py must be compiled with the DASPK solver.
+(See <a class="reference internal" href="installation/linux.html#compile-sensitivity"><em>Compiling RMG-Py with Sensitivity Analysis</em></a> for more details.)
+The sensitivity and sensitivityThrehold are optional arguments for when the
+user would like to conduct sensitivity analysis with respect to the reaction rate
+coefficients for the list of species given for <tt class="docutils literal"><span class="pre">sensitivity</span></tt>.</p>
+<p>Sensitivity analysis is conducted for the list of species given for <tt class="docutils literal"><span class="pre">sensitivity</span></tt> argument in the input file.
+The normalized concentration sensitivities with respect to the reaction rate coefficients dln(C_i)/dln(k_j) are saved to a csv file
+with the file name <tt class="docutils literal"><span class="pre">sensitivity_1_SPC_1.csv</span></tt> with the first index value indicating the reactor system and the second naming the index of the species
+the sensitivity analysis is conducted for.  Sensitivities to thermo of individual species is also saved as semi normalized sensitivities
+dln(C_i)/d(G_j) where the units are given in 1/(kcal mol-1). The sensitivityThreshold is set to some value so that only
+sensitivities for dln(C_i)/dln(k_j) &gt; sensitivityThreshold  or dlnC_i/d(G_j) &gt; sensitivityThreshold are saved to this file.</p>
+<p>Note that in the RMG job, after the model has been generated to completion, sensitivity analysis will be conducted
+in one final simulation (sensitivity is not performed in intermediate iterations of the job).</p>
 </div>
 <div class="section" id="simulator-tolerances">
 <span id="simulatortolerances"></span><h2>4.5. Simulator Tolerances<a class="headerlink" href="#simulator-tolerances" title="Permalink to this headline">¶</a></h2>
@@ -259,9 +275,13 @@ the model generation will stop when either of the termination criterion is satis
 <div class="highlight-python"><div class="highlight"><pre><span class="n">simulator</span><span class="p">(</span>
     <span class="n">atol</span><span class="o">=</span><span class="mf">1e-16</span><span class="p">,</span>
     <span class="n">rtol</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">,</span>
+    <span class="n">sens_atol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span>
+    <span class="n">sens_rtol</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
+<p>The <tt class="docutils literal"><span class="pre">sens_atol</span></tt> and <tt class="docutils literal"><span class="pre">sens_rtol</span></tt> are optional arguments for the sensitivity absolute tolerance and sensitivity relative tolerances, respectively.  They
+are set to a default value of 1e-6 and 1e-4 respectively unless the user specifies otherwise.  They do not apply when sensitivity analysis is not conducted.</p>
 </div>
 <div class="section" id="pruning">
 <span id="id2"></span><h2>4.6. Pruning<a class="headerlink" href="#pruning" title="Permalink to this headline">¶</a></h2>
@@ -440,11 +460,19 @@ of atoms (16 in the above example).</p>
     <span class="n">saveRestartPeriod</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="s">&#39;hour&#39;</span><span class="p">),</span>
     <span class="n">drawMolecules</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
     <span class="n">generatePlots</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+    <span class="n">saveSimulationProfiles</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+    <span class="n">verboseComments</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+    <span class="n">saveEdgeSpecies</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
-<p>Setting <cite>drawMolecules=True</cite> will let RMG know that you want to save 2-D images (png files in the local <cite>species</cite> folder) of all species in the generated core model. This feature is recommended if you wish to easily view the species and reactions in the html file that accompanies an RMG job. Otherwise, the user will be forced to decifer SMILES strings. Also note that if <cite>drawMolecules=False</cite>, but the user specifies a <cite>pressureDependence</cite> section of the input file, RMG will still generate species files in the <cite>species</cite> folder, but only those that pertain to pressure dependent networks that RMG discovers.</p>
-<p>The <cite>saveRestartPeriod</cite> indictes how frequently you wish to save restart files. For very large/long RMG jobs, this process can take a significant amount of time. In such cases, the user may wish to increase the time period for restart.</p>
+<p>The <tt class="docutils literal"><span class="pre">units</span></tt> field is set to <tt class="docutils literal"><span class="pre">si</span></tt>.  Currently there are no other unit options.</p>
+<p>The <tt class="docutils literal"><span class="pre">saveRestartPeriod</span></tt> indictes how frequently you wish to save restart files. For very large/long RMG jobs, this process can take a significant amount of time. In such cases, the user may wish to increase the time period for saving these restart files.</p>
+<p>Setting <tt class="docutils literal"><span class="pre">drawMolecules=True</span></tt> will let RMG know that you want to save 2-D images (png files in the local <tt class="docutils literal"><span class="pre">species</span></tt> folder) of all species in the generated core model. This feature is recommended if you wish to easily view the species and reactions in the html file that accompanies an RMG job. Otherwise, the user will be forced to decifer SMILES strings. Also note that if <tt class="docutils literal"><span class="pre">drawMolecules=False</span></tt>, but the user specifies a <tt class="docutils literal"><span class="pre">pressureDependence</span></tt> section of the input file, RMG will still generate species files in the <tt class="docutils literal"><span class="pre">species</span></tt> folder, but only those that pertain to pressure dependent networks that RMG discovers.</p>
+<p>Setting <tt class="docutils literal"><span class="pre">generatePlots</span></tt> to <tt class="docutils literal"><span class="pre">True</span></tt> will generate a number of plots describing the statistics of the RMG job, including the reaction model core and edge size and memory use versus  execution time. These will be placed in the output directory in the plot/ folder.</p>
+<p>Setting <tt class="docutils literal"><span class="pre">saveSimulationProfiles</span></tt> to <tt class="docutils literal"><span class="pre">True</span></tt> will make RMG save csv files of the simulation in .csv files in the <tt class="docutils literal"><span class="pre">solver/</span></tt> folder.  The filename will be <tt class="docutils literal"><span class="pre">simulation_1_26.csv</span></tt> where the first number corresponds to the reaciton system, and the second number corresponds to the total number of species at the point of the simulation.  Therefore, the highest second number will indicate the latest simulation that RMG has complete while enlarging the core model.  The information inside the csv file will provide the time, reactor volume in m^3, as well as mole fractions of the individual species.</p>
+<p>Setting <tt class="docutils literal"><span class="pre">verboseComments</span></tt> to <tt class="docutils literal"><span class="pre">True</span></tt> will make RMG generate chemkin files with complete verbose commentary for the kinetic and thermo parameters.  This will be helpful in debugging what values are being averaged for the kinetics.  Note that this may produce very large files.</p>
+<p>Setting <tt class="docutils literal"><span class="pre">saveEdgeSpecies</span></tt> to <tt class="docutils literal"><span class="pre">True</span></tt> will make RMG generate chemkin files of the edge reactions in addition to the core model in files such as <tt class="docutils literal"><span class="pre">chem_edge.inp</span></tt> and <tt class="docutils literal"><span class="pre">chem_edge_annotated.inp</span></tt> files located inside the <tt class="docutils literal"><span class="pre">chemkin</span></tt> folder.  These files will be helpful in viewing RMG&#8217;s estimate for edge reactions and seeing if certain reactions one expects are actually in the edge or not.</p>
 </div>
 <div class="section" id="species-constraints">
 <h2>4.10. Species Constraints<a class="headerlink" href="#species-constraints" title="Permalink to this headline">¶</a></h2>

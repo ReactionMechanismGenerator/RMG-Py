@@ -222,8 +222,8 @@ pip install nose quantities sphinx pydot psutil xlwt cython
 <ul>
 <li><p class="first">Download all RMG source packages:</p>
 <div class="highlight-python"><div class="highlight"><pre>cd /c
-git clone git@github.com:jwallen/PyDAS.git
-git clone git@github.com:jwallen/PyDQED.git
+git clone git@github.com:GreenGroup/PyDAS.git
+git clone git@github.com:GreenGroup/PyDQED.git
 git clone git@github.com:GreenGroup/RMG-database.git
 git clone git@github.com:GreenGroup/RMG-Py.git
 </pre></div>
@@ -231,14 +231,15 @@ git clone git@github.com:GreenGroup/RMG-Py.git
 </li>
 <li><p class="first">Build PyDAS by running the provided &#8220;make.bat&#8221; file, then install it:</p>
 <div class="highlight-python"><div class="highlight"><pre>cd /c/PyDAS
-python setup.py install
+mingw32-make
+mingw32-make install
 </pre></div>
 </div>
 </li>
 <li><p class="first">Build and install PyDQED:</p>
 <div class="highlight-python"><div class="highlight"><pre>cd /c/PyDQED
 mingw32-make
-python setup.py install
+mingw32-make install
 </pre></div>
 </div>
 </li>

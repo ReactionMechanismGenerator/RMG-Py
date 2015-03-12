@@ -80,3 +80,22 @@ The instructions listed below have been confirmed on a fresh Ubuntu 12.04 instal
 	make test
 	make eg1
 	make eg2
+
+.. _compile_sensitivity:
+
+* Compiling RMG-Py with Sensitivity Analysis: ::
+
+  Running sensitivity analysis in RMG-Py requires the prerequisite DASPK solver and DASPK compiled wrapper in PyDAS.  
+  To do so first compile daspk in PyDAS and agree to download the daspk31.tgz file when prompted. ::
+
+    cd PyDAS/
+    make
+    make install
+
+  Then compile RMG-Py normally.  It will automatically be compiled with sensitivity analysis if DASPK is found. ::
+
+    cd RMG-Py
+    make clean-solver
+    make
+    
+  Note that using this option will allow RMG to both run with and without sensitivity.  

@@ -64,6 +64,24 @@
             
   <div class="section" id="sensitivity-analysis">
 <span id="sensitivity"></span><h1>15.4. Sensitivity Analysis<a class="headerlink" href="#sensitivity-analysis" title="Permalink to this headline">¶</a></h1>
+<p>For sensitivity analysis, RMG-Py must be compiled with the DASPK solver.
+(See <a class="reference internal" href="../installation/linux.html#compile-sensitivity"><em>Compiling RMG-Py with Sensitivity Analysis</em></a> for more details.)
+Sensitivity analysis can be conducted in a standalone system for an existing kinetics model in Chemkin format.</p>
+<p>To use the sensitivity analysis standalone module:</p>
+<div class="highlight-python"><div class="highlight"><pre>python $RMGPy/sensitivity.py input.py chem.inp species_dictionary.txt
+</pre></div>
+</div>
+<p>where <tt class="docutils literal"><span class="pre">chem.inp</span></tt> is the CHEMKIN file and the <tt class="docutils literal"><span class="pre">species_dictionary.txt</span></tt> contains the dictionary of
+species associated with the CHEMKIN file.  <tt class="docutils literal"><span class="pre">input.py</span></tt> is an input file similar to one used for an RMG job but
+does not generate a RMG job.  See the following <tt class="docutils literal"><span class="pre">input.py</span></tt> example file found under the
+<tt class="docutils literal"><span class="pre">$RMGPy/examples/rmg/sensitivity/input.py</span></tt> folder</p>
+<p>The names of species named in the input file must coincide with the name specified in the CHEMKIN file.</p>
+<p>Sensitivity analysis is conducted for the list of species given for <tt class="docutils literal"><span class="pre">sensitivity</span></tt> argument in the input file.
+The normalized concentration sensitivities with respect to the reaction rate coefficients dln(C_i)/dln(k_j) are saved to a csv file
+with the file name <tt class="docutils literal"><span class="pre">sensitivity_1_SPC_1.csv</span></tt> with the first index value indicating the reactor system and the second naming the index of the species
+the sensitivity analysis is conducted for.  Sensitivities to thermo of individual species is also saved as semi normalized sensitivities
+dln(C_i)/d(G_j) where the units are given in 1/(kcal mol-1). The sensitivityThreshold is set to some value so that only
+sensitivities for dln(C_i)/dln(k_j) &gt; sensitivityThreshold  or dlnC_i/d(G_j) &gt; sensitivityThreshold are saved to this file.</p>
 </div>
 
 

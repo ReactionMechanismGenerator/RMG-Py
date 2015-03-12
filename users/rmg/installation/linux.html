@@ -145,6 +145,24 @@ make eg2
 </div>
 </li>
 </ul>
+<ul id="compile-sensitivity">
+<li><p class="first">Compiling RMG-Py with Sensitivity Analysis:</p>
+<p>Running sensitivity analysis in RMG-Py requires the prerequisite DASPK solver and DASPK compiled wrapper in PyDAS.
+To do so first compile daspk in PyDAS and agree to download the daspk31.tgz file when prompted.</p>
+<div class="highlight-python"><div class="highlight"><pre>cd PyDAS/
+make
+make install
+</pre></div>
+</div>
+<p>Then compile RMG-Py normally.  It will automatically be compiled with sensitivity analysis if DASPK is found.</p>
+<div class="highlight-python"><div class="highlight"><pre>cd RMG-Py
+make clean-solver
+make
+</pre></div>
+</div>
+<p>Note that using this option will allow RMG to both run with and without sensitivity.</p>
+</li>
+</ul>
 </div>
 
 
