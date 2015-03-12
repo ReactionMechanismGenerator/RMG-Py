@@ -51,7 +51,7 @@ but other methods like the `Scipy Superpack <http://fonnesbeck.github.com/ScipyS
 
   It will build the fortran files, but fail to link using clang, so force it to use gcc for the linking with::
 
-	LIBRARY_PATH=/usr/local/lib/gcc LDSHARED='gcc -bundle -undefined dynamic_lookup -arch x86_64' python setup.py install
+	LIBRARY_PATH=$(dirname $(gfortran -print-file-name=libgfortran.a)) LDSHARED='gcc -bundle -undefined dynamic_lookup -arch x86_64' python setup.py install
 
 * Get the RMG-Database and get and build RMG-Py::
 
