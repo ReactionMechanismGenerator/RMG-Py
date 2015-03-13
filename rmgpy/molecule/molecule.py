@@ -1896,24 +1896,18 @@ class Molecule(Graph):
             aromatic = False
             rings = molecule.getSmallestSetOfSmallestRings()            
             for ring0 in rings:
-                # In RMG, only 6-member rings can be considered aromatic, so ignore all other rings                
                 aromaticBonds = []
-                if len(ring0) == 6:
-                    # Figure out which atoms and bonds are aromatic and reassign appropriately:
-                    for i, atom1 in enumerate(ring0):
-                        if not atom1.isCarbon():
-                            # all atoms in the ring must be carbon in RMG for our definition of aromatic
-                            break
-                        for atom2 in ring0[i+1:]:
-                            if molecule.hasBond(atom1, atom2):
-                                if str(rdkitmol.GetBondBetweenAtoms(rdAtomIndices[atom1],rdAtomIndices[atom2]).GetBondType()) == 'AROMATIC':
-                                    aromaticBonds.append(molecule.getBond(atom1, atom2))
-                if len(aromaticBonds) == 6:
+                # Figure out which atoms and bonds are aromatic and reassign appropriately:
+                for i, atom1 in enumerate(ring0):
+                    for atom2 in ring0[i+1:]:
+                        if molecule.hasBond(atom1, atom2):
+                            if str(rdkitmol.GetBondBetweenAtoms(rdAtomIndices[atom1],rdAtomIndices[atom2]).GetBondType()) == 'AROMATIC':
+                                aromaticBonds.append(molecule.getBond(atom1, atom2))
+                if len(aromaticBonds) == len(ring0):
                     aromatic = True
-                    # Only change bonds if there are all 6 are aromatic.  Otherwise don't do anything
+                    # Only change bonds if there are all aromatic.  Otherwise don't do anything
                     for bond in aromaticBonds:
                         bond.order = 'B'
-                        
             if aromatic:              
                 isomers.append(molecule)
 
