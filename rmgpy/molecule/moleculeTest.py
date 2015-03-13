@@ -986,6 +986,14 @@ class TestMolecule(unittest.TestCase):
         m = Molecule().fromSMILES('C1=CC=CC=C1')
         isomers = m.generateResonanceIsomers()
         self.assertTrue(any(isomer.isAromatic() for isomer in isomers))
+        
+    def testAromaticFuran(self):
+        """
+        Test the Molecule.isAromatic() method for Furan.
+        """
+        m = Molecule().fromSMILES('C1=COC=C1')
+        isomers = m.generateResonanceIsomers()
+        self.assertTrue(any(isomer.isAromatic() for isomer in isomers))
 
     def testAromaticNaphthalene(self):
         """
