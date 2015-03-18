@@ -41,6 +41,7 @@ import kinetics as _kinetics
 from reaction import Reaction
 #from species import Species
 from rmg.model import Species
+from rmg.pdep import PDepReaction
 from thermo import NASAPolynomial, NASA
 import rmgpy.constants as constants
 from quantity import Quantity
