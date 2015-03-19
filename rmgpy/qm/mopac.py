@@ -217,7 +217,7 @@ class MopacMol(QMMolecule, Mopac):
 
         if self.verifyOutputFile():
             logging.info("Found a successful output file already; using that.")
-            source = "QM MOPAC result file found from previous run."
+            source = "QM {0} calculation found from previous run.".format(self.__class__.__name__)
         else:
             self.createGeometry()
             success = False
