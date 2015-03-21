@@ -61,10 +61,7 @@ class QMSettings():
                  ):
         self.software = software
         self.method = method
-        if fileStore:
-            self.fileStore = os.path.join(fileStore, method)
-        else:
-            self.fileStore = fileStore
+        self.fileStore = fileStore
         self.scratchDirectory = scratchDirectory
         self.onlyCyclics = onlyCyclics
         self.maxRadicalNumber = maxRadicalNumber
@@ -123,11 +120,12 @@ class QMCalculator():
         """
         IF the fileStore or scratchDirectory are not already set, put them in here.
         """
+        
         if not self.settings.fileStore:
-            self.settings.fileStore = os.path.join(outputDirectory, 'QMfiles', self.settings.method)
+            self.settings.fileStore = os.path.join(outputDirectory, 'QMfiles')
             logging.info("Setting the quantum mechanics fileStore to {0}".format(self.settings.fileStore))
         if not self.settings.scratchDirectory:
-            self.settings.scratchDirectory = os.path.join(outputDirectory, 'QMscratch', self.settings.method)
+            self.settings.scratchDirectory = os.path.join(outputDirectory, 'QMscratch')
             logging.info("Setting the quantum mechanics scratchDirectory to {0}".format(self.settings.scratchDirectory))
     
     def initialize(self):
