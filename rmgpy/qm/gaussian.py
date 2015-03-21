@@ -229,8 +229,13 @@ class GaussianMol(QMMolecule, Gaussian):
                 return None
         result = self.parse() # parsed in cclib
         result.source = source
-        return result
-
+        return result # a CCLibData object
+        
+    def getParser(self, outputFile):
+        """
+        Returns the appropriate cclib parser.
+        """
+        return cclib.parser.Gaussian(outputFile)
 
 class GaussianMolPM3(GaussianMol):
     """

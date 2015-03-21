@@ -17,6 +17,7 @@ import rmgpy.thermo
 import rmgpy.molecule
 import symmetry
 import qmdata
+from qmdata import CCLibData
 
 class Geometry:
     """
@@ -247,29 +248,11 @@ class QMMolecule:
         """
         Set up the fileStore and scratchDirectory if not already done.
         """
+        
         subPath = os.path.join('Species', self.uniqueID, self.settings.method)
         
-        setFileStore = True
-        setScratch = True
-        # Configure the scratch directories
-        if self.settings.fileStore:
-            if not self.settings.fileStore.endswith(subPath):
-                self.settings.fileStore = os.path.join(self.settings.fileStore, subPath)
-                logging.info("Setting the quantum mechanics fileStore to {0}".format(self.settings.fileStore))
-            setFileStore = False    
-        
-        if self.settings.scratchDirectory:
-            if not self.settings.scratchDirectory.endswith(subPath):
-                self.settings.scratchDirectory = os.path.join(self.settings.scratchDirectory, subPath)
-                logging.info("Setting the quantum mechanics fileStore to {0}".format(self.settings.scratchDirectory)) 
-            setScratch = False
-                    
-        if setFileStore:
-            self.settings.fileStore = os.path.join(outputDirectory, 'QMfiles', subPath)
-            logging.info("Setting the quantum mechanics fileStore to {0}".format(self.settings.fileStore))
-        if setScratch:
-            self.settings.scratchDirectory = os.path.join(outputDirectory, 'QMscratch', subPath)
-            logging.info("Setting the quantum mechanics fileStore to {0}".format(self.settings.scratchDirectory))            
+        self.settings.fileStore = os.path.join(outputDirectory, 'QMfiles', subPath)
+        self.settings.scratchDirectory = os.path.join(outputDirectory, 'QMscratch', subPath)
     
     def initialize(self):
         """
@@ -293,7 +276,8 @@ class QMMolecule:
         if not os.path.isdir(self.settings.RMG_bin_path):
             raise Exception("RMG-Py 'bin' directory {0} is not a directory.".format(self.settings.RMG_bin_path))
             
-        self.setOutputDirectory(self.settings.fileStore)
+        self.setOutputDirectory(self.settings.fileStore.split('QMfiles')[0])
+        
         self.settings.fileStore = os.path.expandvars(self.settings.fileStore) # to allow things like $HOME or $RMGpy
         self.settings.scratchDirectory = os.path.expandvars(self.settings.scratchDirectory)
         for path in [self.settings.fileStore, self.settings.scratchDirectory]:
@@ -333,6 +317,8 @@ class QMMolecule:
         
         Returns None if it fails.
         """
+        self.initialize()
+        
         # First, see if we already have it.
         if self.loadThermoData():
             return self.thermo

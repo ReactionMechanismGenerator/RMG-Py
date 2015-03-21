@@ -124,32 +124,32 @@ class Mopac:
             logging.error("No InChI was found in the MOPAC output file {0}".format(self.outputFilePath))
             return False
         
-        if not InChIMatch:
-            #InChIs do not match (most likely due to limited name length mirrored in log file (240 characters), but possibly due to a collision)
-            return self.checkForInChiKeyCollision(logFileInChI) # Not yet implemented!
+        if InChIMatch:
+            # Compare the optimized geometry to the original molecule
+            parser = cclib.parser.Mopac(self.outputFilePath)
+            parser.logger.setLevel(logging.ERROR) #cf. http://cclib.sourceforge.net/wiki/index.php/Using_cclib#Additional_information
+            cclibData = parser.parse()
+            cclibMol = Molecule()
+            cclibMol.fromXYZ(cclibData.atomnos, cclibData.atomcoords[-1])
+            testMol = self.molecule.toSingleBonds()
+            
+            if cclibMol.isIsomorphic(testMol):
+                logging.info("Successful MOPAC quantum result found in {0}".format(self.outputFilePath))
+                # " + self.molfile.name + " ("+self.molfile.InChIAug+") has been found. This log file will be used.")
+                return True
+            else:
+                logging.info("Incorrect connectivity for optimized geometry in file {0}".format(self.outputFilePath))
+                # " + self.molfile.name + " ("+self.molfile.InChIAug+") has been found. This log file will be used.")
+                return False
         
-        # Compare the optimized geometry to the original molecule
-        qmData = self.parse()
-        cclibMol = Molecule()
-        cclibMol.fromXYZ(qmData.atomicNumbers, qmData.atomCoords.value)
-        testMol = self.molecule.toSingleBonds()
-        if not cclibMol.isIsomorphic(testMol):
-            logging.info("Incorrect connectivity for optimized geometry in file {0}".format(self.outputFilePath))
-            return False
-
-        logging.info("Successful {1} quantum result in {0}".format(self.outputFilePath, self.__class__.__name__))
-        return True
-
-    def parse(self):
+        #InChIs do not match (most likely due to limited name length mirrored in log file (240 characters), but possibly due to a collision)
+        return self.checkForInChiKeyCollision(logFileInChI) # Not yet implemented!
+    
+    def getParser(self, outputFile):
         """
-        Parses the results of the Mopac calculation, and returns a CCLibData object.
+        Returns the appropriate cclib parser.
         """
-        parser = cclib.parser.Mopac(self.outputFilePath)
-        parser.logger.setLevel(logging.ERROR) #cf. http://cclib.sourceforge.net/wiki/index.php/Using_cclib#Additional_information
-        cclibData = parser.parse()
-        radicalNumber = sum([i.radicalElectrons for i in self.molecule.atoms])
-        qmData = CCLibData(cclibData, radicalNumber+1)
-        return qmData
+        return cclib.parser.Mopac(outputFile)
 
 class MopacMol(QMMolecule, Mopac):
     """
