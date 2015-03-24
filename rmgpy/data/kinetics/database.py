@@ -389,6 +389,7 @@ class KineticsDatabase(object):
                     products = entry.item.products[:],
                     degeneracy = entry.item.degeneracy,
                     reversible = entry.item.reversible,
+                    duplicate = entry.item.duplicate,
                     kinetics = deepcopy(entry.data),
                     library = library,
                     entry = entry,
