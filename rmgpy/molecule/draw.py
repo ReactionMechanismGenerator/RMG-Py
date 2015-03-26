@@ -165,7 +165,7 @@ class MoleculeDrawer:
         # they will need special attention
         self.__findRingGroups()
         # Handle carbon monoxide special case
-        if self.molecule.getFormula() == 'CO':
+        if self.molecule.getFormula() == 'CO' and len(atomsToRemove) == 0:
             # RDKit does not accept atom type Ot
             self.molecule.removeAtom(self.molecule.atoms[-1])
             self.symbols = ['CO']
