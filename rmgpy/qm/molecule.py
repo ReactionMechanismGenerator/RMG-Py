@@ -69,7 +69,7 @@ class Geometry:
         
         The provided extension should include the leading dot.
         """
-        return os.path.join(self.settings.fileStore, self.uniqueID  + extension)
+        return os.path.join(self.settings.scratchDirectory, self.uniqueID  + extension)
         
     def getCrudeMolFilePath(self):
         "Returns the path of the crude mol file."
@@ -222,7 +222,7 @@ class QMMolecule:
         
         The provided extension should include the leading dot.
         """
-        return os.path.join(self.settings.fileStore, self.uniqueID  + extension)
+        return os.path.join(self.settings.scratchDirectory, self.uniqueID  + extension)
         
     @property
     def outputFilePath(self):
@@ -233,6 +233,10 @@ class QMMolecule:
     def inputFilePath(self):
         """Get the input file name."""
         return self.getFilePath(self.inputFileExtension)
+    
+    def getThermoFilePath(self):
+        "Returns the path the thermo data file."
+        return os.path.join(self.settings.fileStore, self.uniqueID  + '.thermo')
     
     @property
     def scriptAttempts(self):
@@ -351,7 +355,7 @@ class QMMolecule:
         self.thermo.H298.units = 'kcal/mol'
         self.thermo.S298.units = 'cal/mol/K'
         self.thermo.Cpdata.units = 'cal/mol/K'
-        with open(self.getFilePath('.thermo'), 'w') as resultFile:
+        with open(self.getThermoFilePath(), 'w') as resultFile:
             resultFile.write('InChI = "{0!s}"\n'.format(self.uniqueIDlong))
             resultFile.write("thermoData = {0!r}\n".format(self.thermo))
             resultFile.write("pointGroup = {0!r}\n".format(self.pointGroup))
@@ -362,7 +366,7 @@ class QMMolecule:
         """
         Try loading a thermo data from a previous run.
         """
-        filePath = self.getFilePath('.thermo')
+        filePath = self.getThermoFilePath()
         local_context = loadThermoDataFile(filePath)
         if local_context is None:
             # file does not exist or is invalid
