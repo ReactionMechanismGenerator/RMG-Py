@@ -179,7 +179,7 @@ class SymmetryJob:
     @property
     def inputFilePath(self):
         "The input file's path"
-        return os.path.join(self.settings.fileStore, self.uniqueID + self.inputFileExtension)
+        return os.path.join(self.settings.scratchDirectory, self.uniqueID + self.inputFileExtension)
         
     def parse(self, output):
         """
