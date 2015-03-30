@@ -484,13 +484,14 @@ class SolvationDatabase(object):
         Load the solute database from the given `path` on disk, where `path`
         points to the top-level folder of the solute database.
         
-        Two sets of groups for additivity, atom-centered ('abraham') and non atom-centered 
-        ('nonacentered').
+        Three sets of groups for additivity, atom-centered ('abraham'), non atom-centered 
+        ('nonacentered'), and radical corrections ('radical')
         """
         logging.info('Loading Platts additivity group database from {0}...'.format(path))
         self.groups = {}
         self.groups['abraham']   =   SoluteGroups(label='abraham').load(os.path.join(path, 'abraham.py'  ), self.local_context, self.global_context)
         self.groups['nonacentered']  =  SoluteGroups(label='nonacentered').load(os.path.join(path, 'nonacentered.py' ), self.local_context, self.global_context)
+        self.groups['radical']  =  SoluteGroups(label='radical').load(os.path.join(path, 'radical.py' ), self.local_context, self.global_context)
    
     def save(self, path):
         """
@@ -519,6 +520,7 @@ class SolvationDatabase(object):
         if not os.path.exists(path): os.mkdir(path)
         self.groups['abraham'].save(os.path.join(path, 'abraham.py'))
         self.groups['nonacentered'].save(os.path.join(path, 'nonacentered.py'))
+        self.groups['radical'].save(os.path.join(path, 'radical.py'))
 
     def loadOld(self, path):
         """
@@ -772,12 +774,15 @@ class SolvationDatabase(object):
                     saturatedStruct.incrementLonePairs()
 
         # Update Abraham 'A' H-bonding parameter for unsaturated struct
-        # Temporary until I update radical database
         for atom in saturatedStruct.atoms:
-            if atom.isOxygen() and atom.radicalElectrons > 0:
-                for radical in range(1, atom.radicalElectrons):
-                    soluteData.A -= 0.345 # This is for RO and ROO only
-
+            # Iterate over heavy (non-hydrogen) atoms
+            if atom.isNonHydrogen() and atom.radicalElectrons > 0:
+                for electron in range(1, atom.radicalElectrons):
+                    # Get solute data for radical group    
+                    try:
+                        self.__addGroupSoluteData(soluteData, self.groups['radical'], saturatedStruct, {'*':atom})
+                    except KeyError: pass
+      
         return soluteData
 
     def estimateSoluteViaGroupAdditivity(self, molecule):
