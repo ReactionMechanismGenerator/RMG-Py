@@ -44,6 +44,7 @@ import rmgpy.constants as constants
 from rmgpy.thermo import NASAPolynomial, NASA, ThermoData, Wilhoit
 from rmgpy.molecule import Molecule, Atom, Bond, Group
 import rmgpy.molecule
+from rmgpy.species import Species
 
 ################################################################################
 
@@ -849,7 +850,15 @@ class ThermoDatabase(object):
         saturatedStruct.multiplicity = 1
         
         # Get thermo estimate for saturated form of structure
-        thermoData = stableThermoEstimator(saturatedStruct)
+        try:
+            thermoData = stableThermoEstimator(saturatedStruct)
+        except AttributeError:
+            # Probably looking for thermo in a library 
+            saturatedSpec = Species(molecule=[saturatedStruct])
+            thermoData = stableThermoEstimator(saturatedSpec)
+            if thermoData:
+                assert len(thermoData) == 3, "thermoData should be a tuple at this point: (thermoData, library, entry)"
+                thermoData = thermoData[0]
         if thermoData is None:
             logging.info("Thermo data of saturated {0} of molecule {1} is None.".format(saturatedStruct, molecule))
             return None

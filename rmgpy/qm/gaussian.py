@@ -103,7 +103,7 @@ class Gaussian:
                 if line.startswith("InChI="):
                     logFileInChI = line #output files should take up to 240 characters of the name in the input file
                     InChIFound = True
-                    if logFileInChI == self.geometry.uniqueIDlong:
+                    if self.geometry.uniqueIDlong in logFileInChI:
                         InChIMatch = True
                     elif self.geometry.uniqueIDlong.startswith(logFileInChI):
                         logging.info("InChI too long to check, but beginning matches so assuming OK.")
@@ -135,7 +135,7 @@ class Gaussian:
             logging.info("Incorrect connectivity for optimized geometry in file {0}".format(self.outputFilePath))
             return False
 
-        logging.info("Successful MOPAC quantum result found in {0}".format(self.outputFilePath))
+        logging.info("Successful {1} quantum result in {0}".format(self.outputFilePath, self.__class__.__name__))
         return True
         
     def parse(self):
@@ -206,23 +206,36 @@ class GaussianMol(QMMolecule, Gaussian):
         """
         Calculate the QM data and return a QMData object.
         """
-        self.createGeometry()
+        for atom in self.molecule.vertices:
+            if atom.atomType.label in ('N5s', 'N5d', 'N5dd', 'N5t', 'N5b'):
+                return None
+                
         if self.verifyOutputFile():
             logging.info("Found a successful output file already; using that.")
+            source = "QM Gaussian result file found from previous run."
         else:
+            self.createGeometry()
             success = False
             for attempt in range(1, self.maxAttempts+1):
                 self.writeInputFile(attempt)
+                logging.info('Trying {3} attempt {0} of {1} on molecule {2}.'.format(attempt, self.maxAttempts, self.molecule.toSMILES(), self.__class__.__name__))
                 success = self.run()
                 if success:
                     logging.info('Attempt {0} of {1} on species {2} succeeded.'.format(attempt, self.maxAttempts, self.molecule.toAugmentedInChI()))
+                    source = "QM {0} calculation attempt {1}".format(self.__class__.__name__, attempt )
                     break
             else:
                 logging.error('QM thermo calculation failed for {0}.'.format(self.molecule.toAugmentedInChI()))
                 return None
         result = self.parse() # parsed in cclib
-        return result
-
+        result.source = source
+        return result # a CCLibData object
+        
+    def getParser(self, outputFile):
+        """
+        Returns the appropriate cclib parser.
+        """
+        return cclib.parser.Gaussian(outputFile)
 
 class GaussianMolPM3(GaussianMol):
     """
